@@ -44,6 +44,9 @@
 typedef int Py_ssize_t;
 #endif
 
+/* A module to augment tracebacks */
+#include "traceback.c"
+
 /* SQLite 3 headers */
 #include "sqlite3.h"
 
@@ -194,6 +197,7 @@ static void make_exception(int res, sqlite3 *db)
         return;
       }
 
+  /* this line should only be reached if SQLite returns an error code not in the main list */
   PyErr_Format(APSWException, "Error %d: %s", res, db?(sqlite3_errmsg(db)):"error");  
 }
 
@@ -900,7 +904,8 @@ int commithookcb(void *context)
 
   ok=PyObject_IsTrue(retval);
   assert(ok==-1 || ok==0 || ok==1);
-
+  /* the docs say -1 can be returned, but the code for PyObject_IsTrue always returns 1 or 0.  
+     this is a defensive check */
   if(ok==-1)
     {
       ok=1;
@@ -979,7 +984,7 @@ int progresshandlercb(void *context)
   ok=PyObject_IsTrue(retval);
 
   assert(ok==-1 || ok==0 || ok==1);
-
+  /* see earlier comment about PyObject_IsTrue */
   if(ok==-1)
     {
       ok=1;
@@ -1489,6 +1494,8 @@ cbdispatch_func(sqlite3_context *context, int argc, sqlite3_value **argv)
 
   assert(!PyErr_Occurred());
   retval=PyEval_CallObject(cbinfo->scalarfunc, pyargs);
+  if(!retval)
+    TRACEBACKHERE("ScalarFunctionCallback");
   Py_DECREF(pyargs);
   set_context_result(context, retval);
   Py_XDECREF(retval);
@@ -2143,7 +2150,7 @@ Cursor_dealloc(Cursor * self)
       if (have_error)
         PyErr_Fetch(&err_type, &err_value, &err_traceback);
       PyErr_Format(PyExc_RuntimeError, "The destructor for Cursor is called in a different thread than it"
-                   "was created in.  All calls must be in the same thread.  It was created in thread %d" 
+                   "was created in.  All calls must be in the same thread.  It was created in thread %d " 
                    "and this is %d.  SQLite is not being closed as a result.",
                    (int)(self->connection->thread_ident), (int)(PyThread_get_thread_ident()));            
       PyErr_WriteUnraisable((PyObject*)self);

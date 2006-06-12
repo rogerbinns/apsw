@@ -19,6 +19,7 @@ import random
 import time
 import threading
 import Queue
+import traceback
 
 # helper functions
 def randomintegers(howmany):
@@ -74,7 +75,6 @@ class APSW(unittest.TestCase):
         # you get SQLError if the table doesn't exist!
         self.assertRaises(apsw.SQLError, self.db.cursor().execute, "select count(*) from ["+tablename+"]")
 
-
     def testSanity(self):
         "Check all parts compiled and are present"
         # check some error codes etc are present - picked first middle and last from lists in code
@@ -84,6 +84,17 @@ class APSW(unittest.TestCase):
         apsw.ThreadingViolationError
         apsw.BindingsError
         apsw.ExecTraceAbort
+
+    def testConnection(self):
+        "Test connection basics"
+        # keyword args are not allowed
+        self.assertRaises(TypeError, apsw.Connection, ":memory:", user="nobody")
+        # too many arguments
+        self.assertRaises(TypeError, apsw.Connection, ":memory:", 7)
+        # wrong types
+        self.assertRaises(TypeError, apsw.Connection, 3)
+        # non-unicode
+        self.assertRaises(UnicodeDecodeError, apsw.Connection, "\xef\x22\xd3\x9e")
 
     def testMemoryLeaks(self):
         "MemoryLeaks: Run with a memory profiler such as valgrind and debug Python"
@@ -198,6 +209,9 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.ExecutionCompleteError, c.getdescription)
         self.assertRaises(StopIteration, c.next)
         self.assertRaises(StopIteration, c.next)
+        # nulls for getdescription
+        for row in c.execute("pragma user_version"):
+            self.assertEqual(c.getdescription(), ( (None, None), ))
         # incomplete
         c.execute("select * from foo; create table bar(x)") # we don't bother reading leaving 
         self.assertRaises(apsw.IncompleteExecutionError, c.execute, "select * from foo") # execution incomplete
@@ -457,7 +471,9 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, self.db.createcollation, "twelve", 12) # must be callable
         self.db.createcollation("strnum", strnumcollate)
         c.execute("create table foo(x)")
-        vals=("file1", "file7", "file9", "file17", "file20")
+        # adding this unicode in front improves coverage
+        uni=u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}"
+        vals=(uni+"file1", uni+"file7", uni+"file9", uni+"file17", uni+"file20")
         valsrev=list(vals)
         valsrev.reverse() # put them into table in reverse order
         c.executemany("insert into foo values(?)", [(x,) for x in valsrev])
@@ -488,6 +504,8 @@ class APSW(unittest.TestCase):
         c.execute("commit")
 
         self.assertRaises(TypeError, self.db.setprogresshandler, 12) # must be callable
+        self.assertRaises(TypeError, self.db.setprogresshandler, ph, "foo") # second param is steps
+        self.db.setprogresshandler(ph, -17) # SQLite doesn't complain about negative numbers
         self.db.setprogresshandler(ph, 20)
         c.execute("select max(x) from foo").next()
 
@@ -527,6 +545,10 @@ class APSW(unittest.TestCase):
         for i in range(10):
             c.execute("insert into foo values(?)", (i,))
             self.failUnlessEqual(i, self.db.last_insert_rowid())
+        # get a 64 bit value
+        v=2**40
+        c.execute("insert into foo values(?)", (v,))
+        self.failUnlessEqual(v, self.db.last_insert_rowid())
 
     def testComplete(self):
         "Completeness of SQL statement checking"
@@ -570,6 +592,9 @@ class APSW(unittest.TestCase):
                 return False
             return True
         self.assertRaises(TypeError, db2.setbusyhandler, 12) # must be callable
+        self.assertRaises(TypeError, db2.setbusytimeout, "12") # must be int
+        db2.setbusytimeout(-77)  # SQLite doesn't complain about negative numbers, but if it ever does this will catch it
+        self.assertRaises(TypeError, db2.setbusytimeout, 77,88) # too many args
         self.db.setbusyhandler(bh)
 
         c2.execute("begin exclusive")
@@ -635,6 +660,7 @@ class APSW(unittest.TestCase):
         self.db.setcommithook(ch)
         self.assertRaises(apsw.ConstraintError, c.executemany, "insert into foo values(?)", randomintegers(10))
         self.assertEqual(4, chcalled[0])
+        self.db.setcommithook(None)
         def ch():
             chcalled[0]=99
             return 1
@@ -656,6 +682,7 @@ class APSW(unittest.TestCase):
         def rh():
             rhcalled[0]=rhcalled[0]+1
             return 1
+        self.assertRaises(TypeError, self.db.setrollbackhook, 12) # must be callable
         self.db.setrollbackhook(rh)
         c.execute("begin ; insert into foo values(10); rollback")
         self.assertEqual(1, rhcalled[0])
@@ -679,6 +706,7 @@ class APSW(unittest.TestCase):
         uhcalled=[]
         def uh(type, databasename, tablename, rowid):
             uhcalled.append( (type, databasename, tablename, rowid) )
+        self.assertRaises(TypeError, self.db.setupdatehook, 12) # must be callable
         self.db.setupdatehook(uh)
         statements=(
             ("insert into foo values(3,4)", (apsw.SQLITE_INSERT, 3) ),
@@ -714,6 +742,7 @@ class APSW(unittest.TestCase):
         def profile(statement, timing):
             profileinfo.append( (statement, timing) )
         c.execute("commit; create index foo_x on foo(x)")
+        self.assertRaises(TypeError, self.db.setprofile, 12) # must be callable
         self.db.setprofile(profile)
         for val1 in c.execute("select max(x) from foo"): pass # profile is only run when results are exhausted
         self.db.setprofile(None)
@@ -789,6 +818,17 @@ class APSW(unittest.TestCase):
 	tr=ThreadRunner(threadcheck)
 	self.failUnlessEqual(2, tr.go())
         self.db=None
+        if False:
+            # execute destructor in wrong thread - this is quite difficult to arrange!
+            self.db=apsw.Connection("testdb")
+            def threadcheck():
+                print "here"
+                del self.db # python goes into infinite loop here repeatedly running destructor
+                print "here2"
+                raw_input("...")
+            tr=ThreadRunner(threadcheck)
+            tr.go()
+            self.db=None
 
     def testSharedCache(self):
         "Verify setting of shared cache"
@@ -816,6 +856,25 @@ class APSW(unittest.TestCase):
         # this one should work
         apsw.enablesharedcache(True) # should work
         self.db=None
+
+    def testTracebacks(self):
+        "Verify augmented tracebacks"
+        
+        def badfunc(*args):
+            1/0
+        self.db.createscalarfunction("badfunc", badfunc)
+        try:
+            c=self.db.cursor()
+            c.execute("select badfunc()")
+            self.fail("Exception should have occurred")
+        except ZeroDivisionError:
+            tb=sys.exc_info()[2]
+            traceback.print_tb(tb)
+            del tb
+        except:
+            self.fail("Wrong exception type")
+            
+
 
 if __name__=='__main__':
     unittest.main()

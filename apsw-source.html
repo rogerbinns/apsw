@@ -12,7 +12,7 @@
   <h1 class="notoc">APSW - Another Python SQLite Wrapper</h1>
 
 
-  <p><font size="-1">apsw-3.3.5-r1 25th April 2005</font>
+  <p><font size="-1">apsw-3.3.6-r1 11th June 2006</font>
   </p>
 
 
@@ -106,6 +106,8 @@
 </li>
 <li><a href="#verhistory">Version History</a>
 <ul>
+<li><a href="#336r1">3.3.6-r1</a>
+</li>
 <li><a href="#335r1">3.3.5-r1</a>
 </li>
 <li><a href="#327r1">3.2.7-r1</a>
@@ -504,7 +506,7 @@ Get the processed .zip
     <pre>
 &gt; mkdir sqlite3
 &gt; cd sqlite3
-&gt; unzip sqlite-source-3.3.5.zip
+&gt; unzip sqlite-source-3.3.6.zip
 &gt; del tclsqlite.c
 &gt; gcc -DTHREADSAFE -O3 -c *.c <font color="blue"># Adding -DNDEBUG will turn off assertion checking and
                               # improve performance (about 25%) at the expense of safety</font>
@@ -1338,7 +1340,8 @@ apsw.IncompleteExecutionError: Error: there are still remaining sql statements t
   <ul>
     <li><p>*Nothing* happens behind your back. By default pysqlite
     tries to manage transactions by parsing your SQL for you, but 
-    you can turn it off.</li>
+    you can turn it off.  This can result in very unexpected behaviour
+    with pysqlite.</li>
 
     <li><p>SQLite's Manifest typing is used, which limits values to
     being supplied as integer (32/64 bit), string (utf8/unicode),
@@ -1350,11 +1353,15 @@ apsw.IncompleteExecutionError: Error: there are still remaining sql statements t
     href="http://initd.org/pub/software/pysqlite/doc/usage-guide.html#using-adapters-to-store-additional-python-types-in-sqlite-databases">marshalling
     your own types</a>.</li>
 
+    <li><p>APSW <b>always</b> handles Unicode correctly (this was one of the major
+    reasons for writing it in the first place).  pysqlite has since fixed many
+    of its issues but you are still <a href="http://initd.org/tracker/pysqlite/ticket/153">stuck with some</a>.   
+ 
     <li><p>You can use semi-colons at the end of commands and you can
     have multiple commands in the execute string.
 
     <li><p>The cursor object is an iterator and returns itself from
-    execute.  (The latest SQLite has no copied this feature).
+    execute.  (The latest SQLite has now copied this feature).
 
     <li><p><code>cursor.executemany()</code> also works with
     statements that return data such as selects, and you can have
@@ -1363,6 +1370,10 @@ apsw.IncompleteExecutionError: Error: there are still remaining sql statements t
     <li><p>You can define your own collations in Python.</li>
 
     <li><p>You can implement tracers, authorizers and various hooks in Python.</li>
+
+    <li><p>The APSW test suite is larger and tests lots more functionality.
+	Code coverage by the test suite is 80% (the non-covered code lines
+	almost all require that the Python interpretter run out of memory.)</p>
 
   </ul>
 
@@ -1395,6 +1406,20 @@ apsw.IncompleteExecutionError: Error: there are still remaining sql statements t
 </blockquote>
 
   <h1><a name="verhistory">Version History</a></h1>
+
+  <h2><a name="336r1">3.3.6-r1</a></h2>
+
+  <p>You can use this release against any release of SQLite 3 from 3.3.5 onwards. 
+  There were no changes in the SQLite 3.3.6 API from 3.3.5.  APSW had the
+  following changes:	
+
+   <ul>
+   <li>Even more test cases added (APSW didn't fail any of them, but you can't have
+       too many tests :-)
+   <li>When exceptions occur, dummy frames are added to the traceback in the C code.
+       This makes it a lot easier to tell why code was called if you encounter an
+       exception.
+   </ul>
 
   <h2><a name="335r1">3.3.5-r1</a></h2>
 

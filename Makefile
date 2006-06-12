@@ -1,5 +1,5 @@
 
-VERSION=3.3.5-r1
+VERSION=3.3.6-r1
 VERDIR=apsw-$(VERSION)
 
 all: header toc colour
