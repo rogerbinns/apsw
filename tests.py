@@ -187,7 +187,8 @@ class APSW(unittest.TestCase):
             ("x a space", "integer"),
             ("y", "text"),
             ("z", "foo"),
-            ("a", "char")
+            ("a", "char"),
+            (u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}", u"\N{LATIN SMALL LETTER O WITH DIAERESIS}\N{LATIN SMALL LETTER U WITH CIRCUMFLEX}"),
             )
         c.execute("drop table foo; create table foo (%s)" % (", ".join(["[%s] %s" % (n,t) for n,t in cols]),))
         c.execute("insert into foo([x a space]) values(1)")
@@ -371,6 +372,8 @@ class APSW(unittest.TestCase):
             c.execute("insert into foo values(?,?,?)", (i,i,i))
         for i in range(10):
             self.failUnlessEqual( (7,), c.execute("select seven(x,y,z) from foo where x=?", (i,)).next())
+        # function names are limited to 255 characters - SQLerror is the rather unintuitive error return
+        self.assertRaises(apsw.SQLError, self.db.createscalarfunction, "a"*300, ilove7)
         # have an error in a function
         def badfunc(*args):
             return 1/0
