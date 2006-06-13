@@ -263,14 +263,21 @@ class APSW(unittest.TestCase):
         for i,v in enumerate(vals):
             c.execute("insert into foo values(?,?)", (i, v))
 
+        # add function to test conversion back as well
+        def snap(*args):
+            return args[0]
+        self.db.createscalarfunction("snap", snap)
+
         # now see what we got out
         count=0
-        for row,v in c.execute("select * from foo"):
+        for row,v,fv in c.execute("select row,x,snap(x) from foo"):
             count+=1
             if type(vals[row]) is float:
                 self.failUnlessAlmostEqual(vals[row], v)
+                self.failUnlessAlmostEqual(vals[row], fv)
             else:
                 self.failUnlessEqual(vals[row], v)
+                self.failUnlessEqual(vals[row], fv)
         self.failUnlessEqual(count, len(vals))
 
         # check some out of bounds conditions
@@ -324,7 +331,8 @@ class APSW(unittest.TestCase):
         def authorizer(operation, *args):
             return "a silly string"
         self.db.setauthorizer(authorizer)
-        self.assertRaises(TypeError, c.execute, "create table shouldfail(x)")
+        self.assertRaises(TypeError, c.execute, "create table shouldfail(x); select 3+5")
+        self.db.setauthorizer(None) # otherwise next line will fail!
         self.assertTableNotExists("shouldfail")
 
         # back to normal
@@ -409,6 +417,12 @@ class APSW(unittest.TestCase):
             return 1/0
         self.db.createscalarfunction("badscalarfunc", badfunc)
         self.assertRaises(ZeroDivisionError, c.execute, "select badscalarfunc(*) from foo")
+        # return non-allowed types
+        for v in ({'a': 'dict'}, ['a', 'list'], self):
+            def badtype(*args):
+                return v
+            self.db.createscalarfunction("badtype", badtype)
+            self.assertRaises(TypeError, c.execute, "select badtype(*) from foo")
 
     def testAggregateFunctions(self):
         "Verify aggregate functions"
