@@ -2715,7 +2715,7 @@ Cursor_step(Cursor *self)
         }
       res=sqlite3_prepare(self->connection->db, self->zsqlnextpos, -1, &self->statement, &self->zsqlnextpos);
       SET_EXC(self->connection->db,res);
-      if (res!=SQLITE_OK)
+      if (PyErr_Occurred() || res!=SQLITE_OK) /* PyErr_Occurred would happen if there was an error in the authorizer */
         {
           assert(res!=SQLITE_BUSY); /* prepare definitely shouldn't be returning busy */
           return NULL;
@@ -2784,7 +2784,7 @@ Cursor_execute(Cursor *self, PyObject *args)
     }
   res=sqlite3_prepare(self->connection->db, self->zsql, -1, &self->statement, &self->zsqlnextpos);
   SET_EXC(self->connection->db,res);
-  if (res!=SQLITE_OK)
+  if (PyErr_Occurred() || res!=SQLITE_OK) /* PyErr_Occurred would happen if there was an error in the authorizer */
     return NULL;
   
   self->bindingsoffset=0;

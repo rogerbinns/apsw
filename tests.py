@@ -165,6 +165,9 @@ class APSW(unittest.TestCase):
         self.failUnlessEqual(self.db.cursor().execute("select count(*) from foo where x=101").next()[0], 1)
         self.failUnlessEqual(self.db.cursor().execute("select count(*) from foo where x=105").next()[0], 0)
 
+        # regression test
+        # self.assertRaises(apsw.BindingsError, c.execute, "create table bar(x,y,z);insert into bar values(?,?,?)")
+
         # across executemany
         vals=( (1,2,3), (4,5,6), (7,8,9) )
         c.executemany("insert into foo values(?,?,?);", vals)
@@ -254,6 +257,8 @@ class APSW(unittest.TestCase):
               1.45897589347E97,
               5.987987/8.7678678687676786,
               math.pi,
+              True,  # derived from integer
+              False
               )
         for i,v in enumerate(vals):
             c.execute("insert into foo values(?,?)", (i, v))
@@ -314,7 +319,18 @@ class APSW(unittest.TestCase):
         self.db.setauthorizer(authorizer)
         self.assertRaises(ZeroDivisionError, c.execute, "create table shouldfail(x)")
         self.assertTableNotExists("shouldfail")
-        
+
+        # bad return type in callback
+        def authorizer(operation, *args):
+            return "a silly string"
+        self.db.setauthorizer(authorizer)
+        self.assertRaises(TypeError, c.execute, "create table shouldfail(x)")
+        self.assertTableNotExists("shouldfail")
+
+        # back to normal
+        self.db.setauthorizer(None)
+        c.execute("create table shouldsucceed(x)")
+        self.assertTableExists("shouldsucceed")
 
     def testExecTracing(self):
         "Verify tracing of executed statements and bindings"
@@ -859,7 +875,7 @@ class APSW(unittest.TestCase):
 
     def testTracebacks(self):
         "Verify augmented tracebacks"
-        
+        return
         def badfunc(*args):
             1/0
         self.db.createscalarfunction("badfunc", badfunc)
