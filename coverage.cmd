@@ -1,6 +1,6 @@
 @rem measure code coverage on Windows with MinGW
 @echo off
-set pyver=24
+set pyver=23
 if not "%1" == "" set pyver=%1
 set pydir=c:\python%pyver%
 @rem clean up any files from a previous run
