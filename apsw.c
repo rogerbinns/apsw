@@ -1286,6 +1286,7 @@ convert_value_to_pyobject(sqlite3_value *value)
                 Py_DECREF(item);
                 return NULL;
               }
+	    return item;
           }
         return NULL;
       }
@@ -2715,7 +2716,7 @@ Cursor_step(Cursor *self)
         }
       res=sqlite3_prepare(self->connection->db, self->zsqlnextpos, -1, &self->statement, &self->zsqlnextpos);
       SET_EXC(self->connection->db,res);
-      if (PyErr_Occurred() || res!=SQLITE_OK) /* PyErr_Occurred would happen if there was an error in the authorizer */
+      if (res!=SQLITE_OK)
         {
           assert(res!=SQLITE_BUSY); /* prepare definitely shouldn't be returning busy */
           return NULL;
@@ -2784,8 +2785,8 @@ Cursor_execute(Cursor *self, PyObject *args)
     }
   res=sqlite3_prepare(self->connection->db, self->zsql, -1, &self->statement, &self->zsqlnextpos);
   SET_EXC(self->connection->db,res);
-  if (PyErr_Occurred() || res!=SQLITE_OK) /* PyErr_Occurred would happen if there was an error in the authorizer */
-    return NULL;
+  if (res!=SQLITE_OK)
+      return NULL;
   
   self->bindingsoffset=0;
   if(Cursor_dobindings(self))
