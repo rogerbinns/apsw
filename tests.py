@@ -404,12 +404,19 @@ class APSW(unittest.TestCase):
         def ilove7(*args):
             return 7
         self.assertRaises(TypeError, self.db.createscalarfunction, "twelve", 12) # must be callable
+        self.assertRaises(TypeError, self.db.createscalarfunction, "twelve", 12, 27, 28) # too many params
+        self.assertRaises(apsw.SQLError, self.db.createscalarfunction, "twelve", ilove7, 900) # too many args
+        self.assertRaises(TypeError, self.db.createscalarfunction, u"twelve\N{BLACK STAR}", ilove7) # must be ascii
         self.db.createscalarfunction("seven", ilove7)
         c.execute("create table foo(x,y,z)")
         for i in range(10):
             c.execute("insert into foo values(?,?,?)", (i,i,i))
         for i in range(10):
             self.failUnlessEqual( (7,), c.execute("select seven(x,y,z) from foo where x=?", (i,)).next())
+        # clear func
+        self.assertRaises(apsw.BusyError, self.db.createscalarfunction,"seven", None) # active select above so no funcs can be changed
+        for row in c.execute("select null"): pass # no active sql now
+        self.db.createscalarfunction("seven", None) 
         # function names are limited to 255 characters - SQLerror is the rather unintuitive error return
         self.assertRaises(apsw.SQLError, self.db.createscalarfunction, "a"*300, ilove7)
         # have an error in a function
@@ -446,7 +453,11 @@ class APSW(unittest.TestCase):
                 return None,v.step,v.final
             factory=staticmethod(factory)
 
+        self.assertRaises(TypeError, self.db.createaggregatefunction,True, True, True, True) # wrong number/type of params
         self.assertRaises(TypeError, self.db.createaggregatefunction,"twelve", 12) # must be callable
+        self.assertRaises(apsw.SQLError, self.db.createaggregatefunction, "twelve", longest.factory, 923) # max args is 127
+        self.assertRaises(TypeError, self.db.createaggregatefunction,u"twelve\N{BLACK STAR}", 12) # must be ascii
+        self.db.createaggregatefunction("twelve", None)
         self.db.createaggregatefunction("longest", longest.factory)
 
         vals=(
@@ -467,14 +478,80 @@ class APSW(unittest.TestCase):
             def badfunc(*args):
                 1/0
             def final(*args):
-                assert False, "This should not be executed"
+                self.fail("This should not be executed")
                 return 1
             return None,badfunc,final
         
         self.db.createaggregatefunction("badfunc", badfactory)
-
         self.assertRaises(ZeroDivisionError, c.execute, "select badfunc(x) from foo")
 
+        # error in final
+        def badfactory():
+            def badfunc(*args):
+                pass
+            def final(*args):
+                1/0
+            return None,badfunc,final
+        self.db.createaggregatefunction("badfunc", badfactory)
+        self.assertRaises(ZeroDivisionError, c.execute, "select badfunc(x) from foo")
+
+        # error in step and final
+        def badfactory():
+            def badfunc(*args):
+                1/0
+            def final(*args):
+                raise ImportError() # zero div from above is what should be returned
+            return None,badfunc,final
+        self.db.createaggregatefunction("badfunc", badfactory)
+        self.assertRaises(ZeroDivisionError, c.execute, "select badfunc(x) from foo")
+
+        # bad return from factory
+        def badfactory():
+            def badfunc(*args):
+                pass
+            def final(*args):
+                return 0
+            return {}
+        self.db.createaggregatefunction("badfunc", badfactory)
+        self.assertRaises(TypeError, c.execute, "select badfunc(x) from foo")
+
+        # incorrect number of items returned
+        def badfactory():
+            def badfunc(*args):
+                pass
+            def final(*args):
+                return 0
+            return (None, badfunc, final, badfactory)
+        self.db.createaggregatefunction("badfunc", badfactory)
+        self.assertRaises(TypeError, c.execute, "select badfunc(x) from foo")
+
+        # step not callable
+        def badfactory():
+            def badfunc(*args):
+                pass
+            def final(*args):
+                return 0
+            return (None, True, final )
+        self.db.createaggregatefunction("badfunc", badfactory)
+        self.assertRaises(TypeError, c.execute, "select badfunc(x) from foo")
+
+        # final not callable
+        def badfactory():
+            def badfunc(*args):
+                pass
+            def final(*args):
+                return 0
+            return (None, badfunc, True )
+        self.db.createaggregatefunction("badfunc", badfactory)
+        self.assertRaises(TypeError, c.execute, "select badfunc(x) from foo")
+
+        # error in factory method
+        def badfactory():
+            1/0
+        self.db.createaggregatefunction("badfunc", badfactory)
+        self.assertRaises(ZeroDivisionError, c.execute, "select badfunc(x) from foo")
+        
+        
     def testCollation(self):
         "Verify collations"
         c=self.db.cursor()
