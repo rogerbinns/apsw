@@ -511,6 +511,8 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
   return (res==SQLITE_OK)?0:-1;
 }
 
+static void Cursor_init(Cursor *, Connection *);
+
 static PyObject *
 Connection_cursor(Connection *self)
 {
@@ -518,22 +520,17 @@ Connection_cursor(Connection *self)
 
   CHECK_THREAD(self,NULL);
 
-  /* there is absolutely no documentation on how to allocate a new
-     object in the Python C API.  Actually there is documentation of 5
-     different methods, all of which take various parameters we don't
-     have.  This appears to be yet another (and undocumented) way of
-     doing it. */
-  cursor = (Cursor*) (CursorType.tp_alloc(&CursorType, 0));
+  cursor = PyObject_New(Cursor, &CursorType);
   if(!cursor)
     return NULL;
 
   /* incref me since cursor holds a pointer */
   Py_INCREF((PyObject*)self);
-  cursor->connection=self;
+
+  Cursor_init(cursor, self);
   
   return (PyObject*)cursor;
 }
-
 
 static PyObject *
 Connection_setbusytimeout(Connection *self, PyObject *args)
@@ -2121,6 +2118,9 @@ resetcursor(Cursor *self)
           Py_DECREF(next);
           res=SQLITE_ERROR;
           if (!PyErr_Occurred())
+	    /* Technically this line won't get executed since the
+	       block above will already have set ExcIncomplete.
+	       Leaving it in as defensive coding. */
             PyErr_Format(ExcIncomplete, "Error: there are still many remaining sql statements to execute");
         }
     }
@@ -2197,37 +2197,19 @@ Cursor_dealloc(Cursor * self)
   self->ob_type->tp_free((PyObject*)self);
 }
 
-static PyObject *
-Cursor_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+static void
+Cursor_init(Cursor *self, Connection *connection)
 {
-    Cursor *self;
-
-    self = (Cursor *)type->tp_alloc(type, 0);
-    if (self != NULL) {
-      self->connection=0;
-      self->statement=0;
-      self->zsql=0;
-      self->zsqlnextpos=0;
-      self->status=C_DONE;
-      self->bindings=0;
-      self->bindingsoffset=0;
-      self->emiter=0;
-      self->exectrace=0;
-      self->rowtrace=0;
-    }
-
-    return (PyObject *)self;
-}
-
-static int
-Cursor_init(Cursor *self, PyObject *args, PyObject *kwds)
-{
-  CHECK_THREAD(self->connection,-1);
-
-  if(!PyArg_ParseTupleAndKeywords(args, kwds, "", NULL))
-    return -1;
-  
-  return 0;
+  self->connection=connection;
+  self->statement=0;
+  self->zsql=0;
+  self->zsqlnextpos=0;
+  self->status=C_DONE;
+  self->bindings=0;
+  self->bindingsoffset=0;
+  self->emiter=0;
+  self->exectrace=0;
+  self->rowtrace=0;
 }
 
 static PyObject *
@@ -3147,9 +3129,9 @@ static PyTypeObject CursorType = {
     0,                         /* tp_descr_get */
     0,                         /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    (initproc)Cursor_init,     /* tp_init */
+    0,                         /* tp_init */
     0,                         /* tp_alloc */
-    Cursor_new,                /* tp_new */
+    0,                         /* tp_new */
 };
 
 /* MODULE METHODS */
