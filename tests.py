@@ -165,7 +165,7 @@ class APSW(unittest.TestCase):
         self.failUnlessEqual(self.db.cursor().execute("select count(*) from foo where x=101").next()[0], 1)
         self.failUnlessEqual(self.db.cursor().execute("select count(*) from foo where x=105").next()[0], 0)
 
-        # regression test
+        # regression test ::TODO::
         # self.assertRaises(apsw.BindingsError, c.execute, "create table bar(x,y,z);insert into bar values(?,?,?)")
 
         # across executemany
@@ -177,6 +177,10 @@ class APSW(unittest.TestCase):
         # some errors in executemany
         self.assertRaises(apsw.BindingsError, c.executemany, "insert into foo values(?,?,?)", ( (1,2,3), (1,2,3,4)))
         self.assertRaises(apsw.BindingsError, c.executemany, "insert into foo values(?,?,?)", ( (1,2,3), (1,2)))
+
+        # incomplete execution across executemany
+        c.executemany("select * from foo; select ?", ( (1,), (2,) )) # we don't read
+        self.assertRaises(apsw.IncompleteExecutionError, c.executemany, "begin")
 
     def testCursor(self):
         "Check functionality of the cursor"
@@ -575,7 +579,9 @@ class APSW(unittest.TestCase):
                 return 1
             return 0
 
+        self.assertRaises(TypeError, self.db.createcollation, "twelve", strnumcollate, 12) # wrong # params
         self.assertRaises(TypeError, self.db.createcollation, "twelve", 12) # must be callable
+        self.assertRaises(TypeError, self.db.createcollation,u"twelve\N{BLACK STAR}", strnumcollate) # must be ascii
         self.db.createcollation("strnum", strnumcollate)
         c.execute("create table foo(x)")
         # adding this unicode in front improves coverage
@@ -591,11 +597,23 @@ class APSW(unittest.TestCase):
         def collerror(*args):
             return 1/0
         self.db.createcollation("collerror", collerror)
-	try:
-	    c.execute("select x from foo order by x collate collerror")
-	except ZeroDivisionError:
-	    pass
         self.assertRaises(ZeroDivisionError, c.execute, "select x from foo order by x collate collerror")
+
+        # collation function that returns bad value
+        def collerror(*args):
+            return {}
+        self.db.createcollation("collbadtype", collerror)
+        self.assertRaises(TypeError, c.execute, "select x from foo order by x collate collbadtype")
+
+        # get error when registering
+        c.execute("select x from foo order by x collate strnum") # nb we don't read so cursor is still active
+        self.assertRaises(apsw.BusyError, self.db.createcollation, "strnum", strnumcollate)
+
+        # unregister
+        for row in c: pass
+        self.db.createcollation("strnum", None)
+        # check it really has gone
+        self.assertRaises(apsw.SQLError, c.execute, "select x from foo order by x collate strnum")
         
     def testProgressHandler(self):
         "Verify progress handler"
@@ -724,16 +742,17 @@ class APSW(unittest.TestCase):
         c2=db2.cursor()
         
         # Put in busy timeout
+        TIMEOUT=3.5 # seconds
         c2.execute("begin exclusive")
         self.assertRaises(TypeError, self.db.setbusyhandler, "foo")
-        self.db.setbusytimeout(5000)
+        self.db.setbusytimeout(int(TIMEOUT*1000))
         b4=time.time()
         try:
             c.execute("begin immediate ; select * from foo")
         except apsw.BusyError:
             pass
         after=time.time()
-        self.failUnless(after-b4>=5.0)
+        self.failUnless(after-b4>=TIMEOUT)
 
     def testInterruptHandling(self):
         "Verify interrupt function"
@@ -901,7 +920,7 @@ class APSW(unittest.TestCase):
         # do the same thing, but for cursor
         nargs={
             'execute': 1,
-            'executemany': 1,
+            'executemany': 2,
             'setexectrace': 1,
             'setrowtrace': 1,
             }
