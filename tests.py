@@ -133,11 +133,24 @@ class APSW(unittest.TestCase):
             ("(:a,$b,:c)", {'a': 1, 'b': 2, 'c': 3}),
             ("(1,?,3)", (2,)),
             ("(1,$a,$c)", {'a': 2, 'b': 99, 'c': 3}),
+            # some unicode fun
+            (u"($\N{LATIN SMALL LETTER E WITH CIRCUMFLEX},:\N{LATIN SMALL LETTER A WITH TILDE},$\N{LATIN SMALL LETTER O WITH DIAERESIS})", (1,2,3)),
+            (u"($\N{LATIN SMALL LETTER E WITH CIRCUMFLEX},:\N{LATIN SMALL LETTER A WITH TILDE},$\N{LATIN SMALL LETTER O WITH DIAERESIS})",
+             {u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}": 1,
+              u"\N{LATIN SMALL LETTER A WITH TILDE}": 2,
+              u"\N{LATIN SMALL LETTER O WITH DIAERESIS}": 3,
+              }),
+              
             )
         for str,bindings in vals:
             c.execute("insert into foo values"+str, bindings)
             self.failUnlessEqual(c.execute("select * from foo").next(), (1,2,3))
             c.execute("delete from foo")
+            
+        # currently missing dict keys come out as null
+        c.execute("insert into foo values(:a,:b,$c)", {'a': 1, 'c':3}) # 'b' deliberately missing
+        self.failUnlessEqual((1,None,3), c.execute("select * from foo").next())
+        c.execute("delete from foo")
 
         # these ones should cause errors
         vals=(
@@ -145,8 +158,9 @@ class APSW(unittest.TestCase):
             (apsw.BindingsError, "(?,?,?)", (1,2,3,4)), # too many
             (TypeError,          "(?,?,?)", None), # none at all
             (apsw.BindingsError, "(?,?,?)", {'a': 1}), # ? type, dict bindings (note that the reverse will work since all
-                                                       # named bindings are alse implicitly numbered
+                                                       # named bindings are also implicitly numbered
             (TypeError,          "(?,?,?)", 2),    # not a dict or sequence
+            (TypeError,          "(:a,:b,:c)", {'a': 1, 'b': 2, 'c': self}), # bad type for c
             )
         for exc,str,bindings in vals:
             self.assertRaises(exc, c.execute, "insert into foo values"+str, bindings)
@@ -173,6 +187,33 @@ class APSW(unittest.TestCase):
         c.executemany("insert into foo values(?,?,?);", vals)
         for x,y,z in vals:
             self.failUnlessEqual(c.execute("select * from foo where x=?",(x,)).next(), (x,y,z))
+
+        # with an iterator
+        def myvals():
+            for i in range(10):
+                yield {'a': i, 'b': i*10, 'c': i*100}
+        c.execute("delete from foo")
+        c.executemany("insert into foo values($a,:b,$c)", myvals())
+        c.execute("delete from foo")
+
+        # error in iterator
+        def myvals():
+            for i in range(2):
+                yield {'a': i, 'b': i*10, 'c': i*100}
+            1/0
+        self.assertRaises(ZeroDivisionError, c.executemany, "insert into foo values($a,:b,$c)", myvals())
+        self.failUnlessEqual(c.execute("select count(*) from foo").next()[0], 2)
+        c.execute("delete from foo")
+
+        # return bad type from iterator
+        def myvals():
+            for i in range(2):
+                yield {'a': i, 'b': i*10, 'c': i*100}
+            yield self
+
+        self.assertRaises(TypeError, c.executemany, "insert into foo values($a,:b,$c)", myvals())
+        self.failUnlessEqual(c.execute("select count(*) from foo").next()[0], 2)
+        c.execute("delete from foo")
 
         # some errors in executemany
         self.assertRaises(apsw.BindingsError, c.executemany, "insert into foo values(?,?,?)", ( (1,2,3), (1,2,3,4)))
@@ -230,6 +271,10 @@ class APSW(unittest.TestCase):
         # pragma
         c.execute("pragma user_version")
         c.execute("pragma pure=nonsense")
+        # error
+        self.assertRaises(apsw.SQLError, c.execute, "create table bar(x,y,z); this is a syntax error; create table bam(x,y,z)")
+        self.assertTableExists("bar")
+        self.assertTableNotExists("bam")
 
     def testTypes(self):
         "Check type information is maintained"
@@ -377,6 +422,13 @@ class APSW(unittest.TestCase):
         # table should not have been modified
         c.setexectrace(None)
         self.failUnlessEqual(count, c.execute("select count(*) from one").next()[0])
+        # error in tracefunc
+        def tracefunc(cmd, bindings):
+            1/0
+        c.setexectrace(tracefunc)
+        self.assertRaises(ZeroDivisionError, c.execute, "insert into one values(1,2,3)")
+        c.setexectrace(None)
+        self.failUnlessEqual(count, c.execute("select count(*) from one").next()[0])
 
     def testRowTracing(self):
         "Verify row tracing"
@@ -399,6 +451,18 @@ class APSW(unittest.TestCase):
         c.setrowtrace(tracefunc)
         self.failUnlessEqual(c.execute("select * from foo").next(), (7,))
         # no alteration again
+        c.setrowtrace(None)
+        self.failUnlessEqual(c.execute("select * from foo").next(), vals)
+        # error in function
+        def tracefunc(*result):
+            1/0
+        c.setrowtrace(tracefunc)
+        try:
+            for row in c.execute("select * from foo"):
+                self.fail("Should have had exception")
+                break
+        except ZeroDivisionError:
+            pass
         c.setrowtrace(None)
         self.failUnlessEqual(c.execute("select * from foo").next(), vals)
 

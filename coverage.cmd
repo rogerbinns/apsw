@@ -18,5 +18,5 @@ echo initapsw              >>apsw.def
 gcc -ftest-coverage -fprofile-arcs -mdll -Wall -DEXPERIMENTAL -Isqlite3 -I%pydir%\include -I%pydir%\PC -c apsw.c
 gcc -ftest-coverage -fprofile-arcs -shared -s apsw.o apsw.def -Lsqlite3 -L%pydir%\libs -L%pydir%\PCBuild -lsqlite3 -lpython%pyver% -o apsw.pyd
 @del apsw.def
-%pydir%\python tests.py
+%pydir%\python tests.py -v
 gcov apsw.c
