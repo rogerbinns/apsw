@@ -196,7 +196,19 @@ class APSW(unittest.TestCase):
         c.executemany("insert into foo values($a,:b,$c)", myvals())
         c.execute("delete from foo")
 
-        # error in iterator
+        # errors for executemany
+        self.assertRaises(TypeError, c.executemany, "statement", 12, 34, 56) # incorrect num params
+        self.assertRaises(TypeError, c.executemany, "statement", 12) # wrong type
+        self.assertRaises(apsw.SQLError, c.executemany, "syntax error", [(1,)]) # error in prepare
+        def myiter():
+            yield 1/0
+        self.assertRaises(ZeroDivisionError, c.executemany, "statement", myiter()) # immediate error in iterator
+        def myiter():
+            yield self
+        self.assertRaises(TypeError, c.executemany, "statement", myiter()) # immediate bad type
+        c.executemany("statement", ()) # empty sequence
+
+        # error in iterator after a while
         def myvals():
             for i in range(2):
                 yield {'a': i, 'b': i*10, 'c': i*100}
@@ -205,7 +217,7 @@ class APSW(unittest.TestCase):
         self.failUnlessEqual(c.execute("select count(*) from foo").next()[0], 2)
         c.execute("delete from foo")
 
-        # return bad type from iterator
+        # return bad type from iterator after a while
         def myvals():
             for i in range(2):
                 yield {'a': i, 'b': i*10, 'c': i*100}
@@ -429,6 +441,46 @@ class APSW(unittest.TestCase):
         self.assertRaises(ZeroDivisionError, c.execute, "insert into one values(1,2,3)")
         c.setexectrace(None)
         self.failUnlessEqual(count, c.execute("select count(*) from one").next()[0])
+        # test across executemany and multiple statments
+        counter=[0]
+        def tracefunc(cmd, bindings):
+            counter[0]=counter[0]+1
+            return True
+        c.setexectrace(tracefunc)
+        c.execute("create table two(x);insert into two values(1); insert into two values(2); insert into two values(?); insert into two values(?)",
+                  (3, 4))
+        self.failUnlessEqual(counter[0], 5)
+        counter[0]=0
+        c.executemany("insert into two values(?); insert into two values(?)", [[n,n+1] for n in range(5)])
+        self.failUnlessEqual(counter[0], 10)
+        # error in func but only after a while
+        c.execute("delete from two")
+        counter[0]=0
+        def tracefunc(cmd, bindings):
+            counter[0]=counter[0]+1
+            if counter[0]>3:
+                1/0
+            return True
+        c.setexectrace(tracefunc)
+        self.assertRaises(ZeroDivisionError, c.execute,
+                          "insert into two values(1); insert into two values(2); insert into two values(?); insert into two values(?)",
+                          (3, 4))
+        self.failUnlessEqual(counter[0], 4)
+        c.setexectrace(None)
+        # check the first statements got executed
+        self.failUnlessEqual(3, c.execute("select max(x) from two").next()[0])
+        # executemany
+        def tracefunc(cmd, bindings):
+            1/0
+        c.setexectrace(tracefunc)
+        self.assertRaises(ZeroDivisionError, c.executemany, "select ?", [(1,)])
+        c.setexectrace(None)
+        # tracefunc with wrong number of arguments
+        def tracefunc(a,b,c,d,e,f):
+            1/0
+        c.setexectrace(tracefunc)
+        self.assertRaises(TypeError, c.execute, "select max(x) from two")
+        
 
     def testRowTracing(self):
         "Verify row tracing"
