@@ -1217,7 +1217,8 @@ static funccbinfo *
 freefunccbinfo(funccbinfo *func)
 {
   funccbinfo *fnext;
-  if(!func) return NULL;
+  if(!func) 
+    return NULL;
 
   if(func->name)
     PyMem_Free(func->name);
@@ -1510,7 +1511,8 @@ getaggregatefunctioncontext(sqlite3_context *context)
   PyObject *retval;
   PyObject *args;
   /* have we seen it before? */
-  if(aggfc->aggvalue) return aggfc;
+  if(aggfc->aggvalue) 
+    return aggfc;
   
   /* fill in with Py_None so we know it is valid */
   aggfc->aggvalue=Py_None;
@@ -1848,7 +1850,8 @@ static collationcbinfo *
 freecollationcbinfo(collationcbinfo *collation)
 {
   collationcbinfo *cnext;
-  if(!collation) return NULL;
+  if(!collation) 
+    return NULL;
 
   if(collation->name)
     PyMem_Free(collation->name);
@@ -2279,7 +2282,8 @@ Cursor_dobinding(Cursor *self, int arg, PyObject *obj)
 
   int res=SQLITE_OK;
 
-  if(PyErr_Occurred()) return -1;
+  if(PyErr_Occurred()) 
+    return -1;
 
   if(obj==Py_None)
     res=sqlite3_bind_null(self->statement, arg);
@@ -2401,7 +2405,8 @@ Cursor_dobindings(Cursor *self)
   int nargs, arg, res, sz=0;
   PyObject *obj;
 
-  if(PyErr_Occurred()) return -1;
+  if(PyErr_Occurred()) 
+    return -1;
 
   assert(self->bindingsoffset>=0);
 
@@ -2428,7 +2433,8 @@ Cursor_dobindings(Cursor *self)
           if(*chk)
             {
               PyObject *keyo=PyUnicode_DecodeUTF8(key, strlen(key), NULL);
-              if(!keyo) return -1;
+              if(!keyo) 
+		return -1;
 
               obj=PyDict_GetItem(self->bindings, keyo);
               Py_DECREF(keyo);
@@ -2505,7 +2511,8 @@ Cursor_doexectrace(Cursor *self, exectrace_oldstate *etos)
   /* make a string of the command */
   sqlcmd=convertutf8stringsize(etos->previouszsqlpos, self->zsqlnextpos-etos->previouszsqlpos);
 
-  if(!sqlcmd) return -1;
+  if(!sqlcmd) 
+    return -1;
   /* now deal with the bindings */
   if(self->bindings)
     {
@@ -2568,7 +2575,8 @@ Cursor_dorowtrace(Cursor *self, PyObject *retval)
   assert(self->rowtrace);
 
   retval=PyEval_CallObject(self->rowtrace, retval);
-  if(!retval) return NULL;
+  if(!retval) 
+    return NULL;
   
   return retval;
 }
@@ -2919,7 +2927,8 @@ Cursor_next(Cursor *self)
   /* return the row of data */
   numcols=sqlite3_data_count(self->statement);
   retval=PyTuple_New(numcols);
-  if(!retval) return NULL;
+  if(!retval) 
+    return NULL;
 
   for(i=0;i<numcols;i++)
     {
@@ -2975,14 +2984,16 @@ Cursor_next(Cursor *self)
 
         }
 
-      if(!item) return NULL;
+      if(!item) 
+	return NULL;
       PyTuple_SET_ITEM(retval, i, item);
     }
   if(self->rowtrace)
     {
       PyObject *r2=Cursor_dorowtrace(self, retval);
       Py_DECREF(retval);
-      if(!r2) return NULL;
+      if(!r2) 
+	return NULL;
       if (r2==Py_None)
         {
           Py_DECREF(r2);
