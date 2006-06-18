@@ -517,6 +517,21 @@ class APSW(unittest.TestCase):
             pass
         c.setrowtrace(None)
         self.failUnlessEqual(c.execute("select * from foo").next(), vals)
+        # returning null
+        c.execute("create table bar(x)")
+        c.executemany("insert into bar values(?)", [[x] for x in range(10)])
+        counter=[0]
+        def tracefunc(*args):
+            counter[0]=counter[0]+1
+            if counter[0]%2:
+                return None
+            return args
+        c.setrowtrace(tracefunc)
+        countertoo=0
+        for row in c.execute("select * from bar"):
+            countertoo+=1
+        c.setrowtrace(None)
+        self.failUnlessEqual(countertoo, 5) # half the rows should be skipped
 
     def testScalarFunctions(self):
         "Verify scalar functions"
@@ -1074,6 +1089,11 @@ class APSW(unittest.TestCase):
 
     def testSharedCache(self):
         "Verify setting of shared cache"
+
+        # check parameters - wrong # or type of args
+        self.assertRaises(TypeError, apsw.enablesharedcache)
+        self.assertRaises(TypeError, apsw.enablesharedcache, "foo")
+        self.assertRaises(TypeError, apsw.enablesharedcache, True, None)
 
         ## Several of these should be failing but SQLite isn't
         ## returning an error code as the documentation claims it
