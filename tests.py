@@ -1029,7 +1029,7 @@ class APSW(unittest.TestCase):
             args=("one", "two", "three")[:nargs.get(func,0)]
             try:
                 tr=ThreadRunner(getattr(self.db, func), *args)
-		tr.go()
+                tr.go()
             except apsw.ThreadingViolationError:
                 pass
 
@@ -1044,7 +1044,7 @@ class APSW(unittest.TestCase):
             args=("one", "two", "three")[:nargs.get(func,0)]
             try:
                 tr=ThreadRunner(getattr(c, func), *args)
-		tr.go()
+                tr.go()
             except apsw.ThreadingViolationError:
                 pass
 
@@ -1053,12 +1053,12 @@ class APSW(unittest.TestCase):
             pass
         del c
 	# Do another query in a different thread
-	def threadcheck():
-	   db=apsw.Connection("testdb")
-	   c=db.cursor()
-	   return c.execute("select count(*) from foo").next()[0]
-	tr=ThreadRunner(threadcheck)
-	self.failUnlessEqual(2, tr.go())
+        def threadcheck():
+            db=apsw.Connection("testdb")
+            c=db.cursor()
+            return c.execute("select count(*) from foo").next()[0]
+        tr=ThreadRunner(threadcheck)
+        self.failUnlessEqual(2, tr.go())
         self.db=None
         if False:
             # execute destructor in wrong thread - this is quite difficult to arrange!
