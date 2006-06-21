@@ -99,12 +99,12 @@ class APSW(unittest.TestCase):
     def testMemoryLeaks(self):
         "MemoryLeaks: Run with a memory profiler such as valgrind and debug Python"
         # make and toss away a bunch of db objects, cursors, functions etc - if you use memory profiling then
-        # memory leaks will show up
+        # simple memory leaks will show up
         c=self.db.cursor()
         c.execute("create table foo(x)")
         c.executemany("insert into foo values(?)", ( [1], [None], [math.pi], ["jkhfkjshdf"], [u"\u1234\u345432432423423kjgjklhdfgkjhsdfjkghdfjskh"],
                                                      [buffer("78696ghgjhgjhkgjkhgjhg\xfe\xdf")]))
-        for i in xrange(1000):
+        for i in xrange(MEMLEAKITERATIONS):
             db=apsw.Connection("testdb")
             db.createaggregatefunction("aggfunc", lambda x: x)
             db.createscalarfunction("scalarfunc", lambda x: x)
@@ -994,7 +994,7 @@ class APSW(unittest.TestCase):
         # should be way quicker.
         c=self.db.cursor()
         c.execute("create table foo(x); begin")
-        c.executemany("insert into foo values(?)", randomintegers(100000))
+        c.executemany("insert into foo values(?)", randomintegers(PROFILESTEPS))
         profileinfo=[]
         def profile(statement, timing):
             profileinfo.append( (statement, timing) )
@@ -1118,6 +1118,7 @@ class APSW(unittest.TestCase):
         # this one should work
         apsw.enablesharedcache(True) # should work
         self.db=None
+        apsw.enablesharedcache(False) # back to default value
 
     def testTracebacks(self):
         "Verify augmented tracebacks"
@@ -1136,7 +1137,22 @@ class APSW(unittest.TestCase):
         except:
             self.fail("Wrong exception type")
             
-
+MEMLEAKITERATIONS=1000
+PROFILESTEPS=100000
 
 if __name__=='__main__':
-    unittest.main()
+    v=os.getenv("APSW_TEST_ITERATIONS")
+    if v is None:
+        unittest.main()
+    else:
+        # we run all the tests multiple times which has better coverage
+        # a larger value for MEMLEAKITERATIONS slows down everything else
+        MEMLEAKITERATIONS=5
+        PROFILESTEPS=1000  # takes a long time to run under valgrind
+        v=int(v)
+        for i in xrange(v):
+            print "Iteration",i+1,"of",v
+            try:
+                unittest.main()
+            except SystemExit:
+                pass
