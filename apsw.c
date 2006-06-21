@@ -2679,11 +2679,10 @@ Cursor_step(Cursor *self)
           else
             {
               self->bindings=PySequence_Fast(next, "You must supply a dict or a sequence");
+              /* we no longer need next irrespective of what happens in line above */
+              Py_DECREF(next);
               if(!self->bindings)
-                {
-                  Py_DECREF(next);
-                  return NULL;
-                }
+                return NULL;
             }
           assert(self->bindings);
         }
