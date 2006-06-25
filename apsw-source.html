@@ -3,7 +3,7 @@
 <html>
 <head>
   <title>APSW - Another Python SQLite Wrapper</title>
-  <!-- Changed by: , 25-Apr-2006 -->
+  <!-- Changed by: , 24-Jun-2006 -->
 <!-- My stylesheet until somone supplies a better one -->
 <link rel="StyleSheet" href="http://www.rogerbinns.com/styles/main.css" type="text/css" />
 </head>
@@ -147,8 +147,7 @@
 
    <p>The source is controlled by Subversion
      accessible as <a href="https://svn.sourceforge.net/svnroot/bitpim/subprojects/apsw/trunk">https://svn.sourceforge.net/svnroot/bitpim/subprojects/apsw/trunk</a>
-     and can be web browsed at <a href="http://svn.sourceforge.net/viewcvs.cgi/bitpim/subprojects/hb2web/trunk/">http://svn.sourceforge.net/viewcvs.cgi/bitpim/subprojects/hb2web/trunk/</a>
-
+     and can be web browsed at <a href="http://svn.sourceforge.net/viewcvs.cgi/bitpim/subprojects/apsw/trunk/">http://svn.sourceforge.net/viewcvs.cgi/bitpim/subprojects/apsw/trunk/</a>
 
   <h1><a name="SQLiteVersionCompatibilityAndBenchmarking">SQLite version compatibility and benchmarking</a></h1>
 
@@ -701,8 +700,11 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
 
     <dd>
       <p>Causes any pending operations on the database to abort at
-      the earliest opportunity. (This calls <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_interrupt">sqlite3_interrupt</a>).</p>
+      the earliest opportunity.  Note that you must call this in the same
+      thread as you created the Connection.  This restriction <a href="http://article.gmane.org/gmane.comp.db.sqlite.general/20427">may be removed</a>
+      in a future release of SQLite.  (This calls <a href=
+      "http://www.sqlite.org/capi3ref.html#sqlite3_interrupt">sqlite3_interrupt</a>).
+      </p>
     </dd>
 
 
@@ -1107,7 +1109,7 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
   are running.  The GIL is re-acquired while user defined functions,
   collations and the various hooks/handlers run.)
 
-  <p>Note that you cannot use the same Connection object in mulitple
+  <p>Note that you cannot use the same Connection object in multiple
   threads.  You must allocate a new Connection object per thread.
   (This is a requirement of SQLite).  A cursor object can only be used
   in the same thread as it was allocated. (Also an SQLite
@@ -1334,10 +1336,21 @@ apsw.IncompleteExecutionError: Error: there are still remaining sql statements t
 
   <p><a href="http://pysqlite.org/">pysqlite</a> already provides a
   DBAPI compliant wrapper over SQLite 2 and 3. APSW only wraps SQLite
-  3 and has the following enhancements/differences over pysqlite 3:</p>
+  3.  I suggest using APSW when you want to directly use SQLite and
+  its functionality or are using your code to deal with database independence
+  rather than DBAPI.
+
+  <p>APSW has the following enhancements/differences over pysqlite 3:</p>
 
 
   <ul>
+    <li>APSW is a single file for the extension, apsw.pyd on Windows
+    and apsw.so on Unix/Mac.  There are no other files needed and the
+    build instructions show you how to include SQLite statically in this
+    file. You can put this file anywhere your Python session can reach.
+    pysqlite is one binary file and several .py files, all of which need 
+    to be available.
+
     <li><p>*Nothing* happens behind your back. By default pysqlite
     tries to manage transactions by parsing your SQL for you, but 
     you can turn it off.  This can result in very unexpected behaviour
@@ -1358,7 +1371,37 @@ apsw.IncompleteExecutionError: Error: there are still remaining sql statements t
     of its issues but you are still <a href="http://initd.org/tracker/pysqlite/ticket/153">stuck with some</a>.   
  
     <li><p>You can use semi-colons at the end of commands and you can
-    have multiple commands in the execute string.
+    have multiple commands in the execute string in APSW.  There is
+    no restrictions on the type of commands used.  For example this
+    will work fine in APSW but is not allowed in pysqlite:
+
+<pre>
+<blockquote>
+<b>
+import apsw
+
+con=apsw.Connection(":memory:")
+cur=con.cursor()
+
+for row in cur.execute("create table foo(x,y,z);insert into foo values (?,?,?);"
+                       "insert into foo values(?,?,?);select * from foo;drop table foo;"
+                       "create table bar(x,y);insert into bar values(?,?);"
+                       "insert into bar values(?,?);select * from bar;",
+                       (1,2,3,4,5,6,7,8,9,10)):
+    print row
+</b>
+
+And the output as you would expect:
+
+<b>
+$ python test.py
+(1, 2, 3)
+(4, 5, 6)
+(7, 8)
+(9, 10)
+</b>
+</blockquote>
+</pre>
 
     <li><p>The cursor object is an iterator and returns itself from
     execute.  (The latest SQLite has now copied this feature).
@@ -1367,13 +1410,79 @@ apsw.IncompleteExecutionError: Error: there are still remaining sql statements t
     statements that return data such as selects, and you can have
     multiple statements.</li>
 
+    <li>pysqlite swallows exceptions in your callbacks making it far harder
+    to debug problems.  That also prevents you from raising exceptions
+    in your callbacks to be handled in your code that called SQLite.
+    pysqlite does let you turn on printing of tracebacks, but that is a
+    poor substitute.  apsw does the right thing as demonstrated by this example.
+
+<blockquote>
+<table border=1px cellpadding=5 cellspacing=5>
+<tr>
+<th>pysqlite
+<th>apsw
+</tr>
+<tr>
+<td valign="top">
+<pre>
+from pysqlite2 import dbapi2 as sqlite
+def badfunc(t):
+    return 1/0
+
+con = sqlite.connect(":memory:")
+con.create_function("badfunc", 1, badfunc)
+cur = con.cursor()
+cur.execute("select badfunc(3)")
+</pre>
+<td valign="top">
+<pre>
+import apsw
+def badfunc(t):
+    return 1/0
+
+con = apsw.Connection(":memory:")
+con.createscalarfunction("badfunc", badfunc, 1)
+cur = con.cursor()
+cur.execute("select badfunc(3)")
+</pre>
+</tr>
+<tr>
+<td valign="top">
+<pre>
+C:\temp>python func.py
+Traceback (most recent call last):
+  File "func.py", line 8, in ?
+    cur.execute("select badfunc(3)")
+pysqlite2.dbapi2.OperationalError: user-defined function raised exception
+</pre>
+<td valign="top">
+<pre>
+C:\temp>python afunc.py
+Traceback (most recent call last):
+  File "afunc.py", line 8, in ?
+    cur.execute("select badfunc(3)")
+  File "afunc.py", line 3, in badfunc
+    return 1/0
+ZeroDivisionError: integer division or modulo by zero
+</pre>
+</tr>
+</table>
+</blockquote>
+
+
     <li><p>You can define your own collations in Python.</li>
 
     <li><p>You can implement tracers, authorizers and various hooks in Python.</li>
 
-    <li><p>The APSW test suite is larger and tests lots more functionality.
-	Code coverage by the test suite is 80% (the non-covered code lines
-	almost all require that the Python interpretter run out of memory.)</p>
+    <li><p>The APSW test suite is larger and tests more functionality.
+	Code coverage by the test suite is 89%.  pysqlite is good at 80%
+        for C code although there are several places that coverage can be
+        improved.  I haven't measured code coverage for pysqlite's
+        Python code.
+
+        <p>In both cases, the non-covered code lines require that the 
+        Python interpretter or SQLite run out of memory so 100%
+        coverage isn't possible. </p>
 
   </ul>
 
