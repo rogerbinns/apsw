@@ -179,8 +179,8 @@ class APSW(unittest.TestCase):
         self.failUnlessEqual(self.db.cursor().execute("select count(*) from foo where x=101").next()[0], 1)
         self.failUnlessEqual(self.db.cursor().execute("select count(*) from foo where x=105").next()[0], 0)
 
-        # regression test ::TODO::
-        # self.assertRaises(apsw.BindingsError, c.execute, "create table bar(x,y,z);insert into bar values(?,?,?)")
+        # check there are some bindings!
+        self.assertRaises(apsw.BindingsError, c.execute, "create table bar(x,y,z);insert into bar values(?,?,?)")
 
         # across executemany
         vals=( (1,2,3), (4,5,6), (7,8,9) )
@@ -206,6 +206,7 @@ class APSW(unittest.TestCase):
         def myiter():
             yield self
         self.assertRaises(TypeError, c.executemany, "statement", myiter()) # immediate bad type
+        self.assertRaises(TypeError, c.executemany, "select ?", ((self,), (1))) # bad val
         c.executemany("statement", ()) # empty sequence
 
         # error in iterator after a while
@@ -238,6 +239,14 @@ class APSW(unittest.TestCase):
     def testCursor(self):
         "Check functionality of the cursor"
         c=self.db.cursor()
+        # give bad params
+        self.assertRaises(TypeError, c.execute)
+        self.assertRaises(TypeError, "foo", "bar", "bam")
+        # unicode
+        self.failUnlessEqual(3, c.execute(u"select 3").next()[0])
+        self.assertRaises(UnicodeDecodeError, c.execute, "\x99\xaa\xbb\xcc")
+        
+        # does it work?
         c.execute("create table foo(x,y,z)")
         # table should be empty
         entry=-1
@@ -565,6 +574,13 @@ class APSW(unittest.TestCase):
                 return v
             self.db.createscalarfunction("badtype", badtype)
             self.assertRaises(TypeError, c.execute, "select badtype(*) from foo")
+        # return non-unicode string
+        def ilove8bit(*args):
+            return "\x99\xaa\xbb\xcc"
+        
+        self.db.createscalarfunction("ilove8bit", ilove8bit)
+        self.assertRaises(UnicodeDecodeError, c.execute, "select ilove8bit(*) from foo")
+            
 
     def testAggregateFunctions(self):
         "Verify aggregate functions"
@@ -816,6 +832,9 @@ class APSW(unittest.TestCase):
         self.failUnlessEqual(True, self.db.complete("select * from foo; select *;"))
         self.failUnlessEqual(False, self.db.complete("select * from foo where x=1"))
         self.failUnlessEqual(True, self.db.complete("select * from foo;"))
+        self.assertRaises(TypeError, self.db.complete, 12) # wrong type
+        self.assertRaises(TypeError, self.db.complete)     # not enough args
+        self.assertRaises(TypeError, self.db.complete, "foo", "bar") # too many args
 
     def testBusyHandling(self):
         "Verify busy handling"
@@ -884,6 +903,35 @@ class APSW(unittest.TestCase):
             pass
         after=time.time()
         self.failUnless(after-b4>=TIMEOUT)
+
+        # check clearing of handler
+        c2.execute("rollback")
+        self.db.setbusyhandler(None)
+        b4=time.time()
+        c2.execute("begin exclusive")
+        try:
+            c.execute("beging immediate ; select * from foo")
+        except apsw.BusyError:
+            pass
+        after=time.time()
+        self.failUnless(after-b4<TIMEOUT)
+
+        # Close and reopen again
+        del c
+        del c2
+        del db2
+        del self.db
+        self.db=apsw.Connection("testdb")
+        db2=apsw.Connection("testdb")
+        c=self.db.cursor()
+        c2=db2.cursor()
+
+        # error in busyhandler
+        def bh(*args):
+            1/0
+        c2.execute("begin exclusive")
+        self.db.setbusyhandler(bh)
+        self.assertRaises(ZeroDivisionError, c.execute, "begin immediate ; select * from foo")
 
     def testInterruptHandling(self):
         "Verify interrupt function"
