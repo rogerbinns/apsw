@@ -8,6 +8,8 @@ print "Testing with APSW file",apsw.__file__
 print "          APSW version",apsw.apswversion()
 print "        SQLite version",apsw.sqlitelibversion()
 
+if [int(x) for x in apsw.sqlitelibversion().split(".")]<[3,3,5]:
+    print "You are using an earlier version of SQLite than recommended"
 
 # unittest stuff from here on
 
@@ -235,6 +237,15 @@ class APSW(unittest.TestCase):
         # incomplete execution across executemany
         c.executemany("select * from foo; select ?", ( (1,), (2,) )) # we don't read
         self.assertRaises(apsw.IncompleteExecutionError, c.executemany, "begin")
+
+        # set type (pysqlite error with this)
+        if sys.version_info>=(2, 4, 0):
+            c.execute("create table xxset(x,y,z)")
+            c.execute("insert into xxset values(?,?,?)", set((1,2,3)))
+            c.executemany("insert into xxset values(?,?,?)", (set((4,5,6)),))
+            result=[(1,2,3), (4,5,6)]
+            for i,v in enumerate(c.execute("select * from xxset order by x")):
+                self.failUnlessEqual(v, result[i])
 
     def testCursor(self):
         "Check functionality of the cursor"
@@ -1143,30 +1154,9 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, apsw.enablesharedcache, "foo")
         self.assertRaises(TypeError, apsw.enablesharedcache, True, None)
 
-        ## Several of these should be failing but SQLite isn't
-        ## returning an error code as the documentation claims it
-        ## will.
-        
-        # since self.db already exists, we should get error
-        db2=apsw.Connection("testdb")
-        c=self.db.cursor()
-        c2=db2.cursor()
-        c.execute("create table foo(x)")
-        apsw.enablesharedcache(True) # should fail
-        c.executemany("insert into foo values(?)", randomintegers(10))
-        c.execute("select * from foo")
-        c2.execute("select * from foo")
-        apsw.enablesharedcache(False) # should fail
-        c.next()
-        apsw.enablesharedcache(True) # should fail
-        del self.db
-        del c
-        del db2
-        del c2
-        # this one should work
-        apsw.enablesharedcache(True) # should work
-        self.db=None
-        apsw.enablesharedcache(False) # back to default value
+        # the setting can be changed at almost any time
+        apsw.enablesharedcache(True)
+        apsw.enablesharedcache(False)
 
     def testTracebacks(self):
         "Verify augmented tracebacks"
