@@ -1306,7 +1306,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
       assert(PyErr_Occurred());
       /* TODO: possibly examine exception and return appropriate error
          code eg for BusyError set error to SQLITE_BUSY */
-      sqlite3_result_error(context, "executing scalarcallback failed", SQLITE_ERROR);
+      sqlite3_result_error(context, "executing scalarcallback failed", -1);
       return;
     }
 
@@ -1352,7 +1352,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
 	      }
           }
         else
-          sqlite3_result_error(context, "Unicode conversions failed", SQLITE_ERROR);
+          sqlite3_result_error(context, "Unicode conversions failed", -1);
       UNIDATAEND(obj);
       return;
     }
@@ -1366,7 +1366,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
           PyObject *str2=PyUnicode_FromObject(obj);
           if(!str2)
             {
-              sqlite3_result_error(context, "PyUnicode_FromObject failed", SQLITE_ERROR);
+              sqlite3_result_error(context, "PyUnicode_FromObject failed", -1);
               return;
             }
           UNIDATABEGIN(str2)
@@ -1385,7 +1385,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
 		  }
               }
             else
-              sqlite3_result_error(context, "Unicode conversions failed", SQLITE_ERROR);
+              sqlite3_result_error(context, "Unicode conversions failed", -1);
           UNIDATAEND(str2);
           Py_DECREF(str2);
         }
@@ -1407,18 +1407,18 @@ set_context_result(sqlite3_context *context, PyObject *obj)
       Py_ssize_t buflen;
       if(PyObject_AsCharBuffer(obj, &buffer, &buflen))
         {
-          sqlite3_result_error(context, "PyObject_AsCharBuffer failed", SQLITE_ERROR);
+          sqlite3_result_error(context, "PyObject_AsCharBuffer failed", -1);
           return;
         }
       if (buflen>INT32_MAX)
-	sqlite3_result_error(context, "Buffer object is too large for SQLite - only up to 2GB is supported", SQLITE_ERROR);
+	sqlite3_result_error(context, "Buffer object is too large for SQLite - only up to 2GB is supported", -1);
       else
 	sqlite3_result_blob(context, buffer, (int)buflen, SQLITE_TRANSIENT);
       return;
     }
 
   PyErr_Format(PyExc_TypeError, "Bad return type from function callback");
-  sqlite3_result_error(context, "Bad return type from function callback", SQLITE_ERROR);
+  sqlite3_result_error(context, "Bad return type from function callback", -1);
 
 }
 
@@ -1437,7 +1437,7 @@ getfunctionargs(sqlite3_context *context, PyObject *firstelement, int argc, sqli
   pyargs=PyTuple_New((long)argc+extra);
   if(!pyargs)
     {
-      sqlite3_result_error(context, "PyTuple_New failed", SQLITE_ERROR);
+      sqlite3_result_error(context, "PyTuple_New failed", -1);
       goto error;
     }
 
@@ -1453,7 +1453,7 @@ getfunctionargs(sqlite3_context *context, PyObject *firstelement, int argc, sqli
       if(!item)
         {
           Py_DECREF(pyargs);
-          sqlite3_result_error(context, "convert_value_to_pyobject failed", SQLITE_ERROR);
+          sqlite3_result_error(context, "convert_value_to_pyobject failed", -1);
           goto error;
         }
       PyTuple_SET_ITEM(pyargs, i+extra, item);
@@ -1483,7 +1483,7 @@ cbdispatch_func(sqlite3_context *context, int argc, sqlite3_value **argv)
 
   if(PyErr_Occurred())
     {
-      sqlite3_result_error(context, "Prior Python Error", SQLITE_ERROR);
+      sqlite3_result_error(context, "Prior Python Error", -1);
       goto finally;
     }
 
@@ -1641,7 +1641,7 @@ cbdispatch_final(sqlite3_context *context)
   
   if((err_type||err_value||err_traceback) || PyErr_Occurred() || !aggfc->finalfunc)
     {
-      sqlite3_result_error(context, "Prior Python Error in step function", SQLITE_ERROR);
+      sqlite3_result_error(context, "Prior Python Error in step function", -1);
       goto finally;
     }
 
@@ -2412,6 +2412,12 @@ Cursor_dobindings(Cursor *self)
 
   nargs=sqlite3_bind_parameter_count(self->statement);
 
+  if (nargs>0 && !self->bindings)
+    {
+      PyErr_Format(ExcBindings, "Statement has %d bindings but you didn't supply any!", nargs);
+      return -1;
+    }
+
   /* a dictionary? */
   if (self->bindings && PyDict_Check(self->bindings))
     {
@@ -2711,12 +2717,11 @@ Cursor_step(Cursor *self)
           return NULL;
         }
 
-      if(self->bindings)
-        if(Cursor_dobindings(self))
-          {
-            assert(PyErr_Occurred());
-            return NULL;
-          }
+      if(Cursor_dobindings(self))
+        {
+          assert(PyErr_Occurred());
+          return NULL;
+        }
 
       if(self->exectrace)
         {
