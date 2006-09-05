@@ -12,7 +12,7 @@
   <h1 class="notoc">APSW - Another Python SQLite Wrapper</h1>
 
 
-  <p><font size="-1">apsw-3.3.6-r1 11th June 2006</font>
+  <p><font size="-1">apsw-3.3.7-r1 7th September 2006</font>
   </p>
 
 
@@ -106,7 +106,7 @@
 </li>
 <li><a href="#verhistory">Version History</a>
 <ul>
-<li><a href="#336r1">3.3.6-r1</a>
+<li><a href="#337r1">3.3.7-r1</a>
 </li>
 <li><a href="#335r1">3.3.5-r1</a>
 </li>
@@ -1516,11 +1516,15 @@ ZeroDivisionError: integer division or modulo by zero
 
   <h1><a name="verhistory">Version History</a></h1>
 
-  <h2><a name="336r1">3.3.6-r1</a></h2>
+  <h2><a name="337r1">3.3.7-r1</a></h2>
 
-  <p>You can use this release against any release of SQLite 3 from 3.3.5 onwards. 
-  There were no changes in the SQLite 3.3.6 API from 3.3.5.  APSW had the
-  following changes:	
+  <p>You can use this release against any release of SQLite 3 from
+  3.3.7 onwards.  There were no changes in the SQLite 3.3.6 API from
+  3.3.5.  In SQLite 3.3.7 an API was added that allowed removing a
+  chunk of duplicate code.  Also added were <a
+  href="http://www.sqlite.org/cvstrac/wiki?p=VirtualTables">Virtual
+  Tables</a> and loading of external modules (shared libraries).  APSW
+  had the following changes:
 
    <ul>
    <li>Even more test cases added (APSW didn't fail any of them, but you can't have
@@ -1711,9 +1715,5 @@ ZeroDivisionError: integer division or modulo by zero
   <address>
     <a href="mailto:rogerb@rogerbinns.com"></a>
   </address>
-  <!-- Created: Sun Dec 05 10:19:39 Pacific Standard Time 2004 -->
-<!-- hhmts start -->
-Last modified: Sat Apr 15 00:18:56 PDT 2006
-<!-- hhmts end -->
 </body>
 </html>

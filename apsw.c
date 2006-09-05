@@ -1242,9 +1242,6 @@ allocfunccbinfo(void)
 static PyObject *
 convert_value_to_pyobject(sqlite3_value *value)
 {
-  /* DUPLICATE(ish) code: this is substantially similar to the code in
-     Cursor_next.  If you fix anything here then do it there as
-     well. */
   const int coltype=sqlite3_value_type(value);
 
   switch(coltype)
@@ -1262,7 +1259,7 @@ convert_value_to_pyobject(sqlite3_value *value)
       return PyFloat_FromDouble(sqlite3_value_double(value));
       
     case SQLITE_TEXT:
-      return convertutf8string(sqlite3_value_text(value));
+      return convertutf8string((const char*)sqlite3_value_text(value));
 
     case SQLITE_NULL:
       Py_INCREF(Py_None);
@@ -2906,7 +2903,6 @@ Cursor_next(Cursor *self)
   PyObject *item;
   int numcols=-1;
   int i;
-  int coltype;
 
   CHECK_THREAD(self->connection, NULL);
 
@@ -2936,58 +2932,7 @@ Cursor_next(Cursor *self)
 
   for(i=0;i<numcols;i++)
     {
-      coltype=sqlite3_column_type(self->statement, i);
-
-      switch(coltype)
-        {
-        case SQLITE_INTEGER:
-          {
-            long long vint=sqlite3_column_int64(self->statement, i);
-            if(vint<INT32_MIN || vint>INT32_MAX)
-              item=PyLong_FromLongLong(vint);
-            else
-              item=PyInt_FromLong((long)vint);
-          }
-          break;
-
-        case SQLITE_FLOAT:
-          item=PyFloat_FromDouble(sqlite3_column_double(self->statement, i));
-          break;
-                
-        case SQLITE_TEXT:
-          item=convertutf8string(sqlite3_column_text(self->statement, i));
-          break;
-
-        case SQLITE_NULL:
-          Py_INCREF(Py_None);
-          item=Py_None;
-          break;
-
-        case SQLITE_BLOB:
-          {
-            Py_ssize_t sz=sqlite3_column_bytes(self->statement, i);
-            item=PyBuffer_New(sz);
-            if(item)
-              {
-                void *buffy=0;
-                Py_ssize_t sz2=sz;
-                if(!PyObject_AsWriteBuffer(item, &buffy, &sz2))
-                  memcpy(buffy, sqlite3_column_blob(self->statement, i), sz);
-                else
-                  {
-                    Py_DECREF(item);
-                    item=NULL;
-                  }
-              }
-            break;
-          }
-
-        default:
-          PyErr_Format(APSWException, "Unknown sqlite column type %d!", coltype);
-          item=NULL;
-
-        }
-
+      item=convert_value_to_pyobject(sqlite3_column_value(self->statement, i));
       if(!item) 
 	return NULL;
       PyTuple_SET_ITEM(retval, i, item);
