@@ -3208,19 +3208,14 @@ initapsw(void)
     ADDINT(SQLITE_UPDATE);
     ADDINT(SQLITE_ATTACH);
     ADDINT(SQLITE_DETACH);
-    /* these constants were introduced in SQLite 3.1.3 */
-#ifdef SQLITE_ALTER_TABLE
     ADDINT(SQLITE_ALTER_TABLE);
-#endif
-#ifdef SQLITE_REINDEX
     ADDINT(SQLITE_REINDEX);
-#endif
-    /* in 3.2 */
-#ifdef SQLITE_COPY
     ADDINT(SQLITE_COPY);
-#endif
-#ifdef SQLITE_ANALYZE
     ADDINT(SQLITE_ANALYZE);
-#endif
+    ADDINT(SQLITE_CREATE_VTABLE);
+    ADDINT(SQLITE_DROP_VTABLE);
+
+    /* Version number */
+    ADDINT(SQLITE_VERSION_NUMBER);
 }
 

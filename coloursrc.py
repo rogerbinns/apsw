@@ -5,10 +5,12 @@
 # this comes from the Python Cookbook
 # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/52298
 # Cookboox recipes (printed ones anyway) are under the BSD license
-# modifications by Roger Binns:
+# modifications by Roger Binns also BSD licensed
 #  - the __name__=='__main__' section has been replaced
 #  - pre tag is not generated
 #  - if line contains <!-@!@-> then no entity escaping happens
+#  - output can be captured and put inline into code
+#  - some optimising of the html generated to reduce number of <font> tags to minimum necessary
 
 # Imports
 import cgi, string, sys, cStringIO
@@ -45,6 +47,7 @@ class Parser:
         self.out = out
         self.capturecounter=0
         self.capturepattern=capturepattern
+        self.prevcolour=None
 
     def format(self, formatter, form):
         """ Parse and send the colored source.
@@ -115,19 +118,27 @@ class Parser:
             fname=self.capturepattern % self.capturecounter
             self.capturecounter+=1
             # we put spaces in front of each line - using <blockquote> implies a new <p> and gives blank lines
-            self.out.write('\n<font color="blue">'+cgi.escape("".join(["   "+line for line in open(fname, "rt")]))+'</font>')
+            self.out.write('\n</font><font color="blue">'+cgi.escape("".join(["   "+line for line in open(fname, "rt")]))+'</font>')
+            self.prevcolour=None
             return
 
         # send text
-        if color!='#000000': # black is default anyway
-            self.out.write('<font color="%s"%s>' % (color, style))
+        if len(toktext.strip())==0:
+            # only whitespace so no need for colour!
+            self.out.write(cgi.escape(toktext))
+            return
+        if self.prevcolour!=color:
+            if self.prevcolour!='#000000' and self.prevcolour is not None:
+                self.out.write('</font>')
+            self.prevcolour=color
+            if color!='#000000':
+                self.out.write('<font color="%s"%s>' % (color, style))
+                
         if "<!-@!@->" in toktext:  # line contains html - don't quote
             toktext=toktext.replace("<!-@!@->", "")
             self.out.write(toktext)
         else:
             self.out.write(cgi.escape(toktext))
-        if color!='#000000':
-            self.out.write('</font>')
 
 
 def getcode(fname):
