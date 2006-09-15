@@ -38,11 +38,13 @@ class Parser:
     """ Send colored python source.
     """
 
-    def __init__(self, raw, out = sys.stdout):
+    def __init__(self, raw, out = sys.stdout, capturepattern="%d"):
         """ Store the source text.
         """
         self.raw = string.strip(string.expandtabs(raw))
         self.out = out
+        self.capturecounter=0
+        self.capturepattern=capturepattern
 
     def format(self, formatter, form):
         """ Parse and send the colored source.
@@ -106,14 +108,72 @@ class Parser:
         if toktype == token.ERRORTOKEN:
             style = ' style="border: solid 1.5pt #FF0000;"'
 
+        # capture?
+        if toktext.startswith("#@@CAPTURE"):
+            return # pretend line didn't exist
+        elif toktext.startswith("#@@ENDCAPTURE"):
+            fname=self.capturepattern % self.capturecounter
+            self.capturecounter+=1
+            # we put spaces in front of each line - using <blockquote> implies a new <p> and gives blank lines
+            self.out.write('\n<font color="blue">'+cgi.escape("".join(["   "+line for line in open(fname, "rt")]))+'</font>')
+            return
+
         # send text
-        self.out.write('<font color="%s"%s>' % (color, style))
+        if color!='#000000': # black is default anyway
+            self.out.write('<font color="%s"%s>' % (color, style))
         if "<!-@!@->" in toktext:  # line contains html - don't quote
+            toktext=toktext.replace("<!-@!@->", "")
             self.out.write(toktext)
         else:
             self.out.write(cgi.escape(toktext))
-        self.out.write('</font>')
+        if color!='#000000':
+            self.out.write('</font>')
 
+
+def getcode(fname):
+    # Returns the code between #@@BEGIN and #@@END markers
+    code=[]
+    op=False
+    for line in open(fname, "rU"):
+        line=line[:-1] # strip off newline
+        if line.startswith("#@@BEGIN"):
+            op=True
+            continue
+        if line.startswith("#@@END") and not line.startswith("#@@ENDCAPTURE"):
+            op=False
+            continue
+        if op: code.append(line)
+    return "\n".join(code)
+
+def docapture(filename):
+    code=[]
+    code.append(outputredirector)
+    counter=0
+    for line in open(filename, "rU"):
+        line=line[:-1] # strip off newline
+        if line.startswith("#@@CAPTURE"):
+            code.append("opto('.tmpop-%s-%d')" % (filename, counter))
+            counter+=1
+        elif line.startswith("#@@ENDCAPTURE"):
+            code.append("opnormal()")
+        else:
+            code.append(line)
+    code="\n".join(code)
+    open("xx.py", "wt").write(code)
+    exec code in {}
+
+outputredirector="""
+import sys
+origsysstdout=None
+def opto(fname):
+  global origsysstdout
+  origsysstdout=sys.stdout,fname
+  sys.stdout=open(fname, "wt")
+def opnormal():
+  sys.stdout.close()
+  sys.stdout=origsysstdout[0]
+  sys.stdout.write(open(origsysstdout[1], "rb").read())
+"""
 
 if __name__ == "__main__":
     import os, sys, StringIO
@@ -121,23 +181,22 @@ if __name__ == "__main__":
 
     incode=False
     htmlout=[]
-    for line in open("apsw-source.html", "rU"):
+    for line in open("apsw.html", "rU"):
         line=line[:-1] # strip off newline
         if "<!--sourcestart-->" in line:
             incode=True
-            code=[]
             htmlout.append(line)
             continue
         elif "<!--sourceend-->" in line:
             incode=False
+            docapture("example-code.py")
+            code=getcode("example-code.py")
             ostr=StringIO.StringIO()
-            Parser("\n".join(code), ostr).format(None, None)
+            Parser(code, ostr, capturepattern='.tmpop-example-code.py-%d').format(None, None)
             htmlout.append(ostr.getvalue())
             htmlout.append(line)
             continue
-        if incode:
-            code.append(line)
-        else:
+        if not incode:
             htmlout.append(line)
 
     open("apsw.html", "wt").write("\n".join(htmlout))

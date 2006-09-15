@@ -1,467 +1,901 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+  <meta name="generator" content=
+  "HTML Tidy for Linux (vers 1st August 2004), see www.w3.org" />
+
   <title>APSW - Another Python SQLite Wrapper</title>
   <!-- Changed by: , 24-Jun-2006 -->
-<!-- My stylesheet until somone supplies a better one -->
-<link rel="StyleSheet" href="http://www.rogerbinns.com/styles/main.css" type="text/css" />
+  <!-- My stylesheet until somone supplies a better one -->
+  <link rel="StyleSheet" href=
+  "http://www.rogerbinns.com/styles/main.css" type="text/css" />
 </head>
 
 <body>
   <h1 class="notoc">APSW - Another Python SQLite Wrapper</h1>
 
-
-  <p><font size="-1">apsw-3.3.7-r1 7th September 2006</font>
-  </p>
-
+  <p><font size="-1">apsw-3.3.7-r1 7th September 2006</font></p>
 
   <p>APSW provides an SQLite 3 wrapper that provides the thinnest
   layer over <a href="http://www.sqlite.org">SQLite 3</a> possible.
-  Everything you can do from the <a
-  href="http://www.sqlite.org/capi3ref.html">C API</a> to SQLite 3,
-  you can do from Python.  Although APSW looks vaguely similar to the
-  <a href= "http://www.python.org/peps/pep-0249.html">DBAPI</a>, it is
-  <a href="#dbapinotes">not compliant</a> with that API and instead
-  works the way SQLite 3 does. (<a
-  href="http://www.pysqlite.org">pysqlite</a> is DBAPI compliant - <a
-  href="#pysqlitediffs">differences between apsw and pysqlite
+  Everything you can do from the <a href=
+  "http://www.sqlite.org/capi3ref.html">C API</a> to SQLite 3, you
+  can do from Python. Although APSW looks vaguely similar to the
+  <a href="http://www.python.org/peps/pep-0249.html">DBAPI</a>, it
+  is <a href="#dbapinotes">not compliant</a> with that API and
+  instead works the way SQLite 3 does. (<a href=
+  "http://www.pysqlite.org">pysqlite</a> is DBAPI compliant -
+  <a href="#pysqlitediffs">differences between apsw and pysqlite
   2</a>).</p>
 
-<h1 class="notoc">Table of contents</h1>
+  <h1 class="notoc">Table of contents</h1>
 
-<table cellspacing="5" cellpadding="5">
-<tr><td valign="top">
-<!--toc-->
-<ul>
-<li><a href="#Download">Download</a>
-<ul>
-<li><a href="#Source">Source and binaries</a>
-</li>
-<li><a href="#Sourcecode">Source code control</a>
-</li>
+  <table cellspacing="5" cellpadding="5">
+    <tr>
+      <td valign="top">
+        <!--toc-->
 
-</ul>
+        <ul>
+          <li>
+            <a href="#Download">Download</a>
 
-</li>
-<li><a href="#SQLiteVersionCompatibilityAndBenchmarking">SQLite version compatibility and benchmarking</a>
-</li>
-<li><a href="#Example">Example</a>
-</li>
-<li><a href="#Building">Building</a>
-</li>
-<li><a href="#APIReference">API Reference</a>
-<ul>
-<li><a href="#module-methods">Module methods</a>
-</li>
-<li><a href="#Connection">Connection class</a>
-</li>
-<li><a href="#Cursor">Cursor class</a>
-</li>
+            <ul>
+              <li><a href="#Source">Source and binaries</a></li>
 
-</ul>
+              <li><a href="#Sourcecode">Source code
+              control</a></li>
+            </ul>
+          </li>
 
-</li>
-<li><a href="#Exceptions">Exceptions</a>
-</li>
-<li><a href="#Types">Types</a>
-</li>
-<li><a href="#Unicode">Unicode</a>
-</li>
-<li><a href="#threading">Multi-threading and re-entrancy</a>
-</li>
-<li><a href="#tracers">Tracing</a>
-<ul>
-<li><a href="#executiontracer">Execution Tracer</a>
-</li>
-<li><a href="#rowtracer">Row Tracer</a>
-</li>
+          <li><a href=
+          "#SQLiteVersionCompatibilityAndBenchmarking">SQLite
+          version compatibility and benchmarking</a></li>
 
-</ul>
+          <li><a href="#Example">Example</a></li>
 
-</li>
-<li><a href="#64bitpy25">64 bit hosts, Python 2.5</a>
-</li>
-<li><a href="#executionmodel">Execution model</a>
-</li>
-</ul></td><td valign="top"><ul><li><a href="#dbapinotes">DBAPI notes</a>
-<ul>
-<li><a href="#dbapimodiface">Module Interface</a>
-</li>
-<li><a href="#dpapiconnectioniface">Connection Objects</a>
-</li>
-<li><a href="#dbapicursoriface">Cursor Objects</a>
-</li>
-<li><a href="#dpapitypes">Type objects</a>
-</li>
-<li><a href="#dbapiextensions">Optional DB API Extensions</a>
-</li>
+          <li><a href="#Building">Building</a></li>
 
-</ul>
+          <li>
+            <a href="#APIReference">API Reference</a>
 
-</li>
-<li><a href="#pysqlitediffs">pysqlite differences</a>
-</li>
-<li><a href="#copyrightlicense">Copyright and License</a>
-</li>
-<li><a href="#verhistory">Version History</a>
-<ul>
-<li><a href="#337r1">3.3.7-r1</a>
-</li>
-<li><a href="#335r1">3.3.5-r1</a>
-</li>
-<li><a href="#327r1">3.2.7-r1</a>
-</li>
-<li><a href="#322r1">3.2.2-r1</a>
-</li>
-<li><a href="#321r1">3.2.1-r1</a>
-</li>
-<li><a href="#313r1">3.1.3-r1</a>
-</li>
-<li><a href="#308r3">3.0.8-r3</a>
-</li>
-<li><a href="#308r2">3.0.8-r2</a>
-</li>
-<li><a href="#308r1">3.0.8-r1</a></li>
-</ul>
-</li>
-</ul>
+            <ul>
+              <li><a href="#module-methods">Module methods</a></li>
 
-<!--endtoc-->
-</td></tr></table>
+              <li><a href="#Connection">Connection class</a></li>
 
+              <li><a href="#Cursor">Cursor class</a></li>
+            </ul>
+          </li>
 
-  <h1><a name="Download">Download</a></h1>
+          <li><a href="#Exceptions">Exceptions</a></li>
 
+          <li><a href="#Types">Types</a></li>
 
-  <h2><a name="Source">Source and binaries</a></h2>
+          <li><a href="#Unicode">Unicode</a></li>
+
+          <li><a href="#threading">Multi-threading and
+          re-entrancy</a></li>
+
+          <li>
+            <a href="#tracers">Tracing</a>
+
+            <ul>
+              <li><a href="#executiontracer">Execution
+              Tracer</a></li>
+
+              <li><a href="#rowtracer">Row Tracer</a></li>
+            </ul>
+          </li>
+
+          <li><a href="#64bitpy25">64 bit hosts, Python
+          2.5</a></li>
+
+          <li><a href="#executionmodel">Execution model</a></li>
+        </ul>
+      </td>
+
+      <td valign="top">
+        <ul>
+          <li>
+            <a href="#dbapinotes">DBAPI notes</a>
+
+            <ul>
+              <li><a href="#dbapimodiface">Module
+              Interface</a></li>
+
+              <li><a href="#dpapiconnectioniface">Connection
+              Objects</a></li>
+
+              <li><a href="#dbapicursoriface">Cursor
+              Objects</a></li>
+
+              <li><a href="#dpapitypes">Type objects</a></li>
+
+              <li><a href="#dbapiextensions">Optional DB API
+              Extensions</a></li>
+            </ul>
+          </li>
+
+          <li><a href="#pysqlitediffs">pysqlite
+          differences</a></li>
+
+          <li><a href="#copyrightlicense">Copyright and
+          License</a></li>
+
+          <li>
+            <a href="#verhistory">Version History</a>
+
+            <ul>
+              <li><a href="#337r1">3.3.7-r1</a></li>
+
+              <li><a href="#335r1">3.3.5-r1</a></li>
+
+              <li><a href="#327r1">3.2.7-r1</a></li>
+
+              <li><a href="#322r1">3.2.2-r1</a></li>
+
+              <li><a href="#321r1">3.2.1-r1</a></li>
+
+              <li><a href="#313r1">3.1.3-r1</a></li>
+
+              <li><a href="#308r3">3.0.8-r3</a></li>
+
+              <li><a href="#308r2">3.0.8-r2</a></li>
+
+              <li><a href="#308r1">3.0.8-r1</a></li>
+            </ul>
+          </li>
+        </ul><!--endtoc-->
+      </td>
+    </tr>
+  </table>
+
+  <h1><a name="Download" id="Download">Download</a></h1>
+
+  <h2><a name="Source" id="Source">Source and binaries</a></h2>
 
   <p>You can download APSW from SourceForge at <a href=
-  "http://sourceforge.net/project/showfiles.php?group_id=75211&amp;package_id=113804">http://sourceforge.net/project/showfiles.php?group_id=75211&amp;package_id=113804</a>.  There is a zip of the source as well as binary packages for Windows. 
+  "http://sourceforge.net/project/showfiles.php?group_id=75211&amp;package_id=113804">
+  http://sourceforge.net/project/showfiles.php?group_id=75211&amp;package_id=113804</a>.
+  There is a zip of the source as well as binary packages for
+  Windows.</p>
 
-   <p>Some Linux distributions also have packages.  Debian users can grab the package <a
-  href="http://packages.debian.org/python-apsw">python-apsw</a>.  Gentoo users can grab
-  the package <a href="http://www.gentoo-portage.com/dev-python/apsw">dev-python/apsw</a>.</p>
+  <p>Some Linux distributions also have packages. Debian users can
+  grab the package <a href=
+  "http://packages.debian.org/python-apsw">python-apsw</a>. Gentoo
+  users can grab the package <a href=
+  "http://www.gentoo-portage.com/dev-python/apsw">dev-python/apsw</a>.</p>
 
-   <h2><a name="Sourcecode">Source code control</a></h2>
+  <h2><a name="Sourcecode" id="Sourcecode">Source code
+  control</a></h2>
 
-   <p>The source is controlled by Subversion
-     accessible as <a href="https://svn.sourceforge.net/svnroot/bitpim/subprojects/apsw/trunk">https://svn.sourceforge.net/svnroot/bitpim/subprojects/apsw/trunk</a>
-     and can be web browsed at <a href="http://svn.sourceforge.net/viewcvs.cgi/bitpim/subprojects/apsw/trunk/">http://svn.sourceforge.net/viewcvs.cgi/bitpim/subprojects/apsw/trunk/</a>
+  <p>The source is controlled by Subversion accessible as <a href=
+  "https://svn.sourceforge.net/svnroot/bitpim/subprojects/apsw/trunk">
+  https://svn.sourceforge.net/svnroot/bitpim/subprojects/apsw/trunk</a>
+  and can be web browsed at <a href=
+  "http://svn.sourceforge.net/viewcvs.cgi/bitpim/subprojects/apsw/trunk/">
+  http://svn.sourceforge.net/viewcvs.cgi/bitpim/subprojects/apsw/trunk/</a></p>
 
-  <h1><a name="SQLiteVersionCompatibilityAndBenchmarking">SQLite version compatibility and benchmarking</a></h1>
+  <h1><a name="SQLiteVersionCompatibilityAndBenchmarking" id=
+  "SQLiteVersionCompatibilityAndBenchmarking">SQLite version
+  compatibility and benchmarking</a></h1>
 
-  <p>APSW binds to the C interface of SQLite.  That interface is
-  stable for each major version of SQLite (ie the C interface for any
-  SQLite 3.x is stable, but SQLite 4.x would be an incompatible
-  change).  Consequently you can use APSW against any revision of
-  SQLite with the same major version number.  There are small
-  enhancements to the C api over time, and APSW adds support for them
-  as appropriate.  The version number of APSW covers the version these
-  enhancements were added.  The vast majority of changes to SQLite are
-  in the SQL syntax and engine.  Those will be picked up with any
-  version of APSW.
+  <p>APSW binds to the C interface of SQLite. That interface is
+  stable for each major version of SQLite (ie the C interface for
+  any SQLite 3.x is stable, but SQLite 4.x would be an incompatible
+  change). Consequently you can use APSW against any revision of
+  SQLite with the same major version number. There are small
+  enhancements to the C api over time, and APSW adds support for
+  them as appropriate. The version number of APSW covers the
+  version these enhancements were added. The vast majority of
+  changes to SQLite are in the SQL syntax and engine. Those will be
+  picked up with any version of APSW.</p>
 
   <p>Before you do any benchmarking with APSW or other ways of
   accessing SQLite, you must understand how and when SQLite does
-  transactions.  See section 7.0, <i>Transaction Control At The SQL
-  Level</i> of <a
-  href="http://sqlite.org/lockingv3.html">sqlite.org/lockingv3.html</a>.
+  transactions. See section 7.0, <i>Transaction Control At The SQL
+  Level</i> of <a href=
+  "http://sqlite.org/lockingv3.html">sqlite.org/lockingv3.html</a>.
   <b>APSW does not alter SQLite's behaviour with transactions.</b>
-  Some access layers try to interpret your SQL and manage transactions
-  behind your back, which may or may not work well with SQLite also do
-  its own transactions.  You should always manage your transactions 
-  yourself.  For example to insert 1,000 rows wrap it in a single transaction
-  else you will have 1,000 transactions.  The best clue that you have
-  one transaction per statement is having a maximum of 60 statements
-  per second.  You need two drive rotations to do a transaction - the
-  data has to be committed to the main file and the journal - and 7200 RPM
-  drives do 120 rotations a second.  On the other hand if you don't
-  put in the transaction boundaries yourself and get more than 60 statements
-  a second, then your access mechanism is silently starting transactions
-  for you.  This topic also comes up fairly frequently in the SQLite
-  mailing list archives.
+  Some access layers try to interpret your SQL and manage
+  transactions behind your back, which may or may not work well
+  with SQLite also do its own transactions. You should always
+  manage your transactions yourself. For example to insert 1,000
+  rows wrap it in a single transaction else you will have 1,000
+  transactions. The best clue that you have one transaction per
+  statement is having a maximum of 60 statements per second. You
+  need two drive rotations to do a transaction - the data has to be
+  committed to the main file and the journal - and 7200 RPM drives
+  do 120 rotations a second. On the other hand if you don't put in
+  the transaction boundaries yourself and get more than 60
+  statements a second, then your access mechanism is silently
+  starting transactions for you. This topic also comes up fairly
+  frequently in the SQLite mailing list archives.</p>
 
-  <h1><a name="Example">Example</a></h1>
-
+  <h1><a name="Example" id="Example">Example</a></h1>
 
   <p>This is an example of how to use apsw, and also demonstrates
   all the features.</p>
 
-
-  <blockquote> <pre>
+  <blockquote>
+    <pre>
 <!--sourcestart-->
-<font face="Lucida,Courier New"><font color="#C00000">import</font> <font color="#000000">apsw</font>
+<font face="Lucida,Courier New"><font color=
+"#C00000">import</font> os<font color=
+"#0000C0">,</font> sys<font color="#0000C0">,</font> time
+<font color="#C00000">import</font> apsw
 
+<font color="#008000">###
+</font><font color=
+"#008000">### Check we have the expected version of apsw and sqlite
+</font><font color="#008000">###
+</font>
+<font color="#C00000">print</font> <font color=
+"#004080">"Using APSW file"</font><font color=
+"#0000C0">,</font>apsw<font color="#0000C0">.</font>__file__
+<font color="#C00000">print</font> <font color=
+"#004080">"   APSW version"</font><font color=
+"#0000C0">,</font>apsw<font color=
+"#0000C0">.</font>apswversion<font color=
+"#0000C0">(</font><font color="#0000C0">)</font>
+<font color="#C00000">print</font> <font color=
+"#004080">" SQLite version"</font><font color=
+"#0000C0">,</font>apsw<font color=
+"#0000C0">.</font>sqlitelibversion<font color=
+"#0000C0">(</font><font color="#0000C0">)</font>
+
+<font color="blue">   Using APSW file /space/apsw/apsw.so
+      APSW version 3.3.7-r1
+    SQLite version 3.3.7
+</font>
 <font color="#008000">###
 </font><font color="#008000">### Opening/creating database
 </font><font color="#008000">###
 </font>
-<font color="#000000">connection</font><font color="#0000C0">=</font><font color="#000000">apsw</font><font color="#0000C0">.</font><font color="#000000">Connection</font><font color="#0000C0">(</font><font color="#004080">"dbfile"</font><font color="#0000C0">)</font>
-<font color="#000000">cursor</font><font color="#0000C0">=</font><font color="#000000">connection</font><font color="#0000C0">.</font><font color="#000000">cursor</font><font color="#0000C0">(</font><font color="#0000C0">)</font>
+<font color="#C00000">if</font> os<font color=
+"#0000C0">.</font>path<font color=
+"#0000C0">.</font>exists<font color="#0000C0">(</font><font color=
+"#004080">"dbfile"</font><font color="#0000C0">)</font><font color=
+"#0000C0">:</font> os<font color=
+"#0000C0">.</font>remove<font color="#0000C0">(</font><font color=
+"#004080">"dbfile"</font><font color="#0000C0">)</font>
+connection<font color="#0000C0">=</font>apsw<font color=
+"#0000C0">.</font>Connection<font color=
+"#0000C0">(</font><font color="#004080">"dbfile"</font><font color=
+"#0000C0">)</font>
+cursor<font color="#0000C0">=</font>connection<font color=
+"#0000C0">.</font>cursor<font color="#0000C0">(</font><font color=
+"#0000C0">)</font>
 
 <font color="#008000">###
 </font><font color="#008000">### simple statement
 </font><font color="#008000">###
 </font>
-<font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">execute</font><font color="#0000C0">(</font><font color="#004080">"create table foo(x,y,z)"</font><font color="#0000C0">)</font>
+cursor<font color="#0000C0">.</font>execute<font color=
+"#0000C0">(</font><font color=
+"#004080">"create table foo(x,y,z)"</font><font color=
+"#0000C0">)</font>
 
 <font color="#008000">###
 </font><font color="#008000">### multiple statements
 </font><font color="#008000">###
 </font>
-<font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">execute</font><font color="#0000C0">(</font><font color="#004080">"insert into foo values(1,2,3); create table bar(a,b,c) ; insert into foo values(4, 'five', 6.0)"</font><font color="#0000C0">)</font>
+cursor<font color="#0000C0">.</font>execute<font color=
+"#0000C0">(</font><font color=
+"#004080">"insert into foo values(1,2,3); create table bar(a,b,c) ; insert into foo values(4, 'five', 6.0)"</font><font color="#0000C0">)</font>
 
 <font color="#008000">###
 </font><font color="#008000">### iterator
 </font><font color="#008000">###
 </font>
-<font color="#C00000">for</font> <font color="#000000">x</font><font color="#0000C0">,</font><font color="#000000">y</font><font color="#0000C0">,</font><font color="#000000">z</font> <font color="#C00000">in</font> <font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">execute</font><font color="#0000C0">(</font><font color="#004080">"select x,y,z from foo"</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
-    <font color="#C00000">print</font> <font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">getdescription</font><font color="#0000C0">(</font><font color="#0000C0">)</font>  <font color="#008000"># shows column names and declared types</font>
-    <font color="#C00000">print</font> <font color="#000000">x</font><font color="#0000C0">,</font><font color="#000000">y</font><font color="#0000C0">,</font><font color="#000000">z</font>
+<font color="#C00000">for</font> x<font color=
+"#0000C0">,</font>y<font color="#0000C0">,</font>z <font color=
+"#C00000">in</font> cursor<font color=
+"#0000C0">.</font>execute<font color="#0000C0">(</font><font color=
+"#004080">"select x,y,z from foo"</font><font color=
+"#0000C0">)</font><font color="#0000C0">:</font>
+    <font color="#C00000">print</font> cursor<font color=
+"#0000C0">.</font>getdescription<font color=
+"#0000C0">(</font><font color="#0000C0">)</font>  <font color=
+"#008000"># shows column names and declared types</font>
+    <font color="#C00000">print</font> x<font color=
+"#0000C0">,</font>y<font color="#0000C0">,</font>z
 
 <font color="#008000">###        
 </font><font color="#008000">### iterator - multiple statements
 </font><font color="#008000">###
 </font>
-<font color="#C00000">for</font> <font color="#000000">m</font><font color="#0000C0">,</font><font color="#000000">n</font><font color="#0000C0">,</font><font color="#000000">o</font> <font color="#C00000">in</font> <font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">execute</font><font color="#0000C0">(</font><font color="#004080">"select x,y,z from foo ; select a,b,c from bar"</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
-    <font color="#C00000">print</font> <font color="#000000">m</font><font color="#0000C0">,</font><font color="#000000">n</font><font color="#0000C0">,</font><font color="#000000">o</font>
+<font color="#C00000">for</font> m<font color=
+"#0000C0">,</font>n<font color="#0000C0">,</font>o <font color=
+"#C00000">in</font> cursor<font color=
+"#0000C0">.</font>execute<font color="#0000C0">(</font><font color=
+"#004080">"select x,y,z from foo ; select a,b,c from bar"</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
+    <font color="#C00000">print</font> m<font color=
+"#0000C0">,</font>n<font color="#0000C0">,</font>o
 
 <font color="#008000">###
 </font><font color="#008000">### bindings - sequence
 </font><font color="#008000">###
 </font>
-<font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">execute</font><font color="#0000C0">(</font><font color="#004080">"insert into foo values(?,?,?)"</font><font color="#0000C0">,</font> <font color="#0000C0">(</font><font color="#0080C0">7</font><font color="#0000C0">,</font> <font color="#004080">'eight'</font><font color="#0000C0">,</font> <font color="#000000">False</font><font color="#0000C0">)</font><font color="#0000C0">)</font>
-<font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">execute</font><font color="#0000C0">(</font><font color="#004080">"insert into foo values(?,?,?1)"</font><font color="#0000C0">,</font> <font color="#0000C0">(</font><font color="#004080">'one'</font><font color="#0000C0">,</font> <font color="#004080">'two'</font><font color="#0000C0">)</font><font color="#0000C0">)</font>  <font color="#008000"># nb sqlite does the numbers from 1</font>
+cursor<font color="#0000C0">.</font>execute<font color=
+"#0000C0">(</font><font color=
+"#004080">"insert into foo values(?,?,?)"</font><font color=
+"#0000C0">,</font> <font color="#0000C0">(</font><font color=
+"#0080C0">7</font><font color="#0000C0">,</font> <font color=
+"#004080">'eight'</font><font color=
+"#0000C0">,</font> False<font color="#0000C0">)</font><font color=
+"#0000C0">)</font>
+cursor<font color="#0000C0">.</font>execute<font color=
+"#0000C0">(</font><font color=
+"#004080">"insert into foo values(?,?,?1)"</font><font color=
+"#0000C0">,</font> <font color="#0000C0">(</font><font color=
+"#004080">'one'</font><font color="#0000C0">,</font> <font color=
+"#004080">'two'</font><font color="#0000C0">)</font><font color=
+"#0000C0">)</font>  <font color=
+"#008000"># nb sqlite does the numbers from 1</font>
 
 <font color="#008000">###
 </font><font color="#008000">### bindings - dictionary
 </font><font color="#008000">###
 </font>
-<font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">execute</font><font color="#0000C0">(</font><font color="#004080">"insert into foo values(:alpha, :beta, :gamma)"</font><font color="#0000C0">,</font> <font color="#0000C0">{</font><font color="#004080">'alpha'</font><font color="#0000C0">:</font> <font color="#0080C0">1</font><font color="#0000C0">,</font> <font color="#004080">'beta'</font><font color="#0000C0">:</font> <font color="#0080C0">2</font><font color="#0000C0">,</font> <font color="#004080">'gamma'</font><font color="#0000C0">:</font> <font color="#004080">'three'</font><font color="#0000C0">}</font><font color="#0000C0">)</font>
+cursor<font color="#0000C0">.</font>execute<font color=
+"#0000C0">(</font><font color=
+"#004080">"insert into foo values(:alpha, :beta, :gamma)"</font><font color="#0000C0">,</font> <font color="#0000C0">{</font><font color="#004080">'alpha'</font><font color="#0000C0">:</font> <font color="#0080C0">1</font><font color="#0000C0">,</font> <font color="#004080">'beta'</font><font color="#0000C0">:</font> <font color="#0080C0">2</font><font color="#0000C0">,</font> <font color="#004080">'gamma'</font><font color="#0000C0">:</font> <font color="#004080">'three'</font><font color="#0000C0">}</font><font color="#0000C0">)</font>
 
 <font color="#008000">###
-</font><font color="#008000">### <a name="example-exectrace">tracing execution</a> <!-@!@->
+</font><font color="#008000">### <a name="example-exectrace" id=
+"example-exectrace">tracing execution</a> 
 </font><font color="#008000">###
 </font>
-<font color="#C00000">def</font> <font color="#000000">mytrace</font><font color="#0000C0">(</font><font color="#000000">statement</font><font color="#0000C0">,</font> <font color="#000000">bindings</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
-    <font color="#004080">"Called just before executing each statement"</font>
-    <font color="#C00000">print</font> <font color="#004080">"SQL:"</font><font color="#0000C0">,</font><font color="#000000">statement</font>
-    <font color="#C00000">if</font> <font color="#000000">bindings</font><font color="#0000C0">:</font>
-        <font color="#C00000">print</font> <font color="#004080">"Bindings:"</font><font color="#0000C0">,</font><font color="#000000">bindings</font>
-    <font color="#C00000">return</font> <font color="#000000">True</font>  <font color="#008000"># if you return False then execution is aborted</font>
+<font color="#C00000">def</font> mytrace<font color=
+"#0000C0">(</font>statement<font color=
+"#0000C0">,</font> bindings<font color=
+"#0000C0">)</font><font color="#0000C0">:</font>
+    <font color=
+"#004080">"Called just before executing each statement"</font>
+    <font color="#C00000">print</font> <font color=
+"#004080">"SQL:"</font><font color="#0000C0">,</font>statement
+    <font color="#C00000">if</font> bindings<font color=
+"#0000C0">:</font>
+        <font color="#C00000">print</font> <font color=
+"#004080">"Bindings:"</font><font color="#0000C0">,</font>bindings
+    <font color="#C00000">return</font> True  <font color=
+"#008000"># if you return False then execution is aborted</font>
 
-<font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">setexectrace</font><font color="#0000C0">(</font><font color="#000000">mytrace</font><font color="#0000C0">)</font>
-<font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">execute</font><font color="#0000C0">(</font><font color="#004080">"create table bar(x,y,z); select * from foo where x=?"</font><font color="#0000C0">,</font> <font color="#0000C0">(</font><font color="#0080C0">3</font><font color="#0000C0">,</font><font color="#0000C0">)</font><font color="#0000C0">)</font><font color="#000000"></font></font>
-<!--sourceend-->
-  <font color="blue">SQL: create table bar(x,y,z);
-  SQL:  select * from foo where x=?
-  Bindings: (3,)</font>
-<!--sourcestart-->
-<font face="Lucida,Courier New"><font color="#008000">###
-</font><font color="#008000">### <a name="example-rowtrace">tracing results</a> <!-@!@->
+cursor<font color="#0000C0">.</font>setexectrace<font color=
+"#0000C0">(</font>mytrace<font color="#0000C0">)</font>
+cursor<font color="#0000C0">.</font>execute<font color=
+"#0000C0">(</font><font color=
+"#004080">"drop table bar ; create table bar(x,y,z); select * from foo where x=?"</font><font color="#0000C0">,</font> <font color="#0000C0">(</font><font color="#0080C0">3</font><font color="#0000C0">,</font><font color="#0000C0">)</font><font color="#0000C0">)</font>
+
+<font color="blue">   SQL: drop table bar ;
+   SQL:  create table bar(x,y,z);
+   SQL:  select * from foo where x=?
+   Bindings: (3,)
+</font>
+<font color="#008000">###
+</font><font color="#008000">### <a name="example-rowtrace" id=
+"example-rowtrace">tracing results</a> 
 </font><font color="#008000">###
 </font>
-<font color="#C00000">def</font> <font color="#000000">rowtrace</font><font color="#0000C0">(</font><font color="#0000C0">*</font><font color="#000000">results</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
-    <font color="#004080">"""Called with each row of results before they are handed off.  You can return None to
+<font color="#C00000">def</font> rowtrace<font color=
+"#0000C0">(</font><font color="#0000C0">*</font>results<font color=
+"#0000C0">)</font><font color="#0000C0">:</font>
+    <font color=
+"#004080">"""Called with each row of results before they are handed off.  You can return None to
     cause the row to be skipped or a different set of values to return"""</font>
-    <font color="#C00000">print</font> <font color="#004080">"Row:"</font><font color="#0000C0">,</font><font color="#000000">results</font>
-    <font color="#C00000">return</font> <font color="#000000">results</font>
+    <font color="#C00000">print</font> <font color=
+"#004080">"Row:"</font><font color="#0000C0">,</font>results
+    <font color="#C00000">return</font> results
 
-<font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">setrowtrace</font><font color="#0000C0">(</font><font color="#000000">rowtrace</font><font color="#0000C0">)</font>
-<font color="#C00000">for</font> <font color="#000000">row</font> <font color="#C00000">in</font> <font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">execute</font><font color="#0000C0">(</font><font color="#004080">"select x,y from foo where x&gt;3"</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
-     <font color="#C00000">pass</font><font color="#000000"></font></font>
-<!--sourceend--><font color="blue">
-  Row: (4, 'five')
-  Row: (7, 'eight')                
-</font><!--sourcestart-->
-<font face="Lucida,Courier New"><font color="#008000">###
+cursor<font color="#0000C0">.</font>setrowtrace<font color=
+"#0000C0">(</font>rowtrace<font color="#0000C0">)</font>
+<font color="#C00000">for</font> row <font color=
+"#C00000">in</font> cursor<font color=
+"#0000C0">.</font>execute<font color="#0000C0">(</font><font color=
+"#004080">"select x,y from foo where x&gt;3"</font><font color=
+"#0000C0">)</font><font color="#0000C0">:</font>
+     <font color="#C00000">pass</font>
+
+<font color="blue">   SQL: select x,y from foo where x&gt;3
+   Row: (4, 'five')
+   Row: (7, 'eight')
+   Row: ('one', 'two')
+</font>
+<font color="#008000"># Clear tracers
+</font>cursor<font color="#0000C0">.</font>setrowtrace<font color=
+"#0000C0">(</font>None<font color="#0000C0">)</font>
+cursor<font color="#0000C0">.</font>setexectrace<font color=
+"#0000C0">(</font>None<font color="#0000C0">)</font>
+
+<font color="#008000">###
 </font><font color="#008000">### executemany
 </font><font color="#008000">###
 </font>
-<font color="#008000"># (This will work correctly with multiple statements, as well as statements that
-</font><font color="#008000"># return data.  The second argument can be anything that is iterable.)
-</font><font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">executemany</font><font color="#0000C0">(</font><font color="#004080">"insert into foo (x) values(?)"</font><font color="#0000C0">,</font> <font color="#0000C0">(</font> <font color="#0000C0">[</font><font color="#0080C0">1</font><font color="#0000C0">]</font><font color="#0000C0">,</font> <font color="#0000C0">[</font><font color="#0080C0">2</font><font color="#0000C0">]</font><font color="#0000C0">,</font> <font color="#0000C0">[</font><font color="#0080C0">3</font><font color="#0000C0">]</font> <font color="#0000C0">)</font> <font color="#0000C0">)</font>
+<font color=
+"#008000"># (This will work correctly with multiple statements, as well as statements that
+</font><font color=
+"#008000"># return data.  The second argument can be anything that is iterable.)
+</font>cursor<font color="#0000C0">.</font>executemany<font color=
+"#0000C0">(</font><font color=
+"#004080">"insert into foo (x) values(?)"</font><font color=
+"#0000C0">,</font> <font color="#0000C0">(</font> <font color=
+"#0000C0">[</font><font color="#0080C0">1</font><font color=
+"#0000C0">]</font><font color="#0000C0">,</font> <font color=
+"#0000C0">[</font><font color="#0080C0">2</font><font color=
+"#0000C0">]</font><font color="#0000C0">,</font> <font color=
+"#0000C0">[</font><font color="#0080C0">3</font><font color=
+"#0000C0">]</font> <font color="#0000C0">)</font> <font color=
+"#0000C0">)</font>
 
-<font color="#008000"># You can also use it for statements that return data
-</font><font color="#C00000">for</font> <font color="#000000">row</font> <font color="#C00000">in</font> <font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">executemany</font><font color="#0000C0">(</font><font color="#004080">"select * from foo where x=?"</font><font color="#0000C0">,</font> <font color="#0000C0">(</font> <font color="#0000C0">[</font><font color="#0080C0">1</font><font color="#0000C0">]</font><font color="#0000C0">,</font> <font color="#0000C0">[</font><font color="#0080C0">2</font><font color="#0000C0">]</font><font color="#0000C0">,</font> <font color="#0000C0">[</font><font color="#0080C0">3</font><font color="#0000C0">]</font> <font color="#0000C0">)</font> <font color="#0000C0">)</font><font color="#0000C0">:</font>
-    <font color="#C00000">print</font> <font color="#000000">row</font>
+<font color=
+"#008000"># You can also use it for statements that return data
+</font><font color="#C00000">for</font> row <font color=
+"#C00000">in</font> cursor<font color=
+"#0000C0">.</font>executemany<font color=
+"#0000C0">(</font><font color=
+"#004080">"select * from foo where x=?"</font><font color=
+"#0000C0">,</font> <font color="#0000C0">(</font> <font color=
+"#0000C0">[</font><font color="#0080C0">1</font><font color=
+"#0000C0">]</font><font color="#0000C0">,</font> <font color=
+"#0000C0">[</font><font color="#0080C0">2</font><font color=
+"#0000C0">]</font><font color="#0000C0">,</font> <font color=
+"#0000C0">[</font><font color="#0080C0">3</font><font color=
+"#0000C0">]</font> <font color="#0000C0">)</font> <font color=
+"#0000C0">)</font><font color="#0000C0">:</font>
+    <font color="#C00000">print</font> row
 
 <font color="#008000">###
 </font><font color="#008000">### defining your own functions
 </font><font color="#008000">###
 </font>
-<font color="#C00000">def</font> <font color="#000000">ilove7</font><font color="#0000C0">(</font><font color="#0000C0">*</font><font color="#000000">args</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
+<font color="#C00000">def</font> ilove7<font color=
+"#0000C0">(</font><font color="#0000C0">*</font>args<font color=
+"#0000C0">)</font><font color="#0000C0">:</font>
     <font color="#004080">"a scalar function"</font>
-    <font color="#C00000">print</font> <font color="#004080">"ilove7 got"</font><font color="#0000C0">,</font><font color="#000000">args</font><font color="#0000C0">,</font><font color="#004080">"but I love 7"</font>
-    <font color="#C00000">return</font> <font color="#0080C0">7</font>
+    <font color="#C00000">print</font> <font color=
+"#004080">"ilove7 got"</font><font color=
+"#0000C0">,</font>args<font color="#0000C0">,</font><font color=
+"#004080">"but I love 7"</font>
+    <font color="#C00000">return</font> <font color=
+"#0080C0">7</font>
 
-<font color="#000000">connection</font><font color="#0000C0">.</font><font color="#000000">createscalarfunction</font><font color="#0000C0">(</font><font color="#004080">"seven"</font><font color="#0000C0">,</font> <font color="#000000">ilove7</font><font color="#0000C0">)</font>
+connection<font color=
+"#0000C0">.</font>createscalarfunction<font color=
+"#0000C0">(</font><font color="#004080">"seven"</font><font color=
+"#0000C0">,</font> ilove7<font color="#0000C0">)</font>
 
-<font color="#C00000">for</font> <font color="#000000">row</font> <font color="#C00000">in</font> <font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">execute</font><font color="#0000C0">(</font><font color="#004080">"select seven(x,y) from foo"</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
-    <font color="#C00000">print</font> <font color="#000000">row</font>
+<font color="#C00000">for</font> row <font color=
+"#C00000">in</font> cursor<font color=
+"#0000C0">.</font>execute<font color="#0000C0">(</font><font color=
+"#004080">"select seven(x,y) from foo"</font><font color=
+"#0000C0">)</font><font color="#0000C0">:</font>
+    <font color="#C00000">print</font> row
 
 <font color="#008000">###
-</font><font color="#008000">### aggregate functions are more complex
+</font><font color=
+"#008000">### aggregate functions are more complex
 </font><font color="#008000">###
 </font>
-<font color="#008000"># here we return the longest item when represented as a string
+<font color=
+"#008000"># here we return the longest item when represented as a string
 </font>
-<font color="#C00000">def</font> <font color="#000000">longeststep</font><font color="#0000C0">(</font><font color="#000000">context</font><font color="#0000C0">,</font> <font color="#0000C0">*</font><font color="#000000">args</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
-    <font color="#004080">"are any of the arguments longer than our current candidate"</font>
-    <font color="#C00000">for</font> <font color="#000000">arg</font> <font color="#C00000">in</font> <font color="#000000">args</font><font color="#0000C0">:</font>
-        <font color="#C00000">if</font> <font color="#000000">len</font><font color="#0000C0">(</font> <font color="#000000">str</font><font color="#0000C0">(</font><font color="#000000">arg</font><font color="#0000C0">)</font> <font color="#0000C0">)</font> <font color="#0000C0">&gt;</font> <font color="#000000">len</font><font color="#0000C0">(</font> <font color="#000000">context</font><font color="#0000C0">[</font><font color="#004080">'longest'</font><font color="#0000C0">]</font> <font color="#0000C0">)</font><font color="#0000C0">:</font>
-            <font color="#000000">context</font><font color="#0000C0">[</font><font color="#004080">'longest'</font><font color="#0000C0">]</font><font color="#0000C0">=</font><font color="#000000">str</font><font color="#0000C0">(</font><font color="#000000">arg</font><font color="#0000C0">)</font>
+<font color="#C00000">def</font> longeststep<font color=
+"#0000C0">(</font>context<font color=
+"#0000C0">,</font> <font color="#0000C0">*</font>args<font color=
+"#0000C0">)</font><font color="#0000C0">:</font>
+    <font color=
+"#004080">"are any of the arguments longer than our current candidate"</font>
+    <font color="#C00000">for</font> arg <font color=
+"#C00000">in</font> args<font color="#0000C0">:</font>
+        <font color="#C00000">if</font> len<font color=
+"#0000C0">(</font> str<font color="#0000C0">(</font>arg<font color=
+"#0000C0">)</font> <font color="#0000C0">)</font> <font color=
+"#0000C0">&gt;</font> len<font color=
+"#0000C0">(</font> context<font color=
+"#0000C0">[</font><font color="#004080">'longest'</font><font color="#0000C0">]</font> <font color="#0000C0">)</font><font color="#0000C0">:</font>
+            context<font color="#0000C0">[</font><font color=
+"#004080">'longest'</font><font color=
+"#0000C0">]</font><font color="#0000C0">=</font>str<font color=
+"#0000C0">(</font>arg<font color="#0000C0">)</font>
 
-<font color="#C00000">def</font> <font color="#000000">longestfinal</font><font color="#0000C0">(</font><font color="#000000">context</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
+<font color="#C00000">def</font> longestfinal<font color=
+"#0000C0">(</font>context<font color="#0000C0">)</font><font color=
+"#0000C0">:</font>
     <font color="#004080">"return the winner"</font>
-    <font color="#C00000">return</font> <font color="#000000">context</font><font color="#0000C0">[</font><font color="#004080">'longest'</font><font color="#0000C0">]</font>
+    <font color="#C00000">return</font> context<font color=
+"#0000C0">[</font><font color=
+"#004080">'longest'</font><font color="#0000C0">]</font>
 
-<font color="#C00000">def</font> <font color="#000000">longestfactory</font><font color="#0000C0">(</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
-    <font color="#004080">"""called for a new query.  The first item returned can be
+<font color="#C00000">def</font> longestfactory<font color=
+"#0000C0">(</font><font color="#0000C0">)</font><font color=
+"#0000C0">:</font>
+    <font color=
+"#004080">"""called for a new query.  The first item returned can be
     anything and is passed as the context to the step
     and final methods.  We use a dict."""</font>
-    <font color="#C00000">return</font> <font color="#0000C0">(</font> <font color="#0000C0">{</font> <font color="#004080">'longest'</font><font color="#0000C0">:</font> <font color="#004080">''</font> <font color="#0000C0">}</font><font color="#0000C0">,</font> <font color="#000000">longeststep</font><font color="#0000C0">,</font> <font color="#000000">longestfinal</font><font color="#0000C0">)</font>
+    <font color="#C00000">return</font> <font color=
+"#0000C0">(</font> <font color="#0000C0">{</font> <font color=
+"#004080">'longest'</font><font color=
+"#0000C0">:</font> <font color="#004080">''</font> <font color=
+"#0000C0">}</font><font color=
+"#0000C0">,</font> longeststep<font color=
+"#0000C0">,</font> longestfinal<font color="#0000C0">)</font>
 
-<font color="#000000">connection</font><font color="#0000C0">.</font><font color="#000000">createaggregatefunction</font><font color="#0000C0">(</font><font color="#004080">"longest"</font><font color="#0000C0">,</font> <font color="#000000">longestfactory</font><font color="#0000C0">)</font>
+connection<font color=
+"#0000C0">.</font>createaggregatefunction<font color=
+"#0000C0">(</font><font color=
+"#004080">"longest"</font><font color="#0000C0">,</font> longestfactory<font color="#0000C0">)</font>
 
-<font color="#C00000">for</font> <font color="#000000">row</font> <font color="#C00000">in</font> <font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">execute</font><font color="#0000C0">(</font><font color="#004080">"select longest(x) from foo"</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
-    <font color="#C00000">print</font> <font color="#000000">row</font>
+<font color="#C00000">for</font> row <font color=
+"#C00000">in</font> cursor<font color=
+"#0000C0">.</font>execute<font color="#0000C0">(</font><font color=
+"#004080">"select longest(x) from foo"</font><font color=
+"#0000C0">)</font><font color="#0000C0">:</font>
+    <font color="#C00000">print</font> row
 
 <font color="#008000">###
 </font><font color="#008000">### Defining collations.  
 </font><font color="#008000">###
 </font>
-<font color="#008000"># The default sorting mechanisms don't understand numbers at the end of strings
-</font><font color="#008000"># so here we define a collation that does
+<font color=
+"#008000"># The default sorting mechanisms don't understand numbers at the end of strings
+</font><font color=
+"#008000"># so here we define a collation that does
 </font>
-<font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">execute</font><font color="#0000C0">(</font><font color="#004080">"create table s(str)"</font><font color="#0000C0">)</font>
-<font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">executemany</font><font color="#0000C0">(</font><font color="#004080">"insert into s values(?)"</font><font color="#0000C0">,</font>
-                  <font color="#0000C0">(</font> <font color="#0000C0">[</font><font color="#004080">"file1"</font><font color="#0000C0">]</font><font color="#0000C0">,</font> <font color="#0000C0">[</font><font color="#004080">"file7"</font><font color="#0000C0">]</font><font color="#0000C0">,</font> <font color="#0000C0">[</font><font color="#004080">"file17"</font><font color="#0000C0">]</font><font color="#0000C0">,</font> <font color="#0000C0">[</font><font color="#004080">"file20"</font><font color="#0000C0">]</font><font color="#0000C0">,</font> <font color="#0000C0">[</font><font color="#004080">"file3"</font><font color="#0000C0">]</font> <font color="#0000C0">)</font> <font color="#0000C0">)</font>
+cursor<font color="#0000C0">.</font>execute<font color=
+"#0000C0">(</font><font color=
+"#004080">"create table s(str)"</font><font color=
+"#0000C0">)</font>
+cursor<font color="#0000C0">.</font>executemany<font color=
+"#0000C0">(</font><font color=
+"#004080">"insert into s values(?)"</font><font color=
+"#0000C0">,</font>
+                  <font color="#0000C0">(</font> <font color=
+"#0000C0">[</font><font color="#004080">"file1"</font><font color=
+"#0000C0">]</font><font color="#0000C0">,</font> <font color=
+"#0000C0">[</font><font color="#004080">"file7"</font><font color=
+"#0000C0">]</font><font color="#0000C0">,</font> <font color=
+"#0000C0">[</font><font color="#004080">"file17"</font><font color=
+"#0000C0">]</font><font color="#0000C0">,</font> <font color=
+"#0000C0">[</font><font color="#004080">"file20"</font><font color=
+"#0000C0">]</font><font color="#0000C0">,</font> <font color=
+"#0000C0">[</font><font color="#004080">"file3"</font><font color=
+"#0000C0">]</font> <font color="#0000C0">)</font> <font color=
+"#0000C0">)</font>
 
-<font color="#C00000">for</font> <font color="#000000">row</font> <font color="#C00000">in</font> <font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">execute</font><font color="#0000C0">(</font><font color="#004080">"select * from s order by str"</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
-    <font color="#C00000">print</font> <font color="#000000">row</font><font color="#000000"></font></font>
-<!--sourceend--><font color=blue>
-  ('file1',)
-  ('file17',)
-  ('file20',)
-  ('file3',)
-  ('file7',)
-</font><!--sourcestart-->
-<font face="Lucida,Courier New"><font color="#C00000">def</font> <font color="#000000">strnumcollate</font><font color="#0000C0">(</font><font color="#000000">s1</font><font color="#0000C0">,</font> <font color="#000000">s2</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
-    <font color="#008000"># return -1 if s1&lt;s2, +1 if s1&gt;s2 else 0
+<font color="#C00000">for</font> row <font color=
+"#C00000">in</font> cursor<font color=
+"#0000C0">.</font>execute<font color="#0000C0">(</font><font color=
+"#004080">"select * from s order by str"</font><font color=
+"#0000C0">)</font><font color="#0000C0">:</font>
+    <font color="#C00000">print</font> row
+
+<font color="blue">   ('file1',)
+   ('file17',)
+   ('file20',)
+   ('file3',)
+   ('file7',)
 </font>
-    <font color="#008000"># split values into two parts - the head and the numeric tail
-</font>    <font color="#000000">values</font><font color="#0000C0">=</font><font color="#0000C0">[</font><font color="#000000">s1</font><font color="#0000C0">,</font> <font color="#000000">s2</font><font color="#0000C0">]</font>
-    <font color="#C00000">for</font> <font color="#000000">vn</font><font color="#0000C0">,</font><font color="#000000">v</font> <font color="#C00000">in</font> <font color="#000000">enumerate</font><font color="#0000C0">(</font><font color="#000000">values</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
-        <font color="#C00000">for</font> <font color="#000000">i</font> <font color="#C00000">in</font> <font color="#000000">range</font><font color="#0000C0">(</font><font color="#000000">len</font><font color="#0000C0">(</font><font color="#000000">v</font><font color="#0000C0">)</font><font color="#0000C0">,</font> <font color="#0080C0">0</font><font color="#0000C0">,</font> <font color="#0000C0">-</font><font color="#0080C0">1</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
-            <font color="#C00000">if</font> <font color="#000000">v</font><font color="#0000C0">[</font><font color="#000000">i</font><font color="#0000C0">-</font><font color="#0080C0">1</font><font color="#0000C0">]</font> <font color="#C00000">not</font> <font color="#C00000">in</font> <font color="#004080">"01234567890"</font><font color="#0000C0">:</font>
+<font color="#C00000">def</font> strnumcollate<font color=
+"#0000C0">(</font>s1<font color="#0000C0">,</font> s2<font color=
+"#0000C0">)</font><font color="#0000C0">:</font>
+    <font color=
+"#008000"># return -1 if s1&lt;s2, +1 if s1&gt;s2 else 0
+</font>
+    <font color=
+"#008000"># split values into two parts - the head and the numeric tail
+</font>    values<font color="#0000C0">=</font><font color=
+"#0000C0">[</font>s1<font color="#0000C0">,</font> s2<font color=
+"#0000C0">]</font>
+    <font color="#C00000">for</font> vn<font color=
+"#0000C0">,</font>v <font color=
+"#C00000">in</font> enumerate<font color=
+"#0000C0">(</font>values<font color="#0000C0">)</font><font color=
+"#0000C0">:</font>
+        <font color="#C00000">for</font> i <font color=
+"#C00000">in</font> range<font color=
+"#0000C0">(</font>len<font color="#0000C0">(</font>v<font color=
+"#0000C0">)</font><font color="#0000C0">,</font> <font color=
+"#0080C0">0</font><font color="#0000C0">,</font> <font color=
+"#0000C0">-</font><font color="#0080C0">1</font><font color=
+"#0000C0">)</font><font color="#0000C0">:</font>
+            <font color="#C00000">if</font> v<font color=
+"#0000C0">[</font>i<font color="#0000C0">-</font><font color=
+"#0080C0">1</font><font color="#0000C0">]</font> <font color=
+"#C00000">not</font> <font color="#C00000">in</font> <font color=
+"#004080">"01234567890"</font><font color="#0000C0">:</font>
                 <font color="#C00000">break</font>
-        <font color="#C00000">try</font><font color="#0000C0">:</font>
-            <font color="#000000">v</font><font color="#0000C0">=</font><font color="#0000C0">(</font> <font color="#000000">v</font><font color="#0000C0">[</font><font color="#0000C0">:</font><font color="#000000">i</font><font color="#0000C0">]</font><font color="#0000C0">,</font> <font color="#000000">int</font><font color="#0000C0">(</font><font color="#000000">v</font><font color="#0000C0">[</font><font color="#000000">i</font><font color="#0000C0">:</font><font color="#0000C0">]</font><font color="#0000C0">)</font> <font color="#0000C0">)</font>
-        <font color="#C00000">except</font> <font color="#000000">ValueError</font><font color="#0000C0">:</font>
-            <font color="#000000">v</font><font color="#0000C0">=</font><font color="#0000C0">(</font> <font color="#000000">v</font><font color="#0000C0">[</font><font color="#0000C0">:</font><font color="#000000">i</font><font color="#0000C0">]</font><font color="#0000C0">,</font> <font color="#000000">None</font> <font color="#0000C0">)</font>
-        <font color="#000000">values</font><font color="#0000C0">[</font><font color="#000000">vn</font><font color="#0000C0">]</font><font color="#0000C0">=</font><font color="#000000">v</font>
+        <font color="#C00000">try</font><font color=
+"#0000C0">:</font>
+            v<font color="#0000C0">=</font><font color=
+"#0000C0">(</font> v<font color="#0000C0">[</font><font color=
+"#0000C0">:</font>i<font color="#0000C0">]</font><font color=
+"#0000C0">,</font> int<font color="#0000C0">(</font>v<font color=
+"#0000C0">[</font>i<font color="#0000C0">:</font><font color=
+"#0000C0">]</font><font color="#0000C0">)</font> <font color=
+"#0000C0">)</font>
+        <font color="#C00000">except</font> ValueError<font color=
+"#0000C0">:</font>
+            v<font color="#0000C0">=</font><font color=
+"#0000C0">(</font> v<font color="#0000C0">[</font><font color=
+"#0000C0">:</font>i<font color="#0000C0">]</font><font color=
+"#0000C0">,</font> None <font color="#0000C0">)</font>
+        values<font color="#0000C0">[</font>vn<font color=
+"#0000C0">]</font><font color="#0000C0">=</font>v
     <font color="#008000"># compare
-</font>    <font color="#C00000">if</font> <font color="#000000">values</font><font color="#0000C0">[</font><font color="#0080C0">0</font><font color="#0000C0">]</font><font color="#0000C0">&lt;</font><font color="#000000">values</font><font color="#0000C0">[</font><font color="#0080C0">1</font><font color="#0000C0">]</font><font color="#0000C0">:</font>
-        <font color="#C00000">return</font> <font color="#0000C0">-</font><font color="#0080C0">1</font>
-    <font color="#C00000">if</font> <font color="#000000">values</font><font color="#0000C0">[</font><font color="#0080C0">0</font><font color="#0000C0">]</font><font color="#0000C0">&gt;</font><font color="#000000">values</font><font color="#0000C0">[</font><font color="#0080C0">1</font><font color="#0000C0">]</font><font color="#0000C0">:</font>
-        <font color="#C00000">return</font> <font color="#0080C0">1</font>
-    <font color="#C00000">return</font> <font color="#0080C0">0</font>
+</font>    <font color="#C00000">if</font> values<font color=
+"#0000C0">[</font><font color="#0080C0">0</font><font color=
+"#0000C0">]</font><font color=
+"#0000C0">&lt;</font>values<font color=
+"#0000C0">[</font><font color="#0080C0">1</font><font color=
+"#0000C0">]</font><font color="#0000C0">:</font>
+        <font color="#C00000">return</font> <font color=
+"#0000C0">-</font><font color="#0080C0">1</font>
+    <font color="#C00000">if</font> values<font color=
+"#0000C0">[</font><font color="#0080C0">0</font><font color=
+"#0000C0">]</font><font color=
+"#0000C0">&gt;</font>values<font color=
+"#0000C0">[</font><font color="#0080C0">1</font><font color=
+"#0000C0">]</font><font color="#0000C0">:</font>
+        <font color="#C00000">return</font> <font color=
+"#0080C0">1</font>
+    <font color="#C00000">return</font> <font color=
+"#0080C0">0</font>
 
-<font color="#000000">connection</font><font color="#0000C0">.</font><font color="#000000">createcollation</font><font color="#0000C0">(</font><font color="#004080">"strnum"</font><font color="#0000C0">,</font> <font color="#000000">strnumcollate</font><font color="#0000C0">)</font>
+connection<font color="#0000C0">.</font>createcollation<font color=
+"#0000C0">(</font><font color="#004080">"strnum"</font><font color=
+"#0000C0">,</font> strnumcollate<font color="#0000C0">)</font>
 
-<font color="#C00000">for</font> <font color="#000000">row</font> <font color="#C00000">in</font> <font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">execute</font><font color="#0000C0">(</font><font color="#004080">"select * from s order by str collate strnum"</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
-    <font color="#C00000">print</font> <font color="#000000">row</font><font color="#000000"></font></font>
-<!--sourceend--><font color=blue>
-  ('file1',)
-  ('file3',)
-  ('file7',)
-  ('file17',)
-  ('file20',)
-</font><!--sourcestart-->
-<font face="Lucida,Courier New"><font color="#008000">###
-</font><font color="#008000">### Authorizer (eg if you want to control what user supplied SQL can do)
+<font color="#C00000">for</font> row <font color=
+"#C00000">in</font> cursor<font color=
+"#0000C0">.</font>execute<font color="#0000C0">(</font><font color=
+"#004080">"select * from s order by str collate strnum"</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
+    <font color="#C00000">print</font> row
+
+<font color="blue">   ('file1',)
+   ('file3',)
+   ('file7',)
+   ('file17',)
+   ('file20',)
+</font>
+<font color="#008000">###
+</font><font color=
+"#008000">### Authorizer (eg if you want to control what user supplied SQL can do)
 </font><font color="#008000">###
 </font>
-<font color="#C00000">def</font> <font color="#000000">authorizer</font><font color="#0000C0">(</font><font color="#000000">operation</font><font color="#0000C0">,</font> <font color="#000000">paramone</font><font color="#0000C0">,</font> <font color="#000000">paramtwo</font><font color="#0000C0">,</font> <font color="#000000">databasename</font><font color="#0000C0">,</font> <font color="#000000">triggerorview</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
-    <font color="#004080">"""Called when each operation is prepared.  We can return SQLITE_OK, SQLITE_DENY or
+<font color="#C00000">def</font> authorizer<font color=
+"#0000C0">(</font>operation<font color=
+"#0000C0">,</font> paramone<font color=
+"#0000C0">,</font> paramtwo<font color=
+"#0000C0">,</font> databasename<font color=
+"#0000C0">,</font> triggerorview<font color=
+"#0000C0">)</font><font color="#0000C0">:</font>
+    <font color=
+"#004080">"""Called when each operation is prepared.  We can return SQLITE_OK, SQLITE_DENY or
     SQLITE_IGNORE"""</font>
     <font color="#008000"># find the operation name
-</font>    <font color="#000000">ign</font><font color="#0000C0">=</font><font color="#0000C0">[</font><font color="#004080">"SQLITE_OK"</font><font color="#0000C0">,</font> <font color="#004080">"SQLITE_DENY"</font><font color="#0000C0">,</font> <font color="#004080">"SQLITE_IGNORE"</font><font color="#0000C0">]</font>  <font color="#008000"># not operation names but have same values</font>
-    <font color="#C00000">print</font> <font color="#004080">"AUTHORIZER:"</font><font color="#0000C0">,</font>
-    <font color="#C00000">for</font> <font color="#000000">i</font> <font color="#C00000">in</font> <font color="#000000">dir</font><font color="#0000C0">(</font><font color="#000000">apsw</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
-        <font color="#C00000">if</font> <font color="#000000">getattr</font><font color="#0000C0">(</font><font color="#000000">apsw</font><font color="#0000C0">,</font><font color="#000000">i</font><font color="#0000C0">)</font><font color="#0000C0">==</font><font color="#000000">operation</font><font color="#0000C0">:</font>
-            <font color="#C00000">print</font> <font color="#000000">i</font><font color="#0000C0">,</font>
+</font>    ign<font color="#0000C0">=</font><font color=
+"#0000C0">[</font><font color=
+"#004080">"SQLITE_OK"</font><font color=
+"#0000C0">,</font> <font color=
+"#004080">"SQLITE_DENY"</font><font color=
+"#0000C0">,</font> <font color=
+"#004080">"SQLITE_IGNORE"</font><font color=
+"#0000C0">]</font>  <font color=
+"#008000"># not operation names but have same values</font>
+    <font color="#C00000">print</font> <font color=
+"#004080">"AUTHORIZER:"</font><font color="#0000C0">,</font>
+    <font color="#C00000">for</font> i <font color=
+"#C00000">in</font> dir<font color=
+"#0000C0">(</font>apsw<font color="#0000C0">)</font><font color=
+"#0000C0">:</font>
+        <font color="#C00000">if</font> getattr<font color=
+"#0000C0">(</font>apsw<font color="#0000C0">,</font>i<font color=
+"#0000C0">)</font><font color=
+"#0000C0">==</font>operation<font color="#0000C0">:</font>
+            <font color="#C00000">print</font> i<font color=
+"#0000C0">,</font>
             <font color="#C00000">break</font>
-    <font color="#C00000">print</font> <font color="#000000">paramone</font><font color="#0000C0">,</font> <font color="#000000">paramtwo</font><font color="#0000C0">,</font> <font color="#000000">databasename</font><font color="#0000C0">,</font> <font color="#000000">triggerorview</font>
-    <font color="#C00000">if</font> <font color="#000000">operation</font><font color="#0000C0">==</font><font color="#000000">apsw</font><font color="#0000C0">.</font><font color="#000000">SQLITE_CREATE_TABLE</font> <font color="#C00000">and</font> <font color="#000000">paramone</font><font color="#0000C0">.</font><font color="#000000">startswith</font><font color="#0000C0">(</font><font color="#004080">"private"</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
-        <font color="#C00000">return</font> <font color="#000000">apsw</font><font color="#0000C0">.</font><font color="#000000">SQLITE_DENY</font>  <font color="#008000"># not allowed to create tables whose names start with private</font>
+    <font color="#C00000">print</font> paramone<font color=
+"#0000C0">,</font> paramtwo<font color=
+"#0000C0">,</font> databasename<font color=
+"#0000C0">,</font> triggerorview
+    <font color="#C00000">if</font> operation<font color=
+"#0000C0">==</font>apsw<font color=
+"#0000C0">.</font>SQLITE_CREATE_TABLE <font color=
+"#C00000">and</font> paramone<font color=
+"#0000C0">.</font>startswith<font color=
+"#0000C0">(</font><font color=
+"#004080">"private"</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
+        <font color="#C00000">return</font> apsw<font color=
+"#0000C0">.</font>SQLITE_DENY  <font color=
+"#008000"># not allowed to create tables whose names start with private</font>
 
-    <font color="#C00000">return</font> <font color="#000000">apsw</font><font color="#0000C0">.</font><font color="#000000">SQLITE_OK</font>  <font color="#008000"># always allow</font>
+    <font color="#C00000">return</font> apsw<font color=
+"#0000C0">.</font>SQLITE_OK  <font color=
+"#008000"># always allow</font>
 
-<font color="#000000">connection</font><font color="#0000C0">.</font><font color="#000000">setauthorizer</font><font color="#0000C0">(</font><font color="#000000">authorizer</font><font color="#0000C0">)</font>
+connection<font color="#0000C0">.</font>setauthorizer<font color=
+"#0000C0">(</font>authorizer<font color="#0000C0">)</font>
+cursor<font color="#0000C0">.</font>execute<font color=
+"#0000C0">(</font><font color=
+"#004080">"insert into s values('foo')"</font><font color=
+"#0000C0">)</font>
+cursor<font color="#0000C0">.</font>execute<font color=
+"#0000C0">(</font><font color=
+"#004080">"select str from s limit 1"</font><font color=
+"#0000C0">)</font>
+
+<font color="blue">   AUTHORIZER: SQLITE_INSERT s None main None
+   AUTHORIZER: SQLITE_SELECT None None None None
+   AUTHORIZER: SQLITE_READ s str main None
+</font>
+<font color="#008000"># Cancel authorizer
+</font>connection<font color=
+"#0000C0">.</font>setauthorizer<font color=
+"#0000C0">(</font>None<font color="#0000C0">)</font>
 
 <font color="#008000">###
-</font><font color="#008000">### progress handler (SQLite 3 experimental feature)
+</font><font color=
+"#008000">### progress handler (SQLite 3 experimental feature)
 </font><font color="#008000">###
 </font>
-<font color="#008000"># something to give us large numbers of random numbers
-</font><font color="#C00000">import</font> <font color="#000000">random</font>
-<font color="#C00000">def</font> <font color="#000000">randomintegers</font><font color="#0000C0">(</font><font color="#000000">howmany</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
-    <font color="#C00000">for</font> <font color="#000000">i</font> <font color="#C00000">in</font> <font color="#000000">xrange</font><font color="#0000C0">(</font><font color="#000000">howmany</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
-        <font color="#C00000">yield</font> <font color="#0000C0">(</font><font color="#000000">random</font><font color="#0000C0">.</font><font color="#000000">randint</font><font color="#0000C0">(</font><font color="#0080C0">0</font><font color="#0000C0">,</font><font color="#0080C0">9999999999</font><font color="#0000C0">)</font><font color="#0000C0">,</font><font color="#0000C0">)</font>
+<font color=
+"#008000"># something to give us large numbers of random numbers
+</font><font color="#C00000">import</font> random
+<font color="#C00000">def</font> randomintegers<font color=
+"#0000C0">(</font>howmany<font color="#0000C0">)</font><font color=
+"#0000C0">:</font>
+    <font color="#C00000">for</font> i <font color=
+"#C00000">in</font> xrange<font color=
+"#0000C0">(</font>howmany<font color="#0000C0">)</font><font color=
+"#0000C0">:</font>
+        <font color="#C00000">yield</font> <font color=
+"#0000C0">(</font>random<font color=
+"#0000C0">.</font>randint<font color="#0000C0">(</font><font color=
+"#0080C0">0</font><font color="#0000C0">,</font><font color=
+"#0080C0">9999999999</font><font color=
+"#0000C0">)</font><font color="#0000C0">,</font><font color=
+"#0000C0">)</font>
 
-<font color="#008000"># create a table with 10,000 random numbers
-</font><font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">execute</font><font color="#0000C0">(</font><font color="#004080">"begin ; create table bigone(x)"</font><font color="#0000C0">)</font>
-<font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">executemany</font><font color="#0000C0">(</font><font color="#004080">"insert into bigone values(?)"</font><font color="#0000C0">,</font> <font color="#000000">randomintegers</font><font color="#0000C0">(</font><font color="#0080C0">10000</font><font color="#0000C0">)</font><font color="#0000C0">)</font>
-<font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">execute</font><font color="#0000C0">(</font><font color="#004080">"commit"</font><font color="#0000C0">)</font>
+<font color="#008000"># create a table with 500 random numbers
+</font>cursor<font color="#0000C0">.</font>execute<font color=
+"#0000C0">(</font><font color=
+"#004080">"begin ; create table bigone(x)"</font><font color=
+"#0000C0">)</font>
+cursor<font color="#0000C0">.</font>executemany<font color=
+"#0000C0">(</font><font color=
+"#004080">"insert into bigone values(?)"</font><font color=
+"#0000C0">,</font> randomintegers<font color=
+"#0000C0">(</font><font color="#0080C0">500</font><font color=
+"#0000C0">)</font><font color="#0000C0">)</font>
+cursor<font color="#0000C0">.</font>execute<font color=
+"#0000C0">(</font><font color="#004080">"commit"</font><font color=
+"#0000C0">)</font>
 
 <font color="#008000"># display an ascii spinner
-</font><font color="#000000">_phcount</font><font color="#0000C0">=</font><font color="#0080C0">0</font>
-<font color="#000000">_phspinner</font><font color="#0000C0">=</font><font color="#004080">"|/-\\"</font>
-<font color="#C00000">def</font> <font color="#000000">progresshandler</font><font color="#0000C0">(</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
-    <font color="#C00000">global</font> <font color="#000000">_phcount</font>
-    <font color="#000000">sys</font><font color="#0000C0">.</font><font color="#000000">stdout</font><font color="#0000C0">.</font><font color="#000000">write</font><font color="#0000C0">(</font><font color="#000000">_phspinner</font><font color="#0000C0">[</font><font color="#000000">_phcount</font><font color="#0000C0">%</font><font color="#000000">len</font><font color="#0000C0">(</font><font color="#000000">_phspinner</font><font color="#0000C0">)</font><font color="#0000C0">]</font><font color="#0000C0">+</font><font color="#000000">chr</font><font color="#0000C0">(</font><font color="#0080C0">8</font><font color="#0000C0">)</font><font color="#0000C0">)</font> <font color="#008000"># chr(8) is backspace</font>
-    <font color="#000000">sys</font><font color="#0000C0">.</font><font color="#000000">stdout</font><font color="#0000C0">.</font><font color="#000000">flush</font><font color="#0000C0">(</font><font color="#0000C0">)</font>
-    <font color="#000000">_phcount</font><font color="#0000C0">+=</font><font color="#0080C0">1</font>
-    <font color="#000000">time</font><font color="#0000C0">.</font><font color="#000000">sleep</font><font color="#0000C0">(</font><font color="#0080C0">0.1</font><font color="#0000C0">)</font> <font color="#008000"># deliberate delay so we can see the spinner (SQLite is too fast otherwise!)</font>
-    <font color="#C00000">return</font> <font color="#0080C0">0</font>  <font color="#008000"># returning non-zero aborts</font>
+</font>_phcount<font color="#0000C0">=</font><font color=
+"#0080C0">0</font>
+_phspinner<font color="#0000C0">=</font><font color=
+"#004080">"|/-\\"</font>
+<font color="#C00000">def</font> progresshandler<font color=
+"#0000C0">(</font><font color="#0000C0">)</font><font color=
+"#0000C0">:</font>
+    <font color="#C00000">global</font> _phcount
+    sys<font color="#0000C0">.</font>stdout<font color=
+"#0000C0">.</font>write<font color=
+"#0000C0">(</font>_phspinner<font color=
+"#0000C0">[</font>_phcount<font color=
+"#0000C0">%</font>len<font color=
+"#0000C0">(</font>_phspinner<font color=
+"#0000C0">)</font><font color="#0000C0">]</font><font color=
+"#0000C0">+</font>chr<font color="#0000C0">(</font><font color=
+"#0080C0">8</font><font color="#0000C0">)</font><font color=
+"#0000C0">)</font> <font color=
+"#008000"># chr(8) is backspace</font>
+    sys<font color="#0000C0">.</font>stdout<font color=
+"#0000C0">.</font>flush<font color="#0000C0">(</font><font color=
+"#0000C0">)</font>
+    _phcount<font color="#0000C0">+=</font><font color=
+"#0080C0">1</font>
+    time<font color="#0000C0">.</font>sleep<font color=
+"#0000C0">(</font><font color="#0080C0">0.1</font><font color=
+"#0000C0">)</font> <font color=
+"#008000"># deliberate delay so we can see the spinner (SQLite is too fast otherwise!)</font>
+    <font color="#C00000">return</font> <font color=
+"#0080C0">0</font>  <font color=
+"#008000"># returning non-zero aborts</font>
 
-<font color="#008000"># register progresshandler every 20 instructions
-</font><font color="#000000">connection</font><font color="#0000C0">.</font><font color="#000000">setprogresshandler</font><font color="#0000C0">(</font><font color="#000000">progresshandler</font><font color="#0000C0">,</font> <font color="#0080C0">20</font><font color="#0000C0">)</font>
+<font color=
+"#008000"># register progresshandler every 20 instructions
+</font>connection<font color=
+"#0000C0">.</font>setprogresshandler<font color=
+"#0000C0">(</font>progresshandler<font color=
+"#0000C0">,</font> <font color="#0080C0">20</font><font color=
+"#0000C0">)</font>
 
-<font color="#008000"># see it in action
-</font><font color="#C00000">print</font> <font color="#004080">"spinny thing -&gt; "</font><font color="#0000C0">,</font>
-<font color="#C00000">for</font> <font color="#000000">i</font> <font color="#C00000">in</font> <font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">execute</font><font color="#0000C0">(</font><font color="#004080">"select max(x) from bigone"</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
-    <font color="#C00000">print</font> <font color="#008000"># newline</font>
-    <font color="#C00000">print</font> <font color="#000000">i</font> <font color="#008000"># and the maximum number</font>
+<font color=
+"#008000"># see it in action - sorting 500 numbers to find the biggest takes a while
+</font><font color="#C00000">print</font> <font color=
+"#004080">"spinny thing -&gt; "</font><font color=
+"#0000C0">,</font>
+<font color="#C00000">for</font> i <font color=
+"#C00000">in</font> cursor<font color=
+"#0000C0">.</font>execute<font color="#0000C0">(</font><font color=
+"#004080">"select max(x) from bigone"</font><font color=
+"#0000C0">)</font><font color="#0000C0">:</font>
+    <font color="#C00000">print</font> <font color=
+"#008000"># newline</font>
+    <font color="#C00000">print</font> i <font color=
+"#008000"># and the maximum number</font>
 
 <font color="#008000">###
-</font><font color="#008000">### commit hook (SQLite3 experimental feature)
+</font><font color=
+"#008000">### commit hook (SQLite3 experimental feature)
 </font><font color="#008000">###
 </font>
-<font color="#C00000">def</font> <font color="#000000">mycommithook</font><font color="#0000C0">(</font><font color="#0000C0">)</font><font color="#0000C0">:</font>
-    <font color="#C00000">print</font> <font color="#004080">"in commit hook"</font>
-    <font color="#000000">hour</font><font color="#0000C0">=</font><font color="#000000">time</font><font color="#0000C0">.</font><font color="#000000">localtime</font><font color="#0000C0">(</font><font color="#0000C0">)</font><font color="#0000C0">[</font><font color="#0080C0">3</font><font color="#0000C0">]</font>
-    <font color="#C00000">if</font> <font color="#000000">hour</font><font color="#0000C0">&lt;</font><font color="#0080C0">8</font> <font color="#C00000">or</font> <font color="#000000">hour</font><font color="#0000C0">&gt;</font><font color="#0080C0">17</font><font color="#0000C0">:</font>
-        <font color="#C00000">print</font> <font color="#004080">"no commits our of hours"</font>
-        <font color="#C00000">return</font> <font color="#0080C0">1</font>  <font color="#008000"># abort commits outside of 8am through 6pm</font>
-    <font color="#C00000">print</font> <font color="#004080">"commits okay at this time"</font>
-    <font color="#C00000">return</font> <font color="#0080C0">0</font>  <font color="#008000"># let commit go ahead</font>
+<font color="#C00000">def</font> mycommithook<font color=
+"#0000C0">(</font><font color="#0000C0">)</font><font color=
+"#0000C0">:</font>
+    <font color="#C00000">print</font> <font color=
+"#004080">"in commit hook"</font>
+    hour<font color="#0000C0">=</font>time<font color=
+"#0000C0">.</font>localtime<font color=
+"#0000C0">(</font><font color="#0000C0">)</font><font color=
+"#0000C0">[</font><font color="#0080C0">3</font><font color=
+"#0000C0">]</font>
+    <font color="#C00000">if</font> hour<font color=
+"#0000C0">&lt;</font><font color="#0080C0">8</font> <font color=
+"#C00000">or</font> hour<font color=
+"#0000C0">&gt;</font><font color="#0080C0">17</font><font color=
+"#0000C0">:</font>
+        <font color="#C00000">print</font> <font color=
+"#004080">"no commits out of hours"</font>
+        <font color="#C00000">return</font> <font color=
+"#0080C0">1</font>  <font color=
+"#008000"># abort commits outside of 8am through 6pm</font>
+    <font color="#C00000">print</font> <font color=
+"#004080">"commits okay at this time"</font>
+    <font color="#C00000">return</font> <font color=
+"#0080C0">0</font>  <font color=
+"#008000"># let commit go ahead</font>
 
-<font color="#000000">connection</font><font color="#0000C0">.</font><font color="#000000">setcommithook</font><font color="#0000C0">(</font><font color="#000000">mycommithook</font><font color="#0000C0">)</font>
-<font color="#000000">cursor</font><font color="#0000C0">.</font><font color="#000000">execute</font><font color="#0000C0">(</font><font color="#004080">"begin; create table example(x,y,z); insert into example values (3,4,5) ; commit"</font><font color="#0000C0">)</font><font color="#000000"></font></font>
+connection<font color="#0000C0">.</font>setcommithook<font color=
+"#0000C0">(</font>mycommithook<font color="#0000C0">)</font>
+<font color="#C00000">try</font><font color="#0000C0">:</font>
+    cursor<font color="#0000C0">.</font>execute<font color=
+"#0000C0">(</font><font color=
+"#004080">"begin; create table example(x,y,z); insert into example values (3,4,5) ; commit"</font><font color="#0000C0">)</font>
+<font color="#C00000">except</font> apsw<font color=
+"#0000C0">.</font>ConstraintError<font color="#0000C0">:</font>
+    <font color="#C00000">print</font> <font color=
+"#004080">"commit was not allowed"</font>
+
+<font color="#008000">###
+</font><font color="#008000">### Cleanup
+</font><font color="#008000">###
+</font>
+<font color=
+"#008000"># Normal garbage collection will work but if you proactively want to
+</font><font color=
+"#008000"># cleanup then use del.  You can use del on the cursors and
+</font><font color=
+"#008000"># connections in any order.  Note that they must be called in the same
+</font><font color=
+"#008000"># thread as the objects were allocated.
+</font>
+<font color="#C00000">del</font> cursor
+<font color="#C00000">del</font> connection</font>
 <!--sourceend-->
 </pre>
   </blockquote>
 
-
-  <h1><a name="Building">Building</a></h1>
-
+  <h1><a name="Building" id="Building">Building</a></h1>
 
   <p>The simple way is:</p>
-
 
   <blockquote>
     <pre>
@@ -469,10 +903,9 @@ python setup.py install
 </pre>
   </blockquote>
 
-
-  <p>On Windows the above command uses Visual C++. You can use MinGW
-  with the command below.  (If MinGW complains about missing Python
-  functions starting with <code>_imp__Py_</code> then run
+  <p>On Windows the above command uses Visual C++. You can use
+  MinGW with the command below. (If MinGW complains about missing
+  Python functions starting with <code>_imp__Py_</code> then run
   <code>mingwsetup.bat</code> which will ensure your Python
   distribution is initialized for MinGW compilation).</p>
 
@@ -482,32 +915,30 @@ python setup.py build --compile=mingw32 install
 </pre>
   </blockquote>
 
-
-  <p>By default whatever SQLite 3 you already have on your system is
-  used. If you place a copy of the headers and library in a
+  <p>By default whatever SQLite 3 you already have on your system
+  is used. If you place a copy of the headers and library in a
   <code>sqlite3</code> subdirectory then that will be used instead.
   Here is a quick and easy way of doing everything on Linux/Mac or
-  Windows with MinGW, including the SQLite library statically into the
-  extension (ie no external DLLs/shared libraries will be needed at
-  runtime).</p>
-
+  Windows with MinGW, including the SQLite library statically into
+  the extension (ie no external DLLs/shared libraries will be
+  needed at runtime).</p>
 
   <blockquote>
     <p>Download the <a href=
-    "http://www.sqlite.org/download.html">SQLite 3 code</a>. 
+    "http://www.sqlite.org/download.html">SQLite 3 code</a>.</p>
 
-<dl>
+    <dl>
+      <dt><b>Windows</b><br />
+      Get the processed .zip</dt>
 
-<dt><b>Windows</b><br>
-Get the processed .zip
-
-<dd>
-    <pre>
+      <dd>
+        <pre>
 &gt; mkdir sqlite3
 &gt; cd sqlite3
 &gt; unzip sqlite-source-3.3.6.zip
 &gt; del tclsqlite.c
-&gt; gcc -DTHREADSAFE -O3 -c *.c <font color="blue"># Adding -DNDEBUG will turn off assertion checking and
+&gt; gcc -DTHREADSAFE -O3 -c *.c <font color=
+"blue"># Adding -DNDEBUG will turn off assertion checking and
                               # improve performance (about 25%) at the expense of safety</font>
 &gt; ar r libsqlite3.a *.o
 &gt; ranlib libsqlite3.a
@@ -515,17 +946,19 @@ Get the processed .zip
 &gt; python setup.py build --compile=mingw32 install
 &gt; python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
 </pre>
+      </dd>
 
-<dt><b>Mac/Linux/etc</b><br>
-Get the normal source.
+      <dt><b>Mac/Linux/etc</b><br />
+      Get the normal source.</dt>
 
-<dd>
-<pre>
+      <dd>
+        <pre>
 $ wget http://www.sqlite.org/sqlite-3.3.6.tar.gz
 $ tar xvfz sqlite-3.3.6.tar.gz
 $ mv sqlite-3.3.6 sqlite3
 $ cd sqlite3
-<font color="blue"># The static library is not built for inclusion into a seperate shared library
+<font color=
+"blue"># The static library is not built for inclusion into a seperate shared library
 # by default.  If using gcc, then do this</font>
 $ env CC="gcc -fPIC" ./configure --enable-threadsafe --disable-tcl
 <font color="blue"># otherwise do this</font>
@@ -536,8 +969,9 @@ $ cd ..
 $ python setup.py install
 $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"      
 </pre>
+      </dd>
+    </dl>
   </blockquote>
-
 
   <p>The extension just turns into a single file apsw.so
   (Linux/Mac) or apsw.pyd (Windows). You don't need to install it
@@ -547,83 +981,86 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
   add <code>build</code> if it isn't already there.</p>
 
   <p>If you want to check that your build is correct then you can
-  run the unit tests.  Run <tt>tests.py</tt>.  It will print the
-  APSW file used, APSW and SQLite versions and then run lots
-  of tests all of which should pass.
+  run the unit tests. Run <tt>tests.py</tt>. It will print the APSW
+  file used, APSW and SQLite versions and then run lots of tests
+  all of which should pass.</p>
 
-  <h1><a name="APIReference">API Reference</a></h1>
+  <h1><a name="APIReference" id="APIReference">API
+  Reference</a></h1>
 
-  <p>Everything you can do from the <a
-  href="http://www.sqlite.org/capi3ref.html">SQLite 3 C API</a> you
-  can do from Python.  The documentation below notes which C API
+  <p>Everything you can do from the <a href=
+  "http://www.sqlite.org/capi3ref.html">SQLite 3 C API</a> you can
+  do from Python. The documentation below notes which C API
   functions are called where you can get further details on what
-  happens.  The only C function not implemented is <a
-  href="http://www.sqlite.org/capi3ref.html#sqlite3_collation_needed">sqlite3_collation_needed</a>.
-  (You can still add collations, you just can't use this function to
-  find out about them on-demand.)  Additionally <a
-  href="http://www.sqlite.org/capi3ref.html#sqlite3_trace">sqlite3_trace</a>
-  is not wrapped but instead <A href="#tracers">tracers</a> are
-  provided that have more functionality.
+  happens. The only C function not implemented is <a href=
+  "http://www.sqlite.org/capi3ref.html#sqlite3_collation_needed">sqlite3_collation_needed</a>.
+  (You can still add collations, you just can't use this function
+  to find out about them on-demand.) Additionally <a href=
+  "http://www.sqlite.org/capi3ref.html#sqlite3_trace">sqlite3_trace</a>
+  is not wrapped but instead <a href="#tracers">tracers</a> are
+  provided that have more functionality.</p>
 
-  <p>Some functions are marked experimental in the SQLite API.  These
-  have also been made available, but as the SQLite documentation notes
-  these functions may change form or disappear in future versions of
-  SQLite.  You can exclude these functions by commenting out the relevant
-  line in the <code>setup.py</code> when building aspw.
+  <p>Some functions are marked experimental in the SQLite API.
+  These have also been made available, but as the SQLite
+  documentation notes these functions may change form or disappear
+  in future versions of SQLite. You can exclude these functions by
+  commenting out the relevant line in the <code>setup.py</code>
+  when building aspw.</p>
 
- <p>Various methods create functions, collations and set various hooks
- and handlers.  To remove the relevant
- function/collation/hook/handler, pass in None as the callable method.
+  <p>Various methods create functions, collations and set various
+  hooks and handlers. To remove the relevant
+  function/collation/hook/handler, pass in None as the callable
+  method.</p>
 
-  <h2><a name="module-methods">Module methods</a>
-  </h2>
-
+  <h2><a name="module-methods" id="module-methods">Module
+  methods</a></h2>
 
   <dl>
     <dt><strong>sqlitelibversion()</strong></dt>
 
     <dd>
-      <p>Returns the version of the SQLite library as a string.  This
-      function calls <a
-      href="http://www.sqlite.org/capi3ref.html#sqlite3_libversion">sqlite3_libversion</a>.</p>
+      <p>Returns the version of the SQLite library as a string.
+      This function calls <a href=
+      "http://www.sqlite.org/capi3ref.html#sqlite3_libversion">sqlite3_libversion</a>.</p>
     </dd>
 
     <dt><strong>apswversion()</strong></dt>
 
-    <dd><p>Returns the version of the APSW module.
-        </dd>
+    <dd>
+      <p>Returns the version of the APSW module.</p>
+    </dd>
 
     <dt><strong>enablesharedcache(boolean)</strong></dt>
 
-    <dd><p>Calls <a
-    href="http://www.sqlite.org/capi3ref.html#sqlite3_enable_shared_cache">sqlite3_enable_shared_cache</a>.
-	  This sets the <a href="http://www.sqlite.org/sharedcache.html">shared cache mode</a> which was
-	  introduced in SQLite 3.3.  Note that it only affects the current thread and should be called
-	  before any databases are opened.  If called after that then you'll get MisuseError.  APSW
-	  already enforces the other conditions required to use this functionality, namely that all
-	  operations on a Connection must happen in the same thread.  Consequently you can safely
-	  use this functionality.  You do not need to worry about <a
-	  href="http://www.sqlite.org/capi3ref.html#sqlite3_thread_cleanup">sqlite3_thread_cleanup</a>
-	  as that is only needed when abnormally terminating a thread (something you can't do in
-	  Python).  Python's normal reference counting ensures all objects are cleaned up, and
-	  SQLite automatically cleans up the shared cache when the last Connection in a thread
-	  is closed.
-        </dd>
-
-
+    <dd>
+      <p>Calls <a href=
+      "http://www.sqlite.org/capi3ref.html#sqlite3_enable_shared_cache">
+      sqlite3_enable_shared_cache</a>. This sets the <a href=
+      "http://www.sqlite.org/sharedcache.html">shared cache
+      mode</a> which was introduced in SQLite 3.3. Note that it
+      only affects the current thread and should be called before
+      any databases are opened. If called after that then you'll
+      get MisuseError. APSW already enforces the other conditions
+      required to use this functionality, namely that all
+      operations on a Connection must happen in the same thread.
+      Consequently you can safely use this functionality. You do
+      not need to worry about <a href=
+      "http://www.sqlite.org/capi3ref.html#sqlite3_thread_cleanup">sqlite3_thread_cleanup</a>
+      as that is only needed when abnormally terminating a thread
+      (something you can't do in Python). Python's normal reference
+      counting ensures all objects are cleaned up, and SQLite
+      automatically cleans up the shared cache when the last
+      Connection in a thread is closed.</p>
+    </dd>
   </dl>
 
-
-  <h2><a name="Connection">Connection class</a></h2>
-
+  <h2><a name="Connection" id="Connection">Connection
+  class</a></h2>
 
   <p>The connection class wraps a <code>sqlite3 pointer</code>.</p>
 
-
   <dl>
-    <dt><strong>Connection(filename)</strong>
-    </dt>
-
+    <dt><strong>Connection(filename)</strong></dt>
 
     <dd>
       <p>Opens an SQLite database named <code>filename</code>.
@@ -634,9 +1071,7 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
       when no longer in use.)</p>
     </dd>
 
-
     <dt><strong>cursor()</strong></dt>
-
 
     <dd>
       <p>Creates a new <a href="#Cursor">cursor</a> object on this
@@ -645,38 +1080,44 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
 
     <dt><strong>changes()</strong></dt>
 
-    <dd><p>This function returns the number of database rows that were
-    changed (or inserted or deleted) by the most recently completed
-    INSERT, UPDATE, or DELETE statement.  (This calls <a href=
-    "http://www.sqlite.org/capi3ref.html#sqlite3_changes">sqlite3_changes</a>.
-    Read that link for some additional notes.)</p></dd>
+    <dd>
+      <p>This function returns the number of database rows that
+      were changed (or inserted or deleted) by the most recently
+      completed INSERT, UPDATE, or DELETE statement. (This calls
+      <a href=
+      "http://www.sqlite.org/capi3ref.html#sqlite3_changes">sqlite3_changes</a>.
+      Read that link for some additional notes.)</p>
+    </dd>
 
     <dt><strong>totalchanges()</strong></dt>
 
-    <dd><p>This function returns the total number of database rows
-    that have be modified, inserted, or deleted since the database
-    connection was opened. (This calls <a href=
-    "http://www.sqlite.org/capi3ref.html#sqlite3_total_changes">sqlite3_total_changes</a>.
-    Read that link for some additional notes.)</p></dd>
+    <dd>
+      <p>This function returns the total number of database rows
+      that have be modified, inserted, or deleted since the
+      database connection was opened. (This calls <a href=
+      "http://www.sqlite.org/capi3ref.html#sqlite3_total_changes">sqlite3_total_changes</a>.
+      Read that link for some additional notes.)</p>
+    </dd>
 
+    <dt><strong>last_insert_rowid()</strong></dt>
 
-   <dt><strong>last_insert_rowid()</strong></dt>
+    <dd>
+      <p>Returns the integer key of the most recent insert in the
+      database. (This calls <a href=
+      "http://www.sqlite.org/capi3ref.html#sqlite3_last_insert_rowid">
+      sqlite3_last_insert_rowid</a>.)</p>
+    </dd>
 
-   <dd><p>Returns the integer key of the most recent insert in the
-   database.  (This calls <a
-   href="http://www.sqlite.org/capi3ref.html#sqlite3_last_insert_rowid">sqlite3_last_insert_rowid</a>.)</p></dd>
+    <dt><strong>complete(statement)</strong></dt>
 
-
-   <dt><strong>complete(statement)</strong></dt>
-
-   <dd><p>Calls <a
-   href="http://www.sqlite.org/capi3ref.html#sqlite3_complete">sqlite3_complete</a>
-   which tells you if the input string comprises one or more complete
-   SQL statements.</p></dd>
-
+    <dd>
+      <p>Calls <a href=
+      "http://www.sqlite.org/capi3ref.html#sqlite3_complete">sqlite3_complete</a>
+      which tells you if the input string comprises one or more
+      complete SQL statements.</p>
+    </dd>
 
     <dt><strong>setbusytimeout(milliseconds)</strong></dt>
-
 
     <dd>
       <p>Sets the busy timeout. (This calls <a href=
@@ -685,180 +1126,223 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
 
     <dt><strong>setbusyhandler(callable)</strong></dt>
 
-    <dd><p>Sets the busy handler to callable.  callable will be called
-    with one integer argument which is the number of prior calls to
-    the busy callback for the same lock.  If the busy callback returns
-    something that evaluates to False, then SQLite returns SQLITE_BUSY
-    to the calling code.. If the callback returns something that
-    evaluates to True, then SQLite tries to open the table again and
-    the cycle repeats.  (This calls <a href=
-    "http://www.sqlite.org/capi3ref.html#sqlite3_busy_handler">sqlite3_busy_handler</a>).</p></dd>
-
+    <dd>
+      <p>Sets the busy handler to callable. callable will be called
+      with one integer argument which is the number of prior calls
+      to the busy callback for the same lock. If the busy callback
+      returns something that evaluates to False, then SQLite
+      returns SQLITE_BUSY to the calling code.. If the callback
+      returns something that evaluates to True, then SQLite tries
+      to open the table again and the cycle repeats. (This calls
+      <a href=
+      "http://www.sqlite.org/capi3ref.html#sqlite3_busy_handler">sqlite3_busy_handler</a>).</p>
+    </dd>
 
     <dt><strong>interrupt()</strong></dt>
 
-
     <dd>
       <p>Causes any pending operations on the database to abort at
-      the earliest opportunity.  Note that you must call this in the same
-      thread as you created the Connection.  This restriction <a href="http://article.gmane.org/gmane.comp.db.sqlite.general/20427">may be removed</a>
-      in a future release of SQLite.  (This calls <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_interrupt">sqlite3_interrupt</a>).
-      </p>
+      the earliest opportunity. Note that you must call this in the
+      same thread as you created the Connection. This restriction
+      <a href=
+      "http://article.gmane.org/gmane.comp.db.sqlite.general/20427">
+      may be removed</a> in a future release of SQLite. (This calls
+      <a href=
+      "http://www.sqlite.org/capi3ref.html#sqlite3_interrupt">sqlite3_interrupt</a>).</p>
     </dd>
 
-
-    <dt><strong>createscalarfunction(name, callable, numargs=-1)</strong></dt>
-
+    <dt><strong>createscalarfunction(name, callable,
+    numargs=-1)</strong></dt>
 
     <dd>
       <p>Registers a scalar function. The callable will be called.
       You can specify how many arguments your function takes as the
-      numargs parameter or supply -1 to take any amount. (This calls
-      <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_create_function">sqlite3_create_function</a>).</p>
+      numargs parameter or supply -1 to take any amount. (This
+      calls <a href=
+      "http://www.sqlite.org/capi3ref.html#sqlite3_create_function">
+      sqlite3_create_function</a>).</p>
     </dd>
 
-
-    <dt><strong>createaggregatefunction(name, factorycallback, numargs=-1)</strong></dt>
+    <dt><strong>createaggregatefunction(name, factorycallback,
+    numargs=-1)</strong></dt>
 
     <dd>
       <p>Registers an aggregate function. (This calls <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_create_function">sqlite3_create_function</a>.)
-      You can specify how many arguments your function takes as the
-      numargs parameter or supply -1 to take any amount. When the
-      function is called by an SQL query, the factorycallback is
-      called without any arguments. The factorycallback needs to
-      return a tuple consisting of three 3 items.</p>
+      "http://www.sqlite.org/capi3ref.html#sqlite3_create_function">
+      sqlite3_create_function</a>.) You can specify how many
+      arguments your function takes as the numargs parameter or
+      supply -1 to take any amount. When the function is called by
+      an SQL query, the factorycallback is called without any
+      arguments. The factorycallback needs to return a tuple
+      consisting of three 3 items.</p>
 
       <ul>
-        <li><p>a context object (of any type)</p></li>
+        <li>
+          <p>a context object (of any type)</p>
+        </li>
 
+        <li>
+          <p>a step function which is called for each row. The
+          context object will be the first parameter, and the
+          remaining parameters will be from the SQL statement. The
+          return value is ignored - you supply it in final.</p>
+        </li>
 
-        <li><p>a step function which is called for each row. The
-        context object will be the first parameter, and the
-        remaining parameters will be from the SQL statement. The
-        return value is ignored - you supply it in final.</p></li>
-
-
-        <li><p>a final function which is called at the end. The only
-        parameter will be the context object. The value returned is
-        set as the return for the function. It must be a valid
-        SQLite type. Note that the final function is always called
-        even if an exception was raised by the step function. This
-        allows you to ensure any resources are cleaned up.</p></li>
+        <li>
+          <p>a final function which is called at the end. The only
+          parameter will be the context object. The value returned
+          is set as the return for the function. It must be a valid
+          SQLite type. Note that the final function is always
+          called even if an exception was raised by the step
+          function. This allows you to ensure any resources are
+          cleaned up.</p>
+        </li>
       </ul>
     </dd>
 
     <dt><strong>createcollation(name, callable)</strong></dt>
 
-    <dd><p>Creates a collation with the specified name and callable.
-    The callable will be passed two string arguments.  It should
-    return -1 if the first is less than the second, 0 if they are
-    equal and 1 and if the first is greater than the second.  Note
-    that this controls sorting (ORDER BY in SQL) so your comparisons
-    don't affect other SQL operations.  Read more about <a
-    href="http://www.sqlite.org/datatype3.html#collation">SQLite's
-    handling of collations.</a> (This calls <a
-    href="http://www.sqlite.org/capi3ref.html#sqlite3_create_collation">sqlite3_create_collation</a>.)
-    If there is an error in your Python code then 0 (ie items are
-    equal) is returned.</p></dd>
+    <dd>
+      <p>Creates a collation with the specified name and callable.
+      The callable will be passed two string arguments. It should
+      return -1 if the first is less than the second, 0 if they are
+      equal and 1 and if the first is greater than the second. Note
+      that this controls sorting (ORDER BY in SQL) so your
+      comparisons don't affect other SQL operations. Read more
+      about <a href=
+      "http://www.sqlite.org/datatype3.html#collation">SQLite's
+      handling of collations.</a> (This calls <a href=
+      "http://www.sqlite.org/capi3ref.html#sqlite3_create_collation">
+      sqlite3_create_collation</a>.) If there is an error in your
+      Python code then 0 (ie items are equal) is returned.</p>
+    </dd>
 
     <dt><strong>setauthorizer(callable)</strong></dt>
 
-    <dd><p>The callable is invoked while SQL statements are being
-    prepared.  The intent is to allow applications to safely execute
-    user entered SQL.  The callable is called with 5 parameters:</p>
+    <dd>
+      <p>The callable is invoked while SQL statements are being
+      prepared. The intent is to allow applications to safely
+      execute user entered SQL. The callable is called with 5
+      parameters:</p>
 
-    <ul>
+      <ul>
+        <li>
+          <p>an integer representing the operation (the constants
+          are available on the apsw module - eg
+          <code>apsw.SQLITE_CREATE_TABLE</code>.</p>
+        </li>
 
-       <li><p>an integer representing the operation (the constants are
-       available on the apsw module - eg
-       <code>apsw.SQLITE_CREATE_TABLE</code>.</p>
+        <li>
+          <p>A string (or None) dependent on the operation</p>
+        </li>
 
-       <li><p>A string (or None) dependent on the operation</p>
+        <li>
+          <p>Another string (or None) dependent on the
+          operation</p>
+        </li>
 
-       <li><p>Another string (or None) dependent on the operation</p>
+        <li>
+          <p>The string name of the database (or None)</p>
+        </li>
 
-       <li><p>The string name of the database (or None)</p>
+        <li>
+          <p>Name of the innermost trigger or view doing the access
+          (or None)</p>
+        </li>
+      </ul>
 
-       <li><p>Name of the innermost trigger or view doing the access (or None)</p>
+      <p>You should return <code>apsw.SQLITE_OK</code> to allow the
+      operation or <code>apsw.SQLITE_DENY</code> or
+      <code>apsw.SQLITE_IGNORE</code> as applicable. (SQLITE_DENY
+      is returned if there is an error in your Python code).</p>
 
-    </ul>
-
-    <p>You should return <code>apsw.SQLITE_OK</code> to allow the
-    operation or <code>apsw.SQLITE_DENY</code> or
-    <code>apsw.SQLITE_IGNORE</code> as applicable.  (SQLITE_DENY is
-    returned if there is an error in your Python code).</p>
-
-   <p>This calls <a
-   href="http://www.sqlite.org/capi3ref.html#sqlite3_set_authorizer">sqlite3_set_authorizer</a>
-   which contains more detailed documentation.</p></dd>
+      <p>This calls <a href=
+      "http://www.sqlite.org/capi3ref.html#sqlite3_set_authorizer">sqlite3_set_authorizer</a>
+      which contains more detailed documentation.</p>
+    </dd>
 
     <dt><strong>setupdatehook(callable)</strong></dt>
 
-    <dd><p>Sets a callable which is invoked during data changing.  The callable takes
-    four parameters:
+    <dd>
+      <p>Sets a callable which is invoked during data changing. The
+      callable takes four parameters:</p>
 
-    <ul>
-      <li>An integer whose value is one of apsw.SQLITE_INSERT, apsw.SQLITE_DELETE or apsw.SQLITE_UPDATE
-      <li>A string naming the database on which the operation is happening.  (This will typically be <tt>main</tt> unless you used <a href="http://sqlite.org/lang_attach.html"><tt>ATTACH</tt></a>
-      <li>A string naming the table on which the operation is happening.
-      <li>An integer with the rowid of the row that is changing.
-    </ul>
+      <ul>
+        <li>An integer whose value is one of apsw.SQLITE_INSERT,
+        apsw.SQLITE_DELETE or apsw.SQLITE_UPDATE</li>
 
-    <p>(This calls
-    <a
-    href="http://www.sqlite.org/capi3ref.html#sqlite3_update_hook">sqlite3_update_hook</a>.)</p></dd>
-    
+        <li>A string naming the database on which the operation is
+        happening. (This will typically be <tt>main</tt> unless you
+        used <a href=
+        "http://sqlite.org/lang_attach.html"><tt>ATTACH</tt></a></li>
+
+        <li>A string naming the table on which the operation is
+        happening.</li>
+
+        <li>An integer with the rowid of the row that is
+        changing.</li>
+      </ul>
+
+      <p>(This calls <a href=
+      "http://www.sqlite.org/capi3ref.html#sqlite3_update_hook">sqlite3_update_hook</a>.)</p>
+    </dd>
+
     <dt><strong>setrollbackhook(callable)</strong></dt>
 
-    <dd><p>Sets a callable which is invoked during a rollback. The callable takes
-    no parameters and the return value is ignored. (This calls
-    <a
-    href="http://www.sqlite.org/capi3ref.html#sqlite3_rollback_hook">sqlite3_rollback_hook</a>.)</p></dd>
+    <dd>
+      <p>Sets a callable which is invoked during a rollback. The
+      callable takes no parameters and the return value is ignored.
+      (This calls <a href=
+      "http://www.sqlite.org/capi3ref.html#sqlite3_rollback_hook">sqlite3_rollback_hook</a>.)</p>
+    </dd>
 
+    <dt><strong>setcommithook(callable)</strong> (SQLite 3
+    experimental feature)</dt>
 
-    <dt><strong>setcommithook(callable)</strong>  (SQLite 3 experimental feature)</dt>
+    <dd>
+      <p>Sets a callable which is invoked just before a commit. It
+      should return zero for the commit to go ahead and non-zero
+      for it to be turned into a rollback. In the case of an
+      exception in your callable, a non-zero (ie rollback) value is
+      returned. (This calls <a href=
+      "http://www.sqlite.org/capi3ref.html#sqlite3_commit_hook">sqlite3_commit_hook</a>.)</p>
+    </dd>
 
-    <dd><p>Sets a callable which is invoked just before a commit.  It
-    should return zero for the commit to go ahead and non-zero for it
-    to be turned into a rollback.  In the case of an exception in your
-    callable, a non-zero (ie rollback) value is returned.  (This calls
-    <a
-    href="http://www.sqlite.org/capi3ref.html#sqlite3_commit_hook">sqlite3_commit_hook</a>.)</p></dd>
+    <dt><strong>setprofile(callable)</strong> (SQLite 3
+    experimental feature)</dt>
 
-    <dt><strong>setprofile(callable)</strong> (SQLite 3 experimental feature)</dt>    
+    <dd>
+      <p>Sets a callable which is invoked at the end of execution
+      of each statement and passed the statement string and how
+      long it took to execute. (The execution time appears to be in
+      nanoseconds.) Note that it is called only on completion. If
+      for example you do a <tt>SELECT</tt> and only read the first
+      result, then you won't reach the end of the statement.</p>
 
-   <dd><p>Sets a callable which is invoked at the end of execution of each
-   statement and passed the statement string and how long it took to
-   execute.  (The execution time appears to be in nanoseconds.)  Note that
-   it is called only on completion.  If for example you do a <tt>SELECT</tt>
-   and only read the first result, then you won't reach the end of the statement.
+      <p>(This calls <tt>sqlite3_profile</tt> which is not
+      documented on the SQLite web site. See the <tt>sqlite3.h</tt>
+      header file for documentation.).</p>
+    </dd>
 
-   <p>(This calls <tt>sqlite3_profile</tt> which is not documented
-   on the SQLite web site.  See the <tt>sqlite3.h</tt> header file for documentation.).</p></dd>
+    <dt><strong>setprogresshandler(callable, nsteps=20)</strong>
+    (SQLite 3 experimental feature)</dt>
 
-
-    <dt><strong>setprogresshandler(callable, nsteps=20)</strong> (SQLite 3 experimental feature)</dt>    
-
-   <dd><p>Sets a callable which is invoked every <i>nsteps</i> SQLite
-   inststructions.  The callable should return a non-zero value to
-   abort or zero to continue.  (If there is an error in your Python
-   callable then non-zero will be returned).  (This calls <a
-   href="http://www.sqlite.org/capi3ref.html#sqlite3_progress_handler">sqlite3_progress_handler</a>
-   which has more detailed documentation).</p></dd>
-
+    <dd>
+      <p>Sets a callable which is invoked every <i>nsteps</i>
+      SQLite inststructions. The callable should return a non-zero
+      value to abort or zero to continue. (If there is an error in
+      your Python callable then non-zero will be returned). (This
+      calls <a href=
+      "http://www.sqlite.org/capi3ref.html#sqlite3_progress_handler">
+      sqlite3_progress_handler</a> which has more detailed
+      documentation).</p>
+    </dd>
   </dl>
 
-
-  <h2><a name="Cursor">Cursor class</a>
-  </h2>
-
+  <h2><a name="Cursor" id="Cursor">Cursor class</a></h2>
 
   <p>The Cursor class creates and executes SQLite prepared
   statements.</p>
-
 
   <dl>
     <dt><strong>Cursor()</strong></dt>
@@ -868,7 +1352,6 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
       calling Connection.cursor().</p>
     </dd>
 
-
     <dt><strong>getconnection()</strong></dt>
 
     <dd>
@@ -876,266 +1359,436 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
       which this cursor belongs.</p>
     </dd>
 
-
     <dt><strong>execute(statements, bindings=())</strong></dt>
 
     <dd>
       <p>Executes the statements using the supplied bindings. The
       bindings can be supplied as a tuple or as a dict. Execution
-      returns when the first row is available or all statements have
-      completed. The cursor object is returned which you can use as an
-      iterator. (See <a href="#executionmodel">execution model</a> for
-      more details. This function wraps <a href=
+      returns when the first row is available or all statements
+      have completed. The cursor object is returned which you can
+      use as an iterator. (See <a href="#executionmodel">execution
+      model</a> for more details. This function wraps <a href=
       "http://www.sqlite.org/capi3ref.html#sqlite3_prepare">sqlite3_prepare</a>
       and <a href=
       "http://www.sqlite.org/capi3ref.html#sqlite3_step">sqlite3_step</a>.)</p>
     </dd>
 
-
-    <dt><strong>executemany(statements, sequenceofbindings=())</strong>
-    </dt>
-
+    <dt><strong>executemany(statements,
+    sequenceofbindings=())</strong></dt>
 
     <dd>
       <p>Repeatedly executes statements using each element of
-      sequenceofbindings for the bindings each time. Execution returns
-      when the first row is available or all statements have
-      completed. The cursor object is returned which you can use as an
-      iterator. (See <a href="#executionmodel">execution model</a> for
-      more details. This function runs in a loop on each member of
-      sequenceofbindings and wraps <a href=
+      sequenceofbindings for the bindings each time. Execution
+      returns when the first row is available or all statements
+      have completed. The cursor object is returned which you can
+      use as an iterator. (See <a href="#executionmodel">execution
+      model</a> for more details. This function runs in a loop on
+      each member of sequenceofbindings and wraps <a href=
       "http://www.sqlite.org/capi3ref.html#sqlite3_prepare">sqlite3_prepare</a>
       and <a href=
       "http://www.sqlite.org/capi3ref.html#sqlite3_step">sqlite3_step</a>
       .)</p>
     </dd>
 
-
     <dt><strong>next()</strong></dt>
-
 
     <dd>
       <p>The Cursor object is an iterator, and so you can use it in
       a for loop or similar situations. You can also explicitly
-      call the <code>next()</code> method. This method returns a tuple of the
-      contents of a returned row or raises StopIteration after all
-      returned rows have been seen.</p>
+      call the <code>next()</code> method. This method returns a
+      tuple of the contents of a returned row or raises
+      StopIteration after all returned rows have been seen.</p>
     </dd>
 
     <dt><strong>getdescription()</strong></dt>
 
-    <dd><p>Returns a list describing each column in the current result
-    set.  Each item is a tuple of (column name, declared column type).
-    You should only call this function while data is being returned
-    such as when <code>next()</code> returns a row.  This function
-    calls <a
-    href="http://www.sqlite.org/capi3ref.html#sqlite3_column_name">sqlite3_column_name</a>
-    and <a
-    href="http://www.sqlite.org/capi3ref.html#sqlite3_column_decltype">sqlite3_column_decltype</a>.</p></dd>
+    <dd>
+      <p>Returns a list describing each column in the current
+      result set. Each item is a tuple of (column name, declared
+      column type). You should only call this function while data
+      is being returned such as when <code>next()</code> returns a
+      row. This function calls <a href=
+      "http://www.sqlite.org/capi3ref.html#sqlite3_column_name">sqlite3_column_name</a>
+      and <a href=
+      "http://www.sqlite.org/capi3ref.html#sqlite3_column_decltype">
+      sqlite3_column_decltype</a>.</p>
+    </dd>
 
+    <dt><strong>setexectrace(callable)</strong><br />
+    <strong>setrowtrace(callable)</strong><br />
+    <strong>getexectrace()</strong><br />
+    <strong>getrowtrace()</strong></dt>
 
-    <dt><strong>setexectrace(callable)</strong><br>
-    <strong>setrowtrace(callable)</strong><br>
-    <strong>getexectrace()</strong><br>
-    <strong>getrowtrace()</strong>
-    </dt>
-
-
-    <dd><p>Sets or gets the <a href="#tracers">tracers</a>.</p>
+    <dd>
+      <p>Sets or gets the <a href="#tracers">tracers</a>.</p>
     </dd>
   </dl>
 
-
-  <h1><a name="Exceptions">Exceptions</a></h1>
+  <h1><a name="Exceptions" id="Exceptions">Exceptions</a></h1>
 
   <p>All exception types have <code>apsw.Error</code> as a parent.
-  The following exceptions can happen:
+  The following exceptions can happen:</p>
 
   <dl>
+    <dt>ThreadingViolationError</dt>
 
-  <dt>ThreadingViolationError
+    <dd>
+      <p>You have used an object allocated in one thread in a
+      different thread. All objects (Connection, Cursor) must be
+      used in the same thread they were allocated in.</p>
+    </dd>
 
-        <dd><p>You have used an object allocated in one thread in a
-        different thread.  All objects (Connection, Cursor) must be
-        used in the same thread they were allocated in.</p></dd>
+    <dt>IncompleteExecutionError</dt>
 
-  <dt>IncompleteExecutionError
+    <dd>
+      <p>You have tried to start a new SQL execute call before
+      executing all the previous ones. See the <a href=
+      "#executionmodel">execution model</a> for more details.</p>
+    </dd>
 
-        <dd><p>You have tried to start a new SQL execute call before
-        executing all the previous ones.  See the <a
-        href="#executionmodel">execution model</a> for more details.</p></dd>
+    <dt>BindingsError</dt>
 
-  <dt>BindingsError
+    <dd>
+      <p>There is an incorrect number of bindings when using
+      tuples. Or you supplied a dictionary of bindings and not all
+      bindings were named in the SQL statement. For example
+      <code>select&nbsp;*&nbsp;from&nbsp;foo&nbsp;where&nbsp;x=:name&nbsp;and&nbsp;y=?</code>.
+      You should either use colon name style or question mark style
+      in a query but not both.</p>
 
-        <dd><p>There is an incorrect number of bindings when using
-        tuples.  Or you supplied a dictionary of bindings and not all
-        bindings were named in the SQL statement.  For example
-        <code>select&nbsp;*&nbsp;from&nbsp;foo&nbsp;where&nbsp;x=:name&nbsp;and&nbsp;y=?</code>.
-        You should either use colon name style or question mark style
-        in a query but not both.</p>
+      <p><b>Note</b> It is not considered an error to have missing
+      keys in a dictionary. For example
+      <code>cursor.execute("insert into foo values($a,:b,$c)",
+      {'a': 1})</code> is perfectly valid (note <tt>b</tt> and
+      <b>c</b> are not in the dict). For missing keys, None/NULL
+      will be used. This is so you don't have to add lots of
+      spurious values to the supplied dict. If your schema requires
+      every column have a value, then SQLite will generate an error
+      due to some values being None/NULL so that case will be
+      caught.</p>
+    </dd>
 
-        <p><b>Note</b> It is not considered an error to have missing
-        keys in a dictionary.  For example <code>cursor.execute("insert into foo values($a,:b,$c)", {'a': 1})</code>
-        is perfectly valid (note <tt>b</tt> and <b>c</b> are not in the dict).  For missing keys,
-        None/NULL will be used.  This is so you don't have to add lots of spurious values to the
-        supplied dict.  If your schema requires every column have a value, then SQLite will generate
-        an error due to some values being None/NULL so that case will be caught.
-         </p></dd>
+    <dt>ExecutionCompleteError</dt>
 
-  <dt>ExecutionCompleteError
+    <dd>
+      <p>A statement is complete but you try to run it more
+      anyway!</p>
+    </dd>
 
-        <dd><p>A statement is complete but you try to run it more
-        anyway!</p></dd>
+    <dt>ExecTraceAbort</dt>
 
-  <dt>ExecTraceAbort
-
-        <dd><p>The <a href="executiontracer">execution tracer</a>
-        returned False so execution was aborted.</p></dd>
-
+    <dd>
+      <p>The <a href="executiontracer">execution tracer</a>
+      returned False so execution was aborted.</p>
+    </dd>
   </dl>
 
-  <p>The following Exception classes correspond to <a href="http://www.sqlite.org/capi3ref.html#result-codes">SQLite error codes</a>.
+  <p>The following Exception classes correspond to <a href=
+  "http://www.sqlite.org/capi3ref.html#result-codes">SQLite error
+  codes</a>.</p>
 
-<blockquote>
-<!-- This is derived from exc_descriptors in the source -->
-<table cellpadding=5 cellspacing=5 border=0>
-<tr>
-<td valign="top">
-<table cellpadding=5 cellspacing=5 border=0 width="100%">
-<tr><th colspan=2>General Errors</th></tr>
-<tr><td><code>SQLITE_ERROR</code></td><td>SQLError</td></tr>
-<tr><td><code>SQLITE_MISMATCH</code></td><td>MismatchError</td></tr>
-<tr><td colspan=2>&nbsp;</td></tr>
-<tr><th colspan=2>Internal Errors</th></tr>
-<tr><td><code><i>SQLITE_INTERNAL</i></code></td><td>InternalError</td></tr>
-<tr><td><code>SQLITE_PROTOCOL</code></td><td>ProtocolError</td></tr>
-<tr><td><code>SQLITE_MISUSE</code></td><td>MisuseError</td></tr>
-<tr><td><code>SQLITE_RANGE</code></td><td>RangeError</td></tr>
-<tr><td colspan=2>&nbsp;</td></tr>
-<tr><th colspan=2>Permissions etc</th></tr>
-<tr><td><code>SQLITE_PERM</code></td><td>PermissionsError</td></tr>
-<tr><td><code>SQLITE_READONLY</code></td><td>ReadOnlyError</td></tr>
-<tr><td><code>SQLITE_CANTOPEN</code></td><td>CantOpenError</td></tr>
-<tr><td><code>SQLITE_AUTH</code></td><td>AuthError</td></tr>
-</table>
-</td>
+  <blockquote>
+    <!-- This is derived from exc_descriptors in the source -->
 
-<td valign="top">
-<table cellpadding=5 cellspacing=5 border=0 width="100%">
-<tr><th colspan=2>Abort/Busy/etc</th></tr>
-<tr><td><code>SQLITE_ABORT</code></td><td>AbortError</td></tr>
-<tr><td><code>SQLITE_BUSY</code></td><td>BusyError</td></tr>
-<tr><td><code>SQLITE_LOCKED</code></td><td>LockedError</td></tr>
-<tr><td><code>SQLITE_INTERRUPT</code></td><td>InterruptError</td></tr>
-<tr><td><code>SQLITE_SCHEMA</code></td><td>SchemaChangeError</td></tr>
-<tr><td><code>SQLITE_CONSTRAINT</code></td><td>ConstraintError</td></tr>
-<tr><td colspan=2>&nbsp;</td></tr>
-<tr><th colspan=2>Memory/Disk/etc</th></tr>
-<tr><td><code>SQLITE_NOMEM</code></td><td>NoMemError</td></tr>
-<tr><td><code>SQLITE_IOERR</code></td><td>IOError</td></tr>
-<tr><td><code>SQLITE_CORRUPT</code></td><td>CorruptError</td></tr>
-<tr><td><code>SQLITE_FULL</code></td><td>FullError</td></tr>
-<tr><td><code><i>SQLITE_TOOBIG</i></code></td><td>TooBigError</td></tr>
-<tr><td><code>SQLITE_NOLFS</code></td><td>NoLFSError</td></tr>
-<tr><td><code>SQLITE_EMPTY</code></td><td>EmptyError</td></tr>
-<tr><td><code>SQLITE_FORMAT</code></td><td>FormatError</td></tr>
-<tr><td><code>SQLITE_NOTADB</code></td><td>NotADBError</td></tr>
-</table>
-</td>
-</tr>
-</table>
+    <table cellpadding="5" cellspacing="5" border="0">
+      <tr>
+        <td valign="top">
+          <table cellpadding="5" cellspacing="5" border="0" width=
+          "100%">
+            <tr>
+              <th colspan="2">General Errors</th>
+            </tr>
 
-<p>Codes in <i>italics</i> are no longer used by SQLite (according to headers in 3.2.7).
+            <tr>
+              <td><code>SQLITE_ERROR</code></td>
 
-</blockquote>
+              <td>SQLError</td>
+            </tr>
 
-  <h1><a name="Types">Types</a></h1>
+            <tr>
+              <td><code>SQLITE_MISMATCH</code></td>
 
-  <p>Read about <a href="http://www.sqlite.org/datatype3.html">SQLite
-  3 types</a>. ASPW always maintains the correct type for values, and
-  never converts them to something else.  Note however that SQLite may
-  convert types based on column affinity as described in that link.
-  ASPW requires that all values supplied are one of the corresponding
+              <td>MismatchError</td>
+            </tr>
+
+            <tr>
+              <td colspan="2">&nbsp;</td>
+            </tr>
+
+            <tr>
+              <th colspan="2">Internal Errors</th>
+            </tr>
+
+            <tr>
+              <td><code><i>SQLITE_INTERNAL</i></code></td>
+
+              <td>InternalError</td>
+            </tr>
+
+            <tr>
+              <td><code>SQLITE_PROTOCOL</code></td>
+
+              <td>ProtocolError</td>
+            </tr>
+
+            <tr>
+              <td><code>SQLITE_MISUSE</code></td>
+
+              <td>MisuseError</td>
+            </tr>
+
+            <tr>
+              <td><code>SQLITE_RANGE</code></td>
+
+              <td>RangeError</td>
+            </tr>
+
+            <tr>
+              <td colspan="2">&nbsp;</td>
+            </tr>
+
+            <tr>
+              <th colspan="2">Permissions etc</th>
+            </tr>
+
+            <tr>
+              <td><code>SQLITE_PERM</code></td>
+
+              <td>PermissionsError</td>
+            </tr>
+
+            <tr>
+              <td><code>SQLITE_READONLY</code></td>
+
+              <td>ReadOnlyError</td>
+            </tr>
+
+            <tr>
+              <td><code>SQLITE_CANTOPEN</code></td>
+
+              <td>CantOpenError</td>
+            </tr>
+
+            <tr>
+              <td><code>SQLITE_AUTH</code></td>
+
+              <td>AuthError</td>
+            </tr>
+          </table>
+        </td>
+
+        <td valign="top">
+          <table cellpadding="5" cellspacing="5" border="0" width=
+          "100%">
+            <tr>
+              <th colspan="2">Abort/Busy/etc</th>
+            </tr>
+
+            <tr>
+              <td><code>SQLITE_ABORT</code></td>
+
+              <td>AbortError</td>
+            </tr>
+
+            <tr>
+              <td><code>SQLITE_BUSY</code></td>
+
+              <td>BusyError</td>
+            </tr>
+
+            <tr>
+              <td><code>SQLITE_LOCKED</code></td>
+
+              <td>LockedError</td>
+            </tr>
+
+            <tr>
+              <td><code>SQLITE_INTERRUPT</code></td>
+
+              <td>InterruptError</td>
+            </tr>
+
+            <tr>
+              <td><code>SQLITE_SCHEMA</code></td>
+
+              <td>SchemaChangeError</td>
+            </tr>
+
+            <tr>
+              <td><code>SQLITE_CONSTRAINT</code></td>
+
+              <td>ConstraintError</td>
+            </tr>
+
+            <tr>
+              <td colspan="2">&nbsp;</td>
+            </tr>
+
+            <tr>
+              <th colspan="2">Memory/Disk/etc</th>
+            </tr>
+
+            <tr>
+              <td><code>SQLITE_NOMEM</code></td>
+
+              <td>NoMemError</td>
+            </tr>
+
+            <tr>
+              <td><code>SQLITE_IOERR</code></td>
+
+              <td>IOError</td>
+            </tr>
+
+            <tr>
+              <td><code>SQLITE_CORRUPT</code></td>
+
+              <td>CorruptError</td>
+            </tr>
+
+            <tr>
+              <td><code>SQLITE_FULL</code></td>
+
+              <td>FullError</td>
+            </tr>
+
+            <tr>
+              <td><code><i>SQLITE_TOOBIG</i></code></td>
+
+              <td>TooBigError</td>
+            </tr>
+
+            <tr>
+              <td><code>SQLITE_NOLFS</code></td>
+
+              <td>NoLFSError</td>
+            </tr>
+
+            <tr>
+              <td><code>SQLITE_EMPTY</code></td>
+
+              <td>EmptyError</td>
+            </tr>
+
+            <tr>
+              <td><code>SQLITE_FORMAT</code></td>
+
+              <td>FormatError</td>
+            </tr>
+
+            <tr>
+              <td><code>SQLITE_NOTADB</code></td>
+
+              <td>NotADBError</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    <p>Codes in <i>italics</i> are no longer used by SQLite
+    (according to headers in 3.2.7).</p>
+  </blockquote>
+
+  <h1><a name="Types" id="Types">Types</a></h1>
+
+  <p>Read about <a href=
+  "http://www.sqlite.org/datatype3.html">SQLite 3 types</a>. ASPW
+  always maintains the correct type for values, and never converts
+  them to something else. Note however that SQLite may convert
+  types based on column affinity as described in that link. ASPW
+  requires that all values supplied are one of the corresponding
   Python/SQLite types (or a subclass).</p>
 
   <ul>
+    <li>
+      <p>None in Python is NULL in SQLite</p>
+    </li>
 
-    <li><p>None in Python is NULL in SQLite</p></li>
+    <li>
+      <p>Python int or long is INTEGER in SQLite. The value
+      represented must fit within a 64 bit signed quantity (long
+      long at the C level) or an exception is generated. (Don't
+      worry - aspw only uses the long type when values are too
+      large to fit in ints).</p>
+    </li>
 
-    <li><p>Python int or long is INTEGER in SQLite.  The value
-    represented must fit within a 64 bit signed quantity (long long at
-    the C level) or an exception is generated.  (Don't worry - aspw
-    only uses the long type when values are too large to fit in
-    ints).</p></li>
+    <li>
+      <p>Python's float type is used for REAL in SQLite. (At the C
+      level they are both 8 byte quantities and there is no loss of
+      precision).</p>
+    </li>
 
-    <li><p>Python's float type is used for REAL in SQLite.  (At the C
-    level they are both 8 byte quantities and there is no loss of
-    precision).</p></li>
+    <li>
+      <p>Python's string or unicode is used for TEXT in SQLite.
+      (ASPW automatically uses Python's string type for ASCII text
+      and Unicode for other text.)</p>
+    </li>
 
-    <li><p>Python's string or unicode is used for TEXT in SQLite.
-    (ASPW automatically uses Python's string type for ASCII text and
-    Unicode for other text.)</p></li>
-
-   <li><p>Python's buffer class is used for BLOB in SQLite.</p></li>
-
+    <li>
+      <p>Python's buffer class is used for BLOB in SQLite.</p>
+    </li>
   </ul>
 
-  <h1><a name="Unicode">Unicode</a></h1>
+  <h1><a name="Unicode" id="Unicode">Unicode</a></h1>
 
-  <p>All SQLite strings are Unicode.  The actual binary
-  representations can be UTF8, or UTF16 in either byte order.  ASPW
-  uses the UTF8 interface to SQLite which results in the binary string
-  representation in your database defaulting to UTF8 as well.  All
-  this is totally transparent to your Python code.
+  <p>All SQLite strings are Unicode. The actual binary
+  representations can be UTF8, or UTF16 in either byte order. ASPW
+  uses the UTF8 interface to SQLite which results in the binary
+  string representation in your database defaulting to UTF8 as
+  well. All this is totally transparent to your Python code.</p>
 
   <p>Everywhere strings are used (eg as database values, SQL
   statements, bindings names, user defined functions) you can use
-  Unicode strings.  You can also use the bare Python string class, and
-  ASPW will automatically call the unicode converter if any non-ascii
-  characters are present.
+  Unicode strings. You can also use the bare Python string class,
+  and ASPW will automatically call the unicode converter if any
+  non-ascii characters are present.</p>
 
-  <p>When reading values from SQLite, ASPW uses the Python string class
-  for any pure ASCII text, else it uses the Python unicode class.
+  <p>When reading values from SQLite, ASPW uses the Python string
+  class for any pure ASCII text, else it uses the Python unicode
+  class.</p>
 
-  <h1><a name="threading">Multi-threading and re-entrancy</a></h1>
+  <h1><a name="threading" id="threading">Multi-threading and
+  re-entrancy</a></h1>
 
-  <p>ASPW lets you use SQLite in multi-threaded programs and will let
-  other threads execute while SQLite is working.  (Technically the <a
-  href="http://www.python.org/doc/2.3.4/api/threads.html">GIL</a> is
-  released when <a
-  href="http://www.sqlite.org/capi3ref.html#sqlite3_step">sqlite3_step</a>
-  or <a
-  href="http://www.sqlite.org/capi3ref.html#sqlite3_open">sqlite3_open</a>
-  are running.  The GIL is re-acquired while user defined functions,
-  collations and the various hooks/handlers run.)
+  <p>ASPW lets you use SQLite in multi-threaded programs and will
+  let other threads execute while SQLite is working. (Technically
+  the <a href=
+  "http://www.python.org/doc/2.3.4/api/threads.html">GIL</a> is
+  released when <a href=
+  "http://www.sqlite.org/capi3ref.html#sqlite3_step">sqlite3_step</a>
+  or <a href=
+  "http://www.sqlite.org/capi3ref.html#sqlite3_open">sqlite3_open</a>
+  are running. The GIL is re-acquired while user defined functions,
+  collations and the various hooks/handlers run.)</p>
 
-  <p>Note that you cannot use the same Connection object in multiple
-  threads.  You must allocate a new Connection object per thread.
-  (This is a requirement of SQLite).  A cursor object can only be used
-  in the same thread as it was allocated. (Also an SQLite
-  requirement).  Fortunately ASPW will check this for you and throw a
-  ThreadingViolationError if you try to use objects in the wrong
-  thread.  Note that your destructors also need to run in the creation
-  thread.
+  <p>Note that you cannot use the same Connection object in
+  multiple threads. You must allocate a new Connection object per
+  thread. (This is a requirement of SQLite). A cursor object can
+  only be used in the same thread as it was allocated. (Also an
+  SQLite requirement). Fortunately ASPW will check this for you and
+  throw a ThreadingViolationError if you try to use objects in the
+  wrong thread. Note that your destructors also need to run in the
+  creation thread.</p>
 
-  <p>If you have multiple threads and/or multiple programs accessing
-  the same database then there may be contention for the file.  SQLite
-  will return SQLITE_BUSY which will be raised as BusyError.  You can
-  call the Cursor.next() method to resume execution.  Alternately you
-  can call Connection.setbusytimeout to set how long SQLite will retry
-  for or Connection.setbusyhandler to install your own busy handler.
-  SQLite's locking and concurrency is described <a
-  href="http://www.sqlite.org/lockingv3.html">here</a>
+  <p>If you have multiple threads and/or multiple programs
+  accessing the same database then there may be contention for the
+  file. SQLite will return SQLITE_BUSY which will be raised as
+  BusyError. You can call the Cursor.next() method to resume
+  execution. Alternately you can call Connection.setbusytimeout to
+  set how long SQLite will retry for or Connection.setbusyhandler
+  to install your own busy handler. SQLite's locking and
+  concurrency is described <a href=
+  "http://www.sqlite.org/lockingv3.html">here</a></p>
 
-  <p>A cursor object can only be executing one query at a time.  You
-  cannot issue a new query from inside a trace function or from a user
-  defined function or collation since these are called while executing
-  a query.  You can however make new cursors and use those without
-  issue.  You may want to remember the Connection object when you set
-  your trace or user defined functions.
+  <p>A cursor object can only be executing one query at a time. You
+  cannot issue a new query from inside a trace function or from a
+  user defined function or collation since these are called while
+  executing a query. You can however make new cursors and use those
+  without issue. You may want to remember the Connection object
+  when you set your trace or user defined functions.</p>
 
-  <h1><a name="tracers">Tracing</a></h1>
-
+  <h1><a name="tracers" id="tracers">Tracing</a></h1>
 
   <p>You can install tracers on a cursor as an easy way of seeing
   exactly what gets executed and what is returned. The tracers can
@@ -1143,29 +1796,25 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
   This is very useful for diagnostics and testing without having to
   modify your main code.</p>
 
-
   <p><b>Note</b>: You cannot issue new execute statements against
   the cursor your tracer was called from. If you would like to make
   more queries in the tracer then do them from a new cursor
   object.</p>
 
-
-  <h2><a name="executiontracer">Execution Tracer</a></h2>
-
+  <h2><a name="executiontracer" id="executiontracer">Execution
+  Tracer</a></h2>
 
   <p>The execution tracer is called after an SQL statement has been
   prepared. (ie syntax errors will have caused an exception during
-  preparation so you won't see them with a tracer). It is called with
-  two arguments. The first is a string which is the SQL statement
-  about to be executed, and the second is the bindings used for that
-  statement (and can be None). If the return value evaluates to
-  False/None then execution is aborted with an ExecTraceAbort
-  exception. See the <a href= "#example-exectrace">example
-  above</a>.</p>
+  preparation so you won't see them with a tracer). It is called
+  with two arguments. The first is a string which is the SQL
+  statement about to be executed, and the second is the bindings
+  used for that statement (and can be None). If the return value
+  evaluates to False/None then execution is aborted with an
+  ExecTraceAbort exception. See the <a href=
+  "#example-exectrace">example above</a>.</p>
 
-
-  <h2><a name="rowtracer">Row Tracer</a></h2>
-
+  <h2><a name="rowtracer" id="rowtracer">Row Tracer</a></h2>
 
   <p>The row tracer is called before each row is returned. The
   arguments are the items about to be returned. Whatever you return
@@ -1175,42 +1824,40 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
 
   <h1><a name="64bitpy25">64 bit hosts, Python 2.5</a></h1>
 
-  <p>Prior to Python 2.5, you were still limited to 32 bit quantities
-  for items in Python such as the length of strings, number of items
-  in a sequence etc.  APSW will work correctly with those items in
-  Python 2.5 that use 64 bits.  Unfortunately SQLite is limited to 32
-  bit quantities for strings, blobs, number of columns etc.
-  Consequently you will get a TooBig exception from APSW or SQLite if
-  you try to use strings/buffers longer than 1GB or 2GB (depends on
-  internal storage).  You will not get silent truncation or data loss.
+  <p>Prior to Python 2.5, you were still limited to 32 bit
+  quantities for items in Python such as the length of strings,
+  number of items in a sequence etc. APSW will work correctly with
+  those items in Python 2.5 that use 64 bits. Unfortunately SQLite
+  is limited to 32 bit quantities for strings, blobs, number of
+  columns etc. Consequently you will get a TooBig exception from
+  APSW or SQLite if you try to use strings/buffers longer than 1GB
+  or 2GB (depends on internal storage). You will not get silent
+  truncation or data loss.</p>
 
-  <h1><a name="executionmodel">Execution model</a></h1>
-
+  <h1><a name="executionmodel" id="executionmodel">Execution
+  model</a></h1>
 
   <p>This section only matters if you give multiple SQL statements
   in one go to <code>cursor.execute()</code>. (Statements are
   seperated by semi-colons.)</p>
 
-
   <p>SQLite does execution in two steps. First a statement is
-  prepared, which verifies the syntax, tables and fields and converts
-  the statement into an internal representation. The prepared
-  statement is then run. Execution stops when a row is available,
-  there is an error or the statement is complete.</p>
+  prepared, which verifies the syntax, tables and fields and
+  converts the statement into an internal representation. The
+  prepared statement is then run. Execution stops when a row is
+  available, there is an error or the statement is complete.</p>
 
+  <p>The <code>cursor.execute()</code> method automatically does
+  the preparing and starts execution. If none of the statements
+  return rows then execution will go to the end. If a row is
+  returned then you need to call cursor.next() to get the row
+  values. Execution will resume as necessary to satisfy
+  <code>next()</code> calls.</p>
 
-  <p>The <code>cursor.execute()</code> method automatically does the
-  preparing and starts execution. If none of the statements return
-  rows then execution will go to the end. If a row is returned then
-  you need to call cursor.next() to get the row values. Execution will
-  resume as necessary to satisfy <code>next()</code> calls.</p>
-
-
-  <p>However this means that if you don't read the rows returned then
-  the rest of your statements won't be executed. APSW will detect
-  unexecuted previous statements and generate an exception.  For
-  example:</p>
-
+  <p>However this means that if you don't read the rows returned
+  then the rest of your statements won't be executed. APSW will
+  detect unexecuted previous statements and generate an exception.
+  For example:</p>
 
   <blockquote>
     <pre>
@@ -1222,209 +1869,220 @@ apsw.IncompleteExecutionError: Error: there are still remaining sql statements t
 </pre>
   </blockquote>
 
-
   <p>Because I didn't read the results of <code>select * from
   foo</code> then the following create table command didn't have a
   chance to get executed. On the next execute that condition is
   detected and an exception raised.</p>
 
+  <h1><a name="dbapinotes" id="dbapinotes">DBAPI notes</a></h1>
 
-  <h1><a name="dbapinotes">DBAPI notes</a></h1>
+  <p>DBAPI is defined in <a href=
+  "http://www.python.org/peps/pep-0249.html">PEP 249</a>. This
+  section desribes how APSW complies or differs from it.</p>
 
-  <p>DBAPI is defined in <a
-  href="http://www.python.org/peps/pep-0249.html">PEP 249</a>.  This
-  section desribes how APSW complies or differs from it.
+  <h2><a name="dbapimodiface" id="dbapimodiface">Module
+  Interface</a></h2>
 
-  <h2><a name="dbapimodiface">Module Interface</a></h2>
-
-  <p>There is no connect method.  Use the Connection constructor
-  instead, which only takes one parameter - the name of the database.
+  <p>There is no connect method. Use the Connection constructor
+  instead, which only takes one parameter - the name of the
+  database.</p>
 
   <p>The Connection object and any cursors must all be used in the
-  same thread they were allocated from.  You cannot use them in
-  different threads even if you protect them with mutexes.
+  same thread they were allocated from. You cannot use them in
+  different threads even if you protect them with mutexes.</p>
 
-  <p>Three different paramstyles are supported.  You can use qmark
+  <p>Three different paramstyles are supported. You can use qmark
   ('... WHERE name=?'), numeric ('... WHERE name=?4') and named
-  ('... WHERE name=:name' or '... WHERE name=$name').  Note that SQLite
-   numbers parameters from one not zero.
+  ('... WHERE name=:name' or '... WHERE name=$name'). Note that
+  SQLite numbers parameters from one not zero.</p>
 
-  <p>The DBAPI exceptions are not used.
+  <p>The DBAPI exceptions are not used.</p>
 
-  <h2><a name="dpapiconnectioniface">Connection Objects</a></h2>
+  <h2><a name="dpapiconnectioniface" id=
+  "dpapiconnectioniface">Connection Objects</a></h2>
 
-  <p>There is no close method
+  <p>There is no close method</p>
 
-  <p>There are no commit or rollback methods.  You should use
-  cursor.execute("COMMIT") etc.  The <a
-  href="http://www.sqlite.org/lockingv3.html">SQLite documentation</a>
-  has more details.
+  <p>There are no commit or rollback methods. You should use
+  cursor.execute("COMMIT") etc. The <a href=
+  "http://www.sqlite.org/lockingv3.html">SQLite documentation</a>
+  has more details.</p>
 
-  <p>Several methods that are defined in DBAPI to be on the cursor are
-  instead on the Connection object, since this is where SQLite
-  actually stores the information.  Doing operations in any other
+  <p>Several methods that are defined in DBAPI to be on the cursor
+  are instead on the Connection object, since this is where SQLite
+  actually stores the information. Doing operations in any other
   cursor attached to the same Connection object does update their
-  values, and this makes you aware of that.
+  values, and this makes you aware of that.</p>
 
-  <h2><a name="dbapicursoriface">Cursor Objects</a></h2>
+  <h2><a name="dbapicursoriface" id="dbapicursoriface">Cursor
+  Objects</a></h2>
 
-  <p>Use getdescription() instead of description.  This information is
-  only obtained on request.
+  <p>Use getdescription() instead of description. This information
+  is only obtained on request.</p>
 
-  <p>There is no rowcount.
+  <p>There is no rowcount.</p>
 
   <p>callproc is not implemented as SQLite doesn't support stored
-  procedures.
+  procedures.</p>
 
-  <p>There is no close method.
+  <p>There is no close method.</p>
 
   <p>execute returns the Cursor object and you can use it as an
-  iterator to get the results (if any).
+  iterator to get the results (if any).</p>
 
   <p>executemany returns the Cursor object and you can use it as an
-  iterator to get the results (if any).
+  iterator to get the results (if any).</p>
 
-  <p>fetchone is not available.  Use the cursor as an iterator, or
+  <p>fetchone is not available. Use the cursor as an iterator, or
   call next() which raises StopIteration when there are no more
-  results.
-  
-  <p>fetchmany is not available.  Call next() for however many results
-  you want.
+  results.</p>
 
-  <p>fetchall is not available.  Call next() or use a list
+  <p>fetchmany is not available. Call next() for however many
+  results you want.</p>
+
+  <p>fetchall is not available. Call next() or use a list
   comprehension such as <code>[row for row in
-  cursor.execute("....")]</code>.
+  cursor.execute("....")]</code>.</p>
 
-  <p>nextset is not applicable or implemented.
+  <p>nextset is not applicable or implemented.</p>
 
-  <p>arraysize is not available as fetchmany isn't.
+  <p>arraysize is not available as fetchmany isn't.</p>
 
   <p>Neither setinputsizes or setoutputsize are applicable or
-  implemented.
+  implemented.</p>
 
-
-  <h2><a name="dpapitypes">Type objects</a></h2>
+  <h2><a name="dpapitypes" id="dpapitypes">Type objects</a></h2>
 
   <p>None of the date or time methods are available since SQLite 3
-  does not have a native date or time type.
+  does not have a native date or time type.</p>
 
-  <p>Use the standard Python buffer class for BLOBs.
+  <p>Use the standard Python buffer class for BLOBs.</p>
 
-  <h2><a name="dbapiextensions">Optional DB API Extensions</a></h2>
+  <h2><a name="dbapiextensions" id="dbapiextensions">Optional DB
+  API Extensions</a></h2>
 
-  <p>rownumber is not available.
+  <p>rownumber is not available.</p>
 
-  <p>Exception classes are not available as attributes of Connection.
+  <p>Exception classes are not available as attributes of
+  Connection.</p>
 
-  <p>Use Cursor.getconnection() to get the associated Connection object.
+  <p>Use Cursor.getconnection() to get the associated Connection
+  object.</p>
 
-  <p>scroll and messages are not available.
+  <p>scroll and messages are not available.</p>
 
-  <p>The Cursor object supports the iterator protocol and this is the
-  only way of getting information back.
+  <p>The Cursor object supports the iterator protocol and this is
+  the only way of getting information back.</p>
 
   <p>To get the last inserted row id, call
-  <code>Connection.last_insert_rowid()</code>.  That stores the id
+  <code>Connection.last_insert_rowid()</code>. That stores the id
   from the last insert on any Cursor associated with the the
-  Connection.  You can also add <code>select
-  last_insert_rowid()</code> to the end of your execute statements.
+  Connection. You can also add <code>select
+  last_insert_rowid()</code> to the end of your execute
+  statements.</p>
 
-  <p>There is no errorhandler attribute.
+  <p>There is no errorhandler attribute.</p>
 
-  <h1><a name="pysqlitediffs">pysqlite differences</a></h1>
-
+  <h1><a name="pysqlitediffs" id="pysqlitediffs">pysqlite
+  differences</a></h1>
 
   <p><a href="http://pysqlite.org/">pysqlite</a> already provides a
-  DBAPI compliant wrapper over SQLite 2 and 3. APSW only wraps SQLite
-  3.  I suggest using APSW when you want to directly use SQLite and
-  its functionality or are using your code to deal with database independence
-  rather than DBAPI.
+  DBAPI compliant wrapper over SQLite 2 and 3. APSW only wraps
+  SQLite 3. I suggest using APSW when you want to directly use
+  SQLite and its functionality or are using your code to deal with
+  database independence rather than DBAPI.</p>
 
-  <p>APSW has the following enhancements/differences over pysqlite 3:</p>
-
+  <p>APSW has the following enhancements/differences over pysqlite
+  3:</p>
 
   <ul>
-    <li>APSW is a single file for the extension, apsw.pyd on Windows
-    and apsw.so on Unix/Mac.  There are no other files needed and the
-    build instructions show you how to include SQLite statically in this
-    file. You can put this file anywhere your Python session can reach.
-    pysqlite is one binary file and several .py files, all of which need 
-    to be available.
+    <li>APSW is a single file for the extension, apsw.pyd on
+    Windows and apsw.so on Unix/Mac. There are no other files
+    needed and the build instructions show you how to include
+    SQLite statically in this file. You can put this file anywhere
+    your Python session can reach. pysqlite is one binary file and
+    several .py files, all of which need to be available.</li>
 
-    <li><p>*Nothing* happens behind your back. By default pysqlite
-    tries to manage transactions by parsing your SQL for you, but 
-    you can turn it off.  This can result in very unexpected behaviour
-    with pysqlite.</li>
+    <li>
+      <p>*Nothing* happens behind your back. By default pysqlite
+      tries to manage transactions by parsing your SQL for you, but
+      you can turn it off. This can result in very unexpected
+      behaviour with pysqlite.</p>
+    </li>
 
-    <li><p>SQLite's Manifest typing is used, which limits values to
-    being supplied as integer (32/64 bit), string (utf8/unicode),
-    double, null/None and BLOB. (An exception happens if you don't
-    supply values in one of the supported types.) APSW doesn't do any
-    type conversion or co-ercion. Note that SQLite will under <a
-    href="http://www.sqlite.org/datatype3.html">some
-    circumstances</a>.  pysqlite does have a mechanism for <a
-    href="http://initd.org/pub/software/pysqlite/doc/usage-guide.html#using-adapters-to-store-additional-python-types-in-sqlite-databases">marshalling
-    your own types</a>.</li>
+    <li>
+      <p>SQLite's Manifest typing is used, which limits values to
+      being supplied as integer (32/64 bit), string (utf8/unicode),
+      double, null/None and BLOB. (An exception happens if you
+      don't supply values in one of the supported types.) APSW
+      doesn't do any type conversion or co-ercion. Note that SQLite
+      will under <a href=
+      "http://www.sqlite.org/datatype3.html">some
+      circumstances</a>. pysqlite does have a mechanism for
+      <a href="http://initd.org/pub/software/pysqlite/doc/usage-guide.html#using-adapters-to-store-additional-python-types-in-sqlite-databases">
+      marshalling your own types</a>.</p>
+    </li>
 
-    <li><p>APSW <b>always</b> handles Unicode correctly (this was one of the major
-    reasons for writing it in the first place).  pysqlite has since fixed many
-    of its issues but you are still <a href="http://initd.org/tracker/pysqlite/ticket/153">stuck with some</a>.   
- 
-    <li><p>You can use semi-colons at the end of commands and you can
-    have multiple commands in the execute string in APSW.  There is
-    no restrictions on the type of commands used.  For example this
-    will work fine in APSW but is not allowed in pysqlite:
+    <li>
+      <p>APSW <b>always</b> handles Unicode correctly (this was one
+      of the major reasons for writing it in the first place).
+      pysqlite has since fixed many of its issues but you are still
+      <a href="http://initd.org/tracker/pysqlite/ticket/153">stuck
+      with some</a>.</p>
+    </li>
 
-<pre>
-<blockquote>
-<b>
-import apsw
+    <li>
+      <p>You can use semi-colons at the end of commands and you can
+      have multiple commands in the execute string in APSW. There
+      is no restrictions on the type of commands used. For example
+      this will work fine in APSW but is not allowed in
+      pysqlite:</p>
 
-con=apsw.Connection(":memory:")
-cur=con.cursor()
+      <blockquote>
+        <b>import apsw con=apsw.Connection(":memory:")
+        cur=con.cursor() for row in cur.execute("create table
+        foo(x,y,z);insert into foo values (?,?,?);" "insert into
+        foo values(?,?,?);select * from foo;drop table foo;"
+        "create table bar(x,y);insert into bar values(?,?);"
+        "insert into bar values(?,?);select * from bar;",
+        (1,2,3,4,5,6,7,8,9,10)): print row</b> And the output as
+        you would expect: <b>$ python test.py (1, 2, 3) (4, 5, 6)
+        (7, 8) (9, 10)</b>
+      </blockquote>
+      <pre>
 
-for row in cur.execute("create table foo(x,y,z);insert into foo values (?,?,?);"
-                       "insert into foo values(?,?,?);select * from foo;drop table foo;"
-                       "create table bar(x,y);insert into bar values(?,?);"
-                       "insert into bar values(?,?);select * from bar;",
-                       (1,2,3,4,5,6,7,8,9,10)):
-    print row
-</b>
-
-And the output as you would expect:
-
-<b>
-$ python test.py
-(1, 2, 3)
-(4, 5, 6)
-(7, 8)
-(9, 10)
-</b>
-</blockquote>
 </pre>
+    </li>
 
-    <li><p>The cursor object is an iterator and returns itself from
-    execute.  (The latest SQLite has now copied this feature).
+    <li>
+      <p>The cursor object is an iterator and returns itself from
+      execute. (The latest SQLite has now copied this feature).</p>
+    </li>
 
-    <li><p><code>cursor.executemany()</code> also works with
-    statements that return data such as selects, and you can have
-    multiple statements.</li>
+    <li>
+      <p><code>cursor.executemany()</code> also works with
+      statements that return data such as selects, and you can have
+      multiple statements.</p>
+    </li>
 
-    <li>pysqlite swallows exceptions in your callbacks making it far harder
-    to debug problems.  That also prevents you from raising exceptions
-    in your callbacks to be handled in your code that called SQLite.
-    pysqlite does let you turn on printing of tracebacks, but that is a
-    poor substitute.  apsw does the right thing as demonstrated by this example.
+    <li>pysqlite swallows exceptions in your callbacks making it
+    far harder to debug problems. That also prevents you from
+    raising exceptions in your callbacks to be handled in your code
+    that called SQLite. pysqlite does let you turn on printing of
+    tracebacks, but that is a poor substitute. apsw does the right
+    thing as demonstrated by this example.
 
-<blockquote>
-<table border=1px cellpadding=5 cellspacing=5>
-<tr>
-<th>pysqlite
-<th>apsw
-</tr>
-<tr>
-<td valign="top">
-<pre>
+      <blockquote>
+        <table border="1px" cellpadding="5" cellspacing="5">
+          <tr>
+            <th>pysqlite</th>
+
+            <th>apsw</th>
+          </tr>
+
+          <tr>
+            <td valign="top">
+              <pre>
 from pysqlite2 import dbapi2 as sqlite
 def badfunc(t):
     return 1/0
@@ -1434,8 +2092,10 @@ con.create_function("badfunc", 1, badfunc)
 cur = con.cursor()
 cur.execute("select badfunc(3)")
 </pre>
-<td valign="top">
-<pre>
+            </td>
+
+            <td valign="top">
+              <pre>
 import apsw
 def badfunc(t):
     return 1/0
@@ -1445,19 +2105,23 @@ con.createscalarfunction("badfunc", badfunc, 1)
 cur = con.cursor()
 cur.execute("select badfunc(3)")
 </pre>
-</tr>
-<tr>
-<td valign="top">
-<pre>
-C:\temp>python func.py
+            </td>
+          </tr>
+
+          <tr>
+            <td valign="top">
+              <pre>
+C:\temp&gt;python func.py
 Traceback (most recent call last):
   File "func.py", line 8, in ?
     cur.execute("select badfunc(3)")
 pysqlite2.dbapi2.OperationalError: user-defined function raised exception
 </pre>
-<td valign="top">
-<pre>
-C:\temp>python afunc.py
+            </td>
+
+            <td valign="top">
+              <pre>
+C:\temp&gt;python afunc.py
 Traceback (most recent call last):
   File "afunc.py", line 8, in ?
     cur.execute("select badfunc(3)")
@@ -1465,252 +2129,286 @@ Traceback (most recent call last):
     return 1/0
 ZeroDivisionError: integer division or modulo by zero
 </pre>
-</tr>
-</table>
-</blockquote>
+            </td>
+          </tr>
+        </table>
+      </blockquote>
+    </li>
 
+    <li>
+      <p>You can define your own collations in Python.</p>
+    </li>
 
-    <li><p>You can define your own collations in Python.</li>
+    <li>
+      <p>You can implement tracers, authorizers and various hooks
+      in Python.</p>
+    </li>
 
-    <li><p>You can implement tracers, authorizers and various hooks in Python.</li>
+    <li>
+      <p>The APSW test suite is larger and tests more
+      functionality. Code coverage by the test suite is 89%.
+      pysqlite is good at 80% for C code although there are several
+      places that coverage can be improved. I haven't measured code
+      coverage for pysqlite's Python code.</p>
 
-    <li><p>The APSW test suite is larger and tests more functionality.
-	Code coverage by the test suite is 89%.  pysqlite is good at 80%
-        for C code although there are several places that coverage can be
-        improved.  I haven't measured code coverage for pysqlite's
-        Python code.
-
-        <p>In both cases, the non-covered code lines require that the 
-        Python interpretter or SQLite run out of memory so 100%
-        coverage isn't possible. </p>
-
+      <p>In both cases, the non-covered code lines require that the
+      Python interpretter or SQLite run out of memory so 100%
+      coverage isn't possible.</p>
+    </li>
   </ul>
 
-  <h1><a name="copyrightlicense">Copyright and License</a></h1>
+  <h1><a name="copyrightlicense" id="copyrightlicense">Copyright
+  and License</a></h1>
 
-  <p>Copyright (C) 2004-2006 Roger Binns <a href="mailto:rogerb@rogerbinns.com">rogerb@rogerbinns.com</a></p>
+  <p>Copyright (C) 2004-2006 Roger Binns <a href=
+  "mailto:rogerb@rogerbinns.com">rogerb@rogerbinns.com</a></p>
 
-  <p>This software is provided 'as-is', without any express or implied
-  warranty.  In no event will the authors be held liable for any
-  damages arising from the use of this software.</p>
- 
+  <p>This software is provided 'as-is', without any express or
+  implied warranty. In no event will the authors be held liable for
+  any damages arising from the use of this software.</p>
+
   <p>Permission is granted to anyone to use this software for any
   purpose, including commercial applications, and to alter it and
-  redistribute it freely, subject to the following restrictions:</p>
- 
-<blockquote>
- <ol>
-  <li><p>The origin of this software must not be misrepresented; you must
-     not claim that you wrote the original software. If you use this
-     software in a product, an acknowledgment in the product
-     documentation would be appreciated but is not required.</p></li>
+  redistribute it freely, subject to the following
+  restrictions:</p>
 
-  <li><p>Altered source versions must be plainly marked as such, and must
-     not be misrepresented as being the original software.</p></li>
+  <blockquote>
+    <ol>
+      <li>
+        <p>The origin of this software must not be misrepresented;
+        you must not claim that you wrote the original software. If
+        you use this software in a product, an acknowledgment in
+        the product documentation would be appreciated but is not
+        required.</p>
+      </li>
 
-  <li><p>This notice may not be removed or altered from any source
-     distribution.</p></li>
- 
-  </ol>
-</blockquote>
+      <li>
+        <p>Altered source versions must be plainly marked as such,
+        and must not be misrepresented as being the original
+        software.</p>
+      </li>
 
-  <h1><a name="verhistory">Version History</a></h1>
+      <li>
+        <p>This notice may not be removed or altered from any
+        source distribution.</p>
+      </li>
+    </ol>
+  </blockquote>
+
+  <h1><a name="verhistory" id="verhistory">Version History</a></h1>
 
   <h2><a name="337r1">3.3.7-r1</a></h2>
 
   <p>You can use this release against any release of SQLite 3 from
-  3.3.7 onwards.  There were no changes in the SQLite 3.3.6 API from
-  3.3.5.  In SQLite 3.3.7 an API was added that allowed removing a
-  chunk of duplicate code.  Also added were <a
-  href="http://www.sqlite.org/cvstrac/wiki?p=VirtualTables">Virtual
-  Tables</a> and loading of external modules (shared libraries).  APSW
-  had the following changes:
+  3.3.7 onwards. There were no changes in the SQLite 3.3.6 API from
+  3.3.5. In SQLite 3.3.7 an API was added that allowed removing a
+  chunk of duplicate code. Also added were <a href=
+  "http://www.sqlite.org/cvstrac/wiki?p=VirtualTables">Virtual
+  Tables</a> and loading of external modules (shared libraries).
+  APSW had the following changes:</p>
 
-   <ul>
-   <li>Even more test cases added (APSW didn't fail any of them, but you can't have
-       too many tests :-)
-   <li>When exceptions occur, dummy frames are added to the traceback in the C code.
-       This makes it a lot easier to tell why code was called if you encounter an
-       exception.
-   </ul>
+  <ul>
+    <li>Even more test cases added (APSW didn't fail any of them,
+    but you can't have too many tests :-)</li>
+
+    <li>When exceptions occur, dummy frames are added to the
+    traceback in the C code. This makes it a lot easier to tell why
+    code was called if you encounter an exception.</li>
+  </ul>
 
   <h2><a name="335r1">3.3.5-r1</a></h2>
 
-  <p>You can use this release against any release of SQLite 3 from 3.3.5 onwards. 
-  A bug was also fixed when reporting an error during the cleanup of an aggregate
-  function if there had also been an error in the step function.  (PyErr_WriteUnraisable(NULL)
-  crashed on some versions of Python but not others.)
+  <p>You can use this release against any release of SQLite 3 from
+  3.3.5 onwards. A bug was also fixed when reporting an error
+  during the cleanup of an aggregate function if there had also
+  been an error in the step function. (PyErr_WriteUnraisable(NULL)
+  crashed on some versions of Python but not others.)</p>
 
   <p>SQLite added several functions for returning metadata about
-  result column sets.  You have to compile SQLite with <tt>SQLITE_ENABLE_COLUMN_METADATA</tt>
-  to get them.  This is not the default for SQLite.  I don't believe these
-  are generally useful except in some corner cases and so they aren't
-  wrapped.  However please shout if you do need them.  Note that <tt>cursor.getdescription</tt>
-  will already give you generally useful information.  (Also see the
-  <a href="http://sqlite.org/pragma.html">pragmas</a>).
+  result column sets. You have to compile SQLite with
+  <tt>SQLITE_ENABLE_COLUMN_METADATA</tt> to get them. This is not
+  the default for SQLite. I don't believe these are generally
+  useful except in some corner cases and so they aren't wrapped.
+  However please shout if you do need them. Note that
+  <tt>cursor.getdescription</tt> will already give you generally
+  useful information. (Also see the <a href=
+  "http://sqlite.org/pragma.html">pragmas</a>).</p>
 
-  <p>The test code has been converted into using the unittest module.
-   Run <tt>python&nbsp;tests.py&nbsp;-v</tt> to get the tests run.  There should be no 
-   errors.
+  <p>The test code has been converted into using the unittest
+  module. Run <tt>python&nbsp;tests.py&nbsp;-v</tt> to get the
+  tests run. There should be no errors.</p>
 
   <p>Updated code to work correctly with new Py_ssize_t introduced
-  in Python 2.5.  See <a href="#64bitpy25">64 bit hosts, Python 2.5</a>
-  for more details on how Python and SQLite handle 64 bit sized items.
+  in Python 2.5. See <a href="#64bitpy25">64 bit hosts, Python
+  2.5</a> for more details on how Python and SQLite handle 64 bit
+  sized items.</p>
 
   <p>The following functions were added to SQLite and are wrapped.
-  They are all functions defined on the <a
-  href="#Connection">Connection</a> object.
-
-   <ul>
-    <li><a href="http://sqlite.org/capi3ref.html#sqlite3_update_hook">sqlite3_update_hook</a>
-    <li><a href="http://sqlite.org/capi3ref.html#sqlite3_rollback_hook">sqlite3_rollback_hook</a>
-    <li><a href="http://sqlite.org/capi3ref.html#sqlite3_enable_shared_cache">sqlite3_enable_shared_cache</a> (Module level method)
-    <li><a href="http://sqlite.org/capi3ref.html#sqlite3_get_autocommit">sqlite3_get_autocommit</a> (Connection level method)
-    <li>sqlite3_profile (experimental, not documented on SQLite site) This callback is run at the end of each statement execution telling you how long it took)
-   </ul>
-
-
-  <p>The following functions were added/changed in SQLite C API but are not useful to be
-  wrapped.
+  They are all functions defined on the <a href=
+  "#Connection">Connection</a> object.</p>
 
   <ul>
-    <li>sqlite3_value_numeric_type (query if a result is numeric)
-    <li><a href="http://sqlite.org/capi3ref.html#sqlite3_global_recover">sqlite3_global_recover</a> (already deprecated)
-    <li><a href="http://sqlite.org/capi3ref.html#sqlite3_release_memory">sqlite3_release_memory</a> (requires non-default compile flag)
-    <li><a href="http://sqlite.org/capi3ref.html#sqlite3_soft_heap_limit">sqlite3_soft_heap_limit</a> (requires non-default compile flag)
-    <li><a href="http://sqlite.org/capi3ref.html#sqlite3_db_handle">sqlite3_db_handle</a> (use cursor.getconnection())
+    <li><a href=
+    "http://sqlite.org/capi3ref.html#sqlite3_update_hook">sqlite3_update_hook</a></li>
 
- </ul>
+    <li><a href=
+    "http://sqlite.org/capi3ref.html#sqlite3_rollback_hook">sqlite3_rollback_hook</a></li>
+
+    <li><a href=
+    "http://sqlite.org/capi3ref.html#sqlite3_enable_shared_cache">sqlite3_enable_shared_cache</a>
+    (Module level method)</li>
+
+    <li><a href=
+    "http://sqlite.org/capi3ref.html#sqlite3_get_autocommit">sqlite3_get_autocommit</a>
+    (Connection level method)</li>
+
+    <li>sqlite3_profile (experimental, not documented on SQLite
+    site) This callback is run at the end of each statement
+    execution telling you how long it took)</li>
+  </ul>
+
+  <p>The following functions were added/changed in SQLite C API but
+  are not useful to be wrapped.</p>
+
+  <ul>
+    <li>sqlite3_value_numeric_type (query if a result is
+    numeric)</li>
+
+    <li><a href=
+    "http://sqlite.org/capi3ref.html#sqlite3_global_recover">sqlite3_global_recover</a>
+    (already deprecated)</li>
+
+    <li><a href=
+    "http://sqlite.org/capi3ref.html#sqlite3_release_memory">sqlite3_release_memory</a>
+    (requires non-default compile flag)</li>
+
+    <li><a href=
+    "http://sqlite.org/capi3ref.html#sqlite3_soft_heap_limit">sqlite3_soft_heap_limit</a>
+    (requires non-default compile flag)</li>
+
+    <li><a href=
+    "http://sqlite.org/capi3ref.html#sqlite3_db_handle">sqlite3_db_handle</a>
+    (use cursor.getconnection())</li>
+  </ul>
 
   <h2><a name="327r1">3.2.7-r1</a></h2>
 
-  <p>You can use this release against any release of SQLite 3.
+  <p>You can use this release against any release of SQLite 3.</p>
 
-  <p>SQLite 3.2.7 has several bug fixes. The undocumented experimental
-  function <code>sqlite3_profile</code> was added, but it not present
-  in apsw yet.
+  <p>SQLite 3.2.7 has several bug fixes. The undocumented
+  experimental function <code>sqlite3_profile</code> was added, but
+  it not present in apsw yet.</p>
 
-      <ul>
+  <ul>
+    <li>The author of pysqlite has improved it considerably since
+    APSW was originally written. The differences section has been
+    updated to reflect those improvements in pysqlite.</li>
 
-	<li>The author of pysqlite has improved it considerably since
-	APSW was originally written.  The differences section has been
-	updated to reflect those improvements in pysqlite.</li>
+    <li>SQLITE_INTERNAL and SQLITE_NOTFOUND error codes are not
+    used according to 3.2.7 header file. They are still present in
+    APSW for backwards compatibility.</li>
 
-	<li>SQLITE_INTERNAL and SQLITE_NOTFOUND error codes are not used
-	  according to 3.2.7 header file.  They are still present in
-          APSW for backwards compatibility.
+    <li>Changed the build instructions so configure is run on
+    non-Windows platforms.</li>
 
-        <li>Changed the build instructions so configure is run on non-Windows
-          platforms.
+    <li>Fixed a bug caused by an overly helpful error message
+    trying to tell you how many bindings you supplied that crashed
+    if you didn't supply any.</li>
 
-        <li>Fixed a bug caused by an overly helpful error message trying to
-          tell you how many bindings you supplied that crashed if you didn't
-          supply any.
-
-	<li>Changed when an error in the step function for an
-	aggregate is reported due to limitations in SQLite.
-
-      </ul>
+    <li>Changed when an error in the step function for an aggregate
+    is reported due to limitations in SQLite.</li>
+  </ul>
 
   <h2><a name="322r1">3.2.2-r1</a></h2>
 
-  <p>You can use this release against any release of SQLite 3.
+  <p>You can use this release against any release of SQLite 3.</p>
 
   <p>SQLite 3.2.2 API removed <code>sqlite3_global_recover</code>.
-  That function was not wrapped in APSW.  Note that SQLite 3.2.2
-  contains a bug fix that applies when you use 64 bit integer primary
-  keys (32 bit ints are fine).
-
+  That function was not wrapped in APSW. Note that SQLite 3.2.2
+  contains a bug fix that applies when you use 64 bit integer
+  primary keys (32 bit ints are fine).</p>
 
   <h2><a name="321r1">3.2.1-r1</a></h2>
 
-  <p>You can use this release against any release of SQLite 3.
+  <p>You can use this release against any release of SQLite 3.</p>
 
   <ul>
-
-   <li>There are no changes in APSW except to correct an error in 
-      the example code (collations are registered against the connection
-      not the cursor)
-
+    <li>There are no changes in APSW except to correct an error in
+    the example code (collations are registered against the
+    connection not the cursor)</li>
   </ul>
 
-  <p>SQLite 3.2.1 had one addition in the stable C API, which was
-  a new function named <code>sqlite3_global_recover</code>.  That
-  function is not applicable for wrapping in APSW.
-
+  <p>SQLite 3.2.1 had one addition in the stable C API, which was a
+  new function named <code>sqlite3_global_recover</code>. That
+  function is not applicable for wrapping in APSW.</p>
 
   <h2><a name="313r1">3.1.3-r1</a></h2>
 
-  <p>You can use this release against any release of SQLite 3.
+  <p>You can use this release against any release of SQLite 3.</p>
 
   <ul>
+    <li>The text string returned by apsw.Error used to say
+    "apsw.APSWException" and has been changed to "apsw.Error". This
+    is purely cosmetic and helps make clear what the class is. (The
+    old string was what the original class name was in an earlier
+    version of the code.)</li>
 
-  <li>The text string returned by apsw.Error used to say
-  "apsw.APSWException" and has been changed to "apsw.Error".  This is
-  purely cosmetic and helps make clear what the class is.  (The old
-  string was what the original class name was in an earlier version of
-  the code.)
+    <li>Added <code>SQLITE_ALTER_TABLE</code> and
+    <code>SQLITE_REINDEX</code> constants for the authorizer
+    function. (These constants were introduced in SQLite
+    3.1.3).</li>
 
-  <li>Added <code>SQLITE_ALTER_TABLE</code> and
-  <code>SQLITE_REINDEX</code> constants for the authorizer function.
-  (These constants were introduced in SQLite 3.1.3).
+    <li>Changed various C++-isms into standard C (eg // comments
+    and the placing of some CHECK_THREAD macro calls)</li>
 
-  <li>Changed various C++-isms into standard C (eg // comments and the
-  placing of some CHECK_THREAD macro calls)
-
-  <li>Added module level function <code>apswversion</code> which
-  returns the version of APSW.
-
+    <li>Added module level function <code>apswversion</code> which
+    returns the version of APSW.</li>
   </ul>
 
-  <p>SQLite 3.1.3 had no changes in the stable C API other than what
-  is mentioned above.  There were some new experimental functions
-  added which are not currently documented on the SQLite website, which
-  are not wrapped by APSW.  Please contact me if you believe they will
-  remain in SQLite and you would like them wrapped:
+  <p>SQLite 3.1.3 had no changes in the stable C API other than
+  what is mentioned above. There were some new experimental
+  functions added which are not currently documented on the SQLite
+  website, which are not wrapped by APSW. Please contact me if you
+  believe they will remain in SQLite and you would like them
+  wrapped:</p>
 
   <ul>
+    <li><code>sqlite3_sleep</code> An alternative function which
+    sleeps for a specified number of milliseconds can be provided.
+    By default SQLite just uses the standard operating system
+    call.</li>
 
-  <li><code>sqlite3_sleep</code> An alternative function which sleeps for
-  a specified number of milliseconds can be provided.  By default SQLite
-  just uses the standard operating system call.
+    <li><code>sqlite3_expired</code> This function is internal to
+    statement execution. It would apply to the implementation of
+    Cursor.executemany and could in theory provide a marginal
+    improvement in performance.</li>
 
-  <li><code>sqlite3_expired</code> This function is internal to statement
-  execution.  It would apply to the implementation of Cursor.executemany
-  and could in theory provide a marginal improvement in performance.
-
-  <li>A global variable <code>sqlite3_temp_directory</code> can be used
-  before any databases are opened to set where temporary files are 
-  created.  By default SQLite just uses the standard operating system
-  mechanisms.
-
+    <li>A global variable <code>sqlite3_temp_directory</code> can
+    be used before any databases are opened to set where temporary
+    files are created. By default SQLite just uses the standard
+    operating system mechanisms.</li>
   </ul>
 
   <h2><a name="308r3">3.0.8-r3</a></h2>
 
-  <p>There are no functional changes.  The only changes were to
-  correct some variable names in the example code (they were cut and
-  pasted from the test code which used different names) and to make
-  the source zip file extract its contents into a sub-directory which
-  is the more typical way of packaging that sort of thing.
+  <p>There are no functional changes. The only changes were to
+  correct some variable names in the example code (they were cut
+  and pasted from the test code which used different names) and to
+  make the source zip file extract its contents into a
+  sub-directory which is the more typical way of packaging that
+  sort of thing.</p>
 
   <h2><a name="308r2">3.0.8-r2</a></h2>
 
-  <p>All remaining functionality in the C API for SQLite 3.0.8 is now
-  available.
+  <p>All remaining functionality in the C API for SQLite 3.0.8 is
+  now available.</p>
 
-  <p>Finished this documentation.
+  <p>Finished this documentation.</p>
 
   <h2><a name="308r1">3.0.8-r1</a></h2>
 
-
   <p>Initial release</p>
-
-
-
-
-  <hr>
-
+  <hr />
 
   <address>
     <a href="mailto:rogerb@rogerbinns.com"></a>

@@ -2,22 +2,21 @@
 VERSION=3.3.7-r1
 VERDIR=apsw-$(VERSION)
 
-all: header toc colour
+all: header tidytoc
 
 header:
 	echo "#define APSW_VERSION \"$(VERSION)\"" > apswversion.h
 
-toc:
-	awk ' BEGIN {p=1} /<!--toc-->/ {p=0; print;next} /<!--endtoc-->/ {p=1} {if(p) print} ' < apsw-source.html > tmpfile
+tidytoc:
+	python coloursrc.py
+	awk ' BEGIN {p=1} /<!--toc-->/ {p=0; print;next} /<!--endtoc-->/ {p=1} {if(p) print} ' < apsw.html > tmpfile
 	hypertoc --gen_anchors tmpfile >tmpfile2
 	hypertoc --gen_toc --inline --toc_tag '!--toc--' \
 	  --toc_label "" tmpfile2 | \
 	sed 's@\(<li><a href="#dbapinotes">\)@</ul></td><td valign="top"><ul>\1@' | \
-	grep -v '"list-style: none;"' >apsw-source.html
-	@rm -f tmpfile tmpfile2
-
-colour:
-	python coloursrc.py
+	grep -v '"list-style: none;"'> tmpfile
+	-tidy -indent -asxhtml <tmpfile >apsw.html
+	@rm -f tmpfile tmpfile2 .tmpop-*
 
 # You need to use the MinGW version of make.  It needs the doubled up slashes
 distrib-win:
