@@ -46,7 +46,7 @@ def main():
 
 def getpyurl(pyver):
     dirver=pyver
-    if pyver=="2.5c1":
+    if pyver.startswith("2.5"):
         dirver="2.5"
     if pyver>'2.2.3':
         return "http://www.python.org/ftp/python/%s/Python-%s.tar.bz2" % (dirver,pyver)
@@ -82,7 +82,7 @@ def buildapsw(outputfile, pybin):
 
 
 PYVERS=(
-    '2.5c1',
+    '2.5c2',
     '2.4.3',
     '2.3.5',
     # '2.2.3',  - apsw not supported on 2.2 as it needs GILstate
