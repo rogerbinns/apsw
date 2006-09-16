@@ -1259,7 +1259,7 @@ convert_value_to_pyobject(sqlite3_value *value)
       return PyFloat_FromDouble(sqlite3_value_double(value));
       
     case SQLITE_TEXT:
-      return convertutf8string((const char*)sqlite3_value_text(value));
+      return convertutf8stringsize((const char*)sqlite3_value_text(value), sqlite3_value_bytes(value));
 
     case SQLITE_NULL:
       Py_INCREF(Py_None);
@@ -1356,9 +1356,10 @@ set_context_result(sqlite3_context *context, PyObject *obj)
   if (PyString_Check(obj))
     {
       const char *val=PyString_AS_STRING(obj);
+      const Py_ssize_t lenval=PyString_GET_SIZE(obj);
       const char *chk=val;
-      for(;*chk && !((*chk)&0x80); chk++);
-      if(*chk)
+      for(;chk<val+lenval && !((*chk)&0x80); chk++);
+      if(chk<val+lenval)
         {
           PyObject *str2=PyUnicode_FromObject(obj);
           if(!str2)
@@ -1388,7 +1389,6 @@ set_context_result(sqlite3_context *context, PyObject *obj)
         }
       else
 	{
-	  Py_ssize_t lenval=PyString_GET_SIZE(obj);
 	  if(lenval>INT32_MAX)
 	      {
 		PyErr_Format(ExcTooBig, "String object is too large - SQLite only supports up to 2GB");
@@ -2322,9 +2322,10 @@ Cursor_dobinding(Cursor *self, int arg, PyObject *obj)
   else if (PyString_Check(obj))
     {
       const char *val=PyString_AS_STRING(obj);
+      const size_t lenval=PyString_GET_SIZE(obj);
       const char *chk=val;
-      for(;*chk && !((*chk)&0x80); chk++);
-      if(*chk)
+      for(;chk<val+lenval && !((*chk)&0x80); chk++);
+      if(chk<val+lenval)
         {
           const void *badptr=NULL;
           PyObject *str2=PyUnicode_FromObject(obj);
@@ -2356,7 +2357,6 @@ Cursor_dobinding(Cursor *self, int arg, PyObject *obj)
         }
       else
 	{
-	  size_t lenval=strlen(val);
 	  if(lenval>INT32_MAX)
 	      {
 		PyErr_Format(ExcTooBig, "String object is too large - SQLite only supports up to 2GB");

@@ -59,15 +59,22 @@
             <ul>
               <li><a href="#module-methods">Module methods</a></li>
 
-              <li><a href="#Module">Module constants</a></li>
+              <li><a href="#Module_constants">Module constants</a></li>
 
-              <li><a href="#Connection">Connection class</a></li>
+              <li><a href="#Connection_class">Connection class</a></li>
 
               <li><a href="#Cursor">Cursor class</a></li>
             </ul>
           </li>
 
-          <li><a href="#Exceptions">Exceptions</a></li>
+          <li>
+            <a href="#Exceptions">Exceptions</a>
+
+            <ul>
+              <li><a href="#augmentedstacktraces">Augmented stack
+              traces</a></li>
+            </ul>
+          </li>
 
           <li><a href="#Types">Types</a></li>
 
@@ -898,7 +905,8 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
     </dd>
   </dl>
 
-  <h2><a name="Module" id="Module">Module constants</a></h2>
+  <h2><a name="Module_constants" id="Module_constants">Module
+  constants</a></h2>
 
   <p>Note that the same values can be used in different contexts. For example
   SQLITE_OK and SQLITE_CREATE_INDEX both have a value of zero.</p>
@@ -923,7 +931,8 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
     documentation</a>.</dd>
   </dl>
 
-  <h2><a name="Connection" id="Connection">Connection class</a></h2>
+  <h2><a name="Connection_class" id="Connection_class">Connection
+  class</a></h2>
 
   <p>The connection class wraps a <code>sqlite3 pointer</code>.</p>
 
@@ -1523,6 +1532,57 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
     headers in 3.2.7).</p>
   </blockquote>
 
+  <h2><a name="augmentedstacktraces" id="augmentedstacktraces">Augmented stack
+  traces</a></h2>
+
+  <p>When an exception occurs, Python does not include frames from non-Python
+  code. This can make it more difficult to work out what was going on when an
+  exception occurred for example when there are callbacks to collations,
+  functions or virtual tables.</p>
+  <pre>
+<b>Code</b>
+import apsw
+con=apsw.Connection(":memory:")
+con.createscalarfunction("foo", lambda x: 1/0)
+cursor=con.cursor()
+cursor.execute("create table bar(x,y,z);insert into bar values(1,2,3)")
+cursor.execute("select foo(1) from bar")
+</pre>
+
+  <table cellpadding="3" cellspacing="3">
+    <tr>
+      <th>Normal traceback</th>
+
+      <th>Augmented traceback</th>
+    </tr>
+
+    <tr>
+      <td valign="top">
+        <pre>
+Traceback (most recent call last):
+  File "t.py", line 6, in ?
+    cursor.execute("select foo(1) from bar")
+  File "t.py", line 3, in &lt;lambda&gt;
+    con.createscalarfunction("foo", lambda x: 1/0)
+ZeroDivisionError: integer division or modulo by zero
+</pre>
+      </td>
+
+      <td valign="top">
+        <pre>
+Traceback (most recent call last):
+  File "t.py", line 6, in ?
+    cursor.execute("select foo(1) from bar")
+  File "apsw.c", line 1494, in ScalarFunctionCallback
+    TRACEBACKHERE("ScalarFunctionCallback");
+  File "t.py", line 3, in &lt;lambda&gt;
+    con.createscalarfunction("foo", lambda x: 1/0)
+ZeroDivisionError: integer division or modulo by zero
+</pre>
+      </td>
+    </tr>
+  </table>
+
   <h1><a name="Types" id="Types">Types</a></h1>
 
   <p>Read about <a href="http://www.sqlite.org/datatype3.html">SQLite 3
@@ -2008,7 +2068,11 @@ ZeroDivisionError: integer division or modulo by zero
 
     <li>When exceptions occur, dummy frames are added to the traceback in the C
     code. This makes it a lot easier to tell why code was called if you
-    encounter an exception.</li>
+    encounter an exception. See <a href="#augmentedstacktraces">augmented stack
+    traces</a> for details.</li>
+
+    <li>String values (traditional and Unicode) work correctly if they have
+    embedded NULL characters.</li>
   </ul>
 
   <h2><a name="335r1">3.3.5-r1</a></h2>
@@ -2029,8 +2093,8 @@ ZeroDivisionError: integer division or modulo by zero
   "http://sqlite.org/pragma.html">pragmas</a>).</p>
 
   <p>The test code has been converted into using the unittest module. Run
-  <tt>python&nbsp;tests.py&nbsp;-v</tt> to get the tests run. There should be
-  no errors.</p>
+  <tt>python tests.py -v</tt> to get the tests run. There should be no
+  errors.</p>
 
   <p>Updated code to work correctly with new Py_ssize_t introduced in Python
   2.5. See <a href="#64bitpy25">64 bit hosts, Python 2.5</a> for more details

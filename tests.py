@@ -1146,6 +1146,42 @@ class APSW(unittest.TestCase):
             tr.go()
             self.db=None
 
+    def testStringsWithNulls(self):
+        "Verify that strings with nulls in them are handled correctly"
+
+        c=self.db.cursor()
+        c.execute("create table foo(row,str)")
+        vals=("a simple string",
+              "a simple string\0",
+              "a simple string\0with a null",
+              "a string\0with two\0nulls",
+              "or even a \0\0\0\0\0\0sequence\0\0\0\0\of them",
+              u"a \u1234 unicode \ufe54 string \u0089",
+              u"a \u1234 unicode \ufe54 string \u0089\0",
+              u"a \u1234 unicode \ufe54 string \u0089\0and some text",
+              u"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET}\0more\0than you\0can handle",
+              u"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET}\0\0\0\0\0sequences\0\0\0of them")
+
+        for i,v in enumerate(vals):
+            c.execute("insert into foo values(?,?)", (i, v))
+
+        self.assertRaises(UnicodeDecodeError, c.execute, "insert into foo values(9000,?)", ("a simple string\0with a null and \xfe\xfb\x80\x92",))
+            
+        # add function to test conversion back as well
+        def snap(*args):
+            return args[0]
+        self.db.createscalarfunction("snap", snap)
+
+        # now see what we got out
+        count=0
+        for row,v,fv in c.execute("select row,str,snap(str) from foo"):
+            count+=1
+            self.failUnlessEqual(vals[row], v)
+            self.failUnlessEqual(vals[row], fv)
+        self.failUnlessEqual(count, len(vals))
+
+        # ::TODO:: check collations
+
     def testSharedCache(self):
         "Verify setting of shared cache"
 
