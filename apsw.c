@@ -50,6 +50,10 @@ typedef int Py_ssize_t;
 /* SQLite 3 headers */
 #include "sqlite3.h"
 
+#if SQLITE_VERSION_NUMBER < 3003007
+#error Your SQLite version is too old.  It must be at least 3.3.7
+#endif
+
 /* system headers */
 #include <assert.h>
 
@@ -484,18 +488,10 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
 
   CHECK_THREAD(self,-1);
 
-  if(kwds && kwds!=Py_None)
+  if(kwds && PyDict_Size(kwds)!=0)
     {
-      if(!PyDict_Check(kwds))
-        {
-          PyErr_Format(PyExc_TypeError, "Bad type for keyword args");
-          return -1;
-        }
-      if(PyDict_Size(kwds))
-        {
-          PyErr_Format(PyExc_TypeError, "Connection constructor does not take keyword arguments");
-          return -1;
-        }
+      PyErr_Format(PyExc_TypeError, "Connection constructor does not take keyword arguments");
+      return -1;
     }
 
   if(!PyArg_ParseTuple(args, "es:Connection(filename)", STRENCODING, &filename))
@@ -1481,7 +1477,7 @@ cbdispatch_func(sqlite3_context *context, int argc, sqlite3_value **argv)
   if(PyErr_Occurred())
     {
       sqlite3_result_error(context, "Prior Python Error", -1);
-      goto finally;
+      goto finalfinally;
     }
 
   pyargs=getfunctionargs(context, NULL, argc, argv);
@@ -1490,13 +1486,19 @@ cbdispatch_func(sqlite3_context *context, int argc, sqlite3_value **argv)
 
   assert(!PyErr_Occurred());
   retval=PyEval_CallObject(cbinfo->scalarfunc, pyargs);
-  if(!retval)
-    TRACEBACKHERE("ScalarFunctionCallback");
+
   Py_DECREF(pyargs);
   set_context_result(context, retval);
   Py_XDECREF(retval);
 
  finally:
+  if (PyErr_Occurred())
+    {
+      char *funname=sqlite3_mprintf("user-defined-scalar-%s", cbinfo->name);
+      AddTraceBackHere(__FILE__, __LINE__, funname, "{s: i}", "NumberOfArguments", argc);
+      sqlite3_free(funname);
+    }
+ finalfinally:
    PyGILState_Release(gilstate);
 }
 
@@ -1589,7 +1591,7 @@ cbdispatch_step(sqlite3_context *context, int argc, sqlite3_value **argv)
   gilstate=PyGILState_Ensure();
 
   if (PyErr_Occurred())
-    goto finally;
+    goto finalfinally;
 
   aggfc=getaggregatefunctioncontext(context);
 
@@ -1613,7 +1615,17 @@ cbdispatch_step(sqlite3_context *context, int argc, sqlite3_value **argv)
     }
 
  finally:
-   PyGILState_Release(gilstate);
+  if(PyErr_Occurred())
+    {
+      char *funname=0;
+      funccbinfo *cbinfo=(funccbinfo*)sqlite3_user_data(context);
+      assert(cbinfo);
+      funname=sqlite3_mprintf("user-defined-aggregate-step-%s", cbinfo->name);
+      AddTraceBackHere(__FILE__, __LINE__, funname, "{s: i}", "NumberOfArguments", argc);
+      sqlite3_free(funname);
+    }
+ finalfinally:
+  PyGILState_Release(gilstate);
 }
 
 /* this is somewhat similar to cbdispatch_step, except we also have to
@@ -1669,6 +1681,16 @@ cbdispatch_final(sqlite3_context *context)
 
   if(err_type||err_value||err_traceback)
     PyErr_Restore(err_type, err_value, err_traceback);
+
+  if(PyErr_Occurred())
+    {
+      char *funname=0;
+      funccbinfo *cbinfo=(funccbinfo*)sqlite3_user_data(context);
+      assert(cbinfo);
+      funname=sqlite3_mprintf("user-defined-aggregate-final-%s", cbinfo->name);
+      AddTraceBackHere(__FILE__, __LINE__, funname, NULL);
+      sqlite3_free(funname);
+    }
 
   /* sqlite3 frees the actual underlying memory we used (aggfc itself) */
 
@@ -2136,6 +2158,9 @@ resetcursor(Cursor *self)
 
   self->status=C_DONE;
 
+  if (PyErr_Occurred())
+    AddTraceBackHere(__FILE__, __LINE__, "resetcursor", NULL);
+
   return res;
 }
 
@@ -2420,8 +2445,8 @@ Cursor_dobindings(Cursor *self)
     {
       for(arg=1;arg<=nargs;arg++)
         {
+	  PyObject *keyo=NULL;
           const char *key=sqlite3_bind_parameter_name(self->statement, arg);
-          const char *chk;
 
           if(!key)
             {
@@ -2432,18 +2457,12 @@ Cursor_dobindings(Cursor *self)
 	  assert(*key==':' || *key=='$');
           key++; /* first char is a colon or dollar which we skip */
 
-          for(chk=key;*chk && !((*chk)&0x80); chk++);
-          if(*chk)
-            {
-              PyObject *keyo=PyUnicode_DecodeUTF8(key, strlen(key), NULL);
-              if(!keyo) 
-		return -1;
+	  keyo=PyUnicode_DecodeUTF8(key, strlen(key), NULL);
+	  if(!keyo) 
+	    return -1;
 
-              obj=PyDict_GetItem(self->bindings, keyo);
-              Py_DECREF(keyo);
-            }
-            else
-              obj=PyDict_GetItemString(self->bindings, key);
+	  obj=PyDict_GetItem(self->bindings, keyo);
+	  Py_DECREF(keyo);
 
           if(!obj)
             /* this is where we could error on missing keys */

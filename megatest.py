@@ -28,7 +28,7 @@ def dotest(outputdir, pybin, workdir, pyver, sqlitever):
     buildapsw("%s/py%s-sqlite%s-build.txt" % (outputdir,pyver,sqlitever), pybin)
 
     # now the actual tests
-    run("%s tests.py 2>&1 | tee %s/py%s-sqlite%s.txt" % (pybin, outputdir, pyver, sqlitever))
+    run("env APSW_TEST_ITERATIONS=250 %s tests.py 2>&1 | tee %s/py%s-sqlite%s.txt" % (pybin, outputdir, pyver, sqlitever))
 
 
 def main():
@@ -46,8 +46,6 @@ def main():
 
 def getpyurl(pyver):
     dirver=pyver
-    if pyver.startswith("2.5"):
-        dirver="2.5"
     if pyver>'2.2.3':
         return "http://www.python.org/ftp/python/%s/Python-%s.tar.bz2" % (dirver,pyver)
     else:
@@ -64,7 +62,7 @@ def buildpython(workdir, pyver, ucs):
         tarx="z"
     
     run("cd %s ; mkdir pyinst ; wget %s -O - | tar xf%s -" % (workdir, url, tarx))
-    run("cd %s ; cd Python-%s ; ./configure --enable-unicode=ucs%d --with-pydebug --prefix=%s/pyinst ; make -j 3 ; make  install" % (workdir, pyver, ucs, workdir))
+    run("cd %s ; cd Python-%s ; ./configure --enable-unicode=ucs%d --prefix=%s/pyinst ; make -j 3 ; make  install" % (workdir, pyver, ucs, workdir))
 
     return os.path.join(workdir, "pyinst", "bin", "python")
     
@@ -82,13 +80,16 @@ def buildapsw(outputfile, pybin):
 
 
 PYVERS=(
-    '2.5c2',
+    '2.5',
+    '2.4.4',
     '2.4.3',
     '2.3.5',
+    '2.3.6',
     # '2.2.3',  - apsw not supported on 2.2 as it needs GILstate
     )
 
 SQLITEVERS=(
+    '3.3.8',
     '3.3.7',
 #    '3.3.6',  - not supported as 3.3.7 has new column return value api
 #    '3.3.4',

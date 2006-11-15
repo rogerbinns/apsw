@@ -5,7 +5,7 @@
   This code was originally  from the Pyrex project:
   Copyright (C) 2004-2006 Greg Ewing <greg@cosc.canterbury.ac.nz>
 
-  It has been lightly modified to be a part of APSW.
+  It has been lightly modified to be a part of APSW with permission from Greg.
   Copyright (C) 2006 Roger Binns <rogerb@rogerbinns.com>
 
   This software is provided 'as-is', without any express or implied
@@ -33,21 +33,36 @@
 #include "frameobject.h"
 #include "traceback.h"
 
-/* Add a dummy frame to the traceback so the developer has a
-   better idea of what C code was doing */
-static void AddTraceBack(const char *filename, int lineno, const char *desc)
+/* Add a dummy frame to the traceback so the developer has a better idea of what C code was doing 
+
+   @param filename: Use __FILE__ for this - it will be the filename reported in the frame
+   @param lineno: Use __LINE__ for this - it will be the line number reported in the frame
+   @param functionname: Name of the function reported
+   @param localsformat: Format string for Py_BuildValue( that must specify a dictionary or NULL to make
+                        an empty dictionary.  An example is "{s:i, s: s}" with the varargs then conforming
+			to this format (the corresponding params could be "seven", 7, "foo", "bar"
+
+*/
+static void AddTraceBackHere(const char *filename, int lineno, const char *functionname, const char *localsformat, ...)
 {
-  PyObject *srcfile=0, *funcname=0, *empty_dict=0, *empty_tuple=0, *empty_string=0;
+  PyObject *srcfile=0, *funcname=0, *empty_dict=0, *empty_tuple=0, *empty_string=0, *localargs=0;
   PyCodeObject *code=0;
   PyFrameObject *frame=0;
+  va_list localargsva;
 
-  /* fill in variables */
+  va_start(localargsva, localsformat);
   srcfile=PyString_FromString(filename);
-  funcname=PyString_FromString(desc); /* ::TODO:: check utf8 */
+  funcname=PyString_FromString(functionname);
   empty_dict=PyDict_New();
   empty_tuple=PyTuple_New(0);
   empty_string=PyString_FromString("");
-  
+
+  localargs=localsformat?(Py_VaBuildValue((char *)localsformat, localargsva)):PyDict_New();
+  if(localsformat)
+    assert(localsformat[0]=='{');
+  if(localargs)
+    assert(PyDict_Check(localargs));
+
   /* did any fail? */
   if (!srcfile || !funcname || !empty_dict || !empty_tuple || !empty_string)
     goto end;
@@ -76,7 +91,7 @@ static void AddTraceBack(const char *filename, int lineno, const char *desc)
            PyThreadState_Get(), /*PyThreadState *tstate,*/
 	   code,                /*PyCodeObject *code,*/
 	   empty_dict,          /*PyObject *globals,*/
-	   0                    /*PyObject *locals*/
+	   localargs            /*PyObject *locals*/
 	   );
   if(!frame) goto end;
 
@@ -84,8 +99,10 @@ static void AddTraceBack(const char *filename, int lineno, const char *desc)
   frame->f_lineno=lineno;
   PyTraceBack_Here(frame);
   
-  /* this is epilogue deals with success or failure cases */
+  /* this epilogue deals with success or failure cases */
  end:
+  va_end(localargsva);
+  Py_XDECREF(localargs);
   Py_XDECREF(srcfile);
   Py_XDECREF(funcname);
   Py_XDECREF(empty_dict); 
@@ -95,4 +112,3 @@ static void AddTraceBack(const char *filename, int lineno, const char *desc)
   Py_XDECREF(frame); 
 }
 
-#define TRACEBACKHERE(desc) {AddTraceBack(__FILE__, __LINE__, desc);}

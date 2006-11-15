@@ -6,9 +6,10 @@ import apsw
 
 print "Testing with APSW file",apsw.__file__
 print "          APSW version",apsw.apswversion()
-print "        SQLite version",apsw.sqlitelibversion()
+print "    SQLite lib version",apsw.sqlitelibversion()
+print "SQLite headers version",apsw.SQLITE_VERSION_NUMBER
 
-if [int(x) for x in apsw.sqlitelibversion().split(".")]<[3,3,5]:
+if [int(x) for x in apsw.sqlitelibversion().split(".")]<[3,3,7]:
     print "You are using an earlier version of SQLite than recommended"
 
 # unittest stuff from here on
