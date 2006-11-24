@@ -1099,12 +1099,14 @@ class APSW(unittest.TestCase):
             'setrollbackhook': 1,
             'setupdatehook': 1,
             'setprogresshandler': 2,
+            'enableloadextension': 1,
             }
         for func in [x for x in dir(self.db) if not x.startswith("__")]:
             args=("one", "two", "three")[:nargs.get(func,0)]
             try:
                 tr=ThreadRunner(getattr(self.db, func), *args)
                 tr.go()
+                self.fail("connection method "+func+" didn't do thread safety check")
             except apsw.ThreadingViolationError:
                 pass
 
@@ -1120,6 +1122,7 @@ class APSW(unittest.TestCase):
             try:
                 tr=ThreadRunner(getattr(c, func), *args)
                 tr.go()
+                self.fail("cursor method "+func+" didn't do thread safety check")
             except apsw.ThreadingViolationError:
                 pass
 
@@ -1211,11 +1214,46 @@ class APSW(unittest.TestCase):
             del tb
         except:
             self.fail("Wrong exception type")
+
+    def testLoadExtension(self):
+        "Check loading of extensions"
+        # ::TODO:: I don't have checking of unicode filenames and entrypoint names here yet
+        # need to examine SQLite code to verify expected semantics
+        
+        # they need to be enable first
+        self.assertRaises(apsw.ExtensionLoadingError, self.db.loadextension, LOADEXTENSIONFILENAME)
+        self.db.enableloadextension(False)
+        # should still be disabled
+        self.assertRaises(apsw.ExtensionLoadingError, self.db.loadextension, LOADEXTENSIONFILENAME)
+        self.db.enableloadextension(True)
+        # make sure it checks args
+        self.assertRaises(TypeError, self.db.loadextension)
+        self.assertRaises(TypeError, self.db.loadextension, 12)
+        self.assertRaises(TypeError, self.db.loadextension, "foo", 12)
+        self.assertRaises(TypeError, self.db.loadextension, "foo", "bar", 12)
+        self.db.loadextension(LOADEXTENSIONFILENAME)
+        c=self.db.cursor()
+        self.failUnlessEqual(1, c.execute("select half(2)").next()[0])
+        # second entry point hasn't been called yet
+        self.assertRaises(apsw.SQLError, c.execute, "select doubleup(2)")
+        # load using other entry point
+        self.assertRaises(apsw.ExtensionLoadingError, self.db.loadextension, LOADEXTENSIONFILENAME, "doesntexist")
+        self.db.loadextension(LOADEXTENSIONFILENAME, "alternate_sqlite3_extension_init")
+        self.failUnlessEqual(4, c.execute("select doubleup(2)").next()[0])
+
+# note that a directory must be specified otherwise $LD_LIBRARY_PATH is used
+LOADEXTENSIONFILENAME="./testextension.sqlext"
             
 MEMLEAKITERATIONS=1000
 PROFILESTEPS=100000
 
 if __name__=='__main__':
+
+    if not os.path.exists(LOADEXTENSIONFILENAME):
+        print "Not doing LoadExtension test.  You need to compile the extension first"
+        print "  gcc -fpic -shared -o "+LOADEXTENSIONFILENAME+" -Isqlite3 testextension.c"
+        del APSW.testLoadExtension
+    
     v=os.getenv("APSW_TEST_ITERATIONS")
     if v is None:
         unittest.main()
