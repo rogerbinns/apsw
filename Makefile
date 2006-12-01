@@ -1,5 +1,5 @@
 
-VERSION=3.3.7-r1
+VERSION=3.3.8-r1
 VERDIR=apsw-$(VERSION)
 
 all: header tidytoc
