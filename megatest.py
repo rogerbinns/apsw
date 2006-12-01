@@ -25,10 +25,9 @@ def run(cmd):
 
 def dotest(outputdir, pybin, workdir, pyver, sqlitever):
     buildsqlite(workdir, sqlitever)
-    buildapsw("%s/py%s-sqlite%s-build.txt" % (outputdir,pyver,sqlitever), pybin)
-
+    buildapsw("%s/py%s-sqlite%s-build.txt" % (outputdir,pyver,sqlitever), pybin, workdir)
     # now the actual tests
-    run("env APSW_TEST_ITERATIONS=250 %s tests.py 2>&1 | tee %s/py%s-sqlite%s.txt" % (pybin, outputdir, pyver, sqlitever))
+    run("cd %s ; env APSW_TEST_ITERATIONS=250 %s tests.py 2>&1 | tee %s/py%s-sqlite%s.txt" % (workdir, pybin, outputdir, pyver, sqlitever))
 
 
 def main():
@@ -37,6 +36,7 @@ def main():
         for ucs in (2,4):
             workdir=os.path.abspath("work")
             os.system("rm -rf %s 2>/dev/null ; mkdir %s" % (workdir, workdir))
+            run("cp *.py *.c *.h "+workdir)
             pybin=buildpython(workdir, pyver, ucs)
             for sqlitever in SQLITEVERS:
                 # get rid of any existing apsw in the Python
@@ -67,13 +67,13 @@ def buildpython(workdir, pyver, ucs):
     return os.path.join(workdir, "pyinst", "bin", "python")
     
 def buildsqlite(workdir, sqlitever):
-    os.system("rm -rf sqlite3 2>/dev/null")
-    run("cd %s ; wget %s -O - | tar xfz - ; mv sqlite-%s ../sqlite3" % (workdir, sqliteurl(sqlitever), sqlitever))
-    run('cd sqlite3 ; env CC="gcc -fPIC" ./configure --enable-threadsafe --disable-tcl ; make -j 3 ; cp .libs/*.a .')
+    os.system("rm -rf %s/sqlite3 2>/dev/null" % (workdir,))
+    run("cd %s ; wget %s -O - | tar xfz - ; mv sqlite-%s sqlite3" % (workdir, sqliteurl(sqlitever), sqlitever))
+    run('cd %s/sqlite3 ; env CC="gcc -fPIC" CFLAGS="-DHAVE_DLOPEN" ./configure --enable-threadsafe --disable-tcl ; make -j 3 ; cp .libs/*.a .; cp src/sqlite3ext.h .' % (workdir,))
+    run('cd %s ; gcc -fpic -shared -o testextension.sqlext -Isqlite3 testextension.c' % (workdir,))
 
-def buildapsw(outputfile, pybin):
-    os.system("rm -rf build dist 2>/dev/null")
-    run("%s setup.py build 2>&1 | tee %s ; %s setup.py install" % (pybin,outputfile,pybin))
+def buildapsw(outputfile, pybin, workdir):
+    run("cd %s ; %s setup.py build 2>&1 | tee %s ; %s setup.py install" % (workdir, pybin,outputfile,pybin))
 
 
 
@@ -83,14 +83,15 @@ PYVERS=(
     '2.5',
     '2.4.4',
     '2.4.3',
-    '2.3.5',
     '2.3.6',
+    '2.3.5',
+    '2.3.0',  # macos 10.3
     # '2.2.3',  - apsw not supported on 2.2 as it needs GILstate
     )
 
 SQLITEVERS=(
     '3.3.8',
-    '3.3.7',
+#    '3.3.7',  - not supported as api differs for vtable into 3.3.8
 #    '3.3.6',  - not supported as 3.3.7 has new column return value api
 #    '3.3.4',
     )
