@@ -50,16 +50,16 @@ typedef int Py_ssize_t;
 /* SQLite 3 headers */
 #include "sqlite3.h"
 
-#if SQLITE_VERSION_NUMBER < 3003007
-#error Your SQLite version is too old.  It must be at least 3.3.7
+#if SQLITE_VERSION_NUMBER < 3003008
+#error Your SQLite version is too old.  It must be at least 3.3.8
 #endif
 
 /* system headers */
 #include <assert.h>
 
 /* used to decide if we will use int or long long */
-#define INT32_MIN (-2147483647 - 1)
-#define INT32_MAX 2147483647
+#define APSW_INT32_MIN (-2147483647 - 1)
+#define APSW_INT32_MAX 2147483647
 
 /* The encoding we use with SQLite.  SQLite supports either utf8 or 16
    bit unicode (host byte order).  If the latter is used then all
@@ -94,6 +94,7 @@ static PyObject *ExcBindings;  /* wrong number of bindings */
 static PyObject *ExcComplete;  /* query is finished */
 static PyObject *ExcTraceAbort; /* aborted by exectrace */
 static PyObject *ExcTooBig; /* object is too large for SQLite */
+static PyObject *ExcExtensionLoading; /* error loading extension */
 
 static struct { int code; const char *name; PyObject *cls;}
 exc_descriptors[]=
@@ -169,6 +170,7 @@ static int init_exceptions(PyObject *m)
   EXC(ExcComplete, "ExecutionCompleteError");
   EXC(ExcTraceAbort, "ExecTraceAbort");
   EXC(ExcTooBig, "TooBigError");
+  EXC(ExcExtensionLoading, "ExtensionLoadingError");
 
 #undef EXC
 
@@ -240,15 +242,29 @@ typedef struct _collationcbinfo
   
 static collationcbinfo *freecollationcbinfo(collationcbinfo *);
 
+typedef struct Connection Connection; /* forward declaration */
+
+typedef struct _vtableinfo
+{
+  struct _vtableinfo *next;       /* we use a linked list */
+  char *name;                     /* module name */
+  PyObject *datasource;           /* object with create/connect methods */
+  Connection *connection;  /* the Connection this is registered against so we don't
+				     have to have a global table mapping sqlite3_db* to
+				     Connection* */
+} vtableinfo;
+
+static vtableinfo *freevtableinfo(vtableinfo *);
 
 /* CONNECTION TYPE */
 
-typedef struct { 
+struct Connection { 
   PyObject_HEAD
   sqlite3 *db;                    /* the actual database connection */
   long thread_ident;              /* which thread we were made in */
   funccbinfo *functions;          /* linked list of registered functions */
   collationcbinfo *collations;    /* linked list of registered collations */
+  vtableinfo *vtables;            /* linked list of registered vtables */
 
   /* registered hooks/handlers (NULL or callable) */
   PyObject *busyhandler;     
@@ -258,7 +274,7 @@ typedef struct {
   PyObject *commithook;           
   PyObject *progresshandler;      
   PyObject *authorizer;
-} Connection;
+};
 
 static PyTypeObject ConnectionType;
 
@@ -433,6 +449,12 @@ Connection_dealloc(Connection* self)
     while((coll=freecollationcbinfo(coll)));
   }
 
+  /* free vtables */
+  {
+    vtableinfo *vtinfo=self->vtables;
+    while((vtinfo=freevtableinfo(vtinfo)));
+  }
+
   Py_XDECREF(self->busyhandler);
   self->busyhandler=0;
 
@@ -468,6 +490,7 @@ Connection_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
       self->thread_ident=PyThread_get_thread_ident();
       self->functions=0;
       self->collations=0;
+      self->vtables=0;
       self->busyhandler=0;
       self->rollbackhook=0;
       self->profile=0;
@@ -584,7 +607,7 @@ Connection_last_insert_rowid(Connection *self)
 
   vint=sqlite3_last_insert_rowid(self->db);
   
-  if(vint<INT32_MIN || vint>INT32_MAX)
+  if(vint<APSW_INT32_MIN || vint>APSW_INT32_MAX)
     return PyLong_FromLongLong(vint);
   else
     return PyInt_FromLong((long)vint);
@@ -623,7 +646,7 @@ Connection_interrupt(Connection *self)
   return Py_BuildValue("");
 }
 
-void
+static void
 updatecb(void *context, int updatetype, char const *databasename, char const *tablename, sqlite_int64 rowid)
 {
   /* The hook returns void. That makes it impossible for us to
@@ -711,7 +734,7 @@ Connection_setupdatehook(Connection *self, PyObject *callable)
   return Py_BuildValue("");
 }
 
-void
+static void
 rollbackhookcb(void *context)
 {
   /* The hook returns void. That makes it impossible for us to
@@ -779,7 +802,7 @@ Connection_setrollbackhook(Connection *self, PyObject *callable)
 }
 
 #ifdef EXPERIMENTAL /* sqlite3_profile */
-void
+static void
 profilecb(void *context, const char *statement, sqlite_uint64 runtime)
 {
   /* The hook returns void. That makes it impossible for us to
@@ -863,7 +886,8 @@ Connection_setprofile(Connection *self, PyObject *callable)
 
 
 #ifdef EXPERIMENTAL      /* commit hook */
-int commithookcb(void *context)
+static int 
+commithookcb(void *context)
 {
   /* The hook returns 0 for commit to go ahead and non-zero to abort
      commit (turn into a rollback). We return non-zero for errors */
@@ -946,7 +970,8 @@ Connection_setcommithook(Connection *self, PyObject *callable)
 #endif  /* EXPERIMENTAL sqlite3_commit_hook */
 
 #ifdef EXPERIMENTAL      /* sqlite3_progress_handler */
-int progresshandlercb(void *context)
+static int 
+progresshandlercb(void *context)
 {
   /* The hook returns 0 for continue and non-zero to abort (rollback).
      We return non-zero for errors */
@@ -1029,7 +1054,8 @@ Connection_setprogresshandler(Connection *self, PyObject *args)
 }
 #endif  /* EXPERIMENTAL sqlite3_progress_handler */
 
-int authorizercb(void *context, int operation, const char *paramone, const char *paramtwo, const char *databasename, const char *triggerview)
+static int 
+authorizercb(void *context, int operation, const char *paramone, const char *paramtwo, const char *databasename, const char *triggerview)
 {
   /* should return one of SQLITE_OK, SQLITE_DENY, or
      SQLITE_IGNORE. (0, 1 or 2 respectively) */
@@ -1126,7 +1152,8 @@ Connection_setauthorizer(Connection *self, PyObject *callable)
   return (res==SQLITE_OK)?Py_BuildValue(""):NULL;
 }
 
-int busyhandlercb(void *context, int ncall)
+static int 
+busyhandlercb(void *context, int ncall)
 {
   /* Return zero for caller to get SQLITE_BUSY error. We default to
      zero in case of error. */
@@ -1169,6 +1196,51 @@ int busyhandlercb(void *context, int ncall)
   PyGILState_Release(gilstate);
   return result;
 }
+
+#ifdef EXPERIMENTAL  /* extension loading */
+static PyObject *
+Connection_enableloadextension(Connection *self, PyObject *enabled)
+{
+  int enabledp, res;
+
+  CHECK_THREAD(self, NULL);
+
+  /* get the boolean value */
+  enabledp=PyObject_IsTrue(enabled);
+  if(enabledp==-1) return NULL;
+  if (PyErr_Occurred()) return NULL;
+
+  /* call function */
+  res=sqlite3_enable_load_extension(self->db, enabledp);
+  SET_EXC(self->db, res);  /* the function will currently always succeed */
+
+  /* done */
+  return (res==SQLITE_OK)?Py_BuildValue(""):NULL;
+}
+
+static PyObject *
+Connection_loadextension(Connection *self, PyObject *args)
+{
+  int res;
+  char *zfile=NULL, *zproc=NULL, *errmsg=NULL;
+
+  CHECK_THREAD(self, NULL);
+  
+  if(!PyArg_ParseTuple(args, "s|z:loadextension(filename, entrypoint=None)", &zfile, &zproc))
+    return NULL;
+
+  res=sqlite3_load_extension(self->db, zfile, zproc, &errmsg);
+  /* load_extension doesn't set the error message on the db so we have to make exception manually */
+  if(res!=SQLITE_OK)
+    {
+      assert(errmsg);
+      PyErr_Format(ExcExtensionLoading, "ExtensionLoadingError: %s", errmsg?errmsg:"unspecified");
+      return NULL;
+    }
+  return Py_BuildValue("");
+}
+
+#endif /* EXPERIMENTAL extension loading */
 
 static PyObject *
 Connection_setbusyhandler(Connection *self, PyObject *callable)
@@ -1245,7 +1317,7 @@ convert_value_to_pyobject(sqlite3_value *value)
     case SQLITE_INTEGER:
       {
         long long vint=sqlite3_value_int64(value);
-        if(vint<INT32_MIN || vint>INT32_MAX)
+        if(vint<APSW_INT32_MIN || vint>APSW_INT32_MAX)
           return PyLong_FromLongLong(vint);
         else
           return PyInt_FromLong((long)vint);
@@ -1332,7 +1404,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
       UNIDATABEGIN(obj)
         if(strdata)
           {
-	    if(strbytes>INT32_MAX)
+	    if(strbytes>APSW_INT32_MAX)
 	      {
 		PyErr_Format(ExcTooBig, "Unicode object is too large - SQLite only supports up to 2GB");
 	      }
@@ -1366,7 +1438,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
           UNIDATABEGIN(str2)
             if(strdata)
               {
-		if(strbytes>INT32_MAX)
+		if(strbytes>APSW_INT32_MAX)
 		  {
 		    PyErr_Format(ExcTooBig, "Unicode object is too large - SQLite only supports up to 2GB");
 		  }
@@ -1385,7 +1457,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
         }
       else
 	{
-	  if(lenval>INT32_MAX)
+	  if(lenval>APSW_INT32_MAX)
 	      {
 		PyErr_Format(ExcTooBig, "String object is too large - SQLite only supports up to 2GB");
 		}
@@ -1403,7 +1475,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
           sqlite3_result_error(context, "PyObject_AsCharBuffer failed", -1);
           return;
         }
-      if (buflen>INT32_MAX)
+      if (buflen>APSW_INT32_MAX)
 	sqlite3_result_error(context, "Buffer object is too large for SQLite - only up to 2GB is supported", -1);
       else
 	sqlite3_result_blob(context, buffer, (int)buflen, SQLITE_TRANSIENT);
@@ -1888,9 +1960,10 @@ alloccollationcbinfo(void)
   return res;
 }
 
-int collation_cb(void *context, 
-                 int stringonelen, const void *stringonedata,
-                 int stringtwolen, const void *stringtwodata)
+static int 
+collation_cb(void *context, 
+	     int stringonelen, const void *stringonedata,
+	     int stringtwolen, const void *stringtwodata)
 {
   PyGILState_STATE gilstate;
   collationcbinfo *cbinfo=(collationcbinfo*)context;
@@ -2014,6 +2087,284 @@ Connection_createcollation(Connection *self, PyObject *args)
   return Py_BuildValue("");
 }
 
+/* Virtual table code */
+
+/* this function is outside of experimental since it is always called by the destructor */
+static vtableinfo *
+freevtableinfo(vtableinfo *vtinfo)
+{
+  vtableinfo *next;
+  if(!vtinfo)
+    return NULL;
+
+  if(vtinfo->name)
+    PyMem_Free(vtinfo->name);
+  Py_XDECREF(vtinfo->datasource);
+  /* connection was a borrowed reference so no decref needed */
+
+  next=vtinfo->next;
+  PyMem_Free(vtinfo);
+  return next;
+}
+
+
+#ifdef EXPERIMENTAL
+
+/* Calls the named method of object with the provided args */
+static PyObject*
+Py_CallMethod(PyObject *obj, const char *methodname, PyObject *args)
+{
+  PyObject *method=NULL;
+  PyObject *res=NULL;
+
+  /* we should only be called with ascii methodnames so no need to do
+     character set conversions etc */
+  method=PyObject_GetAttrString(obj, methodname);
+  if (!method) 
+    goto finally;
+
+  res=PyEval_CallObject(method, args);
+
+ finally:
+  Py_XDECREF(method);
+  return res;
+}
+
+/* Turns the current Python exception into an SQLite error code and
+   stores the string in the errmsg field (if not NULL).  The errmsg
+   field is expected to belong to sqlite and hence uses sqlite
+   semantics/ownership - for example see the pzErr parameter to
+   xCreate */
+
+static int
+MakeSqliteMsgFromPyException(char **errmsg)
+{
+  int res=SQLITE_ERROR;
+  PyObject *str=NULL;
+  PyObject *etype=NULL, *evalue=NULL, *etraceback=NULL;
+
+  assert(PyErr_Occurred());
+  if(PyErr_Occurred())
+    {
+      /* find out if the exception corresponds to an apsw exception descriptor */
+      int i;
+      for(i=0;exc_descriptors[i].code!=-1;i++)
+	if(PyErr_ExceptionMatches(exc_descriptors[i].cls))
+	{
+	  res=exc_descriptors[i].code;
+	  break;
+	}
+    }
+
+
+  /* I just want a string of the error! */
+  
+  PyErr_Fetch(&etype, &evalue, &etraceback);
+  if(!str && evalue)
+    str=PyObject_Str(evalue);
+  if(!str && etype)
+    str=PyObject_Str(etype);
+  if(!str)
+    str=PyString_FromString("python exception with no information");
+  if(evalue)
+    PyErr_Restore(etype, evalue, etraceback);
+  
+  if(*errmsg)
+    sqlite3_free(*errmsg);
+  *errmsg=sqlite3_mprintf("%s",PyString_AsString(str));
+
+  Py_XDECREF(str);
+  return res;
+}
+
+typedef struct {
+  sqlite3_vtab used_by_sqlite; /* I don't touch this */
+  PyObject *vtable;            /* object implementing vtable */
+} apsw_vtable;
+
+static int vtabCreate(sqlite3 *db, 
+		      void *pAux, 
+		      int argc, 
+		      const char *const *argv,
+		      sqlite3_vtab **pVTab,
+		      char **errmsg)
+{
+  PyGILState_STATE gilstate;
+  vtableinfo *vti;
+  PyObject *args=NULL, *res=NULL, *schema=NULL, *unischema=NULL, *vtable=NULL;
+  apsw_vtable *avi=NULL;
+  int sqliteres=SQLITE_OK;
+  int i;
+  
+  gilstate=PyGILState_Ensure();
+
+  vti=(vtableinfo*) pAux;
+  assert(db==vti->connection->db);
+
+  args=PyTuple_New(1+argc);
+  if(!args) goto pyexception;
+
+  Py_INCREF((PyObject*)(vti->connection));
+  PyTuple_SET_ITEM(args, 0, (PyObject*)(vti->connection));
+  for(i=0;i<argc;i++)
+    {
+      PyObject *str=convertutf8string(argv[i]);
+      if(!str) 
+	goto pyexception;
+      PyTuple_SET_ITEM(args, 1+i, str);
+    }
+
+  res=Py_CallMethod(vti->datasource, "Create", args);
+  if(!res)
+    goto pyexception;
+
+  /* res should be a tuple of two values - a string of sql describing
+     the table and an object implementing it */
+  if(!PySequence_Check(res) || PySequence_Size(res)!=2)
+    {
+      PyErr_Format(PyExc_TypeError, "Expected two values - a string with the table schema and a vtable object implementing it");
+      goto pyexception;
+    }
+  
+  vtable=PySequence_GetItem(res, 1);
+  if(!vtable)
+    goto pyexception;
+
+  avi=PyMem_Malloc(sizeof(apsw_vtable));
+  if(!avi) goto pyexception;
+  assert((void*)avi==(void*)&(avi->used_by_sqlite)); /* detect if wierd padding happens */
+  memset(avi, 0, sizeof(apsw_vtable));
+
+  schema=PySequence_GetItem(res, 0);
+  if(!schema) goto pyexception;
+
+  {
+    /* We need the schema as a UTF-8 string, but it could be a String
+       or Unicode so we have to got to a lot of work to get the
+       necessary conversions done and the utf8 bytes out */
+    PyObject *utf8string=NULL;
+    if(PyUnicode_Check(schema))
+      {
+	unischema=schema;
+	Py_INCREF(unischema);
+      }
+    else
+      {
+	unischema=PyUnicode_FromObject(schema);
+	if(!unischema)
+	  goto pyexception;
+      }
+      
+    assert(!PyErr_Occurred());
+    utf8string=PyUnicode_AsUTF8String(unischema);
+    if(!utf8string)
+      goto pyexception;
+
+    sqliteres=sqlite3_declare_vtab(db, PyString_AsString(utf8string));
+    Py_DECREF(utf8string);
+    if(sqliteres!=SQLITE_OK)
+      {
+	AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xCreate.sqlite3_declare_vtab", "{s: O}", "schema", schema);
+	goto finally;
+      }
+  }
+  
+  assert(sqliteres==SQLITE_OK);
+  *pVTab=(sqlite3_vtab*)avi;
+  avi->vtable=vtable;
+  Py_INCREF(avi->vtable);
+  avi=NULL;
+  goto finally;
+
+ pyexception: /* we had an exception in python code */
+  sqliteres=MakeSqliteMsgFromPyException(errmsg);
+  AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xCreate", "{s: s, s: s, s: s}", "modulename", argv[0], "database", argv[1], "tablename", argv[2]);
+
+ finally: /* cleanup */
+  Py_XDECREF(args);  
+  Py_XDECREF(res);
+  Py_XDECREF(schema);
+  Py_XDECREF(unischema);
+  Py_XDECREF(vtable);
+  if(avi)
+    PyMem_Free(avi);
+
+  PyGILState_Release(gilstate);
+  return sqliteres;
+}
+
+/* it would be nice to use C99 style initializers here ... */
+static struct sqlite3_module apsw_vtable_module=
+  {
+    1,                    /* version */
+    vtabCreate,           /* xCreate */
+    /* xConnect */
+    /* xBestIndex */
+    /* xDisconnect */
+    /* xDestroy */
+    /* xOpen */
+    /* xClose */
+    /* xFilter */
+    /* xNext */
+    /* xEof */
+    /* xColumn */
+    /* xRowid */
+    /* xUpdate */
+    /* xBegin */
+    /* xSync */
+    /* xCommit */
+    /* xRollback */
+    /* xFindFunction */
+  };
+
+static vtableinfo *
+allocvtableinfo(void)
+{
+  vtableinfo *res=PyMem_Malloc(sizeof(vtableinfo));
+  if(res)
+    memset(res, 0, sizeof(vtableinfo));
+  return res;
+}
+
+static PyObject *
+Connection_createmodule(Connection *self, PyObject *args)
+{
+  char *name=NULL;
+  PyObject *datasource=NULL;
+  vtableinfo *vti;
+  int res;
+
+  CHECK_THREAD(self, NULL);
+
+  if(!PyArg_ParseTuple(args, "esO:createmodule(name, datasource)", "utf_8", &name, &datasource))
+    return NULL;
+
+  Py_INCREF(datasource);
+  vti=allocvtableinfo();
+  vti->connection=self;
+  vti->name=name;
+  vti->datasource=datasource;
+
+  /* ::TODO:: - can we call this with NULL to unregister a module? */
+  res=sqlite3_create_module(self->db, name, &apsw_vtable_module, vti);
+  SET_EXC(self->db, res);
+
+  if(res!=SQLITE_OK)
+    {
+      freevtableinfo(vti);
+      return NULL;
+    }
+
+  /* add vti to linked list */
+  vti->next=self->vtables;
+  self->vtables=vti;
+  
+  return Py_BuildValue("");
+}
+
+#endif /* EXPERIMENTAL */
+/* end of Virtual table code */
+
 
 static PyMethodDef Connection_methods[] = {
   {"cursor", (PyCFunction)Connection_cursor, METH_NOARGS,
@@ -2053,6 +2404,12 @@ static PyMethodDef Connection_methods[] = {
    "Sets a callable invoked before each commit"},
   {"setprogresshandler", (PyCFunction)Connection_setprogresshandler, METH_VARARGS,
    "Sets a callback invoked periodically during long running calls"},
+  {"enableloadextension", (PyCFunction)Connection_enableloadextension, METH_O,
+   "Enables loading of SQLite extensions from shared libraries"},
+  {"loadextension", (PyCFunction)Connection_loadextension, METH_VARARGS,
+   "loads SQLite extension"},
+  {"createmodule", (PyCFunction)Connection_createmodule, METH_VARARGS,
+   "registers a virtual table"},
 #endif
   {NULL}  /* Sentinel */
 };
@@ -2325,7 +2682,7 @@ Cursor_dobinding(Cursor *self, int arg, PyObject *obj)
         badptr=strdata;
         if(strdata)
           {
-	    if(strbytes>INT32_MAX)
+	    if(strbytes>APSW_INT32_MAX)
 	      {
 		PyErr_Format(ExcTooBig, "Unicode object is too large - SQLite only supports up to 2GB");
 	      }
@@ -2360,7 +2717,7 @@ Cursor_dobinding(Cursor *self, int arg, PyObject *obj)
             badptr=strdata;
             if(strdata)
               {
-		if(strbytes>INT32_MAX)
+		if(strbytes>APSW_INT32_MAX)
 		  {
 		    PyErr_Format(ExcTooBig, "Unicode object is too large - SQLite only supports up to 2GB");
 		  }
@@ -2382,7 +2739,7 @@ Cursor_dobinding(Cursor *self, int arg, PyObject *obj)
         }
       else
 	{
-	  if(lenval>INT32_MAX)
+	  if(lenval>APSW_INT32_MAX)
 	      {
 		PyErr_Format(ExcTooBig, "String object is too large - SQLite only supports up to 2GB");
 		return -1;
@@ -2396,7 +2753,7 @@ Cursor_dobinding(Cursor *self, int arg, PyObject *obj)
       Py_ssize_t buflen;
       if(PyObject_AsCharBuffer(obj, &buffer, &buflen))
         return -1;
-      if (buflen>INT32_MAX)
+      if (buflen>APSW_INT32_MAX)
 	{
 	  PyErr_Format(ExcTooBig, "Binding object is too large - SQLite only supports up to 2GB");
 	  return -1;
@@ -3024,7 +3381,11 @@ Cursor_setrowtrace(Cursor *self, PyObject *func)
 static PyObject *
 Cursor_getexectrace(Cursor *self)
 {
-  PyObject *ret=(self->exectrace)?(self->exectrace):Py_None;
+  PyObject *ret;
+
+  CHECK_THREAD(self->connection, NULL);
+
+  ret=(self->exectrace)?(self->exectrace):Py_None;
   Py_INCREF(ret);
   return ret;
 }
@@ -3032,7 +3393,9 @@ Cursor_getexectrace(Cursor *self)
 static PyObject *
 Cursor_getrowtrace(Cursor *self)
 {
-  PyObject *ret=(self->rowtrace)?(self->rowtrace):Py_None;
+  PyObject *ret;
+  CHECK_THREAD(self->connection, NULL);
+  ret =(self->rowtrace)?(self->rowtrace):Py_None;
   Py_INCREF(ret);
   return ret;
 }
