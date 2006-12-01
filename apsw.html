@@ -232,10 +232,11 @@
 "#004080">" SQLite version"</font><font color=
 "#0000C0">,</font>apsw<font color="#0000C0">.</font>SQLITE_VERSION_NUMBER   <font color="#008000"># from the sqlite header file at compile time
 
-</font><font color="blue">   Using APSW file /space/apsw/apsw.so
-      APSW version 3.3.7-r1
-    SQLite version 3.3.7
-    SQLite version 3003007
+</font><font color=
+"blue">   Using APSW file /usr/lib64/python2.4/site-packages/apsw.so
+      APSW version 3.3.8-r1
+    SQLite version 3.3.8
+    SQLite version 3003008
 </font>
 <font color="#008000">###
 ### Opening/creating database
@@ -820,9 +821,13 @@ $ cd sqlite3
 <font color=
 "blue"># The static library is not built for inclusion into a seperate shared library
 # by default.  If using gcc, then do this</font>
-$ env CC="gcc -fPIC" ./configure --enable-threadsafe --disable-tcl
+$ env CC="gcc -fPIC" CFLAGS="-DHAVE_DLOPEN" ./configure --enable-threadsafe --disable-tcl
 <font color="blue"># otherwise do this</font>
-$ ./configure --enable-threadsafe --disable-tcl
+$ env CFLAGS="-DHAVE_DLOPEN" ./configure --enable-threadsafe --disable-tcl
+<font color=
+"blue">The <tt>CFLAGS="-DHAVE_DLOPEN</tt> bit is needed for loading dynamic
+extensions.  See SQLite bug <a href=
+"http://www.sqlite.org/cvstrac/tktview?tn=2082">2082</a></font>
 $ make
 $ cp .libs/*.a .
 $ cd ..
@@ -1189,6 +1194,31 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
       "http://www.sqlite.org/capi3ref.html#sqlite3_progress_handler">sqlite3_progress_handler</a>
       which has more detailed documentation).</p>
     </dd>
+
+    <dt><strong>enableloadextension(bool)</strong> (SQLite 3 experimental
+    feature)</dt>
+
+    <dd>
+      <p>Enables <a href=
+      "http://www.sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions">extension</a>
+      loading which is disabled by default. Calls
+      sqlite3_enable_load_extension.</p>
+    </dd>
+
+    <dt><strong>loadextension(filename, entrypoint=None)</strong> (SQLite 3
+    experimental feature)</dt>
+
+    <dd>
+      <p>Loads an <a href=
+      "http://www.sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions">extension</a>
+      by calling sqlite3_load_extension. If you don't specify the entrypoint
+      then SQLite uses a default of sqlite3_extension_init.</p>
+
+      <p>Note that if you build SQLite 3.3.8 on Unix then extension loading
+      won't be built into SQLite by default. The bug and workaround are SQLite
+      ticket <a href=
+      "http://www.sqlite.org/cvstrac/tktview?tn=2082">2082</a></p>
+    </dd>
   </dl>
 
   <h2><a name="Cursor" id="Cursor">Cursor class</a></h2>
@@ -1324,6 +1354,13 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
     <dd>
       <p>The <a href="executiontracer">execution tracer</a> returned False so
       execution was aborted.</p>
+    </dd>
+
+    <dt>ExtensionLoadingError</dt>
+
+    <dd>
+      <p>An error happened loading an <a href=
+      "http://www.sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions">extension</a>.</p>
     </dd>
   </dl>
 
@@ -2072,7 +2109,9 @@ ZeroDivisionError: integer division or modulo by zero
     traces</a> for details.</li>
 
     <li>String values (traditional and Unicode) work correctly if they have
-    embedded NULL characters.</li>
+    embedded NULL characters (ie not truncated at the NULL).</li>
+
+    <li>You can load SQLite shared library extensions.</li>
   </ul>
 
   <h2><a name="335r1">3.3.5-r1</a></h2>
