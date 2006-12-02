@@ -349,6 +349,33 @@ convertutf8stringsize(const char *str, Py_ssize_t size)
     return PyString_FromStringAndSize(str, size);
 }
 
+/* Returns a PyString encoded in UTF8 - new reference.
+   Use PyString_AsString on the return value to get a
+   const char * to utf8 bytes */
+static PyObject *
+getutf8string(PyObject *string)
+{
+  PyObject *inunicode=NULL;
+  PyObject *utf8string=NULL;
+
+  if(PyUnicode_Check(string))
+    {
+      inunicode=string;
+      Py_INCREF(string);
+    }
+  else
+    {
+      inunicode=PyUnicode_FromObject(string);
+      if(!inunicode) 
+	return NULL;
+    }
+  assert(!PyErr_Occurred());
+
+  utf8string=PyUnicode_AsUTF8String(inunicode);
+  Py_DECREF(inunicode);
+  return utf8string;
+}
+
 /* 
    Python's handling of Unicode is horrible.  It can use 2 or 4 byte
    unicode chars and the conversion routines like to put out BOMs
@@ -2156,7 +2183,6 @@ MakeSqliteMsgFromPyException(char **errmsg)
 	}
     }
 
-
   /* I just want a string of the error! */
   
   PyErr_Fetch(&etype, &evalue, &etraceback);
@@ -2182,16 +2208,17 @@ typedef struct {
   PyObject *vtable;            /* object implementing vtable */
 } apsw_vtable;
 
-static int vtabCreate(sqlite3 *db, 
-		      void *pAux, 
-		      int argc, 
-		      const char *const *argv,
-		      sqlite3_vtab **pVTab,
-		      char **errmsg)
+static int 
+vtabCreate(sqlite3 *db, 
+	   void *pAux, 
+	   int argc, 
+	   const char *const *argv,
+	   sqlite3_vtab **pVTab,
+	   char **errmsg)
 {
   PyGILState_STATE gilstate;
   vtableinfo *vti;
-  PyObject *args=NULL, *res=NULL, *schema=NULL, *unischema=NULL, *vtable=NULL;
+  PyObject *args=NULL, *res=NULL, *schema=NULL, *vtable=NULL;
   apsw_vtable *avi=NULL;
   int sqliteres=SQLITE_OK;
   int i;
@@ -2239,29 +2266,11 @@ static int vtabCreate(sqlite3 *db,
   if(!schema) goto pyexception;
 
   {
-    /* We need the schema as a UTF-8 string, but it could be a String
-       or Unicode so we have to got to a lot of work to get the
-       necessary conversions done and the utf8 bytes out */
-    PyObject *utf8string=NULL;
-    if(PyUnicode_Check(schema))
-      {
-	unischema=schema;
-	Py_INCREF(unischema);
-      }
-    else
-      {
-	unischema=PyUnicode_FromObject(schema);
-	if(!unischema)
-	  goto pyexception;
-      }
-      
-    assert(!PyErr_Occurred());
-    utf8string=PyUnicode_AsUTF8String(unischema);
-    if(!utf8string)
+    PyObject *utf8schema=getutf8string(schema);
+    if(!utf8schema) 
       goto pyexception;
-
-    sqliteres=sqlite3_declare_vtab(db, PyString_AsString(utf8string));
-    Py_DECREF(utf8string);
+    sqliteres=sqlite3_declare_vtab(db, PyString_AsString(utf8schema));
+    Py_DECREF(utf8schema);
     if(sqliteres!=SQLITE_OK)
       {
 	AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xCreate.sqlite3_declare_vtab", "{s: O}", "schema", schema);
@@ -2284,7 +2293,6 @@ static int vtabCreate(sqlite3 *db,
   Py_XDECREF(args);  
   Py_XDECREF(res);
   Py_XDECREF(schema);
-  Py_XDECREF(unischema);
   Py_XDECREF(vtable);
   if(avi)
     PyMem_Free(avi);
@@ -2293,28 +2301,393 @@ static int vtabCreate(sqlite3 *db,
   return sqliteres;
 }
 
+static int
+vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
+{
+  PyGILState_STATE gilstate;
+  PyObject *vtable;
+  PyObject *constraints=NULL, *orderbys=NULL;
+  PyObject *args=NULL, *res=NULL, *indices=NULL;
+  int i,j;
+  int nconstraints=0;
+  int sqliteres=SQLITE_OK;
+
+  gilstate=PyGILState_Ensure();
+
+  vtable=((apsw_vtable*)pVtab)->vtable;
+  
+  /* count how many usable constraints there are */
+  for(i=0;i<indexinfo->nConstraint;i++)
+    if (indexinfo->aConstraint[i].usable)
+      nconstraints++;
+
+  constraints=PyTuple_New(nconstraints);
+  if(!constraints) goto pyexception;
+  
+  /* fill them in */
+  for(i=0, j=0;i<indexinfo->nConstraint;i++)
+    {
+      PyObject *constraint=NULL, *column=NULL, *op=NULL;
+      if(!indexinfo->aConstraint[i].usable) continue;
+      
+      constraint=PyTuple_New(2);
+      column=PyInt_FromLong(indexinfo->aConstraint[i].iColumn);
+      op=PyInt_FromLong(indexinfo->aConstraint[i].op);
+      if(!constraint || !column || !op)
+	{
+	  Py_XDECREF(constraint);
+	  Py_XDECREF(column);
+	  Py_XDECREF(op);
+	  goto pyexception;
+	}
+      PyTuple_SET_ITEM(constraint, 0, column);
+      PyTuple_SET_ITEM(constraint, 1, op);
+      PyTuple_SET_ITEM(constraints, j, constraint);
+      j++;
+    }
+
+  /* group bys */
+  orderbys=PyTuple_New(indexinfo->nOrderBy);
+  if(!orderbys) goto pyexception;
+
+  /* fill them in */
+  for(i=0;i<indexinfo->nOrderBy;i++)
+    {
+      PyObject *order=NULL, *column=NULL, *desc=NULL;
+
+      order=PyTuple_New(2);
+      column=PyInt_FromLong(indexinfo->aOrderBy[i].iColumn);
+      desc=PyBool_FromLong(indexinfo->aOrderBy[i].desc);
+      if(!order || !column || !desc)
+	{
+	  Py_XDECREF(order);
+	  Py_XDECREF(column);
+	  Py_XDECREF(desc);
+	  goto pyexception;
+	}
+      PyTuple_SET_ITEM(order, 0, column);
+      PyTuple_SET_ITEM(order, 1, desc);
+      PyTuple_SET_ITEM(orderbys, i, order);
+    }
+
+  /* actually call the function */
+  args=PyTuple_New(2);
+  if(!args)
+    goto pyexception;
+  PyTuple_SET_ITEM(args, 0, constraints);
+  PyTuple_SET_ITEM(args, 1, orderbys);
+  constraints=orderbys=NULL; /* owned by the tuple now */
+
+  res=Py_CallMethod(vtable, "BestIndex", args);
+  if(!res)
+    goto pyexception;
+
+  /* do we have useful index information? */
+  if(res==Py_None)
+    goto finally;
+
+  /* check we have a sequence */
+  if(!PySequence_Check(res) || PySequence_Size(res)>5)
+    {
+      PyErr_Format(PyExc_TypeError, "Bad result from BestIndex.  It should be a sequence of up to 5 items");
+      goto pyexception;
+    }
+
+  /* dig the argv indices out */
+  if(PySequence_Size(res)==0)
+    goto finally;
+
+  indices=PySequence_GetItem(res, 0);
+  if(indices!=Py_None)
+    {
+      if(!PySequence_Check(indices) || PySequence_Size(indices)!=nconstraints)
+	{
+	  PyErr_Format(PyExc_TypeError, "Bad constraints (item 0 in BestIndex return).  It should be a sequence the same length as the constraints passed in (%d) items", nconstraints);
+	  goto pyexception;
+	}
+      /* iterate through the items - i is the SQLite sequence number and j is the apsw one (usable entries) */
+      for(i=0,j=0;i<indexinfo->nConstraint;i++)
+	{
+	  PyObject *constraint=NULL, *argvindex=NULL, *omit=NULL;
+	  int omitv;
+	  if(!indexinfo->aConstraint[i].usable) continue;
+	  constraint=PySequence_GetItem(indices, j);
+	  if(!constraint) goto pyexception;
+	  j++;
+	  /* it can be None */
+	  if(constraint==Py_None)
+	    {
+	      Py_DECREF(constraint);
+	      continue;
+	    }
+	  /* or an integer */
+	  if(PyInt_Check(constraint))
+	    {
+	      indexinfo->aConstraintUsage[i].argvIndex=PyInt_AsLong(constraint);
+	      Py_DECREF(constraint);
+	      continue;
+	    }
+	  /* or a sequence two items long */
+	  if(!PySequence_Check(constraint) || PySequence_Size(constraint)!=2)
+	    {
+	      PyErr_Format(PyExc_TypeError, "Bad constraint (#%d) - it should be one of None, an integer or a tuple of an integer and a boolean", j);
+	      Py_DECREF(constraint);
+	      goto pyexception;
+	    }
+	  argvindex=PySequence_GetItem(constraint, 0);
+	  omit=PySequence_GetItem(constraint, 1);
+	  if(!argvindex || !omit) goto constraintfail;
+	  if(!PyInt_Check(argvindex))
+	    {
+	      PyErr_Format(PyExc_TypeError, "argvindex for constraint #%d should be an integer", j);
+	      goto constraintfail;
+	    }
+	  omitv=PyObject_IsTrue(omit);
+	  if(omitv==-1) goto constraintfail;
+	  indexinfo->aConstraintUsage[i].argvIndex=PyInt_AsLong(argvindex);
+	  indexinfo->aConstraintUsage[i].omit=omitv;
+	  Py_DECREF(constraint);
+	  Py_DECREF(argvindex);
+	  Py_DECREF(omit);
+	  continue;
+
+	constraintfail:
+	  Py_DECREF(constraint);
+	  Py_XDECREF(argvindex);
+	  Py_XDECREF(omit);
+	  goto pyexception;
+	}
+    }
+
+  /* item #1 is idxnum */
+  if(PySequence_Size(res)<2)
+    goto finally;
+  {
+    PyObject *idxnum=PySequence_GetItem(res, 1);
+    if(!idxnum) goto pyexception;
+    if(idxnum!=Py_None)
+      {
+	if(!PyInt_Check(idxnum))
+	  {
+	    PyErr_Format(PyExc_TypeError, "idxnum must be an integer");
+	    Py_DECREF(idxnum);
+	    goto pyexception;
+	  }
+	indexinfo->idxNum=PyInt_AsLong(idxnum);
+      }
+    Py_DECREF(idxnum);
+  }
+
+  /* item #2 is idxStr */
+  if(PySequence_Size(res)<3)
+    goto finally;
+  {
+    PyObject *utf8str=NULL, *idxstr=NULL;
+    idxstr=PySequence_GetItem(res, 2);
+    if(!idxstr) goto pyexception;
+    if(idxstr!=Py_None)
+      {
+	utf8str=getutf8string(idxstr);
+	if(!utf8str)
+	  {
+	    Py_DECREF(idxstr);
+	    goto pyexception;
+	  }
+	indexinfo->idxStr=sqlite3_mprintf("%s", PyString_AsString(utf8str));
+	indexinfo->needToFreeIdxStr=1;
+      }
+    Py_XDECREF(utf8str);
+    Py_DECREF(idxstr);
+  }
+
+  /* item 3 is orderByConsumed */
+  if(PySequence_Size(res)<4)
+    goto finally;
+  {
+    PyObject *orderbyconsumed=NULL;
+    int iorderbyconsumed;
+    orderbyconsumed=PySequence_GetItem(res, 3);
+    if(!orderbyconsumed) goto pyexception;
+    if(orderbyconsumed!=Py_None)
+      {
+	iorderbyconsumed=PyObject_IsTrue(orderbyconsumed);
+	if(iorderbyconsumed==-1)
+	  {
+	    Py_DECREF(orderbyconsumed);
+	    goto pyexception;
+	  }
+	indexinfo->orderByConsumed=iorderbyconsumed;
+      }
+    Py_DECREF(orderbyconsumed);
+  }
+
+  /* item 4 (final) is estimated cost */
+  if(PySequence_Size(res)<5)
+    goto finally;
+  assert(PySequence_Size(res)==5);
+  {
+    PyObject *estimatedcost=NULL, *festimatedcost=NULL;
+    estimatedcost=PySequence_GetItem(res,4);
+    if(!estimatedcost) goto pyexception;
+    if(estimatedcost!=Py_None)
+      {
+	festimatedcost=PyNumber_Float(estimatedcost);
+	if(!festimatedcost)
+	  {
+	    Py_DECREF(estimatedcost);
+	    goto pyexception;
+	  }
+	indexinfo->estimatedCost=PyFloat_AsDouble(festimatedcost);
+      }
+    Py_XDECREF(festimatedcost);
+    Py_DECREF(estimatedcost);
+  }
+
+  goto finally;
+
+ pyexception: /* we had an exception in python code */
+  assert(PyErr_Occurred());
+  sqliteres=MakeSqliteMsgFromPyException(&(pVtab->zErrMsg));
+  AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex", "{s: O}", "self", vtable);
+
+ finally:
+  Py_XDECREF(indices);
+  Py_XDECREF(args);
+  Py_XDECREF(res);
+  Py_XDECREF(constraints);
+  Py_XDECREF(orderbys);
+  PyGILState_Release(gilstate);
+  return sqliteres;
+}
+
+typedef struct {
+  sqlite3_vtab_cursor used_by_sqlite;   /* I don't touch this */
+  PyObject *cursor;                     /* Object implementing cursor */
+} apsw_vtable_cursor;
+
+
+static int
+vtabOpen(sqlite3_vtab *pVtab, sqlite3_vtab_cursor **ppCursor)
+{ 
+  PyObject *vtable=NULL, *args=NULL, *res=NULL;
+  PyGILState_STATE gilstate;
+  apsw_vtable_cursor *avc=NULL;
+  int sqliteres=SQLITE_OK;
+
+  gilstate=PyGILState_Ensure();
+
+  vtable=((apsw_vtable*)pVtab)->vtable;
+
+  args=PyTuple_New(0);
+  if(!args) goto pyexception;
+  res=Py_CallMethod(vtable, "Open", args);
+  if(!res)
+    goto pyexception;
+  avc=PyMem_Malloc(sizeof(apsw_vtable_cursor));
+  assert((void*)avc==(void*)&(avc->used_by_sqlite)); /* detect if wierd padding happens */
+  memset(avc, 0, sizeof(apsw_vtable_cursor));
+
+  avc->cursor=res;
+  res=NULL;
+  *ppCursor=(sqlite3_vtab_cursor*)avc;
+  goto finally;
+
+ pyexception: /* we had an exception in python code */
+  assert(PyErr_Occurred());
+  sqliteres=MakeSqliteMsgFromPyException(&(pVtab->zErrMsg));
+  AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xOpen", "{s: O}", "self", vtable);
+
+ finally:
+  Py_XDECREF(args);
+  Py_XDECREF(res);
+  PyGILState_Release(gilstate);
+  return sqliteres;
+}
+
+
+/* I haven't implemented these yet */
+
+#define CORE_ME { *(char*)0=97; return SQLITE_ERROR; }
+
+static int
+vtabConnect(sqlite3 *db, void *pAux,
+	    int argc, const char * const*argv,
+	    sqlite3_vtab **ppVTab,
+	    char **errmsg)
+{ CORE_ME; }
+
+static int
+vtabDisconnect(sqlite3_vtab *pVTab)
+
+{ CORE_ME; }
+static int
+vtabDestroy(sqlite3_vtab *pVTab)
+{ CORE_ME; }
+
+
+
+static int
+vtabClose(sqlite3_vtab_cursor *pCursor)
+{ CORE_ME; }
+
+static int
+vtabFilter(sqlite3_vtab_cursor *pCursor, int idxNum, const char *idxStr,
+                  int argc, sqlite3_value **argv)
+{ CORE_ME; }
+
+static int
+vtabNext(sqlite3_vtab_cursor *pCursor)
+{ CORE_ME; }
+
+static int
+vtabEof(sqlite3_vtab_cursor *pCursor)
+{ CORE_ME; }
+
+static int
+vtabColumn(sqlite3_vtab_cursor *pCursor, sqlite3_context *result, int ncolumn)
+{ CORE_ME; }
+
+static int
+vtabRowid(sqlite3_vtab_cursor *pCursor, sqlite_int64 *pRowid)
+{ CORE_ME; }
+
+static int
+vtabUpdate(sqlite3_vtab *pVTab, int argc, sqlite3_value **argv, sqlite_int64 *pRowid)
+{ CORE_ME; }
+
+static int vtabBegin(sqlite3_vtab *pVtab) { CORE_ME; }
+static int vtabSync(sqlite3_vtab *pVtab) { CORE_ME; }
+static int vtabCommit(sqlite3_vtab *pVtab) { CORE_ME; }
+static int vtabRollback(sqlite3_vtab *pVtab) { CORE_ME; }
+
+static int 
+vtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
+		 void (**pxFunc)(sqlite3_context*,int,sqlite3_value**),
+		 void **ppArg)
+{ CORE_ME; }
+
 /* it would be nice to use C99 style initializers here ... */
 static struct sqlite3_module apsw_vtable_module=
   {
     1,                    /* version */
-    vtabCreate,           /* xCreate */
-    /* xConnect */
-    /* xBestIndex */
-    /* xDisconnect */
-    /* xDestroy */
-    /* xOpen */
-    /* xClose */
-    /* xFilter */
-    /* xNext */
-    /* xEof */
-    /* xColumn */
-    /* xRowid */
-    /* xUpdate */
-    /* xBegin */
-    /* xSync */
-    /* xCommit */
-    /* xRollback */
-    /* xFindFunction */
+    vtabCreate,           /* methods */
+    vtabConnect,          
+    vtabBestIndex,        
+    vtabDisconnect,
+    vtabDestroy,
+    vtabOpen,
+    vtabClose, 
+    vtabFilter, 
+    vtabNext, 
+    vtabEof, 
+    vtabColumn,
+    vtabRowid, 
+    vtabUpdate, 
+    vtabBegin, 
+    0,                   // vtabSync, 
+    0,                   // vtabCommit, 
+    vtabRollback,
+    vtabFindFunction 
   };
 
 static vtableinfo *
@@ -3153,7 +3526,12 @@ Cursor_execute(Cursor *self, PyObject *args)
   res=sqlite3_prepare(self->connection->db, self->zsql, -1, &self->statement, &self->zsqlnextpos);
   SET_EXC(self->connection->db,res);
   if (res!=SQLITE_OK)
+    {
+      AddTraceBackHere(__FILE__, __LINE__, "Cursor_execute.sqlite3_prepare", "{s: O, s: N}", 
+		       "Connection", self->connection, 
+		       "statement", PyUnicode_DecodeUTF8(self->zsql, strlen(self->zsql), "strict"));
       return NULL;
+    }
   
   self->bindingsoffset=0;
   if(Cursor_dobindings(self))
