@@ -2144,6 +2144,8 @@ Call_PythonMethod(PyObject *obj, const char *methodname, PyObject *args, int man
   PyObject *method=NULL;
   PyObject *res=NULL;
 
+  assert(!PyErr_Occurred()); /* we clear error later, shouldn't be called with error already set */
+
   /* we should only be called with ascii methodnames so no need to do
      character set conversions etc */
   method=PyObject_GetAttrString(obj, methodname);
@@ -2302,6 +2304,7 @@ vtabCreateOrConnect(sqlite3 *db,
     Py_DECREF(utf8schema);
     if(sqliteres!=SQLITE_OK)
       {
+	SET_EXC(db, sqliteres);
 	AddTraceBackHere(__FILE__, __LINE__,  create_or_connect_strings[stringindex].declarevtabtracebackname, "{s: O}", "schema", schema);
 	goto finally;
       }
@@ -2317,7 +2320,7 @@ vtabCreateOrConnect(sqlite3 *db,
  pyexception: /* we had an exception in python code */
   sqliteres=MakeSqliteMsgFromPyException(errmsg);
   AddTraceBackHere(__FILE__, __LINE__, create_or_connect_strings[stringindex].pyexceptionname, 
-		   "{s: s, s: s, s: s}", "modulename", argv[0], "database", argv[1], "tablename", argv[2]);
+		   "{s: s, s: s, s: s, s: O}", "modulename", argv[0], "database", argv[1], "tablename", argv[2], "schema", schema?schema:Py_None);
 
  finally: /* cleanup */
   Py_XDECREF(args);  
@@ -2383,7 +2386,16 @@ vtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
   args=PyTuple_New(0);
   if(!args) goto pyexception;
   res=Call_PythonMethod(vtable, destroy_disconnect_strings[stringindex].methodname, args, 1);
-  if(res) goto finally;
+  if(res) 
+    {
+      PyMem_Free(pVtab);
+      goto finally;
+    }
+  
+  /* ::TODO:: waiting on ticket 2099 to know if the pVtab should also be freed in case of error return.
+     For safety, make the vtable be a pointer to PyNone so any future callbacks do no harm */
+  ((apsw_vtable*)pVtab)->vtable=Py_None;
+  Py_INCREF(Py_None);
 
  pyexception: /* we had an exception in python code */
   sqliteres=MakeSqliteMsgFromPyException(&(pVtab->zErrMsg));
@@ -2500,6 +2512,7 @@ vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
   if(!PySequence_Check(res) || PySequence_Size(res)>5)
     {
       PyErr_Format(PyExc_TypeError, "Bad result from BestIndex.  It should be a sequence of up to 5 items");
+      AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex.result_check", "{s: O, s: O}", "self", vtable, "result", res);
       goto pyexception;
     }
 
@@ -2513,6 +2526,8 @@ vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
       if(!PySequence_Check(indices) || PySequence_Size(indices)!=nconstraints)
 	{
 	  PyErr_Format(PyExc_TypeError, "Bad constraints (item 0 in BestIndex return).  It should be a sequence the same length as the constraints passed in (%d) items", nconstraints);
+	  AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex.result_indices", "{s: O, s: O, s: O}", 
+			   "self", vtable, "result", res, "indices", indices);
 	  goto pyexception;
 	}
       /* iterate through the items - i is the SQLite sequence number and j is the apsw one (usable entries) */
@@ -2541,6 +2556,8 @@ vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
 	  if(!PySequence_Check(constraint) || PySequence_Size(constraint)!=2)
 	    {
 	      PyErr_Format(PyExc_TypeError, "Bad constraint (#%d) - it should be one of None, an integer or a tuple of an integer and a boolean", j);
+	      AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex.result_constraint", "{s: O, s: O, s: O, s: O}", 
+			       "self", vtable, "result", res, "indices", indices, "constraint", constraint);
 	      Py_DECREF(constraint);
 	      goto pyexception;
 	    }
@@ -2550,6 +2567,8 @@ vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
 	  if(!PyInt_Check(argvindex))
 	    {
 	      PyErr_Format(PyExc_TypeError, "argvindex for constraint #%d should be an integer", j);
+	      AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex.result_constraint_argvindex", "{s: O, s: O, s: O, s: O, s: O}", 
+			       "self", vtable, "result", res, "indices", indices, "constraint", constraint, "argvindex", argvindex);
 	      goto constraintfail;
 	    }
 	  omitv=PyObject_IsTrue(omit);
@@ -2580,6 +2599,7 @@ vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
 	if(!PyInt_Check(idxnum))
 	  {
 	    PyErr_Format(PyExc_TypeError, "idxnum must be an integer");
+	      AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex.result_indexnum", "{s: O, s: O, s: O}", "self", vtable, "result", res, "indexnum", idxnum);
 	    Py_DECREF(idxnum);
 	    goto pyexception;
 	  }
@@ -2658,7 +2678,7 @@ vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
  pyexception: /* we had an exception in python code */
   assert(PyErr_Occurred());
   sqliteres=MakeSqliteMsgFromPyException(&(pVtab->zErrMsg));
-  AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex", "{s: O}", "self", vtable);
+  AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex", "{s: O, s: O, s: O}", "self", vtable, "result", res?res:Py_None, "args", args?args:Py_None);
 
  finally:
   Py_XDECREF(indices);
@@ -2973,6 +2993,7 @@ vtabClose(sqlite3_vtab_cursor *pCursor)
   if(!args) goto pyexception;
 
   res=Call_PythonMethod(cursor, "Close", args, 1);
+  PyMem_Free(pCursor); /* always free */
   if(res) goto finally;
 
  pyexception: /* we had an exception in python code */
@@ -4473,10 +4494,21 @@ initapsw(void)
     ADDINT(SQLITE_ANALYZE);
     ADDINT(SQLITE_CREATE_VTABLE);
     ADDINT(SQLITE_DROP_VTABLE);
+    ADDINT(SQLITE_FUNCTION);
 
     /* Version number */
     ADDINT(SQLITE_VERSION_NUMBER);
 
-    /* ::TODO:: vtable best index constraints */
+    /* vtable best index constraints */
+#if defined(SQLITE_INDEX_CONSTRAINT_EQ) && defined(SQLITE_INDEX_CONSTRAINT_MATCH)
+
+    ADDINT(SQLITE_INDEX_CONSTRAINT_EQ);
+    ADDINT(SQLITE_INDEX_CONSTRAINT_GT);
+    ADDINT(SQLITE_INDEX_CONSTRAINT_LE);
+    ADDINT(SQLITE_INDEX_CONSTRAINT_LT);
+    ADDINT(SQLITE_INDEX_CONSTRAINT_GE);
+    ADDINT(SQLITE_INDEX_CONSTRAINT_MATCH);
+
+#endif /* constraints */
 }
 
