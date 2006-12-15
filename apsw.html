@@ -7,8 +7,6 @@
   "HTML Tidy for Linux (vers 1st August 2004), see www.w3.org" />
 
   <title>APSW - Another Python SQLite Wrapper</title>
-  <!-- Changed by: , 24-Jun-2006 -->
-  <!-- My stylesheet until somone supplies a better one -->
   <link rel="StyleSheet" href="http://www.rogerbinns.com/styles/main.css" type=
   "text/css" />
 </head>
@@ -16,7 +14,7 @@
 <body>
   <h1 class="notoc">APSW - Another Python SQLite Wrapper</h1>
 
-  <p><font size="-1">apsw-3.3.7-r1 7th September 2006</font></p>
+  <p><font size="-1">apsw-3.3.8-r1 20th December 2006</font></p>
 
   <p>APSW provides an SQLite 3 wrapper that provides the thinnest layer over
   <a href="http://www.sqlite.org">SQLite 3</a> possible. Everything you can do
@@ -64,6 +62,8 @@
               <li><a href="#Connection_class">Connection class</a></li>
 
               <li><a href="#Cursor">Cursor class</a></li>
+
+              <li><a href="#Virtual">Virtual Tables</a></li>
             </ul>
           </li>
 
@@ -125,6 +125,8 @@
             <a href="#verhistory">Version History</a>
 
             <ul>
+              <li><a href="#338r1">3.3.8-r1</a></li>
+
               <li><a href="#337r1">3.3.7-r1</a></li>
 
               <li><a href="#335r1">3.3.5-r1</a></li>
@@ -232,8 +234,7 @@
 "#004080">" SQLite version"</font><font color=
 "#0000C0">,</font>apsw<font color="#0000C0">.</font>SQLITE_VERSION_NUMBER   <font color="#008000"># from the sqlite header file at compile time
 
-</font><font color=
-"blue">   Using APSW file /usr/lib64/python2.4/site-packages/apsw.so
+</font><font color="blue">   Using APSW file /space/apsw/apsw.so
       APSW version 3.3.8-r1
     SQLite version 3.3.8
     SQLite version 3003008
@@ -1301,6 +1302,85 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
     </dd>
   </dl>
 
+  <h2><a name="Virtual" id="Virtual">Virtual Tables</a></h2>
+
+  <p><a href="http://www.sqlite.org/cvstrac/wiki?p=VirtualTables">Virtual
+  Tables</a> are a new experimental feature introduced in SQLite 3.3.7 and
+  updated in 3.3.8. They let a developer provide underlying table
+  implementations, while still presenting a normal SQL interface to the user.
+  The person writing SQL doesn't need to know or care that some of the tables
+  come from elsewhere.</p>
+
+  <p>Some examples of how you might use this:</p>
+
+  <ul>
+    <li>Translating to/from information stored in other formats (eg a csv/ini
+    format file)</li>
+
+    <li>Accessing the data remotely (eg you could make a table that backends
+    into <a href="http://www.josephson.org/projects/pyamazon/">Amazon's
+    API</a></li>
+
+    <li>Dynamic information (eg currently running processes, files and
+    directories etc)</li>
+
+    <li>Information that needs reformatting (eg if you have complex rules about
+    how to convert strings to/from Unicode in the dataset)</li>
+
+    <li>Information that isn't relationally correct (eg if you have data that
+    has ended up with duplicate "unique" keys)</li>
+
+    <li>There are other examples on the <a href=
+    "http://www.sqlite.org/cvstrac/wiki?p=VirtualTables">SQLite page</a></li>
+  </ul>
+
+  <p>You need to have 3 types of object. A module, a virtual table and a
+  cursor. These are documented below. You can also read the <a href=
+  "http://www.sqlite.org/cvstrac/wiki?p=VirtualTableMethods">SQLite C method
+  documentation</a>. At the C, they are just one set of methods. At the
+  Python/apsw level, they are split over the 3 types of object. The leading
+  <tt><i>x</i></tt> is ommitted in Python. You can return SQLite error codes
+  (eg <code>SQLITE_READONLY</code>) by raising the appropriate exceptions (eg
+  <code>apsw.ReadOnlyError</code>).</p>
+
+  <h3>Module</h3>
+
+  <p>The module is used to create the virtual tables. Once you have a module
+  object, you register it with a connection by calling
+  <code>Connection.createmodule("modulename", module_object)</code>. To create
+  the table, you use SQL: <code>CREATE <b>VIRTUAL</b> TABLE tablename USING
+  modulename<i>(arg0, arg1, ...)</i></code></p>
+
+  <dl>
+    <dt><code><strong>Create(connection, modulename, databasename, tablename,
+    *args)</strong></code></dt>
+
+    <dd>
+      <p>This is called when a table is first created on a connection. The
+      optional args are passed from the SQL CREATE statement.</p>
+
+      <p><b>Return</b> two items. The first item should be a string with SQL
+      specifying the schema for the table. The second item is an Object that
+      implements the table methods.</p>
+    </dd>
+
+    <dt><strong>Connect(connection, modulename, databasename, tablename,
+    *args)</strong></dt>
+
+    <dd>
+      <p>Similar to Create, except it is called to establish a new connection
+      to an existing table. The paramaters and return are the same. In general
+      Create is called the first time a table is accessed and is where you are
+      expect to do heavy initialisation work. Connect can take that initialized
+      work and reuse it.</p>
+    </dd>
+  </dl>
+
+  <h3>Table</h3>
+
+  <p>The table contains knowledge of the indices, makes cursors and can perform
+  transactions.</p>
+
   <h1><a name="Exceptions" id="Exceptions">Exceptions</a></h1>
 
   <p>All exception types have <code>apsw.Error</code> as a parent. The
@@ -2090,12 +2170,24 @@ ZeroDivisionError: integer division or modulo by zero
 
   <h1><a name="verhistory" id="verhistory">Version History</a></h1>
 
+  <h2><a name="338r1">3.3.8-r1</a></h2>
+
+  <p>You can use this with SQLite 3.3.8 onwards. There was an incompatible API
+  change for virtual tables in SQLite 3.3.8.</p>
+
+  <ul>
+    <li>Virtual tables updated for new api</li>
+
+    <li>::TODO:: extended result codes</li>
+
+    <li>::TODO:: add close methods</li>
+  </ul>
+
   <h2><a name="337r1">3.3.7-r1</a></h2>
 
-  <p>You can use this release against any release of SQLite 3 from 3.3.7
-  onwards. There were no changes in the SQLite 3.3.6 API from 3.3.5. In SQLite
-  3.3.7 an API was added that allowed removing a chunk of duplicate code. Also
-  added were <a href=
+  <p>You can use this release against SQLite 3.3.7. There were no changes in
+  the SQLite 3.3.6 API from 3.3.5. In SQLite 3.3.7 an API was added that
+  allowed removing a chunk of duplicate code. Also added were <a href=
   "http://www.sqlite.org/cvstrac/wiki?p=VirtualTables">Virtual Tables</a> and
   loading of external modules (shared libraries). APSW had the following
   changes:</p>
