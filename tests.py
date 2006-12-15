@@ -1241,6 +1241,152 @@ class APSW(unittest.TestCase):
         self.db.loadextension(LOADEXTENSIONFILENAME, "alternate_sqlite3_extension_init")
         self.failUnlessEqual(4, c.execute("select doubleup(2)").next()[0])
 
+    def testVtables(self):
+        "Test virtual table functionality"
+
+        data=( # row 0 is headers, column 0 is rowid
+            ( "rowid",     "name",    "number", "item",          "description"),
+            ( 1,           "Joe Smith",    1.1, u"\u00f6\u1234", "foo"),
+            ( 6000000000L, "Road Runner", -7.3, u"\u00f6\u1235", "foo"),
+            ( 77,          "Fred",           0, u"\u00f6\u1236", "foo"),
+            )
+
+        dataschema="create table this_should_be_ignored"+`data[0][1:]`
+        # a query that will get constraints on every column
+        allconstraints="select rowid,* from foo where rowid>-1000 and name>='A' and number<=12.4 and item>'A' and description MATCH 'foo' order by item"
+        allconstraintsl=[(-1, apsw.SQLITE_INDEX_CONSTRAINT_GT), # rowid >
+                         ( 0, apsw.SQLITE_INDEX_CONSTRAINT_GE), # name >=
+                         ( 1, apsw.SQLITE_INDEX_CONSTRAINT_LE), # number <=
+                         ( 2, apsw.SQLITE_INDEX_CONSTRAINT_GT), # item >
+                         ( 3, apsw.SQLITE_INDEX_CONSTRAINT_MATCH), # description match
+                         ]
+        
+
+        # The testing uses a different module name each time.  SQLite
+        # doc doesn't define the semantics if a 2nd module is
+        # registered with the same name as an existing one and I was
+        # getting coredumps.  It looks like issues inside SQLite.
+
+        cur=self.db.cursor()
+        # should fail since module isn't registered
+        self.assertRaises(apsw.SQLError, cur.execute, "create virtual table vt using testmod(x,y,z)")
+        # give a bad object
+        self.db.createmodule("testmod", 12) # next line fails due to lack of Create method
+        self.assertRaises(AttributeError, cur.execute, "create virtual table xyzzy using testmod(x,y,z)")
+
+        class Source:
+            def __init__(self, *expectargs):
+                self.expectargs=expectargs
+                
+            def Create(self, *args): # db, modname, dbname, tablename, args
+                if self.expectargs!=args:
+                    raise ValueError("Create arguments are not what was expected: "+`args`)
+                1/0
+
+            def CreateErrorCode(self, *args):
+                # This makes sure that sqlite error codes happen.  The coverage checker
+                # is what verifies the code actually works.
+                raise apsw.BusyError("foo")
+
+            def CreateUnicodeException(self, *args):
+                raise Exception(u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}\N{LATIN SMALL LETTER O WITH DIAERESIS}")
+
+            def CreateBadSchemaType(self, *args):
+                return 12, None
+
+            def CreateBadSchema(self, *args):
+                return "this isn't remotely valid sql", None
+
+        # check Create does the right thing - this also tests original object return for the db parameter
+        self.db.createmodule("testmod1", Source(self.db, "testmod1", "main", "xyzzy", "1", '"one"'))
+        self.assertRaises(ZeroDivisionError, cur.execute, 'create virtual table xyzzy using testmod1(1,"one")')
+        # unicode
+        uni=u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}\N{LATIN SMALL LETTER O WITH DIAERESIS}"
+        self.db.createmodule("testmod1dash1", Source(self.db, "testmod1dash1", "main", uni, "1", u'"'+uni+u'"'))
+        self.assertRaises(ZeroDivisionError, cur.execute, u'create virtual table %s using testmod1dash1(1,"%s")' % (uni, uni))
+        Source.Create=Source.CreateErrorCode
+        self.assertRaises(apsw.BusyError, cur.execute, 'create virtual table xyzzz using testmod1(2, "two")')
+        Source.Create=Source.CreateUnicodeException
+        self.assertRaises(Exception, cur.execute, 'create virtual table xyzzz using testmod1(2, "two")')
+        Source.Create=Source.CreateBadSchemaType
+        self.assertRaises(TypeError, cur.execute, 'create virtual table xyzzz using testmod1(2, "two")')
+        Source.Create=Source.CreateBadSchema
+        self.assertRaises(apsw.SQLError, cur.execute, 'create virtual table xyzzz2 using testmod1(2, "two")')
+
+        # a good version of Source
+        class Source:
+            def Create(self, *args):
+                return dataschema, VTable(list(data))
+            Connect=Create
+
+        class VTable:
+
+            # A set of results from bestindex which should all generate TypeError.
+            # Coverage checking will ensure all the code is appropriately tickled
+            badbestindex=(12,
+                          (12,),
+                          ((),),
+                          (((),),),
+                          ((((),),),),
+                          (((((),),),),),
+                          ((None,None,None,None,"bad"),),
+                          ((0,None,(0,),None,None),),
+                          ((("bad",True),None,None,None,None),),
+                          (((0, True),"bad",None,None,None),),
+                          (None,"bad"),
+                          )
+            numbadbextindex=len(badbestindex)
+
+            def __init__(self, data):
+                self.data=data
+                self.bestindex3val=0
+
+            def BestIndex1(self, wrong, number, of, arguments):
+                1/0
+
+            def BestIndex2(self, *args):
+                1/0
+
+            def BestIndex3(self, constraints, orderbys):
+                retval=self.badbestindex[self.bestindex3val]
+                self.bestindex3val+=1
+                if self.bestindex3val>=self.numbadbextindex:
+                    self.bestindex3val=0
+                return retval
+
+            def BestIndex4(self, constraints, orderbys):
+                # this gives ValueError ("bad" is not a float)
+                return (None,12,u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}", "anything", "bad")
+                
+            def BestIndex99(self, constraints, orderbys):
+                print constraints, orderbys
+                cl=list(constraints)
+                cl.sort()
+                assert allconstraintsl == cl
+                assert orderbys == ( (2, False), )
+                return ( [4,(3,),[2,False],[1], [0]], 997, u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}", False)
+
+        # use our more complete version
+        self.db.createmodule("testmod2", Source())
+        cur.execute("create virtual table foo using testmod2(2,two)")
+        # are missing/mangled methods detected correctly?
+        self.assertRaises(AttributeError, cur.execute, "select rowid,* from foo group by number")
+        VTable.BestIndex=VTable.BestIndex1
+        self.assertRaises(TypeError, cur.execute, "select rowid,* from foo groupby number")
+        VTable.BestIndex=VTable.BestIndex2
+        self.assertRaises(ZeroDivisionError, cur.execute, "select rowid,* from foo group by number")
+        # check bestindex results
+        VTable.BestIndex=VTable.BestIndex3
+        for i in range(VTable.numbadbextindex):
+            self.assertRaises(TypeError, cur.execute, allconstraints)
+        VTable.BestIndex=VTable.BestIndex4
+        self.assertRaises(ValueError, cur.execute, allconstraints)
+
+        # error cases ok, return real values
+        VTable.BestIndex=VTable.BestIndex99
+        self.assertRaises(AttributeError, cur.execute, allconstraints)
+        
+
 # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used
 LOADEXTENSIONFILENAME="./testextension.sqlext"
             
