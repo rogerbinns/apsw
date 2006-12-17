@@ -63,7 +63,7 @@
 
               <li><a href="#Cursor">Cursor class</a></li>
 
-              <li><a href="#Virtual">Virtual Tables</a></li>
+              <li><a href="#VirtualTables">Virtual Tables</a></li>
             </ul>
           </li>
 
@@ -797,7 +797,7 @@ python setup.py build --compile=mingw32 install
         <pre>
 &gt; mkdir sqlite3
 &gt; cd sqlite3
-&gt; unzip sqlite-source-3.3.6.zip
+&gt; unzip sqlite-source-3.3.8.zip
 &gt; del tclsqlite.c
 &gt; gcc -DTHREADSAFE -O3 -c *.c <font color=
 "blue"># Adding -DNDEBUG will turn off assertion checking and
@@ -815,9 +815,9 @@ python setup.py build --compile=mingw32 install
 
       <dd>
         <pre>
-$ wget http://www.sqlite.org/sqlite-3.3.6.tar.gz
-$ tar xvfz sqlite-3.3.6.tar.gz
-$ mv sqlite-3.3.6 sqlite3
+$ wget http://www.sqlite.org/sqlite-3.3.8.tar.gz
+$ tar xvfz sqlite-3.3.8.tar.gz
+$ mv sqlite-3.3.8 sqlite3
 $ cd sqlite3
 <font color=
 "blue"># The static library is not built for inclusion into a seperate shared library
@@ -909,6 +909,13 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
       objects are cleaned up, and SQLite automatically cleans up the shared
       cache when the last Connection in a thread is closed.</p>
     </dd>
+
+    <dt><strong>createmodule("modulename", module_object)</strong></dt>
+
+    <dd>
+      <p>Registers a virtual table. See <a href="#VirtualTables">virtual
+      tables</a> for more details.</p>
+    </dd>
   </dl>
 
   <h2><a name="Module_constants" id="Module_constants">Module
@@ -922,7 +929,7 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
 
     <dd>This is the version of the SQLite library from the header file
     <tt>sqlite3.h</tt> at apsw compile time. It is expressed as an integer (eg
-    3003007 for SQLite 3.3.7).</dd>
+    3003008 for SQLite 3.3.8).</dd>
 
     <dt><strong>SQLITE_OK SQLITE_DENY SQLITE_IGNORE</strong></dt>
 
@@ -1302,7 +1309,7 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
     </dd>
   </dl>
 
-  <h2><a name="Virtual" id="Virtual">Virtual Tables</a></h2>
+  <h2><a name="VirtualTables" id="VirtualTables">Virtual Tables</a></h2>
 
   <p><a href="http://www.sqlite.org/cvstrac/wiki?p=VirtualTables">Virtual
   Tables</a> are a new experimental feature introduced in SQLite 3.3.7 and
@@ -1322,13 +1329,14 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
     API</a></li>
 
     <li>Dynamic information (eg currently running processes, files and
-    directories etc)</li>
+    directories, objects in your program)</li>
 
     <li>Information that needs reformatting (eg if you have complex rules about
     how to convert strings to/from Unicode in the dataset)</li>
 
     <li>Information that isn't relationally correct (eg if you have data that
-    has ended up with duplicate "unique" keys)</li>
+    has ended up with duplicate "unique" keys with code that dynamically
+    corrects it)</li>
 
     <li>There are other examples on the <a href=
     "http://www.sqlite.org/cvstrac/wiki?p=VirtualTables">SQLite page</a></li>
@@ -1352,8 +1360,8 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
   modulename<i>(arg0, arg1, ...)</i></code></p>
 
   <dl>
-    <dt><code><strong>Create(connection, modulename, databasename, tablename,
-    *args)</strong></code></dt>
+    <dt><strong>Create(connection, modulename, databasename, tablename,
+    *args)</strong></dt>
 
     <dd>
       <p>This is called when a table is first created on a connection. The
@@ -1361,7 +1369,10 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
 
       <p><b>Return</b> two items. The first item should be a string with SQL
       specifying the schema for the table. The second item is an Object that
-      implements the table methods.</p>
+      implements the table methods. Later methods in the Table and Cursor
+      objects will reference the columns by number, starting at zero with
+      column -1 being the rowid. Every row must have a unique unchanging
+      integer rowid up to 64bit signed integer.</p>
     </dd>
 
     <dt><strong>Connect(connection, modulename, databasename, tablename,
@@ -1381,635 +1392,1093 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
   <p>The table contains knowledge of the indices, makes cursors and can perform
   transactions.</p>
 
-  <h1><a name="Exceptions" id="Exceptions">Exceptions</a></h1>
-
-  <p>All exception types have <code>apsw.Error</code> as a parent. The
-  following exceptions can happen:</p>
-
   <dl>
-    <dt>ThreadingViolationError</dt>
+    <dt><strong>Begin() Sync() Commit() Rollback()</strong> (optional)</dt>
 
     <dd>
-      <p>You have used an object allocated in one thread in a different thread.
-      All objects (Connection, Cursor) must be used in the same thread they
-      were allocated in.</p>
+      <p>These functions are used as part of transactions. At the time of
+      writing they are undocumented in SQLite (see <a href=
+      "http://www.sqlite.org/cvstrac/wiki?p=VirtualTableMethods">www.sqlite.org/cvstrac/wiki?p=VirtualTableMethods</a>.
+      They do not take any arguments nor return anything. You do not have to
+      provide these methods.</p>
     </dd>
 
-    <dt>IncompleteExecutionError</dt>
+    <dt><strong>Disconnect() Destroy()</strong></dt>
 
     <dd>
-      <p>You have tried to start a new SQL execute call before executing all
-      the previous ones. See the <a href="#executionmodel">execution model</a>
-      for more details.</p>
+      <p>These methods are the opposite of <code>Connect</code> and
+      <code>Create</code> in the module implementation. They can be considered
+      destructors for the virtual table instance. It is currently unclear how
+      SQLite behaves if you return an error (<a href=
+      "http://www.sqlite.org/cvstrac/tktview?tn=2099">ticket 2099</a>).</p>
     </dd>
 
-    <dt>BindingsError</dt>
+    <dt><strong>Open()</strong></dt>
 
     <dd>
-      <p>There is an incorrect number of bindings when using tuples. Or you
-      supplied a dictionary of bindings and not all bindings were named in the
-      SQL statement. For example
-      <code>select&nbsp;*&nbsp;from&nbsp;foo&nbsp;where&nbsp;x=:name&nbsp;and&nbsp;y=?</code>.
-      You should either use colon name style or question mark style in a query
-      but not both.</p>
-
-      <p><b>Note</b> It is not considered an error to have missing keys in a
-      dictionary. For example <code>cursor.execute("insert into foo
-      values($a,:b,$c)", {'a': 1})</code> is perfectly valid (note <tt>b</tt>
-      and <b>c</b> are not in the dict). For missing keys, None/NULL will be
-      used. This is so you don't have to add lots of spurious values to the
-      supplied dict. If your schema requires every column have a value, then
-      SQLite will generate an error due to some values being None/NULL so that
-      case will be caught.</p>
+      <p>Returns a new cursor object.</p>
     </dd>
 
-    <dt>ExecutionCompleteError</dt>
+    <dt><strong>FindFunction(nfuncargs, funcname)</strong> <i>not implemented
+    yet</i></dt>
 
     <dd>
-      <p>A statement is complete but you try to run it more anyway!</p>
+      <p>Lets you provide an alternate function implementation for the table.
+      This is currently not implemented in apsw because of incomplete
+      information in SQLite to make it safe (<a href=
+      "http://www.sqlite.org/cvstrac/tktview?tn=2095">ticket 2095</a>).</p>
     </dd>
 
-    <dt>ExecTraceAbort</dt>
+    <dt><strong>BestIndex(constraints, orderbys)</strong></dt>
 
     <dd>
-      <p>The <a href="executiontracer">execution tracer</a> returned False so
-      execution was aborted.</p>
-    </dd>
+      <blockquote>
+        This is a complex method and even has its <a href=
+        "http://www.sqlite.org/cvstrac/wiki?p=VirtualTableBestIndexMethod">own
+        page</a> in the SQLite documentation. To get going initially, just
+        return <code>None</code> and you will be fine. Implementing this method
+        reduces the number of rows scanned in your table to satisfy queries if
+        you have an index or index like mechanism available.
+      </blockquote>
+
+      <p>The purpose of this method is to ask if you have the ability to
+      determine if a row meets certain constraints that doesn't involve
+      visiting every row. An example constraint is
+      <code>price&nbsp;&gt;&nbsp;74.99</code>. In a traditional SQL database,
+      queries with constraints can be speeded up <a href=
+      "http://www.sqlite.org/lang_createindex.html">with indices</a>. If you
+      return None, then SQLite will visit every row in your table and evaluate
+      the constraint itself. Your result will also be passed to the Filter
+      method on your cursor object. Note that SQLite may call this method
+      multiple times trying to find the most efficient way of answering a
+      query. You will be passed the contraints as a sequence of tuples
+      containing two items. The first item is the column number and the second
+      item is the operation.</p>
+
+      <blockquote>
+        Example query: <code>select * from foo where price&gt;74.99 and
+        quantity&lt;=10 and customer=="Acme Widgets"</code>.
+
+        <p>If customer is column 0, price column 2 and quantity column 5, then
+        constraints will be:</p>
+        <pre>
+   (2, apsw.SQLITE_INDEX_CONSTRAINT_GT),
+   (5, apsw.SQLITE_INDEX_CONSTRAINT_LE),
+   (0, apsw.SQLITE_INDEX_CONSTRAINT_EQ)
+</pre>
+
+        <p>Note that you do not get the value of the constraint (eg "Acme
+        Widgets", 74.99 and 10 in this example).</p>
+      </blockquote>
+
+      <p>The first item you return is None if you don't have an appropriate
+      index for any of the constraints and SQLite should iterate over every
+      row. If you do have a suitable index then you return as the first item a
+      sequence the same length as constraints with the members mapping to the
+      constraints in order. Each item can be one of None, an integer or a tuple
+      of an integer and a boolean.</p>
+
+      <dl>
+        <dt>None</dt>
+
+        <dd>This means you have no index for that constraint. SQLite will have
+        to iterate over every row for it.</dd>
+
+        <dt>integer</dt>
+
+        <dd>This is the argument number for the constraintargs being passed
+        into the Filter function of your cursor (the values "Acme Widgets",
+        74.99 and 10 in the example).</dd>
+
+        <dt>(integer, boolean)</dt>
+
+        <dd>By default SQLite will check what you return. For example if you
+        said that you had an index on price, SQLite will still check that each
+        row you returned is greater than 74.99. If you set the boolean to False
+        then SQLite won't do that double checking.</dd>
+      </dl>
+
+      <blockquote>
+        Example query: <code>select * from foo where price&gt;74.99 and
+        quantity&le;10 and customer=="Acme Widgets"</code>.
+
+        <p>Customer is column 0, price column 2 and quantity column 5. You can
+        index on customer equality and price.</p>
+
+        <table border="1" cellspacing="5" cellpadding="5">
+          <tr>
+            <th>Constraints (in)</th>
+
+            <th>Constraints used (out)</th>
+          </tr>
+
+          <tr>
+            <td valign="top">
+              <pre>
+   (2, apsw.SQLITE_INDEX_CONSTRAINT_GT),
+   (5, apsw.SQLITE_INDEX_CONSTRAINT_LE),
+   (0, apsw.SQLITE_INDEX_CONSTRAINT_EQ)
+</pre>
+            </td>
+
+            <td valign="top">
+              <pre>
+   1,
+   None,
+   0
+</pre>
+            </td>
+          </tr>
+        </table>
+      </blockquote>
+
+      <p>When your Filter method in the cursor is called, constraintarg[0] will
+      be "Acme Widgets" (customer constraint value) and constraintarg[1] will
+      be 74.99 (price constraint value). You can also return an index number
+      (integer) and index string to use (SQLite attaches no significance to
+      these values - they are passed as is to your Cursor.Filter method as a
+      way for the BestIndex method to let the Cursor.Filter method know which
+      of your indices or similar mechanism to use.</p>
+
+      <p>The second argument to BestIndex is a sequence of orderbys because the
+      query requested the results in a <a href=
+      "http://sqlite.org/lang_select.html">certain order</a>. If your data is
+      already in that order then SQLite can give the results back as is. If
+      not, then SQLite will have to sort the results first.</p>
+
+      <blockquote>
+        Example query: <code>select * from foo order by price desc, quantity
+        asc</code>
+
+        <p>Price is column 2, quantity column 5 so orderbys will be:</p>
+        <pre>
+  (2, True),  <font color=
+"blue"># True means descending, False is ascending</font>
+  (5, False)
+</pre>
+        <pre>
+
+</pre>
+      </blockquote>
+
+      <p><b>Return</b> You should return up to 5 items. Items not present in
+      the return have a default value.</p>
+
+      <dl>
+        <dt>0: constraints used (default None)</dt>
+
+        <dd>This must either be None or a sequence the same length as
+        constraints passed in. Each item should be as specified above saying if
+        that constraint is used, and if so which constraintarg to make the
+        value be in your Cursor.Filter function.</dd>
+
+        <dt>1: index number (default zero)</dt>
+
+        <dd>This value is passed as is to Cursor.Filter</dd>
+
+        <dt>2: index string (default None)</dt>
+
+        <dd>This value is passed as is to Cursor.Filter</dd>
+
+        <dt>3: orderby consumed (default False)</dt>
+
+        <dd>Return True if your output will be in exactly the same order as the
+        orderbys passed in</dd>
+
+        <dt>4: estimated cost (default a huge number)</dt>
+
+        <dd>Approximately how many disk operations are needed to provide the
+        results. SQLite uses the cost to optimise queries. For example if the
+        query includes <code>A or B</code> and A has 2,000 operations and B has
+        100 then it is best to evaluate B before A.</dd>
+      </dl>
+
+      <blockquote>
+        A complete example. Query is <code>select * from foo where
+        price&gt;74.99 and quantity&lt;=10 and customer=="Acme Widgets" order
+        by price desc, quantity asc</code>
+
+        <p>Customer is column 0, price column 2 and quantity column 5. You can
+        index on customer equality and price.</p>
+        <pre>
+<b>BestIndex</b>(constraints, orderbys)
+ 
+<b>constraints</b>= ( (2, apsw.SQLITE_INDEX_CONSTRAINT_GT), 
+                  (5, apsw.SQLITE_INDEX_CONSTRAINT_LE), 
+                  (0, apsw.SQLITE_INDEX_CONSTRAINT_EQ)  )
 
-    <dt>ExtensionLoadingError</dt>
+<b>orderbys</b>= ( (2, True), (5, False) )
+</pre>
+
+        <p>You return</p>
+        <pre>
+( (1, None, 0),   <font color="blue"># constraints used</font>
+  27,             <font color="blue"># index number</font>
+  "idx_pr_cust",  <font color="blue"># index name</font>
+  False,          <font color="blue"># results are not in orderbys order</font>
+  1000            <font color=
+"blue"># about 1000 disk operations to access index</font>
+)
+</pre>
 
-    <dd>
-      <p>An error happened loading an <a href=
-      "http://www.sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions">extension</a>.</p>
-    </dd>
-  </dl>
+        <p>Your Cursor.Filter method will be called with:</p>
+        <pre>
+27,              <font color="blue"># index number you returned</font>
+"idx_pr_cust",   <font color="blue"># index name you returned</font>
+"Acme Widgets",  <font color="blue"># constraintarg[0] - customer</font>  
+74.99            <font color="blue"># constraintarg[1] - price </font>
+</pre>
+      </blockquote>
 
-  <p>The following Exception classes correspond to <a href=
-  "http://www.sqlite.org/capi3ref.html#result-codes">SQLite error
-  codes</a>.</p>
+      <h3>Cursor</h3>
 
-  <blockquote>
-    <!-- This is derived from exc_descriptors in the source -->
+      <p>Cursors are created by the Open method in the table object. They
+      iterate over rows returning desired values.</p>
 
-    <table cellpadding="5" cellspacing="5" border="0">
-      <tr>
-        <td valign="top">
-          <table cellpadding="5" cellspacing="5" border="0" width="100%">
-            <tr>
-              <th colspan="2">General Errors</th>
-            </tr>
+      <dl>
+        <dt><strong>Close()</strong></dt>
 
-            <tr>
-              <td><code>SQLITE_ERROR</code></td>
+        <dd>
+          <p>This is the destructor for the cursor. Note that you must cleanup.
+          The method will not be called again if you raise an exception.</p>
 
-              <td>SQLError</td>
-            </tr>
+          <p><b>Return</b> None (ignored)</p>
+        </dd>
 
-            <tr>
-              <td><code>SQLITE_MISMATCH</code></td>
+        <dt><strong>Filter(indexnum, indexstring,
+        *constraintargs)</strong></dt>
 
-              <td>MismatchError</td>
-            </tr>
+        <dd>
+          <p>This method is always called first to initialize an iteration to
+          the first row of the table. The arguments come from the BestIndex
+          method in the table object. If you always return None in BestIndex
+          then indexnum will be zero, indexstring will be None and there won't
+          be any constraintargs).</p>
 
-            <tr>
-              <td colspan="2">&nbsp;</td>
-            </tr>
+          <p><b>Return</b> None (ignored)</p>
+        </dd>
+
+        <dt><strong>Eof()</strong></dt>
 
-            <tr>
-              <th colspan="2">Internal Errors</th>
-            </tr>
+        <dd>
+          <p>Called to ask if we are at the end of the table. It is called
+          after each call to Filter and Next.</p>
+
+          <p><b>Return</b> True if the cursor is at a valid row of data, else
+          False.</p>
+        </dd>
+
+        <dt><strong>Next()</strong></dt>
+
+        <dd>
+          <p>Advance to the next row in the table.</p>
+
+          <p><b>Return</b> None (ignored)</p>
+        </dd>
+
+        <dt><strong>Rowid()</strong></dt>
+
+        <dd>
+          <p><b>Return</b> the current rowid. This should be an integer up to
+          64 bits signed.</p>
+        </dd>
+
+        <dt><strong>Column(number)</strong></dt>
 
-            <tr>
-              <td><code><i>SQLITE_INTERNAL</i></code></td>
+        <dd>
+          <p>Requests the value of the specified column number. Column
+          numbering starts at zero with -1 being the rowid.</p>
+
+          <p><b>Return</b> the value in that column. It must be compatible with
+          SQLite types (ie one of None, integer, float, string or buffer
+          (blob))</p>
+        </dd>
+
+        <dt><strong>UpdateDeleteRow(rowid)</strong></dt>
+
+        <dd>
+          <p>Requests deletion of the row with the specified id.</p>
+
+          <p><b>Return</b> None (ignored)</p>
+        </dd>
+
+        <dt><strong>UpdateInsertRow(rowid, fields)</strong></dt>
+
+        <dd>
+          <p>Create a new row. fields is a tuple the same size as the number of
+          columns in your table containing a value for each column. rowid is
+          the rowid to give the row. If rowid is None then you must make up a
+          rowid you want.</p>
+
+          <p><b>Return</b> the new rowid (if rowid was None), else ignored</p>
+        </dd>
+
+        <dt><strong>UpdateChangeRow(rowid, newrowid, fields)</strong></dt>
+
+        <dd>
+          <p>Change an existing row of the table with the values in fields.
+          fields is a tuple the same size as the number of columns in your
+          table containing a value for each column. If newrowid is not the same
+          as rowid then you also have to change the rowid (this would happen
+          for a query like <code>UPDATE table SET rowid=rowid+100 WHERE
+          ...</code>)</p>
+
+          <p><b>Return</b> None (ignored)</p>
+        </dd>
+      </dl>
+
+      <h1><a name="Exceptions" id="Exceptions">Exceptions</a></h1>
 
-              <td>InternalError</td>
-            </tr>
+      <p>All exception types have <code>apsw.Error</code> as a parent. The
+      following exceptions can happen:</p>
 
-            <tr>
-              <td><code>SQLITE_PROTOCOL</code></td>
+      <dl>
+        <dt>ThreadingViolationError</dt>
 
-              <td>ProtocolError</td>
-            </tr>
+        <dd>
+          <p>You have used an object allocated in one thread in a different
+          thread. All objects (Connection, Cursor) must be used in the same
+          thread they were allocated in.</p>
+        </dd>
 
-            <tr>
-              <td><code>SQLITE_MISUSE</code></td>
+        <dt>IncompleteExecutionError</dt>
 
-              <td>MisuseError</td>
-            </tr>
+        <dd>
+          <p>You have tried to start a new SQL execute call before executing
+          all the previous ones. See the <a href="#executionmodel">execution
+          model</a> for more details.</p>
+        </dd>
 
-            <tr>
-              <td><code>SQLITE_RANGE</code></td>
+        <dt>BindingsError</dt>
 
-              <td>RangeError</td>
-            </tr>
+        <dd>
+          <p>There is an incorrect number of bindings when using tuples. Or you
+          supplied a dictionary of bindings and not all bindings were named in
+          the SQL statement. For example
+          <code>select&nbsp;*&nbsp;from&nbsp;foo&nbsp;where&nbsp;x=:name&nbsp;and&nbsp;y=?</code>.
+          You should either use colon name style or question mark style in a
+          query but not both.</p>
 
-            <tr>
-              <td colspan="2">&nbsp;</td>
-            </tr>
+          <p><b>Note</b> It is not considered an error to have missing keys in
+          a dictionary. For example <code>cursor.execute("insert into foo
+          values($a,:b,$c)", {'a': 1})</code> is perfectly valid (note
+          <tt>b</tt> and <b>c</b> are not in the dict). For missing keys,
+          None/NULL will be used. This is so you don't have to add lots of
+          spurious values to the supplied dict. If your schema requires every
+          column have a value, then SQLite will generate an error due to some
+          values being None/NULL so that case will be caught.</p>
+        </dd>
 
-            <tr>
-              <th colspan="2">Permissions etc</th>
-            </tr>
+        <dt>ExecutionCompleteError</dt>
 
-            <tr>
-              <td><code>SQLITE_PERM</code></td>
+        <dd>
+          <p>A statement is complete but you try to run it more anyway!</p>
+        </dd>
 
-              <td>PermissionsError</td>
-            </tr>
+        <dt>ExecTraceAbort</dt>
 
-            <tr>
-              <td><code>SQLITE_READONLY</code></td>
+        <dd>
+          <p>The <a href="executiontracer">execution tracer</a> returned False
+          so execution was aborted.</p>
+        </dd>
 
-              <td>ReadOnlyError</td>
-            </tr>
+        <dt>ExtensionLoadingError</dt>
 
-            <tr>
-              <td><code>SQLITE_CANTOPEN</code></td>
+        <dd>
+          <p>An error happened loading an <a href=
+          "http://www.sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions">extension</a>.</p>
+        </dd>
+      </dl>
 
-              <td>CantOpenError</td>
-            </tr>
+      <p>The following Exception classes correspond to <a href=
+      "http://www.sqlite.org/capi3ref.html#result-codes">SQLite error
+      codes</a>.</p>
 
-            <tr>
-              <td><code>SQLITE_AUTH</code></td>
+      <blockquote>
+        <!-- This is derived from exc_descriptors in the source -->
 
-              <td>AuthError</td>
-            </tr>
-          </table>
-        </td>
+        <table cellpadding="5" cellspacing="5" border="0">
+          <tr>
+            <td valign="top">
+              <table cellpadding="5" cellspacing="5" border="0" width="100%">
+                <tr>
+                  <th colspan="2">General Errors</th>
+                </tr>
 
-        <td valign="top">
-          <table cellpadding="5" cellspacing="5" border="0" width="100%">
-            <tr>
-              <th colspan="2">Abort/Busy/etc</th>
-            </tr>
+                <tr>
+                  <td><code>SQLITE_ERROR</code></td>
 
-            <tr>
-              <td><code>SQLITE_ABORT</code></td>
+                  <td>SQLError</td>
+                </tr>
 
-              <td>AbortError</td>
-            </tr>
+                <tr>
+                  <td><code>SQLITE_MISMATCH</code></td>
 
-            <tr>
-              <td><code>SQLITE_BUSY</code></td>
+                  <td>MismatchError</td>
+                </tr>
 
-              <td>BusyError</td>
-            </tr>
+                <tr>
+                  <td colspan="2">&nbsp;</td>
+                </tr>
 
-            <tr>
-              <td><code>SQLITE_LOCKED</code></td>
+                <tr>
+                  <th colspan="2">Internal Errors</th>
+                </tr>
 
-              <td>LockedError</td>
-            </tr>
+                <tr>
+                  <td><code><i>SQLITE_INTERNAL</i></code></td>
 
-            <tr>
-              <td><code>SQLITE_INTERRUPT</code></td>
+                  <td>InternalError</td>
+                </tr>
 
-              <td>InterruptError</td>
-            </tr>
+                <tr>
+                  <td><code>SQLITE_PROTOCOL</code></td>
 
-            <tr>
-              <td><code>SQLITE_SCHEMA</code></td>
+                  <td>ProtocolError</td>
+                </tr>
 
-              <td>SchemaChangeError</td>
-            </tr>
+                <tr>
+                  <td><code>SQLITE_MISUSE</code></td>
 
-            <tr>
-              <td><code>SQLITE_CONSTRAINT</code></td>
+                  <td>MisuseError</td>
+                </tr>
 
-              <td>ConstraintError</td>
-            </tr>
+                <tr>
+                  <td><code>SQLITE_RANGE</code></td>
 
-            <tr>
-              <td colspan="2">&nbsp;</td>
-            </tr>
+                  <td>RangeError</td>
+                </tr>
 
-            <tr>
-              <th colspan="2">Memory/Disk/etc</th>
-            </tr>
+                <tr>
+                  <td colspan="2">&nbsp;</td>
+                </tr>
 
-            <tr>
-              <td><code>SQLITE_NOMEM</code></td>
+                <tr>
+                  <th colspan="2">Permissions etc</th>
+                </tr>
 
-              <td>NoMemError</td>
-            </tr>
+                <tr>
+                  <td><code>SQLITE_PERM</code></td>
 
-            <tr>
-              <td><code>SQLITE_IOERR</code></td>
+                  <td>PermissionsError</td>
+                </tr>
 
-              <td>IOError</td>
-            </tr>
+                <tr>
+                  <td><code>SQLITE_READONLY</code></td>
 
-            <tr>
-              <td><code>SQLITE_CORRUPT</code></td>
+                  <td>ReadOnlyError</td>
+                </tr>
 
-              <td>CorruptError</td>
-            </tr>
+                <tr>
+                  <td><code>SQLITE_CANTOPEN</code></td>
 
-            <tr>
-              <td><code>SQLITE_FULL</code></td>
+                  <td>CantOpenError</td>
+                </tr>
 
-              <td>FullError</td>
-            </tr>
+                <tr>
+                  <td><code>SQLITE_AUTH</code></td>
 
-            <tr>
-              <td><code><i>SQLITE_TOOBIG</i></code></td>
+                  <td>AuthError</td>
+                </tr>
+              </table>
+            </td>
 
-              <td>TooBigError</td>
-            </tr>
+            <td valign="top">
+              <table cellpadding="5" cellspacing="5" border="0" width="100%">
+                <tr>
+                  <th colspan="2">Abort/Busy/etc</th>
+                </tr>
 
-            <tr>
-              <td><code>SQLITE_NOLFS</code></td>
+                <tr>
+                  <td><code>SQLITE_ABORT</code></td>
 
-              <td>NoLFSError</td>
-            </tr>
+                  <td>AbortError</td>
+                </tr>
 
-            <tr>
-              <td><code>SQLITE_EMPTY</code></td>
+                <tr>
+                  <td><code>SQLITE_BUSY</code></td>
 
-              <td>EmptyError</td>
-            </tr>
+                  <td>BusyError</td>
+                </tr>
 
-            <tr>
-              <td><code>SQLITE_FORMAT</code></td>
+                <tr>
+                  <td><code>SQLITE_LOCKED</code></td>
 
-              <td>FormatError</td>
-            </tr>
+                  <td>LockedError</td>
+                </tr>
 
-            <tr>
-              <td><code>SQLITE_NOTADB</code></td>
+                <tr>
+                  <td><code>SQLITE_INTERRUPT</code></td>
 
-              <td>NotADBError</td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
+                  <td>InterruptError</td>
+                </tr>
 
-    <p>Codes in <i>italics</i> are no longer used by SQLite (according to
-    headers in 3.2.7).</p>
-  </blockquote>
+                <tr>
+                  <td><code>SQLITE_SCHEMA</code></td>
 
-  <h2><a name="augmentedstacktraces" id="augmentedstacktraces">Augmented stack
-  traces</a></h2>
+                  <td>SchemaChangeError</td>
+                </tr>
 
-  <p>When an exception occurs, Python does not include frames from non-Python
-  code. This can make it more difficult to work out what was going on when an
-  exception occurred for example when there are callbacks to collations,
-  functions or virtual tables.</p>
-  <pre>
-<b>Code</b>
+                <tr>
+                  <td><code>SQLITE_CONSTRAINT</code></td>
+
+                  <td>ConstraintError</td>
+                </tr>
+
+                <tr>
+                  <td colspan="2">&nbsp;</td>
+                </tr>
+
+                <tr>
+                  <th colspan="2">Memory/Disk/etc</th>
+                </tr>
+
+                <tr>
+                  <td><code>SQLITE_NOMEM</code></td>
+
+                  <td>NoMemError</td>
+                </tr>
+
+                <tr>
+                  <td><code>SQLITE_IOERR</code></td>
+
+                  <td>IOError</td>
+                </tr>
+
+                <tr>
+                  <td><code>SQLITE_CORRUPT</code></td>
+
+                  <td>CorruptError</td>
+                </tr>
+
+                <tr>
+                  <td><code>SQLITE_FULL</code></td>
+
+                  <td>FullError</td>
+                </tr>
+
+                <tr>
+                  <td><code><i>SQLITE_TOOBIG</i></code></td>
+
+                  <td>TooBigError</td>
+                </tr>
+
+                <tr>
+                  <td><code>SQLITE_NOLFS</code></td>
+
+                  <td>NoLFSError</td>
+                </tr>
+
+                <tr>
+                  <td><code>SQLITE_EMPTY</code></td>
+
+                  <td>EmptyError</td>
+                </tr>
+
+                <tr>
+                  <td><code>SQLITE_FORMAT</code></td>
+
+                  <td>FormatError</td>
+                </tr>
+
+                <tr>
+                  <td><code>SQLITE_NOTADB</code></td>
+
+                  <td>NotADBError</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <p>Codes in <i>italics</i> are no longer used by SQLite (according to
+        headers in 3.2.7).</p>
+      </blockquote>
+
+      <h2><a name="augmentedstacktraces" id="augmentedstacktraces">Augmented
+      stack traces</a></h2>
+
+      <p>When an exception occurs, Python does not include frames from
+      non-Python code (ie the C code called from Python). This can make it more
+      difficult to work out what was going on when an exception occurred for
+      example when there are callbacks to collations, functions or virtual
+      tables, triggers firing etc.</p>
+
+      <p>This is an example showing the difference between the tracebacks you
+      would have got with earlier versions of apsw and the augmented
+      traceback.</p>
+
+      <p><b>Code</b></p>
+      <pre>
 import apsw
+
+def myfunc(x):
+  1/0
+
 con=apsw.Connection(":memory:")
-con.createscalarfunction("foo", lambda x: 1/0)
+con.createscalarfunction("foo", myfunc)
+con.createscalarfunction("fam", myfunc)
 cursor=con.cursor()
 cursor.execute("create table bar(x,y,z);insert into bar values(1,2,3)")
 cursor.execute("select foo(1) from bar")
 </pre>
 
-  <table cellpadding="3" cellspacing="3">
-    <tr>
-      <th>Normal traceback</th>
+      <table cellpadding="3" cellspacing="3">
+        <tr>
+          <th>Original traceback</th>
 
-      <th>Augmented traceback</th>
-    </tr>
+          <th>Augmented traceback</th>
+        </tr>
 
-    <tr>
-      <td valign="top">
-        <pre>
+        <tr>
+          <td valign="top">
+            <pre>
 Traceback (most recent call last):
-  File "t.py", line 6, in ?
+  File "t.py", line 11, in &lt;module&gt;
     cursor.execute("select foo(1) from bar")
-  File "t.py", line 3, in &lt;lambda&gt;
-    con.createscalarfunction("foo", lambda x: 1/0)
+  File "t.py", line 4, in myfunc
+    1/0
 ZeroDivisionError: integer division or modulo by zero
 </pre>
-      </td>
+          </td>
 
-      <td valign="top">
-        <pre>
+          <td valign="top">
+            <pre>
 Traceback (most recent call last):
-  File "t.py", line 6, in ?
+  File "t.py", line 11, in &lt;module&gt;
     cursor.execute("select foo(1) from bar")
-  File "apsw.c", line 1494, in ScalarFunctionCallback
-    TRACEBACKHERE("ScalarFunctionCallback");
-  File "t.py", line 3, in &lt;lambda&gt;
-    con.createscalarfunction("foo", lambda x: 1/0)
+  File "apsw.c", line 3412, in resetcursor
+  File "apsw.c", line 1597, in user-defined-scalar-FOO
+  File "t.py", line 4, in myfunc
+    1/0
 ZeroDivisionError: integer division or modulo by zero
 </pre>
-      </td>
-    </tr>
-  </table>
+          </td>
+        </tr>
+      </table>
 
-  <h1><a name="Types" id="Types">Types</a></h1>
+      <p>In the original traceback you can't even see that code in apsw was
+      involved. The augmented traceback shows that there were indeed two
+      function calls within apsw and gives you line numbers should you need to
+      examine the code. Also note how you are told that the call was in
+      <code>user-defined-scalar-FOO</code> (all function names are
+      uppercased).</p>
 
-  <p>Read about <a href="http://www.sqlite.org/datatype3.html">SQLite 3
-  types</a>. ASPW always maintains the correct type for values, and never
-  converts them to something else. Note however that SQLite may convert types
-  based on column affinity as described in that link. ASPW requires that all
-  values supplied are one of the corresponding Python/SQLite types (or a
-  subclass).</p>
+      <p><i>But wait, there is more!!!</i> In order to further aid
+      troubleshooting, the augmented stack traces make additional information
+      available. Each frame in the traceback has local variables defined with
+      more information. You can print out the variables using <a href=
+      "http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/52215">ASPN
+      recipe 52215</a>.</p>
 
-  <ul>
-    <li>
-      <p>None in Python is NULL in SQLite</p>
-    </li>
+      <blockquote>
+        <p>In the recipe, the initial code in <code>print_exc_plus</code> is
+        far more complicated than need be, and also won't work correctly with
+        all tracebacks (it depends on f_prev being set which isn't always the
+        case). Change the function to start like this:</p>
 
-    <li>
-      <p>Python int or long is INTEGER in SQLite. The value represented must
-      fit within a 64 bit signed quantity (long long at the C level) or an
-      exception is generated. (Don't worry - aspw only uses the long type when
-      values are too large to fit in ints).</p>
-    </li>
+        <blockquote>
+          <pre>
+    tb = sys.exc_info()[2]
+    stack = []
+    
+    while tb:
+        stack.append(tb.tb_frame)
+        tb = tb.tb_next
 
-    <li>
-      <p>Python's float type is used for REAL in SQLite. (At the C level they
-      are both 8 byte quantities and there is no loss of precision).</p>
-    </li>
+    traceback.print_exc()
+    print "Locals by frame, innermost last"
+</pre>
+        </blockquote>
+      </blockquote>
 
-    <li>
-      <p>Python's string or unicode is used for TEXT in SQLite. (ASPW
-      automatically uses Python's string type for ASCII text and Unicode for
-      other text.)</p>
-    </li>
+      <p>Here is a far more complex example from some <a href=
+      "#VirtualTables">virtual tables</a> code I was writing. The BestIndex
+      method in my code had returned an incorrect value. The augmented
+      traceback includes local variables using recipe 52215. I can see what was
+      passed in to my method, what I returned and which item was erroneous. The
+      original traceback is almost completely useless.</p>
 
-    <li>
-      <p>Python's buffer class is used for BLOB in SQLite.</p>
-    </li>
-  </ul>
+      <table cellpadding="3" cellspacing="3">
+        <tr>
+          <th>Original traceback</th>
+        </tr>
 
-  <h1><a name="Unicode" id="Unicode">Unicode</a></h1>
+        <tr>
+          <td valign="top">
+            <pre>
+Traceback (most recent call last):
+  File "tests.py", line 1387, in testVtables
+    cursor.execute(allconstraints)
+TypeError: Bad constraint (#2) - it should be one of None, an integer or a tuple of an integer and a boolean
+</pre>
+          </td>
+        </tr>
 
-  <p>All SQLite strings are Unicode. The actual binary representations can be
-  UTF8, or UTF16 in either byte order. ASPW uses the UTF8 interface to SQLite
-  which results in the binary string representation in your database defaulting
-  to UTF8 as well. All this is totally transparent to your Python code.</p>
+        <tr>
+          <th>Augmented traceback with local variables</th>
+        </tr>
 
-  <p>Everywhere strings are used (eg as database values, SQL statements,
-  bindings names, user defined functions) you can use Unicode strings. You can
-  also use the bare Python string class, and ASPW will automatically call the
-  unicode converter if any non-ascii characters are present.</p>
+        <tr>
+          <td valign="top">
+            <pre>
+Traceback (most recent call last):
+  File "tests.py", line 1387, in testVtables
+    cursor.execute(allconstraints)
+                VTable =  __main__.VTable
+                   cur =  &lt;apsw.Cursor object at 0x988f30&gt;
+                     i =  10
+                  self =  testVtables (__main__.APSW)
+        allconstraints =  select rowid,* from foo where rowid&gt;-1000 ....
 
-  <p>When reading values from SQLite, ASPW uses the Python string class for any
-  pure ASCII text, else it uses the Python unicode class.</p>
+  File "apsw.c", line 4050, in Cursor_execute.sqlite3_prepare
+            Connection =  &lt;apsw.Connection object at 0x978800&gt;
+             statement =  select rowid,* from foo where rowid&gt;-1000 ....
 
-  <h1><a name="threading" id="threading">Multi-threading and
-  re-entrancy</a></h1>
+  File "apsw.c", line 2681, in VirtualTable.xBestIndex
+                  self =  &lt;__main__.VTable instance at 0x98d8c0&gt;
+                  args =  (((-1, 4), (0, 32), (1, 8), (2, 4), (3, 64)), ((2, False),))
+                result =  ([4, (3,), [2, False], [1], [0]], 997, u'\xea', False)
 
-  <p>ASPW lets you use SQLite in multi-threaded programs and will let other
-  threads execute while SQLite is working. (Technically the <a href=
-  "http://www.python.org/doc/2.3.4/api/threads.html">GIL</a> is released when
-  <a href="http://www.sqlite.org/capi3ref.html#sqlite3_step">sqlite3_step</a>
-  or <a href=
-  "http://www.sqlite.org/capi3ref.html#sqlite3_open">sqlite3_open</a> are
-  running. The GIL is re-acquired while user defined functions, collations and
-  the various hooks/handlers run.)</p>
+  File "apsw.c", line 2559, in VirtualTable.xBestIndex.result_constraint
+               indices =  [4, (3,), [2, False], [1], [0]]
+                  self =  &lt;__main__.VTable instance at 0x98d8c0&gt;
+                result =  ([4, (3,), [2, False], [1], [0]], 997, u'\xea', False)
+            constraint =  (3,)
 
-  <p>Note that you cannot use the same Connection object in multiple threads.
-  You must allocate a new Connection object per thread. (This is a requirement
-  of SQLite). A cursor object can only be used in the same thread as it was
-  allocated. (Also an SQLite requirement). Fortunately ASPW will check this for
-  you and throw a ThreadingViolationError if you try to use objects in the
-  wrong thread. Note that your destructors also need to run in the creation
-  thread.</p>
+TypeError: Bad constraint (#2) - it should be one of None, an integer or a tuple of an integer and a boolean
+</pre>
+          </td>
+        </tr>
+      </table>
 
-  <p>If you have multiple threads and/or multiple programs accessing the same
-  database then there may be contention for the file. SQLite will return
-  SQLITE_BUSY which will be raised as BusyError. You can call the Cursor.next()
-  method to resume execution. Alternately you can call
-  Connection.setbusytimeout to set how long SQLite will retry for or
-  Connection.setbusyhandler to install your own busy handler. SQLite's locking
-  and concurrency is described <a href=
-  "http://www.sqlite.org/lockingv3.html">here</a></p>
+      <h1><a name="Types" id="Types">Types</a></h1>
 
-  <p>A cursor object can only be executing one query at a time. You cannot
-  issue a new query from inside a trace function or from a user defined
-  function or collation since these are called while executing a query. You can
-  however make new cursors and use those without issue. You may want to
-  remember the Connection object when you set your trace or user defined
-  functions.</p>
+      <p>Read about <a href="http://www.sqlite.org/datatype3.html">SQLite 3
+      types</a>. ASPW always maintains the correct type for values, and never
+      converts them to something else. Note however that SQLite may convert
+      types based on column affinity as described in that link. ASPW requires
+      that all values supplied are one of the corresponding Python/SQLite types
+      (or a subclass).</p>
 
-  <h1><a name="tracers" id="tracers">Tracing</a></h1>
+      <ul>
+        <li>
+          <p>None in Python is NULL in SQLite</p>
+        </li>
 
-  <p>You can install tracers on a cursor as an easy way of seeing exactly what
-  gets executed and what is returned. The tracers can also abort execution and
-  cause different values to be returned. This is very useful for diagnostics
-  and testing without having to modify your main code.</p>
+        <li>
+          <p>Python int or long is INTEGER in SQLite. The value represented
+          must fit within a 64 bit signed quantity (long long at the C level)
+          or an exception is generated. (Don't worry - aspw only uses the long
+          type when values are too large to fit in ints).</p>
+        </li>
 
-  <p><b>Note</b>: You cannot issue new execute statements against the cursor
-  your tracer was called from. If you would like to make more queries in the
-  tracer then do them from a new cursor object.</p>
+        <li>
+          <p>Python's float type is used for REAL in SQLite. (At the C level
+          they are both 8 byte quantities and there is no loss of
+          precision).</p>
+        </li>
 
-  <h2><a name="executiontracer" id="executiontracer">Execution Tracer</a></h2>
+        <li>
+          <p>Python's string or unicode is used for TEXT in SQLite. (ASPW
+          automatically uses Python's string type for ASCII text and Unicode
+          for other text.)</p>
+        </li>
 
-  <p>The execution tracer is called after an SQL statement has been prepared.
-  (ie syntax errors will have caused an exception during preparation so you
-  won't see them with a tracer). It is called with two arguments. The first is
-  a string which is the SQL statement about to be executed, and the second is
-  the bindings used for that statement (and can be None). If the return value
-  evaluates to False/None then execution is aborted with an ExecTraceAbort
-  exception. See the <a href="#example-exectrace">example above</a>.</p>
+        <li>
+          <p>Python's buffer class is used for BLOB in SQLite.</p>
+        </li>
+      </ul>
 
-  <h2><a name="rowtracer" id="rowtracer">Row Tracer</a></h2>
+      <h1><a name="Unicode" id="Unicode">Unicode</a></h1>
 
-  <p>The row tracer is called before each row is returned. The arguments are
-  the items about to be returned. Whatever you return from the tracer is what
-  is actually returned. If you return None then the whole row is skipped. See
-  the <a href="#example-rowtrace">example above</a>.</p>
+      <p>All SQLite strings are Unicode. The actual binary representations can
+      be UTF8, or UTF16 in either byte order. ASPW uses the UTF8 interface to
+      SQLite which results in the binary string representation in your database
+      defaulting to UTF8 as well. All this is totally transparent to your
+      Python code.</p>
 
-  <h1><a name="64bitpy25">64 bit hosts, Python 2.5</a></h1>
+      <p>Everywhere strings are used (eg as database values, SQL statements,
+      bindings names, user defined functions) you can use Unicode strings. You
+      can also use the bare Python string class, and ASPW will automatically
+      call the unicode converter if any non-ascii characters are present.</p>
 
-  <p>Prior to Python 2.5, you were still limited to 32 bit quantities for items
-  in Python such as the length of strings, number of items in a sequence etc.
-  APSW will work correctly with those items in Python 2.5 that use 64 bits.
-  Unfortunately SQLite is limited to 32 bit quantities for strings, blobs,
-  number of columns etc. Consequently you will get a TooBig exception from APSW
-  or SQLite if you try to use strings/buffers longer than 1GB or 2GB (depends
-  on internal storage). You will not get silent truncation or data loss.</p>
+      <p>When reading values from SQLite, ASPW uses the Python string class for
+      any pure ASCII text, else it uses the Python unicode class.</p>
 
-  <h1><a name="executionmodel" id="executionmodel">Execution model</a></h1>
+      <h1><a name="threading" id="threading">Multi-threading and
+      re-entrancy</a></h1>
 
-  <p>This section only matters if you give multiple SQL statements in one go to
-  <code>cursor.execute()</code>. (Statements are seperated by semi-colons.)</p>
+      <p>ASPW lets you use SQLite in multi-threaded programs and will let other
+      threads execute while SQLite is working. (Technically the <a href=
+      "http://www.python.org/doc/2.3.4/api/threads.html">GIL</a> is released
+      when <a href=
+      "http://www.sqlite.org/capi3ref.html#sqlite3_step">sqlite3_step</a> or
+      <a href=
+      "http://www.sqlite.org/capi3ref.html#sqlite3_open">sqlite3_open</a> are
+      running. The GIL is re-acquired while user defined functions, collations
+      and the various hooks/handlers run.)</p>
 
-  <p>SQLite does execution in two steps. First a statement is prepared, which
-  verifies the syntax, tables and fields and converts the statement into an
-  internal representation. The prepared statement is then run. Execution stops
-  when a row is available, there is an error or the statement is complete.</p>
+      <p>Note that you cannot use the same Connection object in multiple
+      threads. You must allocate a new Connection object per thread. (This is a
+      requirement of SQLite). A cursor object can only be used in the same
+      thread as it was allocated. (Also an SQLite requirement). Fortunately
+      ASPW will check this for you and throw a ThreadingViolationError if you
+      try to use objects in the wrong thread. Note that your destructors also
+      need to run in the creation thread.</p>
 
-  <p>The <code>cursor.execute()</code> method automatically does the preparing
-  and starts execution. If none of the statements return rows then execution
-  will go to the end. If a row is returned then you need to call cursor.next()
-  to get the row values. Execution will resume as necessary to satisfy
-  <code>next()</code> calls.</p>
+      <p>If you have multiple threads and/or multiple programs accessing the
+      same database then there may be contention for the file. SQLite will
+      return SQLITE_BUSY which will be raised as BusyError. You can call the
+      Cursor.next() method to resume execution. Alternately you can call
+      Connection.setbusytimeout to set how long SQLite will retry for or
+      Connection.setbusyhandler to install your own busy handler. SQLite's
+      locking and concurrency is described <a href=
+      "http://www.sqlite.org/lockingv3.html">here</a></p>
 
-  <p>However this means that if you don't read the rows returned then the rest
-  of your statements won't be executed. APSW will detect unexecuted previous
-  statements and generate an exception. For example:</p>
+      <p>A cursor object can only be executing one query at a time. You cannot
+      issue a new query from inside a trace function or from a user defined
+      function or collation since these are called while executing a query. You
+      can however make new cursors and use those without issue. You may want to
+      remember the Connection object when you set your trace or user defined
+      functions.</p>
 
-  <blockquote>
-    <pre>
+      <h1><a name="tracers" id="tracers">Tracing</a></h1>
+
+      <p>You can install tracers on a cursor as an easy way of seeing exactly
+      what gets executed and what is returned. The tracers can also abort
+      execution and cause different values to be returned. This is very useful
+      for diagnostics and testing without having to modify your main code.</p>
+
+      <p><b>Note</b>: You cannot issue new execute statements against the
+      cursor your tracer was called from. If you would like to make more
+      queries in the tracer then do them from a new cursor object.</p>
+
+      <h2><a name="executiontracer" id="executiontracer">Execution
+      Tracer</a></h2>
+
+      <p>The execution tracer is called after an SQL statement has been
+      prepared. (ie syntax errors will have caused an exception during
+      preparation so you won't see them with a tracer). It is called with two
+      arguments. The first is a string which is the SQL statement about to be
+      executed, and the second is the bindings used for that statement (and can
+      be None). If the return value evaluates to False/None then execution is
+      aborted with an ExecTraceAbort exception. See the <a href=
+      "#example-exectrace">example above</a>.</p>
+
+      <h2><a name="rowtracer" id="rowtracer">Row Tracer</a></h2>
+
+      <p>The row tracer is called before each row is returned. The arguments
+      are the items about to be returned. Whatever you return from the tracer
+      is what is actually returned. If you return None then the whole row is
+      skipped. See the <a href="#example-rowtrace">example above</a>.</p>
+
+      <h1><a name="64bitpy25">64 bit hosts, Python 2.5</a></h1>
+
+      <p>Prior to Python 2.5, you were still limited to 32 bit quantities for
+      items in Python such as the length of strings, number of items in a
+      sequence etc. APSW will work correctly with those items in Python 2.5
+      that use 64 bits. Unfortunately SQLite is limited to 32 bit quantities
+      for strings, blobs, number of columns etc. Consequently you will get a
+      TooBig exception from APSW or SQLite if you try to use strings/buffers
+      longer than 1GB or 2GB (depends on internal storage). You will not get
+      silent truncation or data loss.</p>
+
+      <h1><a name="executionmodel" id="executionmodel">Execution model</a></h1>
+
+      <p>This section only matters if you give multiple SQL statements in one
+      go to <code>cursor.execute()</code>. (Statements are seperated by
+      semi-colons.)</p>
+
+      <p>SQLite does execution in two steps. First a statement is prepared,
+      which verifies the syntax, tables and fields and converts the statement
+      into an internal representation. The prepared statement is then run.
+      Execution stops when a row is available, there is an error or the
+      statement is complete.</p>
+
+      <p>The <code>cursor.execute()</code> method automatically does the
+      preparing and starts execution. If none of the statements return rows
+      then execution will go to the end. If a row is returned then you need to
+      call cursor.next() to get the row values. Execution will resume as
+      necessary to satisfy <code>next()</code> calls.</p>
+
+      <p>However this means that if you don't read the rows returned then the
+      rest of your statements won't be executed. APSW will detect unexecuted
+      previous statements and generate an exception. For example:</p>
+
+      <blockquote>
+        <pre>
 &gt;&gt;&gt; cursor.execute("select * from foo ; create table bar(x,y,z)")
 &gt;&gt;&gt; cursor.execute("create table bam(x,y,z)")
 Traceback (most recent call last):
   File "&lt;stdin&gt;", line 1, in ?
 apsw.IncompleteExecutionError: Error: there are still remaining sql statements to execute
 </pre>
-  </blockquote>
+      </blockquote>
 
-  <p>Because I didn't read the results of <code>select * from foo</code> then
-  the following create table command didn't have a chance to get executed. On
-  the next execute that condition is detected and an exception raised.</p>
+      <p>Because I didn't read the results of <code>select * from foo</code>
+      then the following create table command didn't have a chance to get
+      executed. On the next execute that condition is detected and an exception
+      raised.</p>
 
-  <h1><a name="dbapinotes" id="dbapinotes">DBAPI notes</a></h1>
+      <h1><a name="dbapinotes" id="dbapinotes">DBAPI notes</a></h1>
 
-  <p>DBAPI is defined in <a href="http://www.python.org/peps/pep-0249.html">PEP
-  249</a>. This section desribes how APSW complies or differs from it.</p>
+      <p>DBAPI is defined in <a href=
+      "http://www.python.org/peps/pep-0249.html">PEP 249</a>. This section
+      desribes how APSW complies or differs from it.</p>
 
-  <h2><a name="dbapimodiface" id="dbapimodiface">Module Interface</a></h2>
+      <h2><a name="dbapimodiface" id="dbapimodiface">Module Interface</a></h2>
 
-  <p>There is no connect method. Use the Connection constructor instead, which
-  only takes one parameter - the name of the database.</p>
+      <p>There is no connect method. Use the Connection constructor instead,
+      which only takes one parameter - the name of the database.</p>
 
-  <p>The Connection object and any cursors must all be used in the same thread
-  they were allocated from. You cannot use them in different threads even if
-  you protect them with mutexes.</p>
+      <p>The Connection object and any cursors must all be used in the same
+      thread they were allocated from. You cannot use them in different threads
+      even if you protect them with mutexes.</p>
 
-  <p>Three different paramstyles are supported. You can use qmark ('... WHERE
-  name=?'), numeric ('... WHERE name=?4') and named ('... WHERE name=:name' or
-  '... WHERE name=$name'). Note that SQLite numbers parameters from one not
-  zero.</p>
+      <p>Three different paramstyles are supported. You can use qmark ('...
+      WHERE name=?'), numeric ('... WHERE name=?4') and named ('... WHERE
+      name=:name' or '... WHERE name=$name'). Note that SQLite numbers
+      parameters from one not zero.</p>
 
-  <p>The DBAPI exceptions are not used.</p>
+      <p>The DBAPI exceptions are not used.</p>
 
-  <h2><a name="dpapiconnectioniface" id="dpapiconnectioniface">Connection
-  Objects</a></h2>
+      <h2><a name="dpapiconnectioniface" id="dpapiconnectioniface">Connection
+      Objects</a></h2>
 
-  <p>There is no close method</p>
+      <p>There is no close method</p>
 
-  <p>There are no commit or rollback methods. You should use
-  cursor.execute("COMMIT") etc. The <a href=
-  "http://www.sqlite.org/lockingv3.html">SQLite documentation</a> has more
-  details.</p>
+      <p>There are no commit or rollback methods. You should use
+      cursor.execute("COMMIT") etc. The <a href=
+      "http://www.sqlite.org/lockingv3.html">SQLite documentation</a> has more
+      details.</p>
 
-  <p>Several methods that are defined in DBAPI to be on the cursor are instead
-  on the Connection object, since this is where SQLite actually stores the
-  information. Doing operations in any other cursor attached to the same
-  Connection object does update their values, and this makes you aware of
-  that.</p>
+      <p>Several methods that are defined in DBAPI to be on the cursor are
+      instead on the Connection object, since this is where SQLite actually
+      stores the information. Doing operations in any other cursor attached to
+      the same Connection object does update their values, and this makes you
+      aware of that.</p>
 
-  <h2><a name="dbapicursoriface" id="dbapicursoriface">Cursor Objects</a></h2>
+      <h2><a name="dbapicursoriface" id="dbapicursoriface">Cursor
+      Objects</a></h2>
 
-  <p>Use getdescription() instead of description. This information is only
-  obtained on request.</p>
+      <p>Use getdescription() instead of description. This information is only
+      obtained on request.</p>
 
-  <p>There is no rowcount.</p>
+      <p>There is no rowcount.</p>
 
-  <p>callproc is not implemented as SQLite doesn't support stored
-  procedures.</p>
+      <p>callproc is not implemented as SQLite doesn't support stored
+      procedures.</p>
 
-  <p>There is no close method.</p>
+      <p>There is no close method.</p>
 
-  <p>execute returns the Cursor object and you can use it as an iterator to get
-  the results (if any).</p>
+      <p>execute returns the Cursor object and you can use it as an iterator to
+      get the results (if any).</p>
 
-  <p>executemany returns the Cursor object and you can use it as an iterator to
-  get the results (if any).</p>
+      <p>executemany returns the Cursor object and you can use it as an
+      iterator to get the results (if any).</p>
 
-  <p>fetchone is not available. Use the cursor as an iterator, or call next()
-  which raises StopIteration when there are no more results.</p>
+      <p>fetchone is not available. Use the cursor as an iterator, or call
+      next() which raises StopIteration when there are no more results.</p>
 
-  <p>fetchmany is not available. Call next() for however many results you
-  want.</p>
+      <p>fetchmany is not available. Call next() for however many results you
+      want.</p>
 
-  <p>fetchall is not available. Call next() or use a list comprehension such as
-  <code>[row for row in cursor.execute("....")]</code>.</p>
+      <p>fetchall is not available. Call next() or use a list comprehension
+      such as <code>[row for row in cursor.execute("....")]</code>.</p>
 
-  <p>nextset is not applicable or implemented.</p>
+      <p>nextset is not applicable or implemented.</p>
 
-  <p>arraysize is not available as fetchmany isn't.</p>
+      <p>arraysize is not available as fetchmany isn't.</p>
 
-  <p>Neither setinputsizes or setoutputsize are applicable or implemented.</p>
+      <p>Neither setinputsizes or setoutputsize are applicable or
+      implemented.</p>
 
-  <h2><a name="dpapitypes" id="dpapitypes">Type objects</a></h2>
+      <h2><a name="dpapitypes" id="dpapitypes">Type objects</a></h2>
 
-  <p>None of the date or time methods are available since SQLite 3 does not
-  have a native date or time type.</p>
+      <p>None of the date or time methods are available since SQLite 3 does not
+      have a native date or time type.</p>
 
-  <p>Use the standard Python buffer class for BLOBs.</p>
+      <p>Use the standard Python buffer class for BLOBs.</p>
 
-  <h2><a name="dbapiextensions" id="dbapiextensions">Optional DB API
-  Extensions</a></h2>
+      <h2><a name="dbapiextensions" id="dbapiextensions">Optional DB API
+      Extensions</a></h2>
 
-  <p>rownumber is not available.</p>
+      <p>rownumber is not available.</p>
 
-  <p>Exception classes are not available as attributes of Connection.</p>
+      <p>Exception classes are not available as attributes of Connection.</p>
 
-  <p>Use Cursor.getconnection() to get the associated Connection object.</p>
+      <p>Use Cursor.getconnection() to get the associated Connection
+      object.</p>
 
-  <p>scroll and messages are not available.</p>
+      <p>scroll and messages are not available.</p>
 
-  <p>The Cursor object supports the iterator protocol and this is the only way
-  of getting information back.</p>
+      <p>The Cursor object supports the iterator protocol and this is the only
+      way of getting information back.</p>
 
-  <p>To get the last inserted row id, call
-  <code>Connection.last_insert_rowid()</code>. That stores the id from the last
-  insert on any Cursor associated with the the Connection. You can also add
-  <code>select last_insert_rowid()</code> to the end of your execute
-  statements.</p>
+      <p>To get the last inserted row id, call
+      <code>Connection.last_insert_rowid()</code>. That stores the id from the
+      last insert on any Cursor associated with the the Connection. You can
+      also add <code>select last_insert_rowid()</code> to the end of your
+      execute statements.</p>
 
-  <p>There is no errorhandler attribute.</p>
+      <p>There is no errorhandler attribute.</p>
 
-  <h1><a name="pysqlitediffs" id="pysqlitediffs">pysqlite differences</a></h1>
+      <h1><a name="pysqlitediffs" id="pysqlitediffs">pysqlite
+      differences</a></h1>
 
-  <p><a href="http://pysqlite.org/">pysqlite</a> already provides a DBAPI
-  compliant wrapper over SQLite 2 and 3. APSW only wraps SQLite 3. I suggest
-  using APSW when you want to directly use SQLite and its functionality or are
-  using your code to deal with database independence rather than DBAPI.</p>
+      <p><a href="http://pysqlite.org/">pysqlite</a> already provides a DBAPI
+      compliant wrapper over SQLite 2 and 3. APSW only wraps SQLite 3. I
+      suggest using APSW when you want to directly use SQLite and its
+      functionality or are using your code to deal with database independence
+      rather than DBAPI.</p>
 
-  <p>APSW has the following enhancements/differences over pysqlite 2 (wrapping
-  SQLite 3):</p>
+      <p>APSW has the following enhancements/differences over pysqlite 2
+      (wrapping SQLite 3):</p>
 
-  <ul>
-    <li>APSW is a single file for the extension, apsw.pyd on Windows and
-    apsw.so on Unix/Mac. There are no other files needed and the build
-    instructions show you how to include SQLite statically in this file. You
-    can put this file anywhere your Python session can reach. pysqlite is one
-    binary file and several .py files, all of which need to be available.</li>
+      <ul>
+        <li>APSW is a single file for the extension, apsw.pyd on Windows and
+        apsw.so on Unix/Mac. There are no other files needed and the build
+        instructions show you how to include SQLite statically in this file.
+        You can put this file anywhere your Python session can reach. pysqlite
+        is one binary file and several .py files, all of which need to be
+        available.</li>
 
-    <li>
-      <p>*Nothing* happens behind your back. By default pysqlite tries to
-      manage transactions by parsing your SQL for you, but you can turn it off.
-      This can result in very unexpected behaviour with pysqlite.</p>
-    </li>
+        <li>
+          <p>*Nothing* happens behind your back. By default pysqlite tries to
+          manage transactions by parsing your SQL for you, but you can turn it
+          off. This can result in very unexpected behaviour with pysqlite.</p>
+        </li>
 
-    <li>
-      <p>SQLite's Manifest typing is used, which limits values to being
-      supplied as integer (32/64 bit), string (utf8/unicode), double, null/None
-      and BLOB. (An exception happens if you don't supply values in one of the
-      supported types.) APSW doesn't do any type conversion or co-ercion. Note
-      that SQLite will under <a href=
-      "http://www.sqlite.org/datatype3.html">some circumstances</a>. pysqlite
-      does have a mechanism for <a href=
-      "http://initd.org/pub/software/pysqlite/doc/usage-guide.html#using-adapters-to-store-additional-python-types-in-sqlite-databases">
-      marshalling your own types</a> but you'll need to be careful if sharing
-      the database with code in another language.</p>
-    </li>
+        <li>
+          <p>SQLite's Manifest typing is used, which limits values to being
+          supplied as integer (32/64 bit), string (utf8/unicode), double,
+          null/None and BLOB. (An exception happens if you don't supply values
+          in one of the supported types.) APSW doesn't do any type conversion
+          or co-ercion. Note that SQLite will under <a href=
+          "http://www.sqlite.org/datatype3.html">some circumstances</a>.
+          pysqlite does have a mechanism for <a href=
+          "http://initd.org/pub/software/pysqlite/doc/usage-guide.html#using-adapters-to-store-additional-python-types-in-sqlite-databases">
+          marshalling your own types</a> but you'll need to be careful if
+          sharing the database with code in another language.</p>
+        </li>
 
-    <li>
-      <p>APSW <b>always</b> handles Unicode correctly (this was one of the
-      major reasons for writing it in the first place). pysqlite has since
-      fixed many of its issues but you are still <a href=
-      "http://initd.org/tracker/pysqlite/ticket/153">stuck with some</a>.</p>
-    </li>
+        <li>
+          <p>APSW <b>always</b> handles Unicode correctly (this was one of the
+          major reasons for writing it in the first place). pysqlite has since
+          fixed many of its issues but you are still <a href=
+          "http://initd.org/tracker/pysqlite/ticket/153">stuck with
+          some</a>.</p>
+        </li>
 
-    <li>
-      <p>You can use semi-colons at the end of commands and you can have
-      multiple commands in the execute string in APSW. There is no restrictions
-      on the type of commands used. For example this will work fine in APSW but
-      is not allowed in pysqlite:</p>
+        <li>
+          <p>You can use semi-colons at the end of commands and you can have
+          multiple commands in the execute string in APSW. There are no
+          restrictions on the type of commands used. For example this will work
+          fine in APSW but is not allowed in pysqlite:</p>
 
-      <blockquote>
-        <pre>
+          <blockquote>
+            <pre>
 import apsw 
 con=apsw.Connection(":memory:") 
 cur=con.cursor() 
@@ -2022,44 +2491,45 @@ for row in cur.execute("create table foo(x,y,z);insert into foo values (?,?,?);"
         
 </pre>
 
-        <p>And the output as you would expect:</p>
-        <pre>
+            <p>And the output as you would expect:</p>
+            <pre>
 <b>$</b> python test.py 
 (1, 2, 3) 
 (4, 5, 6) 
 (7, 8) 
 (9, 10)
 </pre>
-      </blockquote>
-    </li>
+          </blockquote>
+        </li>
 
-    <li>
-      <p>The cursor object is an iterator and returns itself from execute. (The
-      latest SQLite has now copied this feature).</p>
-    </li>
+        <li>
+          <p>The cursor object is an iterator and returns itself from execute.
+          (The latest SQLite has now copied this feature).</p>
+        </li>
 
-    <li>
-      <p><code>cursor.executemany()</code> also works with statements that
-      return data such as selects, and you can have multiple statements.</p>
-    </li>
+        <li>
+          <p><code>cursor.executemany()</code> also works with statements that
+          return data such as selects, and you can have multiple
+          statements.</p>
+        </li>
 
-    <li>pysqlite swallows exceptions in your callbacks making it far harder to
-    debug problems. That also prevents you from raising exceptions in your
-    callbacks to be handled in your code that called SQLite. pysqlite does let
-    you turn on printing of tracebacks, but that is a poor substitute. apsw
-    does the right thing as demonstrated by this example.
+        <li>pysqlite swallows exceptions in your callbacks making it far harder
+        to debug problems. That also prevents you from raising exceptions in
+        your callbacks to be handled in your code that called SQLite. pysqlite
+        does let you turn on printing of tracebacks, but that is a poor
+        substitute. apsw does the right thing as demonstrated by this example.
 
-      <blockquote>
-        <table border="1px" cellpadding="5" cellspacing="5">
-          <tr>
-            <th>pysqlite</th>
+          <blockquote>
+            <table border="1px" cellpadding="5" cellspacing="5">
+              <tr>
+                <th>pysqlite</th>
 
-            <th>apsw</th>
-          </tr>
+                <th>apsw</th>
+              </tr>
 
-          <tr>
-            <td valign="top">
-              <pre>
+              <tr>
+                <td valign="top">
+                  <pre>
 from pysqlite2 import dbapi2 as sqlite
 def badfunc(t):
     return 1/0
@@ -2069,10 +2539,10 @@ con.create_function("badfunc", 1, badfunc)
 cur = con.cursor()
 cur.execute("select badfunc(3)")
 </pre>
-            </td>
+                </td>
 
-            <td valign="top">
-              <pre>
+                <td valign="top">
+                  <pre>
 import apsw
 def badfunc(t):
     return 1/0
@@ -2082,22 +2552,22 @@ con.createscalarfunction("badfunc", badfunc, 1)
 cur = con.cursor()
 cur.execute("select badfunc(3)")
 </pre>
-            </td>
-          </tr>
+                </td>
+              </tr>
 
-          <tr>
-            <td valign="top">
-              <pre>
+              <tr>
+                <td valign="top">
+                  <pre>
 C:\temp&gt;python func.py
 Traceback (most recent call last):
   File "func.py", line 8, in ?
     cur.execute("select badfunc(3)")
 pysqlite2.dbapi2.OperationalError: user-defined function raised exception
 </pre>
-            </td>
+                </td>
 
-            <td valign="top">
-              <pre>
+                <td valign="top">
+                  <pre>
 C:\temp&gt;python afunc.py
 Traceback (most recent call last):
   File "afunc.py", line 8, in ?
@@ -2106,289 +2576,296 @@ Traceback (most recent call last):
     return 1/0
 ZeroDivisionError: integer division or modulo by zero
 </pre>
-            </td>
-          </tr>
-        </table>
+                </td>
+              </tr>
+            </table>
+          </blockquote>
+        </li>
+
+        <li>
+          <p>You can define your own collations in Python.</p>
+        </li>
+
+        <li>
+          <p>You can implement tracers, authorizers and various hooks in
+          Python.</p>
+        </li>
+
+        <li>
+          <p>The APSW test suite is larger and tests more functionality. Code
+          coverage by the test suite is 89%. pysqlite is good at 80% for C code
+          although there are several places that coverage can be improved. I
+          haven't measured code coverage for pysqlite's Python code.</p>
+
+          <p>In both cases, the non-covered code lines require that the Python
+          interpretter or SQLite run out of memory so 100% coverage isn't
+          possible.</p>
+        </li>
+      </ul>
+
+      <h1><a name="copyrightlicense" id="copyrightlicense">Copyright and
+      License</a></h1>
+
+      <p>Copyright (C) 2004-2006 Roger Binns <a href=
+      "mailto:rogerb@rogerbinns.com">rogerb@rogerbinns.com</a></p>
+
+      <p>This software is provided 'as-is', without any express or implied
+      warranty. In no event will the authors be held liable for any damages
+      arising from the use of this software.</p>
+
+      <p>Permission is granted to anyone to use this software for any purpose,
+      including commercial applications, and to alter it and redistribute it
+      freely, subject to the following restrictions:</p>
+
+      <blockquote>
+        <ol>
+          <li>
+            <p>The origin of this software must not be misrepresented; you must
+            not claim that you wrote the original software. If you use this
+            software in a product, an acknowledgment in the product
+            documentation would be appreciated but is not required.</p>
+          </li>
+
+          <li>
+            <p>Altered source versions must be plainly marked as such, and must
+            not be misrepresented as being the original software.</p>
+          </li>
+
+          <li>
+            <p>This notice may not be removed or altered from any source
+            distribution.</p>
+          </li>
+        </ol>
       </blockquote>
-    </li>
-
-    <li>
-      <p>You can define your own collations in Python.</p>
-    </li>
-
-    <li>
-      <p>You can implement tracers, authorizers and various hooks in
-      Python.</p>
-    </li>
-
-    <li>
-      <p>The APSW test suite is larger and tests more functionality. Code
-      coverage by the test suite is 89%. pysqlite is good at 80% for C code
-      although there are several places that coverage can be improved. I
-      haven't measured code coverage for pysqlite's Python code.</p>
-
-      <p>In both cases, the non-covered code lines require that the Python
-      interpretter or SQLite run out of memory so 100% coverage isn't
-      possible.</p>
-    </li>
-  </ul>
-
-  <h1><a name="copyrightlicense" id="copyrightlicense">Copyright and
-  License</a></h1>
-
-  <p>Copyright (C) 2004-2006 Roger Binns <a href=
-  "mailto:rogerb@rogerbinns.com">rogerb@rogerbinns.com</a></p>
-
-  <p>This software is provided 'as-is', without any express or implied
-  warranty. In no event will the authors be held liable for any damages arising
-  from the use of this software.</p>
-
-  <p>Permission is granted to anyone to use this software for any purpose,
-  including commercial applications, and to alter it and redistribute it
-  freely, subject to the following restrictions:</p>
-
-  <blockquote>
-    <ol>
-      <li>
-        <p>The origin of this software must not be misrepresented; you must not
-        claim that you wrote the original software. If you use this software in
-        a product, an acknowledgment in the product documentation would be
-        appreciated but is not required.</p>
-      </li>
-
-      <li>
-        <p>Altered source versions must be plainly marked as such, and must not
-        be misrepresented as being the original software.</p>
-      </li>
-
-      <li>
-        <p>This notice may not be removed or altered from any source
-        distribution.</p>
-      </li>
-    </ol>
-  </blockquote>
-
-  <h1><a name="verhistory" id="verhistory">Version History</a></h1>
-
-  <h2><a name="338r1">3.3.8-r1</a></h2>
-
-  <p>You can use this with SQLite 3.3.8 onwards. There was an incompatible API
-  change for virtual tables in SQLite 3.3.8.</p>
-
-  <ul>
-    <li>Virtual tables updated for new api</li>
-
-    <li>::TODO:: extended result codes</li>
-
-    <li>::TODO:: add close methods</li>
-  </ul>
 
-  <h2><a name="337r1">3.3.7-r1</a></h2>
+      <h1><a name="verhistory" id="verhistory">Version History</a></h1>
 
-  <p>You can use this release against SQLite 3.3.7. There were no changes in
-  the SQLite 3.3.6 API from 3.3.5. In SQLite 3.3.7 an API was added that
-  allowed removing a chunk of duplicate code. Also added were <a href=
-  "http://www.sqlite.org/cvstrac/wiki?p=VirtualTables">Virtual Tables</a> and
-  loading of external modules (shared libraries). APSW had the following
-  changes:</p>
-
-  <ul>
-    <li>Even more test cases added (you can't have too many tests :-)</li>
+      <h2><a name="338r1">3.3.8-r1</a></h2>
 
-    <li>When exceptions occur, dummy frames are added to the traceback in the C
-    code. This makes it a lot easier to tell why code was called if you
-    encounter an exception. See <a href="#augmentedstacktraces">augmented stack
-    traces</a> for details.</li>
-
-    <li>String values (traditional and Unicode) work correctly if they have
-    embedded NULL characters (ie not truncated at the NULL).</li>
+      <p>You can use this with SQLite 3.3.8 onwards. There was an incompatible
+      API change for virtual tables in SQLite 3.3.8.</p>
 
-    <li>You can load SQLite shared library extensions.</li>
-  </ul>
+      <ul>
+        <li>Virtual tables updated for new api</li>
 
-  <h2><a name="335r1">3.3.5-r1</a></h2>
+        <li>::TODO:: extended result codes</li>
 
-  <p>You can use this release against any release of SQLite 3 from 3.3.5
-  onwards. A bug was also fixed when reporting an error during the cleanup of
-  an aggregate function if there had also been an error in the step function.
-  (PyErr_WriteUnraisable(NULL) crashed on some versions of Python but not
-  others.)</p>
+        <li>::TODO:: add close methods</li>
+      </ul>
 
-  <p>SQLite added several functions for returning metadata about result column
-  sets. You have to compile SQLite with <tt>SQLITE_ENABLE_COLUMN_METADATA</tt>
-  to get them. This is not the default for SQLite. I don't believe these are
-  generally useful except in some corner cases and so they aren't wrapped.
-  However please shout if you do need them. Note that
-  <tt>cursor.getdescription</tt> will already give you generally useful
-  information. (Also see the <a href=
-  "http://sqlite.org/pragma.html">pragmas</a>).</p>
+      <h2><a name="337r1">3.3.7-r1</a></h2>
 
-  <p>The test code has been converted into using the unittest module. Run
-  <tt>python tests.py -v</tt> to get the tests run. There should be no
-  errors.</p>
+      <p>You can use this release against SQLite 3.3.7. There were no changes
+      in the SQLite 3.3.6 API from 3.3.5. In SQLite 3.3.7 an API was added that
+      allowed removing a chunk of duplicate code. Also added were <a href=
+      "http://www.sqlite.org/cvstrac/wiki?p=VirtualTables">Virtual Tables</a>
+      and loading of external modules (shared libraries). APSW had the
+      following changes:</p>
 
-  <p>Updated code to work correctly with new Py_ssize_t introduced in Python
-  2.5. See <a href="#64bitpy25">64 bit hosts, Python 2.5</a> for more details
-  on how Python and SQLite handle 64 bit sized items.</p>
+      <ul>
+        <li>Even more test cases added (you can't have too many tests :-)</li>
 
-  <p>The following functions were added to SQLite and are wrapped. They are all
-  functions defined on the <a href="#Connection">Connection</a> object.</p>
+        <li>When exceptions occur, dummy frames are added to the traceback in
+        the C code. This makes it a lot easier to tell why code was called if
+        you encounter an exception. See <a href=
+        "#augmentedstacktraces">augmented stack traces</a> for details.</li>
 
-  <ul>
-    <li><a href=
-    "http://sqlite.org/capi3ref.html#sqlite3_update_hook">sqlite3_update_hook</a></li>
+        <li>String values (traditional and Unicode) work correctly if they have
+        embedded NULL characters (ie not truncated at the NULL).</li>
 
-    <li><a href=
-    "http://sqlite.org/capi3ref.html#sqlite3_rollback_hook">sqlite3_rollback_hook</a></li>
+        <li>You can load SQLite shared library extensions.</li>
+      </ul>
 
-    <li><a href=
-    "http://sqlite.org/capi3ref.html#sqlite3_enable_shared_cache">sqlite3_enable_shared_cache</a>
-    (Module level method)</li>
+      <h2><a name="335r1">3.3.5-r1</a></h2>
 
-    <li><a href=
-    "http://sqlite.org/capi3ref.html#sqlite3_get_autocommit">sqlite3_get_autocommit</a>
-    (Connection level method)</li>
+      <p>You can use this release against any release of SQLite 3 from 3.3.5
+      onwards. A bug was also fixed when reporting an error during the cleanup
+      of an aggregate function if there had also been an error in the step
+      function. (PyErr_WriteUnraisable(NULL) crashed on some versions of Python
+      but not others.)</p>
 
-    <li>sqlite3_profile (experimental, not documented on SQLite site) This
-    callback is run at the end of each statement execution telling you how long
-    it took)</li>
-  </ul>
+      <p>SQLite added several functions for returning metadata about result
+      column sets. You have to compile SQLite with
+      <tt>SQLITE_ENABLE_COLUMN_METADATA</tt> to get them. This is not the
+      default for SQLite. I don't believe these are generally useful except in
+      some corner cases and so they aren't wrapped. However please shout if you
+      do need them. Note that <tt>cursor.getdescription</tt> will already give
+      you generally useful information. (Also see the <a href=
+      "http://sqlite.org/pragma.html">pragmas</a>).</p>
 
-  <p>The following functions were added/changed in SQLite C API but are not
-  useful to be wrapped.</p>
+      <p>The test code has been converted into using the unittest module. Run
+      <tt>python tests.py -v</tt> to get the tests run. There should be no
+      errors.</p>
 
-  <ul>
-    <li>sqlite3_value_numeric_type (query if a result is numeric)</li>
+      <p>Updated code to work correctly with new Py_ssize_t introduced in
+      Python 2.5. See <a href="#64bitpy25">64 bit hosts, Python 2.5</a> for
+      more details on how Python and SQLite handle 64 bit sized items.</p>
 
-    <li><a href=
-    "http://sqlite.org/capi3ref.html#sqlite3_global_recover">sqlite3_global_recover</a>
-    (already deprecated)</li>
+      <p>The following functions were added to SQLite and are wrapped. They are
+      all functions defined on the <a href="#Connection">Connection</a>
+      object.</p>
 
-    <li><a href=
-    "http://sqlite.org/capi3ref.html#sqlite3_release_memory">sqlite3_release_memory</a>
-    (requires non-default compile flag)</li>
+      <ul>
+        <li><a href=
+        "http://sqlite.org/capi3ref.html#sqlite3_update_hook">sqlite3_update_hook</a></li>
 
-    <li><a href=
-    "http://sqlite.org/capi3ref.html#sqlite3_soft_heap_limit">sqlite3_soft_heap_limit</a>
-    (requires non-default compile flag)</li>
+        <li><a href=
+        "http://sqlite.org/capi3ref.html#sqlite3_rollback_hook">sqlite3_rollback_hook</a></li>
 
-    <li><a href=
-    "http://sqlite.org/capi3ref.html#sqlite3_db_handle">sqlite3_db_handle</a>
-    (use cursor.getconnection())</li>
-  </ul>
+        <li><a href=
+        "http://sqlite.org/capi3ref.html#sqlite3_enable_shared_cache">sqlite3_enable_shared_cache</a>
+        (Module level method)</li>
 
-  <h2><a name="327r1">3.2.7-r1</a></h2>
+        <li><a href=
+        "http://sqlite.org/capi3ref.html#sqlite3_get_autocommit">sqlite3_get_autocommit</a>
+        (Connection level method)</li>
 
-  <p>You can use this release against any release of SQLite 3.</p>
+        <li>sqlite3_profile (experimental, not documented on SQLite site) This
+        callback is run at the end of each statement execution telling you how
+        long it took)</li>
+      </ul>
 
-  <p>SQLite 3.2.7 has several bug fixes. The undocumented experimental function
-  <code>sqlite3_profile</code> was added, but it not present in apsw yet.</p>
+      <p>The following functions were added/changed in SQLite C API but are not
+      useful to be wrapped.</p>
 
-  <ul>
-    <li>The author of pysqlite has improved it considerably since APSW was
-    originally written. The differences section has been updated to reflect
-    those improvements in pysqlite.</li>
+      <ul>
+        <li>sqlite3_value_numeric_type (query if a result is numeric)</li>
 
-    <li>SQLITE_INTERNAL and SQLITE_NOTFOUND error codes are not used according
-    to 3.2.7 header file. They are still present in APSW for backwards
-    compatibility.</li>
+        <li><a href=
+        "http://sqlite.org/capi3ref.html#sqlite3_global_recover">sqlite3_global_recover</a>
+        (already deprecated)</li>
 
-    <li>Changed the build instructions so configure is run on non-Windows
-    platforms.</li>
+        <li><a href=
+        "http://sqlite.org/capi3ref.html#sqlite3_release_memory">sqlite3_release_memory</a>
+        (requires non-default compile flag)</li>
 
-    <li>Fixed a bug caused by an overly helpful error message trying to tell
-    you how many bindings you supplied that crashed if you didn't supply
-    any.</li>
+        <li><a href=
+        "http://sqlite.org/capi3ref.html#sqlite3_soft_heap_limit">sqlite3_soft_heap_limit</a>
+        (requires non-default compile flag)</li>
 
-    <li>Changed when an error in the step function for an aggregate is reported
-    due to limitations in SQLite.</li>
-  </ul>
+        <li><a href=
+        "http://sqlite.org/capi3ref.html#sqlite3_db_handle">sqlite3_db_handle</a>
+        (use cursor.getconnection())</li>
+      </ul>
 
-  <h2><a name="322r1">3.2.2-r1</a></h2>
+      <h2><a name="327r1">3.2.7-r1</a></h2>
 
-  <p>You can use this release against any release of SQLite 3.</p>
+      <p>You can use this release against any release of SQLite 3.</p>
 
-  <p>SQLite 3.2.2 API removed <code>sqlite3_global_recover</code>. That
-  function was not wrapped in APSW. Note that SQLite 3.2.2 contains a bug fix
-  that applies when you use 64 bit integer primary keys (32 bit ints are
-  fine).</p>
+      <p>SQLite 3.2.7 has several bug fixes. The undocumented experimental
+      function <code>sqlite3_profile</code> was added, but it not present in
+      apsw yet.</p>
 
-  <h2><a name="321r1">3.2.1-r1</a></h2>
+      <ul>
+        <li>The author of pysqlite has improved it considerably since APSW was
+        originally written. The differences section has been updated to reflect
+        those improvements in pysqlite.</li>
 
-  <p>You can use this release against any release of SQLite 3.</p>
+        <li>SQLITE_INTERNAL and SQLITE_NOTFOUND error codes are not used
+        according to 3.2.7 header file. They are still present in APSW for
+        backwards compatibility.</li>
 
-  <ul>
-    <li>There are no changes in APSW except to correct an error in the example
-    code (collations are registered against the connection not the cursor)</li>
-  </ul>
+        <li>Changed the build instructions so configure is run on non-Windows
+        platforms.</li>
 
-  <p>SQLite 3.2.1 had one addition in the stable C API, which was a new
-  function named <code>sqlite3_global_recover</code>. That function is not
-  applicable for wrapping in APSW.</p>
+        <li>Fixed a bug caused by an overly helpful error message trying to
+        tell you how many bindings you supplied that crashed if you didn't
+        supply any.</li>
 
-  <h2><a name="313r1">3.1.3-r1</a></h2>
+        <li>Changed when an error in the step function for an aggregate is
+        reported due to limitations in SQLite.</li>
+      </ul>
 
-  <p>You can use this release against any release of SQLite 3.</p>
+      <h2><a name="322r1">3.2.2-r1</a></h2>
 
-  <ul>
-    <li>The text string returned by apsw.Error used to say "apsw.APSWException"
-    and has been changed to "apsw.Error". This is purely cosmetic and helps
-    make clear what the class is. (The old string was what the original class
-    name was in an earlier version of the code.)</li>
+      <p>You can use this release against any release of SQLite 3.</p>
 
-    <li>Added <code>SQLITE_ALTER_TABLE</code> and <code>SQLITE_REINDEX</code>
-    constants for the authorizer function. (These constants were introduced in
-    SQLite 3.1.3).</li>
+      <p>SQLite 3.2.2 API removed <code>sqlite3_global_recover</code>. That
+      function was not wrapped in APSW. Note that SQLite 3.2.2 contains a bug
+      fix that applies when you use 64 bit integer primary keys (32 bit ints
+      are fine).</p>
 
-    <li>Changed various C++-isms into standard C (eg // comments and the
-    placing of some CHECK_THREAD macro calls)</li>
+      <h2><a name="321r1">3.2.1-r1</a></h2>
 
-    <li>Added module level function <code>apswversion</code> which returns the
-    version of APSW.</li>
-  </ul>
+      <p>You can use this release against any release of SQLite 3.</p>
 
-  <p>SQLite 3.1.3 had no changes in the stable C API other than what is
-  mentioned above. There were some new experimental functions added which are
-  not currently documented on the SQLite website, which are not wrapped by
-  APSW. Please contact me if you believe they will remain in SQLite and you
-  would like them wrapped:</p>
+      <ul>
+        <li>There are no changes in APSW except to correct an error in the
+        example code (collations are registered against the connection not the
+        cursor)</li>
+      </ul>
 
-  <ul>
-    <li><code>sqlite3_sleep</code> An alternative function which sleeps for a
-    specified number of milliseconds can be provided. By default SQLite just
-    uses the standard operating system call.</li>
+      <p>SQLite 3.2.1 had one addition in the stable C API, which was a new
+      function named <code>sqlite3_global_recover</code>. That function is not
+      applicable for wrapping in APSW.</p>
 
-    <li><code>sqlite3_expired</code> This function is internal to statement
-    execution. It would apply to the implementation of Cursor.executemany and
-    could in theory provide a marginal improvement in performance.</li>
+      <h2><a name="313r1">3.1.3-r1</a></h2>
 
-    <li>A global variable <code>sqlite3_temp_directory</code> can be used
-    before any databases are opened to set where temporary files are created.
-    By default SQLite just uses the standard operating system mechanisms.</li>
-  </ul>
+      <p>You can use this release against any release of SQLite 3.</p>
 
-  <h2><a name="308r3">3.0.8-r3</a></h2>
+      <ul>
+        <li>The text string returned by apsw.Error used to say
+        "apsw.APSWException" and has been changed to "apsw.Error". This is
+        purely cosmetic and helps make clear what the class is. (The old string
+        was what the original class name was in an earlier version of the
+        code.)</li>
 
-  <p>There are no functional changes. The only changes were to correct some
-  variable names in the example code (they were cut and pasted from the test
-  code which used different names) and to make the source zip file extract its
-  contents into a sub-directory which is the more typical way of packaging that
-  sort of thing.</p>
+        <li>Added <code>SQLITE_ALTER_TABLE</code> and
+        <code>SQLITE_REINDEX</code> constants for the authorizer function.
+        (These constants were introduced in SQLite 3.1.3).</li>
 
-  <h2><a name="308r2">3.0.8-r2</a></h2>
+        <li>Changed various C++-isms into standard C (eg // comments and the
+        placing of some CHECK_THREAD macro calls)</li>
 
-  <p>All remaining functionality in the C API for SQLite 3.0.8 is now
-  available.</p>
+        <li>Added module level function <code>apswversion</code> which returns
+        the version of APSW.</li>
+      </ul>
 
-  <p>Finished this documentation.</p>
+      <p>SQLite 3.1.3 had no changes in the stable C API other than what is
+      mentioned above. There were some new experimental functions added which
+      are not currently documented on the SQLite website, which are not wrapped
+      by APSW. Please contact me if you believe they will remain in SQLite and
+      you would like them wrapped:</p>
 
-  <h2><a name="308r1">3.0.8-r1</a></h2>
+      <ul>
+        <li><code>sqlite3_sleep</code> An alternative function which sleeps for
+        a specified number of milliseconds can be provided. By default SQLite
+        just uses the standard operating system call.</li>
 
-  <p>Initial release</p>
-  <hr />
+        <li><code>sqlite3_expired</code> This function is internal to statement
+        execution. It would apply to the implementation of Cursor.executemany
+        and could in theory provide a marginal improvement in performance.</li>
 
-  <address>
-    <a href="mailto:rogerb@rogerbinns.com"></a>
-  </address>
+        <li>A global variable <code>sqlite3_temp_directory</code> can be used
+        before any databases are opened to set where temporary files are
+        created. By default SQLite just uses the standard operating system
+        mechanisms.</li>
+      </ul>
+
+      <h2><a name="308r3">3.0.8-r3</a></h2>
+
+      <p>There are no functional changes. The only changes were to correct some
+      variable names in the example code (they were cut and pasted from the
+      test code which used different names) and to make the source zip file
+      extract its contents into a sub-directory which is the more typical way
+      of packaging that sort of thing.</p>
+
+      <h2><a name="308r2">3.0.8-r2</a></h2>
+
+      <p>All remaining functionality in the C API for SQLite 3.0.8 is now
+      available.</p>
+
+      <p>Finished this documentation.</p>
+
+      <h2><a name="308r1">3.0.8-r1</a></h2>
+
+      <p>Initial release</p>
+      <hr />
+
+      <address>
+        <a href="mailto:rogerb@rogerbinns.com"></a>
+      </address>
+    </dd>
+  </dl>
 </body>
 </html>
