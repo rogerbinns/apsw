@@ -79,7 +79,7 @@ static void AddTraceBackHere(const char *filename, int lineno, const char *funct
      empty_tuple,  /*PyObject *varnames,*/
      empty_tuple,  /*PyObject *freevars,*/
      empty_tuple,  /*PyObject *cellvars,*/
-     srcfile,     /*PyObject *filename,*/
+     srcfile,      /*PyObject *filename,*/
      funcname,     /*PyObject *name,*/
      lineno,       /*int firstlineno,*/
      empty_string  /*PyObject *lnotab*/
