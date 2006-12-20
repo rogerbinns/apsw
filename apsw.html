@@ -1645,15 +1645,20 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
           <p><b>Return</b> None (ignored)</p>
         </dd>
 
-        <dt><strong>Filter(indexnum, indexstring,
-        *constraintargs)</strong></dt>
+        <dt><strong>Filter(indexnum, indexstring, constraintargs)</strong></dt>
 
         <dd>
           <p>This method is always called first to initialize an iteration to
           the first row of the table. The arguments come from the BestIndex
-          method in the table object. If you always return None in BestIndex
-          then indexnum will be zero, indexstring will be None and there won't
-          be any constraintargs).</p>
+          method in the table object with constraintargs being a tuple of the
+          constraints you requested. If you always return None in BestIndex
+          then indexnum will be zero, indexstring will be None and
+          constraintargs will be empty).</p>
+
+          <p><b>Note</b> that SQLite 3.3.8 has a bug (<a href=
+          "http://www.sqlite.org/cvstrac/tktview?tn=2117">ticket 2117</a>) that
+          results in random behaviour if you have an exception in this method
+          or do not define it.</p>
 
           <p><b>Return</b> None (ignored)</p>
         </dd>
@@ -1665,7 +1670,8 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
           after each call to Filter and Next.</p>
 
           <p><b>Return</b> True if the cursor is at a valid row of data, else
-          False.</p>
+          False. Note that if you have an exception in this method, or do not
+          provide it then False will be returned to SQLite.</p>
         </dd>
 
         <dt><strong>Next()</strong></dt>
@@ -1726,6 +1732,24 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
           <p><b>Return</b> None (ignored)</p>
         </dd>
       </dl>
+
+      <h3>Troubleshooting virtual tables</h3>
+
+      <p>Virtual Tables are a very recent addition to SQLite and haven't been
+      widely used yet. They do work well if all your routines work
+      perfectly.</p>
+
+      <p>A big help is using the local variables recipe as described in
+      <a href="#augmentedstacktraces">augmented stack traces</a> which will
+      give you more details in errors. You may also find errors compounding.
+      For example if you have an error in the Filter method of a cursor, SQLite
+      then closes the cursor. If you also return an error in the Close method
+      then the first error may mask the second or vice versa.</p>
+
+      <p>Also note that SQLite may ignore responses from your methods if they
+      don't make sense. For example in BestIndex, if you set multiple arguments
+      to have the same constraintargs position then your Filter won't receive
+      any constraintargs at all.</p>
 
       <h1><a name="Exceptions" id="Exceptions">Exceptions</a></h1>
 
