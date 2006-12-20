@@ -1334,6 +1334,7 @@ class APSW(unittest.TestCase):
                           ((("bad",True),None,None,None,None),),
                           (((0, True),"bad",None,None,None),),
                           (None,"bad"),
+                          [4,(3,True),[2,False],1, [0]],
                           )
             numbadbextindex=len(badbestindex)
 
@@ -1359,22 +1360,86 @@ class APSW(unittest.TestCase):
                 return (None,12,u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}", "anything", "bad")
                 
             def BestIndex99(self, constraints, orderbys):
-                print constraints, orderbys
                 cl=list(constraints)
                 cl.sort()
                 assert allconstraintsl == cl
                 assert orderbys == ( (2, False), )
-                return ( [4,(3,),[2,False],[1], [0]], 997, u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}", False)
+                return ( [4,(3,True),[2,False],1, 0], 997, u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}", 99)
+
+            def Open1(self, wrong, number, of, arguments):
+                1/0
+
+            def Open2(self):
+                1/0
+
+            def Open3(self):
+                return None
+
+            def Open99(self):
+                return Cursor(self)
+
+        class Cursor:
+
+            def __init__(self, table):
+                self.table=table
+
+            def Filter1(self, toofewargs):
+                1/0
+
+            def Filter2(self, *args):
+                1/0
+
+            def Filter99(self, idxnum, idxstr, constraintargs):
+                assert idxnum==997
+                assert idxstr==u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}"
+                assert constraintargs==('A', 12.4, 'A', -1000)
+                self.pos=1 # row 0 is headers
+
+            def Eof1(self, toomany, args):
+                1/0
+
+            def Eof2(self):
+                1/0
+
+            def Eof99(self):
+                return not ( self.pos<len(self.table.data) )
+
+            def Rowid1(self, too, many, args):
+                1/0
+
+            def Rowid2(self):
+                1/0
+
+            def Rowid3(self):
+                return "cdrom"
+
+            def Rowid99(self):
+                return self.table.data[self.pos][0]
+
+            def Column1(self):
+                1/0
+
+            def Column2(self, too, many, args):
+                1/0
+
+            def Column3(self, col):
+                1/0
+
+            def Column4(self, col):
+                return self # bad type
+
+            def Column99(self, col):
+                return self.table.data[self.pos][col+1] # col 0 is row id
 
         # use our more complete version
         self.db.createmodule("testmod2", Source())
         cur.execute("create virtual table foo using testmod2(2,two)")
         # are missing/mangled methods detected correctly?
-        self.assertRaises(AttributeError, cur.execute, "select rowid,* from foo group by number")
+        self.assertRaises(AttributeError, cur.execute, "select rowid,* from foo order by number")
         VTable.BestIndex=VTable.BestIndex1
-        self.assertRaises(TypeError, cur.execute, "select rowid,* from foo groupby number")
+        self.assertRaises(TypeError, cur.execute, "select rowid,* from foo order by number")
         VTable.BestIndex=VTable.BestIndex2
-        self.assertRaises(ZeroDivisionError, cur.execute, "select rowid,* from foo group by number")
+        self.assertRaises(ZeroDivisionError, cur.execute, "select rowid,* from foo order by number")
         # check bestindex results
         VTable.BestIndex=VTable.BestIndex3
         for i in range(VTable.numbadbextindex):
@@ -1382,10 +1447,51 @@ class APSW(unittest.TestCase):
         VTable.BestIndex=VTable.BestIndex4
         self.assertRaises(ValueError, cur.execute, allconstraints)
 
-        # error cases ok, return real values
+        # error cases ok, return real values and move on to cursor methods
         VTable.BestIndex=VTable.BestIndex99
+        self.assertRaises(AttributeError, cur.execute, allconstraints) # missing open
+        VTable.Open=VTable.Open1
+        self.assertRaises(TypeError, cur.execute,allconstraints)
+        VTable.Open=VTable.Open2
+        self.assertRaises(ZeroDivisionError, cur.execute,allconstraints)
+        VTable.Open=VTable.Open3
         self.assertRaises(AttributeError, cur.execute, allconstraints)
-        
+        VTable.Open=VTable.Open99
+        self.assertRaises(AttributeError, cur.execute, allconstraints)
+        # put in filter
+        Cursor.Filter=Cursor.Filter1
+        self.assertRaises(TypeError, cur.execute,allconstraints)
+        Cursor.Filter=Cursor.Filter2
+        self.assertRaises(ZeroDivisionError, cur.execute,allconstraints)
+        Cursor.Filter=Cursor.Filter99
+        self.assertRaises(AttributeError, cur.execute, allconstraints)
+        Cursor.Eof=Cursor.Eof1
+        self.assertRaises(TypeError, cur.execute,allconstraints)
+        Cursor.Eof=Cursor.Eof2
+        self.assertRaises(ZeroDivisionError, cur.execute,allconstraints)
+        Cursor.Eof=Cursor.Eof99
+        self.assertRaises(AttributeError, cur.execute, allconstraints)
+        # now onto to rowid
+        Cursor.Rowid=Cursor.Rowid1
+        self.assertRaises(TypeError, cur.execute,allconstraints)
+        Cursor.Rowid=Cursor.Rowid2
+        self.assertRaises(ZeroDivisionError, cur.execute,allconstraints)
+        Cursor.Rowid=Cursor.Rowid3
+        self.assertRaises(ValueError, cur.execute,allconstraints)
+        Cursor.Rowid=Cursor.Rowid99
+        self.assertRaises(AttributeError, cur.execute, allconstraints)
+        # column
+        Cursor.Column=Cursor.Column1
+        self.assertRaises(TypeError, cur.execute,allconstraints)
+        Cursor.Column=Cursor.Column2
+        self.assertRaises(TypeError, cur.execute,allconstraints)
+        Cursor.Column=Cursor.Column3
+        self.assertRaises(ZeroDivisionError, cur.execute,allconstraints)
+        Cursor.Column=Cursor.Column4
+        self.assertRaises(TypeError, cur.execute,allconstraints)
+        Cursor.Column=Cursor.Column99
+        cur.execute(allconstraints)
+
 
 # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used
 LOADEXTENSIONFILENAME="./testextension.sqlext"
