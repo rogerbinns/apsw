@@ -2144,7 +2144,13 @@ Call_PythonMethod(PyObject *obj, const char *methodname, PyObject *args, int man
   PyObject *method=NULL;
   PyObject *res=NULL;
 
-  assert(!PyErr_Occurred()); /* we clear error later, shouldn't be called with error already set */
+  /* we may be called when there is already an error.  eg if you return an error in
+     a cursor method, then SQLite calls vtabClose which calls us.  We don't want to 
+     clear pre-existing errors, but we do want to clear ones when the function doesn't
+     exist but is optional */
+
+  void *pyerralreadyoccurred=PyErr_Occurred();
+
 
   /* we should only be called with ascii methodnames so no need to do
      character set conversions etc */
@@ -2154,7 +2160,8 @@ Call_PythonMethod(PyObject *obj, const char *methodname, PyObject *args, int man
       if(!mandatory)
 	{
 	  /* pretend method existed and returned None */
-	  PyErr_Clear();
+	  if(!pyerralreadyoccurred)
+	    PyErr_Clear();
 	  res=Py_None;
 	  Py_INCREF(res);
 	}
@@ -2203,7 +2210,7 @@ MakeSqliteMsgFromPyException(char **errmsg)
     str=PyObject_Str(etype);
   if(!str)
     str=PyString_FromString("python exception with no information");
-  if(evalue)
+  if(etype)
     PyErr_Restore(etype, evalue, etraceback);
   
   if(*errmsg)
@@ -2983,6 +2990,7 @@ vtabClose(sqlite3_vtab_cursor *pCursor)
 {
   PyObject *cursor, *args=NULL, *res=NULL;
   PyGILState_STATE gilstate;
+  char **zErrMsgLocation=&(pCursor->pVtab->zErrMsg); /* we free pCursor but still need this field */
   int sqliteres=SQLITE_OK;
 
   gilstate=PyGILState_Ensure();
@@ -2998,7 +3006,7 @@ vtabClose(sqlite3_vtab_cursor *pCursor)
 
  pyexception: /* we had an exception in python code */
   assert(PyErr_Occurred());
-  sqliteres=MakeSqliteMsgFromPyException(&(pCursor->pVtab->zErrMsg)); /* SQLite flaw: errMsg should be on the cursor not the table! */
+  sqliteres=MakeSqliteMsgFromPyException(zErrMsgLocation); /* SQLite flaw: errMsg should be on the cursor not the table! */
   AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xClose", "{s: O}", "self", cursor);
 
  finally:
