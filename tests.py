@@ -1253,12 +1253,12 @@ class APSW(unittest.TestCase):
 
         dataschema="create table this_should_be_ignored"+`data[0][1:]`
         # a query that will get constraints on every column
-        allconstraints="select rowid,* from foo where rowid>-1000 and name>='A' and number<=12.4 and item>'A' and description MATCH 'foo' order by item"
+        allconstraints="select rowid,* from foo where rowid>-1000 and name>='A' and number<=12.4 and item>'A' and description=='foo' order by item"
         allconstraintsl=[(-1, apsw.SQLITE_INDEX_CONSTRAINT_GT), # rowid >
                          ( 0, apsw.SQLITE_INDEX_CONSTRAINT_GE), # name >=
                          ( 1, apsw.SQLITE_INDEX_CONSTRAINT_LE), # number <=
                          ( 2, apsw.SQLITE_INDEX_CONSTRAINT_GT), # item >
-                         ( 3, apsw.SQLITE_INDEX_CONSTRAINT_MATCH), # description match
+                         ( 3, apsw.SQLITE_INDEX_CONSTRAINT_EQ), # description ==
                          ]
         
 
@@ -1364,7 +1364,7 @@ class APSW(unittest.TestCase):
                 cl.sort()
                 assert allconstraintsl == cl
                 assert orderbys == ( (2, False), )
-                return ( [4,(3,True),[2,False],1, 0], 997, u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}", 99)
+                return ( [4,(3,True),[2,False],1, (0, False)], 997, u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}", 99)
 
             def Open1(self, wrong, number, of, arguments):
                 1/0
@@ -1431,6 +1431,24 @@ class APSW(unittest.TestCase):
             def Column99(self, col):
                 return self.table.data[self.pos][col+1] # col 0 is row id
 
+            def Close1(self, too, many, args):
+                1/0
+
+            def Close2(self):
+                1/0
+
+            def Close99(self):
+                del self.table  # deliberately break ourselves
+
+            def Next1(self, too, many, args):
+                1/0
+
+            def Next2(self):
+                1/0
+
+            def Next99(self):
+                self.pos+=1
+
         # use our more complete version
         self.db.createmodule("testmod2", Source())
         cur.execute("create virtual table foo using testmod2(2,two)")
@@ -1490,7 +1508,36 @@ class APSW(unittest.TestCase):
         Cursor.Column=Cursor.Column4
         self.assertRaises(TypeError, cur.execute,allconstraints)
         Cursor.Column=Cursor.Column99
-        cur.execute(allconstraints)
+        try:
+            for row in cur.execute(allconstraints): pass
+        except AttributeError:  pass
+        # next
+        Cursor.Next=Cursor.Next1
+        try:
+            for row in cur.execute(allconstraints): pass
+        except TypeError:  pass
+        Cursor.Next=Cursor.Next2
+        try:
+            for row in cur.execute(allconstraints): pass
+        except ZeroDivisionError:  pass
+        Cursor.Next=Cursor.Next99
+        try:
+            for row in cur.execute(allconstraints): pass
+        except AttributeError:
+            pass
+        # close
+        Cursor.Close=Cursor.Close1
+        try:
+            for row in cur.execute(allconstraints): pass
+        except TypeError:  pass
+        Cursor.Close=Cursor.Close2
+        try:
+            for row in cur.execute(allconstraints): pass
+        except ZeroDivisionError:  pass
+        Cursor.Close=Cursor.Close99
+        try:
+            for row in cur.execute(allconstraints): pass
+        except AttributeError:  pass
 
 
 # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used
