@@ -2148,8 +2148,10 @@ Call_PythonMethod(PyObject *obj, const char *methodname, PyObject *args, int man
      a cursor method, then SQLite calls vtabClose which calls us.  We don't want to 
      clear pre-existing errors, but we do want to clear ones when the function doesn't
      exist but is optional */
-
+  PyObject *etype=NULL, *evalue=NULL, *etraceback=NULL;
   void *pyerralreadyoccurred=PyErr_Occurred();
+  if(pyerralreadyoccurred)
+    PyErr_Fetch(&etype, &evalue, &etraceback);
 
 
   /* we should only be called with ascii methodnames so no need to do
@@ -2160,8 +2162,7 @@ Call_PythonMethod(PyObject *obj, const char *methodname, PyObject *args, int man
       if(!mandatory)
 	{
 	  /* pretend method existed and returned None */
-	  if(!pyerralreadyoccurred)
-	    PyErr_Clear();
+	  PyErr_Clear();
 	  res=Py_None;
 	  Py_INCREF(res);
 	}
@@ -2171,6 +2172,8 @@ Call_PythonMethod(PyObject *obj, const char *methodname, PyObject *args, int man
   res=PyEval_CallObject(method, args);
 
  finally:
+  if(pyerralreadyoccurred)
+    PyErr_Restore(etype, evalue, etraceback);
   Py_XDECREF(method);
   return res;
 }
@@ -2383,16 +2386,14 @@ static struct
 static int
 vtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
 { 
-  PyObject *vtable, *args=NULL, *res=NULL;
+  PyObject *vtable, *res=NULL;
   PyGILState_STATE gilstate;
   int sqliteres=SQLITE_OK;
 
   gilstate=PyGILState_Ensure();
   vtable=((apsw_vtable*)pVtab)->vtable;
 
-  args=PyTuple_New(0);
-  if(!args) goto pyexception;
-  res=Call_PythonMethod(vtable, destroy_disconnect_strings[stringindex].methodname, args, 1);
+  res=Call_PythonMethod(vtable, destroy_disconnect_strings[stringindex].methodname, NULL, 1);
   if(res) 
     {
       PyMem_Free(pVtab);
@@ -2404,13 +2405,12 @@ vtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
   ((apsw_vtable*)pVtab)->vtable=Py_None;
   Py_INCREF(Py_None);
 
- pyexception: /* we had an exception in python code */
+  /* pyexception:  we had an exception in python code */
   sqliteres=MakeSqliteMsgFromPyException(&(pVtab->zErrMsg));
   AddTraceBackHere(__FILE__, __LINE__,  destroy_disconnect_strings[stringindex].pyexceptionname, "{s: O}", "self", vtable);
 
  finally:
   Py_DECREF(vtable);
-  Py_XDECREF(args);
   Py_XDECREF(res);
 
   PyGILState_Release(gilstate);
@@ -2724,24 +2724,21 @@ struct {
 static int
 vtabTransactionMethod(sqlite3_vtab *pVtab, int stringindex)
 {
-  PyObject *vtable, *args=NULL, *res=NULL;
+  PyObject *vtable, *res=NULL;
   PyGILState_STATE gilstate;
   int sqliteres=SQLITE_OK;
 
   gilstate=PyGILState_Ensure();
   vtable=((apsw_vtable*)pVtab)->vtable;
 
-  args=PyTuple_New(0);
-  if(!args) goto pyexception;
-  res=Call_PythonMethod(vtable, transaction_strings[stringindex].methodname, args, 0);
+  res=Call_PythonMethod(vtable, transaction_strings[stringindex].methodname, NULL, 0);
   if(res) goto finally;
 
- pyexception: /* we had an exception in python code */
+  /*  pyexception: we had an exception in python code */
   sqliteres=MakeSqliteMsgFromPyException(&(pVtab->zErrMsg));
   AddTraceBackHere(__FILE__, __LINE__,  transaction_strings[stringindex].pyexceptionname, "{s: O}", "self", vtable);
 
  finally:
-  Py_XDECREF(args);
   Py_XDECREF(res);
 
   PyGILState_Release(gilstate);
@@ -2781,7 +2778,7 @@ typedef struct {
 static int
 vtabOpen(sqlite3_vtab *pVtab, sqlite3_vtab_cursor **ppCursor)
 { 
-  PyObject *vtable=NULL, *args=NULL, *res=NULL;
+  PyObject *vtable=NULL, *res=NULL;
   PyGILState_STATE gilstate;
   apsw_vtable_cursor *avc=NULL;
   int sqliteres=SQLITE_OK;
@@ -2790,9 +2787,7 @@ vtabOpen(sqlite3_vtab *pVtab, sqlite3_vtab_cursor **ppCursor)
 
   vtable=((apsw_vtable*)pVtab)->vtable;
 
-  args=PyTuple_New(0);
-  if(!args) goto pyexception;
-  res=Call_PythonMethod(vtable, "Open", args, 1);
+  res=Call_PythonMethod(vtable, "Open", NULL, 1);
   if(!res)
     goto pyexception;
   avc=PyMem_Malloc(sizeof(apsw_vtable_cursor));
@@ -2810,7 +2805,6 @@ vtabOpen(sqlite3_vtab *pVtab, sqlite3_vtab_cursor **ppCursor)
   AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xOpen", "{s: O}", "self", vtable);
 
  finally:
-  Py_XDECREF(args);
   Py_XDECREF(res);
   PyGILState_Release(gilstate);
   return sqliteres;
@@ -2881,7 +2875,7 @@ vtabFilter(sqlite3_vtab_cursor *pCursor, int idxNum, const char *idxStr,
 static int
 vtabEof(sqlite3_vtab_cursor *pCursor)
 { 
-  PyObject *cursor, *args=NULL, *res=NULL;
+  PyObject *cursor, *res=NULL;
   PyGILState_STATE gilstate;
   int sqliteres=0; /* nb a true/false value not error code */
 
@@ -2892,10 +2886,7 @@ vtabEof(sqlite3_vtab_cursor *pCursor)
 
   cursor=((apsw_vtable_cursor*)pCursor)->cursor;
 
-  args=PyTuple_New(0);
-  if(!args) goto pyexception;
-
-  res=Call_PythonMethod(cursor, "Eof", args, 1);
+  res=Call_PythonMethod(cursor, "Eof", NULL, 1);
   if(!res) goto pyexception;
 
   sqliteres=PyObject_IsTrue(res);
@@ -2910,7 +2901,6 @@ vtabEof(sqlite3_vtab_cursor *pCursor)
   AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xEof", "{s: O}", "self", cursor);
 
  finally:
-  Py_XDECREF(args);
   Py_XDECREF(res);
 
   PyGILState_Release(gilstate);
@@ -2958,7 +2948,7 @@ vtabColumn(sqlite3_vtab_cursor *pCursor, sqlite3_context *result, int ncolumn)
 static int
 vtabNext(sqlite3_vtab_cursor *pCursor)
 { 
-  PyObject *cursor, *args=NULL, *res=NULL;
+  PyObject *cursor, *res=NULL;
   PyGILState_STATE gilstate;
   int sqliteres=SQLITE_OK;
 
@@ -2966,19 +2956,15 @@ vtabNext(sqlite3_vtab_cursor *pCursor)
 
   cursor=((apsw_vtable_cursor*)pCursor)->cursor;
 
-  args=PyTuple_New(0);
-  if(!args) goto pyexception;
-
-  res=Call_PythonMethod(cursor, "Next", args, 1);
+  res=Call_PythonMethod(cursor, "Next", NULL, 1);
   if(res) goto finally;
 
- pyexception: /* we had an exception in python code */
+  /* pyexception:  we had an exception in python code */
   assert(PyErr_Occurred());
   sqliteres=MakeSqliteMsgFromPyException(&(pCursor->pVtab->zErrMsg)); /* SQLite flaw: errMsg should be on the cursor not the table! */
   AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xNext", "{s: O}", "self", cursor);
 
  finally:
-  Py_XDECREF(args);
   Py_XDECREF(res);
 
   PyGILState_Release(gilstate);
@@ -2988,7 +2974,7 @@ vtabNext(sqlite3_vtab_cursor *pCursor)
 static int
 vtabClose(sqlite3_vtab_cursor *pCursor)
 {
-  PyObject *cursor, *args=NULL, *res=NULL;
+  PyObject *cursor, *res=NULL;
   PyGILState_STATE gilstate;
   char **zErrMsgLocation=&(pCursor->pVtab->zErrMsg); /* we free pCursor but still need this field */
   int sqliteres=SQLITE_OK;
@@ -2997,21 +2983,17 @@ vtabClose(sqlite3_vtab_cursor *pCursor)
 
   cursor=((apsw_vtable_cursor*)pCursor)->cursor;
 
-  args=PyTuple_New(0);
-  if(!args) goto pyexception;
-
-  res=Call_PythonMethod(cursor, "Close", args, 1);
+  res=Call_PythonMethod(cursor, "Close", NULL, 1);
   PyMem_Free(pCursor); /* always free */
   if(res) goto finally;
 
- pyexception: /* we had an exception in python code */
+  /* pyexception: we had an exception in python code */
   assert(PyErr_Occurred());
   sqliteres=MakeSqliteMsgFromPyException(zErrMsgLocation); /* SQLite flaw: errMsg should be on the cursor not the table! */
   AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xClose", "{s: O}", "self", cursor);
 
  finally:
   Py_DECREF(cursor);  /* this is where cursor gets freed */
-  Py_XDECREF(args);
   Py_XDECREF(res);
 
   PyGILState_Release(gilstate);
@@ -3021,7 +3003,7 @@ vtabClose(sqlite3_vtab_cursor *pCursor)
 static int
 vtabRowid(sqlite3_vtab_cursor *pCursor, sqlite_int64 *pRowid)
 { 
-  PyObject *cursor, *args=NULL, *res=NULL, *pyrowid=NULL;
+  PyObject *cursor, *res=NULL, *pyrowid=NULL;
   PyGILState_STATE gilstate;
   int sqliteres=SQLITE_OK; 
 
@@ -3029,8 +3011,7 @@ vtabRowid(sqlite3_vtab_cursor *pCursor, sqlite_int64 *pRowid)
 
   cursor=((apsw_vtable_cursor*)pCursor)->cursor;
 
-  args=PyTuple_New(0);
-  res=Call_PythonMethod(cursor, "Rowid", args, 1);
+  res=Call_PythonMethod(cursor, "Rowid", NULL, 1);
   if(!res) goto pyexception;
   
   /* extract result */
@@ -3048,7 +3029,6 @@ vtabRowid(sqlite3_vtab_cursor *pCursor, sqlite_int64 *pRowid)
 
  finally:
   Py_XDECREF(pyrowid);
-  Py_XDECREF(args);
   Py_XDECREF(res);
 
   PyGILState_Release(gilstate);
