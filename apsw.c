@@ -95,6 +95,8 @@ static PyObject *ExcComplete;  /* query is finished */
 static PyObject *ExcTraceAbort; /* aborted by exectrace */
 static PyObject *ExcTooBig; /* object is too large for SQLite */
 static PyObject *ExcExtensionLoading; /* error loading extension */
+static PyObject *ExcConnectionNotClosed; /* connection wasn't closed when destructor called */
+static PyObject *ExcConnectionClosed; /* connection was closed when function called */
 
 static struct { int code; const char *name; PyObject *cls;}
 exc_descriptors[]=
@@ -171,6 +173,8 @@ static int init_exceptions(PyObject *m)
   EXC(ExcTraceAbort, "ExecTraceAbort");
   EXC(ExcTooBig, "TooBigError");
   EXC(ExcExtensionLoading, "ExtensionLoadingError");
+  EXC(ExcConnectionNotClosed, "ConnectionNotClosedError");
+  EXC(ExcConnectionClosed, "ConnectionClosedError");
 
 #undef EXC
 
@@ -212,6 +216,109 @@ static void make_exception(int res, sqlite3 *db)
  check */
 #define SET_EXC(db,res)  { if(res != SQLITE_OK && !PyErr_Occurred()) make_exception(res,db); }
 
+
+/* The default Python PyErr_WriteUnraiseable is almost useless.  It
+   only prints the str() of the exception and the str() of the object
+   passed in.  This gives the developer no clue whatsoever where in
+   the code it is happening.  It also does funky things to the passed
+   in object which can cause the destructor to fire twice.
+   Consequently we use our version here.  It makes a traceback if
+   necessary, invokes sys.excepthook and if that fails then
+   PyErr_Display. When we return, any error will be cleared. */
+static void 
+apsw_write_unraiseable(void)
+{
+  PyObject *err_type=NULL, *err_value=NULL, *err_traceback=NULL;
+  PyObject *excepthook=NULL;
+  PyObject *args=NULL;
+  PyObject *result=NULL;
+  
+  PyErr_Fetch(&err_type, &err_value, &err_traceback);
+  PyErr_NormalizeException(&err_type, &err_value, &err_traceback);
+
+  /* err_traceback is normally NULL, so lets fake one */
+  if(!err_traceback)
+    {
+      PyObject *e2t=NULL, *e2v=NULL, *e2tb=NULL;
+      PyFrameObject *frame = PyThreadState_GET()->frame;
+      while(frame)
+	{
+	  PyTraceBack_Here(frame);
+	  frame=frame->f_back;
+	}
+      PyErr_Fetch(&e2t, &e2v, &e2tb);
+      Py_XDECREF(e2t);
+      Py_XDECREF(e2v);
+      err_traceback=e2tb;
+    }
+
+  excepthook=PySys_GetObject("excepthook");
+  if(excepthook)
+    args=Py_BuildValue("(OOO)", err_type?err_type:Py_None, err_value?err_value:Py_None, err_traceback?err_traceback:Py_None);
+  if(excepthook && args)
+    result=PyEval_CallObject(excepthook, args);
+  if(!excepthook || !args || !result)
+    PyErr_Display(err_type, err_value, err_traceback);
+
+  /* excepthook is a borrowed reference */
+  Py_XDECREF(result);
+  Py_XDECREF(args);
+  Py_XDECREF(err_traceback);
+  Py_XDECREF(err_value);
+  Py_XDECREF(err_type);
+  PyErr_Clear();
+}
+
+/* Turns the current Python exception into an SQLite error code and
+   stores the string in the errmsg field (if not NULL).  The errmsg
+   field is expected to belong to sqlite and hence uses sqlite
+   semantics/ownership - for example see the pzErr parameter to
+   xCreate */
+
+static int
+MakeSqliteMsgFromPyException(char **errmsg)
+{
+  int res=SQLITE_ERROR;
+  PyObject *str=NULL;
+  PyObject *etype=NULL, *evalue=NULL, *etraceback=NULL;
+
+  assert(PyErr_Occurred());
+  if(PyErr_Occurred())
+    {
+      /* find out if the exception corresponds to an apsw exception descriptor */
+      int i;
+      for(i=0;exc_descriptors[i].code!=-1;i++)
+	if(PyErr_ExceptionMatches(exc_descriptors[i].cls))
+	{
+	  res=exc_descriptors[i].code;
+	  break;
+	}
+    }
+
+  if(errmsg)
+    {
+      /* I just want a string of the error! */
+      
+      PyErr_Fetch(&etype, &evalue, &etraceback);
+      if(!str && evalue)
+	str=PyObject_Str(evalue);
+      if(!str && etype)
+	str=PyObject_Str(etype);
+      if(!str)
+	str=PyString_FromString("python exception with no information");
+      if(etype)
+	PyErr_Restore(etype, evalue, etraceback);
+  
+      if(*errmsg)
+	sqlite3_free(*errmsg);
+      *errmsg=sqlite3_mprintf("%s",PyString_AsString(str));
+
+      Py_XDECREF(str);
+    }
+
+  return res;
+}
+
 /* CALLBACK INFO */
 
 /* details of a registered function passed as user data to sqlite3_create_function */
@@ -249,7 +356,7 @@ typedef struct _vtableinfo
   struct _vtableinfo *next;       /* we use a linked list */
   char *name;                     /* module name */
   PyObject *datasource;           /* object with create/connect methods */
-  Connection *connection;  /* the Connection this is registered against so we don't
+  Connection *connection;         /* the Connection this is registered against so we don't
 				     have to have a global table mapping sqlite3_db* to
 				     Connection* */
 } vtableinfo;
@@ -261,7 +368,11 @@ static vtableinfo *freevtableinfo(vtableinfo *);
 struct Connection { 
   PyObject_HEAD
   sqlite3 *db;                    /* the actual database connection */
+  const char *filename;           /* utf8 filename of the database */
+  int co_linenumber;              /* line number of allocation */
+  PyObject *co_filename;          /* filename of allocation */
   long thread_ident;              /* which thread we were made in */
+
   funccbinfo *functions;          /* linked list of registered functions */
   collationcbinfo *collations;    /* linked list of registered collations */
   vtableinfo *vtables;            /* linked list of registered vtables */
@@ -418,68 +529,56 @@ getutf8string(PyObject *string)
 
 /* CONNECTION CODE */
 
-static void
-Connection_dealloc(Connection* self)
+static PyObject *
+Connection_close(Connection *self)
 {
-  /* thread check - we can't use macro as that returns */
+  int res;
 
-  if(self->thread_ident!=PyThread_get_thread_ident())
+  if(!self->db)
+    goto finally;
+
+  CHECK_THREAD(self,NULL);
+
+  assert(!PyErr_Occurred());
+
+  Py_BEGIN_ALLOW_THREADS
+    res=sqlite3_close(self->db);
+  Py_END_ALLOW_THREADS;
+
+  /* SQLite ignores the error return from vtable Disconnect so we may need to synthesize it */
+  if(res==SQLITE_OK && PyErr_Occurred())
+    res=MakeSqliteMsgFromPyException(NULL);
+
+  if (res!=SQLITE_OK) 
     {
-          PyObject *err_type, *err_value, *err_traceback;
-          int have_error=PyErr_Occurred()?1:0;
-          if (have_error)
-            PyErr_Fetch(&err_type, &err_value, &err_traceback);
-          PyErr_Format(ExcThreadingViolation, "The destructor for Connection is called in a different thread than it"
-                       "was created in.  All calls must be in the same thread.  It was created in thread %d" 
-                       "and this is %d.  This SQLite database is not being closed as a result.",
-                       (int)(self->thread_ident), (int)(PyThread_get_thread_ident()));            
-          PyErr_WriteUnraisable((PyObject*)self);
-          if (have_error)
-            PyErr_Restore(err_type, err_value, err_traceback);
-          
-          return;
+      SET_EXC(self->db, res);
+      return NULL;
     }
 
-  if (self->db)
-    {
-      int res;
-      Py_BEGIN_ALLOW_THREADS
-        res=sqlite3_close(self->db);
-      Py_END_ALLOW_THREADS;
-
-      if (res!=SQLITE_OK) 
-        {
-          PyObject *err_type, *err_value, *err_traceback;
-          int have_error=PyErr_Occurred()?1:0;
-          if (have_error)
-            PyErr_Fetch(&err_type, &err_value, &err_traceback);
-          make_exception(res,self->db);
-          if (have_error)
-            {
-              PyErr_WriteUnraisable((PyObject*)self);
-              PyErr_Restore(err_type, err_value, err_traceback);
-            }
-        }
-      else
-        self->db=0;
-    }
+  self->db=0;
+  PyMem_Free((void*)self->filename);
+  self->filename=0;
+  Py_DECREF(self->co_filename);
 
   /* free functions */
   {
     funccbinfo *func=self->functions;
     while((func=freefunccbinfo(func)));
+    self->functions=0;
   }
 
   /* free collations */
   {
     collationcbinfo *coll=self->collations;
     while((coll=freecollationcbinfo(coll)));
+    self->collations=0;
   }
 
   /* free vtables */
   {
     vtableinfo *vtinfo=self->vtables;
     while((vtinfo=freevtableinfo(vtinfo)));
+    self->vtables=0;
   }
 
   Py_XDECREF(self->busyhandler);
@@ -500,7 +599,31 @@ Connection_dealloc(Connection* self)
   Py_XDECREF(self->authorizer);
   self->authorizer=0;
 
-  self->thread_ident=-1;
+ finally:
+  return Py_BuildValue("");
+  
+}
+
+static void
+Connection_dealloc(Connection* self)
+{
+  if(self->db)
+    {
+      /* not allowed to clobber existing exception */
+      PyObject *etype=NULL, *evalue=NULL, *etraceback=NULL;
+      PyErr_Fetch(&etype, &evalue, &etraceback);
+
+      PyErr_Format(ExcConnectionNotClosed, 
+		   "apsw.Connection on \"%s\" at address %p, allocated at %s:%d. The destructor "
+		   "has been called, but you haven't closed the connection.  All connections must "
+		   "be explicitly closed.  The SQLite database object is being leaked.", 
+		   self->filename?self->filename:"NULL", self,
+		   PyString_AsString(self->co_filename), self->co_linenumber);
+
+      apsw_write_unraiseable();
+      PyErr_Fetch(&etype, &evalue, &etraceback);
+    }
+
   self->ob_type->tp_free((PyObject*)self);
 }
 
@@ -514,6 +637,9 @@ Connection_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
       /* Strictly speaking the memory was already zeroed.  This is
          just defensive coding. */
       self->db=0;
+      self->filename=0;
+      self->co_linenumber=0;
+      self->co_filename=0;
       self->thread_ident=PyThread_get_thread_ident();
       self->functions=0;
       self->collations=0;
@@ -551,8 +677,21 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
     res=sqlite3_open(filename, &self->db);
   Py_END_ALLOW_THREADS;
   SET_EXC(self->db, res);  /* nb sqlite3_open always allocates the db even on error */
-
-  PyMem_Free(filename);
+  
+  if(res!=SQLITE_OK)
+    {
+      /* clean up db since it is useless - no need for user to call close */
+      sqlite3_close(self->db);
+      self->db=0;
+    }
+  else
+    {
+      PyFrameObject *frame = PyThreadState_GET()->frame;
+      self->co_linenumber=PyCode_Addr2Line(frame->f_code, frame->f_lasti);
+      self->co_filename=frame->f_code->co_filename;
+      Py_INCREF(self->co_filename);
+      self->filename=filename;
+    }
   
   return (res==SQLITE_OK)?0:-1;
 }
@@ -1775,7 +1914,7 @@ cbdispatch_final(sqlite3_context *context)
   if(PyErr_Occurred() && (err_type||err_value||err_traceback))
     {
       PyErr_Format(PyExc_StandardError, "An exception happened during cleanup of an aggregate function, but there was already error in the step function so only that can be returned");
-      PyErr_WriteUnraisable(Py_None); /* there is no object to give, and NULL causes some versions to core dump */
+      apsw_write_unraiseable();
     }
 
   if(err_type||err_value||err_traceback)
@@ -2178,51 +2317,7 @@ Call_PythonMethod(PyObject *obj, const char *methodname, PyObject *args, int man
   return res;
 }
 
-/* Turns the current Python exception into an SQLite error code and
-   stores the string in the errmsg field (if not NULL).  The errmsg
-   field is expected to belong to sqlite and hence uses sqlite
-   semantics/ownership - for example see the pzErr parameter to
-   xCreate */
 
-static int
-MakeSqliteMsgFromPyException(char **errmsg)
-{
-  int res=SQLITE_ERROR;
-  PyObject *str=NULL;
-  PyObject *etype=NULL, *evalue=NULL, *etraceback=NULL;
-
-  assert(PyErr_Occurred());
-  if(PyErr_Occurred())
-    {
-      /* find out if the exception corresponds to an apsw exception descriptor */
-      int i;
-      for(i=0;exc_descriptors[i].code!=-1;i++)
-	if(PyErr_ExceptionMatches(exc_descriptors[i].cls))
-	{
-	  res=exc_descriptors[i].code;
-	  break;
-	}
-    }
-
-  /* I just want a string of the error! */
-  
-  PyErr_Fetch(&etype, &evalue, &etraceback);
-  if(!str && evalue)
-    str=PyObject_Str(evalue);
-  if(!str && etype)
-    str=PyObject_Str(etype);
-  if(!str)
-    str=PyString_FromString("python exception with no information");
-  if(etype)
-    PyErr_Restore(etype, evalue, etraceback);
-  
-  if(*errmsg)
-    sqlite3_free(*errmsg);
-  *errmsg=sqlite3_mprintf("%s",PyString_AsString(str));
-
-  Py_XDECREF(str);
-  return res;
-}
 
 typedef struct {
   sqlite3_vtab used_by_sqlite; /* I don't touch this */
@@ -2378,11 +2473,12 @@ static struct
       "VirtualTable.xDestroy"
     },
     {
-      "Disconnect"
+      "Disconnect",
       "VirtualTable.xDisconnect"
     }
   };
 
+/* See SQLite ticket 2099 */
 static int
 vtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
 { 
@@ -2393,17 +2489,27 @@ vtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
   gilstate=PyGILState_Ensure();
   vtable=((apsw_vtable*)pVtab)->vtable;
 
-  res=Call_PythonMethod(vtable, destroy_disconnect_strings[stringindex].methodname, NULL, 1);
-  if(res) 
+  /* mandatory for Destroy, optional for Disconnect */
+  res=Call_PythonMethod(vtable, destroy_disconnect_strings[stringindex].methodname, NULL, (stringindex==0));
+  /* sqlite 3.3.8 ignore return code for disconnect so we always free */
+  if (res || stringindex==1)
     {
-      PyMem_Free(pVtab);
-      goto finally;
+      /* see SQLite ticket 2127 */
+      if(pVtab->zErrMsg)
+	sqlite3_free(pVtab->zErrMsg);
+
+      PyMem_Free(pVtab);    
     }
-  
-  /* ::TODO:: waiting on ticket 2099 to know if the pVtab should also be freed in case of error return.
-     For safety, make the vtable be a pointer to PyNone so any future callbacks do no harm */
-  ((apsw_vtable*)pVtab)->vtable=Py_None;
-  Py_INCREF(Py_None);
+  if(res) 
+    goto finally;
+
+  if(stringindex==0)
+    {
+      /* ::TODO:: waiting on ticket 2099 to know if the pVtab should also be freed in case of error return.
+	 For safety, make the vtable be a pointer to PyNone so any future callbacks do no harm */
+      ((apsw_vtable*)pVtab)->vtable=Py_None;
+      Py_INCREF(Py_None);
+    }
 
   /* pyexception:  we had an exception in python code */
   sqliteres=MakeSqliteMsgFromPyException(&(pVtab->zErrMsg));
@@ -3036,7 +3142,7 @@ vtabRowid(sqlite3_vtab_cursor *pCursor, sqlite_int64 *pRowid)
 }
 
 static int
-vtabUpdate(sqlite3_vtab *pVTab, int argc, sqlite3_value **argv, sqlite_int64 *pRowid)
+vtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite_int64 *pRowid)
 {
   PyObject *vtable, *args=NULL, *res=NULL;
   PyGILState_STATE gilstate;
@@ -3048,7 +3154,7 @@ vtabUpdate(sqlite3_vtab *pVTab, int argc, sqlite3_value **argv, sqlite_int64 *pR
   
   gilstate=PyGILState_Ensure();
 
-  vtable=((apsw_vtable*)pVTab)->vtable;
+  vtable=((apsw_vtable*)pVtab)->vtable;
 
   /* case 1 - argc=1 means delete row */
   if(argc==1)
@@ -3150,7 +3256,7 @@ vtabUpdate(sqlite3_vtab *pVTab, int argc, sqlite3_value **argv, sqlite_int64 *pR
 
  pyexception: /* we had an exception in python code */
   assert(PyErr_Occurred());
-  sqliteres=MakeSqliteMsgFromPyException(&pVTab->zErrMsg); /* SQLite flaw: errMsg should be on the cursor not the table! */
+  sqliteres=MakeSqliteMsgFromPyException(&pVtab->zErrMsg); /* SQLite flaw: errMsg should be on the cursor not the table! */
   AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xUpdate", "{s: O, s: i, s: s}", "self", vtable, "argc", argc, "methodname", methodname);
 
  finally:
@@ -3250,6 +3356,8 @@ Connection_createmodule(Connection *self, PyObject *args)
 static PyMethodDef Connection_methods[] = {
   {"cursor", (PyCFunction)Connection_cursor, METH_NOARGS,
    "Create a new cursor" },
+  {"close",  (PyCFunction)Connection_close, METH_NOARGS,
+   "Closes the connection" },
   {"setbusytimeout", (PyCFunction)Connection_setbusytimeout, METH_VARARGS,
    "Sets the sqlite busy timeout in milliseconds.  Use zero to disable the timeout"},
   {"interrupt", (PyCFunction)Connection_interrupt, METH_NOARGS,
@@ -3413,11 +3521,11 @@ Cursor_dealloc(Cursor * self)
     {
       if (have_error)
         PyErr_Fetch(&err_type, &err_value, &err_traceback);
-      PyErr_Format(PyExc_RuntimeError, "The destructor for Cursor is called in a different thread than it"
+      PyErr_Format(ExcThreadingViolation, "The destructor for Cursor is called in a different thread than it"
                    "was created in.  All calls must be in the same thread.  It was created in thread %d " 
                    "and this is %d.  SQLite is not being closed as a result.",
                    (int)(self->connection->thread_ident), (int)(PyThread_get_thread_ident()));            
-      PyErr_WriteUnraisable((PyObject*)self);
+      apsw_write_unraiseable();
       if (have_error)
         PyErr_Restore(err_type, err_value, err_traceback);
       
