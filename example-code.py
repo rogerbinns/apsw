@@ -286,12 +286,9 @@ except apsw.ConstraintError:
 ### Cleanup
 ###
 
-# Normal garbage collection will work but if you proactively want to
-# cleanup then use del.  You can use del on the cursors and
-# connections in any order.  Note that they must be called in the same
-# thread as the objects were allocated.
-
+# We must close connections
 del cursor
+connection.close()
 del connection
 
 #@@END
