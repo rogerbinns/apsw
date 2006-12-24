@@ -69,6 +69,7 @@ class APSW(unittest.TestCase):
     def tearDown(self):
         # we don't delete the database file itself.  it will be
         # left around if there was a failure
+        self.db.close()
         del self.db
 
     def assertTableExists(self, tablename):
@@ -123,6 +124,7 @@ class APSW(unittest.TestCase):
                 for row in c2.execute("select * from foo"):
                     pass
             del c2
+            db.close()
             del db
 
     def testBindings(self):
@@ -864,6 +866,8 @@ class APSW(unittest.TestCase):
         # it previously returned busy to
         del c
         del c2
+        db2.close()
+        self.db.close()
         del db2
         del self.db
         self.db=apsw.Connection("testdb")
@@ -896,6 +900,8 @@ class APSW(unittest.TestCase):
         # Close and reopen again
         del c
         del c2
+        db2.close()
+        self.db.close()
         del db2
         del self.db
         self.db=apsw.Connection("testdb")
@@ -931,6 +937,8 @@ class APSW(unittest.TestCase):
         # Close and reopen again
         del c
         del c2
+        db2.close()
+        self.db.close()
         del db2
         del self.db
         self.db=apsw.Connection("testdb")
@@ -944,6 +952,9 @@ class APSW(unittest.TestCase):
         c2.execute("begin exclusive")
         self.db.setbusyhandler(bh)
         self.assertRaises(ZeroDivisionError, c.execute, "begin immediate ; select * from foo")
+        del c
+        del c2
+        db2.close()
 
     def testInterruptHandling(self):
         "Verify interrupt function"
@@ -1134,21 +1145,13 @@ class APSW(unittest.TestCase):
         def threadcheck():
             db=apsw.Connection("testdb")
             c=db.cursor()
-            return c.execute("select count(*) from foo").next()[0]
+            v=c.execute("select count(*) from foo").next()[0]
+            for _ in c: pass
+            db.close()
+            return v
+        
         tr=ThreadRunner(threadcheck)
         self.failUnlessEqual(2, tr.go())
-        self.db=None
-        if False:
-            # execute destructor in wrong thread - this is quite difficult to arrange!
-            self.db=apsw.Connection("testdb")
-            def threadcheck():
-                print "here"
-                del self.db # python goes into infinite loop here repeatedly running destructor
-                print "here2"
-                raw_input("...")
-            tr=ThreadRunner(threadcheck)
-            tr.go()
-            self.db=None
 
     def testStringsWithNulls(self):
         "Verify that strings with nulls in them are handled correctly"
@@ -1279,8 +1282,8 @@ class APSW(unittest.TestCase):
                 self.expectargs=expectargs
                 
             def Create(self, *args): # db, modname, dbname, tablename, args
-                if self.expectargs!=args:
-                    raise ValueError("Create arguments are not what was expected: "+`args`)
+                if self.expectargs!=args[1:]:
+                    raise ValueError("Create arguments are not correct.  Expected "+`self.expectargs`+" but got "+`args[1:]`)
                 1/0
 
             def CreateErrorCode(self, *args):
@@ -1297,12 +1300,12 @@ class APSW(unittest.TestCase):
             def CreateBadSchema(self, *args):
                 return "this isn't remotely valid sql", None
 
-        # check Create does the right thing - this also tests original object return for the db parameter
-        self.db.createmodule("testmod1", Source(self.db, "testmod1", "main", "xyzzy", "1", '"one"'))
+        # check Create does the right thing - we don't include db since it creates a circular reference
+        self.db.createmodule("testmod1", Source("testmod1", "main", "xyzzy", "1", '"one"'))
         self.assertRaises(ZeroDivisionError, cur.execute, 'create virtual table xyzzy using testmod1(1,"one")')
         # unicode
         uni=u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}\N{LATIN SMALL LETTER O WITH DIAERESIS}"
-        self.db.createmodule("testmod1dash1", Source(self.db, "testmod1dash1", "main", uni, "1", u'"'+uni+u'"'))
+        self.db.createmodule("testmod1dash1", Source("testmod1dash1", "main", uni, "1", u'"'+uni+u'"'))
         self.assertRaises(ZeroDivisionError, cur.execute, u'create virtual table %s using testmod1dash1(1,"%s")' % (uni, uni))
         Source.Create=Source.CreateErrorCode
         self.assertRaises(apsw.BusyError, cur.execute, 'create virtual table xyzzz using testmod1(2, "two")')
@@ -1539,7 +1542,6 @@ class APSW(unittest.TestCase):
             for row in cur.execute(allconstraints): pass
         except AttributeError:  pass
 
-
 # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used
 LOADEXTENSIONFILENAME="./testextension.sqlext"
             
@@ -1550,7 +1552,10 @@ if __name__=='__main__':
 
     if not os.path.exists(LOADEXTENSIONFILENAME):
         print "Not doing LoadExtension test.  You need to compile the extension first"
-        print "  gcc -fpic -shared -o "+LOADEXTENSIONFILENAME+" -Isqlite3 testextension.c"
+        if sys.platform.startswith("darwin"):
+            print "  gcc -fPIC -bundle -o "+LOADEXTENSIONFILENAME+" -Isqlite3 testextension.c"
+        else:
+            print "  gcc -fPIC -shared -o "+LOADEXTENSIONFILENAME+" -Isqlite3 testextension.c"
         del APSW.testLoadExtension
     
     v=os.getenv("APSW_TEST_ITERATIONS")
