@@ -70,7 +70,10 @@ def buildsqlite(workdir, sqlitever):
     os.system("rm -rf %s/sqlite3 2>/dev/null" % (workdir,))
     run("cd %s ; wget %s -O - | tar xfz - ; mv sqlite-%s sqlite3" % (workdir, sqliteurl(sqlitever), sqlitever))
     run('cd %s/sqlite3 ; env CC="gcc -fPIC" CFLAGS="-DHAVE_DLOPEN" ./configure --enable-threadsafe --disable-tcl ; make -j 3 ; cp .libs/*.a .; cp src/sqlite3ext.h .' % (workdir,))
-    run('cd %s ; gcc -fpic -shared -o testextension.sqlext -Isqlite3 testextension.c' % (workdir,))
+    if sys.platform.startswith("darwin"):
+        run('cd %s ; gcc -fPIC -bundle -o testextension.sqlext -Isqlite3 testextension.c' % (workdir,))
+    else:
+        run('cd %s ; gcc -fPIC -shared -o testextension.sqlext -Isqlite3 testextension.c' % (workdir,))
 
 def buildapsw(outputfile, pybin, workdir):
     run("cd %s ; %s setup.py build 2>&1 | tee %s ; %s setup.py install" % (workdir, pybin,outputfile,pybin))
