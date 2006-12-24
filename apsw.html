@@ -26,6 +26,27 @@
   compliant - <a href="#pysqlitediffs">differences between apsw and pysqlite
   2</a>).</p>
 
+  <blockquote>
+    <p><b>Important changes in 3.3.8</b> You must explicitly call <a href=
+    "#Connection_class">close()</a> on Connection objects. If you do not call
+    close then an error message will be printed when Connection's destructor
+    runs and cleanup will not happen of that connection. This is because it is
+    not possible to raise Exceptions in destructors (actually it is, but Python
+    just calls the destructor again which can result in an infinite loop). I
+    did try to work around this, but with things like no control over which
+    thread destructors run in, virtual tables, triggers, incomplete statements
+    and SQLite's transaction control, it becomes impossible to cleanly close a
+    connection if bits of code are returning errors. Using the close() method
+    allows errors to be returned and it can be called again once they are
+    fixed.</p>
+
+    <p>All strings returned by APSW are now in Unicode. Previously strings that
+    consisted only of ASCII characters where returned as the string type and
+    other strings were returned as the unicode type. This did allow easy usage
+    with other components that knew nothing of Unicode. However it could make
+    Unicode aware software do more work.</p>
+  </blockquote>
+
   <h1 class="notoc">Table of contents</h1>
 
   <table cellspacing="5" cellpadding="5">
@@ -183,7 +204,12 @@
   small enhancements to the C api over time, and APSW adds support for them as
   appropriate. The version number of APSW covers the version these enhancements
   were added. The vast majority of changes to SQLite are in the SQL syntax and
-  engine. Those will be picked up with any version of APSW.</p>
+  engine. Those will be picked up with any version of APSW. The one exception
+  to this is experimental features in SQLite which may change API between
+  revisions. Consequently you will need to turn them off if you want to work
+  against a variety of versions of SQLite (see EXPERIMENTAL in
+  <code>setup.py</code>). I strongly recommend you embed the SQLite library
+  into APSW which will put you in control of versions.</p>
 
   <p>Before you do any benchmarking with APSW or other ways of accessing
   SQLite, you must understand how and when SQLite does transactions. See
@@ -746,13 +772,10 @@ cursor<font color="#0000C0">.</font>setrowtrace<font color=
 ### Cleanup
 ###
 
-# Normal garbage collection will work but if you proactively want to
-# cleanup then use del.  You can use del on the cursors and
-# connections in any order.  Note that they must be called in the same
-# thread as the objects were allocated.
-
+# We must close connections
 </font><font color="#C00000">del </font>cursor
-<font color="#C00000">del </font>connection
+connection<font color="#0000C0">.</font>close<font color="#0000C0">()
+</font><font color="#C00000">del </font>connection
 <!--sourceend-->
 </pre>
   </blockquote>
@@ -780,10 +803,11 @@ python setup.py build --compile=mingw32 install
 
   <p>By default whatever SQLite 3 you already have on your system is used. If
   you place a copy of the headers and library in a <code>sqlite3</code>
-  subdirectory then that will be used instead. Here is a quick and easy way of
-  doing everything on Linux/Mac or Windows with MinGW, including the SQLite
-  library statically into the extension (ie no external DLLs/shared libraries
-  will be needed at runtime).</p>
+  subdirectory then that will be used instead. It is highly recommended that
+  you build SQLite into APSW. Here is a quick and easy way of doing everything
+  on Linux/Mac or Windows with MinGW, including the SQLite library statically
+  into the extension (ie no external DLLs/shared libraries will be needed at
+  runtime).</p>
 
   <blockquote>
     <p>Download the <a href="http://www.sqlite.org/download.html">SQLite 3
@@ -956,9 +980,31 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
       <p>Opens an SQLite database named <code>filename</code>. (This calls
       <a href=
       "http://www.sqlite.org/capi3ref.html#sqlite3_open">sqlite3_open</a>
-      behind the scenes and <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_close">sqlite3_close</a>
-      when no longer in use.)</p>
+      behind the scenes. You must call close when finished with a Connection.
+      If you do not call close then the destructor will invoke
+      <code>sys.excepthook</code> which by default will print a traceback.</p>
+    </dd>
+
+    <dt><strong>close()</strong></dt>
+
+    <dd>
+      <p>You must call this method when you are done with a Connection. Behind
+      the scenes it calls <a href=
+      "http://www.sqlite.org/capi3ref.html#sqlite3_close">sqlite3_close</a>. It
+      is ok to call this method multiple times. Note that this method can raise
+      an exception. Some examples of when exceptions are raised:</p>
+
+      <ul>
+        <li>You have statements still executing (ie currently positioned at a
+        row). Statements that have consumed all results will not hold up
+        closing a Connection.</li>
+
+        <li>You were in the middle of a transaction. SQLite will attempt to do
+        a rollback and errors in your rollback hook will be passed back.</li>
+
+        <li>Any virtual tables will be dropped/disconnected. Errors in your
+        Disconnect/Destroy methods will be passed back.</li>
+      </ul>
     </dd>
 
     <dt><strong>cursor()</strong></dt>
@@ -1403,7 +1449,8 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
       provide these methods.</p>
     </dd>
 
-    <dt><strong>Disconnect() Destroy()</strong></dt>
+    <dt><strong>Disconnect()</strong> (optional)<br />
+    <strong>Destroy()</strong></dt>
 
     <dd>
       <p>These methods are the opposite of <code>Connect</code> and
@@ -1655,7 +1702,7 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
           then indexnum will be zero, indexstring will be None and
           constraintargs will be empty).</p>
 
-	    <p><b>Return</b> None (ignored)</p>
+          <p><b>Return</b> None (ignored)</p>
         </dd>
 
         <dt><strong>Eof()</strong></dt>
@@ -1766,6 +1813,24 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
           <p>You have tried to start a new SQL execute call before executing
           all the previous ones. See the <a href="#executionmodel">execution
           model</a> for more details.</p>
+        </dd>
+
+        <dt>ConnectionNotClosedError</dt>
+
+        <dd>
+          <p>The destructor for a Connection was called, but close() hadn't
+          been called on the Connection. Destructors aren't allowed to return
+          exceptions, so what actually happens is that
+          <code>sys.excepthook</code> is called with this exception so you can
+          find where it is happening in your code. The database will also be
+          left open and hence leak memory and potentially file descriptors.</p>
+        </dd>
+
+        <dt>ConnectionClosedError</dt>
+
+        <dd>
+          <p>You have called close() on a Connection and then continued to use
+          it.</p>
         </dd>
 
         <dt>BindingsError</dt>
@@ -2667,12 +2732,29 @@ ZeroDivisionError: integer division or modulo by zero
       <ul>
         <li>Virtual tables updated for new api</li>
 
+        <li>You must call close() on connections</li>
+
+        <li>All strings are returned as unicode</li>
+
+        <li>PyErr_WriteUnraisable was used for errors in destructors.
+        Unfortunately it is almost completely useless, merely printing str() of
+        the object and exception. This doesn't help in finding where in your
+        code the issue arose so you could fix it. An internal APSW
+        implementation generates a traceback and calls
+        <code>sys.excepthook</code>, the default implementation of which prints
+        the exception and the traceback to sys.stderr. <b>Note</b> the line
+        number reported in the traceback is often off by 1. This is because the
+        destructors run "between" lines of code and so the following line is
+        reported as the current location.</li>
+
         <li>::TODO:: extended result codes</li>
 
         <li>::TODO:: add close methods</li>
       </ul>
 
       <h2><a name="337r1">3.3.7-r1</a></h2>
+
+      <p><i>Never released as 3.3.8 came along</i></p>
 
       <p>You can use this release against SQLite 3.3.7. There were no changes
       in the SQLite 3.3.6 API from 3.3.5. In SQLite 3.3.7 an API was added that
