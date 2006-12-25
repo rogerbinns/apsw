@@ -83,7 +83,8 @@ typedef int Py_ssize_t;
       }                                                                                                                              \
   }
 
-
+#define CHECK_CLOSED(connection,e) \
+{ if(!connection->db) { PyErr_Format(ExcConnectionClosed, "The connection has been closed"); return e; } }
 
 /* EXCEPTION TYPES */
 
@@ -704,6 +705,7 @@ Connection_cursor(Connection *self)
   Cursor* cursor = NULL;
 
   CHECK_THREAD(self,NULL);
+  CHECK_CLOSED(self,NULL);
 
   cursor = PyObject_New(Cursor, &CursorType);
   if(!cursor)
@@ -724,6 +726,7 @@ Connection_setbusytimeout(Connection *self, PyObject *args)
   int res;
 
   CHECK_THREAD(self,NULL);
+  CHECK_CLOSED(self,NULL);
 
   if(!PyArg_ParseTuple(args, "i:setbusytimeout(millseconds)", &ms))
     return NULL;
@@ -744,6 +747,7 @@ static PyObject *
 Connection_changes(Connection *self)
 {
   CHECK_THREAD(self,NULL);
+  CHECK_CLOSED(self,NULL);
   return Py_BuildValue("i", sqlite3_changes(self->db));
 }
 
@@ -751,6 +755,7 @@ static PyObject *
 Connection_totalchanges(Connection *self)
 {
   CHECK_THREAD(self,NULL);
+  CHECK_CLOSED(self,NULL);
   return Py_BuildValue("i", sqlite3_total_changes(self->db));
 }
 
@@ -759,6 +764,7 @@ Connection_getautocommit(Connection *self)
 {
   PyObject *res;
   CHECK_THREAD(self,NULL);
+  CHECK_CLOSED(self,NULL);
   res=(sqlite3_get_autocommit(self->db))?(Py_True):(Py_False);
   Py_INCREF(res);
   return res;
@@ -770,6 +776,7 @@ Connection_last_insert_rowid(Connection *self)
   long long int vint;
 
   CHECK_THREAD(self,NULL);
+  CHECK_CLOSED(self,NULL);
 
   vint=sqlite3_last_insert_rowid(self->db);
   
@@ -786,6 +793,7 @@ Connection_complete(Connection *self, PyObject *args)
   int res;
 
   CHECK_THREAD(self,NULL);
+  CHECK_CLOSED(self,NULL);
   
   if(!PyArg_ParseTuple(args, "es:complete(statement)", STRENCODING, &statements))
     return NULL;
@@ -807,6 +815,7 @@ static PyObject *
 Connection_interrupt(Connection *self)
 {
   CHECK_THREAD(self, NULL);
+  CHECK_CLOSED(self, NULL);
 
   sqlite3_interrupt(self->db);  /* no return value */
   return Py_BuildValue("");
@@ -874,6 +883,7 @@ Connection_setupdatehook(Connection *self, PyObject *callable)
   /* sqlite3_update_hook doesn't return an error code */
   
   CHECK_THREAD(self,NULL);
+  CHECK_CLOSED(self,NULL);
 
   if(callable==Py_None)
     {
@@ -941,6 +951,7 @@ Connection_setrollbackhook(Connection *self, PyObject *callable)
   /* sqlite3_rollback_hook doesn't return an error code */
   
   CHECK_THREAD(self,NULL);
+  CHECK_CLOSED(self,NULL);
 
   if(callable==Py_None)
     {
@@ -1023,6 +1034,7 @@ Connection_setprofile(Connection *self, PyObject *callable)
   /* sqlite3_profile doesn't return an error code */
   
   CHECK_THREAD(self,NULL);
+  CHECK_CLOSED(self,NULL);
 
   if(callable==Py_None)
     {
@@ -1108,6 +1120,7 @@ Connection_setcommithook(Connection *self, PyObject *callable)
   /* sqlite3_commit_hook doesn't return an error code */
   
   CHECK_THREAD(self,NULL);
+  CHECK_CLOSED(self,NULL);
 
   if(callable==Py_None)
     {
@@ -1191,6 +1204,7 @@ Connection_setprogresshandler(Connection *self, PyObject *args)
   PyObject *callable=NULL;
   
   CHECK_THREAD(self,NULL);
+  CHECK_CLOSED(self,NULL);
 
   if(!PyArg_ParseTuple(args, "O|i:setprogresshandler(callable, nsteps=20)", &callable, &nsteps))
     return NULL;
@@ -1292,6 +1306,7 @@ Connection_setauthorizer(Connection *self, PyObject *callable)
   int res;
 
   CHECK_THREAD(self,NULL);
+  CHECK_CLOSED(self,NULL);
 
   if(callable==Py_None)
     {
@@ -1370,6 +1385,7 @@ Connection_enableloadextension(Connection *self, PyObject *enabled)
   int enabledp, res;
 
   CHECK_THREAD(self, NULL);
+  CHECK_CLOSED(self, NULL);
 
   /* get the boolean value */
   enabledp=PyObject_IsTrue(enabled);
@@ -1391,6 +1407,7 @@ Connection_loadextension(Connection *self, PyObject *args)
   char *zfile=NULL, *zproc=NULL, *errmsg=NULL;
 
   CHECK_THREAD(self, NULL);
+  CHECK_CLOSED(self, NULL);
   
   if(!PyArg_ParseTuple(args, "s|z:loadextension(filename, entrypoint=None)", &zfile, &zproc))
     return NULL;
@@ -1414,6 +1431,7 @@ Connection_setbusyhandler(Connection *self, PyObject *callable)
   int res=SQLITE_OK;
 
   CHECK_THREAD(self,NULL);
+  CHECK_CLOSED(self,NULL);
 
   if(callable==Py_None)
     {
@@ -1947,6 +1965,7 @@ Connection_createscalarfunction(Connection *self, PyObject *args)
   int res;
  
   CHECK_THREAD(self,NULL);
+  CHECK_CLOSED(self,NULL);
 
   if(!PyArg_ParseTuple(args, "esO|i:createscalarfunction(name,callback, numargs=-1)", STRENCODING, &name, &callable, &numargs))
     return NULL;
@@ -2028,6 +2047,7 @@ Connection_createaggregatefunction(Connection *self, PyObject *args)
   int res;
 
   CHECK_THREAD(self,NULL);
+  CHECK_CLOSED(self,NULL);
 
   if(!PyArg_ParseTuple(args, "esO|i:createaggregatefunction(name, factorycallback, numargs=-1)", STRENCODING, &name, &callable, &numargs))
     return NULL;
@@ -2188,6 +2208,7 @@ Connection_createcollation(Connection *self, PyObject *args)
   int res;
 
   CHECK_THREAD(self,NULL);
+  CHECK_CLOSED(self,NULL);
   
   if(!PyArg_ParseTuple(args, "esO:createcollation(name,callback)", STRENCODING, &name, &callable))
     return NULL;
@@ -3160,7 +3181,6 @@ vtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite_int64 *pR
   if(argc==1)
     {
       PyObject *rowid=NULL;
-      assert(argv[0]); /* must be non-null */
       methodname="UpdateDeleteRow";
       args=PyTuple_New(1);
       if(!args) goto pyexception;
@@ -3169,13 +3189,13 @@ vtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite_int64 *pR
       PyTuple_SET_ITEM(args, 0, rowid);
     }
   /* case 2 - insert a row */
-  else if(argv[0]==NULL)
+  else if(sqlite3_value_type(argv[0])==SQLITE_NULL)
     {
       PyObject *newrowid;
       methodname="UpdateInsertRow";
       args=PyTuple_New(2);
       if(!args) goto pyexception;
-      if(argv[1]==NULL)
+      if(sqlite3_value_type(argv[1])==SQLITE_NULL)
 	{
 	  newrowid=Py_None;
 	  Py_INCREF(newrowid);
@@ -3194,7 +3214,7 @@ vtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite_int64 *pR
       methodname="UpdateChangeRow";
       args=PyTuple_New(3);
       oldrowid=convert_value_to_pyobject(argv[0]);
-      if(argv[1]==NULL)
+      if(sqlite3_value_type(argv[1])==SQLITE_NULL)
 	{
 	  newrowid=Py_None;
 	  Py_INCREF(newrowid);
@@ -3240,7 +3260,7 @@ vtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite_int64 *pR
   if(argc==1) 
     goto finally;
 
-  if(argv[0]==NULL && argv[1]==NULL)
+  if(sqlite3_value_type(argv[0])==SQLITE_NULL && sqlite3_value_type(argv[1])==SQLITE_NULL)
     {
       /* did an insert and must provide a row id */
       PyObject *rowid=PyNumber_Long(res);
@@ -3249,15 +3269,18 @@ vtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite_int64 *pR
       *pRowid=PyLong_AsLongLong(rowid);
       Py_DECREF(rowid);
       if(PyErr_Occurred()) 
-	goto pyexception;
+	{
+	  AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xUpdateInsertRow.ReturnedValue", "{s: O}", "result", rowid);
+	  goto pyexception;
+	}
     }
   
   goto finally;
 
  pyexception: /* we had an exception in python code */
   assert(PyErr_Occurred());
-  sqliteres=MakeSqliteMsgFromPyException(&pVtab->zErrMsg); /* SQLite flaw: errMsg should be on the cursor not the table! */
-  AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xUpdate", "{s: O, s: i, s: s}", "self", vtable, "argc", argc, "methodname", methodname);
+  sqliteres=MakeSqliteMsgFromPyException(&pVtab->zErrMsg);
+  AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xUpdate", "{s: O, s: i, s: s, s: O}", "self", vtable, "argc", argc, "methodname", methodname, "args", args?args:Py_None);
 
  finally:
   Py_XDECREF(args);
@@ -3265,7 +3288,6 @@ vtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite_int64 *pR
 
   PyGILState_Release(gilstate);
   return sqliteres;
-
 }
 
 
@@ -3322,6 +3344,7 @@ Connection_createmodule(Connection *self, PyObject *args)
   int res;
 
   CHECK_THREAD(self, NULL);
+  CHECK_CLOSED(self, NULL);
 
   if(!PyArg_ParseTuple(args, "esO:createmodule(name, datasource)", "utf_8", &name, &datasource))
     return NULL;
@@ -3517,7 +3540,8 @@ Cursor_dealloc(Cursor * self)
   PyObject *err_type, *err_value, *err_traceback;
   int have_error=PyErr_Occurred()?1:0;
 
-  if(self->connection->thread_ident!=PyThread_get_thread_ident())
+  if( (self->status!=C_DONE || self->statement || self->zsqlnextpos || self->emiter) &&  /* only whine if there was anything left in the Cursor */
+      self->connection->thread_ident!=PyThread_get_thread_ident())
     {
       if (have_error)
         PyErr_Fetch(&err_type, &err_value, &err_traceback);
@@ -3594,6 +3618,7 @@ Cursor_getdescription(Cursor *self)
   const char *str;
 
   CHECK_THREAD(self->connection,NULL);
+  CHECK_CLOSED(self->connection,NULL);
 
   if(!self->statement)
     {
@@ -4111,6 +4136,7 @@ Cursor_execute(Cursor *self, PyObject *args)
   exectrace_oldstate etos;
 
   CHECK_THREAD(self->connection, NULL);
+  CHECK_CLOSED(self->connection, NULL);
 
   res=resetcursor(self);
   if(res!=SQLITE_OK)
@@ -4187,6 +4213,7 @@ Cursor_executemany(Cursor *self, PyObject *args)
   exectrace_oldstate etos;
 
   CHECK_THREAD(self->connection, NULL);
+  CHECK_CLOSED(self->connection, NULL);
 
   res=resetcursor(self);
   if(res!=SQLITE_OK)
@@ -4275,6 +4302,7 @@ Cursor_next(Cursor *self)
   int i;
 
   CHECK_THREAD(self->connection, NULL);
+  CHECK_CLOSED(self->connection, NULL);
 
  again:
   if(self->status==C_BEGIN)
@@ -4327,6 +4355,7 @@ static PyObject *
 Cursor_iter(Cursor *self)
 {
   CHECK_THREAD(self->connection, NULL);
+  CHECK_CLOSED(self->connection, NULL);
 
   Py_INCREF(self);
   return (PyObject*)self;
@@ -4336,6 +4365,7 @@ static PyObject *
 Cursor_setexectrace(Cursor *self, PyObject *func)
 {
   CHECK_THREAD(self->connection, NULL);
+  CHECK_CLOSED(self->connection, NULL);
 
   if(func!=Py_None && !PyCallable_Check(func))
     {
@@ -4356,6 +4386,7 @@ static PyObject *
 Cursor_setrowtrace(Cursor *self, PyObject *func)
 {
   CHECK_THREAD(self->connection, NULL);
+  CHECK_CLOSED(self->connection, NULL);
 
   if(func!=Py_None && !PyCallable_Check(func))
     {
@@ -4378,6 +4409,7 @@ Cursor_getexectrace(Cursor *self)
   PyObject *ret;
 
   CHECK_THREAD(self->connection, NULL);
+  CHECK_CLOSED(self->connection, NULL);
 
   ret=(self->exectrace)?(self->exectrace):Py_None;
   Py_INCREF(ret);
@@ -4389,6 +4421,7 @@ Cursor_getrowtrace(Cursor *self)
 {
   PyObject *ret;
   CHECK_THREAD(self->connection, NULL);
+  CHECK_CLOSED(self->connection, NULL);
   ret =(self->rowtrace)?(self->rowtrace):Py_None;
   Py_INCREF(ret);
   return ret;
@@ -4398,6 +4431,7 @@ static PyObject *
 Cursor_getconnection(Cursor *self)
 {
   CHECK_THREAD(self->connection, NULL);
+  CHECK_CLOSED(self->connection, NULL);
 
   Py_INCREF(self->connection);
   return (PyObject*)self->connection;
