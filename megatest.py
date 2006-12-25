@@ -10,6 +10,7 @@ quicker.  """
 
 import os
 import re
+import sys
 
 def run(cmd):
     print cmd
@@ -46,10 +47,12 @@ def main():
 
 def getpyurl(pyver):
     dirver=pyver
-    if pyver>'2.2.3':
+    if pyver>'2.3.0':
         return "http://www.python.org/ftp/python/%s/Python-%s.tar.bz2" % (dirver,pyver)
-    else:
-        return "http://www.python.org/ftp/python/%s/Python-%s.tgz" % (dirver,pyver)
+    if pyver=='2.3.0':
+        pyver='2.3'
+        dirver='2.3'
+    return "http://www.python.org/ftp/python/%s/Python-%s.tgz" % (dirver,pyver)
 
 def sqliteurl(sqlitever):
     return "http://sqlite.org/sqlite-%s.tar.gz" % (sqlitever,)
@@ -60,7 +63,7 @@ def buildpython(workdir, pyver, ucs):
         tarx="j"
     else:
         tarx="z"
-    
+    if pyver=="2.3.0": pyver="2.3"    
     run("cd %s ; mkdir pyinst ; wget %s -O - | tar xf%s -" % (workdir, url, tarx))
     run("cd %s ; cd Python-%s ; ./configure --enable-unicode=ucs%d --prefix=%s/pyinst ; make -j 3 ; make  install" % (workdir, pyver, ucs, workdir))
 
