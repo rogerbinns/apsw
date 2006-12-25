@@ -1476,6 +1476,37 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
       "http://www.sqlite.org/cvstrac/tktview?tn=2095">ticket 2095</a>).</p>
     </dd>
 
+    <dt><strong>UpdateDeleteRow(rowid)</strong></dt>
+
+    <dd>
+      <p>Requests deletion of the row with the specified id.</p>
+
+      <p><b>Return</b> None (ignored)</p>
+    </dd>
+
+    <dt><strong>UpdateInsertRow(rowid, fields)</strong></dt>
+
+    <dd>
+      <p>Create a new row. fields is a tuple the same size as the number of
+      columns in your table containing a value for each column. rowid is the
+      rowid to give the row. If rowid is None then you must make up a rowid you
+      want.</p>
+
+      <p><b>Return</b> the new rowid (if rowid was None), else ignored</p>
+    </dd>
+
+    <dt><strong>UpdateChangeRow(rowid, newrowid, fields)</strong></dt>
+
+    <dd>
+      <p>Change an existing row of the table with the values in fields. fields
+      is a tuple the same size as the number of columns in your table
+      containing a value for each column. If newrowid is not the same as rowid
+      then you also have to change the rowid (this would happen for a query
+      like <code>UPDATE table SET rowid=rowid+100 WHERE ...</code>)</p>
+
+      <p><b>Return</b> None (ignored)</p>
+    </dd>
+
     <dt><strong>BestIndex(constraints, orderbys)</strong></dt>
 
     <dd>
@@ -1484,8 +1515,17 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
         "http://www.sqlite.org/cvstrac/wiki?p=VirtualTableBestIndexMethod">own
         page</a> in the SQLite documentation. To get going initially, just
         return <code>None</code> and you will be fine. Implementing this method
-        reduces the number of rows scanned in your table to satisfy queries if
-        you have an index or index like mechanism available.
+        reduces the number of rows scanned in your table to satisfy queries,
+        but only if you have an index or index like mechanism available.
+
+        <p><b>Note</b> The implementation of this method differs slightly from
+        the <a href=
+        "http://www.sqlite.org/cvstrac/wiki?p=VirtualTableBestIndexMethod">SQLite
+        documentation</a> for the C API. You are not passed "unusable"
+        constraints. The argv/constraintarg positions are not off by one. In
+        the C api, you have to return position 1 to get something passed to
+        Filter in position 0. With the APSW implementation, you return position
+        0 to get Filter arg 0, position 1 to get Filter arg 1 etc.</p>
       </blockquote>
 
       <p>The purpose of this method is to ask if you have the ability to
@@ -1495,12 +1535,12 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
       queries with constraints can be speeded up <a href=
       "http://www.sqlite.org/lang_createindex.html">with indices</a>. If you
       return None, then SQLite will visit every row in your table and evaluate
-      the constraint itself. Your result will also be passed to the Filter
-      method on your cursor object. Note that SQLite may call this method
-      multiple times trying to find the most efficient way of answering a
-      query. You will be passed the contraints as a sequence of tuples
-      containing two items. The first item is the column number and the second
-      item is the operation.</p>
+      the constraint itself. Your index choice returned from BestIndex will
+      also be passed to the Filter method on your cursor object. Note that
+      SQLite may call this method multiple times trying to find the most
+      efficient way of answering a query. You will be passed the contraints as
+      a sequence of tuples containing two items. The first item is the column
+      number and the second item is the operation.</p>
 
       <blockquote>
         Example query: <code>select * from foo where price&gt;74.99 and
@@ -1740,38 +1780,6 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
           <p><b>Return</b> the value in that column. It must be compatible with
           SQLite types (ie one of None, integer, float, string or buffer
           (blob))</p>
-        </dd>
-
-        <dt><strong>UpdateDeleteRow(rowid)</strong></dt>
-
-        <dd>
-          <p>Requests deletion of the row with the specified id.</p>
-
-          <p><b>Return</b> None (ignored)</p>
-        </dd>
-
-        <dt><strong>UpdateInsertRow(rowid, fields)</strong></dt>
-
-        <dd>
-          <p>Create a new row. fields is a tuple the same size as the number of
-          columns in your table containing a value for each column. rowid is
-          the rowid to give the row. If rowid is None then you must make up a
-          rowid you want.</p>
-
-          <p><b>Return</b> the new rowid (if rowid was None), else ignored</p>
-        </dd>
-
-        <dt><strong>UpdateChangeRow(rowid, newrowid, fields)</strong></dt>
-
-        <dd>
-          <p>Change an existing row of the table with the values in fields.
-          fields is a tuple the same size as the number of columns in your
-          table containing a value for each column. If newrowid is not the same
-          as rowid then you also have to change the rowid (this would happen
-          for a query like <code>UPDATE table SET rowid=rowid+100 WHERE
-          ...</code>)</p>
-
-          <p><b>Return</b> None (ignored)</p>
         </dd>
       </dl>
 
