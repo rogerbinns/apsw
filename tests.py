@@ -57,6 +57,32 @@ class ThreadRunner(threading.Thread):
 
 # main test class/code
 class APSW(unittest.TestCase):
+
+
+    connection_nargs={ # number of args for function.  those not listed take zero
+        'createaggregatefunction': 2,
+        'complete': 1,
+        'createcollation': 2,
+        'createscalarfunction': 2,
+        'setauthorizer': 1,
+        'setbusyhandler': 1,
+        'setbusytimeout': 1,
+        'setcommithook': 1,
+        'setprofile': 1,
+        'setrollbackhook': 1,
+        'setupdatehook': 1,
+        'setprogresshandler': 2,
+        'enableloadextension': 1,
+        'createmodule': 2,
+        }
+
+    cursor_nargs={
+            'execute': 1,
+            'executemany': 2,
+            'setexectrace': 1,
+            'setrowtrace': 1,
+            }
+
     
     def setUp(self, dbname="testdb"):
         # clean out database and journal from last run
@@ -1097,21 +1123,7 @@ class APSW(unittest.TestCase):
         ThreadRunner(apsw.sqlitelibversion).go()
         ThreadRunner(apsw.apswversion).go()
         # these should generate errors
-        nargs={ # number of args for function.  those not listed take zero
-            'createaggregatefunction': 2,
-            'complete': 1,
-            'createcollation': 2,
-            'createscalarfunction': 2,
-            'setauthorizer': 1,
-            'setbusyhandler': 1,
-            'setbusytimeout': 1,
-            'setcommithook': 1,
-            'setprofile': 1,
-            'setrollbackhook': 1,
-            'setupdatehook': 1,
-            'setprogresshandler': 2,
-            'enableloadextension': 1,
-            }
+        nargs=self.connection_nargs
         for func in [x for x in dir(self.db) if not x.startswith("__")]:
             args=("one", "two", "three")[:nargs.get(func,0)]
             try:
@@ -1122,12 +1134,7 @@ class APSW(unittest.TestCase):
                 pass
 
         # do the same thing, but for cursor
-        nargs={
-            'execute': 1,
-            'executemany': 2,
-            'setexectrace': 1,
-            'setrowtrace': 1,
-            }
+        nargs=self.cursor_nargs
         for func in [x for x in dir(c) if not x.startswith("__")]:
             args=("one", "two", "three")[:nargs.get(func,0)]
             try:
@@ -1369,6 +1376,9 @@ class APSW(unittest.TestCase):
                 assert orderbys == ( (2, False), )
                 return ( [4,(3,True),[2,False],1, (0, False)], 997, u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}", 99)
 
+            def BestIndexGood(self, constraints, orderbys):
+                return None
+
             def Open1(self, wrong, number, of, arguments):
                 1/0
 
@@ -1380,6 +1390,57 @@ class APSW(unittest.TestCase):
 
             def Open99(self):
                 return Cursor(self)
+
+            UpdateInsertRow1=None
+                        
+            def UpdateInsertRow2(self, too, many, args):
+                1/0
+
+            def UpdateInsertRow3(self, rowid, fields):
+                1/0
+
+            def UpdateInsertRow4(self, rowid, fields):
+                assert rowid is None
+                return None
+                
+            def UpdateInsertRow5(self, rowid, fields):
+                assert rowid is None
+                return "this is not a number"
+
+            def UpdateInsertRow6(self, rowid, fields):
+                assert rowid is None
+                return -922337203685477580799L # too big
+
+            def UpdateInsertRow7(self, rowid, fields):
+                assert rowid is None
+                return 9223372036854775807L # ok
+
+            def UpdateInsertRow8(self, rowid, fields):
+                assert rowid is not None
+                assert rowid==-12
+                return "this should be ignored since rowid was supplied"
+
+            def UpdateChangeRow1(self, too, many, args, methinks):
+                1/0
+
+            def UpdateChangeRow2(self, rowid, newrowid, fields):
+                1/0
+
+            def UpdateChangeRow3(self, rowid, newrowid, fields):
+                assert newrowid==rowid
+
+            def UpdateChangeRow4(self, rowid, newrowid, fields):
+                assert newrowid==rowid+20
+
+            def UpdateDeleteRow1(self, too, many, args):
+                1/0
+
+            def UpdateDeleteRow2(self, rowid):
+                1/0
+
+            def UpdateDeleteRow3(self, rowid):
+                assert rowid==77
+
 
         class Cursor:
 
@@ -1396,6 +1457,9 @@ class APSW(unittest.TestCase):
                 assert idxnum==997
                 assert idxstr==u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}"
                 assert constraintargs==('A', 12.4, 'A', -1000)
+                self.pos=1 # row 0 is headers
+
+            def FilterGood(self, *args):
                 self.pos=1 # row 0 is headers
 
             def Eof1(self, toomany, args):
@@ -1538,9 +1602,78 @@ class APSW(unittest.TestCase):
             for row in cur.execute(allconstraints): pass
         except ZeroDivisionError:  pass
         Cursor.Close=Cursor.Close99
-        try:
-            for row in cur.execute(allconstraints): pass
-        except AttributeError:  pass
+
+        # update (insert)
+        sql="insert into foo (name, description) values('gunk', 'foo')"
+        self.assertRaises(AttributeError, cur.execute, sql)
+        VTable.UpdateInsertRow=VTable.UpdateInsertRow1
+        self.assertRaises(TypeError, cur.execute, sql)
+        VTable.UpdateInsertRow=VTable.UpdateInsertRow2
+        self.assertRaises(TypeError, cur.execute, sql)
+        VTable.UpdateInsertRow=VTable.UpdateInsertRow3
+        self.assertRaises(ZeroDivisionError, cur.execute, sql)
+        VTable.UpdateInsertRow=VTable.UpdateInsertRow4
+        self.assertRaises(TypeError, cur.execute, sql)
+        VTable.UpdateInsertRow=VTable.UpdateInsertRow5
+        self.assertRaises(ValueError, cur.execute, sql)
+        VTable.UpdateInsertRow=VTable.UpdateInsertRow6
+        self.assertRaises(OverflowError, cur.execute, sql)
+        VTable.UpdateInsertRow=VTable.UpdateInsertRow7
+        cur.execute(sql)
+        self.failUnlessEqual(self.db.last_insert_rowid(), 9223372036854775807L)
+        VTable.UpdateInsertRow=VTable.UpdateInsertRow8
+        cur.execute("insert into foo (rowid,name, description) values(-12,'gunk', 'foo')")
+        
+        # update (change)
+        VTable.BestIndex=VTable.BestIndexGood
+        Cursor.Filter=Cursor.FilterGood
+        sql="update foo set description=='bar' where description=='foo'"
+        self.assertRaises(AttributeError, cur.execute, sql)
+        VTable.UpdateChangeRow=VTable.UpdateChangeRow1
+        self.assertRaises(TypeError, cur.execute, sql)
+        VTable.UpdateChangeRow=VTable.UpdateChangeRow2
+        self.assertRaises(ZeroDivisionError, cur.execute, sql)
+        VTable.UpdateChangeRow=VTable.UpdateChangeRow3
+        cur.execute(sql)
+        VTable.UpdateChangeRow=VTable.UpdateChangeRow4
+        cur.execute("update foo set rowid=rowid+20 where 1")
+
+        # update (delete)
+        sql="delete from foo where name=='Fred'"
+        self.assertRaises(AttributeError, cur.execute, sql)
+        VTable.UpdateDeleteRow=VTable.UpdateDeleteRow1
+        self.assertRaises(TypeError, cur.execute, sql)
+        VTable.UpdateDeleteRow=VTable.UpdateDeleteRow2
+        self.assertRaises(ZeroDivisionError, cur.execute, sql)
+        VTable.UpdateDeleteRow=VTable.UpdateDeleteRow3
+        cur.execute(sql)
+
+        # ::TODO:: disconnect/destroy ...
+
+
+    def testClosing(self):
+        "Check closed connection is correctly detected"
+        cur=self.db.cursor()
+        self.db.close()
+        nargs=self.connection_nargs
+        for func in [x for x in dir(self.db) if not x.startswith("__") and not x in ("close",)]:
+            args=("one", "two", "three")[:nargs.get(func,0)]
+
+            try:
+                getattr(self.db, func)(*args)
+                self.fail("connection method "+func+" didn't notice that the connection is closed")
+            except apsw.ConnectionClosedError:
+                pass
+
+        # do the same thing, but for cursor
+        nargs=self.cursor_nargs
+        for func in [x for x in dir(cur) if not x.startswith("__")]:
+            args=("one", "two", "three")[:nargs.get(func,0)]
+            try:
+                getattr(cur, func)(*args)
+                self.fail("cursor method "+func+" didn't notice that the connection is closed")
+            except apsw.ConnectionClosedError:
+                pass
 
 # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used
 LOADEXTENSIONFILENAME="./testextension.sqlext"
