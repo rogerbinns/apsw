@@ -1649,7 +1649,7 @@ class APSW(unittest.TestCase):
         cur.execute(sql)
 
         # ::TODO:: disconnect/destroy ...
-
+        
 
     def testClosing(self):
         "Check closed connection is correctly detected"
@@ -1674,6 +1674,21 @@ class APSW(unittest.TestCase):
                 self.fail("cursor method "+func+" didn't notice that the connection is closed")
             except apsw.ConnectionClosedError:
                 pass
+
+    def testLargeObjects(self):
+        "Verify handling of large strings/blobs (>2GB) [Python 2.5+, 64 bit platform]"
+        if sys.version_info<(2,5):
+            return
+        import ctypes
+        if ctypes.sizeof(ctypes.c_size_t)<8:
+            return
+        # I use an anonymous slightly larger than 2GB chunk of memory, but don't touch any of it
+        import mmap
+        f=mmap.mmap(-1, 2*1024*1024*1024+25000)
+        c=self.db.cursor()
+        c.execute("create table foo(theblob)")
+        self.assertRaises(apsw.TooBigError,  c.execute, "insert into foo values(?)", (buffer(f),))
+        # I can't find an easy way of making mmap fake being a string (the mmap module doc implies you can)
 
 # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used
 LOADEXTENSIONFILENAME="./testextension.sqlext"
