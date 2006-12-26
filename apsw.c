@@ -131,7 +131,7 @@ exc_descriptors[]=
     {SQLITE_IOERR,    "IO"},
     {SQLITE_CORRUPT,  "Corrupt"},
     {SQLITE_FULL,     "Full"},
-    {SQLITE_TOOBIG,   "TooBig"},     /* NOT USED */
+    /*  {SQLITE_TOOBIG,   "TooBig"},      NOT USED by SQLite any more but there is an apsw equivalent with the same name*/
     {SQLITE_NOLFS,    "NoLFS"},
     {SQLITE_EMPTY,    "Empty"},
     {SQLITE_FORMAT,   "Format"},
@@ -2316,7 +2316,11 @@ Call_PythonMethod(PyObject *obj, const char *methodname, PyObject *args, int man
 
   /* we should only be called with ascii methodnames so no need to do
      character set conversions etc */
+#if PY_VERSION_HEX < 0x02050000
+  method=PyObject_GetAttrString(obj, (char*)methodname);
+#else
   method=PyObject_GetAttrString(obj, methodname);
+#endif
   if (!method)
     {
       if(!mandatory)
