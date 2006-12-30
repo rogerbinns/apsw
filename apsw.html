@@ -29,16 +29,16 @@
   <blockquote>
     <p><b>Important changes in 3.3.8</b> You must explicitly call <a href=
     "#Connection_class">close()</a> on Connection objects. If you do not call
-    close then an error message will be printed when Connection's destructor
-    runs and cleanup will not happen of that connection. This is because it is
-    not possible to raise Exceptions in destructors (actually it is, but Python
-    just calls the destructor again which can result in an infinite loop). I
-    did try to work around this, but with things like no control over which
-    thread destructors run in, virtual tables, triggers, incomplete statements
-    and SQLite's transaction control, it becomes impossible to cleanly close a
-    connection if bits of code are returning errors. Using the close() method
-    allows errors to be returned and it can be called again once they are
-    fixed.</p>
+    close then a detailed error message will be printed when Connection's
+    destructor runs and cleanup will not happen of that connection. This is
+    because it is not possible to raise Exceptions in destructors (actually it
+    is, but Python just calls the destructor again which can result in an
+    infinite loop). I did try to work around this, but with things like no
+    control over which thread destructors run in, virtual tables, triggers,
+    incomplete statements and SQLite's transaction control, it becomes
+    impossible to cleanly close a connection if bits of code are returning
+    errors. Using the close() method allows errors to be returned and it can be
+    called again once they are fixed.</p>
 
     <p>All strings returned by APSW are now in Unicode. Previously strings that
     consisted only of ASCII characters where returned as the string type and
@@ -404,9 +404,9 @@ cursor<font color="#0000C0">.</font>setrowtrace<font color=
      </font><font color="#C00000">pass
 
 </font><font color="blue">   SQL: select x,y from foo where x&gt;3
-   Row: (4, 'five')
-   Row: (7, 'eight')
-   Row: ('one', 'two')
+   Row: (4, u'five')
+   Row: (7, u'eight')
+   Row: (u'one', u'two')
 </font>
 <font color="#008000"># Clear tracers
 </font>cursor<font color="#0000C0">.</font>setrowtrace<font color=
@@ -536,11 +536,11 @@ cursor<font color="#0000C0">.</font>setrowtrace<font color=
 "#004080">"select * from s order by str"</font><font color="#0000C0">):
     </font><font color="#C00000">print </font>row
 
-</font><font color="blue">   ('file1',)
-   ('file17',)
-   ('file20',)
-   ('file3',)
-   ('file7',)
+</font><font color="blue">   (u'file1',)
+   (u'file17',)
+   (u'file20',)
+   (u'file3',)
+   (u'file7',)
 </font>
 <font color="#C00000">def </font>strnumcollate<font color=
 "#0000C0">(</font>s1<font color="#0000C0">, </font>s2<font color="#0000C0">):
@@ -599,11 +599,11 @@ cursor<font color="#0000C0">.</font>setrowtrace<font color=
 "#0000C0">):
     </font><font color="#C00000">print </font>row
 
-<font color="blue">   ('file1',)
-   ('file3',)
-   ('file7',)
-   ('file17',)
-   ('file20',)
+<font color="blue">   (u'file1',)
+   (u'file3',)
+   (u'file7',)
+   (u'file17',)
+   (u'file20',)
 </font>
 <font color="#008000">###
 ### Authorizer (eg if you want to control what user supplied SQL can do)
@@ -618,22 +618,11 @@ cursor<font color="#0000C0">.</font>setrowtrace<font color=
 "#004080">"""Called when each operation is prepared.  We can return SQLITE_OK, SQLITE_DENY or
     SQLITE_IGNORE"""
     </font><font color="#008000"># find the operation name
-    </font>ign<font color="#0000C0">=[</font><font color=
-"#004080">"SQLITE_OK"</font><font color="#0000C0">, </font><font color=
-"#004080">"SQLITE_DENY"</font><font color="#0000C0">, </font><font color=
-"#004080">"SQLITE_IGNORE"</font><font color="#0000C0">]  </font><font color=
-"#008000"># not operation names but have same values
-    </font><font color="#C00000">print </font><font color=
-"#004080">"AUTHORIZER:"</font><font color="#0000C0">,
-    </font><font color="#C00000">for </font>i <font color=
-"#C00000">in </font>dir<font color="#0000C0">(</font>apsw<font color=
-"#0000C0">):
-        </font><font color="#C00000">if </font>getattr<font color=
-"#0000C0">(</font>apsw<font color="#0000C0">,</font>i<font color=
-"#0000C0">)==</font>operation<font color="#0000C0">:
-            </font><font color="#C00000">print </font>i<font color="#0000C0">,
-            </font><font color="#C00000">break
-    print </font>paramone<font color="#0000C0">, </font>paramtwo<font color=
+    </font><font color="#C00000">print </font>apsw<font color=
+"#0000C0">.</font>mapping_authorizer_function<font color=
+"#0000C0">[</font>operation<font color="#0000C0">],
+    </font><font color="#C00000">print </font>paramone<font color=
+"#0000C0">, </font>paramtwo<font color=
 "#0000C0">, </font>databasename<font color="#0000C0">, </font>triggerorview
     <font color="#C00000">if </font>operation<font color=
 "#0000C0">==</font>apsw<font color=
@@ -657,9 +646,9 @@ cursor<font color="#0000C0">.</font>setrowtrace<font color=
 "#0000C0">(</font><font color=
 "#004080">"select str from s limit 1"</font><font color="#0000C0">)
 
-</font><font color="blue">   AUTHORIZER: SQLITE_INSERT s None main None
-   AUTHORIZER: SQLITE_SELECT None None None None
-   AUTHORIZER: SQLITE_READ s str main None
+</font><font color="blue">   SQLITE_INSERT s None main None
+   SQLITE_SELECT None None None None
+   SQLITE_READ s str main None
 </font>
 <font color="#008000"># Cancel authorizer
 </font>connection<font color="#0000C0">.</font>setauthorizer<font color=
@@ -773,9 +762,9 @@ cursor<font color="#0000C0">.</font>setrowtrace<font color=
 ###
 
 # We must close connections
-</font><font color="#C00000">del </font>cursor
-connection<font color="#0000C0">.</font>close<font color="#0000C0">()
-</font><font color="#C00000">del </font>connection
+</font>connection<font color="#0000C0">.</font>close<font color=
+"#0000C0">(</font>True<font color="#0000C0">)  </font><font color=
+"#008000"># force it since we want to exit</font>
 <!--sourceend-->
 </pre>
   </blockquote>
@@ -946,26 +935,75 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
   constants</a></h2>
 
   <p>Note that the same values can be used in different contexts. For example
-  SQLITE_OK and SQLITE_CREATE_INDEX both have a value of zero.</p>
+  SQLITE_OK and SQLITE_CREATE_INDEX both have a value of zero. For each group
+  of constants there is also a mapping (dict) available that you can supply a
+  string to and get the corresponding numeric value, or supply a numeric value
+  and get the corresponding string. These can help improve diagnostics/logging,
+  calling other modules etc. For example</p>
+
+  <blockquote>
+    <pre>
+apsw.mapping_authorizer_function["SQLITE_READ"]=20
+apsw.mapping_authorizer_function[20]="SQLITE_READ"
+</pre>
+  </blockquote>
 
   <dl>
     <dt><strong>SQLITE_VERSION_NUMBER</strong></dt>
 
-    <dd>This is the version of the SQLite library from the header file
-    <tt>sqlite3.h</tt> at apsw compile time. It is expressed as an integer (eg
-    3003008 for SQLite 3.3.8).</dd>
+    <dd>
+      <p>This is the version of the SQLite library from the header file
+      <tt>sqlite3.h</tt> at apsw compile time. It is expressed as an integer
+      (eg 3003008 for SQLite 3.3.8).</p>
+    </dd>
 
-    <dt><strong>SQLITE_OK SQLITE_DENY SQLITE_IGNORE</strong></dt>
+    <dt><strong>SQLITE_OK, SQLITE_DENY, SQLITE_IGNORE</strong></dt>
 
-    <dd>These values are returned from authorizer functions.</dd>
+    <dd>
+      <p>These values are returned from authorizer functions. Mapping is
+      <code>apsw.mapping_authorizer_return</code></p>
+    </dd>
 
-    <dt><strong>SQLITE_CREATE_INDEX SQLITE_CREATE_TABLE</strong> and 30
+    <dt><strong>SQLITE_CREATE_INDEX, SQLITE_CREATE_TABLE</strong> and 30
     others</dt>
 
-    <dd>The values are passed to authorizer functions. You can see a complete
-    list in the <a href=
-    "http://sqlite.org/capi3ref.html#sqlite3_set_authorizer">sqlite3_set_authorizer
-    documentation</a>.</dd>
+    <dd>
+      <p>The values are passed to authorizer functions. You can see a complete
+      list in the <a href=
+      "http://sqlite.org/capi3ref.html#sqlite3_set_authorizer">sqlite3_set_authorizer
+      documentation</a>. Mapping is
+      <code>apsw.mapping_authorizer_function</code></p>
+    </dd>
+
+    <dt><strong>SQLITE_INDEX_CONSTRAINT_EQ, SQLITE_INDEX_CONSTRAINT_GT</strong>
+    and 4 others</dt>
+
+    <dd>
+      <p>These values are passed to the BestIndex method of <a href=
+      "#VirtualTables">virtual tables</a>. Mapping is
+      <code>apsw.mapping_bestindex_constraints</code></p>
+    </dd>
+
+    <dt><strong>SQLITE_IOERR_READ, SQLITE_IOERR_FSYNC</strong> and 7
+    others</dt>
+
+    <dd>
+      <p>These are <a href=
+      "http://www.sqlite.org/cvstrac/wiki?p=ExtendedResultCodes">extended
+      result codes</a> which are provided in <a href=
+      "#Exceptions">exceptions</a>. Mapping is
+      <code>apsw.mapping_extended_result_codes</code></p>
+    </dd>
+
+    <dt><strong>SQLITE_OK, SQLITE_ERROR, SQLITE_PERM</strong> and 22
+    others</dt>
+
+    <dd>
+      <p>These are <a href=
+      "http://sqlite.org/capi3ref.html#result-codes">SQLite result codes</a>
+      which are provided in <a href="#Exceptions">exceptions</a>. Mapping is
+      <code>apsw.mapping_result_codes</code></p>
+    </dd>
   </dl>
 
   <h2><a name="Connection_class" id="Connection_class">Connection
@@ -985,7 +1023,7 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
       <code>sys.excepthook</code> which by default will print a traceback.</p>
     </dd>
 
-    <dt><strong>close()</strong></dt>
+    <dt><strong>close(force=False)</strong></dt>
 
     <dd>
       <p>You must call this method when you are done with a Connection. Behind
@@ -1005,6 +1043,9 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
         <li>Any virtual tables will be dropped/disconnected. Errors in your
         Disconnect/Destroy methods will be passed back.</li>
       </ul>
+
+      <p>If <tt>force</tt> is True, then any executing cursors are forcibly
+      closed.</p>
     </dd>
 
     <dt><strong>cursor()</strong></dt>
@@ -1285,6 +1326,31 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
     <dd>
       <p>You cannot create cursors directly. The are created by calling
       Connection.cursor().</p>
+    </dd>
+
+    <dt><strong>close(force=False)</strong></dt>
+
+    <dd>
+      <p>In general cursors are in a closed state, and you won't need to call
+      this method. Calling while the cursor is already closed or if the
+      Connection is closed will not result in errors. An open Cursor prevents
+      closing of Connections. The circumstances in which they are not closed
+      include:</p>
+
+      <ul>
+        <li>You haven't requested all the rows of available data (calling
+        next() or using the cursor as an iterator will return more data)</li>
+
+        <li>You got a recoverable error and can try again (eg SQLITE_BUDY)</li>
+
+        <li style="list-style: none">
+          <p>If force is False then you will get exceptions if there is
+          remaining work to do be in the Cursor such as more statements to
+          execute, more data from the executemany binding sequence etc. If
+          force is True then all remaining work and state information will be
+          discarded.</p>
+        </li>
+      </ul>
     </dd>
 
     <dt><strong>getconnection()</strong></dt>
@@ -1882,9 +1948,14 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
         </dd>
       </dl>
 
-      <p>The following Exception classes correspond to <a href=
+      <p>The table lists which Exception classes correspond to which <a href=
       "http://www.sqlite.org/capi3ref.html#result-codes">SQLite error
-      codes</a>.</p>
+      codes</a>. APSW runs with <a href=
+      "http://www.sqlite.org/cvstrac/wiki?p=ExtendedResultCodes">extended
+      result codes</a> turned on. If you get the <code>result</code> member of
+      an exception instance then you will get the plain error code. The
+      <code>extendedresult</code> member of an exception instance will get you
+      the extended error code.</p>
 
       <blockquote>
         <!-- This is derived from exc_descriptors in the source -->
@@ -2372,9 +2443,9 @@ TypeError: Bad constraint (#2) - it should be one of None, an integer or a tuple
       sequence etc. APSW will work correctly with those items in Python 2.5
       that use 64 bits. Unfortunately SQLite is limited to 32 bit quantities
       for strings, blobs, number of columns etc. Consequently you will get a
-      TooBig exception from APSW or SQLite if you try to use strings/buffers
-      longer than 1GB or 2GB (depends on internal storage). You will not get
-      silent truncation or data loss.</p>
+      TooBig exception from APSW which checks if strings/buffers longer than
+      1GB or 2GB (depends on internal storage) are used. See SQLite ticket
+      <a href="http://www.sqlite.org/cvstrac/tktview?tn=2125">2125</a>.</p>
 
       <h1><a name="executionmodel" id="executionmodel">Execution model</a></h1>
 
@@ -2740,7 +2811,8 @@ ZeroDivisionError: integer division or modulo by zero
       <ul>
         <li>Virtual tables updated for new api</li>
 
-        <li>You must call close() on connections</li>
+        <li>You must call close() on connections. You can also call close on
+        cursors, but it usually isn't necessary.</li>
 
         <li>All strings are returned as unicode</li>
 
@@ -2755,9 +2827,13 @@ ZeroDivisionError: integer division or modulo by zero
         destructors run "between" lines of code and so the following line is
         reported as the current location.</li>
 
-        <li>::TODO:: extended result codes</li>
+        <li>Authorizer codes SQLITE_CREATE_VTABLE, SQLITE_DROP_VTABLE and
+        SQLITE_FUNCTION added.</li>
 
-        <li>::TODO:: add close methods</li>
+        <li>SQLite <a href=
+        "http://www.sqlite.org/cvstrac/wiki?p=ExtendedResultCodes">extended
+        result codes</a> are available - see <a href=
+        "#Exceptions">Exceptions</a> for more detail.</li>
       </ul>
 
       <h2><a name="337r1">3.3.7-r1</a></h2>
