@@ -207,12 +207,7 @@ def authorizer(operation, paramone, paramtwo, databasename, triggerorview):
     """Called when each operation is prepared.  We can return SQLITE_OK, SQLITE_DENY or
     SQLITE_IGNORE"""
     # find the operation name
-    ign=["SQLITE_OK", "SQLITE_DENY", "SQLITE_IGNORE"]  # not operation names but have same values
-    print "AUTHORIZER:",
-    for i in dir(apsw):
-        if getattr(apsw,i)==operation:
-            print i,
-            break
+    print apsw.mapping_authorizer_function[operation],
     print paramone, paramtwo, databasename, triggerorview
     if operation==apsw.SQLITE_CREATE_TABLE and paramone.startswith("private"):
         return apsw.SQLITE_DENY  # not allowed to create tables whose names start with private
@@ -287,8 +282,6 @@ except apsw.ConstraintError:
 ###
 
 # We must close connections
-del cursor
-connection.close()
-del connection
+connection.close(True)  # force it since we want to exit
 
 #@@END
