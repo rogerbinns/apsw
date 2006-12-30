@@ -95,8 +95,9 @@ class APSW(unittest.TestCase):
     def tearDown(self):
         # we don't delete the database file itself.  it will be
         # left around if there was a failure
-        self.db.close()
+        self.db.close(True)
         del self.db
+        apsw.connection_hooks=[] # back to default value
 
     def assertTableExists(self, tablename):
         self.failUnlessEqual(self.db.cursor().execute("select count(*) from ["+tablename+"]").next()[0], 0)
@@ -1441,6 +1442,31 @@ class APSW(unittest.TestCase):
             def UpdateDeleteRow3(self, rowid):
                 assert rowid==77
 
+            def Disconnect1(self, too, many, args):
+                print "disconnect1"
+                1/0
+
+            def Disconnect2(self):
+                print "disconnect2"
+                1/0
+
+            def Disconnect3(self):
+                print "disconnect3"
+                pass
+
+            def Destroy1(self, too, many, args):
+                print "destroy1"
+                1/0
+                
+            def Destroy2(self):
+                print "destroy2"
+                1/0
+
+            def Destroy3(self):
+                print "destroy3"
+                pass
+                
+
 
         class Cursor:
 
@@ -1648,10 +1674,26 @@ class APSW(unittest.TestCase):
         VTable.UpdateDeleteRow=VTable.UpdateDeleteRow3
         cur.execute(sql)
 
-        # ::TODO:: disconnect/destroy ...
-        
+        # disconnect/destroy
+        db=apsw.Connection("testdb")
+        db.createmodule("testmod2", Source())
+        cur2=db.cursor()
+        for _ in cur2.execute("select * from foo"): pass
+        VTable.Disconnect=VTable.Disconnect1
+        self.assertRaises(TypeError, db.close)
+        VTable.Disconnect=VTable.Disconnect2
+        self.assertRaises(ZeroDivisionError, db.close)
+        VTable.Disconnect=VTable.Disconnect3
+        db.close() # should work now
+        VTable.Destroy=VTable.Destroy1        
+        self.assertRaises(TypeError, cur.execute, "drop table foo")
+        VTable.Destroy=VTable.Destroy2
+        self.assertRaises(ZeroDivisionError, cur.execute, "drop table foo")
+        VTable.Destroy=VTable.Destroy3        
+        cur.execute("drop table foo")
+        self.db.close()
 
-    def testClosing(self):
+    def testClosingChecks(self):
         "Check closed connection is correctly detected"
         cur=self.db.cursor()
         self.db.close()
@@ -1667,13 +1709,28 @@ class APSW(unittest.TestCase):
 
         # do the same thing, but for cursor
         nargs=self.cursor_nargs
-        for func in [x for x in dir(cur) if not x.startswith("__")]:
+        for func in [x for x in dir(cur) if not x.startswith("__") and not x in ("close",)]:
             args=("one", "two", "three")[:nargs.get(func,0)]
             try:
                 getattr(cur, func)(*args)
                 self.fail("cursor method "+func+" didn't notice that the connection is closed")
             except apsw.ConnectionClosedError:
                 pass
+
+    def testClosing(self):
+        "Verify behaviour of close() functions"
+        cur=self.db.cursor()
+        cur.execute("select 3;select 4")
+        self.assertRaises(apsw.IncompleteExecutionError, cur.close)
+        # now force it
+        cur.close(True)
+        l=[self.db.cursor() for i in range(1234)]
+        cur=self.db.cursor()
+        cur.execute("select 3; select 4; select 5")
+        l2=[self.db.cursor() for i in range(1234)]
+        self.assertRaises(apsw.IncompleteExecutionError, self.db.close)
+        self.db.close(True) # force it
+        self.db.close() # should be fine now
 
     def testLargeObjects(self):
         "Verify handling of large strings/blobs (>2GB) [Python 2.5+, 64 bit platform]"
@@ -1682,13 +1739,62 @@ class APSW(unittest.TestCase):
         import ctypes
         if ctypes.sizeof(ctypes.c_size_t)<8:
             return
-        # I use an anonymous slightly larger than 2GB chunk of memory, but don't touch any of it
+        # I use an anonymous area slightly larger than 2GB chunk of memory, but don't touch any of it
         import mmap
         f=mmap.mmap(-1, 2*1024*1024*1024+25000)
         c=self.db.cursor()
         c.execute("create table foo(theblob)")
         self.assertRaises(apsw.TooBigError,  c.execute, "insert into foo values(?)", (buffer(f),))
         # I can't find an easy way of making mmap fake being a string (the mmap module doc implies you can)
+        f.close()
+
+    def testErrorCodes(self):
+        "Verify setting of result codes on error/exception"
+        fname="gunk-errcode-test"
+        open(fname, "wb").write("A"*8192)
+        db=apsw.Connection(fname)
+        cur=db.cursor()
+        try:
+            cur.execute("select * from sqlite_master")
+        except apsw.NotADBError,e:
+            self.failUnlessEqual(e.result, apsw.SQLITE_NOTADB);
+            self.failUnlessEqual(e.extendedresult&0xff, apsw.SQLITE_NOTADB)
+        db.close(True)
+        
+        try:
+            os.remove(fname)
+        except:
+            pass
+
+    def testConnectionHooks(self):
+        "Verify connection hooks"
+        del apsw.connection_hooks
+        try:
+            db=apsw.Connection(":memory:")
+        except AttributeError:
+            pass
+        apsw.connection_hooks=sys # bad type
+        try:
+            db=apsw.Connection(":memory:")
+        except TypeError:
+            pass
+        apsw.connection_hooks=("a", "tuple", "of", "non-callables")
+        try:
+            db=apsw.Connection(":memory:")
+        except TypeError:
+            pass
+        apsw.connection_hooks=(dir, lambda x: 1/0)
+        try:
+            db=apsw.Connection(":memory:")
+        except ZeroDivisionError:
+            pass
+        def delit(db):
+            del db
+        apsw.connection_hooks=[delit for _ in range(9000)]
+        db=apsw.Connection(":memory:")
+        db.close()
+        
+        
 
 # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used
 LOADEXTENSIONFILENAME="./testextension.sqlext"
@@ -1721,3 +1827,20 @@ if __name__=='__main__':
                 unittest.main()
             except SystemExit:
                 pass
+
+    # Free up everything possible
+    del APSW
+    del ThreadRunner
+    del randomintegers
+
+    # modules
+    del apsw
+    del unittest
+    del os
+    del sys
+    del math
+    del random
+    del time
+    del threading
+    del Queue
+    del traceback
