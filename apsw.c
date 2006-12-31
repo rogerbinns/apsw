@@ -47,6 +47,9 @@ typedef int Py_ssize_t;
 /* A module to augment tracebacks */
 #include "traceback.c"
 
+/* A list of pointers (used by Connection to keep track of Cursors) */
+#include "pointerlist.c"
+
 /* SQLite 3 headers */
 #include "sqlite3.h"
 
@@ -60,6 +63,9 @@ typedef int Py_ssize_t;
 /* used to decide if we will use int or long long */
 #define APSW_INT32_MIN (-2147483647 - 1)
 #define APSW_INT32_MAX 2147483647
+
+/* The module object */
+PyObject *apswmodule;
 
 /* The encoding we use with SQLite.  SQLite supports either utf8 or 16
    bit unicode (host byte order).  If the latter is used then all
@@ -200,10 +206,16 @@ static void make_exception(int res, sqlite3 *db)
   int i;
   
   for(i=0;exc_descriptors[i].name;i++)
-    if (exc_descriptors[i].code==res)
+    if (exc_descriptors[i].code==(res&0xff))
       {
+	PyObject *etype, *eval, *etb;
         assert(exc_descriptors[i].cls);
         PyErr_Format(exc_descriptors[i].cls, "%sError: %s", exc_descriptors[i].name, db?(sqlite3_errmsg(db)):"error");
+	PyErr_Fetch(&etype, &eval, &etb);
+	PyErr_NormalizeException(&etype, &eval, &etb);
+	PyObject_SetAttrString(eval, "result", Py_BuildValue("i", res&0xff));
+	PyObject_SetAttrString(eval, "extendedresult", Py_BuildValue("i", res));
+	PyErr_Restore(etype, eval, etb);
         assert(PyErr_Occurred());
         return;
       }
@@ -362,6 +374,7 @@ typedef struct _vtableinfo
 				     Connection* */
 } vtableinfo;
 
+/* forward declarations */
 static vtableinfo *freevtableinfo(vtableinfo *);
 
 /* CONNECTION TYPE */
@@ -373,6 +386,8 @@ struct Connection {
   int co_linenumber;              /* line number of allocation */
   PyObject *co_filename;          /* filename of allocation */
   long thread_ident;              /* which thread we were made in */
+
+  pointerlist cursors;            /* tracking cursors */
 
   funccbinfo *functions;          /* linked list of registered functions */
   collationcbinfo *collations;    /* linked list of registered collations */
@@ -419,6 +434,9 @@ typedef struct {
 
 static PyTypeObject CursorType;
 
+/* forward declarations */
+static PyObject *Cursor_close(Cursor *self, PyObject *args);
+
 
 /* CONVENIENCE FUNCTIONS */
 
@@ -427,19 +445,14 @@ static PyTypeObject CursorType;
 static PyObject *
 convertutf8string(const char *str)
 {
-  const char *chk=str;
-
   if(!str)
     {
       Py_INCREF(Py_None);
       return Py_None;
     }
-  
-  for(chk=str;*chk && !((*chk)&0x80); chk++) ;
-  if(*chk)
-    return PyUnicode_DecodeUTF8(str, strlen(str), NULL);
-  else
-    return PyString_FromString(str);
+
+  /* new behaviour in 3.3.8 - always return unicode strings */
+  return PyUnicode_DecodeUTF8(str, strlen(str), NULL);
 }
 
 /* Convert a pointer and size UTF-8 string into a Python object.
@@ -447,18 +460,11 @@ convertutf8string(const char *str)
 static PyObject *
 convertutf8stringsize(const char *str, Py_ssize_t size)
 {
-  const char *chk=str;
-  Py_ssize_t i;
-  
   assert(str);
   assert(size>=0);
-
-  for(i=0;i<size && !(chk[i]&0x80);i++);
-
-  if(i!=size)
-    return PyUnicode_DecodeUTF8(str, size, NULL);
-  else
-    return PyString_FromStringAndSize(str, size);
+  
+  /* new behaviour in 3.3.8 - always return Unicode strings */
+  return PyUnicode_DecodeUTF8(str, size, NULL);
 }
 
 /* Returns a PyString encoded in UTF8 - new reference.
@@ -531,9 +537,12 @@ getutf8string(PyObject *string)
 /* CONNECTION CODE */
 
 static PyObject *
-Connection_close(Connection *self)
+Connection_close(Connection *self, PyObject *args)
 {
+  PyObject *cursorcloseargs=NULL;
   int res;
+  pointerlist_visit plv;
+  int force=0;
 
   if(!self->db)
     goto finally;
@@ -542,21 +551,52 @@ Connection_close(Connection *self)
 
   assert(!PyErr_Occurred());
 
+  if(!PyArg_ParseTuple(args, "|i:close(force=False)", &force))
+    return NULL;
+
+  cursorcloseargs=Py_BuildValue("(i)", force);
+  if(!cursorcloseargs) return NULL;
+
+  for(pointerlist_visit_begin(&self->cursors, &plv);
+      pointerlist_visit_finished(&plv);
+      pointerlist_visit_next(&plv))
+    {
+      PyObject *closeres=NULL;
+      Cursor *cur=(Cursor*)pointerlist_visit_get(&plv);
+
+      closeres=Cursor_close(cur, args);
+      Py_XDECREF(closeres);
+      if(!closeres)
+	{
+	  Py_DECREF(cursorcloseargs);
+	  return NULL;
+	}
+    }
+
+  Py_DECREF(cursorcloseargs);
+
   Py_BEGIN_ALLOW_THREADS
     res=sqlite3_close(self->db);
   Py_END_ALLOW_THREADS;
 
-  /* SQLite ignores the error return from vtable Disconnect so we may need to synthesize it */
-  if(res==SQLITE_OK && PyErr_Occurred())
-    res=MakeSqliteMsgFromPyException(NULL);
-
   if (res!=SQLITE_OK) 
     {
       SET_EXC(self->db, res);
-      return NULL;
     }
 
+  if(PyErr_Occurred())
+    {
+      AddTraceBackHere(__FILE__, __LINE__, "Connection.close", NULL);
+    }
+
+  /* note: SQLite ignores error returns from vtabDisconnect, so the
+     database still ends up closed and we return an exception! */
+
+  if(res!=SQLITE_OK)
+      return NULL;
+
   self->db=0;
+
   PyMem_Free((void*)self->filename);
   self->filename=0;
   Py_DECREF(self->co_filename);
@@ -601,7 +641,7 @@ Connection_close(Connection *self)
   self->authorizer=0;
 
  finally:
-  return Py_BuildValue("");
+  return PyErr_Occurred()?NULL:Py_BuildValue("");
   
 }
 
@@ -625,6 +665,9 @@ Connection_dealloc(Connection* self)
       PyErr_Fetch(&etype, &evalue, &etraceback);
     }
 
+  assert(self->cursors.numentries==0);
+  pointerlist_free(&self->cursors);
+
   self->ob_type->tp_free((PyObject*)self);
 }
 
@@ -642,6 +685,8 @@ Connection_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
       self->co_linenumber=0;
       self->co_filename=0;
       self->thread_ident=PyThread_get_thread_ident();
+      memset(&self->cursors, 0, sizeof(self->cursors));
+      pointerlist_init(&self->cursors);
       self->functions=0;
       self->collations=0;
       self->vtables=0;
@@ -660,6 +705,7 @@ Connection_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 static int
 Connection_init(Connection *self, PyObject *args, PyObject *kwds)
 {
+  PyObject *hooks=NULL, *hook=NULL, *iterator=NULL, *hookargs=NULL, *hookresult=NULL;
   char *filename=NULL;
   int res=0;
 
@@ -680,21 +726,61 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
   SET_EXC(self->db, res);  /* nb sqlite3_open always allocates the db even on error */
   
   if(res!=SQLITE_OK)
-    {
-      /* clean up db since it is useless - no need for user to call close */
-      sqlite3_close(self->db);
-      self->db=0;
-    }
-  else
-    {
-      PyFrameObject *frame = PyThreadState_GET()->frame;
-      self->co_linenumber=PyCode_Addr2Line(frame->f_code, frame->f_lasti);
-      self->co_filename=frame->f_code->co_filename;
-      Py_INCREF(self->co_filename);
-      self->filename=filename;
-    }
+    goto pyexception;
+    
+  /* record where it was allocated */
+  PyFrameObject *frame = PyThreadState_GET()->frame;
+  self->co_linenumber=PyCode_Addr2Line(frame->f_code, frame->f_lasti);
+  self->co_filename=frame->f_code->co_filename;
+  Py_INCREF(self->co_filename);
+  self->filename=filename;
+
+  /* get detailed error codes */
+  sqlite3_extended_result_codes(self->db, 1);
   
-  return (res==SQLITE_OK)?0:-1;
+  /* call connection hooks */
+  hooks=PyObject_GetAttrString(apswmodule, "connection_hooks");
+  if(!hooks)
+    goto pyexception;
+
+  hookargs=Py_BuildValue("(O)", self);
+  if(!hookargs) goto pyexception;
+
+  iterator=PyObject_GetIter(hooks);
+  if(!iterator)
+    {
+      AddTraceBackHere(__FILE__, __LINE__, "Connection.__init__", "{s: i}", "connection_hooks", hooks);
+      goto pyexception;
+    }
+
+  while( (hook=PyIter_Next(iterator)) )
+    {
+      hookresult=PyEval_CallObject(hook, hookargs);
+      if(!hookresult) 
+	goto pyexception;
+      Py_DECREF(hook);
+      Py_DECREF(hookresult);
+    }
+
+  if(!PyErr_Occurred())
+    {
+      res=0;
+      goto finally;
+    }
+
+ pyexception:
+  /* clean up db since it is useless - no need for user to call close */
+  res=-1;
+  sqlite3_close(self->db);
+  self->db=0;
+
+finally:
+  Py_XDECREF(hookargs);
+  Py_XDECREF(iterator);
+  Py_XDECREF(hooks);
+  Py_XDECREF(hook);
+  Py_XDECREF(hookresult);
+  return res;
 }
 
 static void Cursor_init(Cursor *, Connection *);
@@ -713,7 +799,7 @@ Connection_cursor(Connection *self)
 
   /* incref me since cursor holds a pointer */
   Py_INCREF((PyObject*)self);
-
+  pointerlist_add(&self->cursors, cursor);
   Cursor_init(cursor, self);
   
   return (PyObject*)cursor;
@@ -1418,6 +1504,7 @@ Connection_loadextension(Connection *self, PyObject *args)
     {
       assert(errmsg);
       PyErr_Format(ExcExtensionLoading, "ExtensionLoadingError: %s", errmsg?errmsg:"unspecified");
+      sqlite3_free(errmsg);
       return NULL;
     }
   return Py_BuildValue("");
@@ -2522,18 +2609,23 @@ vtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
       /* see SQLite ticket 2127 */
       if(pVtab->zErrMsg)
 	sqlite3_free(pVtab->zErrMsg);
-
-      PyMem_Free(pVtab);    
+      
+      Py_DECREF(vtable);
+      PyMem_Free(pVtab);
+      goto finally;
     }
-  if(res) 
-    goto finally;
 
   if(stringindex==0)
     {
-      /* ::TODO:: waiting on ticket 2099 to know if the pVtab should also be freed in case of error return.
-	 For safety, make the vtable be a pointer to PyNone so any future callbacks do no harm */
-      ((apsw_vtable*)pVtab)->vtable=Py_None;
-      Py_INCREF(Py_None);
+      /* ::TODO:: waiting on ticket 2099 to know if the pVtab should also be freed in case of error return with Destroy. */
+#if 0
+      /* see SQLite ticket 2127 */
+      if(pVtab->zErrMsg)
+	sqlite3_free(pVtab->zErrMsg);
+      
+      Py_DECREF(vtable);
+      PyMem_Free(pVtab);    
+#endif
     }
 
   /* pyexception:  we had an exception in python code */
@@ -2541,7 +2633,6 @@ vtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
   AddTraceBackHere(__FILE__, __LINE__,  destroy_disconnect_strings[stringindex].pyexceptionname, "{s: O}", "self", vtable);
 
  finally:
-  Py_DECREF(vtable);
   Py_XDECREF(res);
 
   PyGILState_Release(gilstate);
@@ -3383,7 +3474,7 @@ Connection_createmodule(Connection *self, PyObject *args)
 static PyMethodDef Connection_methods[] = {
   {"cursor", (PyCFunction)Connection_cursor, METH_NOARGS,
    "Create a new cursor" },
-  {"close",  (PyCFunction)Connection_close, METH_NOARGS,
+  {"close",  (PyCFunction)Connection_close, METH_VARARGS,
    "Closes the connection" },
   {"setbusytimeout", (PyCFunction)Connection_setbusytimeout, METH_VARARGS,
    "Sets the sqlite busy timeout in milliseconds.  Use zero to disable the timeout"},
@@ -3478,7 +3569,7 @@ static PyTypeObject ConnectionType = {
 
 /* Do finalization and free resources.  Returns the SQLITE error code */
 static int
-resetcursor(Cursor *self)
+resetcursor(Cursor *self, int force)
 {
   int res=SQLITE_OK;
 
@@ -3489,11 +3580,12 @@ resetcursor(Cursor *self)
   if(self->statement)
     {
       res=sqlite3_finalize(self->statement);
-      SET_EXC(self->connection->db, res);
+      if(!force) /* we don't care about errors when forcing */
+	SET_EXC(self->connection->db, res);
       self->statement=0;
     }
 
-  if(self->status!=C_DONE && self->zsqlnextpos)
+  if(!force && (self->status!=C_DONE && self->zsqlnextpos))
     {
       if (*self->zsqlnextpos && res==SQLITE_OK)
         {
@@ -3505,7 +3597,7 @@ resetcursor(Cursor *self)
     }
   self->zsqlnextpos=NULL;
   
-  if(self->status!=C_DONE && self->emiter)
+  if(!force && self->status!=C_DONE && self->emiter)
     {
       PyObject *next=PyIter_Next(self->emiter);
       if(next)
@@ -3569,7 +3661,7 @@ Cursor_dealloc(Cursor * self)
       PyErr_Clear();
     }
 
-  resetcursor(self);
+  resetcursor(self, 1);
   if(PyErr_Occurred())
     PyErr_Clear(); /* clear out any exceptions from resetcursor since we don't care */
 
@@ -3580,6 +3672,7 @@ Cursor_dealloc(Cursor * self)
   /* we no longer need connection */
   if(self->connection)
     {
+      pointerlist_remove(&self->connection->cursors, self);
       Py_DECREF(self->connection);
       self->connection=0;
     }
@@ -3998,7 +4091,7 @@ Cursor_step(Cursor *self)
         res=sqlite3_step(self->statement);
       Py_END_ALLOW_THREADS;
 
-      switch(res)
+      switch(res&0xff)
         {
         case SQLITE_ROW:
           self->status=C_ROW;
@@ -4015,7 +4108,7 @@ Cursor_step(Cursor *self)
         case SQLITE_ERROR:
           /* there was an error - we need to get actual error code from sqlite3_finalize */
           self->status=C_DONE;
-          res=resetcursor(self);  /* this will get the error code for us */
+          res=resetcursor(self, 0);  /* this will get the error code for us */
           assert(res!=SQLITE_OK);
           return NULL;
 
@@ -4023,7 +4116,7 @@ Cursor_step(Cursor *self)
           /* this would be an error in apsw itself */
           self->status=C_DONE;
           SET_EXC(self->connection->db,res);
-          resetcursor(self);
+          resetcursor(self, 0);
           return NULL;
 
         case SQLITE_DONE:
@@ -4045,7 +4138,7 @@ Cursor_step(Cursor *self)
           if(!self->emiter)
             {
               /* no more so we finalize */
-              if(resetcursor(self)!=SQLITE_OK)
+              if(resetcursor(self, 0)!=SQLITE_OK)
                 {
                   assert(PyErr_Occurred());
                   return NULL; /* exception */
@@ -4058,7 +4151,7 @@ Cursor_step(Cursor *self)
           if(!next)
             {
               /* no more from executemanyiter so we finalize */
-              if(resetcursor(self)!=SQLITE_OK)
+              if(resetcursor(self, 0)!=SQLITE_OK)
                 {
                   assert(PyErr_Occurred());
                   return NULL;
@@ -4090,7 +4183,7 @@ Cursor_step(Cursor *self)
       SET_EXC(self->connection->db,res);
       if (res!=SQLITE_OK)
         {
-          assert(res!=SQLITE_BUSY); /* finalize shouldn't be returning busy, only step */
+          assert((res&0xff)!=SQLITE_BUSY); /* finalize shouldn't be returning busy, only step */
           return NULL;
         }
 
@@ -4104,7 +4197,7 @@ Cursor_step(Cursor *self)
       SET_EXC(self->connection->db,res);
       if (res!=SQLITE_OK)
         {
-          assert(res!=SQLITE_BUSY); /* prepare definitely shouldn't be returning busy */
+          assert((res&0xff)!=SQLITE_BUSY); /* prepare definitely shouldn't be returning busy */
           return NULL;
         }
 
@@ -4142,7 +4235,7 @@ Cursor_execute(Cursor *self, PyObject *args)
   CHECK_THREAD(self->connection, NULL);
   CHECK_CLOSED(self->connection, NULL);
 
-  res=resetcursor(self);
+  res=resetcursor(self, 0);
   if(res!=SQLITE_OK)
     return NULL;
   
@@ -4219,7 +4312,7 @@ Cursor_executemany(Cursor *self, PyObject *args)
   CHECK_THREAD(self->connection, NULL);
   CHECK_CLOSED(self->connection, NULL);
 
-  res=resetcursor(self);
+  res=resetcursor(self, 0);
   if(res!=SQLITE_OK)
     return NULL;
   
@@ -4295,6 +4388,26 @@ Cursor_executemany(Cursor *self, PyObject *args)
     }
   Py_INCREF(retval);
   return retval;
+}
+
+static PyObject *
+Cursor_close(Cursor *self, PyObject *args)
+{
+  int res;
+  int force=0;
+
+  CHECK_THREAD(self->connection, NULL);
+  if (!self->connection->db) /* if connection is closed, then we must also be closed */
+    return Py_BuildValue("");
+
+  if(!PyArg_ParseTuple(args, "|i:close(force=False)", &force))
+    return NULL;
+
+  res=resetcursor(self, force);
+  if(res!=SQLITE_OK)
+    return NULL;
+  
+  return Py_BuildValue("");
 }
 
 static PyObject *
@@ -4462,6 +4575,8 @@ static PyMethodDef Cursor_methods[] = {
    "Returns the connection object for this cursor"},
   {"getdescription", (PyCFunction)Cursor_getdescription, METH_NOARGS,
    "Returns the description for the current row"},
+  {"close", (PyCFunction)Cursor_close, METH_VARARGS,
+   "Closes the cursor" },
   {NULL}  /* Sentinel */
 };
 
@@ -4556,7 +4671,9 @@ static PyMethodDef module_methods[] = {
 PyMODINIT_FUNC
 initapsw(void) 
 {
-    PyObject* m;
+    PyObject *m;
+    PyObject *thedict;
+    PyObject *hooks;
 
     assert(sizeof(int)==4);             /* we expect 32 bit ints */
     assert(sizeof(long long)==8);             /* we expect 64 bit long long */
@@ -4571,7 +4688,7 @@ initapsw(void)
     PyEval_InitThreads();
 
 
-    m = Py_InitModule3("apsw", module_methods,
+    m = apswmodule = Py_InitModule3("apsw", module_methods,
                        "Another Python SQLite Wrapper.");
 
     if (m == NULL)
@@ -4588,15 +4705,30 @@ initapsw(void)
 
     /* we don't add cursor to the module since users shouldn't be able to instantiate them directly */
 
-    /* add in some constants */
+    hooks=PyList_New(0);
+    if(!hooks) return;
+    PyModule_AddObject(m, "connection_hooks", hooks);
+    
 
-#define ADDINT(v) PyModule_AddObject(m, #v, Py_BuildValue("i", v));
+    /* add in some constants and also put them in a corresponding mapping dictionary */
+
+#define ADDINT(v) PyModule_AddObject(m, #v, Py_BuildValue("i", v)); \
+         PyDict_SetItemString(thedict, #v, Py_BuildValue("i", v));  \
+         PyDict_SetItem(thedict, Py_BuildValue("i", v), Py_BuildValue("s", #v));
+
+    thedict=PyDict_New();
+    if(!thedict) return;
 
     ADDINT(SQLITE_DENY);
     ADDINT(SQLITE_IGNORE);
     ADDINT(SQLITE_OK);
+    
+    PyModule_AddObject(m, "mapping_authorizer_return", thedict);
 
     /* authorizer functions */
+    thedict=PyDict_New();
+    if(!thedict) return;
+
     ADDINT(SQLITE_CREATE_INDEX);
     ADDINT(SQLITE_CREATE_TABLE);
     ADDINT(SQLITE_CREATE_TEMP_INDEX);
@@ -4630,11 +4762,16 @@ initapsw(void)
     ADDINT(SQLITE_DROP_VTABLE);
     ADDINT(SQLITE_FUNCTION);
 
+    PyModule_AddObject(m, "mapping_authorizer_function", thedict);
+
     /* Version number */
-    ADDINT(SQLITE_VERSION_NUMBER);
+    PyModule_AddObject(m, "SQLITE_VERSION_NUMBER", Py_BuildValue("i", SQLITE_VERSION_NUMBER));
 
     /* vtable best index constraints */
 #if defined(SQLITE_INDEX_CONSTRAINT_EQ) && defined(SQLITE_INDEX_CONSTRAINT_MATCH)
+
+    thedict=PyDict_New();
+    if(!thedict) return;
 
     ADDINT(SQLITE_INDEX_CONSTRAINT_EQ);
     ADDINT(SQLITE_INDEX_CONSTRAINT_GT);
@@ -4643,6 +4780,56 @@ initapsw(void)
     ADDINT(SQLITE_INDEX_CONSTRAINT_GE);
     ADDINT(SQLITE_INDEX_CONSTRAINT_MATCH);
 
+    PyModule_AddObject(m, "mapping_bestindex_constraints", thedict);
+
 #endif /* constraints */
+
+    /* extendended result codes */
+    thedict=PyDict_New();
+    if(!thedict) return;
+
+    ADDINT(SQLITE_IOERR_READ);
+    ADDINT(SQLITE_IOERR_SHORT_READ);
+    ADDINT(SQLITE_IOERR_WRITE);
+    ADDINT(SQLITE_IOERR_FSYNC);
+    ADDINT(SQLITE_IOERR_DIR_FSYNC);
+    ADDINT(SQLITE_IOERR_TRUNCATE);
+    ADDINT(SQLITE_IOERR_FSTAT);
+    ADDINT(SQLITE_IOERR_UNLOCK);
+    ADDINT(SQLITE_IOERR_RDLOCK);
+    PyModule_AddObject(m, "mapping_extended_result_codes", thedict);
+
+    /* error codes */
+    thedict=PyDict_New();
+    if(!thedict) return;
+
+    ADDINT(SQLITE_OK);
+    ADDINT(SQLITE_ERROR);
+    ADDINT(SQLITE_INTERNAL);
+    ADDINT(SQLITE_PERM);
+    ADDINT(SQLITE_ABORT);
+    ADDINT(SQLITE_BUSY);
+    ADDINT(SQLITE_LOCKED);
+    ADDINT(SQLITE_NOMEM);
+    ADDINT(SQLITE_READONLY);
+    ADDINT(SQLITE_INTERRUPT);
+    ADDINT(SQLITE_IOERR);
+    ADDINT(SQLITE_CORRUPT);
+    ADDINT(SQLITE_FULL);
+    ADDINT(SQLITE_CANTOPEN);
+    ADDINT(SQLITE_PROTOCOL);
+    ADDINT(SQLITE_EMPTY);
+    ADDINT(SQLITE_SCHEMA);
+    ADDINT(SQLITE_CONSTRAINT);
+    ADDINT(SQLITE_MISMATCH);
+    ADDINT(SQLITE_MISUSE);
+    ADDINT(SQLITE_NOLFS);
+    ADDINT(SQLITE_AUTH);
+    ADDINT(SQLITE_FORMAT);
+    ADDINT(SQLITE_RANGE);
+    ADDINT(SQLITE_NOTADB);
+
+    PyModule_AddObject(m, "mapping_result_codes", thedict);
+
 }
 
