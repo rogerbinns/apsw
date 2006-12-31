@@ -1443,30 +1443,22 @@ class APSW(unittest.TestCase):
                 assert rowid==77
 
             def Disconnect1(self, too, many, args):
-                print "disconnect1"
                 1/0
 
             def Disconnect2(self):
-                print "disconnect2"
                 1/0
 
             def Disconnect3(self):
-                print "disconnect3"
                 pass
 
             def Destroy1(self, too, many, args):
-                print "destroy1"
                 1/0
                 
             def Destroy2(self):
-                print "destroy2"
                 1/0
 
             def Destroy3(self):
-                print "destroy3"
                 pass
-                
-
 
         class Cursor:
 
@@ -1674,17 +1666,32 @@ class APSW(unittest.TestCase):
         VTable.UpdateDeleteRow=VTable.UpdateDeleteRow3
         cur.execute(sql)
 
-        # disconnect/destroy
+        # disconnect - sqlite ignores any errors
         db=apsw.Connection("testdb")
         db.createmodule("testmod2", Source())
         cur2=db.cursor()
         for _ in cur2.execute("select * from foo"): pass
         VTable.Disconnect=VTable.Disconnect1
-        self.assertRaises(TypeError, db.close)
+        self.assertRaises(TypeError, db.close) # nb close succeeds!
+        self.assertRaises(apsw.ConnectionClosedError, cur2.execute, "select * from foo")
+        del db
+        db=apsw.Connection("testdb")
+        db.createmodule("testmod2", Source())
+        cur2=db.cursor()
+        for _ in cur2.execute("select * from foo"): pass
         VTable.Disconnect=VTable.Disconnect2
-        self.assertRaises(ZeroDivisionError, db.close)
+        self.assertRaises(ZeroDivisionError, db.close) # nb close succeeds!
+        self.assertRaises(apsw.ConnectionClosedError, cur2.execute, "select * from foo")
+        del db
+        db=apsw.Connection("testdb")
+        db.createmodule("testmod2", Source())
+        cur2=db.cursor()
+        for _ in cur2.execute("select * from foo"): pass
         VTable.Disconnect=VTable.Disconnect3
-        db.close() # should work now
+        db.close()
+        del db
+
+        # destroy
         VTable.Destroy=VTable.Destroy1        
         self.assertRaises(TypeError, cur.execute, "drop table foo")
         VTable.Destroy=VTable.Destroy2
