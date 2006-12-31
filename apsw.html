@@ -78,6 +78,8 @@
             <ul>
               <li><a href="#module-methods">Module methods</a></li>
 
+              <li><a href="#Module_variables">Module variables</a></li>
+
               <li><a href="#Module_constants">Module constants</a></li>
 
               <li><a href="#Connection_class">Connection class</a></li>
@@ -931,6 +933,22 @@ $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
     </dd>
   </dl>
 
+  <h2><a name="Module_variables" id="Module_variables">Module
+  variables</a></h2>
+
+  <dl>
+    <dt><strong>connection_hooks</strong></dt>
+
+    <dd>
+      <p>The purpose of the hooks is to allow the easy registration of
+      functions, virtual tables or similar items with each Connection as it is
+      created. The default value is an empty list. Whenever a Connection is
+      created, each item in <code>apsw.connection_hooks</code> is invoked with
+      a single parameter being the new Connection object. If the hook raises an
+      exception then the creation of the Connection fails.</p>
+    </dd>
+  </dl>
+
   <h2><a name="Module_constants" id="Module_constants">Module
   constants</a></h2>
 
@@ -1523,7 +1541,10 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       <code>Create</code> in the module implementation. They can be considered
       destructors for the virtual table instance. It is currently unclear how
       SQLite behaves if you return an error (<a href=
-      "http://www.sqlite.org/cvstrac/tktview?tn=2099">ticket 2099</a>).</p>
+      "http://www.sqlite.org/cvstrac/tktview?tn=2099">ticket 2099</a>). Note
+      that SQLite does ignore errors in the Disconnect method. If you do have
+      one, you will get an exception from the <code>close()</code> method, but
+      the database will actually be closed.</p>
     </dd>
 
     <dt><strong>Open()</strong></dt>
@@ -2834,6 +2855,13 @@ ZeroDivisionError: integer division or modulo by zero
         "http://www.sqlite.org/cvstrac/wiki?p=ExtendedResultCodes">extended
         result codes</a> are available - see <a href=
         "#Exceptions">Exceptions</a> for more detail.</li>
+
+        <li><a href="#Module_variables">Connection hooks</a> added so you can
+        easily register functions, virtual tables or similar items with each
+        Connection as it is created.</li>
+
+        <li>Added <a href="#Module_constants">mapping dicts</a> which makes it
+        easy to map the various constants between strings and ints.</li>
       </ul>
 
       <h2><a name="337r1">3.3.7-r1</a></h2>
