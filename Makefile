@@ -1,5 +1,5 @@
 
-VERSION=3.3.8-r1
+VERSION=3.3.10-r1
 VERDIR=apsw-$(VERSION)
 
 all: header tidytoc
@@ -25,12 +25,18 @@ distrib-win:
 	cmd //c del //s //q $(VERDIR)
 	-cmd //c md $(VERDIR)
 	-cmd //c md dist
-	cmd //c copy apsw.html $(VERDIR)
 	cmd //c copy apsw.c $(VERDIR)
+	cmd //c copy apsw.html $(VERDIR)
 	cmd //c copy apswversion.h $(VERDIR)
+	cmd //c copy mingwsetup.bat $(VERDIR)
+	cmd //c copy pointerlist.c $(VERDIR)
 	cmd //c copy setup.py $(VERDIR)
+	cmd //c copy statementcache.c $(VERDIR)
+	cmd //c copy testextension.c $(VERDIR)
 	cmd //c copy tests.py $(VERDIR)
+	cmd //c copy traceback.c $(VERDIR)
 	cmd //c copy mingwsetup.bat $(VERDIR)
 	zip -9 -r dist/$(VERDIR).zip $(VERDIR)
 	c:/python23/python setup.py build --compile=mingw32 bdist_wininst
 	c:/python24/python setup.py build --compile=mingw32 bdist_wininst
+	c:/python25/python setup.py build --compile=mingw32 bdist_wininst

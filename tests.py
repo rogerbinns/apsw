@@ -23,6 +23,7 @@ import time
 import threading
 import Queue
 import traceback
+import StringIO
 
 # helper functions
 def randomintegers(howmany):
@@ -126,6 +127,8 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, apsw.Connection, 3)
         # non-unicode
         self.assertRaises(UnicodeDecodeError, apsw.Connection, "\xef\x22\xd3\x9e")
+        # bad file (cwd)
+        self.assertRaises(apsw.CantOpenError, apsw.Connection, ".")
 
     def testMemoryLeaks(self):
         "MemoryLeaks: Run with a memory profiler such as valgrind and debug Python"
@@ -148,7 +151,7 @@ class APSW(unittest.TestCase):
                 c2=db.cursor()
                 c2.setrowtrace(lambda x: (x,))
                 c2.setexectrace(lambda x,y: True)
-                for row in c2.execute("select * from foo"):
+                for row in c2.execute("select * from foo"+" "*i):  # spaces on end defeat statement cache
                     pass
             del c2
             db.close()
@@ -199,7 +202,7 @@ class APSW(unittest.TestCase):
 
         # with multiple statements
         c.execute("insert into foo values(?,?,?); insert into foo values(?,?,?)", (99,100,101,102,103,104))
-        self.assertRaises(apsw.BindingsError, c.execute, "insert into foo values(?,?,?); insert into foo values(?,?,?)",
+        self.assertRaises(apsw.BindingsError, c.execute, "insert into foo values(?,?,?); insert into foo values(?,?,?); insert some more",
                           (100,100,101,1000,103)) # too few
         self.assertRaises(apsw.BindingsError, c.execute, "insert into foo values(?,?,?); insert into foo values(?,?,?)",
                           (101,100,101,1000,103,104,105)) # too many
@@ -321,7 +324,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(StopIteration, c.next)
         # nulls for getdescription
         for row in c.execute("pragma user_version"):
-            self.assertEqual(c.getdescription(), ( (None, None), ))
+            self.assertEqual(c.getdescription(), ( ('user_version', None), ))
         # incomplete
         c.execute("select * from foo; create table bar(x)") # we don't bother reading leaving 
         self.assertRaises(apsw.IncompleteExecutionError, c.execute, "select * from foo") # execution incomplete
@@ -530,7 +533,6 @@ class APSW(unittest.TestCase):
             1/0
         c.setexectrace(tracefunc)
         self.assertRaises(TypeError, c.execute, "select max(x) from two")
-        
 
     def testRowTracing(self):
         "Verify row tracing"
@@ -802,6 +804,8 @@ class APSW(unittest.TestCase):
         self.db.createcollation("strnum", None)
         # check it really has gone
         self.assertRaises(apsw.SQLError, c.execute, "select x from foo order by x collate strnum")
+        # check statement still works
+        for _ in c.execute("select x from foo"): pass
         
     def testProgressHandler(self):
         "Verify progress handler"
@@ -1105,11 +1109,12 @@ class APSW(unittest.TestCase):
         self.db.setprofile(profile)
         for val2 in c.execute("select max(x) from foo"): pass
         self.failUnlessEqual(val1, val2)
-        self.failUnlessEqual(len(profileinfo), 2)
-        self.failUnlessEqual(profileinfo[0][0], profileinfo[1][0])
+        self.failUnless(len(profileinfo)>=2) # see SQLite ticket 2157
+        self.failUnlessEqual(profileinfo[0][0], profileinfo[-1][0])
         self.failUnlessEqual("select max(x) from foo", profileinfo[0][0])
+        self.failUnlessEqual("select max(x) from foo", profileinfo[-1][0])
         # the query using the index should take way less time
-        self.failUnless(profileinfo[0][1]<profileinfo[1][1])
+        self.failUnless(profileinfo[0][1]<profileinfo[-1][1])
         def profile(*args):
             1/0
         self.db.setprofile(profile)
@@ -1281,6 +1286,8 @@ class APSW(unittest.TestCase):
         cur=self.db.cursor()
         # should fail since module isn't registered
         self.assertRaises(apsw.SQLError, cur.execute, "create virtual table vt using testmod(x,y,z)")
+        # wrong args
+        self.assertRaises(TypeError, self.db.createmodule, 1,2,3)
         # give a bad object
         self.db.createmodule("testmod", 12) # next line fails due to lack of Create method
         self.assertRaises(AttributeError, cur.execute, "create virtual table xyzzy using testmod(x,y,z)")
@@ -1308,6 +1315,20 @@ class APSW(unittest.TestCase):
             def CreateBadSchema(self, *args):
                 return "this isn't remotely valid sql", None
 
+            def CreateWrongNumReturns(self, *args):
+                return "way","too","many","items",3
+
+            def CreateBadSequence(self, *args):
+                class badseq(object):
+                    def __getitem__(self, which):
+                        if which!=0:
+                            1/0
+                        return 12
+
+                    def __len__(self):
+                        return 2
+                return badseq()
+
         # check Create does the right thing - we don't include db since it creates a circular reference
         self.db.createmodule("testmod1", Source("testmod1", "main", "xyzzy", "1", '"one"'))
         self.assertRaises(ZeroDivisionError, cur.execute, 'create virtual table xyzzy using testmod1(1,"one")')
@@ -1323,6 +1344,10 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, cur.execute, 'create virtual table xyzzz using testmod1(2, "two")')
         Source.Create=Source.CreateBadSchema
         self.assertRaises(apsw.SQLError, cur.execute, 'create virtual table xyzzz2 using testmod1(2, "two")')
+        Source.Create=Source.CreateWrongNumReturns
+        self.assertRaises(TypeError, cur.execute, 'create virtual table xyzzz2 using testmod1(2, "two")')
+        Source.Create=Source.CreateBadSequence
+        self.assertRaises(ZeroDivisionError, cur.execute, 'create virtual table xyzzz2 using testmod1(2, "two")')
 
         # a good version of Source
         class Source:
@@ -1369,16 +1394,25 @@ class APSW(unittest.TestCase):
             def BestIndex4(self, constraints, orderbys):
                 # this gives ValueError ("bad" is not a float)
                 return (None,12,u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}", "anything", "bad")
+
+            _bestindexreturn=99
                 
             def BestIndex99(self, constraints, orderbys):
                 cl=list(constraints)
                 cl.sort()
                 assert allconstraintsl == cl
                 assert orderbys == ( (2, False), )
-                return ( [4,(3,True),[2,False],1, (0, False)], 997, u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}", 99)
+                retval=( [4,(3,True),[2,False],1, (0, False)], 997, u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}", False, 99)[:self._bestindexreturn]
+                return retval
 
             def BestIndexGood(self, constraints, orderbys):
                 return None
+
+            def BestIndexGood2(self, constraints, orderbys):
+                return [] # empty list is same as None
+
+            def Open(self):
+                return Cursor(self)
 
             def Open1(self, wrong, number, of, arguments):
                 1/0
@@ -1460,7 +1494,27 @@ class APSW(unittest.TestCase):
             def Destroy3(self):
                 pass
 
+            def Begin1(self, too, many, args):
+                1/0
+
+            def Begin2(self):
+                1/0
+
+            def Begin3(self):
+                pass
+
+            def Sync(self):
+                pass
+
+            def Commit(self):
+                pass
+
+            def Rollback(self):
+                pass
+
         class Cursor:
+
+            _bestindexreturn=99
 
             def __init__(self, table):
                 self.table=table
@@ -1472,10 +1526,30 @@ class APSW(unittest.TestCase):
                 1/0
 
             def Filter99(self, idxnum, idxstr, constraintargs):
+                self.pos=1 # row 0 is headers
+                if self._bestindexreturn==0:
+                    assert idxnum==0
+                    assert idxstr==None
+                    assert constraintargs==()
+                    return
+                if self._bestindexreturn==1:
+                    assert idxnum==0
+                    assert idxstr==None
+                    assert constraintargs==('A', 12.4, 'A', -1000)
+                    return
+                if self._bestindexreturn==2:
+                    assert idxnum==997
+                    assert idxstr==None
+                    assert constraintargs==('A', 12.4, 'A', -1000)
+                    return 
+                # 3 or more
                 assert idxnum==997
                 assert idxstr==u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}"
                 assert constraintargs==('A', 12.4, 'A', -1000)
-                self.pos=1 # row 0 is headers
+
+            def Filter(self,  *args):
+                self.Filter99(*args)
+                1/0
 
             def FilterGood(self, *args):
                 self.pos=1 # row 0 is headers
@@ -1550,8 +1624,19 @@ class APSW(unittest.TestCase):
         VTable.BestIndex=VTable.BestIndex4
         self.assertRaises(ValueError, cur.execute, allconstraints)
 
-        # error cases ok, return real values and move on to cursor methods
+        # check varying number of return args from bestindex
         VTable.BestIndex=VTable.BestIndex99
+        for i in range(6):
+            VTable._bestindexreturn=i
+            Cursor._bestindexreturn=i
+            try:
+                cur.execute(" "+allconstraints+" "*i) # defeat statement cache - bestindex is called during prepare
+            except ZeroDivisionError:
+                pass
+
+        # error cases ok, return real values and move on to cursor methods
+        del VTable.Open
+        del Cursor.Filter
         self.assertRaises(AttributeError, cur.execute, allconstraints) # missing open
         VTable.Open=VTable.Open1
         self.assertRaises(TypeError, cur.execute,allconstraints)
@@ -1569,9 +1654,9 @@ class APSW(unittest.TestCase):
         Cursor.Filter=Cursor.Filter99
         self.assertRaises(AttributeError, cur.execute, allconstraints)
         Cursor.Eof=Cursor.Eof1
-        self.assertRaises(TypeError, cur.execute,allconstraints)
+        self.assertRaises(TypeError, cur.execute, allconstraints)
         Cursor.Eof=Cursor.Eof2
-        self.assertRaises(ZeroDivisionError, cur.execute,allconstraints)
+        self.assertRaises(ZeroDivisionError,cur.execute, allconstraints)
         Cursor.Eof=Cursor.Eof99
         self.assertRaises(AttributeError, cur.execute, allconstraints)
         # now onto to rowid
@@ -1657,6 +1742,7 @@ class APSW(unittest.TestCase):
         cur.execute("update foo set rowid=rowid+20 where 1")
 
         # update (delete)
+        VTable.BestIndex=VTable.BestIndexGood2  # improves code coverage
         sql="delete from foo where name=='Fred'"
         self.assertRaises(AttributeError, cur.execute, sql)
         VTable.UpdateDeleteRow=VTable.UpdateDeleteRow1
@@ -1664,6 +1750,15 @@ class APSW(unittest.TestCase):
         VTable.UpdateDeleteRow=VTable.UpdateDeleteRow2
         self.assertRaises(ZeroDivisionError, cur.execute, sql)
         VTable.UpdateDeleteRow=VTable.UpdateDeleteRow3
+        cur.execute(sql)
+
+        # transaction control
+        # Begin, Sync, Commit and rollback all use the same underlying code
+        VTable.Begin=VTable.Begin1
+        self.assertRaises(TypeError, cur.execute, sql)
+        VTable.Begin=VTable.Begin2
+        self.assertRaises(ZeroDivisionError, cur.execute, sql)
+        VTable.Begin=VTable.Begin3
         cur.execute(sql)
 
         # disconnect - sqlite ignores any errors
@@ -1700,6 +1795,104 @@ class APSW(unittest.TestCase):
         cur.execute("drop table foo")
         self.db.close()
 
+                            
+    def testVTableExample(self):
+        "Tests vtable example code"
+        # Make sure vtable code actually works by comparing SQLite
+        # results against manually computed results
+
+        def getfiledata(directories):
+            columns=None
+            data=[]
+            counter=1
+            for directory in directories:
+                for f in os.listdir(directory):
+                    if not os.path.isfile(os.path.join(directory,f)):
+                        continue
+                    counter+=1
+                    st=os.stat(os.path.join(directory,f))
+                    if columns is None:
+                        columns=["rowid", "name", "directory"]+[x for x in dir(st) if x.startswith("st_")]
+                    data.append( [counter, f, directory] + [getattr(st,x) for x in columns[3:]] )
+            return columns, data
+        
+        class Source:
+            def Create(self, db, modulename, dbname, tablename, *args):
+                columns,data=getfiledata([eval(a) for a in args]) # eval strips off layer of quotes
+                schema="create table foo("+','.join(["'%s'" % (x,) for x in columns[1:]])+")"
+                return schema,Table(columns,data)
+            Connect=Create
+
+        class Table:
+            def __init__(self, columns, data):
+                self.columns=columns
+                self.data=data
+
+            def BestIndex(self, *args):
+                return None
+
+            def Open(self):
+                return Cursor(self)
+
+            def Disconnect(self):
+                pass
+
+            Destroy=Disconnect
+
+        class Cursor:
+            def __init__(self, table):
+                self.table=table
+
+            def Filter(self, *args):
+                self.pos=0
+
+            def Eof(self):
+                return self.pos>=len(self.table.data)
+
+            def Rowid(self):
+                return self.table.data[self.pos][0]
+
+            def Column(self, col):
+                return self.table.data[self.pos][1+col]
+
+            def Next(self):
+                self.pos+=1
+
+            def Close(self):
+                pass
+
+        paths=[x.replace("\\","/") for x in sys.path if len(x) and os.path.isdir(x)]
+        cols,data=getfiledata(paths)
+        self.db.createmodule("filesource", Source())
+        cur=self.db.cursor()
+        args=",".join(["'%s'" % (x,) for x in paths])
+        cur.execute("create virtual table files using filesource("+args+")")
+
+        # Find the largest file (SQL)
+        for bigsql in cur.execute("select st_size,name,directory from files order by st_size desc limit 1"):
+            pass
+        # Find the largest (manually)
+        colnum=cols.index("st_size")
+        bigmanual=(0,"","")
+        for file in data:
+            if file[colnum]>bigmanual[0]:
+                bigmanual=file[colnum], file[1], file[2]
+
+        self.failUnlessEqual(bigsql, bigmanual)
+
+        # Find the oldest file (SQL)
+        for oldestsql in cur.execute("select st_ctime,name,directory from files order by st_ctime limit 1"):
+            pass
+        # Find the oldest (manually)
+        colnum=cols.index("st_ctime")
+        oldestmanual=(99999999999999999L,"","")
+        for file in data:
+            if file[colnum]<oldestmanual[0]:
+                oldestmanual=file[colnum], file[1], file[2]
+
+        self.failUnlessEqual( oldestmanual, oldestsql)
+                
+
     def testClosingChecks(self):
         "Check closed connection is correctly detected"
         cur=self.db.cursor()
@@ -1730,14 +1923,23 @@ class APSW(unittest.TestCase):
         cur.execute("select 3;select 4")
         self.assertRaises(apsw.IncompleteExecutionError, cur.close)
         # now force it
+        self.assertRaises(TypeError, cur.close, sys)
+        self.assertRaises(TypeError, cur.close, 1,2,3)
         cur.close(True)
         l=[self.db.cursor() for i in range(1234)]
         cur=self.db.cursor()
         cur.execute("select 3; select 4; select 5")
         l2=[self.db.cursor() for i in range(1234)]
         self.assertRaises(apsw.IncompleteExecutionError, self.db.close)
+        self.assertRaises(TypeError, self.db.close, sys)
+        self.assertRaises(TypeError, self.db.close, 1,2,3)
         self.db.close(True) # force it
         self.db.close() # should be fine now
+        # coverage - close cursor after closing db
+        db=apsw.Connection(":memory:")
+        cur=db.cursor()
+        db.close()
+        cur.close()
 
     def testLargeObjects(self):
         "Verify handling of large strings/blobs (>2GB) [Python 2.5+, 64 bit platform]"
@@ -1800,8 +2002,54 @@ class APSW(unittest.TestCase):
         apsw.connection_hooks=[delit for _ in range(9000)]
         db=apsw.Connection(":memory:")
         db.close()
+
+    def testWriteUnraiseable(self):
+        "Verify writeunraiseable replacement function"
+        # This will deliberately leak memory for the connection (the db object)
+
+        xx=sys.excepthook
+        called=[0]
+        def ehook(t,v,tb, called=called):
+            called[0]=1
+        sys.excepthook=ehook
+        db2=apsw.Connection(":memory:")
+        del db2
+        self.failUnlessEqual(called[0], 1)
+        yy=sys.stderr
+        sys.stderr=open("errout.txt", "wt")
+        def ehook(blah):
+            1/0
+        sys.excepthook=ehook
+        db2=apsw.Connection(":memory:")
+        del db2
+        sys.stderr.close()
+        v=open("errout.txt", "rt").read()
+        os.remove("errout.txt")
+        self.failUnless(len(v))
+        sys.excepthook=xx
+        sys.stderr=yy
+
+    def testStatementCache(self):
+        cur=self.db.cursor()
+        cur.execute("create table foo(x,y)")
+        cur.execute("create index foo_x on foo(x)")
+        cur.execute("insert into foo values(1,2)")
+        cur.execute("drop index foo_x")
+        cur.execute("insert into foo values(1,2)") # cache hit, but needs reprepare
+        cur.execute("drop table foo; create table foo(x)")
+        #cur.execute("insert into foo values(1,2)") # cache hit, but invalid sql
+        cur.executemany("insert into foo values(?)", [[1],[2]])
+        # overflow the statement cache
+        l=[self.db.cursor().execute("select x from foo") for i in xrange(40)]
+        del l
+        for _ in cur.execute("select * from foo"): pass
+        db2=apsw.Connection("testdb")
+        cur2=db2.cursor()
+        cur2.execute("create table bar(x,y)")
+        for _ in cur.execute("select * from foo"): pass
+        db2.close()
         
-        
+
 
 # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used
 LOADEXTENSIONFILENAME="./testextension.sqlext"
@@ -1811,13 +2059,20 @@ PROFILESTEPS=100000
 
 if __name__=='__main__':
 
-    if not os.path.exists(LOADEXTENSIONFILENAME):
+    if not getattr(apsw, "enableloadextension", None):
+        del APSW.testLoadExtension
+
+    if getattr(apsw, "enableloadextension", None) and not os.path.exists(LOADEXTENSIONFILENAME):
         print "Not doing LoadExtension test.  You need to compile the extension first"
         if sys.platform.startswith("darwin"):
             print "  gcc -fPIC -bundle -o "+LOADEXTENSIONFILENAME+" -Isqlite3 testextension.c"
         else:
             print "  gcc -fPIC -shared -o "+LOADEXTENSIONFILENAME+" -Isqlite3 testextension.c"
         del APSW.testLoadExtension
+
+    # This test has to deliberately leak memory
+    if os.getenv("APSW_NO_MEMLEAK"):
+        del APSW.testWriteUnraiseable
     
     v=os.getenv("APSW_TEST_ITERATIONS")
     if v is None:
@@ -1826,7 +2081,7 @@ if __name__=='__main__':
         # we run all the tests multiple times which has better coverage
         # a larger value for MEMLEAKITERATIONS slows down everything else
         MEMLEAKITERATIONS=5
-        PROFILESTEPS=1000  # takes a long time to run under valgrind
+        PROFILESTEPS=1000
         v=int(v)
         for i in xrange(v):
             print "Iteration",i+1,"of",v

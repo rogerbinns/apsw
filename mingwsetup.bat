@@ -53,6 +53,21 @@ del py%PYTHONVER%exports.def
 @echo MinGW is setup for Python %PYTHONVER%
 :py24done
 
+@set PYTHONVER=25
+
+@if not exist %PYTHONDIRBASE%%PYTHONVER% goto no%PYTHONVER%
+@if exist %PYTHONDIRBASE%%PYTHONVER%\libs\libpython%PYTHONVER%.a goto lib%PYTHONVER%ok
+pexports %WINSYS32%\python%PYTHONVER%.dll > py%PYTHONVER%exports.def
+dlltool --dllname python%PYTHONVER%.dll --def py%PYTHONVER%exports.def --output-lib %PYTHONDIRBASE%%PYTHONVER%\libs\libpython%PYTHONVER%.a
+del py%PYTHONVER%exports.def
+@goto lib%PYTHONVER%ok
+:no25
+@echo You do not have Python %PYTHONVER% installed
+@goto py%PYTHONVER%done
+:lib25ok
+@echo MinGW is setup for Python %PYTHONVER%
+:py25done
+
 @rem clean out variables
 @set PYTHONDIRBASE=
 @set PYTHONVER=

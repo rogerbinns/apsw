@@ -14,7 +14,7 @@
 <body>
   <h1 class="notoc">APSW - Another Python SQLite Wrapper</h1>
 
-  <p><font size="-1">apsw-3.3.8-r1 20th December 2006</font></p>
+  <p><font size="-1">apsw-3.3.10-r1 11th January 2007</font></p>
 
   <p>APSW provides an SQLite 3 wrapper that provides the thinnest layer over
   <a href="http://www.sqlite.org">SQLite 3</a> possible. Everything you can do
@@ -27,18 +27,18 @@
   2</a>).</p>
 
   <blockquote>
-    <p><b>Important changes in 3.3.8</b> You must explicitly call <a href=
-    "#Connection_class">close()</a> on Connection objects. If you do not call
-    close then a detailed error message will be printed when Connection's
-    destructor runs and cleanup will not happen of that connection. This is
-    because it is not possible to raise Exceptions in destructors (actually it
-    is, but Python just calls the destructor again which can result in an
-    infinite loop). I did try to work around this, but with things like no
-    control over which thread destructors run in, virtual tables, triggers,
-    incomplete statements and SQLite's transaction control, it becomes
-    impossible to cleanly close a connection if bits of code are returning
-    errors. Using the close() method allows errors to be returned and it can be
-    called again once they are fixed.</p>
+    <p><b>Important changes in this release</b> You must explicitly call
+    <a href="#Connection_class">close()</a> on Connection objects. If you do
+    not call close then a detailed error message will be printed when
+    Connection's destructor runs and cleanup will not happen of that
+    connection. This is because it is not possible to raise Exceptions in
+    destructors (actually it is, but Python just calls the destructor again
+    which can result in an infinite loop). I did try to work around this, but
+    with things like no control over which thread destructors run in, virtual
+    tables, triggers, incomplete statements and SQLite's transaction control,
+    it becomes impossible to cleanly close a connection if bits of code are
+    returning errors. Using the close() method allows errors to be returned and
+    it can be called again once they are fixed.</p>
 
     <p>All strings returned by APSW are now in Unicode. Previously strings that
     consisted only of ASCII characters where returned as the string type and
@@ -148,6 +148,10 @@
             <a href="#verhistory">Version History</a>
 
             <ul>
+              <li><a href="#3310r1">3.3.10-r1</a></li>
+
+              <li><a href="#339r1">3.3.9-r1</a></li>
+
               <li><a href="#338r1">3.3.8-r1</a></li>
 
               <li><a href="#337r1">3.3.7-r1</a></li>
@@ -263,9 +267,9 @@
 "#0000C0">,</font>apsw<font color="#0000C0">.</font>SQLITE_VERSION_NUMBER   <font color="#008000"># from the sqlite header file at compile time
 
 </font><font color="blue">   Using APSW file /space/apsw/apsw.so
-      APSW version 3.3.8-r1
-    SQLite version 3.3.8
-    SQLite version 3003008
+      APSW version 3.3.10-r1
+    SQLite version 3.3.10
+    SQLite version 3003010
 </font>
 <font color="#008000">###
 ### Opening/creating database
@@ -724,7 +728,10 @@ cursor<font color="#0000C0">.</font>setrowtrace<font color=
     </font><font color="#C00000">print </font>i <font color=
 "#008000"># and the maximum number
 
-###
+</font>connection<font color="#0000C0">.</font>setprogresshandler<font color=
+"#0000C0">(</font>None<font color="#0000C0">)
+
+</font><font color="#008000">###
 ### commit hook (SQLite3 experimental feature)
 ###
 
@@ -759,7 +766,209 @@ cursor<font color="#0000C0">.</font>setrowtrace<font color=
     </font><font color="#C00000">print </font><font color=
 "#004080">"commit was not allowed"
 
+</font>connection<font color="#0000C0">.</font>setcommithook<font color=
+"#0000C0">(</font>None<font color="#0000C0">)
+
 </font><font color="#008000">###
+### Virtual tables
+###
+
+# This virtual table stores information about files in a set of
+# directories so you can execute SQL queries
+
+</font><font color="#C00000">def </font>getfiledata<font color=
+"#0000C0">(</font>directories<font color="#0000C0">):
+    </font>columns<font color="#0000C0">=</font>None
+    data<font color="#0000C0">=[]
+    </font>counter<font color="#0000C0">=</font><font color="#0080C0">1
+    </font><font color="#C00000">for </font>directory <font color=
+"#C00000">in </font>directories<font color="#0000C0">:
+        </font><font color="#C00000">for </font>f <font color=
+"#C00000">in </font>os<font color="#0000C0">.</font>listdir<font color=
+"#0000C0">(</font>directory<font color="#0000C0">):
+            </font><font color="#C00000">if not </font>os<font color=
+"#0000C0">.</font>path<font color="#0000C0">.</font>isfile<font color=
+"#0000C0">(</font>os<font color="#0000C0">.</font>path<font color=
+"#0000C0">.</font>join<font color="#0000C0">(</font>directory<font color=
+"#0000C0">,</font>f<font color="#0000C0">)):
+                </font><font color="#C00000">continue
+            </font>counter<font color="#0000C0">+=</font><font color=
+"#0080C0">1
+            </font>st<font color="#0000C0">=</font>os<font color=
+"#0000C0">.</font>stat<font color="#0000C0">(</font>os<font color=
+"#0000C0">.</font>path<font color="#0000C0">.</font>join<font color=
+"#0000C0">(</font>directory<font color="#0000C0">,</font>f<font color=
+"#0000C0">))
+            </font><font color="#C00000">if </font>columns <font color=
+"#C00000">is </font>None<font color="#0000C0">:
+                </font>columns<font color="#0000C0">=[</font><font color=
+"#004080">"rowid"</font><font color="#0000C0">, </font><font color=
+"#004080">"name"</font><font color="#0000C0">, </font><font color=
+"#004080">"directory"</font><font color="#0000C0">]+[</font>x <font color=
+"#C00000">for </font>x <font color="#C00000">in </font>dir<font color=
+"#0000C0">(</font>st<font color="#0000C0">) </font><font color=
+"#C00000">if </font>x<font color="#0000C0">.</font>startswith<font color=
+"#0000C0">(</font><font color="#004080">"st_"</font><font color="#0000C0">)]
+            </font>data<font color="#0000C0">.</font>append<font color=
+"#0000C0">( [</font>counter<font color="#0000C0">, </font>f<font color=
+"#0000C0">, </font>directory<font color=
+"#0000C0">] + [</font>getattr<font color="#0000C0">(</font>st<font color=
+"#0000C0">,</font>x<font color="#0000C0">) </font><font color=
+"#C00000">for </font>x <font color="#C00000">in </font>columns<font color=
+"#0000C0">[</font><font color="#0080C0">3</font><font color="#0000C0">:]] )
+    </font><font color="#C00000">return </font>columns<font color=
+"#0000C0">, </font>data
+
+<font color="#008000"># This gets registered with the Connection
+</font><font color="#C00000">class </font>Source<font color="#0000C0">:
+    </font><font color="#C00000">def </font>Create<font color=
+"#0000C0">(</font>self<font color="#0000C0">, </font>db<font color=
+"#0000C0">, </font>modulename<font color="#0000C0">, </font>dbname<font color=
+"#0000C0">, </font>tablename<font color="#0000C0">, *</font>args<font color=
+"#0000C0">):
+        </font>columns<font color="#0000C0">,</font>data<font color=
+"#0000C0">=</font>getfiledata<font color="#0000C0">([</font>eval<font color=
+"#0000C0">(</font>a<font color="#0000C0">) </font><font color=
+"#C00000">for </font>a <font color="#C00000">in </font>args<font color=
+"#0000C0">]) </font><font color="#008000"># eval strips off layer of quotes
+        </font>schema<font color="#0000C0">=</font><font color=
+"#004080">"create table foo("</font><font color="#0000C0">+</font><font color=
+"#004080">','</font><font color="#0000C0">.</font>join<font color=
+"#0000C0">([</font><font color="#004080">"'%s'" </font><font color=
+"#0000C0">% (</font>x<font color="#0000C0">,) </font><font color=
+"#C00000">for </font>x <font color="#C00000">in </font>columns<font color=
+"#0000C0">[</font><font color="#0080C0">1</font><font color=
+"#0000C0">:]])+</font><font color="#004080">")"
+        </font><font color="#C00000">return </font>schema<font color=
+"#0000C0">,</font>Table<font color="#0000C0">(</font>columns<font color=
+"#0000C0">,</font>data<font color="#0000C0">)
+    </font>Connect<font color="#0000C0">=</font>Create
+
+<font color="#008000"># Represents a table
+</font><font color="#C00000">class </font>Table<font color="#0000C0">:
+    </font><font color="#C00000">def </font>__init__<font color=
+"#0000C0">(</font>self<font color="#0000C0">, </font>columns<font color=
+"#0000C0">, </font>data<font color="#0000C0">):
+        </font>self<font color="#0000C0">.</font>columns<font color=
+"#0000C0">=</font>columns
+        self<font color="#0000C0">.</font>data<font color=
+"#0000C0">=</font>data
+
+    <font color="#C00000">def </font>BestIndex<font color=
+"#0000C0">(</font>self<font color="#0000C0">, *</font>args<font color=
+"#0000C0">):
+        </font><font color="#C00000">return </font>None
+
+    <font color="#C00000">def </font>Open<font color=
+"#0000C0">(</font>self<font color="#0000C0">):
+        </font><font color="#C00000">return </font>Cursor<font color=
+"#0000C0">(</font>self<font color="#0000C0">)
+
+    </font><font color="#C00000">def </font>Disconnect<font color=
+"#0000C0">(</font>self<font color="#0000C0">):
+        </font><font color="#C00000">pass
+
+    </font>Destroy<font color="#0000C0">=</font>Disconnect
+
+<font color="#008000"># Represents a cursor
+</font><font color="#C00000">class </font>Cursor<font color="#0000C0">:
+    </font><font color="#C00000">def </font>__init__<font color=
+"#0000C0">(</font>self<font color="#0000C0">, </font>table<font color=
+"#0000C0">):
+        </font>self<font color="#0000C0">.</font>table<font color=
+"#0000C0">=</font>table
+
+    <font color="#C00000">def </font>Filter<font color=
+"#0000C0">(</font>self<font color="#0000C0">, *</font>args<font color=
+"#0000C0">):
+        </font>self<font color="#0000C0">.</font>pos<font color=
+"#0000C0">=</font><font color="#0080C0">0
+
+    </font><font color="#C00000">def </font>Eof<font color=
+"#0000C0">(</font>self<font color="#0000C0">):
+        </font><font color="#C00000">return </font>self<font color=
+"#0000C0">.</font>pos<font color="#0000C0">&gt;=</font>len<font color=
+"#0000C0">(</font>self<font color="#0000C0">.</font>table<font color=
+"#0000C0">.</font>data<font color="#0000C0">)
+
+    </font><font color="#C00000">def </font>Rowid<font color=
+"#0000C0">(</font>self<font color="#0000C0">):
+        </font><font color="#C00000">return </font>self<font color=
+"#0000C0">.</font>table<font color="#0000C0">.</font>data<font color=
+"#0000C0">[</font>self<font color="#0000C0">.</font>pos<font color=
+"#0000C0">][</font><font color="#0080C0">0</font><font color="#0000C0">]
+
+    </font><font color="#C00000">def </font>Column<font color=
+"#0000C0">(</font>self<font color="#0000C0">, </font>col<font color=
+"#0000C0">):
+        </font><font color="#C00000">return </font>self<font color=
+"#0000C0">.</font>table<font color="#0000C0">.</font>data<font color=
+"#0000C0">[</font>self<font color="#0000C0">.</font>pos<font color=
+"#0000C0">][</font><font color="#0080C0">1</font><font color=
+"#0000C0">+</font>col<font color="#0000C0">]
+
+    </font><font color="#C00000">def </font>Next<font color=
+"#0000C0">(</font>self<font color="#0000C0">):
+        </font>self<font color="#0000C0">.</font>pos<font color=
+"#0000C0">+=</font><font color="#0080C0">1
+
+    </font><font color="#C00000">def </font>Close<font color=
+"#0000C0">(</font>self<font color="#0000C0">):
+        </font><font color="#C00000">pass
+
+</font><font color="#008000"># Register the module as filesource
+</font>connection<font color="#0000C0">.</font>createmodule<font color=
+"#0000C0">(</font><font color="#004080">"filesource"</font><font color=
+"#0000C0">, </font>Source<font color="#0000C0">())
+
+</font><font color=
+"#008000"># Arguments to module - all directories in sys.path
+</font>sysdirs<font color="#0000C0">=</font><font color=
+"#004080">","</font><font color="#0000C0">.</font>join<font color=
+"#0000C0">([</font><font color="#004080">"'%s'" </font><font color=
+"#0000C0">% (</font>x<font color="#0000C0">,) </font><font color=
+"#C00000">for </font>x <font color="#C00000">in </font>sys<font color=
+"#0000C0">.</font>path<font color="#0000C0">[</font><font color=
+"#0080C0">1</font><font color="#0000C0">:] </font><font color=
+"#C00000">if </font>len<font color="#0000C0">(</font>x<font color=
+"#0000C0">) </font><font color="#C00000">and </font>os<font color=
+"#0000C0">.</font>path<font color="#0000C0">.</font>isdir<font color=
+"#0000C0">(</font>x<font color="#0000C0">)])
+</font>cursor<font color="#0000C0">.</font>execute<font color=
+"#0000C0">(</font><font color=
+"#004080">"create virtual table sysfiles using filesource("</font><font color=
+"#0000C0">+</font>sysdirs<font color="#0000C0">+</font><font color=
+"#004080">")"</font><font color="#0000C0">)
+
+</font><font color="#008000"># Which 3 files are the biggest?
+</font><font color="#C00000">for </font>size<font color=
+"#0000C0">,</font>directory<font color="#0000C0">,</font>file <font color=
+"#C00000">in </font>cursor<font color="#0000C0">.</font>execute<font color=
+"#0000C0">(</font><font color=
+"#004080">"select st_size,directory,name from sysfiles order by st_size desc limit 3"</font><font color="#0000C0">):
+    </font><font color="#C00000">print </font>size<font color=
+"#0000C0">,</font>file<font color="#0000C0">,</font>directory
+
+<font color=
+"blue">   511102 unicodedata.so /space/pydebug/lib/python2.5/lib-dynload
+   445498 pyexpat.so /space/pydebug/lib/python2.5/lib-dynload
+   302111 _ctypes.so /space/pydebug/lib/python2.5/lib-dynload
+</font>
+<font color="#008000"># Which 3 files are the oldest?
+</font><font color="#C00000">for </font>ctime<font color=
+"#0000C0">,</font>directory<font color="#0000C0">,</font>file <font color=
+"#C00000">in </font>cursor<font color="#0000C0">.</font>execute<font color=
+"#0000C0">(</font><font color=
+"#004080">"select st_ctime,directory,name from sysfiles order by st_ctime limit 3"</font><font color="#0000C0">):
+    </font><font color="#C00000">print </font>ctime<font color=
+"#0000C0">,</font>file<font color="#0000C0">,</font>directory
+
+<font color=
+"blue">   1158823635.0 CGIHTTPServer.py /space/pydebug/lib/python2.5
+   1158823635.0 Cookie.py /space/pydebug/lib/python2.5
+   1158823635.0 UserList.py /space/pydebug/lib/python2.5
+</font>
+<font color="#008000">###
 ### Cleanup
 ###
 
@@ -798,7 +1007,8 @@ python setup.py build --compile=mingw32 install
   you build SQLite into APSW. Here is a quick and easy way of doing everything
   on Linux/Mac or Windows with MinGW, including the SQLite library statically
   into the extension (ie no external DLLs/shared libraries will be needed at
-  runtime).</p>
+  runtime). You should follow these instructions with your current directory
+  being where you extracted the APSW source to.</p>
 
   <blockquote>
     <p>Download the <a href="http://www.sqlite.org/download.html">SQLite 3
@@ -812,11 +1022,9 @@ python setup.py build --compile=mingw32 install
         <pre>
 &gt; mkdir sqlite3
 &gt; cd sqlite3
-&gt; unzip sqlite-source-3.3.8.zip
+&gt; unzip sqlite-source-3_3_10.zip
 &gt; del tclsqlite.c
-&gt; gcc -DTHREADSAFE -O3 -c *.c <font color=
-"blue"># Adding -DNDEBUG will turn off assertion checking and
-                              # improve performance (about 25%) at the expense of safety</font>
+&gt; gcc -DTHREADSAFE -DNDEBUG -O3 -c *.c
 &gt; ar r libsqlite3.a *.o
 &gt; ranlib libsqlite3.a
 &gt; cd ..
@@ -830,9 +1038,9 @@ python setup.py build --compile=mingw32 install
 
       <dd>
         <pre>
-$ wget http://www.sqlite.org/sqlite-3.3.8.tar.gz
-$ tar xvfz sqlite-3.3.8.tar.gz
-$ mv sqlite-3.3.8 sqlite3
+$ wget http://www.sqlite.org/sqlite-3.3.10.tar.gz
+$ tar xvfz sqlite-3.3.10.tar.gz
+$ mv sqlite-3.3.10 sqlite3
 $ cd sqlite3
 <font color=
 "blue"># The static library is not built for inclusion into a seperate shared library
@@ -841,8 +1049,8 @@ $ env CC="gcc -fPIC" CFLAGS="-DHAVE_DLOPEN" ./configure --enable-threadsafe --di
 <font color="blue"># otherwise do this</font>
 $ env CFLAGS="-DHAVE_DLOPEN" ./configure --enable-threadsafe --disable-tcl
 <font color=
-"blue">The <tt>CFLAGS="-DHAVE_DLOPEN</tt> bit is needed for loading dynamic
-extensions.  See SQLite bug <a href=
+"blue"># The <tt>CFLAGS="-DHAVE_DLOPEN</tt> bit is needed for loading dynamic
+# extensions.  See SQLite bug <a href=
 "http://www.sqlite.org/cvstrac/tktview?tn=2082">2082</a></font>
 $ make
 $ cp .libs/*.a .
@@ -972,7 +1180,7 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
     <dd>
       <p>This is the version of the SQLite library from the header file
       <tt>sqlite3.h</tt> at apsw compile time. It is expressed as an integer
-      (eg 3003008 for SQLite 3.3.8).</p>
+      (eg 3003010 for SQLite 3.3.10).</p>
     </dd>
 
     <dt><strong>SQLITE_OK, SQLITE_DENY, SQLITE_IGNORE</strong></dt>
@@ -1315,7 +1523,8 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       <p>Enables <a href=
       "http://www.sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions">extension</a>
       loading which is disabled by default. Calls
-      sqlite3_enable_load_extension.</p>
+      sqlite3_enable_load_extension. See note below about enabling extension
+      loading.</p>
     </dd>
 
     <dt><strong>loadextension(filename, entrypoint=None)</strong> (SQLite 3
@@ -1327,10 +1536,10 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       by calling sqlite3_load_extension. If you don't specify the entrypoint
       then SQLite uses a default of sqlite3_extension_init.</p>
 
-      <p>Note that if you build SQLite 3.3.8 on Unix then extension loading
-      won't be built into SQLite by default. The bug and workaround are SQLite
-      ticket <a href=
-      "http://www.sqlite.org/cvstrac/tktview?tn=2082">2082</a></p>
+      <p>Note that if you build SQLite on Unix then extension loading won't be
+      built into SQLite by default. The details are in SQLite ticket <a href=
+      "http://www.sqlite.org/cvstrac/tktview?tn=2082">2082</a>. You need to
+      edit <tt>setup.py</tt> if you enable extension loading.</p>
     </dd>
   </dl>
 
@@ -1957,7 +2166,7 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
         <dt>ExecTraceAbort</dt>
 
         <dd>
-          <p>The <a href="executiontracer">execution tracer</a> returned False
+          <p>The <a href="#executiontracer">execution tracer</a> returned False
           so execution was aborted.</p>
         </dd>
 
@@ -2530,8 +2739,6 @@ apsw.IncompleteExecutionError: Error: there are still remaining sql statements t
       <h2><a name="dpapiconnectioniface" id="dpapiconnectioniface">Connection
       Objects</a></h2>
 
-      <p>There is no close method</p>
-
       <p>There are no commit or rollback methods. You should use
       cursor.execute("COMMIT") etc. The <a href=
       "http://www.sqlite.org/lockingv3.html">SQLite documentation</a> has more
@@ -2553,8 +2760,6 @@ apsw.IncompleteExecutionError: Error: there are still remaining sql statements t
 
       <p>callproc is not implemented as SQLite doesn't support stored
       procedures.</p>
-
-      <p>There is no close method.</p>
 
       <p>execute returns the Cursor object and you can use it as an iterator to
       get the results (if any).</p>
@@ -2621,6 +2826,9 @@ apsw.IncompleteExecutionError: Error: there are still remaining sql statements t
       (wrapping SQLite 3):</p>
 
       <ul>
+        <li>APSW gives all functionality of SQLite including <a href=
+        "#VirtualTables">virtual tables</a></li>
+
         <li>APSW is a single file for the extension, apsw.pyd on Windows and
         apsw.so on Unix/Mac. There are no other files needed and the build
         instructions show you how to include SQLite statically in this file.
@@ -2754,11 +2962,12 @@ pysqlite2.dbapi2.OperationalError: user-defined function raised exception
                   <pre>
 C:\temp&gt;python afunc.py
 Traceback (most recent call last):
-  File "afunc.py", line 8, in ?
+  File "t.py", line 8, in &lt;module&gt;
     cur.execute("select badfunc(3)")
-  File "afunc.py", line 3, in badfunc
+  File "apsw.c", line 3660, in resetcursor
+  File "apsw.c", line 1871, in user-defined-scalar-BADFUNC
+  File "t.py", line 3, in badfunc
     return 1/0
-ZeroDivisionError: integer division or modulo by zero
 </pre>
                 </td>
               </tr>
@@ -2766,31 +2975,33 @@ ZeroDivisionError: integer division or modulo by zero
           </blockquote>
         </li>
 
-        <li>
-          <p>You can define your own collations in Python.</p>
-        </li>
+        <li>APSW has enhanced debuggability. More details are available than
+        just what is printed out when exceptions happen like above. See
+        <a href="#augmentedstacktraces">augmented stack traces</a>. If you
+        forget to close a Connection then you get a traceback of where the
+        problem is (interceptable via <code>sys.excepthook</code>) and are also
+        told where Connection was allocated.</li>
 
         <li>
-          <p>You can implement tracers, authorizers and various hooks in
-          Python.</p>
+          <p>You can implement tracers and other hooks in Python.</p>
         </li>
 
         <li>
           <p>The APSW test suite is larger and tests more functionality. Code
-          coverage by the test suite is 89%. pysqlite is good at 80% for C code
+          coverage by the test suite is 94%. pysqlite is good at 81% for C code
           although there are several places that coverage can be improved. I
           haven't measured code coverage for pysqlite's Python code.</p>
 
-          <p>In both cases, the non-covered code lines require that the Python
-          interpretter or SQLite run out of memory so 100% coverage isn't
-          possible.</p>
+          <p>In both cases, some of the non-covered code lines require that the
+          Python interpretter or SQLite run out of memory so 100% coverage
+          isn't possible.</p>
         </li>
       </ul>
 
       <h1><a name="copyrightlicense" id="copyrightlicense">Copyright and
       License</a></h1>
 
-      <p>Copyright (C) 2004-2006 Roger Binns <a href=
+      <p>Copyright (C) 2004-2007 Roger Binns <a href=
       "mailto:rogerb@rogerbinns.com">rogerb@rogerbinns.com</a></p>
 
       <p>This software is provided 'as-is', without any express or implied
@@ -2823,6 +3034,27 @@ ZeroDivisionError: integer division or modulo by zero
       </blockquote>
 
       <h1><a name="verhistory" id="verhistory">Version History</a></h1>
+
+      <h2><a name="3310r1">3.3.10-r1</a></h2>
+
+      <p>You can use this with SQLite 3.3.10 onwards.</p>
+
+      <ul>
+        <li>Added a statement cache that works in conjunction with the
+        sqlite3_prepare_v2 API. A few issues were exposed in SQLite and hence
+        you must use SQLite 3.3.10 or later.</li>
+      </ul>
+
+      <h2><a name="339r1">3.3.9-r1</a></h2>
+
+      <p>You can use this with SQLite 3.3.9 onwards.</p>
+
+      <ul>
+        <li>SQLite added <a href=
+        "http://sqlite.org/capi3ref.html#sqlite3_prepare_v2">sqlite3_prepare_v2</a>
+        API. The net effect of this API update is that you will not get
+        SQLITE_SCHEMA any more. SQLite will handle it internally.</li>
+      </ul>
 
       <h2><a name="338r1">3.3.8-r1</a></h2>
 

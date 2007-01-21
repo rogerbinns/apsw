@@ -7,7 +7,7 @@
   It assumes we are running as 32 bit int with a 64 bit long long type
   available.
 
-  Copyright (C) 2004-2006 Roger Binns <rogerb@rogerbinns.com>
+  Copyright (C) 2004-2007 Roger Binns <rogerb@rogerbinns.com>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any
@@ -29,6 +29,9 @@
      distribution.
  
 */
+
+/* system headers */
+#include <assert.h>
 
 /* Get the version number */
 #include "apswversion.h"
@@ -53,15 +56,17 @@ typedef int Py_ssize_t;
 /* SQLite 3 headers */
 #include "sqlite3.h"
 
-#if SQLITE_VERSION_NUMBER < 3003008
-#error Your SQLite version is too old.  It must be at least 3.3.8
+#if SQLITE_VERSION_NUMBER < 3003010
+#error Your SQLite version is too old.  It must be at least 3.3.10
 #endif
 
-/* system headers */
-#include <assert.h>
+/* Prepared statement caching */
+/* #define SCSTATS */
+#define STATEMENTCACHE_LINKAGE static
+#include "statementcache.c"
 
 /* used to decide if we will use int or long long */
-#define APSW_INT32_MIN (-2147483647 - 1)
+#define APSW_INT32_MIN (-2147483647-1)
 #define APSW_INT32_MAX 2147483647
 
 /* The module object */
@@ -109,39 +114,39 @@ static struct { int code; const char *name; PyObject *cls;}
 exc_descriptors[]=
   {
     /* Generic Errors */
-    {SQLITE_ERROR,    "SQL"},       
-    {SQLITE_MISMATCH, "Mismatch"},
+    {SQLITE_ERROR,    "SQL", NULL},       
+    {SQLITE_MISMATCH, "Mismatch", NULL},
 
     /* Internal Errors */
-    {SQLITE_INTERNAL, "Internal"},  /* NOT USED */
-    {SQLITE_PROTOCOL, "Protocol"},
-    {SQLITE_MISUSE,   "Misuse"},
-    {SQLITE_RANGE,    "Range"},
+    {SQLITE_INTERNAL, "Internal", NULL},  /* NOT USED */
+    {SQLITE_PROTOCOL, "Protocol", NULL},
+    {SQLITE_MISUSE,   "Misuse", NULL},
+    {SQLITE_RANGE,    "Range", NULL},
 
     /* permissions etc */
-    {SQLITE_PERM,     "Permissions"},
-    {SQLITE_READONLY, "ReadOnly"},
-    {SQLITE_CANTOPEN, "CantOpen"},
-    {SQLITE_AUTH,     "Auth"},
+    {SQLITE_PERM,     "Permissions", NULL},
+    {SQLITE_READONLY, "ReadOnly", NULL},
+    {SQLITE_CANTOPEN, "CantOpen", NULL},
+    {SQLITE_AUTH,     "Auth", NULL},
 
     /* abort/busy/etc */
-    {SQLITE_ABORT,    "Abort"},
-    {SQLITE_BUSY,     "Busy"},
-    {SQLITE_LOCKED,   "Locked"},
-    {SQLITE_INTERRUPT,"Interrupt"},
-    {SQLITE_SCHEMA,   "SchemaChange"}, 
-    {SQLITE_CONSTRAINT, "Constraint"},
+    {SQLITE_ABORT,    "Abort", NULL},
+    {SQLITE_BUSY,     "Busy", NULL},
+    {SQLITE_LOCKED,   "Locked", NULL},
+    {SQLITE_INTERRUPT,"Interrupt", NULL},
+    {SQLITE_SCHEMA,   "SchemaChange", NULL}, 
+    {SQLITE_CONSTRAINT, "Constraint", NULL},
 
     /* memory/disk/corrupt etc */
-    {SQLITE_NOMEM,    "NoMem"},
-    {SQLITE_IOERR,    "IO"},
-    {SQLITE_CORRUPT,  "Corrupt"},
-    {SQLITE_FULL,     "Full"},
+    {SQLITE_NOMEM,    "NoMem", NULL},
+    {SQLITE_IOERR,    "IO", NULL},
+    {SQLITE_CORRUPT,  "Corrupt", NULL},
+    {SQLITE_FULL,     "Full", NULL},
     /*  {SQLITE_TOOBIG,   "TooBig"},      NOT USED by SQLite any more but there is an apsw equivalent with the same name*/
-    {SQLITE_NOLFS,    "NoLFS"},
-    {SQLITE_EMPTY,    "Empty"},
-    {SQLITE_FORMAT,   "Format"},
-    {SQLITE_NOTADB,   "NotADB"},
+    {SQLITE_NOLFS,    "NoLFS", NULL},
+    {SQLITE_EMPTY,    "Empty", NULL},
+    {SQLITE_FORMAT,   "Format", NULL},
+    {SQLITE_NOTADB,   "NotADB", NULL},
 
     {-1, 0, 0}
   };
@@ -388,6 +393,7 @@ struct Connection {
   long thread_ident;              /* which thread we were made in */
 
   pointerlist cursors;            /* tracking cursors */
+  StatementCache *stmtcache;      /* prepared statement cache */
 
   funccbinfo *functions;          /* linked list of registered functions */
   collationcbinfo *collations;    /* linked list of registered collations */
@@ -412,7 +418,7 @@ typedef struct {
   Connection *connection;          /* pointer to parent connection */
   sqlite3_stmt *statement;         /* current compiled statement */
 
-  /* see sqlite3_prepare for the origin of these */
+  /* see sqlite3_prepare_v2 for the origin of these */
   const char *zsql;               /* current sqlstatement (which may include multiple statements) */
   const char *zsqlnextpos;        /* the next statement to execute (or NULL if no more) */
 
@@ -536,70 +542,17 @@ getutf8string(PyObject *string)
 
 /* CONNECTION CODE */
 
-static PyObject *
-Connection_close(Connection *self, PyObject *args)
+static void
+Connection_internal_cleanup(Connection *self)
 {
-  PyObject *cursorcloseargs=NULL;
-  int res;
-  pointerlist_visit plv;
-  int force=0;
-
-  if(!self->db)
-    goto finally;
-
-  CHECK_THREAD(self,NULL);
-
-  assert(!PyErr_Occurred());
-
-  if(!PyArg_ParseTuple(args, "|i:close(force=False)", &force))
-    return NULL;
-
-  cursorcloseargs=Py_BuildValue("(i)", force);
-  if(!cursorcloseargs) return NULL;
-
-  for(pointerlist_visit_begin(&self->cursors, &plv);
-      pointerlist_visit_finished(&plv);
-      pointerlist_visit_next(&plv))
+  if(self->filename)
     {
-      PyObject *closeres=NULL;
-      Cursor *cur=(Cursor*)pointerlist_visit_get(&plv);
-
-      closeres=Cursor_close(cur, args);
-      Py_XDECREF(closeres);
-      if(!closeres)
-	{
-	  Py_DECREF(cursorcloseargs);
-	  return NULL;
-	}
+      PyMem_Free((void*)self->filename);
+      self->filename=0;
     }
 
-  Py_DECREF(cursorcloseargs);
-
-  Py_BEGIN_ALLOW_THREADS
-    res=sqlite3_close(self->db);
-  Py_END_ALLOW_THREADS;
-
-  if (res!=SQLITE_OK) 
-    {
-      SET_EXC(self->db, res);
-    }
-
-  if(PyErr_Occurred())
-    {
-      AddTraceBackHere(__FILE__, __LINE__, "Connection.close", NULL);
-    }
-
-  /* note: SQLite ignores error returns from vtabDisconnect, so the
-     database still ends up closed and we return an exception! */
-
-  if(res!=SQLITE_OK)
-      return NULL;
-
-  self->db=0;
-
-  PyMem_Free((void*)self->filename);
-  self->filename=0;
-  Py_DECREF(self->co_filename);
+  Py_XDECREF(self->co_filename);
+  self->co_filename=0;
 
   /* free functions */
   {
@@ -640,6 +593,75 @@ Connection_close(Connection *self, PyObject *args)
   Py_XDECREF(self->authorizer);
   self->authorizer=0;
 
+}
+
+static PyObject *
+Connection_close(Connection *self, PyObject *args)
+{
+  PyObject *cursorcloseargs=NULL;
+  int res;
+  pointerlist_visit plv;
+  int force=0;
+
+  if(!self->db)
+    goto finally;
+
+  CHECK_THREAD(self,NULL);
+
+  assert(!PyErr_Occurred());
+
+  if(!PyArg_ParseTuple(args, "|i:close(force=False)", &force))
+    return NULL;
+
+  cursorcloseargs=Py_BuildValue("(i)", force);
+  if(!cursorcloseargs) return NULL;
+
+  for(pointerlist_visit_begin(&self->cursors, &plv);
+      pointerlist_visit_finished(&plv);
+      pointerlist_visit_next(&plv))
+    {
+      PyObject *closeres=NULL;
+      Cursor *cur=(Cursor*)pointerlist_visit_get(&plv);
+
+      closeres=Cursor_close(cur, args);
+      Py_XDECREF(closeres);
+      if(!closeres)
+	{
+	  Py_DECREF(cursorcloseargs);
+	  return NULL;
+	}
+    }
+
+  Py_DECREF(cursorcloseargs);
+
+  res=statementcache_free(self->stmtcache);
+  assert(res==0);
+  self->stmtcache=0;
+
+  Py_BEGIN_ALLOW_THREADS
+    res=sqlite3_close(self->db);
+  Py_END_ALLOW_THREADS;
+
+  if (res!=SQLITE_OK) 
+    {
+      SET_EXC(self->db, res);
+    }
+
+  if(PyErr_Occurred())
+    {
+      AddTraceBackHere(__FILE__, __LINE__, "Connection.close", NULL);
+    }
+
+  /* note: SQLite ignores error returns from vtabDisconnect, so the
+     database still ends up closed and we return an exception! */
+
+  if(res!=SQLITE_OK)
+      return NULL;
+
+  self->db=0;
+
+  Connection_internal_cleanup(self);
+
  finally:
   return PyErr_Occurred()?NULL:Py_BuildValue("");
   
@@ -668,6 +690,8 @@ Connection_dealloc(Connection* self)
   assert(self->cursors.numentries==0);
   pointerlist_free(&self->cursors);
 
+  Connection_internal_cleanup(self);
+
   self->ob_type->tp_free((PyObject*)self);
 }
 
@@ -687,6 +711,7 @@ Connection_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
       self->thread_ident=PyThread_get_thread_ident();
       memset(&self->cursors, 0, sizeof(self->cursors));
       pointerlist_init(&self->cursors);
+      self->stmtcache=0;
       self->functions=0;
       self->collations=0;
       self->vtables=0;
@@ -726,7 +751,7 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
   SET_EXC(self->db, res);  /* nb sqlite3_open always allocates the db even on error */
   
   if(res!=SQLITE_OK)
-    goto pyexception;
+      goto pyexception;
     
   /* record where it was allocated */
   PyFrameObject *frame = PyThreadState_GET()->frame;
@@ -734,6 +759,7 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
   self->co_filename=frame->f_code->co_filename;
   Py_INCREF(self->co_filename);
   self->filename=filename;
+  filename=NULL; /* connection has ownership now */
 
   /* get detailed error codes */
   sqlite3_extended_result_codes(self->db, 1);
@@ -765,6 +791,7 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
   if(!PyErr_Occurred())
     {
       res=0;
+      self->stmtcache=statementcache_init(self->db, 32);
       goto finally;
     }
 
@@ -773,8 +800,10 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
   res=-1;
   sqlite3_close(self->db);
   self->db=0;
+  Connection_internal_cleanup(self);
 
 finally:
+  if(filename) PyMem_Free(filename);
   Py_XDECREF(hookargs);
   Py_XDECREF(iterator);
   Py_XDECREF(hooks);
@@ -819,8 +848,7 @@ Connection_setbusytimeout(Connection *self, PyObject *args)
 
   res=sqlite3_busy_timeout(self->db, ms);
   SET_EXC(self->db, res);
-  if(res!=SQLITE_OK)
-    return NULL;
+  if(res!=SQLITE_OK) return NULL;
   
   /* free any explicit busyhandler we may have had */
   Py_XDECREF(self->busyhandler);
@@ -916,50 +944,24 @@ updatecb(void *context, int updatetype, char const *databasename, char const *ta
   PyGILState_STATE gilstate;
   PyObject *retval=NULL, *args=NULL;
   Connection *self=(Connection *)context;
-  PyObject *pupdatetype=NULL, *pdatabasename=NULL, *ptablename=NULL, *prowid=NULL;
 
   assert(self);
   assert(self->updatehook);
   assert(self->updatehook!=Py_None);
-
-  /* defensive coding */
-  if(!self->updatehook)
-    return;
 
   gilstate=PyGILState_Ensure();
 
   if(PyErr_Occurred())
     goto finally;  /* abort hook due to outstanding exception */
 
-
-  pupdatetype=Py_BuildValue("i", updatetype);
-  pdatabasename=convertutf8string(databasename);
-  ptablename=convertutf8string(tablename);
-  prowid=PyLong_FromLongLong(rowid);
-
-  if (!pupdatetype || !pdatabasename || !ptablename || !prowid)
-    goto finally;
-
-  args=PyTuple_New(4);
-  if(!args)
-    goto finally; /* abort hook on failure to allocate args */
-
-  PyTuple_SET_ITEM(args, 0, pupdatetype);
-  PyTuple_SET_ITEM(args, 1, pdatabasename);
-  PyTuple_SET_ITEM(args, 2, ptablename);
-  PyTuple_SET_ITEM(args, 3, prowid);
-
-  pupdatetype=pdatabasename=ptablename=prowid=NULL; /* owned by args now */
+  args=Py_BuildValue("(iO&O&L)", updatetype, convertutf8string, databasename, convertutf8string, tablename, rowid);
+  if(!args) goto finally;
   
   retval=PyEval_CallObject(self->updatehook, args);
 
  finally:
   Py_XDECREF(retval);
   Py_XDECREF(args);
-  Py_XDECREF(pupdatetype);
-  Py_XDECREF(pdatabasename);
-  Py_XDECREF(ptablename);
-  Py_XDECREF(prowid);
   PyGILState_Release(gilstate);
 }
 
@@ -1003,31 +1005,22 @@ rollbackhookcb(void *context)
      abort immediately due to an error in the callback */
   
   PyGILState_STATE gilstate;
-  PyObject *retval=NULL, *args=NULL;
+  PyObject *retval=NULL;
   Connection *self=(Connection *)context;
 
   assert(self);
   assert(self->rollbackhook);
   assert(self->rollbackhook!=Py_None);
 
-  /* defensive coding */
-  if(!self->rollbackhook)
-    return;
-
   gilstate=PyGILState_Ensure();
 
   if(PyErr_Occurred())
     goto finally;  /* abort hook due to outstanding exception */
 
-  args=PyTuple_New(0);
-  if(!args)
-    goto finally; /* abort hook on failure to allocate args */
-  
-  retval=PyEval_CallObject(self->rollbackhook, args);
+  retval=PyEval_CallObject(self->rollbackhook, NULL);
 
  finally:
   Py_XDECREF(retval);
-  Py_XDECREF(args);
   PyGILState_Release(gilstate);
 }
 
@@ -1074,43 +1067,24 @@ profilecb(void *context, const char *statement, sqlite_uint64 runtime)
   PyGILState_STATE gilstate;
   PyObject *retval=NULL, *args=NULL;
   Connection *self=(Connection *)context;
-  PyObject *pstatement=NULL, *pruntime=NULL;
 
   assert(self);
   assert(self->profile);
   assert(self->profile!=Py_None);
-
-  /* defensive coding */
-  if(!self->profile)
-    return;
 
   gilstate=PyGILState_Ensure();
 
   if(PyErr_Occurred())
     goto finally;  /* abort hook due to outstanding exception */
 
-  pstatement=convertutf8string(statement);
-  pruntime=PyLong_FromUnsignedLongLong(runtime);
-
-  if (!pstatement || !pruntime)
-    goto finally;
-
-  args=PyTuple_New(2);
-  if(!args)
-    goto finally; /* abort hook on failure to allocate args */
-  
-  PyTuple_SET_ITEM(args, 0, pstatement);
-  PyTuple_SET_ITEM(args, 1, pruntime);
-
-  pstatement=pruntime=NULL; /* owned by args now */
+  args=Py_BuildValue("(O&K)", convertutf8string, statement, runtime);
+  if(!args) goto finally;
 
   retval=PyEval_CallObject(self->profile, args);
 
  finally:
   Py_XDECREF(retval);
   Py_XDECREF(args);
-  Py_XDECREF(pstatement);
-  Py_XDECREF(pruntime);
   PyGILState_Release(gilstate);
 }
 
@@ -1157,7 +1131,7 @@ commithookcb(void *context)
      commit (turn into a rollback). We return non-zero for errors */
   
   PyGILState_STATE gilstate;
-  PyObject *retval=NULL, *args=NULL;
+  PyObject *retval=NULL;
   int ok=1; /* error state */
   Connection *self=(Connection *)context;
 
@@ -1165,20 +1139,12 @@ commithookcb(void *context)
   assert(self->commithook);
   assert(self->commithook!=Py_None);
 
-  /* defensive coding */
-  if(!self->commithook)
-    return 0;
-
   gilstate=PyGILState_Ensure();
 
   if(PyErr_Occurred())
     goto finally;  /* abort hook due to outstanding exception */
 
-  args=PyTuple_New(0);
-  if(!args)
-    goto finally; /* abort hook on failure to allocate args */
-  
-  retval=PyEval_CallObject(self->commithook, args);
+  retval=PyEval_CallObject(self->commithook, NULL);
 
   if(!retval)
     goto finally; /* abort hook due to exeception */
@@ -1195,7 +1161,6 @@ commithookcb(void *context)
 
  finally:
   Py_XDECREF(retval);
-  Py_XDECREF(args);
   PyGILState_Release(gilstate);
   return ok;
 }
@@ -1242,24 +1207,16 @@ progresshandlercb(void *context)
      We return non-zero for errors */
   
   PyGILState_STATE gilstate;
-  PyObject *retval=NULL, *args=NULL;
+  PyObject *retval=NULL;
   int ok=1; /* error state */
   Connection *self=(Connection *)context;
 
   assert(self);
   assert(self->progresshandler);
 
-  /* defensive coding */
-  if(!self->progresshandler)
-    return 0;
-
   gilstate=PyGILState_Ensure();
 
-  args=PyTuple_New(0);
-  if(!args)
-    goto finally; /* abort handler due to failure to allocate args */
-  
-  retval=PyEval_CallObject(self->progresshandler, args);
+  retval=PyEval_CallObject(self->progresshandler, NULL);
 
   if(!retval)
     goto finally; /* abort due to exeception */
@@ -1276,7 +1233,6 @@ progresshandlercb(void *context)
 
  finally:
   Py_XDECREF(retval);
-  Py_XDECREF(args);
 
   PyGILState_Release(gilstate);
   return ok;
@@ -1331,38 +1287,20 @@ authorizercb(void *context, int operation, const char *paramone, const char *par
   int result=SQLITE_DENY;  /* default to deny */
   Connection *self=(Connection *)context;
 
-  PyObject *poperation=NULL, *pone=NULL, *ptwo=NULL, *pdatabasename=NULL, *ptriggerview=NULL;
-
   assert(self);
   assert(self->authorizer);
   assert(self->authorizer!=Py_None);
-
-  /* defensive coding */
-  if(!self->authorizer)
-    return SQLITE_OK;
 
   gilstate=PyGILState_Ensure();
 
   if(PyErr_Occurred())
     goto finally;  /* abort due to earlier exception */
 
-  poperation=Py_BuildValue("i", operation);
-  pone=convertutf8string(paramone);
-  ptwo=convertutf8string(paramtwo);
-  pdatabasename=convertutf8string(databasename);
-  ptriggerview=convertutf8string(triggerview);
-  args=PyTuple_New(5);
 
-  if(!poperation || !pone || !ptwo || !pdatabasename || !ptriggerview || !args)
-    goto finally;
-
-  PyTuple_SET_ITEM(args, 0, poperation);
-  PyTuple_SET_ITEM(args, 1, pone);
-  PyTuple_SET_ITEM(args, 2, ptwo);
-  PyTuple_SET_ITEM(args, 3, pdatabasename);
-  PyTuple_SET_ITEM(args, 4, ptriggerview);
-
-  poperation=pone=ptwo=pdatabasename=ptriggerview=NULL;  /* owned by args now */
+  args=Py_BuildValue("(iO&O&O&O&)", operation, convertutf8string, paramone, 
+		     convertutf8string, paramtwo, convertutf8string, databasename, 
+		     convertutf8string, triggerview);
+  if(!args) goto finally;
 
   retval=PyEval_CallObject(self->authorizer, args);
 
@@ -1374,11 +1312,6 @@ authorizercb(void *context, int operation, const char *paramone, const char *par
     result=SQLITE_DENY;
 
  finally:
-  Py_XDECREF(poperation);
-  Py_XDECREF(pone);
-  Py_XDECREF(ptwo);
-  Py_XDECREF(pdatabasename);
-  Py_XDECREF(ptriggerview);
   Py_XDECREF(args);
   Py_XDECREF(retval);
 
@@ -1433,10 +1366,6 @@ busyhandlercb(void *context, int ncall)
   assert(self);
   assert(self->busyhandler);
 
-  /* defensive coding */
-  if(!self->busyhandler)
-    return result;
-
   gilstate=PyGILState_Ensure();
 
   args=Py_BuildValue("(i)", ncall);
@@ -1464,7 +1393,7 @@ busyhandlercb(void *context, int ncall)
   return result;
 }
 
-#ifdef EXPERIMENTAL  /* extension loading */
+#if defined(EXPERIMENTAL) && !defined(SQLITE_OMIT_LOAD_EXTENSION)  /* extension loading */
 static PyObject *
 Connection_enableloadextension(Connection *self, PyObject *enabled)
 {
@@ -1498,7 +1427,10 @@ Connection_loadextension(Connection *self, PyObject *args)
   if(!PyArg_ParseTuple(args, "s|z:loadextension(filename, entrypoint=None)", &zfile, &zproc))
     return NULL;
 
-  res=sqlite3_load_extension(self->db, zfile, zproc, &errmsg);
+  Py_BEGIN_ALLOW_THREADS
+    res=sqlite3_load_extension(self->db, zfile, zproc, &errmsg);
+  Py_END_ALLOW_THREADS;
+
   /* load_extension doesn't set the error message on the db so we have to make exception manually */
   if(res!=SQLITE_OK)
     {
@@ -1666,7 +1598,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
       sqlite3_result_int64(context, PyLong_AsLongLong(obj));
       return;
     }
-  if (PyFloat_CheckExact(obj))
+  if (PyFloat_Check(obj))
     {
       sqlite3_result_double(context, PyFloat_AS_DOUBLE(obj));
       return;
@@ -1851,7 +1783,6 @@ getaggregatefunctioncontext(sqlite3_context *context)
   aggregatefunctioncontext *aggfc=sqlite3_aggregate_context(context, sizeof(aggregatefunctioncontext));
   funccbinfo *cbinfo;
   PyObject *retval;
-  PyObject *args;
   /* have we seen it before? */
   if(aggfc->aggvalue) 
     return aggfc;
@@ -1865,11 +1796,8 @@ getaggregatefunctioncontext(sqlite3_context *context)
   assert(cbinfo->aggregatefactory);
 
   /* call the aggregatefactory to get our working objects */
-  args=PyTuple_New(0);
-  if(!args)
-    return aggfc;
-  retval=PyEval_CallObject(cbinfo->aggregatefactory, args);
-  Py_DECREF(args);
+  retval=PyEval_CallObject(cbinfo->aggregatefactory, NULL);
+
   if(!retval)
     return aggfc;
   /* it should have returned a tuple of 3 items: object, stepfunction and finalfunction */
@@ -1997,12 +1925,8 @@ cbdispatch_final(sqlite3_context *context)
       goto finally;
     }
 
-  pyargs=PyTuple_New(1);
-  if(!pyargs)
-    goto finally;
-
-  Py_INCREF(aggfc->aggvalue);
-  PyTuple_SET_ITEM(pyargs, 0, aggfc->aggvalue);
+  pyargs=Py_BuildValue("(O)", aggfc->aggvalue);
+  if(!pyargs) goto finally;
 
   retval=PyEval_CallObject(aggfc->finalfunc, pyargs);
   Py_DECREF(pyargs);
@@ -2255,12 +2179,9 @@ collation_cb(void *context,
   if(!pys1 || !pys2)  
     goto finally;   /* failed to allocate strings */
 
-  pyargs=PyTuple_New(2);
+  pyargs=Py_BuildValue("(NN)", pys1, pys2);
   if(!pyargs) 
     goto finally; /* failed to allocate arg tuple */
-
-  PyTuple_SET_ITEM(pyargs, 0, pys1);
-  PyTuple_SET_ITEM(pyargs, 1, pys2);
 
   pys1=pys2=NULL;  /* pyargs owns them now */
 
@@ -2678,21 +2599,12 @@ vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
   /* fill them in */
   for(i=0, j=0;i<indexinfo->nConstraint;i++)
     {
-      PyObject *constraint=NULL, *column=NULL, *op=NULL;
+      PyObject *constraint=NULL;
       if(!indexinfo->aConstraint[i].usable) continue;
       
-      constraint=PyTuple_New(2);
-      column=PyInt_FromLong(indexinfo->aConstraint[i].iColumn);
-      op=PyInt_FromLong(indexinfo->aConstraint[i].op);
-      if(!constraint || !column || !op)
-	{
-	  Py_XDECREF(constraint);
-	  Py_XDECREF(column);
-	  Py_XDECREF(op);
-	  goto pyexception;
-	}
-      PyTuple_SET_ITEM(constraint, 0, column);
-      PyTuple_SET_ITEM(constraint, 1, op);
+      constraint=Py_BuildValue("(iB)", indexinfo->aConstraint[i].iColumn, indexinfo->aConstraint[i].op);
+      if(!constraint) goto pyexception;
+
       PyTuple_SET_ITEM(constraints, j, constraint);
       j++;
     }
@@ -2704,29 +2616,18 @@ vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
   /* fill them in */
   for(i=0;i<indexinfo->nOrderBy;i++)
     {
-      PyObject *order=NULL, *column=NULL, *desc=NULL;
+      PyObject *order=NULL;
 
-      order=PyTuple_New(2);
-      column=PyInt_FromLong(indexinfo->aOrderBy[i].iColumn);
-      desc=PyBool_FromLong(indexinfo->aOrderBy[i].desc);
-      if(!order || !column || !desc)
-	{
-	  Py_XDECREF(order);
-	  Py_XDECREF(column);
-	  Py_XDECREF(desc);
-	  goto pyexception;
-	}
-      PyTuple_SET_ITEM(order, 0, column);
-      PyTuple_SET_ITEM(order, 1, desc);
+      order=Py_BuildValue("(iN)", indexinfo->aOrderBy[i].iColumn, PyBool_FromLong(indexinfo->aOrderBy[i].desc));
+      if(!order) goto pyexception;
+
       PyTuple_SET_ITEM(orderbys, i, order);
     }
 
   /* actually call the function */
-  args=PyTuple_New(2);
+  args=Py_BuildValue("(NN)", constraints, orderbys);
   if(!args)
     goto pyexception;
-  PyTuple_SET_ITEM(args, 0, constraints);
-  PyTuple_SET_ITEM(args, 1, orderbys);
   constraints=orderbys=NULL; /* owned by the tuple now */
 
   res=Call_PythonMethod(vtable, "BestIndex", args, 1);
@@ -3045,24 +2946,6 @@ vtabFilter(sqlite3_vtab_cursor *pCursor, int idxNum, const char *idxStr,
 
   cursor=((apsw_vtable_cursor*)pCursor)->cursor;
 
-  args=PyTuple_New(3);
-  if(!args) goto pyexception;
-
-  /* idxNum */
-  {
-    PyObject *pyidxNum=PyInt_FromLong(idxNum);
-    if(!pyidxNum) goto pyexception;
-    PyTuple_SET_ITEM(args, 0, pyidxNum);
-    /* args now owns the int */
-  }
-
-  /* idxStr */
-  {
-    PyObject *pyidxStr=convertutf8string(idxStr);
-    if(!pyidxStr) goto pyexception;
-    PyTuple_SET_ITEM(args, 1, pyidxStr);
-    /* args now owns the string */
-  }
 
   argv=PyTuple_New(argc);
   if(!argv) goto pyexception;
@@ -3072,8 +2955,10 @@ vtabFilter(sqlite3_vtab_cursor *pCursor, int idxNum, const char *idxStr,
       if(!value) goto pyexception;
       PyTuple_SET_ITEM(argv, i, value);
     }
-  /* put argv into args */
-  PyTuple_SET_ITEM(args, 2, argv);
+
+  args=Py_BuildValue("(iO&N)", idxNum, convertutf8string, idxStr, argv);
+  if(!args) goto pyexception;
+
   argv=NULL; /* owned by args now */
 
   res=Call_PythonMethod(cursor, "Filter", args, 1);
@@ -3140,14 +3025,9 @@ vtabColumn(sqlite3_vtab_cursor *pCursor, sqlite3_context *result, int ncolumn)
 
   cursor=((apsw_vtable_cursor*)pCursor)->cursor;
 
-  args=PyTuple_New(1);
+  args=Py_BuildValue("(i)", ncolumn);
   if(!args) goto pyexception;
-  {
-    PyObject *pycol=PyInt_FromLong(ncolumn);
-    if(!pycol) goto pyexception;
-    PyTuple_SET_ITEM(args, 0, pycol);
-  }
-
+  
   res=Call_PythonMethod(cursor, "Column", args, 1);
   if(!res) goto pyexception;
 
@@ -3275,13 +3155,9 @@ vtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite_int64 *pR
   /* case 1 - argc=1 means delete row */
   if(argc==1)
     {
-      PyObject *rowid=NULL;
       methodname="UpdateDeleteRow";
-      args=PyTuple_New(1);
+      args=Py_BuildValue("(O&)", convert_value_to_pyobject, argv[0]);
       if(!args) goto pyexception;
-      rowid=convert_value_to_pyobject(argv[0]);
-      if(!rowid) goto pyexception;
-      PyTuple_SET_ITEM(args, 0, rowid);
     }
   /* case 2 - insert a row */
   else if(sqlite3_value_type(argv[0])==SQLITE_NULL)
@@ -3386,6 +3262,7 @@ vtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite_int64 *pR
 }
 
 
+#if 0
 /* I can't implement this yet since I need to know when
    ppArg will get freed.  See SQLite ticket 2095. */
 
@@ -3396,6 +3273,8 @@ vtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
 { 
   return 0;
 }
+#endif
+
 
 /* it would be nice to use C99 style initializers here ... */
 static struct sqlite3_module apsw_vtable_module=
@@ -3418,7 +3297,7 @@ static struct sqlite3_module apsw_vtable_module=
     vtabSync, 
     vtabCommit, 
     vtabRollback,
-    vtabFindFunction 
+    0,                /* vtabFindFunction */
   };
 
 static vtableinfo *
@@ -3511,14 +3390,16 @@ static PyMethodDef Connection_methods[] = {
    "Sets a callable invoked before each commit"},
   {"setprogresshandler", (PyCFunction)Connection_setprogresshandler, METH_VARARGS,
    "Sets a callback invoked periodically during long running calls"},
+#if !defined(SQLITE_OMIT_LOAD_EXTENSION)
   {"enableloadextension", (PyCFunction)Connection_enableloadextension, METH_O,
    "Enables loading of SQLite extensions from shared libraries"},
   {"loadextension", (PyCFunction)Connection_loadextension, METH_VARARGS,
    "loads SQLite extension"},
+#endif
   {"createmodule", (PyCFunction)Connection_createmodule, METH_VARARGS,
    "registers a virtual table"},
 #endif
-  {NULL}  /* Sentinel */
+  {0, 0, 0, 0}  /* Sentinel */
 };
 
 
@@ -3562,6 +3443,14 @@ static PyTypeObject ConnectionType = {
     (initproc)Connection_init, /* tp_init */
     0,                         /* tp_alloc */
     Connection_new,            /* tp_new */
+    0,                         /* tp_free */
+    0,                         /* tp_is_gc */
+    0,                         /* tp_bases */
+    0,                         /* tp_mro */
+    0,                         /* tp_cache */
+    0,                         /* tp_subclasses */
+    0,                         /* tp_weaklist */
+    0,                         /* tp_del */
 };
 
 
@@ -3579,7 +3468,7 @@ resetcursor(Cursor *self, int force)
 
   if(self->statement)
     {
-      res=sqlite3_finalize(self->statement);
+      res=statementcache_finalize(self->connection->stmtcache, self->statement);
       if(!force) /* we don't care about errors when forcing */
 	SET_EXC(self->connection->db, res);
       self->statement=0;
@@ -3624,7 +3513,10 @@ resetcursor(Cursor *self, int force)
   self->status=C_DONE;
 
   if (PyErr_Occurred())
-    AddTraceBackHere(__FILE__, __LINE__, "resetcursor", NULL);
+    {
+      assert(res);
+      AddTraceBackHere(__FILE__, __LINE__, "resetcursor", NULL);
+    }
 
   return res;
 }
@@ -3710,9 +3602,6 @@ Cursor_getdescription(Cursor *self)
   int ncols,i;
   PyObject *result=NULL;
   PyObject *pair=NULL;
-  PyObject *first=NULL;
-  PyObject *second=NULL;
-  const char *str;
 
   CHECK_THREAD(self->connection,NULL);
   CHECK_CLOSED(self->connection,NULL);
@@ -3729,22 +3618,11 @@ Cursor_getdescription(Cursor *self)
 
   for(i=0;i<ncols;i++)
     {
-      pair=PyTuple_New(2);
+      pair=Py_BuildValue("(O&O&)", 
+			 convertutf8string, sqlite3_column_name(self->statement, i),
+			 convertutf8string, sqlite3_column_decltype(self->statement, i));
+			 
       if(!pair) goto error;
-
-      str=sqlite3_column_name(self->statement, i);
-      first=convertutf8string(str);
-
-      str=sqlite3_column_decltype(self->statement, i);
-      second=convertutf8string(str);
-
-      if(!first || !second) goto error;
-
-      PyTuple_SET_ITEM(pair, 0, first);
-      PyTuple_SET_ITEM(pair, 1, second);
-
-      /* owned by pair now */
-      first=second=0;
 
       PyTuple_SET_ITEM(result, i, pair);
       /* owned by result now */
@@ -3756,8 +3634,6 @@ Cursor_getdescription(Cursor *self)
  error:
   Py_XDECREF(result);
   Py_XDECREF(pair);
-  Py_XDECREF(first);
-  Py_XDECREF(second);
   return NULL;
 }
 
@@ -3926,8 +3802,7 @@ Cursor_dobindings(Cursor *self)
           key++; /* first char is a colon or dollar which we skip */
 
 	  keyo=PyUnicode_DecodeUTF8(key, strlen(key), NULL);
-	  if(!keyo) 
-	    return -1;
+	  if(!keyo) return -1;
 
 	  obj=PyDict_GetItem(self->bindings, keyo);
 	  Py_DECREF(keyo);
@@ -4001,8 +3876,8 @@ Cursor_doexectrace(Cursor *self, exectrace_oldstate *etos)
   /* make a string of the command */
   sqlcmd=convertutf8stringsize(etos->previouszsqlpos, self->zsqlnextpos-etos->previouszsqlpos);
 
-  if(!sqlcmd) 
-    return -1;
+  if(!sqlcmd) return -1;
+
   /* now deal with the bindings */
   if(self->bindings)
     {
@@ -4016,6 +3891,7 @@ Cursor_doexectrace(Cursor *self, exectrace_oldstate *etos)
           bindings=PySequence_GetSlice(self->bindings, etos->savedbindingsoffset, self->bindingsoffset);
           if(!bindings)
             {
+	      /* I couldn't work anything into the test suite to actually make this fail! */
               Py_DECREF(sqlcmd);
               return -1;
             }
@@ -4026,15 +3902,13 @@ Cursor_doexectrace(Cursor *self, exectrace_oldstate *etos)
       bindings=Py_None;
       Py_INCREF(bindings);
     }
-  args=PyTuple_New(2);
+  args=Py_BuildValue("(NN)", sqlcmd, bindings); /* owns sqlcmd and bindings now */
   if(!args)
     {
       Py_DECREF(sqlcmd);
       Py_DECREF(bindings);
       return -1;
     }
-  PyTuple_SET_ITEM(args, 0, sqlcmd);
-  PyTuple_SET_ITEM(args, 1, bindings);
   
   retval=PyEval_CallObject(self->exectrace, args);
   Py_DECREF(args);
@@ -4093,30 +3967,20 @@ Cursor_step(Cursor *self)
 
       switch(res&0xff)
         {
-        case SQLITE_ROW:
-          self->status=C_ROW;
-          return (PyErr_Occurred())?(NULL):((PyObject*)self);
-        case SQLITE_BUSY:
-          self->status=C_BEGIN;
-          SET_EXC(self->connection->db,res);
-          return NULL;
-
-        default:    /* no other value should happen, but we'll
-                       defensively code and treat them the same as
-                        SQLITE_ERROR */
-          /* FALLTHRU */
-        case SQLITE_ERROR:
-          /* there was an error - we need to get actual error code from sqlite3_finalize */
-          self->status=C_DONE;
-          res=resetcursor(self, 0);  /* this will get the error code for us */
-          assert(res!=SQLITE_OK);
-          return NULL;
-
         case SQLITE_MISUSE:
           /* this would be an error in apsw itself */
           self->status=C_DONE;
           SET_EXC(self->connection->db,res);
           resetcursor(self, 0);
+          return NULL;
+
+	case SQLITE_ROW:
+          self->status=C_ROW;
+          return (PyErr_Occurred())?(NULL):((PyObject*)self);
+
+        case SQLITE_BUSY:
+          self->status=C_BEGIN;
+          SET_EXC(self->connection->db,res);
           return NULL;
 
         case SQLITE_DONE:
@@ -4126,6 +3990,41 @@ Cursor_step(Cursor *self)
 	      return NULL;
 	    }
           break;
+
+
+	case SQLITE_SCHEMA:
+	  /* This is typically because a cached statement has become
+	     invalid.  We figure this out by re-preparing.  See SQLite
+	     ticket 2158.
+	   */
+	  {
+	    sqlite3_stmt *newstmt;
+	    res=statementcache_dup(self->connection->stmtcache, self->statement, &newstmt);
+	    if(newstmt)
+	      {
+		assert(res==SQLITE_OK);
+		sqlite3_transfer_bindings(self->statement, newstmt);
+		statementcache_finalize(self->connection->stmtcache, self->statement);
+		self->statement=newstmt;
+		continue;
+	      }
+	    SET_EXC(self->connection->db,res);
+	    self->status=C_DONE;
+	    resetcursor(self, 0); /* we have handled error */
+	    return NULL;
+	  }
+
+        default: /* sqlite3_prepare_v2 introduced in 3.3.9 means the
+		    error code is returned from step as well as
+		    finalize/reset */
+          /* FALLTHRU */
+        case SQLITE_ERROR:
+          /* there was an error - we need to get actual error code from sqlite3_finalize */
+          self->status=C_DONE;
+          res=resetcursor(self, 0);  /* this will get the error code for us */
+          assert(res!=SQLITE_OK);
+          return NULL;
+
           
         }
       assert(res==SQLITE_DONE);
@@ -4178,7 +4077,7 @@ Cursor_step(Cursor *self)
         }
 
       /* finalise and go again */
-      res=sqlite3_finalize(self->statement);
+      res=statementcache_finalize(self->connection->stmtcache, self->statement);
       self->statement=0;
       SET_EXC(self->connection->db,res);
       if (res!=SQLITE_OK)
@@ -4193,14 +4092,15 @@ Cursor_step(Cursor *self)
           etos.previouszsqlpos=self->zsqlnextpos;
           etos.savedbindingsoffset=self->bindingsoffset;
         }
-      res=sqlite3_prepare(self->connection->db, self->zsqlnextpos, -1, &self->statement, &self->zsqlnextpos);
+      assert(!PyErr_Occurred());
+      res=statementcache_prepare(self->connection->stmtcache, self->connection->db, self->zsqlnextpos, -1, &self->statement, &self->zsqlnextpos);
       SET_EXC(self->connection->db,res);
       if (res!=SQLITE_OK)
         {
           assert((res&0xff)!=SQLITE_BUSY); /* prepare definitely shouldn't be returning busy */
           return NULL;
         }
-
+      assert(!PyErr_Occurred());
       if(Cursor_dobindings(self))
         {
           assert(PyErr_Occurred());
@@ -4237,7 +4137,10 @@ Cursor_execute(Cursor *self, PyObject *args)
 
   res=resetcursor(self, 0);
   if(res!=SQLITE_OK)
-    return NULL;
+    {
+      assert(PyErr_Occurred());
+      return NULL;
+    }
   
   assert(!self->bindings);
 
@@ -4262,16 +4165,18 @@ Cursor_execute(Cursor *self, PyObject *args)
       etos.previouszsqlpos=self->zsql;
       etos.savedbindingsoffset=0;
     }
-  res=sqlite3_prepare(self->connection->db, self->zsql, -1, &self->statement, &self->zsqlnextpos);
+  assert(!PyErr_Occurred());
+  res=statementcache_prepare(self->connection->stmtcache, self->connection->db, self->zsql, -1, &self->statement, &self->zsqlnextpos);
   SET_EXC(self->connection->db,res);
   if (res!=SQLITE_OK)
     {
-      AddTraceBackHere(__FILE__, __LINE__, "Cursor_execute.sqlite3_prepare", "{s: O, s: N}", 
+      AddTraceBackHere(__FILE__, __LINE__, "Cursor_execute.sqlite3_prepare_v2", "{s: O, s: N}", 
 		       "Connection", self->connection, 
 		       "statement", PyUnicode_DecodeUTF8(self->zsql, strlen(self->zsql), "strict"));
       return NULL;
     }
-  
+  assert(!PyErr_Occurred());
+
   self->bindingsoffset=0;
   if(Cursor_dobindings(self))
     {
@@ -4314,7 +4219,10 @@ Cursor_executemany(Cursor *self, PyObject *args)
 
   res=resetcursor(self, 0);
   if(res!=SQLITE_OK)
-    return NULL;
+    {
+      assert(PyErr_Occurred());
+      return NULL;
+    }
   
   assert(!self->bindings);
   assert(!self->emiter);
@@ -4357,11 +4265,13 @@ Cursor_executemany(Cursor *self, PyObject *args)
       etos.previouszsqlpos=self->zsql;
       etos.savedbindingsoffset=0;
     }
-  res=sqlite3_prepare(self->connection->db, self->zsql, -1, &self->statement, &self->zsqlnextpos);
+  assert(!PyErr_Occurred());
+  res=statementcache_prepare(self->connection->stmtcache, self->connection->db, self->zsql, -1, &self->statement, &self->zsqlnextpos);
   SET_EXC(self->connection->db,res);
   if (res!=SQLITE_OK)
     return NULL;
-  
+  assert(!PyErr_Occurred());
+
   self->bindingsoffset=0;
   if(Cursor_dobindings(self))
     {
@@ -4405,7 +4315,10 @@ Cursor_close(Cursor *self, PyObject *args)
 
   res=resetcursor(self, force);
   if(res!=SQLITE_OK)
-    return NULL;
+    {
+      assert(PyErr_Occurred());
+      return NULL;
+    }
   
   return Py_BuildValue("");
 }
@@ -4577,7 +4490,7 @@ static PyMethodDef Cursor_methods[] = {
    "Returns the description for the current row"},
   {"close", (PyCFunction)Cursor_close, METH_VARARGS,
    "Closes the cursor" },
-  {NULL}  /* Sentinel */
+  {0, 0, 0, 0}  /* Sentinel */
 };
 
 
@@ -4621,6 +4534,14 @@ static PyTypeObject CursorType = {
     0,                         /* tp_init */
     0,                         /* tp_alloc */
     0,                         /* tp_new */
+    0,                         /* tp_free */
+    0,                         /* tp_is_gc */
+    0,                         /* tp_bases */
+    0,                         /* tp_mro */
+    0,                         /* tp_cache */
+    0,                         /* tp_subclasses */
+    0,                         /* tp_weaklist */
+    0,                         /* tp_del */
 };
 
 /* MODULE METHODS */
@@ -4660,7 +4581,7 @@ static PyMethodDef module_methods[] = {
   {"enablesharedcache", (PyCFunction)enablesharedcache, METH_VARARGS,
    "Sets shared cache semantics for this thread"},
 
-    {NULL}  /* Sentinel */
+    {0, 0, 0, 0}  /* Sentinel */
 };
 
 
@@ -4691,14 +4612,9 @@ initapsw(void)
     m = apswmodule = Py_InitModule3("apsw", module_methods,
                        "Another Python SQLite Wrapper.");
 
-    if (m == NULL)
-      return;
+    if (m == NULL)  return;
 
-    if(init_exceptions(m))
-      {
-        fprintf(stderr, "init_exceptions failed\n");
-        return;
-      }
+    if(init_exceptions(m)) return;
 
     Py_INCREF(&ConnectionType);
     PyModule_AddObject(m, "Connection", (PyObject *)&ConnectionType);

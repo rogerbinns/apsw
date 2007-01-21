@@ -6,7 +6,7 @@
   Copyright (C) 2004-2006 Greg Ewing <greg@cosc.canterbury.ac.nz>
 
   It has been lightly modified to be a part of APSW with permission from Greg.
-  Changes Copyright (C) 2006 Roger Binns <rogerb@rogerbinns.com>
+  Changes Copyright (C) 2006-2007 Roger Binns <rogerb@rogerbinns.com>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any
@@ -51,6 +51,9 @@ static void AddTraceBackHere(const char *filename, int lineno, const char *funct
   va_list localargsva;
 
   va_start(localargsva, localsformat);
+
+  assert(PyErr_Occurred());
+
   srcfile=PyString_FromString(filename);
   funcname=PyString_FromString(functionname);
   empty_dict=PyDict_New();

@@ -4,14 +4,16 @@ from distutils.core import setup, Extension
 
 define_macros=[]
 
-# to turn off assertions and improve performance, uncomment the
-# following line:
-
-#define_macros.append( ('NDEBUG', '1') )
+# Excludes the assertions
+define_macros.append( ('NDEBUG', '1') )
 
 # This includes the functionality marked as experimental in SQLite 3.
 # Comment out the line to exclude them
 define_macros.append( ('EXPERIMENTAL', '1') )
+
+# SQLite 3.3.9 disables extension loading by default.  If you have
+# re-enabled it then comment out the following line:
+define_macros.append( ('SQLITE_OMIT_LOAD_EXTENSION', 1) )
 
 include_dirs=[]
 library_dirs=[]

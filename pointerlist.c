@@ -1,7 +1,7 @@
 /*
   A list of pointers using Python memory management functions
 
-  Copyright (C) 2006 Roger Binns <rogerb@rogerbinns.com>
+  Copyright (C) 2006-2007 Roger Binns <rogerb@rogerbinns.com>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any
@@ -61,14 +61,15 @@ pointerlist_free(pointerlist *pl)
 static int
 pointerlist_add(pointerlist *pl, void *item)
 {
-  int i;
+  unsigned int i;
   if(!item) return 0;
 
   if(!pl->items)
     {
       pl->items=PyMem_Malloc(sizeof(void*)*pl->allocunits);
-      if(pl->items) return 0;
+      if(!pl->items) return 0;
       pl->allocatedsize=pl->allocunits;
+      memset(pl->items, 0, sizeof(void*)*pl->allocatedsize);
     }
   if(pl->numentries+1>=pl->allocatedsize)
     {
@@ -93,7 +94,7 @@ pointerlist_add(pointerlist *pl, void *item)
 static int
 pointerlist_remove(pointerlist *pl, void* item)
 {
-  int i;
+  unsigned int i;
   if(!pl->items) return 0;
   if(!item) return 0;
 
@@ -114,7 +115,7 @@ pointerlist_remove(pointerlist *pl, void* item)
 typedef struct
 {
   pointerlist *pl;
-  int itemnum;
+  unsigned int itemnum;
 } pointerlist_visit;
 
 /* returns zero if there are more items, non-zero if no more are left */
@@ -139,7 +140,7 @@ static void
 pointerlist_visit_begin(pointerlist *pl, pointerlist_visit *plv)
 {
   plv->pl=pl;
-  plv->itemnum=-1;
+  plv->itemnum=(unsigned)~0;
   pointerlist_visit_next(plv);
 }
 

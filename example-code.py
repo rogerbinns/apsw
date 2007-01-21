@@ -258,6 +258,8 @@ for i in cursor.execute("select max(x) from bigone"):
     print # newline
     print i # and the maximum number
 
+connection.setprogresshandler(None)
+
 ###
 ### commit hook (SQLite3 experimental feature)
 ###
@@ -276,6 +278,97 @@ try:
     cursor.execute("begin; create table example(x,y,z); insert into example values (3,4,5) ; commit")
 except apsw.ConstraintError:
     print "commit was not allowed"
+
+connection.setcommithook(None)
+
+###
+### Virtual tables
+###
+
+# This virtual table stores information about files in a set of
+# directories so you can execute SQL queries
+
+def getfiledata(directories):
+    columns=None
+    data=[]
+    counter=1
+    for directory in directories:
+        for f in os.listdir(directory):
+            if not os.path.isfile(os.path.join(directory,f)):
+                continue
+            counter+=1
+            st=os.stat(os.path.join(directory,f))
+            if columns is None:
+                columns=["rowid", "name", "directory"]+[x for x in dir(st) if x.startswith("st_")]
+            data.append( [counter, f, directory] + [getattr(st,x) for x in columns[3:]] )
+    return columns, data
+
+# This gets registered with the Connection
+class Source:
+    def Create(self, db, modulename, dbname, tablename, *args):
+        columns,data=getfiledata([eval(a) for a in args]) # eval strips off layer of quotes
+        schema="create table foo("+','.join(["'%s'" % (x,) for x in columns[1:]])+")"
+        return schema,Table(columns,data)
+    Connect=Create
+
+# Represents a table
+class Table:
+    def __init__(self, columns, data):
+        self.columns=columns
+        self.data=data
+
+    def BestIndex(self, *args):
+        return None
+
+    def Open(self):
+        return Cursor(self)
+
+    def Disconnect(self):
+        pass
+
+    Destroy=Disconnect
+
+# Represents a cursor
+class Cursor:
+    def __init__(self, table):
+        self.table=table
+
+    def Filter(self, *args):
+        self.pos=0
+
+    def Eof(self):
+        return self.pos>=len(self.table.data)
+
+    def Rowid(self):
+        return self.table.data[self.pos][0]
+
+    def Column(self, col):
+        return self.table.data[self.pos][1+col]
+
+    def Next(self):
+        self.pos+=1
+
+    def Close(self):
+        pass
+
+# Register the module as filesource
+connection.createmodule("filesource", Source())
+
+# Arguments to module - all directories in sys.path
+sysdirs=",".join(["'%s'" % (x,) for x in sys.path[1:] if len(x) and os.path.isdir(x)])
+cursor.execute("create virtual table sysfiles using filesource("+sysdirs+")")
+
+#@@CAPTURE
+# Which 3 files are the biggest?
+for size,directory,file in cursor.execute("select st_size,directory,name from sysfiles order by st_size desc limit 3"):
+    print size,file,directory
+#@@ENDCAPTURE
+
+# Which 3 files are the oldest?
+#@@CAPTURE
+for ctime,directory,file in cursor.execute("select st_ctime,directory,name from sysfiles order by st_ctime limit 3"):
+    print ctime,file,directory
+#@@ENDCAPTURE
     
 ###
 ### Cleanup
