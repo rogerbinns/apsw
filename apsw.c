@@ -3962,7 +3962,7 @@ Cursor_step(Cursor *self)
     {
       assert(!PyErr_Occurred());
       Py_BEGIN_ALLOW_THREADS
-        res=sqlite3_step(self->statement);
+        res=(self->statement)?(sqlite3_step(self->statement)):(SQLITE_DONE);
       Py_END_ALLOW_THREADS;
 
       switch(res&0xff)
@@ -3977,11 +3977,6 @@ Cursor_step(Cursor *self)
 	case SQLITE_ROW:
           self->status=C_ROW;
           return (PyErr_Occurred())?(NULL):((PyObject*)self);
-
-        case SQLITE_BUSY:
-          self->status=C_BEGIN;
-          SET_EXC(self->connection->db,res);
-          return NULL;
 
         case SQLITE_DONE:
 	  if (PyErr_Occurred())
@@ -4018,7 +4013,7 @@ Cursor_step(Cursor *self)
 		    error code is returned from step as well as
 		    finalize/reset */
           /* FALLTHRU */
-        case SQLITE_ERROR:
+        case SQLITE_ERROR:  /* SQLITE_BUSY is handled here as well */
           /* there was an error - we need to get actual error code from sqlite3_finalize */
           self->status=C_DONE;
           res=resetcursor(self, 0);  /* this will get the error code for us */

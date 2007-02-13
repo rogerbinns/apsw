@@ -134,6 +134,7 @@ statementcache_prepare(StatementCache *sc,
   if(nBytes<0)
     nBytes=strlen(zSql);
 
+  /* find if we have a cached statement */
   for(i=0;i<sc->nentries;i++)
     {
       sce=&(sc->entries[i]);
@@ -175,6 +176,9 @@ statementcache_prepare(StatementCache *sc,
     {
       return res;
     }
+  /* SQLite returns a null statement if the sql was entirely whitespace. We don't cache whitespace. */
+  if(!*ppStmt)
+    return SQLITE_OK;
 #ifdef SCSTATS
   sc->misses++;
 #endif
@@ -228,6 +232,10 @@ statementcache_finalize(StatementCache* sc, sqlite3_stmt *pStmt)
   StatementCacheEntry *sce;
   unsigned int i;
   int res;
+
+  /* whitespace sql gives null stmt */
+  if(!pStmt)
+    return SQLITE_OK;
 
   for(i=0;i<sc->nentries;i++)
     {
