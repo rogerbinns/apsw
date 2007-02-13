@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta name="generator" content=
-  "HTML Tidy for Linux (vers 1st August 2004), see www.w3.org" />
+  "HTML Tidy for Linux (vers 1 September 2005), see www.w3.org" />
 
   <title>APSW - Another Python SQLite Wrapper</title>
   <link rel="StyleSheet" href="http://www.rogerbinns.com/styles/main.css" type=
@@ -14,7 +14,7 @@
 <body>
   <h1 class="notoc">APSW - Another Python SQLite Wrapper</h1>
 
-  <p><font size="-1">apsw-3.3.10-r1 11th January 2007</font></p>
+  <p><font size="-1">apsw-3.3.12-r1 20th February 2007</font></p>
 
   <p>APSW provides an SQLite 3 wrapper that provides the thinnest layer over
   <a href="http://www.sqlite.org">SQLite 3</a> possible. Everything you can do
@@ -148,6 +148,8 @@
             <a href="#verhistory">Version History</a>
 
             <ul>
+              <li><a href="#3312r1">3.3.12-r1</a></li>
+
               <li><a href="#3310r1">3.3.10-r1</a></li>
 
               <li><a href="#339r1">3.3.9-r1</a></li>
@@ -267,9 +269,9 @@
 "#0000C0">,</font>apsw<font color="#0000C0">.</font>SQLITE_VERSION_NUMBER   <font color="#008000"># from the sqlite header file at compile time
 
 </font><font color="blue">   Using APSW file /space/apsw/apsw.so
-      APSW version 3.3.10-r1
-    SQLite version 3.3.10
-    SQLite version 3003010
+      APSW version 3.3.12-r1
+    SQLite version 3.3.12
+    SQLite version 3003012
 </font>
 <font color="#008000">###
 ### Opening/creating database
@@ -949,10 +951,9 @@ cursor<font color="#0000C0">.</font>setrowtrace<font color=
     </font><font color="#C00000">print </font>size<font color=
 "#0000C0">,</font>file<font color="#0000C0">,</font>directory
 
-<font color=
-"blue">   511102 unicodedata.so /space/pydebug/lib/python2.5/lib-dynload
-   445498 pyexpat.so /space/pydebug/lib/python2.5/lib-dynload
-   302111 _ctypes.so /space/pydebug/lib/python2.5/lib-dynload
+<font color="blue">   1610924 apsw.so /usr/lib64/python2.4/site-packages
+   1527536 _lcms.so /usr/lib64/python2.4/site-packages
+   736616 lapack_lite.so /usr/lib64/python2.4/site-packages/Numeric
 </font>
 <font color="#008000"># Which 3 files are the oldest?
 </font><font color="#C00000">for </font>ctime<font color=
@@ -963,10 +964,9 @@ cursor<font color="#0000C0">.</font>setrowtrace<font color=
     </font><font color="#C00000">print </font>ctime<font color=
 "#0000C0">,</font>file<font color="#0000C0">,</font>directory
 
-<font color=
-"blue">   1158823635.0 CGIHTTPServer.py /space/pydebug/lib/python2.5
-   1158823635.0 Cookie.py /space/pydebug/lib/python2.5
-   1158823635.0 UserList.py /space/pydebug/lib/python2.5
+<font color="blue">   1157247798 libcdemu.py /usr/lib64/python2.4/site-packages
+   1157247798 libcdemu.pyo /usr/lib64/python2.4/site-packages
+   1157247798 libcdemu.pyc /usr/lib64/python2.4/site-packages
 </font>
 <font color="#008000">###
 ### Cleanup
@@ -1341,10 +1341,7 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
 
     <dd>
       <p>Causes any pending operations on the database to abort at the earliest
-      opportunity. Note that you must call this in the same thread as you
-      created the Connection. This restriction <a href=
-      "http://article.gmane.org/gmane.comp.db.sqlite.general/20427">may be
-      removed</a> in a future release of SQLite. (This calls <a href=
+      opportunity. You can call this from any thread. (This calls <a href=
       "http://www.sqlite.org/capi3ref.html#sqlite3_interrupt">sqlite3_interrupt</a>).</p>
     </dd>
 
@@ -2622,11 +2619,11 @@ TypeError: Bad constraint (#2) - it should be one of None, an integer or a tuple
 
       <p>If you have multiple threads and/or multiple programs accessing the
       same database then there may be contention for the file. SQLite will
-      return SQLITE_BUSY which will be raised as BusyError. You can call the
-      Cursor.next() method to resume execution. Alternately you can call
+      return SQLITE_BUSY which will be raised as BusyError. You can call
       Connection.setbusytimeout to set how long SQLite will retry for or
-      Connection.setbusyhandler to install your own busy handler. SQLite's
-      locking and concurrency is described <a href=
+      Connection.setbusyhandler to install your own busy handler. Note that
+      SQLite won't call the busy handler or timeout if it believes a deadlock
+      has arisen. SQLite's locking and concurrency is described <a href=
       "http://www.sqlite.org/lockingv3.html">here</a></p>
 
       <p>A cursor object can only be executing one query at a time. You cannot
@@ -3034,6 +3031,29 @@ Traceback (most recent call last):
       </blockquote>
 
       <h1><a name="verhistory" id="verhistory">Version History</a></h1>
+
+      <h2><a name="3312r1">3.3.12-r1</a></h2>
+
+      <p>You can use this with SQLite 3.3.12 onwards. There were no API changes
+      in SQLite 3.3.10 to 3.3.12 although some internal bugs were fixed and the
+      3.3.12 release is recommended over the earlier version.</p>
+
+      <p>Thanks to Ed Pasma for highlighting these.</p>
+
+      <ul>
+        <li><tt>Connection.interrupt</tt> can be safely called from any
+        thread.</li>
+
+        <li>Empty statements or those consisting entirely of whitespace do not
+        cause misuse errors (internally SQLite started returned NULL pointers
+        for those statements, and sqlite3_step didn't like being passed the
+        NULL pointer).</li>
+
+        <li>Changed special handling of SQLITE_BUSY error to be the same as
+        other errors. The special handling let you restart on receiving busy,
+        but also hung onto statements which could result in other statements
+        getting busy errors.</li>
+      </ul>
 
       <h2><a name="3310r1">3.3.10-r1</a></h2>
 
