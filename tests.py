@@ -286,6 +286,11 @@ class APSW(unittest.TestCase):
         # give bad params
         self.assertRaises(TypeError, c.execute)
         self.assertRaises(TypeError, "foo", "bar", "bam")
+
+        # empty statements
+        c.execute("")
+        c.execute(" ;\n\t\r;;")
+        
         # unicode
         self.failUnlessEqual(3, c.execute(u"select 3").next()[0])
         self.assertRaises(UnicodeDecodeError, c.execute, "\x99\xaa\xbb\xcc")
@@ -959,7 +964,7 @@ class APSW(unittest.TestCase):
         b4=time.time()
         c2.execute("begin exclusive")
         try:
-            c.execute("beging immediate ; select * from foo")
+            c.execute("begin immediate ; select * from foo")
         except apsw.BusyError:
             pass
         after=time.time()
@@ -986,6 +991,21 @@ class APSW(unittest.TestCase):
         del c
         del c2
         db2.close()
+
+    def testBusyHandling2(self):
+        "Another busy handling test"
+
+        # Based on an issue in 3.3.10 and before
+        con2=apsw.Connection("testdb")
+        cur=self.db.cursor()
+        cur2=con2.cursor()
+        cur.execute("create table test(x,y)")
+        cur.execute("begin")
+        cur.execute("insert into test values(123,'abc')")
+        self.assertRaises(apsw.BusyError, cur2.execute, "insert into test values(456, 'def')")
+        cur.execute("commit")
+        self.assertEqual(1, cur2.execute("select count(*) from test where x=123").next()[0])
+        con2.close()
 
     def testInterruptHandling(self):
         "Verify interrupt function"
