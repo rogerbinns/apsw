@@ -39,6 +39,6 @@ distrib-lin:
 	cp  $(SOURCE) $(VERDIR)
 	rm -rf dist
 	mkdir dist
-	tar cf - $(VERDIR) | gzip -9 > dist/$(VERDIR).tar.gz
+	zip -9 -r dist/$(VERDIR).zip $(VERDIR)
 	ssh initd.org mkdir -p /var/www/pub/software/pysqlite/apsw/$(VERSION)
-	scp dist/$(VERDIR).tar.gz apsw.html initd.org:/var/www/pub/software/pysqlite/apsw/$(VERSION)/
+	scp dist/$(VERDIR).zip apsw.html initd.org:/var/www/pub/software/pysqlite/apsw/$(VERSION)/
