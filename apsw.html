@@ -7,14 +7,22 @@
   "HTML Tidy for Linux (vers 1 September 2005), see www.w3.org" />
 
   <title>APSW - Another Python SQLite Wrapper</title>
-  <link rel="StyleSheet" href="http://www.rogerbinns.com/styles/main.css" type=
-  "text/css" />
+<style type="text/css">
+/*<![CDATA[*/
+body { 
+  font-family: verdana, arial, helvetica, sans-serif;
+  margin: 20px;
+  background-color: #ffcc99;
+  padding: 7px;
+ }
+/*]]>*/
+</style>
 </head>
 
 <body>
   <h1 class="notoc">APSW - Another Python SQLite Wrapper</h1>
 
-  <p><font size="-1">apsw-3.3.12-r1 20th February 2007</font></p>
+  <p><font size="-1">apsw-3.3.13-r1 18th February 2007</font></p>
 
   <p>APSW provides an SQLite 3 wrapper that provides the thinnest layer over
   <a href="http://www.sqlite.org">SQLite 3</a> possible. Everything you can do
@@ -27,7 +35,7 @@
   2</a>).</p>
 
   <blockquote>
-    <p><b>Important changes in this release</b> You must explicitly call
+    <p><b>Important changes in 3.3.10 release</b> You must explicitly call
     <a href="#Connection_class">close()</a> on Connection objects. If you do
     not call close then a detailed error message will be printed when
     Connection's destructor runs and cleanup will not happen of that
@@ -148,7 +156,7 @@
             <a href="#verhistory">Version History</a>
 
             <ul>
-              <li><a href="#3312r1">3.3.12-r1</a></li>
+              <li><a href="#3313r1">3.3.13-r1</a></li>
 
               <li><a href="#3310r1">3.3.10-r1</a></li>
 
@@ -184,10 +192,25 @@
 
   <h2><a name="Source" id="Source">Source and binaries</a></h2>
 
-  <p>You can download APSW from SourceForge at <a href=
-  "http://sourceforge.net/project/showfiles.php?group_id=75211&amp;package_id=113804">
-  http://sourceforge.net/project/showfiles.php?group_id=75211&amp;package_id=113804</a>.
-  There is a zip of the source as well as binary packages for Windows.</p>
+  <p>You can download this release in source or binary form.</p>
+
+  <ul>
+    <li><a href=
+    "http://initd.org/pub/software/pysqlite/apsw/3.3.13-r1/apsw-3.3.13-r1.zip">apsw-3.3.13-r1.zip</a>
+    (source)</li>
+
+    <li><a href=
+    "http://initd.org/pub/software/pysqlite/apsw/3.3.13-r1/apsw-3.3.13-r1.win32-py2.3">
+    apsw-3.3.13-r1.win32-py2.3.exe</a> (Windows Python 2.3)</li>
+
+    <li><a href=
+    "http://initd.org/pub/software/pysqlite/apsw/3.3.13-r1/apsw-3.3.13-r1.win32-py2.4">
+    apsw-3.3.13-r1.win32-py2.4.exe</a> (Windows Python 2.4)</li>
+
+    <li><a href=
+    "http://initd.org/pub/software/pysqlite/apsw/3.3.13-r1/apsw-3.3.13-r1.win32-py2.5">
+    apsw-3.3.13-r1.win32-py2.5.exe</a> (Windows Python 2.5)</li>
+  </ul>
 
   <p>Some Linux distributions also have packages. Debian users can grab the
   package <a href="http://packages.debian.org/python-apsw">python-apsw</a>.
@@ -197,9 +220,7 @@
   <h2><a name="Sourcecode" id="Sourcecode">Source code control</a></h2>
 
   <p>The source is controlled by Subversion accessible as <a href=
-  "https://svn.sourceforge.net/svnroot/bitpim/subprojects/apsw/trunk">https://svn.sourceforge.net/svnroot/bitpim/subprojects/apsw/trunk</a>
-  and can be web browsed at <a href=
-  "http://svn.sourceforge.net/viewcvs.cgi/bitpim/subprojects/apsw/trunk/">http://svn.sourceforge.net/viewcvs.cgi/bitpim/subprojects/apsw/trunk/</a></p>
+  "http://initd.org/svn/pysqlite/apsw/trunk">http://initd.org/svn/pysqlite/apsw/trunk</a></p>
 
   <h1><a name="SQLiteVersionCompatibilityAndBenchmarking" id=
   "SQLiteVersionCompatibilityAndBenchmarking">SQLite version compatibility and
@@ -269,9 +290,9 @@
 "#0000C0">,</font>apsw<font color="#0000C0">.</font>SQLITE_VERSION_NUMBER   <font color="#008000"># from the sqlite header file at compile time
 
 </font><font color="blue">   Using APSW file /space/apsw/apsw.so
-      APSW version 3.3.12-r1
-    SQLite version 3.3.12
-    SQLite version 3003012
+      APSW version 3.3.13-r1
+    SQLite version 3.3.13
+    SQLite version 3003013
 </font>
 <font color="#008000">###
 ### Opening/creating database
@@ -1038,9 +1059,9 @@ python setup.py build --compile=mingw32 install
 
       <dd>
         <pre>
-$ wget http://www.sqlite.org/sqlite-3.3.10.tar.gz
-$ tar xvfz sqlite-3.3.10.tar.gz
-$ mv sqlite-3.3.10 sqlite3
+$ wget http://www.sqlite.org/sqlite-3.3.13.tar.gz
+$ tar xvfz sqlite-3.3.13.tar.gz
+$ mv sqlite-3.3.13 sqlite3
 $ cd sqlite3
 <font color=
 "blue"># The static library is not built for inclusion into a seperate shared library
@@ -3032,13 +3053,17 @@ Traceback (most recent call last):
 
       <h1><a name="verhistory" id="verhistory">Version History</a></h1>
 
-      <h2><a name="3312r1">3.3.12-r1</a></h2>
+      <h2><a name="3313r1">3.3.13-r1</a></h2>
 
-      <p>You can use this with SQLite 3.3.12 onwards. There were no API changes
-      in SQLite 3.3.10 to 3.3.12 although some internal bugs were fixed and the
-      3.3.12 release is recommended over the earlier version.</p>
+      <p>As of this release, APSW is now co-hosted with pysqlite meaning there
+      is one site to go to for your Python SQLite bindings. Start at <a href=
+      "http://initd.org/tracker/pysqlite/wiki/">http://initd.org/tracker/pysqlite/wiki</a></p>
 
-      <p>Thanks to Ed Pasma for highlighting these.</p>
+      <p>You can use this with SQLite 3.3.13 onwards. There were no API changes
+      in SQLite 3.3.10 to 3.3.13 although some internal bugs were fixed and the
+      3.3.13 release is recommended over the earlier version.</p>
+
+      <p>Thanks to Ed Pasma for highlighting these issues.</p>
 
       <ul>
         <li><tt>Connection.interrupt</tt> can be safely called from any
@@ -3050,9 +3075,9 @@ Traceback (most recent call last):
         NULL pointer).</li>
 
         <li>Changed special handling of SQLITE_BUSY error to be the same as
-        other errors. The special handling let you restart on receiving busy,
-        but also hung onto statements which could result in other statements
-        getting busy errors.</li>
+        other errors. The special handling previously let you restart on
+        receiving busy, but also hung onto statements which could result in
+        other statements getting busy errors.</li>
       </ul>
 
       <h2><a name="3310r1">3.3.10-r1</a></h2>
@@ -3326,10 +3351,6 @@ Traceback (most recent call last):
 
       <p>Initial release</p>
       <hr />
-
-      <address>
-        <a href="mailto:rogerb@rogerbinns.com"></a>
-      </address>
     </dd>
   </dl>
 </body>
