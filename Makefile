@@ -22,6 +22,8 @@ tidytoc:
 	@rm -f tmpfile tmpfile2 .tmpop-*
 
 # You need to use the MinGW version of make.  It needs the doubled up slashes
+# otherwise it goes off and modifies them, surrounding colons and almost any
+# other punctuation it sees!
 distrib-win:
 	cmd //c del //s //q dist
 	cmd //c del //s //q build
@@ -31,7 +33,7 @@ distrib-win:
 	c:/python23/python setup.py build --compile=mingw32 bdist_wininst
 	c:/python24/python setup.py build --compile=mingw32 bdist_wininst
 	c:/python25/python setup.py build --compile=mingw32 bdist_wininst
-	pscp dist\*.exe initd.org:/var/www/pub/software/pysqlite/apsw/$(VERSION)/
+	pscp dist/*.exe rogerb@initd.org://var//www//pub//software//pysqlite//apsw//$(VERSION)//
 
 distrib-lin:
 	rm -rf $(VERDIR)
