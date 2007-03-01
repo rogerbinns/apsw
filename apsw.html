@@ -1075,6 +1075,7 @@ $ env CFLAGS="-DHAVE_DLOPEN" ./configure --enable-threadsafe --disable-tcl
 "http://www.sqlite.org/cvstrac/tktview?tn=2082">2082</a></font>
 $ make
 $ cp .libs/*.a .
+$ ranlib *.a
 $ cd ..
 $ python setup.py install
 $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"      
