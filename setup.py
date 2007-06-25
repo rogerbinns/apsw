@@ -11,23 +11,26 @@ define_macros.append( ('NDEBUG', '1') )
 # Comment out the line to exclude them
 define_macros.append( ('EXPERIMENTAL', '1') )
 
-# SQLite 3.3.9 disables extension loading by default.  If you have
-# re-enabled it then comment out the following line:
-define_macros.append( ('SQLITE_OMIT_LOAD_EXTENSION', 1) )
-
 include_dirs=[]
 library_dirs=[]
 
-# if there is a sqlite3 subdirectory then use that
-if os.path.exists("sqlite3"):
-    include_dirs=["sqlite3"]
-    library_dirs=["sqlite3"]
+# if sqlite3.c (amalgamation is in this directory then that is used)
+mydir=os.path.dirname(os.path.abspath(__file__))
 
-libraries=['sqlite3']
+if os.path.exists(os.path.join(mydir, "sqlite3.c")):
+    define_macros.append( ('APSW_USE_SQLITE_AMALGAMATION', 1) )
+    libraries=[]
+else:
+    # if there is a sqlite3 subdirectory then use that, otherwise
+    # the system sqlite will be used
+    if os.path.exists("sqlite3"):
+        include_dirs=["sqlite3"]
+        library_dirs=["sqlite3"]
+
+    libraries=['sqlite3']
 
 # work out version number
 version=open("apswversion.h", "rtU").read().split()[2].strip('"')
-
 
 setup(name="apsw",
       version=version,
