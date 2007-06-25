@@ -946,7 +946,7 @@ class APSW(unittest.TestCase):
         c2=db2.cursor()
         
         # Put in busy timeout
-        TIMEOUT=3.5 # seconds
+        TIMEOUT=3 # seconds, must be integer as sqlite can round down to nearest second anyway
         c2.execute("begin exclusive")
         self.assertRaises(TypeError, self.db.setbusyhandler, "foo")
         self.db.setbusytimeout(int(TIMEOUT*1000))
@@ -1150,7 +1150,7 @@ class APSW(unittest.TestCase):
         ThreadRunner(apsw.apswversion).go()
         # these should generate errors
         nargs=self.connection_nargs
-        for func in [x for x in dir(self.db) if not x.startswith("__")]:
+        for func in [x for x in dir(self.db) if not x.startswith("__") and x!="interrupt"]:
             args=("one", "two", "three")[:nargs.get(func,0)]
             try:
                 tr=ThreadRunner(getattr(self.db, func), *args)
