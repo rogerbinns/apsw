@@ -53,11 +53,16 @@ typedef int Py_ssize_t;
 /* A list of pointers (used by Connection to keep track of Cursors) */
 #include "pointerlist.c"
 
+/* SQLite amalgamation */
+#ifdef APSW_USE_SQLITE_AMALGAMATION
+#include "sqlite3.c"
+#else
 /* SQLite 3 headers */
 #include "sqlite3.h"
+#endif
 
-#if SQLITE_VERSION_NUMBER < 3003010
-#error Your SQLite version is too old.  It must be at least 3.3.10
+#if SQLITE_VERSION_NUMBER < 3004000
+#error Your SQLite version is too old.  It must be at least 3.4.0
 #endif
 
 /* Prepared statement caching */
@@ -105,7 +110,6 @@ static PyObject *ExcIncomplete;  /* didn't finish previous query */
 static PyObject *ExcBindings;  /* wrong number of bindings */
 static PyObject *ExcComplete;  /* query is finished */
 static PyObject *ExcTraceAbort; /* aborted by exectrace */
-static PyObject *ExcTooBig; /* object is too large for SQLite */
 static PyObject *ExcExtensionLoading; /* error loading extension */
 static PyObject *ExcConnectionNotClosed; /* connection wasn't closed when destructor called */
 static PyObject *ExcConnectionClosed; /* connection was closed when function called */
@@ -142,7 +146,7 @@ exc_descriptors[]=
     {SQLITE_IOERR,    "IO", NULL},
     {SQLITE_CORRUPT,  "Corrupt", NULL},
     {SQLITE_FULL,     "Full", NULL},
-    /*  {SQLITE_TOOBIG,   "TooBig"},      NOT USED by SQLite any more but there is an apsw equivalent with the same name*/
+    {SQLITE_TOOBIG,   "TooBig"},
     {SQLITE_NOLFS,    "NoLFS", NULL},
     {SQLITE_EMPTY,    "Empty", NULL},
     {SQLITE_FORMAT,   "Format", NULL},
@@ -183,7 +187,6 @@ static int init_exceptions(PyObject *m)
   EXC(ExcBindings, "BindingsError");
   EXC(ExcComplete, "ExecutionCompleteError");
   EXC(ExcTraceAbort, "ExecTraceAbort");
-  EXC(ExcTooBig, "TooBigError");
   EXC(ExcExtensionLoading, "ExtensionLoadingError");
   EXC(ExcConnectionNotClosed, "ConnectionNotClosedError");
   EXC(ExcConnectionClosed, "ConnectionClosedError");
@@ -436,12 +439,12 @@ typedef struct {
   PyObject *exectrace;
   PyObject *rowtrace;
   
-} Cursor;
+} APSWCursor;
 
-static PyTypeObject CursorType;
+static PyTypeObject APSWCursorType;
 
 /* forward declarations */
-static PyObject *Cursor_close(Cursor *self, PyObject *args);
+static PyObject *APSWCursor_close(APSWCursor *self, PyObject *args);
 
 
 /* CONVENIENCE FUNCTIONS */
@@ -621,9 +624,9 @@ Connection_close(Connection *self, PyObject *args)
       pointerlist_visit_next(&plv))
     {
       PyObject *closeres=NULL;
-      Cursor *cur=(Cursor*)pointerlist_visit_get(&plv);
+      APSWCursor *cur=(APSWCursor*)pointerlist_visit_get(&plv);
 
-      closeres=Cursor_close(cur, args);
+      closeres=APSWCursor_close(cur, args);
       Py_XDECREF(closeres);
       if(!closeres)
 	{
@@ -812,24 +815,24 @@ finally:
   return res;
 }
 
-static void Cursor_init(Cursor *, Connection *);
+static void APSWCursor_init(APSWCursor *, Connection *);
 
 static PyObject *
 Connection_cursor(Connection *self)
 {
-  Cursor* cursor = NULL;
+  APSWCursor* cursor = NULL;
 
   CHECK_THREAD(self,NULL);
   CHECK_CLOSED(self,NULL);
 
-  cursor = PyObject_New(Cursor, &CursorType);
+  cursor = PyObject_New(APSWCursor, &APSWCursorType);
   if(!cursor)
     return NULL;
 
   /* incref me since cursor holds a pointer */
   Py_INCREF((PyObject*)self);
   pointerlist_add(&self->cursors, cursor);
-  Cursor_init(cursor, self);
+  APSWCursor_init(cursor, self);
   
   return (PyObject*)cursor;
 }
@@ -928,7 +931,6 @@ Connection_complete(Connection *self, PyObject *args)
 static PyObject *
 Connection_interrupt(Connection *self)
 {
-  CHECK_THREAD(self, NULL);
   CHECK_CLOSED(self, NULL);
 
   sqlite3_interrupt(self->db);  /* no return value */
@@ -1580,7 +1582,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
     }
 
   /* DUPLICATE(ish) code: this is substantially similar to the code in
-     Cursor_dobinding.  If you fix anything here then do it there as
+     APSWCursor_dobinding.  If you fix anything here then do it there as
      well. */
 
   if(obj==Py_None)
@@ -1610,7 +1612,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
           {
 	    if(strbytes>APSW_INT32_MAX)
 	      {
-		PyErr_Format(ExcTooBig, "Unicode object is too large - SQLite only supports up to 2GB");
+                SET_EXC(NULL, SQLITE_TOOBIG);
 	      }
 	    else
 	      {
@@ -1644,7 +1646,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
               {
 		if(strbytes>APSW_INT32_MAX)
 		  {
-		    PyErr_Format(ExcTooBig, "Unicode object is too large - SQLite only supports up to 2GB");
+                    SET_EXC(NULL, SQLITE_TOOBIG);
 		  }
 		else
 		  {
@@ -1662,9 +1664,9 @@ set_context_result(sqlite3_context *context, PyObject *obj)
       else
 	{
 	  if(lenval>APSW_INT32_MAX)
-	      {
-		PyErr_Format(ExcTooBig, "String object is too large - SQLite only supports up to 2GB");
-		}
+            {
+              SET_EXC(NULL, SQLITE_TOOBIG);
+            }
 	  else
 	    sqlite3_result_text(context, val, (int)lenval, SQLITE_TRANSIENT);
 	}
@@ -3458,7 +3460,7 @@ static PyTypeObject ConnectionType = {
 
 /* Do finalization and free resources.  Returns the SQLITE error code */
 static int
-resetcursor(Cursor *self, int force)
+resetcursor(APSWCursor *self, int force)
 {
   int res=SQLITE_OK;
 
@@ -3522,18 +3524,18 @@ resetcursor(Cursor *self, int force)
 }
 
 static void
-Cursor_dealloc(Cursor * self)
+APSWCursor_dealloc(APSWCursor * self)
 {
   /* thread check - we can't use macro as it returns*/
   PyObject *err_type, *err_value, *err_traceback;
   int have_error=PyErr_Occurred()?1:0;
 
-  if( (self->status!=C_DONE || self->statement || self->zsqlnextpos || self->emiter) &&  /* only whine if there was anything left in the Cursor */
+  if( (self->status!=C_DONE || self->statement || self->zsqlnextpos || self->emiter) &&  /* only whine if there was anything left in the APSWCursor */
       self->connection->thread_ident!=PyThread_get_thread_ident())
     {
       if (have_error)
         PyErr_Fetch(&err_type, &err_value, &err_traceback);
-      PyErr_Format(ExcThreadingViolation, "The destructor for Cursor is called in a different thread than it"
+      PyErr_Format(ExcThreadingViolation, "The destructor for APSWCursor is called in a different thread than it"
                    "was created in.  All calls must be in the same thread.  It was created in thread %d " 
                    "and this is %d.  SQLite is not being closed as a result.",
                    (int)(self->connection->thread_ident), (int)(PyThread_get_thread_ident()));            
@@ -3582,7 +3584,7 @@ Cursor_dealloc(Cursor * self)
 }
 
 static void
-Cursor_init(Cursor *self, Connection *connection)
+APSWCursor_init(APSWCursor *self, Connection *connection)
 {
   self->connection=connection;
   self->statement=0;
@@ -3597,7 +3599,7 @@ Cursor_init(Cursor *self, Connection *connection)
 }
 
 static PyObject *
-Cursor_getdescription(Cursor *self)
+APSWCursor_getdescription(APSWCursor *self)
 {
   int ncols,i;
   PyObject *result=NULL;
@@ -3639,7 +3641,7 @@ Cursor_getdescription(Cursor *self)
 
 /* internal function - returns SQLite error code (ie SQLITE_OK if all is well) */
 static int
-Cursor_dobinding(Cursor *self, int arg, PyObject *obj)
+APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
 {
 
   /* DUPLICATE(ish) code: this is substantially similar to the code in
@@ -3671,7 +3673,7 @@ Cursor_dobinding(Cursor *self, int arg, PyObject *obj)
           {
 	    if(strbytes>APSW_INT32_MAX)
 	      {
-		PyErr_Format(ExcTooBig, "Unicode object is too large - SQLite only supports up to 2GB");
+                SET_EXC(NULL, SQLITE_TOOBIG);
 	      }
 	    else
 	      {
@@ -3706,7 +3708,7 @@ Cursor_dobinding(Cursor *self, int arg, PyObject *obj)
               {
 		if(strbytes>APSW_INT32_MAX)
 		  {
-		    PyErr_Format(ExcTooBig, "Unicode object is too large - SQLite only supports up to 2GB");
+                    SET_EXC(NULL, SQLITE_TOOBIG);
 		  }
 		else
 		  {
@@ -3728,7 +3730,7 @@ Cursor_dobinding(Cursor *self, int arg, PyObject *obj)
 	{
 	  if(lenval>APSW_INT32_MAX)
 	      {
-		PyErr_Format(ExcTooBig, "String object is too large - SQLite only supports up to 2GB");
+                SET_EXC(NULL, SQLITE_TOOBIG);
 		return -1;
 	      }
 	  res=sqlite3_bind_text(self->statement, arg, val, (int)lenval, SQLITE_TRANSIENT);
@@ -3742,7 +3744,7 @@ Cursor_dobinding(Cursor *self, int arg, PyObject *obj)
         return -1;
       if (buflen>APSW_INT32_MAX)
 	{
-	  PyErr_Format(ExcTooBig, "Binding object is too large - SQLite only supports up to 2GB");
+          SET_EXC(NULL, SQLITE_TOOBIG);
 	  return -1;
 	}
       res=sqlite3_bind_blob(self->statement, arg, buffer, (int)buflen, SQLITE_TRANSIENT);
@@ -3766,7 +3768,7 @@ Cursor_dobinding(Cursor *self, int arg, PyObject *obj)
 
 /* internal function */
 static int
-Cursor_dobindings(Cursor *self)
+APSWCursor_dobindings(APSWCursor *self)
 {
   int nargs, arg, res, sz=0;
   PyObject *obj;
@@ -3810,7 +3812,7 @@ Cursor_dobindings(Cursor *self)
           if(!obj)
             /* this is where we could error on missing keys */
             continue;
-          if(Cursor_dobinding(self,arg,obj))
+          if(APSWCursor_dobinding(self,arg,obj))
             {
               assert(PyErr_Occurred());
               return -1;
@@ -3845,7 +3847,7 @@ Cursor_dobindings(Cursor *self)
   for(arg=1;arg<=nargs;arg++)
     {
       obj=PySequence_Fast_GET_ITEM(self->bindings, arg-1+self->bindingsoffset);
-      if(Cursor_dobinding(self, arg, obj))
+      if(APSWCursor_dobinding(self, arg, obj))
         {
           assert(PyErr_Occurred());
           return -1;
@@ -3863,7 +3865,7 @@ typedef struct {
 } exectrace_oldstate;
   
 static int
-Cursor_doexectrace(Cursor *self, exectrace_oldstate *etos)
+APSWCursor_doexectrace(APSWCursor *self, exectrace_oldstate *etos)
 {
   PyObject *retval=NULL;
   PyObject *args=NULL;
@@ -3934,7 +3936,7 @@ Cursor_doexectrace(Cursor *self, exectrace_oldstate *etos)
 }
 
 static PyObject*
-Cursor_dorowtrace(Cursor *self, PyObject *retval)
+APSWCursor_dorowtrace(APSWCursor *self, PyObject *retval)
 {
   assert(self->rowtrace);
 
@@ -3947,7 +3949,7 @@ Cursor_dorowtrace(Cursor *self, PyObject *retval)
 
 /* Returns a borrowed reference to self if all is ok, else NULL on error */
 static PyObject *
-Cursor_step(Cursor *self)
+APSWCursor_step(APSWCursor *self)
 {
   int res;
   exectrace_oldstate etos;
@@ -4096,7 +4098,7 @@ Cursor_step(Cursor *self)
           return NULL;
         }
       assert(!PyErr_Occurred());
-      if(Cursor_dobindings(self))
+      if(APSWCursor_dobindings(self))
         {
           assert(PyErr_Occurred());
           return NULL;
@@ -4104,7 +4106,7 @@ Cursor_step(Cursor *self)
 
       if(self->exectrace)
         {
-          if(Cursor_doexectrace(self, &etos))
+          if(APSWCursor_doexectrace(self, &etos))
             {
               assert(self->status==C_DONE);
               assert(PyErr_Occurred());
@@ -4121,7 +4123,7 @@ Cursor_step(Cursor *self)
 }
 
 static PyObject *
-Cursor_execute(Cursor *self, PyObject *args)
+APSWCursor_execute(APSWCursor *self, PyObject *args)
 {
   int res;
   PyObject *retval=NULL;
@@ -4165,7 +4167,7 @@ Cursor_execute(Cursor *self, PyObject *args)
   SET_EXC(self->connection->db,res);
   if (res!=SQLITE_OK)
     {
-      AddTraceBackHere(__FILE__, __LINE__, "Cursor_execute.sqlite3_prepare_v2", "{s: O, s: N}", 
+      AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_execute.sqlite3_prepare_v2", "{s: O, s: N}", 
 		       "Connection", self->connection, 
 		       "statement", PyUnicode_DecodeUTF8(self->zsql, strlen(self->zsql), "strict"));
       return NULL;
@@ -4173,7 +4175,7 @@ Cursor_execute(Cursor *self, PyObject *args)
   assert(!PyErr_Occurred());
 
   self->bindingsoffset=0;
-  if(Cursor_dobindings(self))
+  if(APSWCursor_dobindings(self))
     {
       assert(PyErr_Occurred());
       return NULL;
@@ -4181,7 +4183,7 @@ Cursor_execute(Cursor *self, PyObject *args)
 
   if(self->exectrace)
     {
-      if(Cursor_doexectrace(self, &etos))
+      if(APSWCursor_doexectrace(self, &etos))
         {
           assert(PyErr_Occurred());
           return NULL;  
@@ -4190,7 +4192,7 @@ Cursor_execute(Cursor *self, PyObject *args)
 
   self->status=C_BEGIN;
 
-  retval=Cursor_step(self);
+  retval=APSWCursor_step(self);
   if (!retval) 
     {
       assert(PyErr_Occurred());
@@ -4201,7 +4203,7 @@ Cursor_execute(Cursor *self, PyObject *args)
 }
 
 static PyObject *
-Cursor_executemany(Cursor *self, PyObject *args)
+APSWCursor_executemany(APSWCursor *self, PyObject *args)
 {
   int res;
   PyObject *retval=NULL;
@@ -4268,7 +4270,7 @@ Cursor_executemany(Cursor *self, PyObject *args)
   assert(!PyErr_Occurred());
 
   self->bindingsoffset=0;
-  if(Cursor_dobindings(self))
+  if(APSWCursor_dobindings(self))
     {
       assert(PyErr_Occurred());
       return NULL;
@@ -4276,7 +4278,7 @@ Cursor_executemany(Cursor *self, PyObject *args)
 
   if(self->exectrace)
     {
-      if(Cursor_doexectrace(self, &etos))
+      if(APSWCursor_doexectrace(self, &etos))
         {
           assert(PyErr_Occurred());
           return NULL;  
@@ -4285,7 +4287,7 @@ Cursor_executemany(Cursor *self, PyObject *args)
 
   self->status=C_BEGIN;
 
-  retval=Cursor_step(self);
+  retval=APSWCursor_step(self);
   if (!retval) 
     {
       assert(PyErr_Occurred());
@@ -4296,7 +4298,7 @@ Cursor_executemany(Cursor *self, PyObject *args)
 }
 
 static PyObject *
-Cursor_close(Cursor *self, PyObject *args)
+APSWCursor_close(APSWCursor *self, PyObject *args)
 {
   int res;
   int force=0;
@@ -4319,7 +4321,7 @@ Cursor_close(Cursor *self, PyObject *args)
 }
 
 static PyObject *
-Cursor_next(Cursor *self)
+APSWCursor_next(APSWCursor *self)
 {
   PyObject *retval;
   PyObject *item;
@@ -4331,7 +4333,7 @@ Cursor_next(Cursor *self)
 
  again:
   if(self->status==C_BEGIN)
-    if(!Cursor_step(self))
+    if(!APSWCursor_step(self))
       {
         assert(PyErr_Occurred());
         return NULL;
@@ -4362,7 +4364,7 @@ Cursor_next(Cursor *self)
     }
   if(self->rowtrace)
     {
-      PyObject *r2=Cursor_dorowtrace(self, retval);
+      PyObject *r2=APSWCursor_dorowtrace(self, retval);
       Py_DECREF(retval);
       if(!r2) 
 	return NULL;
@@ -4377,7 +4379,7 @@ Cursor_next(Cursor *self)
 }
 
 static PyObject *
-Cursor_iter(Cursor *self)
+APSWCursor_iter(APSWCursor *self)
 {
   CHECK_THREAD(self->connection, NULL);
   CHECK_CLOSED(self->connection, NULL);
@@ -4387,7 +4389,7 @@ Cursor_iter(Cursor *self)
 }
 
 static PyObject *
-Cursor_setexectrace(Cursor *self, PyObject *func)
+APSWCursor_setexectrace(APSWCursor *self, PyObject *func)
 {
   CHECK_THREAD(self->connection, NULL);
   CHECK_CLOSED(self->connection, NULL);
@@ -4408,7 +4410,7 @@ Cursor_setexectrace(Cursor *self, PyObject *func)
 }
 
 static PyObject *
-Cursor_setrowtrace(Cursor *self, PyObject *func)
+APSWCursor_setrowtrace(APSWCursor *self, PyObject *func)
 {
   CHECK_THREAD(self->connection, NULL);
   CHECK_CLOSED(self->connection, NULL);
@@ -4429,7 +4431,7 @@ Cursor_setrowtrace(Cursor *self, PyObject *func)
 }
 
 static PyObject *
-Cursor_getexectrace(Cursor *self)
+APSWCursor_getexectrace(APSWCursor *self)
 {
   PyObject *ret;
 
@@ -4442,7 +4444,7 @@ Cursor_getexectrace(Cursor *self)
 }
 
 static PyObject *
-Cursor_getrowtrace(Cursor *self)
+APSWCursor_getrowtrace(APSWCursor *self)
 {
   PyObject *ret;
   CHECK_THREAD(self->connection, NULL);
@@ -4453,7 +4455,7 @@ Cursor_getrowtrace(Cursor *self)
 }
 
 static PyObject *
-Cursor_getconnection(Cursor *self)
+APSWCursor_getconnection(APSWCursor *self)
 {
   CHECK_THREAD(self->connection, NULL);
   CHECK_CLOSED(self->connection, NULL);
@@ -4462,40 +4464,40 @@ Cursor_getconnection(Cursor *self)
   return (PyObject*)self->connection;
 }
 
-static PyMethodDef Cursor_methods[] = {
-  {"execute", (PyCFunction)Cursor_execute, METH_VARARGS,
+static PyMethodDef APSWCursor_methods[] = {
+  {"execute", (PyCFunction)APSWCursor_execute, METH_VARARGS,
    "Executes one or more statements" },
-  {"executemany", (PyCFunction)Cursor_executemany, METH_VARARGS,
+  {"executemany", (PyCFunction)APSWCursor_executemany, METH_VARARGS,
    "Repeatedly executes statements on sequence" },
-  {"next", (PyCFunction)Cursor_next, METH_NOARGS,
+  {"next", (PyCFunction)APSWCursor_next, METH_NOARGS,
    "Returns next row returned from query"},
-  {"setexectrace", (PyCFunction)Cursor_setexectrace, METH_O,
+  {"setexectrace", (PyCFunction)APSWCursor_setexectrace, METH_O,
    "Installs a function called for every statement executed"},
-  {"setrowtrace", (PyCFunction)Cursor_setrowtrace, METH_O,
+  {"setrowtrace", (PyCFunction)APSWCursor_setrowtrace, METH_O,
    "Installs a function called for every row returned"},
-  {"getexectrace", (PyCFunction)Cursor_getexectrace, METH_NOARGS,
+  {"getexectrace", (PyCFunction)APSWCursor_getexectrace, METH_NOARGS,
    "Returns the current exec tracer function"},
-  {"getrowtrace", (PyCFunction)Cursor_getrowtrace, METH_NOARGS,
+  {"getrowtrace", (PyCFunction)APSWCursor_getrowtrace, METH_NOARGS,
    "Returns the current row tracer function"},
-  {"getrowtrace", (PyCFunction)Cursor_getrowtrace, METH_NOARGS,
+  {"getrowtrace", (PyCFunction)APSWCursor_getrowtrace, METH_NOARGS,
    "Returns the current row tracer function"},
-  {"getconnection", (PyCFunction)Cursor_getconnection, METH_NOARGS,
+  {"getconnection", (PyCFunction)APSWCursor_getconnection, METH_NOARGS,
    "Returns the connection object for this cursor"},
-  {"getdescription", (PyCFunction)Cursor_getdescription, METH_NOARGS,
+  {"getdescription", (PyCFunction)APSWCursor_getdescription, METH_NOARGS,
    "Returns the description for the current row"},
-  {"close", (PyCFunction)Cursor_close, METH_VARARGS,
+  {"close", (PyCFunction)APSWCursor_close, METH_VARARGS,
    "Closes the cursor" },
   {0, 0, 0, 0}  /* Sentinel */
 };
 
 
-static PyTypeObject CursorType = {
+static PyTypeObject APSWCursorType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
     "apsw.Cursor",             /*tp_name*/
-    sizeof(Cursor),            /*tp_basicsize*/
+    sizeof(APSWCursor),            /*tp_basicsize*/
     0,                         /*tp_itemsize*/
-    (destructor)Cursor_dealloc, /*tp_dealloc*/
+    (destructor)APSWCursor_dealloc, /*tp_dealloc*/
     0,                         /*tp_print*/
     0,                         /*tp_getattr*/
     0,                         /*tp_setattr*/
@@ -4516,9 +4518,9 @@ static PyTypeObject CursorType = {
     0,		               /* tp_clear */
     0,		               /* tp_richcompare */
     0,		               /* tp_weaklistoffset */
-    (getiterfunc)Cursor_iter,  /* tp_iter */
-    (iternextfunc)Cursor_next, /* tp_iternext */
-    Cursor_methods,            /* tp_methods */
+    (getiterfunc)APSWCursor_iter,  /* tp_iter */
+    (iternextfunc)APSWCursor_next, /* tp_iternext */
+    APSWCursor_methods,            /* tp_methods */
     0,                         /* tp_members */
     0,                         /* tp_getset */
     0,                         /* tp_base */
@@ -4597,7 +4599,7 @@ initapsw(void)
     if (PyType_Ready(&ConnectionType) < 0)
         return;
 
-    if (PyType_Ready(&CursorType) < 0)
+    if (PyType_Ready(&APSWCursorType) < 0)
         return;
 
     /* ensure threads are available */
@@ -4708,6 +4710,8 @@ initapsw(void)
     ADDINT(SQLITE_IOERR_FSTAT);
     ADDINT(SQLITE_IOERR_UNLOCK);
     ADDINT(SQLITE_IOERR_RDLOCK);
+    ADDINT(SQLITE_IOERR_DELETE);
+    ADDINT(SQLITE_IOERR_BLOCKED);
     PyModule_AddObject(m, "mapping_extended_result_codes", thedict);
 
     /* error codes */
