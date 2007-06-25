@@ -96,7 +96,10 @@ statementcache_free(StatementCache* sc)
 	}
       if(sce->stmt)
 	{
-	  int res=sqlite3_finalize(sce->stmt);
+#ifndef NDEBUG
+	  int res= /* get rid of unused variable warnings */
+#endif
+          sqlite3_finalize(sce->stmt);
 	  assert(res==SQLITE_OK);
 	  sce->stmt=0;
 	}
