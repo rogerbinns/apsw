@@ -2068,7 +2068,12 @@ class APSW(unittest.TestCase):
         cur2.execute("create table bar(x,y)")
         for _ in cur.execute("select * from foo"): pass
         db2.close()
-        
+
+    def testZeroBlob(self):
+        self.assertRaises(TypeError, apsw.zeroblob)
+        self.assertRaises(TypeError, apsw.zeroblob, "foo")
+        self.assertRaises(TypeError, apsw.zeroblob, -7)
+        self.assertRaises(OverflowError, apsw.zeroblob, 4000000000)        
 
 
 # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used

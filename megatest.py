@@ -120,6 +120,7 @@ def buildapsw(outputfile, pybin, workdir):
 
 
 PYVERS=(
+    '2.5.1',
     '2.5',
     '2.4.4',
     '2.3.6',
@@ -128,11 +129,8 @@ PYVERS=(
     )
 
 SQLITEVERS=(
-#    'cvs',
-    '3.3.10',
-    '3.3.11',
-    '3.3.12',
-    '3.3.13',
+    'cvs',
+    '3.4.0',
    )
 
 

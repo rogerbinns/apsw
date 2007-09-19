@@ -55,7 +55,10 @@ typedef int Py_ssize_t;
 
 /* SQLite amalgamation */
 #ifdef APSW_USE_SQLITE_AMALGAMATION
-#include "sqlite3.c"
+/* See SQLite ticket 2554 */
+#define SQLITE_API static
+#define SQLITE_EXTERN static
+#include APSW_USE_SQLITE_AMALGAMATION
 #else
 /* SQLite 3 headers */
 #include "sqlite3.h"
@@ -75,7 +78,7 @@ typedef int Py_ssize_t;
 #define APSW_INT32_MAX 2147483647
 
 /* The module object */
-PyObject *apswmodule;
+static PyObject *apswmodule;
 
 /* The encoding we use with SQLite.  SQLite supports either utf8 or 16
    bit unicode (host byte order).  If the latter is used then all
@@ -734,6 +737,7 @@ static int
 Connection_init(Connection *self, PyObject *args, PyObject *kwds)
 {
   PyObject *hooks=NULL, *hook=NULL, *iterator=NULL, *hookargs=NULL, *hookresult=NULL;
+  PyFrameObject *frame;
   char *filename=NULL;
   int res=0;
 
@@ -757,7 +761,7 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
       goto pyexception;
     
   /* record where it was allocated */
-  PyFrameObject *frame = PyThreadState_GET()->frame;
+  frame = PyThreadState_GET()->frame;
   self->co_linenumber=PyCode_Addr2Line(frame->f_code, frame->f_lasti);
   self->co_filename=frame->f_code->co_filename;
   Py_INCREF(self->co_filename);
@@ -3455,6 +3459,90 @@ static PyTypeObject ConnectionType = {
     0,                         /* tp_del */
 };
 
+/* Zeroblob used for binding and results - takes a single integer in constructor 
+   and has no other methods */
+
+typedef struct {
+  PyObject_HEAD
+  int blobsize;
+} ZeroBlobBind;
+
+static PyObject*
+ZeroBlobBind_new(PyTypeObject *type, PyObject *args, PyObject *kwargs)
+{
+  ZeroBlobBind *self;
+  int n;
+  
+  if(kwargs && PyDict_Size(kwargs)!=0)
+    {
+      PyErr_Format(PyExc_TypeError, "Zeroblob constructor does not take keyword arguments");
+      return NULL;
+    }
+
+  if(!PyArg_ParseTuple(args, "i", &n))
+    return NULL;
+
+  if(n<0)
+    {
+      PyErr_Format(PyExc_TypeError, "zeroblob size must be >= 0");
+      return NULL;
+    }
+
+  self=(ZeroBlobBind*)type->tp_alloc(type, 0);
+  if(self) self->blobsize=n;
+  return (PyObject*)self;
+}
+
+static PyTypeObject ZeroBlobBindType = {
+    PyObject_HEAD_INIT(NULL)
+    0,                         /*ob_size*/
+    "apsw.zeroblob",           /*tp_name*/
+    sizeof(ZeroBlobBind),      /*tp_basicsize*/
+    0,                         /*tp_itemsize*/
+    0,                         /*tp_dealloc*/ 
+    0,                         /*tp_print*/
+    0,                         /*tp_getattr*/
+    0,                         /*tp_setattr*/
+    0,                         /*tp_compare*/
+    0,                         /*tp_repr*/
+    0,                         /*tp_as_number*/
+    0,                         /*tp_as_sequence*/
+    0,                         /*tp_as_mapping*/
+    0,                         /*tp_hash */
+    0,                         /*tp_call*/
+    0,                         /*tp_str*/
+    0,                         /*tp_getattro*/
+    0,                         /*tp_setattro*/
+    0,                         /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    "ZeroBlobBind object",     /* tp_doc */
+    0,		               /* tp_traverse */
+    0,		               /* tp_clear */
+    0,		               /* tp_richcompare */
+    0,		               /* tp_weaklistoffset */
+    0,		               /* tp_iter */
+    0,		               /* tp_iternext */
+    0,                         /* tp_methods */
+    0,                         /* tp_members */
+    0,                         /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    0,                         /* tp_init */
+    0,                         /* tp_alloc */
+    ZeroBlobBind_new,          /* tp_new */
+    0,                         /* tp_free */
+    0,                         /* tp_is_gc */
+    0,                         /* tp_bases */
+    0,                         /* tp_mro */
+    0,                         /* tp_cache */
+    0,                         /* tp_subclasses */
+    0,                         /* tp_weaklist */
+    0,                         /* tp_del */
+};
+
 
 /* CURSOR CODE */
 
@@ -4597,10 +4685,13 @@ initapsw(void)
     assert(sizeof(long long)==8);             /* we expect 64 bit long long */
 
     if (PyType_Ready(&ConnectionType) < 0)
-        return;
+      return;
 
     if (PyType_Ready(&APSWCursorType) < 0)
-        return;
+      return;
+
+    if (PyType_Ready(&ZeroBlobBindType) <0)
+      return;
 
     /* ensure threads are available */
     PyEval_InitThreads();
@@ -4615,8 +4706,9 @@ initapsw(void)
 
     Py_INCREF(&ConnectionType);
     PyModule_AddObject(m, "Connection", (PyObject *)&ConnectionType);
-
     /* we don't add cursor to the module since users shouldn't be able to instantiate them directly */
+    Py_INCREF(&ZeroBlobBindType);
+    PyModule_AddObject(m, "zeroblob", (PyObject *)&ZeroBlobBindType);
 
     hooks=PyList_New(0);
     if(!hooks) return;

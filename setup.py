@@ -14,11 +14,11 @@ define_macros.append( ('EXPERIMENTAL', '1') )
 include_dirs=[]
 library_dirs=[]
 
-# if sqlite3.c (amalgamation is in this directory then that is used)
-mydir=os.path.dirname(os.path.abspath(__file__))
+# if sqlite3.c (amalgamation is in the sqlite3 sub-directory then that is used)
+amalgamation=os.path.join(os.path.dirname(os.path.abspath(__file__)), "sqlite3", "sqlite3.c")
 
-if os.path.exists(os.path.join(mydir, "sqlite3.c")):
-    define_macros.append( ('APSW_USE_SQLITE_AMALGAMATION', 1) )
+if os.path.exists(amalgamation):
+    define_macros.append( ('APSW_USE_SQLITE_AMALGAMATION', '"'+amalgamation+'"') )
     libraries=[]
 else:
     # if there is a sqlite3 subdirectory then use that, otherwise
