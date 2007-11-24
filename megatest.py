@@ -102,7 +102,7 @@ def buildsqlite(workdir, sqlitever, logfile):
         run("cd %s ; cvs -d :pserver:anonymous@www.sqlite.org:/sqlite checkout sqlite > %s 2>&1; mv sqlite sqlite3" % (workdir, logfile,))
     else:
         run("cd %s ; wget -q %s -O - | tar xfz - > %s 2>&1; mv sqlite-%s sqlite3" % (workdir, sqliteurl(sqlitever), logfile, sqlitever))
-    run('cd %s/sqlite3 ; env CC="gcc -fPIC" CFLAGS="-DHAVE_DLOPEN" ./configure --enable-threadsafe --disable-tcl >> %s 2>&1; make >> %s 2>&1; cp .libs/*.a .; ranlib *.a 2>/dev/null; cp src/sqlite3ext.h .' % (workdir,logfile,logfile))
+    run('cd %s/sqlite3 ; ./configure --enable-threadsafe --disable-tcl >> %s 2>&1; make sqlite3.c >> %s 2>&1' % (workdir,logfile,logfile))
     if sys.platform.startswith("darwin"):
         run('cd %s ; gcc -fPIC -bundle -o testextension.sqlext -Isqlite3 testextension.c' % (workdir,))
     else:
@@ -120,17 +120,18 @@ def buildapsw(outputfile, pybin, workdir):
 
 
 PYVERS=(
-    '2.5.1',
-    '2.5',
-    '2.4.4',
-    '2.3.6',
+    #'2.5.1',
+    #'2.5',
+    #'2.4.4',
+    #'2.3.6',
     'system',
     # '2.2.3',  - apsw not supported on 2.2 as it needs GILstate
     )
 
 SQLITEVERS=(
-    'cvs',
-    '3.4.0',
+    # 'cvs',
+    #'3.4.0',
+    '3.5.2',
    )
 
 

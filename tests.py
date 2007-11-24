@@ -9,7 +9,7 @@ print "          APSW version",apsw.apswversion()
 print "    SQLite lib version",apsw.sqlitelibversion()
 print "SQLite headers version",apsw.SQLITE_VERSION_NUMBER
 
-if [int(x) for x in apsw.sqlitelibversion().split(".")]<[3,3,7]:
+if [int(x) for x in apsw.sqlitelibversion().split(".")]<[3,5,2]:
     print "You are using an earlier version of SQLite than recommended"
 
 # unittest stuff from here on
@@ -2073,7 +2073,23 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, apsw.zeroblob)
         self.assertRaises(TypeError, apsw.zeroblob, "foo")
         self.assertRaises(TypeError, apsw.zeroblob, -7)
-        self.assertRaises(OverflowError, apsw.zeroblob, 4000000000)        
+        self.assertRaises(OverflowError, apsw.zeroblob, 4000000000)
+        cur=self.db.cursor()
+        cur.execute("create table foo(x)")
+        cur.execute("insert into foo values(?)", (apsw.zeroblob(27),))
+        v=cur.execute("select * from foo").next()[0]
+        self.assertEqual(v, buffer("\x00"*27))
+        # Make sure inheritance works
+        class multi(object):
+            def __init__(self): self.foo=3
+        class derived(multi,apsw.zeroblob):
+            def __init__(self, num):
+                multi.__init__(self)
+                apsw.zeroblob.__init__(self, num)
+        cur.execute("delete from foo; insert into foo values(?)", (derived(28),))
+        v=cur.execute("select * from foo").next()[0]
+        self.assertEqual(v, buffer("\x00"*28))
+        
 
 
 # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used

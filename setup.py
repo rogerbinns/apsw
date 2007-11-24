@@ -6,6 +6,8 @@ define_macros=[]
 
 # Excludes the assertions
 define_macros.append( ('NDEBUG', '1') )
+# We always want threadsafe
+define_macros.append( ('SQLITE_THREADSAFE', '1') )
 
 # This includes the functionality marked as experimental in SQLite 3.
 # Comment out the line to exclude them

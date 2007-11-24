@@ -30,6 +30,23 @@
  
 */
 
+
+/* SQLite amalgamation */
+#ifdef APSW_USE_SQLITE_AMALGAMATION
+/* See SQLite ticket 2554 */
+#define SQLITE_API static
+#define SQLITE_EXTERN static
+#include APSW_USE_SQLITE_AMALGAMATION
+#else
+/* SQLite 3 headers */
+#include "sqlite3.h"
+#endif
+
+#if SQLITE_VERSION_NUMBER < 3005000
+#error Your SQLite version is too old.  It must be at least 3.5.0
+#endif
+
+
 /* system headers */
 #include <assert.h>
 
@@ -53,20 +70,6 @@ typedef int Py_ssize_t;
 /* A list of pointers (used by Connection to keep track of Cursors) */
 #include "pointerlist.c"
 
-/* SQLite amalgamation */
-#ifdef APSW_USE_SQLITE_AMALGAMATION
-/* See SQLite ticket 2554 */
-#define SQLITE_API static
-#define SQLITE_EXTERN static
-#include APSW_USE_SQLITE_AMALGAMATION
-#else
-/* SQLite 3 headers */
-#include "sqlite3.h"
-#endif
-
-#if SQLITE_VERSION_NUMBER < 3004000
-#error Your SQLite version is too old.  It must be at least 3.4.0
-#endif
 
 /* Prepared statement caching */
 /* #define SCSTATS */
@@ -86,7 +89,7 @@ static PyObject *apswmodule;
    affects how strings are stored in the database.  We use utf8 since
    it is more space efficient, and Python can't make its mind up about
    Unicode (it uses 16 or 32 bit unichars and often likes to use Byte
-   Order Markers). */
+   Order Markers as well). */
 #define STRENCODING "utf_8"
 
 /* Some macros used for frequent operations */
@@ -3836,6 +3839,10 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
 	  return -1;
 	}
       res=sqlite3_bind_blob(self->statement, arg, buffer, (int)buflen, SQLITE_TRANSIENT);
+    }
+  else if(PyObject_TypeCheck(obj, &ZeroBlobBindType)==1)
+    {
+      res=sqlite3_bind_zeroblob(self->statement, arg, ((ZeroBlobBind*)obj)->blobsize);
     }
   else 
     {
