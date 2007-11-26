@@ -120,10 +120,10 @@ def buildapsw(outputfile, pybin, workdir):
 
 
 PYVERS=(
-    #'2.5.1',
-    #'2.5',
-    #'2.4.4',
-    #'2.3.6',
+    '2.5.1',
+    '2.5',
+    '2.4.4',
+    '2.3.6',
     'system',
     # '2.2.3',  - apsw not supported on 2.2 as it needs GILstate
     )

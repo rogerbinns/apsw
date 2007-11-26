@@ -70,7 +70,6 @@ typedef int Py_ssize_t;
 /* A list of pointers (used by Connection to keep track of Cursors) */
 #include "pointerlist.c"
 
-
 /* Prepared statement caching */
 /* #define SCSTATS */
 #define STATEMENTCACHE_LINKAGE static
@@ -152,7 +151,7 @@ exc_descriptors[]=
     {SQLITE_IOERR,    "IO", NULL},
     {SQLITE_CORRUPT,  "Corrupt", NULL},
     {SQLITE_FULL,     "Full", NULL},
-    {SQLITE_TOOBIG,   "TooBig"},
+    {SQLITE_TOOBIG,   "TooBig", NULL},
     {SQLITE_NOLFS,    "NoLFS", NULL},
     {SQLITE_EMPTY,    "Empty", NULL},
     {SQLITE_FORMAT,   "Format", NULL},
@@ -451,6 +450,17 @@ static PyTypeObject APSWCursorType;
 
 /* forward declarations */
 static PyObject *APSWCursor_close(APSWCursor *self, PyObject *args);
+
+/* BLOB TYPE */
+typedef struct {
+  PyObject_HEAD
+  Connection *connection;
+  sqlite3_blob *pBlob;
+  int curoffset;
+} APSWBlob;
+
+static PyTypeObject APSWBlobType;
+
 
 
 /* CONVENIENCE FUNCTIONS */
@@ -820,6 +830,44 @@ finally:
   Py_XDECREF(hook);
   Py_XDECREF(hookresult);
   return res;
+}
+
+
+static void APSWBlob_init(APSWBlob *, Connection *, sqlite3_blob *);
+
+static PyObject *
+Connection_blobopen(Connection *self, PyObject *args)
+{
+  APSWBlob *apswblob=0;
+  sqlite3_blob *blob=0;
+  const char *dbname, *tablename, *column;
+  long long rowid;
+  int writing;
+  int res;
+
+  CHECK_THREAD(self, NULL);
+  CHECK_CLOSED(self, NULL);
+  
+  if(!PyArg_ParseTuple(args, "esesesLi:", STRENCODING, &dbname, STRENCODING, &tablename, STRENCODING, &column, &rowid, &writing))
+    return NULL;
+
+  res=sqlite3_blob_open(self->db, dbname, tablename, column, rowid, writing, &blob);
+  PyMem_Free((void*)dbname);
+  PyMem_Free((void*)tablename);
+  PyMem_Free((void*)column);
+  SET_EXC(self->db, res);
+  if(res!=SQLITE_OK)
+    return NULL;
+  
+  apswblob=PyObject_New(APSWBlob, &APSWBlobType);
+  if(!apswblob)
+    {
+      sqlite3_blob_close(blob);
+      return NULL;
+    }
+
+  APSWBlob_init(apswblob, self, blob);
+  return (PyObject*)apswblob;
 }
 
 static void APSWCursor_init(APSWCursor *, Connection *);
@@ -3392,6 +3440,8 @@ static PyMethodDef Connection_methods[] = {
       "Sets an update hook"},
   {"setrollbackhook", (PyCFunction)Connection_setrollbackhook, METH_O,
    "Sets a callable invoked before each rollback"},
+  {"blobopen", (PyCFunction)Connection_blobopen, METH_VARARGS,
+   "Opens a blob for i/o"},
 #ifdef EXPERIMENTAL
   {"setprofile", (PyCFunction)Connection_setprofile, METH_O,
    "Sets a callable invoked with profile information after each statement"},
@@ -3462,8 +3512,11 @@ static PyTypeObject ConnectionType = {
     0,                         /* tp_del */
 };
 
-/* Zeroblob used for binding and results - takes a single integer in constructor 
-   and has no other methods */
+
+/* ZEROBLOB CODE */
+
+/*  Zeroblob is used for binding and results - takes a single integer
+   in constructor and has no other methods */
 
 typedef struct {
   PyObject_HEAD
@@ -3545,6 +3598,229 @@ static PyTypeObject ZeroBlobBindType = {
     0,                         /* tp_weaklist */
     0,                         /* tp_del */
 };
+
+
+/* BLOB CODE */
+
+static PyObject*
+APSWBlob_new(PyTypeObject *type, PyObject *args, PyObject *kwargs)
+{
+  if(kwargs && PyDict_Size(kwargs)!=0)
+    {
+      PyErr_Format(PyExc_TypeError, "blob constructor does not take keyword arguments");
+      return NULL;
+    }
+
+  if(!PyArg_ParseTuple(args, ""))
+    return NULL;
+
+  return type->tp_alloc(type, 0);
+}
+
+static void
+APSWBlob_init(APSWBlob *self, Connection *connection, sqlite3_blob *blob)
+{
+  Py_INCREF(connection);
+  self->connection=connection;
+  self->pBlob=blob;
+  self->curoffset=0;
+}
+
+static void
+APSWBlob_dealloc(APSWBlob *self)
+{
+  if(self->pBlob)
+    {
+      /* we assume this can't return any form of error */
+      int res=sqlite3_blob_close(self->pBlob);
+      if(res!=SQLITE_OK)
+        {
+          make_exception(res, self->connection->db);
+          apsw_write_unraiseable();
+        }
+      self->pBlob=0;
+    }
+  if(self->connection)
+    {
+      Py_DECREF(self->connection);
+      self->connection=0;
+    }
+}
+
+/* If the blob is closed, we return the same error as normal python files */
+#define CHECK_BLOB_CLOSED \
+  if(!self->pBlob) \
+    { \
+      PyErr_Format(PyExc_ValueError, "I/O operation on closed blob"); \
+      return NULL; \
+    }
+
+static PyObject *
+APSWBlob_length(APSWBlob *self)
+{
+  CHECK_BLOB_CLOSED;
+  return PyInt_FromLong(sqlite3_blob_bytes(self->pBlob));
+}
+
+static PyObject *
+APSWBlob_read(APSWBlob *self, PyObject *args)
+{
+  int length=-1;
+  int res;
+  PyObject *buffy=0;
+  char *thebuffer;
+
+  CHECK_BLOB_CLOSED;
+
+   
+  /* The python file read routine treats negative numbers as read till
+     end of file, which I think is rather silly.  (Try reading -3
+     bytes from /dev/zero on a 64 bit machine with lots of swap to see
+     why).  In any event we remain consistent with Python file
+     objects */
+  if(!PyArg_ParseTuple(args, "|i:read(numbytes=remaining)", &length))
+    return NULL;
+
+  /* eof? */
+  if(self->curoffset==sqlite3_blob_bytes(self->pBlob))
+    return Py_BuildValue("");
+
+  if(length==0)
+    return PyString_FromString("");
+
+  if(length<0)
+    length=sqlite3_blob_bytes(self->pBlob)-self->curoffset;
+
+  /* trying to read more than is in the blob? */
+  if(self->curoffset+length>sqlite3_blob_bytes(self->pBlob))
+    length=sqlite3_blob_bytes(self->pBlob)-self->curoffset;
+
+  buffy=PyString_FromStringAndSize(NULL, length);
+  if(!buffy) return NULL;
+
+  thebuffer= PyString_AS_STRING(buffy);
+  Py_BEGIN_ALLOW_THREADS
+    res=sqlite3_blob_read(self->pBlob, thebuffer, length, self->curoffset);
+  Py_END_ALLOW_THREADS;
+  if(res!=SQLITE_OK)
+    {
+      Py_DECREF(buffy);
+      SET_EXC(self->connection->db, res);
+      return NULL;
+    }
+  else
+    self->curoffset+=length;
+  assert(self->curoffet<=sqlite3_blob_bytes(self->pBlob));
+  return buffy;
+}
+
+static PyObject *
+APSWBlob_seek(APSWBlob *self, PyObject *args)
+{
+  CHECK_BLOB_CLOSED;
+  int offset, whence=0;
+  
+  if(!PyArg_ParseTuple(args, "i|i:seek(offset,whence=0)", &offset, &whence))
+    return NULL;
+  
+  switch(whence)
+    {
+    default:
+      PyErr_Format(PyExc_ValueError, "whence parameter should be 0, 1 or 2");
+      return NULL;
+    case 0: /* relative to begining of file */
+      if(offset<0 || offset>sqlite3_blob_bytes(self->pBlob))
+        goto out_of_range;
+      self->curoffset=offset;
+      break;
+    case 1: /* relative to current position */
+      if(self->curoffset+offset<0 || self->curoffset+offset>sqlite3_blob_bytes(self->pBlob))
+        goto out_of_range;
+      self->curoffset+=offset;
+      break;
+    case 2: /* relative to end of file */
+      if(sqlite3_blob_bytes(self->pBlob)+offset<0 || sqlite3_blob_bytes(self->pBlob)+offset>sqlite3_blob_bytes(self->pBlob))
+        goto out_of_range;
+      self->curoffset=sqlite3_blob_bytes(self->pBlob)+offset;
+      break;
+    }
+  Py_INCREF(Py_None);
+  return Py_None;
+ out_of_range:
+  PyErr_Format(PyExc_ValueError, "The resulting offset would be less than zero or past the end of the blob");
+  return NULL;
+}
+
+static PyObject *
+APSWBlob_tell(APSWBlob *self)
+{
+  CHECK_BLOB_CLOSED;
+  return Py_BuildValue("i", self->curoffset);
+}
+
+static PyMethodDef APSWBlob_methods[]={
+  {"length", (PyCFunction)APSWBlob_length, METH_NOARGS,
+   "Returns length in bytes of the blob"},
+  {"read", (PyCFunction)APSWBlob_read, METH_VARARGS,
+   "Reads data from the blob"},
+  {"seek", (PyCFunction)APSWBlob_seek, METH_VARARGS,
+   "Seeks to a position in the blob"},
+  {"tell", (PyCFunction)APSWBlob_tell, METH_NOARGS,
+   "Returns current blob offset"},
+
+  {0,0,0,0} /* Sentinel */
+};
+
+static PyTypeObject APSWBlobType = {
+    PyObject_HEAD_INIT(NULL)
+    0,                         /*ob_size*/
+    "apsw.blob",               /*tp_name*/
+    sizeof(APSWBlob),          /*tp_basicsize*/
+    0,                         /*tp_itemsize*/
+    (destructor)APSWBlob_dealloc, /*tp_dealloc*/ 
+    0,                         /*tp_print*/
+    0,                         /*tp_getattr*/
+    0,                         /*tp_setattr*/
+    0,                         /*tp_compare*/
+    0,                         /*tp_repr*/
+    0,                         /*tp_as_number*/
+    0,                         /*tp_as_sequence*/
+    0,                         /*tp_as_mapping*/
+    0,                         /*tp_hash */
+    0,                         /*tp_call*/
+    0,                         /*tp_str*/
+    0,                         /*tp_getattro*/
+    0,                         /*tp_setattro*/
+    0,                         /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    "APSW blob object",        /* tp_doc */
+    0,		               /* tp_traverse */
+    0,		               /* tp_clear */
+    0,		               /* tp_richcompare */
+    0,		               /* tp_weaklistoffset */
+    0,		               /* tp_iter */
+    0,		               /* tp_iternext */
+    APSWBlob_methods,          /* tp_methods */
+    0,                         /* tp_members */
+    0,                         /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    0,                         /* tp_init */
+    0,                         /* tp_alloc */
+    APSWBlob_new,              /* tp_new */
+    0,                         /* tp_free */
+    0,                         /* tp_is_gc */
+    0,                         /* tp_bases */
+    0,                         /* tp_mro */
+    0,                         /* tp_cache */
+    0,                         /* tp_subclasses */
+    0,                         /* tp_weaklist */
+    0,                         /* tp_del */
+};
+
 
 
 /* CURSOR CODE */
@@ -3800,6 +4076,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
 		if(strbytes>APSW_INT32_MAX)
 		  {
                     SET_EXC(NULL, SQLITE_TOOBIG);
+                    res=SQLITE_TOOBIG;
 		  }
 		else
 		  {
@@ -4698,6 +4975,9 @@ initapsw(void)
       return;
 
     if (PyType_Ready(&ZeroBlobBindType) <0)
+      return;
+
+    if (PyType_Ready(&APSWBlobType) <0)
       return;
 
     /* ensure threads are available */

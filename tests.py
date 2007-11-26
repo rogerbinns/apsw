@@ -12,11 +12,13 @@ print "SQLite headers version",apsw.SQLITE_VERSION_NUMBER
 if [int(x) for x in apsw.sqlitelibversion().split(".")]<[3,5,2]:
     print "You are using an earlier version of SQLite than recommended"
 
+import sys
+sys.stdout.flush()
+
 # unittest stuff from here on
 
 import unittest
 import os
-import sys
 import math
 import random
 import time
@@ -2089,6 +2091,54 @@ class APSW(unittest.TestCase):
         cur.execute("delete from foo; insert into foo values(?)", (derived(28),))
         v=cur.execute("select * from foo").next()[0]
         self.assertEqual(v, buffer("\x00"*28))
+
+    def testBlobIO(self):
+        cur=self.db.cursor()
+        rowid=cur.execute("create table foo(x blob); insert into foo values(zeroblob(98765)); select rowid from foo").next()[0]
+        self.assertRaises(TypeError, self.db.blobopen, 1)
+        self.assertRaises(TypeError, self.db.blobopen, u"main", "foo\xf3")
+        self.assertRaises(TypeError, self.db.blobopen, u"main", "foo", "x", complex(-1,-1), True)
+        self.assertRaises(TypeError, self.db.blobopen, u"main", "foo", "x", rowid, True, False)
+        self.assertRaises(apsw.SQLError, self.db.blobopen, "main", "foo", "x", rowid*27, False)
+        blobro=self.db.blobopen("main", "foo", "x", rowid, False)
+        self.assertEqual(blobro.length(), 98765)
+        for i in xrange(98765):
+            x=blobro.read(1)
+            self.assertEqual("\x00", x)
+        x=blobro.read(10)
+        self.assertEqual(x, None)
+        blobro.seek(0,1)
+        self.assertEqual(blobro.tell(), 98765)
+        blobro.seek(0,0)
+        self.assertEqual(blobro.tell(), 0)
+        self.assertEqual(blobro.read(), "\x00"*98765)
+        blobro.seek(-3,2)
+        self.assertEqual(blobro.read(), "\x00"*3)
+        # check types
+        self.assertRaises(TypeError, blobro.read, "foo")
+        self.assertRaises(TypeError, blobro.tell, "foo")
+        self.assertRaises(TypeError, blobro.seek)
+        self.assertRaises(TypeError, blobro.seek, "foo", 1)
+        self.assertRaises(TypeError, blobro.seek, 0, 1, 2)
+        self.assertRaises(ValueError, blobro.seek, 0, -3)
+        self.assertRaises(ValueError, blobro.seek, 0, 3)
+        # can't seek before begining or after end of file
+        self.assertRaises(ValueError, blobro.seek, -1, 0)
+        self.assertRaises(ValueError, blobro.seek, 25, 1)
+        self.assertRaises(ValueError, blobro.seek, 25, 2)
+        self.assertRaises(ValueError, blobro.seek, 100000, 0)
+        self.assertRaises(ValueError, blobro.seek, -100000, 1)
+        self.assertRaises(ValueError, blobro.seek, -100000, 2)
+        blobro.seek(0,0)
+        blobro.write("kermit was here")
+        blobro.close()
+        # check can't work on closed blob
+        self.assertRaises(ValueError, blobro.read)
+        self.assertRaises(ValueError, blobro.seek, 0, 0)
+        self.assertRaises(ValueError, blobro.tell)
+        self.assertRaises(ValueError, blobro.write, "abc")
+        # add write tests, offset read+write, lseek
+        # add commit hook that rejects and verify blob.close then fails
         
 
 
