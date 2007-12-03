@@ -2099,8 +2099,12 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, self.db.blobopen, u"main", "foo\xf3")
         self.assertRaises(TypeError, self.db.blobopen, u"main", "foo", "x", complex(-1,-1), True)
         self.assertRaises(TypeError, self.db.blobopen, u"main", "foo", "x", rowid, True, False)
-        self.assertRaises(apsw.SQLError, self.db.blobopen, "main", "foo", "x", rowid*27, False)
+        self.assertRaises(apsw.SQLError, self.db.blobopen, "main", "foo", "x", rowid+27, False)
+        self.assertRaises(apsw.SQLError, self.db.blobopen, "foo", "foo" , "x", rowid, False)
+        self.assertRaises(apsw.SQLError, self.db.blobopen, "main", "x" , "x", rowid, False)
+        self.assertRaises(apsw.SQLError, self.db.blobopen, "main", "foo" , "y", rowid, False)
         blobro=self.db.blobopen("main", "foo", "x", rowid, False)
+        self.assertEqual(blobro.length(), 98765)
         self.assertEqual(blobro.length(), 98765)
         for i in xrange(98765):
             x=blobro.read(1)
@@ -2130,15 +2134,32 @@ class APSW(unittest.TestCase):
         self.assertRaises(ValueError, blobro.seek, -100000, 1)
         self.assertRaises(ValueError, blobro.seek, -100000, 2)
         blobro.seek(0,0)
-        blobro.write("kermit was here")
-        blobro.close()
+        self.assertRaises(apsw.ReadOnlyError, blobro.write, "kermit was here")
+        # you get the error on the close too, and blob is always closed - sqlite ticket #2815
+        self.assertRaises(apsw.ReadOnlyError, blobro.close) 
         # check can't work on closed blob
         self.assertRaises(ValueError, blobro.read)
         self.assertRaises(ValueError, blobro.seek, 0, 0)
         self.assertRaises(ValueError, blobro.tell)
         self.assertRaises(ValueError, blobro.write, "abc")
-        # add write tests, offset read+write, lseek
-        # add commit hook that rejects and verify blob.close then fails
+        # write tests
+        blobrw=self.db.blobopen("main", "foo", "x", rowid, True)
+        self.assertEqual(blobrw.length(), 98765)
+        blobrw.write("abcd")
+        blobrw.seek(0, 0)
+        self.assertEqual(blobrw.read(4), "abcd")
+        blobrw.write("efg")
+        blobrw.seek(0, 0)
+        self.assertEqual(blobrw.read(7), "abcdefg")
+        blobrw.seek(50, 0)
+        blobrw.write(buffer("hijkl"))
+        blobrw.seek(-98765, 2)
+        self.assertEqual(blobrw.read(55), "abcdefg"+"\x00"*43+"hijkl")
+        self.assertRaises(TypeError, blobrw.write, 12)
+        self.assertRaises(TypeError, blobrw.write)
+        # connection should refuse to close while blob is open
+        self.assertRaises(apsw.BusyError, self.db.close)
+        
         
 
 

@@ -46,7 +46,6 @@
 #error Your SQLite version is too old.  It must be at least 3.5.0
 #endif
 
-
 /* system headers */
 #include <assert.h>
 
@@ -3631,7 +3630,6 @@ APSWBlob_dealloc(APSWBlob *self)
 {
   if(self->pBlob)
     {
-      /* we assume this can't return any form of error */
       int res=sqlite3_blob_close(self->pBlob);
       if(res!=SQLITE_OK)
         {
@@ -3645,6 +3643,7 @@ APSWBlob_dealloc(APSWBlob *self)
       Py_DECREF(self->connection);
       self->connection=0;
     }
+  self->ob_type->tp_free((PyObject*)self);
 }
 
 /* If the blob is closed, we return the same error as normal python files */
@@ -3710,7 +3709,7 @@ APSWBlob_read(APSWBlob *self, PyObject *args)
     }
   else
     self->curoffset+=length;
-  assert(self->curoffet<=sqlite3_blob_bytes(self->pBlob));
+  assert(self->curoffset<=sqlite3_blob_bytes(self->pBlob));
   return buffy;
 }
 
@@ -3758,6 +3757,73 @@ APSWBlob_tell(APSWBlob *self)
   return Py_BuildValue("i", self->curoffset);
 }
 
+static PyObject *
+APSWBlob_write(APSWBlob *self, PyObject *obj)
+{
+  const void *buffer=0;
+  Py_ssize_t size;
+  int res;
+  CHECK_BLOB_CLOSED;
+
+  /* we support buffers and string for the object */
+  if(PyBuffer_Check(obj))
+    {
+      if(PyObject_AsReadBuffer(obj, &buffer, &size))
+        return NULL;
+    }
+  else if(PyString_Check(obj))
+    {
+      buffer=PyString_AS_STRING(obj);
+      size=PyString_GET_SIZE(obj);
+    }
+  else
+    {
+      PyErr_Format(PyExc_TypeError, "Parameter should be string or buffer");
+      return NULL;
+    }
+
+  if( ((int)(size+self->curoffset))<self->curoffset)
+    {
+      PyErr_Format(PyExc_ValueError, "Data is too large (integer wrap)");
+      return NULL;
+    }
+  if( ((int)(size+self->curoffset))>sqlite3_blob_bytes(self->pBlob))
+    {
+      PyErr_Format(PyExc_ValueError, "Data would go beyond end of blob");
+      return NULL;
+    }
+  res=sqlite3_blob_write(self->pBlob, buffer, (int)size, self->curoffset);
+  if(res!=SQLITE_OK)
+    {
+      SET_EXC(self->connection->db, res);
+      return NULL;
+    }
+  else
+    self->curoffset+=size;
+  assert(self->curoffset<=sqlite3_blob_bytes(self->pBlob));
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+static PyObject *
+APSWBlob_close(APSWBlob *self)
+{
+  int res;
+  /* we allow close to be called multiple times */
+  if(!self->pBlob) goto end;
+  res=sqlite3_blob_close(self->pBlob);
+  SET_EXC(self->connection->db, res);
+  self->pBlob=0; /* sqlite ticket #2815 */
+  Py_DECREF(self->connection);
+  self->connection=0;
+  if(res!=SQLITE_OK)
+    return NULL;   
+ end:
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+
 static PyMethodDef APSWBlob_methods[]={
   {"length", (PyCFunction)APSWBlob_length, METH_NOARGS,
    "Returns length in bytes of the blob"},
@@ -3767,7 +3833,10 @@ static PyMethodDef APSWBlob_methods[]={
    "Seeks to a position in the blob"},
   {"tell", (PyCFunction)APSWBlob_tell, METH_NOARGS,
    "Returns current blob offset"},
-
+  {"write", (PyCFunction)APSWBlob_write, METH_O,
+   "Writes data to blob"},
+  {"close", (PyCFunction)APSWBlob_close, METH_NOARGS,
+   "Closes blob"},
   {0,0,0,0} /* Sentinel */
 };
 
