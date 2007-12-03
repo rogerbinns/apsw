@@ -1,7 +1,7 @@
 #!/bin/sh 
 #
 
-if [ $# == 0 ]
+if [ $# = 0 ]
 then
   args="tests.py"
 else
@@ -14,7 +14,7 @@ rm -f *.gcda *.gcov *.gcno apsw.so
 PYTHON=python # use whatever is in the path
 INCLUDEDIR=`$PYTHON -c "import distutils.sysconfig; print distutils.sysconfig.get_python_inc()"`
 set -x
-gcc -pthread -fno-strict-aliasing -ftest-coverage -fprofile-arcs -g -fPIC -Wall -Wextra -DEXPERIMENTAL -DSQLITE_OMIT_LOAD_EXTENSION -Isqlite3 -I$INCLUDEDIR -c apsw.c
-gcc -pthread -ftest-coverage -fprofile-arcs -g -shared apsw.o -Lsqlite3 -lsqlite3 -o apsw.so
+gcc -pthread -fno-strict-aliasing -ftest-coverage -fprofile-arcs -g -fPIC -Wall -Wextra -DEXPERIMENTAL -DSQLITE_THREADSAFE=1 -DAPSW_USE_SQLITE_AMALGAMATION=\"sqlite3/sqlite3.c\" -I$INCLUDEDIR -c apsw.c
+gcc -pthread -ftest-coverage -fprofile-arcs -g -shared apsw.o -o apsw.so
 $PYTHON $args
 gcov apsw.c

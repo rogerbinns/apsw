@@ -5,7 +5,7 @@ from distutils.core import setup, Extension
 define_macros=[]
 
 # Excludes the assertions
-define_macros.append( ('NDEBUG', '1') )
+#define_macros.append( ('NDEBUG', '1') )
 # We always want threadsafe
 define_macros.append( ('SQLITE_THREADSAFE', '1') )
 
