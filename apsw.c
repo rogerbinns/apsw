@@ -810,7 +810,7 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
   if(!PyErr_Occurred())
     {
       res=0;
-      self->stmtcache=statementcache_init(self->db, 32);
+      self->stmtcache=statementcache_init(self->db, 100);
       goto finally;
     }
 
@@ -3461,7 +3461,8 @@ static PyMethodDef Connection_methods[] = {
 };
 
 
-static PyTypeObject ConnectionType = {
+static PyTypeObject ConnectionType = 
+  {
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
     "apsw.Connection",         /*tp_name*/
