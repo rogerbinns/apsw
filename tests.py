@@ -2113,6 +2113,10 @@ class APSW(unittest.TestCase):
         self.assertEqual(x, None)
         blobro.seek(0,1)
         self.assertEqual(blobro.tell(), 98765)
+        blobro.seek(0)
+        self.assertEqual(blobro.tell(), 0)
+        blobro.seek(2222)
+        self.assertEqual(blobro.tell(), 2222)
         blobro.seek(0,0)
         self.assertEqual(blobro.tell(), 0)
         self.assertEqual(blobro.read(), "\x00"*98765)
@@ -2171,8 +2175,11 @@ PROFILESTEPS=100000
 
 if __name__=='__main__':
 
-    if not getattr(apsw, "enableloadextension", None):
+    db=apsw.Connection(":memory:")
+    if not getattr(db, "enableloadextension", None):
         del APSW.testLoadExtension
+    db.close()
+    del db
 
     if getattr(apsw, "enableloadextension", None) and not os.path.exists(LOADEXTENSIONFILENAME):
         print "Not doing LoadExtension test.  You need to compile the extension first"

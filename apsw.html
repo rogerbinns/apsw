@@ -22,7 +22,7 @@ body {
 <body>
   <h1 class="notoc">APSW - Another Python SQLite Wrapper</h1>
 
-  <p><font size="-1">apsw-3.5.2-r1 25th November 2007</font></p>
+  <p><font size="-1">apsw-3.5.4-r1 25th December 2007</font></p>
 
   <p>APSW provides an SQLite 3 wrapper that provides the thinnest layer over
   <a href="http://www.sqlite.org">SQLite 3</a> possible. Everything you can do
@@ -70,6 +70,8 @@ body {
               <li><a href="#Module_constants">Module constants</a></li>
 
               <li><a href="#Connection_class">Connection class</a></li>
+
+              <li><a href="#blobio">Blob I/O</a></li>
 
               <li><a href="#Cursor">Cursor class</a></li>
 
@@ -135,7 +137,7 @@ body {
             <a href="#verhistory">Version History</a>
 
             <ul>
-              <li><a href="#352r1">3.5.2-r1</a></li>
+              <li><a href="#352r1">3.5.4-r1</a></li>
 
               <li><a href="#3313r1">3.3.13-r1</a></li>
 
@@ -271,9 +273,9 @@ body {
 "#0000C0">,</font>apsw<font color="#0000C0">.</font>SQLITE_VERSION_NUMBER   <font color="#008000"># from the sqlite header file at compile time
 
 </font><font color="blue">   Using APSW file /space/apsw/apsw.so
-      APSW version 3.4.0-r1
-    SQLite version 3.5.2
-    SQLite version 3005002
+      APSW version 3.5.4-r1
+    SQLite version 3.5.4
+    SQLite version 3005004
 </font>
 <font color="#008000">###
 ### Opening/creating database
@@ -681,7 +683,7 @@ cursor<font color="#0000C0">.</font>setrowtrace<font color=
 "#0000C0">,</font><font color="#0080C0">9999999999</font><font color=
 "#0000C0">),)
 
-</font><font color="#008000"># create a table with 500 random numbers
+</font><font color="#008000"># create a table with 100 random numbers
 </font>cursor<font color="#0000C0">.</font>execute<font color=
 "#0000C0">(</font><font color=
 "#004080">"begin ; create table bigone(x)"</font><font color="#0000C0">)
@@ -689,7 +691,7 @@ cursor<font color="#0000C0">.</font>setrowtrace<font color=
 "#0000C0">(</font><font color=
 "#004080">"insert into bigone values(?)"</font><font color=
 "#0000C0">, </font>randomintegers<font color="#0000C0">(</font><font color=
-"#0080C0">500</font><font color="#0000C0">))
+"#0080C0">100</font><font color="#0000C0">))
 </font>cursor<font color="#0000C0">.</font>execute<font color=
 "#0000C0">(</font><font color="#004080">"commit"</font><font color="#0000C0">)
 
@@ -721,7 +723,7 @@ cursor<font color="#0000C0">.</font>setrowtrace<font color=
 "#0080C0">20</font><font color="#0000C0">)
 
 </font><font color=
-"#008000"># see it in action - sorting 500 numbers to find the biggest takes a while
+"#008000"># see it in action - sorting 100 numbers to find the biggest takes a while
 </font><font color="#C00000">print </font><font color=
 "#004080">"spinny thing -&gt; "</font><font color="#0000C0">,
 </font><font color="#C00000">for </font>i <font color=
@@ -772,6 +774,48 @@ cursor<font color="#0000C0">.</font>setrowtrace<font color=
 
 </font>connection<font color="#0000C0">.</font>setcommithook<font color=
 "#0000C0">(</font>None<font color="#0000C0">)
+
+</font><font color="#008000">###
+### <a name="example-blobio" id="example-blobio">Blob I/O</a> 
+###
+
+</font>cursor<font color="#0000C0">.</font>execute<font color=
+"#0000C0">(</font><font color=
+"#004080">"create table blobby(x,y)"</font><font color="#0000C0">)
+</font><font color="#008000"># Add a blob we will fill in later
+</font>cursor<font color="#0000C0">.</font>execute<font color=
+"#0000C0">(</font><font color=
+"#004080">"insert into blobby values(1,zeroblob(10000))"</font><font color=
+"#0000C0">)
+</font><font color="#008000"># Or as a binding
+</font>cursor<font color="#0000C0">.</font>execute<font color=
+"#0000C0">(</font><font color=
+"#004080">"insert into blobby values(2,?)"</font><font color=
+"#0000C0">, (</font>apsw<font color="#0000C0">.</font>zeroblob<font color=
+"#0000C0">(</font><font color="#0080C0">20000</font><font color="#0000C0">),))
+</font><font color=
+"#008000"># Open a blob for writing.  We need to know the rowid
+</font>rowid<font color="#0000C0">=</font>cursor<font color=
+"#0000C0">.</font>execute<font color="#0000C0">(</font><font color=
+"#004080">"select ROWID from blobby where x=1"</font><font color=
+"#0000C0">).</font>next<font color="#0000C0">()[</font><font color=
+"#0080C0">0</font><font color="#0000C0">]
+</font>blob<font color="#0000C0">=</font>connection<font color=
+"#0000C0">.</font>blobopen<font color="#0000C0">(</font><font color=
+"#004080">"main"</font><font color="#0000C0">, </font><font color=
+"#004080">"blobby"</font><font color="#0000C0">, </font><font color=
+"#004080">"y"</font><font color="#0000C0">, </font>rowid<font color=
+"#0000C0">, </font><font color="#0080C0">1</font><font color=
+"#0000C0">) </font><font color="#008000"># 1 is for read/write
+</font>blob<font color="#0000C0">.</font>write<font color=
+"#0000C0">(</font><font color="#004080">"hello world"</font><font color=
+"#0000C0">)
+</font>blob<font color="#0000C0">.</font>seek<font color=
+"#0000C0">(</font><font color="#0080C0">2000</font><font color="#0000C0">)
+</font>blob<font color="#0000C0">.</font>write<font color=
+"#0000C0">(</font><font color="#004080">"hello world, again"</font><font color=
+"#0000C0">)
+</font>blob<font color="#0000C0">.</font>close<font color="#0000C0">()
 
 </font><font color="#008000">###
 ### Virtual tables
@@ -953,9 +997,9 @@ cursor<font color="#0000C0">.</font>setrowtrace<font color=
     </font><font color="#C00000">print </font>size<font color=
 "#0000C0">,</font>file<font color="#0000C0">,</font>directory
 
-<font color="blue">   481008 unicodedata.so /usr/lib/python2.5/lib-dynload
-   439341 libxml2.pyc /var/lib/python-support/python2.5
-   378048 libxml2mod.so /var/lib/python-support/python2.5
+<font color="blue">   511474 unicodedata_d.so /usr/lib/python2.5/lib-dynload
+   481008 unicodedata.so /usr/lib/python2.5/lib-dynload
+   453424 pyexpat_d.so /usr/lib/python2.5/lib-dynload
 </font>
 <font color="#008000"># Which 3 files are the oldest?
 </font><font color="#C00000">for </font>ctime<font color=
@@ -1536,6 +1580,58 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       "http://www.sqlite.org/cvstrac/tktview?tn=2082">2082</a>. You need to
       edit <tt>setup.py</tt> if you enable extension loading.</p>
     </dd>
+
+    <dt><strong>blobopen(databasename, tablename, columnname, rowid,
+    flags)</strong></dt>
+
+    <dd>Returns a new <a href="#blobio">blob</a>. The database name will be
+    <tt>main</tt>, unless you want to refer to a database you <a href=
+    "http://www.sqlite.org/lang_attach.html">ATTACH</a>ed.</dd>
+  </dl>
+
+  <h2><a name="blobio" id="blobio">Blob I/O</a></h2>
+
+  <p>Historically SQLite only let you access and create blobs in their
+  entirity. For example to reading or writing a single byte from a blob
+  required reading or writing the whole blob.</p>
+
+  <p>SQLite now provides incremental blob access, with APSW exposing it as a
+  file like object. Call Connection.blobopen to open a blob. <b>Note</b> that
+  the underlying <a href="http://www.sqlite.org/c3ref/blob.html">SQLite blob
+  apis</a> require offsets to be provided to each call, but the APSW blob
+  object tracks that for you.</p>
+
+  <dl>
+    <dt><strong>close()</strong></dt>
+
+    <dd>Stops any further access to the blob. You should proactively call close
+    as it will return errors that may correspond to earlier blob i/o. See
+    <a href="http://www.sqlite.org/c3ref/blob_close.html">blob_close()</a> for
+    more details.</dd>
+
+    <dt><strong>read([amount])</strong></dt>
+
+    <dd>Reads amount of data requested, or till end of file, whichever is
+    earlier. Attempting to read beyond the end of the blob returns the empty
+    string, in the same manner as end of file on normal file objects.</dd>
+
+    <dt><strong>write(data)</strong></dt>
+
+    <dd>Writes the requested data. Note that you cannot make the blob larger or
+    smaller. Normally you would create a zeroblob and then come back and fill
+    it in with this method, as shown in the <a href=
+    "#example-blobio">example</a>.</dd>
+
+    <dt><strong>tell()</strong></dt>
+
+    <dd>Returns the current position.</dd>
+
+    <dt><strong>seek(offset, [whence])</strong></dt>
+
+    <dd>Change the current position. If whence is omitted or zero, then the
+    position is set to offset. If whence is 1 then offset is added to the
+    current position. If whence is 2 then offset is relative to the end of the
+    blob.</dd>
   </dl>
 
   <h2><a name="Cursor" id="Cursor">Cursor class</a></h2>
@@ -3028,9 +3124,9 @@ Traceback (most recent call last):
 
       <h1><a name="verhistory" id="verhistory">Version History</a></h1>
 
-      <h2><a name="352r1">3.5.2-r1</a></h2>
+      <h2><a name="352r1">3.5.4-r1</a></h2>
 
-      <p>You can use this with SQLite 3.5.2 onwards.</p>
+      <p>You can use this with SQLite 3.5.4 onwards.</p>
 
       <p>SQLite now provides the source all <a href=
       "http://www.sqlite.org/cvstrac/wiki?p=TheAmalgamation">amalgamated</a>
@@ -3063,6 +3159,8 @@ Traceback (most recent call last):
         <li>SQLite 3.5 removed the requirement that all operations on a
         connection be done in the same thread. Consequently all code that
         enforced the restriction has been removed from APSW.</li>
+
+        <li>SQLite now has <a href="#blobio">blob I/O</a></li>
       </ul>
 
       <h2><a name="3313r1">3.3.13-r1</a></h2>

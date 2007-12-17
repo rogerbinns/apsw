@@ -63,6 +63,11 @@
 typedef int Py_ssize_t;
 #endif
 
+/* Python 2.3 doesn't have this */
+#ifndef Py_RETURN_NONE
+#define Py_RETURN_NONE return Py_INCREF(Py_None), Py_None
+#endif
+
 /* A module to augment tracebacks */
 #include "traceback.c"
 
@@ -255,7 +260,6 @@ apsw_write_unraiseable(void)
 {
   PyObject *err_type=NULL, *err_value=NULL, *err_traceback=NULL;
   PyObject *excepthook=NULL;
-  PyObject *args=NULL;
   PyObject *result=NULL;
   
   PyErr_Fetch(&err_type, &err_value, &err_traceback);
@@ -279,15 +283,12 @@ apsw_write_unraiseable(void)
 
   excepthook=PySys_GetObject("excepthook");
   if(excepthook)
-    args=Py_BuildValue("(OOO)", err_type?err_type:Py_None, err_value?err_value:Py_None, err_traceback?err_traceback:Py_None);
-  if(excepthook && args)
-    result=PyEval_CallObject(excepthook, args);
-  if(!excepthook || !args || !result)
+    result=PyEval_CallFunction(excepthook, "(OOO)", err_type?err_type:Py_None, err_value?err_value:Py_None, err_traceback?err_traceback:Py_None);
+  if(!excepthook || !result)
     PyErr_Display(err_type, err_value, err_traceback);
 
   /* excepthook is a borrowed reference */
   Py_XDECREF(result);
-  Py_XDECREF(args);
   Py_XDECREF(err_traceback);
   Py_XDECREF(err_value);
   Py_XDECREF(err_type);
@@ -470,10 +471,7 @@ static PyObject *
 convertutf8string(const char *str)
 {
   if(!str)
-    {
-      Py_INCREF(Py_None);
-      return Py_None;
-    }
+    Py_RETURN_NONE;
 
   /* new behaviour in 3.3.8 - always return unicode strings */
   return PyUnicode_DecodeUTF8(str, strlen(str), NULL);
@@ -681,7 +679,9 @@ Connection_close(Connection *self, PyObject *args)
   Connection_internal_cleanup(self);
 
  finally:
-  return PyErr_Occurred()?NULL:Py_BuildValue("");
+  if(PyErr_Occurred())
+    return NULL;
+  else Py_RETURN_NONE;
   
 }
 
@@ -847,7 +847,8 @@ Connection_blobopen(Connection *self, PyObject *args)
   CHECK_THREAD(self, NULL);
   CHECK_CLOSED(self, NULL);
   
-  if(!PyArg_ParseTuple(args, "esesesLi:", STRENCODING, &dbname, STRENCODING, &tablename, STRENCODING, &column, &rowid, &writing))
+  if(!PyArg_ParseTuple(args, "esesesLi:blobopen(database, table, column, rowid, rd_wr)", 
+                       STRENCODING, &dbname, STRENCODING, &tablename, STRENCODING, &column, &rowid, &writing))
     return NULL;
 
   res=sqlite3_blob_open(self->db, dbname, tablename, column, rowid, writing, &blob);
@@ -911,7 +912,7 @@ Connection_setbusytimeout(Connection *self, PyObject *args)
   Py_XDECREF(self->busyhandler);
   self->busyhandler=0;
 
-  return Py_BuildValue("");
+  Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -919,7 +920,7 @@ Connection_changes(Connection *self)
 {
   CHECK_THREAD(self,NULL);
   CHECK_CLOSED(self,NULL);
-  return Py_BuildValue("i", sqlite3_changes(self->db));
+  return PyInt_FromLong(sqlite3_changes(self->db));
 }
 
 static PyObject *
@@ -927,18 +928,17 @@ Connection_totalchanges(Connection *self)
 {
   CHECK_THREAD(self,NULL);
   CHECK_CLOSED(self,NULL);
-  return Py_BuildValue("i", sqlite3_total_changes(self->db));
+  return PyInt_FromLong(sqlite3_total_changes(self->db));
 }
 
 static PyObject *
 Connection_getautocommit(Connection *self)
 {
-  PyObject *res;
   CHECK_THREAD(self,NULL);
   CHECK_CLOSED(self,NULL);
-  res=(sqlite3_get_autocommit(self->db))?(Py_True):(Py_False);
-  Py_INCREF(res);
-  return res;
+  if (sqlite3_get_autocommit(self->db))
+    Py_RETURN_TRUE;
+  Py_RETURN_FALSE;
 }
 
 static PyObject *
@@ -988,7 +988,7 @@ Connection_interrupt(Connection *self)
   CHECK_CLOSED(self, NULL);
 
   sqlite3_interrupt(self->db);  /* no return value */
-  return Py_BuildValue("");
+  Py_RETURN_NONE;
 }
 
 static void
@@ -998,7 +998,7 @@ updatecb(void *context, int updatetype, char const *databasename, char const *ta
      abort immediately due to an error in the callback */
   
   PyGILState_STATE gilstate;
-  PyObject *retval=NULL, *args=NULL;
+  PyObject *retval=NULL;
   Connection *self=(Connection *)context;
 
   assert(self);
@@ -1010,14 +1010,10 @@ updatecb(void *context, int updatetype, char const *databasename, char const *ta
   if(PyErr_Occurred())
     goto finally;  /* abort hook due to outstanding exception */
 
-  args=Py_BuildValue("(iO&O&L)", updatetype, convertutf8string, databasename, convertutf8string, tablename, rowid);
-  if(!args) goto finally;
-  
-  retval=PyEval_CallObject(self->updatehook, args);
+  retval=PyObject_CallFunction(self->updatehook, "(iO&O&L)", updatetype, convertutf8string, databasename, convertutf8string, tablename, rowid);
 
  finally:
   Py_XDECREF(retval);
-  Py_XDECREF(args);
   PyGILState_Release(gilstate);
 }
 
@@ -1051,7 +1047,7 @@ Connection_setupdatehook(Connection *self, PyObject *callable)
   Py_XDECREF(self->updatehook);
   self->updatehook=callable;
 
-  return Py_BuildValue("");
+  Py_RETURN_NONE;
 }
 
 static void
@@ -1110,7 +1106,7 @@ Connection_setrollbackhook(Connection *self, PyObject *callable)
   Py_XDECREF(self->rollbackhook);
   self->rollbackhook=callable;
 
-  return Py_BuildValue("");
+  Py_RETURN_NONE;
 }
 
 #ifdef EXPERIMENTAL /* sqlite3_profile */
@@ -1121,7 +1117,7 @@ profilecb(void *context, const char *statement, sqlite_uint64 runtime)
      abort immediately due to an error in the callback */
   
   PyGILState_STATE gilstate;
-  PyObject *retval=NULL, *args=NULL;
+  PyObject *retval=NULL;
   Connection *self=(Connection *)context;
 
   assert(self);
@@ -1133,14 +1129,10 @@ profilecb(void *context, const char *statement, sqlite_uint64 runtime)
   if(PyErr_Occurred())
     goto finally;  /* abort hook due to outstanding exception */
 
-  args=Py_BuildValue("(O&K)", convertutf8string, statement, runtime);
-  if(!args) goto finally;
-
-  retval=PyEval_CallObject(self->profile, args);
+  retval=PyObject_CallFunction(self->profile, "(O&K)", convertutf8string, statement, runtime);
 
  finally:
   Py_XDECREF(retval);
-  Py_XDECREF(args);
   PyGILState_Release(gilstate);
 }
 
@@ -1174,7 +1166,7 @@ Connection_setprofile(Connection *self, PyObject *callable)
   Py_XDECREF(self->profile);
   self->profile=callable;
 
-  return Py_BuildValue("");
+  Py_RETURN_NONE;
 }
 #endif /* EXPERIMENTAL - sqlite3_profile */
 
@@ -1251,7 +1243,7 @@ Connection_setcommithook(Connection *self, PyObject *callable)
   Py_XDECREF(self->commithook);
   self->commithook=callable;
 
-  return Py_BuildValue("");
+  Py_RETURN_NONE;
 }
 #endif  /* EXPERIMENTAL sqlite3_commit_hook */
 
@@ -1328,7 +1320,7 @@ Connection_setprogresshandler(Connection *self, PyObject *args)
   Py_XDECREF(self->progresshandler);
   self->progresshandler=callable;
 
-  return Py_BuildValue("");
+  Py_RETURN_NONE;
 }
 #endif  /* EXPERIMENTAL sqlite3_progress_handler */
 
@@ -1339,7 +1331,7 @@ authorizercb(void *context, int operation, const char *paramone, const char *par
      SQLITE_IGNORE. (0, 1 or 2 respectively) */
 
   PyGILState_STATE gilstate;
-  PyObject *args=NULL, *retval=NULL;
+  PyObject *retval=NULL;
   int result=SQLITE_DENY;  /* default to deny */
   Connection *self=(Connection *)context;
 
@@ -1352,13 +1344,9 @@ authorizercb(void *context, int operation, const char *paramone, const char *par
   if(PyErr_Occurred())
     goto finally;  /* abort due to earlier exception */
 
-
-  args=Py_BuildValue("(iO&O&O&O&)", operation, convertutf8string, paramone, 
-		     convertutf8string, paramtwo, convertutf8string, databasename, 
-		     convertutf8string, triggerview);
-  if(!args) goto finally;
-
-  retval=PyEval_CallObject(self->authorizer, args);
+  retval=PyObject_CallFunction(self->authorizer, "(iO&O&O&O&)", operation, convertutf8string, paramone, 
+                               convertutf8string, paramtwo, convertutf8string, databasename, 
+                               convertutf8string, triggerview);
 
   if(!retval)
     goto finally; /* abort due to exeception */
@@ -1368,7 +1356,6 @@ authorizercb(void *context, int operation, const char *paramone, const char *par
     result=SQLITE_DENY;
 
  finally:
-  Py_XDECREF(args);
   Py_XDECREF(retval);
 
   PyGILState_Release(gilstate);
@@ -1405,7 +1392,9 @@ Connection_setauthorizer(Connection *self, PyObject *callable)
   Py_XDECREF(self->authorizer);
   self->authorizer=callable;
 
-  return (res==SQLITE_OK)?Py_BuildValue(""):NULL;
+  if(res==SQLITE_OK)
+    Py_RETURN_NONE;
+  return NULL;
 }
 
 static int 
@@ -1415,7 +1404,7 @@ busyhandlercb(void *context, int ncall)
      zero in case of error. */
 
   PyGILState_STATE gilstate;
-  PyObject *args, *retval;
+  PyObject *retval;
   int result=0;  /* default to fail with SQLITE_BUSY */
   Connection *self=(Connection *)context;
 
@@ -1424,12 +1413,7 @@ busyhandlercb(void *context, int ncall)
 
   gilstate=PyGILState_Ensure();
 
-  args=Py_BuildValue("(i)", ncall);
-  if(!args)
-    goto finally; /* abort busy due to memory allocation failure */
-  
-  retval=PyEval_CallObject(self->busyhandler, args);
-  Py_DECREF(args);
+  retval=PyObject_CallFunction(self->busyhandler, "i", ncall);
 
   if(!retval)
     goto finally; /* abort due to exeception */
@@ -1468,7 +1452,9 @@ Connection_enableloadextension(Connection *self, PyObject *enabled)
   SET_EXC(self->db, res);  /* the function will currently always succeed */
 
   /* done */
-  return (res==SQLITE_OK)?Py_BuildValue(""):NULL;
+  if (res==SQLITE_OK)
+    Py_RETURN_NONE;
+  return NULL;
 }
 
 static PyObject *
@@ -1495,7 +1481,7 @@ Connection_loadextension(Connection *self, PyObject *args)
       sqlite3_free(errmsg);
       return NULL;
     }
-  return Py_BuildValue("");
+  Py_RETURN_NONE;
 }
 
 #endif /* EXPERIMENTAL extension loading */
@@ -1530,7 +1516,9 @@ Connection_setbusyhandler(Connection *self, PyObject *callable)
   Py_XDECREF(self->busyhandler);
   self->busyhandler=callable;
 
-  return (res==SQLITE_OK)?Py_BuildValue(""):NULL;
+  if (res==SQLITE_OK)
+    Py_RETURN_NONE;
+  return NULL;
 }
 
 
@@ -1589,8 +1577,7 @@ convert_value_to_pyobject(sqlite3_value *value)
       return convertutf8stringsize((const char*)sqlite3_value_text(value), sqlite3_value_bytes(value));
 
     case SQLITE_NULL:
-      Py_INCREF(Py_None);
-      return Py_None;
+      Py_RETURN_NONE;
 
     case SQLITE_BLOB:
       {
@@ -1961,7 +1948,6 @@ static void
 cbdispatch_final(sqlite3_context *context)
 {
   PyGILState_STATE gilstate;
-  PyObject *pyargs=NULL;
   PyObject *retval=NULL;
   aggregatefunctioncontext *aggfc=NULL;
   PyObject *err_type=NULL, *err_value=NULL, *err_traceback=NULL;
@@ -1981,11 +1967,7 @@ cbdispatch_final(sqlite3_context *context)
       goto finally;
     }
 
-  pyargs=Py_BuildValue("(O)", aggfc->aggvalue);
-  if(!pyargs) goto finally;
-
-  retval=PyEval_CallObject(aggfc->finalfunc, pyargs);
-  Py_DECREF(pyargs);
+  retval=PyObject_CallFunctionObjArgs(aggfc->finalfunc, aggfc->aggvalue, NULL);
   set_context_result(context, retval);
   Py_XDECREF(retval);
 
@@ -2100,7 +2082,7 @@ Connection_createscalarfunction(Connection *self, PyObject *args)
       freefunccbinfo(cbinfo);
     }
   
-  return Py_BuildValue("");
+  Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -2181,7 +2163,7 @@ Connection_createaggregatefunction(Connection *self, PyObject *args)
       freefunccbinfo(cbinfo);
     }
   
-  return Py_BuildValue("");
+  Py_RETURN_NONE;
 }
 
 /* USER DEFINED COLLATION CODE.*/
@@ -2220,7 +2202,7 @@ collation_cb(void *context,
 {
   PyGILState_STATE gilstate;
   collationcbinfo *cbinfo=(collationcbinfo*)context;
-  PyObject *pys1=NULL, *pys2=NULL, *retval=NULL, *pyargs=NULL;
+  PyObject *pys1=NULL, *pys2=NULL, *retval=NULL;
   int result=0;
 
   assert(cbinfo);
@@ -2235,15 +2217,7 @@ collation_cb(void *context,
   if(!pys1 || !pys2)  
     goto finally;   /* failed to allocate strings */
 
-  pyargs=Py_BuildValue("(NN)", pys1, pys2);
-  if(!pyargs) 
-    goto finally; /* failed to allocate arg tuple */
-
-  pys1=pys2=NULL;  /* pyargs owns them now */
-
-  assert(!PyErr_Occurred());
-
-  retval=PyEval_CallObject(cbinfo->func, pyargs);
+  retval=PyObject_CallFunction(cbinfo->func, "(OO)", pys1, pys2);
 
   if(!retval) goto finally;  /* execution failed */
 
@@ -2251,12 +2225,10 @@ collation_cb(void *context,
   if(PyErr_Occurred())
       result=0;
 
-
  finally:
   Py_XDECREF(pys1);
   Py_XDECREF(pys2);
   Py_XDECREF(retval);
-  Py_XDECREF(pyargs);
   PyGILState_Release(gilstate);
   return result;
 
@@ -3354,6 +3326,7 @@ static struct sqlite3_module apsw_vtable_module=
     vtabCommit, 
     vtabRollback,
     0,                /* vtabFindFunction */
+    0                 /* vtabRename */
   };
 
 static vtableinfo *
@@ -3399,7 +3372,7 @@ Connection_createmodule(Connection *self, PyObject *args)
   vti->next=self->vtables;
   self->vtables=vti;
   
-  return Py_BuildValue("");
+  Py_RETURN_NONE;
 }
 
 #endif /* EXPERIMENTAL */
@@ -3683,7 +3656,7 @@ APSWBlob_read(APSWBlob *self, PyObject *args)
 
   /* eof? */
   if(self->curoffset==sqlite3_blob_bytes(self->pBlob))
-    return Py_BuildValue("");
+    Py_RETURN_NONE;
 
   if(length==0)
     return PyString_FromString("");
@@ -3744,8 +3717,7 @@ APSWBlob_seek(APSWBlob *self, PyObject *args)
       self->curoffset=sqlite3_blob_bytes(self->pBlob)+offset;
       break;
     }
-  Py_INCREF(Py_None);
-  return Py_None;
+  Py_RETURN_NONE;
  out_of_range:
   PyErr_Format(PyExc_ValueError, "The resulting offset would be less than zero or past the end of the blob");
   return NULL;
@@ -3755,7 +3727,7 @@ static PyObject *
 APSWBlob_tell(APSWBlob *self)
 {
   CHECK_BLOB_CLOSED;
-  return Py_BuildValue("i", self->curoffset);
+  return PyInt_FromLong(self->curoffset);
 }
 
 static PyObject *
@@ -3802,8 +3774,7 @@ APSWBlob_write(APSWBlob *self, PyObject *obj)
   else
     self->curoffset+=size;
   assert(self->curoffset<=sqlite3_blob_bytes(self->pBlob));
-  Py_INCREF(Py_None);
-  return Py_None;
+  Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -3820,8 +3791,7 @@ APSWBlob_close(APSWBlob *self)
   if(res!=SQLITE_OK)
     return NULL;   
  end:
-  Py_INCREF(Py_None);
-  return Py_None;
+  Py_RETURN_NONE;
 }
 
 
@@ -4310,7 +4280,6 @@ static int
 APSWCursor_doexectrace(APSWCursor *self, exectrace_oldstate *etos)
 {
   PyObject *retval=NULL;
-  PyObject *args=NULL;
   PyObject *sqlcmd=NULL;
   PyObject *bindings=NULL;
   int result;
@@ -4346,16 +4315,10 @@ APSWCursor_doexectrace(APSWCursor *self, exectrace_oldstate *etos)
       bindings=Py_None;
       Py_INCREF(bindings);
     }
-  args=Py_BuildValue("(NN)", sqlcmd, bindings); /* owns sqlcmd and bindings now */
-  if(!args)
-    {
-      Py_DECREF(sqlcmd);
-      Py_DECREF(bindings);
-      return -1;
-    }
-  
-  retval=PyEval_CallObject(self->exectrace, args);
-  Py_DECREF(args);
+
+  retval=PyObject_CallFunction(self->exectrace, "OO", sqlcmd, bindings);
+  Py_DECREF(sqlcmd);
+  Py_DECREF(bindings);
   if(!retval) 
     {
       assert(PyErr_Occurred());
@@ -4747,7 +4710,7 @@ APSWCursor_close(APSWCursor *self, PyObject *args)
 
   CHECK_THREAD(self->connection, NULL);
   if (!self->connection->db) /* if connection is closed, then we must also be closed */
-    return Py_BuildValue("");
+    Py_RETURN_NONE;
 
   if(!PyArg_ParseTuple(args, "|i:close(force=False)", &force))
     return NULL;
@@ -4759,7 +4722,7 @@ APSWCursor_close(APSWCursor *self, PyObject *args)
       return NULL;
     }
   
-  return Py_BuildValue("");
+  Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -4848,7 +4811,7 @@ APSWCursor_setexectrace(APSWCursor *self, PyObject *func)
   Py_XDECREF(self->exectrace);
   self->exectrace=(func!=Py_None)?func:NULL;
 
-  return Py_BuildValue("");
+  Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -4869,7 +4832,7 @@ APSWCursor_setrowtrace(APSWCursor *self, PyObject *func)
   Py_XDECREF(self->rowtrace);
   self->rowtrace=(func!=Py_None)?func:NULL;
 
-  return Py_BuildValue("");
+  Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -5009,7 +4972,7 @@ enablesharedcache(PyObject *self, PyObject *args)
   if(res!=SQLITE_OK)
     return NULL;
 
-  return Py_BuildValue("");
+  Py_RETURN_NONE;
 }
 
 static PyMethodDef module_methods[] = {

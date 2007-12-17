@@ -233,9 +233,9 @@ def randomintegers(howmany):
     for i in xrange(howmany):
         yield (random.randint(0,9999999999),)
 
-# create a table with 500 random numbers
+# create a table with 100 random numbers
 cursor.execute("begin ; create table bigone(x)")
-cursor.executemany("insert into bigone values(?)", randomintegers(500))
+cursor.executemany("insert into bigone values(?)", randomintegers(100))
 cursor.execute("commit")
 
 # display an ascii spinner
@@ -252,7 +252,7 @@ def progresshandler():
 # register progresshandler every 20 instructions
 connection.setprogresshandler(progresshandler, 20)
 
-# see it in action - sorting 500 numbers to find the biggest takes a while
+# see it in action - sorting 100 numbers to find the biggest takes a while
 print "spinny thing -> ",
 for i in cursor.execute("select max(x) from bigone"):
     print # newline
@@ -280,6 +280,23 @@ except apsw.ConstraintError:
     print "commit was not allowed"
 
 connection.setcommithook(None)
+
+###
+### <a name="example-blobio">Blob I/O</a> <!-@!@->
+###
+
+cursor.execute("create table blobby(x,y)")
+# Add a blob we will fill in later
+cursor.execute("insert into blobby values(1,zeroblob(10000))")
+# Or as a binding
+cursor.execute("insert into blobby values(2,?)", (apsw.zeroblob(20000),))
+# Open a blob for writing.  We need to know the rowid
+rowid=cursor.execute("select ROWID from blobby where x=1").next()[0]
+blob=connection.blobopen("main", "blobby", "y", rowid, 1) # 1 is for read/write
+blob.write("hello world")
+blob.seek(2000)
+blob.write("hello world, again")
+blob.close()
 
 ###
 ### Virtual tables
