@@ -18,7 +18,7 @@ tidytoc:
 	  --toc_label "" tmpfile2 | \
 	sed 's@\(<li><a href="#dbapinotes">\)@</ul></td><td valign="top"><ul>\1@' | \
 	grep -v '"list-style: none;"'> tmpfile
-	-tidy -indent -asxhtml -wrap 80 <tmpfile >apsw.html
+	-tidy -q -indent -asxhtml -wrap 120 <tmpfile >apsw.html
 	@rm -f tmpfile tmpfile2 .tmpop-*
 
 # You need to use the MinGW version of make.  It needs the doubled up slashes
