@@ -10,7 +10,8 @@
 #  - pre tag is not generated
 #  - if line contains <!-@!@-> then no entity escaping happens
 #  - output can be captured and put inline into code
-#  - some optimising of the html generated to reduce number of <font> tags to minimum necessary
+#  - some optimising of the html generated to reduce number of tags to minimum necessary
+#  - using spans with css classes instead of font tags
 
 # Imports
 import cgi, string, sys, cStringIO
@@ -24,17 +25,19 @@ import keyword, token, tokenize
 _KEYWORD = token.NT_OFFSET + 1
 _TEXT    = token.NT_OFFSET + 2
 
-_colors = {
-    token.NUMBER:       '#0080C0',
-    token.OP:           '#0000C0',
-    token.STRING:       '#004080',
-    tokenize.COMMENT:   '#008000',
-    token.NAME:         '#000000',
-    token.ERRORTOKEN:   '#FF8080',
-    _KEYWORD:           '#C00000',
-    _TEXT:              '#000000',
+_styles = {
+    token.NUMBER:       'pynumber',
+    token.OP:           'pyoperator',
+    token.STRING:       'pystring',
+    tokenize.COMMENT:   'pycomment',
+    token.NAME:         'pyname',
+    token.ERRORTOKEN:   'pyerror',
+    _KEYWORD:           'pykeyword',
+    _TEXT:              'pytext',
 }
 
+# easier to do this than change all code ...
+_colors=_styles
 
 class Parser:
     """ Send colored python source.
@@ -118,7 +121,7 @@ class Parser:
             fname=self.capturepattern % self.capturecounter
             self.capturecounter+=1
             # we put spaces in front of each line - using <blockquote> implies a new <p> and gives blank lines
-            self.out.write('\n</font><font color="blue">'+cgi.escape("".join(["   "+line for line in open(fname, "rt")]))+'</font>')
+            self.out.write('\n</span><span class="pyoutput">'+cgi.escape("".join(["   "+line for line in open(fname, "rt")]))+'</span>')
             self.prevcolour=None
             return
 
@@ -128,11 +131,11 @@ class Parser:
             self.out.write(cgi.escape(toktext))
             return
         if self.prevcolour!=color:
-            if self.prevcolour!='#000000' and self.prevcolour is not None:
-                self.out.write('</font>')
+            if self.prevcolour!='pytext' and self.prevcolour is not None:
+                self.out.write('</span>')
             self.prevcolour=color
-            if color!='#000000':
-                self.out.write('<font color="%s"%s>' % (color, style))
+            if color!='pytext':
+                self.out.write('<span class="%s"%s>' % (color, style))
                 
         if "<!-@!@->" in toktext:  # line contains html - don't quote
             toktext=toktext.replace("<!-@!@->", "")
