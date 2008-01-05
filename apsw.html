@@ -2814,7 +2814,7 @@ Traceback (most recent call last):
         <li>SQLITE_COPY authorizer code and SQLITE_PROTOCOL error code are no longer used by SQLite, but the values are
         left in apsw for backwards compatibility</li>
 
-        <li>SQLITE_IOERR_DELETE and SQLITE_IOERR_BLOCKED added</li>
+        <li>SQLITE_IOERR_DELETE, SQLITE_IOERR_BLOCKED and SQLITE_IOERR_NOMEM added</li>
 
         <li>Connection.interrupt can be called from any thread</li>
 
@@ -2832,7 +2832,7 @@ Traceback (most recent call last):
         <li>SQLite 3.5 removed the requirement that all operations on a connection be done in the same thread.
         Consequently all code that enforced the restriction has been removed from APSW.</li>
 
-        <li>SQLite now has <a href="#blobio">blob I/O</a></li>
+        <li>SQLite now has incremental <a href="#blobio">blob I/O</a></li>
       </ul>
 
       <h2><a name="3313r1">3.3.13-r1</a></h2>

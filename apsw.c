@@ -48,6 +48,7 @@
 
 /* system headers */
 #include <assert.h>
+#include <stdarg.h>
 
 /* Get the version number */
 #include "apswversion.h"
@@ -1763,7 +1764,6 @@ getfunctionargs(sqlite3_context *context, PyObject *firstelement, int argc, sqli
       PyObject *item=convert_value_to_pyobject(argv[i]);
       if(!item)
         {
-          Py_DECREF(pyargs);
           sqlite3_result_error(context, "convert_value_to_pyobject failed", -1);
           goto error;
         }
@@ -1783,8 +1783,8 @@ static void
 cbdispatch_func(sqlite3_context *context, int argc, sqlite3_value **argv)
 {
   PyGILState_STATE gilstate;
-  PyObject *pyargs;
-  PyObject *retval;
+  PyObject *pyargs=NULL;
+  PyObject *retval=NULL;
   funccbinfo *cbinfo=(funccbinfo*)sqlite3_user_data(context);
   assert(cbinfo);
 
@@ -1804,10 +1804,8 @@ cbdispatch_func(sqlite3_context *context, int argc, sqlite3_value **argv)
 
   assert(!PyErr_Occurred());
   retval=PyEval_CallObject(cbinfo->scalarfunc, pyargs);
-
-  Py_DECREF(pyargs);
-  set_context_result(context, retval);
-  Py_XDECREF(retval);
+  if(retval)
+    set_context_result(context, retval);
 
  finally:
   if (PyErr_Occurred())
@@ -1817,7 +1815,10 @@ cbdispatch_func(sqlite3_context *context, int argc, sqlite3_value **argv)
       sqlite3_free(funname);
     }
  finalfinally:
-   PyGILState_Release(gilstate);
+  Py_XDECREF(pyargs);
+  Py_XDECREF(retval);
+  
+  PyGILState_Release(gilstate);
 }
 
 static aggregatefunctioncontext *
@@ -2335,7 +2336,7 @@ freevtableinfo(vtableinfo *vtinfo)
 
 /* Calls the named method of object with the provided args */
 static PyObject*
-Call_PythonMethod(PyObject *obj, const char *methodname, PyObject *args, int mandatory)
+Call_PythonMethod(PyObject *obj, const char *methodname, int mandatory, PyObject *args)
 {
   PyObject *method=NULL;
   PyObject *res=NULL;
@@ -2378,6 +2379,21 @@ Call_PythonMethod(PyObject *obj, const char *methodname, PyObject *args, int man
   return res;
 }
 
+static PyObject *
+Call_PythonMethodV(PyObject *obj, const char *methodname, int mandatory, const char *format, ...)
+{
+  PyObject *args=NULL, *result=NULL;
+  va_list list;
+  va_start (list, format);
+  args=Py_VaBuildValue(format, list);
+  va_end(list);
+
+  if (args)
+    result=Call_PythonMethod(obj, methodname, mandatory, args);
+
+  Py_XDECREF(args);
+  return result;
+}
 
 
 typedef struct {
@@ -2438,7 +2454,7 @@ vtabCreateOrConnect(sqlite3 *db,
       PyTuple_SET_ITEM(args, 1+i, str);
     }
 
-  res=Call_PythonMethod(vti->datasource, create_or_connect_strings[stringindex].methodname, args, 1);
+  res=Call_PythonMethod(vti->datasource, create_or_connect_strings[stringindex].methodname, 1, args);
   if(!res)
     goto pyexception;
 
@@ -2551,7 +2567,7 @@ vtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
   vtable=((apsw_vtable*)pVtab)->vtable;
 
   /* mandatory for Destroy, optional for Disconnect */
-  res=Call_PythonMethod(vtable, destroy_disconnect_strings[stringindex].methodname, NULL, (stringindex==0));
+  res=Call_PythonMethod(vtable, destroy_disconnect_strings[stringindex].methodname, (stringindex==0), NULL);
   /* sqlite 3.3.8 ignore return code for disconnect so we always free */
   if (res || stringindex==1)
     {
@@ -2607,7 +2623,7 @@ vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
   PyGILState_STATE gilstate;
   PyObject *vtable;
   PyObject *constraints=NULL, *orderbys=NULL;
-  PyObject *args=NULL, *res=NULL, *indices=NULL;
+  PyObject *res=NULL, *indices=NULL;
   int i,j;
   int nconstraints=0;
   int sqliteres=SQLITE_OK;
@@ -2653,12 +2669,7 @@ vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
     }
 
   /* actually call the function */
-  args=Py_BuildValue("(NN)", constraints, orderbys);
-  if(!args)
-    goto pyexception;
-  constraints=orderbys=NULL; /* owned by the tuple now */
-
-  res=Call_PythonMethod(vtable, "BestIndex", args, 1);
+  res=Call_PythonMethodV(vtable, "BestIndex", 1, "(OO)", constraints, orderbys);
   if(!res)
     goto pyexception;
 
@@ -2836,11 +2847,10 @@ vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
  pyexception: /* we had an exception in python code */
   assert(PyErr_Occurred());
   sqliteres=MakeSqliteMsgFromPyException(&(pVtab->zErrMsg));
-  AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex", "{s: O, s: O, s: O}", "self", vtable, "result", res?res:Py_None, "args", args?args:Py_None);
+  AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex", "{s: O, s: O, s: (OO)}", "self", vtable, "result", res?res:Py_None, "args", constraints?constraints:Py_None, orderbys?orderbys:Py_None);
 
  finally:
   Py_XDECREF(indices);
-  Py_XDECREF(args);
   Py_XDECREF(res);
   Py_XDECREF(constraints);
   Py_XDECREF(orderbys);
@@ -2882,7 +2892,7 @@ vtabTransactionMethod(sqlite3_vtab *pVtab, int stringindex)
   gilstate=PyGILState_Ensure();
   vtable=((apsw_vtable*)pVtab)->vtable;
 
-  res=Call_PythonMethod(vtable, transaction_strings[stringindex].methodname, NULL, 0);
+  res=Call_PythonMethod(vtable, transaction_strings[stringindex].methodname, 0, NULL);
   if(res) goto finally;
 
   /*  pyexception: we had an exception in python code */
@@ -2938,7 +2948,7 @@ vtabOpen(sqlite3_vtab *pVtab, sqlite3_vtab_cursor **ppCursor)
 
   vtable=((apsw_vtable*)pVtab)->vtable;
 
-  res=Call_PythonMethod(vtable, "Open", NULL, 1);
+  res=Call_PythonMethod(vtable, "Open", 1, NULL);
   if(!res)
     goto pyexception;
   avc=PyMem_Malloc(sizeof(apsw_vtable_cursor));
@@ -2965,7 +2975,7 @@ static int
 vtabFilter(sqlite3_vtab_cursor *pCursor, int idxNum, const char *idxStr,
                   int argc, sqlite3_value **sqliteargv)
 { 
-  PyObject *cursor, *args=NULL, *argv=NULL, *res=NULL;
+  PyObject *cursor, *argv=NULL, *res=NULL;
   PyGILState_STATE gilstate;
   int sqliteres=SQLITE_OK;
   int i;
@@ -2984,12 +2994,7 @@ vtabFilter(sqlite3_vtab_cursor *pCursor, int idxNum, const char *idxStr,
       PyTuple_SET_ITEM(argv, i, value);
     }
 
-  args=Py_BuildValue("(iO&N)", idxNum, convertutf8string, idxStr, argv);
-  if(!args) goto pyexception;
-
-  argv=NULL; /* owned by args now */
-
-  res=Call_PythonMethod(cursor, "Filter", args, 1);
+  res=Call_PythonMethodV(cursor, "Filter", 1, "(iO&O)", idxNum, convertutf8string, idxStr, argv);
   if(res) goto finally; /* result is ignored */
 
  pyexception: /* we had an exception in python code */
@@ -2998,7 +3003,6 @@ vtabFilter(sqlite3_vtab_cursor *pCursor, int idxNum, const char *idxStr,
   AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xFilter", "{s: O}", "self", cursor);
 
  finally:
-  Py_XDECREF(args);
   Py_XDECREF(argv);
   Py_XDECREF(res);
 
@@ -3021,7 +3025,7 @@ vtabEof(sqlite3_vtab_cursor *pCursor)
 
   cursor=((apsw_vtable_cursor*)pCursor)->cursor;
 
-  res=Call_PythonMethod(cursor, "Eof", NULL, 1);
+  res=Call_PythonMethod(cursor, "Eof", 1, NULL);
   if(!res) goto pyexception;
 
   sqliteres=PyObject_IsTrue(res);
@@ -3045,7 +3049,7 @@ vtabEof(sqlite3_vtab_cursor *pCursor)
 static int
 vtabColumn(sqlite3_vtab_cursor *pCursor, sqlite3_context *result, int ncolumn)
 { 
-  PyObject *cursor, *args=NULL, *res=NULL;
+  PyObject *cursor, *res=NULL;
   PyGILState_STATE gilstate;
   int sqliteres=SQLITE_OK; 
 
@@ -3053,10 +3057,7 @@ vtabColumn(sqlite3_vtab_cursor *pCursor, sqlite3_context *result, int ncolumn)
 
   cursor=((apsw_vtable_cursor*)pCursor)->cursor;
 
-  args=Py_BuildValue("(i)", ncolumn);
-  if(!args) goto pyexception;
-  
-  res=Call_PythonMethod(cursor, "Column", args, 1);
+  res=Call_PythonMethodV(cursor, "Column", 1, "(i)", ncolumn);
   if(!res) goto pyexception;
 
   set_context_result(result, res);
@@ -3068,7 +3069,6 @@ vtabColumn(sqlite3_vtab_cursor *pCursor, sqlite3_context *result, int ncolumn)
   AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xColumn", "{s: O}", "self", cursor);
 
  finally:
-  Py_XDECREF(args);
   Py_XDECREF(res);
 
   PyGILState_Release(gilstate);
@@ -3086,7 +3086,7 @@ vtabNext(sqlite3_vtab_cursor *pCursor)
 
   cursor=((apsw_vtable_cursor*)pCursor)->cursor;
 
-  res=Call_PythonMethod(cursor, "Next", NULL, 1);
+  res=Call_PythonMethod(cursor, "Next", 1, NULL);
   if(res) goto finally;
 
   /* pyexception:  we had an exception in python code */
@@ -3113,7 +3113,7 @@ vtabClose(sqlite3_vtab_cursor *pCursor)
 
   cursor=((apsw_vtable_cursor*)pCursor)->cursor;
 
-  res=Call_PythonMethod(cursor, "Close", NULL, 1);
+  res=Call_PythonMethod(cursor, "Close", 1, NULL);
   PyMem_Free(pCursor); /* always free */
   if(res) goto finally;
 
@@ -3141,7 +3141,7 @@ vtabRowid(sqlite3_vtab_cursor *pCursor, sqlite_int64 *pRowid)
 
   cursor=((apsw_vtable_cursor*)pCursor)->cursor;
 
-  res=Call_PythonMethod(cursor, "Rowid", NULL, 1);
+  res=Call_PythonMethod(cursor, "Rowid", 1, NULL);
   if(!res) goto pyexception;
   
   /* extract result */
@@ -3251,7 +3251,7 @@ vtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite_int64 *pR
       PyTuple_SET_ITEM(args, PyTuple_GET_SIZE(args)-1, fields);
     }
 
-  res=Call_PythonMethod(vtable, methodname, args, 1);
+  res=Call_PythonMethod(vtable, methodname, 1, args);
   if(!res) 
     goto pyexception;
 
@@ -5124,6 +5124,7 @@ initapsw(void)
     ADDINT(SQLITE_IOERR_RDLOCK);
     ADDINT(SQLITE_IOERR_DELETE);
     ADDINT(SQLITE_IOERR_BLOCKED);
+    ADDINT(SQLITE_IOERR_NOMEM);
     PyModule_AddObject(m, "mapping_extended_result_codes", thedict);
 
     /* error codes */
