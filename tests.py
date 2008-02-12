@@ -42,6 +42,12 @@ class ThreadRunner(threading.Thread):
         self.args=args
         self.kwargs=kwargs
         self.q=Queue.Queue()
+        self.started=False
+
+    def start(self):
+        if not self.started:
+            self.started=True
+            threading.Thread.start(self)
 
     def go(self):
         self.start()
@@ -85,6 +91,10 @@ class APSW(unittest.TestCase):
             'setexectrace': 1,
             'setrowtrace': 1,
             }
+
+    blob_nargs={
+
+        }
 
     
     def setUp(self, dbname="testdb"):
@@ -1144,49 +1154,21 @@ class APSW(unittest.TestCase):
 
     def testThreading(self):
         "Verify threading behaviour"
+        # We used to require all operations on a connection happen in
+        # the same thread.  Now they can happen in any thread, so we
+        # ensure that inuse errors are detected by doing a long
+        # running operation in one thread.
         c=self.db.cursor()
-        c.execute("create table foo(x,y); insert into foo values(99,100); insert into foo values(101,102)")
-        ### Check operations on Connection cause error if executed in seperate thread
-        # these should execute fine in any thread
-        ThreadRunner(apsw.sqlitelibversion).go()
-        ThreadRunner(apsw.apswversion).go()
-        # these should generate errors
-        nargs=self.connection_nargs
-        for func in [x for x in dir(self.db) if not x.startswith("__") and x!="interrupt"]:
-            args=("one", "two", "three")[:nargs.get(func,0)]
-            try:
-                tr=ThreadRunner(getattr(self.db, func), *args)
-                tr.go()
-                self.fail("connection method "+func+" didn't do thread safety check")
-            except apsw.ThreadingViolationError:
-                pass
+        c.execute("create table foo(x);begin;")
+        c.executemany("insert into foo values(?)", randomintegers(100000))
+        c.execute("commit")
 
-        # do the same thing, but for cursor
-        nargs=self.cursor_nargs
-        for func in [x for x in dir(c) if not x.startswith("__")]:
-            args=("one", "two", "three")[:nargs.get(func,0)]
-            try:
-                tr=ThreadRunner(getattr(c, func), *args)
-                tr.go()
-                self.fail("cursor method "+func+" didn't do thread safety check")
-            except apsw.ThreadingViolationError:
-                pass
-
-        # check cursor still works
-        for row in c.execute("select * from foo"):
-            pass
-        del c
-	# Do another query in a different thread
-        def threadcheck():
-            db=apsw.Connection("testdb")
-            c=db.cursor()
-            v=c.execute("select count(*) from foo").next()[0]
-            for _ in c: pass
-            db.close()
-            return v
-        
-        tr=ThreadRunner(threadcheck)
-        self.failUnlessEqual(2, tr.go())
+        t=ThreadRunner(c.execute, "select min(max(x-1+x),min(x-1+x)) from foo")
+        t.start()
+        # ensure thread t has started
+        time.sleep(0.01)
+        self.assertRaises(apsw.ThreadingViolationError, c.execute, "select * from foo")
+        t.join()
 
     def testStringsWithNulls(self):
         "Verify that strings with nulls in them are handled correctly"

@@ -1017,13 +1017,27 @@ python setup.py build --compile=mingw32 install
 </pre>
   </blockquote>
 
-  <p>By default whatever SQLite 3 you already have on your system is used. If you place a copy of the headers and
-  library in a <code>sqlite3</code> subdirectory then that will be used instead. If you follow the instructions below
-  then the <a href="http://www.sqlite.org/cvstrac/wiki?p=TheAmalgamation">amalgamation</a> is used, which compiles
-  SQLite into the APSW module itself and makes it private to the module. Any existing SQLite on your system is ignored
-  at build time and runtime. (Note that you can even use APSW in the same process as a different SQLite is used by
-  other libraries - this happens a lot on Mac.) You should follow these instructions with your current directory being
-  where you extracted the APSW source to.</p>
+  <h2>Finding SQLite 3</h2>
+
+  <p>SQLite 3 is needed during the build process.  These methods are tried in order:
+
+<dl>
+<dt><a href="http://www.sqlite.org/cvstrac/wiki?p=TheAmalgamation">Amalgamation</a></dt>
+<dd>The file <tt>sqlite3/sqlite3.c</tt> is looked for.
+<dt>Local build</dt>
+<dd>The header <tt>sqlite3/sqlite3.h</tt> and library <tt>sqlite3/libsqlite3.{a,so,dll}</tt> is looked for.
+<dt>System</dt>
+<dd>The default compiler include path (eg <tt>/usr/include</tt>) and library path (eg <tt>/usr/lib</tt>) are used.
+</dl>
+
+ <h2>Recommended</h2>
+
+  <p>These instructions show how to build using the amalgamation.  Any
+  existing SQLite on your system is ignored at build time and
+  runtime. (Note that you can even use APSW in the same process as a
+  different SQLite is used by other libraries - this happens a lot on
+  Mac.) You should follow these instructions with your current
+  directory being where you extracted the APSW source to.</p>
 
   <blockquote>
     <p>Download the <a href="http://www.sqlite.org/download.html">SQLite 3 code</a>.</p>

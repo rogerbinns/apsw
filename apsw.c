@@ -98,19 +98,22 @@ static PyObject *apswmodule;
 
 /* Some macros used for frequent operations */
 
-#define CHECK_THREAD(x,e)                                                \
-  { if(x->thread_ident!=PyThread_get_thread_ident())                                                                                 \
+#define CHECK_USE(e)                                                \
+  { if(self->inuse)                                                                                 \
       {    /* raise exception if we aren't already in one */                                                                         \
            if (!PyErr_Occurred())                                                                                                    \
-             PyErr_Format(ExcThreadingViolation, "All SQLite objects created in a thread can only be used in that same thread.  "    \
-                         "The object was created in thread id %d and this is %d",                                                    \
-                         (int)(x->thread_ident), (int)(PyThread_get_thread_ident()));                                                \
+             PyErr_Format(ExcThreadingViolation, "You are trying to use the same object concurrently in two threads which is not allowed."); \
            return e;                                                                                                                 \
       }                                                                                                                              \
   }
 
 #define CHECK_CLOSED(connection,e) \
 { if(!connection->db) { PyErr_Format(ExcConnectionClosed, "The connection has been closed"); return e; } }
+
+#define MARK_INUSE \
+  {  assert(self->inuse==0); self->inuse=1; }
+#define MARK_NOTINUSE \
+  {  assert(self->inuse==1); self->inuse=0; }
 
 /* EXCEPTION TYPES */
 
@@ -401,6 +404,8 @@ struct Connection {
   PyObject *co_filename;          /* filename of allocation */
   long thread_ident;              /* which thread we were made in */
 
+  unsigned inuse;                 /* track if we are in use preventing concurrent thread mangling */
+
   pointerlist cursors;            /* tracking cursors */
   StatementCache *stmtcache;      /* prepared statement cache */
 
@@ -426,6 +431,8 @@ typedef struct {
   PyObject_HEAD
   Connection *connection;          /* pointer to parent connection */
   sqlite3_stmt *statement;         /* current compiled statement */
+
+  unsigned inuse;                 /* track if we are in use preventing concurrent thread mangling */
 
   /* see sqlite3_prepare_v2 for the origin of these */
   const char *zsql;               /* current sqlstatement (which may include multiple statements) */
@@ -457,7 +464,8 @@ typedef struct {
   PyObject_HEAD
   Connection *connection;
   sqlite3_blob *pBlob;
-  int curoffset;
+  unsigned inuse;                 /* track if we are in use preventing concurrent thread mangling */
+  int curoffset;                  /* SQLite only supports 32 bit signed int offsets */
 } APSWBlob;
 
 static PyTypeObject APSWBlobType;
@@ -623,7 +631,7 @@ Connection_close(Connection *self, PyObject *args)
   if(!self->db)
     goto finally;
 
-  CHECK_THREAD(self,NULL);
+  CHECK_USE(NULL);
 
   assert(!PyErr_Occurred());
 
@@ -655,9 +663,11 @@ Connection_close(Connection *self, PyObject *args)
   assert(res==0);
   self->stmtcache=0;
 
+  MARK_INUSE;
   Py_BEGIN_ALLOW_THREADS
     res=sqlite3_close(self->db);
   Py_END_ALLOW_THREADS;
+  MARK_NOTINUSE;
 
   if (res!=SQLITE_OK) 
     {
@@ -691,19 +701,28 @@ Connection_dealloc(Connection* self)
 {
   if(self->db)
     {
-      /* not allowed to clobber existing exception */
-      PyObject *etype=NULL, *evalue=NULL, *etraceback=NULL;
-      PyErr_Fetch(&etype, &evalue, &etraceback);
+      int res;
+      Py_BEGIN_ALLOW_THREADS
+        res=sqlite3_close(self->db);
+      Py_END_ALLOW_THREADS;
+      self->db=0;
 
-      PyErr_Format(ExcConnectionNotClosed, 
-		   "apsw.Connection on \"%s\" at address %p, allocated at %s:%d. The destructor "
-		   "has been called, but you haven't closed the connection.  All connections must "
-		   "be explicitly closed.  The SQLite database object is being leaked.", 
-		   self->filename?self->filename:"NULL", self,
-		   PyString_AsString(self->co_filename), self->co_linenumber);
-
-      apsw_write_unraiseable();
-      PyErr_Fetch(&etype, &evalue, &etraceback);
+      if(res!=SQLITE_OK)
+        {
+          /* not allowed to clobber existing exception */
+          PyObject *etype=NULL, *evalue=NULL, *etraceback=NULL;
+          PyErr_Fetch(&etype, &evalue, &etraceback);
+          
+          PyErr_Format(ExcConnectionNotClosed, 
+                       "apsw.Connection on \"%s\" at address %p, allocated at %s:%d. The destructor "
+                       "has encountered an error %d closing the connection, but cannot raise an exception.",
+                       self->filename?self->filename:"NULL", self,
+                       PyString_AsString(self->co_filename), self->co_linenumber,
+                       res);
+          
+          apsw_write_unraiseable();
+          PyErr_Fetch(&etype, &evalue, &etraceback);
+        }
     }
 
   assert(self->cursors.numentries==0);
@@ -724,6 +743,7 @@ Connection_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
       /* Strictly speaking the memory was already zeroed.  This is
          just defensive coding. */
       self->db=0;
+      self->inuse=0;
       self->filename=0;
       self->co_linenumber=0;
       self->co_filename=0;
@@ -753,8 +773,6 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
   PyFrameObject *frame;
   char *filename=NULL;
   int res=0;
-
-  CHECK_THREAD(self,-1);
 
   if(kwds && PyDict_Size(kwds)!=0)
     {
@@ -845,14 +863,19 @@ Connection_blobopen(Connection *self, PyObject *args)
   int writing;
   int res;
 
-  CHECK_THREAD(self, NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
   
   if(!PyArg_ParseTuple(args, "esesesLi:blobopen(database, table, column, rowid, rd_wr)", 
                        STRENCODING, &dbname, STRENCODING, &tablename, STRENCODING, &column, &rowid, &writing))
     return NULL;
 
-  res=sqlite3_blob_open(self->db, dbname, tablename, column, rowid, writing, &blob);
+  MARK_INUSE;
+  Py_BEGIN_ALLOW_THREADS
+    res=sqlite3_blob_open(self->db, dbname, tablename, column, rowid, writing, &blob);
+  Py_END_ALLOW_THREADS;
+  MARK_NOTINUSE;
+
   PyMem_Free((void*)dbname);
   PyMem_Free((void*)tablename);
   PyMem_Free((void*)column);
@@ -878,7 +901,7 @@ Connection_cursor(Connection *self)
 {
   APSWCursor* cursor = NULL;
 
-  CHECK_THREAD(self,NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self,NULL);
 
   cursor = PyObject_New(APSWCursor, &APSWCursorType);
@@ -899,7 +922,7 @@ Connection_setbusytimeout(Connection *self, PyObject *args)
   int ms=0;
   int res;
 
-  CHECK_THREAD(self,NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self,NULL);
 
   if(!PyArg_ParseTuple(args, "i:setbusytimeout(millseconds)", &ms))
@@ -919,7 +942,7 @@ Connection_setbusytimeout(Connection *self, PyObject *args)
 static PyObject *
 Connection_changes(Connection *self)
 {
-  CHECK_THREAD(self,NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self,NULL);
   return PyInt_FromLong(sqlite3_changes(self->db));
 }
@@ -927,7 +950,7 @@ Connection_changes(Connection *self)
 static PyObject *
 Connection_totalchanges(Connection *self)
 {
-  CHECK_THREAD(self,NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self,NULL);
   return PyInt_FromLong(sqlite3_total_changes(self->db));
 }
@@ -935,7 +958,7 @@ Connection_totalchanges(Connection *self)
 static PyObject *
 Connection_getautocommit(Connection *self)
 {
-  CHECK_THREAD(self,NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self,NULL);
   if (sqlite3_get_autocommit(self->db))
     Py_RETURN_TRUE;
@@ -947,7 +970,7 @@ Connection_last_insert_rowid(Connection *self)
 {
   long long int vint;
 
-  CHECK_THREAD(self,NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self,NULL);
 
   vint=sqlite3_last_insert_rowid(self->db);
@@ -964,7 +987,7 @@ Connection_complete(Connection *self, PyObject *args)
   char *statements=NULL;
   int res;
 
-  CHECK_THREAD(self,NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self,NULL);
   
   if(!PyArg_ParseTuple(args, "es:complete(statement)", STRENCODING, &statements))
@@ -1023,7 +1046,7 @@ Connection_setupdatehook(Connection *self, PyObject *callable)
 {
   /* sqlite3_update_hook doesn't return an error code */
   
-  CHECK_THREAD(self,NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self,NULL);
 
   if(callable==Py_None)
@@ -1082,7 +1105,7 @@ Connection_setrollbackhook(Connection *self, PyObject *callable)
 {
   /* sqlite3_rollback_hook doesn't return an error code */
   
-  CHECK_THREAD(self,NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self,NULL);
 
   if(callable==Py_None)
@@ -1142,7 +1165,7 @@ Connection_setprofile(Connection *self, PyObject *callable)
 {
   /* sqlite3_profile doesn't return an error code */
   
-  CHECK_THREAD(self,NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self,NULL);
 
   if(callable==Py_None)
@@ -1219,7 +1242,7 @@ Connection_setcommithook(Connection *self, PyObject *callable)
 {
   /* sqlite3_commit_hook doesn't return an error code */
   
-  CHECK_THREAD(self,NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self,NULL);
 
   if(callable==Py_None)
@@ -1294,7 +1317,7 @@ Connection_setprogresshandler(Connection *self, PyObject *args)
   int nsteps=20;
   PyObject *callable=NULL;
   
-  CHECK_THREAD(self,NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self,NULL);
 
   if(!PyArg_ParseTuple(args, "O|i:setprogresshandler(callable, nsteps=20)", &callable, &nsteps))
@@ -1368,7 +1391,7 @@ Connection_setauthorizer(Connection *self, PyObject *callable)
 {
   int res;
 
-  CHECK_THREAD(self,NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self,NULL);
 
   if(callable==Py_None)
@@ -1440,7 +1463,7 @@ Connection_enableloadextension(Connection *self, PyObject *enabled)
 {
   int enabledp, res;
 
-  CHECK_THREAD(self, NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   /* get the boolean value */
@@ -1464,15 +1487,17 @@ Connection_loadextension(Connection *self, PyObject *args)
   int res;
   char *zfile=NULL, *zproc=NULL, *errmsg=NULL;
 
-  CHECK_THREAD(self, NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
   
   if(!PyArg_ParseTuple(args, "s|z:loadextension(filename, entrypoint=None)", &zfile, &zproc))
     return NULL;
 
+  MARK_INUSE;
   Py_BEGIN_ALLOW_THREADS
     res=sqlite3_load_extension(self->db, zfile, zproc, &errmsg);
   Py_END_ALLOW_THREADS;
+  MARK_NOTINUSE;
 
   /* load_extension doesn't set the error message on the db so we have to make exception manually */
   if(res!=SQLITE_OK)
@@ -1492,7 +1517,7 @@ Connection_setbusyhandler(Connection *self, PyObject *callable)
 {
   int res=SQLITE_OK;
 
-  CHECK_THREAD(self,NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self,NULL);
 
   if(callable==Py_None)
@@ -2014,7 +2039,7 @@ Connection_createscalarfunction(Connection *self, PyObject *args)
   funccbinfo *cbinfo;
   int res;
  
-  CHECK_THREAD(self,NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self,NULL);
 
   if(!PyArg_ParseTuple(args, "esO|i:createscalarfunction(name,callback, numargs=-1)", STRENCODING, &name, &callable, &numargs))
@@ -2096,7 +2121,7 @@ Connection_createaggregatefunction(Connection *self, PyObject *args)
   funccbinfo *cbinfo;
   int res;
 
-  CHECK_THREAD(self,NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self,NULL);
 
   if(!PyArg_ParseTuple(args, "esO|i:createaggregatefunction(name, factorycallback, numargs=-1)", STRENCODING, &name, &callable, &numargs))
@@ -2244,7 +2269,7 @@ Connection_createcollation(Connection *self, PyObject *args)
   collationcbinfo *cbinfo;
   int res;
 
-  CHECK_THREAD(self,NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self,NULL);
   
   if(!PyArg_ParseTuple(args, "esO:createcollation(name,callback)", STRENCODING, &name, &callable))
@@ -3346,7 +3371,7 @@ Connection_createmodule(Connection *self, PyObject *args)
   vtableinfo *vti;
   int res;
 
-  CHECK_THREAD(self, NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   if(!PyArg_ParseTuple(args, "esO:createmodule(name, datasource)", "utf_8", &name, &datasource))
@@ -3597,6 +3622,7 @@ APSWBlob_init(APSWBlob *self, Connection *connection, sqlite3_blob *blob)
   self->connection=connection;
   self->pBlob=blob;
   self->curoffset=0;
+  self->inuse=0;
 }
 
 static void
@@ -3632,6 +3658,7 @@ static PyObject *
 APSWBlob_length(APSWBlob *self)
 {
   CHECK_BLOB_CLOSED;
+  CHECK_USE(NULL);
   return PyInt_FromLong(sqlite3_blob_bytes(self->pBlob));
 }
 
@@ -3644,7 +3671,7 @@ APSWBlob_read(APSWBlob *self, PyObject *args)
   char *thebuffer;
 
   CHECK_BLOB_CLOSED;
-
+  CHECK_USE(NULL);
    
   /* The python file read routine treats negative numbers as read till
      end of file, which I think is rather silly.  (Try reading -3
@@ -3672,9 +3699,11 @@ APSWBlob_read(APSWBlob *self, PyObject *args)
   if(!buffy) return NULL;
 
   thebuffer= PyString_AS_STRING(buffy);
+  MARK_INUSE;
   Py_BEGIN_ALLOW_THREADS
     res=sqlite3_blob_read(self->pBlob, thebuffer, length, self->curoffset);
   Py_END_ALLOW_THREADS;
+  MARK_NOTINUSE;
   if(res!=SQLITE_OK)
     {
       Py_DECREF(buffy);
@@ -3690,8 +3719,9 @@ APSWBlob_read(APSWBlob *self, PyObject *args)
 static PyObject *
 APSWBlob_seek(APSWBlob *self, PyObject *args)
 {
-  CHECK_BLOB_CLOSED;
   int offset, whence=0;
+  CHECK_BLOB_CLOSED;
+  CHECK_USE(NULL);
   
   if(!PyArg_ParseTuple(args, "i|i:seek(offset,whence=0)", &offset, &whence))
     return NULL;
@@ -3727,6 +3757,7 @@ static PyObject *
 APSWBlob_tell(APSWBlob *self)
 {
   CHECK_BLOB_CLOSED;
+  CHECK_USE(NULL);
   return PyInt_FromLong(self->curoffset);
 }
 
@@ -3737,6 +3768,7 @@ APSWBlob_write(APSWBlob *self, PyObject *obj)
   Py_ssize_t size;
   int res;
   CHECK_BLOB_CLOSED;
+  CHECK_USE(NULL);
 
   /* we support buffers and string for the object */
   if(PyBuffer_Check(obj))
@@ -3765,7 +3797,11 @@ APSWBlob_write(APSWBlob *self, PyObject *obj)
       PyErr_Format(PyExc_ValueError, "Data would go beyond end of blob");
       return NULL;
     }
-  res=sqlite3_blob_write(self->pBlob, buffer, (int)size, self->curoffset);
+  MARK_INUSE;
+  Py_BEGIN_ALLOW_THREADS
+    res=sqlite3_blob_write(self->pBlob, buffer, (int)size, self->curoffset);
+  Py_END_ALLOW_THREADS;
+  MARK_NOTINUSE;
   if(res!=SQLITE_OK)
     {
       SET_EXC(self->connection->db, res);
@@ -3783,7 +3819,13 @@ APSWBlob_close(APSWBlob *self)
   int res;
   /* we allow close to be called multiple times */
   if(!self->pBlob) goto end;
-  res=sqlite3_blob_close(self->pBlob);
+  CHECK_USE(NULL);
+
+  MARK_INUSE;
+  Py_BEGIN_ALLOW_THREADS
+    res=sqlite3_blob_close(self->pBlob);
+  Py_END_ALLOW_THREADS;
+  MARK_NOTINUSE;
   SET_EXC(self->connection->db, res);
   self->pBlob=0; /* sqlite ticket #2815 */
   Py_DECREF(self->connection);
@@ -4003,6 +4045,7 @@ APSWCursor_init(APSWCursor *self, Connection *connection)
   self->emiter=0;
   self->exectrace=0;
   self->rowtrace=0;
+  self->inuse=0;
 }
 
 static PyObject *
@@ -4012,7 +4055,7 @@ APSWCursor_getdescription(APSWCursor *self)
   PyObject *result=NULL;
   PyObject *pair=NULL;
 
-  CHECK_THREAD(self->connection,NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self->connection,NULL);
 
   if(!self->statement)
@@ -4368,9 +4411,11 @@ APSWCursor_step(APSWCursor *self)
   for(;;)
     {
       assert(!PyErr_Occurred());
+      MARK_INUSE;
       Py_BEGIN_ALLOW_THREADS
         res=(self->statement)?(sqlite3_step(self->statement)):(SQLITE_DONE);
       Py_END_ALLOW_THREADS;
+      MARK_NOTINUSE;
 
       switch(res&0xff)
         {
@@ -4534,7 +4579,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
   PyObject *retval=NULL;
   exectrace_oldstate etos;
 
-  CHECK_THREAD(self->connection, NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self->connection, NULL);
 
   res=resetcursor(self, 0);
@@ -4616,7 +4661,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
   PyObject *next=NULL;
   exectrace_oldstate etos;
 
-  CHECK_THREAD(self->connection, NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self->connection, NULL);
 
   res=resetcursor(self, 0);
@@ -4708,7 +4753,7 @@ APSWCursor_close(APSWCursor *self, PyObject *args)
   int res;
   int force=0;
 
-  CHECK_THREAD(self->connection, NULL);
+  CHECK_USE(NULL);
   if (!self->connection->db) /* if connection is closed, then we must also be closed */
     Py_RETURN_NONE;
 
@@ -4733,7 +4778,7 @@ APSWCursor_next(APSWCursor *self)
   int numcols=-1;
   int i;
 
-  CHECK_THREAD(self->connection, NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self->connection, NULL);
 
  again:
@@ -4786,7 +4831,7 @@ APSWCursor_next(APSWCursor *self)
 static PyObject *
 APSWCursor_iter(APSWCursor *self)
 {
-  CHECK_THREAD(self->connection, NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self->connection, NULL);
 
   Py_INCREF(self);
@@ -4796,7 +4841,7 @@ APSWCursor_iter(APSWCursor *self)
 static PyObject *
 APSWCursor_setexectrace(APSWCursor *self, PyObject *func)
 {
-  CHECK_THREAD(self->connection, NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self->connection, NULL);
 
   if(func!=Py_None && !PyCallable_Check(func))
@@ -4817,7 +4862,7 @@ APSWCursor_setexectrace(APSWCursor *self, PyObject *func)
 static PyObject *
 APSWCursor_setrowtrace(APSWCursor *self, PyObject *func)
 {
-  CHECK_THREAD(self->connection, NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self->connection, NULL);
 
   if(func!=Py_None && !PyCallable_Check(func))
@@ -4840,7 +4885,7 @@ APSWCursor_getexectrace(APSWCursor *self)
 {
   PyObject *ret;
 
-  CHECK_THREAD(self->connection, NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self->connection, NULL);
 
   ret=(self->exectrace)?(self->exectrace):Py_None;
@@ -4852,7 +4897,7 @@ static PyObject *
 APSWCursor_getrowtrace(APSWCursor *self)
 {
   PyObject *ret;
-  CHECK_THREAD(self->connection, NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self->connection, NULL);
   ret =(self->rowtrace)?(self->rowtrace):Py_None;
   Py_INCREF(ret);
@@ -4862,7 +4907,7 @@ APSWCursor_getrowtrace(APSWCursor *self)
 static PyObject *
 APSWCursor_getconnection(APSWCursor *self)
 {
-  CHECK_THREAD(self->connection, NULL);
+  CHECK_USE(NULL);
   CHECK_CLOSED(self->connection, NULL);
 
   Py_INCREF(self->connection);
