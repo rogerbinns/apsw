@@ -1030,6 +1030,9 @@ python setup.py build --compile=mingw32 install
 <dd>The default compiler include path (eg <tt>/usr/include</tt>) and library path (eg <tt>/usr/lib</tt>) are used.
 </dl>
 
+  <p>Note that if you compiled SQLite with any OMIT flags (eg <tt>SQLITE_OMIT_LOAD_EXTENSION</tt>) then you
+should edit <tt>setup.py</tt> to add the same flag.
+
  <h2>Recommended</h2>
 
   <p>These instructions show how to build using the amalgamation.  Any
@@ -1494,11 +1497,16 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
   require offsets to be provided to each call, but the APSW blob object tracks that for you.</p>
 
   <dl>
-    <dt><strong>close()</strong></dt>
+    <dt><strong>close(force=False)</strong></dt>
 
-    <dd>Stops any further access to the blob. You should proactively call close as it will return errors that may
+    <dd><p>Stops any further access to the blob. You should proactively call close as it will return errors that may
     correspond to earlier blob i/o. See <a href="http://www.sqlite.org/c3ref/blob_close.html">blob_close()</a> for more
-    details.</dd>
+    details.  If you call any of the other methods on a closed blob then you will get a ValueError exception (this is
+    the same as calling methods on a closed Python file object).</p>
+ 
+    <p><i>force</i> currently has no effect and is present for compatibility with cursor objects.</p>
+
+    </dd>
 
     <dt><strong>read([amount])</strong></dt>
 
@@ -1539,7 +1547,7 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       already closed or if the Connection is closed will not result in errors. An open Cursor prevents closing of
       Connections. The circumstances in which they are not closed include:</p>
 
-      <ul>
+      <p><ul>
         <li>You haven't requested all the rows of available data (calling next() or using the cursor as an iterator
         will return more data)</li>
 
@@ -1548,7 +1556,7 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
         <li>If force is False then you will get exceptions if there is remaining work to do be in the Cursor such as
         more statements to execute, more data from the executemany binding sequence etc. If force is True then all
         remaining work and state information will be discarded.</li>
-      </ul>
+      </ul></p>
     </dd>
 
     <dt><strong>getconnection()</strong></dt>

@@ -7,7 +7,7 @@
   It assumes we are running as 32 bit int with a 64 bit long long type
   available.
 
-  Copyright (C) 2004-2007 Roger Binns <rogerb@rogerbinns.com>
+  Copyright (C) 2004-2008 Roger Binns <rogerb@rogerbinns.com>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any
@@ -29,6 +29,10 @@
      distribution.
  
 */
+
+
+/* DO NOT COMMIT */
+#undef NDEBUG
 
 
 /* SQLite amalgamation */
@@ -349,6 +353,67 @@ MakeSqliteMsgFromPyException(char **errmsg)
   return res;
 }
 
+/* Calls the named method of object with the provided args */
+static PyObject*
+Call_PythonMethod(PyObject *obj, const char *methodname, int mandatory, PyObject *args)
+{
+  PyObject *method=NULL;
+  PyObject *res=NULL;
+
+  /* we may be called when there is already an error.  eg if you return an error in
+     a cursor method, then SQLite calls vtabClose which calls us.  We don't want to 
+     clear pre-existing errors, but we do want to clear ones when the function doesn't
+     exist but is optional */
+  PyObject *etype=NULL, *evalue=NULL, *etraceback=NULL;
+  void *pyerralreadyoccurred=PyErr_Occurred();
+  if(pyerralreadyoccurred)
+    PyErr_Fetch(&etype, &evalue, &etraceback);
+
+
+  /* we should only be called with ascii methodnames so no need to do
+     character set conversions etc */
+#if PY_VERSION_HEX < 0x02050000
+  method=PyObject_GetAttrString(obj, (char*)methodname);
+#else
+  method=PyObject_GetAttrString(obj, methodname);
+#endif
+  if (!method)
+    {
+      if(!mandatory)
+	{
+	  /* pretend method existed and returned None */
+	  PyErr_Clear();
+	  res=Py_None;
+	  Py_INCREF(res);
+	}
+      goto finally;
+    }
+
+  res=PyEval_CallObject(method, args);
+
+ finally:
+  if(pyerralreadyoccurred)
+    PyErr_Restore(etype, evalue, etraceback);
+  Py_XDECREF(method);
+  return res;
+}
+
+static PyObject *
+Call_PythonMethodV(PyObject *obj, const char *methodname, int mandatory, const char *format, ...)
+{
+  PyObject *args=NULL, *result=NULL;
+  va_list list;
+  va_start (list, format);
+  args=Py_VaBuildValue(format, list);
+  va_end(list);
+
+  if (args)
+    result=Call_PythonMethod(obj, methodname, mandatory, args);
+
+  Py_XDECREF(args);
+  return result;
+}
+
 /* CALLBACK INFO */
 
 /* details of a registered function passed as user data to sqlite3_create_function */
@@ -402,11 +467,10 @@ struct Connection {
   const char *filename;           /* utf8 filename of the database */
   int co_linenumber;              /* line number of allocation */
   PyObject *co_filename;          /* filename of allocation */
-  long thread_ident;              /* which thread we were made in */
 
   unsigned inuse;                 /* track if we are in use preventing concurrent thread mangling */
 
-  pointerlist cursors;            /* tracking cursors */
+  pointerlist dependents;         /* tracking cursors & blobs belonging to this connection */
   StatementCache *stmtcache;      /* prepared statement cache */
 
   funccbinfo *functions;          /* linked list of registered functions */
@@ -620,10 +684,10 @@ Connection_internal_cleanup(Connection *self)
 
 }
 
+/* Closes cursors and blobs belonging to this connection */
 static PyObject *
 Connection_close(Connection *self, PyObject *args)
 {
-  PyObject *cursorcloseargs=NULL;
   int res;
   pointerlist_visit plv;
   int force=0;
@@ -638,26 +702,18 @@ Connection_close(Connection *self, PyObject *args)
   if(!PyArg_ParseTuple(args, "|i:close(force=False)", &force))
     return NULL;
 
-  cursorcloseargs=Py_BuildValue("(i)", force);
-  if(!cursorcloseargs) return NULL;
-
-  for(pointerlist_visit_begin(&self->cursors, &plv);
+  for(pointerlist_visit_begin(&self->dependents, &plv);
       pointerlist_visit_finished(&plv);
       pointerlist_visit_next(&plv))
     {
       PyObject *closeres=NULL;
-      APSWCursor *cur=(APSWCursor*)pointerlist_visit_get(&plv);
+      PyObject *obj=(PyObject*)pointerlist_visit_get(&plv);
 
-      closeres=APSWCursor_close(cur, args);
+      closeres=Call_PythonMethodV(obj, "close", 1, "(i)", force);
       Py_XDECREF(closeres);
       if(!closeres)
-	{
-	  Py_DECREF(cursorcloseargs);
-	  return NULL;
-	}
+        return NULL;
     }
-
-  Py_DECREF(cursorcloseargs);
 
   res=statementcache_free(self->stmtcache);
   assert(res==0);
@@ -692,8 +748,7 @@ Connection_close(Connection *self, PyObject *args)
  finally:
   if(PyErr_Occurred())
     return NULL;
-  else Py_RETURN_NONE;
-  
+  Py_RETURN_NONE;
 }
 
 static void
@@ -725,8 +780,8 @@ Connection_dealloc(Connection* self)
         }
     }
 
-  assert(self->cursors.numentries==0);
-  pointerlist_free(&self->cursors);
+  assert(self->dependents.numentries==0);
+  pointerlist_free(&self->dependents);
 
   Connection_internal_cleanup(self);
 
@@ -747,9 +802,8 @@ Connection_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
       self->filename=0;
       self->co_linenumber=0;
       self->co_filename=0;
-      self->thread_ident=PyThread_get_thread_ident();
-      memset(&self->cursors, 0, sizeof(self->cursors));
-      pointerlist_init(&self->cursors);
+      memset(&self->dependents, 0, sizeof(self->dependents));
+      pointerlist_init(&self->dependents);
       self->stmtcache=0;
       self->functions=0;
       self->collations=0;
@@ -890,6 +944,7 @@ Connection_blobopen(Connection *self, PyObject *args)
       return NULL;
     }
 
+  pointerlist_add(&self->dependents, apswblob);
   APSWBlob_init(apswblob, self, blob);
   return (PyObject*)apswblob;
 }
@@ -910,7 +965,7 @@ Connection_cursor(Connection *self)
 
   /* incref me since cursor holds a pointer */
   Py_INCREF((PyObject*)self);
-  pointerlist_add(&self->cursors, cursor);
+  pointerlist_add(&self->dependents, cursor);
   APSWCursor_init(cursor, self);
   
   return (PyObject*)cursor;
@@ -2359,67 +2414,6 @@ freevtableinfo(vtableinfo *vtinfo)
 
 #ifdef EXPERIMENTAL
 
-/* Calls the named method of object with the provided args */
-static PyObject*
-Call_PythonMethod(PyObject *obj, const char *methodname, int mandatory, PyObject *args)
-{
-  PyObject *method=NULL;
-  PyObject *res=NULL;
-
-  /* we may be called when there is already an error.  eg if you return an error in
-     a cursor method, then SQLite calls vtabClose which calls us.  We don't want to 
-     clear pre-existing errors, but we do want to clear ones when the function doesn't
-     exist but is optional */
-  PyObject *etype=NULL, *evalue=NULL, *etraceback=NULL;
-  void *pyerralreadyoccurred=PyErr_Occurred();
-  if(pyerralreadyoccurred)
-    PyErr_Fetch(&etype, &evalue, &etraceback);
-
-
-  /* we should only be called with ascii methodnames so no need to do
-     character set conversions etc */
-#if PY_VERSION_HEX < 0x02050000
-  method=PyObject_GetAttrString(obj, (char*)methodname);
-#else
-  method=PyObject_GetAttrString(obj, methodname);
-#endif
-  if (!method)
-    {
-      if(!mandatory)
-	{
-	  /* pretend method existed and returned None */
-	  PyErr_Clear();
-	  res=Py_None;
-	  Py_INCREF(res);
-	}
-      goto finally;
-    }
-
-  res=PyEval_CallObject(method, args);
-
- finally:
-  if(pyerralreadyoccurred)
-    PyErr_Restore(etype, evalue, etraceback);
-  Py_XDECREF(method);
-  return res;
-}
-
-static PyObject *
-Call_PythonMethodV(PyObject *obj, const char *methodname, int mandatory, const char *format, ...)
-{
-  PyObject *args=NULL, *result=NULL;
-  va_list list;
-  va_start (list, format);
-  args=Py_VaBuildValue(format, list);
-  va_end(list);
-
-  if (args)
-    result=Call_PythonMethod(obj, methodname, mandatory, args);
-
-  Py_XDECREF(args);
-  return result;
-}
-
 
 typedef struct {
   sqlite3_vtab used_by_sqlite; /* I don't touch this */
@@ -3633,10 +3627,17 @@ APSWBlob_dealloc(APSWBlob *self)
       int res=sqlite3_blob_close(self->pBlob);
       if(res!=SQLITE_OK)
         {
+          PyObject *err_type, *err_value, *err_traceback;
+          int have_error=PyErr_Occurred()?1:0;
+          if(have_error)
+            PyErr_Fetch(&err_type, &err_value, &err_traceback);
           make_exception(res, self->connection->db);
           apsw_write_unraiseable();
+          if(have_error)
+            PyErr_Restore(err_type, err_value, err_traceback);
         }
       self->pBlob=0;
+      pointerlist_remove(&self->connection->dependents, self);
     }
   if(self->connection)
     {
@@ -3814,12 +3815,16 @@ APSWBlob_write(APSWBlob *self, PyObject *obj)
 }
 
 static PyObject *
-APSWBlob_close(APSWBlob *self)
+APSWBlob_close(APSWBlob *self, PyObject *args)
 {
   int res;
+  int force=0;
   /* we allow close to be called multiple times */
   if(!self->pBlob) goto end;
   CHECK_USE(NULL);
+
+  if(!PyArg_ParseTuple(args, "|i:close(force=False)", &force))
+    return NULL;
 
   MARK_INUSE;
   Py_BEGIN_ALLOW_THREADS
@@ -3827,6 +3832,7 @@ APSWBlob_close(APSWBlob *self)
   Py_END_ALLOW_THREADS;
   MARK_NOTINUSE;
   SET_EXC(self->connection->db, res);
+  pointerlist_remove(&self->connection->dependents, self);
   self->pBlob=0; /* sqlite ticket #2815 */
   Py_DECREF(self->connection);
   self->connection=0;
@@ -3848,7 +3854,7 @@ static PyMethodDef APSWBlob_methods[]={
    "Returns current blob offset"},
   {"write", (PyCFunction)APSWBlob_write, METH_O,
    "Writes data to blob"},
-  {"close", (PyCFunction)APSWBlob_close, METH_NOARGS,
+  {"close", (PyCFunction)APSWBlob_close, METH_VARARGS,
    "Closes blob"},
   {0,0,0,0} /* Sentinel */
 };
@@ -3975,25 +3981,8 @@ resetcursor(APSWCursor *self, int force)
 static void
 APSWCursor_dealloc(APSWCursor * self)
 {
-  /* thread check - we can't use macro as it returns*/
   PyObject *err_type, *err_value, *err_traceback;
   int have_error=PyErr_Occurred()?1:0;
-
-  if( (self->status!=C_DONE || self->statement || self->zsqlnextpos || self->emiter) &&  /* only whine if there was anything left in the APSWCursor */
-      self->connection->thread_ident!=PyThread_get_thread_ident())
-    {
-      if (have_error)
-        PyErr_Fetch(&err_type, &err_value, &err_traceback);
-      PyErr_Format(ExcThreadingViolation, "The destructor for APSWCursor is called in a different thread than it"
-                   "was created in.  All calls must be in the same thread.  It was created in thread %d " 
-                   "and this is %d.  SQLite is not being closed as a result.",
-                   (int)(self->connection->thread_ident), (int)(PyThread_get_thread_ident()));            
-      apsw_write_unraiseable();
-      if (have_error)
-        PyErr_Restore(err_type, err_value, err_traceback);
-      
-      return;
-    }
 
   /* do our finalisation ... */
 
@@ -4004,7 +3993,7 @@ APSWCursor_dealloc(APSWCursor * self)
       PyErr_Clear();
     }
 
-  resetcursor(self, 1);
+  resetcursor(self, /* force = */ 1);
   if(PyErr_Occurred())
     PyErr_Clear(); /* clear out any exceptions from resetcursor since we don't care */
 
@@ -4015,7 +4004,7 @@ APSWCursor_dealloc(APSWCursor * self)
   /* we no longer need connection */
   if(self->connection)
     {
-      pointerlist_remove(&self->connection->cursors, self);
+      pointerlist_remove(&self->connection->dependents, self);
       Py_DECREF(self->connection);
       self->connection=0;
     }
@@ -4766,7 +4755,6 @@ APSWCursor_close(APSWCursor *self, PyObject *args)
       assert(PyErr_Occurred());
       return NULL;
     }
-  
   Py_RETURN_NONE;
 }
 

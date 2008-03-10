@@ -26,6 +26,7 @@ import threading
 import Queue
 import traceback
 import StringIO
+import gc
 
 # helper functions
 def randomintegers(howmany):
@@ -86,14 +87,16 @@ class APSW(unittest.TestCase):
         }
 
     cursor_nargs={
-            'execute': 1,
-            'executemany': 2,
-            'setexectrace': 1,
-            'setrowtrace': 1,
-            }
+        'execute': 1,
+        'executemany': 2,
+        'setexectrace': 1,
+        'setrowtrace': 1,
+        }
 
     blob_nargs={
-
+        'write': 1,
+        'read': 1,
+        'seek': 2
         }
 
     
@@ -1900,6 +1903,18 @@ class APSW(unittest.TestCase):
     def testClosingChecks(self):
         "Check closed connection is correctly detected"
         cur=self.db.cursor()
+        rowid=cur.execute("create table foo(x blob); insert into foo values(zeroblob(98765)); select rowid from foo").next()[0]
+        blob=self.db.blobopen("main", "foo", "x", rowid, True)
+        blob.close()
+        nargs=self.blob_nargs
+        for func in [x for x in dir(blob) if not x.startswith("__") and not x in ("close",)]:
+            args=("one", "two", "three")[:nargs.get(func,0)]
+            try:
+                getattr(blob, func)(*args)
+                self.fail("blob method "+func+" didn't notice that the connection is closed")
+            except ValueError: # we issue ValueError to be consistent with file objects
+                pass
+        
         self.db.close()
         nargs=self.connection_nargs
         for func in [x for x in dir(self.db) if not x.startswith("__") and not x in ("close",)]:
@@ -2009,23 +2024,34 @@ class APSW(unittest.TestCase):
 
     def testWriteUnraiseable(self):
         "Verify writeunraiseable replacement function"
-        # This will deliberately leak memory for the connection (the db object)
-
+        def unraise():
+            # We cause an unraiseable error to happen by writing to a
+            # blob open for reading.  The close method called in the
+            # destructor will then also give the error
+            db=apsw.Connection(":memory:")
+            rowid=db.cursor().execute("create table foo(x); insert into foo values(x'aabbccdd'); select rowid from foo").next()[0]
+            b=db.blobopen("main", "foo", "x", rowid, False)
+            try:
+                b.write("badd")
+            except apsw.ReadOnlyError:
+                pass
+            del db
+            del b
+            gc.collect()
+            
         xx=sys.excepthook
         called=[0]
         def ehook(t,v,tb, called=called):
             called[0]=1
         sys.excepthook=ehook
-        db2=apsw.Connection(":memory:")
-        del db2
+        unraise()
         self.failUnlessEqual(called[0], 1)
         yy=sys.stderr
         sys.stderr=open("errout.txt", "wt")
         def ehook(blah):
             1/0
         sys.excepthook=ehook
-        db2=apsw.Connection(":memory:")
-        del db2
+        unraise()
         sys.stderr.close()
         v=open("errout.txt", "rt").read()
         os.remove("errout.txt")
@@ -2044,7 +2070,7 @@ class APSW(unittest.TestCase):
         #cur.execute("insert into foo values(1,2)") # cache hit, but invalid sql
         cur.executemany("insert into foo values(?)", [[1],[2]])
         # overflow the statement cache
-        l=[self.db.cursor().execute("select x from foo") for i in xrange(40)]
+        l=[self.db.cursor().execute("select x from foo") for i in xrange(4000)]
         del l
         for _ in cur.execute("select * from foo"): pass
         db2=apsw.Connection("testdb")
@@ -2151,7 +2177,7 @@ class APSW(unittest.TestCase):
 
 # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used
 LOADEXTENSIONFILENAME="./testextension.sqlext"
-            
+
 MEMLEAKITERATIONS=1000
 PROFILESTEPS=100000
 
@@ -2171,10 +2197,11 @@ if __name__=='__main__':
             print "  gcc -fPIC -shared -o "+LOADEXTENSIONFILENAME+" -Isqlite3 testextension.c"
         del APSW.testLoadExtension
 
-    # This test has to deliberately leak memory
     if os.getenv("APSW_NO_MEMLEAK"):
-        del APSW.testWriteUnraiseable
-    
+        # Delete tests that have to deliberately leak memory
+        # del APSW.testWriteUnraiseable
+        pass
+        
     v=os.getenv("APSW_TEST_ITERATIONS")
     if v is None:
         unittest.main()
