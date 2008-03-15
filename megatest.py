@@ -28,16 +28,16 @@ def run(cmd):
     raise Exception("Failed with signal "+`os.WTERMSIG(status)`+": "+cmd)
 
 
-def dotest(logdir, pybin, workdir, sqlitever):
+def dotest(logdir, pybin, pylib, workdir, sqlitever):
     buildsqlite(workdir, sqlitever, os.path.abspath(os.path.join(logdir, "sqlitebuild.txt")))
     buildapsw(os.path.abspath(os.path.join(logdir, "buildapsw.txt")), pybin, workdir)
     # now the actual tests
-    run("cd %s ; %s tests.py >%s 2>&1" % (workdir, pybin, os.path.abspath(os.path.join(logdir, "runtests.txt"))))
+    run("cd %s ; env LD_LIBRARY_PATH=%s %s tests.py >%s 2>&1" % (workdir, pylib, pybin, os.path.abspath(os.path.join(logdir, "runtests.txt"))))
 
 
 def runtest(workdir, pyver, ucs, sqlitever, logdir):
-    pybin=buildpython(workdir, pyver, ucs, os.path.abspath(os.path.join(logdir, "pybuild.txt")))
-    dotest(logdir, pybin, workdir, sqlitever)
+    pybin, pylib=buildpython(workdir, pyver, ucs, os.path.abspath(os.path.join(logdir, "pybuild.txt")))
+    dotest(logdir, pybin, pylib, workdir, sqlitever)
 
 def main():
     print "Test starting"
@@ -59,6 +59,7 @@ def main():
                 logdir=os.path.abspath(os.path.join("megatestresults", "py%s-ucs%d-sq%s" % (pyver, ucs, sqlitever)))
                 run("mkdir -p %s %s" % (workdir, logdir))
                 run("cp *.py *.c *.h "+workdir)
+                run("rm -f "+workdir+"/sqlite3.c || true")
 
                 t=threading.Thread(target=runtest, kwargs={'workdir': workdir, 'pyver': pyver, 'ucs': ucs, 'sqlitever': sqlitever, 'logdir': logdir})
                 t.start()
@@ -80,10 +81,10 @@ def getpyurl(pyver):
     return "http://www.python.org/ftp/python/%s/Python-%s.tgz" % (dirver,pyver)
 
 def sqliteurl(sqlitever):
-    return "http://sqlite.org/sqlite-%s.tar.gz" % (sqlitever,)
+    return "http://sqlite.org/sqlite-amalgamation-%s.zip" % (sqlitever.replace('.', '_'),)
 
 def buildpython(workdir, pyver, ucs, logfilename):
-    if pyver=="system": return "/usr/bin/python"
+    if pyver=="system": return "/usr/bin/python", ""
     
     url=getpyurl(pyver)
     if url.endswith(".bz2"):
@@ -94,15 +95,15 @@ def buildpython(workdir, pyver, ucs, logfilename):
     run("cd %s ; mkdir pyinst ; wget -q %s -O - | tar xf%s -  > %s 2>&1" % (workdir, url, tarx, logfilename))
     run("cd %s ; cd Python-%s ; ./configure --enable-unicode=ucs%d --prefix=%s/pyinst >> %s 2>&1; make >>%s 2>&1; make  install >>%s 2>&1" % (workdir, pyver, ucs, workdir, logfilename, logfilename, logfilename))
 
-    return os.path.join(workdir, "pyinst", "bin", "python")
+    return os.path.join(workdir, "pyinst", "bin", "python"), os.path.join(workdir, "pyinst", "lib")
     
 def buildsqlite(workdir, sqlitever, logfile):
-    os.system("rm -rf %s/sqlite3 2>/dev/null" % (workdir,))
+    os.system("rm -rf %s/sqlite3 sqlite3.c 2>/dev/null" % (workdir,))
     if sqlitever=="cvs":
         run("cd %s ; cvs -d :pserver:anonymous@www.sqlite.org:/sqlite checkout sqlite > %s 2>&1; mv sqlite sqlite3" % (workdir, logfile,))
+        run('cd %s/sqlite3 ; ./configure --enable-threadsafe --disable-tcl >> %s 2>&1; make sqlite3.c >> %s 2>&1' % (workdir,logfile,logfile))
     else:
-        run("cd %s ; wget -q %s -O - | tar xfz - > %s 2>&1; mv sqlite-%s sqlite3" % (workdir, sqliteurl(sqlitever), logfile, sqlitever))
-    run('cd %s/sqlite3 ; ./configure --enable-threadsafe --disable-tcl >> %s 2>&1; make sqlite3.c >> %s 2>&1' % (workdir,logfile,logfile))
+        run("cd %s ; mkdir sqlite3 ; cd sqlite3 ; wget -q %s ; unzip -q %s sqlite3.c" % (workdir, sqliteurl(sqlitever), os.path.basename(sqliteurl(sqlitever))))
     if sys.platform.startswith("darwin"):
         run('cd %s ; gcc -fPIC -bundle -o testextension.sqlext -Isqlite3 testextension.c' % (workdir,))
     else:
@@ -120,18 +121,17 @@ def buildapsw(outputfile, pybin, workdir):
 
 
 PYVERS=(
+    '2.5.2',
     '2.5.1',
-    '2.5',
-    '2.4.4',
-    '2.3.6',
+    '2.4.5',
+    '2.3.7',
     'system',
     # '2.2.3',  - apsw not supported on 2.2 as it needs GILstate
     )
 
 SQLITEVERS=(
-    # 'cvs',
-    #'3.4.0',
-    '3.5.4',
+    #'cvs',
+    '3.5.6',
    )
 
 
