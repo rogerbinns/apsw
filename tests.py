@@ -1166,12 +1166,33 @@ class APSW(unittest.TestCase):
         c.executemany("insert into foo values(?)", randomintegers(100000))
         c.execute("commit")
 
-        t=ThreadRunner(c.execute, "select min(max(x-1+x),min(x-1+x)) from foo")
+        vals={"stop": False,
+              "raised": False}
+        def wt():
+            try:
+                while not vals["stop"]:
+                    c.execute("select min(max(x-1+x),min(x-1+x)) from foo")
+            except apsw.ThreadingViolationError:
+                vals["raised"]=True
+                vals["stop"]=True
+                
+        t=ThreadRunner(wt)
         t.start()
         # ensure thread t has started
-        time.sleep(0.01)
-        self.assertRaises(apsw.ThreadingViolationError, c.execute, "select * from foo")
-        t.join()
+        time.sleep(0.1)
+        b4=time.time()
+        # try to get a threadingviolation for 30 seconds
+        try:
+            try:
+                while not vals["stop"] and time.time()-b4<30:
+                    c.execute("select * from foo")
+            except apsw.ThreadingViolationError:
+                vals["stop"]=True
+                vals["raised"]=True
+        finally:
+            vals["stop"]=True
+        t.go()
+        self.assertEqual(vals["raised"], True)
 
     def testStringsWithNulls(self):
         "Verify that strings with nulls in them are handled correctly"
@@ -2060,6 +2081,7 @@ class APSW(unittest.TestCase):
         sys.stderr=yy
 
     def testStatementCache(self):
+        "Verify statement cache integrity"
         cur=self.db.cursor()
         cur.execute("create table foo(x,y)")
         cur.execute("create index foo_x on foo(x)")
@@ -2080,6 +2102,7 @@ class APSW(unittest.TestCase):
         db2.close()
 
     def testZeroBlob(self):
+        "Verify handling of zero blobs"
         self.assertRaises(TypeError, apsw.zeroblob)
         self.assertRaises(TypeError, apsw.zeroblob, "foo")
         self.assertRaises(TypeError, apsw.zeroblob, -7)
@@ -2101,11 +2124,16 @@ class APSW(unittest.TestCase):
         self.assertEqual(v, buffer("\x00"*28))
 
     def testBlobIO(self):
+        "Verify Blob input/output"
         cur=self.db.cursor()
         rowid=cur.execute("create table foo(x blob); insert into foo values(zeroblob(98765)); select rowid from foo").next()[0]
         self.assertRaises(TypeError, self.db.blobopen, 1)
         self.assertRaises(TypeError, self.db.blobopen, u"main", "foo\xf3")
-        self.assertRaises(TypeError, self.db.blobopen, u"main", "foo", "x", complex(-1,-1), True)
+        if sys.version_info>=(2,4):
+            # Bug in python 2.3 gives internal error when complex is
+            # passed to PyArg_ParseTuple for Long instead of raising
+            # TypeError.  Corrected in 2.4
+            self.assertRaises(TypeError, self.db.blobopen, u"main", "foo", "x", complex(-1,-1), True)
         self.assertRaises(TypeError, self.db.blobopen, u"main", "foo", "x", rowid, True, False)
         self.assertRaises(apsw.SQLError, self.db.blobopen, "main", "foo", "x", rowid+27, False)
         self.assertRaises(apsw.SQLError, self.db.blobopen, "foo", "foo" , "x", rowid, False)
@@ -2169,11 +2197,6 @@ class APSW(unittest.TestCase):
         self.assertEqual(blobrw.read(55), "abcdefg"+"\x00"*43+"hijkl")
         self.assertRaises(TypeError, blobrw.write, 12)
         self.assertRaises(TypeError, blobrw.write)
-        # connection should refuse to close while blob is open
-        self.assertRaises(apsw.BusyError, self.db.close)
-        
-        
-
 
 # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used
 LOADEXTENSIONFILENAME="./testextension.sqlext"
@@ -2199,7 +2222,7 @@ if __name__=='__main__':
 
     if os.getenv("APSW_NO_MEMLEAK"):
         # Delete tests that have to deliberately leak memory
-        # del APSW.testWriteUnraiseable
+        # del APSW.testWriteUnraiseable  (used to but no more)
         pass
         
     v=os.getenv("APSW_TEST_ITERATIONS")
@@ -2234,3 +2257,6 @@ if __name__=='__main__':
     del threading
     del Queue
     del traceback
+
+    gc.collect()
+    del gc
