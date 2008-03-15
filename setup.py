@@ -13,18 +13,27 @@ define_macros.append( ('EXPERIMENTAL', '1') )
 
 # If you compiled SQLite omitting functionality then specify the same
 # defines here.  For example this exlcudes loadable extensions.
-define_macros.append( ('SQLITE_OMIT_LOAD_EXTENSION', '1') )
+#
+# define_macros.append( ('SQLITE_OMIT_LOAD_EXTENSION', '1') )
 
 include_dirs=[]
 library_dirs=[]
 
-# if sqlite3.c (amalgamation is in the sqlite3 sub-directory then that is used)
-amalgamation=os.path.join(os.path.dirname(os.path.abspath(__file__)), "sqlite3", "sqlite3.c")
+# Look for amalgamation in our directory or in sqlite3 subdirectory
+amalgamation=(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "sqlite3.c"),
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "sqlite3", "sqlite3.c")
+    )
 
-if os.path.exists(amalgamation):
-    define_macros.append( ('APSW_USE_SQLITE_AMALGAMATION', '"'+amalgamation+'"') )
-    libraries=[]
-else:
+usingamalgamation=False
+for path in amalgamation:
+    if os.path.exists(path):
+        define_macros.append( ('APSW_USE_SQLITE_AMALGAMATION', '"'+path+'"') )
+        libraries=[]
+        usingamalgamation=True
+        break
+    
+if not usingamalgamation:
     # if there is a sqlite3 subdirectory then use that, otherwise
     # the system sqlite will be used
     if os.path.exists("sqlite3"):
