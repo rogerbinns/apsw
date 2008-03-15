@@ -30,11 +30,6 @@
  
 */
 
-
-/* DO NOT COMMIT */
-#undef NDEBUG
-
-
 /* SQLite amalgamation */
 #ifdef APSW_USE_SQLITE_AMALGAMATION
 /* See SQLite ticket 2554 */
@@ -68,10 +63,15 @@
 typedef int Py_ssize_t;
 #endif
 
-/* Python 2.3 doesn't have this */
+/* Python 2.3 doesn't have these */
 #ifndef Py_RETURN_NONE
 #define Py_RETURN_NONE return Py_INCREF(Py_None), Py_None
 #endif
+#ifndef Py_RETURN_TRUE
+#define Py_RETURN_TRUE return Py_INCREF(Py_True), Py_True
+#define Py_RETURN_FALSE return Py_INCREF(Py_False), Py_False
+#endif
+
 
 /* A module to augment tracebacks */
 #include "traceback.c"
@@ -757,6 +757,14 @@ Connection_dealloc(Connection* self)
   if(self->db)
     {
       int res;
+
+      if(self->stmtcache)
+        {
+          res=statementcache_free(self->stmtcache);
+          assert(res==0);
+          self->stmtcache=0;
+        }
+
       Py_BEGIN_ALLOW_THREADS
         res=sqlite3_close(self->db);
       Py_END_ALLOW_THREADS;
