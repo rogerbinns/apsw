@@ -1183,14 +1183,14 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       expressed as an integer (eg 3003010 for SQLite 3.3.10).</p>
     </dd>
 
-    <dt><strong>SQLITE_OK, SQLITE_DENY, SQLITE_IGNORE</strong></dt>
+    <dt><strong><a href="http://sqlite.org/c3ref/c_deny.html">SQLITE_OK, SQLITE_DENY, SQLITE_IGNORE</a></strong></dt>
 
     <dd>
       <p>These values are returned from authorizer functions. Mapping is
       <code>apsw.mapping_authorizer_return</code></p>
     </dd>
 
-    <dt><strong>SQLITE_CREATE_INDEX, SQLITE_CREATE_TABLE</strong> and 30 others</dt>
+    <dt><a href="http://sqlite.org/c3ref/c_alter_table.html"><strong>SQLITE_CREATE_INDEX, SQLITE_CREATE_TABLE</strong> and 30 others</a></dt>
 
     <dd>
       <p>The values are passed to authorizer functions. You can see a complete list in the <a href=
@@ -1205,7 +1205,7 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       <code>apsw.mapping_bestindex_constraints</code></p>
     </dd>
 
-    <dt><strong>SQLITE_IOERR_READ, SQLITE_IOERR_FSYNC</strong> and 7 others</dt>
+    <dt><a href="http://sqlite.org/c3ref/c_ioerr_blocked.html"><strong>SQLITE_IOERR_READ, SQLITE_IOERR_FSYNC</strong> and 7 others</a></dt>
 
     <dd>
       <p>These are <a href="http://www.sqlite.org/cvstrac/wiki?p=ExtendedResultCodes">extended result codes</a> which
@@ -1213,12 +1213,17 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       <code>apsw.mapping_extended_result_codes</code></p>
     </dd>
 
-    <dt><strong>SQLITE_OK, SQLITE_ERROR, SQLITE_PERM</strong> and 22 others</dt>
+    <dt><a href="http://sqlite.org/c3ref/c_abort.html"><strong>SQLITE_OK, SQLITE_ERROR, SQLITE_PERM</strong> and 22 others</a></dt>
 
     <dd>
       <p>These are <a href="http://sqlite.org/capi3ref.html#result-codes">SQLite result codes</a> which are provided in
       <a href="#Exceptions">exceptions</a>. Mapping is <code>apsw.mapping_result_codes</code></p>
     </dd>
+
+    <dt><a href="http://sqlite.org/c3ref/c_open_create.html"><strong>SQLITE_OPEN_READONLY, SQLITE_OPEN_CREATE</strong> and 10 others</a></dt>
+
+<dd><p>These are used for <a href="http://sqlite.org/c3ref/open.html">opening the database</a> as well as the VFS.  Mapping is <code>apsw.mapping_open_flags</code></p></dd>
+
   </dl>
 
   <h2><a name="Connection_class" id="Connection_class">Connection class</a></h2>
@@ -1226,13 +1231,13 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
   <p>The connection class wraps a <code>sqlite3 pointer</code>.</p>
 
   <dl>
-    <dt><strong>Connection(filename)</strong></dt>
+    <dt><strong>Connection(filename, flags=SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE, vfs=None, statementcachesize=100)</strong></dt>
 
     <dd>
       <p>Opens an SQLite database named <code>filename</code>. (This calls <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_open">sqlite3_open</a> behind the scenes. You must call close when
-      finished with a Connection. If you do not call close then the destructor will invoke <code>sys.excepthook</code>
-      which by default will print a traceback.</p>
+      "http://www.sqlite.org/capi3ref.html#sqlite3_open">sqlite3_open_v2</a> behind the scenes.)  If you don't supply
+      a vfs then the default will be used.  You can also set how many entries there are in the statement cache.  You will generally
+      want this to be the total number of distinct SQL statements you execute frequently.</p>
     </dd>
 
     <dt><strong>close(force=False)</strong></dt>

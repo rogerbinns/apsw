@@ -831,22 +831,23 @@ Connection_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 static int
 Connection_init(Connection *self, PyObject *args, PyObject *kwds)
 {
+  static char *kwlist[]={"filename", "flags", "vfs", "statementcachesize", NULL};
   PyObject *hooks=NULL, *hook=NULL, *iterator=NULL, *hookargs=NULL, *hookresult=NULL;
   PyFrameObject *frame;
   char *filename=NULL;
   int res=0;
+  int flags=SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
+  char *vfs=0;
+  int statementcachesize=100;
 
-  if(kwds && PyDict_Size(kwds)!=0)
-    {
-      PyErr_Format(PyExc_TypeError, "Connection constructor does not take keyword arguments");
-      return -1;
-    }
-
-  if(!PyArg_ParseTuple(args, "es:Connection(filename)", STRENCODING, &filename))
+  if(!PyArg_ParseTupleAndKeywords(args, kwds, "es|izi:Connection(filename, flags=SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE, vfs=None, statementcachesize=100)", kwlist, STRENCODING, &filename, &flags, &vfs, &statementcachesize))
     return -1;
   
+  if(statementcachesize<0)
+    statementcachesize=0;
+
   Py_BEGIN_ALLOW_THREADS
-    res=sqlite3_open(filename, &self->db);
+    res=sqlite3_open_v2(filename, &self->db, flags, vfs);
   Py_END_ALLOW_THREADS;
   SET_EXC(self->db, res);  /* nb sqlite3_open always allocates the db even on error */
   
@@ -891,7 +892,7 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
   if(!PyErr_Occurred())
     {
       res=0;
-      self->stmtcache=statementcache_init(self->db, 100);
+      self->stmtcache=statementcache_init(self->db, statementcachesize);
       goto finally;
     }
 
@@ -5199,6 +5200,25 @@ initapsw(void)
     ADDINT(SQLITE_NOTADB);
 
     PyModule_AddObject(m, "mapping_result_codes", thedict);
+
+    /* open flags */
+    thedict=PyDict_New();
+    if(!thedict) return;
+
+    ADDINT(SQLITE_OPEN_READONLY);
+    ADDINT(SQLITE_OPEN_READWRITE);
+    ADDINT(SQLITE_OPEN_CREATE);
+    ADDINT(SQLITE_OPEN_DELETEONCLOSE);
+    ADDINT(SQLITE_OPEN_EXCLUSIVE);
+    ADDINT(SQLITE_OPEN_MAIN_DB);
+    ADDINT(SQLITE_OPEN_TEMP_DB);
+    ADDINT(SQLITE_OPEN_TRANSIENT_DB);
+    ADDINT(SQLITE_OPEN_MAIN_JOURNAL);
+    ADDINT(SQLITE_OPEN_TEMP_JOURNAL);
+    ADDINT(SQLITE_OPEN_SUBJOURNAL);
+    ADDINT(SQLITE_OPEN_MASTER_JOURNAL);
+
+    PyModule_AddObject(m, "mapping_open_flags", thedict);
 
 }
 

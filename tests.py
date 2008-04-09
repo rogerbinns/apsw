@@ -133,17 +133,21 @@ class APSW(unittest.TestCase):
         apsw.ExecTraceAbort
 
     def testConnection(self):
-        "Test connection basics"
-        # keyword args are not allowed
+        "Test connection opening"
+        # bad keyword arg
         self.assertRaises(TypeError, apsw.Connection, ":memory:", user="nobody")
-        # too many arguments
-        self.assertRaises(TypeError, apsw.Connection, ":memory:", 7)
         # wrong types
         self.assertRaises(TypeError, apsw.Connection, 3)
         # non-unicode
         self.assertRaises(UnicodeDecodeError, apsw.Connection, "\xef\x22\xd3\x9e")
         # bad file (cwd)
         self.assertRaises(apsw.CantOpenError, apsw.Connection, ".")
+        # bad open flags can't be tested as sqlite accepts them all - ticket #3037
+        # self.assertRaises(apsw.CantOpenError, apsw.Connection, "<non-existent-file>", flags=65535)
+
+        # bad vfs
+        self.assertRaises(TypeError, apsw.Connection, "foo", vfs=3, flags=-1)
+        self.assertRaises(apsw.SQLError, apsw.Connection, "foo", vfs="jhjkds", flags=-1)
 
     def testMemoryLeaks(self):
         "MemoryLeaks: Run with a memory profiler such as valgrind and debug Python"
@@ -2080,7 +2084,7 @@ class APSW(unittest.TestCase):
         sys.excepthook=xx
         sys.stderr=yy
 
-    def testStatementCache(self):
+    def testStatementCache(self, scsize=100):
         "Verify statement cache integrity"
         cur=self.db.cursor()
         cur.execute("create table foo(x,y)")
@@ -2095,11 +2099,15 @@ class APSW(unittest.TestCase):
         l=[self.db.cursor().execute("select x from foo") for i in xrange(4000)]
         del l
         for _ in cur.execute("select * from foo"): pass
-        db2=apsw.Connection("testdb")
+        db2=apsw.Connection("testdb", statementcachesize=scsize)
         cur2=db2.cursor()
         cur2.execute("create table bar(x,y)")
         for _ in cur.execute("select * from foo"): pass
         db2.close()
+
+    def testStatementCacheZeroSize(self):
+        self.db=apsw.Connection("testdb", statementcachesize=-1)
+        self.testStatementCache(-1)
 
     def testZeroBlob(self):
         "Verify handling of zero blobs"
