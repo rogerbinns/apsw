@@ -73,6 +73,8 @@ def main():
 
 def getpyurl(pyver):
     dirver=pyver
+    if 'a' in dirver:
+        dirver=dirver.split('a')[0]
     if pyver>'2.3.0':
         return "http://www.python.org/ftp/python/%s/Python-%s.tar.bz2" % (dirver,pyver)
     if pyver=='2.3.0':
@@ -85,7 +87,6 @@ def sqliteurl(sqlitever):
 
 def buildpython(workdir, pyver, ucs, logfilename):
     if pyver=="system": return "/usr/bin/python", ""
-    
     url=getpyurl(pyver)
     if url.endswith(".bz2"):
         tarx="j"
@@ -94,11 +95,10 @@ def buildpython(workdir, pyver, ucs, logfilename):
     if pyver=="2.3.0": pyver="2.3"    
     run("cd %s ; mkdir pyinst ; wget -q %s -O - | tar xf%s -  > %s 2>&1" % (workdir, url, tarx, logfilename))
     run("cd %s ; cd Python-%s ; ./configure --enable-unicode=ucs%d --prefix=%s/pyinst >> %s 2>&1; make >>%s 2>&1; make  install >>%s 2>&1" % (workdir, pyver, ucs, workdir, logfilename, logfilename, logfilename))
-
     return os.path.join(workdir, "pyinst", "bin", "python"), os.path.join(workdir, "pyinst", "lib")
     
 def buildsqlite(workdir, sqlitever, logfile):
-    os.system("rm -rf %s/sqlite3 sqlite3.c 2>/dev/null" % (workdir,))
+    os.system("rm -rf '%s/sqlite3' '%s/sqlite3.c' 2>/dev/null" % (workdir,workdir))
     if sqlitever=="cvs":
         run("cd %s ; cvs -d :pserver:anonymous@www.sqlite.org:/sqlite checkout sqlite > %s 2>&1; mv sqlite sqlite3" % (workdir, logfile,))
         run('cd %s/sqlite3 ; ./configure --enable-threadsafe --disable-tcl >> %s 2>&1; make sqlite3.c >> %s 2>&1' % (workdir,logfile,logfile))
@@ -121,6 +121,7 @@ def buildapsw(outputfile, pybin, workdir):
 
 
 PYVERS=(
+    '2.6a2',
     '2.5.2',
     '2.5.1',
     '2.4.5',
@@ -132,6 +133,7 @@ PYVERS=(
 SQLITEVERS=(
     #'cvs',
     '3.5.6',
+    '3.5.7',
    )
 
 
