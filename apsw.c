@@ -30,6 +30,14 @@
  
 */
 
+/* Fight with setuptools over ndebug */
+#ifdef APSW_NO_NDEBUG
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
+#endif
+
+
 /* SQLite amalgamation */
 #ifdef APSW_USE_SQLITE_AMALGAMATION
 /* See SQLite ticket 2554 */
@@ -114,10 +122,15 @@ static PyObject *apswmodule;
 #define CHECK_CLOSED(connection,e) \
 { if(!connection->db) { PyErr_Format(ExcConnectionClosed, "The connection has been closed"); return e; } }
 
-#define MARK_INUSE \
-  {  assert(self->inuse==0); self->inuse=1; }
-#define MARK_NOTINUSE \
-  {  assert(self->inuse==1); self->inuse=0; }
+#define APSW_BEGIN_ALLOW_THREADS \
+  do { \
+      assert(self->inuse==0); self->inuse=1; \
+      Py_BEGIN_ALLOW_THREADS
+
+#define APSW_END_ALLOW_THREADS \
+     Py_END_ALLOW_THREADS; \
+     assert(self->inuse==1); self->inuse=0; \
+  } while(0)
 
 /* EXCEPTION TYPES */
 
@@ -719,11 +732,9 @@ Connection_close(Connection *self, PyObject *args)
   assert(res==0);
   self->stmtcache=0;
 
-  MARK_INUSE;
-  Py_BEGIN_ALLOW_THREADS
+  APSW_BEGIN_ALLOW_THREADS
     res=sqlite3_close(self->db);
-  Py_END_ALLOW_THREADS;
-  MARK_NOTINUSE;
+  APSW_END_ALLOW_THREADS;
 
   if (res!=SQLITE_OK) 
     {
@@ -765,9 +776,9 @@ Connection_dealloc(Connection* self)
           self->stmtcache=0;
         }
 
-      Py_BEGIN_ALLOW_THREADS
+      APSW_BEGIN_ALLOW_THREADS
         res=sqlite3_close(self->db);
-      Py_END_ALLOW_THREADS;
+      APSW_END_ALLOW_THREADS;
       self->db=0;
 
       if(res!=SQLITE_OK)
@@ -846,9 +857,9 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
   if(statementcachesize<0)
     statementcachesize=0;
 
-  Py_BEGIN_ALLOW_THREADS
+  APSW_BEGIN_ALLOW_THREADS
     res=sqlite3_open_v2(filename, &self->db, flags, vfs);
-  Py_END_ALLOW_THREADS;
+  APSW_END_ALLOW_THREADS;
   SET_EXC(self->db, res);  /* nb sqlite3_open always allocates the db even on error */
   
   if(res!=SQLITE_OK)
@@ -933,11 +944,9 @@ Connection_blobopen(Connection *self, PyObject *args)
                        STRENCODING, &dbname, STRENCODING, &tablename, STRENCODING, &column, &rowid, &writing))
     return NULL;
 
-  MARK_INUSE;
-  Py_BEGIN_ALLOW_THREADS
+  APSW_BEGIN_ALLOW_THREADS
     res=sqlite3_blob_open(self->db, dbname, tablename, column, rowid, writing, &blob);
-  Py_END_ALLOW_THREADS;
-  MARK_NOTINUSE;
+  APSW_END_ALLOW_THREADS;
 
   PyMem_Free((void*)dbname);
   PyMem_Free((void*)tablename);
@@ -1557,11 +1566,9 @@ Connection_loadextension(Connection *self, PyObject *args)
   if(!PyArg_ParseTuple(args, "s|z:loadextension(filename, entrypoint=None)", &zfile, &zproc))
     return NULL;
 
-  MARK_INUSE;
-  Py_BEGIN_ALLOW_THREADS
+  APSW_BEGIN_ALLOW_THREADS
     res=sqlite3_load_extension(self->db, zfile, zproc, &errmsg);
-  Py_END_ALLOW_THREADS;
-  MARK_NOTINUSE;
+  APSW_END_ALLOW_THREADS;
 
   /* load_extension doesn't set the error message on the db so we have to make exception manually */
   if(res!=SQLITE_OK)
@@ -1824,7 +1831,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
 }
 
 /* Returns a new reference to a tuple formed from function parameters */
-PyObject *
+static PyObject *
 getfunctionargs(sqlite3_context *context, PyObject *firstelement, int argc, sqlite3_value **argv)
 {
   PyObject *pyargs=NULL;
@@ -2886,7 +2893,7 @@ vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
   return sqliteres;
 }
 
-struct {
+static struct {
   const char *methodname;
   const char *pyexceptionname;
 } transaction_strings[]=
@@ -3709,11 +3716,10 @@ APSWBlob_read(APSWBlob *self, PyObject *args)
   if(!buffy) return NULL;
 
   thebuffer= PyString_AS_STRING(buffy);
-  MARK_INUSE;
-  Py_BEGIN_ALLOW_THREADS
+  APSW_BEGIN_ALLOW_THREADS
     res=sqlite3_blob_read(self->pBlob, thebuffer, length, self->curoffset);
-  Py_END_ALLOW_THREADS;
-  MARK_NOTINUSE;
+  APSW_END_ALLOW_THREADS;
+
   if(res!=SQLITE_OK)
     {
       Py_DECREF(buffy);
@@ -3807,11 +3813,11 @@ APSWBlob_write(APSWBlob *self, PyObject *obj)
       PyErr_Format(PyExc_ValueError, "Data would go beyond end of blob");
       return NULL;
     }
-  MARK_INUSE;
-  Py_BEGIN_ALLOW_THREADS
+
+  APSW_BEGIN_ALLOW_THREADS
     res=sqlite3_blob_write(self->pBlob, buffer, (int)size, self->curoffset);
-  Py_END_ALLOW_THREADS;
-  MARK_NOTINUSE;
+  APSW_END_ALLOW_THREADS;
+
   if(res!=SQLITE_OK)
     {
       SET_EXC(self->connection->db, res);
@@ -3835,11 +3841,10 @@ APSWBlob_close(APSWBlob *self, PyObject *args)
   if(!PyArg_ParseTuple(args, "|i:close(force=False)", &force))
     return NULL;
 
-  MARK_INUSE;
-  Py_BEGIN_ALLOW_THREADS
+  APSW_BEGIN_ALLOW_THREADS
     res=sqlite3_blob_close(self->pBlob);
-  Py_END_ALLOW_THREADS;
-  MARK_NOTINUSE;
+  APSW_END_ALLOW_THREADS;
+
   SET_EXC(self->connection->db, res);
   pointerlist_remove(&self->connection->dependents, self);
   self->pBlob=0; /* sqlite ticket #2815 */
@@ -4409,11 +4414,9 @@ APSWCursor_step(APSWCursor *self)
   for(;;)
     {
       assert(!PyErr_Occurred());
-      MARK_INUSE;
-      Py_BEGIN_ALLOW_THREADS
+      APSW_BEGIN_ALLOW_THREADS
         res=(self->statement)?(sqlite3_step(self->statement)):(SQLITE_DONE);
-      Py_END_ALLOW_THREADS;
-      MARK_NOTINUSE;
+      APSW_END_ALLOW_THREADS;
 
       switch(res&0xff)
         {

@@ -1,4 +1,5 @@
 import os
+import sys
 
 from distutils.core import setup, Extension
 
@@ -41,6 +42,11 @@ if not usingamalgamation:
         library_dirs=["sqlite3"]
 
     libraries=['sqlite3']
+
+# setuptools likes to define NDEBUG even when we want debug stuff
+if "--debug" in sys.argv:
+    define_macros.append( ('APSW_NO_NDEBUG', 1) ) # double negatives are bad
+
 
 # work out version number
 version=open("apswversion.h", "rtU").read().split()[2].strip('"')
