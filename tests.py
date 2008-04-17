@@ -1204,15 +1204,20 @@ class APSW(unittest.TestCase):
         c=self.db.cursor()
         c.execute("create table foo(row,str)")
         vals=("a simple string",
-              "a simple string\0",
               "a simple string\0with a null",
               "a string\0with two\0nulls",
               "or even a \0\0\0\0\0\0sequence\0\0\0\0\of them",
               u"a \u1234 unicode \ufe54 string \u0089",
-              u"a \u1234 unicode \ufe54 string \u0089\0",
               u"a \u1234 unicode \ufe54 string \u0089\0and some text",
               u"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET}\0more\0than you\0can handle",
               u"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET}\0\0\0\0\0sequences\0\0\0of them")
+
+        # See http://www.sqlite.org/cvstrac/tktview?tn=3056
+        if True: # [int(x) for x in apsw.sqlitelibversion().split(".")]<[3,5,8]:
+            vals=vals+(
+              "a simple string\0",
+              u"a \u1234 unicode \ufe54 string \u0089\0",
+              )
 
         for i,v in enumerate(vals):
             c.execute("insert into foo values(?,?)", (i, v))
