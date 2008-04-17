@@ -2052,6 +2052,22 @@ class APSW(unittest.TestCase):
         db=apsw.Connection(":memory:")
         db.close()
 
+    def testIssue4(self):
+        # http://code.google.com/p/apsw/issues/detail?id=4
+        connection = apsw.Connection(":memory:")
+        cursor = connection.cursor()
+
+        cursor.execute("CREATE TABLE A_TABLE (ID ABC PRIMARY KEY NOT NULL)")
+        try:
+            cursor.execute("INSERT INTO A_TABLE VALUES (NULL)")
+        except Exception, e:
+            assert "A_TABLE.ID" in str(e)
+    
+        try:
+            cursor.execute("INSERT INTO A_TABLE VALUES (?)", (None,))
+        except Exception, e:
+            assert "A_TABLE.ID" in str(e)
+
     def testWriteUnraiseable(self):
         "Verify writeunraiseable replacement function"
         def unraise():

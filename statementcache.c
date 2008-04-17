@@ -166,6 +166,8 @@ statementcache_prepare(StatementCache *sc,
       *ppStmt=sce->stmt;
       sce->inuse=1;
       *pzTail=zSql+sce->stringlength;
+      /* See http://code.google.com/p/apsw/issues/detail?id=4 */
+      sqlite3_clear_bindings(sce->stmt);
 #ifdef SCSTATS
       sc->hits++;
 #endif
@@ -248,7 +250,6 @@ statementcache_finalize(StatementCache* sc, sqlite3_stmt *pStmt)
 	  assert(sce->inuse);
 	  sce->inuse=0;
 	  res=sqlite3_reset(pStmt);
-	  sqlite3_clear_bindings(pStmt);
 	  sc->currentlru++;
 	  sce->lru=sc->currentlru;
 	  return res;
