@@ -901,6 +901,8 @@ class APSW(unittest.TestCase):
         self.failUnlessEqual(True, self.db.complete("select * from foo; select *;"))
         self.failUnlessEqual(False, self.db.complete("select * from foo where x=1"))
         self.failUnlessEqual(True, self.db.complete("select * from foo;"))
+        self.failUnlessEqual(True, self.db.complete(u"select '\u9494\ua7a7';"))
+        self.assertRaises(UnicodeDecodeError, self.db.complete, "select '\x94\xa7';")
         self.assertRaises(TypeError, self.db.complete, 12) # wrong type
         self.assertRaises(TypeError, self.db.complete)     # not enough args
         self.assertRaises(TypeError, self.db.complete, "foo", "bar") # too many args
@@ -1237,6 +1239,13 @@ class APSW(unittest.TestCase):
             self.failUnlessEqual(vals[row], fv)
         self.failUnlessEqual(count, len(vals))
 
+        # check execute
+        for v in vals:
+            self.failUnlessEqual(v, c.execute("select ?", (v,)).next()[0])
+            # nulls not allowed in main query string, so lets check the other bits (unicode etc)
+            v2=v.replace("\0", " zero ")
+            self.failUnlessEqual(v2, c.execute("select '%s'" % (v2,)).next()[0])
+
         # ::TODO:: check collations
 
     def testSharedCache(self):
@@ -1270,10 +1279,9 @@ class APSW(unittest.TestCase):
 
     def testLoadExtension(self):
         "Check loading of extensions"
-        # ::TODO:: I don't have checking of unicode filenames and entrypoint names here yet
-        # need to examine SQLite code to verify expected semantics
-        
-        # they need to be enable first
+        # unicode issues
+        self.assertRaises(UnicodeDecodeError, self.db.loadextension, "\xa7\x94")
+        # they need to be enabled first (off by default)
         self.assertRaises(apsw.ExtensionLoadingError, self.db.loadextension, LOADEXTENSIONFILENAME)
         self.db.enableloadextension(False)
         # should still be disabled

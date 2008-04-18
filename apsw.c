@@ -1563,7 +1563,7 @@ Connection_loadextension(Connection *self, PyObject *args)
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
   
-  if(!PyArg_ParseTuple(args, "s|z:loadextension(filename, entrypoint=None)", &zfile, &zproc))
+  if(!PyArg_ParseTuple(args, "es|z:loadextension(filename, entrypoint=None)", STRENCODING, &zfile, &zproc))
     return NULL;
 
   APSW_BEGIN_ALLOW_THREADS
@@ -3384,7 +3384,7 @@ Connection_createmodule(Connection *self, PyObject *args)
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if(!PyArg_ParseTuple(args, "esO:createmodule(name, datasource)", "utf_8", &name, &datasource))
+  if(!PyArg_ParseTuple(args, "esO:createmodule(name, datasource)", STRENCODING, &name, &datasource))
     return NULL;
 
   Py_INCREF(datasource);
