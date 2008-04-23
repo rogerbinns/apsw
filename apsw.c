@@ -1569,6 +1569,7 @@ Connection_loadextension(Connection *self, PyObject *args)
   APSW_BEGIN_ALLOW_THREADS
     res=sqlite3_load_extension(self->db, zfile, zproc, &errmsg);
   APSW_END_ALLOW_THREADS;
+  PyMem_Free(zfile);
 
   /* load_extension doesn't set the error message on the db so we have to make exception manually */
   if(res!=SQLITE_OK)
@@ -1754,7 +1755,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
 	      }
 	    else
 	      {
-		if(use16)
+                if(use16)
 		  sqlite3_result_text16(context, strdata, (int)strbytes, SQLITE_TRANSIENT);
 		else
 		  sqlite3_result_text(context, strdata, (int)strbytes, SQLITE_TRANSIENT);
@@ -3248,15 +3249,7 @@ vtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite_int64 *pR
       methodname="UpdateChangeRow";
       args=PyTuple_New(3);
       oldrowid=convert_value_to_pyobject(argv[0]);
-      if(sqlite3_value_type(argv[1])==SQLITE_NULL)
-	{
-	  newrowid=Py_None;
-	  Py_INCREF(newrowid);
-	}
-      else
-	{
-	  newrowid=convert_value_to_pyobject(argv[1]);
-	}
+      newrowid=convert_value_to_pyobject(argv[1]);
       if(!oldrowid || !newrowid)
 	{
 	  Py_XDECREF(oldrowid);
@@ -3610,21 +3603,6 @@ static PyTypeObject ZeroBlobBindType = {
 
 /* BLOB CODE */
 
-static PyObject*
-APSWBlob_new(PyTypeObject *type, PyObject *args, PyObject *kwargs)
-{
-  if(kwargs && PyDict_Size(kwargs)!=0)
-    {
-      PyErr_Format(PyExc_TypeError, "blob constructor does not take keyword arguments");
-      return NULL;
-    }
-
-  if(!PyArg_ParseTuple(args, ""))
-    return NULL;
-
-  return type->tp_alloc(type, 0);
-}
-
 static void
 APSWBlob_init(APSWBlob *self, Connection *connection, sqlite3_blob *blob)
 {
@@ -3912,7 +3890,7 @@ static PyTypeObject APSWBlobType = {
     0,                         /* tp_dictoffset */
     0,                         /* tp_init */
     0,                         /* tp_alloc */
-    APSWBlob_new,              /* tp_new */
+    0,                         /* tp_new */
     0,                         /* tp_free */
     0,                         /* tp_is_gc */
     0,                         /* tp_bases */
