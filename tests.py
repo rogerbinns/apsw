@@ -302,6 +302,9 @@ class APSW(unittest.TestCase):
     def testCursor(self):
         "Check functionality of the cursor"
         c=self.db.cursor()
+        # shouldn't be able to manually create
+        self.assertRaises(TypeError, type(c))
+        
         # give bad params
         self.assertRaises(TypeError, c.execute)
         self.assertRaises(TypeError, "foo", "bar", "bam")
@@ -433,6 +436,24 @@ class APSW(unittest.TestCase):
 
         # check nothing got inserted
         self.failUnlessEqual(0, c.execute("select count(*) from foo where row=9999").next()[0])
+
+        # playing with default encoding and non-ascii strings
+        enc=sys.getdefaultencoding()
+        reload(sys) # gets setdefaultencoding function back
+        try:
+            for v in vals:
+                if type(v)!=unicode:
+                    continue
+                def encoding(*args):
+                    return v.encode("utf8") # returns as str not unicode
+                self.db.createscalarfunction("encoding", encoding)
+                sys.setdefaultencoding("utf8")
+                for row in c.execute("select encoding(3)"):
+                    self.failUnlessEqual(v, row[0])
+                c.execute("insert into foo values(1234,?)", (v.encode("utf8"),))
+                self.failUnlessEqual(c.execute("select x from foo where rowid="+`self.db.last_insert_rowid()`).next()[0], v)
+        finally:
+            sys.setdefaultencoding(enc)
         
     def testAuthorizer(self):
         "Verify the authorizer works"
@@ -647,7 +668,10 @@ class APSW(unittest.TestCase):
         
         self.db.createscalarfunction("ilove8bit", ilove8bit)
         self.assertRaises(UnicodeDecodeError, c.execute, "select ilove8bit(*) from foo")
-            
+        # coverage
+        def bad(*args): 1/0
+        self.db.createscalarfunction("bad", bad)
+        self.assertRaises(ZeroDivisionError, c.execute, "select bad(3)+bad(4)")
 
     def testAggregateFunctions(self):
         "Verify aggregate functions"
@@ -768,7 +792,7 @@ class APSW(unittest.TestCase):
             1/0
         self.db.createaggregatefunction("badfunc", badfactory)
         self.assertRaises(ZeroDivisionError, c.execute, "select badfunc(x) from foo")
-        
+
         
     def testCollation(self):
         "Verify collations"
@@ -1126,6 +1150,14 @@ class APSW(unittest.TestCase):
         self.db.setupdatehook(uh)
         self.assertRaises(ZeroDivisionError, c.execute, "insert into foo values(100,100)")
         self.db.setupdatehook(None)
+        # improve code coverage
+        c.execute("create table bar(x,y); insert into bar values(1,2); insert into bar values(3,4)")
+        def uh(*args):
+            1/0
+        self.db.setupdatehook(uh)
+        self.assertRaises(ZeroDivisionError, c.execute, "insert into foo select * from bar")
+        self.db.setupdatehook(None)
+        
         # check cursor still works
         c.execute("insert into foo values(1000,1000)")
         self.assertEqual(1, c.execute("select count(*) from foo where x=1000").next()[0])
@@ -1160,6 +1192,17 @@ class APSW(unittest.TestCase):
             1/0
         self.db.setprofile(profile)
         self.assertRaises(ZeroDivisionError, c.execute, "create table bar(y)")
+        # coverage
+        wasrun=[False]
+        def profile(*args):
+            wasrun[0]=True
+        def uh(*args): 1/0
+        self.db.setprofile(profile)
+        self.db.setupdatehook(uh)
+        self.assertRaises(ZeroDivisionError, c.execute, "insert into foo values(3)")
+        self.failUnlessEqual(wasrun[0], False)
+        self.db.setprofile(None)
+        self.db.setupdatehook(None)
 
     def testThreading(self):
         "Verify threading behaviour"
@@ -1440,6 +1483,10 @@ class APSW(unittest.TestCase):
                 # this gives ValueError ("bad" is not a float)
                 return (None,12,u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}", "anything", "bad")
 
+            def BestIndex5(self, constraints, orderbys):
+                # unicode error
+                return (None, None, "\xde\xad\xbe\xef")
+
             _bestindexreturn=99
                 
             def BestIndex99(self, constraints, orderbys):
@@ -1668,6 +1715,8 @@ class APSW(unittest.TestCase):
             self.assertRaises(TypeError, cur.execute, allconstraints)
         VTable.BestIndex=VTable.BestIndex4
         self.assertRaises(ValueError, cur.execute, allconstraints)
+        VTable.BestIndex=VTable.BestIndex5
+        self.assertRaises(UnicodeDecodeError, cur.execute, allconstraints)
 
         # check varying number of return args from bestindex
         VTable.BestIndex=VTable.BestIndex99
@@ -2011,7 +2060,10 @@ class APSW(unittest.TestCase):
         c=self.db.cursor()
         c.execute("create table foo(theblob)")
         self.assertRaises(apsw.TooBigError,  c.execute, "insert into foo values(?)", (buffer(f),))
-        # I can't find an easy way of making mmap fake being a string (the mmap module doc implies you can)
+        c.execute("insert into foo values(?)", ("jkghjk"*1024,))
+        b=self.db.blobopen("main", "foo", "theblob", self.db.last_insert_rowid(), True)
+        b.read(1)
+        self.assertRaises(ValueError, b.write, buffer(f))
         f.close()
 
     def testErrorCodes(self):
@@ -2143,6 +2195,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, apsw.zeroblob)
         self.assertRaises(TypeError, apsw.zeroblob, "foo")
         self.assertRaises(TypeError, apsw.zeroblob, -7)
+        self.assertRaises(TypeError, apsw.zeroblob, size=27)
         self.assertRaises(OverflowError, apsw.zeroblob, 4000000000)
         cur=self.db.cursor()
         cur.execute("create table foo(x)")
@@ -2177,8 +2230,12 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.SQLError, self.db.blobopen, "main", "x" , "x", rowid, False)
         self.assertRaises(apsw.SQLError, self.db.blobopen, "main", "foo" , "y", rowid, False)
         blobro=self.db.blobopen("main", "foo", "x", rowid, False)
+        # sidebar: check they can't be manually created
+        self.assertRaises(TypeError, type(blobro))
+        # check vals
         self.assertEqual(blobro.length(), 98765)
         self.assertEqual(blobro.length(), 98765)
+        self.failUnlessEqual(blobro.read(0), "")
         for i in xrange(98765):
             x=blobro.read(1)
             self.assertEqual("\x00", x)
@@ -2188,6 +2245,7 @@ class APSW(unittest.TestCase):
         self.assertEqual(blobro.tell(), 98765)
         blobro.seek(0)
         self.assertEqual(blobro.tell(), 0)
+        self.failUnlessEqual(len(blobro.read(11119999)), 98765)
         blobro.seek(2222)
         self.assertEqual(blobro.tell(), 2222)
         blobro.seek(0,0)
@@ -2234,6 +2292,46 @@ class APSW(unittest.TestCase):
         self.assertEqual(blobrw.read(55), "abcdefg"+"\x00"*43+"hijkl")
         self.assertRaises(TypeError, blobrw.write, 12)
         self.assertRaises(TypeError, blobrw.write)
+        # try to go beyond end
+        self.assertRaises(ValueError, blobrw.write, " "*100000)
+        self.assertRaises(TypeError, blobrw.close, "elephant")
+
+    def testBlobReadError(self):
+        # Check blob read errors handled correctly.  We use a virtual
+        # table to generate the error
+        class Source:
+            def Create(self, db, modulename, dbname, tablename):
+                return "create table foo(b blob)", Table()
+            Connect=Create
+        class Table:
+            def BestIndex(self, *args): return None
+            def Open(self): return Cursor()
+
+        class Cursor:
+            def __init__(self):
+                self.pos=0
+            def Filter(self, *args):
+                self.pos=0
+            def Eof(self):
+                return self.pos>0
+            def Next(self):
+                self.pos+=1
+            def Rowid(self):
+                return self.pos
+            def Close(self):
+                pass
+            def Column(self, col):
+                if col<0: return self.pos
+                return "foo"
+                1/0
+                raise apsw.IOError()
+        cur=self.db.cursor()
+        self.db.createmodule("ioerror", Source())
+        cur.execute("create virtual table ioerror using ioerror()")
+        blob=self.db.blobopen("main", "ioerror", "b", 0, False)
+        blob.read(1)
+    # See http://www.sqlite.org/cvstrac/tktview?tn=3078
+    del testBlobReadError
 
 # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used
 LOADEXTENSIONFILENAME="./testextension.sqlext"
