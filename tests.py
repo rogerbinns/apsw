@@ -33,6 +33,12 @@ def randomintegers(howmany):
     for i in xrange(howmany):
         yield (random.randint(0,9999999999),)
 
+# An instance of this class is used to get the -1 return value to the
+# C api PyObject_IsTrue
+class BadIsTrue(int):
+    def __nonzero__(self):
+        1/0
+
 # helper class - runs code in a seperate thread
 class ThreadRunner(threading.Thread):
 
@@ -451,7 +457,8 @@ class APSW(unittest.TestCase):
                 for row in c.execute("select encoding(3)"):
                     self.failUnlessEqual(v, row[0])
                 c.execute("insert into foo values(1234,?)", (v.encode("utf8"),))
-                self.failUnlessEqual(c.execute("select x from foo where rowid="+`self.db.last_insert_rowid()`).next()[0], v)
+                for row in c.execute("select x from foo where rowid="+`self.db.last_insert_rowid()`):
+                    self.failUnlessEqual(v, row[0])
         finally:
             sys.setdefaultencoding(enc)
         
@@ -578,6 +585,10 @@ class APSW(unittest.TestCase):
             1/0
         c.setexectrace(tracefunc)
         self.assertRaises(TypeError, c.execute, "select max(x) from two")
+        def tracefunc(*args):
+            return BadIsTrue()
+        c.setexectrace(tracefunc)
+        self.assertRaises(ZeroDivisionError, c.execute, "select max(x) from two")
 
     def testRowTracing(self):
         "Verify row tracing"
@@ -886,7 +897,10 @@ class APSW(unittest.TestCase):
         self.failUnlessEqual(0, c.execute("select count(*) from foo where x=-10").next()[0])
         # and previous ph should not have been called
         self.failUnlessEqual(saved, phcalledcount[0])
-                             
+        def ph():
+            return BadIsTrue()
+        self.db.setprogresshandler(ph, 1)
+        self.assertRaises(ZeroDivisionError, c.execute, "update foo set x=-10")
 
     def testChanges(self):
         "Verify reporting of changes"
@@ -1037,6 +1051,18 @@ class APSW(unittest.TestCase):
         del c2
         db2.close()
 
+        def bh(*args):
+            return BadIsTrue()
+        db2=apsw.Connection("testdb")
+        c=self.db.cursor()
+        c2=db2.cursor()
+        c2.execute("begin exclusive")
+        self.db.setbusyhandler(bh)
+        self.assertRaises(ZeroDivisionError, c.execute, "begin immediate ; select * from foo")
+        del c
+        del c2
+        db2.close()        
+
     def testBusyHandling2(self):
         "Another busy handling test"
 
@@ -1097,6 +1123,11 @@ class APSW(unittest.TestCase):
             return 1/0
         self.db.setcommithook(ch)
         self.assertRaises(ZeroDivisionError, c.execute, "insert into foo values(?)", (1,))
+        def ch():
+            return BadIsTrue()
+        self.db.setcommithook(ch)
+        self.assertRaises(ZeroDivisionError, c.execute, "insert into foo values(?)", (1,))
+        
 
     def testRollbackHook(self):
         "Verify rollback hooks"
@@ -1327,6 +1358,7 @@ class APSW(unittest.TestCase):
         # they need to be enabled first (off by default)
         self.assertRaises(apsw.ExtensionLoadingError, self.db.loadextension, LOADEXTENSIONFILENAME)
         self.db.enableloadextension(False)
+        self.assertRaises(ZeroDivisionError, self.db.enableloadextension, BadIsTrue())
         # should still be disabled
         self.assertRaises(apsw.ExtensionLoadingError, self.db.loadextension, LOADEXTENSIONFILENAME)
         self.db.enableloadextension(True)
@@ -1344,6 +1376,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.ExtensionLoadingError, self.db.loadextension, LOADEXTENSIONFILENAME, "doesntexist")
         self.db.loadextension(LOADEXTENSIONFILENAME, "alternate_sqlite3_extension_init")
         self.failUnlessEqual(4, c.execute("select doubleup(2)").next()[0])
+        
 
     def testVtables(self):
         "Test virtual table functionality"
@@ -1486,6 +1519,12 @@ class APSW(unittest.TestCase):
             def BestIndex5(self, constraints, orderbys):
                 # unicode error
                 return (None, None, "\xde\xad\xbe\xef")
+
+            def BestIndex6(self, constraints, orderbys):
+                return ( (0, 1, (2, BadIsTrue()), 3, 4), )
+
+            def BestIndex7(self, constraints, orderbys):
+                return (None, None, "foo", BadIsTrue(), 99)
 
             _bestindexreturn=99
                 
@@ -1652,6 +1691,9 @@ class APSW(unittest.TestCase):
             def Eof2(self):
                 1/0
 
+            def Eof3(self):
+                return BadIsTrue()
+
             def Eof99(self):
                 return not ( self.pos<len(self.table.data) )
 
@@ -1717,6 +1759,10 @@ class APSW(unittest.TestCase):
         self.assertRaises(ValueError, cur.execute, allconstraints)
         VTable.BestIndex=VTable.BestIndex5
         self.assertRaises(UnicodeDecodeError, cur.execute, allconstraints)
+        VTable.BestIndex=VTable.BestIndex6
+        self.assertRaises(ZeroDivisionError, cur.execute, allconstraints)
+        VTable.BestIndex=VTable.BestIndex7
+        self.assertRaises(ZeroDivisionError, cur.execute, allconstraints)
 
         # check varying number of return args from bestindex
         VTable.BestIndex=VTable.BestIndex99
@@ -1750,6 +1796,8 @@ class APSW(unittest.TestCase):
         Cursor.Eof=Cursor.Eof1
         self.assertRaises(TypeError, cur.execute, allconstraints)
         Cursor.Eof=Cursor.Eof2
+        self.assertRaises(ZeroDivisionError,cur.execute, allconstraints)
+        Cursor.Eof=Cursor.Eof3
         self.assertRaises(ZeroDivisionError,cur.execute, allconstraints)
         Cursor.Eof=Cursor.Eof99
         self.assertRaises(AttributeError, cur.execute, allconstraints)

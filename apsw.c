@@ -1296,8 +1296,6 @@ commithookcb(void *context)
 
   ok=PyObject_IsTrue(retval);
   assert(ok==-1 || ok==0 || ok==1);
-  /* the docs say -1 can be returned, but the code for PyObject_IsTrue always returns 1 or 0.  
-     this is a defensive check */
   if(ok==-1)
     {
       ok=1;
@@ -1369,7 +1367,6 @@ progresshandlercb(void *context)
   ok=PyObject_IsTrue(retval);
 
   assert(ok==-1 || ok==0 || ok==1);
-  /* see earlier comment about PyObject_IsTrue */
   if(ok==-1)
     {
       ok=1;
@@ -2777,7 +2774,8 @@ vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
 	      goto constraintfail;
 	    }
 	  omitv=PyObject_IsTrue(omit);
-	  if(omitv==-1) goto constraintfail;
+	  if(omitv==-1) 
+            goto constraintfail;
 	  indexinfo->aConstraintUsage[i].argvIndex=PyInt_AsLong(argvindex);
 	  indexinfo->aConstraintUsage[i].omit=omitv;
 	  Py_DECREF(constraint);
