@@ -1088,6 +1088,22 @@ Connection_interrupt(Connection *self)
   Py_RETURN_NONE;
 }
 
+#ifdef EXPERIMENTAL
+static PyObject *
+Connection_limit(Connection *self, PyObject *args)
+{
+  int val=-1, res, id;
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+  if(!PyArg_ParseTuple(args, "i|i", &id, &val))
+    return NULL;
+
+  res=sqlite3_limit(self->db, id, val);
+
+  return PyInt_FromLong((long)res);
+}
+#endif
+
 static void
 updatecb(void *context, int updatetype, char const *databasename, char const *tablename, sqlite_int64 rowid)
 {
@@ -3441,6 +3457,8 @@ static PyMethodDef Connection_methods[] = {
   {"blobopen", (PyCFunction)Connection_blobopen, METH_VARARGS,
    "Opens a blob for i/o"},
 #ifdef EXPERIMENTAL
+  {"limit", (PyCFunction)Connection_limit, METH_VARARGS,
+   "Gets and sets limits"},
   {"setprofile", (PyCFunction)Connection_setprofile, METH_O,
    "Sets a callable invoked with profile information after each statement"},
   {"setcommithook", (PyCFunction)Connection_setcommithook, METH_O,
@@ -5198,6 +5216,37 @@ initapsw(void)
     ADDINT(SQLITE_OPEN_MASTER_JOURNAL);
 
     PyModule_AddObject(m, "mapping_open_flags", thedict);
+
+#ifdef SQLITE_LIMIT_LENGTH
+    /* limits */
+
+    thedict=PyDict_New();
+    if(!thedict) return;
+
+    ADDINT(SQLITE_LIMIT_LENGTH);
+    ADDINT(SQLITE_LIMIT_SQL_LENGTH);
+    ADDINT(SQLITE_LIMIT_COLUMN);
+    ADDINT(SQLITE_LIMIT_EXPR_DEPTH);
+    ADDINT(SQLITE_LIMIT_COMPOUND_SELECT);
+    ADDINT(SQLITE_LIMIT_VDBE_OP);
+    ADDINT(SQLITE_LIMIT_FUNCTION_ARG);
+    ADDINT(SQLITE_LIMIT_ATTACHED);
+    ADDINT(SQLITE_LIMIT_LIKE_PATTERN_LENGTH);
+    ADDINT(SQLITE_LIMIT_VARIABLE_NUMBER);
+
+    ADDINT(SQLITE_MAX_LENGTH);
+    ADDINT(SQLITE_MAX_SQL_LENGTH);
+    ADDINT(SQLITE_MAX_COLUMN);
+    ADDINT(SQLITE_MAX_EXPR_DEPTH);
+    ADDINT(SQLITE_MAX_COMPOUND_SELECT);
+    ADDINT(SQLITE_MAX_VDBE_OP);
+    ADDINT(SQLITE_MAX_FUNCTION_ARG);
+    ADDINT(SQLITE_MAX_ATTACHED);
+    ADDINT(SQLITE_MAX_LIKE_PATTERN_LENGTH);
+    ADDINT(SQLITE_MAX_VARIABLE_NUMBER);
+
+    PyModule_AddObject(m, "mapping_limits", thedict);
+#endif
 
 }
 

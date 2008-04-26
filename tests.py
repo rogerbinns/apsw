@@ -2132,6 +2132,21 @@ class APSW(unittest.TestCase):
         except:
             pass
 
+    def testLimits(self):
+        "Verify setting and getting limits"
+        self.assertRaises(TypeError, self.db.limit, "apollo", 11)
+        c=self.db.cursor()
+        c.execute("create table foo(x)")
+        c.execute("insert into foo values(?)", ("x"*1024,))
+        old=self.db.limit(apsw.SQLITE_LIMIT_LENGTH)
+        self.db.limit(apsw.SQLITE_LIMIT_LENGTH, 1023)
+        self.assertRaises(apsw.TooBigError, c.execute, "insert into foo values(?)", ("y"*1024,))
+        self.failUnlessEqual(1023, self.db.limit(apsw.SQLITE_LIMIT_LENGTH, 0))
+        # bug in sqlite - see http://www.sqlite.org/cvstrac/tktview?tn=3085
+        if False:
+            c.execute("insert into foo values(?)", ("x"*1024,))
+            self.failUnlessEqual(apsw.SQLITE_MAX_LENGTH, self.db.limit(apsw.SQLITE_LIMIT_LENGTH))
+
     def testConnectionHooks(self):
         "Verify connection hooks"
         del apsw.connection_hooks

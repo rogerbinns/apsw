@@ -105,9 +105,9 @@ def buildsqlite(workdir, sqlitever, logfile):
     else:
         run("cd %s ; mkdir sqlite3 ; cd sqlite3 ; wget -q %s ; unzip -q %s sqlite3.c" % (workdir, sqliteurl(sqlitever), os.path.basename(sqliteurl(sqlitever))))
     if sys.platform.startswith("darwin"):
-        run('cd %s ; gcc -fPIC -bundle -o testextension.sqlext -Isqlite3 testextension.c' % (workdir,))
+        run('cd %s ; gcc -fPIC -bundle -o testextension.sqlext -Isqlite3 -I. testextension.c' % (workdir,))
     else:
-        run('cd %s ; gcc -fPIC -shared -o testextension.sqlext -Isqlite3 testextension.c' % (workdir,))
+        run('cd %s ; gcc -fPIC -shared -o testextension.sqlext -Isqlite3 -I. testextension.c' % (workdir,))
 
 def buildapsw(outputfile, pybin, workdir):
     run("cd %s ; %s setup.py build >>%s 2>&1" % (workdir, pybin, outputfile))
@@ -132,8 +132,6 @@ PYVERS=(
 
 SQLITEVERS=(
     'cvs',
-    '3.5.6',
-    '3.5.7',
     '3.5.8',
    )
 

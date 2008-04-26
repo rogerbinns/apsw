@@ -386,12 +386,36 @@ for size,directory,file in cursor.execute("select st_size,directory,name from sy
 for ctime,directory,file in cursor.execute("select st_ctime,directory,name from sysfiles order by st_ctime limit 3"):
     print ctime,file,directory
 #@@ENDCAPTURE
+
+###
+### Limits
+###
+
+#@@CAPTURE
+# Print some limits
+for limit in ("LENGTH", "COLUMN", "ATTACHED"):
+    name="SQLITE_LIMIT_"+limit 
+    max="SQLITE_MAX_"+limit  # compile time
+    print name, connection.limit(getattr(apsw, name))
+    print max, getattr(apsw, max)
+
+# Set limit for size of a string
+cursor.execute("create table testlimit(s)")
+cursor.execute("insert into testlimit values(?)", ( "x"*1024, )) # 1024 char string
+connection.limit(apsw.SQLITE_LIMIT_LENGTH, 1023) # limit is now 1023
+try:
+    cursor.execute("insert into testlimit values(?)", ( "y"*1024, ))
+    print "string exceeding limit was inserted"
+except apsw.TooBigError:
+    print "Caught toobig exception"
+    
+#@@ENDCAPTURE
     
 ###
 ### Cleanup
 ###
 
-# We must close connections
+# We can close connections manually (useful if you want to catch exceptions)
 connection.close(True)  # force it since we want to exit
 
 #@@END

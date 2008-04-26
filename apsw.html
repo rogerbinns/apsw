@@ -3,34 +3,34 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <meta name="generator" content="HTML Tidy for Linux (vers 1 September 2005), see www.w3.org" />
+  <meta name="generator" content="HTML Tidy for Linux (vers 6 November 2007), see www.w3.org" />
 
   <title>APSW - Another Python SQLite Wrapper</title>
-<style type="text/css">
+  <style type="text/css">
 /*<![CDATA[*/
-body { 
+  body { 
   font-family: verdana, arial, helvetica, sans-serif;
   margin: 20px;
   background-color: #ffcc99;
   padding: 7px;
- }
- .pynumber    { color: #0080C0;}
- .pyoperator  { color: #0000C0;}
- .pystring    { color: #004080;}
- .pycomment   { color: #008000;}
- .pyname      { color: #000000;}
- .pyerror     { color: #FF8080;}
- .pykeyword   { color: #C00000;}
- .pytext      { color: #000000;}
- .pyoutput    { color: #0000FF;}
-/*]]>*/
-</style>
+  }
+  .pynumber    { color: #0080C0;}
+  .pyoperator  { color: #0000C0;}
+  .pystring    { color: #004080;}
+  .pycomment   { color: #008000;}
+  .pyname      { color: #000000;}
+  .pyerror     { color: #FF8080;}
+  .pykeyword   { color: #C00000;}
+  .pytext      { color: #000000;}
+  .pyoutput    { color: #0000FF;}
+  /*]]>*/
+  </style>
 </head>
 
 <body>
   <h1 class="notoc">APSW - Another Python SQLite Wrapper</h1>
 
-  <p><font size="-1">apsw-3.5.4-r1 25th December 2007</font></p>
+  <p><font size="-1">apsw-3.5.8-r1 1st May 2008</font> (Use with SQLite 3.5.8 or later)</p>
 
   <p>APSW provides an SQLite 3 wrapper that provides the thinnest layer over <a href="http://www.sqlite.org">SQLite
   3</a> possible. Everything you can do from the <a href="http://www.sqlite.org/capi3ref.html">C API</a> to SQLite 3,
@@ -62,7 +62,15 @@ body {
 
           <li><a href="#Example">Example</a></li>
 
-          <li><a href="#Building">Building</a></li>
+          <li>
+            <a href="#Building">Building</a>
+
+            <ul>
+              <li><a href="#Finding">Finding SQLite 3</a></li>
+
+              <li><a href="#Recommended">Recommended</a></li>
+            </ul>
+          </li>
 
           <li>
             <a href="#APIReference">API Reference</a>
@@ -140,7 +148,7 @@ body {
             <a href="#verhistory">Version History</a>
 
             <ul>
-              <li><a href="#352r1">3.5.4-r1</a></li>
+              <li><a href="#358r1">3.5.8-r1</a></li>
 
               <li><a href="#3313r1">3.3.13-r1</a></li>
 
@@ -262,9 +270,9 @@ body {
 "pyname">SQLITE_VERSION_NUMBER   </span><span class="pycomment"># from the sqlite header file at compile time
 
 </span><span class="pyoutput">   Using APSW file /space/apsw/apsw.so
-      APSW version 3.5.4-r1
-    SQLite version 3.5.4
-    SQLite version 3005004
+      APSW version 3.5.8-r1
+    SQLite version 3.5.8
+    SQLite version 3005008
 </span>
 <span class="pycomment">###
 ### Opening/creating database
@@ -968,9 +976,9 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
     </span><span class="pykeyword">print </span><span class="pyname">size</span><span class=
 "pyoperator">,</span><span class="pyname">file</span><span class="pyoperator">,</span><span class="pyname">directory
 
-</span><span class="pyoutput">   511474 unicodedata_d.so /usr/lib/python2.5/lib-dynload
-   481008 unicodedata.so /usr/lib/python2.5/lib-dynload
-   453424 pyexpat_d.so /usr/lib/python2.5/lib-dynload
+</span><span class="pyoutput">   481008 unicodedata.so /usr/lib/python2.5/lib-dynload
+   440223 libxml2.pyc /var/lib/python-support/python2.5
+   376320 libxml2mod.so /var/lib/python-support/python2.5
 </span>
 <span class="pycomment"># Which 3 files are the oldest?
 </span><span class="pykeyword">for </span><span class="pyname">ctime</span><span class=
@@ -981,19 +989,73 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
     </span><span class="pykeyword">print </span><span class="pyname">ctime</span><span class=
 "pyoperator">,</span><span class="pyname">file</span><span class="pyoperator">,</span><span class="pyname">directory
 
-</span><span class="pyoutput">   1194710173.0 site.py /usr/lib/python2.5
-   1194710182.0 debconf.py /usr/lib/python2.5/site-packages
-   1194710188.0 copy_reg.py /usr/lib/python2.5
+</span><span class="pyoutput">   1194713443.0 GnuPGInterface-0.3.2.egg-info /var/lib/python-support/python2.5
+   1194713443.0 GnuPGInterface.py /var/lib/python-support/python2.5
+   1194713447.0 sexy.so /usr/lib/python2.5/site-packages/gtk-2.0
+</span>
+<span class="pycomment">###
+### Limits
+###
+
+# Print some limits
+</span><span class="pykeyword">for </span><span class="pyname">limit </span><span class=
+"pykeyword">in </span><span class="pyoperator">(</span><span class="pystring">"LENGTH"</span><span class=
+"pyoperator">, </span><span class="pystring">"COLUMN"</span><span class="pyoperator">, </span><span class=
+"pystring">"ATTACHED"</span><span class="pyoperator">):
+    </span><span class="pyname">name</span><span class="pyoperator">=</span><span class=
+"pystring">"SQLITE_LIMIT_"</span><span class="pyoperator">+</span><span class="pyname">limit
+    max</span><span class="pyoperator">=</span><span class="pystring">"SQLITE_MAX_"</span><span class=
+"pyoperator">+</span><span class="pyname">limit  </span><span class="pycomment"># compile time
+    </span><span class="pykeyword">print </span><span class="pyname">name</span><span class=
+"pyoperator">, </span><span class="pyname">connection</span><span class="pyoperator">.</span><span class=
+"pyname">limit</span><span class="pyoperator">(</span><span class="pyname">getattr</span><span class=
+"pyoperator">(</span><span class="pyname">apsw</span><span class="pyoperator">, </span><span class=
+"pyname">name</span><span class="pyoperator">))
+    </span><span class="pykeyword">print </span><span class="pyname">max</span><span class=
+"pyoperator">, </span><span class="pyname">getattr</span><span class="pyoperator">(</span><span class=
+"pyname">apsw</span><span class="pyoperator">, </span><span class="pyname">max</span><span class="pyoperator">)
+
+</span><span class="pycomment"># Set limit for size of a string
+</span><span class="pyname">cursor</span><span class="pyoperator">.</span><span class=
+"pyname">execute</span><span class="pyoperator">(</span><span class=
+"pystring">"create table testlimit(s)"</span><span class="pyoperator">)
+</span><span class="pyname">cursor</span><span class="pyoperator">.</span><span class=
+"pyname">execute</span><span class="pyoperator">(</span><span class=
+"pystring">"insert into testlimit values(?)"</span><span class="pyoperator">, ( </span><span class=
+"pystring">"x"</span><span class="pyoperator">*</span><span class="pynumber">1024</span><span class=
+"pyoperator">, )) </span><span class="pycomment"># 1024 char string
+</span><span class="pyname">connection</span><span class="pyoperator">.</span><span class=
+"pyname">limit</span><span class="pyoperator">(</span><span class="pyname">apsw</span><span class=
+"pyoperator">.</span><span class="pyname">SQLITE_LIMIT_LENGTH</span><span class="pyoperator">, </span><span class=
+"pynumber">1023</span><span class="pyoperator">) </span><span class="pycomment"># limit is now 1023
+</span><span class="pykeyword">try</span><span class="pyoperator">:
+    </span><span class="pyname">cursor</span><span class="pyoperator">.</span><span class=
+"pyname">execute</span><span class="pyoperator">(</span><span class=
+"pystring">"insert into testlimit values(?)"</span><span class="pyoperator">, ( </span><span class=
+"pystring">"y"</span><span class="pyoperator">*</span><span class="pynumber">1024</span><span class="pyoperator">, ))
+    </span><span class="pykeyword">print </span><span class="pystring">"string exceeding limit was inserted"
+</span><span class="pykeyword">except </span><span class="pyname">apsw</span><span class=
+"pyoperator">.</span><span class="pyname">TooBigError</span><span class="pyoperator">:
+    </span><span class="pykeyword">print </span><span class="pystring">"Caught toobig exception"
+
+
+</span><span class="pyoutput">   SQLITE_LIMIT_LENGTH 1000000000
+   SQLITE_MAX_LENGTH 1000000000
+   SQLITE_LIMIT_COLUMN 2000
+   SQLITE_MAX_COLUMN 2000
+   SQLITE_LIMIT_ATTACHED 10
+   SQLITE_MAX_ATTACHED 10
+   Caught toobig exception
 </span>
 <span class="pycomment">###
 ### Cleanup
 ###
 
-# We must close connections
+# We can close connections manually (useful if you want to catch exceptions)
 </span><span class="pyname">connection</span><span class="pyoperator">.</span><span class=
 "pyname">close</span><span class="pyoperator">(</span><span class="pyname">True</span><span class=
-"pyoperator">)  </span><span class="pycomment"># force it since we want to exit</span>
-<!--sourceend--></font>
+"pyoperator">)  </span><span class="pycomment"># force it since we want to exit</span></font><span class="pycomment">
+<!--sourceend--></span>
 </pre>
   </blockquote>
 
@@ -1017,30 +1079,34 @@ python setup.py build --compile=mingw32 install
 </pre>
   </blockquote>
 
-  <h2>Finding SQLite 3</h2>
+  <h2><a name="Finding" id="Finding">Finding SQLite 3</a></h2>
 
-  <p>SQLite 3 is needed during the build process.  These methods are tried in order:
+  <p>SQLite 3 is needed during the build process. These methods are tried in order:</p>
 
-<dl>
-<dt><a href="http://www.sqlite.org/cvstrac/wiki?p=TheAmalgamation">Amalgamation</a></dt>
-<dd>The file <tt>sqlite3/sqlite3.c</tt> is looked for.
-<dt>Local build</dt>
-<dd>The header <tt>sqlite3/sqlite3.h</tt> and library <tt>sqlite3/libsqlite3.{a,so,dll}</tt> is looked for.
-<dt>System</dt>
-<dd>The default compiler include path (eg <tt>/usr/include</tt>) and library path (eg <tt>/usr/lib</tt>) are used.
-</dl>
+  <dl>
+    <dt><a href="http://www.sqlite.org/cvstrac/wiki?p=TheAmalgamation">Amalgamation</a></dt>
 
-  <p>Note that if you compiled SQLite with any OMIT flags (eg <tt>SQLITE_OMIT_LOAD_EXTENSION</tt>) then you
-should edit <tt>setup.py</tt> to add the same flag.
+    <dd>The file <tt>sqlite3/sqlite3.c</tt> is looked for.</dd>
 
- <h2>Recommended</h2>
+    <dt>Local build</dt>
 
-  <p>These instructions show how to build using the amalgamation.  Any
-  existing SQLite on your system is ignored at build time and
-  runtime. (Note that you can even use APSW in the same process as a
-  different SQLite is used by other libraries - this happens a lot on
-  Mac.) You should follow these instructions with your current
-  directory being where you extracted the APSW source to.</p>
+    <dd>The header <tt>sqlite3/sqlite3.h</tt> and library <tt>sqlite3/libsqlite3.{a,so,dll}</tt> is looked for.</dd>
+
+    <dt>System</dt>
+
+    <dd>The default compiler include path (eg <tt>/usr/include</tt>) and library path (eg <tt>/usr/lib</tt>) are
+    used.</dd>
+  </dl>
+
+  <p>Note that if you compiled SQLite with any OMIT flags (eg <tt>SQLITE_OMIT_LOAD_EXTENSION</tt>) then you should edit
+  <tt>setup.py</tt> to add the same flag.</p>
+
+  <h2><a name="Recommended" id="Recommended">Recommended</a></h2>
+
+  <p>These instructions show how to build using the amalgamation. Any existing SQLite on your system is ignored at
+  build time and runtime. (Note that you can even use APSW in the same process as a different SQLite is used by other
+  libraries - this happens a lot on Mac.) You should follow these instructions with your current directory being where
+  you extracted the APSW source to.</p>
 
   <blockquote>
     <p>Download the <a href="http://www.sqlite.org/download.html">SQLite 3 code</a>.</p>
@@ -1190,7 +1256,8 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       <code>apsw.mapping_authorizer_return</code></p>
     </dd>
 
-    <dt><a href="http://sqlite.org/c3ref/c_alter_table.html"><strong>SQLITE_CREATE_INDEX, SQLITE_CREATE_TABLE</strong> and 30 others</a></dt>
+    <dt><a href="http://sqlite.org/c3ref/c_alter_table.html"><strong>SQLITE_CREATE_INDEX, SQLITE_CREATE_TABLE</strong>
+    and 30 others</a></dt>
 
     <dd>
       <p>The values are passed to authorizer functions. You can see a complete list in the <a href=
@@ -1205,7 +1272,8 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       <code>apsw.mapping_bestindex_constraints</code></p>
     </dd>
 
-    <dt><a href="http://sqlite.org/c3ref/c_ioerr_blocked.html"><strong>SQLITE_IOERR_READ, SQLITE_IOERR_FSYNC</strong> and 7 others</a></dt>
+    <dt><a href="http://sqlite.org/c3ref/c_ioerr_blocked.html"><strong>SQLITE_IOERR_READ, SQLITE_IOERR_FSYNC</strong>
+    and 7 others</a></dt>
 
     <dd>
       <p>These are <a href="http://www.sqlite.org/cvstrac/wiki?p=ExtendedResultCodes">extended result codes</a> which
@@ -1213,17 +1281,28 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       <code>apsw.mapping_extended_result_codes</code></p>
     </dd>
 
-    <dt><a href="http://sqlite.org/c3ref/c_abort.html"><strong>SQLITE_OK, SQLITE_ERROR, SQLITE_PERM</strong> and 22 others</a></dt>
+    <dt><a href="http://sqlite.org/c3ref/c_abort.html"><strong>SQLITE_OK, SQLITE_ERROR, SQLITE_PERM</strong> and 22
+    others</a></dt>
 
     <dd>
       <p>These are <a href="http://sqlite.org/capi3ref.html#result-codes">SQLite result codes</a> which are provided in
       <a href="#Exceptions">exceptions</a>. Mapping is <code>apsw.mapping_result_codes</code></p>
     </dd>
 
-    <dt><a href="http://sqlite.org/c3ref/c_open_create.html"><strong>SQLITE_OPEN_READONLY, SQLITE_OPEN_CREATE</strong> and 10 others</a></dt>
+    <dt><a href="http://sqlite.org/c3ref/c_open_create.html"><strong>SQLITE_OPEN_READONLY, SQLITE_OPEN_CREATE</strong>
+    and 10 others</a></dt>
 
-<dd><p>These are used for <a href="http://sqlite.org/c3ref/open.html">opening the database</a> as well as the VFS.  Mapping is <code>apsw.mapping_open_flags</code></p></dd>
+    <dd>
+      <p>These are used for <a href="http://sqlite.org/c3ref/open.html">opening the database</a> as well as the VFS.
+      Mapping is <code>apsw.mapping_open_flags</code></p>
+    </dd>
 
+    <dt><a href="http://www.sqlite.org/c3ref/c_limit_attached.html"><strong>SQLITE_LIMIT_LENGTH,
+    SQLITE_LIMIT_SQL_LENGTH</strong> and 8 others</a></dt>
+
+    <dd>
+      <p>These are used for getting or setting <a href="http://www.sqlite.org/c3ref/limit.html">run-time limits</a></p>
+    </dd>
   </dl>
 
   <h2><a name="Connection_class" id="Connection_class">Connection class</a></h2>
@@ -1231,13 +1310,14 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
   <p>The connection class wraps a <code>sqlite3 pointer</code>.</p>
 
   <dl>
-    <dt><strong>Connection(filename, flags=SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE, vfs=None, statementcachesize=100)</strong></dt>
+    <dt><strong>Connection(filename, flags=SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE, vfs=None,
+    statementcachesize=100)</strong></dt>
 
     <dd>
       <p>Opens an SQLite database named <code>filename</code>. (This calls <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_open">sqlite3_open_v2</a> behind the scenes.)  If you don't supply
-      a vfs then the default will be used.  You can also set how many entries there are in the statement cache.  You will generally
-      want this to be the total number of distinct SQL statements you execute frequently.</p>
+      "http://www.sqlite.org/capi3ref.html#sqlite3_open">sqlite3_open_v2</a> behind the scenes.) If you don't supply a
+      vfs then the default will be used. You can also set how many entries there are in the statement cache. You will
+      generally want this to be the total number of distinct SQL statements you execute frequently.</p>
     </dd>
 
     <dt><strong>close(force=False)</strong></dt>
@@ -1321,6 +1401,16 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
     <dd>
       <p>Causes any pending operations on the database to abort at the earliest opportunity. You can call this from any
       thread. (This calls <a href="http://www.sqlite.org/capi3ref.html#sqlite3_interrupt">sqlite3_interrupt</a>).</p>
+    </dd>
+
+    <dt><strong>limit(id [, newval])</strong></dt>
+
+    <dd>
+      <p>If called with one parameter then the relevant limit is returned. If called with two then the limit is
+      changed. Returns the old value of the limit. This calls <a href=
+      "http://www.sqlite.org/c3ref/limit.html">sqlite3_limit</a>. For example
+      <code>connection.limit(apsw.SQLITE_LIMIT_LENGTH, 1024)</code> would set the limit for blobs and strings to 1
+      kilobyte.</p>
     </dd>
 
     <dt><strong>createscalarfunction(name, callable, numargs=-1)</strong></dt>
@@ -1504,13 +1594,13 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
   <dl>
     <dt><strong>close(force=False)</strong></dt>
 
-    <dd><p>Stops any further access to the blob. You should proactively call close as it will return errors that may
-    correspond to earlier blob i/o. See <a href="http://www.sqlite.org/c3ref/blob_close.html">blob_close()</a> for more
-    details.  If you call any of the other methods on a closed blob then you will get a ValueError exception (this is
-    the same as calling methods on a closed Python file object).</p>
- 
-    <p><i>force</i> currently has no effect and is present for compatibility with cursor objects.</p>
+    <dd>
+      <p>Stops any further access to the blob. You should proactively call close as it will return errors that may
+      correspond to earlier blob i/o. See <a href="http://www.sqlite.org/c3ref/blob_close.html">blob_close()</a> for
+      more details. If you call any of the other methods on a closed blob then you will get a ValueError exception
+      (this is the same as calling methods on a closed Python file object).</p>
 
+      <p><i>force</i> currently has no effect and is present for compatibility with cursor objects.</p>
     </dd>
 
     <dt><strong>read([amount])</strong></dt>
@@ -1552,7 +1642,7 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       already closed or if the Connection is closed will not result in errors. An open Cursor prevents closing of
       Connections. The circumstances in which they are not closed include:</p>
 
-      <p><ul>
+      <ul>
         <li>You haven't requested all the rows of available data (calling next() or using the cursor as an iterator
         will return more data)</li>
 
@@ -1561,7 +1651,7 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
         <li>If force is False then you will get exceptions if there is remaining work to do be in the Cursor such as
         more statements to execute, more data from the executemany binding sequence etc. If force is True then all
         remaining work and state information will be discarded.</li>
-      </ul></p>
+      </ul>
     </dd>
 
     <dt><strong>getconnection()</strong></dt>
@@ -1621,10 +1711,10 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
 
   <h2><a name="VirtualTables" id="VirtualTables">Virtual Tables</a></h2>
 
-  <p><a href="http://www.sqlite.org/cvstrac/wiki?p=VirtualTables">Virtual Tables</a> are a new experimental feature
-  introduced in SQLite 3.3.7 and updated in 3.3.8. They let a developer provide underlying table implementations, while
-  still presenting a normal SQL interface to the user. The person writing SQL doesn't need to know or care that some of
-  the tables come from elsewhere.</p>
+  <p><a href="http://www.sqlite.org/cvstrac/wiki?p=VirtualTables">Virtual Tables</a> are an experimental feature
+  introduced in SQLite 3.3.7. They let a developer provide underlying table implementations, while still presenting a
+  normal SQL interface to the user. The person writing SQL doesn't need to know or care that some of the tables come
+  from elsewhere.</p>
 
   <p>Some examples of how you might use this:</p>
 
@@ -2011,8 +2101,9 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
         <dt>ThreadingViolationError</dt>
 
         <dd>
-          <p>You have used an object allocated in one thread in a different thread. All objects (Connection, Cursor)
-          must be used in the same thread they were allocated in.</p>
+          <p>You have used an object concurrently in two threads. For example you may try to use the same cursor in two
+          different threads at the same time, or tried to close the same connection in two threads at the same
+          time.</p>
         </dd>
 
         <dt>IncompleteExecutionError</dt>
@@ -2474,14 +2565,14 @@ TypeError: Bad constraint (#2) - it should be one of None, an integer or a tuple
       <p>ASPW lets you use SQLite in multi-threaded programs and will let other threads execute while SQLite is
       working. (Technically the <a href="http://www.python.org/doc/2.3.4/api/threads.html">GIL</a> is released when
       <a href="http://www.sqlite.org/capi3ref.html#sqlite3_step">sqlite3_step</a> or <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_open">sqlite3_open</a> are running. The GIL is re-acquired while
-      user defined functions, collations and the various hooks/handlers run.)</p>
+      "http://www.sqlite.org/capi3ref.html#sqlite3_open">sqlite3_open</a> are running, as well as many other functions
+      that could take more than a trivial amount of time. The GIL is re-acquired while user defined functions,
+      collations and the various hooks/handlers run.)</p>
 
-      <p>Note that you cannot use the same Connection object in multiple threads. You must allocate a new Connection
-      object per thread. (This is a requirement of SQLite). A cursor object can only be used in the same thread as it
-      was allocated. (Also an SQLite requirement). Fortunately ASPW will check this for you and throw a
-      ThreadingViolationError if you try to use objects in the wrong thread. Note that your destructors also need to
-      run in the creation thread.</p>
+      <p>Note that you cannot use the same cursor object in multiple threads concurrently to execute statements. APSW
+      will detect this and throw an exception. It is safe to use the object serially (eg calling <code>execute</code>
+      in one thread and <code>next</code> in another. You also can't do things like try to close a Connection
+      concurrently in two threads.</p>
 
       <p>If you have multiple threads and/or multiple programs accessing the same database then there may be contention
       for the file. SQLite will return SQLITE_BUSY which will be raised as BusyError. You can call
@@ -2789,7 +2880,7 @@ Traceback (most recent call last):
         </li>
 
         <li>
-          <p>The APSW test suite is larger and tests more functionality. Code coverage by the test suite is 94%.
+          <p>The APSW test suite is larger and tests more functionality. Code coverage by the test suite is 95%.
           pysqlite is good at 81% for C code although there are several places that coverage can be improved. I haven't
           measured code coverage for pysqlite's Python code.</p>
 
@@ -2829,9 +2920,11 @@ Traceback (most recent call last):
 
       <h1><a name="verhistory" id="verhistory">Version History</a></h1>
 
-      <h2><a name="352r1">3.5.4-r1</a></h2>
+      <h2><a name="358r1">3.5.8-r1</a></h2>
 
-      <p>You can use this with SQLite 3.5.4 onwards.</p>
+      <p>APSW is now hosted at <a href="http://code.google.com/p/apsw">http://code.google.com/p/apsw</a>.</p>
+
+      <p>You can use this with SQLite 3.5.8 onwards.</p>
 
       <p>SQLite now provides the source all <a href=
       "http://www.sqlite.org/cvstrac/wiki?p=TheAmalgamation">amalgamated</a> into one file which improves performance
@@ -2845,25 +2938,25 @@ Traceback (most recent call last):
 
         <li>Connection.interrupt can be called from any thread</li>
 
-        <li>SQLite has added <a href="http://www.sqlite.org/limits.html">limits checking</a> (roughly speaking upper
-        bounds are 32 bit signed values even on 64 bit machines). apsw has had checks for a while due to the SQLite
-        apis taking 32 bit values even under a 64 bit compilation. The additional SQLite checks now make it impossible
-        to go beyond intended limits. The SQLITE_TOOBIG error had been deprecated by SQLite and was resurrected in this
-        release.</li>
+        <li>SQLite has implementation limits on string and blob lengths (roughly constrained to fitting within a signed
+        32 bit integer - less than 2GB) which weren't checked. Using a 64 bit Python 2.5+ (as I do) it would have been
+        possible to destroy memory and crash the program. Consequently APSW has length checks to ensure it doesn't
+        happen. SQLite now has further <a href="http://www.sqlite.org/limits.html">limits checking</a> which cover
+        other things as well such as maximum number of virtual machine opcodes, maximum number of variables etc. These
+        are very useful if you are taking in SQL statements from elsewhere. Call Connection.limit()</li>
 
         <li>A rename method was added for virtual tables.</li>
 
         <li>SQLite 3.4.1 introduced a new virtual table registration function, but it is marked as highly experimental
-        and hence hasn't been used until we see what happens to it in the next SQLite release.</li>
+        and hence hasn't been used.</li>
 
         <li>SQLite 3.5 removed the requirement that all operations on a connection be done in the same thread.
         Consequently all code that enforced the restriction has been removed from APSW.</li>
 
         <li>SQLite now has incremental <a href="#blobio">blob I/O</a></li>
 
-        <li>Fixed <a href="http://code.google.com/p/apsw/issues/detail?id=4">issue 4</a> which could lead to
-        generic error messages.</li>
-
+        <li>Fixed <a href="http://code.google.com/p/apsw/issues/detail?id=4">issue 4</a> which could lead to generic
+        error messages.</li>
       </ul>
 
       <h2><a name="3313r1">3.3.13-r1</a></h2>
