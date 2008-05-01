@@ -143,12 +143,14 @@ static PyObject *ExcTraceAbort; /* aborted by exectrace */
 static PyObject *ExcExtensionLoading; /* error loading extension */
 static PyObject *ExcConnectionNotClosed; /* connection wasn't closed when destructor called */
 static PyObject *ExcConnectionClosed; /* connection was closed when function called */
+static PyObject *ExcVFSDied; /* vfs was gc while in use */
+static PyObject *ExcVFSNotImplemented; /* vfs method not implemented */
 
 static struct { int code; const char *name; PyObject *cls;}
 exc_descriptors[]=
   {
     /* Generic Errors */
-    {SQLITE_ERROR,    "SQL", NULL},       
+    {SQLITE_ERROR,    "SQL", NULL},    
     {SQLITE_MISMATCH, "Mismatch", NULL},
 
     /* Internal Errors */
@@ -220,6 +222,8 @@ static int init_exceptions(PyObject *m)
   EXC(ExcExtensionLoading, "ExtensionLoadingError");
   EXC(ExcConnectionNotClosed, "ConnectionNotClosedError");
   EXC(ExcConnectionClosed, "ConnectionClosedError");
+  EXC(ExcVFSDied, "VFSDiedError");
+  EXC(ExcVFSNotImplemented, "VFSNotImplemented");
 
 #undef EXC
 
@@ -807,6 +811,7 @@ Connection_dealloc(Connection* self)
   self->ob_type->tp_free((PyObject*)self);
 }
 
+/*ARGSUSED*/
 static PyObject*
 Connection_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
@@ -3420,7 +3425,6 @@ Connection_createmodule(Connection *self, PyObject *args)
 #endif /* EXPERIMENTAL */
 /* end of Virtual table code */
 
-
 static PyMethodDef Connection_methods[] = {
   {"cursor", (PyCFunction)Connection_cursor, METH_NOARGS,
    "Create a new cursor" },
@@ -4985,6 +4989,245 @@ static PyTypeObject APSWCursorType = {
     0,                         /* tp_del */
 };
 
+
+
+/* VFS CODE */
+
+/* Naming convention prefixes
+
+   apswvfs_         sqlite3_vfs* functions http://sqlite.org/c3ref/vfs.html
+   apswvfspy_       Python implementations of those same functions
+   apswvfsfile_     io methods http://sqlite.org/c3ref/io_methods.html
+   apswvfsfilepy_   Python implementations of those same functions
+
+*/
+
+/* what error code do we do for not implemented? */
+#define VFSNOTIMPLEMENTED(x)              \
+  { PyErr_Format(ExcVFSNotImplemented, "VFSNotImplementedError: %s", #x); return NULL; }
+
+/* make sure plumbing is still there */
+#define CHECKVFS \
+  do { if(!vfs->pAppData) { PyErr_Format(ExcVFSDied, "VFSDiedError: The VFS for %s was garbage collected", vfs->zName); goto finally; } } while(0)
+
+/* safety check */
+#define CHECKVFSPY   assert(self->containingvfs->pAppData==self)
+
+
+typedef struct 
+{
+  PyObject_HEAD;
+  sqlite3_vfs *basevfs;
+  sqlite3_vfs *containingvfs;
+} APSWVFS;
+
+static PyTypeObject APSWVFSType;
+
+static int
+apswvfs_xDelete(sqlite3_vfs *vfs, const char *zName, int syncDir)
+{
+  PyGILState_STATE gilstate;
+  PyObject *pyresult=NULL;
+  int result=SQLITE_OK;
+  gilstate=PyGILState_Ensure();
+
+  CHECKVFS;
+
+  pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xDelete", 1, "(Ni)", convertutf8string(zName), syncDir);
+  if(!pyresult)
+    {
+      result=MakeSqliteMsgFromPyException(NULL);
+      AddTraceBackHere(__FILE__, __LINE__, "vfs.xDelete", "{s: s, s: i}", "zName", zName, "syncDir", syncDir);
+    }
+
+ finally:
+  PyGILState_Release(gilstate);
+  return result;
+}
+
+static PyObject *
+apswvfspy_xDelete(APSWVFS *self, PyObject *args)
+{
+  char *zName=NULL;
+  int syncDir, res;
+
+  CHECKVFSPY;
+  if(!self->basevfs)
+    VFSNOTIMPLEMENTED(xDelete);
+
+  if(!PyArg_ParseTuple(args, "esi", &zName, STRENCODING, &syncDir))
+    return NULL;
+
+  res=self->basevfs->xDelete(self->basevfs, zName, syncDir);
+  PyMem_Free(zName);
+
+  if(res==SQLITE_OK)
+    Py_RETURN_NONE;
+
+  make_exception(res, NULL);
+  return NULL;
+}
+
+static void
+APSWVFS_dealloc(APSWVFS *self)
+{
+  int res;
+
+  CHECKVFSPY;
+
+  res=sqlite3_vfs_unregister(self->containingvfs);
+  if(res!=SQLITE_OK)
+    {
+      /* not allowed to clobber existing exception */
+      PyObject *etype=NULL, *evalue=NULL, *etraceback=NULL;
+      PyErr_Fetch(&etype, &evalue, &etraceback);
+          
+      PyErr_Format(PyExc_ValueError,
+                   "VFS named %s cannot be unregistered with sqlite3_vfs_unregister (SQLite error code %d) in "
+                   "VFS destructor.",
+                   self->containingvfs->zName,
+                   res);
+      
+      apsw_write_unraiseable();
+      PyErr_Fetch(&etype, &evalue, &etraceback);
+
+      self->containingvfs->pAppData=NULL;
+      return;
+    }
+  PyMem_Free((void*)(self->containingvfs->zName));
+  /* zero it out so any attempt to use results in core dump */
+  memset(self->containingvfs, 0, sizeof(sqlite3_vfs));
+  PyMem_Free(self->containingvfs);
+}
+
+static int
+APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
+{
+  static char *kwlist[]={"base", "makedefault", NULL};
+  char *base=NULL, *name=NULL;
+  int makedefault=0, maxpathname=0, res;
+
+  if(!PyArg_ParseTupleAndKeywords(args, kwds, "es|esi:init(vfsname, base=None, makedefault=False, maxpathname=1024)", kwlist,
+                                  &name, STRENCODING, &base, STRENCODING, &makedefault, &maxpathname))
+    return -1;
+
+  if(base)
+    {
+      if(!strlen(base))
+        {
+          PyMem_Free(base);
+          base=NULL;
+        }
+      self->basevfs=sqlite3_vfs_find(base);
+      if(!self->basevfs)
+        {
+          PyErr_Format(PyExc_ValueError, "Base vfs named \"%s\" not found", base?base:"<default>");
+          goto error;
+        }
+      if(self->basevfs->iVersion!=1)
+        {
+          PyErr_Format(PyExc_ValueError, "Base vfs implements version %d of vfs spec, but apsw only supports version 1", self->basevfs->iVersion);
+          goto error;
+        }
+    }
+  
+  self->containingvfs=(sqlite3_vfs *)PyMem_Malloc(sizeof(sqlite3_vfs));
+  if(!self->containingvfs) return -1;
+  memset(self->containingvfs, 0, sizeof(sqlite3_vfs));
+  self->containingvfs->iVersion=1;
+  self->containingvfs->szOsFile=/* add to base size? */0;
+  if(self->basevfs && !maxpathname)
+    self->containingvfs->mxPathname=self->basevfs->mxPathname;
+  else 
+    self->containingvfs->mxPathname=maxpathname?maxpathname:1024;
+  self->containingvfs->zName=name;
+  name=NULL;
+  self->containingvfs->pAppData=self;
+#define METHOD(meth) \
+  self->containingvfs->x##meth=apswvfs_x##meth;
+
+  METHOD(Delete);
+
+#undef METHOD
+
+  res=sqlite3_vfs_register(self->containingvfs, makedefault);
+  if(res==SQLITE_OK)
+    return 0;
+
+  make_exception(res, NULL);
+    
+ error:
+  if(name) PyMem_Free(name);
+  if(base) PyMem_Free(base);
+  if(self->containingvfs && self->containingvfs->zName) PyMem_Free((void*)(self->containingvfs->zName));
+  if(self->containingvfs) PyMem_Free(self->containingvfs);
+  return -1;
+}
+
+static PyMethodDef APSWVFS_methods[]={
+  {"xDelete", (PyCFunction)apswvfspy_xDelete, METH_VARARGS, "xDelete"},
+
+  /* Sentinel */
+  {0, 0, 0, 0}
+  };
+
+static PyTypeObject APSWVFSType =
+  {
+    PyObject_HEAD_INIT(NULL)
+    0,                         /*ob_size*/
+    "apsw.VFS",                /*tp_name*/
+    sizeof(APSWVFS),           /*tp_basicsize*/
+    0,                         /*tp_itemsize*/
+    (destructor)APSWVFS_dealloc, /*tp_dealloc*/ 
+    0,                         /*tp_print*/
+    0,                         /*tp_getattr*/
+    0,                         /*tp_setattr*/
+    0,                         /*tp_compare*/
+    0,                         /*tp_repr*/
+    0,                         /*tp_as_number*/
+    0,                         /*tp_as_sequence*/
+    0,                         /*tp_as_mapping*/
+    0,                         /*tp_hash */
+    0,                         /*tp_call*/
+    0,                         /*tp_str*/
+    0,                         /*tp_getattro*/
+    0,                         /*tp_setattro*/
+    0,                         /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    "VFS object",              /* tp_doc */
+    0,		               /* tp_traverse */
+    0,		               /* tp_clear */
+    0,		               /* tp_richcompare */
+    0,		               /* tp_weaklistoffset */
+    0,		               /* tp_iter */
+    0,		               /* tp_iternext */
+    APSWVFS_methods,           /* tp_methods */
+    0,                         /* tp_members */
+    0,                         /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    (initproc)APSWVFS_init,    /* tp_init */
+    0,                         /* tp_alloc */
+    0,                         /* tp_new */
+    0,                         /* tp_free */
+    0,                         /* tp_is_gc */
+    0,                         /* tp_bases */
+    0,                         /* tp_mro */
+    0,                         /* tp_cache */
+    0,                         /* tp_subclasses */
+    0,                         /* tp_weaklist */
+    0,                         /* tp_del */
+  };
+
+
+/* END OF VFS CODE */
+
+
+
+
 /* MODULE METHODS */
 static PyObject *
 getsqliteversion(void)
@@ -4998,6 +5241,7 @@ getapswversion(void)
   return PyString_FromString(APSW_VERSION);
 }
 
+/* ARGSUSED */
 static PyObject *
 enablesharedcache(PyObject *self, PyObject *args)
 {
@@ -5052,6 +5296,9 @@ initapsw(void)
     if (PyType_Ready(&APSWBlobType) <0)
       return;
 
+    if (PyType_Ready(&APSWVFSType)<0)
+      return;
+
     /* ensure threads are available */
     PyEval_InitThreads();
 
@@ -5065,9 +5312,14 @@ initapsw(void)
 
     Py_INCREF(&ConnectionType);
     PyModule_AddObject(m, "Connection", (PyObject *)&ConnectionType);
+    
     /* we don't add cursor to the module since users shouldn't be able to instantiate them directly */
+    
     Py_INCREF(&ZeroBlobBindType);
     PyModule_AddObject(m, "zeroblob", (PyObject *)&ZeroBlobBindType);
+    
+    Py_INCREF(&APSWVFSType);
+    PyModule_AddObject(m, "VFS", (PyObject*)&APSWVFSType);
 
     hooks=PyList_New(0);
     if(!hooks) return;
