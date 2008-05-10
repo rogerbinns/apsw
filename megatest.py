@@ -121,7 +121,7 @@ def buildapsw(outputfile, pybin, workdir):
 
 
 PYVERS=(
-    '2.6a2',
+    '2.6a3',
     '2.5.2',
     '2.5.1',
     '2.4.5',
