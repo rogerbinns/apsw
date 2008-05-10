@@ -334,14 +334,26 @@ MakeSqliteMsgFromPyException(char **errmsg)
   PyObject *etype=NULL, *evalue=NULL, *etraceback=NULL;
 
   assert(PyErr_Occurred());
+
+  PyErr_Fetch(&etype, &evalue, &etraceback);
+
   if(PyErr_Occurred())
     {
       /* find out if the exception corresponds to an apsw exception descriptor */
       int i;
       for(i=0;exc_descriptors[i].code!=-1;i++)
-	if(PyErr_ExceptionMatches(exc_descriptors[i].cls))
+	if(PyErr_GivenExceptionMatches(etype, exc_descriptors[i].cls))
 	{
 	  res=exc_descriptors[i].code;
+          /* do we have extended information available? */
+          if(PyObject_HasAttrString(evalue, "extendedresult"))
+            {
+              /* extract it */
+              PyObject *extended=PyObject_GetAttrString(evalue, "extendedresult");
+              if(extended && PyInt_Check(extended))
+                res=(PyInt_AsLong(extended) & 0xffffff00u)|res;
+              Py_XDECREF(extended);
+            }
 	  break;
 	}
     }
@@ -350,22 +362,20 @@ MakeSqliteMsgFromPyException(char **errmsg)
     {
       /* I just want a string of the error! */
       
-      PyErr_Fetch(&etype, &evalue, &etraceback);
       if(!str && evalue)
 	str=PyObject_Str(evalue);
       if(!str && etype)
 	str=PyObject_Str(etype);
       if(!str)
 	str=PyString_FromString("python exception with no information");
-      if(etype)
-	PyErr_Restore(etype, evalue, etraceback);
-  
       if(*errmsg)
 	sqlite3_free(*errmsg);
       *errmsg=sqlite3_mprintf("%s",PyString_AsString(str));
 
       Py_XDECREF(str);
     }
+
+  PyErr_Restore(etype, evalue, etraceback);
 
   return res;
 }
@@ -4993,6 +5003,8 @@ static PyTypeObject APSWCursorType = {
 
 /* VFS CODE */
 
+#ifndef APSW_OMIT_VFS
+
 /* Naming convention prefixes.  Since sqlite3.c is #included into this
    file we have to ensure there is no clash with its names.
 
@@ -5015,7 +5027,7 @@ static PyTypeObject APSWCursorType = {
 /* what error code do we do for not implemented? */
 #define VFSNOTIMPLEMENTED(x)              \
   if(!self->basevfs || !self->basevfs->x) \
-  { PyErr_Format(ExcVFSNotImplemented, "VFSNotImplementedError: %s", #x); return NULL; }
+  { PyErr_Format(ExcVFSNotImplemented, "VFSNotImplementedError: Method %s is not implemented", #x); return NULL; }
 
 /* make sure plumbing is still there */
 #define CHECKVFS \
@@ -5036,16 +5048,17 @@ static PyTypeObject APSWVFSType;
 
 typedef struct
 {
+  PyObject_HEAD;
   struct APSWSQLite3File *base;
-
 } APSWVFSFile;
 
 typedef struct
 {
   const struct sqlite3_io_methods *pMethods;
-  APSWVFSFile *file;
+  PyObject *file;
 } APSWSQLite3File;
 
+static PyTypeObject APSWVFSFileType;
 
 static int
 apswvfs_xDelete(sqlite3_vfs *vfs, const char *zName, int syncDir)
@@ -5233,10 +5246,123 @@ apswvfspy_xGetTempname(APSWVFS *self, PyObject *null)
   if(res!=SQLITE_OK)
     make_exception(res, NULL);
 
- finally:
   Py_XDECREF(utf8);
   if(resbuf) PyMem_Free(resbuf);
   
+  return result;
+}
+
+
+const static struct sqlite3_io_methods 
+apsw_io_methods=
+  {
+    1,                /* version */
+    NULL,             /* close */
+    NULL,             /* read */
+    NULL,             /* write */
+    NULL,             /* truncate */
+    NULL,             /* sync */
+    NULL,             /* filesize */
+    NULL,             /* lock */
+    NULL,             /* unlock */
+    NULL,             /* checkreservedlock */
+    NULL,             /* filecontrol */
+    NULL,             /* sectorsize */
+    NULL              /* device characteristics */
+  };
+
+static int
+apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int inflags, int *pOutFlags)
+{
+  PyGILState_STATE gilstate;
+  int result=SQLITE_CANTOPEN;
+  PyObject *flags=NULL;
+  PyObject *pyresult=NULL;
+  APSWSQLite3File *apswfile=(APSWSQLite3File*)(void*)file;
+
+  gilstate=PyGILState_Ensure();
+
+  CHECKVFS;
+
+  flags=PyList_New(2);
+  if(!flags) goto finally;
+  PyList_SET_ITEM(flags, 0, PyInt_FromLong(inflags));
+  PyList_SET_ITEM(flags, 1, PyInt_FromLong(*pOutFlags));
+  if(PyErr_Occurred()) goto finally;
+
+  pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xOpen", 1, "(NO)", convertutf8string(zName), flags);
+  if(!pyresult)
+    {
+      result=MakeSqliteMsgFromPyException(NULL);
+      goto finally;
+    }
+
+  if(!PyList_Check(flags) || PyList_GET_SIZE(flags)!=2 || !PyInt_Check(PyList_GET_ITEM(flags, 1)))
+    {
+      PyErr_Format(PyExc_TypeError, "Flags should be two item list with item zero being integer input and item one being integer output");
+      AddTraceBackHere(__FILE__, __LINE__, "vfs.xOpen", "{s: s, s: i, s: O}", "zName", zName, "inflags", inflags, "flags", flags);
+      goto finally;
+    }
+
+  apswfile->pMethods=&apsw_io_methods;
+  apswfile->file=pyresult;
+  *pOutFlags=(int)PyInt_AS_LONG(PyList_GET_ITEM(flags, 1));
+  pyresult=NULL;
+  result=SQLITE_OK;
+
+ finally:
+  Py_XDECREF(pyresult);
+  Py_XDECREF(flags);
+  PyGILState_Release(gilstate);
+  return result;
+}
+
+static PyObject *
+apswvfspy_xOpen(APSWVFS *self, PyObject *args)
+{
+  sqlite3_file *file=NULL;
+  int flagsout=0;
+  int res;
+  PyObject *result=NULL, *flags;
+  char *name=NULL;
+  APSWVFSFile *apswfile=NULL;
+
+  CHECKVFSPY;
+  VFSNOTIMPLEMENTED(xOpen);
+
+  if(!PyArg_ParseTuple(args, "esO", STRENCODING, &name, &flags))
+    return NULL;
+  if(!PyList_Check(flags) || PyList_GET_SIZE(flags)!=2 || !PyInt_Check(PyList_GET_ITEM(flags, 0)) || !PyInt_Check(PyList_GET_ITEM(flags, 1)))
+    {
+      PyErr_Format(PyExc_TypeError, "Flags argument needs to be a list of two integers");
+      goto finally;
+    }
+  
+  flagsout=PyInt_AS_LONG(PyList_GET_ITEM(flags, 1));
+
+  file=PyMem_Malloc(self->basevfs->szOsFile);
+  if(!file) goto finally;
+
+  res=self->basevfs->xOpen(self->basevfs, name, file, PyInt_AS_LONG(PyList_GET_ITEM(flags, 0)), &flagsout);
+  if(res!=SQLITE_OK)
+    {
+      make_exception(res, NULL);
+      goto finally;
+    }
+
+  PyList_SetItem(flags, 1, PyInt_FromLong(flagsout));
+  if(PyErr_Occurred()) goto finally;
+
+  apswfile=PyObject_New(APSWVFSFile, &APSWVFSFileType);
+  if(!apswfile) goto finally;
+
+  apswfile->base=file;
+  file=NULL;
+  result=apswfile;
+                                                                       
+ finally:
+  if(file) PyMem_Free(file);
+  if(name) PyMem_Free(name);
   return result;
 }
 
@@ -5341,6 +5467,7 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
   METHOD(Delete);
   METHOD(FullPathname);
   METHOD(GetTempname);
+  METHOD(Open);
 
 #undef METHOD
 
@@ -5362,6 +5489,7 @@ static PyMethodDef APSWVFS_methods[]={
   {"xDelete", (PyCFunction)apswvfspy_xDelete, METH_VARARGS, "xDelete"},
   {"xFullPathname", (PyCFunction)apswvfspy_xFullPathname, METH_O, "xFullPathname"},
   {"xGetTempname", (PyCFunction)apswvfspy_xGetTempname, METH_NOARGS, "xGetTempname"},
+  {"xOpen", (PyCFunction)apswvfspy_xOpen, METH_VARARGS, "xOpen"},
   /* Sentinel */
   {0, 0, 0, 0}
   };
@@ -5417,7 +5545,170 @@ static PyTypeObject APSWVFSType =
     0,                         /* tp_del */
   };
 
+static void
+APSWVFSFile_dealloc(APSWVFSFile *self)
+{
+  if(self->base)
+    {
+      PyMem_Free(self->base);
+      self->base=0;
+    }
+  self->ob_type->tp_free((PyObject*)self);
+}
 
+/*ARGSUSED*/
+static PyObject *
+APSWVFSFile_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+  APSWVFSFile *self;
+  self= (APSWVFSFile*)type->tp_alloc(type, 0);
+  if(self)
+    {
+      self->base=NULL;
+    }
+  return (PyObject*)self;
+}
+
+static int
+APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
+{
+  static char *kwlist[]={"vfs", "name", "flags", NULL};
+  char *vfs=NULL, *name=NULL;
+  PyObject *flags=NULL;
+  int res=-1; /* error */
+  int xopenresult;
+  int flagsout=0;
+  PyObject *itemzero=NULL, *itemone=NULL, *zero=NULL;
+  sqlite3_vfs *vfstouse=NULL;
+  sqlite3_file *file;
+
+  if(!PyArg_ParseTupleAndKeywords(args, kwds, "esesO:init(vfs, name, flags)", kwlist, STRENCODING, &vfs, STRENCODING, &name, &flags))
+    return -1;
+
+  /* type checking */
+  if(strlen(vfs)==0)
+    {
+      /* sqlite uses null for default vfs - we use empty string */
+      PyMem_Free(vfs);
+      vfs=NULL;
+    }
+  /* flags need to be a list of two integers */
+  if(!PySequence_Check(flags) || PySequence_Size(flags)!=2)
+    {
+      PyErr_Format(PyExc_TypeError, "Flags should be a sequence of two integers");
+      goto finally;
+    }
+  itemzero=PySequence_GetItem(flags, 0);
+  itemone=PySequence_GetItem(flags, 1);
+  if(!itemzero || !itemone || !PyInt_Check(itemzero) || !PyInt_Check(itemone))
+    {
+      PyErr_Format(PyExc_TypeError, "Flags should contain two integers");
+      goto finally;
+    }
+  /* check we can change item 1 */
+  zero=PyInt_FromLong(0);
+  if(!zero) goto finally;
+  if(-1==PySequence_SetItem(flags, 1, zero))
+    goto finally;
+  
+  vfstouse=sqlite3_vfs_find(vfs);
+  if(!vfstouse)
+    {
+      PyErr_Format(PyExc_ValueError, "Unknown vfs \"%s\"", vfs);
+      goto finally;
+    }
+  file=PyMem_Malloc(vfstouse->szOsFile);
+  xopenresult=vfstouse->xOpen(vfstouse, name, file, (int)PyInt_AsLong(itemzero), &flagsout);
+  if(xopenresult!=SQLITE_OK)
+    {
+      PyMem_Free(file);
+      SET_EXC(NULL, xopenresult);
+      goto finally;
+    }
+  
+  if(-1==PySequence_SetItem(flags, 1, PyInt_FromLong(flagsout)))
+    {
+      file->pMethods->xClose(file);
+      PyMem_Free(file);
+      goto finally;
+    }
+  
+  self->base=(APSWSQLite3File*)(void*)file;
+  res=0;
+
+ finally:
+  Py_XDECREF(itemzero);
+  Py_XDECREF(itemone);
+  Py_XDECREF(zero);
+  if(name) PyMem_Free(name);
+  if(vfs) PyMem_Free(vfs);
+  return res;
+}
+
+static PyMethodDef APSWVFSFile_methods[]={
+  /*
+  {"xDelete", (PyCFunction)apswvfspy_xDelete, METH_VARARGS, "xDelete"},
+  {"xFullPathname", (PyCFunction)apswvfspy_xFullPathname, METH_O, "xFullPathname"},
+  {"xGetTempname", (PyCFunction)apswvfspy_xGetTempname, METH_NOARGS, "xGetTempname"},
+  */
+  /* Sentinel */
+  {0, 0, 0, 0}
+  };
+
+static PyTypeObject APSWVFSFileType =
+  {
+    PyObject_HEAD_INIT(NULL)
+    0,                         /*ob_size*/
+    "apsw.VFSFile",            /*tp_name*/
+    sizeof(APSWVFSFile),       /*tp_basicsize*/
+    0,                         /*tp_itemsize*/
+    (destructor)APSWVFSFile_dealloc, /*tp_dealloc*/ 
+    0,                         /*tp_print*/
+    0,                         /*tp_getattr*/
+    0,                         /*tp_setattr*/
+    0,                         /*tp_compare*/
+    0,                         /*tp_repr*/
+    0,                         /*tp_as_number*/
+    0,                         /*tp_as_sequence*/
+    0,                         /*tp_as_mapping*/
+    0,                         /*tp_hash */
+    0,                         /*tp_call*/
+    0,                         /*tp_str*/
+    0,                         /*tp_getattro*/
+    0,                         /*tp_setattro*/
+    0,                         /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    "VFSFile object",          /* tp_doc */
+    0,		               /* tp_traverse */
+    0,		               /* tp_clear */
+    0,		               /* tp_richcompare */
+    0,		               /* tp_weaklistoffset */
+    0,		               /* tp_iter */
+    0,		               /* tp_iternext */
+    APSWVFSFile_methods,       /* tp_methods */
+    0,                         /* tp_members */
+    0,                         /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    (initproc)APSWVFSFile_init, /* tp_init */
+    0,                         /* tp_alloc */
+    APSWVFSFile_new,           /* tp_new */
+    0,                         /* tp_free */
+    0,                         /* tp_is_gc */
+    0,                         /* tp_bases */
+    0,                         /* tp_mro */
+    0,                         /* tp_cache */
+    0,                         /* tp_subclasses */
+    0,                         /* tp_weaklist */
+    0,                         /* tp_del */
+  };
+
+
+
+#endif
 /* END OF VFS CODE */
 
 
@@ -5453,6 +5744,39 @@ enablesharedcache(PyObject *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
+/* ARGSUSED */
+static PyObject *
+getapswexceptionfor(PyObject *self, PyObject *pycode)
+{
+  int code, i;
+  PyObject *result=NULL;
+
+  if(!PyInt_Check(pycode))
+    {
+      PyErr_Format(PyExc_TypeError, "Argument should be an integer");
+      return NULL;
+    }
+  code=PyInt_AsLong(pycode);
+
+  for(i=0;exc_descriptors[i].name;i++)
+    if (exc_descriptors[i].code==(code&0xff))
+      {
+        result=PyObject_CallObject(exc_descriptors[i].cls, NULL);
+        if(!result) return result;
+        break;
+      }
+  if(!result)
+    {
+      PyErr_Format(PyExc_ValueError, "%d is not a known error code", code);
+      return result;
+    }
+
+  PyObject_SetAttrString(result, "extendedresult", PyInt_FromLong(code));
+  PyObject_SetAttrString(result, "result", PyInt_FromLong(code&0xff));
+  return result;
+}
+
+
 static PyMethodDef module_methods[] = {
   {"sqlitelibversion", (PyCFunction)getsqliteversion, METH_NOARGS,
    "Return the version of the SQLite library"},
@@ -5460,7 +5784,8 @@ static PyMethodDef module_methods[] = {
    "Return the version of the APSW wrapper"},
   {"enablesharedcache", (PyCFunction)enablesharedcache, METH_VARARGS,
    "Sets shared cache semantics for this thread"},
-
+  {"exceptionfor", (PyCFunction)getapswexceptionfor, METH_O,
+   "Returns exception instance corresponding to supplied sqlite error code"},
     {0, 0, 0, 0}  /* Sentinel */
 };
 
@@ -5494,6 +5819,9 @@ initapsw(void)
     if (PyType_Ready(&APSWVFSType)<0)
       return;
 
+    if (PyType_Ready(&APSWVFSFileType)<0)
+      return;
+
     /* ensure threads are available */
     PyEval_InitThreads();
 
@@ -5515,6 +5843,9 @@ initapsw(void)
     
     Py_INCREF(&APSWVFSType);
     PyModule_AddObject(m, "VFS", (PyObject*)&APSWVFSType);
+
+    Py_INCREF(&APSWVFSFileType);
+    PyModule_AddObject(m, "VFSFile", (PyObject*)&APSWVFSFileType);
 
     hooks=PyList_New(0);
     if(!hooks) return;

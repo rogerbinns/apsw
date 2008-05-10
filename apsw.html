@@ -1212,6 +1212,17 @@ $ python test.py <font color="blue"># optional - checks everything works correct
     <dd>
       <p>Registers a virtual table. See <a href="#VirtualTables">virtual tables</a> for more details.</p>
     </dd>
+
+    <dt><strong>exceptionfor(code)</strong></dt>
+    <dd><p>Returns an exception instance corresponding to a SQLite error code, in particular intended for 
+    mapping <a href="http://www.sqlite.org/cvstrac/wiki?p=ExtendedResultCodes">extended result codes</a> 
+    to <a href="#Exceptions">exceptions</a>.  In addition to picking the right exception class, it also sets the <tt>extendedresult</tt>
+    attribute on the instance.  An example usage is:
+<blockquote>
+<pre>
+raise apsw.exceptionfor(SQLITE_IOERR_SHORT_READ)
+</pre>
+</blockquote></p></dd>
   </dl>
 
   <h2><a name="Module_variables" id="Module_variables">Module variables</a></h2>

@@ -2228,6 +2228,13 @@ class APSW(unittest.TestCase):
         sys.excepthook=xx
         sys.stderr=yy
 
+    def testExceptionFor(self):
+        "Verify extended exceptions"
+        e=apsw.exceptionfor(apsw.SQLITE_IOERR_SHORT_READ)
+        self.failUnlessEqual(e.extendedresult, apsw.SQLITE_IOERR_SHORT_READ)
+        self.failUnlessEqual(e.result, apsw.SQLITE_IOERR)
+        self.assert_(isinstance(e, apsw.IOError))
+
     def testStatementCache(self, scsize=100):
         "Verify statement cache integrity"
         cur=self.db.cursor()
@@ -2240,7 +2247,7 @@ class APSW(unittest.TestCase):
         #cur.execute("insert into foo values(1,2)") # cache hit, but invalid sql
         cur.executemany("insert into foo values(?)", [[1],[2]])
         # overflow the statement cache
-        l=[self.db.cursor().execute("select x from foo") for i in xrange(4000)]
+        l=[self.db.cursor().execute("select x from foo") for i in xrange(scsize+200)]
         del l
         for _ in cur.execute("select * from foo"): pass
         db2=apsw.Connection("testdb", statementcachesize=scsize)
