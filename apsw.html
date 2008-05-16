@@ -30,7 +30,7 @@
 <body>
   <h1 class="notoc">APSW - Another Python SQLite Wrapper</h1>
 
-  <p><font size="-1">apsw-3.5.8-r1 1st May 2008</font> (Use with SQLite 3.5.8 or later)</p>
+  <p><font size="-1">apsw-3.5.9-r1 1st May 2008</font> (Use with SQLite 3.5.9 or later)</p>
 
   <p>APSW provides an SQLite 3 wrapper that provides the thinnest layer over <a href="http://www.sqlite.org">SQLite
   3</a> possible. Everything you can do from the <a href="http://www.sqlite.org/capi3ref.html">C API</a> to SQLite 3,
@@ -148,7 +148,7 @@
             <a href="#verhistory">Version History</a>
 
             <ul>
-              <li><a href="#358r1">3.5.8-r1</a></li>
+              <li><a href="#359r1">3.5.9-r1</a></li>
 
               <li><a href="#3313r1">3.3.13-r1</a></li>
 
@@ -270,9 +270,9 @@
 "pyname">SQLITE_VERSION_NUMBER   </span><span class="pycomment"># from the sqlite header file at compile time
 
 </span><span class="pyoutput">   Using APSW file /space/apsw/apsw.so
-      APSW version 3.5.8-r1
-    SQLite version 3.5.8
-    SQLite version 3005008
+      APSW version 3.5.9-r1
+    SQLite version 3.5.9
+    SQLite version 3005009
 </span>
 <span class="pycomment">###
 ### Opening/creating database
@@ -1135,9 +1135,9 @@ python setup.py build --compile=mingw32 install
 
       <dd>
         <pre>
-$ wget http://www.sqlite.org/sqlite-3.5.2.tar.gz
-$ tar xvfz sqlite-3.5.2.tar.gz
-$ mv sqlite-3.5.2 sqlite3
+$ wget http://www.sqlite.org/sqlite-3.5.9.tar.gz
+$ tar xvfz sqlite-3.5.9.tar.gz
+$ mv sqlite-3.5.9 sqlite3
 $ cd sqlite3
 $ ./configure --enable-threadsafe --disable-tcl
 $ make sqlite3.c
@@ -2931,11 +2931,11 @@ Traceback (most recent call last):
 
       <h1><a name="verhistory" id="verhistory">Version History</a></h1>
 
-      <h2><a name="358r1">3.5.8-r1</a></h2>
+      <h2><a name="359r1">3.5.9-r1</a></h2>
 
       <p>APSW is now hosted at <a href="http://code.google.com/p/apsw">http://code.google.com/p/apsw</a>.</p>
 
-      <p>You can use this with SQLite 3.5.8 onwards.</p>
+      <p>You can use this with SQLite 3.5.9 onwards.</p>
 
       <p>SQLite now provides the source all <a href=
       "http://www.sqlite.org/cvstrac/wiki?p=TheAmalgamation">amalgamated</a> into one file which improves performance
@@ -2966,8 +2966,8 @@ Traceback (most recent call last):
 
         <li>SQLite now has incremental <a href="#blobio">blob I/O</a></li>
 
-        <li>Fixed <a href="http://code.google.com/p/apsw/issues/detail?id=4">issue 4</a> which could lead to generic
-        error messages.</li>
+        <li><a href="http://code.google.com/p/apsw/issues/detail?id=4">Issue 4</a> which could lead to generic
+        error messages was fixed in SQLite 3.5.9.</li>
       </ul>
 
       <h2><a name="3313r1">3.3.13-r1</a></h2>

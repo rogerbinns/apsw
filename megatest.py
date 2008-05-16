@@ -132,7 +132,7 @@ PYVERS=(
 
 SQLITEVERS=(
     'cvs',
-    '3.5.8',
+    '3.5.9',
    )
 
 
