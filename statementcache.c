@@ -126,7 +126,8 @@ statementcache_prepare(StatementCache *sc,
 		       const char *zSql, 
 		       int nBytes, 
 		       sqlite3_stmt **ppStmt, 
-		       const char **pzTail)
+		       const char **pzTail,
+                       unsigned int *inuse)
 {
   StatementCacheEntry *sce;
   int evict=-1, res, empty=-1;
@@ -172,16 +173,6 @@ statementcache_prepare(StatementCache *sc,
       return SQLITE_OK;
     }
 
-  /* not in the cache */
-  res=sqlite3_prepare_v2(db, zSql, nBytes, ppStmt, pzTail);
-
-  if(res!=SQLITE_OK)
-    {
-      return res;
-    }
-  /* SQLite returns a null statement if the sql was entirely whitespace. We don't cache whitespace. */
-  if(!*ppStmt)
-    return SQLITE_OK;
 #ifdef SCSTATS
   sc->misses++;
 #endif
@@ -190,41 +181,68 @@ statementcache_prepare(StatementCache *sc,
 #ifdef SCSTATS
       sc->full++;
 #endif
-      return res;
-    }
-
-  if(empty>=0)
-    {
-      evict=empty;
+      sce=NULL;
     }
   else
     {
+      if(empty>=0)
+        {
+          evict=empty;
+        }
+      else
+        {
 #ifdef SCSTATS
-    sc->evictions++;
+          sc->evictions++;
 #endif
+        }
+
+      /* reserve the statement cache entry */
+      sce=&(sc->entries[evict]);
+      assert(sce->inuse==0);
+      sce->inuse=1;
     }
 
-  sce=&(sc->entries[evict]);
-  assert(sce->inuse==0);
-  sce->inuse=1;
-
-  sce->stringlength=*pzTail-zSql;
-
-  if(sce->stmt)
+  /* not in the cache */
+  if(inuse)
     {
-      res=sqlite3_finalize(sce->stmt);
-      assert(!res);
+      assert(*inuse==0);
+      *inuse=1;
     }
-  sce->stmt=*ppStmt;
+  Py_BEGIN_ALLOW_THREADS
+    res=sqlite3_prepare_v2(db, zSql, nBytes, ppStmt, pzTail);
+  Py_END_ALLOW_THREADS;
+  if(inuse)
+    {
+      assert(*inuse==1);
+      *inuse=0;
+    }
 
-  if(sce->sql)
-    sqlite3_free(sce->sql);
+  if(res!=SQLITE_OK || !*ppStmt)
+    {
+      if(sce) sce->inuse=0;
+      return res;
+    }
 
-  /* SQLite reads off end, so we put a null on */
-  sce->sql=sqlite3_malloc(sce->stringlength+1);
-  memcpy(sce->sql, zSql, sce->stringlength);
-  sce->sql[sce->stringlength]=0;
-  
+  if(sce)
+    {
+      sce->stringlength=*pzTail-zSql;
+      
+      if(sce->stmt)
+        {
+          res=sqlite3_finalize(sce->stmt);
+          assert(res==SQLITE_OK);
+        }
+      sce->stmt=*ppStmt;
+      
+      if(sce->sql)
+        sqlite3_free(sce->sql);
+      
+      /* SQLite reads off end, so we put a null on */
+      sce->sql=sqlite3_malloc(sce->stringlength+1);
+      memcpy(sce->sql, zSql, sce->stringlength);
+      sce->sql[sce->stringlength]=0;
+    }
+
   return res;
 }
 
@@ -258,33 +276,4 @@ statementcache_finalize(StatementCache* sc, sqlite3_stmt *pStmt)
   return sqlite3_finalize(pStmt);
 }
 
-/* Makes a new sqlite3_stmt that is from the same string
-   as supplied stmt */
-STATEMENTCACHE_LINKAGE
-int
-statementcache_dup(StatementCache* sc, sqlite3_stmt *pStmt, sqlite3_stmt **newstmt)
-{
-  int res;
-  StatementCacheEntry *sce;
-  unsigned i;
-  const char *pzTail;
-
-  *newstmt=NULL;
-
-  /* find the corresponding entry */
-  for(i=0;i<sc->nentries;i++)
-    {
-      sce=&(sc->entries[i]);
-      if(sce->stmt==pStmt)
-	{
-	  assert(sce->inuse);
-	  res=sqlite3_prepare_v2(sc->db, sce->sql, sce->stringlength, newstmt, &pzTail);
-	  assert(pzTail-sce->sql==sce->stringlength);
-	  return res;
-	}
-    }
-
-  /* didn't find the statement */
-  return SQLITE_ERROR;
-}
 

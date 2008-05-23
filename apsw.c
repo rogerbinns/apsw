@@ -49,7 +49,7 @@
 #include "sqlite3.h"
 #endif
 
-#if SQLITE_VERSION_NUMBER < 3005000
+#if SQLITE_VERSION_NUMBER < 3005009
 #error Your SQLite version is too old.  It must be at least 3.5.0
 #endif
 
@@ -4449,26 +4449,11 @@ APSWCursor_step(APSWCursor *self)
 
 
 	case SQLITE_SCHEMA:
-	  /* This is typically because a cached statement has become
-	     invalid.  We figure this out by re-preparing.  See SQLite
-	     ticket 2158.
+	  /* We used to call statementcache_dup which did a reprepare.
+             To avoid race conditions with the statement cache (we
+             release the GIL around prepare now) we now just return
+             the error.  See SQLite ticket 2158.
 	   */
-	  {
-	    sqlite3_stmt *newstmt;
-	    res=statementcache_dup(self->connection->stmtcache, self->statement, &newstmt);
-	    if(newstmt)
-	      {
-		assert(res==SQLITE_OK);
-		sqlite3_transfer_bindings(self->statement, newstmt);
-		statementcache_finalize(self->connection->stmtcache, self->statement);
-		self->statement=newstmt;
-		continue;
-	      }
-	    SET_EXC(self->connection->db,res);
-	    self->status=C_DONE;
-	    resetcursor(self, 0); /* we have handled error */
-	    return NULL;
-	  }
 
         default: /* sqlite3_prepare_v2 introduced in 3.3.9 means the
 		    error code is returned from step as well as
@@ -4549,7 +4534,7 @@ APSWCursor_step(APSWCursor *self)
           etos.savedbindingsoffset=self->bindingsoffset;
         }
       assert(!PyErr_Occurred());
-      res=statementcache_prepare(self->connection->stmtcache, self->connection->db, self->zsqlnextpos, -1, &self->statement, &self->zsqlnextpos);
+      res=statementcache_prepare(self->connection->stmtcache, self->connection->db, self->zsqlnextpos, -1, &self->statement, &self->zsqlnextpos, &self->inuse);
       SET_EXC(self->connection->db,res);
       if (res!=SQLITE_OK)
         {
@@ -4622,7 +4607,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
       etos.savedbindingsoffset=0;
     }
   assert(!PyErr_Occurred());
-  res=statementcache_prepare(self->connection->stmtcache, self->connection->db, self->zsql, -1, &self->statement, &self->zsqlnextpos);
+  res=statementcache_prepare(self->connection->stmtcache, self->connection->db, self->zsql, -1, &self->statement, &self->zsqlnextpos, &self->inuse);
   SET_EXC(self->connection->db,res);
   if (res!=SQLITE_OK)
     {
@@ -4722,7 +4707,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
       etos.savedbindingsoffset=0;
     }
   assert(!PyErr_Occurred());
-  res=statementcache_prepare(self->connection->stmtcache, self->connection->db, self->zsql, -1, &self->statement, &self->zsqlnextpos);
+  res=statementcache_prepare(self->connection->stmtcache, self->connection->db, self->zsql, -1, &self->statement, &self->zsqlnextpos, &self->inuse);
   SET_EXC(self->connection->db,res);
   if (res!=SQLITE_OK)
     return NULL;

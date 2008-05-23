@@ -862,7 +862,12 @@ class APSW(unittest.TestCase):
         for row in c: pass
         self.db.createcollation("strnum", None)
         # check it really has gone
-        self.assertRaises(apsw.SQLError, c.execute, "select x from foo order by x collate strnum")
+        try:
+            c.execute("select x from foo order by x collate strnum")
+        except (apsw.SQLError,apsw.SchemaChangeError):
+            # exception returned could be either depending on if
+            # statementcache is used.  See SQLite ticket 2158
+            pass
         # check statement still works
         for _ in c.execute("select x from foo"): pass
         
@@ -2190,6 +2195,19 @@ class APSW(unittest.TestCase):
             cursor.execute("INSERT INTO A_TABLE VALUES (?)", (None,))
         except Exception, e:
             assert "A_TABLE.ID" in str(e)
+
+    def testIssue15(self):
+        # http://code.google.com/p/apsw/issues/detail?id=15
+        self.db.cursor().execute("create table foo(x)")
+        self.db.cursor().execute("begin exclusive")
+        db2=apsw.Connection("testdb")
+        db2.setbusytimeout(30000)
+        t=ThreadRunner(db2.cursor().execute, "select * from foo")
+        t.start()
+        time.sleep(1)
+        self.db.cursor().execute("commit")
+        t.go()
+        
 
     def testWriteUnraiseable(self):
         "Verify writeunraiseable replacement function"
