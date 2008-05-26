@@ -26,6 +26,7 @@ import threading
 import Queue
 import traceback
 import StringIO
+import re
 import gc
 
 # helper functions
@@ -2299,6 +2300,102 @@ class APSW(unittest.TestCase):
                 self.failUnlessEqual(row[0], text)
             db.close()
 
+
+    def sourceCheckFunction(self, name, lines):
+        # Checks an individual function does things right
+        if name.startswith("APSWCursor_"):
+            # these methods aren't publically exported so the checks
+            # will already have been done by their callers
+            if name[len("APSWCursor_"):] in ("dealloc", "init", "dobinding", "dobindings", "doexectrace", "dorowtrace", "step", "close"):
+                return
+            use=None
+            closed=None
+            for i,line in enumerate(lines):
+                if "CHECK_USE" in line and use is None:
+                    use=i
+                if "CHECK_CLOSED" in line and closed is None:
+                    closed=i
+            if use is None:
+                self.fail("CHECK_USE missing in "+name)
+            if closed is None:
+                self.fail("CHECK_CLOSED missing in "+name)
+            if closed<use:
+                self.fail("CHECK_CLOSED should be after CHECK_USE in "+name)
+            return
+
+        if name.startswith("Connection_"):
+            # these methods aren't publically exported so the checks
+            # will already have been done by their callers
+            if name[len("Connection_"):] in ("internal_cleanup", "dealloc", "init", "close", "interrupt"):
+                return
+            use=None
+            closed=None
+            for i,line in enumerate(lines):
+                if "CHECK_USE" in line and use is None:
+                    use=i
+                if "CHECK_CLOSED" in line and closed is None:
+                    closed=i
+            if use is None:
+                self.fail("CHECK_USE missing in "+name)
+            if closed is None:
+                self.fail("CHECK_CLOSED missing in "+name)
+            if closed<use:
+                self.fail("CHECK_CLOSED should be after CHECK_USE in "+name)
+            return
+
+        if name.startswith("APSWBlob_"):
+            # these methods aren't publically exported so the checks
+            # will already have been done by their callers
+            if name[len("APSWBlob_"):] in ("dealloc", "init", "close"):
+                return
+            use=None
+            closed=None
+            for i,line in enumerate(lines):
+                if "CHECK_USE" in line and use is None:
+                    use=i
+                if "CHECK_BLOB_CLOSED" in line and closed is None:
+                    closed=i
+            if use is None:
+                self.fail("CHECK_USE missing in "+name)
+            if closed is None:
+                self.fail("CHECK_BLOB_CLOSED missing in "+name)
+            if closed<use:
+                self.fail("CHECK_BLOB_CLOSED should be after CHECK_USE in "+name)
+            return
+
+        if name.startswith("apswvfspy_") or name.startswith("APSWVFS"):
+            return
+
+        self.fail(name+" doesn't have source check")
+
+    def testSourceChecks(self):
+        "Check various source code issues"
+        # We expect a coding style where the functions are named
+        # Object_method, are at the start of the line and have a first
+        # parameter named self.
+        if not os.path.exists("apsw.c"): return
+        funcpat=re.compile(r"^(\w+_\w+)\s*\(\s*\w+\s*\*\s*self")
+        name=None
+        lines=[]
+        infunc=False
+        for line in open("apsw.c", "rtU"):
+            if line.startswith("}") and infunc:
+                infunc=False
+                self.sourceCheckFunction(name, lines)
+                lines=[]
+                name=None
+                continue
+            if name and line.startswith("{"):
+                infunc=True
+                continue
+            if infunc:
+                lines.append(line)
+                continue
+            m=funcpat.match(line)
+            if m:
+                name=m.group(1)
+            
+
     def testZeroBlob(self):
         "Verify handling of zero blobs"
         self.assertRaises(TypeError, apsw.zeroblob)
@@ -2502,6 +2599,8 @@ if __name__=='__main__':
     del threading
     del Queue
     del traceback
+    del re
+    del StringIO
 
     gc.collect()
     del gc

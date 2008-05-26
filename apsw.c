@@ -3682,8 +3682,8 @@ APSWBlob_dealloc(APSWBlob *self)
 static PyObject *
 APSWBlob_length(APSWBlob *self)
 {
-  CHECK_BLOB_CLOSED;
   CHECK_USE(NULL);
+  CHECK_BLOB_CLOSED;
   return PyInt_FromLong(sqlite3_blob_bytes(self->pBlob));
 }
 
@@ -3695,8 +3695,8 @@ APSWBlob_read(APSWBlob *self, PyObject *args)
   PyObject *buffy=0;
   char *thebuffer;
 
-  CHECK_BLOB_CLOSED;
   CHECK_USE(NULL);
+  CHECK_BLOB_CLOSED;
    
   /* The python file read routine treats negative numbers as read till
      end of file, which I think is rather silly.  (Try reading -3
@@ -3744,8 +3744,8 @@ static PyObject *
 APSWBlob_seek(APSWBlob *self, PyObject *args)
 {
   int offset, whence=0;
-  CHECK_BLOB_CLOSED;
   CHECK_USE(NULL);
+  CHECK_BLOB_CLOSED;
   
   if(!PyArg_ParseTuple(args, "i|i:seek(offset,whence=0)", &offset, &whence))
     return NULL;
@@ -3780,8 +3780,8 @@ APSWBlob_seek(APSWBlob *self, PyObject *args)
 static PyObject *
 APSWBlob_tell(APSWBlob *self)
 {
-  CHECK_BLOB_CLOSED;
   CHECK_USE(NULL);
+  CHECK_BLOB_CLOSED;
   return PyInt_FromLong(self->curoffset);
 }
 
@@ -3791,8 +3791,8 @@ APSWBlob_write(APSWBlob *self, PyObject *obj)
   const void *buffer=0;
   Py_ssize_t size;
   int res;
-  CHECK_BLOB_CLOSED;
   CHECK_USE(NULL);
+  CHECK_BLOB_CLOSED;
 
   /* we support buffers and string for the object */
   if(PyBuffer_Check(obj))
