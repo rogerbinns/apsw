@@ -2363,9 +2363,6 @@ class APSW(unittest.TestCase):
                 self.fail("CHECK_BLOB_CLOSED should be after CHECK_USE in "+name)
             return
 
-        if name.startswith("apswvfspy_") or name.startswith("APSWVFS"):
-            return
-
         self.fail(name+" doesn't have source check")
 
     def testSourceChecks(self):
