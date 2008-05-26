@@ -33,8 +33,8 @@
   <p><font size="-1">apsw-3.5.9-r1 1st May 2008</font> (Use with SQLite 3.5.9 or later)</p>
 
   <p>APSW provides an SQLite 3 wrapper that provides the thinnest layer over <a href="http://www.sqlite.org">SQLite
-  3</a> possible. Everything you can do from the <a href="http://www.sqlite.org/capi3ref.html">C API</a> to SQLite 3,
-  you can do from Python. Although APSW looks vaguely similar to the <a href=
+  3</a> possible. Everything you can do from the <a href="http://www.sqlite.org/c3ref/intro.html">C API</a> to SQLite
+  3, you can do from Python. Although APSW looks vaguely similar to the <a href=
   "http://www.python.org/peps/pep-0249.html">DBAPI</a>, it is <a href="#dbapinotes">not compliant</a> with that API and
   instead works the way SQLite 3 does. (<a href="http://www.pysqlite.org">pysqlite</a> is DBAPI compliant - <a href=
   "#pysqlitediffs">differences between apsw and pysqlite 2</a>).</p>
@@ -189,30 +189,30 @@
   <p>You can download this release in source or binary form.</p>
 
   <ul>
-    <li><a href="http://initd.org/pub/software/pysqlite/apsw/3.3.13-r1/apsw-3.3.13-r1.zip">apsw-3.3.13-r1.zip</a>
-    (source)</li>
+    <li style="list-style: none; display: inline">
+      <p>FIXME</p>
+    </li>
 
-    <li><a href=
-    "http://initd.org/pub/software/pysqlite/apsw/3.3.13-r1/apsw-3.3.13-r1.win32-py2.3.exe">apsw-3.3.13-r1.win32-py2.3.exe</a>
+    <li><a href="http://apsw.googlecode.com/files/apsw-3.3.13-r1.zip">apsw-3.3.13-r1.zip</a> (source)</li>
+
+    <li><a href="http://apsw.googlecode.com/files/apsw-3.3.13-r1.win32-py2.3.exe">apsw-3.3.13-r1.win32-py2.3.exe</a>
     (Windows Python 2.3)</li>
 
-    <li><a href=
-    "http://initd.org/pub/software/pysqlite/apsw/3.3.13-r1/apsw-3.3.13-r1.win32-py2.4.exe">apsw-3.3.13-r1.win32-py2.4.exe</a>
+    <li><a href="http://apsw.googlecode.com/files/apsw-3.3.13-r1.win32-py2.4.exe">apsw-3.3.13-r1.win32-py2.4.exe</a>
     (Windows Python 2.4)</li>
 
-    <li><a href=
-    "http://initd.org/pub/software/pysqlite/apsw/3.3.13-r1/apsw-3.3.13-r1.win32-py2.5.exe">apsw-3.3.13-r1.win32-py2.5.exe</a>
+    <li><a href="http://apsw.googlecode.com/files/apsw-3.3.13-r1.win32-py2.5.exe">apsw-3.3.13-r1.win32-py2.5.exe</a>
     (Windows Python 2.5)</li>
   </ul>
 
-  <p>Some Linux distributions also have packages. Debian users can grab the package <a href=
+  <p>Some Linux distributions also have packages. Debian/Ubuntu users can grab the package <a href=
   "http://packages.debian.org/python-apsw">python-apsw</a>. Gentoo users can grab the package <a href=
   "http://www.gentoo-portage.com/dev-python/apsw">dev-python/apsw</a>.</p>
 
   <h2><a name="Sourcecode" id="Sourcecode">Source code control</a></h2>
 
-  <p>The source is controlled by Subversion accessible as <a href=
-  "http://initd.org/svn/pysqlite/apsw/trunk">http://initd.org/svn/pysqlite/apsw/trunk</a></p>
+  <p>The source is controlled by Subversion documented at <a href=
+  "http://code.google.com/p/apsw/source/checkout">http://code.google.com/p/apsw/source/checkout</a></p>
 
   <h1><a name="SQLiteVersionCompatibilityAndBenchmarking" id="SQLiteVersionCompatibilityAndBenchmarking">SQLite version
   compatibility and benchmarking</a></h1>
@@ -246,8 +246,9 @@
   <blockquote>
     <pre>
 <!--sourcestart-->
-<font face="Lucida,Courier New"><span class="pykeyword">import </span><span class="pyname">os</span><span class=
-"pyoperator">, </span><span class="pyname">sys</span><span class="pyoperator">, </span><span class="pyname">time
+<font face="Lucida,Courier New,monospace"><span class="pykeyword">import </span><span class=
+"pyname">os</span><span class="pyoperator">, </span><span class="pyname">sys</span><span class=
+"pyoperator">, </span><span class="pyname">time
 </span><span class="pykeyword">import </span><span class="pyname">apsw
 
 </span><span class="pycomment">###
@@ -1052,10 +1053,11 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
 ###
 
 # We can close connections manually (useful if you want to catch exceptions)
+# but you don't have to
 </span><span class="pyname">connection</span><span class="pyoperator">.</span><span class=
 "pyname">close</span><span class="pyoperator">(</span><span class="pyname">True</span><span class=
-"pyoperator">)  </span><span class="pycomment"># force it since we want to exit</span></font><span class="pycomment">
-<!--sourceend--></span>
+"pyoperator">)  </span><span class="pycomment"># force it since we want to exit</span></font>
+<!--sourceend-->
 </pre>
   </blockquote>
 
@@ -1066,6 +1068,7 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
   <blockquote>
     <pre>
 python setup.py install
+
 </pre>
   </blockquote>
 
@@ -1076,6 +1079,7 @@ python setup.py install
   <blockquote>
     <pre>
 python setup.py build --compile=mingw32 install
+
 </pre>
   </blockquote>
 
@@ -1086,7 +1090,7 @@ python setup.py build --compile=mingw32 install
   <dl>
     <dt><a href="http://www.sqlite.org/cvstrac/wiki?p=TheAmalgamation">Amalgamation</a></dt>
 
-    <dd>The file <tt>sqlite3/sqlite3.c</tt> is looked for.</dd>
+    <dd>The file <tt>sqlite3.c</tt> and then <tt>sqlite3/sqlite3.c</tt> is looked for.</dd>
 
     <dt>Local build</dt>
 
@@ -1099,7 +1103,7 @@ python setup.py build --compile=mingw32 install
   </dl>
 
   <p>Note that if you compiled SQLite with any OMIT flags (eg <tt>SQLITE_OMIT_LOAD_EXTENSION</tt>) then you should edit
-  <tt>setup.py</tt> to add the same flag.</p>
+  <tt>setup.py</tt> to add the same flags.</p>
 
   <h2><a name="Recommended" id="Recommended">Recommended</a></h2>
 
@@ -1108,47 +1112,32 @@ python setup.py build --compile=mingw32 install
   libraries - this happens a lot on Mac.) You should follow these instructions with your current directory being where
   you extracted the APSW source to.</p>
 
-  <blockquote>
-    <p>Download the <a href="http://www.sqlite.org/download.html">SQLite 3 code</a>.</p>
-
-    <dl>
-      <dt><b>Windows</b><br />
-      Get the processed .zip</dt>
-
-      <dd>
-        <pre>
-&gt; mkdir sqlite3
-&gt; cd sqlite3
-&gt; unzip sqlite-source-3_3_10.zip
-&gt; del tclsqlite.c
-&gt; gcc -DTHREADSAFE -DNDEBUG -O3 -c *.c
-&gt; ar r libsqlite3.a *.o
-&gt; ranlib libsqlite3.a
-&gt; cd ..
-&gt; python setup.py build --compile=mingw32 install
+  <dl>
+    <dt><b>Windows</b></dt>
+  </dl>
+  <pre>
+ <font color="blue"> Manually download and extract <a href=
+"http://sqlite.org/sqlite-amalgamation-3_5_9.zip">http://sqlite.org/sqlite-amalgamation-3_5_9.zip</a></font>
+&gt; python setup.py build --compile=mingw32 install         <font color=
+"blue">Leave out --compile=... flag if using Microsoft compiler</font>
 &gt; python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
-</pre>
-      </dd>
+&gt; python test.py       <font color="blue"># optional - checks everything works correctly</font>
 
-      <dt><b>Mac/Linux/etc</b><br />
-      Get the normal source.</dt>
+</pre>Note that there will be many warnings during the compilation step about sqlite3.c, <a href=
+"http://sqlite.org/faq.html#q17">but they are harmless</a>.
 
-      <dd>
-        <pre>
-$ wget http://www.sqlite.org/sqlite-3.5.9.tar.gz
-$ tar xvfz sqlite-3.5.9.tar.gz
-$ mv sqlite-3.5.9 sqlite3
-$ cd sqlite3
-$ ./configure --enable-threadsafe --disable-tcl
-$ make sqlite3.c
-$ cd ..
+  <dl>
+    <dt><b>Mac/Linux/etc</b></dt>
+  </dl>
+  <pre>
+$ wget <a href="http://sqlite.org/sqlite-amalgamation-3_5_9.zip">http://sqlite.org/sqlite-amalgamation-3_5_9.zip</a>
+$ unzip sqlite-amalgamation-3_5_9.zip
 $ python setup.py install
 $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"     
-$ python test.py <font color="blue"># optional - checks everything works correctly</font>
-</pre>Note that there will be many warnings during the compilation step, but they are harmless.
-      </dd>
-    </dl>
-  </blockquote>
+$ python test.py       <font color="blue"># optional - checks everything works correctly</font>
+
+</pre>Note that there will be many warnings during the compilation step about sqlite3.c, <a href=
+"http://sqlite.org/faq.html#q17">but they are harmless</a>.
 
   <p>The extension just turns into a single file apsw.so (Linux/Mac) or apsw.pyd (Windows). You don't need to install
   it and can drop it into any directory that is more convenient for you and that your code can reach. To just do the
@@ -1160,13 +1149,13 @@ $ python test.py <font color="blue"># optional - checks everything works correct
 
   <h1><a name="APIReference" id="APIReference">API Reference</a></h1>
 
-  <p>Everything you can do from the <a href="http://www.sqlite.org/capi3ref.html">SQLite 3 C API</a> you can do from
+  <p>Everything you can do from the <a href="http://www.sqlite.org/c3ref/intro.html">SQLite 3 C API</a> you can do from
   Python. The documentation below notes which C API functions are called where you can get further details on what
   happens. The only C function not implemented is <a href=
-  "http://www.sqlite.org/capi3ref.html#sqlite3_collation_needed">sqlite3_collation_needed</a>. (You can still add
-  collations, you just can't use this function to find out about them on-demand.) Additionally <a href=
-  "http://www.sqlite.org/capi3ref.html#sqlite3_trace">sqlite3_trace</a> is not wrapped but instead <a href=
-  "#tracers">tracers</a> are provided that have more functionality.</p>
+  "http://sqlite.org/c3ref/collation_needed.html">sqlite3_collation_needed</a>. (You can still add collations, you just
+  can't use this function to find out about them on-demand.) Additionally <a href=
+  "http://sqlite.org/c3ref/profile.html">sqlite3_trace</a> is not wrapped but instead <a href="#tracers">tracers</a>
+  are provided that have more functionality.</p>
 
   <p>Some functions are marked experimental in the SQLite API. These have also been made available, but as the SQLite
   documentation notes these functions may change form or disappear in future versions of SQLite. You can exclude these
@@ -1182,7 +1171,7 @@ $ python test.py <font color="blue"># optional - checks everything works correct
 
     <dd>
       <p>Returns the version of the SQLite library as a string. This function calls <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_libversion">sqlite3_libversion</a>.</p>
+      "http://sqlite.org/c3ref/libversion.html">sqlite3_libversion</a>.</p>
     </dd>
 
     <dt><strong>apswversion()</strong></dt>
@@ -1194,17 +1183,9 @@ $ python test.py <font color="blue"># optional - checks everything works correct
     <dt><strong>enablesharedcache(boolean)</strong></dt>
 
     <dd>
-      <p>Calls <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_enable_shared_cache">sqlite3_enable_shared_cache</a>. This sets the
-      <a href="http://www.sqlite.org/sharedcache.html">shared cache mode</a> which was introduced in SQLite 3.3. Note
-      that it only affects the current thread and should be called before any databases are opened. If called after
-      that then you'll get MisuseError. APSW already enforces the other conditions required to use this functionality,
-      namely that all operations on a Connection must happen in the same thread. Consequently you can safely use this
-      functionality. You do not need to worry about <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_thread_cleanup">sqlite3_thread_cleanup</a> as that is only needed
-      when abnormally terminating a thread (something you can't do in Python). Python's normal reference counting
-      ensures all objects are cleaned up, and SQLite automatically cleans up the shared cache when the last Connection
-      in a thread is closed.</p>
+      <p>Calls <a href="http://sqlite.org/c3ref/enable_shared_cache.html">sqlite3_enable_shared_cache</a>. This sets
+      the <a href="http://www.sqlite.org/sharedcache.html">shared cache mode</a> which was introduced in SQLite
+      3.3.</p>
     </dd>
 
     <dt><strong>createmodule("modulename", module_object)</strong></dt>
@@ -1214,15 +1195,20 @@ $ python test.py <font color="blue"># optional - checks everything works correct
     </dd>
 
     <dt><strong>exceptionfor(code)</strong></dt>
-    <dd><p>Returns an exception instance corresponding to a SQLite error code, in particular intended for 
-    mapping <a href="http://www.sqlite.org/cvstrac/wiki?p=ExtendedResultCodes">extended result codes</a> 
-    to <a href="#Exceptions">exceptions</a>.  In addition to picking the right exception class, it also sets the <tt>extendedresult</tt>
-    attribute on the instance.  An example usage is:
-<blockquote>
-<pre>
+
+    <dd>
+      <p>Returns an exception instance corresponding to a SQLite error code, in particular intended for mapping
+      <a href="http://www.sqlite.org/cvstrac/wiki?p=ExtendedResultCodes">extended result codes</a> to <a href=
+      "#Exceptions">exceptions</a>. In addition to picking the right exception class, it also sets the
+      <tt>extendedresult</tt> attribute on the instance. An example usage is:</p>
+
+      <blockquote>
+        <pre>
 raise apsw.exceptionfor(SQLITE_IOERR_SHORT_READ)
+
 </pre>
-</blockquote></p></dd>
+      </blockquote>
+    </dd>
   </dl>
 
   <h2><a name="Module_variables" id="Module_variables">Module variables</a></h2>
@@ -1249,6 +1235,7 @@ raise apsw.exceptionfor(SQLITE_IOERR_SHORT_READ)
     <pre>
 apsw.mapping_authorizer_function["SQLITE_READ"]=20
 apsw.mapping_authorizer_function[20]="SQLITE_READ"
+
 </pre>
   </blockquote>
 
@@ -1272,7 +1259,7 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
 
     <dd>
       <p>The values are passed to authorizer functions. You can see a complete list in the <a href=
-      "http://sqlite.org/capi3ref.html#sqlite3_set_authorizer">sqlite3_set_authorizer documentation</a>. Mapping is
+      "http://sqlite.org/c3ref/set_authorizer.html">sqlite3_set_authorizer documentation</a>. Mapping is
       <code>apsw.mapping_authorizer_function</code></p>
     </dd>
 
@@ -1287,16 +1274,15 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
     and 7 others</a></dt>
 
     <dd>
-      <p>These are <a href="http://www.sqlite.org/cvstrac/wiki?p=ExtendedResultCodes">extended result codes</a> which
-      are provided in <a href="#Exceptions">exceptions</a>. Mapping is
-      <code>apsw.mapping_extended_result_codes</code></p>
+      <p>These are <a href="http://sqlite.org/c3ref/c_ioerr_blocked.html">extended result codes</a> which are provided
+      in <a href="#Exceptions">exceptions</a>. Mapping is <code>apsw.mapping_extended_result_codes</code></p>
     </dd>
 
     <dt><a href="http://sqlite.org/c3ref/c_abort.html"><strong>SQLITE_OK, SQLITE_ERROR, SQLITE_PERM</strong> and 22
     others</a></dt>
 
     <dd>
-      <p>These are <a href="http://sqlite.org/capi3ref.html#result-codes">SQLite result codes</a> which are provided in
+      <p>These are <a href="http://sqlite.org/c3ref/c_abort.html">SQLite result codes</a> which are provided in
       <a href="#Exceptions">exceptions</a>. Mapping is <code>apsw.mapping_result_codes</code></p>
     </dd>
 
@@ -1326,21 +1312,21 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
 
     <dd>
       <p>Opens an SQLite database named <code>filename</code>. (This calls <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_open">sqlite3_open_v2</a> behind the scenes.) If you don't supply a
-      vfs then the default will be used. You can also set how many entries there are in the statement cache. You will
-      generally want this to be the total number of distinct SQL statements you execute frequently.</p>
+      "http://sqlite.org/c3ref/open.html">sqlite3_open_v2</a> behind the scenes.) If you don't supply a vfs then the
+      default will be used. You can also set how many entries there are in the statement cache. You will generally want
+      this to be the total number of distinct SQL statements you execute frequently.</p>
     </dd>
 
     <dt><strong>close(force=False)</strong></dt>
 
     <dd>
       <p>You must call this method when you are done with a Connection. Behind the scenes it calls <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_close">sqlite3_close</a>. It is ok to call this method multiple
-      times. Note that this method can raise an exception. Some examples of when exceptions are raised:</p>
+      "http://sqlite.org/c3ref/close.html">sqlite3_close</a>. It is ok to call this method multiple times. Note that
+      this method can raise an exception. Some examples of when exceptions are raised:</p>
 
       <ul>
-        <li>You have statements still executing (ie currently positioned at a row). Statements that have consumed all
-        results will not hold up closing a Connection.</li>
+        <li>You have statements still executing (ie currently positioned at a row, with more statements to execute).
+        Statements that have consumed all results will not hold up closing a Connection.</li>
 
         <li>You were in the middle of a transaction. SQLite will attempt to do a rollback and errors in your rollback
         hook will be passed back.</li>
@@ -1363,8 +1349,7 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
     <dd>
       <p>This function returns the number of database rows that were changed (or inserted or deleted) by the most
       recently completed INSERT, UPDATE, or DELETE statement. (This calls <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_changes">sqlite3_changes</a>. Read that link for some additional
-      notes.)</p>
+      "http://sqlite.org/c3ref/changes.html">sqlite3_changes</a>. Read that link for some additional notes.)</p>
     </dd>
 
     <dt><strong>totalchanges()</strong></dt>
@@ -1372,29 +1357,29 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
     <dd>
       <p>This function returns the total number of database rows that have be modified, inserted, or deleted since the
       database connection was opened. (This calls <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_total_changes">sqlite3_total_changes</a>. Read that link for some
-      additional notes.)</p>
+      "http://sqlite.org/c3ref/total_changes.html">sqlite3_total_changes</a>. Read that link for some additional
+      notes.)</p>
     </dd>
 
     <dt><strong>last_insert_rowid()</strong></dt>
 
     <dd>
       <p>Returns the integer key of the most recent insert in the database. (This calls <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_last_insert_rowid">sqlite3_last_insert_rowid</a>.)</p>
+      "http://sqlite.org/c3ref/last_insert_rowid.html">sqlite3_last_insert_rowid</a>.)</p>
     </dd>
 
     <dt><strong>complete(statement)</strong></dt>
 
     <dd>
-      <p>Calls <a href="http://www.sqlite.org/capi3ref.html#sqlite3_complete">sqlite3_complete</a> which tells you if
-      the input string comprises one or more complete SQL statements.</p>
+      <p>Calls <a href="http://sqlite.org/c3ref/complete.html">sqlite3_complete</a> which tells you if the input string
+      comprises one or more complete SQL statements.</p>
     </dd>
 
     <dt><strong>setbusytimeout(milliseconds)</strong></dt>
 
     <dd>
       <p>Sets the busy timeout. (This calls <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_busy_timeout">sqlite3_busy_timeout</a>).</p>
+      "http://sqlite.org/c3ref/busy_timeout.html">sqlite3_busy_timeout</a>).</p>
     </dd>
 
     <dt><strong>setbusyhandler(callable)</strong></dt>
@@ -1404,14 +1389,14 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       prior calls to the busy callback for the same lock. If the busy callback returns something that evaluates to
       False, then SQLite returns SQLITE_BUSY to the calling code.. If the callback returns something that evaluates to
       True, then SQLite tries to open the table again and the cycle repeats. (This calls <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_busy_handler">sqlite3_busy_handler</a>).</p>
+      "http://sqlite.org/c3ref/busy_handler.html">sqlite3_busy_handler</a>).</p>
     </dd>
 
     <dt><strong>interrupt()</strong></dt>
 
     <dd>
       <p>Causes any pending operations on the database to abort at the earliest opportunity. You can call this from any
-      thread. (This calls <a href="http://www.sqlite.org/capi3ref.html#sqlite3_interrupt">sqlite3_interrupt</a>).</p>
+      thread. (This calls <a href="http://sqlite.org/c3ref/interrupt.html">sqlite3_interrupt</a>).</p>
     </dd>
 
     <dt><strong>limit(id [, newval])</strong></dt>
@@ -1429,17 +1414,17 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
     <dd>
       <p>Registers a scalar function. The callable will be called. You can specify how many arguments your function
       takes as the numargs parameter or supply -1 to take any amount. (This calls <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_create_function">sqlite3_create_function</a>).</p>
+      "http://sqlite.org/c3ref/create_function.html">sqlite3_create_function</a>).</p>
     </dd>
 
     <dt><strong>createaggregatefunction(name, factorycallback, numargs=-1)</strong></dt>
 
     <dd>
       <p>Registers an aggregate function. (This calls <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_create_function">sqlite3_create_function</a>.) You can specify how
-      many arguments your function takes as the numargs parameter or supply -1 to take any amount. When the function is
-      called by an SQL query, the factorycallback is called without any arguments. The factorycallback needs to return
-      a tuple consisting of three 3 items.</p>
+      "http://sqlite.org/c3ref/create_function.html">sqlite3_create_function</a>.) You can specify how many arguments
+      your function takes as the numargs parameter or supply -1 to take any amount. When the function is called by an
+      SQL query, the factorycallback is called without any arguments. The factorycallback needs to return a tuple
+      consisting of three 3 items.</p>
 
       <ul>
         <li>
@@ -1469,8 +1454,8 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       the second. Note that this controls sorting (ORDER BY in SQL) so your comparisons don't affect other SQL
       operations. Read more about <a href="http://www.sqlite.org/datatype3.html#collation">SQLite's handling of
       collations.</a> (This calls <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_create_collation">sqlite3_create_collation</a>.) If there is an
-      error in your Python code then 0 (ie items are equal) is returned.</p>
+      "http://sqlite.org/c3ref/create_collation.html">sqlite3_create_collation</a>.) If there is an error in your
+      Python code then 0 (ie items are equal) is returned.</p>
     </dd>
 
     <dt><strong>setauthorizer(callable)</strong></dt>
@@ -1506,8 +1491,8 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       <code>apsw.SQLITE_IGNORE</code> as applicable. (SQLITE_DENY is returned if there is an error in your Python
       code).</p>
 
-      <p>This calls <a href="http://www.sqlite.org/capi3ref.html#sqlite3_set_authorizer">sqlite3_set_authorizer</a>
-      which contains more detailed documentation.</p>
+      <p>This calls <a href="http://sqlite.org/c3ref/set_authorizer.html">sqlite3_set_authorizer</a> which contains
+      more detailed documentation.</p>
     </dd>
 
     <dt><strong>setupdatehook(callable)</strong></dt>
@@ -1526,15 +1511,14 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
         <li>An integer with the rowid of the row that is changing.</li>
       </ul>
 
-      <p>(This calls <a href="http://www.sqlite.org/capi3ref.html#sqlite3_update_hook">sqlite3_update_hook</a>.)</p>
+      <p>(This calls <a href="http://sqlite.org/c3ref/update_hook.html">sqlite3_update_hook</a>.)</p>
     </dd>
 
     <dt><strong>setrollbackhook(callable)</strong></dt>
 
     <dd>
       <p>Sets a callable which is invoked during a rollback. The callable takes no parameters and the return value is
-      ignored. (This calls <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_rollback_hook">sqlite3_rollback_hook</a>.)</p>
+      ignored. (This calls <a href="http://sqlite.org/c3ref/commit_hook.html">sqlite3_rollback_hook</a>.)</p>
     </dd>
 
     <dt><strong>setcommithook(callable)</strong> (SQLite 3 experimental feature)</dt>
@@ -1543,7 +1527,7 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       <p>Sets a callable which is invoked just before a commit. It should return zero for the commit to go ahead and
       non-zero for it to be turned into a rollback. In the case of an exception in your callable, a non-zero (ie
       rollback) value is returned. (This calls <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_commit_hook">sqlite3_commit_hook</a>.)</p>
+      "http://sqlite.org/c3ref/commit_hook.html">sqlite3_commit_hook</a>.)</p>
     </dd>
 
     <dt><strong>setprofile(callable)</strong> (SQLite 3 experimental feature)</dt>
@@ -1563,9 +1547,8 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
     <dd>
       <p>Sets a callable which is invoked every <i>nsteps</i> SQLite inststructions. The callable should return a
       non-zero value to abort or zero to continue. (If there is an error in your Python callable then non-zero will be
-      returned). (This calls <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_progress_handler">sqlite3_progress_handler</a> which has more
-      detailed documentation).</p>
+      returned). (This calls <a href="http://sqlite.org/c3ref/progress_handler.html">sqlite3_progress_handler</a> which
+      has more detailed documentation).</p>
     </dd>
 
     <dt><strong>enableloadextension(bool)</strong> (SQLite 3 experimental feature)</dt>
@@ -1677,8 +1660,8 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       <p>Executes the statements using the supplied bindings. The bindings can be supplied as a tuple or as a dict.
       Execution returns when the first row is available or all statements have completed. The cursor object is returned
       which you can use as an iterator. (See <a href="#executionmodel">execution model</a> for more details. This
-      function wraps <a href="http://www.sqlite.org/capi3ref.html#sqlite3_prepare">sqlite3_prepare</a> and <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_step">sqlite3_step</a>.)</p>
+      function wraps <a href="http://sqlite.org/c3ref/prepare.html">sqlite3_prepare_v2</a> and <a href=
+      "http://sqlite.org/c3ref/step.html">sqlite3_step</a>.)</p>
     </dd>
 
     <dt><strong>executemany(statements, sequenceofbindings=())</strong></dt>
@@ -1688,8 +1671,8 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       returns when the first row is available or all statements have completed. The cursor object is returned which you
       can use as an iterator. (See <a href="#executionmodel">execution model</a> for more details. This function runs
       in a loop on each member of sequenceofbindings and wraps <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_prepare">sqlite3_prepare</a> and <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_step">sqlite3_step</a> .)</p>
+      "http://sqlite.org/c3ref/prepare.html">sqlite3_prepare_v2</a> and <a href=
+      "http://sqlite.org/c3ref/step.html">sqlite3_step</a>.)</p>
     </dd>
 
     <dt><strong>next()</strong></dt>
@@ -1706,8 +1689,8 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       <p>Returns a list describing each column in the current result set. Each item is a tuple of (column name,
       declared column type). You should only call this function while data is being returned such as when
       <code>next()</code> returns a row. This function calls <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_column_name">sqlite3_column_name</a> and <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_column_decltype">sqlite3_column_decltype</a>.</p>
+      "http://sqlite.org/c3ref/column_name.html">sqlite3_column_name</a> and <a href=
+      "http://sqlite.org/c3ref/column_decltype.html">sqlite3_column_decltype</a>.</p>
     </dd>
 
     <dt><strong>setexectrace(callable)</strong><br />
@@ -1883,6 +1866,7 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
    (2, apsw.SQLITE_INDEX_CONSTRAINT_GT),
    (5, apsw.SQLITE_INDEX_CONSTRAINT_LE),
    (0, apsw.SQLITE_INDEX_CONSTRAINT_EQ)
+
 </pre>
 
         <p>Note that you do not get the value of the constraint (eg "Acme Widgets", 74.99 and 10 in this example).</p>
@@ -1961,8 +1945,10 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
         <pre>
   (2, True),  <font color="blue"># True means descending, False is ascending</font>
   (5, False)
+
 </pre>
         <pre>
+
 
 </pre>
       </blockquote>
@@ -2009,6 +1995,7 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
                   (0, apsw.SQLITE_INDEX_CONSTRAINT_EQ)  )
 
 <b>orderbys</b>= ( (2, True), (5, False) )
+
 </pre>
 
         <p>You return</p>
@@ -2019,6 +2006,7 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
   False,          <font color="blue"># results are not in orderbys order</font>
   1000            <font color="blue"># about 1000 disk operations to access index</font>
 )
+
 </pre>
 
         <p>Your Cursor.Filter method will be called with:</p>
@@ -2027,6 +2015,7 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
 "idx_pr_cust",   <font color="blue"># index name you returned</font>
 "Acme Widgets",  <font color="blue"># constraintarg[0] - customer</font>  
 74.99            <font color="blue"># constraintarg[1] - price </font>
+
 </pre>
       </blockquote>
 
@@ -2175,8 +2164,8 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       </dl>
 
       <p>The table lists which Exception classes correspond to which <a href=
-      "http://www.sqlite.org/capi3ref.html#result-codes">SQLite error codes</a>. APSW runs with <a href=
-      "http://www.sqlite.org/cvstrac/wiki?p=ExtendedResultCodes">extended result codes</a> turned on. If you get the
+      "http://sqlite.org/c3ref/c_abort.html">SQLite error codes</a>. APSW runs with <a href=
+      "http://sqlite.org/c3ref/c_ioerr_blocked.html">extended result codes</a> turned on. If you get the
       <code>result</code> member of an exception instance then you will get the plain error code. The
       <code>extendedresult</code> member of an exception instance will get you the extended error code.</p>
 
@@ -2402,6 +2391,7 @@ con.createscalarfunction("fam", myfunc)
 cursor=con.cursor()
 cursor.execute("create table bar(x,y,z);insert into bar values(1,2,3)")
 cursor.execute("select foo(1) from bar")
+
 </pre>
 
       <table cellpadding="3" cellspacing="3">
@@ -2464,6 +2454,7 @@ ZeroDivisionError: integer division or modulo by zero
 
     traceback.print_exc()
     print "Locals by frame, innermost last"
+
 </pre>
         </blockquote>
       </blockquote>
@@ -2575,10 +2566,11 @@ TypeError: Bad constraint (#2) - it should be one of None, an integer or a tuple
 
       <p>ASPW lets you use SQLite in multi-threaded programs and will let other threads execute while SQLite is
       working. (Technically the <a href="http://www.python.org/doc/2.3.4/api/threads.html">GIL</a> is released when
-      <a href="http://www.sqlite.org/capi3ref.html#sqlite3_step">sqlite3_step</a> or <a href=
-      "http://www.sqlite.org/capi3ref.html#sqlite3_open">sqlite3_open</a> are running, as well as many other functions
-      that could take more than a trivial amount of time. The GIL is re-acquired while user defined functions,
-      collations and the various hooks/handlers run.)</p>
+      <a href="http://sqlite.org/c3ref/prepare.html">sqlite3_prepare_v2</a>, <a href=
+      "http://sqlite.org/c3ref/step.html">sqlite3_step</a> or <a href=
+      "http://sqlite.org/c3ref/open.html">sqlite3_open_v2</a> are running, as well as many other functions that could
+      take more than a trivial amount of time. The GIL is re-acquired while user defined functions, collations and the
+      various hooks/handlers run.)</p>
 
       <p>Note that you cannot use the same cursor object in multiple threads concurrently to execute statements. APSW
       will detect this and throw an exception. It is safe to use the object serially (eg calling <code>execute</code>
@@ -2651,6 +2643,7 @@ TypeError: Bad constraint (#2) - it should be one of None, an integer or a tuple
 Traceback (most recent call last):
   File "&lt;stdin&gt;", line 1, in ?
 apsw.IncompleteExecutionError: Error: there are still remaining sql statements to execute
+
 </pre>
       </blockquote>
 
@@ -2789,6 +2782,7 @@ for row in cur.execute("create table foo(x,y,z);insert into foo values (?,?,?);"
                        (1,2,3,4,5,6,7,8,9,10)): 
                            print row
         
+
 </pre>
 
             <p>And the output as you would expect:</p>
@@ -2798,6 +2792,7 @@ for row in cur.execute("create table foo(x,y,z);insert into foo values (?,?,?);"
 (4, 5, 6) 
 (7, 8) 
 (9, 10)
+
 </pre>
           </blockquote>
         </li>
@@ -2966,8 +2961,8 @@ Traceback (most recent call last):
 
         <li>SQLite now has incremental <a href="#blobio">blob I/O</a></li>
 
-        <li><a href="http://code.google.com/p/apsw/issues/detail?id=4">Issue 4</a> which could lead to generic
-        error messages was fixed in SQLite 3.5.9.</li>
+        <li><a href="http://code.google.com/p/apsw/issues/detail?id=4">Issue 4</a> which could lead to generic error
+        messages was fixed in SQLite 3.5.9.</li>
       </ul>
 
       <h2><a name="3313r1">3.3.13-r1</a></h2>
@@ -3007,9 +3002,8 @@ Traceback (most recent call last):
       <p>You can use this with SQLite 3.3.9 onwards.</p>
 
       <ul>
-        <li>SQLite added <a href="http://sqlite.org/capi3ref.html#sqlite3_prepare_v2">sqlite3_prepare_v2</a> API. The
-        net effect of this API update is that you will not get SQLITE_SCHEMA any more. SQLite will handle it
-        internally.</li>
+        <li>SQLite added <a href="http://sqlite.org/c3ref/prepare.html">sqlite3_prepare_v2</a> API. The net effect of
+        this API update is that you will not get SQLITE_SCHEMA any more. SQLite will handle it internally.</li>
       </ul>
 
       <h2><a name="338r1">3.3.8-r1</a></h2>
