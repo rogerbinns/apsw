@@ -29,7 +29,11 @@ amalgamation=(
 usingamalgamation=False
 for path in amalgamation:
     if os.path.exists(path):
-        define_macros.append( ('APSW_USE_SQLITE_AMALGAMATION', '"'+path+'"') )
+        if sys.platform=="win32":
+            # double quotes get consumed by windows arg processing
+            define_macros.append( ('APSW_USE_SQLITE_AMALGAMATION', '\\"'+path+'\\"') )
+        else:
+            define_macros.append( ('APSW_USE_SQLITE_AMALGAMATION', '"'+path+'"') )
         libraries=[]
         usingamalgamation=True
         break
