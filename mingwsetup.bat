@@ -12,12 +12,16 @@ set WINSYS32=%systemroot%\system32
 
 @if not exist %PYTHONDIRBASE%%PYTHONVER% goto no%PYTHONVER%
 @if exist %PYTHONDIRBASE%%PYTHONVER%\libs\libpython%PYTHONVER%.a goto lib%PYTHONVER%ok
-pexports %WINSYS32%\python%PYTHONVER%.dll > py%PYTHONVER%exports.def
-dlltool --dllname python%PYTHONVER%.dll --def py%PYTHONVER%exports.def --output-lib %PYTHONDIRBASE%%PYTHONVER%\libs\libpython%PYTHONVER%.a
-del py%PYTHONVER%exports.def
+pexports %WINSYS32%\python%PYTHONVER%.dll > %TEMP%\py%PYTHONVER%exports.def
+dlltool --dllname python%PYTHONVER%.dll --def %TEMP%\py%PYTHONVER%exports.def --output-lib %PYTHONDIRBASE%%PYTHONVER%\libs\libpython%PYTHONVER%.a
+del %TEMP%\py%PYTHONVER%exports.def
+@if not exist %PYTHONDIRBASE%%PYTHONVER%\libs\libpython%PYTHONVER%.a goto fail%PYTHONVER%
 @goto lib%PYTHONVER%ok
 :no22
 @echo You do not have Python %PYTHONVER% installed
+@goto py%PYTHONVER%done
+:fail22
+@echo Setup failed for Python %PYTHONVER%
 @goto py%PYTHONVER%done
 :lib22ok
 @echo MinGW is setup for Python %PYTHONVER%
@@ -27,12 +31,16 @@ del py%PYTHONVER%exports.def
 
 @if not exist %PYTHONDIRBASE%%PYTHONVER% goto no%PYTHONVER%
 @if exist %PYTHONDIRBASE%%PYTHONVER%\libs\libpython%PYTHONVER%.a goto lib%PYTHONVER%ok
-pexports %WINSYS32%\python%PYTHONVER%.dll > py%PYTHONVER%exports.def
-dlltool --dllname python%PYTHONVER%.dll --def py%PYTHONVER%exports.def --output-lib %PYTHONDIRBASE%%PYTHONVER%\libs\libpython%PYTHONVER%.a
-del py%PYTHONVER%exports.def
+pexports %WINSYS32%\python%PYTHONVER%.dll > %TEMP%\py%PYTHONVER%exports.def
+dlltool --dllname python%PYTHONVER%.dll --def %TEMP%\py%PYTHONVER%exports.def --output-lib %PYTHONDIRBASE%%PYTHONVER%\libs\libpython%PYTHONVER%.a
+del %TEMP%\py%PYTHONVER%exports.def
+@if not exist %PYTHONDIRBASE%%PYTHONVER%\libs\libpython%PYTHONVER%.a goto fail%PYTHONVER%
 @goto lib%PYTHONVER%ok
 :no23
 @echo You do not have Python %PYTHONVER% installed
+@goto py%PYTHONVER%done
+:fail23
+@echo Setup failed for Python %PYTHONVER%
 @goto py%PYTHONVER%done
 :lib23ok
 @echo MinGW is setup for Python %PYTHONVER%
@@ -42,12 +50,16 @@ del py%PYTHONVER%exports.def
 
 @if not exist %PYTHONDIRBASE%%PYTHONVER% goto no%PYTHONVER%
 @if exist %PYTHONDIRBASE%%PYTHONVER%\libs\libpython%PYTHONVER%.a goto lib%PYTHONVER%ok
-pexports %WINSYS32%\python%PYTHONVER%.dll > py%PYTHONVER%exports.def
-dlltool --dllname python%PYTHONVER%.dll --def py%PYTHONVER%exports.def --output-lib %PYTHONDIRBASE%%PYTHONVER%\libs\libpython%PYTHONVER%.a
-del py%PYTHONVER%exports.def
+pexports %WINSYS32%\python%PYTHONVER%.dll > %TEMP%\py%PYTHONVER%exports.def
+dlltool --dllname python%PYTHONVER%.dll --def %TEMP%\py%PYTHONVER%exports.def --output-lib %PYTHONDIRBASE%%PYTHONVER%\libs\libpython%PYTHONVER%.a
+del %TEMP%\py%PYTHONVER%exports.def
+@if not exist %PYTHONDIRBASE%%PYTHONVER%\libs\libpython%PYTHONVER%.a goto fail%PYTHONVER%
 @goto lib%PYTHONVER%ok
 :no24
 @echo You do not have Python %PYTHONVER% installed
+@goto py%PYTHONVER%done
+:fail24
+@echo Setup failed for Python %PYTHONVER%
 @goto py%PYTHONVER%done
 :lib24ok
 @echo MinGW is setup for Python %PYTHONVER%
@@ -57,16 +69,40 @@ del py%PYTHONVER%exports.def
 
 @if not exist %PYTHONDIRBASE%%PYTHONVER% goto no%PYTHONVER%
 @if exist %PYTHONDIRBASE%%PYTHONVER%\libs\libpython%PYTHONVER%.a goto lib%PYTHONVER%ok
-pexports %WINSYS32%\python%PYTHONVER%.dll > py%PYTHONVER%exports.def
-dlltool --dllname python%PYTHONVER%.dll --def py%PYTHONVER%exports.def --output-lib %PYTHONDIRBASE%%PYTHONVER%\libs\libpython%PYTHONVER%.a
-del py%PYTHONVER%exports.def
+pexports %WINSYS32%\python%PYTHONVER%.dll > %TEMP%\py%PYTHONVER%exports.def
+dlltool --dllname python%PYTHONVER%.dll --def %TEMP%\py%PYTHONVER%exports.def --output-lib %PYTHONDIRBASE%%PYTHONVER%\libs\libpython%PYTHONVER%.a
+del %TEMP%\py%PYTHONVER%exports.def
+@if not exist %PYTHONDIRBASE%%PYTHONVER%\libs\libpython%PYTHONVER%.a goto fail%PYTHONVER%
 @goto lib%PYTHONVER%ok
 :no25
 @echo You do not have Python %PYTHONVER% installed
 @goto py%PYTHONVER%done
+:fail25
+@echo Setup failed for Python %PYTHONVER%
+@goto py%PYTHONVER%done
 :lib25ok
 @echo MinGW is setup for Python %PYTHONVER%
 :py25done
+
+@set PYTHONVER=26
+
+@if not exist %PYTHONDIRBASE%%PYTHONVER% goto no%PYTHONVER%
+@if exist %PYTHONDIRBASE%%PYTHONVER%\libs\libpython%PYTHONVER%.a goto lib%PYTHONVER%ok
+pexports %WINSYS32%\python%PYTHONVER%.dll > %TEMP%\py%PYTHONVER%exports.def
+dlltool --dllname python%PYTHONVER%.dll --def %TEMP%\py%PYTHONVER%exports.def --output-lib %PYTHONDIRBASE%%PYTHONVER%\libs\libpython%PYTHONVER%.a
+del %TEMP%\py%PYTHONVER%exports.def
+@if not exist %PYTHONDIRBASE%%PYTHONVER%\libs\libpython%PYTHONVER%.a goto fail%PYTHONVER%
+@goto lib%PYTHONVER%ok
+:no26
+@echo You do not have Python %PYTHONVER% installed
+@goto py%PYTHONVER%done
+:fail26
+@echo Setup failed for Python %PYTHONVER%
+@goto py%PYTHONVER%done
+:lib26ok
+@echo MinGW is setup for Python %PYTHONVER%
+:py26done
+
 
 @rem clean out variables
 @set PYTHONDIRBASE=
