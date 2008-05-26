@@ -416,6 +416,7 @@ except apsw.TooBigError:
 ###
 
 # We can close connections manually (useful if you want to catch exceptions)
+# but you don't have to
 connection.close(True)  # force it since we want to exit
 
 #@@END
