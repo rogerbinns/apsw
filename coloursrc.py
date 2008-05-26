@@ -67,7 +67,7 @@ class Parser:
         # parse the source and write it
         self.pos = 0
         text = cStringIO.StringIO(self.raw)
-        self.out.write('<font face="Lucida,Courier New">')
+        self.out.write('<font face="Lucida,Courier New,monospace">')
         try:
             tokenize.tokenize(text.readline, self)
         except tokenize.TokenError, ex:
@@ -75,6 +75,9 @@ class Parser:
             line = ex[1][0]
             self.out.write("<h3>ERROR: %s</h3>%s\n" % (
                 msg, self.raw[self.lines[line]:]))
+        # last item isn't closed
+        self.out.write('</span>')
+        # match font tag setting face above
         self.out.write('</font>')
 
     def __call__(self, toktype, toktext, (srow,scol), (erow,ecol), line):
