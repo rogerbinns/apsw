@@ -458,15 +458,6 @@ typedef struct _aggregatefunctioncontext
 
 static funccbinfo *freefunccbinfo(funccbinfo *);
 
-typedef struct _collationcbinfo
-{
-  struct _collationcbinfo *next;  /* we use a linked list */
-  char *name;                     /* ascii collation name which we uppercased */
-  PyObject *func;                 /* the actual function to call */
-} collationcbinfo;
-  
-static collationcbinfo *freecollationcbinfo(collationcbinfo *);
-
 typedef struct Connection Connection; /* forward declaration */
 
 typedef struct _vtableinfo
@@ -497,7 +488,6 @@ struct Connection {
   StatementCache *stmtcache;      /* prepared statement cache */
 
   funccbinfo *functions;          /* linked list of registered functions */
-  collationcbinfo *collations;    /* linked list of registered collations */
   vtableinfo *vtables;            /* linked list of registered vtables */
 
   /* registered hooks/handlers (NULL or callable) */
@@ -673,13 +663,6 @@ Connection_internal_cleanup(Connection *self)
     self->functions=0;
   }
 
-  /* free collations */
-  {
-    collationcbinfo *coll=self->collations;
-    while((coll=freecollationcbinfo(coll)));
-    self->collations=0;
-  }
-
   /* free vtables */
   {
     vtableinfo *vtinfo=self->vtables;
@@ -836,7 +819,6 @@ Connection_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
       pointerlist_init(&self->dependents);
       self->stmtcache=0;
       self->functions=0;
-      self->collations=0;
       self->vtables=0;
       self->busyhandler=0;
       self->rollbackhook=0;
@@ -2290,40 +2272,13 @@ Connection_createaggregatefunction(Connection *self, PyObject *args)
 
 /* USER DEFINED COLLATION CODE.*/
 
-/*  We store the registered collations in a linked list hooked into
-   the connection object so we can free them.  There is probably a
-   better data structure to use but this was most convenient. */
-
-static collationcbinfo *
-freecollationcbinfo(collationcbinfo *collation)
-{
-  collationcbinfo *cnext;
-  if(!collation) 
-    return NULL;
-
-  if(collation->name)
-    PyMem_Free(collation->name);
-  Py_XDECREF(collation->func);
-  cnext=collation->next;
-  PyMem_Free(collation);
-  return cnext;
-}
-
-static collationcbinfo *
-alloccollationcbinfo(void)
-{
-  collationcbinfo *res=PyMem_Malloc(sizeof(collationcbinfo));
-  memset(res, 0, sizeof(collationcbinfo));
-  return res;
-}
-
 static int 
 collation_cb(void *context, 
 	     int stringonelen, const void *stringonedata,
 	     int stringtwolen, const void *stringtwodata)
 {
   PyGILState_STATE gilstate;
-  collationcbinfo *cbinfo=(collationcbinfo*)context;
+  PyObject *cbinfo=(PyObject*)context;
   PyObject *pys1=NULL, *pys2=NULL, *retval=NULL;
   int result=0;
 
@@ -2339,9 +2294,13 @@ collation_cb(void *context,
   if(!pys1 || !pys2)  
     goto finally;   /* failed to allocate strings */
 
-  retval=PyObject_CallFunction(cbinfo->func, "(OO)", pys1, pys2);
+  retval=PyObject_CallFunction(cbinfo, "(OO)", pys1, pys2);
 
-  if(!retval) goto finally;  /* execution failed */
+  if(!retval) 
+    {
+      AddTraceBackHere(__FILE__, __LINE__, "Collation_callback", "{s: O, s: O, s: O}", "callback", cbinfo, "stringone", pys1, "stringtwo", pys2);
+      goto finally;  /* execution failed */
+    }
 
   result=PyInt_AsLong(retval);
   if(PyErr_Occurred())
@@ -2356,13 +2315,19 @@ collation_cb(void *context,
 
 }
 
+static void
+collation_destroy(void *context)
+{
+  PyGILState_STATE gilstate=PyGILState_Ensure();
+  Py_DECREF((PyObject*)context);
+  PyGILState_Release(gilstate);
+}
+
 static PyObject *
 Connection_createcollation(Connection *self, PyObject *args)
 {
   PyObject *callable;
   char *name=0;
-  char *chk;
-  collationcbinfo *cbinfo;
   int res;
 
   CHECK_USE(NULL);
@@ -2374,24 +2339,6 @@ Connection_createcollation(Connection *self, PyObject *args)
   assert(name);
   assert(callable);
 
-  /* there isn't a C api to get a (potentially unicode) string and make it uppercase so we hack around  */
-
-  /* validate the name */
-  for(chk=name;*chk && !((*chk)&0x80);chk++);
-  if(*chk)
-    {
-      PyMem_Free(name);
-      PyErr_SetString(PyExc_TypeError, "function name must be ascii characters only");
-      return NULL;
-    }
-
-  /* convert name to upper case */
-  for(chk=name;*chk;chk++)
-    if(*chk>='a' && *chk<='z')
-      *chk-='a'-'A';
-
-  /* ::TODO:: check if name points to already defined collation and free relevant collationcbinfo */
-
   if(callable!=Py_None && !PyCallable_Check(callable))
     {
       PyMem_Free(name);
@@ -2401,35 +2348,23 @@ Connection_createcollation(Connection *self, PyObject *args)
 
   Py_INCREF(callable);
 
-  cbinfo=alloccollationcbinfo();
-  cbinfo->name=name;
-  cbinfo->func=callable;
-
-  res=sqlite3_create_collation(self->db,
-                               name,
-                               SQLITE_UTF8,
-                               (callable!=Py_None)?cbinfo:NULL,
-                               (callable!=Py_None)?collation_cb:NULL);
-  if(res)
+  res=sqlite3_create_collation_v2(self->db,
+                                  name,
+                                  SQLITE_UTF8,
+                                  (callable!=Py_None)?callable:NULL,
+                                  (callable!=Py_None)?collation_cb:NULL,
+                                  (callable!=Py_None)?collation_destroy:NULL);
+  PyMem_Free(name);
+  if(res!=SQLITE_OK)
     {
-      freecollationcbinfo(cbinfo);
       SET_EXC(self->db, res);
       return NULL;
     }
 
   if (callable!=Py_None)
-    {
-      /* put cbinfo into the linked list */
-      cbinfo->next=self->collations;
-      self->collations=cbinfo;
-    }
-  else
-    {
-      /* destroy info */
-      freecollationcbinfo(cbinfo);
-    }
+    Py_INCREF(callable);
   
-  return Py_BuildValue("");
+  Py_RETURN_NONE;
 }
 
 /* Virtual table code */
@@ -5049,12 +4984,6 @@ initapsw(void)
     if (PyType_Ready(&APSWBlobType) <0)
       return;
 
-    if (PyType_Ready(&APSWVFSType)<0)
-      return;
-
-    if (PyType_Ready(&APSWVFSFileType)<0)
-      return;
-
     /* ensure threads are available */
     PyEval_InitThreads();
 
@@ -5074,12 +5003,6 @@ initapsw(void)
     Py_INCREF(&ZeroBlobBindType);
     PyModule_AddObject(m, "zeroblob", (PyObject *)&ZeroBlobBindType);
     
-    Py_INCREF(&APSWVFSType);
-    PyModule_AddObject(m, "VFS", (PyObject*)&APSWVFSType);
-
-    Py_INCREF(&APSWVFSFileType);
-    PyModule_AddObject(m, "VFSFile", (PyObject*)&APSWVFSFileType);
-
     hooks=PyList_New(0);
     if(!hooks) return;
     PyModule_AddObject(m, "connection_hooks", hooks);
