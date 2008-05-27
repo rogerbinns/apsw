@@ -29,8 +29,6 @@ tidytoc:
 compile-win:
 	cmd /c del /s /q dist
 	cmd /c del /s /q build
-	cmd /c del /s /q $(VERDIR)
-	-cmd /c md $(VERDIR)
 	-cmd /c md dist
 	c:/python23/python setup.py build --compile=mingw32 install 
 	c:/python23/python tests.py
