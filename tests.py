@@ -808,6 +808,12 @@ class APSW(unittest.TestCase):
         
     def testCollation(self):
         "Verify collations"
+        # create a whole bunch to check they are freed
+        for i in range(1024):
+            self.db.createcollation("x"*i, lambda x,y: i)
+        for ii in range(1024):
+            self.db.createcollation("x"*ii, lambda x,y: ii)
+
         c=self.db.cursor()
         def strnumcollate(s1, s2):
             "return -1 if s1<s2, +1 if s1>s2 else 0.  Items are string head and numeric tail"
@@ -831,7 +837,6 @@ class APSW(unittest.TestCase):
 
         self.assertRaises(TypeError, self.db.createcollation, "twelve", strnumcollate, 12) # wrong # params
         self.assertRaises(TypeError, self.db.createcollation, "twelve", 12) # must be callable
-        self.assertRaises(TypeError, self.db.createcollation,u"twelve\N{BLACK STAR}", strnumcollate) # must be ascii
         self.db.createcollation("strnum", strnumcollate)
         c.execute("create table foo(x)")
         # adding this unicode in front improves coverage
@@ -2246,13 +2251,6 @@ class APSW(unittest.TestCase):
         self.failUnless(len(v))
         sys.excepthook=xx
         sys.stderr=yy
-
-    def testExceptionFor(self):
-        "Verify extended exceptions"
-        e=apsw.exceptionfor(apsw.SQLITE_IOERR_SHORT_READ)
-        self.failUnlessEqual(e.extendedresult, apsw.SQLITE_IOERR_SHORT_READ)
-        self.failUnlessEqual(e.result, apsw.SQLITE_IOERR)
-        self.assert_(isinstance(e, apsw.IOError))
 
     def testStatementCache(self, scsize=100):
         "Verify statement cache integrity"
