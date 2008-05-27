@@ -57,9 +57,27 @@ version=open("apswversion.h", "rtU").read().split()[2].strip('"')
 
 setup(name="apsw",
       version=version,
+      description="Another Python SQLite Wrapper",
+      long_description=\
+"""A Python wrapper for the SQLite embedded relational database engine.
+In contrast to other wrappers such as pysqlite it focuses on being
+a minimal layer over SQLite attempting just to translate the
+complete SQLite API into Python.""",
       author="Roger Binns",
       author_email="rogerb@rogerbinns.com",
-      description="Another Python SQLite Wrapper",
+      url="http://code.google.com/p/apsw/",
+      download_url="http://code.google.com/p/apsw/downloads/list",
+      classifiers=[
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: zlib/libpng License",
+    "Operating System :: OS Independent",
+    "Programming Language :: C",
+    "Topic :: Database :: Front-Ends",
+    ],
+      keywords=["database", "sqlite"],
+      platform="Any supported by both SQLite and Python",
+      license="OSI Approved :: zlib/libpng License",
 
       ext_modules=[Extension("apsw",
                              ["apsw.c"],
