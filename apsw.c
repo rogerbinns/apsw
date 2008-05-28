@@ -50,7 +50,7 @@
 #endif
 
 #if SQLITE_VERSION_NUMBER < 3005009
-#error Your SQLite version is too old.  It must be at least 3.5.0
+#error Your SQLite version is too old.  It must be at least 3.5.9
 #endif
 
 /* system headers */
@@ -462,16 +462,12 @@ typedef struct Connection Connection; /* forward declaration */
 
 typedef struct _vtableinfo
 {
-  struct _vtableinfo *next;       /* we use a linked list */
-  char *name;                     /* module name */
   PyObject *datasource;           /* object with create/connect methods */
   Connection *connection;         /* the Connection this is registered against so we don't
 				     have to have a global table mapping sqlite3_db* to
 				     Connection* */
 } vtableinfo;
 
-/* forward declarations */
-static vtableinfo *freevtableinfo(vtableinfo *);
 
 /* CONNECTION TYPE */
 
@@ -488,7 +484,6 @@ struct Connection {
   StatementCache *stmtcache;      /* prepared statement cache */
 
   funccbinfo *functions;          /* linked list of registered functions */
-  vtableinfo *vtables;            /* linked list of registered vtables */
 
   /* registered hooks/handlers (NULL or callable) */
   PyObject *busyhandler;     
@@ -663,13 +658,6 @@ Connection_internal_cleanup(Connection *self)
     self->functions=0;
   }
 
-  /* free vtables */
-  {
-    vtableinfo *vtinfo=self->vtables;
-    while((vtinfo=freevtableinfo(vtinfo)));
-    self->vtables=0;
-  }
-
   Py_XDECREF(self->busyhandler);
   self->busyhandler=0;
 
@@ -819,7 +807,6 @@ Connection_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
       pointerlist_init(&self->dependents);
       self->stmtcache=0;
       self->functions=0;
-      self->vtables=0;
       self->busyhandler=0;
       self->rollbackhook=0;
       self->profile=0;
@@ -2369,27 +2356,7 @@ Connection_createcollation(Connection *self, PyObject *args)
 
 /* Virtual table code */
 
-/* this function is outside of experimental since it is always called by the destructor */
-static vtableinfo *
-freevtableinfo(vtableinfo *vtinfo)
-{
-  vtableinfo *next;
-  if(!vtinfo)
-    return NULL;
-
-  if(vtinfo->name)
-    PyMem_Free(vtinfo->name);
-  Py_XDECREF(vtinfo->datasource);
-  /* connection was a borrowed reference so no decref needed */
-
-  next=vtinfo->next;
-  PyMem_Free(vtinfo);
-  return next;
-}
-
-
 #ifdef EXPERIMENTAL
-
 
 typedef struct {
   sqlite3_vtab used_by_sqlite; /* I don't touch this */
@@ -2533,6 +2500,20 @@ vtabConnect(sqlite3 *db,
   return vtabCreateOrConnect(db, pAux, argc, argv, pVTab, errmsg, 1);
 }
 
+
+static void
+vtabFree(void *context)
+{
+  vtableinfo *vti=(vtableinfo*)context;
+  PyGILState_STATE gilstate;
+  gilstate=PyGILState_Ensure();
+
+  Py_XDECREF(vti->datasource);
+  /* connection was a borrowed reference so no decref needed */
+  PyMem_Free(vti);
+
+  PyGILState_Release(gilstate);
+}
 
 static struct
 {
@@ -3317,15 +3298,6 @@ static struct sqlite3_module apsw_vtable_module=
     0                 /* vtabRename */
   };
 
-static vtableinfo *
-allocvtableinfo(void)
-{
-  vtableinfo *res=PyMem_Malloc(sizeof(vtableinfo));
-  if(res)
-    memset(res, 0, sizeof(vtableinfo));
-  return res;
-}
-
 static PyObject *
 Connection_createmodule(Connection *self, PyObject *args)
 {
@@ -3341,25 +3313,22 @@ Connection_createmodule(Connection *self, PyObject *args)
     return NULL;
 
   Py_INCREF(datasource);
-  vti=allocvtableinfo();
+  vti=PyMem_Malloc(sizeof(vtableinfo));
   vti->connection=self;
-  vti->name=name;
   vti->datasource=datasource;
 
   /* ::TODO:: - can we call this with NULL to unregister a module? */
-  res=sqlite3_create_module(self->db, name, &apsw_vtable_module, vti);
+  res=sqlite3_create_module_v2(self->db, name, &apsw_vtable_module, vti, vtabFree);
+  PyMem_Free(name);
   SET_EXC(self->db, res);
 
   if(res!=SQLITE_OK)
     {
-      freevtableinfo(vti);
+      Py_DECREF(datasource);
+      PyMem_Free(vti);
       return NULL;
     }
 
-  /* add vti to linked list */
-  vti->next=self->vtables;
-  self->vtables=vti;
-  
   Py_RETURN_NONE;
 }
 

@@ -1410,6 +1410,20 @@ class APSW(unittest.TestCase):
                          ]
         
 
+        for i in range(20):
+            self.db.createmodule("x"*i, lambda x: i)
+        for ii in range(20):
+            self.db.createmodule("x"*ii, lambda x: ii)
+
+        # If shared cache is enabled then vtable creation is supposed to fail
+        # See http://www.sqlite.org/cvstrac/tktview?tn=3144
+        try:
+            apsw.enablesharedcache(True)
+            db=apsw.Connection("testdb2")
+            db.createmodule("y", lambda x: 2)
+        finally:
+            apsw.enablesharedcache(False)
+
         # The testing uses a different module name each time.  SQLite
         # doc doesn't define the semantics if a 2nd module is
         # registered with the same name as an existing one and I was
