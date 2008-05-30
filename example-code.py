@@ -323,7 +323,7 @@ def getfiledata(directories):
 # This gets registered with the Connection
 class Source:
     def Create(self, db, modulename, dbname, tablename, *args):
-        columns,data=getfiledata([eval(a) for a in args]) # eval strips off layer of quotes
+        columns,data=getfiledata([eval(a.replace("\\", "\\\\")) for a in args]) # eval strips off layer of quotes
         schema="create table foo("+','.join(["'%s'" % (x,) for x in columns[1:]])+")"
         return schema,Table(columns,data)
     Connect=Create
