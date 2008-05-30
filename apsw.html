@@ -255,25 +255,25 @@
 ### Check we have the expected version of apsw and sqlite
 ###
 
-</span><span class="pykeyword">print </span><span class="pystring">"Using APSW file"</span><span class=
+</span><span class="pykeyword">print </span><span class="pystring">"      Using APSW file"</span><span class=
 "pyoperator">,</span><span class="pyname">apsw</span><span class="pyoperator">.</span><span class=
 "pyname">__file__                </span><span class="pycomment"># from the extension module
-</span><span class="pykeyword">print </span><span class="pystring">"   APSW version"</span><span class=
+</span><span class="pykeyword">print </span><span class="pystring">"         APSW version"</span><span class=
 "pyoperator">,</span><span class="pyname">apsw</span><span class="pyoperator">.</span><span class=
 "pyname">apswversion</span><span class="pyoperator">()           </span><span class=
 "pycomment"># from the extension module
-</span><span class="pykeyword">print </span><span class="pystring">" SQLite version"</span><span class=
+</span><span class="pykeyword">print </span><span class="pystring">"   SQLite lib version"</span><span class=
 "pyoperator">,</span><span class="pyname">apsw</span><span class="pyoperator">.</span><span class=
 "pyname">sqlitelibversion</span><span class="pyoperator">()      </span><span class=
 "pycomment"># from the sqlite library code
-</span><span class="pykeyword">print </span><span class="pystring">" SQLite version"</span><span class=
+</span><span class="pykeyword">print </span><span class="pystring">"SQLite header version"</span><span class=
 "pyoperator">,</span><span class="pyname">apsw</span><span class="pyoperator">.</span><span class=
 "pyname">SQLITE_VERSION_NUMBER   </span><span class="pycomment"># from the sqlite header file at compile time
 
-</span><span class="pyoutput">   Using APSW file /space/apsw/apsw.so
-      APSW version 3.5.9-r1
-    SQLite version 3.5.9
-    SQLite version 3005009
+</span><span class="pyoutput">         Using APSW file /space/apsw/apsw.so
+            APSW version 3.5.9-r1
+      SQLite lib version 3.5.9
+   SQLite header version 3005009
 </span>
 <span class="pycomment">###
 ### Opening/creating database
@@ -856,7 +856,9 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
         </span><span class="pyname">columns</span><span class="pyoperator">,</span><span class=
 "pyname">data</span><span class="pyoperator">=</span><span class="pyname">getfiledata</span><span class=
 "pyoperator">([</span><span class="pyname">eval</span><span class="pyoperator">(</span><span class=
-"pyname">a</span><span class="pyoperator">) </span><span class="pykeyword">for </span><span class=
+"pyname">a</span><span class="pyoperator">.</span><span class="pyname">replace</span><span class=
+"pyoperator">(</span><span class="pystring">"\\"</span><span class="pyoperator">, </span><span class=
+"pystring">"\\\\"</span><span class="pyoperator">)) </span><span class="pykeyword">for </span><span class=
 "pyname">a </span><span class="pykeyword">in </span><span class="pyname">args</span><span class=
 "pyoperator">]) </span><span class="pycomment"># eval strips off layer of quotes
         </span><span class="pyname">schema</span><span class="pyoperator">=</span><span class=
@@ -977,9 +979,9 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
     </span><span class="pykeyword">print </span><span class="pyname">size</span><span class=
 "pyoperator">,</span><span class="pyname">file</span><span class="pyoperator">,</span><span class="pyname">directory
 
-</span><span class="pyoutput">   481008 unicodedata.so /usr/lib/python2.5/lib-dynload
-   440223 libxml2.pyc /var/lib/python-support/python2.5
-   376320 libxml2mod.so /var/lib/python-support/python2.5
+</span><span class="pyoutput">   8625144 qt.so /usr/lib/python2.5/site-packages
+   786208 qtsql.so /usr/lib/python2.5/site-packages
+   481008 unicodedata.so /usr/lib/python2.5/lib-dynload
 </span>
 <span class="pycomment"># Which 3 files are the oldest?
 </span><span class="pykeyword">for </span><span class="pyname">ctime</span><span class=
@@ -1193,7 +1195,6 @@ $ python test.py       <font color="blue"># optional - checks everything works c
     <dd>
       <p>Registers a virtual table. See <a href="#VirtualTables">virtual tables</a> for more details.</p>
     </dd>
-
   </dl>
 
   <h2><a name="Module_variables" id="Module_variables">Module variables</a></h2>
@@ -2938,16 +2939,37 @@ Traceback (most recent call last):
 
         <li>A rename method was added for virtual tables.</li>
 
-        <li>SQLite 3.4.1 introduced a new virtual table registration function, but it is marked as highly experimental
-        and hence hasn't been used.</li>
-
         <li>SQLite 3.5 removed the requirement that all operations on a connection be done in the same thread.
         Consequently all code that enforced the restriction has been removed from APSW.</li>
+
+        <li>You no longer have to call close() for connections. This was previously a requirement to ensure that the
+        correct thread was used. It is however still a good idea to do so since you can catch exceptions when close()
+        is called but not if you let the destructor do the closing.</li>
 
         <li>SQLite now has incremental <a href="#blobio">blob I/O</a></li>
 
         <li><a href="http://code.google.com/p/apsw/issues/detail?id=4">Issue 4</a> which could lead to generic error
         messages was fixed in SQLite 3.5.9.</li>
+
+        <li>Fixed <a href="http://code.google.com/p/apsw/issues/detail?id=1">Issue 1</a> error in example code for
+        virtual tables which caused filename errors on Windows.</li>
+
+        <li>Fixed <a href="http://code.google.com/p/apsw/issues/detail?id=15">Issue 15</a> releasing the GIL around
+        calls to sqlite3_prepare.</li>
+
+        <li>Fixed <a href="http://code.google.com/p/apsw/issues/detail?id=7">Issue 7</a> ensuring that extension module
+        filenames are converted to utf8.</li>
+
+        <li>Use the sqlite3_open_v2 interface which allows specifying which vfs to use. This release does not allow you
+        to write your own vfs as the SQLite vfs interface is being changed for SQLite 3.6.</li>
+
+        <li>Used new SQLite functions that keep track of when virtual tables and collations are no longer used so they
+        can be released. Previously APSW also had to keep track duplicating effort.</li>
+
+        <li>Improved test coverage a few more percent.</li>
+
+        <li>The statement cache now defaults to the same number of entries as pysqlite (100). You can however specify
+        more or less as needed.</li>
       </ul>
 
       <h2><a name="3313r1">3.3.13-r1</a></h2>

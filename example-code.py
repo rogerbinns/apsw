@@ -12,10 +12,10 @@ import apsw
 ###
 
 #@@CAPTURE
-print "Using APSW file",apsw.__file__                # from the extension module
-print "   APSW version",apsw.apswversion()           # from the extension module
-print " SQLite version",apsw.sqlitelibversion()      # from the sqlite library code
-print " SQLite version",apsw.SQLITE_VERSION_NUMBER   # from the sqlite header file at compile time
+print "      Using APSW file",apsw.__file__                # from the extension module
+print "         APSW version",apsw.apswversion()           # from the extension module
+print "   SQLite lib version",apsw.sqlitelibversion()      # from the sqlite library code
+print "SQLite header version",apsw.SQLITE_VERSION_NUMBER   # from the sqlite header file at compile time
 #@@ENDCAPTURE
 
 ###

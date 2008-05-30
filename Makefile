@@ -19,8 +19,7 @@ tidytoc:
 	sed 's@\(<li><a href="#dbapinotes">\)@</ul></td><td valign="top"><ul>\1@' | \
 	grep -v '"list-style: none;"'> tmpfile
 	-tidy -q -indent -asxhtml -wrap 120 <tmpfile >apsw.html
-	@rm -f tmpfile2 .tmpop-*
-	echo rm -f tmpfile
+	@rm -f tmpfile tmpfile2 .tmpop-*
 	linkchecker -q --no-status --ignore-url="http://www.sqlite.org/cvstrac/tktview?tn=[0-9][0-9][0-9][0-9]" apsw.html
 
 # You need to use the MinGW version of make.  It needs the doubled up slashes
