@@ -3272,6 +3272,36 @@ vtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
 }
 #endif
 
+static int
+vtabRename(sqlite3_vtab *pVtab, const char *zNew)
+{
+  PyGILState_STATE gilstate;
+  PyObject *vtable, *res=NULL, *newname=NULL;
+  int sqliteres=SQLITE_OK;
+
+  gilstate=PyGILState_Ensure();
+  vtable=((apsw_vtable*)pVtab)->vtable;
+
+  newname=convertutf8string(zNew);
+  if(!newname)
+    {
+      sqliteres=SQLITE_ERROR;
+      goto finally;
+    }
+  /* Marked as optional since sqlite does the actual renaming */
+  res=Call_PythonMethodV(vtable, "Rename", 0, "(N)", newname);
+  if(!res)
+    {
+      sqliteres=MakeSqliteMsgFromPyException(NULL);
+      AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xRename", "{s: O, s: s}", "self", vtable, "newname", zNew);
+    }
+  
+ finally:
+  Py_XDECREF(res);
+  PyGILState_Release(gilstate);
+  return sqliteres;
+}
+
 
 /* it would be nice to use C99 style initializers here ... */
 static struct sqlite3_module apsw_vtable_module=
@@ -3295,7 +3325,7 @@ static struct sqlite3_module apsw_vtable_module=
     vtabCommit, 
     vtabRollback,
     0,                /* vtabFindFunction */
-    0                 /* vtabRename */
+    vtabRename 
   };
 
 static PyObject *

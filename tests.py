@@ -1668,6 +1668,15 @@ class APSW(unittest.TestCase):
             def Rollback(self):
                 pass
 
+            def Rename1(self, too, many, args):
+                1/0
+
+            def Rename2(self, x):
+                1/0
+
+            def Rename3(self, x):
+                return ["thisshouldbeignored"*25, [1]]
+
         class Cursor:
 
             _bestindexreturn=99
@@ -1919,8 +1928,21 @@ class APSW(unittest.TestCase):
         VTable.UpdateDeleteRow=VTable.UpdateDeleteRow3
         cur.execute(sql)
 
+        # rename
+        sql="alter table foo rename to bar"
+        VTable.Rename=VTable.Rename1
+        self.assertRaises(TypeError, cur.execute, sql)
+        VTable.Rename=VTable.Rename2
+        self.assertRaises(ZeroDivisionError, cur.execute, sql)
+        VTable.Rename=VTable.Rename3
+        # this is to catch memory leaks
+        cur.execute(sql)
+        del VTable.Rename # method is optional
+        cur.execute("alter table bar rename to foo") # put things back
+
         # transaction control
         # Begin, Sync, Commit and rollback all use the same underlying code
+        sql="delete from foo where name=='Fred'"
         VTable.Begin=VTable.Begin1
         self.assertRaises(TypeError, cur.execute, sql)
         VTable.Begin=VTable.Begin2

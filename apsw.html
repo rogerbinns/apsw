@@ -41,7 +41,7 @@
 
   <h1 class="notoc">Table of contents</h1>
 
-  <table cellspacing="5" cellpadding="5">
+  <table cellspacing="5" cellpadding="5" summary="Table of contents">
     <tr>
       <td valign="top">
         <!--toc-->
@@ -1781,6 +1781,13 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       <p>Returns a new cursor object.</p>
     </dd>
 
+    <dt><strong>Rename(newname)</strong> (optional)</dt>
+
+    <dd>
+      <p>Notification that the table will be given a new name. If you return without raising an exception, then SQLite
+      renames the table (you don't have to do anything). If you raise an exception then the renaming is prevented.</p>
+    </dd>
+
     <dt><strong>FindFunction(nfuncargs, funcname)</strong> <i>not implemented yet</i></dt>
 
     <dd>
@@ -1887,7 +1894,7 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
         <p>Customer is column 0, price column 2 and quantity column 5. You can index on customer equality and
         price.</p>
 
-        <table border="1" cellspacing="5" cellpadding="5">
+        <table border="1" cellspacing="5" cellpadding="5" summary="BestIndex example">
           <tr>
             <th>Constraints (in)</th>
 
@@ -2102,10 +2109,7 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
         <dt>ConnectionNotClosedError</dt>
 
         <dd>
-          <p>The destructor for a Connection was called, but close() hadn't been called on the Connection. Destructors
-          aren't allowed to return exceptions, so what actually happens is that <code>sys.excepthook</code> is called
-          with this exception so you can find where it is happening in your code. The database will also be left open
-          and hence leak memory and potentially file descriptors.</p>
+          <p>This exception is no longer generated.</p>
         </dd>
 
         <dt>ConnectionClosedError</dt>
