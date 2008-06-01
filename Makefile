@@ -22,9 +22,12 @@ tidytoc:
 	@rm -f tmpfile tmpfile2 .tmpop-*
 	linkchecker -q --no-status --ignore-url="http://www.sqlite.org/cvstrac/tktview?tn=[0-9][0-9][0-9][0-9]" apsw.html
 
-# You need to use the MinGW version of make.  It needs the doubled up slashes
-# otherwise it goes off and modifies them, surrounding colons and almost any
-# other punctuation it sees!
+# the funky test stuff is to exit successfully when grep has rc==1 since that means no lines found.
+showsymbols:
+	test -f apsw.so # ensure file exists
+	set +e; nm --extern-only --defined-only apsw.so | egrep -v ' (__bss_start|_edata|_end|_fini|_init|initapsw)$$' ; test $$? -eq 1 || false
+
+# You need to use the MinGW version of make. 
 compile-win:
 	cmd /c del /s /q dist
 	cmd /c del /s /q build
@@ -38,9 +41,10 @@ compile-win:
 	c:/python25/python setup.py build --compile=mingw32 install 
 	c:/python25/python tests.py
 	c:/python25/python setup.py build --compile=mingw32 bdist_wininst
-	c:/python26/python setup.py build --compile=mingw32 install 
-	c:/python26/python tests.py
-	c:/python26/python setup.py build --compile=mingw32 bdist_wininst
+# Alpha release currently
+#	c:/python26/python setup.py build --compile=mingw32 install 
+#	c:/python26/python tests.py
+#	c:/python26/python setup.py build --compile=mingw32 bdist_wininst
 
 distrib-win: compile-win
 	pscp dist/*.exe rogerb@initd.org://var//www//pub//software//pysqlite//apsw//$(VERSION)//
