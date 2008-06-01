@@ -1153,11 +1153,9 @@ $ python test.py       <font color="blue"># optional - checks everything works c
 
   <p>Everything you can do from the <a href="http://www.sqlite.org/c3ref/intro.html">SQLite 3 C API</a> you can do from
   Python. The documentation below notes which C API functions are called where you can get further details on what
-  happens. The only C function not implemented is <a href=
-  "http://sqlite.org/c3ref/collation_needed.html">sqlite3_collation_needed</a>. (You can still add collations, you just
-  can't use this function to find out about them on-demand.) Additionally <a href=
-  "http://sqlite.org/c3ref/profile.html">sqlite3_trace</a> is not wrapped but instead <a href="#tracers">tracers</a>
-  are provided that have more functionality.</p>
+  happens. The only functionality not implemented is <a href="http://www.sqlite.org/c3ref/vfs.html">VFS</a> because it
+  is being changed for SQLite 3.6. Additionally <a href="http://sqlite.org/c3ref/profile.html">sqlite3_trace</a> is not
+  wrapped but instead <a href="#tracers">tracers</a> are provided that have more functionality.</p>
 
   <p>Some functions are marked experimental in the SQLite API. These have also been made available, but as the SQLite
   documentation notes these functions may change form or disappear in future versions of SQLite. You can exclude these
@@ -1442,6 +1440,14 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       collations.</a> (This calls <a href=
       "http://sqlite.org/c3ref/create_collation.html">sqlite3_create_collation</a>.) If there is an error in your
       Python code then 0 (ie items are equal) is returned.</p>
+    </dd>
+
+    <dt><strong>collationneeded(callable)</strong></dt>
+
+    <dd>
+      <p><tt>callable</tt> will be called if a statement requires a collation that hasn't been registered. Your
+      callable will be passed two parameters. The first is the connection object. The second is the name of the
+      collation. If you have the collation code available then call createcollation, else just return.</p>
     </dd>
 
     <dt><strong>setauthorizer(callable)</strong></dt>
@@ -2974,6 +2980,8 @@ Traceback (most recent call last):
 
         <li>The statement cache now defaults to the same number of entries as pysqlite (100). You can however specify
         more or less as needed.</li>
+
+        <li>collationneeded was implemented.</li>
       </ul>
 
       <h2><a name="3313r1">3.3.13-r1</a></h2>

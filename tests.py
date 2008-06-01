@@ -81,6 +81,7 @@ class APSW(unittest.TestCase):
         'complete': 1,
         'createcollation': 2,
         'createscalarfunction': 2,
+        'collationneeded': 1,
         'setauthorizer': 1,
         'setbusyhandler': 1,
         'setbusytimeout': 1,
@@ -173,6 +174,7 @@ class APSW(unittest.TestCase):
             db.setcommithook(lambda x=1: 0)
             db.setrollbackhook(lambda x=2: 1)
             db.setupdatehook(lambda x=3: 2)
+            db.collationneeded(lambda x: 4)
             for i in xrange(100):
                 c2=db.cursor()
                 c2.setrowtrace(lambda x: (x,))
@@ -876,6 +878,39 @@ class APSW(unittest.TestCase):
             pass
         # check statement still works
         for _ in c.execute("select x from foo"): pass
+
+        # collation needed testing
+        self.assertRaises(TypeError, self.db.collationneeded, 12)
+        def cn1(): pass
+        def cn2(x, y): 1/0
+        def cn3(x, y):
+            self.assert_(x is self.db)
+            self.failUnlessEqual(y, "strnum")
+            self.db.createcollation("strnum", strnumcollate)
+
+        self.db.collationneeded(cn1)
+        try:
+            for _ in c.execute("select x from foo order by x collate strnum"): pass
+        except TypeError:
+            pass
+        self.db.collationneeded(cn2)
+        try:
+            for _ in c.execute("select x from foo order by x collate strnum"): pass
+        except ZeroDivisionError:
+            pass
+        self.db.collationneeded(cn3)
+        for _ in c.execute("select x from foo order by x collate strnum"): pass
+        self.db.collationneeded(None)
+        self.db.createcollation("strnum", None)
+        
+        # check it really has gone
+        try:
+            c.execute("select x from foo order by x collate strnum")
+        except (apsw.SQLError,apsw.SchemaChangeError):
+            # exception returned could be either depending on if
+            # statementcache is used.  See SQLite ticket 2158
+            pass
+        
         
     def testProgressHandler(self):
         "Verify progress handler"

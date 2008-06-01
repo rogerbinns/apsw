@@ -493,6 +493,7 @@ struct Connection {
   PyObject *commithook;           
   PyObject *progresshandler;      
   PyObject *authorizer;
+  PyObject *collationneeded;
 };
 
 static PyTypeObject ConnectionType;
@@ -676,6 +677,9 @@ Connection_internal_cleanup(Connection *self)
   Py_XDECREF(self->authorizer);
   self->authorizer=0;
 
+  Py_XDECREF(self->collationneeded);
+  self->collationneeded=0;
+
 }
 
 /* Closes cursors and blobs belonging to this connection */
@@ -814,6 +818,7 @@ Connection_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
       self->commithook=0;
       self->progresshandler=0;
       self->authorizer=0;
+      self->collationneeded=0;
     }
 
     return (PyObject *)self;
@@ -1481,6 +1486,64 @@ Connection_setauthorizer(Connection *self, PyObject *callable)
  finally:
   Py_XDECREF(self->authorizer);
   self->authorizer=callable;
+
+  if(res==SQLITE_OK)
+    Py_RETURN_NONE;
+  return NULL;
+}
+
+/* ARGSUSED */
+static void
+collationneeded_cb(void *pAux, sqlite3 *db, int eTextRep, const char *name)
+{
+  PyObject *res=NULL, *pyname=NULL;
+  Connection *self=(Connection*)pAux;
+  PyGILState_STATE gilstate=PyGILState_Ensure();
+
+  assert(self->collationneeded);
+  if(!self->collationneeded) goto finally;
+  if(PyErr_Occurred()) goto finally;
+  pyname=convertutf8string(name);
+  if(pyname)  res=PyEval_CallFunction(self->collationneeded, "(OO)", self, pyname);
+  if(!pyname || !res)
+    AddTraceBackHere(__FILE__, __LINE__, "collationneeded callback", "{s: O, s: i, s: s}",
+                     "Connection", self, "eTextRep", eTextRep, "name", name);
+  Py_XDECREF(res);
+
+ finally:
+  Py_XDECREF(pyname);
+  PyGILState_Release(gilstate);
+}
+
+static PyObject *
+Connection_collationneeded(Connection *self, PyObject *callable)
+{
+  int res;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self,NULL);
+
+  if(callable==Py_None)
+    {
+      res=sqlite3_collation_needed(self->db, NULL, NULL);
+      callable=NULL;
+      goto finally;
+    }
+
+  if(!PyCallable_Check(callable))
+    {
+      PyErr_Format(PyExc_TypeError, "collationneeded callback must be callable");
+      return NULL;
+    }
+
+  res=sqlite3_collation_needed(self->db, self, collationneeded_cb);
+  SET_EXC(self->db, res);
+
+  Py_INCREF(callable);
+
+ finally:
+  Py_XDECREF(self->collationneeded);
+  self->collationneeded=callable;
 
   if(res==SQLITE_OK)
     Py_RETURN_NONE;
@@ -3392,6 +3455,8 @@ static PyMethodDef Connection_methods[] = {
    "Returns rowid for last insert"},
   {"complete", (PyCFunction)Connection_complete, METH_VARARGS,
    "Checks if a SQL statement is complete"},
+  {"collationneeded", (PyCFunction)Connection_collationneeded, METH_O,
+   "Sets collation needed callback"},
   {"setauthorizer", (PyCFunction)Connection_setauthorizer, METH_O,
    "Sets an authorizer function"},
   {"setupdatehook", (PyCFunction)Connection_setupdatehook, METH_O,
