@@ -41,21 +41,35 @@ compile-win:
 	c:/python25/python setup.py build --compile=mingw32 install 
 	c:/python25/python tests.py
 	c:/python25/python setup.py build --compile=mingw32 bdist_wininst
+	c:/python23/python example-code.py
 # Alpha release currently
 #	c:/python26/python setup.py build --compile=mingw32 install 
 #	c:/python26/python tests.py
 #	c:/python26/python setup.py build --compile=mingw32 bdist_wininst
 
-distrib-win: compile-win
-	pscp dist/*.exe rogerb@initd.org://var//www//pub//software//pysqlite//apsw//$(VERSION)//
 
-compile-lin:
+source:
 	rm -rf $(VERDIR)
 	mkdir $(VERDIR)
 	cp  $(SOURCE) $(VERDIR)
 	rm -rf dist
 	mkdir dist
 	zip -9 -r dist/$(VERDIR).zip $(VERDIR)
+
+upload:
+	test -f googlecode_upload.py
+	test -f apsw.html
+	test -f dist/$(VERDIR).zip
+	test -f dist/$(VERDIR).win32-py2.3.exe
+	test -f dist/$(VERDIR).win32-py2.4.exe
+	test -f dist/$(VERDIR).win32-py2.5.exe
+	-rm -f $(VERDIR).html
+	cp apsw.html $(VERDIR).html
+	python googlecode_upload.py -p apsw -s "$(VERSION) (Documentation)" -l "Type-Docs" $(VERDIR).html
+	python googlecode_upload.py -p apsw -s "$(VERSION) (Source)" -l "Type-Source,OpSys-All" dist/$(VERDIR).zip
+	python googlecode_upload.py -p apsw -s "$(VERSION) (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.3.exe
+	python googlecode_upload.py -p apsw -s "$(VERSION) (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.4.exe
+	python googlecode_upload.py -p apsw -s "$(VERSION) (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.5.exe
 
 distrib-lin: compile-lin
 	ssh initd.org mkdir -p /var/www/pub/software/pysqlite/apsw/$(VERSION)
