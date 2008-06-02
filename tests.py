@@ -122,6 +122,7 @@ class APSW(unittest.TestCase):
         self.db.close(True)
         del self.db
         apsw.connection_hooks=[] # back to default value
+        gc.collect()
 
     def assertTableExists(self, tablename):
         self.failUnlessEqual(self.db.cursor().execute("select count(*) from ["+tablename+"]").next()[0], 0)
