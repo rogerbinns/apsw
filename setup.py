@@ -9,7 +9,8 @@ define_macros=[]
 define_macros.append( ('SQLITE_THREADSAFE', '1') )
 
 # We don't want assertions
-define_macros.append( ('NDEBUG', '1') )
+if "--debug" not in sys.argv:
+    define_macros.append( ('NDEBUG', '1') )
 
 # This includes the functionality marked as experimental in SQLite 3.
 # Comment out the line to exclude them
