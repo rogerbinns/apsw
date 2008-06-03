@@ -44,6 +44,15 @@
 #define SQLITE_API static
 #define SQLITE_EXTERN static
 #include APSW_USE_SQLITE_AMALGAMATION
+
+/* Fight with SQLite over ndebug */
+#ifdef APSW_NO_NDEBUG
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
+#endif
+
+
 #else
 /* SQLite 3 headers */
 #include "sqlite3.h"
