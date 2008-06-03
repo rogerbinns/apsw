@@ -1772,6 +1772,65 @@ convert_value_to_pyobject(sqlite3_value *value)
   return NULL;
 }
 
+/* Converts column to PyObject.  Returns a new reference. Almost identical to above 
+   but we cannot just use sqlite3_column)value and then call the above function as 
+   SQLite doesn't allow that ("unprotected values") */
+static PyObject *
+convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
+{
+  const int coltype=sqlite3_column_type(stmt, col);
+
+  switch(coltype)
+    {
+    case SQLITE_INTEGER:
+      {
+        long long vint=sqlite3_column_int64(stmt, col);
+        if(vint<APSW_INT32_MIN || vint>APSW_INT32_MAX)
+          return PyLong_FromLongLong(vint);
+        else
+          return PyInt_FromLong((long)vint);
+      }
+
+    case SQLITE_FLOAT:
+      return PyFloat_FromDouble(sqlite3_column_double(stmt, col));
+      
+    case SQLITE_TEXT:
+      return convertutf8stringsize((const char*)sqlite3_column_text(stmt, col), sqlite3_column_bytes(stmt, col));
+
+    case SQLITE_NULL:
+      Py_RETURN_NONE;
+
+    case SQLITE_BLOB:
+      {
+        PyObject *item;
+        Py_ssize_t sz=sqlite3_column_bytes(stmt, col);
+        item=PyBuffer_New(sz);
+        if(item)
+          {
+            void *buffy=0;
+            Py_ssize_t sz2=sz;
+            if(!PyObject_AsWriteBuffer(item, &buffy, &sz2))
+              memcpy(buffy, sqlite3_column_blob(stmt, col), sz);
+            else
+              {
+                Py_DECREF(item);
+                return NULL;
+              }
+	    return item;
+          }
+        return NULL;
+      }
+
+    default:
+      PyErr_Format(APSWException, "Unknown sqlite column type %d!", coltype);
+      return NULL;
+    }
+  /* can't get here */
+  assert(0);
+  return NULL;
+}
+
+
 /* converts a python object into a sqlite3_context result */
 static void
 set_context_result(sqlite3_context *context, PyObject *obj)
@@ -4792,10 +4851,6 @@ APSWCursor_next(APSWCursor *self)
 
   self->status=C_BEGIN;
   
-  /* DUPLICATE(ish) code: this is substantially similar to the code in
-     convert_value_to_pyobject.  If you fix anything here then do it
-     there as well. */
-
   /* return the row of data */
   numcols=sqlite3_data_count(self->statement);
   retval=PyTuple_New(numcols);
@@ -4804,7 +4859,7 @@ APSWCursor_next(APSWCursor *self)
 
   for(i=0;i<numcols;i++)
     {
-      item=convert_value_to_pyobject(sqlite3_column_value(self->statement, i));
+      item=convert_column_to_pyobject(self->statement, i);
       if(!item) 
 	return NULL;
       PyTuple_SET_ITEM(retval, i, item);

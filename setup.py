@@ -54,8 +54,7 @@ if not usingamalgamation:
 # setuptools likes to define NDEBUG even when we want debug stuff
 if "--debug" in sys.argv:
     define_macros.append( ('APSW_NO_NDEBUG', 1) ) # double negatives are bad
-    # Assertions in SQLite are broken - http://www.sqlite.org/cvstrac/tktview?tn=3158
-    # define_macros.append( ('SQLITE_DEBUG', 1) ) # also does NDEBUG mangling
+    define_macros.append( ('SQLITE_DEBUG', 1) ) # also does NDEBUG mangling
 
 
 # work out version number
