@@ -73,6 +73,9 @@ static void AddTraceBackHere(const char *filename, int lineno, const char *funct
   /* make the dummy code object */
   code = PyCode_New(
      0,            /*int argcount,*/
+#if PY_VERSION_HEX >= 0x03000000
+     0,            /*int kwonlyargcount*/
+#endif
      0,            /*int nlocals,*/
      0,            /*int stacksize,*/
      0,            /*int flags,*/
