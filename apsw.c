@@ -355,8 +355,26 @@ MakeSqliteMsgFromPyException(char **errmsg)
             {
               /* extract it */
               PyObject *extended=PyObject_GetAttrString(evalue, "extendedresult");
-              if(extended && PyInt_Check(extended))
-                res=(PyInt_AsLong(extended) & 0xffffff00u)|res;
+              /* Now you can see why PyInt and PyLong were unified in
+                 Python 3.0.  Also the user could set something that
+                 doesn't fit in 64 bits which would cause the _AsLong
+                 functions to return -1 and set an exception which we
+                 would swallow.  Don't do that then! */
+              if(extended)
+                {
+                  do
+                    {
+                      if(PyLong_Check(extended))
+                        {
+                          res=(PyLong_AsLong(extended) & 0xffffff00u)|res;
+                          break;
+                        }
+#if PY_VERSION_HEX<0x03000000
+                      if(PyInt_Check(extended))
+                        res=(PyInt_AsLong(extended) & 0xffffff00u)|res;
+#endif
+                    } while(0);
+                }
               Py_XDECREF(extended);
             }
 	  break;
@@ -1011,7 +1029,7 @@ Connection_changes(Connection *self)
 {
   CHECK_USE(NULL);
   CHECK_CLOSED(self,NULL);
-  return PyInt_FromLong(sqlite3_changes(self->db));
+  return PyLong_FromLong(sqlite3_changes(self->db));
 }
 
 static PyObject *
@@ -1019,7 +1037,7 @@ Connection_totalchanges(Connection *self)
 {
   CHECK_USE(NULL);
   CHECK_CLOSED(self,NULL);
-  return PyInt_FromLong(sqlite3_total_changes(self->db));
+  return PyLong_FromLong(sqlite3_total_changes(self->db));
 }
 
 static PyObject *
@@ -1035,17 +1053,10 @@ Connection_getautocommit(Connection *self)
 static PyObject *
 Connection_last_insert_rowid(Connection *self)
 {
-  long long int vint;
-
   CHECK_USE(NULL);
   CHECK_CLOSED(self,NULL);
 
-  vint=sqlite3_last_insert_rowid(self->db);
-  
-  if(vint<APSW_INT32_MIN || vint>APSW_INT32_MAX)
-    return PyLong_FromLongLong(vint);
-  else
-    return PyInt_FromLong((long)vint);
+  return PyLong_FromLongLong(sqlite3_last_insert_rowid(self->db));
 }
 
 static PyObject *
@@ -1094,7 +1105,7 @@ Connection_limit(Connection *self, PyObject *args)
 
   res=sqlite3_limit(self->db, id, val);
 
-  return PyInt_FromLong((long)res);
+  return PyLong_FromLong(res);
 }
 #endif
 
@@ -1455,7 +1466,25 @@ authorizercb(void *context, int operation, const char *paramone, const char *par
   if(!retval)
     goto finally; /* abort due to exeception */
 
-  result=PyInt_AsLong(retval);
+#if PY_VERSION_HEX<0x03000000
+  if (PyInt_Check(retval))
+    {
+      result=PyInt_AsLong(retval);
+      goto haveval;
+    }
+#endif
+  if(PyLong_Check(retval))
+    {
+      result=PyLong_AsLong(retval);
+      goto haveval;
+    }
+  
+  PyErr_Format(PyExc_TypeError, "Authorizer must return a number");
+  AddTraceBackHere(__FILE__, __LINE__, "authorizer callback", "{s: i, s: s:, s: s, s: s}",
+                   "operation", operation, "paramone", paramone, "paramtwo", paramtwo, 
+                   "databasename", databasename, "triggerview", triggerview);
+
+ haveval:
   if (PyErr_Occurred())
     result=SQLITE_DENY;
 
@@ -1725,13 +1754,7 @@ convert_value_to_pyobject(sqlite3_value *value)
   switch(coltype)
     {
     case SQLITE_INTEGER:
-      {
-        long long vint=sqlite3_value_int64(value);
-        if(vint<APSW_INT32_MIN || vint>APSW_INT32_MAX)
-          return PyLong_FromLongLong(vint);
-        else
-          return PyInt_FromLong((long)vint);
-      }
+        return PyLong_FromLongLong(sqlite3_value_int64(value));
 
     case SQLITE_FLOAT:
       return PyFloat_FromDouble(sqlite3_value_double(value));
@@ -1783,13 +1806,7 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
   switch(coltype)
     {
     case SQLITE_INTEGER:
-      {
-        long long vint=sqlite3_column_int64(stmt, col);
-        if(vint<APSW_INT32_MIN || vint>APSW_INT32_MAX)
-          return PyLong_FromLongLong(vint);
-        else
-          return PyInt_FromLong((long)vint);
-      }
+      return PyLong_FromLongLong(sqlite3_column_int64(stmt, col));
 
     case SQLITE_FLOAT:
       return PyFloat_FromDouble(sqlite3_column_double(stmt, col));
@@ -1853,11 +1870,13 @@ set_context_result(sqlite3_context *context, PyObject *obj)
       sqlite3_result_null(context);
       return;
     }
+#if PY_VERSION_HEX<0x03000000
   if(PyInt_Check(obj))
     {
       sqlite3_result_int64(context, PyInt_AS_LONG(obj));
       return;
     }
+#endif
   if (PyLong_Check(obj))
     {
       sqlite3_result_int64(context, PyLong_AsLongLong(obj));
@@ -2420,7 +2439,24 @@ collation_cb(void *context,
       goto finally;  /* execution failed */
     }
 
-  result=PyInt_AsLong(retval);
+#if PY_VERSION_HEX<0x03000000
+  if (PyInt_Check(retval))
+    {
+      result=PyInt_AsLong(retval);
+      goto haveval;
+    }
+#endif
+  if(PyLong_Check(retval))
+    {
+      result=PyLong_AsLong(retval);
+      goto haveval;
+    }
+  
+  PyErr_Format(PyExc_TypeError, "Collation callback must return a number");
+  AddTraceBackHere(__FILE__, __LINE__, "collation callback", "{s: O, s: O}",
+                   "stringone", pys1, "stringtwo", pys2);
+
+ haveval:
   if(PyErr_Occurred())
       result=0;
 
@@ -2822,9 +2858,17 @@ vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
 	      continue;
 	    }
 	  /* or an integer */
+#if PY_VERSION_HEX<0x03000000
 	  if(PyInt_Check(constraint))
 	    {
 	      indexinfo->aConstraintUsage[i].argvIndex=PyInt_AsLong(constraint);
+	      Py_DECREF(constraint);
+	      continue;
+	    }
+#endif
+	  if(PyLong_Check(constraint))
+	    {
+	      indexinfo->aConstraintUsage[i].argvIndex=PyLong_AsLong(constraint);
 	      Py_DECREF(constraint);
 	      continue;
 	    }
@@ -2840,7 +2884,11 @@ vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
 	  argvindex=PySequence_GetItem(constraint, 0);
 	  omit=PySequence_GetItem(constraint, 1);
 	  if(!argvindex || !omit) goto constraintfail;
-	  if(!PyInt_Check(argvindex))
+	  if(!PyLong_Check(argvindex)
+#if PY_VERSION_HEX<0x03000000
+             && !PyInt_Check(argvindex)
+#endif
+             )
 	    {
 	      PyErr_Format(PyExc_TypeError, "argvindex for constraint #%d should be an integer", j);
 	      AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex.result_constraint_argvindex", "{s: O, s: O, s: O, s: O, s: O}", 
@@ -2850,7 +2898,12 @@ vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
 	  omitv=PyObject_IsTrue(omit);
 	  if(omitv==-1) 
             goto constraintfail;
-	  indexinfo->aConstraintUsage[i].argvIndex=PyInt_AsLong(argvindex);
+#if PY_VERSION_HEX<0x03000000
+          if(PyInt_Check(argvindex))
+            indexinfo->aConstraintUsage[i].argvIndex=PyInt_AsLong(argvindex);
+#endif
+          if(PyLong_Check(argvindex))
+            indexinfo->aConstraintUsage[i].argvIndex=PyLong_AsLong(argvindex);
 	  indexinfo->aConstraintUsage[i].omit=omitv;
 	  Py_DECREF(constraint);
 	  Py_DECREF(argvindex);
@@ -2873,14 +2926,23 @@ vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
     if(!idxnum) goto pyexception;
     if(idxnum!=Py_None)
       {
-	if(!PyInt_Check(idxnum))
+	if(!PyLong_Check(idxnum)
+#if PY_VERSION_HEX<0x03000000
+           && !PyInt_Check(idxnum)
+#endif
+           )
 	  {
 	    PyErr_Format(PyExc_TypeError, "idxnum must be an integer");
 	      AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex.result_indexnum", "{s: O, s: O, s: O}", "self", vtable, "result", res, "indexnum", idxnum);
 	    Py_DECREF(idxnum);
 	    goto pyexception;
 	  }
-	indexinfo->idxNum=PyInt_AsLong(idxnum);
+#if PY_VERSION_HEX<0x03000000
+        if(PyInt_Check(idxnum))
+           indexinfo->idxNum=PyInt_AsLong(idxnum);
+#endif
+        if(PyLong_Check(idxnum))
+          indexinfo->idxNum=PyLong_AsLong(idxnum);
       }
     Py_DECREF(idxnum);
   }
@@ -3747,7 +3809,7 @@ APSWBlob_length(APSWBlob *self)
 {
   CHECK_USE(NULL);
   CHECK_BLOB_CLOSED;
-  return PyInt_FromLong(sqlite3_blob_bytes(self->pBlob));
+  return PyLong_FromLong(sqlite3_blob_bytes(self->pBlob));
 }
 
 static PyObject *
@@ -3845,7 +3907,7 @@ APSWBlob_tell(APSWBlob *self)
 {
   CHECK_USE(NULL);
   CHECK_BLOB_CLOSED;
-  return PyInt_FromLong(self->curoffset);
+  return PyLong_FromLong(self->curoffset);
 }
 
 static PyObject *
@@ -4181,8 +4243,10 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
     res=sqlite3_bind_null(self->statement, arg);
   /* Python uses a 'long' for storage of PyInt.  This could
      be a 32bit or 64bit quantity depending on the platform. */
+#if PY_VERSION_HEX<0x03000000
   else if(PyInt_Check(obj))
     res=sqlite3_bind_int64(self->statement, arg, PyInt_AS_LONG(obj));
+#endif
   else if (PyLong_Check(obj))
     /* nb: PyLong_AsLongLong can cause Python level error */
     res=sqlite3_bind_int64(self->statement, arg, PyLong_AsLongLong(obj));

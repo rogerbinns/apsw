@@ -461,7 +461,7 @@ class APSW(unittest.TestCase):
                 for row in c.execute("select encoding(3)"):
                     self.failUnlessEqual(v, row[0])
                 c.execute("insert into foo values(1234,?)", (v.encode("utf8"),))
-                for row in c.execute("select x from foo where rowid="+`self.db.last_insert_rowid()`):
+                for row in c.execute("select x from foo where rowid="+str(self.db.last_insert_rowid())):
                     self.failUnlessEqual(v, row[0])
         finally:
             sys.setdefaultencoding(enc)
