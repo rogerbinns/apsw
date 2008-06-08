@@ -89,6 +89,11 @@ typedef int Py_ssize_t;
 #define Py_RETURN_FALSE return Py_INCREF(Py_False), Py_False
 #endif
 
+/* fun with objects - this is defined in Python 3 */
+#ifndef Py_TYPE
+#define Py_TYPE(x) ((x)->ob_type)
+#endif
+
 
 /* A module to augment tracebacks */
 #include "traceback.c"
@@ -816,7 +821,7 @@ Connection_dealloc(Connection* self)
 
   Connection_internal_cleanup(self);
 
-  self->ob_type->tp_free((PyObject*)self);
+  Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 /*ARGSUSED*/
@@ -1767,8 +1772,10 @@ convert_value_to_pyobject(sqlite3_value *value)
 
     case SQLITE_BLOB:
       {
+#if PY_VERSION_HEX<0x03000000
         PyObject *item;
         Py_ssize_t sz=sqlite3_value_bytes(value);
+
         item=PyBuffer_New(sz);
         if(item)
           {
@@ -1784,6 +1791,9 @@ convert_value_to_pyobject(sqlite3_value *value)
 	    return item;
           }
         return NULL;
+#else
+        return PyBytes_FromStringAndSize(sqlite3_value_blob(value), sqlite3_value_bytes(value));
+#endif
       }
 
     default:
@@ -1818,6 +1828,7 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
       Py_RETURN_NONE;
 
     case SQLITE_BLOB:
+#if PY_VERSION_HEX<0x03000000
       {
         PyObject *item;
         Py_ssize_t sz=sqlite3_column_bytes(stmt, col);
@@ -1837,6 +1848,9 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
           }
         return NULL;
       }
+#else
+      return PyBytes_FromStringAndSize(sqlite3_column_blob(stmt, col), sqlite3_column_bytes(stmt, col));
+#endif
 
     default:
       PyErr_Format(APSWException, "Unknown sqlite column type %d!", coltype);
@@ -1954,11 +1968,11 @@ set_context_result(sqlite3_context *context, PyObject *obj)
 	}
       return;
     }
-  if (PyBuffer_Check(obj))
+  if (PyObject_CheckReadBuffer(obj))
     {
-      const char *buffer;
+      const void *buffer;
       Py_ssize_t buflen;
-      if(PyObject_AsCharBuffer(obj, &buffer, &buflen))
+      if(PyObject_AsReadBuffer(obj, &buffer, &buflen))
         {
           sqlite3_result_error(context, "PyObject_AsCharBuffer failed", -1);
           return;
@@ -2221,7 +2235,7 @@ cbdispatch_final(sqlite3_context *context)
 
   if(PyErr_Occurred() && (err_type||err_value||err_traceback))
     {
-      PyErr_Format(PyExc_StandardError, "An exception happened during cleanup of an aggregate function, but there was already error in the step function so only that can be returned");
+      PyErr_Format(PyExc_Exception, "An exception happened during cleanup of an aggregate function, but there was already error in the step function so only that can be returned");
       apsw_write_unraiseable();
     }
 
@@ -3619,8 +3633,12 @@ static PyMethodDef Connection_methods[] = {
 
 static PyTypeObject ConnectionType = 
   {
+#if PY_VERSION_HEX<0x03000000
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
+#else
+    PyVarObject_HEAD_INIT(NULL,0)
+#endif
     "apsw.Connection",         /*tp_name*/
     sizeof(Connection),        /*tp_basicsize*/
     0,                         /*tp_itemsize*/
@@ -3706,8 +3724,12 @@ ZeroBlobBind_new(PyTypeObject *type, PyObject *args, PyObject *kwargs)
 }
 
 static PyTypeObject ZeroBlobBindType = {
+#if PY_VERSION_HEX<0x03000000
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
+#else
+    PyVarObject_HEAD_INIT(NULL,0)
+#endif
     "apsw.zeroblob",           /*tp_name*/
     sizeof(ZeroBlobBind),      /*tp_basicsize*/
     0,                         /*tp_itemsize*/
@@ -3793,7 +3815,7 @@ APSWBlob_dealloc(APSWBlob *self)
       Py_DECREF(self->connection);
       self->connection=0;
     }
-  self->ob_type->tp_free((PyObject*)self);
+  Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 /* If the blob is closed, we return the same error as normal python files */
@@ -3920,7 +3942,7 @@ APSWBlob_write(APSWBlob *self, PyObject *obj)
   CHECK_BLOB_CLOSED;
 
   /* we support buffers and string for the object */
-  if(PyBuffer_Check(obj))
+  if(PyObject_CheckReadBuffer(obj))
     {
       if(PyObject_AsReadBuffer(obj, &buffer, &size))
         return NULL;
@@ -4007,8 +4029,12 @@ static PyMethodDef APSWBlob_methods[]={
 };
 
 static PyTypeObject APSWBlobType = {
+#if PY_VERSION_HEX<0x03000000
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
+#else
+    PyVarObject_HEAD_INIT(NULL,0)
+#endif
     "apsw.blob",               /*tp_name*/
     sizeof(APSWBlob),          /*tp_basicsize*/
     0,                         /*tp_itemsize*/
@@ -4165,7 +4191,7 @@ APSWCursor_dealloc(APSWCursor * self)
   Py_XDECREF(self->rowtrace);
   self->exectrace=self->rowtrace=0;
   
-  self->ob_type->tp_free((PyObject*)self);
+  Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 static void
@@ -4325,11 +4351,11 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
 	  res=sqlite3_bind_text(self->statement, arg, val, (int)lenval, SQLITE_TRANSIENT);
 	}
     }
-  else if (PyBuffer_Check(obj))
+  else if (PyObject_CheckReadBuffer(obj))
     {
-      const char *buffer;
+      const void *buffer;
       Py_ssize_t buflen;
-      if(PyObject_AsCharBuffer(obj, &buffer, &buflen))
+      if(PyObject_AsReadBuffer(obj, &buffer, &buflen))
         return -1;
       if (buflen>APSW_INT32_MAX)
 	{
@@ -5058,8 +5084,12 @@ static PyMethodDef APSWCursor_methods[] = {
 
 
 static PyTypeObject APSWCursorType = {
+#if PY_VERSION_HEX<0x03000000
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
+#else
+    PyVarObject_HEAD_INIT(NULL,0)
+#endif
     "apsw.Cursor",             /*tp_name*/
     sizeof(APSWCursor),            /*tp_basicsize*/
     0,                         /*tp_itemsize*/
@@ -5078,7 +5108,11 @@ static PyTypeObject APSWCursorType = {
     0,                         /*tp_getattro*/
     0,                         /*tp_setattro*/
     0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_ITER , /*tp_flags*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE
+#if PY_VERSION_HEX<0x03000000
+ | Py_TPFLAGS_HAVE_ITER
+#endif
+ , /*tp_flags*/
     "Cursor object",           /* tp_doc */
     0,		               /* tp_traverse */
     0,		               /* tp_clear */
