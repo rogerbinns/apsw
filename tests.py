@@ -1,19 +1,21 @@
 #!/usr/bin/env python
 
-# APSW test suite
+# APSW test suite - runs under both Python 2 and Python 3
 
 import apsw
-
-print "Testing with APSW file",apsw.__file__
-print "          APSW version",apsw.apswversion()
-print "    SQLite lib version",apsw.sqlitelibversion()
-print "SQLite headers version",apsw.SQLITE_VERSION_NUMBER
-
-if [int(x) for x in apsw.sqlitelibversion().split(".")]<[3,5,2]:
-    print "You are using an earlier version of SQLite than recommended"
-
 import sys
+
+sys.stdout.write("Testing with APSW file "+apsw.__file__+"\n")
+sys.stdout.write("          APSW version "+apsw.apswversion()+"\n")
+sys.stdout.write("    SQLite lib version "+apsw.sqlitelibversion()+"\n")
+sys.stdout.write("SQLite headers version "+str(apsw.SQLITE_VERSION_NUMBER)+"\n")
+
+if [int(x) for x in apsw.sqlitelibversion().split(".")]<[3,5,9]:
+    sys.stdout.write("You are using an earlier version of SQLite than recommended\n")
+
 sys.stdout.flush()
+
+py3=sys.version_info>=(3,0)
 
 # unittest stuff from here on
 
@@ -25,13 +27,30 @@ import time
 import threading
 import Queue
 import traceback
-import StringIO
 import re
 import gc
 
+# Unicode string prefix
+if py3:
+    UPREFIX=""
+else:
+    UPREFIX="u"
+
+def u(x):
+    return eval(UPREFIX+"'''"+x+"'''")
+
+def b(x):
+    if py3:
+        return eval("b"+"'''"+x+"'''")
+    return eval("buffer('''"+x+"''')")
+
+# Various py3 things
+if py3:
+    long=int
+
 # helper functions
 def randomintegers(howmany):
-    for i in xrange(howmany):
+    for i in range(howmany):
         yield (random.randint(0,9999999999),)
 
 # An instance of this class is used to get the -1 return value to the
@@ -63,14 +82,16 @@ class ThreadRunner(threading.Thread):
         if t: # result
             return res
         else: # exception
-            raise res[0], res[1], res[2]
+            if py3:
+                exec("raise res[1].with_traceback(res[2])")
+            else:
+                exec("raise res[0], res[1], res[2]")
 
     def run(self):
         try:
             self.q.put( (True, self.callable(*self.args, **self.kwargs)) )
         except:
             self.q.put( (False, sys.exc_info()) )
-
 
 # main test class/code
 class APSW(unittest.TestCase):
@@ -164,9 +185,10 @@ class APSW(unittest.TestCase):
         # simple memory leaks will show up
         c=self.db.cursor()
         c.execute("create table foo(x)")
-        c.executemany("insert into foo values(?)", ( [1], [None], [math.pi], ["jkhfkjshdf"], [u"\u1234\u345432432423423kjgjklhdfgkjhsdfjkghdfjskh"],
-                                                     [buffer("78696ghgjhgjhkgjkhgjhg\xfe\xdf")]))
-        for i in xrange(MEMLEAKITERATIONS):
+        vals=[ [1], [None], [math.pi], ["kjkljkljl"], [u(r"\u1234\u345432432423423kjgjklhdfgkjhsdfjkghdfjskh")],
+               [b(r"78696ghgjhgjhkgjkhgjhg\xfe\xdf")] ]
+        c.executemany("insert into foo values(?)", vals)
+        for i in range(MEMLEAKITERATIONS):
             db=apsw.Connection("testdb")
             db.createaggregatefunction("aggfunc", lambda x: x)
             db.createscalarfunction("scalarfunc", lambda x: x)
@@ -176,7 +198,7 @@ class APSW(unittest.TestCase):
             db.setrollbackhook(lambda x=2: 1)
             db.setupdatehook(lambda x=3: 2)
             db.collationneeded(lambda x: 4)
-            for i in xrange(100):
+            for i in range(100):
                 c2=db.cursor()
                 c2.setrowtrace(lambda x: (x,))
                 c2.setexectrace(lambda x,y: True)
@@ -198,14 +220,13 @@ class APSW(unittest.TestCase):
             ("(1,?,3)", (2,)),
             ("(1,$a,$c)", {'a': 2, 'b': 99, 'c': 3}),
             # some unicode fun
-            (u"($\N{LATIN SMALL LETTER E WITH CIRCUMFLEX},:\N{LATIN SMALL LETTER A WITH TILDE},$\N{LATIN SMALL LETTER O WITH DIAERESIS})", (1,2,3)),
-            (u"($\N{LATIN SMALL LETTER E WITH CIRCUMFLEX},:\N{LATIN SMALL LETTER A WITH TILDE},$\N{LATIN SMALL LETTER O WITH DIAERESIS})",
-             {u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}": 1,
-              u"\N{LATIN SMALL LETTER A WITH TILDE}": 2,
-              u"\N{LATIN SMALL LETTER O WITH DIAERESIS}": 3,
-              }),
-              
+            (u(r"($\N{LATIN SMALL LETTER E WITH CIRCUMFLEX},:\N{LATIN SMALL LETTER A WITH TILDE},$\N{LATIN SMALL LETTER O WITH DIAERESIS})"), (1,2,3)),
+            (u(r"($\N{LATIN SMALL LETTER E WITH CIRCUMFLEX},:\N{LATIN SMALL LETTER A WITH TILDE},$\N{LATIN SMALL LETTER O WITH DIAERESIS})"),
+             {u(r"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}"): 1,
+              u(r"\N{LATIN SMALL LETTER A WITH TILDE}"): 2,
+              u(r"\N{LATIN SMALL LETTER O WITH DIAERESIS}"): 3,})
             )
+              
         for str,bindings in vals:
             c.execute("insert into foo values"+str, bindings)
             self.failUnlessEqual(c.execute("select * from foo").next(), (1,2,3))
@@ -324,7 +345,7 @@ class APSW(unittest.TestCase):
         c.execute(" ;\n\t\r;;")
         
         # unicode
-        self.failUnlessEqual(3, c.execute(u"select 3").next()[0])
+        self.failUnlessEqual(3, c.execute(u("select 3")).next()[0])
         self.assertRaises(UnicodeDecodeError, c.execute, "\x99\xaa\xbb\xcc")
         
         # does it work?
@@ -349,7 +370,8 @@ class APSW(unittest.TestCase):
             ("y", "text"),
             ("z", "foo"),
             ("a", "char"),
-            (u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}", u"\N{LATIN SMALL LETTER O WITH DIAERESIS}\N{LATIN SMALL LETTER U WITH CIRCUMFLEX}"),
+            (u(r"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}"),
+             u(r"\N{LATIN SMALL LETTER O WITH DIAERESIS}\N{LATIN SMALL LETTER U WITH CIRCUMFLEX}")),
             )
         c.execute("drop table foo; create table foo (%s)" % (", ".join(["[%s] %s" % (n,t) for n,t in cols]),))
         c.execute("insert into foo([x a space]) values(1)")
@@ -384,23 +406,22 @@ class APSW(unittest.TestCase):
         c.execute("create table foo(row,x)")
         vals=("a simple string",  # "ascii" string
               "0123456789"*200000, # a longer string
-              u"a \u1234 unicode \ufe54 string \u0089",  # simple unicode string
-              u"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET} ", # funky unicode
+              u(r"a \u1234 unicode \ufe54 string \u0089"),  # simple unicode string
+              u(r"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET} "), # funky unicode
               97, # integer
               2147483647,   # numbers on 31 bit boundary (32nd bit used for integer sign), and then
               -2147483647,  # start using 32nd bit (must be represented by 64bit to avoid losing
-              2147483648L,  # detail)
-              -2147483648L,
-              2147483999L,
-              -2147483999L,
-              sys.maxint,
-              992147483999L,
-              -992147483999L,
-              9223372036854775807L,
-              -9223372036854775808L,
-              buffer("a set of bytes"),      # bag of bytes initialised from a string, but don't confuse it with a
-              buffer("".join([chr(x) for x in range(256)])), # string
-              buffer("".join([chr(x) for x in range(256)])*20000),  # non-trivial size
+              long(2147483648),  # detail)
+              long(-2147483648),
+              long(2147483999),
+              long(-2147483999),
+              992147483999,
+              -992147483999,
+              9223372036854775807,
+              -9223372036854775808,
+              b("a set of bytes"),      # bag of bytes initialised from a string, but don't confuse it with a
+              b("".join(["\\x%02x" % (x,) for x in range(256)])), # string
+              b("".join(["\\x%02x" % (x,) for x in range(256)])*20000),  # non-trivial size
               None,  # our good friend NULL/None
               1.1,  # floating point can't be compared exactly - failUnlessAlmostEqual is used to check
               10.2, # see Appendix B in the Python Tutorial 
@@ -433,8 +454,8 @@ class APSW(unittest.TestCase):
 
         # check some out of bounds conditions
         # integer greater than signed 64 quantity (SQLite only supports up to that)
-        self.assertRaises(OverflowError, c.execute, "insert into foo values(9999,?)", (922337203685477580799L,))
-        self.assertRaises(OverflowError, c.execute, "insert into foo values(9999,?)", (-922337203685477580799L,))
+        self.assertRaises(OverflowError, c.execute, "insert into foo values(9999,?)", (922337203685477580799,))
+        self.assertRaises(OverflowError, c.execute, "insert into foo values(9999,?)", (-922337203685477580799,))
 
         # invalid character data - non-ascii data must be provided in unicode
         self.assertRaises(UnicodeDecodeError, c.execute, "insert into foo values(9999,?)", ("\xfe\xfb\x80\x92",))
@@ -653,7 +674,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, self.db.createscalarfunction, "twelve", 12) # must be callable
         self.assertRaises(TypeError, self.db.createscalarfunction, "twelve", 12, 27, 28) # too many params
         self.assertRaises(apsw.SQLError, self.db.createscalarfunction, "twelve", ilove7, 900) # too many args
-        self.assertRaises(TypeError, self.db.createscalarfunction, u"twelve\N{BLACK STAR}", ilove7) # must be ascii
+        self.assertRaises(TypeError, self.db.createscalarfunction, u(r"twelve\N{BLACK STAR}"), ilove7) # must be ascii
         self.db.createscalarfunction("seven", ilove7)
         c.execute("create table foo(x,y,z)")
         for i in range(10):
@@ -713,7 +734,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, self.db.createaggregatefunction,True, True, True, True) # wrong number/type of params
         self.assertRaises(TypeError, self.db.createaggregatefunction,"twelve", 12) # must be callable
         self.assertRaises(apsw.SQLError, self.db.createaggregatefunction, "twelve", longest.factory, 923) # max args is 127
-        self.assertRaises(TypeError, self.db.createaggregatefunction,u"twelve\N{BLACK STAR}", 12) # must be ascii
+        self.assertRaises(TypeError, self.db.createaggregatefunction, u(r"twelve\N{BLACK STAR}"), 12) # must be ascii
         self.db.createaggregatefunction("twelve", None)
         self.db.createaggregatefunction("longest", longest.factory)
 
@@ -843,7 +864,7 @@ class APSW(unittest.TestCase):
         self.db.createcollation("strnum", strnumcollate)
         c.execute("create table foo(x)")
         # adding this unicode in front improves coverage
-        uni=u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}"
+        uni=u(r"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}")
         vals=(uni+"file1", uni+"file7", uni+"file9", uni+"file17", uni+"file20")
         valsrev=list(vals)
         valsrev.reverse() # put them into table in reverse order
@@ -953,13 +974,13 @@ class APSW(unittest.TestCase):
         "Verify reporting of changes"
         c=self.db.cursor()
         c.execute("create table foo (x);begin")
-        for i in xrange(100):
+        for i in range(100):
             c.execute("insert into foo values(?)", (i+1000,))
         c.execute("commit")
         c.execute("update foo set x=0 where x>=1000")
         self.failUnlessEqual(100, self.db.changes())
         c.execute("begin")
-        for i in xrange(100):
+        for i in range(100):
             c.execute("insert into foo values(?)", (i+1000,))
         c.execute("commit")
         self.failUnlessEqual(300, self.db.totalchanges())
@@ -986,7 +1007,7 @@ class APSW(unittest.TestCase):
         self.failUnlessEqual(True, self.db.complete("select * from foo; select *;"))
         self.failUnlessEqual(False, self.db.complete("select * from foo where x=1"))
         self.failUnlessEqual(True, self.db.complete("select * from foo;"))
-        self.failUnlessEqual(True, self.db.complete(u"select '\u9494\ua7a7';"))
+        self.failUnlessEqual(True, self.db.complete(u(r"select '\u9494\ua7a7';")))
         self.assertRaises(UnicodeDecodeError, self.db.complete, "select '\x94\xa7';")
         self.assertRaises(TypeError, self.db.complete, 12) # wrong type
         self.assertRaises(TypeError, self.db.complete)     # not enough args
@@ -1034,7 +1055,7 @@ class APSW(unittest.TestCase):
         
         try:
             for row in c.execute("begin immediate ; select * from foo"):
-                print row
+                self.fail("Transaction wasn't exclusive")
         except apsw.BusyError:
             pass
         self.failUnlessEqual(bhcalled[0], 4)
@@ -1330,16 +1351,16 @@ class APSW(unittest.TestCase):
               "a simple string\0with a null",
               "a string\0with two\0nulls",
               "or even a \0\0\0\0\0\0sequence\0\0\0\0\of them",
-              u"a \u1234 unicode \ufe54 string \u0089",
-              u"a \u1234 unicode \ufe54 string \u0089\0and some text",
-              u"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET}\0more\0than you\0can handle",
-              u"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET}\0\0\0\0\0sequences\0\0\0of them")
+              u(r"a \u1234 unicode \ufe54 string \u0089"),
+              u(r"a \u1234 unicode \ufe54 string \u0089\0and some text"),
+              u(r"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET}\0more\0than you\0can handle"),
+              u(r"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET}\0\0\0\0\0sequences\0\0\0of them"))
 
         # See http://www.sqlite.org/cvstrac/tktview?tn=3056
         if True: # [int(x) for x in apsw.sqlitelibversion().split(".")]<[3,5,8]:
             vals=vals+(
               "a simple string\0",
-              u"a \u1234 unicode \ufe54 string \u0089\0",
+              u(r"a \u1234 unicode \ufe54 string \u0089\0"),
               )
 
         for i,v in enumerate(vals):
@@ -1430,12 +1451,12 @@ class APSW(unittest.TestCase):
 
         data=( # row 0 is headers, column 0 is rowid
             ( "rowid",     "name",    "number", "item",          "description"),
-            ( 1,           "Joe Smith",    1.1, u"\u00f6\u1234", "foo"),
-            ( 6000000000L, "Road Runner", -7.3, u"\u00f6\u1235", "foo"),
-            ( 77,          "Fred",           0, u"\u00f6\u1236", "foo"),
+            ( 1,           "Joe Smith",    1.1, u(r"\u00f6\u1234"), "foo"),
+            ( 6000000000,  "Road Runner", -7.3, u(r"\u00f6\u1235"), "foo"),
+            ( 77,          "Fred",           0, u(r"\u00f6\u1236"), "foo"),
             )
 
-        dataschema="create table this_should_be_ignored"+`data[0][1:]`
+        dataschema="create table this_should_be_ignored"+str(data[0][1:])
         # a query that will get constraints on every column
         allconstraints="select rowid,* from foo where rowid>-1000 and name>='A' and number<=12.4 and item>'A' and description=='foo' order by item"
         allconstraintsl=[(-1, apsw.SQLITE_INDEX_CONSTRAINT_GT), # rowid >
@@ -1480,7 +1501,7 @@ class APSW(unittest.TestCase):
                 
             def Create(self, *args): # db, modname, dbname, tablename, args
                 if self.expectargs!=args[1:]:
-                    raise ValueError("Create arguments are not correct.  Expected "+`self.expectargs`+" but got "+`args[1:]`)
+                    raise ValueError("Create arguments are not correct.  Expected "+str(self.expectargs)+" but got "+str(args[1:]))
                 1/0
 
             def CreateErrorCode(self, *args):
@@ -1489,7 +1510,7 @@ class APSW(unittest.TestCase):
                 raise apsw.BusyError("foo")
 
             def CreateUnicodeException(self, *args):
-                raise Exception(u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}\N{LATIN SMALL LETTER O WITH DIAERESIS}")
+                raise Exception(u(r"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}\N{LATIN SMALL LETTER O WITH DIAERESIS}"))
 
             def CreateBadSchemaType(self, *args):
                 return 12, None
@@ -1515,9 +1536,9 @@ class APSW(unittest.TestCase):
         self.db.createmodule("testmod1", Source("testmod1", "main", "xyzzy", "1", '"one"'))
         self.assertRaises(ZeroDivisionError, cur.execute, 'create virtual table xyzzy using testmod1(1,"one")')
         # unicode
-        uni=u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}\N{LATIN SMALL LETTER O WITH DIAERESIS}"
-        self.db.createmodule("testmod1dash1", Source("testmod1dash1", "main", uni, "1", u'"'+uni+u'"'))
-        self.assertRaises(ZeroDivisionError, cur.execute, u'create virtual table %s using testmod1dash1(1,"%s")' % (uni, uni))
+        uni=u(r"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}\N{LATIN SMALL LETTER O WITH DIAERESIS}")
+        self.db.createmodule("testmod1dash1", Source("testmod1dash1", "main", uni, "1", '"'+uni+'"'))
+        self.assertRaises(ZeroDivisionError, cur.execute, u('create virtual table %s using testmod1dash1(1,"%s")') % (uni, uni))
         Source.Create=Source.CreateErrorCode
         self.assertRaises(apsw.BusyError, cur.execute, 'create virtual table xyzzz using testmod1(2, "two")')
         Source.Create=Source.CreateUnicodeException
@@ -1575,7 +1596,7 @@ class APSW(unittest.TestCase):
 
             def BestIndex4(self, constraints, orderbys):
                 # this gives ValueError ("bad" is not a float)
-                return (None,12,u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}", "anything", "bad")
+                return (None,12,u(r"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}"), "anything", "bad")
 
             def BestIndex5(self, constraints, orderbys):
                 # unicode error
@@ -1594,7 +1615,7 @@ class APSW(unittest.TestCase):
                 cl.sort()
                 assert allconstraintsl == cl
                 assert orderbys == ( (2, False), )
-                retval=( [4,(3,True),[2,False],1, (0, False)], 997, u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}", False, 99)[:self._bestindexreturn]
+                retval=( [4,(3,True),[2,False],1, (0, False)], 997, u(r"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}"), False, 99)[:self._bestindexreturn]
                 return retval
 
             def BestIndexGood(self, constraints, orderbys):
@@ -1636,11 +1657,11 @@ class APSW(unittest.TestCase):
 
             def UpdateInsertRow6(self, rowid, fields):
                 assert rowid is None
-                return -922337203685477580799L # too big
+                return -922337203685477580799 # too big
 
             def UpdateInsertRow7(self, rowid, fields):
                 assert rowid is None
-                return 9223372036854775807L # ok
+                return 9223372036854775807 # ok
 
             def UpdateInsertRow8(self, rowid, fields):
                 assert rowid is not None
@@ -1745,7 +1766,7 @@ class APSW(unittest.TestCase):
                     return 
                 # 3 or more
                 assert idxnum==997
-                assert idxstr==u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}"
+                assert idxstr==u(r"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}")
                 assert constraintargs==('A', 12.4, 'A', -1000)
 
             def Filter(self,  *args):
@@ -1935,7 +1956,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(OverflowError, cur.execute, sql)
         VTable.UpdateInsertRow=VTable.UpdateInsertRow7
         cur.execute(sql)
-        self.failUnlessEqual(self.db.last_insert_rowid(), 9223372036854775807L)
+        self.failUnlessEqual(self.db.last_insert_rowid(), 9223372036854775807)
         VTable.UpdateInsertRow=VTable.UpdateInsertRow8
         cur.execute("insert into foo (rowid,name, description) values(-12,'gunk', 'foo')")
         
@@ -2043,7 +2064,7 @@ class APSW(unittest.TestCase):
         
         class Source:
             def Create(self, db, modulename, dbname, tablename, *args):
-                columns,data=getfiledata([eval(a) for a in args]) # eval strips off layer of quotes
+                columns,data=getfiledata([eval(UPREFIX+a) for a in args]) # eval strips off layer of quotes
                 schema="create table foo("+','.join(["'%s'" % (x,) for x in columns[1:]])+")"
                 return schema,Table(columns,data)
             Connect=Create
@@ -2086,7 +2107,7 @@ class APSW(unittest.TestCase):
             def Close(self):
                 pass
 
-        paths=[x.replace("\\","/") for x in sys.path if len(x) and os.path.isdir(x)]
+        paths=[x.decode(sys.getfilesystemencoding()).replace("\\","/") for x in sys.path if len(x) and os.path.isdir(x)]
         cols,data=getfiledata(paths)
         self.db.createmodule("filesource", Source())
         cur=self.db.cursor()
@@ -2110,7 +2131,7 @@ class APSW(unittest.TestCase):
             pass
         # Find the oldest (manually)
         colnum=cols.index("st_ctime")
-        oldestmanual=(99999999999999999L,"","")
+        oldestmanual=(99999999999999999,"","")
         for file in data:
             if file[colnum]<oldestmanual[0]:
                 oldestmanual=file[colnum], file[1], file[2]
@@ -2200,12 +2221,14 @@ class APSW(unittest.TestCase):
     def testErrorCodes(self):
         "Verify setting of result codes on error/exception"
         fname="gunk-errcode-test"
-        open(fname, "wb").write("A"*8192)
+        open(fname, "wb").write(b("A")*8192)
         db=apsw.Connection(fname)
         cur=db.cursor()
         try:
             cur.execute("select * from sqlite_master")
-        except apsw.NotADBError,e:
+        except:
+            klass,e,tb=sys.exc_info()
+            self.failUnless(isinstance(e, apsw.NotADBError))
             self.failUnlessEqual(e.result, apsw.SQLITE_NOTADB);
             self.failUnlessEqual(e.extendedresult&0xff, apsw.SQLITE_NOTADB)
         db.close(True)
@@ -2266,12 +2289,14 @@ class APSW(unittest.TestCase):
         cursor.execute("CREATE TABLE A_TABLE (ID ABC PRIMARY KEY NOT NULL)")
         try:
             cursor.execute("INSERT INTO A_TABLE VALUES (NULL)")
-        except Exception, e:
+        except:
+            klass,e,tb=sys.exc_info()
             assert "A_TABLE.ID" in str(e)
     
         try:
             cursor.execute("INSERT INTO A_TABLE VALUES (?)", (None,))
-        except Exception, e:
+        except:
+            klass,e,tb=sys.exc_info()
             assert "A_TABLE.ID" in str(e)
 
     def testIssue15(self):
@@ -2336,7 +2361,7 @@ class APSW(unittest.TestCase):
         #cur.execute("insert into foo values(1,2)") # cache hit, but invalid sql
         cur.executemany("insert into foo values(?)", [[1],[2]])
         # overflow the statement cache
-        l=[self.db.cursor().execute("select x from foo") for i in xrange(scsize+200)]
+        l=[self.db.cursor().execute("select x from foo") for i in range(scsize+200)]
         del l
         for _ in cur.execute("select * from foo"): pass
         db2=apsw.Connection("testdb", statementcachesize=scsize)
@@ -2352,7 +2377,7 @@ class APSW(unittest.TestCase):
     def testWikipedia(self):
         "Use front page of wikipedia to check unicode handling"
         # the text also includes characters that can't be represented in 16 bits
-        text=u"""WIKIPEDIA\nEnglish\nThe Free Encyclopedia\n2 386 000+ articles\nDeutsch\nDie freie Enzyklop\\u00e4die\n753 000+ Artikel\nFran\\u00e7ais\nL\\u2019encyclop\\u00e9die libre\n662 000+ articles\nPolski\nWolna encyklopedia\n503 000+ hase\\u0142\n\\u65e5\\u672c\\u8a9e\n\\u30d5\\u30ea\\u30fc\\u767e\\u79d1\\u4e8b\\u5178\n492 000+ \\u8a18\\u4e8b\nItaliano\nL\\u2019enciclopedia libera\n456 000+ voci\nNederlands\nDe vrije encyclopedie\n440 000+ artikelen\nPortugu\\u00eas\nA enciclop\\u00e9dia livre\n380 000+ artigos\nEspa\\u00f1ol\nLa enciclopedia libre\n363 000+ art\\u00edculos\n\\u0420\\u0443\\u0441\\u0441\\u043a\\u0438\\u0439\n\\u0421\\u0432\\u043e\\u0431\\u043e\\u0434\\u043d\\u0430\\u044f \\u044d\\u043d\\u0446\\u0438\\u043a\\u043b\\u043e\\u043f\\u0435\\u0434\\u0438\\u044f\n285 000+ \\u0441\\u0442\\u0430\\u0442\\u0435\\u0439\nSearch \\u00b7 Suche \\u00b7 Rechercher \\u00b7 Szukaj \\u00b7 \\u691c\\u7d22 \\u00b7 Ricerca \\u00b7 Zoeken \\u00b7 Busca \\u00b7 Buscar\n\\u041f\\u043e\\u0438\\u0441\\u043a \\u00b7 S\\u00f6k \\u00b7 \\u641c\\u7d22 \\u00b7 S\\u00f8k \\u00b7 Haku \\u00b7 Cerca \\u00b7 Suk \\u00b7 \\u041f\\u043e\\u0448\\u0443\\u043a \\u00b7 C\\u0103utare \\u00b7 Ara\n 100 000+ \nCatal\\u00e0 \\u00b7 Deutsch \\u00b7 English \\u00b7 Espa\\u00f1ol \\u00b7 Fran\\u00e7ais \\u00b7 Italiano \\u00b7 Nederlands \\u00b7 \\u65e5\\u672c\\u8a9e \\u00b7 Norsk (bokm\\u00e5l) \\u00b7 Polski \\u00b7 Portugu\\u00eas \\u00b7 \\u0420\\u0443\\u0441\\u0441\\u043a\\u0438\\u0439 \\u00b7 Rom\\u00e2n\\u0103 \\u00b7 Suomi \\u00b7 Svenska \\u00b7 T\\u00fcrk\\u00e7e \\u00b7 \\u0423\\u043a\\u0440\\u0430\\u0457\\u043d\\u0441\\u044c\\u043a\\u0430 \\u00b7 Volap\\u00fck \\u00b7 \\u4e2d\\u6587\n 10 000+ \n\\u0627\\u0644\\u0639\\u0631\\u0628\\u064a\\u0629 \\u00b7 Asturianu \\u00b7 Krey\\u00f2l Ayisyen \\u00b7 Az\\u0259rbaycan / \\u0622\\u0630\\u0631\\u0628\\u0627\\u064a\\u062c\\u0627\\u0646 \\u062f\\u064a\\u0644\\u06cc \\u00b7 \\u09ac\\u09be\\u0982\\u09b2\\u09be \\u00b7 \\u0411\\u0435\\u043b\\u0430\\u0440\\u0443\\u0441\\u043a\\u0430\\u044f (\\u0410\\u043a\\u0430\\u0434\\u044d\\u043c\\u0456\\u0447\\u043d\\u0430\\u044f) \\u00b7 \\u09ac\\u09bf\\u09b7\\u09cd\\u09a3\\u09c1\\u09aa\\u09cd\\u09b0\\u09bf\\u09af\\u09bc\\u09be \\u09ae\\u09a3\\u09bf\\u09aa\\u09c1\\u09b0\\u09c0 \\u00b7 Bosanski \\u00b7 Brezhoneg \\u00b7 \\u0411\\u044a\\u043b\\u0433\\u0430\\u0440\\u0441\\u043a\\u0438 \\u00b7 \\u010cesky \\u00b7 Cymraeg \\u00b7 Dansk \\u00b7 Eesti \\u00b7 \\u0395\\u03bb\\u03bb\\u03b7\\u03bd\\u03b9\\u03ba\\u03ac \\u00b7 Esperanto \\u00b7 Euskara \\u00b7 \\u0641\\u0627\\u0631\\u0633\\u06cc \\u00b7 Galego \\u00b7 \\ud55c\\uad6d\\uc5b4 \\u00b7 \\u0939\\u093f\\u0928\\u094d\\u0926\\u0940 \\u00b7 Hrvatski \\u00b7 Ido \\u00b7 Bahasa Indonesia \\u00b7 \\u00cdslenska \\u00b7 \\u05e2\\u05d1\\u05e8\\u05d9\\u05ea \\u00b7 Basa Jawa \\u00b7 \\u10e5\\u10d0\\u10e0\\u10d7\\u10e3\\u10da\\u10d8 \\u00b7 Kurd\\u00ee / \\u0643\\u0648\\u0631\\u062f\\u06cc \\u00b7 Latina \\u00b7 Lumbaart \\u00b7 Latvie\\u0161u \\u00b7 L\\u00ebtzebuergesch \\u00b7 Lietuvi\\u0173 \\u00b7 Magyar \\u00b7 \\u041c\\u0430\\u043a\\u0435\\u0434\\u043e\\u043d\\u0441\\u043a\\u0438 \\u00b7 \\u092e\\u0930\\u093e\\u0920\\u0940 \\u00b7 Bahasa Melayu \\u00b7 \\u0928\\u0947\\u092a\\u093e\\u0932 \\u092d\\u093e\\u0937\\u093e \\u00b7 Norsk (nynorsk) \\u00b7 Nnapulitano \\u00b7 Occitan \\u00b7 Piemont\\u00e8is \\u00b7 Plattd\\u00fc\\u00fctsch \\u00b7 Shqip \\u00b7 Sicilianu \\u00b7 Simple English \\u00b7 Sinugboanon \\u00b7 Sloven\\u010dina \\u00b7 Sloven\\u0161\\u010dina \\u00b7 \\u0421\\u0440\\u043f\\u0441\\u043a\\u0438 \\u00b7 Srpskohrvatski / \\u0421\\u0440\\u043f\\u0441\\u043a\\u043e\\u0445\\u0440\\u0432\\u0430\\u0442\\u0441\\u043a\\u0438 \\u00b7 Basa Sunda \\u00b7 Tagalog \\u00b7 \\u0ba4\\u0bae\\u0bbf\\u0bb4\\u0bcd \\u00b7 \\u0c24\\u0c46\\u0c32\\u0c41\\u0c17\\u0c41 \\u00b7 \\u0e44\\u0e17\\u0e22 \\u00b7 Ti\\u1ebfng Vi\\u1ec7t \\u00b7 Walon\n 1 000+ \nAfrikaans \\u00b7 Alemannisch \\u00b7 \\u12a0\\u121b\\u122d\\u129b \\u00b7 Aragon\\u00e9s \\u00b7 Arm\\u00e3neashce \\u00b7 Arpitan \\u00b7 B\\u00e2n-l\\u00e2m-g\\u00fa \\u00b7 Basa Banyumasan \\u00b7 \\u0411\\u0435\\u043b\\u0430\\u0440\\u0443\\u0441\\u043a\\u0430\\u044f (\\u0422\\u0430\\u0440\\u0430\\u0448\\u043a\\u0435\\u0432i\\u0446\\u0430) \\u00b7 \\u092d\\u094b\\u091c\\u092a\\u0941\\u0930\\u0940 \\u00b7 Boarisch \\u00b7 Corsu \\u00b7 \\u0427\\u0103\\u0432\\u0430\\u0448 \\u00b7 Deitsch \\u00b7 \\u078b\\u07a8\\u0788\\u07ac\\u0780\\u07a8 \\u00b7 Eald Englisc \\u00b7 F\\u00f8royskt \\u00b7 Frysk \\u00b7 Furlan \\u00b7 Gaeilge \\u00b7 Gaelg \\u00b7 G\\u00e0idhlig \\u00b7 \\u53e4\\u6587 / \\u6587\\u8a00\\u6587 \\u00b7 \\u02bb\\u014clelo Hawai\\u02bbi \\u00b7 \\u0540\\u0561\\u0575\\u0565\\u0580\\u0565\\u0576 \\u00b7 Hornjoserbsce \\u00b7 Ilokano \\u00b7 Interlingua \\u00b7 \\u0418\\u0440\\u043e\\u043d \\u00e6\\u0432\\u0437\\u0430\\u0433 \\u00b7 \\u0c95\\u0ca8\\u0ccd\\u0ca8\\u0ca1 \\u00b7 Kapampangan \\u00b7 Kasz\\u00ebbsczi \\u00b7 Kernewek \\u00b7 \\u1797\\u17b6\\u179f\\u17b6\\u1781\\u17d2\\u1798\\u17c2\\u179a \\u00b7 Ladino / \\u05dc\\u05d0\\u05d3\\u05d9\\u05e0\\u05d5 \\u00b7 Ligure \\u00b7 Limburgs \\u00b7 Ling\\u00e1la \\u00b7 \\u0d2e\\u0d32\\u0d2f\\u0d3e\\u0d33\\u0d02 \\u00b7 Malti \\u00b7 M\\u0101ori \\u00b7 \\u041c\\u043e\\u043d\\u0433\\u043e\\u043b \\u00b7 N\\u0101huatlaht\\u014dlli \\u00b7 Nedersaksisch \\u00b7 \\u0928\\u0947\\u092a\\u093e\\u0932\\u0940 \\u00b7 Nouormand \\u00b7 Novial \\u00b7 O\\u2018zbek \\u00b7 \\u092a\\u093e\\u0934\\u093f \\u00b7 Pangasin\\u00e1n \\u00b7 \\u067e\\u069a\\u062a\\u0648 \\u00b7 \\u049a\\u0430\\u0437\\u0430\\u049b\\u0448\\u0430 \\u00b7 Ripoarisch \\u00b7 Rumantsch \\u00b7 Runa Simi \\u00b7 \\u0938\\u0902\\u0938\\u094d\\u0915\\u0943\\u0924\\u092e\\u094d \\u00b7 S\\u00e1megiella \\u00b7 Scots \\u00b7 Kiswahili \\u00b7 Tarand\\u00edne \\u00b7 Tatar\\u00e7a \\u00b7 \\u0422\\u043e\\u04b7\\u0438\\u043a\\u04e3 \\u00b7 Lea faka-Tonga \\u00b7 T\\u00fcrkmen \\u00b7 \\u0627\\u0631\\u062f\\u0648 \\u00b7 V\\u00e8neto \\u00b7 V\\u00f5ro \\u00b7 West-Vlams \\u00b7 Winaray \\u00b7 \\u5434\\u8bed \\u00b7 \\u05d9\\u05d9\\u05b4\\u05d3\\u05d9\\u05e9 \\u00b7 \\u7cb5\\u8a9e \\u00b7 Yor\\u00f9b\\u00e1 \\u00b7 Zazaki \\u00b7 \\u017demait\\u0117\\u0161ka\n 100+ \n\\u0710\\u072a\\u0721\\u071d\\u0710 \\u00b7 Ava\\u00f1e\\u2019\\u1ebd \\u00b7 \\u0410\\u0432\\u0430\\u0440 \\u00b7 Aymara \\u00b7 Bamanankan \\u00b7 \\u0411\\u0430\\u0448\\u04a1\\u043e\\u0440\\u0442 \\u00b7 Bikol Central \\u00b7 \\u0f56\\u0f7c\\u0f51\\u0f0b\\u0f61\\u0f72\\u0f42 \\u00b7 Chamoru \\u00b7 Chavacano de Zamboanga \\u00b7 Bislama \\u00b7 Din\\u00e9 Bizaad \\u00b7 Dolnoserbski \\u00b7 Emigli\\u00e0n-Rumagn\\u00f2l \\u00b7 E\\u028begbe \\u00b7 \\u06af\\u06cc\\u0644\\u06a9\\u06cc \\u00b7 \\u0a97\\u0ac1\\u0a9c\\u0ab0\\u0abe\\u0aa4\\u0ac0 \\u00b7 \\U00010332\\U0001033f\\U00010344\\U00010339\\U00010343\\U0001033a \\u00b7 Hak-k\\u00e2-fa / \\u5ba2\\u5bb6\\u8a71 \\u00b7 Igbo \\u00b7 \\u1403\\u14c4\\u1483\\u144e\\u1450\\u1466 / Inuktitut \\u00b7 Interlingue \\u00b7 \\u0915\\u0936\\u094d\\u092e\\u0940\\u0930\\u0940 / \\u0643\\u0634\\u0645\\u064a\\u0631\\u064a \\u00b7 Kongo \\u00b7 \\u041a\\u044b\\u0440\\u0433\\u044b\\u0437\\u0447\\u0430 \\u00b7 \\u0e9e\\u0eb2\\u0eaa\\u0eb2\\u0ea5\\u0eb2\\u0ea7 \\u00b7 lojban \\u00b7 Malagasy \\u00b7 M\\u0101z\\u0259r\\u016bni / \\u0645\\u0627\\u0632\\u0650\\u0631\\u0648\\u0646\\u06cc \\u00b7 M\\u00ecng-d\\u0115\\u0324ng-ng\\u1e73\\u0304 \\u00b7 \\u041c\\u043e\\u043b\\u0434\\u043e\\u0432\\u0435\\u043d\\u044f\\u0441\\u043a\\u044d \\u00b7 \\u1017\\u1019\\u102c\\u1005\\u102c \\u00b7 Ekakair\\u0169 Naoero \\u00b7 N\\u0113hiyaw\\u0113win / \\u14c0\\u1426\\u1403\\u152d\\u140d\\u140f\\u1423 \\u00b7 Norfuk / Pitkern \\u00b7 \\u041d\\u043e\\u0445\\u0447\\u0438\\u0439\\u043d \\u00b7 \\u0b13\\u0b21\\u0b3c\\u0b3f\\u0b06 \\u00b7 Afaan Oromoo \\u00b7 \\u0985\\u09b8\\u09ae\\u09c0\\u09af\\u09bc\\u09be \\u00b7 \\u0a2a\\u0a70\\u0a1c\\u0a3e\\u0a2c\\u0a40 / \\u067e\\u0646\\u062c\\u0627\\u0628\\u06cc \\u00b7 Papiamentu \\u00b7 Q\\u0131r\\u0131mtatarca \\u00b7 Romani / \\u0930\\u094b\\u092e\\u093e\\u0928\\u0940 \\u00b7 Kinyarwanda \\u00b7 Gagana S\\u0101moa \\u00b7 Sardu \\u00b7 Seeltersk \\u00b7 \\u0dc3\\u0dd2\\u0d82\\u0dc4\\u0dbd \\u00b7 \\u0633\\u0646\\u068c\\u064a \\u00b7 \\u0421\\u043b\\u043e\\u0432\\u0463\\u043d\\u044c\\u0441\\u043a\\u044a \\u00b7 Af Soomaali \\u00b7 SiSwati \\u00b7 Reo Tahiti \\u00b7 Taqbaylit \\u00b7 Tetun \\u00b7 \\u1275\\u130d\\u122d\\u129b \\u00b7 Tok Pisin \\u00b7 \\u13e3\\u13b3\\u13a9 \\u00b7 \\u0423\\u0434\\u043c\\u0443\\u0440\\u0442 \\u00b7 Uyghur / \\u0626\\u06c7\\u064a\\u063a\\u06c7\\u0631\\u0686\\u0647 \\u00b7 Tshiven\\u1e13a \\u00b7 Wollof \\u00b7 isiXhosa \\u00b7 Ze\\u00eauws \\u00b7 isiZulu\nOther languages \\u00b7 Weitere Sprachen \\u00b7 \\u4ed6\\u306e\\u8a00\\u8a9e \\u00b7 Kompletna lista j\\u0119zyk\\u00f3w \\u00b7 \\u5176\\u4ed6\\u8bed\\u8a00 \\u00b7 \\u0414\\u0440\\u0443\\u0433\\u0438\\u0435 \\u044f\\u0437\\u044b\\u043a\\u0438 \\u00b7 Aliaj lingvoj \\u00b7 \\ub2e4\\ub978 \\uc5b8\\uc5b4 \\u00b7 Ng\\u00f4n ng\\u1eef kh\\u00e1c"""
+        text=u(r"""WIKIPEDIA\nEnglish\nThe Free Encyclopedia\n2 386 000+ articles\nDeutsch\nDie freie Enzyklop\\u00e4die\n753 000+ Artikel\nFran\\u00e7ais\nL\\u2019encyclop\\u00e9die libre\n662 000+ articles\nPolski\nWolna encyklopedia\n503 000+ hase\\u0142\n\\u65e5\\u672c\\u8a9e\n\\u30d5\\u30ea\\u30fc\\u767e\\u79d1\\u4e8b\\u5178\n492 000+ \\u8a18\\u4e8b\nItaliano\nL\\u2019enciclopedia libera\n456 000+ voci\nNederlands\nDe vrije encyclopedie\n440 000+ artikelen\nPortugu\\u00eas\nA enciclop\\u00e9dia livre\n380 000+ artigos\nEspa\\u00f1ol\nLa enciclopedia libre\n363 000+ art\\u00edculos\n\\u0420\\u0443\\u0441\\u0441\\u043a\\u0438\\u0439\n\\u0421\\u0432\\u043e\\u0431\\u043e\\u0434\\u043d\\u0430\\u044f \\u044d\\u043d\\u0446\\u0438\\u043a\\u043b\\u043e\\u043f\\u0435\\u0434\\u0438\\u044f\n285 000+ \\u0441\\u0442\\u0430\\u0442\\u0435\\u0439\nSearch \\u00b7 Suche \\u00b7 Rechercher \\u00b7 Szukaj \\u00b7 \\u691c\\u7d22 \\u00b7 Ricerca \\u00b7 Zoeken \\u00b7 Busca \\u00b7 Buscar\n\\u041f\\u043e\\u0438\\u0441\\u043a \\u00b7 S\\u00f6k \\u00b7 \\u641c\\u7d22 \\u00b7 S\\u00f8k \\u00b7 Haku \\u00b7 Cerca \\u00b7 Suk \\u00b7 \\u041f\\u043e\\u0448\\u0443\\u043a \\u00b7 C\\u0103utare \\u00b7 Ara\n 100 000+ \nCatal\\u00e0 \\u00b7 Deutsch \\u00b7 English \\u00b7 Espa\\u00f1ol \\u00b7 Fran\\u00e7ais \\u00b7 Italiano \\u00b7 Nederlands \\u00b7 \\u65e5\\u672c\\u8a9e \\u00b7 Norsk (bokm\\u00e5l) \\u00b7 Polski \\u00b7 Portugu\\u00eas \\u00b7 \\u0420\\u0443\\u0441\\u0441\\u043a\\u0438\\u0439 \\u00b7 Rom\\u00e2n\\u0103 \\u00b7 Suomi \\u00b7 Svenska \\u00b7 T\\u00fcrk\\u00e7e \\u00b7 \\u0423\\u043a\\u0440\\u0430\\u0457\\u043d\\u0441\\u044c\\u043a\\u0430 \\u00b7 Volap\\u00fck \\u00b7 \\u4e2d\\u6587\n 10 000+ \n\\u0627\\u0644\\u0639\\u0631\\u0628\\u064a\\u0629 \\u00b7 Asturianu \\u00b7 Krey\\u00f2l Ayisyen \\u00b7 Az\\u0259rbaycan / \\u0622\\u0630\\u0631\\u0628\\u0627\\u064a\\u062c\\u0627\\u0646 \\u062f\\u064a\\u0644\\u06cc \\u00b7 \\u09ac\\u09be\\u0982\\u09b2\\u09be \\u00b7 \\u0411\\u0435\\u043b\\u0430\\u0440\\u0443\\u0441\\u043a\\u0430\\u044f (\\u0410\\u043a\\u0430\\u0434\\u044d\\u043c\\u0456\\u0447\\u043d\\u0430\\u044f) \\u00b7 \\u09ac\\u09bf\\u09b7\\u09cd\\u09a3\\u09c1\\u09aa\\u09cd\\u09b0\\u09bf\\u09af\\u09bc\\u09be \\u09ae\\u09a3\\u09bf\\u09aa\\u09c1\\u09b0\\u09c0 \\u00b7 Bosanski \\u00b7 Brezhoneg \\u00b7 \\u0411\\u044a\\u043b\\u0433\\u0430\\u0440\\u0441\\u043a\\u0438 \\u00b7 \\u010cesky \\u00b7 Cymraeg \\u00b7 Dansk \\u00b7 Eesti \\u00b7 \\u0395\\u03bb\\u03bb\\u03b7\\u03bd\\u03b9\\u03ba\\u03ac \\u00b7 Esperanto \\u00b7 Euskara \\u00b7 \\u0641\\u0627\\u0631\\u0633\\u06cc \\u00b7 Galego \\u00b7 \\ud55c\\uad6d\\uc5b4 \\u00b7 \\u0939\\u093f\\u0928\\u094d\\u0926\\u0940 \\u00b7 Hrvatski \\u00b7 Ido \\u00b7 Bahasa Indonesia \\u00b7 \\u00cdslenska \\u00b7 \\u05e2\\u05d1\\u05e8\\u05d9\\u05ea \\u00b7 Basa Jawa \\u00b7 \\u10e5\\u10d0\\u10e0\\u10d7\\u10e3\\u10da\\u10d8 \\u00b7 Kurd\\u00ee / \\u0643\\u0648\\u0631\\u062f\\u06cc \\u00b7 Latina \\u00b7 Lumbaart \\u00b7 Latvie\\u0161u \\u00b7 L\\u00ebtzebuergesch \\u00b7 Lietuvi\\u0173 \\u00b7 Magyar \\u00b7 \\u041c\\u0430\\u043a\\u0435\\u0434\\u043e\\u043d\\u0441\\u043a\\u0438 \\u00b7 \\u092e\\u0930\\u093e\\u0920\\u0940 \\u00b7 Bahasa Melayu \\u00b7 \\u0928\\u0947\\u092a\\u093e\\u0932 \\u092d\\u093e\\u0937\\u093e \\u00b7 Norsk (nynorsk) \\u00b7 Nnapulitano \\u00b7 Occitan \\u00b7 Piemont\\u00e8is \\u00b7 Plattd\\u00fc\\u00fctsch \\u00b7 Shqip \\u00b7 Sicilianu \\u00b7 Simple English \\u00b7 Sinugboanon \\u00b7 Sloven\\u010dina \\u00b7 Sloven\\u0161\\u010dina \\u00b7 \\u0421\\u0440\\u043f\\u0441\\u043a\\u0438 \\u00b7 Srpskohrvatski / \\u0421\\u0440\\u043f\\u0441\\u043a\\u043e\\u0445\\u0440\\u0432\\u0430\\u0442\\u0441\\u043a\\u0438 \\u00b7 Basa Sunda \\u00b7 Tagalog \\u00b7 \\u0ba4\\u0bae\\u0bbf\\u0bb4\\u0bcd \\u00b7 \\u0c24\\u0c46\\u0c32\\u0c41\\u0c17\\u0c41 \\u00b7 \\u0e44\\u0e17\\u0e22 \\u00b7 Ti\\u1ebfng Vi\\u1ec7t \\u00b7 Walon\n 1 000+ \nAfrikaans \\u00b7 Alemannisch \\u00b7 \\u12a0\\u121b\\u122d\\u129b \\u00b7 Aragon\\u00e9s \\u00b7 Arm\\u00e3neashce \\u00b7 Arpitan \\u00b7 B\\u00e2n-l\\u00e2m-g\\u00fa \\u00b7 Basa Banyumasan \\u00b7 \\u0411\\u0435\\u043b\\u0430\\u0440\\u0443\\u0441\\u043a\\u0430\\u044f (\\u0422\\u0430\\u0440\\u0430\\u0448\\u043a\\u0435\\u0432i\\u0446\\u0430) \\u00b7 \\u092d\\u094b\\u091c\\u092a\\u0941\\u0930\\u0940 \\u00b7 Boarisch \\u00b7 Corsu \\u00b7 \\u0427\\u0103\\u0432\\u0430\\u0448 \\u00b7 Deitsch \\u00b7 \\u078b\\u07a8\\u0788\\u07ac\\u0780\\u07a8 \\u00b7 Eald Englisc \\u00b7 F\\u00f8royskt \\u00b7 Frysk \\u00b7 Furlan \\u00b7 Gaeilge \\u00b7 Gaelg \\u00b7 G\\u00e0idhlig \\u00b7 \\u53e4\\u6587 / \\u6587\\u8a00\\u6587 \\u00b7 \\u02bb\\u014clelo Hawai\\u02bbi \\u00b7 \\u0540\\u0561\\u0575\\u0565\\u0580\\u0565\\u0576 \\u00b7 Hornjoserbsce \\u00b7 Ilokano \\u00b7 Interlingua \\u00b7 \\u0418\\u0440\\u043e\\u043d \\u00e6\\u0432\\u0437\\u0430\\u0433 \\u00b7 \\u0c95\\u0ca8\\u0ccd\\u0ca8\\u0ca1 \\u00b7 Kapampangan \\u00b7 Kasz\\u00ebbsczi \\u00b7 Kernewek \\u00b7 \\u1797\\u17b6\\u179f\\u17b6\\u1781\\u17d2\\u1798\\u17c2\\u179a \\u00b7 Ladino / \\u05dc\\u05d0\\u05d3\\u05d9\\u05e0\\u05d5 \\u00b7 Ligure \\u00b7 Limburgs \\u00b7 Ling\\u00e1la \\u00b7 \\u0d2e\\u0d32\\u0d2f\\u0d3e\\u0d33\\u0d02 \\u00b7 Malti \\u00b7 M\\u0101ori \\u00b7 \\u041c\\u043e\\u043d\\u0433\\u043e\\u043b \\u00b7 N\\u0101huatlaht\\u014dlli \\u00b7 Nedersaksisch \\u00b7 \\u0928\\u0947\\u092a\\u093e\\u0932\\u0940 \\u00b7 Nouormand \\u00b7 Novial \\u00b7 O\\u2018zbek \\u00b7 \\u092a\\u093e\\u0934\\u093f \\u00b7 Pangasin\\u00e1n \\u00b7 \\u067e\\u069a\\u062a\\u0648 \\u00b7 \\u049a\\u0430\\u0437\\u0430\\u049b\\u0448\\u0430 \\u00b7 Ripoarisch \\u00b7 Rumantsch \\u00b7 Runa Simi \\u00b7 \\u0938\\u0902\\u0938\\u094d\\u0915\\u0943\\u0924\\u092e\\u094d \\u00b7 S\\u00e1megiella \\u00b7 Scots \\u00b7 Kiswahili \\u00b7 Tarand\\u00edne \\u00b7 Tatar\\u00e7a \\u00b7 \\u0422\\u043e\\u04b7\\u0438\\u043a\\u04e3 \\u00b7 Lea faka-Tonga \\u00b7 T\\u00fcrkmen \\u00b7 \\u0627\\u0631\\u062f\\u0648 \\u00b7 V\\u00e8neto \\u00b7 V\\u00f5ro \\u00b7 West-Vlams \\u00b7 Winaray \\u00b7 \\u5434\\u8bed \\u00b7 \\u05d9\\u05d9\\u05b4\\u05d3\\u05d9\\u05e9 \\u00b7 \\u7cb5\\u8a9e \\u00b7 Yor\\u00f9b\\u00e1 \\u00b7 Zazaki \\u00b7 \\u017demait\\u0117\\u0161ka\n 100+ \n\\u0710\\u072a\\u0721\\u071d\\u0710 \\u00b7 Ava\\u00f1e\\u2019\\u1ebd \\u00b7 \\u0410\\u0432\\u0430\\u0440 \\u00b7 Aymara \\u00b7 Bamanankan \\u00b7 \\u0411\\u0430\\u0448\\u04a1\\u043e\\u0440\\u0442 \\u00b7 Bikol Central \\u00b7 \\u0f56\\u0f7c\\u0f51\\u0f0b\\u0f61\\u0f72\\u0f42 \\u00b7 Chamoru \\u00b7 Chavacano de Zamboanga \\u00b7 Bislama \\u00b7 Din\\u00e9 Bizaad \\u00b7 Dolnoserbski \\u00b7 Emigli\\u00e0n-Rumagn\\u00f2l \\u00b7 E\\u028begbe \\u00b7 \\u06af\\u06cc\\u0644\\u06a9\\u06cc \\u00b7 \\u0a97\\u0ac1\\u0a9c\\u0ab0\\u0abe\\u0aa4\\u0ac0 \\u00b7 \\U00010332\\U0001033f\\U00010344\\U00010339\\U00010343\\U0001033a \\u00b7 Hak-k\\u00e2-fa / \\u5ba2\\u5bb6\\u8a71 \\u00b7 Igbo \\u00b7 \\u1403\\u14c4\\u1483\\u144e\\u1450\\u1466 / Inuktitut \\u00b7 Interlingue \\u00b7 \\u0915\\u0936\\u094d\\u092e\\u0940\\u0930\\u0940 / \\u0643\\u0634\\u0645\\u064a\\u0631\\u064a \\u00b7 Kongo \\u00b7 \\u041a\\u044b\\u0440\\u0433\\u044b\\u0437\\u0447\\u0430 \\u00b7 \\u0e9e\\u0eb2\\u0eaa\\u0eb2\\u0ea5\\u0eb2\\u0ea7 \\u00b7 lojban \\u00b7 Malagasy \\u00b7 M\\u0101z\\u0259r\\u016bni / \\u0645\\u0627\\u0632\\u0650\\u0631\\u0648\\u0646\\u06cc \\u00b7 M\\u00ecng-d\\u0115\\u0324ng-ng\\u1e73\\u0304 \\u00b7 \\u041c\\u043e\\u043b\\u0434\\u043e\\u0432\\u0435\\u043d\\u044f\\u0441\\u043a\\u044d \\u00b7 \\u1017\\u1019\\u102c\\u1005\\u102c \\u00b7 Ekakair\\u0169 Naoero \\u00b7 N\\u0113hiyaw\\u0113win / \\u14c0\\u1426\\u1403\\u152d\\u140d\\u140f\\u1423 \\u00b7 Norfuk / Pitkern \\u00b7 \\u041d\\u043e\\u0445\\u0447\\u0438\\u0439\\u043d \\u00b7 \\u0b13\\u0b21\\u0b3c\\u0b3f\\u0b06 \\u00b7 Afaan Oromoo \\u00b7 \\u0985\\u09b8\\u09ae\\u09c0\\u09af\\u09bc\\u09be \\u00b7 \\u0a2a\\u0a70\\u0a1c\\u0a3e\\u0a2c\\u0a40 / \\u067e\\u0646\\u062c\\u0627\\u0628\\u06cc \\u00b7 Papiamentu \\u00b7 Q\\u0131r\\u0131mtatarca \\u00b7 Romani / \\u0930\\u094b\\u092e\\u093e\\u0928\\u0940 \\u00b7 Kinyarwanda \\u00b7 Gagana S\\u0101moa \\u00b7 Sardu \\u00b7 Seeltersk \\u00b7 \\u0dc3\\u0dd2\\u0d82\\u0dc4\\u0dbd \\u00b7 \\u0633\\u0646\\u068c\\u064a \\u00b7 \\u0421\\u043b\\u043e\\u0432\\u0463\\u043d\\u044c\\u0441\\u043a\\u044a \\u00b7 Af Soomaali \\u00b7 SiSwati \\u00b7 Reo Tahiti \\u00b7 Taqbaylit \\u00b7 Tetun \\u00b7 \\u1275\\u130d\\u122d\\u129b \\u00b7 Tok Pisin \\u00b7 \\u13e3\\u13b3\\u13a9 \\u00b7 \\u0423\\u0434\\u043c\\u0443\\u0440\\u0442 \\u00b7 Uyghur / \\u0626\\u06c7\\u064a\\u063a\\u06c7\\u0631\\u0686\\u0647 \\u00b7 Tshiven\\u1e13a \\u00b7 Wollof \\u00b7 isiXhosa \\u00b7 Ze\\u00eauws \\u00b7 isiZulu\nOther languages \\u00b7 Weitere Sprachen \\u00b7 \\u4ed6\\u306e\\u8a00\\u8a9e \\u00b7 Kompletna lista j\\u0119zyk\\u00f3w \\u00b7 \\u5176\\u4ed6\\u8bed\\u8a00 \\u00b7 \\u0414\\u0440\\u0443\\u0433\\u0438\\u0435 \\u044f\\u0437\\u044b\\u043a\\u0438 \\u00b7 Aliaj lingvoj \\u00b7 \\ub2e4\\ub978 \\uc5b8\\uc5b4 \\u00b7 Ng\\u00f4n ng\\u1eef kh\\u00e1c""")
 
         self.db.close()
 
@@ -2474,7 +2499,7 @@ class APSW(unittest.TestCase):
         cur.execute("create table foo(x)")
         cur.execute("insert into foo values(?)", (apsw.zeroblob(27),))
         v=cur.execute("select * from foo").next()[0]
-        self.assertEqual(v, buffer("\x00"*27))
+        self.assertEqual(v, b(r"\x00"*27))
         # Make sure inheritance works
         class multi(object):
             def __init__(self): self.foo=3
@@ -2484,20 +2509,20 @@ class APSW(unittest.TestCase):
                 apsw.zeroblob.__init__(self, num)
         cur.execute("delete from foo; insert into foo values(?)", (derived(28),))
         v=cur.execute("select * from foo").next()[0]
-        self.assertEqual(v, buffer("\x00"*28))
+        self.assertEqual(v, b(r"\x00"*28))
 
     def testBlobIO(self):
         "Verify Blob input/output"
         cur=self.db.cursor()
         rowid=cur.execute("create table foo(x blob); insert into foo values(zeroblob(98765)); select rowid from foo").next()[0]
         self.assertRaises(TypeError, self.db.blobopen, 1)
-        self.assertRaises(TypeError, self.db.blobopen, u"main", "foo\xf3")
+        self.assertRaises(TypeError, self.db.blobopen, u("main"), "foo\xf3")
         if sys.version_info>=(2,4):
             # Bug in python 2.3 gives internal error when complex is
             # passed to PyArg_ParseTuple for Long instead of raising
             # TypeError.  Corrected in 2.4
-            self.assertRaises(TypeError, self.db.blobopen, u"main", "foo", "x", complex(-1,-1), True)
-        self.assertRaises(TypeError, self.db.blobopen, u"main", "foo", "x", rowid, True, False)
+            self.assertRaises(TypeError, self.db.blobopen, u("main"), "foo", "x", complex(-1,-1), True)
+        self.assertRaises(TypeError, self.db.blobopen, u("main"), "foo", "x", rowid, True, False)
         self.assertRaises(apsw.SQLError, self.db.blobopen, "main", "foo", "x", rowid+27, False)
         self.assertRaises(apsw.SQLError, self.db.blobopen, "foo", "foo" , "x", rowid, False)
         self.assertRaises(apsw.SQLError, self.db.blobopen, "main", "x" , "x", rowid, False)
@@ -2509,7 +2534,7 @@ class APSW(unittest.TestCase):
         self.assertEqual(blobro.length(), 98765)
         self.assertEqual(blobro.length(), 98765)
         self.failUnlessEqual(blobro.read(0), "")
-        for i in xrange(98765):
+        for i in range(98765):
             x=blobro.read(1)
             self.assertEqual("\x00", x)
         x=blobro.read(10)
@@ -2560,7 +2585,7 @@ class APSW(unittest.TestCase):
         blobrw.seek(0, 0)
         self.assertEqual(blobrw.read(7), "abcdefg")
         blobrw.seek(50, 0)
-        blobrw.write(buffer("hijkl"))
+        blobrw.write(b("hijkl"))
         blobrw.seek(-98765, 2)
         self.assertEqual(blobrw.read(55), "abcdefg"+"\x00"*43+"hijkl")
         self.assertRaises(TypeError, blobrw.write, 12)
@@ -2622,11 +2647,11 @@ if __name__=='__main__':
 
     # We can do extension loading but no extension present ...
     if getattr(apsw, "enableloadextension", None) and not os.path.exists(LOADEXTENSIONFILENAME):
-        print "Not doing LoadExtension test.  You need to compile the extension first"
+        sys.stdout.write("Not doing LoadExtension test.  You need to compile the extension first\n")
         if sys.platform.startswith("darwin"):
-            print "  gcc -fPIC -bundle -o "+LOADEXTENSIONFILENAME+" -Isqlite3 testextension.c"
+            sys.stdout.write("  gcc -fPIC -bundle -o "+LOADEXTENSIONFILENAME+" -Isqlite3 testextension.c\n")
         else:
-            print "  gcc -fPIC -shared -o "+LOADEXTENSIONFILENAME+" -Isqlite3 testextension.c"
+            sys.stdout.write("  gcc -fPIC -shared -o "+LOADEXTENSIONFILENAME+" -Isqlite3 testextension.c\n")
         del APSW.testLoadExtension
 
     if os.getenv("APSW_NO_MEMLEAK"):
@@ -2643,8 +2668,8 @@ if __name__=='__main__':
         MEMLEAKITERATIONS=5
         PROFILESTEPS=1000
         v=int(v)
-        for i in xrange(v):
-            print "Iteration",i+1,"of",v
+        for i in range(v):
+            sys.stdout.write("Iteration "+str(i+1)+" of "+str(v)+"\n")
             try:
                 unittest.main()
             except SystemExit:
@@ -2667,7 +2692,6 @@ if __name__=='__main__':
     del Queue
     del traceback
     del re
-    del StringIO
 
     gc.collect()
     del gc

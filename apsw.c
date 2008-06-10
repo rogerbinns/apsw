@@ -94,6 +94,17 @@ typedef int Py_ssize_t;
 #define Py_TYPE(x) ((x)->ob_type)
 #endif
 
+/* How to make a string from a utf8 constant */
+#if PY_VERSION_HEX < 0x03000000
+#define MAKESTR  PyString_FromString
+#else
+#define MAKESTR  PyUnicode_FromString
+#endif
+
+#if PY_VERSION_HEX < 0x03000000
+#define PyBytes_FromStringAndSize PyString_FromStringAndSize
+#define PyBytes_AS_STRING         PyString_AS_STRING
+#endif
 
 /* A module to augment tracebacks */
 #include "traceback.c"
@@ -340,6 +351,7 @@ static int
 MakeSqliteMsgFromPyException(char **errmsg)
 {
   int res=SQLITE_ERROR;
+  int i;
   PyObject *str=NULL;
   PyObject *etype=NULL, *evalue=NULL, *etraceback=NULL;
 
@@ -347,44 +359,40 @@ MakeSqliteMsgFromPyException(char **errmsg)
 
   PyErr_Fetch(&etype, &evalue, &etraceback);
 
-  if(PyErr_Occurred())
-    {
-      /* find out if the exception corresponds to an apsw exception descriptor */
-      int i;
-      for(i=0;exc_descriptors[i].code!=-1;i++)
-	if(PyErr_GivenExceptionMatches(etype, exc_descriptors[i].cls))
-	{
-	  res=exc_descriptors[i].code;
-          /* do we have extended information available? */
-          if(PyObject_HasAttrString(evalue, "extendedresult"))
-            {
-              /* extract it */
-              PyObject *extended=PyObject_GetAttrString(evalue, "extendedresult");
-              /* Now you can see why PyInt and PyLong were unified in
-                 Python 3.0.  Also the user could set something that
-                 doesn't fit in 64 bits which would cause the _AsLong
-                 functions to return -1 and set an exception which we
-                 would swallow.  Don't do that then! */
-              if(extended)
-                {
-                  do
-                    {
-                      if(PyLong_Check(extended))
-                        {
-                          res=(PyLong_AsLong(extended) & 0xffffff00u)|res;
-                          break;
-                        }
+  /* find out if the exception corresponds to an apsw exception descriptor */
+  for(i=0;exc_descriptors[i].code!=-1;i++)
+    if(PyErr_GivenExceptionMatches(etype, exc_descriptors[i].cls))
+      {
+        res=exc_descriptors[i].code;
+        /* do we have extended information available? */
+        if(PyObject_HasAttrString(evalue, "extendedresult"))
+          {
+            /* extract it */
+            PyObject *extended=PyObject_GetAttrString(evalue, "extendedresult");
+            /* Now you can see why PyInt and PyLong were unified in
+               Python 3.0.  Also the user could set something that
+               doesn't fit in 64 bits which would cause the _AsLong
+               functions to return -1 and set an exception which we
+               would swallow.  Don't do that then! */
+            if(extended)
+              {
+                do
+                  {
+                    if(PyLong_Check(extended))
+                      {
+                        res=(PyLong_AsLong(extended) & 0xffffff00u)|res;
+                        break;
+                      }
 #if PY_VERSION_HEX<0x03000000
-                      if(PyInt_Check(extended))
-                        res=(PyInt_AsLong(extended) & 0xffffff00u)|res;
+                    if(PyInt_Check(extended))
+                      res=(PyInt_AsLong(extended) & 0xffffff00u)|res;
 #endif
-                    } while(0);
-                }
-              Py_XDECREF(extended);
-            }
-	  break;
-	}
-    }
+                  } while(0);
+              }
+            Py_XDECREF(extended);
+          }
+        break;
+      }
 
   if(errmsg)
     {
@@ -395,7 +403,7 @@ MakeSqliteMsgFromPyException(char **errmsg)
       if(!str && etype)
 	str=PyObject_Str(etype);
       if(!str)
-	str=PyString_FromString("python exception with no information");
+	str=MAKESTR("python exception with no information");
       if(*errmsg)
 	sqlite3_free(*errmsg);
       *errmsg=sqlite3_mprintf("%s",PyString_AsString(str));
@@ -1923,6 +1931,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
       UNIDATAEND(obj);
       return;
     }
+#if PY_VERSION_HEX < 0x03000000
   if (PyString_Check(obj))
     {
       const char *val=PyString_AS_STRING(obj);
@@ -1968,13 +1977,14 @@ set_context_result(sqlite3_context *context, PyObject *obj)
 	}
       return;
     }
+#endif
   if (PyObject_CheckReadBuffer(obj))
     {
       const void *buffer;
       Py_ssize_t buflen;
       if(PyObject_AsReadBuffer(obj, &buffer, &buflen))
         {
-          sqlite3_result_error(context, "PyObject_AsCharBuffer failed", -1);
+          sqlite3_result_error(context, "PyObject_AsReadBuffer failed", -1);
           return;
         }
       if (buflen>APSW_INT32_MAX)
@@ -3858,7 +3868,7 @@ APSWBlob_read(APSWBlob *self, PyObject *args)
     Py_RETURN_NONE;
 
   if(length==0)
-    return PyString_FromString("");
+    return PyBytes_FromStringAndSize(NULL, 0);
 
   if(length<0)
     length=sqlite3_blob_bytes(self->pBlob)-self->curoffset;
@@ -3867,10 +3877,11 @@ APSWBlob_read(APSWBlob *self, PyObject *args)
   if(self->curoffset+length>sqlite3_blob_bytes(self->pBlob))
     length=sqlite3_blob_bytes(self->pBlob)-self->curoffset;
 
-  buffy=PyString_FromStringAndSize(NULL, length);
+  buffy=PyBytes_FromStringAndSize(NULL, length);
+
   if(!buffy) return NULL;
 
-  thebuffer= PyString_AS_STRING(buffy);
+  thebuffer= PyBytes_AS_STRING(buffy);
   APSW_BEGIN_ALLOW_THREADS
     res=sqlite3_blob_read(self->pBlob, thebuffer, length, self->curoffset);
   APSW_END_ALLOW_THREADS;
@@ -3947,11 +3958,13 @@ APSWBlob_write(APSWBlob *self, PyObject *obj)
       if(PyObject_AsReadBuffer(obj, &buffer, &size))
         return NULL;
     }
+#if PY_VERSION_HEX < 0x03000000
   else if(PyString_Check(obj))
     {
       buffer=PyString_AS_STRING(obj);
       size=PyString_GET_SIZE(obj);
     }
+#endif
   else
     {
       PyErr_Format(PyExc_TypeError, "Parameter should be string or buffer");
@@ -4304,6 +4317,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
           return -1;
         }
     }
+#if PY_VERSION_HEX < 0x03000000
   else if (PyString_Check(obj))
     {
       const char *val=PyString_AS_STRING(obj);
@@ -4351,6 +4365,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
 	  res=sqlite3_bind_text(self->statement, arg, val, (int)lenval, SQLITE_TRANSIENT);
 	}
     }
+#endif
   else if (PyObject_CheckReadBuffer(obj))
     {
       const void *buffer;
@@ -4370,9 +4385,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
     }
   else 
     {
-      PyObject *strrep=PyObject_Str(obj);
-      PyErr_Format(PyExc_TypeError, "Bad binding argument type supplied - argument #%d: %s", (int)(arg+self->bindingsoffset), strrep?PyString_AsString(strrep):"<str failed>");
-      Py_XDECREF(strrep);
+      PyErr_Format(PyExc_TypeError, "Bad binding argument type supplied - argument #%d: type %s", (int)(arg+self->bindingsoffset), Py_TYPE(obj)->tp_name);
       return -1;
     }
   if(res!=SQLITE_OK)
@@ -5147,13 +5160,13 @@ static PyTypeObject APSWCursorType = {
 static PyObject *
 getsqliteversion(void)
 {
-  return PyString_FromString(sqlite3_libversion());
+  return MAKESTR(sqlite3_libversion());
 }
 
 static PyObject *
 getapswversion(void)
 {
-  return PyString_FromString(APSW_VERSION);
+  return MAKESTR(APSW_VERSION);
 }
 
 /* ARGSUSED */

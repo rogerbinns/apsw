@@ -45,7 +45,7 @@
 */
 static void AddTraceBackHere(const char *filename, int lineno, const char *functionname, const char *localsformat, ...)
 {
-  PyObject *srcfile=0, *funcname=0, *empty_dict=0, *empty_tuple=0, *empty_string=0, *localargs=0;
+  PyObject *srcfile=0, *funcname=0, *empty_dict=0, *empty_tuple=0, *empty_string=0, *localargs=0, *empty_code=0;
   PyCodeObject *code=0;
   PyFrameObject *frame=0;
   va_list localargsva;
@@ -54,11 +54,21 @@ static void AddTraceBackHere(const char *filename, int lineno, const char *funct
 
   assert(PyErr_Occurred());
 
+#if PY_VERSION_HEX<0x03000000
   srcfile=PyString_FromString(filename);
   funcname=PyString_FromString(functionname);
+#else
+  srcfile=PyUnicode_FromString(filename);
+  funcname=PyUnicode_FromString(functionname);
+#endif
   empty_dict=PyDict_New();
   empty_tuple=PyTuple_New(0);
   empty_string=PyString_FromString("");
+#if PY_VERSION_HEX<0x03000000
+  empty_code=PyString_FromString("");
+#else
+  empty_code=PyBytes_FromStringAndSize(NULL,0);
+#endif
 
   localargs=localsformat?(Py_VaBuildValue((char *)localsformat, localargsva)):PyDict_New();
   if(localsformat)
@@ -79,7 +89,7 @@ static void AddTraceBackHere(const char *filename, int lineno, const char *funct
      0,            /*int nlocals,*/
      0,            /*int stacksize,*/
      0,            /*int flags,*/
-     empty_string, /*PyObject *code,*/
+     empty_code,   /*PyObject *code,*/
      empty_tuple,  /*PyObject *consts,*/
      empty_tuple,  /*PyObject *names,*/
      empty_tuple,  /*PyObject *varnames,*/
@@ -114,6 +124,7 @@ static void AddTraceBackHere(const char *filename, int lineno, const char *funct
   Py_XDECREF(empty_dict); 
   Py_XDECREF(empty_tuple); 
   Py_XDECREF(empty_string); 
+  Py_XDECREF(empty_code);
   Py_XDECREF(code); 
   Py_XDECREF(frame); 
 }
