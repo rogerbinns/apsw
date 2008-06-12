@@ -5,13 +5,14 @@
 import apsw
 import sys
 
-sys.stdout.write("Testing with APSW file "+apsw.__file__+"\n")
-sys.stdout.write("          APSW version "+apsw.apswversion()+"\n")
-sys.stdout.write("    SQLite lib version "+apsw.sqlitelibversion()+"\n")
-sys.stdout.write("SQLite headers version "+str(apsw.SQLITE_VERSION_NUMBER)+"\n")
+write=sys.stdout.write
+write("Testing with APSW file "+apsw.__file__+"\n")
+write("          APSW version "+apsw.apswversion()+"\n")
+write("    SQLite lib version "+apsw.sqlitelibversion()+"\n")
+write("SQLite headers version "+str(apsw.SQLITE_VERSION_NUMBER)+"\n")
 
 if [int(x) for x in apsw.sqlitelibversion().split(".")]<[3,5,9]:
-    sys.stdout.write("You are using an earlier version of SQLite than recommended\n")
+    write("You are using an earlier version of SQLite than recommended\n")
 
 sys.stdout.flush()
 
@@ -30,23 +31,48 @@ import traceback
 import re
 import gc
 
-# Unicode string prefix
+# Unicode string/bytes prefix
 if py3:
     UPREFIX=""
+    BPREFIX="b"
 else:
     UPREFIX="u"
+    BPREFIX=""
 
+# Return a unicode string - x should have been raw
 def u(x):
     return eval(UPREFIX+"'''"+x+"'''")
 
+# Return a bytes (py3)/buffer (py2) - x should have been raw
 def b(x):
     if py3:
-        return eval("b"+"'''"+x+"'''")
+        return eval(BPREFIX+"'''"+x+"'''")
     return eval("buffer('''"+x+"''')")
+
+# return bytes (py3)/string (py2) - x should have been raw
+# Use this instead of b for file i/o data as py2 uses str
+def BYTES(x):
+    if py3: return b(x)
+    return eval("'''"+x+"'''")
+
 
 # Various py3 things
 if py3:
     long=int
+
+if not py3:
+    # emulation of py3 next built-in.  In py2 the iternext method is exposed
+    # as object.next() but in py3 it is object.__next__().
+    def next(iterator, *args):
+        if len(args)>1:
+            raise TypeError("bad args")
+        try:
+            return iterator.next()
+        except StopIteration:
+            if len(args):
+                return args[0]
+            raise
+            
 
 # helper functions
 def randomintegers(howmany):
@@ -56,7 +82,11 @@ def randomintegers(howmany):
 # An instance of this class is used to get the -1 return value to the
 # C api PyObject_IsTrue
 class BadIsTrue(int):
+    # py2 does this
     def __nonzero__(self):
+        1/0
+    # py3 does this
+    def __bool__(self):
         1/0
 
 # helper class - runs code in a seperate thread
@@ -146,7 +176,7 @@ class APSW(unittest.TestCase):
         gc.collect()
 
     def assertTableExists(self, tablename):
-        self.failUnlessEqual(self.db.cursor().execute("select count(*) from ["+tablename+"]").next()[0], 0)
+        self.failUnlessEqual(next(self.db.cursor().execute("select count(*) from ["+tablename+"]"))[0], 0)
 
     def assertTableNotExists(self, tablename):
         # you get SQLError if the table doesn't exist!
@@ -169,7 +199,8 @@ class APSW(unittest.TestCase):
         # wrong types
         self.assertRaises(TypeError, apsw.Connection, 3)
         # non-unicode
-        self.assertRaises(UnicodeDecodeError, apsw.Connection, "\xef\x22\xd3\x9e")
+        if not py3:
+            self.assertRaises(UnicodeDecodeError, apsw.Connection, "\xef\x22\xd3\x9e")
         # bad file (cwd)
         self.assertRaises(apsw.CantOpenError, apsw.Connection, ".")
         # bad open flags can't be tested as sqlite accepts them all - ticket #3037
@@ -229,12 +260,12 @@ class APSW(unittest.TestCase):
               
         for str,bindings in vals:
             c.execute("insert into foo values"+str, bindings)
-            self.failUnlessEqual(c.execute("select * from foo").next(), (1,2,3))
+            self.failUnlessEqual(next(c.execute("select * from foo")), (1,2,3))
             c.execute("delete from foo")
             
         # currently missing dict keys come out as null
         c.execute("insert into foo values(:a,:b,$c)", {'a': 1, 'c':3}) # 'b' deliberately missing
-        self.failUnlessEqual((1,None,3), c.execute("select * from foo").next())
+        self.failUnlessEqual((1,None,3), next(c.execute("select * from foo")))
         c.execute("delete from foo")
 
         # these ones should cause errors
@@ -257,12 +288,12 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.BindingsError, c.execute, "insert into foo values(?,?,?); insert into foo values(?,?,?)",
                           (101,100,101,1000,103,104,105)) # too many
         # check the relevant statements did or didn't execute as appropriate
-        self.failUnlessEqual(self.db.cursor().execute("select count(*) from foo where x=99").next()[0], 1)
-        self.failUnlessEqual(self.db.cursor().execute("select count(*) from foo where x=102").next()[0], 1)
-        self.failUnlessEqual(self.db.cursor().execute("select count(*) from foo where x=100").next()[0], 1)
-        self.failUnlessEqual(self.db.cursor().execute("select count(*) from foo where x=1000").next()[0], 0)
-        self.failUnlessEqual(self.db.cursor().execute("select count(*) from foo where x=101").next()[0], 1)
-        self.failUnlessEqual(self.db.cursor().execute("select count(*) from foo where x=105").next()[0], 0)
+        self.failUnlessEqual(next(self.db.cursor().execute("select count(*) from foo where x=99"))[0], 1)
+        self.failUnlessEqual(next(self.db.cursor().execute("select count(*) from foo where x=102"))[0], 1)
+        self.failUnlessEqual(next(self.db.cursor().execute("select count(*) from foo where x=100"))[0], 1)
+        self.failUnlessEqual(next(self.db.cursor().execute("select count(*) from foo where x=1000"))[0], 0)
+        self.failUnlessEqual(next(self.db.cursor().execute("select count(*) from foo where x=101"))[0], 1)
+        self.failUnlessEqual(next(self.db.cursor().execute("select count(*) from foo where x=105"))[0], 0)
 
         # check there are some bindings!
         self.assertRaises(apsw.BindingsError, c.execute, "create table bar(x,y,z);insert into bar values(?,?,?)")
@@ -271,7 +302,7 @@ class APSW(unittest.TestCase):
         vals=( (1,2,3), (4,5,6), (7,8,9) )
         c.executemany("insert into foo values(?,?,?);", vals)
         for x,y,z in vals:
-            self.failUnlessEqual(c.execute("select * from foo where x=?",(x,)).next(), (x,y,z))
+            self.failUnlessEqual(next(c.execute("select * from foo where x=?",(x,))), (x,y,z))
 
         # with an iterator
         def myvals():
@@ -300,7 +331,7 @@ class APSW(unittest.TestCase):
                 yield {'a': i, 'b': i*10, 'c': i*100}
             1/0
         self.assertRaises(ZeroDivisionError, c.executemany, "insert into foo values($a,:b,$c)", myvals())
-        self.failUnlessEqual(c.execute("select count(*) from foo").next()[0], 2)
+        self.failUnlessEqual(next(c.execute("select count(*) from foo"))[0], 2)
         c.execute("delete from foo")
 
         # return bad type from iterator after a while
@@ -310,7 +341,7 @@ class APSW(unittest.TestCase):
             yield self
 
         self.assertRaises(TypeError, c.executemany, "insert into foo values($a,:b,$c)", myvals())
-        self.failUnlessEqual(c.execute("select count(*) from foo").next()[0], 2)
+        self.failUnlessEqual(next(c.execute("select count(*) from foo"))[0], 2)
         c.execute("delete from foo")
 
         # some errors in executemany
@@ -345,8 +376,9 @@ class APSW(unittest.TestCase):
         c.execute(" ;\n\t\r;;")
         
         # unicode
-        self.failUnlessEqual(3, c.execute(u("select 3")).next()[0])
-        self.assertRaises(UnicodeDecodeError, c.execute, "\x99\xaa\xbb\xcc")
+        self.failUnlessEqual(3, next(c.execute(u("select 3")))[0])
+        if not py3:
+            self.assertRaises(UnicodeDecodeError, c.execute, "\x99\xaa\xbb\xcc")
         
         # does it work?
         c.execute("create table foo(x,y,z)")
@@ -379,8 +411,8 @@ class APSW(unittest.TestCase):
             self.failUnlessEqual(cols, c.getdescription())
         # execution is complete ...
         self.assertRaises(apsw.ExecutionCompleteError, c.getdescription)
-        self.assertRaises(StopIteration, c.next)
-        self.assertRaises(StopIteration, c.next)
+        self.assertRaises(StopIteration, lambda xx=0: next(c))
+        self.assertRaises(StopIteration, lambda xx=0: next(c))
         # nulls for getdescription
         for row in c.execute("pragma user_version"):
             self.assertEqual(c.getdescription(), ( ('user_version', None), ))
@@ -458,7 +490,8 @@ class APSW(unittest.TestCase):
         self.assertRaises(OverflowError, c.execute, "insert into foo values(9999,?)", (-922337203685477580799,))
 
         # invalid character data - non-ascii data must be provided in unicode
-        self.assertRaises(UnicodeDecodeError, c.execute, "insert into foo values(9999,?)", ("\xfe\xfb\x80\x92",))
+        if not py3: # py3 - all strings are unicode so not a problem
+            self.assertRaises(UnicodeDecodeError, c.execute, "insert into foo values(9999,?)", ("\xfe\xfb\x80\x92",))
 
         # not valid types for SQLite
         self.assertRaises(TypeError, c.execute, "insert into foo values(9999,?)", (apsw,)) # a module
@@ -466,9 +499,10 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, c.execute, "insert into foo values(9999,?)", (dir,))  # function
 
         # check nothing got inserted
-        self.failUnlessEqual(0, c.execute("select count(*) from foo where row=9999").next()[0])
+        self.failUnlessEqual(0, next(c.execute("select count(*) from foo where row=9999"))[0])
 
-        # playing with default encoding and non-ascii strings
+        # playing with default encoding and non-ascii strings - py2 only
+        if py3: return
         enc=sys.getdefaultencoding()
         reload(sys) # gets setdefaultencoding function back
         try:
@@ -556,21 +590,21 @@ class APSW(unittest.TestCase):
         # cmds should be unchanged
         self.failUnlessEqual(cmds, statements)
         # tracefunc can abort execution
-        count=c.execute("select count(*) from one").next()[0]
+        count=next(c.execute("select count(*) from one"))[0]
         def tracefunc(cmd, bindings):
             return False # abort
         c.setexectrace(tracefunc)
         self.assertRaises(apsw.ExecTraceAbort, c.execute, "insert into one values(1,2,3)")
         # table should not have been modified
         c.setexectrace(None)
-        self.failUnlessEqual(count, c.execute("select count(*) from one").next()[0])
+        self.failUnlessEqual(count, next(c.execute("select count(*) from one"))[0])
         # error in tracefunc
         def tracefunc(cmd, bindings):
             1/0
         c.setexectrace(tracefunc)
         self.assertRaises(ZeroDivisionError, c.execute, "insert into one values(1,2,3)")
         c.setexectrace(None)
-        self.failUnlessEqual(count, c.execute("select count(*) from one").next()[0])
+        self.failUnlessEqual(count, next(c.execute("select count(*) from one"))[0])
         # test across executemany and multiple statments
         counter=[0]
         def tracefunc(cmd, bindings):
@@ -598,7 +632,7 @@ class APSW(unittest.TestCase):
         self.failUnlessEqual(counter[0], 4)
         c.setexectrace(None)
         # check the first statements got executed
-        self.failUnlessEqual(3, c.execute("select max(x) from two").next()[0])
+        self.failUnlessEqual(3, next(c.execute("select max(x) from two"))[0])
         # executemany
         def tracefunc(cmd, bindings):
             1/0
@@ -624,20 +658,20 @@ class APSW(unittest.TestCase):
         def tracefunc(*result):
             return tuple([7 for i in result])
         # should get original row back
-        self.failUnlessEqual(c.execute("select * from foo").next(), vals)
+        self.failUnlessEqual(next(c.execute("select * from foo")), vals)
         self.assertRaises(TypeError, c.setrowtrace, 12) # must be callable
         c.setrowtrace(tracefunc)
         self.failUnless(c.getrowtrace() is tracefunc)
         # all values replaced with 7
-        self.failUnlessEqual(c.execute("select * from foo").next(), tuple([7]*len(vals)))
+        self.failUnlessEqual(next(c.execute("select * from foo")), tuple([7]*len(vals)))
         def tracefunc(*result):
             return (7,)
         # a single 7
         c.setrowtrace(tracefunc)
-        self.failUnlessEqual(c.execute("select * from foo").next(), (7,))
+        self.failUnlessEqual(next(c.execute("select * from foo")), (7,))
         # no alteration again
         c.setrowtrace(None)
-        self.failUnlessEqual(c.execute("select * from foo").next(), vals)
+        self.failUnlessEqual(next(c.execute("select * from foo")), vals)
         # error in function
         def tracefunc(*result):
             1/0
@@ -649,7 +683,7 @@ class APSW(unittest.TestCase):
         except ZeroDivisionError:
             pass
         c.setrowtrace(None)
-        self.failUnlessEqual(c.execute("select * from foo").next(), vals)
+        self.failUnlessEqual(next(c.execute("select * from foo")), vals)
         # returning null
         c.execute("create table bar(x)")
         c.executemany("insert into bar values(?)", [[x] for x in range(10)])
@@ -680,7 +714,7 @@ class APSW(unittest.TestCase):
         for i in range(10):
             c.execute("insert into foo values(?,?,?)", (i,i,i))
         for i in range(10):
-            self.failUnlessEqual( (7,), c.execute("select seven(x,y,z) from foo where x=?", (i,)).next())
+            self.failUnlessEqual( (7,), next(c.execute("select seven(x,y,z) from foo where x=?", (i,))))
         # clear func
         self.assertRaises(apsw.BusyError, self.db.createscalarfunction,"seven", None) # active select above so no funcs can be changed
         for row in c.execute("select null"): pass # no active sql now
@@ -703,7 +737,8 @@ class APSW(unittest.TestCase):
             return "\x99\xaa\xbb\xcc"
         
         self.db.createscalarfunction("ilove8bit", ilove8bit)
-        self.assertRaises(UnicodeDecodeError, c.execute, "select ilove8bit(*) from foo")
+        if not py3:
+            self.assertRaises(UnicodeDecodeError, c.execute, "select ilove8bit(*) from foo")
         # coverage
         def bad(*args): 1/0
         self.db.createscalarfunction("bad", bad)
@@ -748,7 +783,7 @@ class APSW(unittest.TestCase):
         for v in vals:
             c.execute("insert into foo values(?,?,?)", v)
 
-        v=c.execute("select longest(x,y,z) from foo").next()[0]
+        v=next(c.execute("select longest(x,y,z) from foo"))[0]
         self.failUnlessEqual(v, vals[0][2])
 
         # SQLite doesn't allow step functions to return an error, so we have to defer to the final
@@ -951,7 +986,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, self.db.setprogresshandler, ph, "foo") # second param is steps
         self.db.setprogresshandler(ph, -17) # SQLite doesn't complain about negative numbers
         self.db.setprogresshandler(ph, 20)
-        c.execute("select max(x) from foo").next()
+        next(c.execute("select max(x) from foo"))
 
         self.assertNotEqual(phcalledcount[0], 0)
         saved=phcalledcount[0]
@@ -962,7 +997,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(ZeroDivisionError, c.execute, "update foo set x=-10")
         self.db.setprogresshandler(None) # clear ph so next line runs
         # none should have taken
-        self.failUnlessEqual(0, c.execute("select count(*) from foo where x=-10").next()[0])
+        self.failUnlessEqual(0, next(c.execute("select count(*) from foo where x=-10"))[0])
         # and previous ph should not have been called
         self.failUnlessEqual(saved, phcalledcount[0])
         def ph():
@@ -1008,7 +1043,8 @@ class APSW(unittest.TestCase):
         self.failUnlessEqual(False, self.db.complete("select * from foo where x=1"))
         self.failUnlessEqual(True, self.db.complete("select * from foo;"))
         self.failUnlessEqual(True, self.db.complete(u(r"select '\u9494\ua7a7';")))
-        self.assertRaises(UnicodeDecodeError, self.db.complete, "select '\x94\xa7';")
+        if not py3:
+            self.assertRaises(UnicodeDecodeError, self.db.complete, "select '\x94\xa7';")
         self.assertRaises(TypeError, self.db.complete, 12) # wrong type
         self.assertRaises(TypeError, self.db.complete)     # not enough args
         self.assertRaises(TypeError, self.db.complete, "foo", "bar") # too many args
@@ -1143,7 +1179,7 @@ class APSW(unittest.TestCase):
         cur.execute("insert into test values(123,'abc')")
         self.assertRaises(apsw.BusyError, cur2.execute, "insert into test values(456, 'def')")
         cur.execute("commit")
-        self.assertEqual(1, cur2.execute("select count(*) from test where x=123").next()[0])
+        self.assertEqual(1, next(cur2.execute("select count(*) from test where x=123"))[0])
         con2.close()
 
     def testInterruptHandling(self):
@@ -1259,7 +1295,7 @@ class APSW(unittest.TestCase):
         
         # check cursor still works
         c.execute("insert into foo values(1000,1000)")
-        self.assertEqual(1, c.execute("select count(*) from foo where x=1000").next()[0])
+        self.assertEqual(1, next(c.execute("select count(*) from foo where x=1000"))[0])
 
     def testProfile(self):
         "Verify profiling"
@@ -1366,7 +1402,8 @@ class APSW(unittest.TestCase):
         for i,v in enumerate(vals):
             c.execute("insert into foo values(?,?)", (i, v))
 
-        self.assertRaises(UnicodeDecodeError, c.execute, "insert into foo values(9000,?)", ("a simple string\0with a null and \xfe\xfb\x80\x92",))
+        if not py3:
+            self.assertRaises(UnicodeDecodeError, c.execute, "insert into foo values(9000,?)", ("a simple string\0with a null and \xfe\xfb\x80\x92",))
             
         # add function to test conversion back as well
         def snap(*args):
@@ -1383,10 +1420,10 @@ class APSW(unittest.TestCase):
 
         # check execute
         for v in vals:
-            self.failUnlessEqual(v, c.execute("select ?", (v,)).next()[0])
+            self.failUnlessEqual(v, next(c.execute("select ?", (v,)))[0])
             # nulls not allowed in main query string, so lets check the other bits (unicode etc)
             v2=v.replace("\0", " zero ")
-            self.failUnlessEqual(v2, c.execute("select '%s'" % (v2,)).next()[0])
+            self.failUnlessEqual(v2, next(c.execute("select '%s'" % (v2,)))[0])
 
         # ::TODO:: check collations
 
@@ -1437,13 +1474,13 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, self.db.loadextension, "foo", "bar", 12)
         self.db.loadextension(LOADEXTENSIONFILENAME)
         c=self.db.cursor()
-        self.failUnlessEqual(1, c.execute("select half(2)").next()[0])
+        self.failUnlessEqual(1, next(c.execute("select half(2)"))[0])
         # second entry point hasn't been called yet
         self.assertRaises(apsw.SQLError, c.execute, "select doubleup(2)")
         # load using other entry point
         self.assertRaises(apsw.ExtensionLoadingError, self.db.loadextension, LOADEXTENSIONFILENAME, "doesntexist")
         self.db.loadextension(LOADEXTENSIONFILENAME, "alternate_sqlite3_extension_init")
-        self.failUnlessEqual(4, c.execute("select doubleup(2)").next()[0])
+        self.failUnlessEqual(4, next(c.execute("select doubleup(2)"))[0])
         
 
     def testVtables(self):
@@ -1848,8 +1885,9 @@ class APSW(unittest.TestCase):
             self.assertRaises(TypeError, cur.execute, allconstraints)
         VTable.BestIndex=VTable.BestIndex4
         self.assertRaises(ValueError, cur.execute, allconstraints)
-        VTable.BestIndex=VTable.BestIndex5
-        self.assertRaises(UnicodeDecodeError, cur.execute, allconstraints)
+        if not py3:
+            VTable.BestIndex=VTable.BestIndex5
+            self.assertRaises(UnicodeDecodeError, cur.execute, allconstraints)
         VTable.BestIndex=VTable.BestIndex6
         self.assertRaises(ZeroDivisionError, cur.execute, allconstraints)
         VTable.BestIndex=VTable.BestIndex7
@@ -2107,7 +2145,7 @@ class APSW(unittest.TestCase):
             def Close(self):
                 pass
 
-        paths=[x.decode(sys.getfilesystemencoding()).replace("\\","/") for x in sys.path if len(x) and os.path.isdir(x)]
+        paths=[x.replace("\\","/") for x in sys.path if len(x) and os.path.isdir(x)]
         cols,data=getfiledata(paths)
         self.db.createmodule("filesource", Source())
         cur=self.db.cursor()
@@ -2142,7 +2180,7 @@ class APSW(unittest.TestCase):
     def testClosingChecks(self):
         "Check closed connection is correctly detected"
         cur=self.db.cursor()
-        rowid=cur.execute("create table foo(x blob); insert into foo values(zeroblob(98765)); select rowid from foo").next()[0]
+        rowid=next(cur.execute("create table foo(x blob); insert into foo values(zeroblob(98765)); select rowid from foo"))[0]
         blob=self.db.blobopen("main", "foo", "x", rowid, True)
         blob.close()
         nargs=self.blob_nargs
@@ -2211,11 +2249,11 @@ class APSW(unittest.TestCase):
         f=mmap.mmap(-1, 2*1024*1024*1024+25000)
         c=self.db.cursor()
         c.execute("create table foo(theblob)")
-        self.assertRaises(apsw.TooBigError,  c.execute, "insert into foo values(?)", (buffer(f),))
+        self.assertRaises(apsw.TooBigError,  c.execute, "insert into foo values(?)", (f,))
         c.execute("insert into foo values(?)", ("jkghjk"*1024,))
         b=self.db.blobopen("main", "foo", "theblob", self.db.last_insert_rowid(), True)
         b.read(1)
-        self.assertRaises(ValueError, b.write, buffer(f))
+        self.assertRaises(ValueError, b.write, f)
         f.close()
 
     def testErrorCodes(self):
@@ -2319,14 +2357,14 @@ class APSW(unittest.TestCase):
             # blob open for reading.  The close method called in the
             # destructor will then also give the error
             db=apsw.Connection(":memory:")
-            rowid=db.cursor().execute("create table foo(x); insert into foo values(x'aabbccdd'); select rowid from foo").next()[0]
-            b=db.blobopen("main", "foo", "x", rowid, False)
+            rowid=next(db.cursor().execute("create table foo(x); insert into foo values(x'aabbccdd'); select rowid from foo"))[0]
+            blob=db.blobopen("main", "foo", "x", rowid, False)
             try:
-                b.write("badd")
+                blob.write(b("badd"))
             except apsw.ReadOnlyError:
                 pass
             del db
-            del b
+            del blob
             gc.collect()
             
         xx=sys.excepthook
@@ -2398,6 +2436,9 @@ class APSW(unittest.TestCase):
 
     def sourceCheckFunction(self, name, lines):
         # Checks an individual function does things right
+        if name.startswith("ZeroBlobBind_"):
+                return
+
         if name.startswith("APSWCursor_"):
             # these methods aren't publically exported so the checks
             # will already have been done by their callers
@@ -2498,23 +2539,24 @@ class APSW(unittest.TestCase):
         cur=self.db.cursor()
         cur.execute("create table foo(x)")
         cur.execute("insert into foo values(?)", (apsw.zeroblob(27),))
-        v=cur.execute("select * from foo").next()[0]
+        v=next(cur.execute("select * from foo"))[0]
         self.assertEqual(v, b(r"\x00"*27))
         # Make sure inheritance works
-        class multi(object):
-            def __init__(self): self.foo=3
-        class derived(multi,apsw.zeroblob):
+        class multi:
+            def __init__(self, *args):
+                self.foo=3
+        class derived(apsw.zeroblob):
             def __init__(self, num):
-                multi.__init__(self)
+                #multi.__init__(self)
                 apsw.zeroblob.__init__(self, num)
         cur.execute("delete from foo; insert into foo values(?)", (derived(28),))
-        v=cur.execute("select * from foo").next()[0]
+        v=next(cur.execute("select * from foo"))[0]
         self.assertEqual(v, b(r"\x00"*28))
 
     def testBlobIO(self):
         "Verify Blob input/output"
         cur=self.db.cursor()
-        rowid=cur.execute("create table foo(x blob); insert into foo values(zeroblob(98765)); select rowid from foo").next()[0]
+        rowid=next(cur.execute("create table foo(x blob); insert into foo values(zeroblob(98765)); select rowid from foo"))[0]
         self.assertRaises(TypeError, self.db.blobopen, 1)
         self.assertRaises(TypeError, self.db.blobopen, u("main"), "foo\xf3")
         if sys.version_info>=(2,4):
@@ -2533,10 +2575,10 @@ class APSW(unittest.TestCase):
         # check vals
         self.assertEqual(blobro.length(), 98765)
         self.assertEqual(blobro.length(), 98765)
-        self.failUnlessEqual(blobro.read(0), "")
+        self.failUnlessEqual(blobro.read(0), BYTES(""))
         for i in range(98765):
             x=blobro.read(1)
-            self.assertEqual("\x00", x)
+            self.assertEqual(BYTES(r"\x00"), x)
         x=blobro.read(10)
         self.assertEqual(x, None)
         blobro.seek(0,1)
@@ -2548,9 +2590,9 @@ class APSW(unittest.TestCase):
         self.assertEqual(blobro.tell(), 2222)
         blobro.seek(0,0)
         self.assertEqual(blobro.tell(), 0)
-        self.assertEqual(blobro.read(), "\x00"*98765)
+        self.assertEqual(blobro.read(), BYTES(r"\x00"*98765))
         blobro.seek(-3,2)
-        self.assertEqual(blobro.read(), "\x00"*3)
+        self.assertEqual(blobro.read(), BYTES(r"\x00"*3))
         # check types
         self.assertRaises(TypeError, blobro.read, "foo")
         self.assertRaises(TypeError, blobro.tell, "foo")
@@ -2567,7 +2609,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(ValueError, blobro.seek, -100000, 1)
         self.assertRaises(ValueError, blobro.seek, -100000, 2)
         blobro.seek(0,0)
-        self.assertRaises(apsw.ReadOnlyError, blobro.write, "kermit was here")
+        self.assertRaises(apsw.ReadOnlyError, blobro.write, b("kermit was here"))
         # you get the error on the close too, and blob is always closed - sqlite ticket #2815
         self.assertRaises(apsw.ReadOnlyError, blobro.close) 
         # check can't work on closed blob
@@ -2578,20 +2620,20 @@ class APSW(unittest.TestCase):
         # write tests
         blobrw=self.db.blobopen("main", "foo", "x", rowid, True)
         self.assertEqual(blobrw.length(), 98765)
-        blobrw.write("abcd")
+        blobrw.write(b("abcd"))
         blobrw.seek(0, 0)
-        self.assertEqual(blobrw.read(4), "abcd")
-        blobrw.write("efg")
+        self.assertEqual(blobrw.read(4), BYTES("abcd"))
+        blobrw.write(b("efg"))
         blobrw.seek(0, 0)
-        self.assertEqual(blobrw.read(7), "abcdefg")
+        self.assertEqual(blobrw.read(7), BYTES("abcdefg"))
         blobrw.seek(50, 0)
         blobrw.write(b("hijkl"))
         blobrw.seek(-98765, 2)
-        self.assertEqual(blobrw.read(55), "abcdefg"+"\x00"*43+"hijkl")
+        self.assertEqual(blobrw.read(55), BYTES("abcdefg"+r"\x00"*43+"hijkl"))
         self.assertRaises(TypeError, blobrw.write, 12)
         self.assertRaises(TypeError, blobrw.write)
         # try to go beyond end
-        self.assertRaises(ValueError, blobrw.write, " "*100000)
+        self.assertRaises(ValueError, blobrw.write, b(" "*100000))
         self.assertRaises(TypeError, blobrw.close, "elephant")
 
     def testBlobReadError(self):
@@ -2647,11 +2689,11 @@ if __name__=='__main__':
 
     # We can do extension loading but no extension present ...
     if getattr(apsw, "enableloadextension", None) and not os.path.exists(LOADEXTENSIONFILENAME):
-        sys.stdout.write("Not doing LoadExtension test.  You need to compile the extension first\n")
+        write("Not doing LoadExtension test.  You need to compile the extension first\n")
         if sys.platform.startswith("darwin"):
-            sys.stdout.write("  gcc -fPIC -bundle -o "+LOADEXTENSIONFILENAME+" -Isqlite3 testextension.c\n")
+            write("  gcc -fPIC -bundle -o "+LOADEXTENSIONFILENAME+" -Isqlite3 testextension.c\n")
         else:
-            sys.stdout.write("  gcc -fPIC -shared -o "+LOADEXTENSIONFILENAME+" -Isqlite3 testextension.c\n")
+            write("  gcc -fPIC -shared -o "+LOADEXTENSIONFILENAME+" -Isqlite3 testextension.c\n")
         del APSW.testLoadExtension
 
     if os.getenv("APSW_NO_MEMLEAK"):
@@ -2669,7 +2711,7 @@ if __name__=='__main__':
         PROFILESTEPS=1000
         v=int(v)
         for i in range(v):
-            sys.stdout.write("Iteration "+str(i+1)+" of "+str(v)+"\n")
+            write("Iteration "+str(i+1)+" of "+str(v)+"\n")
             try:
                 unittest.main()
             except SystemExit:

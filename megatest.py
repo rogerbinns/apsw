@@ -49,7 +49,7 @@ def main():
     threads=[]
 
     for pyver in PYVERS:
-        for ucs in (2,4):
+        for ucs in UCSTEST:
             if pyver=="system":
                 if ucs!=2: continue
                 ucs=0
@@ -95,7 +95,10 @@ def buildpython(workdir, pyver, ucs, logfilename):
     if pyver=="2.3.0": pyver="2.3"    
     run("cd %s ; mkdir pyinst ; wget -q %s -O - | tar xf%s -  > %s 2>&1" % (workdir, url, tarx, logfilename))
     run("cd %s ; cd Python-%s ; ./configure --enable-unicode=ucs%d --prefix=%s/pyinst >> %s 2>&1; make >>%s 2>&1; make  install >>%s 2>&1" % (workdir, pyver, ucs, workdir, logfilename, logfilename, logfilename))
-    return os.path.join(workdir, "pyinst", "bin", "python"), os.path.join(workdir, "pyinst", "lib")
+    suf=""
+    if pyver>="3.0":
+        suf="3.0"
+    return os.path.join(workdir, "pyinst", "bin", "python"+suf), os.path.join(workdir, "pyinst", "lib")
     
 def buildsqlite(workdir, sqlitever, logfile):
     os.system("rm -rf '%s/sqlite3' '%s/sqlite3.c' 2>/dev/null" % (workdir,workdir))
@@ -117,13 +120,10 @@ def buildapsw(outputfile, pybin, workdir):
         run("cd %s ; %s setup.py install >>%s 2>&1" % (workdir, pybin, outputfile))
 
 
-
-
-
 PYVERS=(
+    '3.0a5',
     '2.6a3',
     '2.5.2',
-    '2.5.1',
     '2.4.5',
     '2.3.7',
     'system',
@@ -135,6 +135,7 @@ SQLITEVERS=(
     '3.5.9',
    )
 
+UCSTEST=(2,4,)
 
 if __name__=='__main__':
     main()

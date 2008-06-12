@@ -331,7 +331,11 @@ apsw_write_unraiseable(void)
   if(excepthook)
     result=PyEval_CallFunction(excepthook, "(OOO)", err_type?err_type:Py_None, err_value?err_value:Py_None, err_traceback?err_traceback:Py_None);
   if(!excepthook || !result)
-    PyErr_Display(err_type, err_value, err_traceback);
+    {
+      /* remove any error from callback failure */
+      PyErr_Clear();
+      PyErr_Display(err_type, err_value, err_traceback);
+    }
 
   /* excepthook is a borrowed reference */
   Py_XDECREF(result);
@@ -3711,26 +3715,32 @@ static PyObject*
 ZeroBlobBind_new(PyTypeObject *type, PyObject *args, PyObject *kwargs)
 {
   ZeroBlobBind *self;
+  self=(ZeroBlobBind*)type->tp_alloc(type, 0);
+  if(self) self->blobsize=0;
+  return (PyObject*)self;
+}
+
+static int
+ZeroBlobBind_init(ZeroBlobBind *self, PyObject *args, PyObject *kwargs)
+{
   int n;
-  
   if(kwargs && PyDict_Size(kwargs)!=0)
     {
       PyErr_Format(PyExc_TypeError, "Zeroblob constructor does not take keyword arguments");
-      return NULL;
+      return -1;
     }
-
+  
   if(!PyArg_ParseTuple(args, "i", &n))
-    return NULL;
+    return -1;
 
   if(n<0)
     {
       PyErr_Format(PyExc_TypeError, "zeroblob size must be >= 0");
-      return NULL;
+      return -1;
     }
+  self->blobsize=n;
 
-  self=(ZeroBlobBind*)type->tp_alloc(type, 0);
-  if(self) self->blobsize=n;
-  return (PyObject*)self;
+  return 0;
 }
 
 static PyTypeObject ZeroBlobBindType = {
@@ -3774,7 +3784,7 @@ static PyTypeObject ZeroBlobBindType = {
     0,                         /* tp_descr_get */
     0,                         /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    0,                         /* tp_init */
+    (initproc)ZeroBlobBind_init, /* tp_init */
     0,                         /* tp_alloc */
     ZeroBlobBind_new,          /* tp_new */
     0,                         /* tp_free */
@@ -5074,8 +5084,6 @@ static PyMethodDef APSWCursor_methods[] = {
    "Executes one or more statements" },
   {"executemany", (PyCFunction)APSWCursor_executemany, METH_VARARGS,
    "Repeatedly executes statements on sequence" },
-  {"next", (PyCFunction)APSWCursor_next, METH_NOARGS,
-   "Returns next row returned from query"},
   {"setexectrace", (PyCFunction)APSWCursor_setexectrace, METH_O,
    "Installs a function called for every statement executed"},
   {"setrowtrace", (PyCFunction)APSWCursor_setrowtrace, METH_O,
@@ -5249,7 +5257,7 @@ initapsw(void)
 
     /* add in some constants and also put them in a corresponding mapping dictionary */
 
-#define ADDINT(v) PyModule_AddObject(m, #v, Py_BuildValue("i", v)); \
+#define ADDINT(v) PyModule_AddIntConstant(m, #v, v); \
          PyDict_SetItemString(thedict, #v, Py_BuildValue("i", v));  \
          PyDict_SetItem(thedict, Py_BuildValue("i", v), Py_BuildValue("s", #v));
 
