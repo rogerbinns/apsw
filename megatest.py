@@ -73,14 +73,14 @@ def main():
 
 def getpyurl(pyver):
     dirver=pyver
-    if 'a' in dirver:
-        dirver=dirver.split('a')[0]
+    if 'b' in dirver:
+        dirver=dirver.split('b')[0]
     if pyver>'2.3.0':
-        return "http://www.python.org/ftp/python/%s/Python-%s.tar.bz2" % (dirver,pyver)
+        return "http://python.org/ftp/python/%s/Python-%s.tar.bz2" % (dirver,pyver)
     if pyver=='2.3.0':
         pyver='2.3'
         dirver='2.3'
-    return "http://www.python.org/ftp/python/%s/Python-%s.tgz" % (dirver,pyver)
+    return "http://python.org/ftp/python/%s/Python-%s.tgz" % (dirver,pyver)
 
 def sqliteurl(sqlitever):
     return "http://sqlite.org/sqlite-amalgamation-%s.zip" % (sqlitever.replace('.', '_'),)
@@ -121,8 +121,8 @@ def buildapsw(outputfile, pybin, workdir):
 
 
 PYVERS=(
-    '3.0a5',
-    '2.6a3',
+    '3.0b1',
+    '2.6b1',
     '2.5.2',
     '2.4.5',
     '2.3.7',

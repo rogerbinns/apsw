@@ -103,7 +103,9 @@ typedef int Py_ssize_t;
 
 #if PY_VERSION_HEX < 0x03000000
 #define PyBytes_FromStringAndSize PyString_FromStringAndSize
+#define PyBytes_AsString          PyString_AsString
 #define PyBytes_AS_STRING         PyString_AS_STRING
+#define PyBytes_GET_SIZE          PyString_GET_SIZE
 #endif
 
 /* A module to augment tracebacks */
@@ -410,7 +412,7 @@ MakeSqliteMsgFromPyException(char **errmsg)
 	str=MAKESTR("python exception with no information");
       if(*errmsg)
 	sqlite3_free(*errmsg);
-      *errmsg=sqlite3_mprintf("%s",PyString_AsString(str));
+      *errmsg=sqlite3_mprintf("%s",PyBytes_AsString(str));
 
       Py_XDECREF(str);
     }
@@ -591,6 +593,34 @@ static PyTypeObject APSWBlobType;
 
 /* CONVENIENCE FUNCTIONS */
 
+/* Return a PyBuffer (py2) or PyBytes (py3) */
+#if PY_VERSION_HEX<0x03000000
+static PyObject *
+converttobytes(const void *ptr, Py_ssize_t size)
+{
+
+  PyObject *item;
+  item=PyBuffer_New(size);
+  if(item)
+    {
+      void *buffy=0;
+      Py_ssize_t size2=size;
+      if(!PyObject_AsWriteBuffer(item, &buffy, &size2))
+        memcpy(buffy, ptr, size);
+      else
+        {
+          Py_DECREF(item);
+          item=NULL;
+        }
+    }
+  return item;
+}
+#else
+#define converttobytes PyBytes_FromStringAndSize
+#endif
+
+
+
 /* Convert a NULL terminated UTF-8 string into a Python object.  None
    is returned if NULL is passed in. */
 static PyObject *
@@ -615,8 +645,8 @@ convertutf8stringsize(const char *str, Py_ssize_t size)
   return PyUnicode_DecodeUTF8(str, size, NULL);
 }
 
-/* Returns a PyString encoded in UTF8 - new reference.
-   Use PyString_AsString on the return value to get a
+/* Returns a PyBytes/String encoded in UTF8 - new reference.
+   Use PyBytes/String_AsString on the return value to get a
    const char * to utf8 bytes */
 static PyObject *
 getutf8string(PyObject *string)
@@ -672,8 +702,8 @@ getutf8string(PyObject *string)
   _utf8=PyUnicode_AsUTF8String(obj);                     \
   if(_utf8)                                              \
     {                                                    \
-      strbytes=PyString_GET_SIZE(_utf8);                 \
-      strdata=PyString_AsString(_utf8);                  \
+      strbytes=PyBytes_GET_SIZE(_utf8);                 \
+      strdata=PyBytes_AS_STRING(_utf8);                  \
     }                      
 
 #define UNIDATAEND(obj)                                  \
@@ -813,17 +843,20 @@ Connection_dealloc(Connection* self)
       if(res!=SQLITE_OK)
         {
           /* not allowed to clobber existing exception */
-          PyObject *etype=NULL, *evalue=NULL, *etraceback=NULL;
+          PyObject *etype=NULL, *evalue=NULL, *etraceback=NULL, *utf8filename=NULL;
           PyErr_Fetch(&etype, &evalue, &etraceback);
+
+          utf8filename=getutf8string(self->co_filename);
           
           PyErr_Format(ExcConnectionNotClosed, 
                        "apsw.Connection on \"%s\" at address %p, allocated at %s:%d. The destructor "
                        "has encountered an error %d closing the connection, but cannot raise an exception.",
                        self->filename?self->filename:"NULL", self,
-                       PyString_AsString(self->co_filename), self->co_linenumber,
+                       PyBytes_AsString(utf8filename), self->co_linenumber,
                        res);
           
           apsw_write_unraiseable();
+          Py_XDECREF(utf8filename);
           PyErr_Fetch(&etype, &evalue, &etraceback);
         }
     }
@@ -1783,30 +1816,7 @@ convert_value_to_pyobject(sqlite3_value *value)
       Py_RETURN_NONE;
 
     case SQLITE_BLOB:
-      {
-#if PY_VERSION_HEX<0x03000000
-        PyObject *item;
-        Py_ssize_t sz=sqlite3_value_bytes(value);
-
-        item=PyBuffer_New(sz);
-        if(item)
-          {
-            void *buffy=0;
-            Py_ssize_t sz2=sz;
-            if(!PyObject_AsWriteBuffer(item, &buffy, &sz2))
-              memcpy(buffy, sqlite3_value_blob(value), sz);
-            else
-              {
-                Py_DECREF(item);
-                return NULL;
-              }
-	    return item;
-          }
-        return NULL;
-#else
-        return PyBytes_FromStringAndSize(sqlite3_value_blob(value), sqlite3_value_bytes(value));
-#endif
-      }
+      return converttobytes(sqlite3_value_blob(value), sqlite3_value_bytes(value));
 
     default:
       PyErr_Format(APSWException, "Unknown sqlite column type %d!", coltype);
@@ -1840,29 +1850,7 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
       Py_RETURN_NONE;
 
     case SQLITE_BLOB:
-#if PY_VERSION_HEX<0x03000000
-      {
-        PyObject *item;
-        Py_ssize_t sz=sqlite3_column_bytes(stmt, col);
-        item=PyBuffer_New(sz);
-        if(item)
-          {
-            void *buffy=0;
-            Py_ssize_t sz2=sz;
-            if(!PyObject_AsWriteBuffer(item, &buffy, &sz2))
-              memcpy(buffy, sqlite3_column_blob(stmt, col), sz);
-            else
-              {
-                Py_DECREF(item);
-                return NULL;
-              }
-	    return item;
-          }
-        return NULL;
-      }
-#else
-      return PyBytes_FromStringAndSize(sqlite3_column_blob(stmt, col), sqlite3_column_bytes(stmt, col));
-#endif
+      return converttobytes(sqlite3_column_blob(stmt, col), sqlite3_column_bytes(stmt, col));
 
     default:
       PyErr_Format(APSWException, "Unknown sqlite column type %d!", coltype);
@@ -1921,6 +1909,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
 	    if(strbytes>APSW_INT32_MAX)
 	      {
                 SET_EXC(NULL, SQLITE_TOOBIG);
+                sqlite3_result_error_toobig(context);
 	      }
 	    else
 	      {
@@ -1956,6 +1945,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
 		if(strbytes>APSW_INT32_MAX)
 		  {
                     SET_EXC(NULL, SQLITE_TOOBIG);
+                    sqlite3_result_error_toobig(context);
 		  }
 		else
 		  {
@@ -1975,6 +1965,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
 	  if(lenval>APSW_INT32_MAX)
             {
               SET_EXC(NULL, SQLITE_TOOBIG);
+              sqlite3_result_error_toobig(context);
             }
 	  else
 	    sqlite3_result_text(context, val, (int)lenval, SQLITE_TRANSIENT);
@@ -1992,7 +1983,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
           return;
         }
       if (buflen>APSW_INT32_MAX)
-	sqlite3_result_error(context, "Buffer object is too large for SQLite - only up to 2GB is supported", -1);
+	sqlite3_result_error_toobig(context);
       else
 	sqlite3_result_blob(context, buffer, (int)buflen, SQLITE_TRANSIENT);
       return;
@@ -2639,7 +2630,7 @@ vtabCreateOrConnect(sqlite3 *db,
     PyObject *utf8schema=getutf8string(schema);
     if(!utf8schema) 
       goto pyexception;
-    sqliteres=sqlite3_declare_vtab(db, PyString_AsString(utf8schema));
+    sqliteres=sqlite3_declare_vtab(db, PyBytes_AsString(utf8schema));
     Py_DECREF(utf8schema);
     if(sqliteres!=SQLITE_OK)
       {
@@ -2990,7 +2981,7 @@ vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
 	    Py_DECREF(idxstr);
 	    goto pyexception;
 	  }
-	indexinfo->idxStr=sqlite3_mprintf("%s", PyString_AsString(utf8str));
+	indexinfo->idxStr=sqlite3_mprintf("%s", PyBytes_AsString(utf8str));
 	indexinfo->needToFreeIdxStr=1;
       }
     Py_XDECREF(utf8str);
@@ -4168,7 +4159,7 @@ resetcursor(APSWCursor *self, int force)
   if (PyErr_Occurred())
     {
       assert(res);
-      AddTraceBackHere(__FILE__, __LINE__, "resetcursor", NULL);
+      AddTraceBackHere(__FILE__, __LINE__, "resetcursor", "{s: i}", "res", res);
     }
 
   return res;
@@ -5206,13 +5197,25 @@ static PyMethodDef module_methods[] = {
 
 
 
-#ifndef PyMODINIT_FUNC	/* declarations for DLL import/export */
-#define PyMODINIT_FUNC void
+#if PY_VERSION_HEX>=0x03000000
+static struct PyModuleDef apswmoduledef={
+  PyModuleDef_HEAD_INIT,
+  "apsw", 
+  NULL,
+  -1,
+  module_methods
+};
 #endif
+
+
 PyMODINIT_FUNC
+#if PY_VERSION_HEX<0x03000000
 initapsw(void) 
+#else
+PyInit_apsw(void)
+#endif
 {
-    PyObject *m;
+    PyObject *m=NULL;
     PyObject *thedict;
     PyObject *hooks;
 
@@ -5220,27 +5223,30 @@ initapsw(void)
     assert(sizeof(long long)==8);             /* we expect 64 bit long long */
 
     if (PyType_Ready(&ConnectionType) < 0)
-      return;
+      goto fail;
 
     if (PyType_Ready(&APSWCursorType) < 0)
-      return;
+      goto fail;
 
     if (PyType_Ready(&ZeroBlobBindType) <0)
-      return;
+      goto fail;
 
     if (PyType_Ready(&APSWBlobType) <0)
-      return;
+      goto fail;
 
     /* ensure threads are available */
     PyEval_InitThreads();
 
-
+#if PY_VERSION_HEX<0x03000000
     m = apswmodule = Py_InitModule3("apsw", module_methods,
                        "Another Python SQLite Wrapper.");
+#else
+    m = apswmodule = PyModule_Create(&apswmoduledef);
+#endif
 
-    if (m == NULL)  return;
+    if (m == NULL)  goto fail;
 
-    if(init_exceptions(m)) return;
+    if(init_exceptions(m)) goto fail;
 
     Py_INCREF(&ConnectionType);
     PyModule_AddObject(m, "Connection", (PyObject *)&ConnectionType);
@@ -5251,7 +5257,7 @@ initapsw(void)
     PyModule_AddObject(m, "zeroblob", (PyObject *)&ZeroBlobBindType);
     
     hooks=PyList_New(0);
-    if(!hooks) return;
+    if(!hooks) goto fail;
     PyModule_AddObject(m, "connection_hooks", hooks);
     
 
@@ -5262,7 +5268,7 @@ initapsw(void)
          PyDict_SetItem(thedict, Py_BuildValue("i", v), Py_BuildValue("s", #v));
 
     thedict=PyDict_New();
-    if(!thedict) return;
+    if(!thedict) goto fail;
 
     ADDINT(SQLITE_DENY);
     ADDINT(SQLITE_IGNORE);
@@ -5272,7 +5278,7 @@ initapsw(void)
 
     /* authorizer functions */
     thedict=PyDict_New();
-    if(!thedict) return;
+    if(!thedict) goto fail;
 
     ADDINT(SQLITE_CREATE_INDEX);
     ADDINT(SQLITE_CREATE_TABLE);
@@ -5316,7 +5322,7 @@ initapsw(void)
 #if defined(SQLITE_INDEX_CONSTRAINT_EQ) && defined(SQLITE_INDEX_CONSTRAINT_MATCH)
 
     thedict=PyDict_New();
-    if(!thedict) return;
+    if(!thedict) goto fail;
 
     ADDINT(SQLITE_INDEX_CONSTRAINT_EQ);
     ADDINT(SQLITE_INDEX_CONSTRAINT_GT);
@@ -5331,7 +5337,7 @@ initapsw(void)
 
     /* extendended result codes */
     thedict=PyDict_New();
-    if(!thedict) return;
+    if(!thedict) goto fail;
 
     ADDINT(SQLITE_IOERR_READ);
     ADDINT(SQLITE_IOERR_SHORT_READ);
@@ -5349,7 +5355,7 @@ initapsw(void)
 
     /* error codes */
     thedict=PyDict_New();
-    if(!thedict) return;
+    if(!thedict) goto fail;
 
     ADDINT(SQLITE_OK);
     ADDINT(SQLITE_ERROR);
@@ -5381,7 +5387,7 @@ initapsw(void)
 
     /* open flags */
     thedict=PyDict_New();
-    if(!thedict) return;
+    if(!thedict) goto fail;
 
     ADDINT(SQLITE_OPEN_READONLY);
     ADDINT(SQLITE_OPEN_READWRITE);
@@ -5402,7 +5408,7 @@ initapsw(void)
     /* limits */
 
     thedict=PyDict_New();
-    if(!thedict) return;
+    if(!thedict) goto fail;
 
     ADDINT(SQLITE_LIMIT_LENGTH);
     ADDINT(SQLITE_LIMIT_SQL_LENGTH);
@@ -5429,5 +5435,21 @@ initapsw(void)
     PyModule_AddObject(m, "mapping_limits", thedict);
 #endif
 
+    if(!PyErr_Occurred())
+      {
+        return
+#if PY_VERSION_HEX>=0x03000000
+          m
+#endif
+          ;
+      }
+
+ fail:
+    Py_XDECREF(m);
+    return 
+#if PY_VERSION_HEX>=0x03000000
+          NULL
+#endif
+          ;
 }
 

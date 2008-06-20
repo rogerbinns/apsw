@@ -63,10 +63,11 @@ static void AddTraceBackHere(const char *filename, int lineno, const char *funct
 #endif
   empty_dict=PyDict_New();
   empty_tuple=PyTuple_New(0);
-  empty_string=PyString_FromString("");
 #if PY_VERSION_HEX<0x03000000
+  empty_string=PyString_FromString("");
   empty_code=PyString_FromString("");
 #else
+  empty_string=PyUnicode_FromString("");
   empty_code=PyBytes_FromStringAndSize(NULL,0);
 #endif
 
@@ -98,7 +99,7 @@ static void AddTraceBackHere(const char *filename, int lineno, const char *funct
      srcfile,      /*PyObject *filename,*/
      funcname,     /*PyObject *name,*/
      lineno,       /*int firstlineno,*/
-     empty_string  /*PyObject *lnotab*/
+     empty_code    /*PyObject *lnotab*/
    );
   if (!code) goto end;
 

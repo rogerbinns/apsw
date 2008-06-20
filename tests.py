@@ -26,7 +26,10 @@ import math
 import random
 import time
 import threading
-import Queue
+if py3:
+    import queue as Queue
+else:
+    import Queue
 import traceback
 import re
 import gc
@@ -94,7 +97,10 @@ class ThreadRunner(threading.Thread):
 
     def __init__(self, callable, *args, **kwargs):
         threading.Thread.__init__(self)
-        self.setDaemon(True)
+        if py3:
+            self.set_daemon(True)
+        else:
+            self.setDaemon(True)
         self.callable=callable
         self.args=args
         self.kwargs=kwargs
@@ -523,10 +529,11 @@ class APSW(unittest.TestCase):
         
     def testAuthorizer(self):
         "Verify the authorizer works"
+        retval=apsw.SQLITE_DENY
         def authorizer(operation, paramone, paramtwo, databasename, triggerorview):
             # we fail creates of tables starting with "private"
             if operation==apsw.SQLITE_CREATE_TABLE and paramone.startswith("private"):
-                return apsw.SQLITE_DENY
+                return retval
             return apsw.SQLITE_OK
         c=self.db.cursor()
         # this should succeed
@@ -534,7 +541,12 @@ class APSW(unittest.TestCase):
         # this should fail
         self.assertRaises(TypeError, self.db.setauthorizer, 12) # must be callable
         self.db.setauthorizer(authorizer)
-        self.assertRaises(apsw.AuthError, c.execute, "create table privatetwo(x)")
+        for val in apsw.SQLITE_DENY, long(apsw.SQLITE_DENY), 0x800276889000212112:
+            retval=val
+            if val<100:
+                self.assertRaises(apsw.AuthError, c.execute, "create table privatetwo(x)")
+            else:
+                self.assertRaises(OverflowError, c.execute, "create table privatetwo(x)")
         # this should succeed
         self.db.setauthorizer(None)
         c.execute("create table privatethree(x)")
@@ -743,6 +755,9 @@ class APSW(unittest.TestCase):
         def bad(*args): 1/0
         self.db.createscalarfunction("bad", bad)
         self.assertRaises(ZeroDivisionError, c.execute, "select bad(3)+bad(4)")
+        # turn a blob into a string to fail python utf8 conversion
+        self.assertRaises(UnicodeDecodeError, c.execute, "select bad(cast (x'fffffcfb9208' as TEXT))")
+        
 
     def testAggregateFunctions(self):
         "Verify aggregate functions"
@@ -1459,7 +1474,8 @@ class APSW(unittest.TestCase):
     def testLoadExtension(self):
         "Check loading of extensions"
         # unicode issues
-        self.assertRaises(UnicodeDecodeError, self.db.loadextension, "\xa7\x94")
+        if not py3:
+            self.assertRaises(UnicodeDecodeError, self.db.loadextension, "\xa7\x94")
         # they need to be enabled first (off by default)
         self.assertRaises(apsw.ExtensionLoadingError, self.db.loadextension, LOADEXTENSIONFILENAME)
         self.db.enableloadextension(False)
@@ -1482,6 +1498,48 @@ class APSW(unittest.TestCase):
         self.db.loadextension(LOADEXTENSIONFILENAME, "alternate_sqlite3_extension_init")
         self.failUnlessEqual(4, next(c.execute("select doubleup(2)"))[0])
         
+
+    def testMakeSqliteMsgFromException(self):
+        "Test C function that converts exception into SQLite error code"
+        class Source:
+            def Create1(self, *args):
+                e=apsw.IOError()
+                e.extendedresult=apsw.SQLITE_IOERR_BLOCKED
+                raise e
+
+            def Create2(self, *args):
+                e=apsw.IOError()
+                e.extendedresult=long(apsw.SQLITE_IOERR_BLOCKED)
+                raise e
+
+            def Create3(self, *args):
+                e=apsw.IOError()
+                e.extendedresult=0x8000000000+apsw.SQLITE_IOERR_BLOCKED # bigger than 32 bits
+                raise e
+
+            
+        self.db.createmodule("foo", Source())
+        for i in "1", "2", "3":
+            Source.Create=getattr(Source, "Create"+i)
+            try:
+                self.db.cursor().execute("create virtual table vt using foo()")
+                1/0
+            except:
+                klass,value,tb=sys.exc_info()
+            # check types and values
+            self.failUnlessEqual(klass, apsw.IOError)
+            self.assert_(isinstance(value, apsw.IOError))
+            self.failUnlessEqual(value.extendedresult&0xffffffff, apsw.SQLITE_IOERR_BLOCKED)
+            # walk the stack to verify that C level value is correct
+            found=False
+            while tb:
+                frame=tb.tb_frame
+                if frame.f_code.co_name=="resetcursor":
+                    self.failUnlessEqual(frame.f_locals["res"], apsw.SQLITE_IOERR_BLOCKED|apsw.SQLITE_IOERR)
+                    found=True
+                    break
+                tb=tb.tb_next
+            self.assertEqual(found, True)
 
     def testVtables(self):
         "Test virtual table functionality"
@@ -2254,6 +2312,9 @@ class APSW(unittest.TestCase):
         b=self.db.blobopen("main", "foo", "theblob", self.db.last_insert_rowid(), True)
         b.read(1)
         self.assertRaises(ValueError, b.write, f)
+        def func(): return f
+        self.db.createscalarfunction("toobig", func)
+        self.assertRaises(apsw.TooBigError, c.execute, "select toobig()")
         f.close()
 
     def testErrorCodes(self):
@@ -2684,17 +2745,21 @@ PROFILESTEPS=100000
 
 if __name__=='__main__':
 
-    if not getattr(apsw, "enableloadextension", None):
+    memdb=apsw.Connection(":memory:")
+    if not getattr(memdb, "enableloadextension", None):
         del APSW.testLoadExtension
 
     # We can do extension loading but no extension present ...
-    if getattr(apsw, "enableloadextension", None) and not os.path.exists(LOADEXTENSIONFILENAME):
+    if getattr(memdb, "enableloadextension", None) and not os.path.exists(LOADEXTENSIONFILENAME):
         write("Not doing LoadExtension test.  You need to compile the extension first\n")
         if sys.platform.startswith("darwin"):
             write("  gcc -fPIC -bundle -o "+LOADEXTENSIONFILENAME+" -Isqlite3 testextension.c\n")
         else:
             write("  gcc -fPIC -shared -o "+LOADEXTENSIONFILENAME+" -Isqlite3 testextension.c\n")
         del APSW.testLoadExtension
+        sys.stdout.flush()
+
+    del memdb
 
     if os.getenv("APSW_NO_MEMLEAK"):
         # Delete tests that have to deliberately leak memory
