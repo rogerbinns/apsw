@@ -2305,7 +2305,7 @@ class APSW(unittest.TestCase):
         import ctypes
         if ctypes.sizeof(ctypes.c_size_t)<8:
             return
-        # I use an anonymous area slightly larger than 2GB chunk of memory, but don't touch any of it
+        # For binary/blobs I use an anonymous area slightly larger than 2GB chunk of memory, but don't touch any of it
         import mmap
         f=mmap.mmap(-1, 2*1024*1024*1024+25000)
         c=self.db.cursor()
@@ -2736,6 +2736,24 @@ class APSW(unittest.TestCase):
         blob.read(1)
     # See http://www.sqlite.org/cvstrac/tktview?tn=3078
     del testBlobReadError
+
+    # This test must come last since fault locations are dynamically
+    # registered.  Note that faults fire only once, so there is no
+    # need to reset them
+    def testzzFaultInjection(self):
+        if not hasattr(apsw, "faultdict"):
+            return
+
+        ## UnknownSQLiteErrorCode
+        apsw.faultdict["UnknownSQLiteErrorCode"]=True
+        try:
+            self.db.cursor().execute("select '")
+            1/0
+        except:
+            klass,value,tb=sys.exc_info()
+            self.assert_(klass is apsw.Error)
+            self.assert_("254" in str(value))
+
 
 if sys.platform!="win32":
     # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used

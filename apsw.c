@@ -123,6 +123,35 @@ typedef int Py_ssize_t;
 #define APSW_INT32_MIN (-2147483647-1)
 #define APSW_INT32_MAX 2147483647
 
+
+#ifdef APSW_TESTFIXTURES
+/* Fault injection */
+#define APSW_FAULT_INJECT(name,good,bad)          \
+do {                                              \
+  if(APSW_Should_Fault(#name))                    \
+    {                                             \
+      do { bad ; } while(0);                      \
+    }                                             \
+  else                                            \
+    {                                             \
+      do { good ; } while(0);                     \
+    }                                             \
+ } while(0)
+
+static int APSW_Should_Fault(const char *);
+
+/* Are we Python 2.x (x>=5) and doing 64 bit? - _LP64 is best way I can find as sizeof isn't valid in cpp #if */
+#if  PY_VERSION_HEX>=0x02050000 && defined(_LP64) && _LP64
+#define APSW_TEST_LARGE_OBJECTS
+#endif
+
+#else /* APSW_TESTFIXTURES */
+#define APSW_FAULT_INJECT(name,good,bad)        \
+  do { good ; } while(0)
+
+#endif
+
+
 /* The module object */
 static PyObject *apswmodule;
 
@@ -269,6 +298,8 @@ static int init_exceptions(PyObject *m)
 static void make_exception(int res, sqlite3 *db)
 {
   int i;
+
+  APSW_FAULT_INJECT(UnknownSQLiteErrorCode,,res=0xfe);
   
   for(i=0;exc_descriptors[i].name;i++)
     if (exc_descriptors[i].code==(res&0xff))
@@ -402,14 +433,12 @@ MakeSqliteMsgFromPyException(char **errmsg)
 
   if(errmsg)
     {
-      /* I just want a string of the error! */
-      
+      /* I just want a string of the error! */      
       if(!str && evalue)
 	str=PyObject_Str(evalue);
       if(!str && etype)
 	str=PyObject_Str(etype);
-      if(!str)
-	str=MAKESTR("python exception with no information");
+      if(!str) str=MAKESTR("python exception with no information");
       if(*errmsg)
 	sqlite3_free(*errmsg);
       *errmsg=sqlite3_mprintf("%s",PyBytes_AsString(str));
@@ -698,13 +727,12 @@ getutf8string(PyObject *string)
   Py_ssize_t strbytes=0;				 \
   const char *strdata=NULL;                              \
   PyObject *_utf8=NULL;                                  \
-                                                         \
   _utf8=PyUnicode_AsUTF8String(obj);                     \
   if(_utf8)                                              \
     {                                                    \
-      strbytes=PyBytes_GET_SIZE(_utf8);                 \
+      strbytes=PyBytes_GET_SIZE(_utf8);                  \
       strdata=PyBytes_AS_STRING(_utf8);                  \
-    }                      
+    } 
 
 #define UNIDATAEND(obj)                                  \
   Py_XDECREF(_utf8);                                     \
@@ -1930,7 +1958,10 @@ set_context_result(sqlite3_context *context, PyObject *obj)
       const char *val=PyString_AS_STRING(obj);
       const Py_ssize_t lenval=PyString_GET_SIZE(obj);
       const char *chk=val;
-      for(;chk<val+lenval && !((*chk)&0x80); chk++);
+      /* check if string is all ascii if less than 10kb in size */
+      if(lenval<10000)
+        for(;chk<val+lenval && !((*chk)&0x80); chk++);
+      /* Non-ascii or long, so convert to unicode */
       if(chk<val+lenval)
         {
           PyObject *str2=PyUnicode_FromObject(obj);
@@ -1960,7 +1991,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
           UNIDATAEND(str2);
           Py_DECREF(str2);
         }
-      else
+      else /* just ascii chars */
 	{
 	  if(lenval>APSW_INT32_MAX)
             {
@@ -2069,9 +2100,13 @@ cbdispatch_func(sqlite3_context *context, int argc, sqlite3_value **argv)
  finally:
   if (PyErr_Occurred())
     {
+      char *errmsg=NULL;
       char *funname=sqlite3_mprintf("user-defined-scalar-%s", cbinfo->name);
-      AddTraceBackHere(__FILE__, __LINE__, funname, "{s: i}", "NumberOfArguments", argc);
+      MakeSqliteMsgFromPyException(&errmsg);
+      sqlite3_result_error(context, errmsg, -1);
+      AddTraceBackHere(__FILE__, __LINE__, funname, "{s: i, s: s}", "NumberOfArguments", argc, "message", errmsg);
       sqlite3_free(funname);
+      sqlite3_free(errmsg);
     }
  finalfinally:
   Py_XDECREF(pyargs);
@@ -4324,7 +4359,8 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
       const char *val=PyString_AS_STRING(obj);
       const size_t lenval=PyString_GET_SIZE(obj);
       const char *chk=val;
-      for(;chk<val+lenval && !((*chk)&0x80); chk++);
+      if(lenval<10000)
+        for(;chk<val+lenval && !((*chk)&0x80); chk++);
       if(chk<val+lenval)
         {
           const void *badptr=NULL;
@@ -5185,6 +5221,7 @@ enablesharedcache(PyObject *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
+
 static PyMethodDef module_methods[] = {
   {"sqlitelibversion", (PyCFunction)getsqliteversion, METH_NOARGS,
    "Return the version of the SQLite library"},
@@ -5192,7 +5229,7 @@ static PyMethodDef module_methods[] = {
    "Return the version of the APSW wrapper"},
   {"enablesharedcache", (PyCFunction)enablesharedcache, METH_VARARGS,
    "Sets shared cache semantics for this thread"},
-    {0, 0, 0, 0}  /* Sentinel */
+  {0, 0, 0, 0}  /* Sentinel */
 };
 
 
@@ -5260,7 +5297,6 @@ PyInit_apsw(void)
     if(!hooks) goto fail;
     PyModule_AddObject(m, "connection_hooks", hooks);
     
-
     /* add in some constants and also put them in a corresponding mapping dictionary */
 
 #define ADDINT(v) PyModule_AddIntConstant(m, #v, v); \
@@ -5453,3 +5489,38 @@ PyInit_apsw(void)
           ;
 }
 
+#ifdef APSW_TESTFIXTURES
+static int
+APSW_Should_Fault(const char *name)
+{
+  PyGILState_STATE gilstate;
+  PyObject *faultdict=NULL, *truthval=NULL, *value=NULL;
+  int res=0;
+
+  gilstate=PyGILState_Ensure();
+
+  if(!PyObject_HasAttrString(apswmodule, "faultdict"))
+    PyObject_SetAttrString(apswmodule, "faultdict", PyDict_New());
+
+  value=MAKESTR(name);
+  
+  faultdict=PyObject_GetAttrString(apswmodule, "faultdict");
+  
+  truthval=PyDict_GetItem(faultdict, value);
+
+  /* set false if not present or if we are just firing */
+  PyDict_SetItem(faultdict, value, Py_False);
+      
+  if(!truthval)
+    goto finally;
+
+  res=PyObject_IsTrue(truthval);
+
+ finally:
+  Py_XDECREF(value);
+  Py_XDECREF(faultdict);
+
+  PyGILState_Release(gilstate);
+  return res;
+}
+#endif
