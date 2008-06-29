@@ -57,6 +57,10 @@ def BYTES(x):
     if py3: return b(x)
     return eval("'''"+x+"'''")
 
+def l(x):
+    if py3: return eval(x)
+    return eval(x+"L")
+
 # Various py3 things
 if py3:
     long=int
@@ -1512,7 +1516,7 @@ class APSW(unittest.TestCase):
 
             def Create3(self, *args):
                 e=apsw.IOError()
-                e.extendedresult=long(0x80)<<32+apsw.SQLITE_IOERR_BLOCKED # bigger than 32 bits
+                e.extendedresult=l("0x8000000000")+apsw.SQLITE_IOERR_BLOCKED # bigger than 32 bits
                 raise e
 
             
