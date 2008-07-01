@@ -30,7 +30,8 @@
 <body>
   <h1 class="notoc">APSW - Another Python SQLite Wrapper</h1>
 
-  <p><font size="-1">apsw-3.5.9-r1 1st June 2008</font> (Use with SQLite 3.5.9 or later, Python 2.3 or later including Python 3)</p>
+  <p><font size="-1">apsw-3.5.9-r2 7th July 2008</font> (Use with SQLite 3.5.9 or later, Python 2.3 or later including
+  Python 3)</p>
 
   <p>APSW provides an SQLite 3 wrapper that provides the thinnest layer over <a href="http://www.sqlite.org">SQLite
   3</a> possible. Everything you can do from the <a href="http://www.sqlite.org/c3ref/intro.html">C API</a> to SQLite
@@ -148,6 +149,8 @@
             <a href="#verhistory">Version History</a>
 
             <ul>
+              <li><a href="#359r2">3.5.9-r2</a></li>
+
               <li><a href="#359r1">3.5.9-r1</a></li>
 
               <li><a href="#3313r1">3.3.13-r1</a></li>
@@ -271,7 +274,7 @@
 "pyname">SQLITE_VERSION_NUMBER   </span><span class="pycomment"># from the sqlite header file at compile time
 
 </span><span class="pyoutput">         Using APSW file /space/apsw/apsw.so
-            APSW version 3.5.9-r1
+            APSW version 3.5.9-r2
       SQLite lib version 3.5.9
    SQLite header version 3005009
 </span>
@@ -412,8 +415,8 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
      </span><span class="pykeyword">pass
 
 </span><span class="pyoutput">   SQL: select x,y from foo where x&gt;3
-   Row: (4, u'five')
-   Row: (7, u'eight')
+   Row: (4L, u'five')
+   Row: (7L, u'eight')
    Row: (u'one', u'two')
 </span>
 <span class="pycomment"># Clear tracers
@@ -1007,16 +1010,26 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
 "pystring">"ATTACHED"</span><span class="pyoperator">):
     </span><span class="pyname">name</span><span class="pyoperator">=</span><span class=
 "pystring">"SQLITE_LIMIT_"</span><span class="pyoperator">+</span><span class="pyname">limit
-    max</span><span class="pyoperator">=</span><span class="pystring">"SQLITE_MAX_"</span><span class=
+    maxname</span><span class="pyoperator">=</span><span class="pystring">"SQLITE_MAX_"</span><span class=
 "pyoperator">+</span><span class="pyname">limit  </span><span class="pycomment"># compile time
+    </span><span class="pyname">orig</span><span class="pyoperator">=</span><span class=
+"pyname">connection</span><span class="pyoperator">.</span><span class="pyname">limit</span><span class=
+"pyoperator">(</span><span class="pyname">getattr</span><span class="pyoperator">(</span><span class=
+"pyname">apsw</span><span class="pyoperator">, </span><span class="pyname">name</span><span class="pyoperator">))
     </span><span class="pykeyword">print </span><span class="pyname">name</span><span class=
-"pyoperator">, </span><span class="pyname">connection</span><span class="pyoperator">.</span><span class=
+"pyoperator">, </span><span class="pyname">orig
+    </span><span class="pycomment"># To get the maximum, set to 0x7fffffff and then read value back
+    </span><span class="pyname">connection</span><span class="pyoperator">.</span><span class=
 "pyname">limit</span><span class="pyoperator">(</span><span class="pyname">getattr</span><span class=
 "pyoperator">(</span><span class="pyname">apsw</span><span class="pyoperator">, </span><span class=
-"pyname">name</span><span class="pyoperator">))
-    </span><span class="pykeyword">print </span><span class="pyname">max</span><span class=
-"pyoperator">, </span><span class="pyname">getattr</span><span class="pyoperator">(</span><span class=
-"pyname">apsw</span><span class="pyoperator">, </span><span class="pyname">max</span><span class="pyoperator">)
+"pyname">name</span><span class="pyoperator">), </span><span class="pynumber">0x7fffffff</span><span class=
+"pyoperator">)
+    </span><span class="pyname">max</span><span class="pyoperator">=</span><span class=
+"pyname">connection</span><span class="pyoperator">.</span><span class="pyname">limit</span><span class=
+"pyoperator">(</span><span class="pyname">getattr</span><span class="pyoperator">(</span><span class=
+"pyname">apsw</span><span class="pyoperator">, </span><span class="pyname">name</span><span class="pyoperator">))
+    </span><span class="pykeyword">print </span><span class="pyname">maxname</span><span class=
+"pyoperator">, </span><span class="pyname">max
 
 </span><span class="pycomment"># Set limit for size of a string
 </span><span class="pyname">cursor</span><span class="pyoperator">.</span><span class=
@@ -1112,7 +1125,7 @@ python setup.py build --compile=mingw32 install
   <p>These instructions show how to build using the amalgamation. Any existing SQLite on your system is ignored at
   build time and runtime. (Note that you can even use APSW in the same process as a different SQLite is used by other
   libraries - this happens a lot on Mac.) You should follow these instructions with your current directory being where
-  you extracted the APSW source to.  You can use 3.5.9 or later versions of SQLite.</p>
+  you extracted the APSW source to. You can use 3.5.9 or later versions of SQLite.</p>
 
   <dl>
     <dt><b>Windows</b></dt>
@@ -1390,7 +1403,8 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       changed. Returns the old value of the limit. This calls <a href=
       "http://www.sqlite.org/c3ref/limit.html">sqlite3_limit</a>. For example
       <code>connection.limit(apsw.SQLITE_LIMIT_LENGTH, 1024)</code> would set the limit for blobs and strings to 1
-      kilobyte.</p>
+      kilobyte.  To find the maximum value, set the limit to 0x7fffffff and then call <tt>connection.limit</tt> again
+      to see what value it was set to.</p>
     </dd>
 
     <dt><strong>createscalarfunction(name, callable, numargs=-1)</strong></dt>
@@ -2921,6 +2935,13 @@ Traceback (most recent call last):
       </blockquote>
 
       <h1><a name="verhistory" id="verhistory">Version History</a></h1>
+
+      <h2><a name="359r2">3.5.9-r2</a></h2>
+
+      <p>APSW now works with Python 3 (you need 3.0b1 or later).</p>
+
+      <p>Removed the <tt>SQLITE_MAX_*</tt> constants since they could be unreliable (eg APSW can't tell what a shared
+      library was compiled with). <a href="http://code.google.com/p/apsw/issues/detail?id=17">Issue 17</a>.</p>
 
       <h2><a name="359r1">3.5.9-r1</a></h2>
 

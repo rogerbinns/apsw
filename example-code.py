@@ -395,9 +395,13 @@ for ctime,directory,file in cursor.execute("select st_ctime,directory,name from 
 # Print some limits
 for limit in ("LENGTH", "COLUMN", "ATTACHED"):
     name="SQLITE_LIMIT_"+limit 
-    max="SQLITE_MAX_"+limit  # compile time
-    print name, connection.limit(getattr(apsw, name))
-    print max, getattr(apsw, max)
+    maxname="SQLITE_MAX_"+limit  # compile time
+    orig=connection.limit(getattr(apsw, name))
+    print name, orig
+    # To get the maximum, set to 0x7fffffff and then read value back
+    connection.limit(getattr(apsw, name), 0x7fffffff)
+    max=connection.limit(getattr(apsw, name))
+    print maxname, max
 
 # Set limit for size of a string
 cursor.execute("create table testlimit(s)")

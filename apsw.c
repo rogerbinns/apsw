@@ -634,7 +634,11 @@ converttobytes(const void *ptr, Py_ssize_t size)
     {
       void *buffy=0;
       Py_ssize_t size2=size;
-      if(!PyObject_AsWriteBuffer(item, &buffy, &size2))
+      int aswb=PyObject_AsWriteBuffer(item, &buffy, &size2);
+
+      APSW_FAULT_INJECT(AsWriteBufferFails,,(aswb=PyErr_NoMemory(),-1));
+
+      if(aswb==0)
         memcpy(buffy, ptr, size);
       else
         {
@@ -5457,16 +5461,7 @@ PyInit_apsw(void)
     ADDINT(SQLITE_LIMIT_LIKE_PATTERN_LENGTH);
     ADDINT(SQLITE_LIMIT_VARIABLE_NUMBER);
 
-    ADDINT(SQLITE_MAX_LENGTH);
-    ADDINT(SQLITE_MAX_SQL_LENGTH);
-    ADDINT(SQLITE_MAX_COLUMN);
-    ADDINT(SQLITE_MAX_EXPR_DEPTH);
-    ADDINT(SQLITE_MAX_COMPOUND_SELECT);
-    ADDINT(SQLITE_MAX_VDBE_OP);
-    ADDINT(SQLITE_MAX_FUNCTION_ARG);
-    ADDINT(SQLITE_MAX_ATTACHED);
-    ADDINT(SQLITE_MAX_LIKE_PATTERN_LENGTH);
-    ADDINT(SQLITE_MAX_VARIABLE_NUMBER);
+    /* We don't include the MAX limits - see http://code.google.com/p/apsw/issues/detail?id=17 */
 
     PyModule_AddObject(m, "mapping_limits", thedict);
 #endif
