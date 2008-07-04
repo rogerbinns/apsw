@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 
-# APSW test suite - runs under both Python 2 and Python 3
+# APSW test suite - runs under both Python 2 and Python 3 hence a lot
+# of wierd constructs to be simultaneously compatible with both.
+# (2to3 is not used).
 
 import apsw
 import sys
 
 write=sys.stdout.write
+write("                Python "+sys.executable+" "+str(sys.version_info)+"\n")
 write("Testing with APSW file "+apsw.__file__+"\n")
 write("          APSW version "+apsw.apswversion()+"\n")
 write("    SQLite lib version "+apsw.sqlitelibversion()+"\n")
@@ -448,6 +451,7 @@ class APSW(unittest.TestCase):
               "0123456789"*200000, # a longer string
               u(r"a \u1234 unicode \ufe54 string \u0089"),  # simple unicode string
               u(r"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET} "), # funky unicode
+              u(r"\N{MUSICAL SYMBOL G CLEF}"), # http://www.cmlenz.net/archives/2008/07/the-truth-about-unicode-in-python
               97, # integer
               2147483647,   # numbers on 31 bit boundary (32nd bit used for integer sign), and then
               -2147483647,  # start using 32nd bit (must be represented by 64bit to avoid losing
@@ -2748,6 +2752,13 @@ class APSW(unittest.TestCase):
         if not hasattr(apsw, "faultdict"):
             return
 
+        def dummy(*args):
+            1/0
+
+        # The 1/0 in these tests is to cause a ZeroDivisionError so
+        # that an exception is always thrown.  If we catch that then
+        # it means earlier expected exceptions were not thrown.
+
         ## UnknownSQLiteErrorCode
         apsw.faultdict["UnknownSQLiteErrorCode"]=True
         try:
@@ -2758,7 +2769,197 @@ class APSW(unittest.TestCase):
             self.assert_(klass is apsw.Error)
             self.assert_("254" in str(value))
 
+        ## AsWriteBufferFails
+        if not py3:
+            apsw.faultdict["AsWriteBufferFails"]=True
+            try:
+                for row in self.db.cursor().execute("select x'1234ccddeeff'"):
+                    pass
+                1/0
+            except:
+                klass,value,tb=sys.exc_info()
+                self.assert_(klass is MemoryError)
 
+        ## ConnectionCloseFail
+        apsw.faultdict["ConnectionCloseFail"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.cursor().execute("select 3")
+            db.close(True)
+            1/0
+        except:
+            klass,value,tb=sys.exc_info()
+            self.assert_(klass is apsw.IOError)
+
+        ## DestructorCloseFail
+        if not os.getenv("APSW_NO_MEMLEAK"):
+            # save existing excepthook
+            xx=sys.excepthook
+            # put in our own
+            called=[0]
+            def ehook(t,v,tb, called=called):
+                called[0]=1
+            sys.excepthook=ehook
+            # test
+            apsw.faultdict["DestructorCloseFail"]=True
+            db=apsw.Connection(":memory:")
+            db.cursor().execute("select 3")
+            del db
+            gc.collect()
+            # check there was an unraiseable
+            self.failUnlessEqual(called[0], 1)
+            # restore
+            sys.excepthook=xx
+
+        ## BlobAllocFails
+        apsw.faultdict["BlobAllocFails"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.cursor().execute("create table foo(ablob); insert into foo (ROWID, ablob) values (1,x'aabbccddeeff')")
+            blob=db.blobopen("main", "foo", "ablob", 1, False)
+            1/0
+        except:
+            klass,value,tb=sys.exc_info()
+            self.assert_(klass is MemoryError)
+
+        ## CursorAllocFails
+        apsw.faultdict["CursorAllocFails"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.cursor().execute("select 3")
+            1/0
+        except:
+            klass,value,tb=sys.exc_info()
+            self.assert_(klass is MemoryError)
+
+        ## RollbackHookExistingError
+        apsw.faultdict["RollbackHookExistingError"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.setrollbackhook(dummy)
+            db.cursor().execute("create table foo(a); begin ; insert into foo values(3); rollback")
+            1/0
+        except:
+            klass,value,tb=sys.exc_info()
+            self.assert_(klass is MemoryError)
+
+        ## CommitHookExceptionAlready
+        apsw.faultdict["CommitHookExistingError"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.setcommithook(dummy)
+            db.cursor().execute("begin; create table foo(a); insert into foo values(3); commit")
+            1/0
+        except:
+            klass,value,tb=sys.exc_info()
+            self.assert_(klass is MemoryError)
+
+        ## AuthorizerExistingError
+        apsw.faultdict["AuthorizerExistingError"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.setauthorizer(dummy)
+            db.cursor().execute("create table foo(a)")
+            1/0
+        except:
+            klass,value,tb=sys.exc_info()
+            self.assert_(klass is MemoryError)
+
+        ## SetAuthorizerNullFail
+        apsw.faultdict["SetAuthorizerNullFail"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.setauthorizer(None)
+            1/0
+        except:
+            klass,value,tb=sys.exc_info()
+            self.assert_(klass is apsw.IOError)
+
+        ## SetAuthorizerFail
+        apsw.faultdict["SetAuthorizerFail"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.setauthorizer(dummy)
+            1/0
+        except:
+            klass,value,tb=sys.exc_info()
+            self.assert_(klass is apsw.IOError)
+
+        ## CollationNeededNullFail
+        apsw.faultdict["CollationNeededNullFail"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.collationneeded(None)
+            1/0
+        except:
+            klass,value,tb=sys.exc_info()
+            self.assert_(klass is apsw.IOError)
+            
+        ## CollationNeededFail
+        apsw.faultdict["CollationNeededFail"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.collationneeded(dummy)
+            1/0
+        except:
+            klass,value,tb=sys.exc_info()
+            self.assert_(klass is apsw.IOError)
+
+        ##EnableLoadExtensionFail
+        apsw.faultdict["EnableLoadExtensionFail"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.enableloadextension(True)
+            1/0
+        except:
+            klass,value,tb=sys.exc_info()
+            self.assert_(klass is apsw.IOError)
+
+        ## SetBusyHandlerNullFail
+        apsw.faultdict["SetBusyHandlerNullFail"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.setbusyhandler(None)
+            1/0
+        except:
+            klass,value,tb=sys.exc_info()
+            self.assert_(klass is apsw.IOError)
+            
+        ## SetBusyHandlerFail
+        apsw.faultdict["SetBusyHandlerFail"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.setbusyhandler(dummy)
+            1/0
+        except:
+            klass,value,tb=sys.exc_info()
+            self.assert_(klass is apsw.IOError)
+
+        ## UnknownValueType
+        apsw.faultdict["UnknownValueType"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.createscalarfunction("dummy", dummy)
+            db.cursor().execute("select dummy(4)")
+            1/0
+        except:
+            klass,value,tb=sys.exc_info()
+            self.assert_(klass is apsw.Error)
+            self.assert_("123456" in str(value))
+
+        ## UnknownColumnType
+        apsw.faultdict["UnknownColumnType"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            for row in db.cursor().execute("select 3"):
+                pass
+            1/0
+        except:
+            klass,value,tb=sys.exc_info()
+            self.assert_(klass is apsw.Error)
+            self.assert_("12348" in str(value))
+        
+        
 if sys.platform!="win32":
     # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used
     LOADEXTENSIONFILENAME="./testextension.sqlext"

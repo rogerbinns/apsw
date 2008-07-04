@@ -636,7 +636,7 @@ converttobytes(const void *ptr, Py_ssize_t size)
       Py_ssize_t size2=size;
       int aswb=PyObject_AsWriteBuffer(item, &buffy, &size2);
 
-      APSW_FAULT_INJECT(AsWriteBufferFails,,(aswb=PyErr_NoMemory(),-1));
+      APSW_FAULT_INJECT(AsWriteBufferFails,,(PyErr_NoMemory(),aswb=-1));
 
       if(aswb==0)
         memcpy(buffy, ptr, size);
@@ -824,7 +824,7 @@ Connection_close(Connection *self, PyObject *args)
   self->stmtcache=0;
 
   APSW_BEGIN_ALLOW_THREADS
-    res=sqlite3_close(self->db);
+    APSW_FAULT_INJECT(ConnectionCloseFail, res=sqlite3_close(self->db), res=SQLITE_IOERR);
   APSW_END_ALLOW_THREADS;
 
   if (res!=SQLITE_OK) 
@@ -868,7 +868,7 @@ Connection_dealloc(Connection* self)
         }
 
       APSW_BEGIN_ALLOW_THREADS
-        res=sqlite3_close(self->db);
+        APSW_FAULT_INJECT(DestructorCloseFail, res=sqlite3_close(self->db), res=SQLITE_IOERR);
       APSW_END_ALLOW_THREADS;
       self->db=0;
 
@@ -893,6 +893,8 @@ Connection_dealloc(Connection* self)
         }
     }
 
+  /* Our dependents all hold a refcount on us, so they must have all
+     released before this destructor could be called */
   assert(self->dependents.numentries==0);
   pointerlist_free(&self->dependents);
 
@@ -1049,7 +1051,7 @@ Connection_blobopen(Connection *self, PyObject *args)
   if(res!=SQLITE_OK)
     return NULL;
   
-  apswblob=PyObject_New(APSWBlob, &APSWBlobType);
+  APSW_FAULT_INJECT(BlobAllocFails,apswblob=PyObject_New(APSWBlob, &APSWBlobType), (PyErr_NoMemory(), apswblob=NULL));
   if(!apswblob)
     {
       sqlite3_blob_close(blob);
@@ -1071,7 +1073,7 @@ Connection_cursor(Connection *self)
   CHECK_USE(NULL);
   CHECK_CLOSED(self,NULL);
 
-  cursor = PyObject_New(APSWCursor, &APSWCursorType);
+  APSW_FAULT_INJECT(CursorAllocFails,cursor = PyObject_New(APSWCursor, &APSWCursorType), (PyErr_NoMemory(), cursor=NULL));
   if(!cursor)
     return NULL;
 
@@ -1266,6 +1268,8 @@ rollbackhookcb(void *context)
 
   gilstate=PyGILState_Ensure();
 
+  APSW_FAULT_INJECT(RollbackHookExistingError,,PyErr_NoMemory());
+
   if(PyErr_Occurred())
     goto finally;  /* abort hook due to outstanding exception */
 
@@ -1388,6 +1392,8 @@ commithookcb(void *context)
   assert(self->commithook!=Py_None);
 
   gilstate=PyGILState_Ensure();
+
+  APSW_FAULT_INJECT(CommitHookExistingError,,PyErr_NoMemory());
 
   if(PyErr_Occurred())
     goto finally;  /* abort hook due to outstanding exception */
@@ -1538,6 +1544,8 @@ authorizercb(void *context, int operation, const char *paramone, const char *par
 
   gilstate=PyGILState_Ensure();
 
+  APSW_FAULT_INJECT(AuthorizerExistingError,,PyErr_NoMemory());
+
   if(PyErr_Occurred())
     goto finally;  /* abort due to earlier exception */
 
@@ -1587,7 +1595,12 @@ Connection_setauthorizer(Connection *self, PyObject *callable)
 
   if(callable==Py_None)
     {
-      res=sqlite3_set_authorizer(self->db, NULL, NULL);
+      APSW_FAULT_INJECT(SetAuthorizerNullFail,res=sqlite3_set_authorizer(self->db, NULL, NULL),res=SQLITE_IOERR);
+      if(res!=SQLITE_OK)
+        {
+          SET_EXC(self->db, res);
+          return NULL;
+        }
       callable=NULL;
       goto finally;
     }
@@ -1598,8 +1611,12 @@ Connection_setauthorizer(Connection *self, PyObject *callable)
       return NULL;
     }
 
-  res=sqlite3_set_authorizer(self->db, authorizercb, self);
-  SET_EXC(self->db, res);
+  APSW_FAULT_INJECT(SetAuthorizerFail,res=sqlite3_set_authorizer(self->db, authorizercb, self),res=SQLITE_IOERR);
+  if(res!=SQLITE_OK)
+    {
+      SET_EXC(self->db, res);
+      return NULL;
+    }
 
   Py_INCREF(callable);
 
@@ -1607,9 +1624,7 @@ Connection_setauthorizer(Connection *self, PyObject *callable)
   Py_XDECREF(self->authorizer);
   self->authorizer=callable;
 
-  if(res==SQLITE_OK)
-    Py_RETURN_NONE;
-  return NULL;
+  Py_RETURN_NONE;
 }
 
 /* ARGSUSED */
@@ -1645,7 +1660,12 @@ Connection_collationneeded(Connection *self, PyObject *callable)
 
   if(callable==Py_None)
     {
-      res=sqlite3_collation_needed(self->db, NULL, NULL);
+      APSW_FAULT_INJECT(CollationNeededNullFail,res=sqlite3_collation_needed(self->db, NULL, NULL),res=SQLITE_IOERR);
+      if(res!=SQLITE_OK)
+        {
+          SET_EXC(self->db, res);
+          return NULL;
+        }
       callable=NULL;
       goto finally;
     }
@@ -1656,8 +1676,12 @@ Connection_collationneeded(Connection *self, PyObject *callable)
       return NULL;
     }
 
-  res=sqlite3_collation_needed(self->db, self, collationneeded_cb);
-  SET_EXC(self->db, res);
+  APSW_FAULT_INJECT(CollationNeededFail,res=sqlite3_collation_needed(self->db, self, collationneeded_cb), res=SQLITE_IOERR);
+  if(res!=SQLITE_OK)
+    {
+      SET_EXC(self->db, res);
+      return NULL;
+    }
 
   Py_INCREF(callable);
 
@@ -1665,9 +1689,7 @@ Connection_collationneeded(Connection *self, PyObject *callable)
   Py_XDECREF(self->collationneeded);
   self->collationneeded=callable;
 
-  if(res==SQLITE_OK)
-    Py_RETURN_NONE;
-  return NULL;
+  Py_RETURN_NONE;
 }
 
 static int 
@@ -1721,8 +1743,8 @@ Connection_enableloadextension(Connection *self, PyObject *enabled)
   if (PyErr_Occurred()) return NULL;
 
   /* call function */
-  res=sqlite3_enable_load_extension(self->db, enabledp);
-  SET_EXC(self->db, res);  /* the function will currently always succeed */
+  APSW_FAULT_INJECT(EnableLoadExtensionFail, res=sqlite3_enable_load_extension(self->db, enabledp), res=SQLITE_IOERR);
+  SET_EXC(self->db, res);
 
   /* done */
   if (res==SQLITE_OK)
@@ -1770,7 +1792,12 @@ Connection_setbusyhandler(Connection *self, PyObject *callable)
 
   if(callable==Py_None)
     {
-      res=sqlite3_busy_handler(self->db, NULL, NULL);
+      APSW_FAULT_INJECT(SetBusyHandlerNullFail,res=sqlite3_busy_handler(self->db, NULL, NULL), res=SQLITE_IOERR);
+      if(res!=SQLITE_OK)
+        {
+          SET_EXC(self->db, res);
+          return NULL;
+        }
       callable=NULL;
       goto finally;
     }
@@ -1781,8 +1808,12 @@ Connection_setbusyhandler(Connection *self, PyObject *callable)
       return NULL;
     }
 
-  res=sqlite3_busy_handler(self->db, busyhandlercb, self);
-  SET_EXC(self->db, res);
+  APSW_FAULT_INJECT(SetBusyHandlerFail,res=sqlite3_busy_handler(self->db, busyhandlercb, self), res=SQLITE_IOERR);
+  if(res!=SQLITE_OK)
+    {
+      SET_EXC(self->db, res);
+      return NULL;
+    }
 
   Py_INCREF(callable);
 
@@ -1790,9 +1821,7 @@ Connection_setbusyhandler(Connection *self, PyObject *callable)
   Py_XDECREF(self->busyhandler);
   self->busyhandler=callable;
 
-  if (res==SQLITE_OK)
-    Py_RETURN_NONE;
-  return NULL;
+  Py_RETURN_NONE;
 }
 
 
@@ -1831,7 +1860,9 @@ allocfunccbinfo(void)
 static PyObject *
 convert_value_to_pyobject(sqlite3_value *value)
 {
-  const int coltype=sqlite3_value_type(value);
+  int coltype=sqlite3_value_type(value);
+
+  APSW_FAULT_INJECT(UnknownValueType,,coltype=123456);
 
   switch(coltype)
     {
@@ -1860,12 +1891,14 @@ convert_value_to_pyobject(sqlite3_value *value)
 }
 
 /* Converts column to PyObject.  Returns a new reference. Almost identical to above 
-   but we cannot just use sqlite3_column)value and then call the above function as 
+   but we cannot just use sqlite3_column_value and then call the above function as 
    SQLite doesn't allow that ("unprotected values") */
 static PyObject *
 convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
 {
-  const int coltype=sqlite3_column_type(stmt, col);
+  int coltype=sqlite3_column_type(stmt, col);
+
+  APSW_FAULT_INJECT(UnknownColumnType,,coltype=12348);
 
   switch(coltype)
     {
@@ -1901,8 +1934,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
   if(!obj)
     {
       assert(PyErr_Occurred());
-      /* TODO: possibly examine exception and return appropriate error
-         code eg for BusyError set error to SQLITE_BUSY */
+      sqlite3_result_error_code(context, MakeSqliteMsgFromPyException(NULL));
       sqlite3_result_error(context, "bad object given to set_context_result", -1);
       return;
     }
@@ -2088,6 +2120,7 @@ cbdispatch_func(sqlite3_context *context, int argc, sqlite3_value **argv)
 
   if(PyErr_Occurred())
     {
+      sqlite3_result_error_code(context, MakeSqliteMsgFromPyException(NULL));
       sqlite3_result_error(context, "Prior Python Error", -1);
       goto finalfinally;
     }
@@ -2106,7 +2139,7 @@ cbdispatch_func(sqlite3_context *context, int argc, sqlite3_value **argv)
     {
       char *errmsg=NULL;
       char *funname=sqlite3_mprintf("user-defined-scalar-%s", cbinfo->name);
-      MakeSqliteMsgFromPyException(&errmsg);
+      sqlite3_result_error_code(context, MakeSqliteMsgFromPyException(&errmsg));
       sqlite3_result_error(context, errmsg, -1);
       AddTraceBackHere(__FILE__, __LINE__, funname, "{s: i, s: s}", "NumberOfArguments", argc, "message", errmsg);
       sqlite3_free(funname);
@@ -5502,13 +5535,11 @@ APSW_Should_Fault(const char *name)
   faultdict=PyObject_GetAttrString(apswmodule, "faultdict");
   
   truthval=PyDict_GetItem(faultdict, value);
-
-  /* set false if not present or if we are just firing */
-  PyDict_SetItem(faultdict, value, Py_False);
-      
   if(!truthval)
     goto finally;
 
+  /* set false if present - one shot firing */
+  PyDict_SetItem(faultdict, value, Py_False);
   res=PyObject_IsTrue(truthval);
 
  finally:
