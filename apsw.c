@@ -716,18 +716,18 @@ getutf8string(PyObject *string)
 #if Py_UNICODE_SIZE==2
 #define UNIDATABEGIN(obj) \
 {                                                        \
-  const int use16=1;                                     \
   size_t strbytes=2*PyUnicode_GET_SIZE(obj);             \
   const void *strdata=PyUnicode_AS_DATA(obj);            
 
 #define UNIDATAEND(obj)                                  \
 }
 
+#define USE16(x) x##16
+
 #else  /* Py_UNICODE_SIZE!=2 */
 
 #define UNIDATABEGIN(obj) \
 {                                                        \
-  const int use16=0;                                     \
   Py_ssize_t strbytes=0;				 \
   const char *strdata=NULL;                              \
   PyObject *_utf8=NULL;                                  \
@@ -741,6 +741,8 @@ getutf8string(PyObject *string)
 #define UNIDATAEND(obj)                                  \
   Py_XDECREF(_utf8);                                     \
 }
+
+#define USE16(x) x
 
 #endif /* Py_UNICODE_SIZE */
 
@@ -1968,20 +1970,19 @@ set_context_result(sqlite3_context *context, PyObject *obj)
   if (PyUnicode_Check(obj))
     {
       UNIDATABEGIN(obj)
+        APSW_FAULT_INJECT(SetContextResultUnicodeConversionFails,,(PyErr_NoMemory(),strdata=NULL));
         if(strdata)
           {
+#ifdef APSW_TEST_LARGE_OBJECTS
+            APSW_FAULT_INJECT(SetContextResultLargeUnicode,,strbytes=0x001234567890L);
+#endif
 	    if(strbytes>APSW_INT32_MAX)
 	      {
                 SET_EXC(NULL, SQLITE_TOOBIG);
                 sqlite3_result_error_toobig(context);
 	      }
 	    else
-	      {
-                if(use16)
-		  sqlite3_result_text16(context, strdata, (int)strbytes, SQLITE_TRANSIENT);
-		else
-		  sqlite3_result_text(context, strdata, (int)strbytes, SQLITE_TRANSIENT);
-	      }
+              USE16(sqlite3_result_text)(context, strdata, (int)strbytes, SQLITE_TRANSIENT);
           }
         else
           sqlite3_result_error(context, "Unicode conversions failed", -1);
@@ -2007,20 +2008,19 @@ set_context_result(sqlite3_context *context, PyObject *obj)
               return;
             }
           UNIDATABEGIN(str2)
+            APSW_FAULT_INJECT(SetContextResultStringUnicodeConversionFails,,(PyErr_NoMemory(),strdata=NULL));
             if(strdata)
               {
+#ifdef APSW_TEST_LARGE_OBJECTS
+                APSW_FAULT_INJECT(SetContextResultLargeString,,strbytes=0x001234567890L);
+#endif
 		if(strbytes>APSW_INT32_MAX)
 		  {
                     SET_EXC(NULL, SQLITE_TOOBIG);
                     sqlite3_result_error_toobig(context);
 		  }
 		else
-		  {
-		    if(use16)
-		      sqlite3_result_text16(context, strdata, (int)strbytes, SQLITE_TRANSIENT);
-		    else
-		      sqlite3_result_text(context, strdata, (int)strbytes, SQLITE_TRANSIENT);
-		  }
+                  USE16(sqlite3_result_text)(context, strdata, (int)strbytes, SQLITE_TRANSIENT);
               }
             else
               sqlite3_result_error(context, "Unicode conversions failed", -1);
@@ -2028,15 +2028,8 @@ set_context_result(sqlite3_context *context, PyObject *obj)
           Py_DECREF(str2);
         }
       else /* just ascii chars */
-	{
-	  if(lenval>APSW_INT32_MAX)
-            {
-              SET_EXC(NULL, SQLITE_TOOBIG);
-              sqlite3_result_error_toobig(context);
-            }
-	  else
-	    sqlite3_result_text(context, val, (int)lenval, SQLITE_TRANSIENT);
-	}
+        sqlite3_result_text(context, val, (int)lenval, SQLITE_TRANSIENT);
+
       return;
     }
 #endif
@@ -2044,7 +2037,11 @@ set_context_result(sqlite3_context *context, PyObject *obj)
     {
       const void *buffer;
       Py_ssize_t buflen;
-      if(PyObject_AsReadBuffer(obj, &buffer, &buflen))
+      int asrb=PyObject_AsReadBuffer(obj, &buffer, &buflen);
+
+      APSW_FAULT_INJECT(SetContextResultAsReadBufferFail,,(PyErr_NoMemory(),asrb=-1));
+
+      if(asrb!=0)
         {
           sqlite3_result_error(context, "PyObject_AsReadBuffer failed", -1);
           return;
@@ -2072,7 +2069,7 @@ getfunctionargs(sqlite3_context *context, PyObject *firstelement, int argc, sqli
   if(firstelement)
     extra=1;
 
-  pyargs=PyTuple_New((long)argc+extra);
+  APSW_FAULT_INJECT(GFAPyTuple_NewFail,pyargs=PyTuple_New((long)argc+extra),pyargs=PyErr_NoMemory());
   if(!pyargs)
     {
       sqlite3_result_error(context, "PyTuple_New failed", -1);
@@ -2117,6 +2114,9 @@ cbdispatch_func(sqlite3_context *context, int argc, sqlite3_value **argv)
   gilstate=PyGILState_Ensure();
 
   assert(cbinfo->scalarfunc);
+
+
+  APSW_FAULT_INJECT(CBDispatchExistingError,,PyErr_NoMemory());
 
   if(PyErr_Occurred())
     {
@@ -2290,8 +2290,9 @@ cbdispatch_final(sqlite3_context *context)
   PyErr_Clear();
 
   aggfc=getaggregatefunctioncontext(context);
-
   assert(aggfc);
+
+  APSW_FAULT_INJECT(CBDispatchFinalError,,PyErr_NoMemory());
   
   if((err_type||err_value||err_traceback) || PyErr_Occurred() || !aggfc->finalfunc)
     {
@@ -2668,7 +2669,9 @@ vtabCreateOrConnect(sqlite3 *db,
   PyTuple_SET_ITEM(args, 0, (PyObject*)(vti->connection));
   for(i=0;i<argc;i++)
     {
-      PyObject *str=convertutf8string(argv[i]);
+      PyObject *str;
+
+      APSW_FAULT_INJECT(VtabCreateBadString,str=convertutf8string(argv[i]), str=PyErr_NoMemory());
       if(!str) 
 	goto pyexception;
       PyTuple_SET_ITEM(args, 1+i, str);
@@ -3474,8 +3477,8 @@ vtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite_int64 *pR
       methodname="UpdateChangeRow";
       args=PyTuple_New(3);
       oldrowid=convert_value_to_pyobject(argv[0]);
-      newrowid=convert_value_to_pyobject(argv[1]);
-      if(!oldrowid || !newrowid)
+      APSW_FAULT_INJECT(VtabUpdateChangeRowFail,newrowid=convert_value_to_pyobject(argv[1]), newrowid=PyErr_NoMemory());
+      if(!args || !oldrowid || !newrowid)
 	{
 	  Py_XDECREF(oldrowid);
 	  Py_XDECREF(newrowid);
@@ -3493,7 +3496,8 @@ vtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite_int64 *pR
       if(!fields) goto pyexception;
       for(i=0;i+2<argc;i++)
 	{
-	  PyObject *field=convert_value_to_pyobject(argv[i+2]);
+	  PyObject *field;
+          APSW_FAULT_INJECT(VtabUpdateBadField,field=convert_value_to_pyobject(argv[i+2]), field=PyErr_NoMemory());
 	  if(!field)
 	    {
 	      Py_DECREF(fields);
@@ -3566,7 +3570,7 @@ vtabRename(sqlite3_vtab *pVtab, const char *zNew)
   gilstate=PyGILState_Ensure();
   vtable=((apsw_vtable*)pVtab)->vtable;
 
-  newname=convertutf8string(zNew);
+  APSW_FAULT_INJECT(VtabRenameBadName, newname=convertutf8string(zNew), newname=PyErr_NoMemory());
   if(!newname)
     {
       sqliteres=SQLITE_ERROR;
@@ -3632,7 +3636,7 @@ Connection_createmodule(Connection *self, PyObject *args)
   vti->datasource=datasource;
 
   /* ::TODO:: - can we call this with NULL to unregister a module? */
-  res=sqlite3_create_module_v2(self->db, name, &apsw_vtable_module, vti, vtabFree);
+  APSW_FAULT_INJECT(CreateModuleFail, res=sqlite3_create_module_v2(self->db, name, &apsw_vtable_module, vti, vtabFree), res=SQLITE_IOERR);
   PyMem_Free(name);
   SET_EXC(self->db, res);
 
@@ -4376,12 +4380,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
                 SET_EXC(NULL, SQLITE_TOOBIG);
 	      }
 	    else
-	      {
-		if(use16)
-		  res=sqlite3_bind_text16(self->statement, arg, strdata, (int)strbytes, SQLITE_TRANSIENT);
-		else
-		  res=sqlite3_bind_text(self->statement, arg, strdata, (int)strbytes, SQLITE_TRANSIENT);
-	      }
+              res=USE16(sqlite3_bind_text)(self->statement, arg, strdata, (int)strbytes, SQLITE_TRANSIENT);
           }
       UNIDATAEND(obj);
       if(!badptr) 
@@ -4414,12 +4413,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
                     res=SQLITE_TOOBIG;
 		  }
 		else
-		  {
-		    if(use16)
-		      res=sqlite3_bind_text16(self->statement, arg, strdata, (int)strbytes, SQLITE_TRANSIENT);
-		    else
-		      res=sqlite3_bind_text(self->statement, arg, strdata, (int)strbytes, SQLITE_TRANSIENT);
-		  }
+                  res=USE16(sqlite3_bind_text)(self->statement, arg, strdata, (int)strbytes, SQLITE_TRANSIENT);
               }
           UNIDATAEND(str2);
           Py_DECREF(str2);

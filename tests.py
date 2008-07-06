@@ -910,9 +910,9 @@ class APSW(unittest.TestCase):
                 values[vn]=v
             # compare
             if values[0]<values[1]:
-                return -1
-            if values[0]>values[1]:
-                return 1
+                return -1 # return an int
+            if values[0]>values[1]: 
+                return long(1) # and a long
             return 0
 
         self.assertRaises(TypeError, self.db.createcollation, "twelve", strnumcollate, 12) # wrong # params
@@ -924,6 +924,7 @@ class APSW(unittest.TestCase):
         vals=(uni+"file1", uni+"file7", uni+"file9", uni+"file17", uni+"file20")
         valsrev=list(vals)
         valsrev.reverse() # put them into table in reverse order
+        valsrev=valsrev[1:]+valsrev[:1] # except one out of order
         c.executemany("insert into foo values(?)", [(x,) for x in valsrev])
         for i,row in enumerate(c.execute("select x from foo order by x collate strnum")):
             self.failUnlessEqual(vals[i], row[0])
@@ -1712,7 +1713,7 @@ class APSW(unittest.TestCase):
                 return ( (0, 1, (2, BadIsTrue()), 3, 4), )
 
             def BestIndex7(self, constraints, orderbys):
-                return (None, None, "foo", BadIsTrue(), 99)
+                return (None, long(77), "foo", BadIsTrue(), 99)
 
             _bestindexreturn=99
                 
@@ -1721,7 +1722,7 @@ class APSW(unittest.TestCase):
                 cl.sort()
                 assert allconstraintsl == cl
                 assert orderbys == ( (2, False), )
-                retval=( [4,(3,True),[2,False],1, (0, False)], 997, u(r"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}"), False, 99)[:self._bestindexreturn]
+                retval=( [long(4),(3,True),[long(2),False],1, (0, False)], 997, u(r"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}"), False, 99)[:self._bestindexreturn]
                 return retval
 
             def BestIndexGood(self, constraints, orderbys):
@@ -2327,6 +2328,37 @@ class APSW(unittest.TestCase):
         self.db.createscalarfunction("toobig", func)
         self.assertRaises(apsw.TooBigError, c.execute, "select toobig()")
         f.close()
+        # Other testing by fault injection
+        if not hasattr(apsw, "faultdict"):
+            return
+
+        ## SetContextResultLargeUnicode
+        apsw.faultdict["SetContextResultLargeUnicode"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.createscalarfunction("foo", lambda x: u("a unicode string"))
+            for row in db.cursor().execute("select foo(3)"):
+                pass
+            1/0
+        except:
+            klass, value, tb=sys.exc_info()
+            self.assert_(klass is apsw.TooBigError)
+
+        ## SetContextResultLargeString
+        if sys.version_info<(3,0):
+            apsw.faultdict["SetContextResultLargeString"]=True
+            try:
+                db=apsw.Connection(":memory:")
+                def func(x):
+                    return "an ordinary string"*10000
+                db.createscalarfunction("foo", func)
+                for row in db.cursor().execute("select foo(3)"):
+                    pass
+                1/0
+            except:
+                klass, value, tb=sys.exc_info()
+                self.assert_(klass is apsw.TooBigError)
+
 
     def testErrorCodes(self):
         "Verify setting of result codes on error/exception"
@@ -2709,51 +2741,32 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, blobrw.close, "elephant")
 
     def testBlobReadError(self):
-        # Check blob read errors handled correctly.  We use a virtual
-        # table to generate the error
-        class Source:
-            def Create(self, db, modulename, dbname, tablename):
-                return "create table foo(b blob)", Table()
-            Connect=Create
-        class Table:
-            def BestIndex(self, *args): return None
-            def Open(self): return Cursor()
-
-        class Cursor:
-            def __init__(self):
-                self.pos=0
-            def Filter(self, *args):
-                self.pos=0
-            def Eof(self):
-                return self.pos>0
-            def Next(self):
-                self.pos+=1
-            def Rowid(self):
-                return self.pos
-            def Close(self):
-                pass
-            def Column(self, col):
-                if col<0: return self.pos
-                return "foo"
-                1/0
-                raise apsw.IOError()
+        "Ensure blob read errors are handled well"
         cur=self.db.cursor()
-        self.db.createmodule("ioerror", Source())
-        cur.execute("create virtual table ioerror using ioerror()")
-        blob=self.db.blobopen("main", "ioerror", "b", 0, False)
+        cur.execute("create table ioerror (x, blob)")
+        cur.execute("insert into ioerror (rowid,x,blob) values (2,3,x'deadbeef')")
+        blob=self.db.blobopen("main", "ioerror", "blob", 2, False)
         blob.read(1)
-    # See http://www.sqlite.org/cvstrac/tktview?tn=3078
-    del testBlobReadError
+        cur.execute("update ioerror set blob='fsdfdsfasd' where x=3")
+        try:
+            blob.read(1)
+            1/0
+        except:
+            klass,value=sys.exc_info()[:2]
+            self.assert_(klass is apsw.AbortError)
 
-    # This test must come last since fault locations are dynamically
-    # registered.  Note that faults fire only once, so there is no
-    # need to reset them
+    # Note that faults fire only once, so there is no need to reset
+    # them.  The testing for objects bigger than 2GB is done in
+    # testLargeObjects
     def testzzFaultInjection(self):
         if not hasattr(apsw, "faultdict"):
             return
 
         def dummy(*args):
             1/0
+
+        def dummy2(*args):
+            return 7
 
         # The 1/0 in these tests is to cause a ZeroDivisionError so
         # that an exception is always thrown.  If we catch that then
@@ -2765,7 +2778,7 @@ class APSW(unittest.TestCase):
             self.db.cursor().execute("select '")
             1/0
         except:
-            klass,value,tb=sys.exc_info()
+            klass,value=sys.exc_info()[:2]
             self.assert_(klass is apsw.Error)
             self.assert_("254" in str(value))
 
@@ -2777,7 +2790,7 @@ class APSW(unittest.TestCase):
                     pass
                 1/0
             except:
-                klass,value,tb=sys.exc_info()
+                klass,value=sys.exc_info()[:2]
                 self.assert_(klass is MemoryError)
 
         ## ConnectionCloseFail
@@ -2788,7 +2801,7 @@ class APSW(unittest.TestCase):
             db.close(True)
             1/0
         except:
-            klass,value,tb=sys.exc_info()
+            klass,value=sys.exc_info()[:2]
             self.assert_(klass is apsw.IOError)
 
         ## DestructorCloseFail
@@ -2819,7 +2832,7 @@ class APSW(unittest.TestCase):
             blob=db.blobopen("main", "foo", "ablob", 1, False)
             1/0
         except:
-            klass,value,tb=sys.exc_info()
+            klass,value=sys.exc_info()[:2]
             self.assert_(klass is MemoryError)
 
         ## CursorAllocFails
@@ -2829,7 +2842,7 @@ class APSW(unittest.TestCase):
             db.cursor().execute("select 3")
             1/0
         except:
-            klass,value,tb=sys.exc_info()
+            klass,value=sys.exc_info()[:2]
             self.assert_(klass is MemoryError)
 
         ## RollbackHookExistingError
@@ -2840,7 +2853,7 @@ class APSW(unittest.TestCase):
             db.cursor().execute("create table foo(a); begin ; insert into foo values(3); rollback")
             1/0
         except:
-            klass,value,tb=sys.exc_info()
+            klass,value=sys.exc_info()[:2]
             self.assert_(klass is MemoryError)
 
         ## CommitHookExceptionAlready
@@ -2851,7 +2864,7 @@ class APSW(unittest.TestCase):
             db.cursor().execute("begin; create table foo(a); insert into foo values(3); commit")
             1/0
         except:
-            klass,value,tb=sys.exc_info()
+            klass,value=sys.exc_info()[:2]
             self.assert_(klass is MemoryError)
 
         ## AuthorizerExistingError
@@ -2862,7 +2875,7 @@ class APSW(unittest.TestCase):
             db.cursor().execute("create table foo(a)")
             1/0
         except:
-            klass,value,tb=sys.exc_info()
+            klass,value=sys.exc_info()[:2]
             self.assert_(klass is MemoryError)
 
         ## SetAuthorizerNullFail
@@ -2872,7 +2885,7 @@ class APSW(unittest.TestCase):
             db.setauthorizer(None)
             1/0
         except:
-            klass,value,tb=sys.exc_info()
+            klass,value=sys.exc_info()[:2]
             self.assert_(klass is apsw.IOError)
 
         ## SetAuthorizerFail
@@ -2882,7 +2895,7 @@ class APSW(unittest.TestCase):
             db.setauthorizer(dummy)
             1/0
         except:
-            klass,value,tb=sys.exc_info()
+            klass,value=sys.exc_info()[:2]
             self.assert_(klass is apsw.IOError)
 
         ## CollationNeededNullFail
@@ -2892,7 +2905,7 @@ class APSW(unittest.TestCase):
             db.collationneeded(None)
             1/0
         except:
-            klass,value,tb=sys.exc_info()
+            klass,value=sys.exc_info()[:2]
             self.assert_(klass is apsw.IOError)
             
         ## CollationNeededFail
@@ -2902,7 +2915,7 @@ class APSW(unittest.TestCase):
             db.collationneeded(dummy)
             1/0
         except:
-            klass,value,tb=sys.exc_info()
+            klass,value=sys.exc_info()[:2]
             self.assert_(klass is apsw.IOError)
 
         ##EnableLoadExtensionFail
@@ -2912,7 +2925,7 @@ class APSW(unittest.TestCase):
             db.enableloadextension(True)
             1/0
         except:
-            klass,value,tb=sys.exc_info()
+            klass,value=sys.exc_info()[:2]
             self.assert_(klass is apsw.IOError)
 
         ## SetBusyHandlerNullFail
@@ -2922,7 +2935,7 @@ class APSW(unittest.TestCase):
             db.setbusyhandler(None)
             1/0
         except:
-            klass,value,tb=sys.exc_info()
+            klass,value=sys.exc_info()[:2]
             self.assert_(klass is apsw.IOError)
             
         ## SetBusyHandlerFail
@@ -2932,7 +2945,7 @@ class APSW(unittest.TestCase):
             db.setbusyhandler(dummy)
             1/0
         except:
-            klass,value,tb=sys.exc_info()
+            klass,value=sys.exc_info()[:2]
             self.assert_(klass is apsw.IOError)
 
         ## UnknownValueType
@@ -2943,7 +2956,7 @@ class APSW(unittest.TestCase):
             db.cursor().execute("select dummy(4)")
             1/0
         except:
-            klass,value,tb=sys.exc_info()
+            klass,value=sys.exc_info()[:2]
             self.assert_(klass is apsw.Error)
             self.assert_("123456" in str(value))
 
@@ -2955,10 +2968,199 @@ class APSW(unittest.TestCase):
                 pass
             1/0
         except:
-            klass,value,tb=sys.exc_info()
+            klass,value=sys.exc_info()[:2]
             self.assert_(klass is apsw.Error)
             self.assert_("12348" in str(value))
         
+        ## SetContextResultUnicodeConversionFails
+        apsw.faultdict["SetContextResultUnicodeConversionFails"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.createscalarfunction("foo", lambda x: u("another unicode string"))
+            for row in db.cursor().execute("select foo(3)"):
+                pass
+            1/0
+        except:
+            klass,value=sys.exc_info()[:2]
+            self.assert_(klass is MemoryError)
+
+        ## SetContextResultStringUnicodeConversionFails
+        if sys.version_info<(3,0):
+            apsw.faultdict["SetContextResultStringUnicodeConversionFails"]=True
+            try:
+                db=apsw.Connection(":memory:")
+                db.createscalarfunction("foo", lambda x: "another string"*10000)
+                for row in db.cursor().execute("select foo(3)"):
+                    pass
+                1/0
+            except:
+                klass,value=sys.exc_info()[:2]
+                self.assert_(klass is MemoryError)
+
+        ## SetContextResultAsReadBufferFail
+        apsw.faultdict["SetContextResultAsReadBufferFail"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.createscalarfunction("foo", lambda x: b("another string"))
+            for row in db.cursor().execute("select foo(3)"):
+                pass
+            1/0
+        except:
+            klass,value=sys.exc_info()[:2]
+            self.assert_(klass is MemoryError)
+
+        ## GFAPyTuple_NewFail
+        apsw.faultdict["GFAPyTuple_NewFail"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.createscalarfunction("foo", dummy)
+            for row in db.cursor().execute("select foo(3)"):
+                pass
+            1/0
+        except:
+            klass,value=sys.exc_info()[:2]
+            self.assert_(klass is MemoryError)
+
+        ## Same again
+        apsw.faultdict["GFAPyTuple_NewFail"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            def foo():
+                return None, dummy2, dummy2
+            db.createaggregatefunction("foo", foo)
+            for row in db.cursor().execute("create table bar(x);insert into bar values(3); select foo(x) from bar"):
+                pass
+            1/0
+        except:
+            klass,value=sys.exc_info()[:2]
+            self.assert_(klass is MemoryError)
+
+        ## CBDispatchExistingError
+        apsw.faultdict["CBDispatchExistingError"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.createscalarfunction("foo", dummy)
+            db.cursor().execute("select foo(3)")
+            1/0
+        except:
+            klass,value=sys.exc_info()[:2]
+            self.assert_(klass is MemoryError)
+
+        ## CBDispatchFinalError
+        apsw.faultdict["CBDispatchFinalError"]=True
+        try:
+            # save existing excepthook
+            xx=sys.excepthook
+            # put in our own
+            called=[0]
+            def ehook(t,v,tb, called=called):
+                called[0]=1
+            sys.excepthook=ehook
+
+            db=apsw.Connection(":memory:")
+            def foo():
+                return None, dummy, dummy2
+            db.createaggregatefunction("foo", foo)
+            for row in db.cursor().execute("create table bar(x);insert into bar values(3); select foo(x) from bar"):
+                pass
+            1/0
+        except:
+            klass,value=sys.exc_info()[:2]
+            self.assert_(klass is ZeroDivisionError)
+            # restore
+            sys.excepthook=xx
+            # check there was an unraiseable
+            self.failUnlessEqual(called[0], 1)
+
+        ## Virtual table code
+        class Source:
+            def Create(self, *args):
+                return "create table foo(x,y)", Table()
+            Connect=Create
+        class Table:
+            def __init__(self):
+                self.data=[ #("rowid", "x", "y"),
+                            [0, 1, 2],
+                            [3, 4, 5]]
+            def Open(self):
+                return Cursor(self)
+
+            def BestIndex(self, *args): return None
+
+            def UpdateChangeRow(self, rowid, newrowid, fields):
+                for i, row in enumerate(self.data):
+                    if row[0]==rowid:
+                        self.data[i]=[newrowid]+list(fields)
+        class Cursor:
+            def __init__(self, table):
+                self.table=table
+                self.row=0
+            def Eof(self):
+                return self.row>=len(self.table.data)
+            def Rowid(self):
+                return self.table.data[self.row][0]
+            def Column(self, col):
+                return self.table.data[self.row][1+col]
+            def Filter(self, *args):
+                self.row=0
+            def Next(self):
+                self.row+=1
+                def Close(self): pass
+
+        ## VtabCreateBadString
+        apsw.faultdict["VtabCreateBadString"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.createmodule("nonsense", None)
+            db.cursor().execute("create virtual table foo using nonsense(3,4)")
+            1/0
+        except:
+            klass,value=sys.exc_info()[:2]
+            self.assert_(klass is MemoryError)
+
+        ## VtabUpdateChangeRowFail
+        apsw.faultdict["VtabUpdateChangeRowFail"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.createmodule("foo", Source())
+            db.cursor().execute("create virtual table foo using foo();update foo set x=3 where y=2")
+            1/0
+        except:
+            klass,value=sys.exc_info()[:2]
+            self.assert_(klass is MemoryError)
+
+        ## VtabUpdateBadField
+        apsw.faultdict["VtabUpdateBadField"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.createmodule("foo", Source())
+            db.cursor().execute("create virtual table foo using foo();update foo set x=3 where y=2")
+            1/0
+        except:
+            klass,value=sys.exc_info()[:2]
+            self.assert_(klass is MemoryError)
+            
+        ## VtabRenameBadName
+        apsw.faultdict["VtabRenameBadName"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.createmodule("foo", Source())
+            db.cursor().execute("create virtual table foo using foo(); alter table foo rename to bar")
+            1/0
+        except:
+            klass,value=sys.exc_info()[:2]
+            self.assert_(klass is MemoryError)
+
+        ## VtabRenameBadName
+        apsw.faultdict["CreateModuleFail"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.createmodule("foo", Source())
+            1/0
+        except:
+            klass,value=sys.exc_info()[:2]
+            self.assert_(klass is apsw.IOError)        
+
         
 if sys.platform!="win32":
     # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used
