@@ -1521,7 +1521,7 @@ class APSW(unittest.TestCase):
 
             def Create3(self, *args):
                 e=apsw.IOError()
-                e.extendedresult=l("0x8000000000")+apsw.SQLITE_IOERR_BLOCKED # bigger than 32 bits
+                e.extendedresult=(long("0x80")<<32)+apsw.SQLITE_IOERR_BLOCKED # bigger than 32 bits
                 raise e
 
             
@@ -1534,6 +1534,9 @@ class APSW(unittest.TestCase):
             except:
                 klass,value,tb=sys.exc_info()
             # check types and values
+            if i=="3":
+                self.failUnlessEqual(klass, ValueError)
+                continue
             self.failUnlessEqual(klass, apsw.IOError)
             self.assert_(isinstance(value, apsw.IOError))
             # python 2.3 totally messes up on long<->int and signed conversions causing the test to fail
