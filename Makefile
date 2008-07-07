@@ -42,10 +42,14 @@ compile-win:
 	c:/python25/python tests.py
 	c:/python25/python setup.py build --compile=mingw32 bdist_wininst
 	c:/python23/python example-code.py
-# Alpha release currently
+# Beta release currently
+# See http://bugs.python.org/issue3308
 #	c:/python26/python setup.py build --compile=mingw32 install 
 #	c:/python26/python tests.py
 #	c:/python26/python setup.py build --compile=mingw32 bdist_wininst
+#	c:/python30/python setup.py build --compile=mingw32 install 
+#	c:/python30/python tests.py
+#	c:/python30/python setup.py build --compile=mingw32 bdist_wininst
 
 
 source:
