@@ -30,7 +30,7 @@
 <body>
   <h1 class="notoc">APSW - Another Python SQLite Wrapper</h1>
 
-  <p><font size="-1">apsw-3.5.9-r2 7th July 2008</font> (Use with SQLite 3.5.9 or later, Python 2.3 or later including
+  <p><font size="-1">apsw-3.5.9-r2 6th July 2008</font> (Use with SQLite 3.5.9 or later, Python 2.3 or later including
   Python 3)</p>
 
   <p>APSW provides an SQLite 3 wrapper that provides the thinnest layer over <a href="http://www.sqlite.org">SQLite
@@ -1396,15 +1396,15 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       thread. (This calls <a href="http://sqlite.org/c3ref/interrupt.html">sqlite3_interrupt</a>).</p>
     </dd>
 
-    <dt><strong>limit(id [, newval])</strong></dt>
+    <dt><a name="Connection_limit" id="Connection_limit"><strong>limit(id [, newval])</strong></a></dt>
 
     <dd>
       <p>If called with one parameter then the relevant limit is returned. If called with two then the limit is
       changed. Returns the old value of the limit. This calls <a href=
       "http://www.sqlite.org/c3ref/limit.html">sqlite3_limit</a>. For example
       <code>connection.limit(apsw.SQLITE_LIMIT_LENGTH, 1024)</code> would set the limit for blobs and strings to 1
-      kilobyte.  To find the maximum value, set the limit to 0x7fffffff and then call <tt>connection.limit</tt> again
-      to see what value it was set to.</p>
+      kilobyte. To find the maximum value, set the limit to 0x7fffffff and then call <tt>connection.limit</tt> again to
+      see what value it was set to.</p>
     </dd>
 
     <dt><strong>createscalarfunction(name, callable, numargs=-1)</strong></dt>
@@ -2940,8 +2940,9 @@ Traceback (most recent call last):
 
       <p>APSW now works with Python 3 (you need 3.0b1 or later).</p>
 
-      <p>Removed the <tt>SQLITE_MAX_*</tt> constants since they could be unreliable (eg APSW can't tell what a shared
-      library was compiled with). <a href="http://code.google.com/p/apsw/issues/detail?id=17">Issue 17</a>.</p>
+      <p>(<a href="http://code.google.com/p/apsw/issues/detail?id=17">Issue 17</a>) Removed the <tt>SQLITE_MAX_*</tt>
+      constants since they could be unreliable (eg APSW can't tell what a shared library was compiled with). A
+      workaround is documented in the <a href="#Connection_limit">Connection.limit</a> section.</p>
 
       <h2><a name="359r1">3.5.9-r1</a></h2>
 
