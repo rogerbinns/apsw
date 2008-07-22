@@ -58,8 +58,8 @@
 #include "sqlite3.h"
 #endif
 
-#if SQLITE_VERSION_NUMBER < 3005009
-#error Your SQLite version is too old.  It must be at least 3.5.9
+#if SQLITE_VERSION_NUMBER < 3006000
+#error Your SQLite version is too old.  It must be at least 3.6.0
 #endif
 
 /* system headers */
@@ -1970,7 +1970,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
   if (PyUnicode_Check(obj))
     {
       UNIDATABEGIN(obj)
-        APSW_FAULT_INJECT(SetContextResultUnicodeConversionFails,,(PyErr_NoMemory(),strdata=NULL));
+        APSW_FAULT_INJECT(SetContextResultUnicodeConversionFails,,strdata=(char*)PyErr_NoMemory());
         if(strdata)
           {
 #ifdef APSW_TEST_LARGE_OBJECTS
@@ -2008,7 +2008,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
               return;
             }
           UNIDATABEGIN(str2)
-            APSW_FAULT_INJECT(SetContextResultStringUnicodeConversionFails,,(PyErr_NoMemory(),strdata=NULL));
+            APSW_FAULT_INJECT(SetContextResultStringUnicodeConversionFails,,strdata=(char*)PyErr_NoMemory());
             if(strdata)
               {
 #ifdef APSW_TEST_LARGE_OBJECTS
@@ -3886,13 +3886,19 @@ APSWBlob_dealloc(APSWBlob *self)
       if(res!=SQLITE_OK)
         {
           PyObject *err_type, *err_value, *err_traceback;
-          int have_error=PyErr_Occurred()?1:0;
+          int have_error;
+
+          APSW_FAULT_INJECT(BlobDeallocException,,PyErr_NoMemory());
+
+          have_error=PyErr_Occurred()?1:0;
           if(have_error)
             PyErr_Fetch(&err_type, &err_value, &err_traceback);
           make_exception(res, self->connection->db);
           apsw_write_unraiseable();
           if(have_error)
             PyErr_Restore(err_type, err_value, err_traceback);
+          /* destructors can't throw exceptions */
+          PyErr_Clear();
         }
       self->pBlob=0;
       pointerlist_remove(&self->connection->dependents, self);
@@ -4030,21 +4036,18 @@ APSWBlob_write(APSWBlob *self, PyObject *obj)
   CHECK_BLOB_CLOSED;
 
   /* we support buffers and string for the object */
-  if(PyObject_CheckReadBuffer(obj))
+  if(!PyUnicode_Check(obj) && PyObject_CheckReadBuffer(obj))
     {
-      if(PyObject_AsReadBuffer(obj, &buffer, &size))
+      int asrb=PyObject_AsReadBuffer(obj, &buffer, &size);
+
+      APSW_FAULT_INJECT(BlobWriteAsReadBufFails,,(PyErr_NoMemory(), asrb=-1));
+
+      if(asrb!=0)
         return NULL;
     }
-#if PY_VERSION_HEX < 0x03000000
-  else if(PyString_Check(obj))
-    {
-      buffer=PyString_AS_STRING(obj);
-      size=PyString_GET_SIZE(obj);
-    }
-#endif
   else
     {
-      PyErr_Format(PyExc_TypeError, "Parameter should be string or buffer");
+      PyErr_Format(PyExc_TypeError, "Parameter should be bytes/string or buffer");
       return NULL;
     }
 
@@ -4322,9 +4325,12 @@ APSWCursor_getdescription(APSWCursor *self)
 
   for(i=0;i<ncols;i++)
     {
+      APSW_FAULT_INJECT(GetDescriptionFail,
       pair=Py_BuildValue("(O&O&)", 
 			 convertutf8string, sqlite3_column_name(self->statement, i),
-			 convertutf8string, sqlite3_column_decltype(self->statement, i));
+			 convertutf8string, sqlite3_column_decltype(self->statement, i)),
+      pair=PyErr_NoMemory()
+      );                  
 			 
       if(!pair) goto error;
 
@@ -4352,6 +4358,8 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
 
   int res=SQLITE_OK;
 
+  APSW_FAULT_INJECT(DoBindingFail,,PyErr_NoMemory());
+
   if(PyErr_Occurred()) 
     return -1;
 
@@ -4372,7 +4380,11 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
     {
       const void *badptr=NULL;
       UNIDATABEGIN(obj)
+        APSW_FAULT_INJECT(DoBindingUnicodeConversionFails,,strdata=(char*)PyErr_NoMemory());
         badptr=strdata;
+#ifdef APSW_TEST_LARGE_OBJECTS
+        APSW_FAULT_INJECT(DoBindingLargeUnicode,,strbytes=0x001234567890L);
+#endif
         if(strdata)
           {
 	    if(strbytes>APSW_INT32_MAX)
@@ -4395,6 +4407,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
       const char *val=PyString_AS_STRING(obj);
       const size_t lenval=PyString_GET_SIZE(obj);
       const char *chk=val;
+
       if(lenval<10000)
         for(;chk<val+lenval && !((*chk)&0x80); chk++);
       if(chk<val+lenval)
@@ -4404,6 +4417,10 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
           if(!str2)
             return -1;
           UNIDATABEGIN(str2)
+            APSW_FAULT_INJECT(DoBindingStringConversionFails,,strdata=(char*)PyErr_NoMemory());
+#ifdef APSW_TEST_LARGE_OBJECTS
+            APSW_FAULT_INJECT(DoBindingLargeString,,strbytes=0x001234567890L);
+#endif
             badptr=strdata;
             if(strdata)
               {
@@ -4425,11 +4442,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
         }
       else
 	{
-	  if(lenval>APSW_INT32_MAX)
-	      {
-                SET_EXC(NULL, SQLITE_TOOBIG);
-		return -1;
-	      }
+	  assert(lenval<APSW_INT32_MAX);
 	  res=sqlite3_bind_text(self->statement, arg, val, (int)lenval, SQLITE_TRANSIENT);
 	}
     }
@@ -4438,8 +4451,12 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
     {
       const void *buffer;
       Py_ssize_t buflen;
-      if(PyObject_AsReadBuffer(obj, &buffer, &buflen))
+      int asrb;
+      
+      APSW_FAULT_INJECT(DoBindingAsReadBufferFails,asrb=PyObject_AsReadBuffer(obj, &buffer, &buflen), (PyErr_NoMemory(), asrb=-1));
+      if(asrb!=0)
         return -1;
+
       if (buflen>APSW_INT32_MAX)
 	{
           SET_EXC(NULL, SQLITE_TOOBIG);
@@ -4473,6 +4490,7 @@ APSWCursor_dobindings(APSWCursor *self)
   int nargs, arg, res, sz=0;
   PyObject *obj;
 
+  APSW_FAULT_INJECT(DoBindingExistingError,,PyErr_NoMemory());
   if(PyErr_Occurred()) 
     return -1;
 
@@ -4512,7 +4530,7 @@ APSWCursor_dobindings(APSWCursor *self)
           if(!obj)
             /* this is where we could error on missing keys */
             continue;
-          if(APSWCursor_dobinding(self,arg,obj))
+          if(APSWCursor_dobinding(self,arg,obj)!=SQLITE_OK)
             {
               assert(PyErr_Occurred());
               return -1;
@@ -4589,10 +4607,12 @@ APSWCursor_doexectrace(APSWCursor *self, exectrace_oldstate *etos)
         }
       else
         {
-          bindings=PySequence_GetSlice(self->bindings, etos->savedbindingsoffset, self->bindingsoffset);
+          APSW_FAULT_INJECT(DoExecTraceBadSlice,
+          bindings=PySequence_GetSlice(self->bindings, etos->savedbindingsoffset, self->bindingsoffset),
+          bindings=PyErr_NoMemory());
+
           if(!bindings)
             {
-	      /* I couldn't work anything into the test suite to actually make this fail! */
               Py_DECREF(sqlcmd);
               return -1;
             }
@@ -4647,12 +4667,6 @@ APSWCursor_step(APSWCursor *self)
   int res;
   exectrace_oldstate etos;
 
-  if(self->status==C_DONE)
-    {
-      PyErr_Format(ExcComplete, "The statement(s) have finished or errored, so you can't keep running them");
-      return NULL;
-    }
-
   for(;;)
     {
       assert(!PyErr_Occurred());
@@ -4662,13 +4676,6 @@ APSWCursor_step(APSWCursor *self)
 
       switch(res&0xff)
         {
-        case SQLITE_MISUSE:
-          /* this would be an error in apsw itself */
-          self->status=C_DONE;
-          SET_EXC(self->connection->db,res);
-          resetcursor(self, 0);
-          return NULL;
-
 	case SQLITE_ROW:
           self->status=C_ROW;
           return (PyErr_Occurred())?(NULL):((PyObject*)self);
@@ -5025,14 +5032,12 @@ APSWCursor_next(APSWCursor *self)
   /* return the row of data */
   numcols=sqlite3_data_count(self->statement);
   retval=PyTuple_New(numcols);
-  if(!retval) 
-    return NULL;
+  if(!retval) goto error;
 
   for(i=0;i<numcols;i++)
     {
       item=convert_column_to_pyobject(self->statement, i);
-      if(!item) 
-	return NULL;
+      if(!item) goto error;
       PyTuple_SET_ITEM(retval, i, item);
     }
   if(self->rowtrace)
@@ -5049,6 +5054,9 @@ APSWCursor_next(APSWCursor *self)
       return r2;
     }
   return retval;
+ error:
+  Py_XDECREF(retval);
+  return NULL;
 }
 
 static PyObject *
@@ -5243,7 +5251,7 @@ enablesharedcache(PyObject *self, PyObject *args)
   if(!PyArg_ParseTuple(args, "i:enablesharedcache(boolean)", &setting))
     return NULL;
 
-  res=sqlite3_enable_shared_cache(setting);
+  APSW_FAULT_INJECT(EnableSharedCacheFail,res=sqlite3_enable_shared_cache(setting),res=SQLITE_NOMEM);
   SET_EXC(NULL, res);
 
   if(res!=SQLITE_OK)
@@ -5290,16 +5298,10 @@ PyInit_apsw(void)
     assert(sizeof(int)==4);             /* we expect 32 bit ints */
     assert(sizeof(long long)==8);             /* we expect 64 bit long long */
 
-    if (PyType_Ready(&ConnectionType) < 0)
-      goto fail;
-
-    if (PyType_Ready(&APSWCursorType) < 0)
-      goto fail;
-
-    if (PyType_Ready(&ZeroBlobBindType) <0)
-      goto fail;
-
-    if (PyType_Ready(&APSWBlobType) <0)
+    if (PyType_Ready(&ConnectionType) < 0
+        || PyType_Ready(&APSWCursorType) < 0
+        || PyType_Ready(&ZeroBlobBindType) <0
+        || PyType_Ready(&APSWBlobType) <0)
       goto fail;
 
     /* ensure threads are available */
