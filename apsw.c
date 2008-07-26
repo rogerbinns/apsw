@@ -1200,7 +1200,7 @@ Connection_limit(Connection *self, PyObject *args)
 #endif
 
 static void
-updatecb(void *context, int updatetype, char const *databasename, char const *tablename, sqlite_int64 rowid)
+updatecb(void *context, int updatetype, char const *databasename, char const *tablename, sqlite3_int64 rowid)
 {
   /* The hook returns void. That makes it impossible for us to
      abort immediately due to an error in the callback */
@@ -1985,7 +1985,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
                 sqlite3_result_error_toobig(context);
 	      }
 	    else
-              USE16(sqlite3_result_text)(context, strdata, (int)strbytes, SQLITE_TRANSIENT);
+              USE16(sqlite3_result_text)(context, strdata, strbytes, SQLITE_TRANSIENT);
           }
         else
           sqlite3_result_error(context, "Unicode conversions failed", -1);
@@ -2023,7 +2023,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
                     sqlite3_result_error_toobig(context);
 		  }
 		else
-                  USE16(sqlite3_result_text)(context, strdata, (int)strbytes, SQLITE_TRANSIENT);
+                  USE16(sqlite3_result_text)(context, strdata, strbytes, SQLITE_TRANSIENT);
               }
             else
               sqlite3_result_error(context, "Unicode conversions failed", -1);
@@ -2031,7 +2031,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
           Py_DECREF(str2);
         }
       else /* just ascii chars */
-        sqlite3_result_text(context, val, (int)lenval, SQLITE_TRANSIENT);
+        sqlite3_result_text(context, val, lenval, SQLITE_TRANSIENT);
 
       return;
     }
@@ -2052,7 +2052,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
       if (buflen>APSW_INT32_MAX)
 	sqlite3_result_error_toobig(context);
       else
-	sqlite3_result_blob(context, buffer, (int)buflen, SQLITE_TRANSIENT);
+	sqlite3_result_blob(context, buffer, buflen, SQLITE_TRANSIENT);
       return;
     }
 
@@ -3398,7 +3398,7 @@ vtabClose(sqlite3_vtab_cursor *pCursor)
 }
 
 static int
-vtabRowid(sqlite3_vtab_cursor *pCursor, sqlite_int64 *pRowid)
+vtabRowid(sqlite3_vtab_cursor *pCursor, sqlite3_int64 *pRowid)
 { 
   PyObject *cursor, *res=NULL, *pyrowid=NULL;
   PyGILState_STATE gilstate;
@@ -3433,7 +3433,7 @@ vtabRowid(sqlite3_vtab_cursor *pCursor, sqlite_int64 *pRowid)
 }
 
 static int
-vtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite_int64 *pRowid)
+vtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int64 *pRowid)
 {
   PyObject *vtable, *args=NULL, *res=NULL;
   PyGILState_STATE gilstate;
@@ -4066,7 +4066,7 @@ APSWBlob_write(APSWBlob *self, PyObject *obj)
     }
 
   APSW_BEGIN_ALLOW_THREADS
-    res=sqlite3_blob_write(self->pBlob, buffer, (int)size, self->curoffset);
+    res=sqlite3_blob_write(self->pBlob, buffer, size, self->curoffset);
   APSW_END_ALLOW_THREADS;
 
   if(res!=SQLITE_OK)
@@ -4395,7 +4395,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
                 SET_EXC(NULL, SQLITE_TOOBIG);
 	      }
 	    else
-              res=USE16(sqlite3_bind_text)(self->statement, arg, strdata, (int)strbytes, SQLITE_TRANSIENT);
+              res=USE16(sqlite3_bind_text)(self->statement, arg, strdata, strbytes, SQLITE_TRANSIENT);
           }
       UNIDATAEND(obj);
       if(!badptr) 
@@ -4433,7 +4433,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
                     res=SQLITE_TOOBIG;
 		  }
 		else
-                  res=USE16(sqlite3_bind_text)(self->statement, arg, strdata, (int)strbytes, SQLITE_TRANSIENT);
+                  res=USE16(sqlite3_bind_text)(self->statement, arg, strdata, strbytes, SQLITE_TRANSIENT);
               }
           UNIDATAEND(str2);
           Py_DECREF(str2);
@@ -4446,7 +4446,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
       else
 	{
 	  assert(lenval<APSW_INT32_MAX);
-	  res=sqlite3_bind_text(self->statement, arg, val, (int)lenval, SQLITE_TRANSIENT);
+	  res=sqlite3_bind_text(self->statement, arg, val, lenval, SQLITE_TRANSIENT);
 	}
     }
 #endif
@@ -4465,7 +4465,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
           SET_EXC(NULL, SQLITE_TOOBIG);
 	  return -1;
 	}
-      res=sqlite3_bind_blob(self->statement, arg, buffer, (int)buflen, SQLITE_TRANSIENT);
+      res=sqlite3_bind_blob(self->statement, arg, buffer, buflen, SQLITE_TRANSIENT);
     }
   else if(PyObject_TypeCheck(obj, &ZeroBlobBindType)==1)
     {
@@ -5300,6 +5300,13 @@ PyInit_apsw(void)
     assert(sizeof(int)==4);             /* we expect 32 bit ints */
     assert(sizeof(long long)==8);             /* we expect 64 bit long long */
 
+    /* Check SQLite was compiled with thread safety */
+    if(!sqlite3_threadsafe())
+      {
+        PyErr_Format(PyExc_EnvironmentError, "SQLite was compiled without thread safety and cannot be used.");
+        goto fail;
+      }
+
     if (PyType_Ready(&ConnectionType) < 0
         || PyType_Ready(&APSWCursorType) < 0
         || PyType_Ready(&ZeroBlobBindType) <0
@@ -5422,6 +5429,8 @@ PyInit_apsw(void)
     ADDINT(SQLITE_IOERR_DELETE);
     ADDINT(SQLITE_IOERR_BLOCKED);
     ADDINT(SQLITE_IOERR_NOMEM);
+    ADDINT(SQLITE_IOERR_ACCESS);
+    ADDINT(SQLITE_IOERR_CHECKRESERVEDLOCK);
     PyModule_AddObject(m, "mapping_extended_result_codes", thedict);
 
     /* error codes */
@@ -5472,6 +5481,7 @@ PyInit_apsw(void)
     ADDINT(SQLITE_OPEN_TEMP_JOURNAL);
     ADDINT(SQLITE_OPEN_SUBJOURNAL);
     ADDINT(SQLITE_OPEN_MASTER_JOURNAL);
+    ADDINT(SQLITE_OPEN_NOMUTEX);
 
     PyModule_AddObject(m, "mapping_open_flags", thedict);
 
