@@ -33,10 +33,19 @@ cursor=connection.cursor()
 cursor.execute("create table foo(x,y,z)")
 
 ###
+### using different types
+###
+
+cursor.execute("insert into foo values(?,?,?)", (1, 1.1, None))  # integer, float/real, Null
+cursor.execute("insert into foo(x) values(?)", ("abc", ))        # string (note trailing comma to ensure tuple!)
+cursor.execute("insert into foo(x) values(?)",                   # a blob (binary data)
+                    (buffer("abc\xff\xfe"), ))                   # Use b"abc\xff\xfe" for Python 3
+
+###
 ### multiple statements
 ###
 
-cursor.execute("insert into foo values(1,2,3); create table bar(a,b,c) ; insert into foo values(4, 'five', 6.0)")
+cursor.execute("delete from foo; insert into foo values(1,2,3); create table bar(a,b,c) ; insert into foo values(4, 'five', 6.0)")
 
 ###
 ### iterator
