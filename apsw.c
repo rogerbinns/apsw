@@ -5262,6 +5262,35 @@ enablesharedcache(APSW_ARGUNUSED PyObject *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
+static PyObject *
+initialize(void)
+{
+  int res;
+
+  res=sqlite3_initialize();
+  APSW_FAULT_INJECT(InitializeFail, ,res=SQLITE_NOMEM);
+  SET_EXC(NULL, res);
+
+  if(res!=SQLITE_OK)
+    return NULL;
+
+  Py_RETURN_NONE;
+}
+
+static PyObject *
+shutdown(void)
+{
+  int res;
+  
+  APSW_FAULT_INJECT(ShutdownFail, res=sqlite3_shutdown(), res=SQLITE_NOMEM);
+  SET_EXC(NULL, res);
+
+  if(res!=SQLITE_OK)
+    return NULL;
+
+  Py_RETURN_NONE;
+}
+
 
 static PyMethodDef module_methods[] = {
   {"sqlitelibversion", (PyCFunction)getsqliteversion, METH_NOARGS,
@@ -5270,6 +5299,10 @@ static PyMethodDef module_methods[] = {
    "Return the version of the APSW wrapper"},
   {"enablesharedcache", (PyCFunction)enablesharedcache, METH_VARARGS,
    "Sets shared cache semantics for this thread"},
+  {"initialize", (PyCFunction)initialize, METH_NOARGS,
+   "Initialize SQLite library"},
+  {"shutdown", (PyCFunction)shutdown, METH_NOARGS,
+   "Shutdown SQLite library"},
   {0, 0, 0, 0}  /* Sentinel */
 };
 

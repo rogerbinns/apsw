@@ -3281,6 +3281,23 @@ class APSW(unittest.TestCase):
         except apsw.NoMemError:
             pass
 
+        ## InitializeFail
+        apsw.faultdict["InitializeFail"]=True
+        try:
+            apsw.initialize()
+            1/0
+        except apsw.NoMemError:
+            pass
+
+        ## ShutdownFail
+        apsw.faultdict["ShutdownFail"]=True
+        try:
+            apsw.shutdown()
+            1/0
+        except apsw.NoMemError:
+            pass
+
+
 if sys.platform!="win32":
     # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used
     LOADEXTENSIONFILENAME="./testextension.sqlext"
@@ -3292,6 +3309,7 @@ PROFILESTEPS=100000
 
 if __name__=='__main__':
 
+    apsw.initialize() # manual call for coverage
     memdb=apsw.Connection(":memory:")
     if not getattr(memdb, "enableloadextension", None):
         del APSW.testLoadExtension
@@ -3315,7 +3333,10 @@ if __name__=='__main__':
         
     v=os.getenv("APSW_TEST_ITERATIONS")
     if v is None:
-        unittest.main()
+        try:
+            unittest.main()
+        except SystemExit:
+            pass
     else:
         # we run all the tests multiple times which has better coverage
         # a larger value for MEMLEAKITERATIONS slows down everything else
@@ -3334,8 +3355,12 @@ if __name__=='__main__':
     del ThreadRunner
     del randomintegers
 
-    # modules
+    # clean up sqlite and apsw
+    gc.collect() # all cursors & connections must be gone
+    apsw.shutdown()
     del apsw
+
+    # modules
     del unittest
     del os
     del sys

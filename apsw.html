@@ -1269,6 +1269,11 @@ OK
     <dd>
       <p>Registers a virtual table. See <a href="#VirtualTables">virtual tables</a> for more details.</p>
     </dd>
+
+    <dt><strong>initialize()</strong> &amp; <strong>shutdown</strong></dt>
+
+<dd><p>Calls the <a href="http://sqlite.org/c3ref/initialize.html">sqlite3_initialize/sqlite3_shutdown</a> functions.  There is no need to manually call these functions.  Note that it is a really bad idea to call shutdown unless you are absolutely sure all connections and cursors have been closed, deleted and garbage collected.</p></dd>
+
   </dl>
 
   <h2><a name="Module_variables" id="Module_variables">Module variables</a></h2>
@@ -2997,6 +3002,14 @@ Traceback (most recent call last):
       <h1><a name="verhistory" id="verhistory">Version History</a></h1>
 
       <h2><a name="360r1">3.6.0-r1</a></h2>
+
+      <p>APSW checks that SQLite was compiled to be <a href="http://sqlite.org/c3ref/threadsafe.html">threadsafe</a>.
+
+      <p>Added new constants: 
+           <ul>
+           <li>SQLITE_IOERR_ACCESS and SQLITE_IOERR_CHECKRESERVEDLOCK extended result codes
+           <li>SQLITE_OPEN_NOMUTEX open flag
+      </ul>
 
       <h2><a name="359r2">3.5.9-r2</a></h2>
 
