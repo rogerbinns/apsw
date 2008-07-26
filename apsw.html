@@ -30,7 +30,7 @@
 <body>
   <h1 class="notoc">APSW - Another Python SQLite Wrapper</h1>
 
-  <p><font size="-1">apsw-3.5.9-r2 6th July 2008</font> (Use with SQLite 3.5.9 or later, Python 2.3 or later including
+  <p><font size="-1">apsw-3.6.0-r1 31st July 2008</font> (Use with SQLite 3.6.0 or later, Python 2.3 or later including
   Python 3)</p>
 
   <p>APSW provides an SQLite 3 wrapper that provides the thinnest layer over <a href="http://www.sqlite.org">SQLite
@@ -70,6 +70,8 @@
               <li><a href="#Finding">Finding SQLite 3</a></li>
 
               <li><a href="#Recommended">Recommended</a></li>
+
+              <li><a href="#testing">Testing</a></li>
             </ul>
           </li>
 
@@ -117,7 +119,7 @@
             </ul>
           </li>
 
-          <li><a href="#64bitpy25">64 bit hosts, Python 2.5</a></li>
+          <li><a href="#64bitpy25">64 bit hosts, Python 2.5+</a></li>
 
           <li><a href="#executionmodel">Execution model</a></li>
         </ul>
@@ -149,6 +151,8 @@
             <a href="#verhistory">Version History</a>
 
             <ul>
+              <li><a href="#360r1">3.6.0-r1</a></li>
+
               <li><a href="#359r2">3.5.9-r2</a></li>
 
               <li><a href="#359r1">3.5.9-r1</a></li>
@@ -192,7 +196,6 @@
   <p>You can download this release in source or binary form.</p>
 
   <ul>
-
     <li><a href="http://apsw.googlecode.com/files/apsw-3.5.9-r2.zip">apsw-3.5.9-r2.zip</a> (source)</li>
 
     <li><a href="http://apsw.googlecode.com/files/apsw-3.5.9-r2.win32-py2.3.exe">apsw-3.5.9-r2.win32-py2.3.exe</a>
@@ -271,9 +274,9 @@
 "pyname">SQLITE_VERSION_NUMBER   </span><span class="pycomment"># from the sqlite header file at compile time
 
 </span><span class="pyoutput">         Using APSW file /space/apsw/apsw.so
-            APSW version 3.5.9-r2
-      SQLite lib version 3.5.9
-   SQLite header version 3005009
+            APSW version 3.6.0-r1
+      SQLite lib version 3.6.0
+   SQLite header version 3006000
 </span>
 <span class="pycomment">###
 ### Opening/creating database
@@ -300,12 +303,35 @@
 "pystring">"create table foo(x,y,z)"</span><span class="pyoperator">)
 
 </span><span class="pycomment">###
+### using different types
+###
+
+</span><span class="pyname">cursor</span><span class="pyoperator">.</span><span class=
+"pyname">execute</span><span class="pyoperator">(</span><span class=
+"pystring">"insert into foo values(?,?,?)"</span><span class="pyoperator">, (</span><span class=
+"pynumber">1</span><span class="pyoperator">, </span><span class="pynumber">1.1</span><span class=
+"pyoperator">, </span><span class="pyname">None</span><span class="pyoperator">))  </span><span class=
+"pycomment"># integer, float/real, Null
+</span><span class="pyname">cursor</span><span class="pyoperator">.</span><span class=
+"pyname">execute</span><span class="pyoperator">(</span><span class=
+"pystring">"insert into foo(x) values(?)"</span><span class="pyoperator">, (</span><span class=
+"pystring">"abc"</span><span class="pyoperator">, ))        </span><span class=
+"pycomment"># string (note trailing comma to ensure tuple!)
+</span><span class="pyname">cursor</span><span class="pyoperator">.</span><span class=
+"pyname">execute</span><span class="pyoperator">(</span><span class=
+"pystring">"insert into foo(x) values(?)"</span><span class="pyoperator">,                   </span><span class=
+"pycomment"># a blob (binary data)
+                    </span><span class="pyoperator">(</span><span class="pyname">buffer</span><span class=
+"pyoperator">(</span><span class="pystring">"abc\xff\xfe"</span><span class=
+"pyoperator">), ))                   </span><span class="pycomment"># Use b"abc\xff\xfe" for Python 3
+
+###
 ### multiple statements
 ###
 
 </span><span class="pyname">cursor</span><span class="pyoperator">.</span><span class=
 "pyname">execute</span><span class="pyoperator">(</span><span class=
-"pystring">"insert into foo values(1,2,3); create table bar(a,b,c) ; insert into foo values(4, 'five', 6.0)"</span><span class="pyoperator">)
+"pystring">"delete from foo; insert into foo values(1,2,3); create table bar(a,b,c) ; insert into foo values(4, 'five', 6.0)"</span><span class="pyoperator">)
 
 </span><span class="pycomment">###
 ### iterator
@@ -979,9 +1005,9 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
     </span><span class="pykeyword">print </span><span class="pyname">size</span><span class=
 "pyoperator">,</span><span class="pyname">file</span><span class="pyoperator">,</span><span class="pyname">directory
 
-</span><span class="pyoutput">   8625144 qt.so /usr/lib/python2.5/site-packages
-   786208 qtsql.so /usr/lib/python2.5/site-packages
-   481008 unicodedata.so /usr/lib/python2.5/lib-dynload
+</span><span class="pyoutput">   481008 unicodedata.so /usr/lib/python2.5/lib-dynload
+   440223 libxml2.pyc /var/lib/python-support/python2.5
+   376320 libxml2mod.so /var/lib/python-support/python2.5
 </span>
 <span class="pycomment"># Which 3 files are the oldest?
 </span><span class="pykeyword">for </span><span class="pyname">ctime</span><span class=
@@ -1122,14 +1148,14 @@ python setup.py build --compile=mingw32 install
   <p>These instructions show how to build using the amalgamation. Any existing SQLite on your system is ignored at
   build time and runtime. (Note that you can even use APSW in the same process as a different SQLite is used by other
   libraries - this happens a lot on Mac.) You should follow these instructions with your current directory being where
-  you extracted the APSW source to. You can use 3.5.9 or later versions of SQLite.</p>
+  you extracted the APSW source to. You can use 3.6.0 or later versions of SQLite.</p>
 
   <dl>
     <dt><b>Windows</b></dt>
   </dl>
   <pre>
  <font color="blue"> Manually download and extract <a href=
-"http://sqlite.org/sqlite-amalgamation-3_5_9.zip">http://sqlite.org/sqlite-amalgamation-3_5_9.zip</a></font>
+"http://sqlite.org/sqlite-amalgamation-3_6_0.zip">http://sqlite.org/sqlite-amalgamation-3_6_0.zip</a></font>
 &gt; python setup.py build --compile=mingw32 install         <font color=
 "blue">Leave out --compile=... flag if using Microsoft compiler</font>
 &gt; python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
@@ -1142,8 +1168,8 @@ python setup.py build --compile=mingw32 install
     <dt><b>Mac/Linux/etc</b></dt>
   </dl>
   <pre>
-$ wget <a href="http://sqlite.org/sqlite-amalgamation-3_5_9.zip">http://sqlite.org/sqlite-amalgamation-3_5_9.zip</a>
-$ unzip sqlite-amalgamation-3_5_9.zip
+$ wget <a href="http://sqlite.org/sqlite-amalgamation-3_6_0.zip">http://sqlite.org/sqlite-amalgamation-3_6_0.zip</a>
+$ unzip sqlite-amalgamation-3_6_0.zip
 $ python setup.py install
 $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"     
 $ python test.py       <font color="blue"># optional - checks everything works correctly</font>
@@ -1158,6 +1184,46 @@ $ python test.py       <font color="blue"># optional - checks everything works c
 
   <p>If you want to check that your build is correct then you can run the unit tests. Run <tt>tests.py</tt>. It will
   print the APSW file used, APSW and SQLite versions and then run lots of tests all of which should pass.</p>
+
+  <h2><a name="testing" id="testing">Testing</a></h2>
+
+  <p>SQLite itself is extensively tested. It has considerably more code dedicated to testing than makes up the actual
+  database functionality.</p>
+
+  <p>APSW includes a tests.py file which uses the standard Python testing modules to verify correct operation. New code
+  is developed alongside the tests. Reported issues also have test cases to ensure the issue doesn't happen or doesn't
+  happen again.</p>
+  <pre>
+$ <b>python tests.py</b>
+                Python /usr/bin/python (2, 5, 2, 'final', 0)
+Testing with APSW file /usr/lib/python2.5/site-packages/apsw.so
+          APSW version 3.6.0-r1
+    SQLite lib version 3.6.0
+SQLite headers version 3006000
+.................................................
+----------------------------------------------------------------------
+Ran 49 tests in 13.302s
+
+OK
+</pre>
+
+  <p>The tests also ensure that as much APSW code as possible is executed including alternate paths through the code.
+  95.5% of the APSW code is executed by the tests. If you checkout the APSW source then there is an script <a href=
+  "http://code.google.com/p/apsw/source/browse/apsw/trunk/coverage.sh"><tt>coverage.sh</tt></a> that enables extra code
+  that deliberately induces extra conditions such as memory allocation failures, SQLite returning undocumented error
+  codes etc. That brings coverage up to 99.5% of the code.</p>
+
+  <p>A memory checker <a href="http://valgrind.org/">Valgrind</a> is used while running the test suite. The test suite
+  is run 150 times to makes any memory leaks or similar issues stand out. A checking version of Python is also used.
+  See <a href="http://code.google.com/p/apsw/source/browse/apsw/trunk/valgrind.sh"><tt>valgrind.sh</tt></a> in the
+  source.</p>
+
+  <p>To ensure compatibility with the various Python versions, a script downloads and compiles all supported Python
+  versions in both 2 byte and 4 byte Unicode character configurations against the APSW and SQLite supported versions
+  running the tests. See <a href=
+  "http://code.google.com/p/apsw/source/browse/apsw/trunk/megatest.py"><tt>megatest.py</tt></a> in the source.</p>
+
+  <p>In short both SQLite and APSW have a lot of testing!</p>
 
   <h1><a name="APIReference" id="APIReference">API Reference</a></h1>
 
@@ -2618,11 +2684,11 @@ TypeError: Bad constraint (#2) - it should be one of None, an integer or a tuple
       Whatever you return from the tracer is what is actually returned. If you return None then the whole row is
       skipped. See the <a href="#example-rowtrace">example above</a>.</p>
 
-      <h1><a name="64bitpy25">64 bit hosts, Python 2.5</a></h1>
+      <h1><a name="64bitpy25">64 bit hosts, Python 2.5+</a></h1>
 
       <p>Prior to Python 2.5, you were still limited to 32 bit quantities for items in Python such as the length of
-      strings, number of items in a sequence etc. APSW will work correctly with those items in Python 2.5 that use 64
-      bits. Unfortunately SQLite is limited to 32 bit quantities for strings, blobs, number of columns etc.
+      strings, number of items in a sequence etc. APSW will work correctly with those items in Python 2.5 and above
+      that use 64 bits. Unfortunately SQLite is limited to 32 bit quantities for strings, blobs, number of columns etc.
       Consequently you will get a TooBig exception from APSW which checks if strings/buffers longer than 1GB or 2GB
       (depends on internal storage) are used. See SQLite ticket <a href=
       "http://www.sqlite.org/cvstrac/tktview?tn=2125">2125</a>.</p>
@@ -2893,12 +2959,9 @@ Traceback (most recent call last):
         </li>
 
         <li>
-          <p>The APSW test suite is larger and tests more functionality. Code coverage by the test suite is 95%.
+          <p>The APSW test suite is larger and tests more functionality. Code coverage by the test suite is 95.9%.
           pysqlite is good at 81% for C code although there are several places that coverage can be improved. I haven't
           measured code coverage for pysqlite's Python code.</p>
-
-          <p>In both cases, some of the non-covered code lines require that the Python interpretter or SQLite run out
-          of memory so 100% coverage isn't possible.</p>
         </li>
       </ul>
 
@@ -2932,6 +2995,8 @@ Traceback (most recent call last):
       </blockquote>
 
       <h1><a name="verhistory" id="verhistory">Version History</a></h1>
+
+      <h2><a name="360r1">3.6.0-r1</a></h2>
 
       <h2><a name="359r2">3.5.9-r2</a></h2>
 
