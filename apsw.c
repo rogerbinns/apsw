@@ -52,7 +52,6 @@
 #endif
 #endif
 
-
 #else
 /* SQLite 3 headers */
 #include "sqlite3.h"
@@ -73,6 +72,12 @@
 #include <Python.h>
 #include <pythread.h>
 #include "structmember.h"
+
+#ifdef __GNUC__
+#define APSW_ARGUNUSED __attribute__ ((unused))
+#else
+#define APSW_ARGUNUSED
+#endif
 
 /* Python 2.5 compatibility when size_t types become 64 bit.
    SQLite3 is limited to 32 bit sizes even on a 64 bit machine. */
@@ -905,9 +910,8 @@ Connection_dealloc(Connection* self)
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
-/*ARGSUSED*/
 static PyObject*
-Connection_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+Connection_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED PyObject *kwds)
 {
     Connection *self;
 
@@ -1629,9 +1633,8 @@ Connection_setauthorizer(Connection *self, PyObject *callable)
   Py_RETURN_NONE;
 }
 
-/* ARGSUSED */
 static void
-collationneeded_cb(void *pAux, sqlite3 *db, int eTextRep, const char *name)
+collationneeded_cb(void *pAux, APSW_ARGUNUSED sqlite3 *db, int eTextRep, const char *name)
 {
   PyObject *res=NULL, *pyname=NULL;
   Connection *self=(Connection*)pAux;
@@ -3779,7 +3782,7 @@ typedef struct {
 } ZeroBlobBind;
 
 static PyObject*
-ZeroBlobBind_new(PyTypeObject *type, PyObject *args, PyObject *kwargs)
+ZeroBlobBind_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED PyObject *kwargs)
 {
   ZeroBlobBind *self;
   self=(ZeroBlobBind*)type->tp_alloc(type, 0);
@@ -5243,9 +5246,8 @@ getapswversion(void)
   return MAKESTR(APSW_VERSION);
 }
 
-/* ARGSUSED */
 static PyObject *
-enablesharedcache(PyObject *self, PyObject *args)
+enablesharedcache(APSW_ARGUNUSED PyObject *self, PyObject *args)
 {
   int setting,res;
   if(!PyArg_ParseTuple(args, "i:enablesharedcache(boolean)", &setting))
