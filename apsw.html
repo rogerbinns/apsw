@@ -1274,6 +1274,10 @@ OK
 
 <dd><p>Calls the <a href="http://sqlite.org/c3ref/initialize.html">sqlite3_initialize/sqlite3_shutdown</a> functions.  There is no need to manually call these functions.  Note that it is a really bad idea to call shutdown unless you are absolutely sure all connections and cursors have been closed, deleted and garbage collected.</p></dd>
 
+    <dt><strong>config</strong></dt>
+
+<dd><p>Calls the <a href="http://sqlite.org/c3ref/config.html">sqlite3_config</a> function.  Only the options SQLITE_CONFIG_SINGLETHREAD, SQLITE_CONFIG_MULTITHREAD, SQLITE_CONFIG_SERIALIZED and SQLITE_CONFIG_MEMSTATUS are supported.</p></dd>
+
   </dl>
 
   <h2><a name="Module_variables" id="Module_variables">Module variables</a></h2>
@@ -1365,6 +1369,11 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
     <dd>
       <p>These are used for getting or setting <a href="http://www.sqlite.org/c3ref/limit.html">run-time limits</a></p>
     </dd>
+
+    <dt><a href="http://sqlite.org/c3ref/c_config_getmalloc.html"><strong>SQLITE_CONFIG_SINGLETHREAD, SQLITE_CONFIG_MULTITHREAD</strong> and 9 others<a></dt>
+
+<dd><p>These are used with <a href="http://sqlite.org/c3ref/config.html">sqlite3_config</a>.</p></dd>
+
   </dl>
 
   <h2><a name="Connection_class" id="Connection_class">Connection class</a></h2>

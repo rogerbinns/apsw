@@ -5291,6 +5291,70 @@ shutdown(void)
   Py_RETURN_NONE;
 }
 
+#ifdef EXPERIMENTAL
+static PyObject *
+config(APSW_ARGUNUSED PyObject *self, PyObject *args)
+{
+  int res, optdup;
+  long opt;
+
+  if(PyTuple_GET_SIZE(args)<1 || !(PyLong_Check(PyTuple_GET_ITEM(args, 0))
+#if PY_VERSION_HEX<0x03000000
+     || PyInt_Check(PyTuple_GET_ITEM(args, 0))
+#endif
+                                   ))
+    {
+      PyErr_Format(PyExc_TypeError, "There should be at least one argument with the first being a number");
+      return NULL;
+    }
+  if(PyLong_Check(PyTuple_GET_ITEM(args,0)))
+    opt=PyLong_AsLong(PyTuple_GET_ITEM(args,0));
+  else
+    {
+#if PY_VERSION_HEX<0x03000000
+      opt=PyInt_AsLong(PyTuple_GET_ITEM(args,0));
+#else
+      assert(0);
+#endif
+    }
+  /* Error in conversion? */
+  if(PyErr_Occurred())
+    return NULL;
+
+  switch(opt)
+    {
+    case SQLITE_CONFIG_SINGLETHREAD:
+    case SQLITE_CONFIG_MULTITHREAD:
+    case SQLITE_CONFIG_SERIALIZED:
+      if(!PyArg_ParseTuple(args, "i", &optdup))
+        return NULL;
+      assert(opt==optdup);
+      res=sqlite3_config( (int)opt );
+      break;
+      
+    case SQLITE_CONFIG_MEMSTATUS:
+      {
+        int boolval;
+        if(!PyArg_ParseTuple(args, "ii", &optdup, &boolval))
+          return NULL;
+        assert(opt==optdup);
+        res=sqlite3_config( (int)opt, boolval);
+        break;
+      }
+      
+    default:
+      PyErr_Format(PyExc_TypeError, "Unknown config type %d", (int)opt);
+      return NULL;
+    }
+
+  SET_EXC(NULL, res);
+
+  if(res!=SQLITE_OK)
+    return NULL;
+
+  Py_RETURN_NONE;
+}
+#endif /* EXPERIMENTAL */
 
 static PyMethodDef module_methods[] = {
   {"sqlitelibversion", (PyCFunction)getsqliteversion, METH_NOARGS,
@@ -5303,6 +5367,10 @@ static PyMethodDef module_methods[] = {
    "Initialize SQLite library"},
   {"shutdown", (PyCFunction)shutdown, METH_NOARGS,
    "Shutdown SQLite library"},
+#ifdef EXPERIMENTAL
+  {"config", (PyCFunction)config, METH_VARARGS,
+   "Calls sqlite3_config"},
+#endif
   {0, 0, 0, 0}  /* Sentinel */
 };
 
@@ -5539,6 +5607,23 @@ PyInit_apsw(void)
 
     PyModule_AddObject(m, "mapping_limits", thedict);
 #endif
+
+    thedict=PyDict_New();
+    if(!thedict) goto fail;
+
+    ADDINT(SQLITE_CONFIG_SINGLETHREAD);
+    ADDINT(SQLITE_CONFIG_MULTITHREAD);
+    ADDINT(SQLITE_CONFIG_SERIALIZED);
+    ADDINT(SQLITE_CONFIG_MALLOC);
+    ADDINT(SQLITE_CONFIG_GETMALLOC);
+    ADDINT(SQLITE_CONFIG_SCRATCH);
+    ADDINT(SQLITE_CONFIG_PAGECACHE);
+    ADDINT(SQLITE_CONFIG_HEAP);
+    ADDINT(SQLITE_CONFIG_MEMSTATUS);
+    ADDINT(SQLITE_CONFIG_MUTEX);
+    ADDINT(SQLITE_CONFIG_GETMUTEX);
+
+    PyModule_AddObject(m, "mapping_config", thedict);
 
     if(!PyErr_Occurred())
       {

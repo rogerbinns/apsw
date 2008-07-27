@@ -181,7 +181,8 @@ class APSW(unittest.TestCase):
     def tearDown(self):
         # we don't delete the database file itself.  it will be
         # left around if there was a failure
-        self.db.close(True)
+        if self.db is not None:
+            self.db.close(True)
         del self.db
         apsw.connection_hooks=[] # back to default value
         gc.collect()
@@ -2643,6 +2644,11 @@ class APSW(unittest.TestCase):
         # Object_method, are at the start of the line and have a first
         # parameter named self.
         if not os.path.exists("apsw.c"): return
+        # check not using C++ style comments
+        code=open("apsw.c", "rtU").read().replace("http://", "http:__")
+        self.assert_( "//" not in code)
+
+        # check check funcs
         funcpat=re.compile(r"^(\w+_\w+)\s*\(\s*\w+\s*\*\s*self")
         name=None
         lines=[]
@@ -2663,7 +2669,29 @@ class APSW(unittest.TestCase):
             m=funcpat.match(line)
             if m:
                 name=m.group(1)
-            
+
+    def testConfig(self):
+        "Verify sqlite3_config wrapper"
+        # we need to ensure there are no outstanding sqlite objects
+        self.db=None
+        gc.collect()
+        apsw.shutdown()
+        try:
+            self.assertRaises(TypeError, apsw.config)
+            self.assertRaises(TypeError, apsw.config, "chicken")
+            apsw.config(apsw.SQLITE_CONFIG_SINGLETHREAD)
+            apsw.config(long(apsw.SQLITE_CONFIG_SINGLETHREAD))
+            self.assertRaises(TypeError, apsw.config, apsw.SQLITE_CONFIG_SINGLETHREAD, 2)
+            self.assertRaises(TypeError, apsw.config, apsw.SQLITE_CONFIG_MEMSTATUS)
+            apsw.config(apsw.SQLITE_CONFIG_MEMSTATUS, True)
+            apsw.config(apsw.SQLITE_CONFIG_MEMSTATUS, False)
+            self.assertRaises(TypeError, apsw.config, 89748937)
+            x=long(0x7fffffff)
+            self.assertRaises(OverflowError, apsw.config, x*x*x*x)
+        finally:
+            # put back to normal
+            apsw.config(apsw.SQLITE_CONFIG_SERIALIZED)
+            apsw.initialize()
 
     def testZeroBlob(self):
         "Verify handling of zero blobs"
@@ -3236,13 +3264,14 @@ class APSW(unittest.TestCase):
             pass
 
         ## DoBindingStringConversionFails
-        apsw.faultdict["DoBindingStringConversionFails"]=True
-        try:
-            db=apsw.Connection(":memory:")
-            db.cursor().execute("select ?", ("abc"*10000,))
-            1/0
-        except MemoryError:
-            pass
+        if sys.version_info<(3,0):
+            apsw.faultdict["DoBindingStringConversionFails"]=True
+            try:
+                db=apsw.Connection(":memory:")
+                db.cursor().execute("select ?", ("abc"*10000,))
+                1/0
+            except MemoryError:
+                pass
 
         ## DoBindingAsReadBufferFails
         apsw.faultdict["DoBindingAsReadBufferFails"]=True
