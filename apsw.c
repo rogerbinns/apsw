@@ -5356,6 +5356,23 @@ config(APSW_ARGUNUSED PyObject *self, PyObject *args)
 }
 #endif /* EXPERIMENTAL */
 
+static PyObject*
+memoryused(void)
+{
+  return PyLong_FromLongLong(sqlite3_memory_used());
+}
+
+static PyObject*
+memoryhighwater(APSW_ARGUNUSED PyObject *self, PyObject *args)
+{
+  int reset=0;
+
+  if(!PyArg_ParseTuple(args, "|i:memoryhighwater(reset=False)", &reset))
+    return NULL;
+
+  return PyLong_FromLongLong(sqlite3_memory_highwater(reset));
+}
+
 static PyMethodDef module_methods[] = {
   {"sqlitelibversion", (PyCFunction)getsqliteversion, METH_NOARGS,
    "Return the version of the SQLite library"},
@@ -5371,6 +5388,10 @@ static PyMethodDef module_methods[] = {
   {"config", (PyCFunction)config, METH_VARARGS,
    "Calls sqlite3_config"},
 #endif
+  {"memoryused", (PyCFunction)memoryused, METH_NOARGS,
+   "Current SQLite memory in use"},
+  {"memoryhighwater", (PyCFunction)memoryhighwater, METH_VARARGS,
+   "Most amount of memory used"},
   {0, 0, 0, 0}  /* Sentinel */
 };
 

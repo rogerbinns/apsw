@@ -1272,12 +1272,34 @@ OK
 
     <dt><strong>initialize()</strong> &amp; <strong>shutdown</strong></dt>
 
-<dd><p>Calls the <a href="http://sqlite.org/c3ref/initialize.html">sqlite3_initialize/sqlite3_shutdown</a> functions.  There is no need to manually call these functions.  Note that it is a really bad idea to call shutdown unless you are absolutely sure all connections and cursors have been closed, deleted and garbage collected.</p></dd>
+    <dd>
+      <p>Calls the <a href="http://sqlite.org/c3ref/initialize.html">sqlite3_initialize/sqlite3_shutdown</a> functions.
+      There is no need to manually call these functions. Note that it is a really bad idea to call shutdown unless you
+      are absolutely sure all connections and cursors have been closed, deleted and garbage collected.</p>
+    </dd>
 
-    <dt><strong>config</strong></dt>
+    <dt><strong>config(op [,args])</strong></dt>
 
-<dd><p>Calls the <a href="http://sqlite.org/c3ref/config.html">sqlite3_config</a> function.  Only the options SQLITE_CONFIG_SINGLETHREAD, SQLITE_CONFIG_MULTITHREAD, SQLITE_CONFIG_SERIALIZED and SQLITE_CONFIG_MEMSTATUS are supported.</p></dd>
+    <dd>
+      <p>Calls the <a href="http://sqlite.org/c3ref/config.html">sqlite3_config</a> function. Only the options
+      SQLITE_CONFIG_SINGLETHREAD, SQLITE_CONFIG_MULTITHREAD, SQLITE_CONFIG_SERIALIZED and SQLITE_CONFIG_MEMSTATUS are
+      supported.</p>
+    </dd>
 
+    <dt><strong>memoryused()</strong></dt>
+
+    <dd>
+      <p>Returns the amount of memory SQLite is currently using by calling <a href=
+      "http://sqlite.org/c3ref/memory_highwater.html">sqlite3_memory_used</a>.</p>
+    </dd>
+
+    <dt><strong>memoryhighwater(reset=False)</strong></dt>
+
+    <dd>
+      <p>Returns the most amount of memory SQLite has used by calling <a href=
+      "http://sqlite.org/c3ref/memory_highwater.html">sqlite3_memory_highwater</a>. If <code>reset</code> is not False
+      then the counter is reset.</p>
+    </dd>
   </dl>
 
   <h2><a name="Module_variables" id="Module_variables">Module variables</a></h2>
@@ -1370,10 +1392,12 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       <p>These are used for getting or setting <a href="http://www.sqlite.org/c3ref/limit.html">run-time limits</a></p>
     </dd>
 
-    <dt><a href="http://sqlite.org/c3ref/c_config_getmalloc.html"><strong>SQLITE_CONFIG_SINGLETHREAD, SQLITE_CONFIG_MULTITHREAD</strong> and 9 others<a></dt>
+    <dt><a href="http://sqlite.org/c3ref/c_config_getmalloc.html"><strong>SQLITE_CONFIG_SINGLETHREAD,
+    SQLITE_CONFIG_MULTITHREAD</strong> and 9 others</a></dt>
 
-<dd><p>These are used with <a href="http://sqlite.org/c3ref/config.html">sqlite3_config</a>.</p></dd>
-
+    <dd>
+      <p>These are used with <a href="http://sqlite.org/c3ref/config.html">sqlite3_config</a>.</p>
+    </dd>
   </dl>
 
   <h2><a name="Connection_class" id="Connection_class">Connection class</a></h2>
@@ -3012,12 +3036,26 @@ Traceback (most recent call last):
 
       <h2><a name="360r1">3.6.0-r1</a></h2>
 
-      <p>APSW checks that SQLite was compiled to be <a href="http://sqlite.org/c3ref/threadsafe.html">threadsafe</a>.
+      <p>APSW checks that SQLite was compiled to be <a href=
+      "http://sqlite.org/c3ref/threadsafe.html">threadsafe</a>.</p>
 
-      <p>Added new constants: 
-           <ul>
-           <li>SQLITE_IOERR_ACCESS and SQLITE_IOERR_CHECKRESERVEDLOCK extended result codes
-           <li>SQLITE_OPEN_NOMUTEX open flag
+      <p>Added new constants:</p>
+
+      <ul>
+        <li>SQLITE_IOERR_ACCESS and SQLITE_IOERR_CHECKRESERVEDLOCK extended result codes</li>
+
+        <li>SQLITE_OPEN_NOMUTEX open flag</li>
+      </ul>
+
+      <p>Wrapped several new SQLite apis:</p>
+
+      <ul>
+        <li><a href="http://sqlite.org/c3ref/config.html">sqlite3_config</a></li>
+
+        <li><a href="http://sqlite.org/c3ref/initialize.html">sqlite3_initialize/sqlite3_shutdown</a></li>
+
+        <li><a href=
+        "http://sqlite.org/c3ref/memory_highwater.html">sqlite3_memory_used/sqlite3_memory_highwater</a></li>
       </ul>
 
       <h2><a name="359r2">3.5.9-r2</a></h2>

@@ -2675,6 +2675,7 @@ class APSW(unittest.TestCase):
         # we need to ensure there are no outstanding sqlite objects
         self.db=None
         gc.collect()
+        self.assertRaises(apsw.MisuseError, apsw.config, apsw.SQLITE_CONFIG_MEMSTATUS, True)
         apsw.shutdown()
         try:
             self.assertRaises(TypeError, apsw.config)
@@ -2691,7 +2692,17 @@ class APSW(unittest.TestCase):
         finally:
             # put back to normal
             apsw.config(apsw.SQLITE_CONFIG_SERIALIZED)
+            apsw.config(apsw.SQLITE_CONFIG_MEMSTATUS, True)
             apsw.initialize()
+
+    def testMemory(self):
+        "Verify memory tracking functions"
+        self.assertNotEqual(apsw.memoryused(), 0)
+        print apsw.memoryused(), apsw.memoryhighwater()
+        self.assert_(apsw.memoryhighwater() >= apsw.memoryused())
+        self.assertRaises(TypeError, apsw.memoryhighwater, "eleven")
+        apsw.memoryhighwater(True)
+        self.assertEqual(apsw.memoryhighwater(), apsw.memoryused())
 
     def testZeroBlob(self):
         "Verify handling of zero blobs"
@@ -3338,6 +3349,7 @@ PROFILESTEPS=100000
 
 if __name__=='__main__':
 
+    apsw.config(apsw.SQLITE_CONFIG_MEMSTATUS, True) # ensure memory tracking is on
     apsw.initialize() # manual call for coverage
     memdb=apsw.Connection(":memory:")
     if not getattr(memdb, "enableloadextension", None):
