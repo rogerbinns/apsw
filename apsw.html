@@ -1087,6 +1087,18 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
    Caught toobig exception
 </span>
 <span class="pycomment">###
+### Statistics
+###
+
+</span><span class="pykeyword">print </span><span class=
+"pystring">"SQLite memory usage current %d max %d" </span><span class="pyoperator">% </span><span class=
+"pyname">apsw</span><span class="pyoperator">.</span><span class="pyname">status</span><span class=
+"pyoperator">(</span><span class="pyname">apsw</span><span class="pyoperator">.</span><span class=
+"pyname">SQLITE_STATUS_MEMORY_USED</span><span class="pyoperator">)
+
+</span><span class="pyoutput">   SQLite memory usage current 196088 max 201960
+</span>
+<span class="pycomment">###
 ### Cleanup
 ###
 
@@ -1300,6 +1312,14 @@ OK
       "http://sqlite.org/c3ref/memory_highwater.html">sqlite3_memory_highwater</a>. If <code>reset</code> is not False
       then the counter is reset.</p>
     </dd>
+
+    <dt><strong>status(op, reset=False)</strong></dt>
+
+    <dd>
+      <p>Returns a tuple of current and highwater values for various SQLite counters by calling <a href=
+      "http://sqlite.org/c3ref/status.html">sqlite3_status</a>. If <code>reset</code> is not False then the highwater
+      is reset to the current value.</p>
+    </dd>
   </dl>
 
   <h2><a name="Module_variables" id="Module_variables">Module variables</a></h2>
@@ -1386,7 +1406,7 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
     </dd>
 
     <dt><a href="http://www.sqlite.org/c3ref/c_limit_attached.html"><strong>SQLITE_LIMIT_LENGTH,
-    SQLITE_LIMIT_SQL_LENGTH</strong> and 8 others</a></dt>
+    SQLITE_LIMIT_SQL_LENGTH</strong> and 8 others</a>. Mapping is <code>apsw.mapping_limits</code></dt>
 
     <dd>
       <p>These are used for getting or setting <a href="http://www.sqlite.org/c3ref/limit.html">run-time limits</a></p>
@@ -1396,7 +1416,16 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
     SQLITE_CONFIG_MULTITHREAD</strong> and 9 others</a></dt>
 
     <dd>
-      <p>These are used with <a href="http://sqlite.org/c3ref/config.html">sqlite3_config</a>.</p>
+      <p>These are used with <a href="http://sqlite.org/c3ref/config.html">sqlite3_config</a>. Mapping is
+      <code>apsw.mapping_config</code></p>
+    </dd>
+
+    <dt><a href="http://sqlite.org/c3ref/c_status_malloc_size.html"><strong>SQLITE_STATUS_MEMORY_USED,
+    SQLITE_STATUS_PAGECACHE_USED</strong> and 4 others</a></dt>
+
+    <dd>
+      <p>These are used with <a href="http://sqlite.org/c3ref/status.html">sqlite3_status</a>. Mapping is
+      <code>apsw.mapping_status</code></p>
     </dd>
   </dl>
 
@@ -3056,6 +3085,8 @@ Traceback (most recent call last):
 
         <li><a href=
         "http://sqlite.org/c3ref/memory_highwater.html">sqlite3_memory_used/sqlite3_memory_highwater</a></li>
+
+        <li><a href="http://sqlite.org/c3ref/status.html">sqlite3_status</a></li>
       </ul>
 
       <h2><a name="359r2">3.5.9-r2</a></h2>

@@ -423,7 +423,15 @@ except apsw.TooBigError:
     print "Caught toobig exception"
     
 #@@ENDCAPTURE
-    
+
+###
+### Statistics
+###
+
+#@@CAPTURE
+print "SQLite memory usage current %d max %d" % apsw.status(apsw.SQLITE_STATUS_MEMORY_USED)
+#@@ENDCAPTURE
+
 ###
 ### Cleanup
 ###

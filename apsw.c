@@ -5373,6 +5373,24 @@ memoryhighwater(APSW_ARGUNUSED PyObject *self, PyObject *args)
   return PyLong_FromLongLong(sqlite3_memory_highwater(reset));
 }
 
+static PyObject *
+status(APSW_ARGUNUSED PyObject *self, PyObject *args)
+{
+  int res, op, current=0, highwater=0, reset=0;
+
+  if(!PyArg_ParseTuple(args, "i|i:status(op, reset=False)", &op, &reset))
+    return NULL;
+
+  res=sqlite3_status(op, &current, &highwater, reset);
+  SET_EXC(NULL, res);
+
+  if(res!=SQLITE_OK)
+    return NULL;
+
+  return Py_BuildValue("(ii)", current, highwater);
+}
+
+
 static PyMethodDef module_methods[] = {
   {"sqlitelibversion", (PyCFunction)getsqliteversion, METH_NOARGS,
    "Return the version of the SQLite library"},
@@ -5392,6 +5410,8 @@ static PyMethodDef module_methods[] = {
    "Current SQLite memory in use"},
   {"memoryhighwater", (PyCFunction)memoryhighwater, METH_VARARGS,
    "Most amount of memory used"},
+  {"status", (PyCFunction)status, METH_VARARGS,
+   "Gets various SQLite counters"},
   {0, 0, 0, 0}  /* Sentinel */
 };
 
@@ -5645,6 +5665,18 @@ PyInit_apsw(void)
     ADDINT(SQLITE_CONFIG_GETMUTEX);
 
     PyModule_AddObject(m, "mapping_config", thedict);
+
+    thedict=PyDict_New();
+    if(!thedict) goto fail;
+
+    ADDINT(SQLITE_STATUS_MEMORY_USED);
+    ADDINT(SQLITE_STATUS_PAGECACHE_USED);
+    ADDINT(SQLITE_STATUS_PAGECACHE_OVERFLOW);
+    ADDINT(SQLITE_STATUS_SCRATCH_USED);
+    ADDINT(SQLITE_STATUS_SCRATCH_OVERFLOW);
+    ADDINT(SQLITE_STATUS_MALLOC_SIZE);
+
+    PyModule_AddObject(m, "mapping_status", thedict);
 
     if(!PyErr_Occurred())
       {

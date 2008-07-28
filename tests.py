@@ -2698,11 +2698,21 @@ class APSW(unittest.TestCase):
     def testMemory(self):
         "Verify memory tracking functions"
         self.assertNotEqual(apsw.memoryused(), 0)
-        print apsw.memoryused(), apsw.memoryhighwater()
         self.assert_(apsw.memoryhighwater() >= apsw.memoryused())
         self.assertRaises(TypeError, apsw.memoryhighwater, "eleven")
         apsw.memoryhighwater(True)
         self.assertEqual(apsw.memoryhighwater(), apsw.memoryused())
+
+    def testStatus(self):
+        "Verify status function"
+        self.assertRaises(TypeError, apsw.status, "zebra")
+        self.assertRaises(apsw.MisuseError, apsw.status, 2323)
+        for i in apsw.mapping_status:
+            if type(i)!=type(""): continue
+            res=apsw.status(getattr(apsw, i))
+            self.assertEqual(len(res), 2)
+            self.assertEqual(type(res), tuple)
+            self.assert_(res[0]<=res[1])
 
     def testZeroBlob(self):
         "Verify handling of zero blobs"
