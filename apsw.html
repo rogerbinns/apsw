@@ -92,6 +92,8 @@
               <li><a href="#Cursor">Cursor class</a></li>
 
               <li><a href="#VirtualTables">Virtual Tables</a></li>
+
+              <li><a href="#VFS">VFS</a></li>
             </ul>
           </li>
 
@@ -1005,9 +1007,9 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
     </span><span class="pykeyword">print </span><span class="pyname">size</span><span class=
 "pyoperator">,</span><span class="pyname">file</span><span class="pyoperator">,</span><span class="pyname">directory
 
-</span><span class="pyoutput">   481008 unicodedata.so /usr/lib/python2.5/lib-dynload
-   440223 libxml2.pyc /var/lib/python-support/python2.5
-   376320 libxml2mod.so /var/lib/python-support/python2.5
+</span><span class="pyoutput">   511686 unicodedata_d.so /usr/lib/python2.5/lib-dynload
+   481008 unicodedata.so /usr/lib/python2.5/lib-dynload
+   457585 pyexpat_d.so /usr/lib/python2.5/lib-dynload
 </span>
 <span class="pycomment"># Which 3 files are the oldest?
 </span><span class="pykeyword">for </span><span class="pyname">ctime</span><span class=
@@ -1096,7 +1098,7 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
 "pyoperator">(</span><span class="pyname">apsw</span><span class="pyoperator">.</span><span class=
 "pyname">SQLITE_STATUS_MEMORY_USED</span><span class="pyoperator">)
 
-</span><span class="pyoutput">   SQLite memory usage current 196088 max 201960
+</span><span class="pyoutput">   SQLite memory usage current 194152 max 200024
 </span>
 <span class="pycomment">###
 ### Cleanup
@@ -1320,6 +1322,21 @@ OK
       "http://sqlite.org/c3ref/status.html">sqlite3_status</a>. If <code>reset</code> is not False then the highwater
       is reset to the current value.</p>
     </dd>
+
+    <dt><a name="exceptionfor"><strong>exceptionfor(code)</strong></a></dt>
+
+    <dd>
+      <p>Returns an exception instance corresponding to a SQLite error code, in particular intended for mapping
+      <a href="http://www.sqlite.org/cvstrac/wiki?p=ExtendedResultCodes">extended result codes</a> to <a href=
+      "#Exceptions">exceptions</a>. In addition to picking the right exception class, it also sets the
+      <tt>extendedresult</tt> attribute on the instance. An example usage is:</p>
+
+      <blockquote>
+        <pre>
+ raise apsw.exceptionfor(SQLITE_IOERR_SHORT_READ)
+</pre>
+      </blockquote>
+    </dd>
   </dl>
 
   <h2><a name="Module_variables" id="Module_variables">Module variables</a></h2>
@@ -1426,6 +1443,14 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
     <dd>
       <p>These are used with <a href="http://sqlite.org/c3ref/status.html">sqlite3_status</a>. Mapping is
       <code>apsw.mapping_status</code></p>
+    </dd>
+
+    <dt><a href="http://sqlite.org/c3ref/c_lock_exclusive.html"><strong>SQLITE_LOCK_NONE, SQLITE_LOCK_SHARED</strong>
+    and 3 others</a></dt>
+
+    <dd>
+      <p>These are used with the <a href="http://sqlite.org/c3ref/io_methods.html">xLock/xUnlock</a> VFS file methods.
+      Mapping is <code>apsw.mapping_locking_levels</code></p>
     </dd>
   </dl>
 
@@ -2224,8 +2249,8 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
 
       <h3>Troubleshooting virtual tables</h3>
 
-      <p>Virtual Tables are a very recent addition to SQLite and haven't been widely used yet. They do work well if all
-      your routines work perfectly.</p>
+      <p>Virtual Tables are a recent addition to SQLite and haven't been widely used yet. They do work well if all your
+      routines work perfectly.</p>
 
       <p>A big help is using the local variables recipe as described in <a href="#augmentedstacktraces">augmented stack
       traces</a> which will give you more details in errors. You may also find errors compounding. For example if you
@@ -2235,6 +2260,97 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       <p>Also note that SQLite may ignore responses from your methods if they don't make sense. For example in
       BestIndex, if you set multiple arguments to have the same constraintargs position then your Filter won't receive
       any constraintargs at all.</p>
+
+      <h2><a name="VFS" id="VFS">VFS</a></h2>
+
+      <p>SQLite has new functionality named <a href="http://sqlite.org/c3ref/vfs.html">VFS</a> which defines the
+      interface between the SQLite core and the underlying operating system. The majority of the functionality deals
+      with files. APSW exposes this functionality letting you provide your own routines. You can also <i>inherit</i>
+      from an existing vfs making it easy to augment or override specific routines. For example you could obfuscate
+      your database by XORing the data implemented by augmenting the read and write methods.</p>
+
+      <p>You can specify which VFS to use as a parameter to the module Connection constructor</p>
+      <pre>
+  db=apsw.Connection("file", vfs="myvfs")
+</pre>
+
+      <p>To return an error from any routine you should raise an
+      exception.  The exception will be translated into the
+      appropriate SQLite error code for SQLite.  To return a specific
+      SQLite error code use <code><a
+      href="#exceptionfor">apsw.exceptionfor(code)</a></code>.
+
+      <h3>OS Interface</h3>
+
+      <p>You can get an overview in the <a href="http://sqlite.org/c3ref/vfs.html">C documentation</a>. To create a VFS
+      you must inherit from <code>apsw.VFS</code>.</p>
+
+      <dl>
+        <dt><strong>VFS(name, base=None, makedefault=False, maxpathname=1024)</strong> (Constructor)</dt>
+
+        <dd>
+          <p>Registers the VFS using <i>name</i>. If <i>base</i> is not None then this VFS will inherit from an
+          existing installed VFS. To inherit from the default, pass in the empty string. If <i>makedefault</i> is True
+          then this VFS will be installed as the default for all future database opens.</p>
+        </dd>
+
+        <dt><strong>xOpen(name, flags)</strong></dt>
+
+        <dd>
+          <p>This method should return a new file object. <i>flags</i> is a list of two integers, with item zero being
+          flags in and item one being flags out. You should modify item one as appropriate, for example setting
+          SQLITE_OPEN_READONLY if you opened the file read only.</p>
+        </dd>
+
+        <dt><strong>xDelete(name, syncdir)</strong></dt>
+
+        <dd>
+          <p>Delete the named file, and if <i>syncdir</i> is true then also sync the directory afterwards.</p>
+        </dd>
+      </dl>
+
+      <h3>File interface</h3>
+
+      <p>You can get an overview in the <a href="http://sqlite.org/c3ref/io_methods.html">C documentation</a>.</p>
+
+      <dl>
+        <dt><strong>VFSFile(vfs, name, flags)</strong> (Inheriting constructor)</dt>
+
+        <dd>
+          <p>If you want to inherit from an existing VFS then you must subclass <code>apsw.VFSFile</code> passing in
+          the parameters above. If <i>vfs</i> is an empty string then the default VFS will be used. <i>flags</i> is a
+          two item list with semantics documented in <code>xOpen</code> above.</p>
+        </dd>
+
+        <dt><strong>xClose()</strong></dt>
+
+<dd><p>Close the database.  Note that even if you return an error you should still close the file.</p></dd>
+
+        <dd><p>
+     
+        <dt><strong>xRead(amount, offset)</strong></dt>
+
+        <dd>
+          <p>Read the specified amount of data starting at offset. You should make every effort to read all the data
+          requested. If you have the file open for non-blocking I/O or if signals happen then it is possible for the
+          underlying operating system to do a partial read. You will need to request the remaining data. Except for
+          empty files SQLite considers short reads to be a fatal error. Return the data as a string (Python 2), bytes
+          (Python 3) or buffer (either Python version).</p>
+        </dd>
+
+        <dt><strong>xUnlock(level)</strong></dt>
+
+        <dd>
+          <p>Decrease the lock to the level specified which is one of the <a href=
+          "http://sqlite.org/c3ref/c_lock_exclusive.html"><code>SQLITE_LOCK</code></a> family of constants.</p>
+        </dd>
+
+         <dt><strong>xSectorSize()</strong> (optional)</dt>
+
+<dd><p>Return the native underlying sector size.  SQLite uses this in determining the database page size.  If you do not implement the
+function or have an error then 512 (the SQLite default) is returned.</p></dd>
+
+      </dl>
 
       <h1><a name="Exceptions" id="Exceptions">Exceptions</a></h1>
 
@@ -2473,7 +2589,7 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
                 </tr>
 
                 <tr>
-                  <td><code><i>SQLITE_TOOBIG</i></code></td>
+                  <td><code>SQLITE_TOOBIG</code></td>
 
                   <td>TooBigError</td>
                 </tr>
@@ -2506,7 +2622,7 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
           </tr>
         </table>
 
-        <p>Codes in <i>italics</i> are no longer used by SQLite (according to headers in 3.2.7).</p>
+        <p>Codes in <i>italics</i> are no longer used by SQLite.</p>
       </blockquote>
 
       <h2><a name="augmentedstacktraces" id="augmentedstacktraces">Augmented stack traces</a></h2>
@@ -2671,8 +2787,7 @@ TypeError: Bad constraint (#2) - it should be one of None, an integer or a tuple
 
         <li>
           <p>Python int or long is INTEGER in SQLite. The value represented must fit within a 64 bit signed quantity
-          (long long at the C level) or an exception is generated. (Don't worry - aspw only uses the long type when
-          values are too large to fit in ints).</p>
+          (long long at the C level) or an exception is generated.</p>
         </li>
 
         <li>
@@ -2681,12 +2796,12 @@ TypeError: Bad constraint (#2) - it should be one of None, an integer or a tuple
         </li>
 
         <li>
-          <p>Python's string or unicode is used for TEXT in SQLite. (ASPW automatically uses Python's string type for
-          ASCII text and Unicode for other text.)</p>
+          <p>Python's string or unicode is used for TEXT in SQLite. (All text returned from SQLite is unicode.)</p>
         </li>
 
         <li>
-          <p>Python's buffer class is used for BLOB in SQLite.</p>
+          <p>Python's buffer class is used for BLOB in SQLite.  In Python 3 the bytes type is used, also you can still
+          supply buffers.</p>
         </li>
       </ul>
 
@@ -2755,10 +2870,10 @@ TypeError: Bad constraint (#2) - it should be one of None, an integer or a tuple
 
       <p>Prior to Python 2.5, you were still limited to 32 bit quantities for items in Python such as the length of
       strings, number of items in a sequence etc. APSW will work correctly with those items in Python 2.5 and above
-      that use 64 bits. Unfortunately SQLite is limited to 32 bit quantities for strings, blobs, number of columns etc.
+      that use 64 bits. Unfortunately SQLite is limited to 32 bit quantities for strings, blobs, number of columns etc even when compiled for 64 bit.
       Consequently you will get a TooBig exception from APSW which checks if strings/buffers longer than 1GB or 2GB
       (depends on internal storage) are used. See SQLite ticket <a href=
-      "http://www.sqlite.org/cvstrac/tktview?tn=2125">2125</a>.</p>
+      "http://www.sqlite.org/cvstrac/tktview?tn=2125">2125</a> and <a href="http://sqlite.org/cvstrac/tktview?tn=3246">3246</a>.</p>
 
       <h1><a name="executionmodel" id="executionmodel">Execution model</a></h1>
 
