@@ -1450,8 +1450,12 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
 
     <dd>
       <p>These are used with the <a href="http://sqlite.org/c3ref/io_methods.html">xLock/xUnlock</a> VFS file methods.
-      Mapping is <code>apsw.mapping_locking_levels</code></p>
+      Mapping is <code>apsw.mapping_locking_level</code></p>
     </dd>
+
+    <dt><a href="http://sqlite.org/c3ref/c_access_exists.html"><strong>SQLITE_ACCESS_EXISTS, SQLITE_ACCESS_READWRITE, SQLITE_ACCESS_READ</strong></a></dt>
+
+<dd><p>These are used with the xAccess <a href="http://sqlite.org/c3ref/vfs.html">VFS method</a>.  Mapping is <code>apsw.mapping_access</code>.</p></dd>
   </dl>
 
   <h2><a name="Connection_class" id="Connection_class">Connection class</a></h2>
@@ -2307,6 +2311,12 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
         <dd>
           <p>Delete the named file, and if <i>syncdir</i> is true then also sync the directory afterwards.</p>
         </dd>
+
+        <dt><strong>xAccess(name, flag)</strong></dt>
+
+<dd><p><i>name</i> is a file or directory that SQLite wants to check access permissions for as specified by the <a href="http://sqlite.org/c3ref/c_access_exists.html">flag</a>.  Return True or False accordingly.
+</p></dd>
+
       </dl>
 
       <h3>File interface</h3>
@@ -2337,6 +2347,14 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
           empty files SQLite considers short reads to be a fatal error. Return the data as a string (Python 2), bytes
           (Python 3) or buffer (either Python version).</p>
         </dd>
+
+        <dt><strong>xLock(level)</strong></dt>
+
+        <dd>
+          <p>Increase the lock to the level specified which is one of the <a href=
+          "http://sqlite.org/c3ref/c_lock_exclusive.html"><code>SQLITE_LOCK</code></a> family of constants.</p>
+        </dd>
+
 
         <dt><strong>xUnlock(level)</strong></dt>
 

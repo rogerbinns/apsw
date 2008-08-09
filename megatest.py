@@ -131,7 +131,8 @@ PYVERS=(
     )
 
 SQLITEVERS=(
-    #'cvs',
+#    'cvs',
+    '3.6.1',
     '3.6.0',
    )
 

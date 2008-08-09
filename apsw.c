@@ -110,6 +110,12 @@ typedef int Py_ssize_t;
 #define PyBytes_AsString          PyString_AsString
 #define PyBytes_AS_STRING         PyString_AS_STRING
 #define PyBytes_GET_SIZE          PyString_GET_SIZE
+#define PyIntLong_Check(x)        (PyInt_Check((x)) || PyLong_Check((x)))
+#define PyIntLong_AsLong(x)       ( (PyInt_Check((x))) ? ( PyInt_AsLong((x)) ) : ( (PyLong_AsLong((x)))))
+#else
+#define PyIntLong_Check           PyLong_Check
+#define PyIntLong_AsLong          PyLong_AsLong
+#define PyInt_FromLong            PyLong_FromLong
 #endif
 
 /* A module to augment tracebacks */
@@ -123,7 +129,7 @@ typedef int Py_ssize_t;
 #define STATEMENTCACHE_LINKAGE static
 #include "statementcache.c"
 
-/* used to decide if we will use int or long long */
+/* used to decide if we will use int or long long, sqlite limit tests due to it not being 64 bit correct */
 #define APSW_INT32_MIN (-2147483647-1)
 #define APSW_INT32_MAX 2147483647
 
@@ -414,26 +420,9 @@ MakeSqliteMsgFromPyException(char **errmsg)
           {
             /* extract it */
             PyObject *extended=PyObject_GetAttrString(evalue, "extendedresult");
-            /* Now you can see why PyInt and PyLong were unified in
-               Python 3.0.  Also the user could set something that
-               doesn't fit in 64 bits which would cause the _AsLong
-               functions to return -1 and set an exception which we
-               would swallow.  Don't do that then! */
-            if(extended)
-              {
-                do
-                  {
-                    if(PyLong_Check(extended))
-                      {
-                        res=(PyLong_AsLong(extended) & 0xffffff00u)|res;
-                        break;
-                      }
-#if PY_VERSION_HEX<0x03000000
-                    if(PyInt_Check(extended))
-                      res=(PyInt_AsLong(extended) & 0xffffff00u)|res;
-#endif
-                  } while(0);
-              }
+            if(extended && PyIntLong_Check(extended))
+              /* Any errors in this will be swallowed */
+              res=(PyIntLong_AsLong(extended) & 0xffffff00u)|res;
             Py_XDECREF(extended);
           }
         break;
@@ -1566,16 +1555,9 @@ authorizercb(void *context, int operation, const char *paramone, const char *par
   if(!retval)
     goto finally; /* abort due to exeception */
 
-#if PY_VERSION_HEX<0x03000000
-  if (PyInt_Check(retval))
+  if (PyIntLong_Check(retval))
     {
-      result=PyInt_AsLong(retval);
-      goto haveval;
-    }
-#endif
-  if(PyLong_Check(retval))
-    {
-      result=PyLong_AsLong(retval);
+      result=PyIntLong_AsLong(retval);
       goto haveval;
     }
   
@@ -2538,16 +2520,9 @@ collation_cb(void *context,
       goto finally;  /* execution failed */
     }
 
-#if PY_VERSION_HEX<0x03000000
-  if (PyInt_Check(retval))
+  if (PyIntLong_Check(retval))
     {
-      result=PyInt_AsLong(retval);
-      goto haveval;
-    }
-#endif
-  if(PyLong_Check(retval))
-    {
-      result=PyLong_AsLong(retval);
+      result=PyIntLong_AsLong(retval);
       goto haveval;
     }
   
@@ -2950,7 +2925,7 @@ vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
 	  int omitv;
 	  if(!indexinfo->aConstraint[i].usable) continue;
 	  constraint=PySequence_GetItem(indices, j);
-	  if(!constraint) goto pyexception;
+	  if(PyErr_Occurred() || !constraint) goto pyexception;
 	  j++;
 	  /* it can be None */
 	  if(constraint==Py_None)
@@ -2959,17 +2934,9 @@ vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
 	      continue;
 	    }
 	  /* or an integer */
-#if PY_VERSION_HEX<0x03000000
-	  if(PyInt_Check(constraint))
+	  if(PyIntLong_Check(constraint))
 	    {
-	      indexinfo->aConstraintUsage[i].argvIndex=PyInt_AsLong(constraint);
-	      Py_DECREF(constraint);
-	      continue;
-	    }
-#endif
-	  if(PyLong_Check(constraint))
-	    {
-	      indexinfo->aConstraintUsage[i].argvIndex=PyLong_AsLong(constraint);
+	      indexinfo->aConstraintUsage[i].argvIndex=PyIntLong_AsLong(constraint);
 	      Py_DECREF(constraint);
 	      continue;
 	    }
@@ -2985,11 +2952,7 @@ vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
 	  argvindex=PySequence_GetItem(constraint, 0);
 	  omit=PySequence_GetItem(constraint, 1);
 	  if(!argvindex || !omit) goto constraintfail;
-	  if(!PyLong_Check(argvindex)
-#if PY_VERSION_HEX<0x03000000
-             && !PyInt_Check(argvindex)
-#endif
-             )
+	  if(!PyIntLong_Check(argvindex))
 	    {
 	      PyErr_Format(PyExc_TypeError, "argvindex for constraint #%d should be an integer", j);
 	      AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex.result_constraint_argvindex", "{s: O, s: O, s: O, s: O, s: O}", 
@@ -2999,12 +2962,7 @@ vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
 	  omitv=PyObject_IsTrue(omit);
 	  if(omitv==-1) 
             goto constraintfail;
-#if PY_VERSION_HEX<0x03000000
-          if(PyInt_Check(argvindex))
-            indexinfo->aConstraintUsage[i].argvIndex=PyInt_AsLong(argvindex);
-#endif
-          if(PyLong_Check(argvindex))
-            indexinfo->aConstraintUsage[i].argvIndex=PyLong_AsLong(argvindex);
+          indexinfo->aConstraintUsage[i].argvIndex=PyIntLong_AsLong(argvindex);
 	  indexinfo->aConstraintUsage[i].omit=omitv;
 	  Py_DECREF(constraint);
 	  Py_DECREF(argvindex);
@@ -3027,23 +2985,14 @@ vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
     if(!idxnum) goto pyexception;
     if(idxnum!=Py_None)
       {
-	if(!PyLong_Check(idxnum)
-#if PY_VERSION_HEX<0x03000000
-           && !PyInt_Check(idxnum)
-#endif
-           )
+	if(!PyIntLong_Check(idxnum))
 	  {
 	    PyErr_Format(PyExc_TypeError, "idxnum must be an integer");
 	      AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex.result_indexnum", "{s: O, s: O, s: O}", "self", vtable, "result", res, "indexnum", idxnum);
 	    Py_DECREF(idxnum);
 	    goto pyexception;
 	  }
-#if PY_VERSION_HEX<0x03000000
-        if(PyInt_Check(idxnum))
-           indexinfo->idxNum=PyInt_AsLong(idxnum);
-#endif
-        if(PyLong_Check(idxnum))
-          indexinfo->idxNum=PyLong_AsLong(idxnum);
+        indexinfo->idxNum=PyIntLong_AsLong(idxnum);
       }
     Py_DECREF(idxnum);
   }
@@ -3772,6 +3721,9 @@ static PyTypeObject ConnectionType =
     0,                         /* tp_subclasses */
     0,                         /* tp_weaklist */
     0,                         /* tp_del */
+#if PY_VERSION_HEX>=0x03000000
+    0                          /* tp_version_tag */
+#endif
 };
 
 
@@ -3869,6 +3821,9 @@ static PyTypeObject ZeroBlobBindType = {
     0,                         /* tp_subclasses */
     0,                         /* tp_weaklist */
     0,                         /* tp_del */
+#if PY_VERSION_HEX>=0x03000000
+    0                          /* tp_version_tag */
+#endif
 };
 
 
@@ -4180,6 +4135,9 @@ static PyTypeObject APSWBlobType = {
     0,                         /* tp_subclasses */
     0,                         /* tp_weaklist */
     0,                         /* tp_del */
+#if PY_VERSION_HEX>=0x03000000
+    0                          /* tp_version_tag */
+#endif
 };
 
 
@@ -5233,6 +5191,9 @@ static PyTypeObject APSWCursorType = {
     0,                         /* tp_subclasses */
     0,                         /* tp_weaklist */
     0,                         /* tp_del */
+#if PY_VERSION_HEX>=0x03000000
+    0                          /* tp_version_tag */
+#endif
 };
 
 
@@ -5348,6 +5309,62 @@ apswvfspy_xDelete(APSWVFS *self, PyObject *args)
 }
 
 static int
+apswvfs_xAccess(sqlite3_vfs *vfs, const char *zName, int flags, int *pResOut)
+{
+  PyGILState_STATE gilstate;
+  PyObject *pyresult=NULL;
+  int result=SQLITE_OK;
+  gilstate=PyGILState_Ensure();
+
+  CHECKVFS;
+
+  pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xAccess", 1, "(Ni)", convertutf8string(zName), flags);
+  if(!pyresult)
+    goto finally;
+
+  if(PyIntLong_Check(pyresult))
+    *pResOut=!!PyIntLong_AsLong(pyresult);
+  else
+    PyErr_Format(PyExc_TypeError, "xAccess should return a number");
+
+ finally:
+  if(PyErr_Occurred())
+    {
+      result=MakeSqliteMsgFromPyException(NULL);
+      AddTraceBackHere(__FILE__, __LINE__, "vfs.xAccess", "{s: s, s: i}", "zName", zName, "flags", flags);
+    }
+  PyGILState_Release(gilstate);
+  return result;
+}
+
+static PyObject *
+apswvfspy_xAccess(APSWVFS *self, PyObject *args)
+{
+  char *zName=NULL;
+  int res, flags, resout=0;
+
+  CHECKVFSPY;
+  VFSNOTIMPLEMENTED(xAccess);
+
+  if(!PyArg_ParseTuple(args, "esi", STRENCODING, &zName, &flags))
+    return NULL;
+
+  res=self->basevfs->xAccess(self->basevfs, zName, flags, &resout);
+  PyMem_Free(zName);
+
+  if(res==SQLITE_OK)
+    {
+      if(resout)
+        Py_RETURN_TRUE;
+      Py_RETURN_FALSE;
+    }
+
+  make_exception(res, NULL);
+  return NULL;
+}
+
+
+static int
 apswvfs_xFullPathname(sqlite3_vfs *vfs, const char *zName, int nOut, char *zOut)
 {
   PyGILState_STATE gilstate;
@@ -5373,13 +5390,13 @@ apswvfs_xFullPathname(sqlite3_vfs *vfs, const char *zName, int nOut, char *zOut)
           goto finally;
         }
       /* nOut includes null terminator space (ie is mxPathname+1) */
-      if(PyString_GET_SIZE(utf8)+1>nOut)
+      if(PyBytes_GET_SIZE(utf8)+1>nOut)
         {
           result=SQLITE_CANTOPEN;
           AddTraceBackHere(__FILE__, __LINE__, "vfs.xFullPathname", "{s: s, s: O, s: i}", "zName", zName, "result_from_python", utf8, "nOut", nOut);
           goto finally;
         }
-      memcpy(zOut, PyString_AsString(utf8), PyString_GET_SIZE(utf8)+1); /* Python always null terminates hence +1 */
+      memcpy(zOut, PyBytes_AS_STRING(utf8), PyBytes_GET_SIZE(utf8)+1); /* Python always null terminates hence +1 */
     }
 
  finally:
@@ -5405,7 +5422,7 @@ apswvfspy_xFullPathname(APSWVFS *self, PyObject *name)
 
   resbuf=PyMem_Malloc(self->basevfs->mxPathname+1);
   if(resbuf)
-    res=self->basevfs->xFullPathname(self->basevfs, PyString_AsString(utf8), self->basevfs->mxPathname+1, resbuf);
+    res=self->basevfs->xFullPathname(self->basevfs, PyBytes_AsString(utf8), self->basevfs->mxPathname+1, resbuf);
 
   if(res==SQLITE_OK)
       result=convertutf8string(resbuf);
@@ -5438,6 +5455,7 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
 
   flags=PyList_New(2);
   if(!flags) goto finally;
+
   PyList_SET_ITEM(flags, 0, PyInt_FromLong(inflags));
   PyList_SET_ITEM(flags, 1, PyInt_FromLong(*pOutFlags));
   if(PyErr_Occurred()) goto finally;
@@ -5449,16 +5467,18 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
       goto finally;
     }
 
-  if(!PyList_Check(flags) || PyList_GET_SIZE(flags)!=2 || !PyInt_Check(PyList_GET_ITEM(flags, 1)))
+  if(!PyList_Check(flags) || PyList_GET_SIZE(flags)!=2 || !PyIntLong_Check(PyList_GET_ITEM(flags, 1)))
     {
       PyErr_Format(PyExc_TypeError, "Flags should be two item list with item zero being integer input and item one being integer output");
       AddTraceBackHere(__FILE__, __LINE__, "vfs.xOpen", "{s: s, s: i, s: O}", "zName", zName, "inflags", inflags, "flags", flags);
       goto finally;
     }
 
+  *pOutFlags=(int)PyIntLong_AsLong(PyList_GET_ITEM(flags, 1));
+  if(PyErr_Occurred()) goto finally;
+
   apswfile->pMethods=&apsw_io_methods;
   apswfile->file=pyresult;
-  *pOutFlags=(int)PyInt_AS_LONG(PyList_GET_ITEM(flags, 1));
   pyresult=NULL;
   result=SQLITE_OK;
 
@@ -5484,18 +5504,20 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args)
 
   if(!PyArg_ParseTuple(args, "esO", STRENCODING, &name, &flags))
     return NULL;
-  if(!PyList_Check(flags) || PyList_GET_SIZE(flags)!=2 || !PyInt_Check(PyList_GET_ITEM(flags, 0)) || !PyInt_Check(PyList_GET_ITEM(flags, 1)))
+  if(!PyList_Check(flags) || PyList_GET_SIZE(flags)!=2 || !PyIntLong_Check(PyList_GET_ITEM(flags, 0)) || !PyIntLong_Check(PyList_GET_ITEM(flags, 1)))
     {
       PyErr_Format(PyExc_TypeError, "Flags argument needs to be a list of two integers");
       goto finally;
     }
   
-  flagsout=PyInt_AS_LONG(PyList_GET_ITEM(flags, 1));
+  flagsout=PyIntLong_AsLong(PyList_GET_ITEM(flags, 1));
+  if(PyErr_Occurred()) goto finally;
 
   file=PyMem_Malloc(self->basevfs->szOsFile);
   if(!file) goto finally;
 
-  res=self->basevfs->xOpen(self->basevfs, name, file, PyInt_AS_LONG(PyList_GET_ITEM(flags, 0)), &flagsout);
+  res=self->basevfs->xOpen(self->basevfs, name, file, PyIntLong_AsLong(PyList_GET_ITEM(flags, 0)), &flagsout);
+  if(PyErr_Occurred()) goto finally;
   if(res!=SQLITE_OK)
     {
       make_exception(res, NULL);
@@ -5555,7 +5577,7 @@ APSWVFS_dealloc(APSWVFS *self)
         PyMem_Free(self->containingvfs);
       }
     }
-  self->ob_type->tp_free((PyObject*)self);
+  Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 static PyObject *
@@ -5620,6 +5642,7 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
   METHOD(Delete);
   METHOD(FullPathname);
   METHOD(Open);
+  METHOD(Access);
 
 #undef METHOD
 
@@ -5641,14 +5664,19 @@ static PyMethodDef APSWVFS_methods[]={
   {"xDelete", (PyCFunction)apswvfspy_xDelete, METH_VARARGS, "xDelete"},
   {"xFullPathname", (PyCFunction)apswvfspy_xFullPathname, METH_O, "xFullPathname"},
   {"xOpen", (PyCFunction)apswvfspy_xOpen, METH_VARARGS, "xOpen"},
+  {"xAccess", (PyCFunction)apswvfspy_xAccess, METH_VARARGS, "xAccess"},
   /* Sentinel */
   {0, 0, 0, 0}
   };
 
 static PyTypeObject APSWVFSType =
   {
+#if PY_VERSION_HEX<0x03000000
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
+#else
+    PyVarObject_HEAD_INIT(NULL,0)
+#endif
     "apsw.VFS",                /*tp_name*/
     sizeof(APSWVFS),           /*tp_basicsize*/
     0,                         /*tp_itemsize*/
@@ -5694,6 +5722,9 @@ static PyTypeObject APSWVFSType =
     0,                         /* tp_subclasses */
     0,                         /* tp_weaklist */
     0,                         /* tp_del */
+#if PY_VERSION_HEX>=0x03000000
+    0,                         /* tp_version */
+#endif
   };
 
 static void
@@ -5704,7 +5735,7 @@ APSWVFSFile_dealloc(APSWVFSFile *self)
       PyMem_Free(self->base);
       self->base=0;
     }
-  self->ob_type->tp_free((PyObject*)self);
+  Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 /*ARGSUSED*/
@@ -5751,7 +5782,7 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
     }
   itemzero=PySequence_GetItem(flags, 0);
   itemone=PySequence_GetItem(flags, 1);
-  if(!itemzero || !itemone || !PyInt_Check(itemzero) || !PyInt_Check(itemone))
+  if(!itemzero || !itemone || !PyIntLong_Check(itemzero) || !PyIntLong_Check(itemone))
     {
       PyErr_Format(PyExc_TypeError, "Flags should contain two integers");
       goto finally;
@@ -5769,7 +5800,12 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
       goto finally;
     }
   file=PyMem_Malloc(vfstouse->szOsFile);
-  xopenresult=vfstouse->xOpen(vfstouse, name, file, (int)PyInt_AsLong(itemzero), &flagsout);
+  xopenresult=vfstouse->xOpen(vfstouse, name, file, (int)PyIntLong_AsLong(itemzero), &flagsout);
+  if(PyErr_Occurred())
+    {
+      PyMem_Free(file);
+      goto finally;
+    }
   if(xopenresult!=SQLITE_OK)
     {
       PyMem_Free(file);
@@ -5783,6 +5819,8 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
       PyMem_Free(file);
       goto finally;
     }
+  
+  if(PyErr_Occurred()) goto finally;
   
   self->base=(sqlite3_file*)(void*)file;
   res=0;
@@ -5931,6 +5969,49 @@ apswvfsfilepy_xUnlock(APSWVFSFile *self, PyObject *args)
 }
 
 static int
+apswvfsfile_xLock(sqlite3_file *file, int flag)
+{
+  PyGILState_STATE gilstate;
+  APSWSQLite3File *apswfile=(APSWSQLite3File*)(void*)file;
+  int result=SQLITE_ERROR;
+  PyObject *pyresult=NULL;
+
+  gilstate=PyGILState_Ensure();
+  CHECKVFSFILE;
+
+  pyresult=Call_PythonMethodV(apswfile->file, "xLock", 1, "(i)", flag);
+  if(!pyresult)
+    result=MakeSqliteMsgFromPyException(NULL);
+  else
+    result=SQLITE_OK;
+
+ finally:
+  Py_XDECREF(pyresult);
+  PyGILState_Release(gilstate);
+  return result;
+}
+
+static PyObject *
+apswvfsfilepy_xLock(APSWVFSFile *self, PyObject *args)
+{
+  int flag, res;
+
+  VFSFILENOTIMPLEMENTED(xLock);
+
+  if(!PyArg_ParseTuple(args, "i", &flag))
+    return NULL;
+  
+  res=self->base->pMethods->xLock(self->base, flag);
+
+  if(res==SQLITE_OK)
+    Py_RETURN_NONE;
+    
+  make_exception(res, NULL);
+  return NULL;
+}
+
+
+static int
 apswvfsfile_xSectorSize(sqlite3_file *file)
 {
   PyGILState_STATE gilstate;
@@ -5946,15 +6027,10 @@ apswvfsfile_xSectorSize(sqlite3_file *file)
     result=MakeSqliteMsgFromPyException(NULL);
   else if(pyresult!=Py_None)
     {
-#if PY_VERSION_HEX<0x03000000
-      if(PyInt_Check(pyresult))
-        result=PyInt_AsLong(pyresult);
+      if(PyIntLong_Check(pyresult))
+        result=PyIntLong_AsLong(pyresult);
       else
-#endif
-        if(PyLong_Check(pyresult))
-          result=PyLong_AsLong(pyresult);
-        else
-          PyErr_Format(PyExc_TypeError, "xSectorSize should return a number");
+        PyErr_Format(PyExc_TypeError, "xSectorSize should return a number");
     }
 
   /* We can't return errors so use unraiseable */
@@ -5978,8 +6054,7 @@ apswvfsfilepy_xSectorSize(APSWVFSFile *self)
   if(self->base->pMethods->xSectorSize)
     res=self->base->pMethods->xSectorSize(self->base);
 
-  res=PyInt_FromLong(res);
-  return res;
+  return PyInt_FromLong(res);
 }
 
 static int
@@ -6038,7 +6113,7 @@ static struct sqlite3_io_methods apsw_io_methods=
     NULLx,             /* truncate */
     NULLx,             /* sync */
     NULLx,             /* filesize */
-    NULLx,             /* lock */
+    apswvfsfile_xLock,       /* lock */
     apswvfsfile_xUnlock,     /* unlock */
     NULLx,             /* checkreservedlock */
     NULLx,             /* filecontrol */
@@ -6050,6 +6125,7 @@ static struct sqlite3_io_methods apsw_io_methods=
 static PyMethodDef APSWVFSFile_methods[]={
   {"xRead", (PyCFunction)apswvfsfilepy_xRead, METH_VARARGS, "xRead"},
   {"xUnlock", (PyCFunction)apswvfsfilepy_xUnlock, METH_VARARGS, "xUnlock"},
+  {"xLock", (PyCFunction)apswvfsfilepy_xLock, METH_VARARGS, "xLock"},
   {"xClose", (PyCFunction)apswvfsfilepy_xClose, METH_NOARGS, "xClose"},
   {"xSectorSize", (PyCFunction)apswvfsfilepy_xSectorSize, METH_NOARGS, "xSectorSize"},
   /* Sentinel */
@@ -6058,8 +6134,12 @@ static PyMethodDef APSWVFSFile_methods[]={
 
 static PyTypeObject APSWVFSFileType =
   {
+#if PY_VERSION_HEX<0x03000000
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
+#else
+    PyVarObject_HEAD_INIT(NULL,0)
+#endif
     "apsw.VFSFile",            /*tp_name*/
     sizeof(APSWVFSFile),       /*tp_basicsize*/
     0,                         /*tp_itemsize*/
@@ -6105,6 +6185,9 @@ static PyTypeObject APSWVFSFileType =
     0,                         /* tp_subclasses */
     0,                         /* tp_weaklist */
     0,                         /* tp_del */
+#if PY_VERSION_HEX>=0x03000000
+    0                          /* tp_version_tag */
+#endif
   };
 
 
@@ -6179,26 +6262,12 @@ config(APSW_ARGUNUSED PyObject *self, PyObject *args)
   int res, optdup;
   long opt;
 
-  if(PyTuple_GET_SIZE(args)<1 || !(PyLong_Check(PyTuple_GET_ITEM(args, 0))
-#if PY_VERSION_HEX<0x03000000
-     || PyInt_Check(PyTuple_GET_ITEM(args, 0))
-#endif
-                                   ))
+  if(PyTuple_GET_SIZE(args)<1 || !PyIntLong_Check(PyTuple_GET_ITEM(args, 0)))
     {
       PyErr_Format(PyExc_TypeError, "There should be at least one argument with the first being a number");
       return NULL;
     }
-  if(PyLong_Check(PyTuple_GET_ITEM(args,0)))
-    opt=PyLong_AsLong(PyTuple_GET_ITEM(args,0));
-  else
-    {
-#if PY_VERSION_HEX<0x03000000
-      opt=PyInt_AsLong(PyTuple_GET_ITEM(args,0));
-#else
-      assert(0);
-#endif
-    }
-  /* Error in conversion? */
+  opt=PyIntLong_AsLong(PyTuple_GET_ITEM(args,0));
   if(PyErr_Occurred())
     return NULL;
 
@@ -6278,12 +6347,13 @@ getapswexceptionfor(APSW_ARGUNUSED PyObject *self, PyObject *pycode)
   int code, i;
   PyObject *result=NULL;
 
-  if(!PyInt_Check(pycode))
+  if(!PyIntLong_Check(pycode))
     {
       PyErr_Format(PyExc_TypeError, "Argument should be an integer");
       return NULL;
     }
-  code=PyInt_AsLong(pycode);
+  code=PyIntLong_AsLong(pycode);
+  if(PyErr_Occurred()) return NULL;
 
   for(i=0;exc_descriptors[i].name;i++)
     if (exc_descriptors[i].code==(code&0xff))
@@ -6338,7 +6408,11 @@ static struct PyModuleDef apswmoduledef={
   "apsw", 
   NULL,
   -1,
-  module_methods
+  module_methods,
+  0,
+  0,
+  0,
+  0,
 };
 #endif
 
@@ -6612,6 +6686,14 @@ PyInit_apsw(void)
 
     PyModule_AddObject(m, "mapping_locking_level", thedict);
 
+    thedict=PyDict_New();
+    if(!thedict) goto fail;
+
+    ADDINT(SQLITE_ACCESS_EXISTS);
+    ADDINT(SQLITE_ACCESS_READWRITE);
+    ADDINT(SQLITE_ACCESS_READ);
+
+    PyModule_AddObject(m, "mapping_access", thedict);
 
     if(!PyErr_Occurred())
       {

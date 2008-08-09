@@ -2636,6 +2636,12 @@ class APSW(unittest.TestCase):
                 self.fail("CHECK_BLOB_CLOSED should be after CHECK_USE in "+name)
             return
 
+        if name.startswith("apswvfspy_") or name.startswith("APSWVFS"):
+            return
+
+        if name.startswith("apswvfsfilepy_"):
+            return
+
         self.fail(name+" doesn't have source check")
 
     def testSourceChecks(self):
@@ -2837,6 +2843,52 @@ class APSW(unittest.TestCase):
         except:
             klass,value=sys.exc_info()[:2]
             self.assert_(klass is apsw.AbortError)
+
+
+##    def testVFS(self):
+##        "Ensure VFS works"
+##        self.db=None
+##        class TestVFS(apsw.VFS):
+##            def __init__(self, vfsname, base=None):
+##                apsw.VFS.__init__(self, vfsname, base)
+##                self.vfsname=vfsname
+##                self.basevfs=base
+
+##            def xDelete(self, name, syncdir):
+##                print "VFS xDelete", `name`, syncdir
+##                ret=super(TestVFS,self).xDelete(name, syncdir)
+##                print "    ",ret
+##                return ret
+
+##            def xFullPathname(self, name):
+##                print "VFS xFullPathname", `name`
+##                ret=super(TestVFS, self).xFullPathname(name)
+##                print "    ",`ret`
+##                return ret
+
+##            def xOpen1(self, name, flags):
+##                # flags is two item list [in, out] - callee should modify flags[1]
+##                print "VFS xOpen", `name`, flags
+##                ret=super(TestVFS, self).xOpen(name, flags)
+##                print "    ",ret, "flagsout="+`flags`
+##                return ret
+
+##            def xOpen2(self, name, flags):
+##                print "VFS xOpen", `name`, flags
+##                ret=TestVFSFile(self.basevfs, name, flags)
+##                print "    ",ret, "flagsout="+`flags`
+##                return ret
+
+##        class TestVFSFile(apsw.VFSFile):
+##            def __init__(self, vfs, name, flags):
+##                apsw.VFSFile.__init__(self, vfs, name, flags)
+            
+##        vfs=TestVFS("test", "")
+##        for i in (1,2):
+##            TestVFS.xOpen=getattr(TestVFS, "xOpen"+`i`)
+##            db=apsw.Connection("testdb", vfs="test")
+
+##    del testVFS
 
     # Note that faults fire only once, so there is no need to reset
     # them.  The testing for objects bigger than 2GB is done in
@@ -3414,7 +3466,6 @@ if __name__=='__main__':
     # modules
     del unittest
     del os
-    del sys
     del math
     del random
     del time
@@ -3422,6 +3473,15 @@ if __name__=='__main__':
     del Queue
     del traceback
     del re
-
     gc.collect()
+    # In py3 gc and sys can end up being None even though we take care not to delete them
+    for k in list(sys.modules.keys()):
+        if k not in ('gc', 'sys'):
+            try:
+                del sys.modules[k]
+            except:
+                pass
+    del sys
+    if gc:
+        gc.collect()
     del gc
