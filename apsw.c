@@ -5457,7 +5457,7 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
   if(!flags) goto finally;
 
   PyList_SET_ITEM(flags, 0, PyInt_FromLong(inflags));
-  PyList_SET_ITEM(flags, 1, PyInt_FromLong(*pOutFlags));
+  PyList_SET_ITEM(flags, 1, PyInt_FromLong(pOutFlags?*pOutFlags:0));
   if(PyErr_Occurred()) goto finally;
 
   pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xOpen", 1, "(NO)", convertutf8string(zName), flags);
@@ -5474,7 +5474,8 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
       goto finally;
     }
 
-  *pOutFlags=(int)PyIntLong_AsLong(PyList_GET_ITEM(flags, 1));
+  if(pOutFlags)
+    *pOutFlags=(int)PyIntLong_AsLong(PyList_GET_ITEM(flags, 1));
   if(PyErr_Occurred()) goto finally;
 
   apswfile->pMethods=&apsw_io_methods;
@@ -5540,6 +5541,173 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args)
   if(name) PyMem_Free(name);
   return result;
 }
+
+static void*
+apswvfs_xDlOpen(sqlite3_vfs *vfs, const char *zName)
+{
+  PyGILState_STATE gilstate;
+  PyObject *pyresult=NULL;
+  void *result=NULL;
+  gilstate=PyGILState_Ensure();
+
+  CHECKVFS;
+
+  pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xDlOpen", 1, "(N)", convertutf8string(zName));
+  if(pyresult)
+    {
+      if(PyIntLong_Check(pyresult))
+        result=PyLong_AsVoidPtr(pyresult);
+      else
+        PyErr_Format(PyExc_TypeError, "Pointer returned must be int/long");
+    }
+  if(PyErr_Occurred())
+    {
+      result=NULL;
+      AddTraceBackHere(__FILE__, __LINE__, "vfs.xDlOpen", "{s: s, s: O}", "zName", zName, "result", pyresult?pyresult:Py_None);
+      apsw_write_unraiseable();
+    }
+
+ finally:
+  Py_XDECREF(pyresult);
+  PyGILState_Release(gilstate);
+  return result;
+}
+
+static PyObject *
+apswvfspy_xDlOpen(APSWVFS *self, PyObject *args)
+{
+  char *zName=NULL;
+  void *res;
+
+  CHECKVFSPY;
+  VFSNOTIMPLEMENTED(xDlOpen);
+
+  if(!PyArg_ParseTuple(args, "es", STRENCODING, &zName))
+    return NULL;
+
+  res=self->basevfs->xDlOpen(self->basevfs, zName);
+  PyMem_Free(zName);
+
+  return PyLong_FromVoidPtr(res);
+}
+
+static void*
+apswvfs_xDlSym(sqlite3_vfs *vfs, void *handle, const char *zName)
+{
+  PyGILState_STATE gilstate;
+  PyObject *pyresult=NULL;
+  void *result=NULL;
+  gilstate=PyGILState_Ensure();
+
+  CHECKVFS;
+
+  pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xDlSym", 1, "(NN)", PyLong_FromVoidPtr(handle), convertutf8string(zName));
+  if(pyresult)
+    {
+      if(PyIntLong_Check(pyresult))
+        result=PyLong_AsVoidPtr(pyresult);
+      else
+        PyErr_Format(PyExc_TypeError, "Pointer returned must be int/long");
+    }
+  if(PyErr_Occurred())
+    {
+      result=NULL;
+      AddTraceBackHere(__FILE__, __LINE__, "vfs.xDlSym", "{s: s, s: O}", "zName", zName, "result", pyresult?pyresult:Py_None);
+      apsw_write_unraiseable();
+    }
+
+ finally:
+  Py_XDECREF(pyresult);
+  PyGILState_Release(gilstate);
+  return result;
+}
+
+static PyObject *
+apswvfspy_xDlSym(APSWVFS *self, PyObject *args)
+{
+  char *zName=NULL;
+  void *res=NULL;
+  PyObject *pyptr;
+  void *ptr;
+
+  CHECKVFSPY;
+  VFSNOTIMPLEMENTED(xDlSym);
+
+  if(!PyArg_ParseTuple(args, "Oes", &pyptr, STRENCODING, &zName))
+    return NULL;
+
+  if(PyIntLong_Check(pyptr))
+    ptr=PyLong_AsVoidPtr(pyptr);
+
+  if(PyErr_Occurred())
+    goto finally;
+
+  res=self->basevfs->xDlSym(self->basevfs, ptr, zName);
+
+ finally:
+  PyMem_Free(zName);
+
+  if(PyErr_Occurred())
+    {
+      res=NULL;
+      AddTraceBackHere(__FILE__, __LINE__, "vfspy.xDlSym", "{s: O}", "args", args);
+      apsw_write_unraiseable();
+    }
+
+  return PyLong_FromVoidPtr(res);
+}
+
+static void
+apswvfs_xDlClose(sqlite3_vfs *vfs, void *handle)
+{
+  PyGILState_STATE gilstate;
+  PyObject *pyresult=NULL;
+  gilstate=PyGILState_Ensure();
+
+  CHECKVFS;
+
+  pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xDlClose", 1, "(N)", PyLong_FromVoidPtr(handle));
+
+  if(PyErr_Occurred())
+    {
+      AddTraceBackHere(__FILE__, __LINE__, "vfs.xDlClose", "{s: N}", "ptr", PyLong_FromVoidPtr(handle));
+      apsw_write_unraiseable();
+    }
+
+ finally:
+  Py_XDECREF(pyresult);
+  PyGILState_Release(gilstate);
+}
+
+static PyObject *
+apswvfspy_xDlClose(APSWVFS *self, PyObject *pyptr)
+{
+  void *res=NULL;
+  void *ptr;
+
+  CHECKVFSPY;
+  VFSNOTIMPLEMENTED(xDlSym);
+
+  if(PyIntLong_Check(pyptr))
+    ptr=PyLong_AsVoidPtr(pyptr);
+
+  if(PyErr_Occurred())
+    goto finally;
+
+  self->basevfs->xDlClose(self->basevfs, ptr);
+
+ finally:
+
+  if(PyErr_Occurred())
+    {
+      res=NULL;
+      AddTraceBackHere(__FILE__, __LINE__, "vfspy.xDlClose", "{s: O}", "ptr", pyptr);
+      apsw_write_unraiseable();
+    }
+
+  return Py_None;
+}
+
 
 static void
 APSWVFS_dealloc(APSWVFS *self)
@@ -5626,7 +5794,7 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
   
   self->containingvfs=(sqlite3_vfs *)PyMem_Malloc(sizeof(sqlite3_vfs));
   if(!self->containingvfs) return -1;
-  memset(self->containingvfs, 0, sizeof(sqlite3_vfs));
+  memset(self->containingvfs, 0xff, sizeof(sqlite3_vfs));
   self->containingvfs->iVersion=1;
   self->containingvfs->szOsFile=sizeof(APSWSQLite3File);
   if(self->basevfs && !maxpathname)
@@ -5643,6 +5811,9 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
   METHOD(FullPathname);
   METHOD(Open);
   METHOD(Access);
+  METHOD(DlOpen);
+  METHOD(DlSym);
+  METHOD(DlClose);
 
 #undef METHOD
 
@@ -5665,6 +5836,9 @@ static PyMethodDef APSWVFS_methods[]={
   {"xFullPathname", (PyCFunction)apswvfspy_xFullPathname, METH_O, "xFullPathname"},
   {"xOpen", (PyCFunction)apswvfspy_xOpen, METH_VARARGS, "xOpen"},
   {"xAccess", (PyCFunction)apswvfspy_xAccess, METH_VARARGS, "xAccess"},
+  {"xDlOpen", (PyCFunction)apswvfspy_xDlOpen, METH_VARARGS, "xDlOpen"},
+  {"xDlSym", (PyCFunction)apswvfspy_xDlSym, METH_VARARGS, "xDlSym"},
+  {"xDlClose", (PyCFunction)apswvfspy_xDlClose, METH_O, "xDlClose"},
   /* Sentinel */
   {0, 0, 0, 0}
   };
@@ -5927,6 +6101,72 @@ apswvfsfilepy_xRead(APSWVFSFile *self, PyObject *args)
 }
 
 static int
+apswvfsfile_xWrite(sqlite3_file *file, const void *buffer, int amount, sqlite3_int64 offset)
+{
+  PyGILState_STATE gilstate;
+  APSWSQLite3File *apswfile=(APSWSQLite3File*)(void*)file;
+  PyObject *pyresult=NULL, *pybuf=NULL;
+  int result=SQLITE_OK;
+
+  gilstate=PyGILState_Ensure();
+  CHECKVFSFILE;
+
+  pybuf=PyBytes_FromStringAndSize(buffer, amount);
+  if(!pybuf)
+    goto finally;
+
+  pyresult=Call_PythonMethodV(apswfile->file, "xWrite", 1, "(OL)", pybuf, offset);
+  
+ finally:
+  if(PyErr_Occurred())
+    {
+      assert(!pyresult);
+      result=MakeSqliteMsgFromPyException(NULL);
+      AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xWrite", "{s: i, s: L, s: O}", "amount", amount, "offset", offset, "data", pybuf?pybuf:Py_None);
+    }
+  Py_XDECREF(pybuf);
+  Py_XDECREF(pyresult);
+  PyGILState_Release(gilstate);
+  return result;
+
+}
+
+static PyObject *
+apswvfsfilepy_xWrite(APSWVFSFile *self, PyObject *args)
+{
+  sqlite3_int64 offset;
+  int res;
+  PyObject *buffy=NULL;
+  const void *buffer;
+  Py_ssize_t size;
+  int asrb;
+
+  VFSFILENOTIMPLEMENTED(xWrite);
+
+  if(!PyArg_ParseTuple(args, "OL", &buffy, &offset))
+    {
+      assert(PyErr_Occurred());
+      return NULL;
+    }
+  
+  asrb=PyObject_AsReadBuffer(buffy, &buffer, &size);
+  if(asrb!=0)
+    {
+      PyErr_Format(PyExc_TypeError, "Object passed to xWrite doesn't do read buffer");
+      AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xWrite", "{s: L, s: O}", "offset", offset, "buffer", buffy);
+      return NULL;
+    }
+
+  res=self->base->pMethods->xWrite(self->base, buffer, size, offset);
+
+  if(res==SQLITE_OK)
+    Py_RETURN_NONE;
+    
+  make_exception(res, NULL);
+  return NULL;
+}
+
+static int
 apswvfsfile_xUnlock(sqlite3_file *file, int flag)
 {
   PyGILState_STATE gilstate;
@@ -6010,6 +6250,48 @@ apswvfsfilepy_xLock(APSWVFSFile *self, PyObject *args)
   return NULL;
 }
 
+static int
+apswvfsfile_xSync(sqlite3_file *file, int flags)
+{
+  PyGILState_STATE gilstate;
+  APSWSQLite3File *apswfile=(APSWSQLite3File*)(void*)file;
+  int result=SQLITE_ERROR;
+  PyObject *pyresult=NULL;
+
+  gilstate=PyGILState_Ensure();
+  CHECKVFSFILE;
+
+  pyresult=Call_PythonMethodV(apswfile->file, "xSync", 1, "(i)", flags);
+  if(!pyresult)
+    result=MakeSqliteMsgFromPyException(NULL);
+  else
+    result=SQLITE_OK;
+
+ finally:
+  Py_XDECREF(pyresult);
+  PyGILState_Release(gilstate);
+  return result;
+}
+
+static PyObject *
+apswvfsfilepy_xSync(APSWVFSFile *self, PyObject *args)
+{
+  int flags, res;
+
+  VFSFILENOTIMPLEMENTED(xSync);
+
+  if(!PyArg_ParseTuple(args, "i", &flags))
+    return NULL;
+  
+  res=self->base->pMethods->xSync(self->base, flags);
+
+  if(res==SQLITE_OK)
+    Py_RETURN_NONE;
+    
+  make_exception(res, NULL);
+  return NULL;
+}
+
 
 static int
 apswvfsfile_xSectorSize(sqlite3_file *file)
@@ -6056,6 +6338,153 @@ apswvfsfilepy_xSectorSize(APSWVFSFile *self)
 
   return PyInt_FromLong(res);
 }
+
+static int
+apswvfsfile_xDeviceCharacteristics(sqlite3_file *file)
+{
+  PyGILState_STATE gilstate;
+  APSWSQLite3File *apswfile=(APSWSQLite3File*)(void*)file;
+  int result=0;
+  PyObject *pyresult=NULL;
+
+  gilstate=PyGILState_Ensure();
+  CHECKVFSFILE;
+
+  pyresult=Call_PythonMethodV(apswfile->file, "xDeviceCharacteristics", 0, "()");
+  if(!pyresult)
+    result=MakeSqliteMsgFromPyException(NULL);
+  else if(pyresult!=Py_None)
+    {
+      if(PyIntLong_Check(pyresult))
+        result=PyIntLong_AsLong(pyresult);
+      else
+        PyErr_Format(PyExc_TypeError, "xDeviceCharacteristics should return a number");
+    }
+
+  /* We can't return errors so use unraiseable */
+  if(PyErr_Occurred())
+    {
+      AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xDeviceCharacteristics", NULL);
+      apsw_write_unraiseable();
+    }
+
+ finally:
+  Py_XDECREF(pyresult);
+  PyGILState_Release(gilstate);
+  return result;
+}
+
+static PyObject *
+apswvfsfilepy_xDeviceCharacteristics(APSWVFSFile *self)
+{
+  int res=0;
+
+  if(self->base->pMethods->xDeviceCharacteristics)
+    res=self->base->pMethods->xDeviceCharacteristics(self->base);
+
+  return PyInt_FromLong(res);
+}
+
+
+static int
+apswvfsfile_xFileSize(sqlite3_file *file, sqlite3_int64 *pSize)
+{
+  PyGILState_STATE gilstate;
+  APSWSQLite3File *apswfile=(APSWSQLite3File*)(void*)file;
+  int result=SQLITE_OK;
+  PyObject *pyresult=NULL;
+
+  gilstate=PyGILState_Ensure();
+  CHECKVFSFILE;
+
+  pyresult=Call_PythonMethodV(apswfile->file, "xFileSize", 1, "()");
+  if(!pyresult)
+    result=MakeSqliteMsgFromPyException(NULL);
+  else if(PyLong_Check(pyresult))
+    *pSize=PyLong_AsLongLong(pyresult);
+  else if(PyIntLong_Check(pyresult))
+    *pSize=PyIntLong_AsLong(pyresult);
+  else
+    PyErr_Format(PyExc_TypeError, "xFileSize should return a number");
+
+  if(PyErr_Occurred() && pyresult)
+    {
+      result=MakeSqliteMsgFromPyException(NULL);
+      AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xFileSize", "{s: O}", "result", pyresult);
+    }
+
+ finally:
+  Py_XDECREF(pyresult);
+  PyGILState_Release(gilstate);
+  return result;
+}
+
+static PyObject *
+apswvfsfilepy_xFileSize(APSWVFSFile *self)
+{
+  sqlite3_int64 size;
+  int res;
+
+  res=self->base->pMethods->xFileSize(self->base, &size);
+
+  if(res!=SQLITE_OK)
+    {
+      make_exception(res, NULL);
+      return NULL;
+    }
+  return PyLong_FromLongLong(size);
+}
+
+static int
+apswvfsfile_xCheckReservedLock(sqlite3_file *file, int *pResOut)
+{
+  PyGILState_STATE gilstate;
+  APSWSQLite3File *apswfile=(APSWSQLite3File*)(void*)file;
+  int result=SQLITE_OK;
+  PyObject *pyresult=NULL;
+
+  gilstate=PyGILState_Ensure();
+  CHECKVFSFILE;
+
+  pyresult=Call_PythonMethodV(apswfile->file, "xCheckReservedLock", 1, "()");
+  if(!pyresult)
+    result=MakeSqliteMsgFromPyException(NULL);
+  else if(PyIntLong_Check(pyresult))
+    *pResOut=!!PyIntLong_AsLong(pyresult);
+  else
+    PyErr_Format(PyExc_TypeError, "xCheckReservedLock should return a boolean/number");
+
+  if(PyErr_Occurred() && pyresult)
+    {
+      result=MakeSqliteMsgFromPyException(NULL);
+      AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xCheckReservedLock", "{s: O}", "result", pyresult);
+    }
+
+ finally:
+  Py_XDECREF(pyresult);
+  PyGILState_Release(gilstate);
+  return result;
+}
+
+static PyObject *
+apswvfsfilepy_xCheckReservedLock(APSWVFSFile *self)
+{
+  int islocked;
+  int res;
+
+  res=self->base->pMethods->xCheckReservedLock(self->base, &islocked);
+
+  if(res!=SQLITE_OK)
+    {
+      make_exception(res, NULL);
+      return NULL;
+    }
+  if(islocked)
+    Py_RETURN_TRUE;
+  Py_RETURN_FALSE;
+}
+
+
 
 static int
 apswvfsfile_xClose(sqlite3_file *file)
@@ -6106,19 +6535,19 @@ apswvfsfilepy_xClose(APSWVFSFile *self)
 #define NULLx ((void*)1)
 static struct sqlite3_io_methods apsw_io_methods=
   {
-    1,                       /* version */
-    apswvfsfile_xClose,      /* close */
-    apswvfsfile_xRead,       /* read */
-    NULLx,             /* write */
+    1,                                 /* version */
+    apswvfsfile_xClose,                /* close */
+    apswvfsfile_xRead,                 /* read */
+    apswvfsfile_xWrite,                /* write */
     NULLx,             /* truncate */
-    NULLx,             /* sync */
-    NULLx,             /* filesize */
-    apswvfsfile_xLock,       /* lock */
-    apswvfsfile_xUnlock,     /* unlock */
-    NULLx,             /* checkreservedlock */
+    apswvfsfile_xSync,                 /* sync */
+    apswvfsfile_xFileSize,             /* filesize */
+    apswvfsfile_xLock,                 /* lock */
+    apswvfsfile_xUnlock,               /* unlock */
+    apswvfsfile_xCheckReservedLock,    /* checkreservedlock */
     NULLx,             /* filecontrol */
-    apswvfsfile_xSectorSize, /* sectorsize */
-    NULLx              /* device characteristics */
+    apswvfsfile_xSectorSize,           /* sectorsize */
+    apswvfsfile_xDeviceCharacteristics /* device characteristics */
   };
 
 
@@ -6128,6 +6557,11 @@ static PyMethodDef APSWVFSFile_methods[]={
   {"xLock", (PyCFunction)apswvfsfilepy_xLock, METH_VARARGS, "xLock"},
   {"xClose", (PyCFunction)apswvfsfilepy_xClose, METH_NOARGS, "xClose"},
   {"xSectorSize", (PyCFunction)apswvfsfilepy_xSectorSize, METH_NOARGS, "xSectorSize"},
+  {"xFileSize", (PyCFunction)apswvfsfilepy_xFileSize, METH_NOARGS, "xFileSize"},
+  {"xDeviceCharacteristics", (PyCFunction)apswvfsfilepy_xDeviceCharacteristics, METH_NOARGS, "xDeviceCharacteristics"},
+  {"xCheckReservedLock", (PyCFunction)apswvfsfilepy_xCheckReservedLock, METH_NOARGS, "xCheckReservedLock"},
+  {"xWrite", (PyCFunction)apswvfsfilepy_xWrite, METH_VARARGS, "xWrite"},
+  {"xSync", (PyCFunction)apswvfsfilepy_xSync, METH_VARARGS, "xSync"},
   /* Sentinel */
   {0, 0, 0, 0}
   };
@@ -6694,6 +7128,33 @@ PyInit_apsw(void)
     ADDINT(SQLITE_ACCESS_READ);
 
     PyModule_AddObject(m, "mapping_access", thedict);
+
+    thedict=PyDict_New();
+    if(!thedict) goto fail;
+
+    ADDINT(SQLITE_IOCAP_ATOMIC);
+    ADDINT(SQLITE_IOCAP_ATOMIC512);
+    ADDINT(SQLITE_IOCAP_ATOMIC1K);
+    ADDINT(SQLITE_IOCAP_ATOMIC2K);
+    ADDINT(SQLITE_IOCAP_ATOMIC4K);
+    ADDINT(SQLITE_IOCAP_ATOMIC8K);
+    ADDINT(SQLITE_IOCAP_ATOMIC16K);
+    ADDINT(SQLITE_IOCAP_ATOMIC32K);
+    ADDINT(SQLITE_IOCAP_ATOMIC64K);
+    ADDINT(SQLITE_IOCAP_SAFE_APPEND);
+    ADDINT(SQLITE_IOCAP_SEQUENTIAL);
+
+    PyModule_AddObject(m, "mapping_device_characteristics", thedict);
+
+    thedict=PyDict_New();
+    if(!thedict) goto fail;
+
+    ADDINT(SQLITE_SYNC_NORMAL);
+    ADDINT(SQLITE_SYNC_FULL);
+    ADDINT(SQLITE_SYNC_DATAONLY);
+
+    PyModule_AddObject(m, "mapping_sync", thedict);
+
 
     if(!PyErr_Occurred())
       {
