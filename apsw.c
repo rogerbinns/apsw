@@ -6676,7 +6676,7 @@ initialize(void)
 }
 
 static PyObject *
-shutdown(void)
+sqliteshutdown(void)
 {
   int res;
   
@@ -6817,7 +6817,7 @@ static PyMethodDef module_methods[] = {
    "Sets shared cache semantics for this thread"},
   {"initialize", (PyCFunction)initialize, METH_NOARGS,
    "Initialize SQLite library"},
-  {"shutdown", (PyCFunction)shutdown, METH_NOARGS,
+  {"shutdown", (PyCFunction)sqliteshutdown, METH_NOARGS,
    "Shutdown SQLite library"},
 #ifdef EXPERIMENTAL
   {"config", (PyCFunction)config, METH_VARARGS,
