@@ -35,21 +35,22 @@ compile-win:
 	c:/python23/python setup.py build --compile=mingw32 install 
 	c:/python23/python tests.py
 	c:/python23/python setup.py build --compile=mingw32 bdist_wininst
+	c:/python23/python example-code.py
 	c:/python24/python setup.py build --compile=mingw32 install 
 	c:/python24/python tests.py
 	c:/python24/python setup.py build --compile=mingw32 bdist_wininst
 	c:/python25/python setup.py build --compile=mingw32 install 
 	c:/python25/python tests.py
 	c:/python25/python setup.py build --compile=mingw32 bdist_wininst
-	c:/python23/python example-code.py
 # Beta release currently
-# See http://bugs.python.org/issue3308
-#	c:/python26/python setup.py build --compile=mingw32 install 
-#	c:/python26/python tests.py
-#	c:/python26/python setup.py build --compile=mingw32 bdist_wininst
-#	c:/python30/python setup.py build --compile=mingw32 install 
-#	c:/python30/python tests.py
-#	c:/python30/python setup.py build --compile=mingw32 bdist_wininst
+# See http://bugs.python.org/issue3308 if these fail to run with
+# missing symbols
+	c:/python26/python setup.py build --compile=mingw32 install 
+	c:/python26/python tests.py
+	c:/python26/python setup.py build --compile=mingw32 bdist_wininst
+	c:/python30/python setup.py build --compile=mingw32 install 
+	c:/python30/python tests.py
+	c:/python30/python setup.py build --compile=mingw32 bdist_wininst
 
 
 source:
