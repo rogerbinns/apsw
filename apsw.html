@@ -1323,7 +1323,7 @@ OK
       is reset to the current value.</p>
     </dd>
 
-    <dt><a name="exceptionfor"><strong>exceptionfor(code)</strong></a></dt>
+    <dt><a name="exceptionfor" id="exceptionfor"><strong>exceptionfor(code)</strong></a></dt>
 
     <dd>
       <p>Returns an exception instance corresponding to a SQLite error code, in particular intended for mapping
@@ -1337,6 +1337,11 @@ OK
 </pre>
       </blockquote>
     </dd>
+
+<dt><strong>vfsnames()</strong></dt>
+
+<dd><p>Returns a list of the names of the installed vfs modules, with the default being first.  You can use this to confirm that you vfs is installed.  It is also useful if you want to install your vfs as the default and need the name of the previous default to inherit from.</p></dd>
+
   </dl>
 
   <h2><a name="Module_variables" id="Module_variables">Module variables</a></h2>
@@ -1453,29 +1458,29 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       Mapping is <code>apsw.mapping_locking_level</code></p>
     </dd>
 
-    <dt><a href="http://sqlite.org/c3ref/c_iocap_atomic.html"><strong>SQLITE_IOCAP_ATOMIC, SQLITE_IOCAP_ATOMIC512, SQLITE_IOCAP_ATOMIC1K</strong>
-    and 8 others</a></dt>
+    <dt><a href="http://sqlite.org/c3ref/c_iocap_atomic.html"><strong>SQLITE_IOCAP_ATOMIC, SQLITE_IOCAP_ATOMIC512,
+    SQLITE_IOCAP_ATOMIC1K</strong> and 8 others</a></dt>
 
     <dd>
-      <p>These are used with the <a href="http://sqlite.org/c3ref/io_methods.html">xDeviceCharacteristics</a> VFS file method.
-      Mapping is <code>apsw.mapping_device_characteristics</code></p>
+      <p>These are used with the <a href="http://sqlite.org/c3ref/io_methods.html">xDeviceCharacteristics</a> VFS file
+      method. Mapping is <code>apsw.mapping_device_characteristics</code></p>
     </dd>
 
     <dt><a href="http://sqlite.org/c3ref/c_sync_dataonly.html"><strong>SQLITE_SYNC_NORMAL, SQLITE_SYNC_FULL</strong>
     and 1 other</a></dt>
 
     <dd>
-      <p>These are used with the <a href="http://sqlite.org/c3ref/io_methods.html">xSync</a> VFS file method.
-      Mapping is <code>apsw.mapping_sync</code></p>
+      <p>These are used with the <a href="http://sqlite.org/c3ref/io_methods.html">xSync</a> VFS file method. Mapping
+      is <code>apsw.mapping_sync</code></p>
     </dd>
 
+    <dt><a href="http://sqlite.org/c3ref/c_access_exists.html"><strong>SQLITE_ACCESS_EXISTS, SQLITE_ACCESS_READWRITE,
+    SQLITE_ACCESS_READ</strong></a></dt>
 
-    <dt><a href="http://sqlite.org/c3ref/c_access_exists.html"><strong>SQLITE_ACCESS_EXISTS, SQLITE_ACCESS_READWRITE, SQLITE_ACCESS_READ</strong></a></dt>
-
-<dd><p>These are used with the xAccess <a href="http://sqlite.org/c3ref/vfs.html">VFS method</a>.  Mapping is <code>apsw.mapping_access</code>.</p></dd>
-
-
-
+    <dd>
+      <p>These are used with the xAccess <a href="http://sqlite.org/c3ref/vfs.html">VFS method</a>. Mapping is
+      <code>apsw.mapping_access</code>.</p>
+    </dd>
   </dl>
 
   <h2><a name="Connection_class" id="Connection_class">Connection class</a></h2>
@@ -2298,11 +2303,9 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
   db=apsw.Connection("file", vfs="myvfs")
 </pre>
 
-      <p>To return an error from any routine you should raise an
-      exception.  The exception will be translated into the
-      appropriate SQLite error code for SQLite.  To return a specific
-      SQLite error code use <code><a
-      href="#exceptionfor">apsw.exceptionfor(code)</a></code>.
+      <p>To return an error from any routine you should raise an exception. The exception will be translated into the
+      appropriate SQLite error code for SQLite. To return a specific SQLite error code use <code><a href=
+      "#exceptionfor">apsw.exceptionfor(code)</a></code>.</p>
 
       <h3>OS Interface</h3>
 
@@ -2334,37 +2337,52 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
 
         <dt><strong>xAccess(name, flag)</strong></dt>
 
-<dd><p><i>name</i> is a file or directory that SQLite wants to check access permissions for as specified by the <a href="http://sqlite.org/c3ref/c_access_exists.html">flag</a>.  Return True or False accordingly.
-</p></dd>
+        <dd>
+          <p><i>name</i> is a file or directory that SQLite wants to check access permissions for as specified by the
+          <a href="http://sqlite.org/c3ref/c_access_exists.html">flag</a>. Return True or False accordingly.</p>
+        </dd>
 
-  <dt><strong>xFullPathname(name)</strong></dt>
+        <dt><strong>xFullPathname(name)</strong></dt>
 
-<dd><p>Return the absolute pathname for <i>name</i>.  You can use <code>os.path.abspath</code> to do this.</p></dd>
+        <dd>
+          <p>Return the absolute pathname for <i>name</i>. You can use <code>os.path.abspath</code> to do this.</p>
+        </dd>
 
-<dt><strong>xDlOpen(name)</strong></dt>
+        <dt><strong>xDlOpen(name)</strong></dt>
 
-<dd><p>Load the shared library.  You should return a number which will be treated as a <code>void*</code>.  On error you should return 0 (NULL). The number is passed as is to xDlSym/xDlClose so it can represent anything that is convenient for you (eg index into an array). You can use ctypes to load a library.
-<pre>
+        <dd>
+          <p>Load the shared library. You should return a number which will be treated as a <code>void*</code>. On
+          error you should return 0 (NULL). The number is passed as is to xDlSym/xDlClose so it can represent anything
+          that is convenient for you (eg index into an array). You can use ctypes to load a library.</p>
+          <pre>
 def xDlOpen(name):
     return ctypes.cdll.LoadLibrary(name)._handle
 </pre>
-</p></dd>
+        </dd>
 
-<dt><strong>xDlSym(ptr, name)</strong></dt>
+        <dt><strong>xDlSym(ptr, name)</strong></dt>
 
-<dd><p>Returns the address of the named function which will be treated as a <code>void*</code>.  On error you should return 0 (NULL).  You can use ctypes
-but you must remember the pointer you returned in xDlOpen.  Note this uses <code>_ctypes</code> (leading underscore):
-<pre>
+        <dd>
+          <p>Returns the address of the named function which will be treated as a <code>void*</code>. On error you
+          should return 0 (NULL). You can use ctypes:</p>
+          <pre>
 def xDlSym(ptr, name):
-    dll=pointer2library[ptr]
-    return _ctypes.dlsym          (dll._handle, function)  # Linux/Unix/Mac etc
-    return _ctypes.GetProcAddress (dll._handle, function)  # Windows
-</pre></p></dd>
+    return _ctypes.dlsym (ptr, function)  # Linux/Unix/Mac etc (note leading underscore)
+    return ctypes.win32.kernel32.GetProcAddress (ptr, function)  # Windows
+</pre>
+        </dd>
 
-<dt><strong>xDlClose(ptr)</strong></dt>
+        <dt><strong>xDlClose(ptr)</strong></dt>
 
-<dd><p>Close/Unload the shared library.</p></dd>
+        <dd>
+          <p>Close/Unload the shared library.  Use <code>_ctypes.dlclose</code> (Linux/Unix/Mac) or <code>_ctypes.FreeLibrary</code> (Windows).</p>
+        </dd>
 
+        <dt><strong>xDlError()</strong> (optional)</dt>
+
+        <dd><p>Return an error string describing the last error of xDlOpen or xDlSym.  If you do not supply this routine then
+        a generic message is used.  To implement it, catch exceptions in xDlOpen/xDlSym, turn them into strings and return them in this
+   routine.  Note that the message may be truncated to 255 characters - see <a href="http://www.sqlite.org/cvstrac/tktview?tn=3305">ticket 3305</a>.  If you have an error or return None then the generic message will be used.</p></dd>
       </dl>
 
       <h3>File interface</h3>
@@ -2382,44 +2400,49 @@ def xDlSym(ptr, name):
 
         <dt><strong>xClose()</strong></dt>
 
-<dd><p>Close the database.  Note that even if you return an error you should still close the file.</p></dd>
+        <dd>
+          <p>Close the database. Note that even if you return an error you should still close the file.</p>
+        </dd>
 
-        <dd><p>
-     
         <dt><strong>xRead(amount, offset)</strong></dt>
 
         <dd>
           <p>Read the specified amount of data starting at offset. You should make every effort to read all the data
-          requested, or return an error. If you have the file open for non-blocking I/O or if signals happen then it is possible for the
-          underlying operating system to do a partial read. You will need to request the remaining data. Except for
-          empty files SQLite considers short reads to be a fatal error. Return the data as a string (Python 2), bytes
-          (Python 3) or buffer (either Python version).</p>
+          requested, or return an error. If you have the file open for non-blocking I/O or if signals happen then it is
+          possible for the underlying operating system to do a partial read. You will need to request the remaining
+          data. Except for empty files SQLite considers short reads to be a fatal error. Return the data as a string
+          (Python 2), bytes (Python 3) or buffer (either Python version).</p>
         </dd>
 
         <dt><strong>xWrite(data, offset)</strong></dt>
 
         <dd>
-          <p>Write the data starting at offset. You must write all the data
-          requested, or return an error. If you have the file open for non-blocking I/O or if signals happen then it is possible for the
-          underlying operating system to do a partial write. You will need to write the remaining data.  The data will be a string (Python 2) or bytes
-          (Python 3).</p>
+          <p>Write the data starting at offset. You must write all the data requested, or return an error. If you have
+          the file open for non-blocking I/O or if signals happen then it is possible for the underlying operating
+          system to do a partial write. You will need to write the remaining data. The data will be a string (Python 2)
+          or bytes (Python 3).</p>
         </dd>
 
         <dt><strong>xSync(flags)</strong></dt>
 
-<dd><p>Ensure data is on the disk platters (ie could survive a power failure immediately after the call returns) with the <a href="http://sqlite.org/c3ref/c_sync_dataonly.html">flags</a> detailing what needs to be synced.</p></dd>
+        <dd>
+          <p>Ensure data is on the disk platters (ie could survive a power failure immediately after the call returns)
+          with the <a href="http://sqlite.org/c3ref/c_sync_dataonly.html">flags</a> detailing what needs to be
+          synced.</p>
+        </dd>
 
-         <dt><strong>xFileSize()</strong></dt>
+        <dt><strong>xFileSize()</strong></dt>
 
-<dd><p>Return the size of the file in bytes.</p></dd>
+        <dd>
+          <p>Return the size of the file in bytes.</p>
+        </dd>
 
         <dt><strong>xLock(level)</strong></dt>
 
         <dd>
           <p>Increase the lock to the level specified which is one of the <a href=
-          "http://sqlite.org/c3ref/c_lock_exclusive.html"><code>SQLITE_LOCK</code></a> family of constants.</p>
+          "http://sqlite.org/c3ref/c_lock_exclusive.html"><code>SQLITE_LOCK</code></a> family of constants.  If you can't increase the lock level because someone else has locked it, then raise <code>apsw.BusyException</code>.</p>
         </dd>
-
 
         <dt><strong>xUnlock(level)</strong></dt>
 
@@ -2428,19 +2451,26 @@ def xDlSym(ptr, name):
           "http://sqlite.org/c3ref/c_lock_exclusive.html"><code>SQLITE_LOCK</code></a> family of constants.</p>
         </dd>
 
-<dt><strong>xCheckReservedLock()</strong></dt>
-<dd><p>Returns True if any database connection (in this or another process) has a lock other than <a href="http://sqlite.org/c3ref/c_lock_exclusive.html">SQLITE_LOCK_NONE or SQLITE_LOCK_SHARED</a>.</p></dd>
+        <dt><strong>xCheckReservedLock()</strong></dt>
 
-         <dt><strong>xSectorSize()</strong> (optional)</dt>
+        <dd>
+          <p>Returns True if any database connection (in this or another process) has a lock other than <a href=
+          "http://sqlite.org/c3ref/c_lock_exclusive.html">SQLITE_LOCK_NONE or SQLITE_LOCK_SHARED</a>.</p>
+        </dd>
 
-<dd><p>Return the native underlying sector size.  SQLite uses this in determining the database page size.  If you do not implement the
-function or have an error then 512 (the SQLite default) is returned.</p></dd>
+        <dt><strong>xSectorSize()</strong> (optional)</dt>
 
-<dt><strong>xDeviceCharacteristics()</strong> (optional)</dt>
+        <dd>
+          <p>Return the native underlying sector size. SQLite uses this in determining the database page size. If you
+          do not implement the function or have an error then 512 (the SQLite default) is returned.</p>
+        </dd>
 
-<dd><p>Return <a href="http://sqlite.org/c3ref/c_iocap_atomic.html">I/O capabilities</a> (bitwise or appropriate values).  If you do not implement the function or
-have an error then 0 (the SQLite default) is returned.</p></dd>
+        <dt><strong>xDeviceCharacteristics()</strong> (optional)</dt>
 
+        <dd>
+          <p>Return <a href="http://sqlite.org/c3ref/c_iocap_atomic.html">I/O capabilities</a> (bitwise or appropriate
+          values). If you do not implement the function or have an error then 0 (the SQLite default) is returned.</p>
+        </dd>
       </dl>
 
       <h1><a name="Exceptions" id="Exceptions">Exceptions</a></h1>
@@ -2891,7 +2921,7 @@ TypeError: Bad constraint (#2) - it should be one of None, an integer or a tuple
         </li>
 
         <li>
-          <p>Python's buffer class is used for BLOB in SQLite.  In Python 3 the bytes type is used, also you can still
+          <p>Python's buffer class is used for BLOB in SQLite. In Python 3 the bytes type is used, also you can still
           supply buffers.</p>
         </li>
       </ul>
@@ -2961,10 +2991,11 @@ TypeError: Bad constraint (#2) - it should be one of None, an integer or a tuple
 
       <p>Prior to Python 2.5, you were still limited to 32 bit quantities for items in Python such as the length of
       strings, number of items in a sequence etc. APSW will work correctly with those items in Python 2.5 and above
-      that use 64 bits. Unfortunately SQLite is limited to 32 bit quantities for strings, blobs, number of columns etc even when compiled for 64 bit.
-      Consequently you will get a TooBig exception from APSW which checks if strings/buffers longer than 1GB or 2GB
-      (depends on internal storage) are used. See SQLite ticket <a href=
-      "http://www.sqlite.org/cvstrac/tktview?tn=2125">2125</a> and <a href="http://sqlite.org/cvstrac/tktview?tn=3246">3246</a>.</p>
+      that use 64 bits. Unfortunately SQLite is limited to 32 bit quantities for strings, blobs, number of columns etc
+      even when compiled for 64 bit. Consequently you will get a TooBig exception from APSW which checks if
+      strings/buffers longer than 1GB or 2GB (depends on internal storage) are used. See SQLite ticket <a href=
+      "http://www.sqlite.org/cvstrac/tktview?tn=2125">2125</a> and <a href=
+      "http://sqlite.org/cvstrac/tktview?tn=3246">3246</a>.</p>
 
       <h1><a name="executionmodel" id="executionmodel">Execution model</a></h1>
 
