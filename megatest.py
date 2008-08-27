@@ -104,7 +104,7 @@ def buildsqlite(workdir, sqlitever, logfile):
     os.system("rm -rf '%s/sqlite3' '%s/sqlite3.c' 2>/dev/null" % (workdir,workdir))
     if sqlitever=="cvs":
         run("cd %s ; cvs -d :pserver:anonymous@www.sqlite.org:/sqlite checkout sqlite > %s 2>&1; mv sqlite sqlite3" % (workdir, logfile,))
-        run('cd %s/sqlite3 ; ./configure --enable-threadsafe --disable-tcl >> %s 2>&1; make sqlite3.c >> %s 2>&1' % (workdir,logfile,logfile))
+        run('cd %s/sqlite3 ; ./configure --enable-loadextension --enable-threadsafe --disable-tcl >> %s 2>&1; make sqlite3.c >> %s 2>&1' % (workdir,logfile,logfile))
     else:
         run("cd %s ; mkdir sqlite3 ; cd sqlite3 ; wget -q %s ; unzip -q %s sqlite3.c" % (workdir, sqliteurl(sqlitever), os.path.basename(sqliteurl(sqlitever))))
     if sys.platform.startswith("darwin"):
@@ -121,8 +121,8 @@ def buildapsw(outputfile, pybin, workdir):
 
 
 PYVERS=(
-    '3.0b2',
-    '2.6b2',
+    '3.0b3',
+    '2.6b3',
     '2.5.2',
     '2.4.5',
     '2.3.7',
@@ -131,7 +131,7 @@ PYVERS=(
     )
 
 SQLITEVERS=(
-#    'cvs',
+    'cvs',
     '3.6.1',
     '3.6.0',
    )
