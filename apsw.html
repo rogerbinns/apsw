@@ -277,8 +277,8 @@
 
 </span><span class="pyoutput">         Using APSW file /space/apsw/apsw.so
             APSW version 3.6.0-r1
-      SQLite lib version 3.6.0
-   SQLite header version 3006000
+      SQLite lib version 3.6.1
+   SQLite header version 3006001
 </span>
 <span class="pycomment">###
 ### Opening/creating database
@@ -1007,9 +1007,9 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
     </span><span class="pykeyword">print </span><span class="pyname">size</span><span class=
 "pyoperator">,</span><span class="pyname">file</span><span class="pyoperator">,</span><span class="pyname">directory
 
-</span><span class="pyoutput">   511686 unicodedata_d.so /usr/lib/python2.5/lib-dynload
-   481008 unicodedata.so /usr/lib/python2.5/lib-dynload
-   457585 pyexpat_d.so /usr/lib/python2.5/lib-dynload
+</span><span class="pyoutput">   511757 unicodedata.so /space/pydebug/lib/python2.5/lib-dynload
+   457857 pyexpat.so /space/pydebug/lib/python2.5/lib-dynload
+   308465 _ctypes.so /space/pydebug/lib/python2.5/lib-dynload
 </span>
 <span class="pycomment"># Which 3 files are the oldest?
 </span><span class="pykeyword">for </span><span class="pyname">ctime</span><span class=
@@ -1020,9 +1020,9 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
     </span><span class="pykeyword">print </span><span class="pyname">ctime</span><span class=
 "pyoperator">,</span><span class="pyname">file</span><span class="pyoperator">,</span><span class="pyname">directory
 
-</span><span class="pyoutput">   1194713443.0 GnuPGInterface-0.3.2.egg-info /var/lib/python-support/python2.5
-   1194713443.0 GnuPGInterface.py /var/lib/python-support/python2.5
-   1194713447.0 sexy.so /usr/lib/python2.5/site-packages/gtk-2.0
+</span><span class="pyoutput">   1205478976.0 _sqlite3.so /space/pydebug/lib/python2.5/lib-dynload
+   1205478976.0 _bsddb.so /space/pydebug/lib/python2.5/lib-dynload
+   1205478976.0 dbm.so /space/pydebug/lib/python2.5/lib-dynload
 </span>
 <span class="pycomment">###
 ### Limits
@@ -1098,7 +1098,7 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
 "pyoperator">(</span><span class="pyname">apsw</span><span class="pyoperator">.</span><span class=
 "pyname">SQLITE_STATUS_MEMORY_USED</span><span class="pyoperator">)
 
-</span><span class="pyoutput">   SQLite memory usage current 194152 max 200024
+</span><span class="pyoutput">   SQLite memory usage current 235672 max 240888
 </span>
 <span class="pycomment">###
 ### Cleanup
@@ -1338,10 +1338,13 @@ OK
       </blockquote>
     </dd>
 
-<dt><strong>vfsnames()</strong></dt>
+    <dt><strong>vfsnames()</strong></dt>
 
-<dd><p>Returns a list of the names of the installed vfs modules, with the default being first.  You can use this to confirm that you vfs is installed.  It is also useful if you want to install your vfs as the default and need the name of the previous default to inherit from.</p></dd>
-
+    <dd>
+      <p>Returns a list of the names of the installed vfs modules, with the default being first. You can use this to
+      confirm that you vfs is installed. It is also useful if you want to install your vfs as the default and need the
+      name of the previous default to inherit from.</p>
+    </dd>
   </dl>
 
   <h2><a name="Module_variables" id="Module_variables">Module variables</a></h2>
@@ -2375,14 +2378,19 @@ def xDlSym(ptr, name):
         <dt><strong>xDlClose(ptr)</strong></dt>
 
         <dd>
-          <p>Close/Unload the shared library.  Use <code>_ctypes.dlclose</code> (Linux/Unix/Mac) or <code>_ctypes.FreeLibrary</code> (Windows).</p>
+          <p>Close/Unload the shared library. Use <code>_ctypes.dlclose</code> (Linux/Unix/Mac) or
+          <code>_ctypes.FreeLibrary</code> (Windows).</p>
         </dd>
 
         <dt><strong>xDlError()</strong> (optional)</dt>
 
-        <dd><p>Return an error string describing the last error of xDlOpen or xDlSym.  If you do not supply this routine then
-        a generic message is used.  To implement it, catch exceptions in xDlOpen/xDlSym, turn them into strings and return them in this
-   routine.  Note that the message may be truncated to 255 characters - see <a href="http://www.sqlite.org/cvstrac/tktview?tn=3305">ticket 3305</a>.  If you have an error or return None then the generic message will be used.</p></dd>
+        <dd>
+          <p>Return an error string describing the last error of xDlOpen or xDlSym. If you do not supply this routine
+          then a generic message is used. To implement it, catch exceptions in xDlOpen/xDlSym, turn them into strings
+          and return them in this routine. Note that the message may be truncated to 255 characters - see <a href=
+          "http://www.sqlite.org/cvstrac/tktview?tn=3305">ticket 3305</a>. If you have an error or return None then the
+          generic message will be used.</p>
+        </dd>
       </dl>
 
       <h3>File interface</h3>
@@ -2423,6 +2431,12 @@ def xDlSym(ptr, name):
           or bytes (Python 3).</p>
         </dd>
 
+        <dt><strong>xTruncate(size)</strong></dt>
+
+        <dd>
+          <p>Set the file length to <code>size</code> (which may be more or less than the current length).</p>
+        </dd>
+
         <dt><strong>xSync(flags)</strong></dt>
 
         <dd>
@@ -2441,7 +2455,9 @@ def xDlSym(ptr, name):
 
         <dd>
           <p>Increase the lock to the level specified which is one of the <a href=
-          "http://sqlite.org/c3ref/c_lock_exclusive.html"><code>SQLITE_LOCK</code></a> family of constants.  If you can't increase the lock level because someone else has locked it, then raise <code>apsw.BusyException</code>.</p>
+          "http://sqlite.org/c3ref/c_lock_exclusive.html"><code>SQLITE_LOCK</code></a> family of constants. If you
+          can't increase the lock level because someone else has locked it, then raise
+          <code>apsw.BusyException</code>.</p>
         </dd>
 
         <dt><strong>xUnlock(level)</strong></dt>
@@ -2470,6 +2486,14 @@ def xDlSym(ptr, name):
         <dd>
           <p>Return <a href="http://sqlite.org/c3ref/c_iocap_atomic.html">I/O capabilities</a> (bitwise or appropriate
           values). If you do not implement the function or have an error then 0 (the SQLite default) is returned.</p>
+        </dd>
+
+        <dt><strong>xGetLastError()</strong> (optional, not implemented)</dt>
+
+        <dd>
+          <p>The intention behind this method is to return text describing the last error that happened in this thread.
+          The text would override SQLite's more generic message. However the method is never called by SQLite as of
+          3.6.2.</p>
         </dd>
       </dl>
 
