@@ -1763,6 +1763,34 @@ apsw.mapping_authorizer_function[20]="SQLITE_READ"
       <tt>setup.py</tt> if you enable extension loading.</p>
     </dd>
 
+    <dt><strong><a name="filecontrol" id="filecontrol">filecontrol(op, pointer)</a></strong></dt>
+
+    <dd>
+      <p>Calls <a href="http://sqlite.org/c3ref/file_control.html">sqlite3_file_control</a>. <i>op</i> should be a
+      number with values below 100 reserved by SQLite. This is an example if how to pass a Python object using <a href=
+      "http://docs.python.org/lib/module-ctypes.html">ctypes</a>.</p>
+      <pre>
+obj={"foo": 1, 2: 3}                 # object we want to pass
+objwrap=ctypes.py_object(obj)        # objwrap must live before and after the call else
+                                     # it gets garbage collected
+connection.filecontrol(
+         123,                        # our op code
+         ctypes.addressof(objwrap))  # get pointer
+</pre>
+
+      <p>In your VFS file implementation, you turn the pointer back into a Python object like this:</p>
+      <pre>
+def xFileControl(self, op, pointer):
+    if op==123:                      # our op code
+        obj=ctypes.py_object.from_address(pointer).value
+        # play with obj - you can use id() to verify it is the same
+        print obj["foo"]
+        obj["result"]="it worked"
+    else:
+        raise Exception("Unknown file control "+`op`)
+</pre>
+    </dd>
+
     <dt><strong>blobopen(databasename, tablename, columnname, rowid, flags)</strong></dt>
 
     <dd>Returns a new <a href="#blobio">blob</a>. The database name will be <tt>main</tt>, unless you want to refer to
@@ -2474,6 +2502,13 @@ def xDlSym(ptr, name):
           "http://sqlite.org/c3ref/c_lock_exclusive.html">SQLITE_LOCK_NONE or SQLITE_LOCK_SHARED</a>.</p>
         </dd>
 
+        <dt><strong>xFileControl(op, ptr)</strong></dt>
+
+        <dd>
+          <p>Receives a <a href="http://sqlite.org/c3ref/file_control.html">file control</a> request. See <a href=
+          "#filecontrol">Connection.filecontrol</a> for an example of how to pass a Python object to this routine.</p>
+        </dd>
+
         <dt><strong>xSectorSize()</strong> (optional)</dt>
 
         <dd>
@@ -2488,11 +2523,11 @@ def xDlSym(ptr, name):
           values). If you do not implement the function or have an error then 0 (the SQLite default) is returned.</p>
         </dd>
 
-        <dt><strong>xGetLastError()</strong> (optional, not implemented)</dt>
+        <dt><strong>xGetLastError()</strong> (optional)</dt>
 
         <dd>
-          <p>The intention behind this method is to return text describing the last error that happened in this thread.
-          The text would override SQLite's more generic message. However the method is never called by SQLite as of
+          <p>This method is to return text describing the last error that happened in this thread.  If not implemented
+          SQLite's more generic message. However the method is never called by SQLite as of
           3.6.2.</p>
         </dd>
       </dl>

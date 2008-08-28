@@ -2622,6 +2622,41 @@ Connection_createcollation(Connection *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
+static PyObject *
+Connection_filecontrol(Connection *self, PyObject *args)
+{
+  PyObject *pyptr;
+  void *ptr;
+  int res, op;
+  char *dbname=NULL;
+
+  if(!PyArg_ParseTuple(args, "esiO", STRENCODING, &dbname, &op, &pyptr))
+    return NULL;
+
+  if(PyIntLong_Check(pyptr))
+    ptr=PyLong_AsVoidPtr(pyptr);
+  else
+    PyErr_Format(PyExc_TypeError, "Argument is not a number (pointer)");
+
+  if(PyErr_Occurred())
+    {
+      AddTraceBackHere(__FILE__, __LINE__, "Connection.filecontrol", "{s: O}", "args", args);
+      goto finally;
+    }
+
+  res=sqlite3_file_control(self->db, dbname, op, ptr);
+
+  SET_EXC(self->db, res);
+
+ finally:
+  if(dbname) PyMem_Free(dbname);
+  
+  if(PyErr_Occurred())
+    return NULL;
+
+  Py_RETURN_NONE;
+}
+
 /* Virtual table code */
 
 #ifdef EXPERIMENTAL
@@ -3691,6 +3726,8 @@ static PyMethodDef Connection_methods[] = {
   {"createmodule", (PyCFunction)Connection_createmodule, METH_VARARGS,
    "registers a virtual table"},
 #endif
+  {"filecontrol", (PyCFunction)Connection_filecontrol, METH_VARARGS,
+   "file control"},
   {0, 0, 0, 0}  /* Sentinel */
 };
 
@@ -5733,6 +5770,8 @@ apswvfspy_xDlClose(APSWVFS *self, PyObject *pyptr)
 
   if(PyIntLong_Check(pyptr))
     ptr=PyLong_AsVoidPtr(pyptr);
+  else
+    PyErr_Format(PyExc_TypeError, "Argument is not number (pointer)");
 
   if(PyErr_Occurred())
     goto finally;
@@ -5996,11 +6035,77 @@ apswvfspy_xCurrentTime(APSWVFS *self)
   return PyFloat_FromDouble(julian);
 }
 
-/* not called by sqlite as of 3.6.2 */
 static int
-apswvfs_xGetLastError(sqlite3_vfs *vfs, int nByte, char *buffer)
+apswvfs_xGetLastError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
 {
-  return 0;
+  PyGILState_STATE gilstate;
+  PyObject *pyresult=NULL, *utf8=NULL;
+  int buffertoosmall=0;
+  gilstate=PyGILState_Ensure();
+
+  CHECKVFS;
+
+  pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xGetError", 0, "()");
+
+  if(pyresult && pyresult!=Py_None)
+    {
+      utf8=getutf8string(pyresult);
+      if(utf8)
+        {
+          /* Get size includes trailing null */
+          size_t len=PyBytes_GET_SIZE(utf8);
+          if(len>(size_t)nByte)
+            {
+              len=(size_t)nByte;
+              buffertoosmall=1;
+            }
+          memcpy(zErrMsg, PyBytes_AS_STRING(utf8), len);
+        }
+
+    }
+
+  if(PyErr_Occurred())
+    {
+      AddTraceBackHere(__FILE__, __LINE__, "vfs.xGetLastError", NULL);
+      apsw_write_unraiseable();
+    }
+
+ finally:
+  Py_XDECREF(pyresult);
+  Py_XDECREF(utf8);
+  PyGILState_Release(gilstate);
+  return buffertoosmall;
+}
+
+static PyObject *
+apswvfspy_xGetLastError(APSWVFS *self)
+{
+  PyObject *res=NULL;
+
+  CHECKVFSPY;
+  VFSNOTIMPLEMENTED(xGetLastError);
+
+  res=PyBytes_FromStringAndSize(NULL, 1024); /* should be big enough for anyone :-) */
+  if(res)
+    {
+      memset(PyBytes_AS_STRING(res), 0, PyBytes_GET_SIZE(res));
+      self->basevfs->xGetLastError(self->basevfs, PyBytes_GET_SIZE(res), PyBytes_AS_STRING(res));
+    }
+
+  if(PyErr_Occurred())
+    {
+      AddTraceBackHere(__FILE__, __LINE__, "vfspy.xGetLastError", NULL);
+      Py_XDECREF(res);
+      return NULL;
+    }
+
+  /* did they make a message? */
+  if(strlen(PyBytes_AS_STRING(res))==0)
+    {
+      Py_XDECREF(res);
+      Py_RETURN_NONE;
+    }
+  return res;
 }
 
 static void
@@ -6157,6 +6262,7 @@ static PyMethodDef APSWVFS_methods[]={
   {"xRandomness", (PyCFunction)apswvfspy_xRandomness, METH_VARARGS, "xRandomness"},
   {"xSleep", (PyCFunction)apswvfspy_xSleep, METH_VARARGS, "xSleep"},
   {"xCurrentTime", (PyCFunction)apswvfspy_xCurrentTime, METH_NOARGS, "xCurrentTime"},
+  {"xGetLastError", (PyCFunction)apswvfspy_xGetLastError, METH_NOARGS, "xGetLastError"},
   /* Sentinel */
   {0, 0, 0, 0}
   };
@@ -6861,7 +6967,57 @@ apswvfsfilepy_xCheckReservedLock(APSWVFSFile *self)
   Py_RETURN_FALSE;
 }
 
+static int
+apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
+{
+  PyGILState_STATE gilstate;
+  APSWSQLite3File *apswfile=(APSWSQLite3File*)(void*)file;
+  int result=SQLITE_ERROR;
+  PyObject *pyresult=NULL;
 
+  gilstate=PyGILState_Ensure();
+  CHECKVFSFILE;
+
+  pyresult=Call_PythonMethodV(apswfile->file, "xFileControl", 1, "(iN)", op, PyLong_FromVoidPtr(pArg));
+  if(!pyresult)
+    result=MakeSqliteMsgFromPyException(NULL);
+  else
+    result=SQLITE_OK;
+
+ finally:
+  Py_XDECREF(pyresult);
+  PyGILState_Release(gilstate);
+  return result;
+}
+
+static PyObject *
+apswvfsfilepy_xFileControl(APSWVFSFile *self, PyObject *args)
+{
+  int op, res;
+  PyObject *pyptr;
+  void *ptr;
+
+  VFSFILENOTIMPLEMENTED(xFileControl);
+
+  if(!PyArg_ParseTuple(args, "iO", &op, &pyptr))
+    return NULL;
+
+  if(PyIntLong_Check(pyptr))
+    ptr=PyLong_AsVoidPtr(pyptr);
+  else
+    PyErr_Format(PyExc_TypeError, "Argument is not number (pointer)");
+
+  if(PyErr_Occurred())
+    goto finally;
+  
+  res=self->base->pMethods->xFileControl(self->base, op, ptr);
+
+  if(res==SQLITE_OK)
+    Py_RETURN_NONE;
+ finally:
+  make_exception(res, NULL);
+  return NULL;
+}
 
 static int
 apswvfsfile_xClose(sqlite3_file *file)
@@ -6907,7 +7063,6 @@ apswvfsfilepy_xClose(APSWVFSFile *self)
   return NULL;
 }
 
-#define NULLx ((void*)1)
 static struct sqlite3_io_methods apsw_io_methods=
   {
     1,                                 /* version */
@@ -6920,7 +7075,7 @@ static struct sqlite3_io_methods apsw_io_methods=
     apswvfsfile_xLock,                 /* lock */
     apswvfsfile_xUnlock,               /* unlock */
     apswvfsfile_xCheckReservedLock,    /* checkreservedlock */
-    NULLx,             /* filecontrol */
+    apswvfsfile_xFileControl,          /* filecontrol */
     apswvfsfile_xSectorSize,           /* sectorsize */
     apswvfsfile_xDeviceCharacteristics /* device characteristics */
   };
@@ -6938,6 +7093,7 @@ static PyMethodDef APSWVFSFile_methods[]={
   {"xWrite", (PyCFunction)apswvfsfilepy_xWrite, METH_VARARGS, "xWrite"},
   {"xSync", (PyCFunction)apswvfsfilepy_xSync, METH_VARARGS, "xSync"},
   {"xTruncate", (PyCFunction)apswvfsfilepy_xTruncate, METH_VARARGS, "xTruncate"},
+  {"xFileControl", (PyCFunction)apswvfsfilepy_xFileControl, METH_VARARGS, "xFileControl"},
   /* Sentinel */
   {0, 0, 0, 0}
   };
