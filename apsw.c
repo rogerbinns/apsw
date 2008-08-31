@@ -211,6 +211,7 @@ static PyObject *ExcExtensionLoading; /* error loading extension */
 static PyObject *ExcConnectionNotClosed; /* connection wasn't closed when destructor called */
 static PyObject *ExcConnectionClosed; /* connection was closed when function called */
 static PyObject *ExcVFSNotImplemented; /* base vfs doesn't implment function */
+static PyObject *ExcVFSFileClosed;     /* attempted operation on closed file */
 
 static struct { int code; const char *name; PyObject *cls;}
 exc_descriptors[]=
@@ -259,7 +260,7 @@ exc_descriptors[]=
 static int init_exceptions(PyObject *m)
 {
   char buffy[100]; /* more than enough for anyone :-) */
-  int i;
+  unsigned int i;
   PyObject *obj;
 
   /* PyModule_AddObject uses borrowed reference so we incref whatever
@@ -273,24 +274,28 @@ static int init_exceptions(PyObject *m)
   if(PyModule_AddObject(m, "Error", (PyObject *)APSWException))
     return -1;
 
-#define EXC(varname,name) \
-  varname=PyErr_NewException("apsw." name, APSWException, NULL);  \
-  if(!varname) return -1;                                          \
-  Py_INCREF(varname);                                              \
-  if(PyModule_AddObject(m, name, (PyObject *)varname))            \
-    return -1;
+  struct {PyObject **var; const char *name; } apswexceptions[]={
+    {&ExcThreadingViolation, "ThreadingViolationError"},
+    {&ExcIncomplete, "IncompleteExecutionError"},
+    {&ExcBindings, "BindingsError"},
+    {&ExcComplete, "ExecutionCompleteError"},
+    {&ExcTraceAbort, "ExecTraceAbort"},
+    {&ExcExtensionLoading, "ExtensionLoadingError"},
+    {&ExcConnectionNotClosed, "ConnectionNotClosedError"},
+    {&ExcConnectionClosed, "ConnectionClosedError"},
+    {&ExcVFSNotImplemented, "VFSNotImplementedError"},
+    {&ExcVFSFileClosed, "VFSFileClosedError"}
+  };
 
-  EXC(ExcThreadingViolation, "ThreadingViolationError");
-  EXC(ExcIncomplete, "IncompleteExecutionError");
-  EXC(ExcBindings, "BindingsError");
-  EXC(ExcComplete, "ExecutionCompleteError");
-  EXC(ExcTraceAbort, "ExecTraceAbort");
-  EXC(ExcExtensionLoading, "ExtensionLoadingError");
-  EXC(ExcConnectionNotClosed, "ConnectionNotClosedError");
-  EXC(ExcConnectionClosed, "ConnectionClosedError");
-  EXC(ExcVFSNotImplemented, "VFSNotImplemented");
-
-#undef EXC
+  for(i=0; i<sizeof(apswexceptions)/sizeof(apswexceptions[0]); i++)
+    {
+      sprintf(buffy, "apsw.%s", apswexceptions[i].name);
+      *apswexceptions[i].var=PyErr_NewException(buffy, APSWException, NULL);
+      if(!*apswexceptions[i].var) return -1;                                      
+      Py_INCREF(*apswexceptions[i].var);                                          
+      if(PyModule_AddObject(m, apswexceptions[i].name, *apswexceptions[i].var))         
+        return -1;
+    }
 
   /* all the ones corresponding to SQLITE error codes */
   for(i=0;exc_descriptors[i].name;i++)
@@ -2629,6 +2634,9 @@ Connection_filecontrol(Connection *self, PyObject *args)
   void *ptr;
   int res, op;
   char *dbname=NULL;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self,NULL);
 
   if(!PyArg_ParseTuple(args, "esiO", STRENCODING, &dbname, &op, &pyptr))
     return NULL;
@@ -5268,7 +5276,13 @@ static PyTypeObject APSWCursorType = {
 /* VFS CODE */
 
 /* Naming convention prefixes.  Since sqlite3.c is #included into this
-   file we have to ensure there is no clash with its names.
+   file we have to ensure there is no clash with its names.  There are
+   two objects - the VFS itself and a VFSFile as returned from xOpen.
+   For each there are both C and Python methods.  The C methods are
+   what SQLite calls and effectively turns a C call into a Python
+   call.  The Python methods turn a Python call into the C call of the
+   (SQLite C) object we are inheriting from and wouldn't be necessary
+   if we didn't implement the inheritance feature.
 
    Methods:
 
@@ -5295,32 +5309,36 @@ static PyTypeObject APSWCursorType = {
   if(!self->base || !self->base->pMethods->x) \
   { PyErr_Format(ExcVFSNotImplemented, "VFSNotImplementedError: File method " #x " is not implemented"); return NULL; }
 
-/* make sure plumbing is still there */
+/* various checks */
 #define CHECKVFS \
-  do { assert(vfs->pAppData); } while(0)
+   assert(vfs->pAppData);
+
+#define CHECKVFSPY   \
+   assert(self->containingvfs->pAppData==self)
 
 #define CHECKVFSFILE \
-  do { assert(apswfile->file); } while(0)
+   assert(apswfile->file); 
 
-/* safety check */
-#define CHECKVFSPY   assert(self->containingvfs->pAppData==self)
+#define CHECKVFSFILEPY \
+  if(!self->base) { PyErr_Format(ExcVFSFileClosed, "VFSFileClosed: Attempting operation on closed file"); return NULL; }
 
 
 typedef struct 
 {
   PyObject_HEAD;
-  sqlite3_vfs *basevfs;
-  sqlite3_vfs *containingvfs;
+  sqlite3_vfs *basevfs;         /* who we inherit from (might be null) */
+  sqlite3_vfs *containingvfs;   /* pointer given to sqlite for this instance */
 } APSWVFS;
 
 static PyTypeObject APSWVFSType;
 
-typedef struct
+typedef struct /* inherits */
 {
-  const struct sqlite3_io_methods *pMethods;
-  PyObject *file;
+  const struct sqlite3_io_methods *pMethods;  /* structure sqlite needs */
+  PyObject *file;                             
 } APSWSQLite3File;
 
+/* this is only used if there is inheritance */
 typedef struct
 {
   PyObject_HEAD;
@@ -5449,7 +5467,7 @@ apswvfs_xFullPathname(sqlite3_vfs *vfs, const char *zName, int nOut, char *zOut)
     }
   else
     {
-      PyObject *utf8=getutf8string(pyresult);
+      utf8=getutf8string(pyresult);
       if(!utf8)
         {
           result=SQLITE_ERROR;
@@ -5552,6 +5570,8 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
   result=SQLITE_OK;
 
  finally:
+  if(PyErr_Occurred())
+    assert(result!=SQLITE_OK);
   Py_XDECREF(pyresult);
   Py_XDECREF(flags);
   PyGILState_Release(gilstate);
@@ -5766,7 +5786,7 @@ apswvfspy_xDlClose(APSWVFS *self, PyObject *pyptr)
   void *ptr;
 
   CHECKVFSPY;
-  VFSNOTIMPLEMENTED(xDlSym);
+  VFSNOTIMPLEMENTED(xDlClose);
 
   if(PyIntLong_Check(pyptr))
     ptr=PyLong_AsVoidPtr(pyptr);
@@ -5861,7 +5881,7 @@ static int
 apswvfs_xRandomness(sqlite3_vfs *vfs, int nByte, char *zOut)
 {
   PyGILState_STATE gilstate;
-  PyObject *pyresult=NULL, *utf8=NULL;
+  PyObject *pyresult=NULL;
   int result=0;
   gilstate=PyGILState_Ensure();
 
@@ -6198,11 +6218,12 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
           PyErr_Format(PyExc_ValueError, "Base vfs implements version %d of vfs spec, but apsw only supports version 1", self->basevfs->iVersion);
           goto error;
         }
+      if(base) PyMem_Free(base);
     }
   
   self->containingvfs=(sqlite3_vfs *)PyMem_Malloc(sizeof(sqlite3_vfs));
   if(!self->containingvfs) return -1;
-  memset(self->containingvfs, 0xc0, sizeof(sqlite3_vfs)); /* 0xc0 is used to flush out unfilled fields being accessed */
+  memset(self->containingvfs, 0, sizeof(sqlite3_vfs)); 
   self->containingvfs->iVersion=1;
   self->containingvfs->szOsFile=sizeof(APSWSQLite3File);
   if(self->basevfs && !maxpathname)
@@ -6509,6 +6530,7 @@ apswvfsfilepy_xRead(APSWVFSFile *self, PyObject *args)
   int res;
   PyObject *buffy=NULL;
 
+  CHECKVFSFILEPY;
   VFSFILENOTIMPLEMENTED(xRead);
 
   if(!PyArg_ParseTuple(args, "iL", &amount, &offset))
@@ -6575,6 +6597,7 @@ apswvfsfilepy_xWrite(APSWVFSFile *self, PyObject *args)
   Py_ssize_t size;
   int asrb;
 
+  CHECKVFSFILEPY;
   VFSFILENOTIMPLEMENTED(xWrite);
 
   if(!PyArg_ParseTuple(args, "OL", &buffy, &offset))
@@ -6628,6 +6651,7 @@ apswvfsfilepy_xUnlock(APSWVFSFile *self, PyObject *args)
 {
   int flag, res;
 
+  CHECKVFSFILEPY;
   VFSFILENOTIMPLEMENTED(xUnlock);
 
   if(!PyArg_ParseTuple(args, "i", &flag))
@@ -6676,6 +6700,7 @@ apswvfsfilepy_xLock(APSWVFSFile *self, PyObject *args)
 {
   int flag, res;
 
+  CHECKVFSFILEPY;
   VFSFILENOTIMPLEMENTED(xLock);
 
   if(!PyArg_ParseTuple(args, "i", &flag))
@@ -6719,7 +6744,8 @@ apswvfsfilepy_xTruncate(APSWVFSFile *self, PyObject *args)
   int res;
   sqlite3_int64 size;
 
-  VFSFILENOTIMPLEMENTED(xLock);
+  CHECKVFSFILEPY;
+  VFSFILENOTIMPLEMENTED(xTruncate);
 
   if(!PyArg_ParseTuple(args, "L", &size))
     return NULL;
@@ -6761,6 +6787,7 @@ apswvfsfilepy_xSync(APSWVFSFile *self, PyObject *args)
 {
   int flags, res;
 
+  CHECKVFSFILEPY;
   VFSFILENOTIMPLEMENTED(xSync);
 
   if(!PyArg_ParseTuple(args, "i", &flags))
@@ -6816,8 +6843,10 @@ apswvfsfilepy_xSectorSize(APSWVFSFile *self)
 {
   int res=512;
 
-  if(self->base->pMethods->xSectorSize)
-    res=self->base->pMethods->xSectorSize(self->base);
+  CHECKVFSFILEPY;
+  VFSFILENOTIMPLEMENTED(xSectorSize);
+
+  res=self->base->pMethods->xSectorSize(self->base);
 
   return PyInt_FromLong(res);
 }
@@ -6862,8 +6891,10 @@ apswvfsfilepy_xDeviceCharacteristics(APSWVFSFile *self)
 {
   int res=0;
 
-  if(self->base->pMethods->xDeviceCharacteristics)
-    res=self->base->pMethods->xDeviceCharacteristics(self->base);
+  CHECKVFSFILEPY;
+  VFSFILENOTIMPLEMENTED(xDeviceCharacteristics);
+
+  res=self->base->pMethods->xDeviceCharacteristics(self->base);
 
   return PyInt_FromLong(res);
 }
@@ -6908,6 +6939,8 @@ apswvfsfilepy_xFileSize(APSWVFSFile *self)
   sqlite3_int64 size;
   int res;
 
+  CHECKVFSFILEPY;
+  VFSFILENOTIMPLEMENTED(xFileSize);
   res=self->base->pMethods->xFileSize(self->base, &size);
 
   if(res!=SQLITE_OK)
@@ -6955,6 +6988,9 @@ apswvfsfilepy_xCheckReservedLock(APSWVFSFile *self)
   int islocked;
   int res;
 
+  CHECKVFSFILEPY;
+  VFSFILENOTIMPLEMENTED(xCheckReservedLock);
+
   res=self->base->pMethods->xCheckReservedLock(self->base, &islocked);
 
   if(res!=SQLITE_OK)
@@ -6997,6 +7033,7 @@ apswvfsfilepy_xFileControl(APSWVFSFile *self, PyObject *args)
   PyObject *pyptr;
   void *ptr;
 
+  CHECKVFSFILEPY;
   VFSFILENOTIMPLEMENTED(xFileControl);
 
   if(!PyArg_ParseTuple(args, "iO", &op, &pyptr))
@@ -7049,8 +7086,14 @@ apswvfsfilepy_xClose(APSWVFSFile *self)
 {
   int res;
 
+
+  if(!self->base) /* already closed */
+    Py_RETURN_NONE;
+
   res=self->base->pMethods->xClose(self->base);
   
+  /* we set pMethods to NULL after xClose callback so xClose can call other operations
+     such as read or write during close */
   self->base->pMethods=NULL;
 
   PyMem_Free(self->base);
@@ -7417,8 +7460,10 @@ PyInit_apsw(void)
 #endif
 {
     PyObject *m=NULL;
-    PyObject *thedict;
+    PyObject *thedict=NULL;
+    const char *mapping_name;
     PyObject *hooks;
+    unsigned int i;
 
     assert(sizeof(int)==4);             /* we expect 32 bit ints */
     assert(sizeof(long long)==8);             /* we expect 64 bit long long */
@@ -7469,252 +7514,249 @@ PyInit_apsw(void)
     hooks=PyList_New(0);
     if(!hooks) goto fail;
     PyModule_AddObject(m, "connection_hooks", hooks);
-    
-    /* add in some constants and also put them in a corresponding mapping dictionary */
-
-#define ADDINT(v) PyModule_AddIntConstant(m, #v, v); \
-         PyDict_SetItemString(thedict, #v, Py_BuildValue("i", v));  \
-         PyDict_SetItem(thedict, Py_BuildValue("i", v), Py_BuildValue("s", #v));
-
-    thedict=PyDict_New();
-    if(!thedict) goto fail;
-
-    ADDINT(SQLITE_DENY);
-    ADDINT(SQLITE_IGNORE);
-    ADDINT(SQLITE_OK);
-    
-    PyModule_AddObject(m, "mapping_authorizer_return", thedict);
-
-    /* authorizer functions */
-    thedict=PyDict_New();
-    if(!thedict) goto fail;
-
-    ADDINT(SQLITE_CREATE_INDEX);
-    ADDINT(SQLITE_CREATE_TABLE);
-    ADDINT(SQLITE_CREATE_TEMP_INDEX);
-    ADDINT(SQLITE_CREATE_TEMP_TABLE);
-    ADDINT(SQLITE_CREATE_TEMP_TRIGGER);
-    ADDINT(SQLITE_CREATE_TEMP_VIEW);
-    ADDINT(SQLITE_CREATE_TRIGGER);
-    ADDINT(SQLITE_CREATE_VIEW);
-    ADDINT(SQLITE_DELETE);
-    ADDINT(SQLITE_DROP_INDEX);
-    ADDINT(SQLITE_DROP_TABLE);
-    ADDINT(SQLITE_DROP_TEMP_INDEX);
-    ADDINT(SQLITE_DROP_TEMP_TABLE);
-    ADDINT(SQLITE_DROP_TEMP_TRIGGER);
-    ADDINT(SQLITE_DROP_TEMP_VIEW);
-    ADDINT(SQLITE_DROP_TRIGGER);
-    ADDINT(SQLITE_DROP_VIEW);
-    ADDINT(SQLITE_INSERT);
-    ADDINT(SQLITE_PRAGMA);
-    ADDINT(SQLITE_READ);
-    ADDINT(SQLITE_SELECT);
-    ADDINT(SQLITE_TRANSACTION);
-    ADDINT(SQLITE_UPDATE);
-    ADDINT(SQLITE_ATTACH);
-    ADDINT(SQLITE_DETACH);
-    ADDINT(SQLITE_ALTER_TABLE);
-    ADDINT(SQLITE_REINDEX);
-    ADDINT(SQLITE_COPY);
-    ADDINT(SQLITE_ANALYZE);
-    ADDINT(SQLITE_CREATE_VTABLE);
-    ADDINT(SQLITE_DROP_VTABLE);
-    ADDINT(SQLITE_FUNCTION);
-
-    PyModule_AddObject(m, "mapping_authorizer_function", thedict);
 
     /* Version number */
     PyModule_AddObject(m, "SQLITE_VERSION_NUMBER", Py_BuildValue("i", SQLITE_VERSION_NUMBER));
+    
 
-    /* vtable best index constraints */
+    /* add in some constants and also put them in a corresponding mapping dictionary */
+
+    /* sentinel should be a number that doesn't exist */
+#define SENTINEL -786343
+#define DICT(n) {n, SENTINEL}
+#define END {NULL, 0}
+#define ADDINT(n) {#n, n}
+
+    struct { const char *name; int value; } integers[]={
+      DICT("mapping_authorizer_return"),
+      ADDINT(SQLITE_DENY),
+      ADDINT(SQLITE_IGNORE),
+      ADDINT(SQLITE_OK),
+      END,
+      
+      DICT("mapping_authorizer_function"),
+      ADDINT(SQLITE_CREATE_INDEX),
+      ADDINT(SQLITE_CREATE_TABLE),
+      ADDINT(SQLITE_CREATE_TEMP_INDEX),
+      ADDINT(SQLITE_CREATE_TEMP_TABLE),
+      ADDINT(SQLITE_CREATE_TEMP_TRIGGER),
+      ADDINT(SQLITE_CREATE_TEMP_VIEW),
+      ADDINT(SQLITE_CREATE_TRIGGER),
+      ADDINT(SQLITE_CREATE_VIEW),
+      ADDINT(SQLITE_DELETE),
+      ADDINT(SQLITE_DROP_INDEX),
+      ADDINT(SQLITE_DROP_TABLE),
+      ADDINT(SQLITE_DROP_TEMP_INDEX),
+      ADDINT(SQLITE_DROP_TEMP_TABLE),
+      ADDINT(SQLITE_DROP_TEMP_TRIGGER),
+      ADDINT(SQLITE_DROP_TEMP_VIEW),
+      ADDINT(SQLITE_DROP_TRIGGER),
+      ADDINT(SQLITE_DROP_VIEW),
+      ADDINT(SQLITE_INSERT),
+      ADDINT(SQLITE_PRAGMA),
+      ADDINT(SQLITE_READ),
+      ADDINT(SQLITE_SELECT),
+      ADDINT(SQLITE_TRANSACTION),
+      ADDINT(SQLITE_UPDATE),
+      ADDINT(SQLITE_ATTACH),
+      ADDINT(SQLITE_DETACH),
+      ADDINT(SQLITE_ALTER_TABLE),
+      ADDINT(SQLITE_REINDEX),
+      ADDINT(SQLITE_COPY),
+      ADDINT(SQLITE_ANALYZE),
+      ADDINT(SQLITE_CREATE_VTABLE),
+      ADDINT(SQLITE_DROP_VTABLE),
+      ADDINT(SQLITE_FUNCTION),
+      END,
+
+      /* vtable best index constraints */
 #if defined(SQLITE_INDEX_CONSTRAINT_EQ) && defined(SQLITE_INDEX_CONSTRAINT_MATCH)
-
-    thedict=PyDict_New();
-    if(!thedict) goto fail;
-
-    ADDINT(SQLITE_INDEX_CONSTRAINT_EQ);
-    ADDINT(SQLITE_INDEX_CONSTRAINT_GT);
-    ADDINT(SQLITE_INDEX_CONSTRAINT_LE);
-    ADDINT(SQLITE_INDEX_CONSTRAINT_LT);
-    ADDINT(SQLITE_INDEX_CONSTRAINT_GE);
-    ADDINT(SQLITE_INDEX_CONSTRAINT_MATCH);
-
-    PyModule_AddObject(m, "mapping_bestindex_constraints", thedict);
-
+      DICT("mapping_bestindex_constraints"),
+      ADDINT(SQLITE_INDEX_CONSTRAINT_EQ),
+      ADDINT(SQLITE_INDEX_CONSTRAINT_GT),
+      ADDINT(SQLITE_INDEX_CONSTRAINT_LE),
+      ADDINT(SQLITE_INDEX_CONSTRAINT_LT),
+      ADDINT(SQLITE_INDEX_CONSTRAINT_GE),
+      ADDINT(SQLITE_INDEX_CONSTRAINT_MATCH),
+      END,
 #endif /* constraints */
 
     /* extendended result codes */
-    thedict=PyDict_New();
-    if(!thedict) goto fail;
-
-    ADDINT(SQLITE_IOERR_READ);
-    ADDINT(SQLITE_IOERR_SHORT_READ);
-    ADDINT(SQLITE_IOERR_WRITE);
-    ADDINT(SQLITE_IOERR_FSYNC);
-    ADDINT(SQLITE_IOERR_DIR_FSYNC);
-    ADDINT(SQLITE_IOERR_TRUNCATE);
-    ADDINT(SQLITE_IOERR_FSTAT);
-    ADDINT(SQLITE_IOERR_UNLOCK);
-    ADDINT(SQLITE_IOERR_RDLOCK);
-    ADDINT(SQLITE_IOERR_DELETE);
-    ADDINT(SQLITE_IOERR_BLOCKED);
-    ADDINT(SQLITE_IOERR_NOMEM);
-    ADDINT(SQLITE_IOERR_ACCESS);
-    ADDINT(SQLITE_IOERR_CHECKRESERVEDLOCK);
-    PyModule_AddObject(m, "mapping_extended_result_codes", thedict);
+      DICT("mapping_extended_result_codes"),
+      ADDINT(SQLITE_IOERR_READ),
+      ADDINT(SQLITE_IOERR_SHORT_READ),
+      ADDINT(SQLITE_IOERR_WRITE),
+      ADDINT(SQLITE_IOERR_FSYNC),
+      ADDINT(SQLITE_IOERR_DIR_FSYNC),
+      ADDINT(SQLITE_IOERR_TRUNCATE),
+      ADDINT(SQLITE_IOERR_FSTAT),
+      ADDINT(SQLITE_IOERR_UNLOCK),
+      ADDINT(SQLITE_IOERR_RDLOCK),
+      ADDINT(SQLITE_IOERR_DELETE),
+      ADDINT(SQLITE_IOERR_BLOCKED),
+      ADDINT(SQLITE_IOERR_NOMEM),
+      ADDINT(SQLITE_IOERR_ACCESS),
+      ADDINT(SQLITE_IOERR_CHECKRESERVEDLOCK),
+      END,
 
     /* error codes */
-    thedict=PyDict_New();
-    if(!thedict) goto fail;
-
-    ADDINT(SQLITE_OK);
-    ADDINT(SQLITE_ERROR);
-    ADDINT(SQLITE_INTERNAL);
-    ADDINT(SQLITE_PERM);
-    ADDINT(SQLITE_ABORT);
-    ADDINT(SQLITE_BUSY);
-    ADDINT(SQLITE_LOCKED);
-    ADDINT(SQLITE_NOMEM);
-    ADDINT(SQLITE_READONLY);
-    ADDINT(SQLITE_INTERRUPT);
-    ADDINT(SQLITE_IOERR);
-    ADDINT(SQLITE_CORRUPT);
-    ADDINT(SQLITE_FULL);
-    ADDINT(SQLITE_CANTOPEN);
-    ADDINT(SQLITE_PROTOCOL);
-    ADDINT(SQLITE_EMPTY);
-    ADDINT(SQLITE_SCHEMA);
-    ADDINT(SQLITE_CONSTRAINT);
-    ADDINT(SQLITE_MISMATCH);
-    ADDINT(SQLITE_MISUSE);
-    ADDINT(SQLITE_NOLFS);
-    ADDINT(SQLITE_AUTH);
-    ADDINT(SQLITE_FORMAT);
-    ADDINT(SQLITE_RANGE);
-    ADDINT(SQLITE_NOTADB);
-
-    PyModule_AddObject(m, "mapping_result_codes", thedict);
+      DICT("mapping_result_codes"),
+      ADDINT(SQLITE_OK),
+      ADDINT(SQLITE_ERROR),
+      ADDINT(SQLITE_INTERNAL),
+      ADDINT(SQLITE_PERM),
+      ADDINT(SQLITE_ABORT),
+      ADDINT(SQLITE_BUSY),
+      ADDINT(SQLITE_LOCKED),
+      ADDINT(SQLITE_NOMEM),
+      ADDINT(SQLITE_READONLY),
+      ADDINT(SQLITE_INTERRUPT),
+      ADDINT(SQLITE_IOERR),
+      ADDINT(SQLITE_CORRUPT),
+      ADDINT(SQLITE_FULL),
+      ADDINT(SQLITE_CANTOPEN),
+      ADDINT(SQLITE_PROTOCOL),
+      ADDINT(SQLITE_EMPTY),
+      ADDINT(SQLITE_SCHEMA),
+      ADDINT(SQLITE_CONSTRAINT),
+      ADDINT(SQLITE_MISMATCH),
+      ADDINT(SQLITE_MISUSE),
+      ADDINT(SQLITE_NOLFS),
+      ADDINT(SQLITE_AUTH),
+      ADDINT(SQLITE_FORMAT),
+      ADDINT(SQLITE_RANGE),
+      ADDINT(SQLITE_NOTADB),
+      END,
 
     /* open flags */
-    thedict=PyDict_New();
-    if(!thedict) goto fail;
-
-    ADDINT(SQLITE_OPEN_READONLY);
-    ADDINT(SQLITE_OPEN_READWRITE);
-    ADDINT(SQLITE_OPEN_CREATE);
-    ADDINT(SQLITE_OPEN_DELETEONCLOSE);
-    ADDINT(SQLITE_OPEN_EXCLUSIVE);
-    ADDINT(SQLITE_OPEN_MAIN_DB);
-    ADDINT(SQLITE_OPEN_TEMP_DB);
-    ADDINT(SQLITE_OPEN_TRANSIENT_DB);
-    ADDINT(SQLITE_OPEN_MAIN_JOURNAL);
-    ADDINT(SQLITE_OPEN_TEMP_JOURNAL);
-    ADDINT(SQLITE_OPEN_SUBJOURNAL);
-    ADDINT(SQLITE_OPEN_MASTER_JOURNAL);
-    ADDINT(SQLITE_OPEN_NOMUTEX);
-
-    PyModule_AddObject(m, "mapping_open_flags", thedict);
+      DICT("mapping_open_flags"),
+      ADDINT(SQLITE_OPEN_READONLY),
+      ADDINT(SQLITE_OPEN_READWRITE),
+      ADDINT(SQLITE_OPEN_CREATE),
+      ADDINT(SQLITE_OPEN_DELETEONCLOSE),
+      ADDINT(SQLITE_OPEN_EXCLUSIVE),
+      ADDINT(SQLITE_OPEN_MAIN_DB),
+      ADDINT(SQLITE_OPEN_TEMP_DB),
+      ADDINT(SQLITE_OPEN_TRANSIENT_DB),
+      ADDINT(SQLITE_OPEN_MAIN_JOURNAL),
+      ADDINT(SQLITE_OPEN_TEMP_JOURNAL),
+      ADDINT(SQLITE_OPEN_SUBJOURNAL),
+      ADDINT(SQLITE_OPEN_MASTER_JOURNAL),
+      ADDINT(SQLITE_OPEN_NOMUTEX),
+      END,
 
 #ifdef SQLITE_LIMIT_LENGTH
-    /* limits */
-
-    thedict=PyDict_New();
-    if(!thedict) goto fail;
-
-    ADDINT(SQLITE_LIMIT_LENGTH);
-    ADDINT(SQLITE_LIMIT_SQL_LENGTH);
-    ADDINT(SQLITE_LIMIT_COLUMN);
-    ADDINT(SQLITE_LIMIT_EXPR_DEPTH);
-    ADDINT(SQLITE_LIMIT_COMPOUND_SELECT);
-    ADDINT(SQLITE_LIMIT_VDBE_OP);
-    ADDINT(SQLITE_LIMIT_FUNCTION_ARG);
-    ADDINT(SQLITE_LIMIT_ATTACHED);
-    ADDINT(SQLITE_LIMIT_LIKE_PATTERN_LENGTH);
-    ADDINT(SQLITE_LIMIT_VARIABLE_NUMBER);
-
-    /* We don't include the MAX limits - see http://code.google.com/p/apsw/issues/detail?id=17 */
-
-    PyModule_AddObject(m, "mapping_limits", thedict);
+      /* limits */
+      DICT("mapping_limits"),
+      ADDINT(SQLITE_LIMIT_LENGTH),
+      ADDINT(SQLITE_LIMIT_SQL_LENGTH),
+      ADDINT(SQLITE_LIMIT_COLUMN),
+      ADDINT(SQLITE_LIMIT_EXPR_DEPTH),
+      ADDINT(SQLITE_LIMIT_COMPOUND_SELECT),
+      ADDINT(SQLITE_LIMIT_VDBE_OP),
+      ADDINT(SQLITE_LIMIT_FUNCTION_ARG),
+      ADDINT(SQLITE_LIMIT_ATTACHED),
+      ADDINT(SQLITE_LIMIT_LIKE_PATTERN_LENGTH),
+      ADDINT(SQLITE_LIMIT_VARIABLE_NUMBER),
+      /* We don't include the MAX limits - see http://code.google.com/p/apsw/issues/detail?id=17 */
+      END,
 #endif
 
-    thedict=PyDict_New();
-    if(!thedict) goto fail;
+      DICT("mapping_config"),
+      ADDINT(SQLITE_CONFIG_SINGLETHREAD),
+      ADDINT(SQLITE_CONFIG_MULTITHREAD),
+      ADDINT(SQLITE_CONFIG_SERIALIZED),
+      ADDINT(SQLITE_CONFIG_MALLOC),
+      ADDINT(SQLITE_CONFIG_GETMALLOC),
+      ADDINT(SQLITE_CONFIG_SCRATCH),
+      ADDINT(SQLITE_CONFIG_PAGECACHE),
+      ADDINT(SQLITE_CONFIG_HEAP),
+      ADDINT(SQLITE_CONFIG_MEMSTATUS),
+      ADDINT(SQLITE_CONFIG_MUTEX),
+      ADDINT(SQLITE_CONFIG_GETMUTEX),
+      END,
 
-    ADDINT(SQLITE_CONFIG_SINGLETHREAD);
-    ADDINT(SQLITE_CONFIG_MULTITHREAD);
-    ADDINT(SQLITE_CONFIG_SERIALIZED);
-    ADDINT(SQLITE_CONFIG_MALLOC);
-    ADDINT(SQLITE_CONFIG_GETMALLOC);
-    ADDINT(SQLITE_CONFIG_SCRATCH);
-    ADDINT(SQLITE_CONFIG_PAGECACHE);
-    ADDINT(SQLITE_CONFIG_HEAP);
-    ADDINT(SQLITE_CONFIG_MEMSTATUS);
-    ADDINT(SQLITE_CONFIG_MUTEX);
-    ADDINT(SQLITE_CONFIG_GETMUTEX);
+      DICT("mapping_status"),
+      ADDINT(SQLITE_STATUS_MEMORY_USED),
+      ADDINT(SQLITE_STATUS_PAGECACHE_USED),
+      ADDINT(SQLITE_STATUS_PAGECACHE_OVERFLOW),
+      ADDINT(SQLITE_STATUS_SCRATCH_USED),
+      ADDINT(SQLITE_STATUS_SCRATCH_OVERFLOW),
+      ADDINT(SQLITE_STATUS_MALLOC_SIZE),
+      END,
 
-    PyModule_AddObject(m, "mapping_config", thedict);
+      DICT("mapping_locking_level"),
+      ADDINT(SQLITE_LOCK_NONE),
+      ADDINT(SQLITE_LOCK_SHARED),
+      ADDINT(SQLITE_LOCK_RESERVED),
+      ADDINT(SQLITE_LOCK_PENDING),
+      ADDINT(SQLITE_LOCK_EXCLUSIVE),
+      END,
 
-    thedict=PyDict_New();
-    if(!thedict) goto fail;
+      DICT("mapping_access"),
+      ADDINT(SQLITE_ACCESS_EXISTS),
+      ADDINT(SQLITE_ACCESS_READWRITE),
+      ADDINT(SQLITE_ACCESS_READ),
+      END,
 
-    ADDINT(SQLITE_STATUS_MEMORY_USED);
-    ADDINT(SQLITE_STATUS_PAGECACHE_USED);
-    ADDINT(SQLITE_STATUS_PAGECACHE_OVERFLOW);
-    ADDINT(SQLITE_STATUS_SCRATCH_USED);
-    ADDINT(SQLITE_STATUS_SCRATCH_OVERFLOW);
-    ADDINT(SQLITE_STATUS_MALLOC_SIZE);
+      DICT("mapping_device_characteristics"),
+      ADDINT(SQLITE_IOCAP_ATOMIC),
+      ADDINT(SQLITE_IOCAP_ATOMIC512),
+      ADDINT(SQLITE_IOCAP_ATOMIC1K),
+      ADDINT(SQLITE_IOCAP_ATOMIC2K),
+      ADDINT(SQLITE_IOCAP_ATOMIC4K),
+      ADDINT(SQLITE_IOCAP_ATOMIC8K),
+      ADDINT(SQLITE_IOCAP_ATOMIC16K),
+      ADDINT(SQLITE_IOCAP_ATOMIC32K),
+      ADDINT(SQLITE_IOCAP_ATOMIC64K),
+      ADDINT(SQLITE_IOCAP_SAFE_APPEND),
+      ADDINT(SQLITE_IOCAP_SEQUENTIAL),
+      END,
 
-    PyModule_AddObject(m, "mapping_status", thedict);
+      DICT("mapping_sync"),
+      ADDINT(SQLITE_SYNC_NORMAL),
+      ADDINT(SQLITE_SYNC_FULL),
+      ADDINT(SQLITE_SYNC_DATAONLY),
+      END};
+ 
+ 
+ for(i=0;i<sizeof(integers)/sizeof(integers[0]); i++)
+   {
+     const char *name=integers[i].name;
+     int value=integers[i].value;
+     PyObject *pyname;
+     PyObject *pyvalue;
 
-    thedict=PyDict_New();
-    if(!thedict) goto fail;
+     /* should be at dict */
+     if(!thedict)
+       {
+         assert(value==SENTINEL);
+         mapping_name=name;
+         thedict=PyDict_New();
+         continue;
+       }
+     /* at END? */
+     if(!name)
+       {
+         assert(thedict);
+         PyModule_AddObject(m, mapping_name, thedict);
+         thedict=NULL;
+         continue;
+       }
+     /* regular ADDINT */
+     PyModule_AddIntConstant(m, name, value);
+     pyname=MAKESTR(name);
+     pyvalue=PyInt_FromLong(value);
+     if(!pyname || !pyvalue) goto fail;
+     PyDict_SetItem(thedict, pyname, pyvalue);
+     PyDict_SetItem(thedict, pyvalue, pyname);
+     Py_DECREF(pyname);
+     Py_DECREF(pyvalue);
+   }
+ /* should have ended with END so thedict should be NULL */
+ assert(thedict==NULL);
 
-    ADDINT(SQLITE_LOCK_NONE);
-    ADDINT(SQLITE_LOCK_SHARED);
-    ADDINT(SQLITE_LOCK_RESERVED);
-    ADDINT(SQLITE_LOCK_PENDING);
-    ADDINT(SQLITE_LOCK_EXCLUSIVE);
-
-    PyModule_AddObject(m, "mapping_locking_level", thedict);
-
-    thedict=PyDict_New();
-    if(!thedict) goto fail;
-
-    ADDINT(SQLITE_ACCESS_EXISTS);
-    ADDINT(SQLITE_ACCESS_READWRITE);
-    ADDINT(SQLITE_ACCESS_READ);
-
-    PyModule_AddObject(m, "mapping_access", thedict);
-
-    thedict=PyDict_New();
-    if(!thedict) goto fail;
-
-    ADDINT(SQLITE_IOCAP_ATOMIC);
-    ADDINT(SQLITE_IOCAP_ATOMIC512);
-    ADDINT(SQLITE_IOCAP_ATOMIC1K);
-    ADDINT(SQLITE_IOCAP_ATOMIC2K);
-    ADDINT(SQLITE_IOCAP_ATOMIC4K);
-    ADDINT(SQLITE_IOCAP_ATOMIC8K);
-    ADDINT(SQLITE_IOCAP_ATOMIC16K);
-    ADDINT(SQLITE_IOCAP_ATOMIC32K);
-    ADDINT(SQLITE_IOCAP_ATOMIC64K);
-    ADDINT(SQLITE_IOCAP_SAFE_APPEND);
-    ADDINT(SQLITE_IOCAP_SEQUENTIAL);
-
-    PyModule_AddObject(m, "mapping_device_characteristics", thedict);
-
-    thedict=PyDict_New();
-    if(!thedict) goto fail;
-
-    ADDINT(SQLITE_SYNC_NORMAL);
-    ADDINT(SQLITE_SYNC_FULL);
-    ADDINT(SQLITE_SYNC_DATAONLY);
-
-    PyModule_AddObject(m, "mapping_sync", thedict);
-
-
-    if(!PyErr_Occurred())
+ if(!PyErr_Occurred())
       {
         return
 #if PY_VERSION_HEX>=0x03000000
