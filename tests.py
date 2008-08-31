@@ -154,6 +154,7 @@ class APSW(unittest.TestCase):
         'setprogresshandler': 2,
         'enableloadextension': 1,
         'createmodule': 2,
+        'filecontrol': 3
         }
 
     cursor_nargs={
@@ -2573,76 +2574,124 @@ class APSW(unittest.TestCase):
 
     def sourceCheckFunction(self, name, lines):
         # Checks an individual function does things right
-        if name.startswith("ZeroBlobBind_"):
+
+        if name.startswith("ZeroBlobBind_") or name.startswith("APSWVFS_") or name.startswith("APSWVFSFile_"):
                 return
 
-        if name.startswith("APSWCursor_"):
-            # these methods aren't publically exported so the checks
-            # will already have been done by their callers
-            if name[len("APSWCursor_"):] in ("dealloc", "init", "dobinding", "dobindings", "doexectrace", "dorowtrace", "step", "close"):
-                return
-            use=None
-            closed=None
-            for i,line in enumerate(lines):
-                if "CHECK_USE" in line and use is None:
-                    use=i
-                if "CHECK_CLOSED" in line and closed is None:
-                    closed=i
-            if use is None:
-                self.fail("CHECK_USE missing in "+name)
-            if closed is None:
-                self.fail("CHECK_CLOSED missing in "+name)
-            if closed<use:
-                self.fail("CHECK_CLOSED should be after CHECK_USE in "+name)
+        checks={
+            "APSWCursor":
+                {
+                  "skip": ("dealloc", "init", "dobinding", "dobindings", "doexectrace", "dorowtrace", "step", "close"),
+                  "req":
+                      {
+                         "use": "CHECK_USE",
+                         "closed": "CHECK_CLOSED",
+                      },
+                  "order": ("use", "closed")
+                },
+        
+            "Connection":
+                {
+                  "skip": ("internal_cleanup", "dealloc", "init", "close", "interrupt"),
+                  "req":
+                      {
+                         "use": "CHECK_USE",
+                         "closed": "CHECK_CLOSED",
+                      },
+                  "order": ("use", "closed")
+                },
+
+            "APSWBlob":
+               {
+                  "skip":  ("dealloc", "init", "close"),
+                  "req":
+                      {
+                        "use": "CHECK_USE",
+                        "closed": "CHECK_BLOB_CLOSED"
+                      },
+                  "order": ("use", "closed")
+               },
+            "apswvfs":
+               {
+                 "req":
+                      {
+                        "gilacq": "PyGILState_Ensure",
+                        "check": "CHECKVFS",
+                        "gilrel": "PyGILState_Release",
+                      },
+                 "order": ("gilacq", "check", "gilrel")
+               },
+            "apswvfspy":
+               {
+                "req":
+                     {
+                        "check": "CHECKVFSPY",
+                        "notimpl": "VFSNOTIMPLEMENTED(%(base)s)"
+                     },
+                "order": ("check", "notimpl"),
+               },
+            "apswvfsfile":
+               {
+                 "req":
+                      {
+                        "gilacq": "PyGILState_Ensure",
+                        "check": "CHECKVFSFILE",
+                        "gilrel": "PyGILState_Release",
+                      },
+                 "order": ("gilacq", "check", "gilrel")
+               },
+            "apswvfsfilepy":
+               {
+               "skip": ("xClose", ),
+                "req":
+                     {
+                        "check": "CHECKVFSFILEPY",
+                        "notimpl": "VFSFILENOTIMPLEMENTED(%(base)s)"
+                     },
+                "order": ("check", "notimpl"),
+               },
+
+            }
+
+        prefix,base=name.split("_", 1)
+        if name in checks:
+            checker=checks[name]
+        elif prefix in checks:
+            checker=checks[prefix]
+        else:
+            self.fail(prefix+" not in checks")
+
+        if base in checker.get("skip", ()):
             return
 
-        if name.startswith("Connection_"):
-            # these methods aren't publically exported so the checks
-            # will already have been done by their callers
-            if name[len("Connection_"):] in ("internal_cleanup", "dealloc", "init", "close", "interrupt"):
-                return
-            use=None
-            closed=None
-            for i,line in enumerate(lines):
-                if "CHECK_USE" in line and use is None:
-                    use=i
-                if "CHECK_CLOSED" in line and closed is None:
-                    closed=i
-            if use is None:
-                self.fail("CHECK_USE missing in "+name)
-            if closed is None:
-                self.fail("CHECK_CLOSED missing in "+name)
-            if closed<use:
-                self.fail("CHECK_CLOSED should be after CHECK_USE in "+name)
-            return
+        format={"base": base, "prefix": prefix}
 
-        if name.startswith("APSWBlob_"):
-            # these methods aren't publically exported so the checks
-            # will already have been done by their callers
-            if name[len("APSWBlob_"):] in ("dealloc", "init", "close"):
-                return
-            use=None
-            closed=None
-            for i,line in enumerate(lines):
-                if "CHECK_USE" in line and use is None:
-                    use=i
-                if "CHECK_BLOB_CLOSED" in line and closed is None:
-                    closed=i
-            if use is None:
-                self.fail("CHECK_USE missing in "+name)
-            if closed is None:
-                self.fail("CHECK_BLOB_CLOSED missing in "+name)
-            if closed<use:
-                self.fail("CHECK_BLOB_CLOSED should be after CHECK_USE in "+name)
-            return
+        found={}
+        for k in checker["req"]:
+            found[k]=None
 
-        if name.startswith("apswvfspy_") or name.startswith("APSWVFS"):
-            return
+        # check the lines
+        for i,line in enumerate(lines):
+            for k,v in checker["req"].items():
+                v=v % format
+                if v in line and found[k] is None:
+                    found[k]=i
 
-        if name.startswith("apswvfsfilepy_"):
-            return
+        # check they are present
+        for k,v in checker["req"].items():
+            if found[k] is None:
+                v=v%format
+                self.fail(k+" "+v+" missing in "+name)
 
-        self.fail(name+" doesn't have source check")
+        # check order
+        order=checker.get("order", ())
+        for i in range(len(order)-2):
+            b4=order[i]
+            after=order[i+1]
+            if found[b4]>found[after]:
+                self.fail(checker["req"][b4]%format+" should be before "+checker["req"][after]%format+" in "+name)
+
+        return
 
     def testSourceChecks(self):
         "Check various source code issues"
