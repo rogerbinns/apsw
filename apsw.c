@@ -5556,7 +5556,7 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
   if(!PyList_Check(flags) || PyList_GET_SIZE(flags)!=2 || !PyIntLong_Check(PyList_GET_ITEM(flags, 1)))
     {
       PyErr_Format(PyExc_TypeError, "Flags should be two item list with item zero being integer input and item one being integer output");
-      AddTraceBackHere(__FILE__, __LINE__, "vfs.xOpen", "{s: s, s: i, s: O}", "zName", zName, "inflags", inflags, "flags", flags);
+      AddTraceBackHere(__FILE__, __LINE__, "vfs.xOpen", "{s: s, s: i, s: i}", "zName", zName, "inflags", inflags, "flags", flags);
       goto finally;
     }
 
@@ -6346,13 +6346,21 @@ static PyTypeObject APSWVFSType =
 #endif
   };
 
+static PyObject *apswvfsfilepy_xClose(APSWVFSFile *self);
+
 static void
 APSWVFSFile_dealloc(APSWVFSFile *self)
 {
   if(self->base)
     {
-      PyMem_Free(self->base);
-      self->base=0;
+      /* close it */
+      PyObject *x=apswvfsfilepy_xClose(self);
+      Py_XDECREF(x);
+    }
+  if(PyErr_Occurred())
+    {
+      AddTraceBackHere(__FILE__, __LINE__, "APSWVFS File destructor", NULL);
+      apsw_write_unraiseable();
     }
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
@@ -6379,7 +6387,7 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
   int res=-1; /* error */
   int xopenresult;
   int flagsout=0;
-  PyObject *itemzero=NULL, *itemone=NULL, *zero=NULL;
+  PyObject *itemzero=NULL, *itemone=NULL, *zero=NULL, *pyflagsout=NULL;
   sqlite3_vfs *vfstouse=NULL;
   sqlite3_file *file;
 
@@ -6430,6 +6438,7 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
     }
   file=PyMem_Malloc(vfstouse->szOsFile);
   xopenresult=vfstouse->xOpen(vfstouse, (utf8name==Py_None)?NULL:PyBytes_AS_STRING(utf8name), file, (int)PyIntLong_AsLong(itemzero), &flagsout);
+  pyflagsout=PyInt_FromLong(flagsout);
   if(PyErr_Occurred())
     {
       PyMem_Free(file);
@@ -6442,7 +6451,7 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
       goto finally;
     }
   
-  if(-1==PySequence_SetItem(flags, 1, PyInt_FromLong(flagsout)))
+  if(-1==PySequence_SetItem(flags, 1, pyflagsout))
     {
       file->pMethods->xClose(file);
       PyMem_Free(file);
@@ -6455,6 +6464,7 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
   res=0;
 
  finally:
+  Py_XDECREF(pyflagsout);
   Py_XDECREF(itemzero);
   Py_XDECREF(itemone);
   Py_XDECREF(zero);
@@ -7085,7 +7095,6 @@ static PyObject *
 apswvfsfilepy_xClose(APSWVFSFile *self)
 {
   int res;
-
 
   if(!self->base) /* already closed */
     Py_RETURN_NONE;
