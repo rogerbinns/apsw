@@ -397,6 +397,67 @@ for ctime,directory,file in cursor.execute("select st_ctime,directory,name from 
 #@@ENDCAPTURE
 
 ###
+### A VFS that "obfuscates" the database file contents.  The scheme
+### used is to xor all bytes with 0xa5.  This scheme honours that used
+### for MAPI and SQL Server.
+###
+
+def encryptme(data):
+    if not data: return data
+    return "".join([chr(ord(x)^0xa5) for x in data])
+
+# Inheriting from a base of "" means the default vfs
+class ObfuscatedVFS(apsw.VFS):
+    def __init__(self, vfsname="obfu", basevfs=""):
+        self.vfsname=vfsname
+        self.basevfs=basevfs
+        apsw.VFS.__init__(self, self.vfsname, self.basevfs)
+
+    # We want to return our own file implmentation, but also
+    # want it to inherit
+    def xOpen(self, name, flags):
+        return ObfuscatedVFSFile(self.basevfs, name, flags)
+
+# The file implementation where we override xRead and xWrite to call our
+# encryption routine
+class ObfuscatedVFSFile(apsw.VFSFile):
+    def __init__(self, inheritfromvfsname, filename, flags):
+        apsw.VFSFile.__init__(self, inheritfromvfsname, filename, flags)
+        
+    def xRead(self, amount, offset):
+        return encryptme(super(ObfuscatedVFSFile, self).xRead(amount, offset))
+    
+    def xWrite(self, data, offset):
+        super(ObfuscatedVFSFile, self).xWrite(encryptme(data), offset)
+
+# To register the VFS we just instantiate it
+obfuvfs=ObfuscatedVFS()
+# Lets see what vfs are now availabe?
+#@@CAPTURE
+print apsw.vfsnames()
+#@@ENDCAPTURE
+
+# Make an obfuscated db
+obfudb=apsw.Connection("myobfudb", vfs=obfuvfs.vfsname)
+# Check it works
+obfudb.cursor().execute("create table foo(x,y); insert into foo values(1,2)")
+
+# Check it really is obfuscated on disk
+#@@CAPTURE
+print `open("myobfudb", "rb").read()[:20]`
+#@@ENDCAPTURE
+
+# And unobfuscating it
+#@@CAPTURE
+print `encryptme(open("myobfudb", "rb").read()[:20])`
+#@@ENDCAPTURE
+
+# Tidy up
+obfudb.close()
+os.remove("myobfudb")
+
+
+###
 ### Limits
 ###
 
