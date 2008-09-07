@@ -1025,6 +1025,130 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
    1205478976.0 dbm.so /space/pydebug/lib/python2.5/lib-dynload
 </span>
 <span class="pycomment">###
+### A VFS that "obfuscates" the database file contents.  The scheme
+### used is to xor all bytes with 0xa5.  This scheme honours that used
+### for MAPI and SQL Server.
+###
+
+</span><span class="pykeyword">def </span><span class="pyname">encryptme</span><span class=
+"pyoperator">(</span><span class="pyname">data</span><span class="pyoperator">):
+    </span><span class="pykeyword">if not </span><span class="pyname">data</span><span class=
+"pyoperator">: </span><span class="pykeyword">return </span><span class="pyname">data
+    </span><span class="pykeyword">return </span><span class="pystring">""</span><span class=
+"pyoperator">.</span><span class="pyname">join</span><span class="pyoperator">([</span><span class=
+"pyname">chr</span><span class="pyoperator">(</span><span class="pyname">ord</span><span class=
+"pyoperator">(</span><span class="pyname">x</span><span class="pyoperator">)^</span><span class=
+"pynumber">0xa5</span><span class="pyoperator">) </span><span class="pykeyword">for </span><span class=
+"pyname">x </span><span class="pykeyword">in </span><span class="pyname">data</span><span class="pyoperator">])
+
+</span><span class="pycomment"># Inheriting from a base of "" means the default vfs
+</span><span class="pykeyword">class </span><span class="pyname">ObfuscatedVFS</span><span class=
+"pyoperator">(</span><span class="pyname">apsw</span><span class="pyoperator">.</span><span class=
+"pyname">VFS</span><span class="pyoperator">):
+    </span><span class="pykeyword">def </span><span class="pyname">__init__</span><span class=
+"pyoperator">(</span><span class="pyname">self</span><span class="pyoperator">, </span><span class=
+"pyname">vfsname</span><span class="pyoperator">=</span><span class="pystring">"obfu"</span><span class=
+"pyoperator">, </span><span class="pyname">basevfs</span><span class="pyoperator">=</span><span class=
+"pystring">""</span><span class="pyoperator">):
+        </span><span class="pyname">self</span><span class="pyoperator">.</span><span class=
+"pyname">vfsname</span><span class="pyoperator">=</span><span class="pyname">vfsname
+        self</span><span class="pyoperator">.</span><span class="pyname">basevfs</span><span class=
+"pyoperator">=</span><span class="pyname">basevfs
+        apsw</span><span class="pyoperator">.</span><span class="pyname">VFS</span><span class=
+"pyoperator">.</span><span class="pyname">__init__</span><span class="pyoperator">(</span><span class=
+"pyname">self</span><span class="pyoperator">, </span><span class="pyname">self</span><span class=
+"pyoperator">.</span><span class="pyname">vfsname</span><span class="pyoperator">, </span><span class=
+"pyname">self</span><span class="pyoperator">.</span><span class="pyname">basevfs</span><span class="pyoperator">)
+
+    </span><span class="pycomment"># We want to return our own file implmentation, but also
+    # want it to inherit
+    </span><span class="pykeyword">def </span><span class="pyname">xOpen</span><span class=
+"pyoperator">(</span><span class="pyname">self</span><span class="pyoperator">, </span><span class=
+"pyname">name</span><span class="pyoperator">, </span><span class="pyname">flags</span><span class="pyoperator">):
+        </span><span class="pykeyword">return </span><span class="pyname">ObfuscatedVFSFile</span><span class=
+"pyoperator">(</span><span class="pyname">self</span><span class="pyoperator">.</span><span class=
+"pyname">basevfs</span><span class="pyoperator">, </span><span class="pyname">name</span><span class=
+"pyoperator">, </span><span class="pyname">flags</span><span class="pyoperator">)
+
+</span><span class="pycomment"># The file implementation where we override xRead and xWrite to call our
+# encryption routine
+</span><span class="pykeyword">class </span><span class="pyname">ObfuscatedVFSFile</span><span class=
+"pyoperator">(</span><span class="pyname">apsw</span><span class="pyoperator">.</span><span class=
+"pyname">VFSFile</span><span class="pyoperator">):
+    </span><span class="pykeyword">def </span><span class="pyname">__init__</span><span class=
+"pyoperator">(</span><span class="pyname">self</span><span class="pyoperator">, </span><span class=
+"pyname">inheritfromvfsname</span><span class="pyoperator">, </span><span class="pyname">filename</span><span class=
+"pyoperator">, </span><span class="pyname">flags</span><span class="pyoperator">):
+        </span><span class="pyname">apsw</span><span class="pyoperator">.</span><span class=
+"pyname">VFSFile</span><span class="pyoperator">.</span><span class="pyname">__init__</span><span class=
+"pyoperator">(</span><span class="pyname">self</span><span class="pyoperator">, </span><span class=
+"pyname">inheritfromvfsname</span><span class="pyoperator">, </span><span class="pyname">filename</span><span class=
+"pyoperator">, </span><span class="pyname">flags</span><span class="pyoperator">)
+
+    </span><span class="pykeyword">def </span><span class="pyname">xRead</span><span class=
+"pyoperator">(</span><span class="pyname">self</span><span class="pyoperator">, </span><span class=
+"pyname">amount</span><span class="pyoperator">, </span><span class="pyname">offset</span><span class="pyoperator">):
+        </span><span class="pykeyword">return </span><span class="pyname">encryptme</span><span class=
+"pyoperator">(</span><span class="pyname">super</span><span class="pyoperator">(</span><span class=
+"pyname">ObfuscatedVFSFile</span><span class="pyoperator">, </span><span class="pyname">self</span><span class=
+"pyoperator">).</span><span class="pyname">xRead</span><span class="pyoperator">(</span><span class=
+"pyname">amount</span><span class="pyoperator">, </span><span class="pyname">offset</span><span class="pyoperator">))
+
+    </span><span class="pykeyword">def </span><span class="pyname">xWrite</span><span class=
+"pyoperator">(</span><span class="pyname">self</span><span class="pyoperator">, </span><span class=
+"pyname">data</span><span class="pyoperator">, </span><span class="pyname">offset</span><span class="pyoperator">):
+        </span><span class="pyname">super</span><span class="pyoperator">(</span><span class=
+"pyname">ObfuscatedVFSFile</span><span class="pyoperator">, </span><span class="pyname">self</span><span class=
+"pyoperator">).</span><span class="pyname">xWrite</span><span class="pyoperator">(</span><span class=
+"pyname">encryptme</span><span class="pyoperator">(</span><span class="pyname">data</span><span class=
+"pyoperator">), </span><span class="pyname">offset</span><span class="pyoperator">)
+
+</span><span class="pycomment"># To register the VFS we just instantiate it
+</span><span class="pyname">obfuvfs</span><span class="pyoperator">=</span><span class=
+"pyname">ObfuscatedVFS</span><span class="pyoperator">()
+</span><span class="pycomment"># Lets see what vfs are now availabe?
+</span><span class="pykeyword">print </span><span class="pyname">apsw</span><span class=
+"pyoperator">.</span><span class="pyname">vfsnames</span><span class="pyoperator">()
+
+</span><span class="pyoutput">   [u'unix', u'obfu']
+</span>
+<span class="pycomment"># Make an obfuscated db
+</span><span class="pyname">obfudb</span><span class="pyoperator">=</span><span class="pyname">apsw</span><span class=
+"pyoperator">.</span><span class="pyname">Connection</span><span class="pyoperator">(</span><span class=
+"pystring">"myobfudb"</span><span class="pyoperator">, </span><span class="pyname">vfs</span><span class=
+"pyoperator">=</span><span class="pyname">obfuvfs</span><span class="pyoperator">.</span><span class=
+"pyname">vfsname</span><span class="pyoperator">)
+</span><span class="pycomment"># Check it works
+</span><span class="pyname">obfudb</span><span class="pyoperator">.</span><span class=
+"pyname">cursor</span><span class="pyoperator">().</span><span class="pyname">execute</span><span class=
+"pyoperator">(</span><span class="pystring">"create table foo(x,y); insert into foo values(1,2)"</span><span class=
+"pyoperator">)
+
+</span><span class="pycomment"># Check it really is obfuscated on disk
+</span><span class="pykeyword">print </span><span class="pyoperator">`</span><span class=
+"pyname">open</span><span class="pyoperator">(</span><span class="pystring">"myobfudb"</span><span class=
+"pyoperator">, </span><span class="pystring">"rb"</span><span class="pyoperator">).</span><span class=
+"pyname">read</span><span class="pyoperator">()[:</span><span class="pynumber">20</span><span class="pyoperator">]`
+
+</span><span class="pyoutput">   '\xf6\xf4\xe9\xcc\xd1\xc0\x85\xc3\xca\xd7\xc8\xc4\xd1\x85\x96\xa5\xa1\xa5\xa4\xa4'
+</span>
+<span class="pycomment"># And unobfuscating it
+</span><span class="pykeyword">print </span><span class="pyoperator">`</span><span class=
+"pyname">encryptme</span><span class="pyoperator">(</span><span class="pyname">open</span><span class=
+"pyoperator">(</span><span class="pystring">"myobfudb"</span><span class="pyoperator">, </span><span class=
+"pystring">"rb"</span><span class="pyoperator">).</span><span class="pyname">read</span><span class=
+"pyoperator">()[:</span><span class="pynumber">20</span><span class="pyoperator">])`
+
+</span><span class="pyoutput">   'SQLite format 3\x00\x04\x00\x01\x01'
+</span>
+<span class="pycomment"># Tidy up
+</span><span class="pyname">obfudb</span><span class="pyoperator">.</span><span class="pyname">close</span><span class=
+"pyoperator">()
+</span><span class="pyname">os</span><span class="pyoperator">.</span><span class="pyname">remove</span><span class=
+"pyoperator">(</span><span class="pystring">"myobfudb"</span><span class="pyoperator">)
+
+
+</span><span class="pycomment">###
 ### Limits
 ###
 
@@ -1098,7 +1222,7 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
 "pyoperator">(</span><span class="pyname">apsw</span><span class="pyoperator">.</span><span class=
 "pyname">SQLITE_STATUS_MEMORY_USED</span><span class="pyoperator">)
 
-</span><span class="pyoutput">   SQLite memory usage current 234152 max 239376
+</span><span class="pyoutput">   SQLite memory usage current 234152 max 305416
 </span>
 <span class="pycomment">###
 ### Cleanup
@@ -2338,6 +2462,16 @@ def xFileControl(self, op, pointer):
       <p>To return an error from any routine you should raise an exception. The exception will be translated into the
       appropriate SQLite error code for SQLite. To return a specific SQLite error code use <code><a href=
       "#exceptionfor">apsw.exceptionfor(code)</a></code>.</p>
+
+ <p>Some VFS routines cannot return an error.  For others there may be
+ several more VFS calls. For example an error in the xWrite routine
+ can result in a rollback which involve several more VFS calls dealing
+ with the journal and main file.  Those could result in even more
+ exceptions obscuring the previous ones.  In these situations the
+ exceptions are delivered to <code>sys.excepthook()</code> and if that
+ fails then <code>PyErr_Display()</code> is called which prints out a
+ traceback.  <a href="#augmentedstacktraces">Augmented stack traces</a> are
+available which will help diagnose issues.</p>
 
       <h3>OS Interface</h3>
 
