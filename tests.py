@@ -171,13 +171,14 @@ class APSW(unittest.TestCase):
         }
 
     
-    def setUp(self, dbname="testdb"):
-        # clean out database and journal from last run
-        for i in "-journal", "":
-            if os.path.exists(dbname+i):
-                os.remove(dbname+i)
-            assert not os.path.exists(dbname+i)
-        self.db=apsw.Connection(dbname)
+    def setUp(self):
+        # clean out database and journals from last runs
+        for name in ("testdb", "testdb2"):
+            for i in "-journal", "":
+                if os.path.exists(name+i):
+                    os.remove(name+i)
+                assert not os.path.exists(name+i)
+        self.db=apsw.Connection("testdb")
 
     def tearDown(self):
         # we don't delete the database file itself.  it will be
@@ -194,6 +195,24 @@ class APSW(unittest.TestCase):
     def assertTableNotExists(self, tablename):
         # you get SQLError if the table doesn't exist!
         self.assertRaises(apsw.SQLError, self.db.cursor().execute, "select count(*) from ["+tablename+"]")
+
+    def assertRaisesUnraisable(self, exc, func, *args, **kwargs):
+        orig=sys.excepthook
+        try:
+            called=[]
+            def ehook(t,v,tb, called=called):
+                called.extend(t,v,tb)
+            sys.excepthook=ehook
+            try:
+                return func(*args, **kwargs)
+            finally:
+                if len(called)<1:
+                    self.fail("Call %s(*%s, **%s) did not do any unraiseable" % (func, args, kwargs) )
+                print called, len(called), exc, called[0], exc==called[0]
+                self.failUnless(len(called)) # check an unraiseable fired
+                self.assertEqual(exc, called[0]) # check it was the correct type
+        finally:
+            sys.excepthook=orig
 
     def testSanity(self):
         "Check all parts compiled and are present"
@@ -223,6 +242,14 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, apsw.Connection, "foo", vfs=3, flags=-1)
         self.assertRaises(apsw.SQLError, apsw.Connection, "foo", vfs="jhjkds", flags=-1)
 
+    def testConnectionFileControl(self):
+        "Verify sqlite3_file_control"
+        # Note that testVFS deals with success cases
+        self.assertRaises(TypeError, self.db.filecontrol, 1, 2)
+        self.assertRaises(TypeError, self.db.filecontrol, "main", 1001, "foo")
+        self.assertRaises(OverflowError, self.db.filecontrol, "main", 1001, l("45236748972389749283"))
+        self.assertRaises(apsw.SQLError, self.db.filecontrol, "main", 1001, 25)
+        
     def testMemoryLeaks(self):
         "MemoryLeaks: Run with a memory profiler such as valgrind and debug Python"
         # make and toss away a bunch of db objects, cursors, functions etc - if you use memory profiling then
@@ -2894,50 +2921,197 @@ class APSW(unittest.TestCase):
             self.assert_(klass is apsw.AbortError)
 
 
-##    def testVFS(self):
-##        "Ensure VFS works"
-##        self.db=None
-##        class TestVFS(apsw.VFS):
-##            def __init__(self, vfsname, base=None):
-##                apsw.VFS.__init__(self, vfsname, base)
-##                self.vfsname=vfsname
-##                self.basevfs=base
+    def testVFS(self):
+        "Verify VFS functionality"
+        # Check basic functionality and inheritance - make an obfuscated provider
 
-##            def xDelete(self, name, syncdir):
-##                print "VFS xDelete", `name`, syncdir
-##                ret=super(TestVFS,self).xDelete(name, syncdir)
-##                print "    ",ret
-##                return ret
+        # obfusvfs code
+        def encryptme(data):
+            # An "encryption" scheme in honour of MAPI and SQL server passwords
+            if not data: return data
+            if py3:
+                return bytes([x^0xa5 for x in data])
+            return "".join([chr(ord(x)^0xa5) for x in data])
+        
+        class ObfuscatedVFSFile(apsw.VFSFile):
+            def __init__(self, inheritfromvfsname, filename, flags):
+                apsw.VFSFile.__init__(self, inheritfromvfsname, filename, flags)
 
-##            def xFullPathname(self, name):
-##                print "VFS xFullPathname", `name`
-##                ret=super(TestVFS, self).xFullPathname(name)
-##                print "    ",`ret`
-##                return ret
+            def xRead(self, amount, offset):
+                return encryptme(super(ObfuscatedVFSFile, self).xRead(amount, offset))
 
-##            def xOpen1(self, name, flags):
-##                # flags is two item list [in, out] - callee should modify flags[1]
-##                print "VFS xOpen", `name`, flags
-##                ret=super(TestVFS, self).xOpen(name, flags)
-##                print "    ",ret, "flagsout="+`flags`
-##                return ret
+            def xWrite(self, data, offset):
+                super(ObfuscatedVFSFile, self).xWrite(encryptme(data), offset)
 
-##            def xOpen2(self, name, flags):
-##                print "VFS xOpen", `name`, flags
-##                ret=TestVFSFile(self.basevfs, name, flags)
-##                print "    ",ret, "flagsout="+`flags`
-##                return ret
+        class ObfuscatedVFS(apsw.VFS):
+            def __init__(self, vfsname="obfu", basevfs=""):
+                self.vfsname=vfsname
+                self.basevfs=basevfs
+                apsw.VFS.__init__(self, self.vfsname, self.basevfs)
 
-##        class TestVFSFile(apsw.VFSFile):
-##            def __init__(self, vfs, name, flags):
-##                apsw.VFSFile.__init__(self, vfs, name, flags)
+            def xOpen(self, name, flags):
+                return ObfuscatedVFSFile(self.basevfs, name, flags)
+
+        vfs=ObfuscatedVFS()
             
-##        vfs=TestVFS("test", "")
-##        for i in (1,2):
-##            TestVFS.xOpen=getattr(TestVFS, "xOpen"+`i`)
-##            db=apsw.Connection("testdb", vfs="test")
+        query="create table foo(x,y); insert into foo values(1,2); insert into foo values(3,4)"
+        self.db.cursor().execute(query)
 
-##    del testVFS
+        db2=apsw.Connection("testdb2", vfs=vfs.vfsname)
+        db2.cursor().execute(query)
+
+        # check the two databases are the same (modulo the XOR)
+        orig=open("testdb", "rb").read()
+        obfu=open("testdb2", "rb").read()
+        self.assertEqual(len(orig), len(obfu))
+        self.assertNotEqual(orig, obfu)
+        self.assertEqual(orig, encryptme(obfu))
+        db2.close()
+        del db2
+        gc.collect()
+
+        ### Detailed vfs testing
+
+        def testdb(filename="testdb2", vfsname="apswtest"):
+            "This method causes all parts of a vfs to be executed"
+            gc.collect() # free any existing db handles
+            try: os.remove(filename)
+            except OSError: pass
+            try: os.remove(filename+"-journal")
+            except OSError: pass
+                
+            db=apsw.Connection(filename, vfs=vfsname)
+            db.cursor().execute("create table foo(x,y); insert into foo values(1,2)")
+            # busy
+            db2=apsw.Connection(filename, vfs=vfsname)
+            db.setbusytimeout(2000)
+            db2.cursor().execute("begin exclusive")
+            try:
+                db.cursor().execute("begin immediate")
+                1/0 # should not be reached
+            except apsw.BusyError:
+                pass
+            db2.cursor().execute("end")
+
+            # cause truncate to be called
+            # see sqlite test/pager3.test where this (public domain) code is taken from
+            # I had to add the pragma locking_mode to get it to work
+            c=db.cursor()
+            for row in c.execute("pragma locking_mode=exclusive"):
+                pass
+
+            c.execute("""
+                         create table t1(a unique, b);
+                         insert into t1 values(1, 'abcdefghijklmnopqrstuvwxyz');
+                         insert into t1 values(2, 'abcdefghijklmnopqrstuvwxyz');
+                         update t1 set b=b||a||b;
+                         update t1 set b=b||a||b;
+                         update t1 set b=b||a||b;
+                         update t1 set b=b||a||b;
+                         update t1 set b=b||a||b;
+                         update t1 set b=b||a||b;
+                         create temp table t2 as select * from t1;
+                         begin; 
+                         create table t3(x);""")
+            try:
+                c.execute("insert into t1 select 4-a, b from t2")
+            except apsw.ConstraintError:
+                pass
+            c.execute("rollback")
+
+            if hasattr(APSW, "testLoadExtension"):
+                # can we test loadextension?
+                db.enableloadextension(True)
+                try:
+                    db.loadextension("./"*128+LOADEXTENSIONFILENAME+"xxx")
+                except apsw.ExtensionLoadingError:
+                    pass
+                db.loadextension(LOADEXTENSIONFILENAME)
+                self.assertEqual(1, db.cursor().execute("select half(2)").next()[0])
+
+        class TestVFS(apsw.VFS):
+            def init1(self):
+                super(TestVFS, self).__init__("apswtest")
+
+            def init99(self):
+                super(TestVFS, self).__init__("apswtest", "")
+
+            def xDelete1(self, name, syncdir):
+                super(TestVFS,self).xDelete("<thisfile<does<not\\exist/", 1)
+
+            def xDelete2(self, bad, number, of, args):
+                1/0
+
+            def xDelete3(self, name, syncdir):
+                1/0
+
+            def xDelete4(self, name, syncdir):
+                super(TestVFS,self).xDelete("bad", "arguments")
+
+            def xDelete99(self, name, syncdir):
+                assert(type(name)== type(u""))
+                assert(type(syncdir)==type(1))
+                return super(TestVFS, self).xDelete(name, syncdir)
+
+            def xAccess1(self, bad, number, of, args):
+                1/0
+
+            def xAccess2(self, name, flags):
+                1/0
+
+            def xAccess3(self, name, flags):
+                return super(TestVFS,self).xAccess("bad", "arguments")
+
+            def xAccess4(self, name, flags):
+                return (3)
+
+            def xAccess99(self, name, flags):
+                assert(type(name) == type(u""))
+                assert(type(flags) == type(1))
+                return super(TestVFS, self).xAccess(name, flags)
+
+        # check initialization
+        TestVFS.__init__=TestVFS.init1
+        vfs=TestVFS()
+        try:
+            testdb()
+        except apsw.VFSNotImplementedError:
+            pass
+        del vfs
+        gc.collect()
+        TestVFS.__init__=TestVFS.init99
+        vfs=TestVFS()
+        
+        # Should work without any overridden methods
+        testdb()
+        
+        ## xDelete
+        self.assertRaises(TypeError, TestVFS.xDelete, "bogus", "arguments")
+        TestVFS.xDelete=TestVFS.xDelete1
+        self.assertRaises(apsw.CantOpenError, testdb)
+        TestVFS.xDelete=TestVFS.xDelete2
+        self.assertRaises(TypeError, testdb)
+        TestVFS.xDelete=TestVFS.xDelete3
+        self.assertRaises(ZeroDivisionError, testdb)
+        TestVFS.xDelete=TestVFS.xDelete4
+        self.assertRaises(TypeError, testdb)
+        TestVFS.xDelete=TestVFS.xDelete99
+
+        ## xAccess
+        self.assertRaises(TypeError, TestVFS.xAccess, "bogus", "arguments")
+        TestVFS.xAccess=TestVFS.xAccess1
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+        TestVFS.xAccess=TestVFS.xAccess2
+        self.assertRaises(ZeroDivisionError, testdb)
+        TestVFS.xAccess=TestVFS.xAccess3
+        self.assertRaises(TypeError, testdb)
+        TestVFS.xAccess=TestVFS.xAccess4
+        self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, TypeError, testdb)
+        TestVFS.xAccess=TestVFS.xAccess99
+        self.assertEqual(False, vfs.xAccess(u("<bad<filename:"), apsw.SQLITE_ACCESS_READWRITE))
+        
+        
+
 
     # Note that faults fire only once, so there is no need to reset
     # them.  The testing for objects bigger than 2GB is done in
@@ -3449,6 +3623,7 @@ class APSW(unittest.TestCase):
             pass
 
 
+
 if sys.platform!="win32":
     # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used
     LOADEXTENSIONFILENAME="./testextension.sqlext"
@@ -3488,7 +3663,7 @@ if __name__=='__main__':
         try:
             unittest.main()
         except SystemExit:
-            pass
+            exitcode=sys.exc_info()[1].code
     else:
         # we run all the tests multiple times which has better coverage
         # a larger value for MEMLEAKITERATIONS slows down everything else
@@ -3500,7 +3675,7 @@ if __name__=='__main__':
             try:
                 unittest.main()
             except SystemExit:
-                pass
+                exitcode=sys.exc_info()[1].code
 
     # Free up everything possible
     del APSW
@@ -3511,6 +3686,8 @@ if __name__=='__main__':
     gc.collect() # all cursors & connections must be gone
     apsw.shutdown()
     del apsw
+
+    exit=sys.exit
 
     # modules
     del unittest
@@ -3530,7 +3707,9 @@ if __name__=='__main__':
                 del sys.modules[k]
             except:
                 pass
+
     del sys
     if gc:
         gc.collect()
     del gc
+    exit(exitcode)
