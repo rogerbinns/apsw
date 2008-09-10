@@ -1884,7 +1884,14 @@ convert_value_to_pyobject(sqlite3_value *value)
   switch(coltype)
     {
     case SQLITE_INTEGER:
-        return PyLong_FromLongLong(sqlite3_value_int64(value));
+      {
+        sqlite3_int64 val=sqlite3_value_int64(value);
+#if Py_VERSION_MAJOR<3
+        if (val>=APSW_INT32_MIN && val<=APSW_INT32_MAX)
+          return PyInt_FromLong((long)val);
+#endif
+        return PyLong_FromLongLong(val);
+      }
 
     case SQLITE_FLOAT:
       return PyFloat_FromDouble(sqlite3_value_double(value));
@@ -1920,7 +1927,14 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
   switch(coltype)
     {
     case SQLITE_INTEGER:
-      return PyLong_FromLongLong(sqlite3_column_int64(stmt, col));
+      {
+        sqlite3_int64 val=sqlite3_column_int64(stmt, col);
+#if Py_VERSION_MAJOR<3
+        if (val>=APSW_INT32_MIN && val<=APSW_INT32_MAX)
+          return PyInt_FromLong((long)val);
+#endif
+        return PyLong_FromLongLong(val);
+      }
 
     case SQLITE_FLOAT:
       return PyFloat_FromDouble(sqlite3_column_double(stmt, col));

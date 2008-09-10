@@ -2515,6 +2515,20 @@ class APSW(unittest.TestCase):
         next(c)
         next(c)
 
+    def testIssue24(self):
+        # http://code.google.com/p/apsw/issues/detail?id=24
+        c=self.db.cursor()
+        for row in c.execute("select 3"): pass
+        self.assertEqual(int, type(row[0]))
+        for row in c.execute("select -2147483647-1"): pass
+        self.assertEqual(int, type(row[0]))
+        for row in c.execute("select -2147483647-2"): pass
+        self.assertEqual(long, type(row[0]))
+        for row in c.execute("select 2147483647"): pass
+        self.assertEqual(int, type(row[0]))
+        for row in c.execute("select 2147483647+1"): pass
+        self.assertEqual(long, type(row[0]))
+
     def testWriteUnraiseable(self):
         "Verify writeunraiseable replacement function"
         def unraise():
