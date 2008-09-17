@@ -201,16 +201,15 @@ class APSW(unittest.TestCase):
         try:
             called=[]
             def ehook(t,v,tb, called=called):
-                called.extend(t,v,tb)
+                called.append( (t,v,tb) )
             sys.excepthook=ehook
             try:
                 return func(*args, **kwargs)
             finally:
                 if len(called)<1:
                     self.fail("Call %s(*%s, **%s) did not do any unraiseable" % (func, args, kwargs) )
-                print called, len(called), exc, called[0], exc==called[0]
                 self.failUnless(len(called)) # check an unraiseable fired
-                self.assertEqual(exc, called[0]) # check it was the correct type
+                self.assertEqual(exc, called[0][0]) # check it was the correct type
         finally:
             sys.excepthook=orig
 
@@ -1249,6 +1248,7 @@ class APSW(unittest.TestCase):
                 pass
         except apsw.InterruptError:
             pass
+        # ::TODO:: raise the interrupt from another thread
 
     def testCommitHook(self):
         "Verify commit hooks"
@@ -1398,7 +1398,7 @@ class APSW(unittest.TestCase):
         # running operation in one thread.
         c=self.db.cursor()
         c.execute("create table foo(x);begin;")
-        c.executemany("insert into foo values(?)", randomintegers(100000))
+        c.executemany("insert into foo values(?)", randomintegers(10000))
         c.execute("commit")
 
         vals={"stop": False,
@@ -2545,14 +2545,11 @@ class APSW(unittest.TestCase):
             del db
             del blob
             gc.collect()
-            
+
+        # Normal excepthook
+        self.assertRaisesUnraisable(apsw.ReadOnlyError, unraise)
+        # excepthook with error to check PyErr_Display is called
         xx=sys.excepthook
-        called=[0]
-        def ehook(t,v,tb, called=called):
-            called[0]=1
-        sys.excepthook=ehook
-        unraise()
-        self.failUnlessEqual(called[0], 1)
         yy=sys.stderr
         sys.stderr=open("errout.txt", "wt")
         def ehook(blah):
@@ -2857,9 +2854,12 @@ class APSW(unittest.TestCase):
         self.assertEqual(blobro.length(), 98765)
         self.assertEqual(blobro.length(), 98765)
         self.failUnlessEqual(blobro.read(0), BYTES(""))
-        for i in range(98765):
-            x=blobro.read(1)
-            self.assertEqual(BYTES(r"\x00"), x)
+        zero=BYTES(r"\x00")
+        step=5 # must be exact multiple of size
+        assert(blobro.length()%step==0)
+        for i in range(0,98765,step):
+            x=blobro.read(step)
+            self.assertEqual(zero*step, x)
         x=blobro.read(10)
         self.assertEqual(x, None)
         blobro.seek(0,1)
@@ -2980,6 +2980,18 @@ class APSW(unittest.TestCase):
         self.assertEqual(len(orig), len(obfu))
         self.assertNotEqual(orig, obfu)
         self.assertEqual(orig, encryptme(obfu))
+
+        # test raw file object
+        f=ObfuscatedVFSFile("", "testdb", [apsw.SQLITE_OPEN_READONLY, 0])
+        del f # check closes
+        f=ObfuscatedVFSFile("", "testdb", [apsw.SQLITE_OPEN_READONLY, 0])
+        data=f.xRead(len(obfu), 0) # will encrypt it
+        self.assertEqual(obfu, data)
+        f.xClose()
+        f.xClose()
+
+        # cleanup so it doesn't interfere with following code
+        del f
         db2.close()
         del db2
         gc.collect()
@@ -2998,7 +3010,7 @@ class APSW(unittest.TestCase):
             db.cursor().execute("create table foo(x,y); insert into foo values(1,2)")
             # busy
             db2=apsw.Connection(filename, vfs=vfsname)
-            db.setbusytimeout(2000)
+            db.setbusytimeout(1100)
             db2.cursor().execute("begin exclusive")
             try:
                 db.cursor().execute("begin immediate")
@@ -3043,12 +3055,21 @@ class APSW(unittest.TestCase):
                 db.loadextension(LOADEXTENSIONFILENAME)
                 self.assertEqual(1, db.cursor().execute("select half(2)").next()[0])
 
+        class ErrorVFS(apsw.VFS):
+            # A vfs that returns errors for all methods
+            def __init__(self):
+                apsw.VFS.__init__(self, "errorvfs", "")
+
+            def errorme(self, *args):
+                raise apsw.exceptionfor(apsw.SQLITE_IOERR)
+
+
         class TestVFS(apsw.VFS):
             def init1(self):
                 super(TestVFS, self).__init__("apswtest")
 
-            def init99(self):
-                super(TestVFS, self).__init__("apswtest", "")
+            def init99(self, name="apswtest", base=""):
+                super(TestVFS, self).__init__(name, base)
 
             def xDelete1(self, name, syncdir):
                 super(TestVFS,self).xDelete("<thisfile<does<not\\exist/", 1)
@@ -3063,7 +3084,7 @@ class APSW(unittest.TestCase):
                 super(TestVFS,self).xDelete("bad", "arguments")
 
             def xDelete99(self, name, syncdir):
-                assert(type(name)== type(u""))
+                assert(type(name)== type(u("")))
                 assert(type(syncdir)==type(1))
                 return super(TestVFS, self).xDelete(name, syncdir)
 
@@ -3077,20 +3098,67 @@ class APSW(unittest.TestCase):
                 return super(TestVFS,self).xAccess("bad", "arguments")
 
             def xAccess4(self, name, flags):
-                return (3)
+                return (3,)
 
             def xAccess99(self, name, flags):
-                assert(type(name) == type(u""))
+                assert(type(name) == type(u("")))
                 assert(type(flags) == type(1))
                 return super(TestVFS, self).xAccess(name, flags)
+
+            def xFullPathname1(self, bad, number, of, args):
+                1/0
+
+            def xFullPathname2(self, name):
+                1/0
+
+            def xFullPathname3(self, name):
+                return super(TestVFS, self).xFullPathname("bad", "args")
+
+            def xFullPathname4(self, name):
+                # parameter is larger than default buffer sizes used by sqlite
+                return super(TestVFS, self).xFullPathname(name*10000)
+
+            def xFullPathname5(self, name):
+                # result is larger than default buffer sizes used by sqlite
+                return "a"*10000
+
+            def xFullPathname6(self, name):
+                return 12 # bad return type
+
+            def xFullPathname99(self, name):
+                assert(type(name) == type(u("")))
+                return super(TestVFS, self).xFullPathname(name)
+
+            def xOpen1(self, bad, number, of, arguments):
+                1/0
+
+            def xOpen2(self, name, flags):
+                super(TestVFS, self).xOpen(name, 3)
+                1/0
+
+            def xOpen3(self, name, flags):
+                v=super(TestVFS, self).xOpen(name, flags)
+                flags.append(v)
+                return v
+
+            def xOpen4(self, name, flags):
+                return None
+
+            def xOpen99(self, name, flags):
+                assert(name is None or type(name)==type(u("")))
+                assert(type(flags)==type([]))
+                assert(len(flags)==2)
+                assert(type(flags[0]) in (int,long))
+                assert(type(flags[1]) in (int,long))
+                return super(TestVFS, self).xOpen(name, flags)
+                       
+
+            
 
         # check initialization
         TestVFS.__init__=TestVFS.init1
         vfs=TestVFS()
-        try:
-            testdb()
-        except apsw.VFSNotImplementedError:
-            pass
+        self.assertRaises(apsw.VFSNotImplementedError, testdb)
         del vfs
         gc.collect()
         TestVFS.__init__=TestVFS.init99
@@ -3100,7 +3168,7 @@ class APSW(unittest.TestCase):
         testdb()
         
         ## xDelete
-        self.assertRaises(TypeError, TestVFS.xDelete, "bogus", "arguments")
+        self.assertRaises(TypeError, vfs.xDelete, "bogus", "arguments")
         TestVFS.xDelete=TestVFS.xDelete1
         self.assertRaises(apsw.CantOpenError, testdb)
         TestVFS.xDelete=TestVFS.xDelete2
@@ -3112,19 +3180,67 @@ class APSW(unittest.TestCase):
         TestVFS.xDelete=TestVFS.xDelete99
 
         ## xAccess
-        self.assertRaises(TypeError, TestVFS.xAccess, "bogus", "arguments")
+        self.assertRaises(TypeError, vfs.xAccess, "bogus", "arguments")
         TestVFS.xAccess=TestVFS.xAccess1
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xAccess=TestVFS.xAccess2
-        self.assertRaises(ZeroDivisionError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
         TestVFS.xAccess=TestVFS.xAccess3
-        self.assertRaises(TypeError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xAccess=TestVFS.xAccess4
-        self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, TypeError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xAccess=TestVFS.xAccess99
         self.assertEqual(False, vfs.xAccess(u("<bad<filename:"), apsw.SQLITE_ACCESS_READWRITE))
-        
-        
+        self.assertEqual(True, vfs.xAccess(u("."), apsw.SQLITE_ACCESS_EXISTS))
+        # unix vfs doesn't ever return error so we have to indirect through one of ours
+        errvfs=ErrorVFS()
+        errvfs.xAccess=errvfs.errorme
+        vfs2=TestVFS("apswtest2", "errorvfs")
+        self.assertRaises(apsw.IOError, self.assertRaisesUnraisable, apsw.IOError, testdb, vfsname="apswtest2")
+        del vfs2
+        del errvfs
+        gc.collect()
+
+        ## xFullPathname
+        self.assertRaises(TypeError, vfs.xFullPathname, "bogus", "arguments")
+        self.assertRaises(TypeError, vfs.xFullPathname, 3)
+        TestVFS.xFullPathname=TestVFS.xFullPathname1
+        self.assertRaises(TypeError, testdb)
+        TestVFS.xFullPathname=TestVFS.xFullPathname2
+        self.assertRaises(ZeroDivisionError, testdb)
+        TestVFS.xFullPathname=TestVFS.xFullPathname3
+        self.assertRaises(TypeError, testdb)
+        TestVFS.xFullPathname=TestVFS.xFullPathname4
+        # SQLite doesn't give an error even though the vfs is silently truncating
+        # the full pathname.  See SQLite ticket 3373
+        self.assertRaises(apsw.CantOpenError, testdb) # we get cantopen on the truncated fullname
+        TestVFS.xFullPathname=TestVFS.xFullPathname5
+        self.assertRaises(apsw.TooBigError, testdb)
+        TestVFS.xFullPathname=TestVFS.xFullPathname6
+        self.assertRaises(TypeError, testdb)
+        TestVFS.xFullPathname=TestVFS.xFullPathname99
+        testdb()
+
+        ## xOpen
+        self.assertRaises(TypeError, vfs.xOpen, 3)
+        self.assertRaises(TypeError, vfs.xOpen, 3, 3)
+        self.assertRaises(TypeError, vfs.xOpen, None, (1,2))
+        self.assertRaises(TypeError, vfs.xOpen, None, [1,2,3])
+        self.assertRaises(TypeError, vfs.xOpen, None, ["1",2])
+        self.assertRaises(TypeError, vfs.xOpen, None, [1,"2"])
+        self.assertRaises(OverflowError, vfs.xOpen, None, [l("0xffffffffeeeeeeee0"), 2])
+        self.assertRaises(OverflowError, vfs.xOpen, None, [l("0xffffffff0"), 2])
+        self.assertRaises(OverflowError, vfs.xOpen, None, [1, l("0xffffffff0")])
+        self.assertRaises(apsw.CantOpenError, testdb, filename=".") # can't open directories
+        TestVFS.xOpen=TestVFS.xOpen1
+        self.assertRaises(TypeError, testdb)
+        TestVFS.xOpen=TestVFS.xOpen2
+        self.assertRaises(TypeError, testdb)
+        TestVFS.xOpen=TestVFS.xOpen3
+        self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, TypeError, testdb)
+        TestVFS.xOpen=TestVFS.xOpen4
+        self.assertRaises(AttributeError, testdb)
+
 
 
     # Note that faults fire only once, so there is no need to reset
@@ -3176,23 +3292,14 @@ class APSW(unittest.TestCase):
 
         ## DestructorCloseFail
         if not os.getenv("APSW_NO_MEMLEAK"):
-            # save existing excepthook
-            xx=sys.excepthook
-            # put in our own
-            called=[0]
-            def ehook(t,v,tb, called=called):
-                called[0]=1
-            sys.excepthook=ehook
             # test
             apsw.faultdict["DestructorCloseFail"]=True
-            db=apsw.Connection(":memory:")
-            db.cursor().execute("select 3")
-            del db
-            gc.collect()
-            # check there was an unraiseable
-            self.failUnlessEqual(called[0], 1)
-            # restore
-            sys.excepthook=xx
+            def f():
+                db=apsw.Connection(":memory:")
+                db.cursor().execute("select 3")
+                del db
+                gc.collect()
+            self.assertRaisesUnraisable(apsw.ConnectionNotClosedError, f)
 
         ## BlobAllocFails
         apsw.faultdict["BlobAllocFails"]=True
@@ -3404,27 +3511,17 @@ class APSW(unittest.TestCase):
         ## CBDispatchFinalError
         apsw.faultdict["CBDispatchFinalError"]=True
         try:
-            # save existing excepthook
-            xx=sys.excepthook
-            # put in our own
-            called=[0]
-            def ehook(t,v,tb, called=called):
-                called[0]=1
-            sys.excepthook=ehook
-
-            db=apsw.Connection(":memory:")
-            def foo():
-                return None, dummy, dummy2
-            db.createaggregatefunction("foo", foo)
-            for row in db.cursor().execute("create table bar(x);insert into bar values(3); select foo(x) from bar"):
-                pass
-            1/0
+            def f():
+                db=apsw.Connection(":memory:")
+                def foo():
+                    return None, dummy, dummy2
+                db.createaggregatefunction("foo", foo)
+                for row in db.cursor().execute("create table bar(x);insert into bar values(3); select foo(x) from bar"):
+                    pass
+                1/0
+            self.assertRaisesUnraisable(Exception, f)
         except ZeroDivisionError:
             pass
-        # restore
-        sys.excepthook=xx
-        # check there was an unraiseable
-        self.failUnlessEqual(called[0], 1)
 
         ## Virtual table code
         class Source:
@@ -3512,26 +3609,18 @@ class APSW(unittest.TestCase):
 
         ## BlobDeallocException
         apsw.faultdict["BlobDeallocException"]=True
-        # save existing excepthook
-        xx=sys.excepthook
-        # put in our own
-        called=[0]
-        def ehook(t,v,tb, called=called):
-            called[0]=1
-        sys.excepthook=ehook
+        def f():
+            db=apsw.Connection(":memory:")
+            db.cursor().execute("create table foo(b);insert into foo(rowid,b) values(2,x'aabbccddee')")
+            blob=db.blobopen("main", "foo", "b", 2, False) # open read-only
+            # deliberately cause problem
+            try:  blob.write(b('a'))
+            except apsw.ReadOnlyError:   pass
+            # garbage collect
+            del blob
+            gc.collect()
 
-        db=apsw.Connection(":memory:")
-        db.cursor().execute("create table foo(b);insert into foo(rowid,b) values(2,x'aabbccddee')")
-        blob=db.blobopen("main", "foo", "b", 2, False) # open read-only
-        # deliberately cause problem
-        try:  blob.write(b('a'))
-        except apsw.ReadOnlyError:   pass
-        # garbage collect
-        del blob
-        gc.collect()
-
-        sys.excepthook=xx
-        self.assertEqual(called[0], 1)
+        self.assertRaisesUnraisable(apsw.ReadOnlyError, f)
         
         ## BlobWriteAsReadBufFails
         apsw.faultdict["BlobWriteAsReadBufFails"]=True
@@ -3636,7 +3725,22 @@ class APSW(unittest.TestCase):
         except apsw.NoMemError:
             pass
 
+        ### vfs routines
 
+        class FaultVFS(apsw.VFS):
+            def __init__(self):
+                super(FaultVFS, self).__init__("faultvfs", "")
+
+        vfs=FaultVFS()
+        
+        ## xFullPathnameConversion
+        apsw.faultdict["xFullPathnameConversion"]=True
+        try:
+            apsw.Connection("testdb", vfs="faultvfs")
+            1/0
+        except MemoryError:
+            pass
+                
 
 if sys.platform!="win32":
     # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used
@@ -3725,5 +3829,8 @@ if __name__=='__main__':
     del sys
     if gc:
         gc.collect()
+#    print gc.get_objects()
+#    import pdb ; pdb.set_trace()
+
     del gc
     exit(exitcode)
