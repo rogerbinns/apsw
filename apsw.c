@@ -5487,7 +5487,8 @@ apswvfs_xFullPathname(sqlite3_vfs *vfs, const char *zName, int nOut, char *zOut)
       /* nOut includes null terminator space (ie is mxPathname+1) */
       if(PyBytes_GET_SIZE(utf8)+1>nOut)
         {
-          result=SQLITE_CANTOPEN;
+          result=SQLITE_TOOBIG;
+          SET_EXC(result, NULL);
           AddTraceBackHere(__FILE__, __LINE__, "vfs.xFullPathname", "{s: s, s: O, s: i}", "zName", zName, "result_from_python", utf8, "nOut", nOut);
           goto finally;
         }
@@ -5513,7 +5514,10 @@ apswvfspy_xFullPathname(APSWVFS *self, PyObject *name)
 
   utf8=getutf8string(name);
   if(!utf8)
-    goto finally;
+    {
+      AddTraceBackHere(__FILE__, __LINE__, "vfspy.xFullPathname", "{s: O}", "name", name);
+      goto finally;
+    }
 
   resbuf=PyMem_Malloc(self->basevfs->mxPathname+1);
   memset(resbuf, 0, self->basevfs->mxPathname+1); /* make sure it is null terminated */
@@ -5521,13 +5525,16 @@ apswvfspy_xFullPathname(APSWVFS *self, PyObject *name)
     res=self->basevfs->xFullPathname(self->basevfs, PyBytes_AsString(utf8), self->basevfs->mxPathname+1, resbuf);
 
   if(res==SQLITE_OK)
-      result=convertutf8string(resbuf);
+    APSW_FAULT_INJECT(xFullPathnameConversion,result=convertutf8string(resbuf),result=PyErr_NoMemory());
 
   if(!result)
     res=SQLITE_CANTOPEN;
 
   if(res!=SQLITE_OK)
-    SET_EXC(res, NULL);
+    {
+      SET_EXC(res, NULL);
+      AddTraceBackHere(__FILE__, __LINE__, "vfspy.xFullPathname", "{s: O, s: i, s: O}", "name", name, "res", res, "result", result?result:Py_None);
+    }
 
  finally:
   Py_XDECREF(utf8);
@@ -5593,6 +5600,7 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args)
 {
   sqlite3_file *file=NULL;
   int flagsout=0;
+  int flagsin=0;
   int res;
   PyObject *result=NULL, *flags;
   PyObject *pyname=NULL, *utf8name=NULL;
@@ -5622,12 +5630,16 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args)
     }
   
   flagsout=PyIntLong_AsLong(PyList_GET_ITEM(flags, 1));
+  flagsin=PyIntLong_AsLong(PyList_GET_ITEM(flags, 0));
+  /* check for overflow */
+  if(flagsout!=PyIntLong_AsLong(PyList_GET_ITEM(flags, 1)) || flagsin!=PyIntLong_AsLong(PyList_GET_ITEM(flags, 0)))
+    PyErr_Format(PyExc_OverflowError, "Flags arguments need to fit in 32 bits");
   if(PyErr_Occurred()) goto finally;
 
   file=PyMem_Malloc(self->basevfs->szOsFile);
   if(!file) goto finally;
 
-  res=self->basevfs->xOpen(self->basevfs, (utf8name==Py_None)?NULL:PyBytes_AS_STRING(utf8name), file, PyIntLong_AsLong(PyList_GET_ITEM(flags, 0)), &flagsout);
+  res=self->basevfs->xOpen(self->basevfs, (utf8name==Py_None)?NULL:PyBytes_AS_STRING(utf8name), file, flagsin, &flagsout);
   if(PyErr_Occurred()) goto finally;
   if(res!=SQLITE_OK)
     {
@@ -5644,7 +5656,6 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args)
   apswfile->base=file;
   file=NULL;
   result=(PyObject*)(void*)apswfile;
-  Py_INCREF(apswfile); /* ensure it hangs around until xClose is called */
                                                                        
  finally:
   if(file) PyMem_Free(file);
@@ -6382,6 +6393,7 @@ APSWVFSFile_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSE
     {
       self->base=NULL;
     }
+
   return (PyObject*)self;
 }
 
