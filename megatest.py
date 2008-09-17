@@ -75,6 +75,8 @@ def getpyurl(pyver):
     dirver=pyver
     if 'b' in dirver:
         dirver=dirver.split('b')[0]
+    elif 'rc' in dirver:
+        dirver=dirver.split('rc')[0]
     if pyver>'2.3.0':
         return "http://python.org/ftp/python/%s/Python-%s.tar.bz2" % (dirver,pyver)
     if pyver=='2.3.0':
@@ -122,7 +124,7 @@ def buildapsw(outputfile, pybin, workdir):
 
 PYVERS=(
     '3.0b3',
-    '2.6b3',
+    '2.6rc1',
     '2.5.2',
     '2.4.5',
     '2.3.7',
@@ -132,8 +134,8 @@ PYVERS=(
 
 SQLITEVERS=(
     'cvs',
+    '3.6.2',
     '3.6.1',
-    '3.6.0',
    )
 
 UCSTEST=(2,4,)
