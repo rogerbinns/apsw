@@ -3530,6 +3530,9 @@ Traceback (most recent call last):
     <li><a href="http://sqlite.org/c3ref/status.html">sqlite3_status</a></li>
   </ul>
 
+  <p>Restored prior behaviour regarding Python ints and longs returning int for numbers fitting in signed 32 bit.  This only affects
+   Python 2 as Python 3 uses long exclusively.  Thanks to Joe Pham for reporting this as <a href="http://code.google.com/p/apsw/issues/detail?id=24">issue 24</a>.
+
   <h2><a name="359r2">3.5.9-r2</a></h2>
 
   <p>APSW now works with Python 3 (you need 3.0b1 or later).</p>
