@@ -784,6 +784,9 @@ Connection_internal_cleanup(Connection *self)
   Py_XDECREF(self->profile);
   self->profile=0;
 
+  Py_XDECREF(self->updatehook);
+  self->updatehook=0;
+
   Py_XDECREF(self->commithook);
   self->commithook=0;
 
@@ -2613,8 +2616,6 @@ Connection_createcollation(Connection *self, PyObject *args)
       PyErr_SetString(PyExc_TypeError, "parameter must be callable");
       return NULL;
     }
-
-  Py_INCREF(callable);
 
   res=sqlite3_create_collation_v2(self->db,
                                   name,
