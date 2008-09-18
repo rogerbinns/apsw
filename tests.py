@@ -2989,9 +2989,17 @@ class APSW(unittest.TestCase):
         self.assertEqual(obfu, data)
         f.xClose()
         f.xClose()
+        f2=apsw.VFSFile("", "testdb", [apsw.SQLITE_OPEN_READONLY, 0])
+        del f2
+        f2=apsw.VFSFile("", "testdb2", [apsw.SQLITE_OPEN_READONLY, 0])
+        data=f2.xRead(len(obfu), 0) 
+        self.assertEqual(obfu, data)
+        f2.xClose()
+        f2.xClose()
 
         # cleanup so it doesn't interfere with following code
         del f
+        del f2
         db2.close()
         del db2
         gc.collect()
