@@ -29,8 +29,8 @@ gcc -pthread -fno-strict-aliasing  -Os -g -D_FORTIFY_SOURCE=2 -fPIC -W -Wall -DA
 gcc -pthread  -g -shared apsw.o -o apsw.so
 if [ $# -eq 0 ]
 then
-    env APSW_NO_MEMLEAK=t APSW_TEST_ITERATIONS=$APSW_TEST_ITERATIONS valgrind --num-callers=100 --leak-check=full --leak-resolution=high --show-reachable=yes --freelist-vol=500000000 $PYTHON tests.py 
+    env APSW_NO_MEMLEAK=t APSW_TEST_ITERATIONS=$APSW_TEST_ITERATIONS valgrind --track-fds=yes --num-callers=100 --leak-check=full --leak-resolution=high --show-reachable=yes --freelist-vol=500000000 $PYTHON tests.py 
 else
-    env APSW_NO_MEMLEAK=t APSW_TEST_ITERATIONS=$APSW_TEST_ITERATIONS valgrind --num-callers=100 --leak-check=full --leak-resolution=high --show-reachable=yes --freelist-vol=500000000 $PYTHON "$@"
+    env APSW_NO_MEMLEAK=t APSW_TEST_ITERATIONS=$APSW_TEST_ITERATIONS valgrind --track-fds=yes --num-callers=100 --leak-check=full --leak-resolution=high --show-reachable=yes --freelist-vol=500000000 $PYTHON "$@"
 fi
 
