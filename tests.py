@@ -36,6 +36,11 @@ else:
 import traceback
 import re
 import gc
+try:
+    import ctypes
+except:
+    ctypes=None
+
 
 # Unicode string/bytes prefix
 if py3:
@@ -102,10 +107,7 @@ class ThreadRunner(threading.Thread):
 
     def __init__(self, callable, *args, **kwargs):
         threading.Thread.__init__(self)
-        if py3:
-            self.set_daemon(True)
-        else:
-            self.setDaemon(True)
+        self.setDaemon(True)
         self.callable=callable
         self.args=args
         self.kwargs=kwargs
@@ -2343,7 +2345,6 @@ class APSW(unittest.TestCase):
         "Verify handling of large strings/blobs (>2GB) [Python 2.5+, 64 bit platform]"
         if sys.version_info<(2,5):
             return
-        import ctypes
         if ctypes.sizeof(ctypes.c_size_t)<8:
             return
         # For binary/blobs I use an anonymous area slightly larger than 2GB chunk of memory, but don't touch any of it
@@ -3006,6 +3007,8 @@ class APSW(unittest.TestCase):
 
         ### Detailed vfs testing
 
+        testtimeout=False
+
         def testdb(filename="testdb2", vfsname="apswtest"):
             "This method causes all parts of a vfs to be executed"
             gc.collect() # free any existing db handles
@@ -3016,16 +3019,17 @@ class APSW(unittest.TestCase):
                 
             db=apsw.Connection(filename, vfs=vfsname)
             db.cursor().execute("create table foo(x,y); insert into foo values(1,2)")
-            # busy
-            db2=apsw.Connection(filename, vfs=vfsname)
-            db.setbusytimeout(1100)
-            db2.cursor().execute("begin exclusive")
-            try:
-                db.cursor().execute("begin immediate")
-                1/0 # should not be reached
-            except apsw.BusyError:
-                pass
-            db2.cursor().execute("end")
+            if testtimeout:
+                # busy
+                db2=apsw.Connection(filename, vfs=vfsname)
+                db.setbusytimeout(1100)
+                db2.cursor().execute("begin exclusive")
+                try:
+                    db.cursor().execute("begin immediate")
+                    1/0 # should not be reached
+                except apsw.BusyError:
+                    pass
+                db2.cursor().execute("end")
 
             # cause truncate to be called
             # see sqlite test/pager3.test where this (public domain) code is taken from
@@ -3054,14 +3058,14 @@ class APSW(unittest.TestCase):
             c.execute("rollback")
 
             if hasattr(APSW, "testLoadExtension"):
-                # can we test loadextension?
+                # can we use loadextension?
                 db.enableloadextension(True)
                 try:
                     db.loadextension("./"*128+LOADEXTENSIONFILENAME+"xxx")
                 except apsw.ExtensionLoadingError:
                     pass
                 db.loadextension(LOADEXTENSIONFILENAME)
-                self.assertEqual(1, db.cursor().execute("select half(2)").next()[0])
+                self.assertEqual(1, next(db.cursor().execute("select half(2)"))[0])
 
         class ErrorVFS(apsw.VFS):
             # A vfs that returns errors for all methods
@@ -3159,9 +3163,37 @@ class APSW(unittest.TestCase):
                 assert(type(flags[0]) in (int,long))
                 assert(type(flags[1]) in (int,long))
                 return super(TestVFS, self).xOpen(name, flags)
-                       
 
-            
+            def xDlOpen1(self, bad, number, of, arguments):
+                1/0
+
+            def xDlOpen2(self, name):
+                1/0
+
+            def xDlOpen3(self, name):
+                return -1
+
+            def xDlOpen4(self, name):
+                return "fred"
+
+            def xDlOpen5(self, name):
+                return super(TestVFS, self).xDlOpen(3)
+
+            # python 3 only test
+            def xDlOpen6(self, name):
+                return super(TestVFS, self).xDlOpen(b("abcd")) # bad string type
+
+            def xDlOpen7(self, name):
+                return l("0xffffffffffffffff10")
+
+            def xDlOpen99(self, name):
+                assert(type(name)==type(u("")))
+                res=super(TestVFS, self).xDlOpen(name)
+                if ctypes:
+                    cres=ctypes.cdll.LoadLibrary(name)._handle
+                    assert(res==cres)
+                return res
+                
 
         # check initialization
         TestVFS.__init__=TestVFS.init1
@@ -3248,8 +3280,29 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xOpen=TestVFS.xOpen4
         self.assertRaises(AttributeError, testdb)
+        TestVFS.xOpen=TestVFS.xOpen99
+        testdb()
 
-
+        ## xDlOpen
+        self.assertRaises(TypeError, vfs.xDlOpen, 3)
+        self.assertRaises(UnicodeDecodeError, vfs.xDlOpen, b(r"\xfb\xfc\xfd\xfe\xff\xff\xff\xff"))
+        TestVFS.xDlOpen=TestVFS.xDlOpen1
+        self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
+        TestVFS.xDlOpen=TestVFS.xDlOpen2
+        self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
+        TestVFS.xDlOpen=TestVFS.xDlOpen3
+        # skip testing xDlOpen3 as python is happy to convert -1 to void ptr!
+        TestVFS.xDlOpen=TestVFS.xDlOpen4
+        self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
+        TestVFS.xDlOpen=TestVFS.xDlOpen5
+        self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
+        if py3:
+            TestVFS.xDlOpen=TestVFS.xDlOpen6
+            testdb()
+        TestVFS.xDlOpen=TestVFS.xDlOpen7
+        self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, OverflowError, testdb)
+        TestVFS.xDlOpen=TestVFS.xDlOpen99
+        testdb()
 
     # Note that faults fire only once, so there is no need to reset
     # them.  The testing for objects bigger than 2GB is done in
