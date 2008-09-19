@@ -1243,7 +1243,7 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
 
   <blockquote>
     <pre>
-python setup.py install
+python setup.py install --fetch-sqlite
 
 </pre>
   </blockquote>
@@ -1254,14 +1254,21 @@ python setup.py install
 
   <blockquote>
     <pre>
-python setup.py build --compile=mingw32 install
+python setup.py build --compile=mingw32 install --fetch-sqlite
 
 </pre>
   </blockquote>
 
   <h2><a name="Finding" id="Finding">Finding SQLite 3</a></h2>
 
-  <p>SQLite 3 is needed during the build process. These methods are tried in order:</p>
+  <p>SQLite 3 is needed during the build process. If you specify
+  <code>--fetch-sqlite</code> anywhere on the setup.py command line
+  then it will automatically fetch the current version of the SQLite
+  amalgamation.  You can manually specify the version, for example
+  <code>--fetch-sqlite=3.6.1</code>.
+
+  <p>These
+  methods are tried in order:</p>
 
   <dl>
     <dt><a href="http://www.sqlite.org/cvstrac/wiki?p=TheAmalgamation">Amalgamation</a></dt>
@@ -1283,19 +1290,17 @@ python setup.py build --compile=mingw32 install
 
   <h2><a name="Recommended" id="Recommended">Recommended</a></h2>
 
-  <p>These instructions show how to build using the amalgamation. Any existing SQLite on your system is ignored at
+  <p>These instructions show how to build automatically downloading and using the amalgamation. Any existing SQLite on your system is ignored at
   build time and runtime. (Note that you can even use APSW in the same process as a different SQLite is used by other
   libraries - this happens a lot on Mac.) You should follow these instructions with your current directory being where
-  you extracted the APSW source to. You can use 3.6.0 or later versions of SQLite.</p>
+  you extracted the APSW source to.</p>
 
   <dl>
     <dt><b>Windows</b></dt>
   </dl>
   <pre>
- <font color="blue"> Manually download and extract <a href=
-"http://sqlite.org/sqlite-amalgamation-3_6_0.zip">http://sqlite.org/sqlite-amalgamation-3_6_0.zip</a></font>
-&gt; python setup.py build --compile=mingw32 install         <font color=
-"blue">Leave out --compile=... flag if using Microsoft compiler</font>
+&gt; python setup.py build --compile=mingw32 install --fetch-sqlite     <font color=
+"blue"># Leave out --compile=... flag if using Microsoft compiler</font>
 &gt; python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
 &gt; python test.py       <font color="blue"># optional - checks everything works correctly</font>
 
@@ -1306,9 +1311,7 @@ python setup.py build --compile=mingw32 install
     <dt><b>Mac/Linux/etc</b></dt>
   </dl>
   <pre>
-$ wget <a href="http://sqlite.org/sqlite-amalgamation-3_6_0.zip">http://sqlite.org/sqlite-amalgamation-3_6_0.zip</a>
-$ unzip sqlite-amalgamation-3_6_0.zip
-$ python setup.py install
+$ python setup.py install --fetch-sqlite
 $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"     
 $ python test.py       <font color="blue"># optional - checks everything works correctly</font>
 

@@ -3,6 +3,57 @@ import sys
 
 from distutils.core import setup, Extension
 
+# Should we automatically fetch SQLite amalgamation?
+fetch=None
+argv2=[]
+for v in sys.argv:
+    if v=="--fetch-sqlite" or v.startswith("--fetch-sqlite="):
+        fetch=v
+    else:
+        argv2.append(v)
+sys.argv=argv2
+
+if fetch:
+    # python 2 and 3 print equivalent
+    def write(*args):
+        # py2 won't allow keyword arg on end, so work around it
+        dest=sys.stdout
+        if args[-1]==sys.stderr:
+            dest=args[-1]
+            args=args[:-1]
+        dest.write(" ".join(args)+"\n")
+        dest.flush()
+    import urllib2
+    import re
+    import cStringIO
+    import zipfile
+    URL="http://sqlite.org/download.html"
+    if fetch=="--fetch-sqlite":
+        # grab index page to figure out latest version available
+        write("Fetching", URL)
+        page=urllib2.urlopen(URL).read()
+        match=re.search('"sqlite-amalgamation-3_([0-9]+)_([0-9]+).zip"', page)
+        if match:
+            ver="3."+match.group(1)+"."+match.group(2)
+        else:
+            write("Unable to determine current SQLite version.  Use --fetch-sqlite=VERSION", sys.stderr)
+            write("to set version (for example --fetch-sqlite=3.6.2", sys.stderr)
+            sys.exit(17)
+    else:
+        ver=fetch[len("--fetch-sqlite="):]
+    ver=ver.replace(".", "_")
+    AURL="http://sqlite.org/sqlite-amalgamation-%s.zip" % (ver,)
+    write("Fetching", AURL)
+    data=urllib2.urlopen(AURL).read()
+    data=cStringIO.StringIO(data)
+    zip=zipfile.ZipFile(data, "r")
+    for name in "sqlite3.c", "sqlite3.h", "sqlite3ext.h":
+        write("Extracting", name)
+        # If you get an exception here then the archive doesn't contain the files it should
+        open(name, "wb").write(zip.read(name))
+
+
+depends=["apswversion.h", "pointerlist.c", "statementcache.c", "traceback.c"]
 define_macros=[]
 
 # We always want threadsafe
@@ -40,6 +91,7 @@ for path in amalgamation:
             define_macros.append( ('APSW_USE_SQLITE_AMALGAMATION', '"'+path+'"') )
         libraries=[]
         usingamalgamation=True
+        depends.append(path)
         break
     
 if not usingamalgamation:
@@ -50,6 +102,7 @@ if not usingamalgamation:
         library_dirs=["sqlite3"]
 
     libraries=['sqlite3']
+    
 
 # setuptools likes to define NDEBUG even when we want debug stuff
 if "--debug" in sys.argv:
@@ -88,5 +141,6 @@ complete SQLite API into Python.""",
                              include_dirs=include_dirs,
                              library_dirs=library_dirs,
                              libraries=libraries,
-                             define_macros=define_macros)])
+                             define_macros=define_macros,
+                             depends=depends)])
 
