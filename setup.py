@@ -1,7 +1,21 @@
+#!/usr/bin/env python
+
 import os
 import sys
 
 from distutils.core import setup, Extension
+
+# python 2 and 3 print equivalent
+def write(*args):
+    # py2 won't allow keyword arg on end, so work around it
+    dest=sys.stdout
+    if args[-1]==sys.stderr:
+        dest=args[-1]
+        args=args[:-1]
+    dest.write(" ".join(args)+"\n")
+    dest.flush()
+
+py3=sys.version_info>=(3,0)
 
 # Should we automatically fetch SQLite amalgamation?
 fetch=None
@@ -14,24 +28,26 @@ for v in sys.argv:
 sys.argv=argv2
 
 if fetch:
-    # python 2 and 3 print equivalent
-    def write(*args):
-        # py2 won't allow keyword arg on end, so work around it
-        dest=sys.stdout
-        if args[-1]==sys.stderr:
-            dest=args[-1]
-            args=args[:-1]
-        dest.write(" ".join(args)+"\n")
-        dest.flush()
-    import urllib2
+    if py3:
+        import urllib.request
+        urlopen=urllib.request.urlopen
+        import io
+        bytesio=io.BytesIO
+    else:
+        import urllib2
+        urlopen=urllib2.urlopen
+        import cStringIO
+        bytesio=cStringIO.StringIO
+
     import re
-    import cStringIO
     import zipfile
     URL="http://sqlite.org/download.html"
     if fetch=="--fetch-sqlite":
         # grab index page to figure out latest version available
         write("Fetching", URL)
-        page=urllib2.urlopen(URL).read()
+        page=urlopen(URL).read()
+        if py3:
+            page=page.decode("iso8859_1")
         match=re.search('"sqlite-amalgamation-3_([0-9]+)_([0-9]+).zip"', page)
         if match:
             ver="3."+match.group(1)+"."+match.group(2)
@@ -44,8 +60,8 @@ if fetch:
     ver=ver.replace(".", "_")
     AURL="http://sqlite.org/sqlite-amalgamation-%s.zip" % (ver,)
     write("Fetching", AURL)
-    data=urllib2.urlopen(AURL).read()
-    data=cStringIO.StringIO(data)
+    data=urlopen(AURL).read()
+    data=bytesio(data)
     zip=zipfile.ZipFile(data, "r")
     for name in "sqlite3.c", "sqlite3.h", "sqlite3ext.h":
         write("Extracting", name)
@@ -92,6 +108,7 @@ for path in amalgamation:
         libraries=[]
         usingamalgamation=True
         depends.append(path)
+        write("SQLite: Using amalgamation", path)
         break
     
 if not usingamalgamation:
@@ -100,8 +117,12 @@ if not usingamalgamation:
     if os.path.exists("sqlite3"):
         include_dirs=["sqlite3"]
         library_dirs=["sqlite3"]
+        write("SQLite: Using include/libraries in sqlite3 subdirectory")
+    else:
+        write("SQLite: Using system sqlite include/libraries")
 
     libraries=['sqlite3']
+
     
 
 # setuptools likes to define NDEBUG even when we want debug stuff
