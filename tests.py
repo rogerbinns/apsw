@@ -3824,9 +3824,9 @@ if __name__=='__main__':
     if getattr(memdb, "enableloadextension", None) and not os.path.exists(LOADEXTENSIONFILENAME):
         write("Not doing LoadExtension test.  You need to compile the extension first\n")
         if sys.platform.startswith("darwin"):
-            write("  gcc -fPIC -bundle -o "+LOADEXTENSIONFILENAME+" -Isqlite3 testextension.c\n")
+            write("  gcc -fPIC -bundle -o "+LOADEXTENSIONFILENAME+" -I. -Isqlite3 testextension.c\n")
         else:
-            write("  gcc -fPIC -shared -o "+LOADEXTENSIONFILENAME+" -Isqlite3 testextension.c\n")
+            write("  gcc -fPIC -shared -o "+LOADEXTENSIONFILENAME+" -I. -Isqlite3 testextension.c\n")
         del APSW.testLoadExtension
         sys.stdout.flush()
 
