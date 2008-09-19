@@ -17,6 +17,7 @@ import os
 import re
 import sys
 import threading
+import Queue
 
 def run(cmd):
     status=os.system(cmd)
@@ -39,6 +40,18 @@ def runtest(workdir, pyver, ucs, sqlitever, logdir):
     pybin, pylib=buildpython(workdir, pyver, ucs, os.path.abspath(os.path.join(logdir, "pybuild.txt")))
     dotest(logdir, pybin, pylib, workdir, sqlitever)
 
+def threadrun(queue):
+    while True:
+        d=queue.get()
+        if d is None:
+            return
+        try:
+            print "Starting",d
+            runtest(**d)
+            print "Finished",d
+        except:
+            print "FAILED", d
+        
 def main():
     print "Test starting"
     os.system("rm -rf apsw.so megatestresults 2>/dev/null ; mkdir megatestresults")
@@ -46,6 +59,8 @@ def main():
     workdir=os.path.abspath("work")
     os.system("rm -rf %s 2>/dev/null ; mkdir %s" % (workdir, workdir))
     print "      done"
+
+    queue=Queue.Queue()
     threads=[]
 
     for pyver in PYVERS:
@@ -61,9 +76,14 @@ def main():
                 run("cp *.py *.c *.h "+workdir)
                 run("rm -f "+workdir+"/sqlite3.c || true")
 
-                t=threading.Thread(target=runtest, kwargs={'workdir': workdir, 'pyver': pyver, 'ucs': ucs, 'sqlitever': sqlitever, 'logdir': logdir})
-                t.start()
-                threads.append(t)
+                queue.put({'workdir': workdir, 'pyver': pyver, 'ucs': ucs, 'sqlitever': sqlitever, 'logdir': logdir})
+
+    threads=[]
+    for i in range(8):
+        queue.put(None) # exit sentinel
+        t=threading.Thread(target=threadrun, args=(queue,))
+        t.start()
+        threads.append(t)
 
     print "All builds started, now waiting for them to finish"
     for t in threads:
@@ -123,8 +143,8 @@ def buildapsw(outputfile, pybin, workdir):
 
 
 PYVERS=(
-    '3.0b3',
-    '2.6rc1',
+    '3.0rc1',
+    '2.6rc2',
     '2.5.2',
     '2.4.5',
     '2.3.7',
