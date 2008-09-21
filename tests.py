@@ -38,8 +38,10 @@ import re
 import gc
 try:
     import ctypes
+    import _ctypes
 except:
     ctypes=None
+    _ctypes=None
 
 
 # Unicode string/bytes prefix
@@ -85,6 +87,15 @@ if not py3:
             if len(args):
                 return args[0]
             raise
+
+# py3 has a useless sys.excepthook mainly to avoid allocating any memory as the
+# exception could have been running out of memory
+if py3:
+    def ehook(etype, evalue, etraceback):
+        sys.stderr.write("Unraiseable exception "+str(etype)+":"+str(evalue)+"\n")
+        traceback.print_tb(etraceback)
+    sys.excepthook=ehook
+
             
 
 # helper functions
@@ -2343,9 +2354,7 @@ class APSW(unittest.TestCase):
 
     def testLargeObjects(self):
         "Verify handling of large strings/blobs (>2GB) [Python 2.5+, 64 bit platform]"
-        if sys.version_info<(2,5):
-            return
-        if ctypes.sizeof(ctypes.c_size_t)<8:
+        if not ctypes or ctypes.sizeof(ctypes.c_size_t)<8:
             return
         # For binary/blobs I use an anonymous area slightly larger than 2GB chunk of memory, but don't touch any of it
         import mmap
@@ -2938,6 +2947,7 @@ class APSW(unittest.TestCase):
 
     def testVFS(self):
         "Verify VFS functionality"
+       
         # Check basic functionality and inheritance - make an obfuscated provider
 
         # obfusvfs code
@@ -3006,6 +3016,78 @@ class APSW(unittest.TestCase):
         gc.collect()
 
         ### Detailed vfs testing
+
+        # xRandomness is tested first. The method is called once after sqlite initializes
+        # and only the default vfs is called.  Consequently we have a helper test method
+        # but it is only available when using testfixtures and the amalgamation
+        self.db=None
+        gc.collect()
+
+        defvfs=apsw.vfsnames()[0] # we want to inherit from this one
+
+        def testrand():
+            gc.collect()
+            apsw.test_reset_rng()
+            vfs=RandomVFS()
+            db=apsw.Connection("testdb")
+            next(db.cursor().execute("select randomblob(10)"))
+            
+        
+        class RandomVFS(apsw.VFS):
+            def __init__(self):
+                apsw.VFS.__init__(self, "random", defvfs, makedefault=True)
+
+            def xRandomness1(self, bad, number, of, arguments):
+                1/0
+
+            def xRandomness2(self, n):
+                1/0
+
+            def xRandomness3(self, n):
+                return b("abcd")
+
+            def xRandomness4(self, n):
+                return u("abcd")
+
+            def xRandomness5(self, n):
+                return b("a")*(2*n)
+
+            def xRandomness6(self, n):
+                return None
+
+            def xRandomness7(self, n):
+                return 3
+
+            def xRandomness99(self, n):
+                return super(RandomVFS, self).xRandomness(n+1)
+
+        if hasattr(apsw, 'test_reset_rng'):
+            vfs=RandomVFS()
+            self.assertRaises(TypeError, vfs.xRandomness, "jksdhfsd")
+            self.assertRaises(TypeError, vfs.xRandomness, 3, 3)
+            self.assertRaises(ValueError, vfs.xRandomness, -88)
+
+            RandomVFS.xRandomness=RandomVFS.xRandomness1
+            self.assertRaisesUnraisable(TypeError, testrand)
+            RandomVFS.xRandomness=RandomVFS.xRandomness2
+            self.assertRaisesUnraisable(ZeroDivisionError, testrand)
+            RandomVFS.xRandomness=RandomVFS.xRandomness3
+            testrand() # shouldn't have problems
+            RandomVFS.xRandomness=RandomVFS.xRandomness4
+            self.assertRaisesUnraisable(TypeError, testrand)
+            RandomVFS.xRandomness=RandomVFS.xRandomness5
+            testrand() # shouldn't have problems
+            RandomVFS.xRandomness=RandomVFS.xRandomness6
+            testrand() # shouldn't have problems
+            RandomVFS.xRandomness=RandomVFS.xRandomness7
+            self.assertRaisesUnraisable(TypeError, testrand)
+            RandomVFS.xRandomness=RandomVFS.xRandomness99
+            testrand() # shouldn't have problems
+
+        # make things nice for following code
+        gc.collect()
+        self.tearDown()
+        self.setUp()
 
         testtimeout=False
 
@@ -3190,10 +3272,76 @@ class APSW(unittest.TestCase):
                 assert(type(name)==type(u("")))
                 res=super(TestVFS, self).xDlOpen(name)
                 if ctypes:
-                    cres=ctypes.cdll.LoadLibrary(name)._handle
+                    try:
+                        cres=ctypes.cdll.LoadLibrary(name)._handle
+                    except:
+                        cres=0
                     assert(res==cres)
                 return res
+
+            def xDlSym1(self, bad, number, of, arguments):
+                1/0
                 
+            def xDlSym2(self, handle, name):
+                1/0
+
+            def xDlSym3(self, handle, name):
+                return "fred"
+
+            def xDlSym4(self, handle, name):
+                super(TestVFS, self).xDlSym(3,3)
+
+            def xDlSym5(self, handle, name):
+                return super(TestVFS, self).xDlSym(handle, b("abcd"))
+
+            def xDlSym6(self, handle, name):
+                return l("0xffffffffffffffff10")
+
+            def xDlSym99(self, handle, name):
+                assert(type(handle) in (int,long))
+                assert(type(name) == type(u("")))
+                res=super(TestVFS, self).xDlSym(handle, name)
+                if sys.platform not in ("win32", "win64") and _ctypes:
+                    assert(_ctypes.dlsym (handle, name)==res)
+                else:
+                    if ctypes:
+                        assert(ctypes.win32.kernel32.GetProcAddress (handle, name)==res)
+                return res
+
+            def xDlClose1(self, bad, number, of, arguments):
+                1/0
+
+            def xDlClose2(self, handle):
+                1/0
+
+            def xDlClose3(self, handle):
+                return super(TestVFS, self).xDlClose("three")
+
+            def xDlClose99(self, handle):
+                assert(type(handle) in (int,long))
+                super(TestVFS,self).xDlClose(handle)
+
+            def xDlError1(self, bad, number, of, arguments):
+                1/0
+
+            def xDlError2(self):
+                1/0
+
+            def xDlError3(self):
+                return super(TestVFS, self).xDlError("three")
+
+            def xDlError4(self):
+                return 3
+
+            def xDlError5(self):
+                return b("abcd")
+
+            def xDlError6(self):
+                return None
+
+            def xDlError99(self):
+                return super(TestVFS,self).xDlError()
+                    
 
         # check initialization
         TestVFS.__init__=TestVFS.init1
@@ -3285,7 +3433,10 @@ class APSW(unittest.TestCase):
 
         ## xDlOpen
         self.assertRaises(TypeError, vfs.xDlOpen, 3)
-        self.assertRaises(UnicodeDecodeError, vfs.xDlOpen, b(r"\xfb\xfc\xfd\xfe\xff\xff\xff\xff"))
+        if py3:
+            self.assertRaises(TypeError, vfs.xDlOpen, b(r"\xfb\xfc\xfd\xfe\xff\xff\xff\xff"))
+        else:
+            self.assertRaises(UnicodeDecodeError, vfs.xDlOpen, b(r"\xfb\xfc\xfd\xfe\xff\xff\xff\xff"))
         TestVFS.xDlOpen=TestVFS.xDlOpen1
         self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xDlOpen=TestVFS.xDlOpen2
@@ -3303,6 +3454,57 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, OverflowError, testdb)
         TestVFS.xDlOpen=TestVFS.xDlOpen99
         testdb()
+
+        ## xDlSym
+        self.assertRaises(TypeError, vfs.xDlSym, 3)
+        self.assertRaises(TypeError, vfs.xDlSym, 3, 3)
+        self.assertRaises(TypeError, vfs.xDlSym, "three", "three")
+        TestVFS.xDlSym=TestVFS.xDlSym1
+        self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
+        TestVFS.xDlSym=TestVFS.xDlSym2
+        self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
+        TestVFS.xDlSym=TestVFS.xDlSym3
+        self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
+        TestVFS.xDlSym=TestVFS.xDlSym4
+        self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
+        if py3:
+            TestVFS.xDlSym=TestVFS.xDlSym5
+            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
+        TestVFS.xDlSym=TestVFS.xDlSym6
+        self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, OverflowError, testdb)
+        TestVFS.xDlSym=TestVFS.xDlSym99
+        testdb()
+
+        ## xDlClose
+        self.assertRaises(TypeError, vfs.xDlClose, "three")
+        self.assertRaises(OverflowError, vfs.xDlClose, l("0xffffffffffffffff10"))
+        TestVFS.xDlClose=TestVFS.xDlClose1
+        self.assertRaisesUnraisable(TypeError, testdb)
+        TestVFS.xDlClose=TestVFS.xDlClose2
+        self.assertRaisesUnraisable(ZeroDivisionError, testdb)
+        TestVFS.xDlClose=TestVFS.xDlClose3
+        self.assertRaisesUnraisable(TypeError, testdb)
+        TestVFS.xDlClose=TestVFS.xDlClose99
+        testdb()
+                          
+        ## xDlError
+        self.assertRaises(TypeError, vfs.xDlError, "three")
+        TestVFS.xDlError=TestVFS.xDlError1
+        self.assertRaisesUnraisable(TypeError, testdb)
+        TestVFS.xDlError=TestVFS.xDlError2
+        self.assertRaisesUnraisable(ZeroDivisionError, testdb)
+        TestVFS.xDlError=TestVFS.xDlError3
+        self.assertRaisesUnraisable(TypeError, testdb)
+        TestVFS.xDlError=TestVFS.xDlError4
+        self.assertRaisesUnraisable(TypeError, testdb)
+        if py3:
+            TestVFS.xDlError=TestVFS.xDlError5
+            self.assertRaisesUnraisable(TypeError, testdb)
+        TestVFS.xDlError=TestVFS.xDlError6 # should not error
+        testdb()
+        TestVFS.xDlError=TestVFS.xDlError99
+        testdb()
+
 
     # Note that faults fire only once, so there is no need to reset
     # them.  The testing for objects bigger than 2GB is done in
@@ -3789,8 +3991,8 @@ class APSW(unittest.TestCase):
         ### vfs routines
 
         class FaultVFS(apsw.VFS):
-            def __init__(self):
-                super(FaultVFS, self).__init__("faultvfs", "")
+            def __init__(self, name="faultvfs", inherit="", makedefault=False):
+                super(FaultVFS, self).__init__(name, inherit, makedefault=makedefault)
 
         vfs=FaultVFS()
         
@@ -3801,9 +4003,36 @@ class APSW(unittest.TestCase):
             1/0
         except MemoryError:
             pass
-                
 
-if sys.platform!="win32":
+        ## xDlError
+        db=apsw.Connection(":memory:", vfs="faultvfs")
+        if hasattr(db, 'enableloadextension'):
+            db.enableloadextension(True)
+            ## xDlErrorAllocFail
+            apsw.faultdict["xDlErrorAllocFail"]=True
+            self.assertRaises(apsw.ExtensionLoadingError,
+                              self.assertRaisesUnraisable, MemoryError,
+                              db.loadextension, "non-existent-file-name")
+            ## xDlErrorUnicodeFail
+            apsw.faultdict["xDlErrorUnicodeFail"]=True
+            self.assertRaises(apsw.ExtensionLoadingError,
+                              self.assertRaisesUnraisable, MemoryError,
+                              db.loadextension, "non-existent-file-name")
+        del db
+        gc.collect()
+        ## xRandomnessAllocFail
+        if hasattr(apsw, 'test_reset_rng'):
+            # we need to be default vfs
+            vfs2=FaultVFS("faultvfs2", apsw.vfsnames()[0], makedefault=True)
+            apsw.test_reset_rng()
+            apsw.faultdict["xRandomnessAllocFail"]=True
+            # doesn't matter which vfs opens the file
+            self.assertRaisesUnraisable(MemoryError, apsw.Connection(":memory:").cursor().execute, "select randomblob(10)")
+            del vfs2
+            gc.collect()
+
+
+if sys.platform not in ("win32", "win64"):
     # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used
     LOADEXTENSIONFILENAME="./testextension.sqlext"
 else:

@@ -1033,7 +1033,7 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
 
  pyexception:
   /* clean up db since it is useless - no need for user to call close */
-  res=-1;
+  res= -1;
   sqlite3_close(self->db);
   self->db=0;
   Connection_internal_cleanup(self);
@@ -3331,8 +3331,6 @@ vtabEof(sqlite3_vtab_cursor *pCursor)
   if(sqliteres==0 || sqliteres==1)
     goto finally;
 
-  sqliteres=0; /* we say there are no more records on error */
-  
  pyexception: /* we had an exception in python code */
   assert(PyErr_Occurred());
   sqliteres=MakeSqliteMsgFromPyException(&(pCursor->pVtab->zErrMsg)); /* SQLite flaw: errMsg should be on the cursor not the table! */
@@ -4233,7 +4231,7 @@ resetcursor(APSWCursor *self, int force)
 
   Py_XDECREF(self->bindings);
   self->bindings=NULL;
-  self->bindingsoffset=-1;
+  self->bindingsoffset= -1;
 
   if(self->statement)
     {
@@ -5760,6 +5758,8 @@ apswvfspy_xDlSym(APSWVFS *self, PyObject *args)
 
   if(PyIntLong_Check(pyptr))
     ptr=PyLong_AsVoidPtr(pyptr);
+  else
+    PyErr_Format(PyExc_TypeError, "Pointer must be int/long");
 
   if(PyErr_Occurred())
     goto finally;
@@ -5771,9 +5771,8 @@ apswvfspy_xDlSym(APSWVFS *self, PyObject *args)
 
   if(PyErr_Occurred())
     {
-      res=NULL;
       AddTraceBackHere(__FILE__, __LINE__, "vfspy.xDlSym", "{s: O}", "args", args);
-      apsw_write_unraiseable();
+      return NULL;
     }
 
   return PyLong_FromVoidPtr(res);
@@ -5804,7 +5803,6 @@ apswvfs_xDlClose(sqlite3_vfs *vfs, void *handle)
 static PyObject *
 apswvfspy_xDlClose(APSWVFS *self, PyObject *pyptr)
 {
-  void *res=NULL;
   void *ptr=NULL;
 
   CHECKVFSPY;
@@ -5824,12 +5822,11 @@ apswvfspy_xDlClose(APSWVFS *self, PyObject *pyptr)
 
   if(PyErr_Occurred())
     {
-      res=NULL;
       AddTraceBackHere(__FILE__, __LINE__, "vfspy.xDlClose", "{s: O}", "ptr", pyptr);
-      apsw_write_unraiseable();
+      return NULL;
     }
 
-  return Py_None;
+  Py_RETURN_NONE;
 }
 
 static void
@@ -5872,11 +5869,14 @@ static PyObject *
 apswvfspy_xDlError(APSWVFS *self)
 {
   PyObject *res=NULL;
+  PyObject *unicode=NULL;
 
   CHECKVFSPY;
   VFSNOTIMPLEMENTED(xDlError);
 
-  res=PyBytes_FromStringAndSize(NULL, 512+self->basevfs->mxPathname);
+  APSW_FAULT_INJECT(xDlErrorAllocFail,
+                    res=PyBytes_FromStringAndSize(NULL, 512+self->basevfs->mxPathname),
+                    res=PyErr_NoMemory());
   if(res)
     {
       memset(PyBytes_AS_STRING(res), 0, PyBytes_GET_SIZE(res));
@@ -5893,10 +5893,23 @@ apswvfspy_xDlError(APSWVFS *self)
   /* did they make a message? */
   if(strlen(PyBytes_AS_STRING(res))==0)
     {
-      Py_XDECREF(res);
+      Py_DECREF(res);
       Py_RETURN_NONE;
     }
-  return res;
+
+  /* turn into unicode */
+  APSW_FAULT_INJECT(xDlErrorUnicodeFail,
+                    unicode=convertutf8string(PyBytes_AS_STRING(res)),
+                    unicode=PyErr_NoMemory());
+  if(unicode)
+    {
+      Py_DECREF(res);
+      return unicode;
+    }
+
+  AddTraceBackHere(__FILE__, __LINE__, "vfspy.xDlError", "{s: O, s: O}", "self", self, "res", PyBytes_FromStringAndSize(PyBytes_AS_STRING(res), strlen(PyBytes_AS_STRING(res))));
+  Py_DECREF(res);
+  return NULL;
 }
 
 static int
@@ -5911,7 +5924,9 @@ apswvfs_xRandomness(sqlite3_vfs *vfs, int nByte, char *zOut)
 
   pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xRandomness", 1, "(i)", nByte);
 
-  if(pyresult)
+  if(pyresult && PyUnicode_Check(pyresult))
+    PyErr_Format(PyExc_TypeError, "Randomness object must be data/bytes not unicode");
+  else if(pyresult && pyresult!=Py_None)
     {
       const void *buffer;
       Py_ssize_t buflen;
@@ -5923,6 +5938,8 @@ apswvfs_xRandomness(sqlite3_vfs *vfs, int nByte, char *zOut)
           memcpy(zOut, buffer, buflen);
           result=buflen;
         }
+      else
+        assert(PyErr_Occurred());
     }
 
   if(PyErr_Occurred())
@@ -5949,7 +5966,15 @@ apswvfspy_xRandomness(APSWVFS *self, PyObject *args)
   if(!PyArg_ParseTuple(args, "i", &nbyte))
     return NULL;
 
-  res=PyBytes_FromStringAndSize(NULL, nbyte);
+  if(nbyte<0)
+    {
+      PyErr_Format(PyExc_ValueError, "You can't have negative amounts of randomness!");
+      return NULL;
+    }
+
+  APSW_FAULT_INJECT(xRandomnessAllocFail,
+                    res=PyBytes_FromStringAndSize(NULL, nbyte),
+                    res=PyErr_NoMemory());
   if(res)
     {
       int amt=self->basevfs->xRandomness(self->basevfs, PyBytes_GET_SIZE(res), PyBytes_AS_STRING(res));
@@ -7435,6 +7460,18 @@ getapswexceptionfor(APSW_ARGUNUSED PyObject *self, PyObject *pycode)
   return result;
 }
 
+#if defined(APSW_TESTFIXTURES) && defined(APSW_USE_SQLITE_AMALGAMATION)
+/* a routine to reset the random number generator so that we can test xRandomness */
+static PyObject *
+apsw_test_reset_rng(APSW_ARGUNUSED PyObject *self)
+{
+  /* See sqlite3PrngResetState in sqlite's random.c which is above us if using the amalgamation */
+  GLOBAL(struct sqlite3PrngType, sqlite3Prng).isInit = 0;
+
+  Py_RETURN_NONE;
+}
+#endif
+
 
 static PyMethodDef module_methods[] = {
   {"sqlitelibversion", (PyCFunction)getsqliteversion, METH_NOARGS,
@@ -7461,6 +7498,10 @@ static PyMethodDef module_methods[] = {
    "Gets various SQLite counters"},
   {"exceptionfor", (PyCFunction)getapswexceptionfor, METH_O,
    "Returns exception instance corresponding to supplied sqlite error code"},
+#if defined(APSW_TESTFIXTURES) && defined(APSW_USE_SQLITE_AMALGAMATION)
+  {"test_reset_rng", (PyCFunction)apsw_test_reset_rng, METH_NOARGS,
+   "Resets random number generator so we can test vfs xRandomness"},
+#endif
   {0, 0, 0, 0}  /* Sentinel */
 };
 
