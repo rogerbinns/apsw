@@ -396,7 +396,7 @@ for ctime,directory,file in cursor.execute("select st_ctime,directory,name from 
     print ctime,file,directory
 #@@ENDCAPTURE
 
-###
+### <a name="example-vfs"> </a> <!-@!@->
 ### A VFS that "obfuscates" the database file contents.  The scheme
 ### used is to xor all bytes with 0xa5.  This scheme honours that used
 ### for MAPI and SQL Server.
