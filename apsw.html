@@ -277,8 +277,8 @@
 
 </span><span class="pyoutput">         Using APSW file /space/apsw/apsw.so
             APSW version 3.6.0-r1
-      SQLite lib version 3.6.2
-   SQLite header version 3006002
+      SQLite lib version 3.6.3
+   SQLite header version 3006003
 </span>
 <span class="pycomment">###
 ### Opening/creating database
@@ -440,8 +440,8 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
      </span><span class="pykeyword">pass
 
 </span><span class="pyoutput">   SQL: select x,y from foo where x&gt;3
-   Row: (4L, u'five')
-   Row: (7L, u'eight')
+   Row: (4, u'five')
+   Row: (7, u'eight')
    Row: (u'one', u'two')
 </span>
 <span class="pycomment"># Clear tracers
@@ -1007,9 +1007,9 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
     </span><span class="pykeyword">print </span><span class="pyname">size</span><span class=
 "pyoperator">,</span><span class="pyname">file</span><span class="pyoperator">,</span><span class="pyname">directory
 
-</span><span class="pyoutput">   511757 unicodedata.so /space/pydebug/lib/python2.5/lib-dynload
-   457857 pyexpat.so /space/pydebug/lib/python2.5/lib-dynload
-   308465 _ctypes.so /space/pydebug/lib/python2.5/lib-dynload
+</span><span class="pyoutput">   511686 unicodedata_d.so /usr/lib/python2.5/lib-dynload
+   481008 unicodedata.so /usr/lib/python2.5/lib-dynload
+   457585 pyexpat_d.so /usr/lib/python2.5/lib-dynload
 </span>
 <span class="pycomment"># Which 3 files are the oldest?
 </span><span class="pykeyword">for </span><span class="pyname">ctime</span><span class=
@@ -1020,11 +1020,11 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
     </span><span class="pykeyword">print </span><span class="pyname">ctime</span><span class=
 "pyoperator">,</span><span class="pyname">file</span><span class="pyoperator">,</span><span class="pyname">directory
 
-</span><span class="pyoutput">   1205478976.0 _sqlite3.so /space/pydebug/lib/python2.5/lib-dynload
-   1205478976.0 _bsddb.so /space/pydebug/lib/python2.5/lib-dynload
-   1205478976.0 dbm.so /space/pydebug/lib/python2.5/lib-dynload
+</span><span class="pyoutput">   1194713443.0 GnuPGInterface-0.3.2.egg-info /var/lib/python-support/python2.5
+   1194713443.0 GnuPGInterface.py /var/lib/python-support/python2.5
+   1194713447.0 sexy.so /usr/lib/python2.5/site-packages/gtk-2.0
 </span>
-<span class="pycomment">###
+<span class="pycomment">### <a name="example-vfs" id="example-vfs"> </a> 
 ### A VFS that "obfuscates" the database file contents.  The scheme
 ### used is to xor all bytes with 0xa5.  This scheme honours that used
 ### for MAPI and SQL Server.
@@ -1222,7 +1222,7 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
 "pyoperator">(</span><span class="pyname">apsw</span><span class="pyoperator">.</span><span class=
 "pyname">SQLITE_STATUS_MEMORY_USED</span><span class="pyoperator">)
 
-</span><span class="pyoutput">   SQLite memory usage current 234152 max 305416
+</span><span class="pyoutput">   SQLite memory usage current 235024 max 306296
 </span>
 <span class="pycomment">###
 ### Cleanup
@@ -1261,14 +1261,11 @@ python setup.py build --compile=mingw32 install --fetch-sqlite
 
   <h2><a name="Finding" id="Finding">Finding SQLite 3</a></h2>
 
-  <p>SQLite 3 is needed during the build process. If you specify
-  <code>--fetch-sqlite</code> anywhere on the setup.py command line
-  then it will automatically fetch the current version of the SQLite
-  amalgamation.  You can manually specify the version, for example
-  <code>--fetch-sqlite=3.6.1</code>.
+  <p>SQLite 3 is needed during the build process. If you specify <code>--fetch-sqlite</code> anywhere on the setup.py
+  command line then it will automatically fetch the current version of the SQLite amalgamation. You can manually
+  specify the version, for example <code>--fetch-sqlite=3.6.1</code>.</p>
 
-  <p>These
-  methods are tried in order:</p>
+  <p>These methods are tried in order:</p>
 
   <dl>
     <dt><a href="http://www.sqlite.org/cvstrac/wiki?p=TheAmalgamation">Amalgamation</a></dt>
@@ -1290,10 +1287,10 @@ python setup.py build --compile=mingw32 install --fetch-sqlite
 
   <h2><a name="Recommended" id="Recommended">Recommended</a></h2>
 
-  <p>These instructions show how to build automatically downloading and using the amalgamation. Any existing SQLite on your system is ignored at
-  build time and runtime. (Note that you can even use APSW in the same process as a different SQLite is used by other
-  libraries - this happens a lot on Mac.) You should follow these instructions with your current directory being where
-  you extracted the APSW source to.</p>
+  <p>These instructions show how to build automatically downloading and using the amalgamation. Any existing SQLite on
+  your system is ignored at build time and runtime. (Note that you can even use APSW in the same process as a different
+  SQLite is used by other libraries - this happens a lot on Mac.) You should follow these instructions with your
+  current directory being where you extracted the APSW source to.</p>
 
   <dl>
     <dt><b>Windows</b></dt>
@@ -2466,15 +2463,12 @@ def xFileControl(self, op, pointer):
       appropriate SQLite error code for SQLite. To return a specific SQLite error code use <code><a href=
       "#exceptionfor">apsw.exceptionfor(code)</a></code>.</p>
 
- <p>Some VFS routines cannot return an error.  For others there may be
- several more VFS calls. For example an error in the xWrite routine
- can result in a rollback which involve several more VFS calls dealing
- with the journal and main file.  Those could result in even more
- exceptions obscuring the previous ones.  In these situations the
- exceptions are delivered to <code>sys.excepthook()</code> and if that
- fails then <code>PyErr_Display()</code> is called which prints out a
- traceback.  <a href="#augmentedstacktraces">Augmented stack traces</a> are
-available which will help diagnose issues.</p>
+      <p>Some VFS routines cannot return an error. For others there may be several more VFS calls. For example an error
+      in the xWrite routine can result in a rollback which involve several more VFS calls dealing with the journal and
+      main file. Those could result in even more exceptions obscuring the previous ones. In these situations the
+      exceptions are delivered to <code>sys.excepthook()</code> and if that fails then <code>PyErr_Display()</code> is
+      called which prints out a traceback. <a href="#augmentedstacktraces">Augmented stack traces</a> are available
+      which will help diagnose issues.</p>
 
       <h3>OS Interface</h3>
 
@@ -2536,8 +2530,8 @@ def xDlOpen(name):
           should return 0 (NULL). You can use ctypes:</p>
           <pre>
 def xDlSym(ptr, name):
-    return _ctypes.dlsym (ptr, function)  # Linux/Unix/Mac etc (note leading underscore)
-    return ctypes.win32.kernel32.GetProcAddress (ptr, function)  # Windows
+    return _ctypes.dlsym (ptr, name)  # Linux/Unix/Mac etc (note leading underscore)
+    return ctypes.win32.kernel32.GetProcAddress (ptr, name)  # Windows
 </pre>
         </dd>
 
@@ -2556,6 +2550,38 @@ def xDlSym(ptr, name):
           and return them in this routine. Note that the message may be truncated to 255 characters - see <a href=
           "http://www.sqlite.org/cvstrac/tktview?tn=3305">ticket 3305</a>. If you have an error or return None then the
           generic message will be used.</p>
+        </dd>
+
+        <dt><strong>xRandomness(numbytes)</strong></dt>
+
+        <dd>
+          <p>This method is called once when SQLite needs to seed the random number generator. It is called on the
+          default VFS only. You can return less than the number of bytes requested including None. If you return more
+          then the surplus is ignored. If you are inheriting, be aware that the Unix VFS implementation has a <a href=
+          "http://www.sqlite.org/cvstrac/tktview?tn=3306">bug</a> where it will claim to provide no randomness.</p>
+        </dd>
+
+        <dt><strong>xSleep(microseconds)</strong></dt>
+
+        <dd>
+          <p>Pause execution on the thread for at least the specified number of microseconds (millionths of a second).
+          You should return how many microseconds you actually requested the operating system to sleep for. This
+          routine is typically called from the busy handler.</p>
+        </dd>
+
+        <dt><strong>xCurrentTime()</strong></dt>
+
+        <dd>
+          <p>Return the <a href="http://en.wikipedia.org/wiki/Julian_day">Julian Day Number</a> as a floating point
+          number where the integer portion is the day and the fractional part is the time. Do not adjust for timezone
+          (ie use <a href="http://en.wikipedia.org/wiki/Universal_Time">UTC</a>).</p>
+        </dd>
+
+        <dt><strong>xGetLastError()</strong> (optional)</dt>
+
+        <dd>
+          <p>This method is to return text describing the last error that happened in this thread. If not implemented
+          SQLite's more generic message is used. However the method is never called by SQLite as of 3.6.2.</p>
         </dd>
       </dl>
 
@@ -2659,13 +2685,6 @@ def xDlSym(ptr, name):
         <dd>
           <p>Return <a href="http://sqlite.org/c3ref/c_iocap_atomic.html">I/O capabilities</a> (bitwise or appropriate
           values). If you do not implement the function or have an error then 0 (the SQLite default) is returned.</p>
-        </dd>
-
-        <dt><strong>xGetLastError()</strong> (optional)</dt>
-
-        <dd>
-          <p>This method is to return text describing the last error that happened in this thread. If not implemented
-          SQLite's more generic message. However the method is never called by SQLite as of 3.6.2.</p>
         </dd>
       </dl>
 
@@ -3511,6 +3530,13 @@ Traceback (most recent call last):
 
   <h2><a name="360r1">3.6.0-r1</a></h2>
 
+  <p>You can now write your own <a href="#VFS">VFS</a> in Python. You can also inherit from an existing VFS making it
+  easy to augment or override small bits of behaviour without having to code everything else. See the <a href=
+  "#example-vfs">example</a> where database files are obfuscated by XORing their contents.</p>
+
+  <p><code>setup.py</code> now takes an optional <code>--fetch-sqlite[=ver]</code> argument to automatically download
+  and use the latest SQLite (or a specified version).</p>
+
   <p>APSW checks that SQLite was compiled to be <a href="http://sqlite.org/c3ref/threadsafe.html">threadsafe</a>.</p>
 
   <p>Added new constants:</p>
@@ -3533,8 +3559,9 @@ Traceback (most recent call last):
     <li><a href="http://sqlite.org/c3ref/status.html">sqlite3_status</a></li>
   </ul>
 
-  <p>Restored prior behaviour regarding Python ints and longs returning int for numbers fitting in signed 32 bit.  This only affects
-   Python 2 as Python 3 uses long exclusively.  Thanks to Joe Pham for reporting this as <a href="http://code.google.com/p/apsw/issues/detail?id=24">issue 24</a>.
+  <p>Restored prior behaviour regarding Python ints and longs returning int for numbers fitting in signed 32 bit. This
+  only affects Python 2 as Python 3 uses long exclusively. Thanks to Joe Pham for reporting this as <a href=
+  "http://code.google.com/p/apsw/issues/detail?id=24">issue 24</a>.</p>
 
   <h2><a name="359r2">3.5.9-r2</a></h2>
 
