@@ -10,7 +10,7 @@ else
   args="$@"
 fi
 
-OPT=${OPT:=}
+OPT=
 
 # Measure code coverage
 rm -f *.gcda *.gcov *.gcno apsw.so
