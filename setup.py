@@ -78,8 +78,11 @@ if fetch:
         # we need to run configure to get various -DHAVE_foo flags on non-windows platforms
         import tarfile
         tar=tarfile.open("nonexistentname to keep old python happy", 'r', data)
+        configmember=None
         for member in tar.getmembers():
             tar.extract(member)
+            if member.path.endswith("/configure"):
+                configmember=member
         tar.close()
         if os.path.exists('sqlite3'):
             for dirpath, dirnames, filenames in os.walk('sqlite3', topdown=False):
@@ -88,7 +91,12 @@ if fetch:
                 for dir in dirnames:
                     os.rmdir(os.path.join(dirpath, dir))
             os.rmdir('sqlite3')
-        os.rename('sqlite-'+ver, 'sqlite3')
+        # the directory name has changed a bit with each release so try to work out what it is
+        if not configmember:
+            write("Unable to determine directory it extracted to.", dest=sys.stderr)
+            sys.exit(19)
+        dirname=configmember.path.split('/')[0]
+        os.rename(dirname, 'sqlite3')
         os.chdir('sqlite3')
         write("Running configure to work which flags to compile SQLite with")
         res=os.system("./configure >/dev/null")
