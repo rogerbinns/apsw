@@ -77,8 +77,9 @@ if fetch:
     else:
         # we need to run configure to get various -DHAVE_foo flags on non-windows platforms
         import tarfile
-        tar=tarfile.open(None, 'r', data)
-        tar.extractall()
+        tar=tarfile.open("nonexistentname to keep old python happy", 'r', data)
+        for member in tar.getmembers():
+            tar.extract(member)
         tar.close()
         if os.path.exists('sqlite3'):
             for dirpath, dirnames, filenames in os.walk('sqlite3', topdown=False):
