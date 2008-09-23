@@ -39,6 +39,9 @@ if fetch:
         import cStringIO
         bytesio=cStringIO.StringIO
 
+    # Do we want the 'zip' or full blown version with configure?
+    simple=sys.platform in ('win32', 'win64')
+
     import re
     import zipfile
     URL="http://sqlite.org/download.html"
@@ -57,17 +60,62 @@ if fetch:
             sys.exit(17)
     else:
         ver=fetch[len("--fetch-sqlite="):]
-    ver=ver.replace(".", "_")
-    AURL="http://sqlite.org/sqlite-amalgamation-%s.zip" % (ver,)
+    if simple:
+        ver=ver.replace(".", "_")
+        AURL="http://sqlite.org/sqlite-amalgamation-%s.zip" % (ver,)
+    else:
+        AURL="http://www.sqlite.org/sqlite-amalgamation-%s.tar.gz" % (ver,)
     write("Fetching", AURL)
     data=urlopen(AURL).read()
     data=bytesio(data)
-    zip=zipfile.ZipFile(data, "r")
-    for name in "sqlite3.c", "sqlite3.h", "sqlite3ext.h":
-        write("Extracting", name)
-        # If you get an exception here then the archive doesn't contain the files it should
-        open(name, "wb").write(zip.read(name))
-
+    if simple:
+        zip=zipfile.ZipFile(data, "r")
+        for name in "sqlite3.c", "sqlite3.h", "sqlite3ext.h":
+            write("Extracting", name)
+            # If you get an exception here then the archive doesn't contain the files it should
+            open(name, "wb").write(zip.read(name))
+    else:
+        # we need to run configure to get various -DHAVE_foo flags on non-windows platforms
+        import tarfile
+        tar=tarfile.open(None, 'r', data)
+        tar.extractall()
+        tar.close()
+        if os.path.exists('sqlite3'):
+            for dirpath, dirnames, filenames in os.walk('sqlite3', topdown=False):
+                for file in filenames:
+                    os.remove(os.path.join(dirpath, file))
+                for dir in dirnames:
+                    os.rmdir(os.path.join(dirpath, dir))
+            os.rmdir('sqlite3')
+        os.rename('sqlite-'+ver, 'sqlite3')
+        os.chdir('sqlite3')
+        write("Running configure to work which flags to compile SQLite with")
+        res=os.system("./configure >/dev/null")
+        defline=None
+        for line in open("Makefile"):
+            if line.startswith("DEFS = "):
+                defline=line
+                break
+        if not defline:
+            write("Unable to determine compile flags.  Edit the top of sqlite3/sqlite3.c to manually set.", dest=sys.stderr)
+            sys.exit(18)
+        defs=[]
+        import shlex
+        for part in shlex.split(defline):
+            if part.startswith("-DHAVE"):
+                part=part[2:]
+                if '=' in part:
+                    part=part.split('=', 1)
+                else:
+                    part=(part, '')
+                defs.append(part)
+        op=open("sqlite3-fixed.c", "wt")
+        for define in defs:
+            op.write('#define %s %s\n' % tuple(define))
+        op.write(open('sqlite3.c', 'rt').read())
+        op.close()
+        os.rename("sqlite3-fixed.c", "sqlite3.c")
+        os.chdir("..")
 
 depends=["apswversion.h", "pointerlist.c", "statementcache.c", "traceback.c"]
 define_macros=[]

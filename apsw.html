@@ -1007,9 +1007,9 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
     </span><span class="pykeyword">print </span><span class="pyname">size</span><span class=
 "pyoperator">,</span><span class="pyname">file</span><span class="pyoperator">,</span><span class="pyname">directory
 
-</span><span class="pyoutput">   511686 unicodedata_d.so /usr/lib/python2.5/lib-dynload
-   481008 unicodedata.so /usr/lib/python2.5/lib-dynload
-   457585 pyexpat_d.so /usr/lib/python2.5/lib-dynload
+</span><span class="pyoutput">   511757 unicodedata.so /space/pydebug/lib/python2.5/lib-dynload
+   457857 pyexpat.so /space/pydebug/lib/python2.5/lib-dynload
+   308465 _ctypes.so /space/pydebug/lib/python2.5/lib-dynload
 </span>
 <span class="pycomment"># Which 3 files are the oldest?
 </span><span class="pykeyword">for </span><span class="pyname">ctime</span><span class=
@@ -1020,9 +1020,9 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
     </span><span class="pykeyword">print </span><span class="pyname">ctime</span><span class=
 "pyoperator">,</span><span class="pyname">file</span><span class="pyoperator">,</span><span class="pyname">directory
 
-</span><span class="pyoutput">   1194713443.0 GnuPGInterface-0.3.2.egg-info /var/lib/python-support/python2.5
-   1194713443.0 GnuPGInterface.py /var/lib/python-support/python2.5
-   1194713447.0 sexy.so /usr/lib/python2.5/site-packages/gtk-2.0
+</span><span class="pyoutput">   1205478976.0 _sqlite3.so /space/pydebug/lib/python2.5/lib-dynload
+   1205478976.0 _bsddb.so /space/pydebug/lib/python2.5/lib-dynload
+   1205478976.0 dbm.so /space/pydebug/lib/python2.5/lib-dynload
 </span>
 <span class="pycomment">### <a name="example-vfs" id="example-vfs"> </a> 
 ### A VFS that "obfuscates" the database file contents.  The scheme
@@ -1222,7 +1222,7 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
 "pyoperator">(</span><span class="pyname">apsw</span><span class="pyoperator">.</span><span class=
 "pyname">SQLITE_STATUS_MEMORY_USED</span><span class="pyoperator">)
 
-</span><span class="pyoutput">   SQLite memory usage current 235024 max 306296
+</span><span class="pyoutput">   SQLite memory usage current 233712 max 304984
 </span>
 <span class="pycomment">###
 ### Cleanup
@@ -1263,14 +1263,17 @@ python setup.py build --compile=mingw32 install --fetch-sqlite
 
   <p>SQLite 3 is needed during the build process. If you specify <code>--fetch-sqlite</code> anywhere on the setup.py
   command line then it will automatically fetch the current version of the SQLite amalgamation. You can manually
-  specify the version, for example <code>--fetch-sqlite=3.6.1</code>.</p>
+  specify the version, for example <code>--fetch-sqlite=3.6.1</code>. On non-Windows platforms it will also work out
+  what compile flags SQLite needs (for example <tt>HAVE_USLEEP, HAVE_LOCALTIME_R</tt>).</p>
 
   <p>These methods are tried in order:</p>
 
   <dl>
     <dt><a href="http://www.sqlite.org/cvstrac/wiki?p=TheAmalgamation">Amalgamation</a></dt>
 
-    <dd>The file <tt>sqlite3.c</tt> and then <tt>sqlite3/sqlite3.c</tt> is looked for.</dd>
+    <dd>The file <tt>sqlite3.c</tt> and then <tt>sqlite3/sqlite3.c</tt> is looked for. The SQLite code is then
+    statically compiled into the APSW extension and is invisible to the rest of the process. There are no runtime
+    dependencies on SQLite as a result.</dd>
 
     <dt>Local build</dt>
 
@@ -2574,7 +2577,8 @@ def xDlSym(ptr, name):
         <dd>
           <p>Return the <a href="http://en.wikipedia.org/wiki/Julian_day">Julian Day Number</a> as a floating point
           number where the integer portion is the day and the fractional part is the time. Do not adjust for timezone
-          (ie use <a href="http://en.wikipedia.org/wiki/Universal_Time">UTC</a>).</p>
+          (ie use <a href="http://en.wikipedia.org/wiki/Universal_Time">UTC</a>). Although SQLite allows for an error
+          return, that is <a href="http://www.sqlite.org/cvstrac/tktview?tn=3394">ignored</a>.</p>
         </dd>
 
         <dt><strong>xGetLastError()</strong> (optional)</dt>
@@ -3535,7 +3539,8 @@ Traceback (most recent call last):
   "#example-vfs">example</a> where database files are obfuscated by XORing their contents.</p>
 
   <p><code>setup.py</code> now takes an optional <code>--fetch-sqlite[=ver]</code> argument to automatically download
-  and use the latest SQLite (or a specified version).</p>
+  and use the latest SQLite amalgamation (or a specified version). On non-Windows platforms it will also work out what
+  compile flags SQLite needs (for example <tt>HAVE_USLEEP, HAVE_LOCALTIME_R</tt>)</p>
 
   <p>APSW checks that SQLite was compiled to be <a href="http://sqlite.org/c3ref/threadsafe.html">threadsafe</a>.</p>
 
