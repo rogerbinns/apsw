@@ -23,6 +23,8 @@
   .pykeyword   { color: #C00000;}
   .pytext      { color: #000000;}
   .pyoutput    { color: #0000FF;}
+
+  }
   /*]]>*/
   </style>
 </head>
@@ -1222,7 +1224,7 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
 "pyoperator">(</span><span class="pyname">apsw</span><span class="pyoperator">.</span><span class=
 "pyname">SQLITE_STATUS_MEMORY_USED</span><span class="pyoperator">)
 
-</span><span class="pyoutput">   SQLite memory usage current 233712 max 304984
+</span><span class="pyoutput">   SQLite memory usage current 234736 max 307032
 </span>
 <span class="pycomment">###
 ### Cleanup
@@ -1239,54 +1241,135 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
 
   <h1><a name="Building" id="Building">Building</a></h1>
 
-  <p>The simple way is:</p>
+  <p>You run <tt>setup.py</tt>.</p>
 
-  <blockquote>
-    <pre>
-python setup.py install --fetch-sqlite
+  <table cellspacing="5" cellpadding="5">
+    <tr>
+      <th>Command</th>
 
+      <th>Result</th>
+    </tr>
+
+    <tr>
+      <td valign="top"><code>python setup.py install</code></td>
+
+      <td>Compiles APSW with default Python compiler and installs it into Python site library directory.</td>
+    </tr>
+
+    <tr>
+      <td valign="top"><code>python setup.py build --compile=mingw32 install</code></td>
+
+      <td>On Windows this will use the free MinGW compiler instead of the Microsoft compilers.</td>
+    </tr>
+
+    <tr>
+      <td valign="top"><code>python setup.py build</code></td>
+
+      <td>Compiles the extension but doesn't install it. The resulting file will be in a <tt>build</tt> subdirectory.
+      For example on a Linux 64 bit Python 2.5 installation the file is
+      <tt>build/lib.linux-x86_64-2.5/apsw.so</tt></td>
+    </tr>
+  </table>
+
+  <p>There are a number of APSW specific flags you can specify.</p>
+
+  <table cellspacing="5" cellpadding="5">
+    <tr>
+      <td valign="top">
+        <pre>
+--fetch-sqlite
+--fetch-sqlite=VER
 </pre>
-  </blockquote>
+      </td>
 
-  <p>On Windows the above command uses Visual C++. You can use MinGW with the command below. (If MinGW complains about
-  missing Python functions starting with <code>_imp__Py_</code> then run <code>mingwsetup.bat</code> which will ensure
-  your Python distribution is initialized for MinGW compilation).</p>
+      <td>Automatically downloads the latest or specified version of the SQLite amalgamation and uses it for the APSW
+      extension. On non-Windows platforms it will also work out what compile flags SQLite needs (for example
+      <tt>HAVE_USLEEP, HAVE_LOCALTIME_R</tt>). The amalgamation is the preferred way to use SQLite as you have total
+      control over what components are included or excluded (see below) and have no dependencies on any existing
+      libraries on your developer or deployment machines. You can set the environment variable <tt>http_proxy</tt> to
+      control proxy usage for the download.</td>
+    </tr>
 
-  <blockquote>
-    <pre>
-python setup.py build --compile=mingw32 install --fetch-sqlite
+    <tr>
+      <td valign="top"><tt>--enable=ITEM</tt></td>
 
-</pre>
-  </blockquote>
+      <td>Enables a specific SQLite feature ITEM</td>
+    </tr>
+
+    <tr>
+      <td valign="top"><tt>--enable=fts</tt></td>
+
+      <td>Enables the <a href="http://www.sqlite.org/cvstrac/wiki?p=FtsUsage">full text search</a> extension. This flag
+      only helps when using the amalgamation. If not using the amalgamation then you need to seperately ensure it is
+      enabled in the SQLite install.</td>
+    </tr>
+
+    <tr>
+      <td valign="top"><tt>--enable=rtree</tt></td>
+
+      <td>Enables the spatial table <a href="http://en.wikipedia.org/wiki/R-tree">rtree</a> (<a href=
+      "http://www.sqlite.org/cvstrac/fileview?f=sqlite/ext/rtree/README">README</a>). This flag only helps when using
+      the amalgamation. If not using the amalgamation then you need to seperately ensure it is enabled in the SQLite
+      install.</td>
+    </tr>
+
+    <tr>
+      <td valign="top"><tt>--enable=icu</tt></td>
+
+      <td>Enables the <a href="http://en.wikipedia.org/wiki/International_Components_for_Unicode">Internation
+      Components for Unicode</a> extension (<a href=
+      "http://www.sqlite.org/cvstrac/fileview?f=sqlite/ext/icu/README.txt">README</a>). Note that you must have the ICU
+      libraries on your machine which setup will automatically try to find using <tt>icu-config</tt>. This flag only
+      helps when using the amalgamation. If not using the amalgamation then you need to seperately ensure it is enabled
+      in the SQLite install.</td>
+    </tr>
+
+    <tr>
+      <td valign="top"><tt>--omit=ITEM</tt></td>
+
+      <td>Causes various functionality to be omitted. For example <tt>--omit=load_extension</tt> will omit code to do
+      with loading extensions. If using the amalgamation then this will omit the functionality from APSW and SQLite,
+      otherwise the functionality will only be omitted from APSW.</td>
+    </tr>
+  </table>
 
   <h2><a name="Finding" id="Finding">Finding SQLite 3</a></h2>
 
   <p>SQLite 3 is needed during the build process. If you specify <code>--fetch-sqlite</code> anywhere on the setup.py
   command line then it will automatically fetch the current version of the SQLite amalgamation. You can manually
-  specify the version, for example <code>--fetch-sqlite=3.6.1</code>. On non-Windows platforms it will also work out
-  what compile flags SQLite needs (for example <tt>HAVE_USLEEP, HAVE_LOCALTIME_R</tt>).</p>
+  specify the version, for example <code>--fetch-sqlite=3.6.1</code>. ).</p>
 
   <p>These methods are tried in order:</p>
 
   <dl>
-    <dt><a href="http://www.sqlite.org/cvstrac/wiki?p=TheAmalgamation">Amalgamation</a></dt>
+    <dt><br />
+    <a href="http://www.sqlite.org/cvstrac/wiki?p=TheAmalgamation">Amalgamation</a></dt>
 
-    <dd>The file <tt>sqlite3.c</tt> and then <tt>sqlite3/sqlite3.c</tt> is looked for. The SQLite code is then
-    statically compiled into the APSW extension and is invisible to the rest of the process. There are no runtime
-    dependencies on SQLite as a result.</dd>
+    <dd>
+      <p>The file <tt>sqlite3.c</tt> and then <tt>sqlite3/sqlite3.c</tt> is looked for. The SQLite code is then
+      statically compiled into the APSW extension and is invisible to the rest of the process. There are no runtime
+      library dependencies on SQLite as a result.</p>
+    </dd>
 
-    <dt>Local build</dt>
+    <dt><br />
+    Local build</dt>
 
-    <dd>The header <tt>sqlite3/sqlite3.h</tt> and library <tt>sqlite3/libsqlite3.{a,so,dll}</tt> is looked for.</dd>
+    <dd>
+      <p>The header <tt>sqlite3/sqlite3.h</tt> and library <tt>sqlite3/libsqlite3.{a,so,dll}</tt> is looked for.</p>
+    </dd>
 
-    <dt>System</dt>
+    <dt><br />
+    System</dt>
 
-    <dd>The default compiler include path (eg <tt>/usr/include</tt>) and library path (eg <tt>/usr/lib</tt>) are
-    used.</dd>
+    <dd>
+      <p>The default compiler include path (eg <tt>/usr/include</tt>) and library path (eg <tt>/usr/lib</tt>) are
+      used.</p>
+    </dd>
   </dl>
 
-  <p>Note that if you compiled SQLite with any OMIT flags (eg <tt>SQLITE_OMIT_LOAD_EXTENSION</tt>) then you should edit
-  <tt>setup.py</tt> to add the same flags.</p>
+  <p>Note that if you compiled SQLite with any OMIT flags (eg <tt>SQLITE_OMIT_LOAD_EXTENSION</tt>) then you should
+  include them in the <tt>setup.py</tt> command. For this example you would use <tt>setup.py --omit=load_extension</tt>
+  to add the same flags.</p>
 
   <h2><a name="Recommended" id="Recommended">Recommended</a></h2>
 

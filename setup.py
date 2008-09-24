@@ -2,8 +2,44 @@
 
 import os
 import sys
+import shlex
 
 from distutils.core import setup, Extension
+
+##
+## Do your customizations here
+##
+
+include_dirs=[]
+library_dirs=[]
+define_macros=[]
+libraries=[]
+
+# We always want threadsafe
+define_macros.append( ('SQLITE_THREADSAFE', '1') )
+
+# This includes the functionality marked as experimental in SQLite 3.
+# Comment out the line to exclude them
+define_macros.append( ('EXPERIMENTAL', '1') )
+
+##
+## End of customizations
+##
+
+addicuinclib=False
+# Look for various omits and enables
+argv2=[]
+for v in sys.argv:
+    if v.startswith("--enable="):
+        define_macros.append( ('SQLITE_ENABLE_'+v[len("--enable="):].upper(), 1) )
+        if v[len("--enable="):].upper()=="ICU":
+            addicuinclib=True
+    elif v.startswith("--omit="):
+        define_macros.append( ('SQLITE_OMIT_'+v[len("--omit="):].upper(), 1) )
+    else:
+        argv2.append(v)
+sys.argv=argv2
+
 
 # python 2 and 3 print equivalent
 def write(*args):
@@ -81,7 +117,8 @@ if fetch:
         configmember=None
         for member in tar.getmembers():
             tar.extract(member)
-            if member.path.endswith("/configure"):
+            # find first file named configure
+            if not configmember and member.name.endswith("/configure"):
                 configmember=member
         tar.close()
         if os.path.exists('sqlite3'):
@@ -95,10 +132,10 @@ if fetch:
         if not configmember:
             write("Unable to determine directory it extracted to.", dest=sys.stderr)
             sys.exit(19)
-        dirname=configmember.path.split('/')[0]
+        dirname=configmember.name.split('/')[0]
         os.rename(dirname, 'sqlite3')
         os.chdir('sqlite3')
-        write("Running configure to work which flags to compile SQLite with")
+        write("Running configure to work out SQLite compilation flags")
         res=os.system("./configure >/dev/null")
         defline=None
         for line in open("Makefile"):
@@ -109,14 +146,13 @@ if fetch:
             write("Unable to determine compile flags.  Edit the top of sqlite3/sqlite3.c to manually set.", dest=sys.stderr)
             sys.exit(18)
         defs=[]
-        import shlex
         for part in shlex.split(defline):
             if part.startswith("-DHAVE"):
                 part=part[2:]
                 if '=' in part:
                     part=part.split('=', 1)
                 else:
-                    part=(part, '')
+                    part=(part, )
                 defs.append(part)
         op=open("sqlite3-fixed.c", "wt")
         for define in defs:
@@ -127,26 +163,12 @@ if fetch:
         os.chdir("..")
 
 depends=["apswversion.h", "pointerlist.c", "statementcache.c", "traceback.c"]
-define_macros=[]
 
-# We always want threadsafe
-define_macros.append( ('SQLITE_THREADSAFE', '1') )
 
 # We don't want assertions
 if "--debug" not in sys.argv:
     define_macros.append( ('NDEBUG', '1') )
 
-# This includes the functionality marked as experimental in SQLite 3.
-# Comment out the line to exclude them
-define_macros.append( ('EXPERIMENTAL', '1') )
-
-# If you compiled SQLite omitting functionality then specify the same
-# defines here.  For example this exlcudes loadable extensions.
-#
-# define_macros.append( ('SQLITE_OMIT_LOAD_EXTENSION', '1') )
-
-include_dirs=[]
-library_dirs=[]
 
 # Look for amalgamation in our directory or in sqlite3 subdirectory
 amalgamation=(
@@ -162,9 +184,10 @@ for path in amalgamation:
             define_macros.append( ('APSW_USE_SQLITE_AMALGAMATION', '\\"'+path+'\\"') )
         else:
             define_macros.append( ('APSW_USE_SQLITE_AMALGAMATION', '"'+path+'"') )
-        libraries=[]
         usingamalgamation=True
         depends.append(path)
+        # we also add the directory to include path since icu tries to use it
+        include_dirs.append(os.path.dirname(path))
         write("SQLite: Using amalgamation", path)
         break
     
@@ -172,20 +195,47 @@ if not usingamalgamation:
     # if there is a sqlite3 subdirectory then use that, otherwise
     # the system sqlite will be used
     if os.path.exists("sqlite3"):
-        include_dirs=["sqlite3"]
-        library_dirs=["sqlite3"]
+        include_dirs.append("sqlite3")
+        library_dirs.append("sqlite3")
         write("SQLite: Using include/libraries in sqlite3 subdirectory")
     else:
         write("SQLite: Using system sqlite include/libraries")
 
-    libraries=['sqlite3']
-
-    
+    libraries.append('sqlite3')
 
 # setuptools likes to define NDEBUG even when we want debug stuff
 if "--debug" in sys.argv:
-    define_macros.append( ('APSW_NO_NDEBUG', 1) ) # double negatives are bad
-    define_macros.append( ('SQLITE_DEBUG', 1) ) # also does NDEBUG mangling
+    define_macros.append( ('APSW_NO_NDEBUG', '1') ) # double negatives are bad
+    define_macros.append( ('SQLITE_DEBUG', '1') ) # also does NDEBUG mangling
+
+# add stuff for 3rd party components?
+if addicuinclib:
+    foundstuff=False
+    for part in shlex.split(os.popen("icu-config --cppflags", "r").read()):
+        if part.startswith("-I"):
+            include_dirs.append(part[2:])
+            foundstuff=True
+        elif part.startswith("-D"):
+            part=part[2:]
+            if '=' in part:
+                part=part.split('=', 1)
+            else:
+                part=(part, '1')
+            define_macros.append(part)
+            foundstuff=True
+
+    for part in shlex.split(os.popen("icu-config --ldflags", "r").read()):
+        if part.startswith("-L"):
+            library_dirs.append(part[2:])
+            foundstuff=True
+        elif part.startswith("-l"):
+            libraries.append(part[2:])
+            foundstuff=True
+
+    if not foundstuff:
+        write("ICU: Unable to determine includes/libraries for ICU using icu-config")
+        write("ICU: You will need to manually edit setup.py to set them")
+
 
 
 # work out version number
