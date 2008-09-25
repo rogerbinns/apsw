@@ -902,7 +902,7 @@ Connection_dealloc(Connection* self)
           
           apsw_write_unraiseable();
           Py_XDECREF(utf8filename);
-          PyErr_Fetch(&etype, &evalue, &etraceback);
+          PyErr_Restore(etype, evalue, etraceback);
         }
     }
 
@@ -2319,7 +2319,6 @@ cbdispatch_final(sqlite3_context *context)
   gilstate=PyGILState_Ensure();
 
   PyErr_Fetch(&err_type, &err_value, &err_traceback);
-  PyErr_Clear();
 
   aggfc=getaggregatefunctioncontext(context);
   assert(aggfc);
@@ -5907,7 +5906,7 @@ apswvfspy_xDlError(APSWVFS *self)
       return unicode;
     }
 
-  AddTraceBackHere(__FILE__, __LINE__, "vfspy.xDlError", "{s: O, s: O}", "self", self, "res", PyBytes_FromStringAndSize(PyBytes_AS_STRING(res), strlen(PyBytes_AS_STRING(res))));
+  AddTraceBackHere(__FILE__, __LINE__, "vfspy.xDlError", "{s: O, s: N}", "self", self, "res", PyBytes_FromStringAndSize(PyBytes_AS_STRING(res), strlen(PyBytes_AS_STRING(res))));
   Py_DECREF(res);
   return NULL;
 }
@@ -6033,7 +6032,6 @@ apswvfs_xSleep(sqlite3_vfs *vfs, int microseconds)
 static PyObject *
 apswvfspy_xSleep(APSWVFS *self, PyObject *args)
 {
-  PyObject *res=NULL;
   int microseconds=0;
 
   CHECKVFSPY;
@@ -6042,24 +6040,17 @@ apswvfspy_xSleep(APSWVFS *self, PyObject *args)
   if(!PyArg_ParseTuple(args, "i", &microseconds))
     return NULL;
 
-  res=PyLong_FromLong(self->basevfs->xSleep(self->basevfs, microseconds));
-
-  if(PyErr_Occurred())
-    {
-      AddTraceBackHere(__FILE__, __LINE__, "vfspy.xSleep", "{s: i}", "microseconds", microseconds);
-      Py_XDECREF(res);
-      return NULL;
-    }
-
-  return res;
+  return PyLong_FromLong(self->basevfs->xSleep(self->basevfs, microseconds));
 }
 
+/* See http://www.sqlite.org/cvstrac/tktview?tn=3394 for SQLite implementation issues */
 static int
 apswvfs_xCurrentTime(sqlite3_vfs *vfs, double *julian)
 {
   PyGILState_STATE gilstate;
   PyObject *pyresult=NULL;
-  int result=SQLITE_OK;
+  /* note returns zero or one.  Details in sqlite ticket 3394*/
+  int result=0; 
   gilstate=PyGILState_Ensure();
 
   CHECKVFS;
@@ -6071,8 +6062,9 @@ apswvfs_xCurrentTime(sqlite3_vfs *vfs, double *julian)
 
   if(PyErr_Occurred())
     {
-      result=MakeSqliteMsgFromPyException(NULL);
       AddTraceBackHere(__FILE__, __LINE__, "vfs.xCurrentTime", "{s: O}", "result", pyresult?pyresult:Py_None);
+      apsw_write_unraiseable();
+      result=1;
     }
 
  finally:
@@ -6092,9 +6084,12 @@ apswvfspy_xCurrentTime(APSWVFS *self)
 
   res=self->basevfs->xCurrentTime(self->basevfs, &julian);
 
-  if(res!=SQLITE_OK)
+  APSW_FAULT_INJECT(xCurrentTimeFail, ,res=1);
+
+  if(res!=0)
     {
-      SET_EXC(res, NULL);
+      /* routines are documented to return zero or one - see ticket 3394 info above */
+      SET_EXC(SQLITE_ERROR, NULL);   /* general sqlite error code */
       AddTraceBackHere(__FILE__, __LINE__, "vfspy.xCurrentTime", NULL);
       return NULL;
     }
@@ -6112,7 +6107,7 @@ apswvfs_xGetLastError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
 
   CHECKVFS;
 
-  pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xGetError", 0, "()");
+  pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xGetLastError", 0, "()");
 
   if(pyresult && pyresult!=Py_None)
     {
@@ -6148,22 +6143,28 @@ static PyObject *
 apswvfspy_xGetLastError(APSWVFS *self)
 {
   PyObject *res=NULL;
+  int toobig=1;
+  Py_ssize_t size=256; /* start small */
 
   CHECKVFSPY;
   VFSNOTIMPLEMENTED(xGetLastError);
 
-  res=PyBytes_FromStringAndSize(NULL, 1024); /* should be big enough for anyone :-) */
-  if(res)
+  res=PyBytes_FromStringAndSize(NULL, size);
+  if(!res) goto error;
+  while(toobig)
     {
-      memset(PyBytes_AS_STRING(res), 0, PyBytes_GET_SIZE(res));
-      self->basevfs->xGetLastError(self->basevfs, PyBytes_GET_SIZE(res), PyBytes_AS_STRING(res));
-    }
+      int resizeresult;
 
-  if(PyErr_Occurred())
-    {
-      AddTraceBackHere(__FILE__, __LINE__, "vfspy.xGetLastError", NULL);
-      Py_XDECREF(res);
-      return NULL;
+      memset(PyBytes_AS_STRING(res), 0, PyBytes_GET_SIZE(res));
+      toobig=self->basevfs->xGetLastError(self->basevfs, PyBytes_GET_SIZE(res), PyBytes_AS_STRING(res));
+      if(!toobig)
+        break;
+      size*=2; /* double size and try again */
+      APSW_FAULT_INJECT(xGetLastErrorAllocFail,
+                        resizeresult=_PyBytes_Resize(&res, size),
+                        resizeresult=(PyErr_NoMemory(), -1));
+      if(resizeresult!=0)
+        goto error;
     }
 
   /* did they make a message? */
@@ -6172,7 +6173,15 @@ apswvfspy_xGetLastError(APSWVFS *self)
       Py_XDECREF(res);
       Py_RETURN_NONE;
     }
+
+  _PyBytes_Resize(&res, strlen(PyBytes_AS_STRING(res)));
   return res;
+
+ error:
+  assert(PyErr_Occurred());
+  AddTraceBackHere(__FILE__, __LINE__, "vfspy.xGetLastError", "{s: O, s: i}", "self", self, "size", (int)size);
+  Py_XDECREF(res);
+  return NULL;
 }
 
 static void
@@ -6188,8 +6197,16 @@ APSWVFS_dealloc(APSWVFS *self)
   if(self->containingvfs)
     {
     res=sqlite3_vfs_unregister(self->containingvfs);
+    APSW_FAULT_INJECT(APSWVFSDeallocFail, ,res=SQLITE_IOERR);
     if(res!=SQLITE_OK)
       {
+        /* although it is undocumented by sqlite, we assume that an
+           unregister failure always results in an unregister and so
+           continue freeing the data structures.  we memset everything
+           to zero so there will be a coredump should this behaviour
+           change.  as of 3.6.3 the sqlite code doesn't return
+           anything except ok anyway. */
+
         /* not allowed to clobber existing exception */
         PyObject *etype=NULL, *evalue=NULL, *etraceback=NULL;
         PyErr_Fetch(&etype, &evalue, &etraceback);
@@ -6201,10 +6218,9 @@ APSWVFS_dealloc(APSWVFS *self)
                      res);
         
         apsw_write_unraiseable();
-        PyErr_Fetch(&etype, &evalue, &etraceback);
+        PyErr_Restore(etype, evalue, etraceback);
         
         self->containingvfs->pAppData=NULL;
-        return;
       }
     if(self->containingvfs)
       {
@@ -6246,6 +6262,7 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
 
   if(base)
     {
+      int baseversion;
       if(!strlen(base))
         {
           PyMem_Free(base);
@@ -6257,9 +6274,11 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
           PyErr_Format(PyExc_ValueError, "Base vfs named \"%s\" not found", base?base:"<default>");
           goto error;
         }
-      if(self->basevfs->iVersion!=1)
+      baseversion=self->basevfs->iVersion;
+      APSW_FAULT_INJECT(APSWVFSBadVersion, , baseversion=-789426);
+      if(baseversion!=1)
         {
-          PyErr_Format(PyExc_ValueError, "Base vfs implements version %d of vfs spec, but apsw only supports version 1", self->basevfs->iVersion);
+          PyErr_Format(PyExc_ValueError, "Base vfs implements version %d of vfs spec, but apsw only supports version 1", baseversion);
           goto error;
         }
       if(base) PyMem_Free(base);
@@ -6295,7 +6314,11 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
 #undef METHOD
   /* not implemented in SQLite anyway */
 
-  res=sqlite3_vfs_register(self->containingvfs, makedefault);
+
+  APSW_FAULT_INJECT(APSWVFSRegistrationFails,
+                    res=sqlite3_vfs_register(self->containingvfs, makedefault),
+                    res=SQLITE_NOMEM);
+
   if(res==SQLITE_OK)
     {
       if(self->basevfs && self->basevfs->xAccess==apswvfs_xAccess)
@@ -6312,6 +6335,7 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
   if(base) PyMem_Free(base);
   if(self->containingvfs && self->containingvfs->zName) PyMem_Free((void*)(self->containingvfs->zName));
   if(self->containingvfs) PyMem_Free(self->containingvfs);
+  self->containingvfs=NULL;
   return -1;
 }
 
@@ -7472,6 +7496,41 @@ apsw_test_reset_rng(APSW_ARGUNUSED PyObject *self)
 }
 #endif
 
+#ifdef APSW_TESTFIXTURES
+/* xGetLastError isn't actually called anywhere by SQLite so add a
+   manual way of doing so
+   http://www.sqlite.org/cvstrac/tktview?tn=3337 */
+
+static PyObject *
+apsw_call_xGetLastError(APSW_ARGUNUSED PyObject *self, PyObject *args)
+{
+  char *vfsname;
+  int bufsize;
+  PyObject *resultbuffer=NULL;
+  sqlite3_vfs *vfs;
+  int res;
+
+  if(!PyArg_ParseTuple(args, "esi", STRENCODING, &vfsname, &bufsize))
+    return NULL;
+
+  vfs=sqlite3_vfs_find(vfsname);
+  if(!vfs) goto finally;
+
+  resultbuffer=PyBytes_FromStringAndSize(NULL, bufsize);
+  if(!resultbuffer) goto finally;
+
+  memset(PyBytes_AS_STRING(resultbuffer), 0, PyBytes_GET_SIZE(resultbuffer));
+
+  res=vfs->xGetLastError(vfs, bufsize, PyBytes_AS_STRING(resultbuffer));
+
+ finally:
+  if(vfsname)
+    PyMem_Free(vfsname);
+
+  return resultbuffer?Py_BuildValue("Ni", resultbuffer, res):NULL;
+}
+#endif
+
 
 static PyMethodDef module_methods[] = {
   {"sqlitelibversion", (PyCFunction)getsqliteversion, METH_NOARGS,
@@ -7501,6 +7560,10 @@ static PyMethodDef module_methods[] = {
 #if defined(APSW_TESTFIXTURES) && defined(APSW_USE_SQLITE_AMALGAMATION)
   {"test_reset_rng", (PyCFunction)apsw_test_reset_rng, METH_NOARGS,
    "Resets random number generator so we can test vfs xRandomness"},
+#endif
+#ifdef APSW_TESTFIXTURES
+  {"test_call_xGetLastError", (PyCFunction)apsw_call_xGetLastError, METH_VARARGS,
+   "Calls xGetLastError routine"},
 #endif
   {0, 0, 0, 0}  /* Sentinel */
 };

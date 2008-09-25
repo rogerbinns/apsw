@@ -3100,7 +3100,7 @@ class APSW(unittest.TestCase):
             except OSError: pass
                 
             db=apsw.Connection(filename, vfs=vfsname)
-            db.cursor().execute("create table foo(x,y); insert into foo values(1,2)")
+            db.cursor().execute("create table foo(x,y); insert into foo values(1,2); insert into foo values(date('now'), date('now'))")
             if testtimeout:
                 # busy
                 db2=apsw.Connection(filename, vfs=vfsname)
@@ -3341,9 +3341,70 @@ class APSW(unittest.TestCase):
 
             def xDlError99(self):
                 return super(TestVFS,self).xDlError()
+
+            def xSleep1(self, bad, number, of, arguments):
+                1/0
+
+            def xSleep2(self, microseconds):
+                1/0
+
+            def xSleep3(self, microseconds):
+                return super(TestVFS, self).xSleep("three")
+
+            def xSleep4(self, microseconds):
+                return "three"
+
+            def xSleep5(self, microseconds):
+                return l("0xffffffff0")
+
+            def xSleep6(self, microseconds):
+                return l("0xffffffffeeeeeeee0")
+
+            def xSleep99(self, microseconds):
+                assert(type(microseconds) in (int, long))
+                return super(TestVFS, self).xSleep(microseconds)
+
+            def xCurrentTime1(self, bad, args):
+                1/0
+
+            def xCurrentTime2(self):
+                1/0
+
+            def xCurrentTime3(self):
+                return super(TestVFS, self).xCurrentTime("three")
+
+            def xCurrentTime4(self):
+                return "three"
+
+            def xCurrentTime5(self):
+                return math.exp(math.pi)*26000
+
+            def xCurrentTime99(self):
+                return super(TestVFS, self).xCurrentTime()
                     
+            def xGetLastError1(self, bad, args):
+                1/0
+
+            def xGetLastError2(self):
+                1/0
+
+            def xGetLastError3(self):
+                return super(TestVFS,self).xGetLastError("three")
+
+            def xGetLastError4(self):
+                return 3
+
+            def xGetLastError5(self):
+                return "a"*1500
+
+            def xGetLastError99(self):
+                return super(TestVFS,self).xGetLastError()
+                
 
         # check initialization
+        self.assertRaises(TypeError, apsw.VFS, "3", 3)
+        self.assertRaises(ValueError, apsw.VFS, "never", "klgfkljdfsljgklfjdsglkdfs")
+        self.assert_("never" not in apsw.vfsnames())
         TestVFS.__init__=TestVFS.init1
         vfs=TestVFS()
         self.assertRaises(apsw.VFSNotImplementedError, testdb)
@@ -3505,6 +3566,79 @@ class APSW(unittest.TestCase):
         TestVFS.xDlError=TestVFS.xDlError99
         testdb()
 
+        ## xSleep
+        testtimeout=True
+        self.assertRaises(TypeError, vfs.xSleep, "three")
+        self.assertRaises(TypeError, vfs.xSleep, 3, 3)
+        TestVFS.xSleep=TestVFS.xSleep1
+        self.assertRaisesUnraisable(TypeError, testdb)
+        TestVFS.xSleep=TestVFS.xSleep2
+        self.assertRaisesUnraisable(ZeroDivisionError, testdb)
+        TestVFS.xSleep=TestVFS.xSleep3
+        self.assertRaisesUnraisable(TypeError, testdb)
+        TestVFS.xSleep=TestVFS.xSleep4
+        self.assertRaisesUnraisable(TypeError, testdb)
+        TestVFS.xSleep=TestVFS.xSleep5
+        self.assertRaisesUnraisable(OverflowError, testdb)
+        TestVFS.xSleep=TestVFS.xSleep6
+        self.assertRaisesUnraisable(OverflowError, testdb)
+        TestVFS.xSleep=TestVFS.xSleep99
+        testdb()
+        testtimeout=False
+
+        ## xCurrentTime
+        self.assertRaises(TypeError, vfs.xCurrentTime, "three")
+        TestVFS.xCurrentTime=TestVFS.xCurrentTime1
+        self.assertRaisesUnraisable(TypeError, testdb)
+        TestVFS.xCurrentTime=TestVFS.xCurrentTime2
+        self.assertRaisesUnraisable(ZeroDivisionError, testdb)
+        TestVFS.xCurrentTime=TestVFS.xCurrentTime3
+        self.assertRaisesUnraisable(TypeError, testdb)
+        TestVFS.xCurrentTime=TestVFS.xCurrentTime4
+        self.assertRaisesUnraisable(TypeError, testdb)
+        TestVFS.xCurrentTime=TestVFS.xCurrentTime5
+        testdb()
+        TestVFS.xCurrentTime=TestVFS.xCurrentTime99
+        testdb()
+
+        ## xGetLastError
+        xgle=getattr(apsw, 'test_call_xGetLastError', None)
+        if xgle:
+            # cause an error
+            self.assertRaises(apsw.CantOpenError, vfs.xOpen, u("."), [0xfffffff,0])
+            # check it works
+            res=xgle("apswtest", 512)
+            self.assertEqual(type(res), type(()))
+            self.assertEqual(len(res), 2)
+            self.assertRaises(TypeError, vfs.xGetLastError, "three")
+            TestVFS.xGetLastError=TestVFS.xGetLastError1
+            res=self.assertRaisesUnraisable(TypeError, xgle, "apswtest", 512)
+            self.assertEqual(res[1], 0)
+            TestVFS.xGetLastError=TestVFS.xGetLastError2
+            res=self.assertRaisesUnraisable(ZeroDivisionError, xgle, "apswtest", 512)
+            self.assertEqual(res[1], 0)
+            TestVFS.xGetLastError=TestVFS.xGetLastError3
+            res=self.assertRaisesUnraisable(TypeError, xgle, "apswtest", 512)
+            self.assertEqual(res[1], 0)
+            TestVFS.xGetLastError=TestVFS.xGetLastError4
+            res=self.assertRaisesUnraisable(TypeError, xgle, "apswtest", 512)
+            self.assertEqual(res[1], 0)
+            TestVFS.xGetLastError=TestVFS.xGetLastError5
+            res=xgle("apswtest", 512)
+            self.assertEqual(res[1], 1)
+            self.assertEqual(res[0], b("a")*512)
+            res=xgle("apswtest", 1024)
+            self.assertEqual(res[1], 1)
+            self.assertEqual(res[0], b("a")*1024)
+            res=xgle("apswtest", 1500)
+            self.assertEqual(res[1], 0)
+            self.assertEqual(res[0], b("a")*1500)
+            class VFS2(apsw.VFS):
+                def __init__(self):
+                    apsw.VFS.__init__(self, "apswtest2", "apswtest")
+            vfs2=VFS2()
+            res=xgle("apswtest2", 128)
+            self.assertEqual(res[1], 1)
 
     # Note that faults fire only once, so there is no need to reset
     # them.  The testing for objects bigger than 2GB is done in
@@ -3994,6 +4128,9 @@ class APSW(unittest.TestCase):
             def __init__(self, name="faultvfs", inherit="", makedefault=False):
                 super(FaultVFS, self).__init__(name, inherit, makedefault=makedefault)
 
+            def xGetLastErrorLong(self):
+                return "a"*1024
+
         vfs=FaultVFS()
         
         ## xFullPathnameConversion
@@ -4031,6 +4168,36 @@ class APSW(unittest.TestCase):
             del vfs2
             gc.collect()
 
+        ## xCurrentTimeFail
+        apsw.faultdict["xCurrentTimeFail"]=True
+        self.assertRaisesUnraisable(apsw.SQLError, apsw.Connection(":memory:", vfs="faultvfs").cursor().execute, "select date('now')")
+
+        ## xGetLastErrorAllocFail
+        if hasattr(apsw, 'test_call_xGetLastError'):
+            apsw.faultdict["xGetLastErrorAllocFail"]=True
+            vfs2=FaultVFS("faultvfs2", "faultvfs")
+            vfs.xGetLastError=vfs.xGetLastErrorLong
+            self.assertRaisesUnraisable(MemoryError, apsw.test_call_xGetLastError, "faultvfs2", 128)
+            vfs.xGetLastError=super(FaultVFS, vfs).xGetLastError
+
+        ## APSWVFSDeallocFail
+        apsw.faultdict["APSWVFSDeallocFail"]=True
+        def foo():
+            vfs2=FaultVFS("faultvfs2", "faultvfs")
+            del vfs2
+            gc.collect()
+        self.assertRaisesUnraisable(ValueError, foo)
+
+        ## APSWVFSBadVersion
+        apsw.faultdict["APSWVFSBadVersion"]=True
+        self.assertRaises(ValueError, apsw.VFS, "foo", "")
+        self.assert_("foo" not in apsw.vfsnames())
+
+        ## APSWVFSRegistrationFails
+        apsw.faultdict["APSWVFSRegistrationFails"]=True
+        self.assertRaises(apsw.NoMemError, apsw.VFS, "foo", "")
+        self.assert_("foo" not in apsw.vfsnames())
+        
 
 if sys.platform not in ("win32", "win64"):
     # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used
