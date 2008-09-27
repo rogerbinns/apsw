@@ -19,6 +19,9 @@ if [int(x) for x in apsw.sqlitelibversion().split(".")]<[3,5,9]:
 
 sys.stdout.flush()
 
+# sigh
+iswindows=sys.platform in ('win32', 'win64')
+
 py3=sys.version_info>=(3,0)
 
 # unittest stuff from here on
@@ -42,7 +45,6 @@ try:
 except:
     ctypes=None
     _ctypes=None
-
 
 # Unicode string/bytes prefix
 if py3:
@@ -147,6 +149,39 @@ class ThreadRunner(threading.Thread):
         except:
             self.q.put( (False, sys.exc_info()) )
 
+# Windows doesn't allow files that are open to be deleted.  Even after
+# we close them, tagalongs such as virus scanners, tortoisesvn etc can
+# keep them open.  But the good news is that we can rename a file that
+# is in use.  This background thread does the background deletions of the
+# renamed files
+def bgdel():
+    q=bgdelq
+    while True:
+        name=q.get()
+        while os.path.exists(name):
+            try:
+                os.remove(name)
+            except:
+                pass
+            if os.path.exists(name):
+                time.sleep(0.1)
+
+bgdelq=Queue.Queue()
+bgdelthread=threading.Thread(target=bgdel)
+bgdelthread.setDaemon(True)
+bgdelthread.start()
+
+def deletefile(name):
+    l=list("abcdefghijklmn")
+    random.shuffle(l)
+    newname="n-"+"".join(l)
+    while os.path.exists(name):
+        try:
+            os.rename(name, newname)
+        except:
+            pass
+        bgdelq.put(newname)
+
 # main test class/code
 class APSW(unittest.TestCase):
 
@@ -186,11 +221,10 @@ class APSW(unittest.TestCase):
 
     def setUp(self):
         # clean out database and journals from last runs
-        for name in ("testdb", "testdb2"):
+        for name in ("testdb", "testdb2", "testfile"):
             for i in "-journal", "":
                 if os.path.exists(name+i):
-                    os.remove(name+i)
-                assert not os.path.exists(name+i)
+                    deletefile(name+i)
         self.db=apsw.Connection("testdb")
 
     def tearDown(self):
@@ -2434,7 +2468,7 @@ class APSW(unittest.TestCase):
         db.close(True)
 
         try:
-            os.remove(fname)
+            deletefile(fname)
         except:
             pass
 
@@ -2568,7 +2602,7 @@ class APSW(unittest.TestCase):
         unraise()
         sys.stderr.close()
         v=open("errout.txt", "rt").read()
-        os.remove("errout.txt")
+        deletefile("errout.txt")
         self.failUnless(len(v))
         sys.excepthook=xx
         sys.stderr=yy
@@ -2607,7 +2641,7 @@ class APSW(unittest.TestCase):
 
         for encoding in "UTF-16", "UTF-16le", "UTF-16be", "UTF-8":
             if os.path.exists("testdb"):
-                os.remove("testdb")
+                deletefile("testdb")
             db=apsw.Connection("testdb")
             c=db.cursor()
             c.execute("pragma encoding=\"%s\"" % (encoding,))
@@ -2984,15 +3018,18 @@ class APSW(unittest.TestCase):
 
         db2=apsw.Connection("testdb2", vfs=vfs.vfsname)
         db2.cursor().execute(query)
-
+        
         # check the two databases are the same (modulo the XOR)
         orig=open("testdb", "rb").read()
         obfu=open("testdb2", "rb").read()
         self.assertEqual(len(orig), len(obfu))
         self.assertNotEqual(orig, obfu)
         self.assertEqual(orig, encryptme(obfu))
+        
 
         # test raw file object
+        self.db.close()
+        db2.close()
         f=ObfuscatedVFSFile("", "testdb", [apsw.SQLITE_OPEN_READONLY, 0])
         del f # check closes
         f=ObfuscatedVFSFile("", "testdb", [apsw.SQLITE_OPEN_READONLY, 0])
@@ -3094,9 +3131,9 @@ class APSW(unittest.TestCase):
         def testdb(filename="testdb2", vfsname="apswtest"):
             "This method causes all parts of a vfs to be executed"
             gc.collect() # free any existing db handles
-            try: os.remove(filename)
+            try: deletefile(filename)
             except OSError: pass
-            try: os.remove(filename+"-journal")
+            try: deletefile(filename+"-journal")
             except OSError: pass
 
             db=apsw.Connection(filename, vfs=vfsname)
@@ -3304,11 +3341,9 @@ class APSW(unittest.TestCase):
                 assert(type(handle) in (int,long))
                 assert(type(name) == type(u("")))
                 res=super(TestVFS, self).xDlSym(handle, name)
-                if sys.platform not in ("win32", "win64") and _ctypes:
+                if not iswindows and _ctypes:
                     assert(_ctypes.dlsym (handle, name)==res)
-                else:
-                    if ctypes:
-                        assert(ctypes.win32.kernel32.GetProcAddress (handle, name)==res)
+                # windows has funky issues I don't want to deal with here
                 return res
 
             def xDlClose1(self, bad, number, of, arguments):
@@ -3513,7 +3548,7 @@ class APSW(unittest.TestCase):
         ## xDelete
         self.assertRaises(TypeError, vfs.xDelete, "bogus", "arguments")
         TestVFS.xDelete=TestVFS.xDelete1
-        self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, apsw.CantOpenError, testdb)
+        self.assertRaises([apsw.CantOpenError, apsw.IOError][iswindows], self.assertRaisesUnraisable, [apsw.CantOpenError, apsw.IOError][iswindows], testdb)
         TestVFS.xDelete=TestVFS.xDelete2
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xDelete=TestVFS.xDelete3
@@ -3575,7 +3610,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(OverflowError, vfs.xOpen, None, [l("0xffffffffeeeeeeee0"), 2])
         self.assertRaises(OverflowError, vfs.xOpen, None, [l("0xffffffff0"), 2])
         self.assertRaises(OverflowError, vfs.xOpen, None, [1, l("0xffffffff0")])
-        self.assertRaises(apsw.CantOpenError, testdb, filename=".") # can't open directories
+        self.assertRaises(apsw.CantOpenError, testdb, filename="notadir/notexist/nochance") # can't open due to intermediate directories not existing
         TestVFS.xOpen=TestVFS.xOpen1
         self.assertRaises(TypeError, testdb)
         TestVFS.xOpen=TestVFS.xOpen2
@@ -3767,7 +3802,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.CantOpenError, TestFile, ".", [apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
 
         ## xRead
-        t=TestFile("testdb", [apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
+        t=TestFile("testfile", [apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
         self.assertRaises(TypeError, t.xRead, "three", "four")
         self.assertRaises(OverflowError, t.xRead, l("0xffffffffeeeeeeee0"), 1)
         self.assertRaises(OverflowError, t.xRead, 1, l("0xffffffffeeeeeeee0"))
@@ -3786,16 +3821,17 @@ class APSW(unittest.TestCase):
         testdb()
 
         ## xWrite
-        self.assertRaises(TypeError, t.xWrite, "three", "four")
+        if sys.version_info>=(2,4): # py2.3 has bug
+            self.assertRaises(TypeError, t.xWrite, "three", "four")
         self.assertRaises(OverflowError, t.xWrite, "three", l("0xffffffffeeeeeeee0"))
-        self.assertRaises(apsw.IOError, t.xWrite, "foo", -7)
+        self.assertRaises([apsw.IOError, apsw.FullError][iswindows], t.xWrite, "foo", -7)
         self.assertRaises(TypeError, t.xWrite, u("foo"), 0)
         TestFile.xWrite=TestFile.xWrite1
         self.assertRaises(TypeError, testdb)
         TestFile.xWrite=TestFile.xWrite2
         self.assertRaises(ZeroDivisionError, testdb)
         TestFile.xWrite=TestFile.xWrite3
-        self.assertRaises(apsw.IOError, testdb)
+        self.assertRaises([apsw.IOError, apsw.FullError][iswindows], testdb)
         TestFile.xWrite=TestFile.xWrite99
         testdb()
 
@@ -3840,7 +3876,6 @@ class APSW(unittest.TestCase):
         ## xClose
 
         try:
-            print "errors from deleting t"
             del t
             gc.collect()
         except:
@@ -4426,7 +4461,7 @@ class APSW(unittest.TestCase):
         apsw.faultdict["xUnlockFails"]=True
         self.assertRaises(apsw.IOError, self.assertRaisesUnraisable, apsw.IOError, apsw.Connection("testdb", vfs="faultvfs").cursor().execute, "select * from dummy1")
         
-if sys.platform not in ("win32", "win64"):
+if not iswindows:
     # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used
     LOADEXTENSIONFILENAME="./testextension.sqlext"
 else:
@@ -4513,8 +4548,6 @@ if __name__=='__main__':
     del sys
     if gc:
         gc.collect()
-#    print gc.get_objects()
-#    import pdb ; pdb.set_trace()
 
     del gc
     exit(exitcode)
