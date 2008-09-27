@@ -343,7 +343,6 @@ static void make_exception(int res, sqlite3 *db)
  check */
 #define SET_EXC(res,db)  { if(res != SQLITE_OK && !PyErr_Occurred()) make_exception(res,db); }
 
-
 /* The default Python PyErr_WriteUnraiseable is almost useless.  It
    only prints the str() of the exception and the str() of the object
    passed in.  This gives the developer no clue whatsoever where in
@@ -5361,8 +5360,10 @@ apswvfs_xDelete(sqlite3_vfs *vfs, const char *zName, int syncDir)
   PyGILState_STATE gilstate;
   PyObject *pyresult=NULL;
   int result=SQLITE_OK;
-  gilstate=PyGILState_Ensure();
+  PyObject *etype, *eval, *etb;
 
+  gilstate=PyGILState_Ensure();
+  PyErr_Fetch(&etype, &eval, &etb);
   CHECKVFS;
 
   pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xDelete", 1, "(Ni)", convertutf8string(zName), syncDir);
@@ -5373,6 +5374,9 @@ apswvfs_xDelete(sqlite3_vfs *vfs, const char *zName, int syncDir)
     }
 
  finally:
+  if(PyErr_Occurred())
+    apsw_write_unraiseable();
+  PyErr_Restore(etype, eval, etb);
   PyGILState_Release(gilstate);
   return result;
 }
@@ -5405,8 +5409,9 @@ apswvfs_xAccess(sqlite3_vfs *vfs, const char *zName, int flags, int *pResOut)
   PyGILState_STATE gilstate;
   PyObject *pyresult=NULL;
   int result=SQLITE_OK;
+  PyObject *etype, *eval, *etb;
   gilstate=PyGILState_Ensure();
-
+  PyErr_Fetch(&etype, &eval, &etb);
   CHECKVFS;
 
   pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xAccess", 1, "(Ni)", convertutf8string(zName), flags);
@@ -5426,6 +5431,7 @@ apswvfs_xAccess(sqlite3_vfs *vfs, const char *zName, int flags, int *pResOut)
       AddTraceBackHere(__FILE__, __LINE__, "vfs.xAccess", "{s: s, s: i}", "zName", zName, "flags", flags);
       apsw_write_unraiseable();
     }
+  PyErr_Restore(etype, eval, etb);
   PyGILState_Release(gilstate);
   return result;
 }
@@ -5667,8 +5673,10 @@ apswvfs_xDlOpen(sqlite3_vfs *vfs, const char *zName)
   PyGILState_STATE gilstate;
   PyObject *pyresult=NULL;
   void *result=NULL;
-  gilstate=PyGILState_Ensure();
+  PyObject *etype, *eval, *etb;
 
+  gilstate=PyGILState_Ensure();
+  PyErr_Fetch(&etype, &eval, &etb);
   CHECKVFS;
 
   pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xDlOpen", 1, "(N)", convertutf8string(zName));
@@ -5688,6 +5696,7 @@ apswvfs_xDlOpen(sqlite3_vfs *vfs, const char *zName)
 
  finally:
   Py_XDECREF(pyresult);
+  PyErr_Restore(etype, eval, etb);
   PyGILState_Release(gilstate);
   return result;
 }
@@ -5716,8 +5725,10 @@ apswvfs_xDlSym(sqlite3_vfs *vfs, void *handle, const char *zName)
   PyGILState_STATE gilstate;
   PyObject *pyresult=NULL;
   void *result=NULL;
-  gilstate=PyGILState_Ensure();
+  PyObject *etype, *eval, *etb;
 
+  gilstate=PyGILState_Ensure();
+  PyErr_Fetch(&etype, &eval, &etb);
   CHECKVFS;
 
   pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xDlSym", 1, "(NN)", PyLong_FromVoidPtr(handle), convertutf8string(zName));
@@ -5737,6 +5748,7 @@ apswvfs_xDlSym(sqlite3_vfs *vfs, void *handle, const char *zName)
 
  finally:
   Py_XDECREF(pyresult);
+  PyErr_Restore(etype, eval, etb);
   PyGILState_Release(gilstate);
   return result;
 }
@@ -5782,8 +5794,9 @@ apswvfs_xDlClose(sqlite3_vfs *vfs, void *handle)
 {
   PyGILState_STATE gilstate;
   PyObject *pyresult=NULL;
+  PyObject *etype, *eval, *etb;
   gilstate=PyGILState_Ensure();
-
+  PyErr_Fetch(&etype, &eval, &etb);
   CHECKVFS;
 
   pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xDlClose", 1, "(N)", PyLong_FromVoidPtr(handle));
@@ -5796,6 +5809,7 @@ apswvfs_xDlClose(sqlite3_vfs *vfs, void *handle)
 
  finally:
   Py_XDECREF(pyresult);
+  PyErr_Restore(etype, eval, etb);
   PyGILState_Release(gilstate);
 }
 
@@ -5833,8 +5847,10 @@ apswvfs_xDlError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
 {
   PyGILState_STATE gilstate;
   PyObject *pyresult=NULL, *utf8=NULL;
-  gilstate=PyGILState_Ensure();
+  PyObject *etype, *eval, *etb;
 
+  gilstate=PyGILState_Ensure();
+  PyErr_Fetch(&etype, &eval, &etb);
   CHECKVFS;
 
   pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xDlError", 0, "()");
@@ -5861,6 +5877,7 @@ apswvfs_xDlError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
  finally:
   Py_XDECREF(pyresult);
   Py_XDECREF(utf8);
+  PyErr_Restore(etype, eval, etb);
   PyGILState_Release(gilstate);
 }
 
@@ -5917,7 +5934,9 @@ apswvfs_xRandomness(sqlite3_vfs *vfs, int nByte, char *zOut)
   PyGILState_STATE gilstate;
   PyObject *pyresult=NULL;
   int result=0;
+  PyObject *etype, *eval, *etb;
   gilstate=PyGILState_Ensure();
+  PyErr_Fetch(&etype, &eval, &etb);
 
   CHECKVFS;
 
@@ -5949,6 +5968,7 @@ apswvfs_xRandomness(sqlite3_vfs *vfs, int nByte, char *zOut)
 
  finally:
   Py_XDECREF(pyresult);
+  PyErr_Restore(etype, eval, etb);
   PyGILState_Release(gilstate);
   return result;
 }
@@ -5998,8 +6018,10 @@ apswvfs_xSleep(sqlite3_vfs *vfs, int microseconds)
   PyGILState_STATE gilstate;
   PyObject *pyresult=NULL;
   int result=0;
-  gilstate=PyGILState_Ensure();
+  PyObject *etype, *eval, *etb;
 
+  gilstate=PyGILState_Ensure();
+  PyErr_Fetch(&etype, &eval, &etb);
   CHECKVFS;
 
   pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xSleep", 1, "(i)", microseconds);
@@ -6025,6 +6047,7 @@ apswvfs_xSleep(sqlite3_vfs *vfs, int microseconds)
 
  finally:
   Py_XDECREF(pyresult);
+  PyErr_Restore(etype, eval, etb);
   PyGILState_Release(gilstate);
   return result;
 }
@@ -6051,8 +6074,10 @@ apswvfs_xCurrentTime(sqlite3_vfs *vfs, double *julian)
   PyObject *pyresult=NULL;
   /* note returns zero or one.  Details in sqlite ticket 3394*/
   int result=0; 
-  gilstate=PyGILState_Ensure();
+  PyObject *etype, *eval, *etb;
 
+  gilstate=PyGILState_Ensure();
+  PyErr_Fetch(&etype, &eval, &etb);
   CHECKVFS;
 
   pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xCurrentTime", 1, "()");
@@ -6069,6 +6094,7 @@ apswvfs_xCurrentTime(sqlite3_vfs *vfs, double *julian)
 
  finally:
   Py_XDECREF(pyresult);
+  PyErr_Restore(etype, eval, etb);
   PyGILState_Release(gilstate);
   return result;
 }
@@ -6103,8 +6129,9 @@ apswvfs_xGetLastError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
   PyGILState_STATE gilstate;
   PyObject *pyresult=NULL, *utf8=NULL;
   int buffertoosmall=0;
+  PyObject *etype, *eval, *etb;
   gilstate=PyGILState_Ensure();
-
+  PyErr_Fetch(&etype, &eval, &etb);
   CHECKVFS;
 
   pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xGetLastError", 0, "()");
@@ -6135,6 +6162,8 @@ apswvfs_xGetLastError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
  finally:
   Py_XDECREF(pyresult);
   Py_XDECREF(utf8);
+  PyErr_Restore(etype, eval, etb);
+
   PyGILState_Release(gilstate);
   return buffertoosmall;
 }
@@ -6419,6 +6448,10 @@ static PyObject *apswvfsfilepy_xClose(APSWVFSFile *self);
 static void
 APSWVFSFile_dealloc(APSWVFSFile *self)
 {
+  PyObject *a,*b,*c;
+
+  PyErr_Fetch(&a, &b, &c);
+
   if(self->base)
     {
       /* close it */
@@ -6431,6 +6464,8 @@ APSWVFSFile_dealloc(APSWVFSFile *self)
       apsw_write_unraiseable();
     }
   Py_TYPE(self)->tp_free((PyObject*)self);
+
+  PyErr_Restore(a,b,c);
 }
 
 /*ARGSUSED*/
@@ -6440,9 +6475,7 @@ APSWVFSFile_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSE
   APSWVFSFile *self;
   self= (APSWVFSFile*)type->tp_alloc(type, 0);
   if(self)
-    {
-      self->base=NULL;
-    }
+    self->base=NULL;
 
   return (PyObject*)self;
 }
@@ -6453,12 +6486,19 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
   static char *kwlist[]={"vfs", "name", "flags", NULL};
   char *vfs=NULL;
   PyObject *flags=NULL, *pyname=NULL, *utf8name=NULL;
-  int res=-1; /* error */
   int xopenresult;
   int flagsout=0;
+  int res=-1; /* error */
+
   PyObject *itemzero=NULL, *itemone=NULL, *zero=NULL, *pyflagsout=NULL;
   sqlite3_vfs *vfstouse=NULL;
   sqlite3_file *file;
+
+  if(PyErr_Occurred())
+    {
+      fprintf(stderr, "There is already an error present\n");
+      fflush(stderr);
+    }
 
   if(!PyArg_ParseTupleAndKeywords(args, kwds, "esOO:init(vfs, name, flags)", kwlist, STRENCODING, &vfs, &pyname, &flags))
     return -1;
@@ -6506,19 +6546,18 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
       goto finally;
     }
   file=PyMem_Malloc(vfstouse->szOsFile);
+  if(!file) goto finally;
   xopenresult=vfstouse->xOpen(vfstouse, (utf8name==Py_None)?NULL:PyBytes_AS_STRING(utf8name), file, (int)PyIntLong_AsLong(itemzero), &flagsout);
-  pyflagsout=PyInt_FromLong(flagsout);
+  SET_EXC(xopenresult, NULL);
   if(PyErr_Occurred())
     {
+      /* just in case the result was ok, but there was a python level exception ... */
+      if(xopenresult==SQLITE_OK) file->pMethods->xClose(file);
       PyMem_Free(file);
       goto finally;
     }
-  if(xopenresult!=SQLITE_OK)
-    {
-      PyMem_Free(file);
-      SET_EXC(xopenresult, NULL);
-      goto finally;
-    }
+  
+  pyflagsout=PyInt_FromLong(flagsout);
   
   if(-1==PySequence_SetItem(flags, 1, pyflagsout))
     {
@@ -6533,6 +6572,10 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
   res=0;
 
  finally:
+  assert(res==0 || PyErr_Occurred());
+  if(PyErr_Occurred())
+    AddTraceBackHere(__FILE__, __LINE__, "vfsfile.init", "{s: O, s: O}", "args", args, "kwargs", kwds);
+
   Py_XDECREF(pyflagsout);
   Py_XDECREF(itemzero);
   Py_XDECREF(itemone);
@@ -6568,26 +6611,23 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
       result=SQLITE_IOERR_SHORT_READ;
       goto finally;
     }
-  if(!PyObject_CheckReadBuffer(pybuf))
+  if(PyUnicode_Check(pybuf) || !PyObject_CheckReadBuffer(pybuf))
     {
       PyErr_Format(PyExc_TypeError, "Object returned from xRead should be bytes/buffer/string");
-      AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xRead", "{s: i, s: L, s: O}", "amount", amount, "offset", offset, "result", pybuf);
       goto finally;
     }
   asrb=PyObject_AsReadBuffer(pybuf, &buffer, &size);
+  
+  APSW_FAULT_INJECT(xReadReadBufferFail,,(PyErr_NoMemory(),asrb=-1));
+
   if(asrb!=0)
     {
       PyErr_Format(PyExc_TypeError, "Object returned from xRead doesn't do read buffer");
-      AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xRead", "{s: i, s: L, s: O}", "amount", amount, "offset", offset, "result", pybuf);
       goto finally;
     }
 
   if(size<amount)
-    {
       result=SQLITE_IOERR_SHORT_READ;
-      if(PyErr_Occurred())
-        AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xRead:shortread", "{s: i, s: L, s: O}", "amount", amount, "offset", offset, "result", pybuf);
-    }
   else
     {
       memcpy(bufout, buffer, amount);
@@ -6595,10 +6635,12 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
     }
   
  finally:
+  if(PyErr_Occurred())
+      AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xRead", "{s: i, s: L, s: O}", "amount", amount, "offset", offset, "result", pybuf);
+
   Py_XDECREF(pybuf);
   PyGILState_Release(gilstate);
   return result;
-
 }
 
 static PyObject *
@@ -6646,16 +6688,21 @@ apswvfsfile_xWrite(sqlite3_file *file, const void *buffer, int amount, sqlite3_i
   gilstate=PyGILState_Ensure();
   CHECKVFSFILE;
 
+  /* I could instead use PyBuffer_New here which avoids duplicating
+     the memory.  But if the developer keeps a reference on it then
+     the underlying memory goes away on return of this function and
+     all hell would break lose on next access.  It is very unlikely
+     someone would hang on to them but I'd rather there not be any
+     possibility of problems.  In any event the data sizes are usually
+     very small - typically the SQLite default page size of 1kb */
   pybuf=PyBytes_FromStringAndSize(buffer, amount);
-  if(!pybuf)
-    goto finally;
+  if(!pybuf) goto finally;
 
   pyresult=Call_PythonMethodV(apswfile->file, "xWrite", 1, "(OL)", pybuf, offset);
   
  finally:
   if(PyErr_Occurred())
     {
-      assert(!pyresult);
       result=MakeSqliteMsgFromPyException(NULL);
       AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xWrite", "{s: i, s: L, s: O}", "amount", amount, "offset", offset, "data", pybuf?pybuf:Py_None);
     }
@@ -6686,7 +6733,7 @@ apswvfsfilepy_xWrite(APSWVFSFile *self, PyObject *args)
     }
   
   asrb=PyObject_AsReadBuffer(buffy, &buffer, &size);
-  if(asrb!=0)
+  if(asrb!=0 || PyUnicode_Check(buffy))
     {
       PyErr_Format(PyExc_TypeError, "Object passed to xWrite doesn't do read buffer");
       AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xWrite", "{s: L, s: O}", "offset", offset, "buffer", buffy);
@@ -6709,8 +6756,10 @@ apswvfsfile_xUnlock(sqlite3_file *file, int flag)
   APSWSQLite3File *apswfile=(APSWSQLite3File*)(void*)file;
   int result=SQLITE_ERROR;
   PyObject *pyresult=NULL;
+  PyObject *etype, *eval, *etb;
 
   gilstate=PyGILState_Ensure();
+  PyErr_Fetch(&etype, &eval, &etb);
   CHECKVFSFILE;
 
   pyresult=Call_PythonMethodV(apswfile->file, "xUnlock", 1, "(i)", flag);
@@ -6719,8 +6768,19 @@ apswvfsfile_xUnlock(sqlite3_file *file, int flag)
   else
     result=SQLITE_OK;
 
+  /* Although we can leave a python exception around, it causes too
+     much grief to sqlite.  it often ends up swallowing the error
+     since there isn't much else it can do on unlock failure.  So we
+     use unraiseable. */
+
  finally:
+  if(PyErr_Occurred())
+    {
+      AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile.xUnlock", "{s: i}", "flag", flag);
+      apsw_write_unraiseable();
+    }
   Py_XDECREF(pyresult);
+  PyErr_Restore(etype, eval, etb);
   PyGILState_Release(gilstate);
   return result;
 }
@@ -6737,6 +6797,8 @@ apswvfsfilepy_xUnlock(APSWVFSFile *self, PyObject *args)
     return NULL;
   
   res=self->base->pMethods->xUnlock(self->base, flag);
+  
+  APSW_FAULT_INJECT(xUnlockFails,,res=SQLITE_IOERR);
 
   if(res==SQLITE_OK)
     Py_RETURN_NONE;
@@ -6752,8 +6814,10 @@ apswvfsfile_xLock(sqlite3_file *file, int flag)
   APSWSQLite3File *apswfile=(APSWSQLite3File*)(void*)file;
   int result=SQLITE_ERROR;
   PyObject *pyresult=NULL;
+  PyObject *etype, *eval, *etb;
 
   gilstate=PyGILState_Ensure();
+  PyErr_Fetch(&etype, &eval, &etb);
   CHECKVFSFILE;
 
   pyresult=Call_PythonMethodV(apswfile->file, "xLock", 1, "(i)", flag);
@@ -6770,6 +6834,13 @@ apswvfsfile_xLock(sqlite3_file *file, int flag)
 
  finally:
   Py_XDECREF(pyresult);
+  if(PyErr_Occurred())
+    {
+      AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile.xLock", "{s: i}", "level", flag);
+      apsw_write_unraiseable();
+    }
+     
+  PyErr_Restore(etype, eval, etb);
   PyGILState_Release(gilstate);
   return result;
 }
@@ -6889,8 +6960,10 @@ apswvfsfile_xSectorSize(sqlite3_file *file)
   APSWSQLite3File *apswfile=(APSWSQLite3File*)(void*)file;
   int result=512;
   PyObject *pyresult=NULL;
+  PyObject *etype, *eval, *etb;
 
   gilstate=PyGILState_Ensure();
+  PyErr_Fetch(&etype, &eval, &etb);
   CHECKVFSFILE;
 
   pyresult=Call_PythonMethodV(apswfile->file, "xSectorSize", 0, "()");
@@ -6913,6 +6986,7 @@ apswvfsfile_xSectorSize(sqlite3_file *file)
 
  finally:
   Py_XDECREF(pyresult);
+  PyErr_Restore(etype, eval, etb);
   PyGILState_Release(gilstate);
   return result;
 }
@@ -6937,8 +7011,9 @@ apswvfsfile_xDeviceCharacteristics(sqlite3_file *file)
   APSWSQLite3File *apswfile=(APSWSQLite3File*)(void*)file;
   int result=0;
   PyObject *pyresult=NULL;
-
+  PyObject *etype, *eval, *etb;
   gilstate=PyGILState_Ensure();
+  PyErr_Fetch(&etype, &eval, &etb);
   CHECKVFSFILE;
 
   pyresult=Call_PythonMethodV(apswfile->file, "xDeviceCharacteristics", 0, "()");
@@ -6961,6 +7036,7 @@ apswvfsfile_xDeviceCharacteristics(sqlite3_file *file)
 
  finally:
   Py_XDECREF(pyresult);
+  PyErr_Restore(etype, eval, etb);
   PyGILState_Release(gilstate);
   return result;
 }
@@ -7141,9 +7217,11 @@ apswvfsfile_xClose(sqlite3_file *file)
   PyGILState_STATE gilstate;
   APSWSQLite3File *apswfile=(APSWSQLite3File*)(void*)file;
   int result=SQLITE_ERROR;
-  PyObject *pyresult=NULL;
+  PyObject *pyresult=NULL, *etype, *eval, *etb;
 
   gilstate=PyGILState_Ensure();
+  PyErr_Fetch(&etype, &eval, &etb);
+  
   CHECKVFSFILE;
 
   pyresult=Call_PythonMethodV(apswfile->file, "xClose", 1, "()");
@@ -7153,9 +7231,15 @@ apswvfsfile_xClose(sqlite3_file *file)
     result=SQLITE_OK;
 
  finally:
+  if(PyErr_Occurred())
+    {
+      AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile.xClose", NULL);
+      apsw_write_unraiseable();
+    }
   Py_XDECREF(apswfile->file);
   apswfile->file=NULL;
   Py_XDECREF(pyresult);
+  PyErr_Restore(etype, eval, etb);
   PyGILState_Release(gilstate);
   return result;
 }

@@ -1257,7 +1257,7 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
     </tr>
 
     <tr>
-      <td valign="top"><code>python setup.py build --compile=mingw32 install</code></td>
+      <td valign="top"><code>python&nbsp;setup.py&nbsp;build&nbsp;--compile=mingw32&nbsp;install</code></td>
 
       <td>On Windows this will use the free MinGW compiler instead of the Microsoft compilers.</td>
     </tr>
@@ -3623,7 +3623,9 @@ Traceback (most recent call last):
 
   <p><code>setup.py</code> now takes an optional <code>--fetch-sqlite[=ver]</code> argument to automatically download
   and use the latest SQLite amalgamation (or a specified version). On non-Windows platforms it will also work out what
-  compile flags SQLite needs (for example <tt>HAVE_USLEEP, HAVE_LOCALTIME_R</tt>)</p>
+  compile flags SQLite needs (for example <tt>HAVE_USLEEP, HAVE_LOCALTIME_R</tt>).  Several other options to <code>setup.py</code>
+  are also available to control enabling/omitting certains features and functionality.  See <a href="#Building">building</a> for
+  further details.</p>
 
   <p>APSW checks that SQLite was compiled to be <a href="http://sqlite.org/c3ref/threadsafe.html">threadsafe</a>.</p>
 
