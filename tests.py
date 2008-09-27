@@ -3640,7 +3640,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
         if py3:
             TestVFS.xDlOpen=TestVFS.xDlOpen6
-            testdb()
+            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xDlOpen=TestVFS.xDlOpen7
         self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, OverflowError, testdb)
         TestVFS.xDlOpen=TestVFS.xDlOpen99
@@ -3767,8 +3767,9 @@ class APSW(unittest.TestCase):
                 def __init__(self):
                     apsw.VFS.__init__(self, "apswtest2", "apswtest")
             vfs2=VFS2()
-            res=xgle("apswtest2", 128)
-            self.assertEqual(res[1], 1)
+            if not py3:
+                res=xgle("apswtest2", 128)
+                self.assertEqual(res[1], 1)
 
         ##
         ## VFS file testing
@@ -3824,7 +3825,7 @@ class APSW(unittest.TestCase):
         if sys.version_info>=(2,4): # py2.3 has bug
             self.assertRaises(TypeError, t.xWrite, "three", "four")
         self.assertRaises(OverflowError, t.xWrite, "three", l("0xffffffffeeeeeeee0"))
-        self.assertRaises([apsw.IOError, apsw.FullError][iswindows], t.xWrite, "foo", -7)
+        self.assertRaises([apsw.IOError, apsw.FullError][iswindows], t.xWrite, b("foo"), -7)
         self.assertRaises(TypeError, t.xWrite, u("foo"), 0)
         TestFile.xWrite=TestFile.xWrite1
         self.assertRaises(TypeError, testdb)
@@ -4537,6 +4538,10 @@ if __name__=='__main__':
     del traceback
     del re
     gc.collect()
+
+    if py3: # doesn't handle modules being deleted vert well
+        exit(exitcode)
+        
     # In py3 gc and sys can end up being None even though we take care not to delete them
     for k in list(sys.modules.keys()):
         if k not in ('gc', 'sys'):
@@ -4546,6 +4551,7 @@ if __name__=='__main__':
                 pass
 
     del sys
+
     if gc:
         gc.collect()
 
