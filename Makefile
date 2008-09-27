@@ -29,6 +29,7 @@ showsymbols:
 
 # You need to use the MinGW version of make. 
 compile-win:
+	-del /q apsw.pyd
 	cmd /c del /s /q dist
 	cmd /c del /s /q build
 	-cmd /c md dist
