@@ -18,6 +18,7 @@ import re
 import sys
 import threading
 import Queue
+import optparse
 
 def run(cmd):
     status=os.system(cmd)
@@ -46,13 +47,13 @@ def threadrun(queue):
         if d is None:
             return
         try:
-            print "Starting",d
             runtest(**d)
-            print "Finished",d
+            sys.stdout.write(".")
+            sys.stdout.flush()
         except:
-            print "FAILED", d
+            print "\nFAILED", d
         
-def main():
+def main(PYVERS, UCSTEST, SQLITEVERS, concurrency):
     print "Test starting"
     os.system("rm -rf apsw.so megatestresults 2>/dev/null ; mkdir megatestresults")
     print "  ... removing old work directory"
@@ -79,7 +80,7 @@ def main():
                 queue.put({'workdir': workdir, 'pyver': pyver, 'ucs': ucs, 'sqlitever': sqlitever, 'logdir': logdir})
 
     threads=[]
-    for i in range(8):
+    for i in range(concurrency):
         queue.put(None) # exit sentinel
         t=threading.Thread(target=threadrun, args=(queue,))
         t.start()
@@ -88,7 +89,7 @@ def main():
     print "All builds started, now waiting for them to finish"
     for t in threads:
         t.join()
-                
+    print "\nFinished"
 
 
 def getpyurl(pyver):
@@ -142,6 +143,7 @@ def buildapsw(outputfile, pybin, workdir):
         run("cd %s ; %s setup.py install >>%s 2>&1" % (workdir, pybin, outputfile))
 
 
+# Default versions we support
 PYVERS=(
     '3.0rc1',
     '2.6rc2',
@@ -153,12 +155,43 @@ PYVERS=(
     )
 
 SQLITEVERS=(
-    'cvs',
+    '3.6.3',
     '3.6.2',
     '3.6.1',
    )
 
-UCSTEST=(2,4,)
-
 if __name__=='__main__':
-    main()
+    nprocs=0
+    try:
+        # try and work out how many processors there are - this works on linux
+        for line in open("/proc/cpuinfo", "rt"):
+            line=line.split()
+            if line and line[0]=="processor":
+                nprocs+=1
+    except:
+        pass
+    # well there should be at least one!
+    if nprocs==0:
+        nprocs=1
+
+    concurrency=nprocs*2
+
+    parser=optparse.OptionParser()
+    parser.add_option("--pyvers", dest="pyvers", help="Which Python versions to test against [%default]", default=",".join(PYVERS))
+    parser.add_option("--sqlitevers", dest="sqlitevers", help="Which SQLite versions to test against [%default]", default=",".join(SQLITEVERS))
+    parser.add_option("--cvs", dest="cvs", help="Also test current SQLite CVS version [%default]", default=False, action="store_true")
+    parser.add_option("--ucs", dest="ucs", help="Unicode character widths to test in bytes [%default]", default="2,4")
+    parser.add_option("--tasks", dest="concurrency", help="Number of simultaneous builds/tests to run [%default]", default=concurrency)
+
+    options,args=parser.parse_args()
+
+    if args:
+        parser.error("Unexpect options "+str(options))
+
+    pyvers=options.pyvers.split(",")
+    sqlitevers=options.sqlitevers.split(",")
+    if options.cvs:
+        sqlitevers.append("cvs")
+    ucstest=[int(x) for x in options.ucs.split(",")]
+    concurrency=int(options.concurrency)
+    main(pyvers, ucstest, sqlitevers, concurrency)
