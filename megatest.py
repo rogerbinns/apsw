@@ -117,7 +117,7 @@ def buildpython(workdir, pyver, ucs, logfilename):
         tarx="z"
     if pyver=="2.3.0": pyver="2.3"    
     run("cd %s ; mkdir pyinst ; wget -q %s -O - | tar xf%s -  > %s 2>&1" % (workdir, url, tarx, logfilename))
-    run("cd %s ; cd Python-%s ; ./configure --enable-unicode=ucs%d --prefix=%s/pyinst >> %s 2>&1; make >>%s 2>&1; make  install >>%s 2>&1" % (workdir, pyver, ucs, workdir, logfilename, logfilename, logfilename))
+    run("cd %s ; cd Python-%s ; ./configure --disable-ipv6 --enable-unicode=ucs%d --prefix=%s/pyinst >> %s 2>&1; make >>%s 2>&1; make  install >>%s 2>&1" % (workdir, pyver, ucs, workdir, logfilename, logfilename, logfilename))
     suf=""
     if pyver>="3.0":
         suf="3.0"
