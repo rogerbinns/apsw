@@ -2243,10 +2243,14 @@ class APSW(unittest.TestCase):
                     if not os.path.isfile(os.path.join(directory,f)):
                         continue
                     counter+=1
-                    st=os.stat(os.path.join(directory,f))
-                    if columns is None:
-                        columns=["rowid", "name", "directory"]+[x for x in dir(st) if x.startswith("st_")]
-                    data.append( [counter, f, directory] + [getattr(st,x) for x in columns[3:]] )
+                    try:
+                        st=os.stat(os.path.join(directory,f))
+                        if columns is None:
+                            columns=["rowid", "name", "directory"]+[x for x in dir(st) if x.startswith("st_")]
+                        data.append( [counter, f, directory] + [getattr(st,x) for x in columns[3:]] )
+                    except OSError:
+                        # we ignore file and permission errors in this example
+                        pass
             return columns, data
 
         class Source:
