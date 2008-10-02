@@ -43,12 +43,12 @@ compile-win:
 	c:/python25/python setup.py build --compile=mingw32 install 
 	c:/python25/python tests.py
 	c:/python25/python setup.py build --compile=mingw32 bdist_wininst
-# Beta release currently
 # See http://bugs.python.org/issue3308 if these fail to run with
 # missing symbols
 	c:/python26/python setup.py build --compile=mingw32 install 
 	c:/python26/python tests.py
 	c:/python26/python setup.py build --compile=mingw32 bdist_wininst
+# Beta release currently
 	c:/python30/python setup.py build --compile=mingw32 install 
 	c:/python30/python tests.py
 	c:/python30/python setup.py build --compile=mingw32 bdist_wininst
@@ -69,7 +69,9 @@ upload:
 	test -f dist/$(VERDIR).win32-py2.3.exe
 	test -f dist/$(VERDIR).win32-py2.4.exe
 	test -f dist/$(VERDIR).win32-py2.5.exe
+	test -f dist/$(VERDIR).win32-py2.6.exe
 	-rm -f $(VERDIR).html
+	python googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.6 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.6.exe
 	python googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.5 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.5.exe
 	python googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.4 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.4.exe
 	python googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.3 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.3.exe
