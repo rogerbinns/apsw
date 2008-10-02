@@ -187,9 +187,9 @@ def deletefile(name):
     random.shuffle(l)
     newname="n-"+"".join(l)
     while os.path.exists(name):
-        try:
+        if True:
             os.rename(name, newname)
-        except:
+        if False:
             pass
     bgdelq.put(newname)
 
@@ -232,6 +232,7 @@ class APSW(unittest.TestCase):
 
     def setUp(self):
         # clean out database and journals from last runs
+        gc.collect()
         for name in ("testdb", "testdb2", "testfile"):
             for i in "-journal", "":
                 if os.path.exists(name+i):
@@ -3602,11 +3603,11 @@ class APSW(unittest.TestCase):
         TestVFS.xDelete=TestVFS.xDelete1
         self.assertRaises([apsw.CantOpenError, apsw.IOError][iswindows], self.assertRaisesUnraisable, [apsw.CantOpenError, apsw.IOError][iswindows], testdb)
         TestVFS.xDelete=TestVFS.xDelete2
-        self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, TypeError, testdb)
+        self.assertRaises([apsw.CantOpenError, apsw.SQLError][iswindows], self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xDelete=TestVFS.xDelete3
-        self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
+        self.assertRaises([apsw.CantOpenError, apsw.SQLError][iswindows], self.assertRaisesUnraisable, ZeroDivisionError, testdb)
         TestVFS.xDelete=TestVFS.xDelete4
-        self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, TypeError, testdb)
+        self.assertRaises([apsw.CantOpenError, apsw.SQLError][iswindows], self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xDelete=TestVFS.xDelete99
         testdb()
 
@@ -4653,22 +4654,23 @@ def testdb(filename="testdb2", vfsname="apswtest", closedb=True):
 
     # Get the routine xCheckReservedLock to be called.  We need a hot journal
     # which this code adapted from SQLite's pager.test does
-    c.execute("create table abc(a,b,c)")
-    for i in range(20):
-        c.execute("insert into abc values(1,2,?)", (randomstring(200),))
-    c.execute("begin; update abc set c=?", (randomstring(200),))
+    if not iswindows:
+        c.execute("create table abc(a,b,c)")
+        for i in range(20):
+            c.execute("insert into abc values(1,2,?)", (randomstring(200),))
+        c.execute("begin; update abc set c=?", (randomstring(200),))
 
-    open(filename+"x", "wb").write(open(filename, "rb").read())
-    open(filename+"x-journal", "wb").write(open(filename+"-journal", "rb").read())
+        open(filename+"x", "wb").write(open(filename, "rb").read())
+        open(filename+"x-journal", "wb").write(open(filename+"-journal", "rb").read())
 
-    f=open(filename+"x-journal", "ab")
-    f.seek(-1032, 2) # 1032 bytes before end of file
-    f.write(b(r"\x00\x00\x00\x00"))
-    f.close()
+        f=open(filename+"x-journal", "ab")
+        f.seek(-1032, 2) # 1032 bytes before end of file
+        f.write(b(r"\x00\x00\x00\x00"))
+        f.close()
 
-    hotdb=apsw.Connection(filename+"x", vfs=vfsname)
-    hotdb.cursor().execute("select sql from sqlite_master")
-    hotdb.close()
+        hotdb=apsw.Connection(filename+"x", vfs=vfsname)
+        hotdb.cursor().execute("select sql from sqlite_master")
+        hotdb.close()
 
     if closedb:
         db.close()
