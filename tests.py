@@ -90,13 +90,16 @@ if not py3:
                 return args[0]
             raise
 
-# py3 has a useless sys.excepthook mainly to avoid allocating any memory as the
-# exception could have been running out of memory
-if py3:
-    def ehook(etype, evalue, etraceback):
-        sys.stderr.write("Unraiseable exception "+str(etype)+":"+str(evalue)+"\n")
-        traceback.print_tb(etraceback)
-    sys.excepthook=ehook
+# py3 has a useless sys.excepthook mainly to avoid allocating any
+# memory as the exception could have been running out of memory.  So
+# we use our own which is also valueable on py2 as it says it is an
+# unraiseable exception (with testcode you sometimes can't tell if it
+# is unittest showing you an exception or the unraiseable).  It is
+# mainly VFS code that needs to raise these.
+def ehook(etype, evalue, etraceback):
+    sys.stderr.write("Unraiseable exception "+str(etype)+":"+str(evalue)+"\n")
+    traceback.print_tb(etraceback)
+sys.excepthook=ehook
 
 
 
@@ -104,6 +107,14 @@ if py3:
 def randomintegers(howmany):
     for i in range(howmany):
         yield (random.randint(0,9999999999),)
+
+def randomstring(length):
+    l=list("abcdefghijklmnopqrstuvwxyz0123456789")
+    while len(l)<length:
+        l.extend(l)
+    l=l[:length]
+    random.shuffle(l)
+    return "".join(l)
 
 # An instance of this class is used to get the -1 return value to the
 # C api PyObject_IsTrue
@@ -180,7 +191,7 @@ def deletefile(name):
             os.rename(name, newname)
         except:
             pass
-        bgdelq.put(newname)
+    bgdelq.put(newname)
 
 # main test class/code
 class APSW(unittest.TestCase):
@@ -247,7 +258,7 @@ class APSW(unittest.TestCase):
         orig=sys.excepthook
         try:
             called=[]
-            def ehook(t,v,tb, called=called):
+            def ehook(t,v,tb):
                 called.append( (t,v,tb) )
             sys.excepthook=ehook
             try:
@@ -255,7 +266,6 @@ class APSW(unittest.TestCase):
             finally:
                 if len(called)<1:
                     self.fail("Call %s(*%s, **%s) did not do any unraiseable" % (func, args, kwargs) )
-                self.failUnless(len(called)) # check an unraiseable fired
                 self.assertEqual(exc, called[0][0]) # check it was the correct type
         finally:
             sys.excepthook=orig
@@ -2701,11 +2711,11 @@ class APSW(unittest.TestCase):
                {
                  "req":
                       {
-                        "gilacq": "PyGILState_Ensure",
-                        "check": "CHECKVFS",
-                        "gilrel": "PyGILState_Release",
+                        "preamble": "VFSPREAMBLE",
+                        "tb": "AddTraceBackHere",
+                        "postamble": "VFSPOSTAMBLE"
                       },
-                 "order": ("gilacq", "check", "gilrel")
+                 "order": ("preamble", "tb", "postamble")
                },
             "apswvfspy":
                {
@@ -2716,15 +2726,21 @@ class APSW(unittest.TestCase):
                      },
                 "order": ("check", "notimpl"),
                },
+            "apswvfspy_unregister":
+               {
+               "req":
+                    {
+                        "check": "CHECKVFSPY",
+                    },
+               },
             "apswvfsfile":
                {
                  "req":
                       {
-                        "gilacq": "PyGILState_Ensure",
-                        "check": "CHECKVFSFILE",
-                        "gilrel": "PyGILState_Release",
+                        "preamble": "FILEPREAMBLE",
+                        "postamble": "FILEPOSTAMBLE",
                       },
-                 "order": ("gilacq", "check", "gilrel")
+                 "order": ("preamble", "postamble")
                },
             "apswvfsfilepy":
                {
@@ -2985,7 +3001,7 @@ class APSW(unittest.TestCase):
 
     def testVFS(self):
         "Verify VFS functionality"
-
+        global testtimeout
         # Check basic functionality and inheritance - make an obfuscated provider
 
         # obfusvfs code
@@ -3049,11 +3065,12 @@ class APSW(unittest.TestCase):
         f2.xClose()
         f2.xClose()
 
-        # cleanup so it doesn't interfere with following code
+        # cleanup so it doesn't interfere with following code using the same file
         del f
         del f2
         db2.close()
         del db2
+        vfs.unregister()
         gc.collect()
 
         ### Detailed vfs testing
@@ -3124,71 +3141,7 @@ class APSW(unittest.TestCase):
             self.assertRaisesUnraisable(TypeError, testrand)
             RandomVFS.xRandomness=RandomVFS.xRandomness99
             testrand() # shouldn't have problems
-
-        # make things nice for following code
-        gc.collect()
-        self.tearDown()
-        self.setUp()
-
-        testtimeout=False
-
-        def testdb(filename="testdb2", vfsname="apswtest"):
-            "This method causes all parts of a vfs to be executed"
-            gc.collect() # free any existing db handles
-            try: deletefile(filename)
-            except OSError: pass
-            try: deletefile(filename+"-journal")
-            except OSError: pass
-
-            db=apsw.Connection(filename, vfs=vfsname)
-            db.cursor().execute("create table foo(x,y); insert into foo values(1,2); insert into foo values(date('now'), date('now'))")
-            if testtimeout:
-                # busy
-                db2=apsw.Connection(filename, vfs=vfsname)
-                db.setbusytimeout(1100)
-                db2.cursor().execute("begin exclusive")
-                try:
-                    db.cursor().execute("begin immediate")
-                    1/0 # should not be reached
-                except apsw.BusyError:
-                    pass
-                db2.cursor().execute("end")
-
-            # cause truncate to be called
-            # see sqlite test/pager3.test where this (public domain) code is taken from
-            # I had to add the pragma locking_mode to get it to work
-            c=db.cursor()
-            for row in c.execute("pragma locking_mode=exclusive"):
-                pass
-
-            c.execute("""
-                         create table t1(a unique, b);
-                         insert into t1 values(1, 'abcdefghijklmnopqrstuvwxyz');
-                         insert into t1 values(2, 'abcdefghijklmnopqrstuvwxyz');
-                         update t1 set b=b||a||b;
-                         update t1 set b=b||a||b;
-                         update t1 set b=b||a||b;
-                         update t1 set b=b||a||b;
-                         update t1 set b=b||a||b;
-                         update t1 set b=b||a||b;
-                         create temp table t2 as select * from t1;
-                         begin;
-                         create table t3(x);""")
-            try:
-                c.execute("insert into t1 select 4-a, b from t2")
-            except apsw.ConstraintError:
-                pass
-            c.execute("rollback")
-
-            if hasattr(APSW, "testLoadExtension"):
-                # can we use loadextension?
-                db.enableloadextension(True)
-                try:
-                    db.loadextension("./"*128+LOADEXTENSIONFILENAME+"xxx")
-                except apsw.ExtensionLoadingError:
-                    pass
-                db.loadextension(LOADEXTENSIONFILENAME)
-                self.assertEqual(1, next(db.cursor().execute("select half(2)"))[0])
+            vfs.unregister()
 
         class ErrorVFS(apsw.VFS):
             # A vfs that returns errors for all methods
@@ -3533,6 +3486,101 @@ class APSW(unittest.TestCase):
             def xLock99(self, level):
                 return super(TestFile, self).xLock(level)
 
+            def xTruncate1(self, bad, number, of, arguments):
+                1/0
+
+            def xTruncate2(self, size):
+                1/0
+
+            def xTruncate99(self, size):
+                return super(TestFile, self).xTruncate(size)
+
+            def xSync1(self, bad, number, of, arguments):
+                1/0
+
+            def xSync2(self, flags):
+                1/0
+
+            def xSync99(self, flags):
+                return super(TestFile, self).xSync(flags)
+
+            def xSectorSize1(self, bad, number, of, args):
+                1/0
+
+            def xSectorSize2(self):
+                1/0
+
+            def xSectorSize3(self):
+                return "three"
+
+            def xSectorSize4(self):
+                return l("0xffffffffeeeeeeee0")
+
+            def xSectorSize99(self):
+                return super(TestFile, self).xSectorSize()
+
+            def xDeviceCharacteristics1(self, bad, number, of, args):
+                1/0
+
+            def xDeviceCharacteristics2(self):
+                1/0
+
+            def xDeviceCharacteristics3(self):
+                return "three"
+
+            def xDeviceCharacteristics4(self):
+                return l("0xffffffffeeeeeeee0")
+
+            def xDeviceCharacteristics99(self):
+                return super(TestFile, self).xDeviceCharacteristics()
+                
+            def xFileSize1(self, bad, number, of, args):
+                1/0
+
+            def xFileSize2(self):
+                1/0
+
+            def xFileSize3(self):
+                return "three"
+
+            def xFileSize4(self):
+                return l("0xffffffffeeeeeeee0")
+
+            def xFileSize99(self):
+                res=super(TestFile, self).xFileSize()
+                if res<100000:
+                    return int(res)
+                return res
+
+            def xCheckReservedLock1(self, bad, number, of, args):
+                1/0
+
+            def xCheckReservedLock2(self):
+                1/0
+
+            def xCheckReservedLock3(self):
+                return "three"
+
+            def xCheckReservedLock4(self):
+                return l("0xffffffffeeeeeeee0")
+
+            def xCheckReservedLock99(self):
+                return super(TestFile,self).xCheckReservedLock()
+
+            def xFileControl1(self, bad, number, of, args):
+                1/0
+
+            def xFileControl2(self, op, ptr):
+                1/0
+
+            def xFileControl99(self, op, ptr):
+                if op==1027:
+                    assert(ptr==1027)
+                elif op==1028:
+                    if ctypes:
+                        assert(True is ctypes.py_object.from_address(ptr).value)
+                else:
+                    raise Exception("Unknown op "+str(op))
 
         # check initialization
         self.assertRaises(TypeError, apsw.VFS, "3", 3)
@@ -3540,7 +3588,7 @@ class APSW(unittest.TestCase):
         self.assert_("never" not in apsw.vfsnames())
         TestVFS.__init__=TestVFS.init1
         vfs=TestVFS()
-        self.assertRaises(apsw.VFSNotImplementedError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, apsw.VFSNotImplementedError, testdb)
         del vfs
         gc.collect()
         TestVFS.__init__=TestVFS.init99
@@ -3554,14 +3602,14 @@ class APSW(unittest.TestCase):
         TestVFS.xDelete=TestVFS.xDelete1
         self.assertRaises([apsw.CantOpenError, apsw.IOError][iswindows], self.assertRaisesUnraisable, [apsw.CantOpenError, apsw.IOError][iswindows], testdb)
         TestVFS.xDelete=TestVFS.xDelete2
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+        self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xDelete=TestVFS.xDelete3
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
+        self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
         TestVFS.xDelete=TestVFS.xDelete4
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+        self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xDelete=TestVFS.xDelete99
         testdb()
-        
+
         ## xAccess
         self.assertRaises(TypeError, vfs.xAccess, "bogus", "arguments")
         TestVFS.xAccess=TestVFS.xAccess1
@@ -3588,19 +3636,19 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, vfs.xFullPathname, "bogus", "arguments")
         self.assertRaises(TypeError, vfs.xFullPathname, 3)
         TestVFS.xFullPathname=TestVFS.xFullPathname1
-        self.assertRaises(TypeError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xFullPathname=TestVFS.xFullPathname2
-        self.assertRaises(ZeroDivisionError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
         TestVFS.xFullPathname=TestVFS.xFullPathname3
-        self.assertRaises(TypeError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xFullPathname=TestVFS.xFullPathname4
         # SQLite doesn't give an error even though the vfs is silently truncating
         # the full pathname.  See SQLite ticket 3373
         self.assertRaises(apsw.CantOpenError, testdb) # we get cantopen on the truncated fullname
         TestVFS.xFullPathname=TestVFS.xFullPathname5
-        self.assertRaises(apsw.TooBigError, testdb)
+        self.assertRaises(apsw.TooBigError, self.assertRaisesUnraisable, apsw.TooBigError, testdb)
         TestVFS.xFullPathname=TestVFS.xFullPathname6
-        self.assertRaises(TypeError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xFullPathname=TestVFS.xFullPathname99
         testdb()
 
@@ -3614,15 +3662,16 @@ class APSW(unittest.TestCase):
         self.assertRaises(OverflowError, vfs.xOpen, None, [l("0xffffffffeeeeeeee0"), 2])
         self.assertRaises(OverflowError, vfs.xOpen, None, [l("0xffffffff0"), 2])
         self.assertRaises(OverflowError, vfs.xOpen, None, [1, l("0xffffffff0")])
-        self.assertRaises(apsw.CantOpenError, testdb, filename="notadir/notexist/nochance") # can't open due to intermediate directories not existing
+        self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, apsw.CantOpenError,
+                                         testdb, filename="notadir/notexist/nochance") # can't open due to intermediate directories not existing
         TestVFS.xOpen=TestVFS.xOpen1
-        self.assertRaises(TypeError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xOpen=TestVFS.xOpen2
-        self.assertRaises(TypeError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xOpen=TestVFS.xOpen3
-        self.assertRaises(TypeError, testdb)
+        self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xOpen=TestVFS.xOpen4
-        self.assertRaises(AttributeError, self.assertRaisesUnraisable, AttributeError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, AttributeError, testdb)
         TestVFS.xOpen=TestVFS.xOpen99
         testdb()
 
@@ -3783,23 +3832,23 @@ class APSW(unittest.TestCase):
         TestVFS.xOpen=TestVFS.xOpen100
 
         TestFile.__init__=TestFile.init1
-        self.assertRaises(TypeError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.__init__=TestFile.init2
-        self.assertRaises(TypeError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.__init__=TestFile.init3
-        self.assertRaises(TypeError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.__init__=TestFile.init4
-        self.assertRaises(TypeError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.__init__=TestFile.init5
-        self.assertRaises(OverflowError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, OverflowError, testdb)
         TestFile.__init__=TestFile.init6
-        self.assertRaises(TypeError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.__init__=TestFile.init7
-        self.assertRaises(ValueError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ValueError, testdb)
         TestFile.__init__=TestFile.init8
-        self.assertRaises(TypeError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.__init__=TestFile.init9
-        self.assertRaises(ValueError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ValueError, testdb)
         TestFile.__init__=TestFile.init99
         testdb() # should work just fine
 
@@ -3813,13 +3862,13 @@ class APSW(unittest.TestCase):
         self.assertRaises(OverflowError, t.xRead, 1, l("0xffffffffeeeeeeee0"))
         self.assertRaises(apsw.IOError, t.xRead, 27, -17)
         TestFile.xRead=TestFile.xRead1
-        self.assertRaises(TypeError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.xRead=TestFile.xRead2
-        self.assertRaises(ZeroDivisionError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
         TestFile.xRead=TestFile.xRead3
-        self.assertRaises(TypeError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.xRead=TestFile.xRead4
-        self.assertRaises(TypeError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.xRead=TestFile.xRead5
         self.assertRaises(apsw.IOError, testdb)
         TestFile.xRead=TestFile.xRead99
@@ -3832,11 +3881,11 @@ class APSW(unittest.TestCase):
         self.assertRaises([apsw.IOError, apsw.FullError][iswindows], t.xWrite, b("foo"), -7)
         self.assertRaises(TypeError, t.xWrite, u("foo"), 0)
         TestFile.xWrite=TestFile.xWrite1
-        self.assertRaises(TypeError, testdb)
+        self.assertRaises(apsw.FullError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.xWrite=TestFile.xWrite2
-        self.assertRaises(ZeroDivisionError, testdb)
+        self.assertRaises(apsw.FullError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
         TestFile.xWrite=TestFile.xWrite3
-        self.assertRaises([apsw.IOError, apsw.FullError][iswindows], testdb)
+        self.assertRaises([apsw.IOError, apsw.FullError][iswindows], self.assertRaisesUnraisable, apsw.IOError, testdb)
         TestFile.xWrite=TestFile.xWrite99
         testdb()
 
@@ -3865,21 +3914,89 @@ class APSW(unittest.TestCase):
         testdb()
 
         ## xTruncate
-
+        if sys.version_info>=(2,4): # work around py2.3 bug
+            self.assertRaises(TypeError, t.xTruncate, "three")
+        self.assertRaises(OverflowError, t.xTruncate, l("0xffffffffeeeeeeee0"))
+        self.assertRaises(apsw.IOError, t.xTruncate, -77)
+        TestFile.xTruncate=TestFile.xTruncate1
+        self.assertRaisesUnraisable(TypeError, testdb)
+        TestFile.xTruncate=TestFile.xTruncate2
+        self.assertRaisesUnraisable(ZeroDivisionError, testdb)
+        TestFile.xTruncate=TestFile.xTruncate99
+        testdb()
+        
         ## xSync
+        if sys.version_info>=(2,4): # work around py2.3 bug
+            self.assertRaises(TypeError, t.xSync, "three")
+        self.assertRaises(OverflowError, t.xSync, l("0xffffffffeeeeeeee0"))
+        TestFile.xSync=TestFile.xSync1
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+        TestFile.xSync=TestFile.xSync2
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
+        TestFile.xSync=TestFile.xSync99
+        testdb()
 
         ## xSectorSize
+        self.assertRaises(TypeError, t.xSectorSize, 3)
+        TestFile.xSectorSize=TestFile.xSectorSize1
+        self.assertRaisesUnraisable(TypeError, testdb)
+        TestFile.xSectorSize=TestFile.xSectorSize2
+        self.assertRaisesUnraisable(ZeroDivisionError, testdb)
+        TestFile.xSectorSize=TestFile.xSectorSize3
+        self.assertRaisesUnraisable(TypeError, testdb)
+        TestFile.xSectorSize=TestFile.xSectorSize4
+        self.assertRaisesUnraisable(OverflowError, testdb)
+        TestFile.xSectorSize=TestFile.xSectorSize99
+        testdb()
 
         ## xDeviceCharacteristics
+        self.assertRaises(TypeError, t.xDeviceCharacteristics, 3)
+        TestFile.xDeviceCharacteristics=TestFile.xDeviceCharacteristics1
+        self.assertRaisesUnraisable(TypeError, testdb)
+        TestFile.xDeviceCharacteristics=TestFile.xDeviceCharacteristics2
+        self.assertRaisesUnraisable(ZeroDivisionError, testdb)
+        TestFile.xDeviceCharacteristics=TestFile.xDeviceCharacteristics3
+        self.assertRaisesUnraisable(TypeError, testdb)
+        TestFile.xDeviceCharacteristics=TestFile.xDeviceCharacteristics4
+        self.assertRaisesUnraisable(OverflowError, testdb)
+        TestFile.xDeviceCharacteristics=TestFile.xDeviceCharacteristics99
+        testdb()
 
         ## xFileSize
+        self.assertRaises(TypeError, t.xFileSize, 3)
+        TestFile.xFileSize=TestFile.xFileSize1
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+        TestFile.xFileSize=TestFile.xFileSize2
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
+        TestFile.xFileSize=TestFile.xFileSize3
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+        TestFile.xFileSize=TestFile.xFileSize4
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, OverflowError, testdb)
+        TestFile.xFileSize=TestFile.xFileSize99
+        testdb()
 
         ## xCheckReservedLock
+        self.assertRaises(TypeError, t.xCheckReservedLock, 8)
+        TestFile.xCheckReservedLock=TestFile.xCheckReservedLock1
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+        TestFile.xCheckReservedLock=TestFile.xCheckReservedLock2
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
+        TestFile.xCheckReservedLock=TestFile.xCheckReservedLock3
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+        TestFile.xCheckReservedLock=TestFile.xCheckReservedLock4
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, OverflowError, testdb)
+        TestFile.xCheckReservedLock=TestFile.xCheckReservedLock99
+        db=testdb()
 
         ## xFileControl
+        self.assertRaises(TypeError, t.xFileControl, "three", "four")
+        self.assertRaises(OverflowError, t.xFileControl, 10, l("0xffffffffeeeeeeee0"))
+        self.assertRaises(apsw.SQLError, t.xFileControl, 2000, 3000)
+        TestFile.xFileControl=TestFile.xFileControl1
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb(closedb=False).filecontrol, "main", 1027, 1027)
+
 
         ## xClose
-
         try:
             del t
             gc.collect()
@@ -4390,11 +4507,7 @@ class APSW(unittest.TestCase):
 
         ## xFullPathnameConversion
         apsw.faultdict["xFullPathnameConversion"]=True
-        try:
-            apsw.Connection("testdb", vfs="faultvfs")
-            1/0
-        except MemoryError:
-            pass
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, MemoryError,  apsw.Connection, "testdb", vfs="faultvfs")
 
         ## xDlError
         db=apsw.Connection(":memory:", vfs="faultvfs")
@@ -4441,7 +4554,7 @@ class APSW(unittest.TestCase):
             vfs2=FaultVFS("faultvfs2", "faultvfs")
             del vfs2
             gc.collect()
-        self.assertRaisesUnraisable(ValueError, foo)
+        self.assertRaisesUnraisable(apsw.IOError, foo)
 
         ## APSWVFSBadVersion
         apsw.faultdict["APSWVFSBadVersion"]=True
@@ -4454,17 +4567,114 @@ class APSW(unittest.TestCase):
         self.assert_("foo" not in apsw.vfsnames())
 
         ## xReadReadBufferFail
-        apsw.faultdict["xReadReadBufferFail"]=True
         apsw.Connection("testdb", vfs="faultvfs").cursor().execute("create table dummy1(x,y)")
-        try:
+        apsw.faultdict["xReadReadBufferFail"]=True
+        def foo():
             apsw.Connection("testdb", vfs="faultvfs").cursor().execute("select * from dummy1")
-            1/0
-        except TypeError:
-            pass
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, foo)
 
         ## xUnlockFails
         apsw.faultdict["xUnlockFails"]=True
         self.assertRaises(apsw.IOError, self.assertRaisesUnraisable, apsw.IOError, apsw.Connection("testdb", vfs="faultvfs").cursor().execute, "select * from dummy1")
+
+        ## xSyncFails
+        apsw.faultdict["xSyncFails"]=True
+        self.assertRaises(apsw.IOError, self.assertRaisesUnraisable, apsw.IOError, apsw.Connection("testdb", vfs="faultvfs").cursor().execute, "insert into dummy1 values(3,4)")
+
+        ## xFileSizeFails
+        apsw.faultdict["xFileSizeFails"]=True
+        self.assertRaises(apsw.IOError, self.assertRaisesUnraisable, apsw.IOError, apsw.Connection("testdb", vfs="faultvfs").cursor().execute, "select * from dummy1")
+
+        ## xCheckReservedLockFails
+        apsw.faultdict["xCheckReservedLockFails"]=True
+        self.assertRaises(apsw.IOError, self.assertRaisesUnraisable, apsw.IOError, testdb, vfsname="faultvfs")
+
+        ## xCheckReservedLockIsTrue
+        apsw.faultdict["xCheckReservedLockIsTrue"]=True
+        testdb(vfsname="faultvfs")
+
+
+testtimeout=False # timeout testing adds several seconds to each run
+def testdb(filename="testdb2", vfsname="apswtest", closedb=True):
+    "This method causes all parts of a vfs to be executed"
+    gc.collect() # free any existing db handles
+    for suf in "", "-journal", "x", "x-journal":
+        deletefile(filename)
+
+    db=apsw.Connection(filename, vfs=vfsname)
+    db.cursor().execute("create table foo(x,y); insert into foo values(1,2); insert into foo values(date('now'), date('now'))")
+    if testtimeout:
+        # busy
+        db2=apsw.Connection(filename, vfs=vfsname)
+        db.setbusytimeout(1100)
+        db2.cursor().execute("begin exclusive")
+        try:
+            db.cursor().execute("begin immediate")
+            1/0 # should not be reached
+        except apsw.BusyError:
+            pass
+        db2.cursor().execute("end")
+
+    # cause truncate to be called
+    # see sqlite test/pager3.test where this (public domain) code is taken from
+    # I had to add the pragma locking_mode to get it to work
+    c=db.cursor()
+    for row in c.execute("pragma locking_mode=exclusive"):
+        pass
+
+    c.execute("""
+                 create table t1(a unique, b);
+                 insert into t1 values(1, 'abcdefghijklmnopqrstuvwxyz');
+                 insert into t1 values(2, 'abcdefghijklmnopqrstuvwxyz');
+                 update t1 set b=b||a||b;
+                 update t1 set b=b||a||b;
+                 update t1 set b=b||a||b;
+                 update t1 set b=b||a||b;
+                 update t1 set b=b||a||b;
+                 update t1 set b=b||a||b;
+                 create temp table t2 as select * from t1;
+                 begin;
+                 create table t3(x);""")
+    try:
+        c.execute("insert into t1 select 4-a, b from t2")
+    except apsw.ConstraintError:
+        pass
+    c.execute("rollback")
+
+    if hasattr(APSW, "testLoadExtension"):
+        # can we use loadextension?
+        db.enableloadextension(True)
+        try:
+            db.loadextension("./"*128+LOADEXTENSIONFILENAME+"xxx")
+        except apsw.ExtensionLoadingError:
+            pass
+        db.loadextension(LOADEXTENSIONFILENAME)
+        assert(1==next(db.cursor().execute("select half(2)"))[0])
+
+    # Get the routine xCheckReservedLock to be called.  We need a hot journal
+    # which this code adapted from SQLite's pager.test does
+    c.execute("create table abc(a,b,c)")
+    for i in range(20):
+        c.execute("insert into abc values(1,2,?)", (randomstring(200),))
+    c.execute("begin; update abc set c=?", (randomstring(200),))
+
+    open(filename+"x", "wb").write(open(filename, "rb").read())
+    open(filename+"x-journal", "wb").write(open(filename+"-journal", "rb").read())
+
+    f=open(filename+"x-journal", "ab")
+    f.seek(-1032, 2) # 1032 bytes before end of file
+    f.write(b(r"\x00\x00\x00\x00"))
+    f.close()
+
+    hotdb=apsw.Connection(filename+"x", vfs=vfsname)
+    hotdb.cursor().execute("select sql from sqlite_master")
+    hotdb.close()
+
+    if closedb:
+        db.close()
+    else:
+        return db
+
         
 if not iswindows:
     # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used
