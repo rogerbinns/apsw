@@ -26,6 +26,14 @@ else
   args="$@"
 fi
 
+if [ -z "$NOLEAKS" ]
+then
+   showleaks="--leak-check=full --leak-resolution=high --show-reachable=yes"
+else
+   showleaks=""
+fi
+
+
 # find python
 PYTHON=python # use whatever is in the path
 INCLUDEDIR=`$PYTHON -c "import distutils.sysconfig, sys; sys.stdout.write(distutils.sysconfig.get_python_inc())"`
@@ -34,5 +42,5 @@ set -x
 rm -f apsw.o apsw.so
 gcc -pthread -fno-strict-aliasing  -Os -g -D_FORTIFY_SOURCE=2 -fPIC -W -Wall -DAPSW_TESTFIXTURES -DAPSW_NO_NDEBUG -DEXPERIMENTAL -DSQLITE_THREADSAFE=1 -DAPSW_USE_SQLITE_AMALGAMATION=\"sqlite3.c\" -I$INCLUDEDIR -c apsw.c
 gcc -pthread  -g -shared apsw.o -o apsw.so
-env APSW_NO_MEMLEAK=t APSW_TEST_ITERATIONS=$APSW_TEST_ITERATIONS valgrind --track-fds=yes --num-callers=100 --leak-check=full --leak-resolution=high --show-reachable=yes --freelist-vol=500000000 $PYTHON $args
+env APSW_NO_MEMLEAK=t APSW_TEST_ITERATIONS=$APSW_TEST_ITERATIONS valgrind --track-fds=yes --num-callers=100 $showleaks --freelist-vol=500000000 $PYTHON $args
 
