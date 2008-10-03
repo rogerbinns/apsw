@@ -1224,7 +1224,7 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
 "pyoperator">(</span><span class="pyname">apsw</span><span class="pyoperator">.</span><span class=
 "pyname">SQLITE_STATUS_MEMORY_USED</span><span class="pyoperator">)
 
-</span><span class="pyoutput">   SQLite memory usage current 234736 max 307032
+</span><span class="pyoutput">   SQLite memory usage current 233712 max 304984
 </span>
 <span class="pycomment">###
 ### Cleanup
@@ -2545,16 +2545,19 @@ def xFileControl(self, op, pointer):
   db=apsw.Connection("file", vfs="myvfs")
 </pre>
 
+      <h3>Exceptions and errors</h3>
+
       <p>To return an error from any routine you should raise an exception. The exception will be translated into the
       appropriate SQLite error code for SQLite. To return a specific SQLite error code use <code><a href=
       "#exceptionfor">apsw.exceptionfor(code)</a></code>.</p>
 
-      <p>Some VFS routines cannot return an error. For others there may be several more VFS calls. For example an error
-      in the xWrite routine can result in a rollback which involve several more VFS calls dealing with the journal and
-      main file. Those could result in even more exceptions obscuring the previous ones. In these situations the
-      exceptions are delivered to <code>sys.excepthook()</code> and if that fails then <code>PyErr_Display()</code> is
-      called which prints out a traceback. <a href="#augmentedstacktraces">Augmented stack traces</a> are available
-      which will help diagnose issues.</p>
+      <p>Some VFS routines cannot return an error. For others there usually are several more VFS calls. For example an
+      error in the xWrite routine can result in a rollback which involves several more VFS calls dealing with the
+      journal and main file. Those could result in even more exceptions obscuring the previous ones. Consequently
+      exceptions cannot be passed back via conventional mechanisms and are instead delivered to
+      <code>sys.excepthook()</code> and if that fails then <code>PyErr_Display()</code> is called which prints out a
+      traceback. <a href="#augmentedstacktraces">Augmented stack traces</a> are available which will help diagnose
+      issues.</p>
 
       <h3>OS Interface</h3>
 
@@ -2568,6 +2571,15 @@ def xFileControl(self, op, pointer):
           <p>Registers the VFS using <i>name</i>. If <i>base</i> is not None then this VFS will inherit from an
           existing installed VFS. To inherit from the default, pass in the empty string. If <i>makedefault</i> is True
           then this VFS will be installed as the default for all future database opens.</p>
+        </dd>
+
+        <dt><strong>unregister()</strong></dt>
+
+        <dd>
+          <p>Unregisters the VFS making it unavailable to future database opens. You do not need to call this as the
+          VFS is automatically unregistered by when the VFS has no more references or open datatabases using it. It is
+          however useful to call if you have made your VFS be the default and wish to immediately make it be
+          unavailable. It is safe to call this routine multiple times.</p>
         </dd>
 
         <dt><strong>xOpen(name, flags)</strong></dt>
@@ -3623,9 +3635,9 @@ Traceback (most recent call last):
 
   <p><code>setup.py</code> now takes an optional <code>--fetch-sqlite[=ver]</code> argument to automatically download
   and use the latest SQLite amalgamation (or a specified version). On non-Windows platforms it will also work out what
-  compile flags SQLite needs (for example <tt>HAVE_USLEEP, HAVE_LOCALTIME_R</tt>).  Several other options to <code>setup.py</code>
-  are also available to control enabling/omitting certains features and functionality.  See <a href="#Building">building</a> for
-  further details.</p>
+  compile flags SQLite needs (for example <tt>HAVE_USLEEP, HAVE_LOCALTIME_R</tt>). Several other options to
+  <code>setup.py</code> are also available to control enabling/omitting certains features and functionality. See
+  <a href="#Building">building</a> for further details.</p>
 
   <p>APSW checks that SQLite was compiled to be <a href="http://sqlite.org/c3ref/threadsafe.html">threadsafe</a>.</p>
 

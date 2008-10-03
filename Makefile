@@ -78,7 +78,3 @@ upload:
 	python googlecode_upload.py -p apsw -s "$(VERSION) (Source)" -l "Type-Source,OpSys-All" dist/$(VERDIR).zip
 	cp apsw.html $(VERDIR).html
 	python googlecode_upload.py -p apsw -s "$(VERSION) (Documentation)" -l "Type-Docs" $(VERDIR).html
-
-distrib-lin: compile-lin
-	ssh initd.org mkdir -p /var/www/pub/software/pysqlite/apsw/$(VERSION)
-	scp dist/$(VERDIR).zip apsw.html initd.org:/var/www/pub/software/pysqlite/apsw/$(VERSION)/
