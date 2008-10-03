@@ -86,7 +86,7 @@ def main(PYVERS, UCSTEST, SQLITEVERS, concurrency):
         t.start()
         threads.append(t)
 
-    print "All builds started, now waiting for them to finish"
+    print "All builds started, now waiting for them to finish (%d concurrency)" % (concurrency,)
     for t in threads:
         t.join()
     print "\nFinished"
@@ -146,7 +146,7 @@ def buildapsw(outputfile, pybin, workdir):
 # Default versions we support
 PYVERS=(
     '3.0rc1',
-    '2.6rc2',
+    '2.6',
     '2.5.2',
     '2.4.5',
     '2.3.7',
