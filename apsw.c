@@ -4304,8 +4304,7 @@ APSWCursor_dealloc(APSWCursor * self)
     }
 
   resetcursor(self, /* force = */ 1);
-  if(PyErr_Occurred())
-    PyErr_Clear(); /* clear out any exceptions from resetcursor since we don't care */
+  assert(!PyErr_Occurred());
 
   if (have_error)
     /* restore earlier error if there was one */
@@ -6447,12 +6446,6 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
   sqlite3_vfs *vfstouse=NULL;
   sqlite3_file *file;
 
-  if(PyErr_Occurred())
-    {
-      fprintf(stderr, "There is already an error present\n");
-      fflush(stderr);
-    }
-
   if(!PyArg_ParseTupleAndKeywords(args, kwds, "esOO:init(vfs, name, flags)", kwlist, STRENCODING, &vfs, &pyname, &flags))
     return -1;
 
@@ -6747,8 +6740,7 @@ apswvfsfile_xLock(sqlite3_file *file, int flag)
   if(!pyresult)
     {
       result=MakeSqliteMsgFromPyException(NULL);
-      /* For busy we don't want an exception hanging around as sleep will be called
-         and print it! */
+      /* a busy exception is normal so we clear it */
       if(SQLITE_BUSY==(result&0xff))
         PyErr_Clear();
     }
@@ -7135,6 +7127,8 @@ apswvfsfilepy_xClose(APSWVFSFile *self)
 
   res=self->base->pMethods->xClose(self->base);
   
+  APSW_FAULT_INJECT(xCloseFails,, res=SQLITE_IOERR);
+
   /* we set pMethods to NULL after xClose callback so xClose can call other operations
      such as read or write during close */
   self->base->pMethods=NULL;
@@ -7403,7 +7397,9 @@ vfsnames(APSW_ARGUNUSED PyObject *self)
 
   while(vfs)
     {
-      str=convertutf8string(vfs->zName);
+      APSW_FAULT_INJECT(vfsnamesfails, 
+                        str=convertutf8string(vfs->zName),
+                        str=PyErr_NoMemory());
       if(!str) goto error;
       if(PyList_Append(result, str)) goto error;
       Py_DECREF(str);
@@ -7726,7 +7722,7 @@ PyInit_apsw(void)
       ADDINT(SQLITE_NOTADB),
       END,
 
-    /* open flags */
+      /* open flags */
       DICT("mapping_open_flags"),
       ADDINT(SQLITE_OPEN_READONLY),
       ADDINT(SQLITE_OPEN_READWRITE),
@@ -7743,7 +7739,6 @@ PyInit_apsw(void)
       ADDINT(SQLITE_OPEN_NOMUTEX),
       END,
 
-#ifdef SQLITE_LIMIT_LENGTH
       /* limits */
       DICT("mapping_limits"),
       ADDINT(SQLITE_LIMIT_LENGTH),
@@ -7758,7 +7753,6 @@ PyInit_apsw(void)
       ADDINT(SQLITE_LIMIT_VARIABLE_NUMBER),
       /* We don't include the MAX limits - see http://code.google.com/p/apsw/issues/detail?id=17 */
       END,
-#endif
 
       DICT("mapping_config"),
       ADDINT(SQLITE_CONFIG_SINGLETHREAD),

@@ -187,10 +187,11 @@ def deletefile(name):
     random.shuffle(l)
     newname="n-"+"".join(l)
     while os.path.exists(name):
-        if True:
+        try:
             os.rename(name, newname)
-        if False:
-            pass
+        except:
+            # Make windows happy
+            gc.collect()
     bgdelq.put(newname)
 
 # main test class/code
@@ -233,7 +234,7 @@ class APSW(unittest.TestCase):
     def setUp(self):
         # clean out database and journals from last runs
         gc.collect()
-        for name in ("testdb", "testdb2", "testfile"):
+        for name in ("testdb", "testdb2", "testfile", "testfile2"):
             for i in "-journal", "":
                 if os.path.exists(name+i):
                     deletefile(name+i)
@@ -301,7 +302,7 @@ class APSW(unittest.TestCase):
 
     def testConnectionFileControl(self):
         "Verify sqlite3_file_control"
-        # Note that testVFS deals with success cases
+        # Note that testVFS deals with success cases and the actual vfs backend
         self.assertRaises(TypeError, self.db.filecontrol, 1, 2)
         self.assertRaises(TypeError, self.db.filecontrol, "main", 1001, "foo")
         self.assertRaises(OverflowError, self.db.filecontrol, "main", 1001, l("45236748972389749283"))
@@ -2999,7 +3000,6 @@ class APSW(unittest.TestCase):
             klass,value=sys.exc_info()[:2]
             self.assert_(klass is apsw.AbortError)
 
-
     def testVFS(self):
         "Verify VFS functionality"
         global testtimeout
@@ -3046,6 +3046,11 @@ class APSW(unittest.TestCase):
         self.assertEqual(len(orig), len(obfu))
         self.assertNotEqual(orig, obfu)
         self.assertEqual(orig, encryptme(obfu))
+
+        # helper routines
+        self.assertRaises(TypeError, apsw.exceptionfor, "three")
+        self.assertRaises(ValueError, apsw.exceptionfor, 8764324)
+        self.assertRaises(OverflowError, apsw.exceptionfor, l("0xffffffffffffffff10"))
         
 
         # test raw file object
@@ -3788,6 +3793,8 @@ class APSW(unittest.TestCase):
         ## xGetLastError
         xgle=getattr(apsw, 'test_call_xGetLastError', None)
         if xgle:
+            # check it
+            self.assertRaises(TypeError, xgle, 3, "seven")
             # cause an error
             self.assertRaises(apsw.CantOpenError, vfs.xOpen, u("."), [0xfffffff,0])
             # check it works
@@ -3907,11 +3914,11 @@ class APSW(unittest.TestCase):
         self.assertRaises(OverflowError, t.xLock, l("0xffffffffeeeeeeee0"))
         # doesn't care about nonsensical levels
         t.xLock(0xffffff)
-        TestFile.xUnlock=TestFile.xLock1
+        TestFile.xLock=TestFile.xLock1
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
-        TestFile.xUnlock=TestFile.xLock2
+        TestFile.xLock=TestFile.xLock2
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
-        TestFile.xUnlock=TestFile.xLock99
+        TestFile.xLock=TestFile.xLock99
         testdb()
 
         ## xTruncate
@@ -3992,17 +3999,32 @@ class APSW(unittest.TestCase):
         ## xFileControl
         self.assertRaises(TypeError, t.xFileControl, "three", "four")
         self.assertRaises(OverflowError, t.xFileControl, 10, l("0xffffffffeeeeeeee0"))
+        self.assertRaises(TypeError, t.xFileControl, 10, "three")
         self.assertRaises(apsw.SQLError, t.xFileControl, 2000, 3000)
         TestFile.xFileControl=TestFile.xFileControl1
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb(closedb=False).filecontrol, "main", 1027, 1027)
-
+        TestFile.xFileControl=TestFile.xFileControl2
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb(closedb=False).filecontrol, "main", 1027, 1027)
+        TestFile.xFileControl=TestFile.xFileControl99
+        # these should work
+        testdb(closedb=False).filecontrol("main", 1027, 1027)
+        if ctypes:
+            objwrap=ctypes.py_object(True)
+            testdb(closedb=False).filecontrol("main", 1028, ctypes.addressof(objwrap))
 
         ## xClose
-        try:
-            del t
-            gc.collect()
-        except:
-            raise
+        t.xClose()
+        # make sure there is no problem closing twice
+        t.xClose()
+        del t
+        gc.collect()
+
+        t=apsw.VFSFile("", "testfile2", [apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
+        t.xClose()
+        # check all functions detect closed file
+        for n in dir(t):
+            if n not in ('xClose',) and not n.startswith("__"):
+                self.assertRaises(apsw.VFSFileClosedError, getattr(t, n))
         
         
 
@@ -4593,6 +4615,23 @@ class APSW(unittest.TestCase):
         ## xCheckReservedLockIsTrue
         apsw.faultdict["xCheckReservedLockIsTrue"]=True
         testdb(vfsname="faultvfs")
+
+        ## xCloseFails
+        t=apsw.VFSFile("", "testfile", [apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
+        apsw.faultdict["xCloseFails"]=True
+        self.assertRaises(apsw.IOError, t.xClose)
+        del t
+        # now catch it in the destructor
+        def foo():
+            t=apsw.VFSFile("", "testfile", [apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
+            apsw.faultdict["xCloseFails"]=True
+            del t
+            gc.collect()
+        self.assertRaisesUnraisable(apsw.IOError, foo)
+
+        ## vfsnamesfails
+        apsw.faultdict["vfsnamesfails"]=True
+        self.assertRaises(MemoryError, apsw.vfsnames)
 
 
 testtimeout=False # timeout testing adds several seconds to each run
