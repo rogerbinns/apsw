@@ -4023,10 +4023,8 @@ class APSW(unittest.TestCase):
         t.xClose()
         # check all functions detect closed file
         for n in dir(t):
-            if n not in ('xClose',) and not n.startswith("__"):
+            if n not in ('xClose', 'excepthook') and not n.startswith("__"):
                 self.assertRaises(apsw.VFSFileClosedError, getattr(t, n))
-        
-        
 
     # Note that faults fire only once, so there is no need to reset
     # them.  The testing for objects bigger than 2GB is done in

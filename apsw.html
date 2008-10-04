@@ -1009,9 +1009,9 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
     </span><span class="pykeyword">print </span><span class="pyname">size</span><span class=
 "pyoperator">,</span><span class="pyname">file</span><span class="pyoperator">,</span><span class="pyname">directory
 
-</span><span class="pyoutput">   511757 unicodedata.so /space/pydebug/lib/python2.5/lib-dynload
-   457857 pyexpat.so /space/pydebug/lib/python2.5/lib-dynload
-   308465 _ctypes.so /space/pydebug/lib/python2.5/lib-dynload
+</span><span class="pyoutput">   511686 unicodedata_d.so /usr/lib/python2.5/lib-dynload
+   481008 unicodedata.so /usr/lib/python2.5/lib-dynload
+   457585 pyexpat_d.so /usr/lib/python2.5/lib-dynload
 </span>
 <span class="pycomment"># Which 3 files are the oldest?
 </span><span class="pykeyword">for </span><span class="pyname">ctime</span><span class=
@@ -1022,9 +1022,9 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
     </span><span class="pykeyword">print </span><span class="pyname">ctime</span><span class=
 "pyoperator">,</span><span class="pyname">file</span><span class="pyoperator">,</span><span class="pyname">directory
 
-</span><span class="pyoutput">   1205478976.0 _sqlite3.so /space/pydebug/lib/python2.5/lib-dynload
-   1205478976.0 _bsddb.so /space/pydebug/lib/python2.5/lib-dynload
-   1205478976.0 dbm.so /space/pydebug/lib/python2.5/lib-dynload
+</span><span class="pyoutput">   1194713443.0 GnuPGInterface-0.3.2.egg-info /var/lib/python-support/python2.5
+   1194713443.0 GnuPGInterface.py /var/lib/python-support/python2.5
+   1194713447.0 sexy.so /usr/lib/python2.5/site-packages/gtk-2.0
 </span>
 <span class="pycomment">### <a name="example-vfs" id="example-vfs"> </a> 
 ### A VFS that "obfuscates" the database file contents.  The scheme
@@ -1224,7 +1224,7 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
 "pyoperator">(</span><span class="pyname">apsw</span><span class="pyoperator">.</span><span class=
 "pyname">SQLITE_STATUS_MEMORY_USED</span><span class="pyoperator">)
 
-</span><span class="pyoutput">   SQLite memory usage current 233712 max 304984
+</span><span class="pyoutput">   SQLite memory usage current 235024 max 306296
 </span>
 <span class="pycomment">###
 ### Cleanup
@@ -2538,26 +2538,138 @@ def xFileControl(self, op, pointer):
       interface between the SQLite core and the underlying operating system. The majority of the functionality deals
       with files. APSW exposes this functionality letting you provide your own routines. You can also <i>inherit</i>
       from an existing vfs making it easy to augment or override specific routines. For example you could obfuscate
-      your database by XORing the data implemented by augmenting the read and write methods.</p>
+      your database by XORing the data implemented by augmenting the read and write methods. The method names are
+      exactly the same as SQLite uses making it easier to read the SQLite documentation, trouble tickets, web searches
+      or mailing lists. The SQLite convention results in names like xAccess, xCurrentTime and xWrite.</p>
 
       <p>You can specify which VFS to use as a parameter to the module Connection constructor</p>
       <pre>
   db=apsw.Connection("file", vfs="myvfs")
 </pre>
 
-      <h3>Exceptions and errors</h3>
+      <h3><a name="vfsexceptions" id="vfsexceptions">Exceptions and errors</a></h3>
 
       <p>To return an error from any routine you should raise an exception. The exception will be translated into the
       appropriate SQLite error code for SQLite. To return a specific SQLite error code use <code><a href=
-      "#exceptionfor">apsw.exceptionfor(code)</a></code>.</p>
+      "#exceptionfor">apsw.exceptionfor(code)</a></code>. If the exception does not map to any specific error code then
+      SQLITE_ERROR (which corresponds to <code>apsw.SQLError</code>) is returned to SQLite.</p>
 
-      <p>Some VFS routines cannot return an error. For others there usually are several more VFS calls. For example an
-      error in the xWrite routine can result in a rollback which involves several more VFS calls dealing with the
-      journal and main file. Those could result in even more exceptions obscuring the previous ones. Consequently
-      exceptions cannot be passed back via conventional mechanisms and are instead delivered to
-      <code>sys.excepthook()</code> and if that fails then <code>PyErr_Display()</code> is called which prints out a
-      traceback. <a href="#augmentedstacktraces">Augmented stack traces</a> are available which will help diagnose
-      issues.</p>
+      <p>The SQLite code that deals with VFS errors behaves in varying ways. Some routines have no way to return an
+      error (eg xDlOpen just returns zero/NULL on being unable to load a library, xSleep has no error return
+      parameter), others have any error values ignored (eg <a href=
+      "http://www.sqlite.org/cvstrac/tktview?tn=3394">xCurrentTime</a>) and others are unified (eg almost any error in
+      xWrite will be returned to the user as disk full error). Sometimes errors are ignored as they are harmless such
+      as when a journal can't be deleted after a commit (the journal is marked as obsolete before being deleted).
+      Simple operations such as opening a database can result in hundreds of different VFS function calls such as hot
+      journals being detected, locking, and read/writes for playback/rollback.</p>
+
+      <p>To avoid confusion with exceptions being raised in the VFS and exceptions from normal code to open Connections
+      or execute SQL queries, VFS exceptions are not raised in the normal way. (If they were, only one could be raised
+      and it would obscure whatever exceptions the Connection open or SQL query execute wanted to raise.) Instead the
+      <tt>excepthook</tt> member of the VFS or VFSFile is called with a tuple of exception type, exception value and
+      exception traceback. The default implementation of <tt>excepthook</tt> calls <code>sys.excepthook()</code> which
+      under Python 2 shows the stack trace and under Python 3 merely prints the exception value. (If
+      <tt>sys.excepthook</tt> fails then PyErr_Display() is called.)</p>
+
+      <p>In normal VFS usage there will be no exceptions raised, or specific expected ones which APSW clears after
+      noting them and returning the appropriate value back to SQLite. The exception hooking behaviour helps you find
+      issues in your code or unexpected behaviour of the external environment. Remember that <a href=
+      "#augmentedstacktraces">augmented stack traces</a> are available which significantly increase detail about the
+      exceptions.</p>
+
+      <p>As an example, lets say you have a divide by zero error in your xWrite routine. The table below shows what
+      happens with time going down and across.</p>
+
+      <table cellspacing="5" cellpadding="5">
+        <tr>
+          <th>Python query code</th>
+
+          <th>SQLite and APSW C code</th>
+
+          <th>Python VFS code</th>
+        </tr>
+
+        <tr>
+          <td>cursor.execute("update table set foo=3")</td>
+
+          <td></td>
+
+          <td></td>
+        </tr>
+
+        <tr>
+          <td></td>
+
+          <td>SQLite code does query</td>
+
+          <td></td>
+        </tr>
+
+        <tr>
+          <td></td>
+
+          <td></td>
+
+          <td>Your VFS routines are called</td>
+        </tr>
+
+        <tr>
+          <td></td>
+
+          <td></td>
+
+          <td>xWrite divides by zero</td>
+        </tr>
+
+        <tr>
+          <td></td>
+
+          <td></td>
+
+          <td>&nbsp;&nbsp;VFS excepthook is called with ZeroDivision exception</td>
+        </tr>
+
+        <tr>
+          <td></td>
+
+          <td>SQLITE_ERROR (closest matching SQLite error code) is returned to SQLite by APSW</td>
+
+          <td></td>
+        </tr>
+
+        <tr>
+          <td></td>
+
+          <td>SQLite error handling and recovery operates</td>
+
+          <td>More VFS routines are called. Any exceptions in these routines will result in VFS excepthook being called
+          with them.</td>
+        </tr>
+
+        <tr>
+          <td></td>
+
+          <td>SQLite code returns SQLITE_FULL to APSW</td>
+
+          <td></td>
+        </tr>
+
+        <tr>
+          <td></td>
+
+          <td>APSW translates into <tt>apsw.FullError</tt> exception</td>
+
+          <td></td>
+        </tr>
+
+        <tr>
+          <td><tt>apsw.FullError</tt> exception received</td>
+
+          <td></td>
+
+          <td></td>
+        </tr>
+      </table>
 
       <h3>OS Interface</h3>
 
@@ -2565,12 +2677,14 @@ def xFileControl(self, op, pointer):
       you must inherit from <code>apsw.VFS</code>.</p>
 
       <dl>
-        <dt><strong>VFS(name, base=None, makedefault=False, maxpathname=1024)</strong> (Constructor)</dt>
+        <dt><strong>VFS(name, base=None, makedefault=False, maxpathname=1024, excepthook=hookfunction)</strong>
+        (Constructor)</dt>
 
         <dd>
           <p>Registers the VFS using <i>name</i>. If <i>base</i> is not None then this VFS will inherit from an
           existing installed VFS. To inherit from the default, pass in the empty string. If <i>makedefault</i> is True
-          then this VFS will be installed as the default for all future database opens.</p>
+          then this VFS will be installed as the default for all future database opens. If excepthook is provided then
+          it replaces the default one used as described in <a href="#vfsexceptions">VFS exceptions</a>.</p>
         </dd>
 
         <dt><strong>unregister()</strong></dt>
@@ -2580,6 +2694,12 @@ def xFileControl(self, op, pointer):
           VFS is automatically unregistered by when the VFS has no more references or open datatabases using it. It is
           however useful to call if you have made your VFS be the default and wish to immediately make it be
           unavailable. It is safe to call this routine multiple times.</p>
+        </dd>
+
+        <dt><strong>excepthook</strong></dt>
+
+        <dd>
+          <p>The function called when unexpected exceptions happen in the VFS.</p>
         </dd>
 
         <dt><strong>xOpen(name, flags)</strong></dt>
@@ -2689,12 +2809,19 @@ def xDlSym(ptr, name):
       <p>You can get an overview in the <a href="http://sqlite.org/c3ref/io_methods.html">C documentation</a>.</p>
 
       <dl>
-        <dt><strong>VFSFile(vfs, name, flags)</strong> (Inheriting constructor)</dt>
+        <dt><strong>VFSFile(vfs, name, flags, excepthook=hookfunction)</strong> (Inheriting constructor)</dt>
 
         <dd>
           <p>If you want to inherit from an existing VFS then you must subclass <code>apsw.VFSFile</code> passing in
           the parameters above. If <i>vfs</i> is an empty string then the default VFS will be used. <i>flags</i> is a
-          two item list with semantics documented in <code>xOpen</code> above.</p>
+          two item list with semantics documented in <code>xOpen</code> above. If excepthook is provided then it
+          replaces the default one used as described in <a href="#vfsexceptions">VFS exceptions</a>.</p>
+        </dd>
+
+        <dt><strong>excepthook</strong></dt>
+
+        <dd>
+          <p>The function called when unexpected exceptions happen in the VFS file.</p>
         </dd>
 
         <dt><strong>xClose()</strong></dt>

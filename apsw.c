@@ -343,16 +343,25 @@ static void make_exception(int res, sqlite3 *db)
  check */
 #define SET_EXC(res,db)  { if(res != SQLITE_OK && !PyErr_Occurred()) make_exception(res,db); }
 
-/* The default Python PyErr_WriteUnraiseable is almost useless.  It
+/* 
+   The default Python PyErr_WriteUnraiseable is almost useless.  It
    only prints the str() of the exception and the str() of the object
    passed in.  This gives the developer no clue whatsoever where in
    the code it is happening.  It also does funky things to the passed
    in object which can cause the destructor to fire twice.
-   Consequently we use our version here.  It makes a traceback if
-   necessary, invokes sys.excepthook and if that fails then
-   PyErr_Display. When we return, any error will be cleared. */
+   Consequently we use our version here.  It makes the traceback
+   complete, and then tries the following, going to the next if
+   the hook isn't found or returns an error:
+
+   * excepthook of hookobject (if not NULL)
+   * excepthook of sys module
+   * PyErr_Display
+
+   If any return an error then then the next one is tried.  When we
+   return, any error will be cleared.
+*/
 static void 
-apsw_write_unraiseable(void)
+apsw_write_unraiseable(PyObject *hookobject)
 {
   PyObject *err_type=NULL, *err_value=NULL, *err_traceback=NULL;
   PyObject *excepthook=NULL;
@@ -371,22 +380,40 @@ apsw_write_unraiseable(void)
   PyErr_Fetch(&err_type, &err_value, &err_traceback);
   PyErr_NormalizeException(&err_type, &err_value, &err_traceback);
 
-  excepthook=PySys_GetObject("excepthook");
-  if(excepthook)
-    result=PyEval_CallFunction(excepthook, "(OOO)", err_type?err_type:Py_None, err_value?err_value:Py_None, err_traceback?err_traceback:Py_None);
-  if(!excepthook || !result)
+  if(hookobject)
     {
-      /* remove any error from callback failure */
+      excepthook=PyObject_GetAttrString(hookobject, "excepthook");
       PyErr_Clear();
-      PyErr_Display(err_type, err_value, err_traceback);
+      if(excepthook)
+        {
+          result=PyEval_CallFunction(excepthook, "(OOO)", err_type?err_type:Py_None, err_value?err_value:Py_None, err_traceback?err_traceback:Py_None);
+          if(result)
+            goto finally;
+        }
+      Py_XDECREF(excepthook);
     }
 
-  /* excepthook is a borrowed reference */
+  excepthook=PySys_GetObject("excepthook");
+  if(excepthook)
+    {
+      Py_INCREF(excepthook); /* borrowed reference from PySys_GetObject so we increment */
+      PyErr_Clear();
+      result=PyEval_CallFunction(excepthook, "(OOO)", err_type?err_type:Py_None, err_value?err_value:Py_None, err_traceback?err_traceback:Py_None);
+      if(result) 
+        goto finally;
+    }
+
+  /* remove any error from callback failure */
+  PyErr_Clear();
+  PyErr_Display(err_type, err_value, err_traceback);
+
+  finally:
+  Py_XDECREF(excepthook);
   Py_XDECREF(result);
   Py_XDECREF(err_traceback);
   Py_XDECREF(err_value);
   Py_XDECREF(err_type);
-  PyErr_Clear();
+  PyErr_Clear(); /* being paranoid - make sure no errors on return */
 }
 
 /* Turns the current Python exception into an SQLite error code and
@@ -898,7 +925,7 @@ Connection_dealloc(Connection* self)
                        PyBytes_AsString(utf8filename), self->co_linenumber,
                        res);
           
-          apsw_write_unraiseable();
+          apsw_write_unraiseable(NULL);
           Py_XDECREF(utf8filename);
           PyErr_Restore(etype, evalue, etraceback);
         }
@@ -2343,7 +2370,7 @@ cbdispatch_final(sqlite3_context *context)
   if(PyErr_Occurred() && (err_type||err_value||err_traceback))
     {
       PyErr_Format(PyExc_Exception, "An exception happened during cleanup of an aggregate function, but there was already error in the step function so only that can be returned");
-      apsw_write_unraiseable();
+      apsw_write_unraiseable(NULL);
     }
 
   if(err_type||err_value||err_traceback)
@@ -3932,7 +3959,7 @@ APSWBlob_dealloc(APSWBlob *self)
           if(have_error)
             PyErr_Fetch(&err_type, &err_value, &err_traceback);
           SET_EXC(res, self->connection->db);
-          apsw_write_unraiseable();
+          apsw_write_unraiseable(NULL);
           if(have_error)
             PyErr_Restore(err_type, err_value, err_traceback);
           /* destructors can't throw exceptions */
@@ -5325,28 +5352,32 @@ static PyTypeObject APSWCursorType = {
 #define CHECKVFSFILEPY \
   if(!self->base) { PyErr_Format(ExcVFSFileClosed, "VFSFileClosed: Attempting operation on closed file"); return NULL; }
 
-#define VFSPREAMBLE                       \
-  PyObject *etype, *eval, *etb;           \
-  PyGILState_STATE gilstate;              \
-  gilstate=PyGILState_Ensure();           \
-  PyErr_Fetch(&etype, &eval, &etb);       \
+#define VFSPREAMBLE                         \
+  PyObject *etype, *eval, *etb;             \
+  PyGILState_STATE gilstate;                \
+  gilstate=PyGILState_Ensure();             \
+  PyErr_Fetch(&etype, &eval, &etb);         \
   CHECKVFS;
 
-#define VFSPOSTAMBLE                      \
-  if(PyErr_Occurred())                    \
-     apsw_write_unraiseable();            \
-  PyErr_Restore(etype, eval, etb);        \
+#define VFSPOSTAMBLE                        \
+  if(PyErr_Occurred())                      \
+    apsw_write_unraiseable((PyObject*)(vfs->pAppData)); \
+  PyErr_Restore(etype, eval, etb);          \
   PyGILState_Release(gilstate);
 
-#define FILEPREAMBLE                      \
+#define FILEPREAMBLE                        \
   APSWSQLite3File *apswfile=(APSWSQLite3File*)(void*)file; \
-  PyObject *etype, *eval, *etb;           \
-  PyGILState_STATE gilstate;              \
-  gilstate=PyGILState_Ensure();           \
-  PyErr_Fetch(&etype, &eval, &etb);       \
+  PyObject *etype, *eval, *etb;             \
+  PyGILState_STATE gilstate;                \
+  gilstate=PyGILState_Ensure();             \
+  PyErr_Fetch(&etype, &eval, &etb);         \
   CHECKVFSFILE;
 
-#define FILEPOSTAMBLE VFSPOSTAMBLE
+#define FILEPOSTAMBLE                       \
+  if(PyErr_Occurred())                      \
+    apsw_write_unraiseable(apswfile->file); \
+  PyErr_Restore(etype, eval, etb);          \
+  PyGILState_Release(gilstate);
 
 typedef struct 
 {
@@ -5374,6 +5405,22 @@ typedef struct
 static PyTypeObject APSWVFSFileType;
 
 static struct sqlite3_io_methods apsw_io_methods;
+
+/* This function only needs to call sys.excepthook.  If things mess up
+   then whoever called us will fallback on PyErr_Display etc */
+static PyObject*
+apswvfs_excepthook(APSW_ARGUNUSED PyObject *donotuseself, PyObject *args)
+{
+  /* NOTE: do not use the self argument as this function is used for
+     both apswvfs and apswvfsfile.  If you need to use self then make
+     two versions of the function. */
+  PyObject *excepthook; 
+
+  excepthook=PySys_GetObject("excepthook"); /* NB borrowed reference */
+  if(!excepthook) return NULL;
+
+  return PyEval_CallObject(excepthook, args);
+}
 
 static int
 apswvfs_xDelete(sqlite3_vfs *vfs, const char *zName, int syncDir)
@@ -6196,7 +6243,7 @@ APSWVFS_dealloc(APSWVFS *self)
       Py_XDECREF(xx);
 
       if(PyErr_Occurred())
-        apsw_write_unraiseable();
+        apsw_write_unraiseable(NULL);
       PyErr_Restore(etype, evalue, etraceback);
 
       /* some cleanups */
@@ -6333,6 +6380,7 @@ static PyMethodDef APSWVFS_methods[]={
   {"xCurrentTime", (PyCFunction)apswvfspy_xCurrentTime, METH_NOARGS, "xCurrentTime"},
   {"xGetLastError", (PyCFunction)apswvfspy_xGetLastError, METH_NOARGS, "xGetLastError"},
   {"unregister", (PyCFunction)apswvfspy_unregister, METH_NOARGS, "Unregisters the vfs"},
+  {"excepthook", (PyCFunction)apswvfs_excepthook, METH_VARARGS, "Exception hook"},
   /* Sentinel */
   {0, 0, 0, 0}
   };
@@ -6413,7 +6461,7 @@ APSWVFSFile_dealloc(APSWVFSFile *self)
   if(PyErr_Occurred())
     {
       AddTraceBackHere(__FILE__, __LINE__, "APSWVFS File destructor", NULL);
-      apsw_write_unraiseable();
+      apsw_write_unraiseable(NULL);
     }
   Py_TYPE(self)->tp_free((PyObject*)self);
 
@@ -7174,6 +7222,7 @@ static PyMethodDef APSWVFSFile_methods[]={
   {"xSync", (PyCFunction)apswvfsfilepy_xSync, METH_VARARGS, "xSync"},
   {"xTruncate", (PyCFunction)apswvfsfilepy_xTruncate, METH_VARARGS, "xTruncate"},
   {"xFileControl", (PyCFunction)apswvfsfilepy_xFileControl, METH_VARARGS, "xFileControl"},
+  {"excepthook", (PyCFunction)apswvfs_excepthook, METH_VARARGS, "Exception hook"},
   /* Sentinel */
   {0, 0, 0, 0}
   };
@@ -7469,7 +7518,7 @@ apsw_call_xGetLastError(APSW_ARGUNUSED PyObject *self, PyObject *args)
   int bufsize;
   PyObject *resultbuffer=NULL;
   sqlite3_vfs *vfs;
-  int res;
+  int res=-1;
 
   if(!PyArg_ParseTuple(args, "esi", STRENCODING, &vfsname, &bufsize))
     return NULL;
