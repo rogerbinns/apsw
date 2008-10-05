@@ -3648,9 +3648,12 @@ class APSW(unittest.TestCase):
         TestVFS.xFullPathname=TestVFS.xFullPathname3
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xFullPathname=TestVFS.xFullPathname4
-        # SQLite doesn't give an error even though the vfs is silently truncating
-        # the full pathname.  See SQLite ticket 3373
-        self.assertRaises(apsw.CantOpenError, testdb) # we get cantopen on the truncated fullname
+        if iswindows:
+            self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, apsw.CantOpenError, testdb)
+        else:
+            # SQLite doesn't give an error even though the vfs is silently truncating
+            # the full pathname.  See SQLite ticket 3373
+            self.assertRaises(apsw.CantOpenError, testdb) # we get cantopen on the truncated fullname
         TestVFS.xFullPathname=TestVFS.xFullPathname5
         self.assertRaises(apsw.TooBigError, self.assertRaisesUnraisable, apsw.TooBigError, testdb)
         TestVFS.xFullPathname=TestVFS.xFullPathname6
@@ -3893,7 +3896,7 @@ class APSW(unittest.TestCase):
         TestFile.xWrite=TestFile.xWrite2
         self.assertRaises(apsw.FullError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
         TestFile.xWrite=TestFile.xWrite3
-        self.assertRaises([apsw.IOError, apsw.FullError][iswindows], self.assertRaisesUnraisable, apsw.IOError, testdb)
+        self.assertRaises([apsw.IOError, apsw.FullError][iswindows], self.assertRaisesUnraisable, [apsw.IOError, apsw.FullError][iswindows], testdb)
         TestFile.xWrite=TestFile.xWrite99
         testdb()
 
@@ -3925,7 +3928,10 @@ class APSW(unittest.TestCase):
         if sys.version_info>=(2,4): # work around py2.3 bug
             self.assertRaises(TypeError, t.xTruncate, "three")
         self.assertRaises(OverflowError, t.xTruncate, l("0xffffffffeeeeeeee0"))
-        self.assertRaises(apsw.IOError, t.xTruncate, -77)
+        if not iswindows:
+            # windows is happy to truncate to -77 bytes
+            # see http://www.sqlite.org/cvstrac/tktview?tn=3415
+            self.assertRaises(apsw.IOError, t.xTruncate, -77)
         TestFile.xTruncate=TestFile.xTruncate1
         self.assertRaisesUnraisable(TypeError, testdb)
         TestFile.xTruncate=TestFile.xTruncate2
@@ -3985,14 +3991,18 @@ class APSW(unittest.TestCase):
 
         ## xCheckReservedLock
         self.assertRaises(TypeError, t.xCheckReservedLock, 8)
-        TestFile.xCheckReservedLock=TestFile.xCheckReservedLock1
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
-        TestFile.xCheckReservedLock=TestFile.xCheckReservedLock2
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
-        TestFile.xCheckReservedLock=TestFile.xCheckReservedLock3
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
-        TestFile.xCheckReservedLock=TestFile.xCheckReservedLock4
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, OverflowError, testdb)
+        if not iswindows:
+            # we don't do checkreservedlock test on windows as the
+            # various files that need to be copied and finagled behind
+            # the scenes are locked
+            TestFile.xCheckReservedLock=TestFile.xCheckReservedLock1
+            self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+            TestFile.xCheckReservedLock=TestFile.xCheckReservedLock2
+            self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
+            TestFile.xCheckReservedLock=TestFile.xCheckReservedLock3
+            self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+            TestFile.xCheckReservedLock=TestFile.xCheckReservedLock4
+            self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, OverflowError, testdb)
         TestFile.xCheckReservedLock=TestFile.xCheckReservedLock99
         db=testdb()
 
