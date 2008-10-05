@@ -1,5 +1,5 @@
 
-VERSION=3.6.0-r1
+VERSION=3.6.3-r1
 VERDIR=apsw-$(VERSION)
 
 SOURCE=apsw.c apsw.html apswversion.h mingwsetup.bat pointerlist.c \

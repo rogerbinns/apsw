@@ -56,8 +56,8 @@
 #include "sqlite3.h"
 #endif
 
-#if SQLITE_VERSION_NUMBER < 3006000
-#error Your SQLite version is too old.  It must be at least 3.6.0
+#if SQLITE_VERSION_NUMBER < 3006002
+#error Your SQLite version is too old.  It must be at least 3.6.2
 #endif
 
 /* system headers */
