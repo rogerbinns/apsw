@@ -3771,9 +3771,11 @@ Traceback (most recent call last):
   <p>Added new constants:</p>
 
   <ul>
-    <li>SQLITE_IOERR_ACCESS and SQLITE_IOERR_CHECKRESERVEDLOCK extended result codes</li>
+    <li>SQLITE_IOERR_ACCESS, SQLITE_IOERR_CHECKRESERVEDLOCK and SQLITE_IOERR_LOCK extended result codes</li>
 
-    <li>SQLITE_OPEN_NOMUTEX open flag</li>
+    <li>SQLITE_OPEN_NOMUTEX and SQLITE_OPEN_FULLMUTEX open flags</li>
+
+    <li>Several new SQLITE_CONFIG and SQLITE_STATUS codes</li>
   </ul>
 
   <p>Wrapped several new SQLite apis:</p>
@@ -3787,6 +3789,14 @@ Traceback (most recent call last):
 
     <li><a href="http://sqlite.org/c3ref/status.html">sqlite3_status</a></li>
   </ul>
+
+  <p>The following experimental apis are not wrapped as there is nothing useful you can do with them (yet):
+
+<ul>
+<li><a href="http://www.sqlite.org/c3ref/db_config.html">sqlite3_db_config</a>
+
+<li><a href="http://www.sqlite.org/c3ref/db_status.html">sqlite3_db_status</a>
+</ul>
 
   <p>Restored prior behaviour regarding Python ints and longs returning int for numbers fitting in signed 32 bit. This
   only affects Python 2 as Python 3 uses long exclusively. Thanks to Joe Pham for reporting this as <a href=

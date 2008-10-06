@@ -7659,7 +7659,7 @@ PyInit_apsw(void)
     PyModule_AddObject(m, "connection_hooks", hooks);
 
     /* Version number */
-    PyModule_AddObject(m, "SQLITE_VERSION_NUMBER", Py_BuildValue("i", SQLITE_VERSION_NUMBER));
+    PyModule_AddIntConstant(m, "SQLITE_VERSION_NUMBER", SQLITE_VERSION_NUMBER);
     
 
     /* add in some constants and also put them in a corresponding mapping dictionary */
@@ -7740,6 +7740,7 @@ PyInit_apsw(void)
       ADDINT(SQLITE_IOERR_NOMEM),
       ADDINT(SQLITE_IOERR_ACCESS),
       ADDINT(SQLITE_IOERR_CHECKRESERVEDLOCK),
+      ADDINT(SQLITE_IOERR_LOCK),
       END,
 
     /* error codes */
@@ -7786,6 +7787,7 @@ PyInit_apsw(void)
       ADDINT(SQLITE_OPEN_SUBJOURNAL),
       ADDINT(SQLITE_OPEN_MASTER_JOURNAL),
       ADDINT(SQLITE_OPEN_NOMUTEX),
+      ADDINT(SQLITE_OPEN_FULLMUTEX),
       END,
 
       /* limits */
@@ -7815,6 +7817,12 @@ PyInit_apsw(void)
       ADDINT(SQLITE_CONFIG_MEMSTATUS),
       ADDINT(SQLITE_CONFIG_MUTEX),
       ADDINT(SQLITE_CONFIG_GETMUTEX),
+      ADDINT(SQLITE_CONFIG_CHUNKALLOC),
+      ADDINT(SQLITE_CONFIG_LOOKASIDE),
+      END,
+
+      DICT("mapping_db_config"),
+      ADDINT(SQLITE_DBCONFIG_LOOKASIDE),
       END,
 
       DICT("mapping_status"),
@@ -7824,6 +7832,13 @@ PyInit_apsw(void)
       ADDINT(SQLITE_STATUS_SCRATCH_USED),
       ADDINT(SQLITE_STATUS_SCRATCH_OVERFLOW),
       ADDINT(SQLITE_STATUS_MALLOC_SIZE),
+      ADDINT(SQLITE_STATUS_PARSER_STACK),
+      ADDINT(SQLITE_STATUS_PAGECACHE_SIZE),
+      ADDINT(SQLITE_STATUS_SCRATCH_SIZE),
+      END,
+
+      DICT("mapping_db_status"),
+      ADDINT(SQLITE_DBSTATUS_LOOKASIDE_USED),
       END,
 
       DICT("mapping_locking_level"),
