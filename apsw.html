@@ -123,7 +123,7 @@
             </ul>
           </li>
 
-          <li><a href="#64bitpy25">64 bit hosts, Python 2.5+</a></li>
+          <li><a href="#x64bitpy25">64 bit hosts, Python 2.5+</a></li>
 
           <li><a href="#executionmodel">Execution model</a></li>
         </ul>
@@ -155,37 +155,37 @@
             <a href="#verhistory">Version History</a>
 
             <ul>
-              <li><a href="#363r1">3.6.3-r1</a></li>
+              <li><a href="#v363r1">3.6.3-r1</a></li>
 
-              <li><a href="#359r2">3.5.9-r2</a></li>
+              <li><a href="#v359r2">3.5.9-r2</a></li>
 
-              <li><a href="#359r1">3.5.9-r1</a></li>
+              <li><a href="#v359r1">3.5.9-r1</a></li>
 
-              <li><a href="#3313r1">3.3.13-r1</a></li>
+              <li><a href="#v3313r1">3.3.13-r1</a></li>
 
-              <li><a href="#3310r1">3.3.10-r1</a></li>
+              <li><a href="#v3310r1">3.3.10-r1</a></li>
 
-              <li><a href="#339r1">3.3.9-r1</a></li>
+              <li><a href="#v339r1">3.3.9-r1</a></li>
 
-              <li><a href="#338r1">3.3.8-r1</a></li>
+              <li><a href="#v338r1">3.3.8-r1</a></li>
 
-              <li><a href="#337r1">3.3.7-r1</a></li>
+              <li><a href="#v337r1">3.3.7-r1</a></li>
 
-              <li><a href="#335r1">3.3.5-r1</a></li>
+              <li><a href="#v335r1">3.3.5-r1</a></li>
 
-              <li><a href="#327r1">3.2.7-r1</a></li>
+              <li><a href="#v327r1">3.2.7-r1</a></li>
 
-              <li><a href="#322r1">3.2.2-r1</a></li>
+              <li><a href="#v322r1">3.2.2-r1</a></li>
 
-              <li><a href="#321r1">3.2.1-r1</a></li>
+              <li><a href="#v321r1">3.2.1-r1</a></li>
 
-              <li><a href="#313r1">3.1.3-r1</a></li>
+              <li><a href="#v313r1">3.1.3-r1</a></li>
 
-              <li><a href="#308r3">3.0.8-r3</a></li>
+              <li><a href="#v308r3">3.0.8-r3</a></li>
 
-              <li><a href="#308r2">3.0.8-r2</a></li>
+              <li><a href="#v308r2">3.0.8-r2</a></li>
 
-              <li><a href="#308r1">3.0.8-r1</a></li>
+              <li><a href="#v308r1">3.0.8-r1</a></li>
             </ul>
           </li>
         </ul><!--endtoc-->
@@ -238,8 +238,8 @@
   SQLite does transactions. See section 7.0, <i>Transaction Control At The SQL Level</i> of <a href=
   "http://sqlite.org/lockingv3.html">sqlite.org/lockingv3.html</a>. <b>APSW does not alter SQLite's behaviour with
   transactions.</b> Some access layers try to interpret your SQL and manage transactions behind your back, which may or
-  may not work well with SQLite also do its own transactions. You should always manage your transactions yourself. For
-  example to insert 1,000 rows wrap it in a single transaction else you will have 1,000 transactions. The best clue
+  may not work well with SQLite also doing its own transactions. You should always manage your transactions yourself.
+  For example to insert 1,000 rows wrap it in a single transaction else you will have 1,000 transactions. The best clue
   that you have one transaction per statement is having a maximum of 60 statements per second. You need two drive
   rotations to do a transaction - the data has to be committed to the main file and the journal - and 7200 RPM drives
   do 120 rotations a second. On the other hand if you don't put in the transaction boundaries yourself and get more
@@ -1243,7 +1243,7 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
 
   <p>You run <tt>setup.py</tt>.</p>
 
-  <table cellspacing="5" cellpadding="5">
+  <table cellspacing="5" cellpadding="5" summary="setup.py examples">
     <tr>
       <th>Command</th>
 
@@ -1254,6 +1254,17 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
       <td valign="top"><code>python setup.py install</code></td>
 
       <td>Compiles APSW with default Python compiler and installs it into Python site library directory.</td>
+    </tr>
+
+    <tr>
+      <td valign="top"><code>python setup.py install --user</code> Python 2.6+, Python 3.</td>
+
+      <td>Compiles APSW with default Python compiler and installs it into a subdirectory of your home directory. See
+      <a href="http://www.python.org/dev/peps/pep-0370/">PEP 370</a> for more details.</td>
+    </tr>
+
+    <tr>
+      <td></td>
     </tr>
 
     <tr>
@@ -1273,7 +1284,7 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
 
   <p>There are a number of APSW specific flags you can specify.</p>
 
-  <table cellspacing="5" cellpadding="5">
+  <table cellspacing="5" cellpadding="5" summary="setup.py options reference">
     <tr>
       <td valign="top">
         <pre>
@@ -1359,11 +1370,12 @@ cursor</span><span class="pyoperator">.</span><span class="pyname">setrowtrace</
     </dd>
 
     <dt><br />
-    System</dt>
+    User/System directories</dt>
 
     <dd>
-      <p>The default compiler include path (eg <tt>/usr/include</tt>) and library path (eg <tt>/usr/lib</tt>) are
-      used.</p>
+      <p>If you are using Python 2.6+ or Python 3 and specified <tt>--user</tt> then your user directory is searched
+      first. See <a href="http://www.python.org/dev/peps/pep-0370/">PEP 370</a> for more details. Then the default
+      compiler include path (eg <tt>/usr/include</tt>) and library path (eg <tt>/usr/lib</tt>) are used.</p>
     </dd>
   </dl>
 
@@ -2615,7 +2627,7 @@ def xFileControl(self, op, pointer):
       <p>As an example, lets say you have a divide by zero error in your xWrite routine. The table below shows what
       happens with time going down and across.</p>
 
-      <table cellspacing="5" cellpadding="5">
+      <table cellspacing="5" cellpadding="5" summary="Exceptions example">
         <tr>
           <th>Python query code</th>
 
@@ -3038,10 +3050,10 @@ def xDlSym(ptr, name):
   <blockquote>
     <!-- This is derived from exc_descriptors in the source -->
 
-    <table cellpadding="5" cellspacing="5" border="0">
+    <table cellpadding="5" cellspacing="5" border="0" summary="Exceptions">
       <tr>
         <td valign="top">
-          <table cellpadding="5" cellspacing="5" border="0" width="100%">
+          <table cellpadding="5" cellspacing="5" border="0" width="100%" summary="Exceptions column 1">
             <tr>
               <th colspan="2">General Errors</th>
             </tr>
@@ -3125,7 +3137,7 @@ def xDlSym(ptr, name):
         </td>
 
         <td valign="top">
-          <table cellpadding="5" cellspacing="5" border="0" width="100%">
+          <table cellpadding="5" cellspacing="5" border="0" width="100%" summary="Exceptions column 2">
             <tr>
               <th colspan="2">Abort/Busy/etc</th>
             </tr>
@@ -3260,7 +3272,7 @@ cursor.execute("select foo(1) from bar")
 
 </pre>
 
-  <table cellpadding="3" cellspacing="3">
+  <table cellpadding="3" cellspacing="3" summary="Augmented comparisons example">
     <tr>
       <th>Original traceback</th>
 
@@ -3330,7 +3342,7 @@ ZeroDivisionError: integer division or modulo by zero
   recipe 52215. I can see what was passed in to my method, what I returned and which item was erroneous. The original
   traceback is almost completely useless.</p>
 
-  <table cellpadding="3" cellspacing="3">
+  <table cellpadding="3" cellspacing="3" summary="Augmented exceptions BestIndex example">
     <tr>
       <th>Original traceback</th>
     </tr>
@@ -3476,7 +3488,7 @@ TypeError: Bad constraint (#2) - it should be one of None, an integer or a tuple
   you return from the tracer is what is actually returned. If you return None then the whole row is skipped. See the
   <a href="#example-rowtrace">example above</a>.</p>
 
-  <h1><a name="64bitpy25">64 bit hosts, Python 2.5+</a></h1>
+  <h1><a name="x64bitpy25" id="x64bitpy25">64 bit hosts, Python 2.5+</a></h1>
 
   <p>Prior to Python 2.5, you were still limited to 32 bit quantities for items in Python such as the length of
   strings, number of items in a sequence etc. APSW will work correctly with those items in Python 2.5 and above that
@@ -3603,7 +3615,8 @@ apsw.IncompleteExecutionError: Error: there are still remaining sql statements t
   <p>APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite 3):</p>
 
   <ul>
-    <li>APSW gives all functionality of SQLite including <a href="#VirtualTables">virtual tables</a></li>
+    <li>APSW gives all functionality of SQLite including <a href="#VirtualTables">virtual tables</a>, <a href=
+    "#VFS">VFS</a>, <a href="#blobio">BLOB I/O</a></li>
 
     <li>APSW is a single file for the extension, apsw.pyd on Windows and apsw.so on Unix/Mac. There are no other files
     needed and the build instructions show you how to include SQLite statically in this file. You can put this file
@@ -3664,11 +3677,6 @@ for row in cur.execute("create table foo(x,y,z);insert into foo values (?,?,?);"
     </li>
 
     <li>
-      <p>The cursor object is an iterator and returns itself from execute. (The latest SQLite has now copied this
-      feature).</p>
-    </li>
-
-    <li>
       <p><code>cursor.executemany()</code> also works with statements that return data such as selects, and you can
       have multiple statements.</p>
     </li>
@@ -3679,7 +3687,7 @@ for row in cur.execute("create table foo(x,y,z);insert into foo values (?,?,?);"
     example.
 
       <blockquote>
-        <table border="1px" cellpadding="5" cellspacing="5">
+        <table border="1px" cellpadding="5" cellspacing="5" summary="pysqlite exception swallowing">
           <tr>
             <th>pysqlite</th>
 
@@ -3743,9 +3751,7 @@ Traceback (most recent call last):
     </li>
 
     <li>APSW has enhanced debuggability. More details are available than just what is printed out when exceptions
-    happen like above. See <a href="#augmentedstacktraces">augmented stack traces</a>. If you forget to close a
-    Connection then you get a traceback of where the problem is (interceptable via <code>sys.excepthook</code>) and are
-    also told where Connection was allocated.</li>
+    happen like above. See <a href="#augmentedstacktraces">augmented stack traces</a>.</li>
 
     <li>
       <p>You can implement tracers and other hooks in Python.</p>
@@ -3789,7 +3795,7 @@ Traceback (most recent call last):
 
   <h1><a name="verhistory" id="verhistory">Version History</a></h1>
 
-  <h2><a name="363r1">3.6.3-r1</a></h2>
+  <h2><a name="v363r1" id="v363r1">3.6.3-r1</a></h2>
 
   <p>You can now write your own <a href="#VFS">VFS</a> in Python. You can also inherit from an existing VFS making it
   easy to augment or override small bits of behaviour without having to code everything else. See the <a href=
@@ -3846,7 +3852,7 @@ Traceback (most recent call last):
   <p>Added <tt>Connection.sqlite3pointer</tt> method to help with <a href=
   "http://code.google.com/p/apsw/issues/detail?id=26">issue 26</a>.</p>
 
-  <h2><a name="359r2">3.5.9-r2</a></h2>
+  <h2><a name="v359r2" id="v359r2">3.5.9-r2</a></h2>
 
   <p>APSW now works with Python 3 (you need 3.0b1 or later).</p>
 
@@ -3854,7 +3860,7 @@ Traceback (most recent call last):
   constants since they could be unreliable (eg APSW can't tell what a shared library was compiled with). A workaround
   is documented in the <a href="#Connection_limit">Connection.limit</a> section.</p>
 
-  <h2><a name="359r1">3.5.9-r1</a></h2>
+  <h2><a name="v359r1" id="v359r1">3.5.9-r1</a></h2>
 
   <p>APSW is now hosted at <a href="http://code.google.com/p/apsw">http://code.google.com/p/apsw</a>.</p>
 
@@ -3916,7 +3922,7 @@ Traceback (most recent call last):
     <li>collationneeded was implemented.</li>
   </ul>
 
-  <h2><a name="3313r1">3.3.13-r1</a></h2>
+  <h2><a name="v3313r1" id="v3313r1">3.3.13-r1</a></h2>
 
   <p>As of this release, APSW is now co-hosted with pysqlite meaning there is one site to go to for your Python SQLite
   bindings. Start at <a href="http://initd.org/tracker/pysqlite/wiki/">http://initd.org/tracker/pysqlite/wiki</a></p>
@@ -3938,7 +3944,7 @@ Traceback (most recent call last):
     busy errors.</li>
   </ul>
 
-  <h2><a name="3310r1">3.3.10-r1</a></h2>
+  <h2><a name="v3310r1" id="v3310r1">3.3.10-r1</a></h2>
 
   <p>You can use this with SQLite 3.3.10 onwards.</p>
 
@@ -3947,7 +3953,7 @@ Traceback (most recent call last):
     SQLite and hence you must use SQLite 3.3.10 or later.</li>
   </ul>
 
-  <h2><a name="339r1">3.3.9-r1</a></h2>
+  <h2><a name="v339r1" id="v339r1">3.3.9-r1</a></h2>
 
   <p>You can use this with SQLite 3.3.9 onwards.</p>
 
@@ -3956,7 +3962,7 @@ Traceback (most recent call last):
     API update is that you will not get SQLITE_SCHEMA any more. SQLite will handle it internally.</li>
   </ul>
 
-  <h2><a name="338r1">3.3.8-r1</a></h2>
+  <h2><a name="v338r1" id="v338r1">3.3.8-r1</a></h2>
 
   <p>You can use this with SQLite 3.3.8 onwards. There was an incompatible API change for virtual tables in SQLite
   3.3.8.</p>
@@ -3987,7 +3993,7 @@ Traceback (most recent call last):
     strings and ints.</li>
   </ul>
 
-  <h2><a name="337r1">3.3.7-r1</a></h2>
+  <h2><a name="v337r1" id="v337r1">3.3.7-r1</a></h2>
 
   <p><i>Never released as 3.3.8 came along</i></p>
 
@@ -4009,7 +4015,7 @@ Traceback (most recent call last):
     <li>You can load SQLite shared library extensions.</li>
   </ul>
 
-  <h2><a name="335r1">3.3.5-r1</a></h2>
+  <h2><a name="v335r1" id="v335r1">3.3.5-r1</a></h2>
 
   <p>You can use this release against any release of SQLite 3 from 3.3.5 onwards. A bug was also fixed when reporting
   an error during the cleanup of an aggregate function if there had also been an error in the step function.
@@ -4024,7 +4030,7 @@ Traceback (most recent call last):
   <p>The test code has been converted into using the unittest module. Run <tt>python tests.py -v</tt> to get the tests
   run. There should be no errors.</p>
 
-  <p>Updated code to work correctly with new Py_ssize_t introduced in Python 2.5. See <a href="#64bitpy25">64 bit
+  <p>Updated code to work correctly with new Py_ssize_t introduced in Python 2.5. See <a href="#x64bitpy25">64 bit
   hosts, Python 2.5</a> for more details on how Python and SQLite handle 64 bit sized items.</p>
 
   <p>The following functions were added to SQLite and are wrapped. They are all functions defined on the <a href=
@@ -4063,7 +4069,7 @@ Traceback (most recent call last):
     cursor.getconnection())</li>
   </ul>
 
-  <h2><a name="327r1">3.2.7-r1</a></h2>
+  <h2><a name="v327r1" id="v327r1">3.2.7-r1</a></h2>
 
   <p>You can use this release against any release of SQLite 3.</p>
 
@@ -4085,14 +4091,14 @@ Traceback (most recent call last):
     <li>Changed when an error in the step function for an aggregate is reported due to limitations in SQLite.</li>
   </ul>
 
-  <h2><a name="322r1">3.2.2-r1</a></h2>
+  <h2><a name="v322r1" id="v322r1">3.2.2-r1</a></h2>
 
   <p>You can use this release against any release of SQLite 3.</p>
 
   <p>SQLite 3.2.2 API removed <code>sqlite3_global_recover</code>. That function was not wrapped in APSW. Note that
   SQLite 3.2.2 contains a bug fix that applies when you use 64 bit integer primary keys (32 bit ints are fine).</p>
 
-  <h2><a name="321r1">3.2.1-r1</a></h2>
+  <h2><a name="v321r1" id="v321r1">3.2.1-r1</a></h2>
 
   <p>You can use this release against any release of SQLite 3.</p>
 
@@ -4104,7 +4110,7 @@ Traceback (most recent call last):
   <p>SQLite 3.2.1 had one addition in the stable C API, which was a new function named
   <code>sqlite3_global_recover</code>. That function is not applicable for wrapping in APSW.</p>
 
-  <h2><a name="313r1">3.1.3-r1</a></h2>
+  <h2><a name="v313r1" id="v313r1">3.1.3-r1</a></h2>
 
   <p>You can use this release against any release of SQLite 3.</p>
 
@@ -4136,19 +4142,19 @@ Traceback (most recent call last):
     temporary files are created. By default SQLite just uses the standard operating system mechanisms.</li>
   </ul>
 
-  <h2><a name="308r3">3.0.8-r3</a></h2>
+  <h2><a name="v308r3" id="v308r3">3.0.8-r3</a></h2>
 
   <p>There are no functional changes. The only changes were to correct some variable names in the example code (they
   were cut and pasted from the test code which used different names) and to make the source zip file extract its
   contents into a sub-directory which is the more typical way of packaging that sort of thing.</p>
 
-  <h2><a name="308r2">3.0.8-r2</a></h2>
+  <h2><a name="v308r2" id="v308r2">3.0.8-r2</a></h2>
 
   <p>All remaining functionality in the C API for SQLite 3.0.8 is now available.</p>
 
   <p>Finished this documentation.</p>
 
-  <h2><a name="308r1">3.0.8-r1</a></h2>
+  <h2><a name="v308r1" id="v308r1">3.0.8-r1</a></h2>
 
   <p>Initial release</p>
   <hr />
