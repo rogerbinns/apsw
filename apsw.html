@@ -2023,10 +2023,24 @@ def xFileControl(self, op, pointer):
 </pre>
     </dd>
 
+    <dt><strong>sqlite3pointer()</strong></dt>
+
+    <dd>
+      <p>Returns the underlying <a href="http://sqlite.org/c3ref/sqlite3.html">sqlite3</a> pointer for the connection.
+      This method is useful if there are other C level libraries in the same process and you want them to use the APSW
+      connection handle. The value is returned as a number using <a href=
+      "http://docs.python.org/c-api/long.html?highlight=pylong_fromvoidptr#PyLong_FromVoidPtr">PyLong_FromVoidPtr</a>
+      under the hood. You should also ensure that you hang on to the Connection object for as long as the other
+      libraries are using the handle or increment the reference count on it. It is also a very good idea to call
+      <tt>apsw.sqlitelibversion()</tt> and ensure it is the same as the other libraries.</p>
+    </dd>
+
     <dt><strong>blobopen(databasename, tablename, columnname, rowid, flags)</strong></dt>
 
-    <dd>Returns a new <a href="#blobio">blob</a>. The database name will be <tt>main</tt>, unless you want to refer to
-    a database you <a href="http://www.sqlite.org/lang_attach.html">ATTACH</a>ed.</dd>
+    <dd>
+      <p>Returns a new <a href="#blobio">blob</a>. The database name will be <tt>main</tt>, unless you want to refer to
+      a database you <a href="http://www.sqlite.org/lang_attach.html">ATTACH</a>ed.</p>
+    </dd>
   </dl>
 
   <h2><a name="blobio" id="blobio">Blob I/O</a></h2>
@@ -3828,6 +3842,9 @@ Traceback (most recent call last):
   <p>Restored prior behaviour regarding Python ints and longs returning int for numbers fitting in signed 32 bit. This
   only affects Python 2 as Python 3 uses long exclusively. Thanks to Joe Pham for reporting this as <a href=
   "http://code.google.com/p/apsw/issues/detail?id=24">issue 24</a>.</p>
+
+  <p>Added <tt>Connection.sqlite3pointer</tt> method to help with <a href=
+  "http://code.google.com/p/apsw/issues/detail?id=26">issue 26</a>.</p>
 
   <h2><a name="359r2">3.5.9-r2</a></h2>
 

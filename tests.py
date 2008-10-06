@@ -2869,7 +2869,7 @@ class APSW(unittest.TestCase):
         res=apsw.releasememory(0x7fffffff)
         self.assert_(type(res) in (int, long))
 
-    def testRanomdness(self):
+    def testRandomness(self):
         "Verify randomness routine"
         self.assertRaises(TypeError, apsw.randomness, "three")
         self.assertRaises(OverflowError, apsw.randomness, l("0xffffffffee"))
@@ -2878,6 +2878,12 @@ class APSW(unittest.TestCase):
         self.assertEqual(1, len(apsw.randomness(1)))
         self.assertEqual(16383, len(apsw.randomness(16383)))
         self.assertNotEqual(apsw.randomness(77), apsw.randomness(77))
+
+    def testSqlite3Pointer(self):
+        self.assertRaises(TypeError, self.db.sqlite3pointer, 7)
+        self.assert_(type(self.db.sqlite3pointer()) in (int,long))
+        self.assertEqual(self.db.sqlite3pointer(), self.db.sqlite3pointer())
+        self.assertNotEqual(self.db.sqlite3pointer(), apsw.Connection(":memory:").sqlite3pointer())
 
     def testStatus(self):
         "Verify status function"

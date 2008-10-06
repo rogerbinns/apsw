@@ -2698,6 +2698,15 @@ Connection_filecontrol(Connection *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
+static PyObject*
+Connection_sqlite3pointer(Connection *self)
+{
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  return PyLong_FromVoidPtr(self->db);
+}
+
 /* Virtual table code */
 
 #ifdef EXPERIMENTAL
@@ -3767,6 +3776,8 @@ static PyMethodDef Connection_methods[] = {
 #endif
   {"filecontrol", (PyCFunction)Connection_filecontrol, METH_VARARGS,
    "file control"},
+  {"sqlite3pointer", (PyCFunction)Connection_sqlite3pointer, METH_NOARGS,
+   "gets underlying pointer"},
   {0, 0, 0, 0}  /* Sentinel */
 };
 
