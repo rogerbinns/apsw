@@ -2861,6 +2861,23 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, apsw.memoryhighwater, "eleven")
         apsw.memoryhighwater(True)
         self.assertEqual(apsw.memoryhighwater(), apsw.memoryused())
+        self.assertRaises(TypeError, apsw.softheaplimit, 1, 2)
+        self.assertRaises(OverflowError, apsw.softheaplimit, l("0xffffffffee"))
+        apsw.softheaplimit(0)
+        self.assertRaises(TypeError, apsw.releasememory, 1, 2)
+        self.assertRaises(OverflowError, apsw.releasememory, l("0xffffffffee"))
+        res=apsw.releasememory(0x7fffffff)
+        self.assert_(type(res) in (int, long))
+
+    def testRanomdness(self):
+        "Verify randomness routine"
+        self.assertRaises(TypeError, apsw.randomness, "three")
+        self.assertRaises(OverflowError, apsw.randomness, l("0xffffffffee"))
+        self.assertRaises(ValueError, apsw.randomness, -2)
+        self.assertEqual(0, len(apsw.randomness(0)))
+        self.assertEqual(1, len(apsw.randomness(1)))
+        self.assertEqual(16383, len(apsw.randomness(16383)))
+        self.assertNotEqual(apsw.randomness(77), apsw.randomness(77))
 
     def testStatus(self):
         "Verify status function"

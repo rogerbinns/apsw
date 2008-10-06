@@ -155,7 +155,7 @@
             <a href="#verhistory">Version History</a>
 
             <ul>
-              <li><a href="#360r1">3.6.0-r1</a></li>
+              <li><a href="#363r1">3.6.3-r1</a></li>
 
               <li><a href="#359r2">3.5.9-r2</a></li>
 
@@ -278,7 +278,7 @@
 "pyname">SQLITE_VERSION_NUMBER   </span><span class="pycomment"># from the sqlite header file at compile time
 
 </span><span class="pyoutput">         Using APSW file /space/apsw/apsw.so
-            APSW version 3.6.0-r1
+            APSW version 3.6.3-r1
       SQLite lib version 3.6.3
    SQLite header version 3006003
 </span>
@@ -1502,6 +1502,13 @@ OK
       are absolutely sure all connections and cursors have been closed, deleted and garbage collected.</p>
     </dd>
 
+    <dt><strong>randomness(bytes)</strong></dt>
+
+    <dd>
+      <p>Calls <a href="http://sqlite.org/c3ref/randomness.html">sqlite3_randomness</a> to obtain <i>bytes</i> of
+      random data.</p>
+    </dd>
+
     <dt><strong>config(op [,args])</strong></dt>
 
     <dd>
@@ -1523,6 +1530,20 @@ OK
       <p>Returns the most amount of memory SQLite has used by calling <a href=
       "http://sqlite.org/c3ref/memory_highwater.html">sqlite3_memory_highwater</a>. If <code>reset</code> is not False
       then the counter is reset.</p>
+    </dd>
+
+    <dt><strong>softheaplimit(bytes)</strong></dt>
+
+    <dd>
+      <p>Calls <a href="http://sqlite.org/c3ref/soft_heap_limit.html">sqlite3_soft_heap_limit</a> requesting a soft
+      upper bounds on the amount of memory SQLite uses.</p>
+    </dd>
+
+    <dt><strong>releasememory(bytes)</strong></dt>
+
+    <dd>
+      <p>Calls <a href="http://sqlite.org/c3ref/release_memory.html">sqlite3_release_memory</a> requesting SQLite free
+      up to <i>bytes</i> bytes of memory. Returns how much was actually freed.</p>
     </dd>
 
     <dt><strong>status(op, reset=False)</strong></dt>
@@ -3788,15 +3809,21 @@ Traceback (most recent call last):
     <li><a href="http://sqlite.org/c3ref/memory_highwater.html">sqlite3_memory_used/sqlite3_memory_highwater</a></li>
 
     <li><a href="http://sqlite.org/c3ref/status.html">sqlite3_status</a></li>
+
+    <li><a href="http://sqlite.org/c3ref/soft_heap_limit.html">sqlite3_soft_heap_limit</a></li>
+
+    <li><a href="http://sqlite.org/c3ref/release_memory.html">sqlite3_release_memory</a></li>
+
+    <li><a href="http://sqlite.org/c3ref/randomness.html">sqlite3_randomness</a></li>
   </ul>
 
-  <p>The following experimental apis are not wrapped as there is nothing useful you can do with them (yet):
+  <p>The following experimental apis are not wrapped as there is nothing useful you can do with them (yet):</p>
 
-<ul>
-<li><a href="http://www.sqlite.org/c3ref/db_config.html">sqlite3_db_config</a>
+  <ul>
+    <li><a href="http://www.sqlite.org/c3ref/db_config.html">sqlite3_db_config</a></li>
 
-<li><a href="http://www.sqlite.org/c3ref/db_status.html">sqlite3_db_status</a>
-</ul>
+    <li><a href="http://www.sqlite.org/c3ref/db_status.html">sqlite3_db_status</a></li>
+  </ul>
 
   <p>Restored prior behaviour regarding Python ints and longs returning int for numbers fitting in signed 32 bit. This
   only affects Python 2 as Python 3 uses long exclusively. Thanks to Joe Pham for reporting this as <a href=

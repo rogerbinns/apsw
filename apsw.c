@@ -7418,6 +7418,49 @@ memoryhighwater(APSW_ARGUNUSED PyObject *self, PyObject *args)
   return PyLong_FromLongLong(sqlite3_memory_highwater(reset));
 }
 
+static PyObject*
+softheaplimit(APSW_ARGUNUSED PyObject *self, PyObject *args)
+{
+  int limit;
+
+  if(!PyArg_ParseTuple(args, "i", &limit))
+    return NULL;
+
+  sqlite3_soft_heap_limit(limit);
+
+  Py_RETURN_NONE;
+}
+
+static PyObject*
+randomness(APSW_ARGUNUSED PyObject *self, PyObject *args)
+{
+  int amount;
+  PyObject *bytes;
+
+  if(!PyArg_ParseTuple(args, "i", &amount))
+    return NULL;
+  if(amount<0)
+    {
+      PyErr_Format(PyExc_ValueError, "Can't have negative number of bytes");
+      return NULL;
+    }
+  bytes=PyBytes_FromStringAndSize(NULL, amount);
+  if(!bytes) return bytes;
+  sqlite3_randomness(amount, PyBytes_AS_STRING(bytes));
+  return bytes;
+}
+
+static PyObject*
+releasememory(APSW_ARGUNUSED PyObject *self, PyObject *args)
+{
+  int amount;
+
+  if(!PyArg_ParseTuple(args, "i", &amount))
+    return NULL;
+
+  return PyInt_FromLong(sqlite3_release_memory(amount));
+}
+
 static PyObject *
 status(APSW_ARGUNUSED PyObject *self, PyObject *args)
 {
@@ -7565,6 +7608,12 @@ static PyMethodDef module_methods[] = {
    "Most amount of memory used"},
   {"status", (PyCFunction)status, METH_VARARGS,
    "Gets various SQLite counters"},
+  {"softheaplimit", (PyCFunction)softheaplimit, METH_VARARGS,
+   "Sets soft limit on SQLite memory usage"},
+  {"releasememory", (PyCFunction)releasememory, METH_VARARGS,
+   "Attempts to free specified amount of memory"},
+  {"randomness", (PyCFunction)randomness, METH_VARARGS,
+   "Obtains random bytes"},
   {"exceptionfor", (PyCFunction)getapswexceptionfor, METH_O,
    "Returns exception instance corresponding to supplied sqlite error code"},
 #if defined(APSW_TESTFIXTURES) && defined(APSW_USE_SQLITE_AMALGAMATION)
