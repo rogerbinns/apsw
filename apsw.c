@@ -98,14 +98,19 @@ typedef int Py_ssize_t;
 #define Py_TYPE(x) ((x)->ob_type)
 #endif
 
+/* define as zero if not present - introduced in Python 2.6 */
+#ifndef Py_TPFLAGS_HAVE_VERSION_TAG
+#define Py_TPFLAGS_HAVE_VERSION_TAG 0
+#endif
+
 /* How to make a string from a utf8 constant */
-#if PY_VERSION_HEX < 0x03000000
+#if PY_MAJOR_VERSION < 3
 #define MAKESTR  PyString_FromString
 #else
 #define MAKESTR  PyUnicode_FromString
 #endif
 
-#if PY_VERSION_HEX < 0x03000000
+#if PY_MAJOR_VERSION < 3
 #define PyBytes_FromStringAndSize PyString_FromStringAndSize
 #define PyBytes_AsString          PyString_AsString
 #define PyBytes_AS_STRING         PyString_AS_STRING
@@ -654,7 +659,7 @@ static PyTypeObject APSWBlobType;
 /* CONVENIENCE FUNCTIONS */
 
 /* Return a PyBuffer (py2) or PyBytes (py3) */
-#if PY_VERSION_HEX<0x03000000
+#if PY_MAJOR_VERSION < 3
 static PyObject *
 converttobytes(const void *ptr, Py_ssize_t size)
 {
@@ -2007,7 +2012,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
       sqlite3_result_null(context);
       return;
     }
-#if PY_VERSION_HEX<0x03000000
+#if PY_MAJOR_VERSION < 3
   if(PyInt_Check(obj))
     {
       sqlite3_result_int64(context, PyInt_AS_LONG(obj));
@@ -2046,7 +2051,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
       UNIDATAEND(obj);
       return;
     }
-#if PY_VERSION_HEX < 0x03000000
+#if PY_MAJOR_VERSION < 3
   if (PyString_Check(obj))
     {
       const char *val=PyString_AS_STRING(obj);
@@ -3784,7 +3789,7 @@ static PyMethodDef Connection_methods[] = {
 
 static PyTypeObject ConnectionType = 
   {
-#if PY_VERSION_HEX<0x03000000
+#if PY_MAJOR_VERSION < 3
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
 #else
@@ -3808,7 +3813,7 @@ static PyTypeObject ConnectionType =
     0,                         /*tp_getattro*/
     0,                         /*tp_setattro*/
     0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG, /*tp_flags*/
     "Connection object",       /* tp_doc */
     0,		               /* tp_traverse */
     0,		               /* tp_clear */
@@ -3835,7 +3840,7 @@ static PyTypeObject ConnectionType =
     0,                         /* tp_subclasses */
     0,                         /* tp_weaklist */
     0,                         /* tp_del */
-#if PY_VERSION_HEX>=0x03000000
+#if PY_VERSION_HEX>=0x02060000
     0                          /* tp_version_tag */
 #endif
 };
@@ -3884,7 +3889,7 @@ ZeroBlobBind_init(ZeroBlobBind *self, PyObject *args, PyObject *kwargs)
 }
 
 static PyTypeObject ZeroBlobBindType = {
-#if PY_VERSION_HEX<0x03000000
+#if PY_MAJOR_VERSION < 3
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
 #else
@@ -3908,7 +3913,7 @@ static PyTypeObject ZeroBlobBindType = {
     0,                         /*tp_getattro*/
     0,                         /*tp_setattro*/
     0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG, /*tp_flags*/
     "ZeroBlobBind object",     /* tp_doc */
     0,		               /* tp_traverse */
     0,		               /* tp_clear */
@@ -3935,7 +3940,7 @@ static PyTypeObject ZeroBlobBindType = {
     0,                         /* tp_subclasses */
     0,                         /* tp_weaklist */
     0,                         /* tp_del */
-#if PY_VERSION_HEX>=0x03000000
+#if PY_VERSION_HEX>=0x02060000
     0                          /* tp_version_tag */
 #endif
 };
@@ -4198,7 +4203,7 @@ static PyMethodDef APSWBlob_methods[]={
 };
 
 static PyTypeObject APSWBlobType = {
-#if PY_VERSION_HEX<0x03000000
+#if PY_MAJOR_VERSION < 3
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
 #else
@@ -4222,7 +4227,7 @@ static PyTypeObject APSWBlobType = {
     0,                         /*tp_getattro*/
     0,                         /*tp_setattro*/
     0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_VERSION_TAG, /*tp_flags*/
     "APSW blob object",        /* tp_doc */
     0,		               /* tp_traverse */
     0,		               /* tp_clear */
@@ -4249,7 +4254,7 @@ static PyTypeObject APSWBlobType = {
     0,                         /* tp_subclasses */
     0,                         /* tp_weaklist */
     0,                         /* tp_del */
-#if PY_VERSION_HEX>=0x03000000
+#if PY_VERSION_HEX>=0x02060000
     0                          /* tp_version_tag */
 #endif
 };
@@ -4448,7 +4453,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
     res=sqlite3_bind_null(self->statement, arg);
   /* Python uses a 'long' for storage of PyInt.  This could
      be a 32bit or 64bit quantity depending on the platform. */
-#if PY_VERSION_HEX<0x03000000
+#if PY_MAJOR_VERSION < 3
   else if(PyInt_Check(obj))
     res=sqlite3_bind_int64(self->statement, arg, PyInt_AS_LONG(obj));
 #endif
@@ -4482,7 +4487,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
           return -1;
         }
     }
-#if PY_VERSION_HEX < 0x03000000
+#if PY_MAJOR_VERSION < 3
   else if (PyString_Check(obj))
     {
       const char *val=PyString_AS_STRING(obj);
@@ -5252,7 +5257,7 @@ static PyMethodDef APSWCursor_methods[] = {
 
 
 static PyTypeObject APSWCursorType = {
-#if PY_VERSION_HEX<0x03000000
+#if PY_MAJOR_VERSION < 3
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
 #else
@@ -5276,8 +5281,8 @@ static PyTypeObject APSWCursorType = {
     0,                         /*tp_getattro*/
     0,                         /*tp_setattro*/
     0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE
-#if PY_VERSION_HEX<0x03000000
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG
+#if PY_MAJOR_VERSION < 3
  | Py_TPFLAGS_HAVE_ITER
 #endif
  , /*tp_flags*/
@@ -5307,7 +5312,7 @@ static PyTypeObject APSWCursorType = {
     0,                         /* tp_subclasses */
     0,                         /* tp_weaklist */
     0,                         /* tp_del */
-#if PY_VERSION_HEX>=0x03000000
+#if PY_VERSION_HEX>=0x02060000
     0                          /* tp_version_tag */
 #endif
 };
@@ -6398,7 +6403,7 @@ static PyMethodDef APSWVFS_methods[]={
 
 static PyTypeObject APSWVFSType =
   {
-#if PY_VERSION_HEX<0x03000000
+#if PY_MAJOR_VERSION < 3
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
 #else
@@ -6422,7 +6427,7 @@ static PyTypeObject APSWVFSType =
     0,                         /*tp_getattro*/
     0,                         /*tp_setattro*/
     0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG, /*tp_flags*/
     "VFS object",              /* tp_doc */
     0,		               /* tp_traverse */
     0,		               /* tp_clear */
@@ -6449,7 +6454,7 @@ static PyTypeObject APSWVFSType =
     0,                         /* tp_subclasses */
     0,                         /* tp_weaklist */
     0,                         /* tp_del */
-#if PY_VERSION_HEX>=0x03000000
+#if PY_VERSION_HEX>=0x02060000
     0,                         /* tp_version */
 #endif
   };
@@ -7240,7 +7245,7 @@ static PyMethodDef APSWVFSFile_methods[]={
 
 static PyTypeObject APSWVFSFileType =
   {
-#if PY_VERSION_HEX<0x03000000
+#if PY_MAJOR_VERSION < 3
     PyObject_HEAD_INIT(NULL)
     0,                         /*ob_size*/
 #else
@@ -7264,7 +7269,7 @@ static PyTypeObject APSWVFSFileType =
     0,                         /*tp_getattro*/
     0,                         /*tp_setattro*/
     0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /*tp_flags*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG, /*tp_flags*/
     "VFSFile object",          /* tp_doc */
     0,		               /* tp_traverse */
     0,		               /* tp_clear */
@@ -7291,7 +7296,7 @@ static PyTypeObject APSWVFSFileType =
     0,                         /* tp_subclasses */
     0,                         /* tp_weaklist */
     0,                         /* tp_del */
-#if PY_VERSION_HEX>=0x03000000
+#if PY_VERSION_HEX>=0x02060000
     0                          /* tp_version_tag */
 #endif
   };
@@ -7640,7 +7645,7 @@ static PyMethodDef module_methods[] = {
 
 
 
-#if PY_VERSION_HEX>=0x03000000
+#if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef apswmoduledef={
   PyModuleDef_HEAD_INIT,
   "apsw", 
@@ -7656,7 +7661,7 @@ static struct PyModuleDef apswmoduledef={
 
 
 PyMODINIT_FUNC
-#if PY_VERSION_HEX<0x03000000
+#if PY_MAJOR_VERSION < 3
 initapsw(void) 
 #else
 PyInit_apsw(void)
@@ -7690,7 +7695,7 @@ PyInit_apsw(void)
     /* ensure threads are available */
     PyEval_InitThreads();
 
-#if PY_VERSION_HEX<0x03000000
+#if PY_MAJOR_VERSION < 3
     m = apswmodule = Py_InitModule3("apsw", module_methods,
                        "Another Python SQLite Wrapper.");
 #else
@@ -7977,7 +7982,7 @@ PyInit_apsw(void)
  if(!PyErr_Occurred())
       {
         return
-#if PY_VERSION_HEX>=0x03000000
+#if PY_MAJOR_VERSION >= 3
           m
 #endif
           ;
@@ -7986,7 +7991,7 @@ PyInit_apsw(void)
  fail:
     Py_XDECREF(m);
     return 
-#if PY_VERSION_HEX>=0x03000000
+#if PY_MAJOR_VERSION >= 3
           NULL
 #endif
           ;
