@@ -192,7 +192,10 @@ def deletefile(name):
         except:
             # Make windows happy
             gc.collect()
-    bgdelq.put(newname)
+    if os.path.exists(newname):
+        bgdelq.put(newname)
+        # Give bg thread a chance to run
+        time.sleep(0.1)
 
 # main test class/code
 class APSW(unittest.TestCase):
