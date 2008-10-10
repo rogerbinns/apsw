@@ -6987,7 +6987,7 @@ apswvfsfile_xDeviceCharacteristics(sqlite3_file *file)
   /* We can't return errors so use unraiseable */
   if(PyErr_Occurred())
     {
-      AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xDeviceCharacteristics", NULL);
+      AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xDeviceCharacteristics", "{s: O}", "result", pyresult?pyresult:Py_None);
       result=0; /* harmless value for error cases */
     }
 
