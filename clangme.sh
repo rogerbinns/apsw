@@ -12,7 +12,7 @@ else
 fi
 
 
-export PATH=$CLANGDIR/Release/bin:$CLAMGDIR/bin:$PATH 
+export PATH=$CLANGDIR/Release/bin:$CLANGDIR/bin:$PATH 
 
 # ensure clang is up to date
 (
