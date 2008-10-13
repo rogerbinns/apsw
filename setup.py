@@ -7,7 +7,8 @@ import shlex
 from distutils.core import setup, Extension
 
 ##
-## Do your customizations here
+## Do your customizations here or by creating a setup.cfg as documented at
+## http://www.python.org/doc/2.5.2/dist/setup-config.html
 ##
 
 include_dirs=[]
@@ -17,6 +18,8 @@ libraries=[]
 
 # We always want threadsafe
 define_macros.append( ('SQLITE_THREADSAFE', '1') )
+# We don't use any deprecated functions
+define_macros.append( ('SQLITE_OMIT_DEPRECATED), '1') )
 
 # This includes the functionality marked as experimental in SQLite 3.
 # Comment out the line to exclude them
