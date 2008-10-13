@@ -40,6 +40,20 @@
 #define STATEMENTCACHE_LINKAGE
 #endif
 
+
+#if 1
+#define STATEMENTCACHE_MALLOC malloc
+#define STATEMENTCACHE_REALLOC(x,y) do {free(x); x=malloc(y);} while(0)
+#define STATEMENTCACHE_FREE    free
+#else
+#define STATEMENTCACHE_MALLOC  PyMem_Malloc
+#define STATEMENTCACHE_REALLOC(x,y) do {PyMem_Free(x); x=PyMem_Malloc(y);} while(0)
+#define STATEMENTCACHE_FREE    PyMem_Free
+#define STATEMENTCACHE_MALLOC  sqlite3_malloc
+#define STATEMENTCACHE_REALLOC(x,y) x=sqlite3_realloc(x,y)
+#define STATEMENTCACHE_FREE    sqlite3_free
+#endif
+
 typedef struct _StatementCacheEntry
 {
   unsigned inuse;
@@ -67,10 +81,10 @@ STATEMENTCACHE_LINKAGE
 StatementCache* 
 statementcache_init(sqlite3*db, unsigned nentries)
 {
-  StatementCache *sc=(StatementCache*)sqlite3_malloc(sizeof(StatementCache));
+  StatementCache *sc=(StatementCache*)STATEMENTCACHE_MALLOC(sizeof(StatementCache));
   memset(sc, 0, sizeof(StatementCache));
   sc->nentries=nentries;
-  sc->entries=sqlite3_malloc(nentries*sizeof(StatementCacheEntry));
+  sc->entries=STATEMENTCACHE_MALLOC(nentries*sizeof(StatementCacheEntry));
   memset(sc->entries, 0, nentries*sizeof(StatementCacheEntry));
   assert(db);
   sc->db=db;
@@ -105,7 +119,7 @@ statementcache_free(StatementCache* sc)
 	}
       if(sce->sql)
 	{
-	  sqlite3_free(sce->sql);
+	  STATEMENTCACHE_FREE(sce->sql);
 	  sce->sql=0;
 	}
     }
@@ -114,8 +128,8 @@ statementcache_free(StatementCache* sc)
 #ifdef SCSTATS
   printf("SC: %d hits, %d misses, %d evictions, %d full\n", sc->hits, sc->misses, sc->evictions, sc->full);
 #endif
-  sqlite3_free(sc->entries);
-  sqlite3_free(sc);
+  STATEMENTCACHE_FREE(sc->entries);
+  STATEMENTCACHE_FREE(sc);
   return 0;
 }
 
@@ -124,7 +138,7 @@ int
 statementcache_prepare(StatementCache *sc, 
 		       sqlite3* db, 
 		       const char *zSql, 
-		       int nBytes, 
+		       int *nBytes, 
 		       sqlite3_stmt **ppStmt, 
 		       const char **pzTail,
                        unsigned int *inuse)
@@ -135,43 +149,45 @@ statementcache_prepare(StatementCache *sc,
 
   assert(sc->db==db);
 
-  if(nBytes<0)
-    nBytes=strlen(zSql);
+  if(*nBytes<0)
+    *nBytes=strlen(zSql);
 
-  /* find if we have a cached statement */
-  for(i=0;i<sc->nentries;i++)
-    {
-      sce=&(sc->entries[i]);
-      if(sce->inuse)
-	continue;
+  /* find if we have a cached statement - we don't bother for over 10kb of text */
+  if(*nBytes<10240)
+    for(i=0;i<sc->nentries;i++)
+      {
+        sce=&(sc->entries[i]);
+        if(sce->inuse)
+          continue;
 
-      if(!sce->stmt)
-	{
-	  if(empty<0)
-	    empty=i;
-	  continue;
-	}
+        if(!sce->stmt)
+          {
+            if(empty<0)
+              empty=i;
+            continue;
+          }
 
-      /* LRU */
-      if(sce->lru<evictlru)
-	{
-	  evict=i;
-	  evictlru=sce->lru;
-	}
+        /* LRU */
+        if(sce->lru<evictlru)
+          {
+            evict=i;
+            evictlru=sce->lru;
+          }
 
-      if(sce->stringlength!=nBytes)
-	continue;
-      if(memcmp(zSql, sce->sql, sce->stringlength))
-	continue;
-      /* ok, we can use this one */
-      *ppStmt=sce->stmt;
-      sce->inuse=1;
-      *pzTail=zSql+sce->stringlength;
+        if(sce->stringlength!=*nBytes)
+          continue;
+        if(memcmp(zSql, sce->sql, sce->stringlength))
+          continue;
+        /* ok, we can use this one */
+        *ppStmt=sce->stmt;
+        sce->inuse=1;
+        *pzTail=zSql+sce->stringlength;
+        *nBytes-=sce->stringlength;
 #ifdef SCSTATS
-      sc->hits++;
+        sc->hits++;
 #endif
-      return SQLITE_OK;
-    }
+        return SQLITE_OK;
+      }
 
 #ifdef SCSTATS
   sc->misses++;
@@ -208,8 +224,9 @@ statementcache_prepare(StatementCache *sc,
       assert(*inuse==0);
       *inuse=1;
     }
+  assert(*(zSql+*nBytes)==0);
   Py_BEGIN_ALLOW_THREADS
-    res=sqlite3_prepare_v2(db, zSql, nBytes, ppStmt, pzTail);
+    res=sqlite3_prepare_v2(db, zSql, *nBytes+1, ppStmt, pzTail);
   Py_END_ALLOW_THREADS;
   if(inuse)
     {
@@ -225,7 +242,9 @@ statementcache_prepare(StatementCache *sc,
 
   if(sce)
     {
+      int oldlen=sce->stringlength;
       sce->stringlength=*pzTail-zSql;
+
       
       if(sce->stmt)
         {
@@ -233,15 +252,22 @@ statementcache_prepare(StatementCache *sc,
           assert(res==SQLITE_OK);
         }
       sce->stmt=*ppStmt;
-      
+
       if(sce->sql)
-        sqlite3_free(sce->sql);
-      
-      /* SQLite reads off end, so we put a null on */
-      sce->sql=sqlite3_malloc(sce->stringlength+1);
+        {
+          if(sce->stringlength>oldlen)
+            STATEMENTCACHE_REALLOC(sce->sql, sce->stringlength+1);
+        }
+      else
+        /* SQLite reads off end, so we put an extra null on allocations*/      
+        sce->sql=STATEMENTCACHE_MALLOC(sce->stringlength+1);
+
       memcpy(sce->sql, zSql, sce->stringlength);
       sce->sql[sce->stringlength]=0;
     }
+
+  /* Update nBytes to be remaining string length */
+  *nBytes-=*pzTail-zSql;
 
   return res;
 }

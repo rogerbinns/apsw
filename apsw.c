@@ -621,6 +621,7 @@ typedef struct {
   /* see sqlite3_prepare_v2 for the origin of these */
   const char *zsql;               /* current sqlstatement (which may include multiple statements) */
   const char *zsqlnextpos;        /* the next statement to execute (or NULL if no more) */
+  int byteslen;                   /* length of string starting at zsql so we don't have to keep calling strlen */
 
   /* what state we are in */
   enum { C_BEGIN, C_ROW, C_DONE } status;
@@ -4583,6 +4584,8 @@ APSWCursor_dobindings(APSWCursor *self)
   assert(self->bindingsoffset>=0);
 
   nargs=sqlite3_bind_parameter_count(self->statement);
+  if(nargs==0 && !self->bindings)
+    return 0; /* common case, no bindings needed or supplied */
 
   if (nargs>0 && !self->bindings)
     {
@@ -4826,6 +4829,7 @@ APSWCursor_step(APSWCursor *self)
               return (PyObject*)self;
             }
           self->zsqlnextpos=self->zsql; /* start at begining of string again */
+          self->byteslen= -1;
           /* don't need bindings from last round if emiter.next() */
           Py_XDECREF(self->bindings);
           self->bindings=0;
@@ -4861,7 +4865,7 @@ APSWCursor_step(APSWCursor *self)
           etos.savedbindingsoffset=self->bindingsoffset;
         }
       assert(!PyErr_Occurred());
-      res=statementcache_prepare(self->connection->stmtcache, self->connection->db, self->zsqlnextpos, -1, &self->statement, &self->zsqlnextpos, &self->inuse);
+      res=statementcache_prepare(self->connection->stmtcache, self->connection->db, self->zsqlnextpos, &self->byteslen, &self->statement, &self->zsqlnextpos, &self->inuse);
       SET_EXC(res, self->connection->db);
       if (res!=SQLITE_OK)
         {
@@ -4912,7 +4916,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
   
   assert(!self->bindings);
 
-  if(!PyArg_ParseTuple(args, "es|O:execute(statements,bindings=())", STRENCODING, &self->zsql, &self->bindings))
+  if(!PyArg_ParseTuple(args, "es#|O:execute(statements,bindings=())", STRENCODING, &self->zsql, &self->byteslen, &self->bindings))
     return NULL;
 
   if(self->bindings)
@@ -4934,7 +4938,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
       etos.savedbindingsoffset=0;
     }
   assert(!PyErr_Occurred());
-  res=statementcache_prepare(self->connection->stmtcache, self->connection->db, self->zsql, -1, &self->statement, &self->zsqlnextpos, &self->inuse);
+  res=statementcache_prepare(self->connection->stmtcache, self->connection->db, self->zsql, &self->byteslen, &self->statement, &self->zsqlnextpos, &self->inuse);
   SET_EXC(res, self->connection->db);
   if (res!=SQLITE_OK)
     {
@@ -4997,7 +5001,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
   assert(!self->zsql);
   assert(self->status=C_DONE);
 
-  if(!PyArg_ParseTuple(args, "esO:executemany(statements, sequenceofbindings)", STRENCODING, &self->zsql, &theiterable))
+  if(!PyArg_ParseTuple(args, "es#O:executemany(statements, sequenceofbindings)", STRENCODING, &self->zsql, &self->byteslen, &theiterable))
     return NULL;
 
   self->emiter=PyObject_GetIter(theiterable);
@@ -5034,7 +5038,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
       etos.savedbindingsoffset=0;
     }
   assert(!PyErr_Occurred());
-  res=statementcache_prepare(self->connection->stmtcache, self->connection->db, self->zsql, -1, &self->statement, &self->zsqlnextpos, &self->inuse);
+  res=statementcache_prepare(self->connection->stmtcache, self->connection->db, self->zsql, &self->byteslen, &self->statement, &self->zsqlnextpos, &self->inuse);
   SET_EXC(res, self->connection->db);
   if (res!=SQLITE_OK)
     return NULL;
