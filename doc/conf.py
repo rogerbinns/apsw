@@ -36,7 +36,7 @@ master_doc = 'index'
 
 # General substitutions.
 project = u'APSW'
-copyright = u'2008, Roger Binns'
+copyright = u'2004-2008, Roger Binns <rogerb@rogerbinns.com>'
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
@@ -57,7 +57,7 @@ today_fmt = '%B %d, %Y'
 
 # List of directories, relative to source directories, that shouldn't be searched
 # for source files.
-exclude_trees = ['.build']
+exclude_trees = ['build']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -142,7 +142,7 @@ html_last_updated_fmt = '%b %d, %Y'
 #html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'APSWdoc'
+htmlhelp_basename = 'apsw'
 
 
 # Options for LaTeX output
@@ -157,8 +157,8 @@ htmlhelp_basename = 'APSWdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
 latex_documents = [
-  ('index', 'APSW.tex', u'APSW Documentation',
-   u'Roger Binns', 'manual'),
+  ('index', 'apsw.tex', u'APSW Documentation',
+   u'Roger Binns <rogerb@rogerbinns.com>', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

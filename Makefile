@@ -5,7 +5,15 @@ VERDIR=apsw-$(VERSION)
 SOURCE=apsw.c apsw.html apswversion.h mingwsetup.bat pointerlist.c \
 	  setup.py statementcache.c testextension.c tests.py traceback.c 
 
-all: header tidytoc
+all: header docs
+
+# The various tools and sphinx generate a prodigious amount of output which
+# we send to dev null
+docs:
+	make VERSION=$(VERSION) -C doc clean html htmlhelp latex > /dev/null
+
+linkcheck:
+	make -C doc linkcheck 
 
 header:
 	echo "#define APSW_VERSION \"$(VERSION)\"" > apswversion.h
