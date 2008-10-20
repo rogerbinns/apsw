@@ -42,9 +42,10 @@ copyright = u'2004-2008, Roger Binns <rogerb@rogerbinns.com>'
 # other places throughout the built documents.
 #
 # The short X.Y version.
-version = '3.6.4-r1'
+version = os.getenv("VERSION")
 # The full version, including alpha/beta/rc tags.
-release = '3.6.4-r1'
+release = version
+assert version
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
