@@ -1,30 +1,123 @@
 #!/usr/bin/env python
 
-# Do speed tests.  The tests try to correspond to http://www.sqlite.org/cvstrac/fileview?f=sqlite/tool/mkspeedsql.tcl
-
-# Check we can do both apsw and pysqlite
+# Do speed tests.  The tests try to correspond to
+# http://www.sqlite.org/cvstrac/fileview?f=sqlite/tool/mkspeedsql.tcl
+# This file needs to run under both Python 2 and Python 3 hence a few
+# funky things.  Command line options etc were added later hence the
+# somewhat wierd structuring.
 
 import sys
 import os
 import random
 import time
 import gc
+import optparse
 
+# This would be a py 2 vs py 3 funky thing
 write=sys.stdout.write
-write("                    Python "+sys.executable+" "+str(sys.version_info)+"\n\n")
 
-import apsw
+parser=optparse.OptionParser()
+parser.add_option("--apsw", dest="apsw", action="store_true", default=False,
+                  help="Include apsw in testing (%default)")
+parser.add_option("--pysqlite", dest="pysqlite", action="store_true", default=False,
+                  help="Include pysqlite in testing (%default)")
+parser.add_option("--correctness", dest="correctness", action="store_true", default=False,
+                  help="Do a correctness test")
+parser.add_option("--scale", dest="scale", type="int", default=10,
+                  help="How many statements to execute.  Each unit takes about 2 seconds per test on memory only databases. [Default %default]")
+parser.add_option("--database", dest="database", default=":memory:",
+                  help="The database file to use [Default %default]")
+parser.add_option("--tests", dest="tests", default="bigstmt,statements,statements_nobindings",
+                  help="What tests to run [Default %default]")
+parser.add_option("--iterations", dest="iterations", default=3, type="int", metavar="N",
+                  help="How many times to run the tests [Default %default]")
+parser.add_option("--tests-detail", dest="tests_detail", default=False, action="store_true",
+                  help="Print details of what the tests do.  (Does not run the tests)")
+parser.add_option("--dump-sql", dest="dump_filename", metavar="FILENAME",
+                  help="Name of file to dump SQL to.  This is useful for feeding into the SQLite command line shell.")
+parser.add_option("--sc-size", dest="scsize", type="int", default=100, metavar="N",
+                  help="Size of the statement cache. APSW will disable cache with value of zero.  Pysqlite ensures a minimum of 5 [Default %default]")
 
-write("    Testing with APSW file "+apsw.__file__+"\n")
-write("              APSW version "+apsw.apswversion()+"\n")
-write("        SQLite lib version "+apsw.sqlitelibversion()+"\n")
-write("    SQLite headers version "+str(apsw.SQLITE_VERSION_NUMBER)+"\n\n")
+options,args=parser.parse_args()
 
-from pysqlite2 import dbapi2 as pysqlite
+if len(args):
+    parser.error("Unexpected arguments "+str(args))
 
-write("Testing with pysqlite file "+pysqlite.__file__+"\n")
-write("          pysqlite version "+pysqlite.version+"\n")
-write("            SQLite version "+pysqlite.sqlite_version+"\n\n")
+if options.tests_detail:
+    write("""\
+    bigstmt:
+
+       Supplies the SQL as a single string consisting of multiple
+       statements.  apsw handles this normally via cursor.execute
+       while pysqlite requires that cursor.executescript is called.
+       The string will be several kilobytes and with a factor of 50
+       will be in the megabyte range.  This is the kind of query you
+       would run if you were restoring a database from a dump.
+
+    statements:
+
+       Runs the SQL queries but uses bindings (? parameters). eg:
+
+       for i in range(3):
+          cursor.execute("insert into table foo values(?)", (i,))
+
+       This test has many hits of the statement cache.
+
+    statements_nobindings:
+
+       Runs the SQL queries but doesn't use bindings. eg:
+
+       cursor.execute("insert into table foo values(0)")
+       cursor.execute("insert into table foo values(1)")
+       cursor.execute("insert into table foo values(2)")
+
+       This test has no statement cache hits and shows the overhead of
+       having a statement cache.
+
+    In theory all the tests above should run in almost identical time
+    as well as when using the SQLite command line shell.  This tool
+    shows you what happens in practise.
+    \n""")
+    sys.exit(0)
+
+if not options.apsw and not options.pysqlite and not options.dump_filename:
+    parser.error("You should select at least one of --apsw or --pysqlite")
+
+options.tests=[t.strip() for t in options.tests.split(",")]
+    
+write("         Python %s %s\n" % (sys.executable, str(sys.version_info)))
+write("          Scale %d\n" % (options.scale,))
+write("       Database %s\n" % (options.database,))
+write("          Tests %s\n" % (", ".join(options.tests),))
+write("     Iterations %d\n" % (options.iterations,))
+write("Statement Cache %d\n" % (options.scsize,))
+
+write("\n")
+
+if options.apsw:
+    import apsw
+
+    write("    Testing with APSW file "+apsw.__file__+"\n")
+    write("              APSW version "+apsw.apswversion()+"\n")
+    write("        SQLite lib version "+apsw.sqlitelibversion()+"\n")
+    write("    SQLite headers version "+str(apsw.SQLITE_VERSION_NUMBER)+"\n\n")
+
+    def apsw_setup(dbfile):
+        con=apsw.Connection(dbfile, statementcachesize=options.scsize)
+        con.createscalarfunction("number_name", number_name, 1)
+        return con
+
+if options.pysqlite:
+    from pysqlite2 import dbapi2 as pysqlite
+
+    write("Testing with pysqlite file "+pysqlite.__file__+"\n")
+    write("          pysqlite version "+pysqlite.version+"\n")
+    write("            SQLite version "+pysqlite.sqlite_version+"\n\n")
+
+    def pysqlite_setup(dbfile):
+        con=pysqlite.connect(dbfile, isolation_level=None, cached_statements=options.scsize)
+        con.create_function("number_name", 1, number_name)
+        return con
 
 
 ones=("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
@@ -60,10 +153,15 @@ def number_name(n):
 def getlines(scale=50, bindings=False):
     random.seed(0)
 
+    # RogerB added two pragmas so that only memory is used.  This means that the
+    # vagaries of disk access times don't alter the results
+
     # database schema
     for i in """PRAGMA page_size=1024;
   PRAGMA cache_size=8192;
   PRAGMA locking_mode=EXCLUSIVE;
+  PRAGMA journal_mode = OFF;
+  PRAGMA temp_store = MEMORY; 
   CREATE TABLE t1(a INTEGER, b INTEGER, c TEXT);
   CREATE TABLE t2(a INTEGER, b INTEGER, c TEXT);
   CREATE INDEX i2a ON t2(a);
@@ -128,10 +226,15 @@ def getlines(scale=50, bindings=False):
 
     # 50000 random SELECTs against an indexed column text column
     for i in xrange(scale*1000):
-        yield ("SELECT c FROM t1 WHERE c='%s'" % (random.choice(t1c_list),),)
+        if bindings:
+            yield ("SELECT c FROM t1 WHERE c=?", (random.choice(t1c_list),),)
+        else:
+            yield ("SELECT c FROM t1 WHERE c='%s'" % (random.choice(t1c_list),),)
         
     # Vacuum
-    yield ("VACUUM",)
+    if options.database!=":memory:":
+        # opens a disk file
+        yield ("VACUUM",)
 
     # 5000 updates of ranges where the field being compared is indexed.
     yield ("BEGIN",)
@@ -142,7 +245,10 @@ def getlines(scale=50, bindings=False):
     # 50000 single-row updates.  An index is used to find the row quickly.
     yield ("BEGIN",)
     for i in xrange(scale*1000):
-        yield ("UPDATE t1 SET b=%d WHERE a=%d" % (random.randint(0,500000), i),)
+        if bindings:
+            yield ("UPDATE t1 SET b=? WHERE a=%d" % (i,), (random.randint(0,500000),))
+        else:
+            yield ("UPDATE t1 SET b=%d WHERE a=%d" % (random.randint(0,500000), i),)
     yield ("COMMIT",)
 
     # 1 big text update that touches every row in the table.
@@ -152,7 +258,10 @@ def getlines(scale=50, bindings=False):
     # touched through an index.
     yield ("BEGIN",)
     for i in xrange(1,scale*1000+1):
-        yield ("UPDATE t1 SET c='%s' WHERE a=%d" % (number_name(random.randint(0,500000)), i),)
+        if bindings:
+            yield ("UPDATE t1 SET c=? WHERE a=%d" % (i,), (number_name(random.randint(0,500000)),))
+        else:
+            yield ("UPDATE t1 SET c='%s' WHERE a=%d" % (number_name(random.randint(0,500000)),i),)
     yield ("COMMIT",)
 
     # Delete all content in a table.
@@ -197,64 +306,145 @@ def getlines(scale=50, bindings=False):
 
     yield ("SELECT count(*) FROM t1",)
 
-text=";".join([x[0] for x in getlines(scale=1)])+";" # pysqlite requires final semicolon
-bindings=[line for line in getlines(scale=10, bindings=True)]
+# Do a correctness test first
+if options.correctness:
+    write("Correctness test\n")
+    if 'bigstmt' in options.tests:
+        text=";\n".join([x[0] for x in getlines(scale=1)])+";"
+    if 'statements' in options.tests:
+        withbindings=[line for line in getlines(scale=1, bindings=True)]
+    if 'statements_nobindings' in options.tests:
+        withoutbindings=[line for line in getlines(scale=1, bindings=False)]
 
-def apsw_bigstmt(dbfile):
+    res={}
+    for driver in ('apsw', 'pysqlite'):
+        if not getattr(options, driver):
+            continue
+
+        for test in options.tests:
+            name=driver+"_"+test
+
+            write(name+'\t')
+            sys.stdout.flush()
+
+            if name=='pysqlite_bigstmt':
+                write('limited functionality (ignoring)\n')
+                continue
+
+            con=globals().get(driver+"_setup")(":memory:") # we always correctness test on memory
+
+            if test=='bigstmt':
+                cursor=con.cursor()
+                if driver=='apsw':
+                    func=cursor.execute
+                else:
+                    func=cursor.executescript
+
+                res[name]=[row for row in func(text)]
+                write(str(len(res[name]))+"\n")
+                continue
+
+            cursor=con.cursor
+            if test=='statements':
+                sql=withbindings
+            elif test=='statements_nobindings':
+                sql=withoutbindings
+
+            l=[]
+            for s in sql:
+                for row in cursor.execute(*s):
+                    l.append(row)
+
+            res[name]=l
+
+    # All elements of res should be identical
+    elements=res.keys()
+    elements.sort()
+    for i in range(0,len(elements)-1):
+        write("%s == %s %s\n" % (elements[i],"==", elements[i+1], res[elements[i]]==res[elements[i+1]]))
+
+    del res
+
+
+text=None
+withbindings=None
+withoutbindings=None
+
+if options.dump_filename or "bigstmt" in options.tests:
+    text=";\n".join([x[0] for x in getlines(scale=options.scale)])+";" # pysqlite requires final semicolon
+    if options.dump_filename:
+        open(options.dump_filename, "wt").write(text)
+        sys.exit(0)
+
+if "statements" in options.tests:
+    withbindings=list(getlines(scale=options.scale, bindings=True))
+
+if "statements_nobindings" in options.tests:
+    withoutbindings=list(getlines(scale=options.scale, bindings=False))
+
+# Each test returns the amount of time taken.  Note that we include
+# the close time as well.  Otherwise the numbers become a function of
+# cache and other collection sizes as freeing members gets deferred to
+# close time.
+
+def apsw_bigstmt(con):
     "APSW big statement"
-    con=apsw.Connection(dbfile)
-    b4=time.time()
     for row in con.cursor().execute(text): pass
-    after=time.time()
-    con.close()
-    return after-b4
 
-def pysqlite_bigstmt(dbfile):
+def pysqlite_bigstmt(con):
     "pysqlite big statement"
-    con=pysqlite.connect(dbfile, isolation_level=None)
-    b4=time.time()
-    for row in con.executescript(text+";"): pass
-    after=time.time()
-    con.close()
-    return after-b4
+    for row in con.executescript(text): pass
 
-def apsw_statements(dbfile):
-    "APSW individual statements"
-    con=apsw.Connection(dbfile)
-    con.createscalarfunction("number_name", number_name, 1)
+def apsw_statements(con, bindings=withbindings):
+    "APSW individual statements with bindings"
     cursor=con.cursor()
-    b4=time.time()
     for b in bindings:
         for row in cursor.execute(*b): pass
-    after=time.time()
-    con.close()
-    return after-b4
 
-def pysqlite_statements(dbfile):
-    "pysqlite individual statements"
-    con=pysqlite.connect(dbfile, isolation_level=None)
-    con.create_function("number_name", 1, number_name)
+def pysqlite_statements(con, bindings=withbindings):
+    "pysqlite individual statements with bindings"
     cursor=con.cursor()
-    b4=time.time()
     for b in bindings:
         for row in cursor.execute(*b): pass
-    after=time.time()
-    con.close()
-    return after-b4
 
-tests=(
-    # pysqlite_bigstmt,
-    # apsw_bigstmt,
-    pysqlite_statements,
-    apsw_statements,
-    )
 
-dbfile=":memory:"
-#dbfile="testdb2"
-for i in range(5):
-    for t in tests:
-        if os.path.exists(dbfile):
-            os.remove(dbfile)
-        gc.collect()
-        print t.__doc__,t(dbfile)
-        
+def apsw_statements_nobindings(con):
+    "APSW individual statements without bindings"
+    return apsw_statements(con, withoutbindings)
+
+def pysqlite_statements_nobindings(con):
+    "pysqlite individual statements without bindings"
+    return pysqlite_statements(con, withoutbindings)
+
+# Do the work
+write("\nRunning tests\n")
+
+for i in range(options.iterations):
+    write("%d/%d\n" % (i+1, options.iterations))
+    for test in options.tests:
+        for driver in "apsw", "pysqlite":
+            if getattr(options, driver):
+                name=driver+"_"+test
+                func=globals().get(name, None)
+                if not func:
+                    sys.stderr.write("No such test "+name+"\n")
+                    sys.exit(1)
+            
+                if os.path.exists(options.database):
+                    os.remove(options.database)
+                write("\t"+func.__name__+(" "*(40-len(func.__name__))))
+                sys.stdout.flush()
+                con=globals().get(driver+"_setup")(options.database)
+                gc.collect()
+                b4=time.time()
+                func(con)
+                con.close() # see note above as to why we include this in the timing
+                gc.collect()
+                after=time.time()
+                write(str(after-b4)+"\n")
+
+# Cleanup if using valgrind
+if options.apsw:
+    if hasattr(apsw, "_fini"):
+        # Cleans out buffer recycle cache
+        apsw._fini()
