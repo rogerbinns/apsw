@@ -17,10 +17,7 @@ export PATH=$CLANGDIR/Release/bin:$CLANGDIR/bin:$PATH
 # ensure clang is up to date
 (
     cd $CLANGDIR
-    svn up
-    cd tools/clang
-    svn up
-    cd ../..
+    make update
     make -j4
 )
 
