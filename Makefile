@@ -1,9 +1,10 @@
 
-VERSION=3.6.3-r1
+VERSION=3.6.4-r1
 VERDIR=apsw-$(VERSION)
 
 SOURCE=apsw.c apsw.html apswversion.h mingwsetup.bat pointerlist.c \
-	  setup.py statementcache.c testextension.c tests.py traceback.c 
+	  setup.py statementcache.c testextension.c tests.py traceback.c \
+	  speedtest.py
 
 all: header docs
 

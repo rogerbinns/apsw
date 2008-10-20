@@ -1636,16 +1636,6 @@ class APSW(unittest.TestCase):
                 return
 
             self.failUnlessEqual(value.extendedresult& ((long(0xffff)<<16)|long(0xffff)), apsw.SQLITE_IOERR_BLOCKED)
-            # walk the stack to verify that C level value is correct
-            found=False
-            while tb:
-                frame=tb.tb_frame
-                if frame.f_code.co_name=="resetcursor":
-                    self.failUnlessEqual(frame.f_locals["res"], apsw.SQLITE_IOERR_BLOCKED|apsw.SQLITE_IOERR)
-                    found=True
-                    break
-                tb=tb.tb_next
-            self.assertEqual(found, True)
 
     def testVtables(self):
         "Test virtual table functionality"
@@ -4463,15 +4453,6 @@ class APSW(unittest.TestCase):
         except MemoryError:
             pass
 
-        ## DoBindingFail
-        apsw.faultdict["DoBindingFail"]=True
-        try:
-            db=apsw.Connection(":memory:")
-            db.cursor().execute("select ?,?", (97,2))
-            1/0
-        except MemoryError:
-            pass
-
         ## DoBindingUnicodeConversionFails
         apsw.faultdict["DoBindingUnicodeConversionFails"]=True
         try:
@@ -4493,15 +4474,6 @@ class APSW(unittest.TestCase):
 
         ## DoBindingAsReadBufferFails
         apsw.faultdict["DoBindingAsReadBufferFails"]=True
-        try:
-            db=apsw.Connection(":memory:")
-            db.cursor().execute("select ?", (b("abcd"),))
-            1/0
-        except MemoryError:
-            pass
-
-        ## DoBindingExistingError
-        apsw.faultdict["DoBindingExistingError"]=True
         try:
             db=apsw.Connection(":memory:")
             db.cursor().execute("select ?", (b("abcd"),))
@@ -4812,6 +4784,9 @@ if __name__=='__main__':
     # clean up sqlite and apsw
     gc.collect() # all cursors & connections must be gone
     apsw.shutdown()
+    if hasattr(apsw, "_fini"):
+        apsw._fini()
+        gc.collect()
     del apsw
 
     exit=sys.exit

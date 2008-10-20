@@ -111,11 +111,14 @@ typedef int Py_ssize_t;
 #endif
 
 #if PY_MAJOR_VERSION < 3
+#define PyBytes_Check             PyString_Check
 #define PyBytes_FromStringAndSize PyString_FromStringAndSize
 #define PyBytes_AsString          PyString_AsString
 #define PyBytes_AS_STRING         PyString_AS_STRING
 #define PyBytes_GET_SIZE          PyString_GET_SIZE
 #define _PyBytes_Resize           _PyString_Resize
+#define PyBytes_CheckExact        PyString_CheckExact
+#define PyBytesObject             PyStringObject
 #define PyIntLong_Check(x)        (PyInt_Check((x)) || PyLong_Check((x)))
 #define PyIntLong_AsLong(x)       ( (PyInt_Check((x))) ? ( PyInt_AsLong((x)) ) : ( (PyLong_AsLong((x)))))
 #else
@@ -129,11 +132,6 @@ typedef int Py_ssize_t;
 
 /* A list of pointers (used by Connection to keep track of Cursors) */
 #include "pointerlist.c"
-
-/* Prepared statement caching */
-/* #define SCSTATS */
-#define STATEMENTCACHE_LINKAGE static
-#include "statementcache.c"
 
 /* used to decide if we will use int or long long, sqlite limit tests due to it not being 64 bit correct */
 #define APSW_INT32_MIN (-2147483647-1)
@@ -178,7 +176,7 @@ static PyObject *apswmodule;
    it is more space efficient, and Python can't make its mind up about
    Unicode (it uses 16 or 32 bit unichars and often likes to use Byte
    Order Markers as well). */
-#define STRENCODING "utf_8"
+#define STRENCODING "utf-8"
 
 /* Some macros used for frequent operations */
 
@@ -589,7 +587,7 @@ struct Connection {
   unsigned inuse;                 /* track if we are in use preventing concurrent thread mangling */
 
   pointerlist dependents;         /* tracking cursors & blobs belonging to this connection */
-  StatementCache *stmtcache;      /* prepared statement cache */
+  struct StatementCache *stmtcache;      /* prepared statement cache */
 
   funccbinfo *functions;          /* linked list of registered functions */
 
@@ -614,24 +612,20 @@ static PyTypeObject ConnectionType;
 typedef struct {
   PyObject_HEAD
   Connection *connection;          /* pointer to parent connection */
-  sqlite3_stmt *statement;         /* current compiled statement */
 
-  unsigned inuse;                 /* track if we are in use preventing concurrent thread mangling */
-
-  /* see sqlite3_prepare_v2 for the origin of these */
-  const char *zsql;               /* current sqlstatement (which may include multiple statements) */
-  const char *zsqlnextpos;        /* the next statement to execute (or NULL if no more) */
-  int byteslen;                   /* length of string starting at zsql so we don't have to keep calling strlen */
+  unsigned inuse;                  /* track if we are in use preventing concurrent thread mangling */
+  struct APSWStatement *statement; /* statement we are currently using */
 
   /* what state we are in */
   enum { C_BEGIN, C_ROW, C_DONE } status;
 
   /* bindings for query */
-  PyObject *bindings;             /* dict or sequence */
-  Py_ssize_t bindingsoffset;             /* for sequence tracks how far along we are when dealing with multiple statements */
+  PyObject *bindings;              /* dict or sequence */
+  Py_ssize_t bindingsoffset;       /* for sequence tracks how far along we are when dealing with multiple statements */
 
-  /* iterator for executemany */
+  /* iterator for executemany, original query string */
   PyObject *emiter;
+  PyObject *emoriginalquery;
 
   /* tracing functions */
   PyObject *exectrace;
@@ -640,6 +634,8 @@ typedef struct {
 } APSWCursor;
 
 static PyTypeObject APSWCursorType;
+
+
 
 /* forward declarations */
 static PyObject *APSWCursor_close(APSWCursor *self, PyObject *args);
@@ -689,7 +685,51 @@ converttobytes(const void *ptr, Py_ssize_t size)
 #define converttobytes PyBytes_FromStringAndSize
 #endif
 
+/* Convert a pointer and size UTF-8 string into a Python object.
+   Pointer must be non-NULL.  New behaviour in 3.3.8 - always return
+   Unicode strings
+*/
+static PyObject *
+convertutf8stringsize(const char *str, Py_ssize_t size)
+{
+  assert(str);
+  assert(size>=0);
 
+  /* Performance optimization:  If str is all ascii then we 
+     can just make a unicode object and fill in the chars. PyUnicode_DecodeUTF8 is rather long
+  */
+  if(size<16384)
+    {
+      int isallascii=1;
+      int i=size;
+      const char *p=str;
+      while(isallascii && i)
+        {
+          isallascii=! (*p & 0x80);
+          i--;
+          p++;
+        }
+      if(i==0 && isallascii)
+        {
+          Py_UNICODE *out;
+          PyObject *res=PyUnicode_FromUnicode(NULL, size);
+          if(!res) return res;
+          out=PyUnicode_AS_UNICODE(res);
+
+          i=size;
+          while(i)
+            {
+              i--;
+              *out=*str;
+              out++;
+              str++;
+            }
+          return res;
+        }
+    }
+  
+  return PyUnicode_DecodeUTF8(str, size, NULL);
+}
 
 /* Convert a NULL terminated UTF-8 string into a Python object.  None
    is returned if NULL is passed in. */
@@ -699,20 +739,7 @@ convertutf8string(const char *str)
   if(!str)
     Py_RETURN_NONE;
 
-  /* new behaviour in 3.3.8 - always return unicode strings */
-  return PyUnicode_DecodeUTF8(str, strlen(str), NULL);
-}
-
-/* Convert a pointer and size UTF-8 string into a Python object.
-   Pointer must be non-NULL. */
-static PyObject *
-convertutf8stringsize(const char *str, Py_ssize_t size)
-{
-  assert(str);
-  assert(size>=0);
-  
-  /* new behaviour in 3.3.8 - always return Unicode strings */
-  return PyUnicode_DecodeUTF8(str, size, NULL);
+  return convertutf8stringsize(str, strlen(str));
 }
 
 /* Returns a PyBytes/String encoded in UTF8 - new reference.
@@ -724,17 +751,48 @@ getutf8string(PyObject *string)
   PyObject *inunicode=NULL;
   PyObject *utf8string=NULL;
 
-  if(PyUnicode_Check(string))
+  if(PyUnicode_CheckExact(string))
     {
       inunicode=string;
       Py_INCREF(string);
     }
-  else
+#if Py_VERSION_MAJOR < 3
+  else if(PyString_CheckExact(string))
     {
-      inunicode=PyUnicode_FromObject(string);
-      if(!inunicode) 
-	return NULL;
+      /* A python 2 performance optimisation.  If the string consists
+         only of ascii characters then it is already valid utf8.  And
+         in py2 pybytes and pystring are the same thing.  This avoids
+         doing a conversion to unicode and then a conversion to utf8.
+
+         We only do this optimisation for strings that aren't
+         ridiculously long. 
+      */
+      if(PyString_GET_SIZE(string)<16384)
+        {
+          int isallascii=1; 
+          int i=PyString_GET_SIZE(string);
+          const char *p=PyString_AS_STRING(string);
+          while(isallascii && i)
+            {
+              isallascii=! (*p & 0x80);
+              i--;
+              p++;
+            }
+          if(i==0 && isallascii)
+            {
+              Py_INCREF(string);
+              return string;
+            }
+        }
     }
+#endif
+
+  if(!inunicode)
+      inunicode=PyUnicode_FromObject(string);
+
+  if(!inunicode) 
+    return NULL;
+
   assert(!PyErr_Occurred());
 
   utf8string=PyUnicode_AsUTF8String(inunicode);
@@ -782,6 +840,12 @@ getutf8string(PyObject *string)
 #define USE16(x) x
 
 #endif /* Py_UNICODE_SIZE */
+
+/* buffer used in statement cache */
+#include "apswbuffer.c"
+
+/* The statement cache */
+#include "statementcache.c"
 
 /* CONNECTION CODE */
 
@@ -863,8 +927,7 @@ Connection_close(Connection *self, PyObject *args)
         return NULL;
     }
 
-  res=statementcache_free(self->stmtcache);
-  assert(res==0);
+  statementcache_free(self->stmtcache);
   self->stmtcache=0;
 
   APSW_BEGIN_ALLOW_THREADS
@@ -906,8 +969,7 @@ Connection_dealloc(Connection* self)
 
       if(self->stmtcache)
         {
-          res=statementcache_free(self->stmtcache);
-          assert(res==0);
+          statementcache_free(self->stmtcache);
           self->stmtcache=0;
         }
 
@@ -4269,6 +4331,14 @@ static int
 resetcursor(APSWCursor *self, int force)
 {
   int res=SQLITE_OK;
+  PyObject *nextquery=self->statement?self->statement->next:NULL;
+  PyObject *etype, *eval, *etb;
+
+  if(force)
+    PyErr_Fetch(&etype, &eval, &etb);
+
+  if(nextquery) 
+    Py_INCREF(nextquery);
 
   Py_XDECREF(self->bindings);
   self->bindings=NULL;
@@ -4282,20 +4352,21 @@ resetcursor(APSWCursor *self, int force)
       self->statement=0;
     }
 
-  if(!force && (self->status!=C_DONE && self->zsqlnextpos))
+  if(!force && self->status!=C_DONE && nextquery)
     {
-      if (*self->zsqlnextpos && res==SQLITE_OK)
+      if (res==SQLITE_OK)
         {
           /* We still have more, so this is actually an abort. */
           res=SQLITE_ERROR;
           if(!PyErr_Occurred())
             {
               PyErr_Format(ExcIncomplete, "Error: there are still remaining sql statements to execute");
-              AddTraceBackHere(__FILE__, __LINE__, "resetcursor", "{s: s}", "remaining", self->zsqlnextpos);
+              AddTraceBackHere(__FILE__, __LINE__, "resetcursor", "{s: N}", "remaining", convertutf8buffertounicode(nextquery));
             }
         }
     }
-  self->zsqlnextpos=NULL;
+
+  Py_XDECREF(nextquery);
   
   if(!force && self->status!=C_DONE && self->emiter)
     {
@@ -4314,12 +4385,8 @@ resetcursor(APSWCursor *self, int force)
      
   Py_XDECREF(self->emiter);
   self->emiter=NULL;
-
-  if(self->zsql)
-    {
-      PyMem_Free((void*)self->zsql);
-      self->zsql=0;
-    }
+  Py_XDECREF(self->emoriginalquery);
+  self->emoriginalquery=NULL;
 
   self->status=C_DONE;
 
@@ -4328,6 +4395,9 @@ resetcursor(APSWCursor *self, int force)
       assert(res);
       AddTraceBackHere(__FILE__, __LINE__, "resetcursor", "{s: i}", "res", res);
     }
+
+  if(force && (etype || eval || etb))
+    PyErr_Restore(etype, eval, etb);
 
   return res;
 }
@@ -4344,7 +4414,6 @@ APSWCursor_dealloc(APSWCursor * self)
     {
       /* remember the existing error so that resetcursor won't immediately return */
       PyErr_Fetch(&err_type, &err_value, &err_traceback);
-      PyErr_Clear();
     }
 
   resetcursor(self, /* force = */ 1);
@@ -4379,12 +4448,11 @@ APSWCursor_init(APSWCursor *self, Connection *connection)
 {
   self->connection=connection;
   self->statement=0;
-  self->zsql=0;
-  self->zsqlnextpos=0;
   self->status=C_DONE;
   self->bindings=0;
   self->bindingsoffset=0;
   self->emiter=0;
+  self->emoriginalquery=0;
   self->exectrace=0;
   self->rowtrace=0;
   self->inuse=0;
@@ -4406,7 +4474,7 @@ APSWCursor_getdescription(APSWCursor *self)
       return NULL;
     }
   
-  ncols=sqlite3_column_count(self->statement);
+  ncols=sqlite3_column_count(self->statement->statement);
   result=PyTuple_New(ncols);
   if(!result) goto error;
 
@@ -4414,8 +4482,8 @@ APSWCursor_getdescription(APSWCursor *self)
     {
       APSW_FAULT_INJECT(GetDescriptionFail,
       pair=Py_BuildValue("(O&O&)", 
-			 convertutf8string, sqlite3_column_name(self->statement, i),
-			 convertutf8string, sqlite3_column_decltype(self->statement, i)),
+			 convertutf8string, sqlite3_column_name(self->statement->statement, i),
+			 convertutf8string, sqlite3_column_decltype(self->statement->statement, i)),
       pair=PyErr_NoMemory()
       );                  
 			 
@@ -4445,24 +4513,21 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
 
   int res=SQLITE_OK;
 
-  APSW_FAULT_INJECT(DoBindingFail,,PyErr_NoMemory());
-
-  if(PyErr_Occurred()) 
-    return -1;
+  assert(!PyErr_Occurred());
 
   if(obj==Py_None)
-    res=sqlite3_bind_null(self->statement, arg);
+    res=sqlite3_bind_null(self->statement->statement, arg);
   /* Python uses a 'long' for storage of PyInt.  This could
      be a 32bit or 64bit quantity depending on the platform. */
 #if PY_MAJOR_VERSION < 3
   else if(PyInt_Check(obj))
-    res=sqlite3_bind_int64(self->statement, arg, PyInt_AS_LONG(obj));
+    res=sqlite3_bind_int64(self->statement->statement, arg, PyInt_AS_LONG(obj));
 #endif
   else if (PyLong_Check(obj))
     /* nb: PyLong_AsLongLong can cause Python level error */
-    res=sqlite3_bind_int64(self->statement, arg, PyLong_AsLongLong(obj));
+    res=sqlite3_bind_int64(self->statement->statement, arg, PyLong_AsLongLong(obj));
   else if (PyFloat_Check(obj))
-    res=sqlite3_bind_double(self->statement, arg, PyFloat_AS_DOUBLE(obj));
+    res=sqlite3_bind_double(self->statement->statement, arg, PyFloat_AS_DOUBLE(obj));
   else if (PyUnicode_Check(obj))
     {
       const void *badptr=NULL;
@@ -4479,7 +4544,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
                 SET_EXC(SQLITE_TOOBIG, NULL);
 	      }
 	    else
-              res=USE16(sqlite3_bind_text)(self->statement, arg, strdata, strbytes, SQLITE_TRANSIENT);
+              res=USE16(sqlite3_bind_text)(self->statement->statement, arg, strdata, strbytes, SQLITE_TRANSIENT);
           }
       UNIDATAEND(obj);
       if(!badptr) 
@@ -4517,7 +4582,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
                     res=SQLITE_TOOBIG;
 		  }
 		else
-                  res=USE16(sqlite3_bind_text)(self->statement, arg, strdata, strbytes, SQLITE_TRANSIENT);
+                  res=USE16(sqlite3_bind_text)(self->statement->statement, arg, strdata, strbytes, SQLITE_TRANSIENT);
               }
           UNIDATAEND(str2);
           Py_DECREF(str2);
@@ -4530,7 +4595,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
       else
 	{
 	  assert(lenval<APSW_INT32_MAX);
-	  res=sqlite3_bind_text(self->statement, arg, val, lenval, SQLITE_TRANSIENT);
+	  res=sqlite3_bind_text(self->statement->statement, arg, val, lenval, SQLITE_TRANSIENT);
 	}
     }
 #endif
@@ -4549,11 +4614,11 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
           SET_EXC(SQLITE_TOOBIG, NULL);
 	  return -1;
 	}
-      res=sqlite3_bind_blob(self->statement, arg, buffer, buflen, SQLITE_TRANSIENT);
+      res=sqlite3_bind_blob(self->statement->statement, arg, buffer, buflen, SQLITE_TRANSIENT);
     }
   else if(PyObject_TypeCheck(obj, &ZeroBlobBindType)==1)
     {
-      res=sqlite3_bind_zeroblob(self->statement, arg, ((ZeroBlobBind*)obj)->blobsize);
+      res=sqlite3_bind_zeroblob(self->statement->statement, arg, ((ZeroBlobBind*)obj)->blobsize);
     }
   else 
     {
@@ -4577,13 +4642,10 @@ APSWCursor_dobindings(APSWCursor *self)
   int nargs, arg, res, sz=0;
   PyObject *obj;
 
-  APSW_FAULT_INJECT(DoBindingExistingError,,PyErr_NoMemory());
-  if(PyErr_Occurred()) 
-    return -1;
-
+  assert(!PyErr_Occurred());
   assert(self->bindingsoffset>=0);
 
-  nargs=sqlite3_bind_parameter_count(self->statement);
+  nargs=sqlite3_bind_parameter_count(self->statement->statement);
   if(nargs==0 && !self->bindings)
     return 0; /* common case, no bindings needed or supplied */
 
@@ -4599,7 +4661,7 @@ APSWCursor_dobindings(APSWCursor *self)
       for(arg=1;arg<=nargs;arg++)
         {
 	  PyObject *keyo=NULL;
-          const char *key=sqlite3_bind_parameter_name(self->statement, arg);
+          const char *key=sqlite3_bind_parameter_name(self->statement->statement, arg);
 
           if(!key)
             {
@@ -4634,14 +4696,14 @@ APSWCursor_dobindings(APSWCursor *self)
   if (self->bindings)
     sz=PySequence_Fast_GET_SIZE(self->bindings);
   /* there is another statement after this one ... */
-  if(*self->zsqlnextpos && sz-self->bindingsoffset<nargs)
+  if(self->statement->next && sz-self->bindingsoffset<nargs)
     {
       PyErr_Format(ExcBindings, "Incorrect number of bindings supplied.  The current statement uses %d and there are only %d left.  Current offset is %d",
                    nargs, (self->bindings)?sz:0, (int)(self->bindingsoffset));
       return -1;
     }
   /* no more statements */
-  if(!*self->zsqlnextpos && sz-self->bindingsoffset!=nargs)
+  if(!self->statement->next && sz-self->bindingsoffset!=nargs)
     {
       PyErr_Format(ExcBindings, "Incorrect number of bindings supplied.  The current statement uses %d and there are %d supplied.  Current offset is %d",
                    nargs, (self->bindings)?sz:0, (int)(self->bindingsoffset));
@@ -4666,13 +4728,8 @@ APSWCursor_dobindings(APSWCursor *self)
   return 0;
 }
 
-typedef struct { 
-  const char *previouszsqlpos;  /* where the begining of the statement was */
-  Py_ssize_t savedbindingsoffset;      /* where the bindings began */
-} exectrace_oldstate;
-  
 static int
-APSWCursor_doexectrace(APSWCursor *self, exectrace_oldstate *etos)
+APSWCursor_doexectrace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
 {
   PyObject *retval=NULL;
   PyObject *sqlcmd=NULL;
@@ -4680,9 +4737,10 @@ APSWCursor_doexectrace(APSWCursor *self, exectrace_oldstate *etos)
   int result;
 
   assert(self->exectrace);
+  assert(self->statement);
 
   /* make a string of the command */
-  sqlcmd=convertutf8stringsize(etos->previouszsqlpos, self->zsqlnextpos-etos->previouszsqlpos);
+  sqlcmd=convertutf8buffersizetounicode(self->statement->utf8, self->statement->querylen);
 
   if(!sqlcmd) return -1;
 
@@ -4697,7 +4755,7 @@ APSWCursor_doexectrace(APSWCursor *self, exectrace_oldstate *etos)
       else
         {
           APSW_FAULT_INJECT(DoExecTraceBadSlice,
-          bindings=PySequence_GetSlice(self->bindings, etos->savedbindingsoffset, self->bindingsoffset),
+          bindings=PySequence_GetSlice(self->bindings, savedbindingsoffset, self->bindingsoffset),
           bindings=PyErr_NoMemory());
 
           if(!bindings)
@@ -4754,13 +4812,13 @@ static PyObject *
 APSWCursor_step(APSWCursor *self)
 {
   int res;
-  exectrace_oldstate etos;
+  int savedbindingsoffset=0; /* initialised to stop stupid compiler from whining */
 
   for(;;)
     {
       assert(!PyErr_Occurred());
       APSW_BEGIN_ALLOW_THREADS
-        res=(self->statement)?(sqlite3_step(self->statement)):(SQLITE_DONE);
+        res=(self->statement->statement)?(sqlite3_step(self->statement->statement)):(SQLITE_DONE);
       APSW_END_ALLOW_THREADS;
 
       switch(res&0xff)
@@ -4783,6 +4841,9 @@ APSWCursor_step(APSWCursor *self)
              To avoid race conditions with the statement cache (we
              release the GIL around prepare now) we now just return
              the error.  See SQLite ticket 2158.
+
+             ::TODO:: with the new fangled statementcache it is safe
+             to do a reprepare
 	   */
 
         default: /* sqlite3_prepare_v2 introduced in 3.3.9 means the
@@ -4792,8 +4853,14 @@ APSWCursor_step(APSWCursor *self)
         case SQLITE_ERROR:  /* SQLITE_BUSY is handled here as well */
           /* there was an error - we need to get actual error code from sqlite3_finalize */
           self->status=C_DONE;
-          res=resetcursor(self, 0);  /* this will get the error code for us */
-          assert(res!=SQLITE_OK);
+          if(PyErr_Occurred())
+            /* we don't care about further errors from the sql */
+            resetcursor(self, 1);
+          else
+            {
+              res=resetcursor(self, 0);  /* this will get the error code for us */
+              assert(res!=SQLITE_OK);
+            }
           return NULL;
 
           
@@ -4802,9 +4869,11 @@ APSWCursor_step(APSWCursor *self)
 
       /* done with that statement, are there any more? */
       self->status=C_DONE;
-      if(!self->zsqlnextpos || !*self->zsqlnextpos)
+      if(!self->statement->next)
         {
           PyObject *next;
+
+          /* in executemany mode ?*/
           if(!self->emiter)
             {
               /* no more so we finalize */
@@ -4815,21 +4884,27 @@ APSWCursor_step(APSWCursor *self)
                 }
               return (PyObject*)self;
             }
+
+          /* we are in executemany mode */
           next=PyIter_Next(self->emiter);
           if(PyErr_Occurred())
             return NULL;
+          
           if(!next)
             {
-              /* no more from executemanyiter so we finalize */
+              /* clear out statement if no more*/
               if(resetcursor(self, 0)!=SQLITE_OK)
                 {
                   assert(PyErr_Occurred());
                   return NULL;
                 }
-              return (PyObject*)self;
+
+            return (PyObject*)self;
             }
-          self->zsqlnextpos=self->zsql; /* start at begining of string again */
-          self->byteslen= -1;
+
+          /* we need to clear just completed and restart original executemany statement */
+          statementcache_finalize(self->connection->stmtcache, self->statement);
+          self->statement=NULL;
           /* don't need bindings from last round if emiter.next() */
           Py_XDECREF(self->bindings);
           self->bindings=0;
@@ -4849,30 +4924,36 @@ APSWCursor_step(APSWCursor *self)
         }
 
       /* finalise and go again */
-      res=statementcache_finalize(self->connection->stmtcache, self->statement);
-      self->statement=0;
-      SET_EXC(res, self->connection->db);
+      self->inuse=1;
+      if(!self->statement)
+        {
+          /* we are going again in executemany mode */
+          assert(self->emiter);
+          self->statement=statementcache_prepare(self->connection->stmtcache, self->emoriginalquery);
+          res=(self->statement)?SQLITE_OK:SQLITE_ERROR;
+        }
+      else
+        {
+          /* next sql statement */
+          res=statementcache_next(self->connection->stmtcache, &self->statement);
+          SET_EXC(res, self->connection->db);
+        }
+      self->inuse=0;
+
       if (res!=SQLITE_OK)
         {
           assert((res&0xff)!=SQLITE_BUSY); /* finalize shouldn't be returning busy, only step */
+          assert(!self->statement);
           return NULL;
         }
 
-      assert(!self->statement);
+      assert(self->statement);
       if(self->exectrace)
         {
-          etos.previouszsqlpos=self->zsqlnextpos;
-          etos.savedbindingsoffset=self->bindingsoffset;
+          savedbindingsoffset=self->bindingsoffset;
         }
       assert(!PyErr_Occurred());
-      res=statementcache_prepare(self->connection->stmtcache, self->connection->db, self->zsqlnextpos, &self->byteslen, &self->statement, &self->zsqlnextpos, &self->inuse);
-      SET_EXC(res, self->connection->db);
-      if (res!=SQLITE_OK)
-        {
-          assert((res&0xff)!=SQLITE_BUSY); /* prepare definitely shouldn't be returning busy */
-          return NULL;
-        }
-      assert(!PyErr_Occurred());
+
       if(APSWCursor_dobindings(self))
         {
           assert(PyErr_Occurred());
@@ -4881,7 +4962,7 @@ APSWCursor_step(APSWCursor *self)
 
       if(self->exectrace)
         {
-          if(APSWCursor_doexectrace(self, &etos))
+          if(APSWCursor_doexectrace(self, savedbindingsoffset))
             {
               assert(self->status==C_DONE);
               assert(PyErr_Occurred());
@@ -4901,13 +4982,14 @@ static PyObject *
 APSWCursor_execute(APSWCursor *self, PyObject *args)
 {
   int res;
+  int savedbindingsoffset;
   PyObject *retval=NULL;
-  exectrace_oldstate etos;
+  PyObject *query;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self->connection, NULL);
 
-  res=resetcursor(self, 0);
+  res=resetcursor(self, /* force= */ 0);
   if(res!=SQLITE_OK)
     {
       assert(PyErr_Occurred());
@@ -4915,9 +4997,17 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
     }
   
   assert(!self->bindings);
+  assert(PyTuple_Check(args));
 
-  if(!PyArg_ParseTuple(args, "es#|O:execute(statements,bindings=())", STRENCODING, &self->zsql, &self->byteslen, &self->bindings))
-    return NULL;
+  if(PyTuple_GET_SIZE(args)<1 || PyTuple_GET_SIZE(args)>2)
+    {
+      PyErr_Format(PyExc_TypeError, "Incorrect number of arguments.  execute(statements [,bindings])");
+      return NULL;
+    }
+
+  query=PyTuple_GET_ITEM(args, 0);
+  if (PyTuple_GET_SIZE(args)==2)
+    self->bindings=PyTuple_GET_ITEM(args, 1);
 
   if(self->bindings)
     {
@@ -4932,24 +5022,23 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
     }
 
   assert(!self->statement);
-  if(self->exectrace)
-    {
-      etos.previouszsqlpos=self->zsql;
-      etos.savedbindingsoffset=0;
-    }
   assert(!PyErr_Occurred());
-  res=statementcache_prepare(self->connection->stmtcache, self->connection->db, self->zsql, &self->byteslen, &self->statement, &self->zsqlnextpos, &self->inuse);
-  SET_EXC(res, self->connection->db);
-  if (res!=SQLITE_OK)
+  self->inuse=1;
+  self->statement=statementcache_prepare(self->connection->stmtcache, query);
+  self->inuse=0;
+  if (!self->statement)
     {
-      AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_execute.sqlite3_prepare_v2", "{s: O, s: N}", 
+      AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_execute.sqlite3_prepare_v2", "{s: O, s: O}", 
 		       "Connection", self->connection, 
-		       "statement", PyUnicode_DecodeUTF8(self->zsql, strlen(self->zsql), "strict"));
+		       "statement", query);
       return NULL;
     }
   assert(!PyErr_Occurred());
 
   self->bindingsoffset=0;
+  if(self->exectrace)
+    savedbindingsoffset=0;
+
   if(APSWCursor_dobindings(self))
     {
       assert(PyErr_Occurred());
@@ -4958,7 +5047,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
 
   if(self->exectrace)
     {
-      if(APSWCursor_doexectrace(self, &etos))
+      if(APSWCursor_doexectrace(self, savedbindingsoffset))
         {
           assert(PyErr_Occurred());
           return NULL;  
@@ -4984,12 +5073,13 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
   PyObject *retval=NULL;
   PyObject *theiterable=NULL;
   PyObject *next=NULL;
-  exectrace_oldstate etos;
+  PyObject *query=NULL;
+  int savedbindingsoffset;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self->connection, NULL);
 
-  res=resetcursor(self, 0);
+  res=resetcursor(self, /* force= */ 0);
   if(res!=SQLITE_OK)
     {
       assert(PyErr_Occurred());
@@ -4998,10 +5088,10 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
   
   assert(!self->bindings);
   assert(!self->emiter);
-  assert(!self->zsql);
+  assert(!self->emoriginalquery);
   assert(self->status=C_DONE);
 
-  if(!PyArg_ParseTuple(args, "es#O:executemany(statements, sequenceofbindings)", STRENCODING, &self->zsql, &self->byteslen, &theiterable))
+  if(!PyArg_ParseTuple(args, "OO:executemany(statements, sequenceofbindings)", &query, &theiterable))
     return NULL;
 
   self->emiter=PyObject_GetIter(theiterable);
@@ -5032,19 +5122,27 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
     }
 
   assert(!self->statement);
-  if(self->exectrace)
+  assert(!PyErr_Occurred());
+  assert(!self->statement);
+  self->inuse=1;
+  self->statement=statementcache_prepare(self->connection->stmtcache, query);
+  self->inuse=0;
+  if (!self->statement)
     {
-      etos.previouszsqlpos=self->zsql;
-      etos.savedbindingsoffset=0;
+      AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_executemany.sqlite3_prepare_v2", "{s: O, s: O}", 
+		       "Connection", self->connection, 
+		       "statement", query);
+      return NULL;
     }
   assert(!PyErr_Occurred());
-  res=statementcache_prepare(self->connection->stmtcache, self->connection->db, self->zsql, &self->byteslen, &self->statement, &self->zsqlnextpos, &self->inuse);
-  SET_EXC(res, self->connection->db);
-  if (res!=SQLITE_OK)
-    return NULL;
-  assert(!PyErr_Occurred());
+
+  self->emoriginalquery=self->statement->utf8;
+  Py_INCREF(self->emoriginalquery);
 
   self->bindingsoffset=0;
+  if(self->exectrace)
+    savedbindingsoffset=0;
+
   if(APSWCursor_dobindings(self))
     {
       assert(PyErr_Occurred());
@@ -5053,7 +5151,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
 
   if(self->exectrace)
     {
-      if(APSWCursor_doexectrace(self, &etos))
+      if(APSWCursor_doexectrace(self, savedbindingsoffset))
         {
           assert(PyErr_Occurred());
           return NULL;  
@@ -5120,13 +5218,13 @@ APSWCursor_next(APSWCursor *self)
   self->status=C_BEGIN;
   
   /* return the row of data */
-  numcols=sqlite3_data_count(self->statement);
+  numcols=sqlite3_data_count(self->statement->statement);
   retval=PyTuple_New(numcols);
   if(!retval) goto error;
 
   for(i=0;i<numcols;i++)
     {
-      item=convert_column_to_pyobject(self->statement, i);
+      item=convert_column_to_pyobject(self->statement->statement, i);
       if(!item) goto error;
       PyTuple_SET_ITEM(retval, i, item);
     }
@@ -7602,6 +7700,14 @@ apsw_call_xGetLastError(APSW_ARGUNUSED PyObject *self, PyObject *args)
 
   return resultbuffer?Py_BuildValue("Ni", resultbuffer, res):NULL;
 }
+
+static PyObject *
+apsw_fini(APSW_ARGUNUSED PyObject *self)
+{
+  APSWBuffer_fini();
+
+  Py_RETURN_NONE;
+}
 #endif
 
 
@@ -7643,6 +7749,8 @@ static PyMethodDef module_methods[] = {
 #ifdef APSW_TESTFIXTURES
   {"test_call_xGetLastError", (PyCFunction)apsw_call_xGetLastError, METH_VARARGS,
    "Calls xGetLastError routine"},
+  {"_fini", (PyCFunction)apsw_fini, METH_NOARGS,
+   "Frees all caches and recycle lists"},
 #endif
   {0, 0, 0, 0}  /* Sentinel */
 };
@@ -7693,6 +7801,8 @@ PyInit_apsw(void)
         || PyType_Ready(&APSWBlobType) <0
         || PyType_Ready(&APSWVFSType) <0
         || PyType_Ready(&APSWVFSFileType) <0
+        || PyType_Ready(&APSWStatementType) <0
+        || PyType_Ready(&APSWBufferType) <0
         )
       goto fail;
 
