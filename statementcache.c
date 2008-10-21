@@ -187,9 +187,9 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
   if(!APSWBuffer_Check(query))
     {
       /* Check to see if query is already in cache.  The size checks are to
-         avoid calulating hashes on long strings */
+         avoid calculating hashes on long strings */
       if( sc->cache && ((PyUnicode_CheckExact(query) && PyUnicode_GET_DATA_SIZE(query)<16384)
-#if Py_VERSION_MAJOR < 3 
+#if PY_MAJOR_VERSION < 3 
           || (PyString_CheckExact(query) && PyString_GET_SIZE(query)<16384)
 #endif
                         ))

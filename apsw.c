@@ -98,6 +98,10 @@ typedef int Py_ssize_t;
 #define Py_TYPE(x) ((x)->ob_type)
 #endif
 
+#ifndef Py_REFCNT
+#define Py_REFCNT(x) (((PyObject*)x)->ob_refcnt)
+#endif
+
 /* define as zero if not present - introduced in Python 2.6 */
 #ifndef Py_TPFLAGS_HAVE_VERSION_TAG
 #define Py_TPFLAGS_HAVE_VERSION_TAG 0
@@ -125,6 +129,14 @@ typedef int Py_ssize_t;
 #define PyIntLong_Check           PyLong_Check
 #define PyIntLong_AsLong          PyLong_AsLong
 #define PyInt_FromLong            PyLong_FromLong
+#endif
+
+#if PY_VERSION_HEX<0x02040000
+/* Introduced in Python 2.4 */
+static int PyDict_Contains(PyObject *dict, PyObject *key)
+{
+  return !!PyDict_GetItem(dict, key);
+}
 #endif
 
 /* A module to augment tracebacks */
@@ -756,7 +768,7 @@ getutf8string(PyObject *string)
       inunicode=string;
       Py_INCREF(string);
     }
-#if Py_VERSION_MAJOR < 3
+#if PY_MAJOR_VERSION < 3
   else if(PyString_CheckExact(string))
     {
       /* A python 2 performance optimisation.  If the string consists
@@ -1982,7 +1994,7 @@ convert_value_to_pyobject(sqlite3_value *value)
     case SQLITE_INTEGER:
       {
         sqlite3_int64 val=sqlite3_value_int64(value);
-#if Py_VERSION_MAJOR<3
+#if PY_MAJOR_VERSION<3
         if (val>=APSW_INT32_MIN && val<=APSW_INT32_MAX)
           return PyInt_FromLong((long)val);
 #endif
@@ -2025,7 +2037,7 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
     case SQLITE_INTEGER:
       {
         sqlite3_int64 val=sqlite3_column_int64(stmt, col);
-#if Py_VERSION_MAJOR<3
+#if PY_MAJOR_VERSION<3
         if (val>=APSW_INT32_MIN && val<=APSW_INT32_MAX)
           return PyInt_FromLong((long)val);
 #endif
