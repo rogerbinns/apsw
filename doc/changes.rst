@@ -9,6 +9,7 @@ The distribution now includes a speedtest script.  You can use this to
 see how APSW performs relative to pysqlite, or to track performance
 differences between SQLite versions.  The underlying queries are
 derived from `SQLite's speed test <http://www.sqlite.org/cvstrac/fileview?f=sqlite/tool/mkspeedsql.tcl>`_
+!!!link to benchmarking doc
 
 The statement cache was completely rewritten.  It uses less memory and
 scales significantly better.
@@ -17,6 +18,10 @@ Documentation is now done using `Sphinx <http://sphinx.pocoo.org>`_
 which was adopted by Python 3.  This has allowed for richer
 documentation and more output formats such as PDF and `Windows CHM
 <http://en.wikipedia.org/wiki/Microsoft_Compiled_HTML_Help>`_ format.
+
+The source structure and files were reorganized to make it clearer
+where things are implemented and to make automatic extraction of
+documentation easier.
 
 3.6.3-r1
 ========

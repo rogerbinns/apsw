@@ -1,5 +1,3 @@
-:tocdepth: 2 
-
 APSW documentation
 ==================
 
@@ -28,6 +26,7 @@ Contents:
 
    connection
    cursor
+   blob
 
    exceptions
    types

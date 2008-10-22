@@ -4,8 +4,10 @@ VERDIR=apsw-$(VERSION)
 
 SOURCEFILES = \
 	src/apsw.c \
+	src/apswbuffer.c \
 	src/apswversion.h \
- 	src/pointerlist.c \
+	src/blob.c \
+	src/pointerlist.c \
 	src/statementcache.c \
         src/traceback.c  \
 	src/testextension.c 
@@ -22,6 +24,7 @@ all: header docs
 # we send to dev null.  latex is whiny
 docs:
 	#python example2rst.py
+	python code2rst.py src/blob.c doc/blob.rst
 	make VERSION=$(VERSION) -C doc clean html htmlhelp  # >/dev/null
 
 linkcheck:
