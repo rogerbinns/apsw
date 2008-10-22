@@ -9,12 +9,13 @@ SOURCE=apsw.c apsw.html apswversion.h mingwsetup.bat pointerlist.c \
 all: header docs
 
 # The various tools and sphinx generate a prodigious amount of output which
-# we send to dev null
+# we send to dev null.  latex is whiny
 docs:
-	make VERSION=$(VERSION) -C doc clean html htmlhelp latex > /dev/null
+	#python example2rst.py
+	make VERSION=$(VERSION) -C doc clean html htmlhelp  # >/dev/null
 
 linkcheck:
-	make -C doc linkcheck 
+	make http_proxy=http://192.168.1.25:8080 VERSION=$(VERSION) -C doc linkcheck 
 
 header:
 	echo "#define APSW_VERSION \"$(VERSION)\"" > apswversion.h

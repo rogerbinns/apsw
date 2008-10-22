@@ -1,8 +1,9 @@
 Change History
-==============
+**************
+.. currentmodule:: apsw
 
 3.6.4-r1
-^^^^^^^^
+========
 
 The distribution now includes a speedtest script.  You can use this to
 see how APSW performs relative to pysqlite, or to track performance
@@ -14,11 +15,11 @@ scales significantly better.
 
 Documentation is now done using `Sphinx <http://sphinx.pocoo.org>`_
 which was adopted by Python 3.  This has allowed for richer
-documentation and more output formats such PDF and `Windows CHM
+documentation and more output formats such as PDF and `Windows CHM
 <http://en.wikipedia.org/wiki/Microsoft_Compiled_HTML_Help>`_ format.
 
 3.6.3-r1
-^^^^^^^^
+========
 
 You can now write your own :ref:`VFS` in Python. You can also inherit
 from an existing VFS making it easy to augment or override small bits
@@ -62,11 +63,11 @@ for numbers fitting in signed 32 bit. This only affects Python 2 as
 Python 3 uses long exclusively. Thanks to Joe Pham for reporting this
 as `issue 24 <http://code.google.com/p/apsw/issues/detail?id=24>`_.
 
-Added :func:`Connection.getsqlite3pointer` method to help with 
+Added :meth:`Connection.getsqlite3pointer` method to help with 
 `issue 26 <http://code.google.com/p/apsw/issues/detail?id=26>`_.
 
 3.5.9-r2
-^^^^^^^^
+========
 
 APSW now works with Python 3 (you need 3.0b1 or later).
 
@@ -76,7 +77,7 @@ unreliable (eg APSW can't tell what a shared library was compiled
 with). A workaround is documented in :func:`Connection.limit`.
 
 3.5.9-r1
-^^^^^^^^
+========
 
 APSW is now hosted at http://code.google.com/p/apsw
 
@@ -151,7 +152,7 @@ pysqlite (100). You can however specify more or less as needed.
 
 
 3.3.13-r1
-^^^^^^^^^
+=========
 
 As of this release, APSW is now co-hosted with pysqlite meaning there
 is one site to go to for your Python SQLite bindings. Start at
@@ -166,18 +167,18 @@ Thanks to Ed Pasma for highlighting these issues:
 * :func:`Connection.interrupt` can be safely called from any thread.
 
 * Empty statements or those consisting entirely of whitespace do not
-cause misuse errors (internally SQLite started returned NULL pointers
-for those statements, and `sqlite3_step
-<http://sqlite.org/c3ref/step.html>`_ didn't like being passed the
-NULL pointer).
+  cause misuse errors (internally SQLite started returned NULL pointers
+  for those statements, and `sqlite3_step
+  <http://sqlite.org/c3ref/step.html>`_ didn't like being passed the
+  NULL pointer).
 
 * Changed special handling of :const:`SQLITE_BUSY` error to be the same
-as other errors. The special handling previously let you restart on
-receiving busy, but also hung onto statements which could result in
-other statements getting busy errors.
+  as other errors. The special handling previously let you restart on
+  receiving busy, but also hung onto statements which could result in
+  other statements getting busy errors.
   
 3.3.10-r1
-^^^^^^^^^
+=========
 
 You can use this with SQLite 3.3.10 onwards.
 
@@ -187,7 +188,7 @@ few issues were exposed in SQLite and hence you must use SQLite 3.3.10
 or later.
 
 3.3.9-r1
-^^^^^^^^
+========
 You can use this with SQLite 3.3.9 onwards.
 
 SQLite added `sqlite3_prepare_v2
@@ -197,7 +198,7 @@ will handle it internally.
   
 
 3.3.8-r1
-^^^^^^^^
+========
 
 You can use this with SQLite 3.3.8 onwards. There was an incompatible
 API change for virtual tables in SQLite 3.3.8.
@@ -237,7 +238,7 @@ Added :ref:`mapping dicts <Module_constants>` which makes it easy to
 map the various constants between strings and ints.
 
 3.3.7-r1
-^^^^^^^^
+========
 
 Never released as 3.3.8 came along.
 
@@ -251,15 +252,15 @@ APSW had the following changes:
 
 * Even more test cases added (you can't have too many tests :-)
 * When exceptions occur, dummy frames are added to the traceback in the
-C code. This makes it a lot easier to tell why code was called if you
-encounter an exception. See :ref:`augmented stack traces
-<augmentedstacktraces` for details.
+  C code. This makes it a lot easier to tell why code was called if you
+  encounter an exception. See :ref:`augmented stack traces
+  <augmentedstacktraces` for details.
 * String values (traditional and Unicode) work correctly if they have
-embedded NULL characters (ie not truncated at the NULL).
+  embedded NULL characters (ie not truncated at the NULL).
 * You can load SQLite shared library extensions.
 
 3.3.5-r1
-^^^^^^^^
+========
 
 You can use this release against any release of SQLite 3 from 3.3.5
 onwards. A bug was also fixed when reporting an error during the
@@ -293,13 +294,11 @@ module:
 * `sqlite3_enable_shared_cache <http://sqlite.org/c3ref/enable_shared_cache.html>`_
 * `sqlite3_get_autocommit <http://sqlite.org/c3ref/get_autocommit.html>`_
 * `sqlite3_profile <http://sqlite.org/c3ref/profile.html>`_ This
-callback is run at the end of each statement execution telling you how
-long it took.
-
-
+  callback is run at the end of each statement execution telling you how
+  long it took.
 
 3.2.7-r1
-^^^^^^^^
+========
 
 You can use this release against any release of SQLite 3.
 
@@ -324,10 +323,9 @@ any.
 
 Changed when an error in the step function for an aggregate is
 reported due to limitations in SQLite.
-  
 
 3.2.2-r1
-^^^^^^^^
+========
 
 You can use this release against any release of SQLite 3.
 
@@ -337,7 +335,7 @@ that applies when you use 64 bit integer primary keys (32 bit ints are
 fine).
 
 3.2.1-r1
-^^^^^^^^
+========
 
 You can use this release against any release of SQLite 3.
 
@@ -349,7 +347,7 @@ function named :func:`sqlite3_global_recover`. That function is not
 applicable for wrapping in APSW.
 
 3.1.3-r1
-^^^^^^^^
+========
 
 You can use this release against any release of SQLite 3.
 
@@ -376,19 +374,18 @@ not wrapped by APSW.  Please contact me if you believe they will
 remain in SQLite and you would like them wrapped:
 
 * :cfunc:`sqlite3_sleep` An alternative function which sleeps for a
-specified number of milliseconds can be provided. By default SQLite
-just uses the standard operating system call.
+  specified number of milliseconds can be provided. By default SQLite
+  just uses the standard operating system call.
 * :cfunc:`sqlite3_expired` This function is internal to statement
-execution. It would apply to the implementation of
-:meth:`Cursor.executemany` and could in theory provide a marginal
-improvement in performance.
+  execution. It would apply to the implementation of
+  :meth:`Cursor.executemany` and could in theory provide a marginal
+  improvement in performance.
 * A global variable :cdata:`sqlite3_temp_directory` can be used before
-any databases are opened to set where temporary files are created. By
-default SQLite just uses the standard operating system mechanisms.
-  
+  any databases are opened to set where temporary files are created. By
+  default SQLite just uses the standard operating system mechanisms.
 
 3.0.8-r3
-^^^^^^^^
+========
 
 There are no functional changes. The only changes were to correct some
 variable names in the example code (they were cut and pasted from the
@@ -397,7 +394,7 @@ extract its contents into a sub-directory which is the more typical
 way of packaging that sort of thing.
 
 3.0.8-r2
-^^^^^^^^
+========
 
 All remaining functionality in the C API for SQLite 3.0.8 is now
 available.
@@ -405,7 +402,7 @@ available.
 Finished this documentation.
 
 3.0.8-r1
-^^^^^^^^
+========
 
 Initial release
 

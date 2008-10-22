@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-#
-# This is the example code. The file should run correctly as is.  coloursrc.py is run over this
-# file and produces HTML escaped and coloured code, as well as output where indicated.
-
-#@@BEGIN
 import os, sys, time
 import apsw
 
@@ -500,5 +494,3 @@ print "SQLite memory usage current %d max %d" % apsw.status(apsw.SQLITE_STATUS_M
 # We can close connections manually (useful if you want to catch exceptions)
 # but you don't have to
 connection.close(True)  # force it since we want to exit
-
-#@@END
