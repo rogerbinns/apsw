@@ -3,6 +3,7 @@
 import os
 import sys
 import shlex
+import glob
 
 from distutils.core import setup, Extension
 
@@ -11,7 +12,7 @@ from distutils.core import setup, Extension
 ## http://www.python.org/doc/2.5.2/dist/setup-config.html
 ##
 
-include_dirs=[]
+include_dirs=['src']
 library_dirs=[]
 define_macros=[]
 libraries=[]
@@ -165,7 +166,8 @@ if fetch:
         os.rename("sqlite3-fixed.c", "sqlite3.c")
         os.chdir("..")
 
-depends=["apswversion.h", "pointerlist.c", "statementcache.c", "traceback.c"]
+# We depend on every .[ch] file in src
+depends=[f for f in glob.glob("src/*.[ch]") if f!="src/apsw.c"]
 
 
 # We don't want assertions
@@ -242,7 +244,7 @@ if addicuinclib:
 
 
 # work out version number
-version=open("apswversion.h", "rtU").read().split()[2].strip('"')
+version=open("src/apswversion.h", "rtU").read().split()[2].strip('"')
 
 setup(name="apsw",
       version=version,
@@ -268,7 +270,7 @@ complete SQLite API into Python.""",
       license="OSI Approved :: zlib/libpng License",
 
       ext_modules=[Extension("apsw",
-                             ["apsw.c"],
+                             ["src/apsw.c"],
                              include_dirs=include_dirs,
                              library_dirs=library_dirs,
                              libraries=libraries,

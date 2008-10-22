@@ -2,9 +2,19 @@
 VERSION=3.6.4-r1
 VERDIR=apsw-$(VERSION)
 
-SOURCE=apsw.c apsw.html apswversion.h mingwsetup.bat pointerlist.c \
-	  setup.py statementcache.c testextension.c tests.py traceback.c \
-	  speedtest.py
+SOURCEFILES = \
+	src/apsw.c \
+	src/apswversion.h \
+ 	src/pointerlist.c \
+	src/statementcache.c \
+        src/traceback.c  \
+	src/testextension.c 
+
+OTHERFILES = \
+	mingwsetup.bat  \
+	setup.py  \
+	speedtest.py \
+	tests.py
 
 all: header docs
 
@@ -18,7 +28,7 @@ linkcheck:
 	make http_proxy=http://192.168.1.25:8080 VERSION=$(VERSION) -C doc linkcheck 
 
 header:
-	echo "#define APSW_VERSION \"$(VERSION)\"" > apswversion.h
+	echo "#define APSW_VERSION \"$(VERSION)\"" > src/apswversion.h
 
 tidytoc:
 	python coloursrc.py
@@ -66,8 +76,9 @@ compile-win:
 
 source:
 	rm -rf $(VERDIR)
-	mkdir $(VERDIR)
-	cp  $(SOURCE) $(VERDIR)
+	mkdir -p $(VERDIR)/src
+	cp  $(SOURCEFILES) $(VERDIR)/src/
+	cp $(OTHERFILES) $(VERDIR)
 	rm -rf dist
 	mkdir dist
 	zip -9 -r dist/$(VERDIR).zip $(VERDIR)
