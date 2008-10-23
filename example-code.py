@@ -128,8 +128,10 @@ def ilove7(*args):
 
 connection.createscalarfunction("seven", ilove7)
 
+#@@CAPTURE
 for row in cursor.execute("select seven(x,y) from foo"):
     print row
+#@@ENDCAPTURE
 
 ###
 ### aggregate functions are more complex
@@ -426,7 +428,7 @@ class ObfuscatedVFSFile(apsw.VFSFile):
 
 # To register the VFS we just instantiate it
 obfuvfs=ObfuscatedVFS()
-# Lets see what vfs are now availabe?
+# Lets see what vfs are now available?
 #@@CAPTURE
 print apsw.vfsnames()
 #@@ENDCAPTURE

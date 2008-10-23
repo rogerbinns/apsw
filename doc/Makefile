@@ -33,7 +33,7 @@ clean:
 html:
 	mkdir -p build/html build/doctrees ../dist
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) build/html
-	cd build/html ; zip -9r ../../../dist/apswdoc-$(VERSION).zip *
+	cd build/html ; zip -9rq ../../../dist/apswdoc-$(VERSION).zip *
 
 pickle:
 	mkdir -p build/pickle build/doctrees

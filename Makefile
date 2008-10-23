@@ -10,7 +10,8 @@ SOURCEFILES = \
 	src/pointerlist.c \
 	src/statementcache.c \
         src/traceback.c  \
-	src/testextension.c 
+	src/testextension.c  \
+	src/vfs.c
 
 OTHERFILES = \
 	mingwsetup.bat  \
@@ -21,11 +22,16 @@ OTHERFILES = \
 all: header docs
 
 # The various tools and sphinx generate a prodigious amount of output which
-# we send to dev null.  latex is whiny
-docs:
-	python example2rst.py
+# we send to dev null.  latex is whiny.  The various code2rst runs are so quick
+# we don't bother breaking them out into seperate dependencies
+docs: doc/example.rst
 	python code2rst.py src/blob.c doc/blob.rst
-	make VERSION=$(VERSION) -C doc clean html htmlhelp  # >/dev/null
+	python code2rst.py src/vfs.c doc/vfs.rst
+	make VERSION=$(VERSION) -C doc clean html htmlhelp  # | egrep -i "^(warning|error):"
+
+# This takes a while to run so we only do so if something changed
+doc/example.rst: example-code.py example2rst.py
+	python example2rst.py
 
 linkcheck:
 	make http_proxy=http://192.168.1.25:8080 VERSION=$(VERSION) -C doc linkcheck 

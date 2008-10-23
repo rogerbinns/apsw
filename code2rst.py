@@ -40,14 +40,43 @@ def do_calls(line):
     line=line.strip().split()
     assert line[0]=="-*"
     indexop=["", ".. index:: "+(", ".join(line[1:])), ""]
-    saop=["", "  Calls:"]
+    saop=["", "Calls:"]
     for func in line[1:]:
-        saop.append("    * `%s <%s>`_" % (func, funclist[func]))
+        saop.append("  * `%s <%s>`_" % (func, funclist[func]))
     saop.append("")
     return indexop, saop
              
 
 def do_methods():
+    # special handling for __init__ - add into class body
+    i="__init__"
+    if i in methods:
+        v=methods[i]
+        del methods[i]
+        dec=v[0]
+        p=dec.index(i)+len(i)
+        sig=dec[p:]
+        body=v[1:]
+        indexop, saop=[],[]
+        newbody=[]
+        for line in body:
+            if line.strip().startswith("-*"):
+                indexop, saop=do_calls(line)
+            else:
+                newbody.append(line)
+        body=newbody
+        for j in range(-1, -9999, -1):
+            if op[j].startswith(".. class::"):
+                for l in indexop:
+                    op.insert(j,l)
+                op[j]=op[j]+sig
+                break
+        op.append("")
+        op.extend(body)
+        op.append("")
+        op.extend(fixup(op, saop))
+        op.append("")
+    
     keys=methods.keys()
     keys.sort()
 
@@ -74,9 +103,22 @@ def do_methods():
         op.append(dec)
         op.extend(d)
         op.append("")
-        op.extend(saop)
+        op.extend(fixup(op, saop))
 
-
+# op is current output, integrate is unindented lines that need to be
+# indented correctly for output
+def fixup(op, integrate):
+    if len(integrate)==0:
+        return []
+    prefix=999999
+    for i in range(-1, -99999, -1):
+        if op[i].startswith(".. "):
+            break
+        if len(op[i].strip())==0:
+            continue
+        leading=len(op[i])-len(op[i].lstrip())
+        prefix=min(prefix, leading)
+    return [" "*prefix+line for line in integrate]
 
 do_funclist()
 
@@ -107,6 +149,7 @@ for line in open(sys.argv[1], "rtU"):
         continue
     # end of comment
     if incomment and line.lstrip().startswith("*/"):
+        op.append("")
         incomment=False
         line=cursection
         t=cursection.split()[1]
@@ -134,5 +177,16 @@ for line in open(sys.argv[1], "rtU"):
 
 if methods:
     do_methods()
+
+# remove double blank lines
+op2=[]
+for i in range(len(op)-1):
+    if len(op[i].strip())==0 and len(op[i+1].strip())==0:
+        continue
+    if len(op[i].strip())==0:
+        op2.append("")
+    else:
+        op2.append(op[i].rstrip())
+op=op2
 
 open(sys.argv[2], "wt").write("\n".join(op)+"\n")
