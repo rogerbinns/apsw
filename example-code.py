@@ -70,7 +70,7 @@ cursor.execute("insert into foo values(?,?,?1)", ('one', 'two'))  # nb sqlite do
 cursor.execute("insert into foo values(:alpha, :beta, :gamma)", {'alpha': 1, 'beta': 2, 'gamma': 'three'})
 
 ###
-### <a name="example-exectrace">tracing execution</a> <!-@!@->
+### tracing execution @@ example-exectrace
 ###
 
 def mytrace(statement, bindings):
@@ -86,7 +86,7 @@ cursor.execute("drop table bar ; create table bar(x,y,z); select * from foo wher
 #@@ENDCAPTURE
 
 ###
-### <a name="example-rowtrace">tracing results</a> <!-@!@->
+### tracing results @@ example-rowtrace
 ###
 
 def rowtrace(*results):
@@ -285,7 +285,7 @@ except apsw.ConstraintError:
 connection.setcommithook(None)
 
 ###
-### <a name="example-blobio">Blob I/O</a> <!-@!@->
+### Blob I/O    @@ example-blobio
 ###
 
 cursor.execute("create table blobby(x,y)")
@@ -390,7 +390,7 @@ for ctime,directory,file in cursor.execute("select st_ctime,directory,name from 
     print ctime,file,directory
 #@@ENDCAPTURE
 
-### <a name="example-vfs"> </a> <!-@!@->
+### @@ example-vfs
 ### A VFS that "obfuscates" the database file contents.  The scheme
 ### used is to xor all bytes with 0xa5.  This scheme honours that used
 ### for MAPI and SQL Server.

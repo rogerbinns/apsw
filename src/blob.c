@@ -193,6 +193,8 @@ static PyTypeObject APSWBlobType;
     create it with the correct size in advance either by using
     :class:`zeroblob` or the `zeroblob()
     <http://www.sqlite.org/lang_corefunc.html>`_ function.
+
+  See the :ref:`example <example-blobio>`.
 */
 
 static void

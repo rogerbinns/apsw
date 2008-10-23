@@ -23,7 +23,7 @@ all: header docs
 # The various tools and sphinx generate a prodigious amount of output which
 # we send to dev null.  latex is whiny
 docs:
-	#python example2rst.py
+	python example2rst.py
 	python code2rst.py src/blob.c doc/blob.rst
 	make VERSION=$(VERSION) -C doc clean html htmlhelp  # >/dev/null
 
