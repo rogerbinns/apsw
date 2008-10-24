@@ -35,12 +35,12 @@ all: header docs
 docs: $(GENDOCS) doc/example.rst
 	make VERSION=$(VERSION) -C doc clean html htmlhelp  # | egrep -i "^(warning|error):"
 
-doc/example.rst: example-code.py example2rst.py
-	python example2rst.py
+doc/example.rst: example-code.py tools/example2rst.py
+	python tools/example2rst.py
 
 # This is probably gnu make specific but only developers use this makefile
-$(GENDOCS): doc/%.rst: src/%.c code2rst.py
-	python code2rst.py $< $@
+$(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
+	python tools/code2rst.py $< $@
 
 linkcheck:
 	make http_proxy=http://192.168.1.25:8080 VERSION=$(VERSION) -C doc linkcheck 
@@ -102,7 +102,7 @@ source:
 	zip -9 -r dist/$(VERDIR).zip $(VERDIR)
 
 upload:
-	test -f googlecode_upload.py
+	test -f tools/googlecode_upload.py
 	test -f apsw.html
 	test -f dist/$(VERDIR).zip
 	test -f dist/$(VERDIR).win32-py2.3.exe
@@ -110,10 +110,10 @@ upload:
 	test -f dist/$(VERDIR).win32-py2.5.exe
 	test -f dist/$(VERDIR).win32-py2.6.exe
 	-rm -f $(VERDIR).html
-	python googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.6 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.6.exe
-	python googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.5 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.5.exe
-	python googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.4 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.4.exe
-	python googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.3 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.3.exe
-	python googlecode_upload.py -p apsw -s "$(VERSION) (Source)" -l "Type-Source,OpSys-All" dist/$(VERDIR).zip
+	python tools/googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.6 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.6.exe
+	python tools/googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.5 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.5.exe
+	python tools/googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.4 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.4.exe
+	python tools/googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.3 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.3.exe
+	python tools/googlecode_upload.py -p apsw -s "$(VERSION) (Source)" -l "Type-Source,OpSys-All" dist/$(VERDIR).zip
 	cp apsw.html $(VERDIR).html
-	python googlecode_upload.py -p apsw -s "$(VERSION) (Documentation)" -l "Type-Docs" $(VERDIR).html
+	python tools/googlecode_upload.py -p apsw -s "$(VERSION) (Documentation)" -l "Type-Docs" $(VERDIR).html
