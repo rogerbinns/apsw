@@ -7,11 +7,15 @@ SOURCEFILES = \
 	src/apswbuffer.c \
 	src/apswversion.h \
 	src/blob.c \
+	src/exceptions.c \
 	src/pointerlist.c \
+	src/pyutil.c \
 	src/statementcache.c \
         src/traceback.c  \
 	src/testextension.c  \
-	src/vfs.c
+	src/util.c \
+	src/vfs.c \
+	src/vtable.c
 
 OTHERFILES = \
 	mingwsetup.bat  \
@@ -19,19 +23,24 @@ OTHERFILES = \
 	speedtest.py \
 	tests.py
 
+GENDOCS = \
+	doc/blob.rst \
+	doc/vfs.rst \
+	doc/vtable.rst 
+
 all: header docs
 
 # The various tools and sphinx generate a prodigious amount of output which
-# we send to dev null.  latex is whiny.  The various code2rst runs are so quick
-# we don't bother breaking them out into seperate dependencies
-docs: doc/example.rst
-	python code2rst.py src/blob.c doc/blob.rst
-	python code2rst.py src/vfs.c doc/vfs.rst
+# we send to dev null.  latex is whiny.
+docs: $(GENDOCS) doc/example.rst
 	make VERSION=$(VERSION) -C doc clean html htmlhelp  # | egrep -i "^(warning|error):"
 
-# This takes a while to run so we only do so if something changed
 doc/example.rst: example-code.py example2rst.py
 	python example2rst.py
+
+# This is probably gnu make specific but only developers use this makefile
+$(GENDOCS): doc/%.rst: src/%.c code2rst.py
+	python code2rst.py $< $@
 
 linkcheck:
 	make http_proxy=http://192.168.1.25:8080 VERSION=$(VERSION) -C doc linkcheck 

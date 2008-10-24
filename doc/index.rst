@@ -28,6 +28,7 @@ Contents:
    connection
    cursor
    blob
+   vtable
    vfs
 
    exceptions

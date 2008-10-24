@@ -248,8 +248,9 @@ static struct sqlite3_io_methods apsw_io_methods;
 
 /** .. class:: VFS
 
-    You can get an overview in the `SQLite documentation <http://sqlite.org/c3ref/vfs.html>`_.  To create a VFS your
-    Python class must inherit from :class:`VFS`.
+    Provides operating system access.  You can get an overview in the
+    `SQLite documentation <http://sqlite.org/c3ref/vfs.html>`_.  To
+    create a VFS your Python class must inherit from :class:`VFS`.
 
 */
 
@@ -1468,6 +1469,33 @@ static PyTypeObject APSWVFSType =
 #endif
   };
 
+
+/** .. class:: VFSFile
+
+    Wraps access to a file.  You only need to derive from this class
+    if you want the file object returned from :meth:`VFS.xOpen` to
+    inherit from an existing VFS implementation.
+
+    .. note::
+ 
+       All file sizes and offsets are 64 bit quantities even on 32 bit
+       operating systems.
+*/
+
+/** .. method:: excepthook(etype, evalue, etraceback)
+
+    Called when there has been an exception in a :class:`VFSFile`
+    routine.  The default implementation calls ``sys.excepthook`` and
+    if that fails then ``PyErr_Display``.  The three arguments
+    correspond to what ``sys.exc_info()`` would return.
+
+    :param etype: The exception type 
+    :param evalue: The exception  value 
+    :param etraceback: The exception traceback.  Note this
+      includes all frames all the way up to the thread being started.
+*/
+
+
 static PyObject *apswvfsfilepy_xClose(APSWVFSFile *self);
 
 static void
@@ -1505,6 +1533,19 @@ APSWVFSFile_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSE
   return (PyObject*)self;
 }
 
+/** .. method:: __init__(vfs, name, flags)
+
+    :param vfs: The vfs you want to inherit behaviour from.  You can
+       use an empty string ``""`` to inherit from the default vfs.
+    :param name: The name of the file being opened.
+    :param flags: A two list ``[inflags, outflags]`` as detailed in :meth:`VFS.xOpen`.
+
+    :raises ValueError: If the named VFS is not registered.
+
+    .. seealso::
+
+      :meth:`VFS.xOpen`
+*/
 static int
 APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
 {
@@ -1659,6 +1700,18 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
   return result;
 }
 
+/** .. method:: xRead(amount, offset) -> bytes
+
+    Read the specified `amount` of data starting at `offset`. You
+    should make every effort to read all the data requested, or return
+    an error. If you have the file open for non-blocking I/O or if
+    signals happen then it is possible for the underlying operating
+    system to do a partial read. You will need to request the
+    remaining data. Except for empty files SQLite considers short
+    reads to be a fatal error.
+
+    :rtype: (Python 2) string, buffer.  (Python 3) bytes, buffer
+*/
 static PyObject *
 apswvfsfilepy_xRead(APSWVFSFile *self, PyObject *args)
 {
@@ -1724,6 +1777,17 @@ apswvfsfile_xWrite(sqlite3_file *file, const void *buffer, int amount, sqlite3_i
   return result;
 }
 
+/** .. method:: xWrite(data, offset)
+
+  Write the `data` starting at absolute `offset`. You must write all the data
+  requested, or return an error. If you have the file open for
+  non-blocking I/O or if signals happen then it is possible for the
+  underlying operating system to do a partial write. You will need to
+  write the remaining data. 
+
+  :param data: (Python 2) string, (Python 3) bytes
+*/
+
 static PyObject *
 apswvfsfilepy_xWrite(APSWVFSFile *self, PyObject *args)
 {
@@ -1780,6 +1844,12 @@ apswvfsfile_xUnlock(sqlite3_file *file, int flag)
   return result;
 }
 
+/** .. method:: xUnlock(level)
+
+    Decrease the lock to the level specified which is one of the
+    `SQLITE_LOCK <http://sqlite.org/c3ref/c_lock_exclusive.html>`_
+    family of constants.</p>
+*/
 static PyObject *
 apswvfsfilepy_xUnlock(APSWVFSFile *self, PyObject *args)
 {
@@ -1828,6 +1898,13 @@ apswvfsfile_xLock(sqlite3_file *file, int flag)
   return result;
 }
 
+/** .. method:: xLock(level)
+
+  Increase the lock to the level specified which is one of the
+  `SQLITE_LOCK <http://sqlite.org/c3ref/c_lock_exclusive.html>`_
+  family of constants. If you can't increase the lock level because
+  someone else has locked it, then raise ``apsw.BusyException``.
+*/
 static PyObject *
 apswvfsfilepy_xLock(APSWVFSFile *self, PyObject *args)
 {
@@ -1868,6 +1945,11 @@ apswvfsfile_xTruncate(sqlite3_file *file, sqlite3_int64 size)
   return result;
 }
 
+/** .. method:: xTruncate(newsize)
+
+  Set the file length to `newsize` (which may be more or less than the
+  current length).
+*/
 static PyObject *
 apswvfsfilepy_xTruncate(APSWVFSFile *self, PyObject *args)
 {
@@ -1909,6 +1991,13 @@ apswvfsfile_xSync(sqlite3_file *file, int flags)
   return result;
 }
 
+/** .. method:: xSync(flags)
+
+  Ensure data is on the disk platters (ie could survive a power
+  failure immediately after the call returns) with the `sync flags
+  <http://sqlite.org/c3ref/c_sync_dataonly.html>`_ detailing what
+  needs to be synced.  You can sync more than what is requested.
+*/
 static PyObject *
 apswvfsfilepy_xSync(APSWVFSFile *self, PyObject *args)
 {
@@ -1962,6 +2051,13 @@ apswvfsfile_xSectorSize(sqlite3_file *file)
   return result;
 }
 
+/** .. method:: xSectorSize() -> int
+
+    Return the native underlying sector size. SQLite uses the value
+    returned in determining the database page size. If you do not
+    implement the function or have an error then 512 (the SQLite
+    default) is returned.
+*/
 static PyObject *
 apswvfsfilepy_xSectorSize(APSWVFSFile *self)
 {
@@ -2005,6 +2101,13 @@ apswvfsfile_xDeviceCharacteristics(sqlite3_file *file)
   return result;
 }
 
+/** .. method:: xDeviceCharacteristics() -> int
+
+  Return `I/O capabilities
+  <http://sqlite.org/c3ref/c_iocap_atomic.html>`_ (bitwise or of
+  appropriate values). If you do not implement the function or have an
+  error then 0 (the SQLite default) is returned.
+*/
 static PyObject *
 apswvfsfilepy_xDeviceCharacteristics(APSWVFSFile *self)
 {
@@ -2047,6 +2150,11 @@ apswvfsfile_xFileSize(sqlite3_file *file, sqlite3_int64 *pSize)
   return result;
 }
 
+/** .. method:: xFileSize() -> int
+
+  Return the size of the file in bytes.  Remember that file sizes are
+  64 bit quantities even on 32 bit operating systems.
+*/
 static PyObject *
 apswvfsfilepy_xFileSize(APSWVFSFile *self)
 {
@@ -2093,6 +2201,12 @@ apswvfsfile_xCheckReservedLock(sqlite3_file *file, int *pResOut)
   return result;
 }
 
+/** .. method:: xCheckReservedLock()
+
+  Returns True if any database connection (in this or another process)
+  has a lock other than `SQLITE_LOCK_NONE or SQLITE_LOCK_SHARED
+  <http://sqlite.org/c3ref/c_lock_exclusive.html>`_.>
+*/
 static PyObject *
 apswvfsfilepy_xCheckReservedLock(APSWVFSFile *self)
 {
@@ -2137,6 +2251,18 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
   return result;
 }
 
+/** .. xFileControl(op, ptr)
+
+   Receives `file control
+   <http://sqlite.org/c3ref/file_control.html>`_ request typically
+   issues by :meth:`Connection.filecontrol`.  See
+   :meth:`Connection.filecontrol` for an example of how to pass a
+   Python object to this routine.
+
+   :param op: A numeric code.  Codes below 100 are reserved for SQLite
+     internal use.
+   :param ptr: An integer corresponding to a pointer at the C level.
+*/
 static PyObject *
 apswvfsfilepy_xFileControl(APSWVFSFile *self, PyObject *args)
 {
@@ -2190,6 +2316,12 @@ apswvfsfile_xClose(sqlite3_file *file)
   return result;
 }
 
+/** .. method:: xClose()
+
+  Close the database. Note that even if you return an error you should
+  still close the file.  It is safe to call this method mutliple
+  times.
+*/
 static PyObject *
 apswvfsfilepy_xClose(APSWVFSFile *self)
 {

@@ -139,12 +139,13 @@ for line in open(sys.argv[1], "rtU"):
         cursection=line
         incomment=True
         assert len(curop)==0
-        t=line.split()[1]
-        if t=="class::":
-            if methods:
-                do_methods()
-                methods={}
-            curclass=line.split()[2].split("(")[0]
+        if len(line):
+            t=line.split()[1]
+            if t=="class::":
+                if methods:
+                    do_methods()
+                    methods={}
+                curclass=line.split()[2].split("(")[0]
         curop.append(line)
         continue
     # end of comment
@@ -152,19 +153,27 @@ for line in open(sys.argv[1], "rtU"):
         op.append("")
         incomment=False
         line=cursection
-        t=cursection.split()[1]
-        if t=="method::":
-            name=line.split()[2].split("(")[0]
-            methods[name]=curop
-        elif t=="class::":
-            op.append("")
-            op.append(curclass+" class")
-            op.append("="*len(op[-1]))
-            op.append("")
-            op.extend(curop)
+        if len(line):
+            t=cursection.split()[1]
+            if t=="method::":
+                name=line.split()[2].split("(")[0]
+                methods[name]=curop
+            elif t=="class::":
+                op.append("")
+                op.append(curclass+" class")
+                op.append("="*len(op[-1]))
+                op.append("")
+                op.extend(curop)
+            # I keep forgetting double colons
+            elif t.endswith("method:") or t.endswith("class:"):
+                raise Exception("You forgot double colons: "+line)
+            else:
+                assert not methods # check no outstanding methods
+                op.extend(curop)
         else:
+            do_methods()
+            methods=[]
             op.extend(curop)
-            
         curop=[]
         continue
     # ordinary comment line
