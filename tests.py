@@ -2582,6 +2582,31 @@ class APSW(unittest.TestCase):
         for row in c.execute("select 2147483647+1"): pass
         self.assertEqual(long, type(row[0]))
 
+    def testIssue31(self):
+        # http://code.google.com/p/apsw/issues/detail?id=31
+        
+        # The claim is that using the same connection in two threads
+        # on Windows results in the main thread and the same
+        # connection threads all hanging.
+
+        self.db.cursor().execute("create table foo(x)")
+        def dostuff(n):
+            # spend n seconds doing stuff to the database
+            c=self.db.cursor()
+            b4=time.time()
+            while time.time()-b4<n:
+                c.executemany("insert into foo values(?)", randomintegers(20))
+                c.executemany("delete from foo where x=?", randomintegers(20))
+
+        threads=[ThreadRunner(dostuff, 5) for _ in range(2)]
+        for t in threads:
+            t.start()
+
+        for t in threads:
+            # if there were any errors then exceptions would be raised here
+            t.go()
+            
+
     def testWriteUnraiseable(self):
         "Verify writeunraiseable replacement function"
         def unraise():
