@@ -2596,9 +2596,11 @@ class APSW(unittest.TestCase):
             b4=time.time()
             while time.time()-b4<n:
                 c.executemany("insert into foo values(?)", randomintegers(20))
+                for row in c.execute("select * from foo"):
+                    pass
                 c.executemany("delete from foo where x=?", randomintegers(20))
 
-        threads=[ThreadRunner(dostuff, 5) for _ in range(2)]
+        threads=[ThreadRunner(dostuff, 5) for _ in range(20)]
         for t in threads:
             t.start()
 

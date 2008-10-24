@@ -250,6 +250,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
     {
       /* yay, one we can use */
       assert(val->incache);
+      assert(val->statement);
       val->inuse=1;
       sqlite3_clear_bindings(val->statement);
       /* unlink from lru tracking */
@@ -373,7 +374,7 @@ statementcache_finalize(StatementCache *sc, APSWStatement *stmt)
   res=sqlite3_reset(stmt->statement);
 
   /* is it going to be put in cache? */
-  if(sc->cache && APSWBuffer_GET_SIZE(stmt->utf8)<sc->maxsize && (stmt->incache || !PyDict_Contains(sc->cache, stmt->utf8)))
+  if(sc->cache && stmt->statement && APSWBuffer_GET_SIZE(stmt->utf8)<sc->maxsize && (stmt->incache || !PyDict_Contains(sc->cache, stmt->utf8)))
     {
       /* we don't start doing lru tracking until dict is at least 80% full */
       /* do we need to do an evict (but stmt may already be in cache so won't cause spill)? */
