@@ -237,3 +237,32 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
   return NULL;
 }
 
+
+/* Some macros used for frequent operations */
+
+/* used by Connection and Cursor */
+#define CHECK_USE(e)                                                \
+  { if(self->inuse)                                                                                 \
+      {    /* raise exception if we aren't already in one */                                                                         \
+           if (!PyErr_Occurred())                                                                                                    \
+             PyErr_Format(ExcThreadingViolation, "You are trying to use the same object concurrently in two threads which is not allowed."); \
+           return e;                                                                                                                 \
+      }                                                                                                                              \
+  }
+
+/* used by Connection */
+#define CHECK_CLOSED(connection,e) \
+{ if(!connection->db) { PyErr_Format(ExcConnectionClosed, "The connection has been closed"); return e; } }
+
+
+/* these two are used by Connection and Cursor */
+
+#define APSW_BEGIN_ALLOW_THREADS \
+  do { \
+      assert(self->inuse==0); self->inuse=1; \
+      Py_BEGIN_ALLOW_THREADS
+
+#define APSW_END_ALLOW_THREADS \
+     Py_END_ALLOW_THREADS; \
+     assert(self->inuse==1); self->inuse=0; \
+  } while(0)

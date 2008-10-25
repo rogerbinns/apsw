@@ -170,13 +170,15 @@ static PyTypeObject ZeroBlobBindType = {
 
 
 /* BLOB TYPE */
-typedef struct {
+struct APSWBlob {
   PyObject_HEAD
   Connection *connection;
   sqlite3_blob *pBlob;
   unsigned inuse;                 /* track if we are in use preventing concurrent thread mangling */
   int curoffset;                  /* SQLite only supports 32 bit signed int offsets */
-} APSWBlob;
+};
+
+typedef struct APSWBlob APSWBlob;
 
 static PyTypeObject APSWBlobType;
 

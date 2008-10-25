@@ -1486,40 +1486,6 @@ method then the first error may mask the second or vice versa.
    receive any constraintargs at all.
 */
 
-/* !!! This should be in the connection.c file */
-static PyObject *
-Connection_createmodule(Connection *self, PyObject *args)
-{
-  char *name=NULL;
-  PyObject *datasource=NULL;
-  vtableinfo *vti;
-  int res;
-
-  CHECK_USE(NULL);
-  CHECK_CLOSED(self, NULL);
-
-  if(!PyArg_ParseTuple(args, "esO:createmodule(name, datasource)", STRENCODING, &name, &datasource))
-    return NULL;
-
-  Py_INCREF(datasource);
-  vti=PyMem_Malloc(sizeof(vtableinfo));
-  vti->connection=self;
-  vti->datasource=datasource;
-
-  /* ::TODO:: - can we call this with NULL to unregister a module? */
-  APSW_FAULT_INJECT(CreateModuleFail, res=sqlite3_create_module_v2(self->db, name, &apsw_vtable_module, vti, vtabFree), res=SQLITE_IOERR);
-  PyMem_Free(name);
-  SET_EXC(res, self->db);
-
-  if(res!=SQLITE_OK)
-    {
-      Py_DECREF(datasource);
-      PyMem_Free(vti);
-      return NULL;
-    }
-
-  Py_RETURN_NONE;
-}
 
 #endif /* EXPERIMENTAL */
 /* end of Virtual table code */
