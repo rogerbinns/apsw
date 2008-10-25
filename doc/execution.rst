@@ -107,6 +107,8 @@ bindings used for that statement (and can be None). If the tracer
 return value evaluates to False/None then execution is aborted with an
 ExecTraceAbort exception.  See the :ref:`example <example-exectrace>`.
 
+.. _rowtracer:
+
 Row Tracer
 ----------
 

@@ -168,11 +168,13 @@ for line in open(sys.argv[1], "rtU"):
             elif t.endswith("method:") or t.endswith("class:"):
                 raise Exception("You forgot double colons: "+line)
             else:
+                if methods:
+                    import pdb ; pdb.set_trace()
                 assert not methods # check no outstanding methods
                 op.extend(curop)
         else:
             do_methods()
-            methods=[]
+            methods={}
             op.extend(curop)
         curop=[]
         continue

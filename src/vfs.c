@@ -1710,6 +1710,9 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
     remaining data. Except for empty files SQLite considers short
     reads to be a fatal error.
 
+    :param amount: Number of bytes to read
+    :param offset: Where to start reading. This number may be 64 bit once the database is larger than 2GB.
+
     :rtype: (Python 2) string, buffer.  (Python 3) bytes, buffer
 */
 static PyObject *
@@ -1785,6 +1788,7 @@ apswvfsfile_xWrite(sqlite3_file *file, const void *buffer, int amount, sqlite3_i
   underlying operating system to do a partial write. You will need to
   write the remaining data. 
 
+  :param offset: Where to start reading. This number may be 64 bit once the database is larger than 2GB.
   :param data: (Python 2) string, (Python 3) bytes
 */
 
@@ -2251,7 +2255,7 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
   return result;
 }
 
-/** .. xFileControl(op, ptr)
+/** .. method:: xFileControl(op, ptr)
 
    Receives `file control
    <http://sqlite.org/c3ref/file_control.html>`_ request typically

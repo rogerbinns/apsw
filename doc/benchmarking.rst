@@ -1,3 +1,5 @@
+.. _benchmarking:
+
 Compatibility and Benchmarking
 ==============================
 

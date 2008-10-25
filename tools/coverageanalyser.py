@@ -18,5 +18,5 @@ for f in glob.glob("*.c.gcov"):
             linesexecuted+=1
         linestotal+=1
 
-print "Lines executed: %0.2f of %d" % (linesexecuted*100.0/linestotal, linestotal)
+print "Lines executed: %0.2f%% of %d" % (linesexecuted*100.0/linestotal, linestotal)
         

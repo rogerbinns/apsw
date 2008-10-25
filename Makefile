@@ -26,7 +26,9 @@ OTHERFILES = \
 GENDOCS = \
 	doc/blob.rst \
 	doc/vfs.rst \
-	doc/vtable.rst 
+	doc/vtable.rst \
+	doc/connection.rst \
+	doc/cursor.rst
 
 all: header docs
 

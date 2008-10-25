@@ -24,6 +24,105 @@
  
 */
 
+/** 
+
+Cursors (executing SQL)
+***********************
+
+A cursor encapsulates a SQL query and returning results.  To make a
+new cursor you should call :meth:`~Connection.cursor` on your
+database::
+
+  db=apsw.Connection("database")
+  cursor=db.cursor()
+
+A cursor executes SQL::
+
+  cursor.execute("create table example(title, isbn)")
+
+You can also read data back.  The row is returned as a tuple of the
+column values::
+ 
+  for row in cursor.execute("select * from example"):
+     print row
+
+There are two ways of supplying data to a query.  The really bad way is to compose a string::
+
+  sql="insert into example values('%s', %s)" % ("string", "8390823904")
+  cursor.execute(sql)
+
+If there were any single quotes in string then you would have invalid
+syntax.  Additionally this is how `SQL injection attacks
+<http://en.wikipedia.org/wiki/SQL_injection>`_ happen. Instead you should use bindings::
+
+  sql="insert into example values(?, ?)"
+  cursor.execute(sql, ("string", "8390823904"))
+
+  # You can also use dictionaries
+  sql="insert into example values(:title, :isbn)"
+  cursor.execute(sql, {"title": "string", "isbn": "8390823904"})
+
+Cursors are cheap.  Use as many as you need.  It is safe to use them
+across threads, such as calling :meth:`~Cursor.execute` in one thread,
+passing the cursor to another thread that then ccalls
+:meth:`Cursor.next`.  The only thing you can't do is call methods at
+exactly the same time on the same cursor in two different threads - eg
+trying to call :meth:`~Cursor.execute` in both at the same time, or
+:meth:`~Cursor.execute` in one and :meth:`Cursor.next` in another.
+(If you do attempt this, it will be detected and
+:class:`apsw.ThreadingViolationError` will be raised.)  
+
+Behind the scenes a :class:`Cursor` maps to a `SQLite statement
+<http://www.sqlite.org/c3ref/stmt.html>`_.  APSW maintains a
+:class:`cache <Connection>` so that the mapping is very fast, and the
+SQLite objects are reused when possible.
+
+A unique feature of APSW is that your query can be multiple semi-colon
+separated statements.  For example::
+
+  cursor.execute("select ... ; insert into ... ; update ... ; select ...")
+
+.. note::
+
+  SQLite fetches data as it is needed.  If table `example` had 10
+  million rows it would only get the next row as requested (the for
+  loop effectively calls :meth:`~Cursor.next` to get each row).  This
+  code would not work as expected::
+
+    for row in cursor.execute("select * from example"):
+       cursor.execute("insert .....")
+
+  The nested :meth:`~Cursor.execute` would start a new query
+  abandoning any remaining results from the ``SELECT``.  There are two
+  ways to work around this.  Use a different cursor::
+
+    for row in cursor1.execute("select * from example"):
+       cursor2.execute("insert ...")
+
+  You can also get all the rows immediately by filling in a list::
+
+    rows=list( cursor.execute("select * from example") )
+    for row in rows:
+       cursor.execute("insert ...")
+
+  This last approach is recommended since you don't have to worry
+  about the database changing while doing the ``select``.  You should
+  also understand transactions and where to put the transaction
+  boundaries.
+
+.. seealso::
+
+  * `SQLite transactions <http://www.sqlite.org/lang_transaction.html>`_
+  * `Atomic commit <http://www.sqlite.org/atomiccommit.html>`_
+  * :ref:`Benchmarking`
+
+*/
+
+
+/** .. class:: Cursor
+
+  You obtain cursors by calling :meth:`Connection.cursor`.
+*/
 
 /* CURSOR TYPE */
 
@@ -187,6 +286,57 @@ APSWCursor_init(APSWCursor *self, Connection *connection)
   self->rowtrace=0;
   self->inuse=0;
 }
+
+/** .. method:: getdescription() -> list
+
+   Returns a list describing each column in the result row.  The
+   return is identical for every row of the results.  You can only
+   call this method once you have started executing a statement and
+   before you have finished::
+
+      # This will error
+      cursor.getdescription()
+
+      for row in cursor.execute("select ....."):
+         # this works
+         print cursor.getdescription()
+         print row
+
+   The information about each column is a tuple of ``(column_name,
+   declared_column_type)``.  The type is what was declared in the
+   ``CREATE TABLE`` statement - the value returned in the row will be
+   whatever type you put in for that row and column.  (This is known
+   as `manifest typing <http://www.sqlite.org/different.html#typing>`_
+   which is also the way that Python works.  The variable ``a`` could
+   contain an integer, and then you could put a string in it.  Other
+   static languages such as C or other SQL databases only let you put
+   one type in - eg ``a`` could only every contain integer or string,
+   but never both.)
+
+   Example::
+
+      cursor.execute("create table books(title string, isbn number, wibbly wobbly zebra)")
+      cursor.execute("insert into books values(?,?,?)", (97, "fjfjfj", 3.7))
+      cursor.execute("insert into books values(?,?,?)", ("fjfjfj", 3.7, 97))
+
+      for row in cursor.execute("select * from books"):
+         print cursor.getdescription()
+         print row
+ 
+   Output::
+ 
+     # row 0 - description
+     (('title', 'string'), ('isbn', 'number'), ('wibbly', 'wobbly zebra'))
+     # row 0 - values
+     (97, 'fjfjfj', 3.7)
+     # row 1 - description
+     (('title', 'string'), ('isbn', 'number'), ('wibbly', 'wobbly zebra'))
+     # row 1 - values
+     ('fjfjfj', 3.7, 97)
+
+   -* sqlite3_column_name sqlite3_column_decltype
+
+*/
 
 static PyObject *
 APSWCursor_getdescription(APSWCursor *self)
@@ -708,6 +858,59 @@ APSWCursor_step(APSWCursor *self)
   return NULL;
 }
 
+/** .. method:: execute(statements[, bindings]) -> iterator
+
+    Executes the statements using the supplied bindings.  Execution
+    returns when the first row is available or all statements have
+    completed.  
+
+    :param statements: One or more SQL statements such as ``select *
+      from books`` or ``begin; insert into books ...; select
+      last_insert_rowid(); end``.
+    :param bindings: If supplied should either be a sequence or a dictionary.
+
+    If you use numbered bindings in the query then supply a sequence.
+    Any sequence will work including lists and iterators.  For
+    example::
+
+      cursor.execute("insert into books values(?,?)", ("title", "number"))
+
+    .. note:: 
+
+      A common gotcha is wanting to insert a single string but not
+      putting it in a tuple::
+
+        cursor.execute("insert into books values(?)", "a title")
+
+      The string is a sequence of 8 characters and so it will look
+      like you are supplying 8 bindings when only one is needed.  Use
+      a one item tuple with a trailing comma like this::
+
+        cursor.execute("insert into books values(?)", ("a title",) )
+
+    If you used names in the statement then supply a dictionary as the
+    binding.  It is ok to be missing entries from the dictionary -
+    None/null will be used.  For example::
+
+       cursor.execute("insert into books values(:title, :isbn, :rating)", 
+            {"title": "book title", "isbn": 908908908})
+
+    The return is the cursor object itself which is also an iterator.  This allows you to write::
+
+       for row in cursor.execute("select * from books"):
+          print row
+
+    :raises TypeError: The bindings supplied were neither a dict nor a sequence
+    :raises apsw.BindingsError: You supplied too many or too few bindings for the statements
+    :raises apsw.IncompleteExecutionError: There are remaining unexecuted queries from your last execute
+
+    -* sqlite3_prepare_v2 sqlite3_step sqlite3_bind_int64 sqlite3_bind_null sqlite3_bind_text sqlite3_bind_double sqlite3_bind_blob sqlite3_bind_zeroblob
+
+    .. seealso::
+
+       * :ref:`executionmodel`
+ 
+*/
 static PyObject *
 APSWCursor_execute(APSWCursor *self, PyObject *args)
 {
@@ -795,6 +998,28 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
   Py_INCREF(retval);
   return retval;
 }
+
+/** .. method:: executemany(statements, sequenceofbindings)  -> iterator
+
+  This method is for when you want to execute the same statements over
+  a sequence of bindings.  Conceptually it does this::
+
+    for binding in sequenceofbindings:
+        cursor.execute(statements, binding)
+
+  Example::
+
+    rows=(  (1, 7),
+            (2, 23),
+            (4, 92),
+            (12, 12) )
+
+    cursor.executemany("insert into nums(?,?)", rows)
+
+  The return is the cursor itself which acts as an iterator.  Your
+  statements can return data.  See :meth:`~Cursor.execute` for more
+  information.
+*/
 
 static PyObject *
 APSWCursor_executemany(APSWCursor *self, PyObject *args)
@@ -900,6 +1125,28 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
   return retval;
 }
 
+/** .. method:: close(force=False)
+
+  It is very unlikely you will need to call this method.  It exists
+  because older versions of SQLite required all Connection/Cursor
+  activity to be confined to the same thread.  That is no longer the
+  case.  Cursors are automatically garbage collected and when their
+  are none left will allow the connection to be garbage collected if
+  it has no other references.
+
+  A cursor is open if there are remaining statements to execute (if
+  your query included multiple statements), or if you called
+  :meth:`~Cursor.executemany` and not all of the `sequenceofbindings`
+  have been used yet.
+
+  :param force: If False then you will get exceptions if there is
+   remaining work to do be in the Cursor such as more statements to
+   execute, more data from the executemany binding sequence etc. If
+   force is True then all remaining work and state information will be
+   silently discarded.
+
+*/
+
 static PyObject *
 APSWCursor_close(APSWCursor *self, PyObject *args)
 {
@@ -921,6 +1168,14 @@ APSWCursor_close(APSWCursor *self, PyObject *args)
     }
   Py_RETURN_NONE;
 }
+
+/** .. method:: next() -> row
+
+  Returns the next row of data or raises StopIteration if there are no
+  more rows.  Python calls this method behind the scenes when using
+  the cursor as an iterator.  It is unlikely you will want to manually
+  call it.
+*/
 
 static PyObject *
 APSWCursor_next(APSWCursor *self)
@@ -987,6 +1242,18 @@ APSWCursor_iter(APSWCursor *self)
   return (PyObject*)self;
 }
 
+/** .. method:: setexectrace(callable)
+
+  `callable` is called with the statement and bindings for each
+  :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
+  cursor.  An example use is if you want to log all statements
+  executed.  Your execution tracer can also abort execution of a
+  statement.  See :ref:`executiontracer` for more details.
+
+  If `callable` is `None` then any existing execution tracer is
+  removed.
+*/
+
 static PyObject *
 APSWCursor_setexectrace(APSWCursor *self, PyObject *func)
 {
@@ -1007,6 +1274,17 @@ APSWCursor_setexectrace(APSWCursor *self, PyObject *func)
 
   Py_RETURN_NONE;
 }
+
+/** .. method:: setrowtrace(callable)
+
+  `callable` is called with each row being returned.  You can change
+  the data that is returned or cause the row to be skipped altogether.
+  An example use is if you want to log all rows returned.  See
+  :ref:`rowtracer` for more details.
+
+  If `callable` is `None` then any existing row tracer is
+  removed.
+*/
 
 static PyObject *
 APSWCursor_setrowtrace(APSWCursor *self, PyObject *func)
@@ -1029,6 +1307,11 @@ APSWCursor_setrowtrace(APSWCursor *self, PyObject *func)
   Py_RETURN_NONE;
 }
 
+/** .. method:: getexectrace() -> callable or None
+
+  Returns the currently installed (via :meth:`~Cursor.setexectrace`)
+  execution tracer.
+*/
 static PyObject *
 APSWCursor_getexectrace(APSWCursor *self)
 {
@@ -1042,6 +1325,11 @@ APSWCursor_getexectrace(APSWCursor *self)
   return ret;
 }
 
+/** .. method:: getrowtrace() -> callable or None
+
+  Returns the currently installed (via :meth:`~Cursor.setrowtrace`)
+  row tracer.
+*/
 static PyObject *
 APSWCursor_getrowtrace(APSWCursor *self)
 {
@@ -1052,6 +1340,17 @@ APSWCursor_getrowtrace(APSWCursor *self)
   Py_INCREF(ret);
   return ret;
 }
+
+/** .. method:: getconnection() -> Connection
+
+  Returns the :class:`Connection` this cursor belongs to.  An example usage is to get another cursor::
+
+    def func(cursor):
+      # I don't want to alter existing cursor, so make a new one
+      mycursor=cursor.getconnection().cursor()
+      mycursor.execute("....")
+
+*/
 
 static PyObject *
 APSWCursor_getconnection(APSWCursor *self)

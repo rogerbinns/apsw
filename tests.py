@@ -32,6 +32,8 @@ import math
 import random
 import time
 import threading
+import glob
+
 if py3:
     import queue as Queue
 else:
@@ -2690,10 +2692,11 @@ class APSW(unittest.TestCase):
             db.close()
 
 
-    def sourceCheckFunction(self, name, lines):
+    def sourceCheckFunction(self, filename, name, lines):
         # Checks an individual function does things right
 
-        if name.startswith("ZeroBlobBind_") or name.startswith("APSWVFS_") or name.startswith("APSWVFSFile_"):
+        # not checked
+        if name.split("_")[0] in ("ZeroBlobBind", "APSWVFS", "APSWVFSFile", "APSWBuffer") :
                 return
 
         checks={
@@ -2783,7 +2786,7 @@ class APSW(unittest.TestCase):
         elif prefix in checks:
             checker=checks[prefix]
         else:
-            self.fail(prefix+" not in checks")
+            self.fail(filename+": "+prefix+" not in checks")
 
         if base in checker.get("skip", ()):
             return
@@ -2805,7 +2808,7 @@ class APSW(unittest.TestCase):
         for k,v in checker["req"].items():
             if found[k] is None:
                 v=v%format
-                self.fail(k+" "+v+" missing in "+name)
+                self.fail(filename+": "+k+" "+v+" missing in "+name)
 
         # check order
         order=checker.get("order", ())
@@ -2813,7 +2816,7 @@ class APSW(unittest.TestCase):
             b4=order[i]
             after=order[i+1]
             if found[b4]>found[after]:
-                self.fail(checker["req"][b4]%format+" should be before "+checker["req"][after]%format+" in "+name)
+                self.fail(filename+": "+checker["req"][b4]%format+" should be before "+checker["req"][after]%format+" in "+name)
 
         return
 
@@ -2822,32 +2825,35 @@ class APSW(unittest.TestCase):
         # We expect a coding style where the functions are named
         # Object_method, are at the start of the line and have a first
         # parameter named self.
-        if not os.path.exists("apsw.c"): return
-        # check not using C++ style comments
-        code=open("apsw.c", "rtU").read().replace("http://", "http:__")
-        self.assert_( "//" not in code)
+        if not os.path.exists("src/apsw.c"): return
 
-        # check check funcs
-        funcpat=re.compile(r"^(\w+_\w+)\s*\(\s*\w+\s*\*\s*self")
-        name=None
-        lines=[]
-        infunc=False
-        for line in open("apsw.c", "rtU"):
-            if line.startswith("}") and infunc:
-                infunc=False
-                self.sourceCheckFunction(name, lines)
-                lines=[]
-                name=None
-                continue
-            if name and line.startswith("{"):
-                infunc=True
-                continue
-            if infunc:
-                lines.append(line)
-                continue
-            m=funcpat.match(line)
-            if m:
-                name=m.group(1)
+        for filename in glob.glob("src/*.c"):
+            # check not using C++ style comments
+            code=open(filename, "rtU").read().replace("http://", "http:__")
+            if "//" in code:
+                self.fail("// style comment in "+filename)
+
+            # check check funcs
+            funcpat=re.compile(r"^(\w+_\w+)\s*\(\s*\w+\s*\*\s*self")
+            name=None
+            lines=[]
+            infunc=False
+            for line in open(filename, "rtU"):
+                if line.startswith("}") and infunc:
+                    infunc=False
+                    self.sourceCheckFunction(filename, name, lines)
+                    lines=[]
+                    name=None
+                    continue
+                if name and line.startswith("{"):
+                    infunc=True
+                    continue
+                if infunc:
+                    lines.append(line)
+                    continue
+                m=funcpat.match(line)
+                if m:
+                    name=m.group(1)
 
     def testConfig(self):
         "Verify sqlite3_config wrapper"
