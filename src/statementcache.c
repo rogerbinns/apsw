@@ -52,7 +52,7 @@
 
 typedef struct APSWStatement {
   PyObject_HEAD
-  sqlite3_stmt *statement;          /* the sqlite level vdbe code */
+  sqlite3_stmt *vdbestatement;      /* the sqlite level vdbe code */
   unsigned inuse;                   /* indicates an element is inuse when in cache preventing simulataneous use */
   unsigned incache;                 /* indicates APSWStatement resides in cache */
   PyObject *utf8;                   /* The text of the statement, also the key in the cache */
@@ -108,6 +108,7 @@ statementcache_sanity_check(StatementCache *sc)
       assert(!sc->mru->lru_prev);
       assert(!sc->mru->lru_next);
       assert(sc->mru->incache);
+      assert(sc->mru->vdbestatement);
       return;
     }
 
@@ -149,6 +150,8 @@ statementcache_sanity_check(StatementCache *sc)
       assert(item->lru_next!=item);
       assert(item->lru_prev!=item);
       assert(item->lru_prev!=item->lru_next);
+      /* statement not null */
+      assert(item->vdbestatement);
 
       itemcountbackwd++;
       last=item;
@@ -246,35 +249,40 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
 #endif
 
 
-  if(val && !val->inuse)
+  if(val)
     {
-      /* yay, one we can use */
-      assert(val->incache);
-      assert(val->statement);
-      val->inuse=1;
-      sqlite3_clear_bindings(val->statement);
-      /* unlink from lru tracking */
-      if(sc->mru==val)
-        sc->mru=val->lru_next;
-      if(sc->lru==val)
-        sc->lru=val->lru_prev;
-      if(val->lru_prev)
+      if(!val->inuse)
         {
-          assert(val->lru_prev->lru_next==val);
-          val->lru_prev->lru_next=val->lru_next;
+          /* yay, one we can use */
+          assert(val->incache);
+          assert(val->vdbestatement);
+          val->inuse=1;
+          sqlite3_clear_bindings(val->vdbestatement);
+          /* unlink from lru tracking */
+          if(sc->mru==val)
+            sc->mru=val->lru_next;
+          if(sc->lru==val)
+            sc->lru=val->lru_prev;
+          if(val->lru_prev)
+            {
+              assert(val->lru_prev->lru_next==val);
+              val->lru_prev->lru_next=val->lru_next;
+            }
+          if(val->lru_next)
+            {
+              assert(val->lru_next->lru_prev==val);
+              val->lru_next->lru_prev=val->lru_prev;
+          }
+          val->lru_prev=val->lru_next=0;
+          statementcache_sanity_check(sc);
+          
+          Py_INCREF( (PyObject*)val);
+          assert(PyObject_RichCompareBool(utf8, val->utf8, Py_EQ)==1);
+          APSWBuffer_XDECREF_unlikely(utf8);
+          return val;
         }
-      if(val->lru_next)
-        {
-          assert(val->lru_next->lru_prev==val);
-          val->lru_next->lru_prev=val->lru_prev;
-        }
-      val->lru_prev=val->lru_next=0;
-      statementcache_sanity_check(sc);
-
-      Py_INCREF( (PyObject*)val);
-      assert(PyObject_RichCompareBool(utf8, val->utf8, Py_EQ)==1);
-      APSWBuffer_XDECREF_unlikely(utf8);
-      return val;
+      /* someone else is using it so we can't */
+      val=NULL;
     }
 
 #if SC_NRECYCLE > 0
@@ -283,8 +291,8 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
       val=sc->recyclelist[--sc->nrecycle];
       assert(!val->incache);
       assert(!val->inuse);
-      if(val->statement)
-        sqlite3_finalize(val->statement);
+      if(val->vdbestatement)
+        sqlite3_finalize(val->vdbestatement);
       APSWBuffer_XDECREF_likely(val->utf8);
       APSWBuffer_XDECREF_unlikely(val->next);
       Py_XDECREF(val->origquery);
@@ -307,7 +315,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
   
   val->utf8=utf8;
   val->next=NULL;
-  val->statement=NULL;
+  val->vdbestatement=NULL;
   val->inuse=1;
   Py_XINCREF(query);
   val->origquery=query;
@@ -321,7 +329,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
      sure */
   assert(buffer[buflen+1-1]==0);
   Py_BEGIN_ALLOW_THREADS
-    res=sqlite3_prepare_v2(sc->db, buffer, buflen+1, &val->statement, &tail);
+    res=sqlite3_prepare_v2(sc->db, buffer, buflen+1, &val->vdbestatement, &tail);
   Py_END_ALLOW_THREADS;
 
   /* handle error */
@@ -371,10 +379,10 @@ statementcache_finalize(StatementCache *sc, APSWStatement *stmt)
   assert(stmt->inuse);
   stmt->inuse=0;
 
-  res=sqlite3_reset(stmt->statement);
+  res=sqlite3_reset(stmt->vdbestatement);
 
   /* is it going to be put in cache? */
-  if(sc->cache && stmt->statement && APSWBuffer_GET_SIZE(stmt->utf8)<sc->maxsize && (stmt->incache || !PyDict_Contains(sc->cache, stmt->utf8)))
+  if(sc->cache && stmt->vdbestatement && APSWBuffer_GET_SIZE(stmt->utf8)<sc->maxsize && (stmt->incache || !PyDict_Contains(sc->cache, stmt->utf8)))
     {
       /* we don't start doing lru tracking until dict is at least 80% full */
       /* do we need to do an evict (but stmt may already be in cache so won't cause spill)? */
@@ -555,8 +563,8 @@ statementcache_free(StatementCache *sc)
 static void
 APSWStatement_dealloc(APSWStatement *stmt)
 {
-  if(stmt->statement)
-    sqlite3_finalize(stmt->statement);
+  if(stmt->vdbestatement)
+    sqlite3_finalize(stmt->vdbestatement);
   assert(stmt->inuse==0);
   APSWBuffer_XDECREF_likely(stmt->utf8);
   APSWBuffer_XDECREF_likely(stmt->next);

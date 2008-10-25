@@ -2381,7 +2381,7 @@ APSWCursor_getdescription(APSWCursor *self)
       return NULL;
     }
   
-  ncols=sqlite3_column_count(self->statement->statement);
+  ncols=sqlite3_column_count(self->statement->vdbestatement);
   result=PyTuple_New(ncols);
   if(!result) goto error;
 
@@ -2389,8 +2389,8 @@ APSWCursor_getdescription(APSWCursor *self)
     {
       APSW_FAULT_INJECT(GetDescriptionFail,
       pair=Py_BuildValue("(O&O&)", 
-			 convertutf8string, sqlite3_column_name(self->statement->statement, i),
-			 convertutf8string, sqlite3_column_decltype(self->statement->statement, i)),
+			 convertutf8string, sqlite3_column_name(self->statement->vdbestatement, i),
+			 convertutf8string, sqlite3_column_decltype(self->statement->vdbestatement, i)),
       pair=PyErr_NoMemory()
       );                  
 			 
@@ -2423,18 +2423,18 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
   assert(!PyErr_Occurred());
 
   if(obj==Py_None)
-    res=sqlite3_bind_null(self->statement->statement, arg);
+    res=sqlite3_bind_null(self->statement->vdbestatement, arg);
   /* Python uses a 'long' for storage of PyInt.  This could
      be a 32bit or 64bit quantity depending on the platform. */
 #if PY_MAJOR_VERSION < 3
   else if(PyInt_Check(obj))
-    res=sqlite3_bind_int64(self->statement->statement, arg, PyInt_AS_LONG(obj));
+    res=sqlite3_bind_int64(self->statement->vdbestatement, arg, PyInt_AS_LONG(obj));
 #endif
   else if (PyLong_Check(obj))
     /* nb: PyLong_AsLongLong can cause Python level error */
-    res=sqlite3_bind_int64(self->statement->statement, arg, PyLong_AsLongLong(obj));
+    res=sqlite3_bind_int64(self->statement->vdbestatement, arg, PyLong_AsLongLong(obj));
   else if (PyFloat_Check(obj))
-    res=sqlite3_bind_double(self->statement->statement, arg, PyFloat_AS_DOUBLE(obj));
+    res=sqlite3_bind_double(self->statement->vdbestatement, arg, PyFloat_AS_DOUBLE(obj));
   else if (PyUnicode_Check(obj))
     {
       const void *badptr=NULL;
@@ -2451,7 +2451,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
                 SET_EXC(SQLITE_TOOBIG, NULL);
 	      }
 	    else
-              res=USE16(sqlite3_bind_text)(self->statement->statement, arg, strdata, strbytes, SQLITE_TRANSIENT);
+              res=USE16(sqlite3_bind_text)(self->statement->vdbestatement, arg, strdata, strbytes, SQLITE_TRANSIENT);
           }
       UNIDATAEND(obj);
       if(!badptr) 
@@ -2489,7 +2489,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
                     res=SQLITE_TOOBIG;
 		  }
 		else
-                  res=USE16(sqlite3_bind_text)(self->statement->statement, arg, strdata, strbytes, SQLITE_TRANSIENT);
+                  res=USE16(sqlite3_bind_text)(self->statement->vdbestatement, arg, strdata, strbytes, SQLITE_TRANSIENT);
               }
           UNIDATAEND(str2);
           Py_DECREF(str2);
@@ -2502,7 +2502,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
       else
 	{
 	  assert(lenval<APSW_INT32_MAX);
-	  res=sqlite3_bind_text(self->statement->statement, arg, val, lenval, SQLITE_TRANSIENT);
+	  res=sqlite3_bind_text(self->statement->vdbestatement, arg, val, lenval, SQLITE_TRANSIENT);
 	}
     }
 #endif
@@ -2521,11 +2521,11 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
           SET_EXC(SQLITE_TOOBIG, NULL);
 	  return -1;
 	}
-      res=sqlite3_bind_blob(self->statement->statement, arg, buffer, buflen, SQLITE_TRANSIENT);
+      res=sqlite3_bind_blob(self->statement->vdbestatement, arg, buffer, buflen, SQLITE_TRANSIENT);
     }
   else if(PyObject_TypeCheck(obj, &ZeroBlobBindType)==1)
     {
-      res=sqlite3_bind_zeroblob(self->statement->statement, arg, ((ZeroBlobBind*)obj)->blobsize);
+      res=sqlite3_bind_zeroblob(self->statement->vdbestatement, arg, ((ZeroBlobBind*)obj)->blobsize);
     }
   else 
     {
@@ -2552,7 +2552,7 @@ APSWCursor_dobindings(APSWCursor *self)
   assert(!PyErr_Occurred());
   assert(self->bindingsoffset>=0);
 
-  nargs=sqlite3_bind_parameter_count(self->statement->statement);
+  nargs=sqlite3_bind_parameter_count(self->statement->vdbestatement);
   if(nargs==0 && !self->bindings)
     return 0; /* common case, no bindings needed or supplied */
 
@@ -2568,7 +2568,7 @@ APSWCursor_dobindings(APSWCursor *self)
       for(arg=1;arg<=nargs;arg++)
         {
 	  PyObject *keyo=NULL;
-          const char *key=sqlite3_bind_parameter_name(self->statement->statement, arg);
+          const char *key=sqlite3_bind_parameter_name(self->statement->vdbestatement, arg);
 
           if(!key)
             {
@@ -2725,7 +2725,7 @@ APSWCursor_step(APSWCursor *self)
     {
       assert(!PyErr_Occurred());
       APSW_BEGIN_ALLOW_THREADS
-        res=(self->statement->statement)?(sqlite3_step(self->statement->statement)):(SQLITE_DONE);
+        res=(self->statement->vdbestatement)?(sqlite3_step(self->statement->vdbestatement)):(SQLITE_DONE);
       APSW_END_ALLOW_THREADS;
 
       switch(res&0xff)
@@ -3125,13 +3125,13 @@ APSWCursor_next(APSWCursor *self)
   self->status=C_BEGIN;
   
   /* return the row of data */
-  numcols=sqlite3_data_count(self->statement->statement);
+  numcols=sqlite3_data_count(self->statement->vdbestatement);
   retval=PyTuple_New(numcols);
   if(!retval) goto error;
 
   for(i=0;i<numcols;i++)
     {
-      item=convert_column_to_pyobject(self->statement->statement, i);
+      item=convert_column_to_pyobject(self->statement->vdbestatement, i);
       if(!item) goto error;
       PyTuple_SET_ITEM(retval, i, item);
     }
