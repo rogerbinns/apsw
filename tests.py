@@ -856,6 +856,13 @@ class APSW(unittest.TestCase):
         # turn a blob into a string to fail python utf8 conversion
         self.assertRaises(UnicodeDecodeError, c.execute, "select bad(cast (x'fffffcfb9208' as TEXT))")
 
+        # register same named function taking different number of arguments
+        for i in range(-1, 4):
+            self.db.createscalarfunction("multi", lambda *args: len(args), i)
+        gc.collect()
+        for row in c.execute("select multi(), multi(1), multi(1,2), multi(1,2,3), multi(1,2,3,4), multi(1,2,3,4,5)"):
+            self.assertEqual(row, (0, 1, 2, 3, 4, 5))
+
 
     def testAggregateFunctions(self):
         "Verify aggregate functions"

@@ -24,6 +24,20 @@
  
 */
 
+/** 
+
+Connections to a database
+*************************
+
+A :class:`Connection` encapsulates access to a database.  You then use
+:class:`cursors <Cursor>` to issue queries against the database.
+
+You can have multple :class:`Connections <Connection>` open against
+the same database in the same process, across threads and in other
+processes.
+
+*/
+
 
 /* CALLBACK INFO */
 
@@ -100,6 +114,14 @@ static PyTypeObject APSWCursorType;
 struct ZeroBlobBind;
 static PyTypeObject ZeroBlobBindType;
 
+
+/** .. class:: Connection
+
+
+  Conceptually this object wraps a `sqlite3 pointer
+  <http://www.sqlite.org/c3ref/sqlite3.html>`_.
+*/
+
 /* CONNECTION CODE */
 
 static void
@@ -148,6 +170,19 @@ Connection_internal_cleanup(Connection *self)
   Py_XDECREF(self->vfs);
   self->vfs=0;
 }
+
+/** .. method:: close([force=False])
+
+  Closes the database.  If there are any outstanding :class:`cursors
+  <Cursor>` or :class:`blobs <blob>` then they are closed too.  It is
+  not necessary to call this method as the database is automatically
+  closed when there are no more references.  It is ok to call the
+  method multiple times.
+
+  If `force` is True then any exceptions are ignored.
+
+   -* sqlite3_close
+*/
 
 /* Closes cursors and blobs belonging to this connection */
 static PyObject *
@@ -294,6 +329,28 @@ Connection_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED
     return (PyObject *)self;
 }
 
+
+/** .. method:: __init__(filename[, flags=SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs=None, statementcachesize=100])
+
+  Opens the named database.  You can use ``:memory:`` to get a private temporary
+  memory database that is not shared with any other connections.
+
+  :param flags: One or more of the `open flags <http://www.sqlite.org/c3ref/c_open_create.html>`_
+  :param vfs: The name of the `vfs <http://www.sqlite.org/c3ref/vfs.html>`_ to use.  If :const:`None` then the default
+     vfs will be used.
+
+  :param statementcachesize: Use zero to disable the statement cache,
+    or a number larger than the total distinct SQL statements you
+    execute frequently.
+
+  -* sqlite3_open_v2
+
+  .. seealso::
+
+    * :ref:`statementcache`
+    * :ref:`vfs`
+
+*/
 /* forward declaration so we can tell if it is one of ours */
 static int apswvfs_xAccess(sqlite3_vfs *vfs, const char *zName, int flags, int *pResOut);
 
@@ -394,7 +451,26 @@ finally:
   return res;
 }
 
+/** .. method:: blobopen(database, table, column, rowid, writeable)  -> blob
 
+   Opens a blob for :ref:`incremental I/O <blobio>`.
+
+   :param database: Name of the database.  This will be ``main`` for
+     the main connection and the name you specified for `attached
+     <http://www.sqlite.org/lang_attach.html>`_ databases.
+   :param table: The name of the table
+   :param column: The name of the column
+   :param rowid: The id that uniquely identifies the row.
+   :param writeable: If True then you can read and write the blob.  If False then you can only read it.
+
+   :rtype: :class:`blob`
+
+   .. seealso::
+
+     * :ref:`Blob I/O example <example-blobio>`
+
+   -* sqlite3_blob_open
+*/
 static PyObject *
 Connection_blobopen(Connection *self, PyObject *args)
 {
@@ -435,7 +511,12 @@ Connection_blobopen(Connection *self, PyObject *args)
   return (PyObject*)apswblob;
 }
 
+/** .. method:: cursor() -> Cursor
 
+  Creates a new :class:`Cursor` object on this database.
+
+  :rtype: :class:`Cursor`
+*/
 static PyObject *
 Connection_cursor(Connection *self)
 {
@@ -456,6 +537,24 @@ Connection_cursor(Connection *self)
   return (PyObject*)cursor;
 }
 
+/** .. method:: setbusytimeout(millseconds)
+
+  If the database is locked such as when another connection is making
+  changes, SQLite will keep retrying.  This sets the maximum amount of
+  time SQLite will keep retrying before giving up.  If the database is
+  still busy then :class:`apsw.BusyError` will be returned.
+
+  :param milliseconds: Maximum thousandths of a second to wait.
+
+  If you previously called :meth:`~Connection.setbusyhandler` then
+  calling this overrides that.
+
+  .. seealso::
+
+     * :meth:`Connection.setbusyhandler`
+
+  -* sqlite3_busy_timeout
+*/
 static PyObject *
 Connection_setbusytimeout(Connection *self, PyObject *args)
 {
@@ -479,6 +578,14 @@ Connection_setbusytimeout(Connection *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
+/** .. method:: changes() -> int
+
+  Returns the number of database rows that were changed (or inserted
+  or deleted) by the most recently completed INSERT, UPDATE, or DELETE
+  statement.
+
+  -* sqlite3_changes
+*/
 static PyObject *
 Connection_changes(Connection *self)
 {
@@ -487,6 +594,13 @@ Connection_changes(Connection *self)
   return PyLong_FromLong(sqlite3_changes(self->db));
 }
 
+/** .. method:: totalchanges() -> int
+
+  Returns the total number of database rows that have be modified,
+  inserted, or deleted since the database connection was opened.
+
+  -* sqlite3_total_changes
+*/
 static PyObject *
 Connection_totalchanges(Connection *self)
 {
@@ -495,6 +609,12 @@ Connection_totalchanges(Connection *self)
   return PyLong_FromLong(sqlite3_total_changes(self->db));
 }
 
+/** .. method:: getautocommit() -> bool
+
+  Returns if the Connection is in auto commit mode (ie not in a transaction).
+
+  -* sqlite3_get_autocommit
+*/
 static PyObject *
 Connection_getautocommit(Connection *self)
 {
@@ -505,6 +625,12 @@ Connection_getautocommit(Connection *self)
   Py_RETURN_FALSE;
 }
 
+/** .. method:: last_insert_rowid() -> int
+
+  Returns the integer key of the most recent insert in the database.
+
+  -* sqlite3_last_insert_rowid
+*/
 static PyObject *
 Connection_last_insert_rowid(Connection *self)
 {
@@ -514,6 +640,20 @@ Connection_last_insert_rowid(Connection *self)
   return PyLong_FromLongLong(sqlite3_last_insert_rowid(self->db));
 }
 
+/** .. method:: complete(statement) -> bool
+
+  Returns True if the input string comprises one or more complete SQL
+  statements.  An example use would be if you were prompting the user
+  for SQL statements and needed to know if you had a whole statement,
+  or needed to ask for another line::
+
+    statement=raw_input("SQL> ")
+    while not apsw.complete(statement):
+       more=raw_input("  .. ")
+       statement=statement+"\n"+more
+
+  -* sqlite3_complete
+*/
 static PyObject *
 Connection_complete(Connection *self, PyObject *args)
 {
@@ -539,6 +679,16 @@ Connection_complete(Connection *self, PyObject *args)
   return Py_False;
 }
 
+/** .. method:: interrupt()
+
+  Causes any pending operations on the database to abort at the
+  earliest opportunity. You can call this from any thread.  For
+  example you may have a long running query when the user presses the
+  stop button in your user interface.  :class:`apsw.InterruptedError`
+  will be raised in the query that got interrupted.
+
+  -* sqlite3_interrupt
+*/
 static PyObject *
 Connection_interrupt(Connection *self)
 {
@@ -548,6 +698,24 @@ Connection_interrupt(Connection *self)
   Py_RETURN_NONE;
 }
 
+/** .. method:: limit(id[, newval]) -> int
+
+  If called with one parameter then the current limit for that `id` is
+  returned.  If called with two then the limit is set to `newval`.
+
+
+  :param id: One of the `runtime limit ids <http://www.sqlite.org/c3ref/c_limit_attached.html>`
+  :param newval: The new limit.  This is a 32 bit signed integer even on 64 bit platforms.
+
+  :returns: The current value if `newval` was not provided or the old value if `newval` was provided.
+
+  -* sqlite3_limit
+
+  .. seealso::
+
+    * :ref:`Example <example-limit>`
+
+*/
 #ifdef EXPERIMENTAL
 static PyObject *
 Connection_limit(Connection *self, PyObject *args)
@@ -590,6 +758,32 @@ updatecb(void *context, int updatetype, char const *databasename, char const *ta
   PyGILState_Release(gilstate);
 }
 
+/** .. method:: setupdatehook(callable)
+
+  Calls `callable` whenever a row is updated, deleted or inserted.  If
+  `callable` is :const:`None` then any existing update hook is
+  removed.  The update hook cannot make changes to the database while
+  the query is still executing, but can record them for later use or
+  apply them in a different connection.
+
+  The update hook is called with 4 paramaters: 
+
+    type (int)
+      :const:`SQLITE_INSERT`, :const:`SQLITE_DELETE` or :const:`SQLITE_UPDATE`
+    database name (string)
+      This is ``main`` for the database or the name specified in
+      `ATTACH <http://sqlite.org/lang_attach.html>`_
+    table name (string)
+      The table on which the update happened
+    rowid (64 bit integer)
+      The affected row
+
+  .. seealso::
+
+      * !!! update hook example code
+
+  -* sqlite3_update_hook
+*/
 static PyObject *
 Connection_setupdatehook(Connection *self, PyObject *callable)
 {
@@ -651,6 +845,15 @@ rollbackhookcb(void *context)
   PyGILState_Release(gilstate);
 }
 
+/** .. method:: setrollbackhook(callable)
+
+  Sets a callable which is invoked during a rollback.  If `callable`
+  is :const:`None` then any existing rollback hook is removed.
+
+  The `callable` is called with no parameters and the return value is ignored.
+
+  -* sqlite3_rollback_hook
+*/
 static PyObject *
 Connection_setrollbackhook(Connection *self, PyObject *callable)
 {
@@ -710,6 +913,18 @@ profilecb(void *context, const char *statement, sqlite_uint64 runtime)
   Py_XDECREF(retval);
   PyGILState_Release(gilstate);
 }
+
+/** .. method:: setprofile(callable)
+
+  Sets a callable which is invoked at the end of execution of each
+  statement and passed the statement string and how long it took to
+  execute. (The execution time appears is in nanoseconds.) Note that
+  it is called only on completion. If for example you do a ``SELECT``
+  and only read the first result, then you won't reach the end of the
+  statement.
+
+  -* sqlite3_profile
+*/
 
 static PyObject *
 Connection_setprofile(Connection *self, PyObject *callable)
@@ -788,6 +1003,16 @@ commithookcb(void *context)
   return ok;
 }
 
+/** .. method:: setcommithook(callable)
+
+  `callable` will be called just before a commit.  It should return
+  zero for the commit to go ahead and non-zero for it to be turned
+  into a rollback. In the case of an exception in your callable, a
+  non-zero (ie rollback) value is returned. 
+
+  -* sqlite3_commit_hook
+
+*/
 static PyObject *
 Connection_setcommithook(Connection *self, PyObject *callable)
 {
@@ -859,6 +1084,16 @@ progresshandlercb(void *context)
   PyGILState_Release(gilstate);
   return ok;
 }
+
+/** .. method:: setprogresshandler(callable[, nsteps=20])
+
+  Sets a callable which is invoked every nsteps SQLite
+  inststructions. The callable should return a non-zero value to abort
+  or zero to continue. (If there is an error in your Python callable
+  then non-zero will be returned).
+
+  -* sqlite3_progress_handler
+*/
 
 static PyObject *
 Connection_setprogresshandler(Connection *self, PyObject *args)
@@ -949,6 +1184,37 @@ authorizercb(void *context, int operation, const char *paramone, const char *par
   return result;
 }
 
+/** .. method:: setauthorizer(callable)
+
+  While `preparing <http://www.sqlite.org/c3ref/prepare.html>`_
+  statements, SQLite will call any defined authorizer to see if a
+  particular action is ok to be part of the statement.
+
+  Typical usage would be if you are running user supplied SQL and want
+  to prevent running of create and drop operatings.  You should also
+  set the :class:`statementcachesize <Connection>` to zero.  !!!
+  mention authorizer in statement cache doc
+
+  The authorizer callback has 5 parameters:
+
+    * An `operation code <http://www.sqlite.org/c3ref/c_alter_table.html>`_
+    * A string (or None) dependent on the operation `(listed as 3rd) <http://www.sqlite.org/c3ref/c_alter_table.html>`_
+    * A string (or None) dependent on the operation `(listed as 4th) <http://www.sqlite.org/c3ref/c_alter_table.html>`_
+    * A string name of the database (or None)
+    * Name of the innermost trigger or view doing the access (or None)
+
+  The authorizer callback should return one of :const:`SQLITE_OK`,
+  :const:`SQLITE_DENY` or :const:`SQLITE_IGNORE`.
+  (:const:`SQLITE_DENY` is returned if there is an error in your
+  Python code).
+
+  .. seealso:
+ 
+    * :ref:`Example <authorizer-example>`
+
+  -* sqlite3_set_authorizer
+*/
+
 static PyObject *
 Connection_setauthorizer(Connection *self, PyObject *callable)
 {
@@ -1013,6 +1279,29 @@ collationneeded_cb(void *pAux, APSW_ARGUNUSED sqlite3 *db, int eTextRep, const c
   PyGILState_Release(gilstate);
 }
 
+/** .. method:: collationneeded(callable)
+
+  `callable` will be called if a statement requires a `collation
+  <http://en.wikipedia.org/wiki/Collation>`_ that hasn't been
+  registered. Your callable will be passed two parameters. The first
+  is the connection object. The second is the name of the
+  collation. If you have the collation code available then call
+  :meth:`Connection.createcollation`.
+
+  This is useful for creating collations on demand.  For example you
+  may include the `locale <http://en.wikipedia.org/wiki/Locale>`_ in
+  the collation name, but since there are thousands of locales in
+  popular use it would not be useful to :meth:`prereigster
+  <Connection.createcollation>` them all.  Using
+  :meth:`~Connection.collationneeded` tells you when you need to
+  register them.
+
+  .. seealso::
+
+    * !!! collationneeded example
+
+  -* sqlite3_collation_needed
+*/
 static PyObject *
 Connection_collationneeded(Connection *self, PyObject *callable)
 {
@@ -1091,60 +1380,26 @@ busyhandlercb(void *context, int ncall)
   return result;
 }
 
-#if defined(EXPERIMENTAL) && !defined(SQLITE_OMIT_LOAD_EXTENSION)  /* extension loading */
-static PyObject *
-Connection_enableloadextension(Connection *self, PyObject *enabled)
-{
-  int enabledp, res;
+/** .. method:: setbusyhandler(callable)
 
-  CHECK_USE(NULL);
-  CHECK_CLOSED(self, NULL);
+   Sets the busy handler to callable. callable will be called with one
+   integer argument which is the number of prior calls to the busy
+   callback for the same lock. If the busy callback returns something
+   that evaluates to False, then SQLite returns :const:`SQLITE_BUSY` to the
+   calling code.. If the callback returns something that evaluates to
+   True, then SQLite tries to open the table again and the cycle
+   repeats.
 
-  /* get the boolean value */
-  enabledp=PyObject_IsTrue(enabled);
-  if(enabledp==-1) return NULL;
-  if (PyErr_Occurred()) return NULL;
+   If you previously called :meth:`~Connection.setbusytimeout` then
+   calling this overrides that.
 
-  /* call function */
-  APSW_FAULT_INJECT(EnableLoadExtensionFail, res=sqlite3_enable_load_extension(self->db, enabledp), res=SQLITE_IOERR);
-  SET_EXC(res, self->db);
+   .. seealso::
 
-  /* done */
-  if (res==SQLITE_OK)
-    Py_RETURN_NONE;
-  return NULL;
-}
+     * :meth:`Connection.setbusytimeout`
 
-static PyObject *
-Connection_loadextension(Connection *self, PyObject *args)
-{
-  int res;
-  char *zfile=NULL, *zproc=NULL, *errmsg=NULL;
+   -* sqlite3_busy_handler
 
-  CHECK_USE(NULL);
-  CHECK_CLOSED(self, NULL);
-  
-  if(!PyArg_ParseTuple(args, "es|z:loadextension(filename, entrypoint=None)", STRENCODING, &zfile, &zproc))
-    return NULL;
-
-  APSW_BEGIN_ALLOW_THREADS
-    res=sqlite3_load_extension(self->db, zfile, zproc, &errmsg);
-  APSW_END_ALLOW_THREADS;
-  PyMem_Free(zfile);
-
-  /* load_extension doesn't set the error message on the db so we have to make exception manually */
-  if(res!=SQLITE_OK)
-    {
-      assert(errmsg);
-      PyErr_Format(ExcExtensionLoading, "ExtensionLoadingError: %s", errmsg?errmsg:"unspecified");
-      sqlite3_free(errmsg);
-      return NULL;
-    }
-  Py_RETURN_NONE;
-}
-
-#endif /* EXPERIMENTAL extension loading */
-
+*/
 static PyObject *
 Connection_setbusyhandler(Connection *self, PyObject *callable)
 {
@@ -1186,6 +1441,93 @@ Connection_setbusyhandler(Connection *self, PyObject *callable)
 
   Py_RETURN_NONE;
 }
+
+#if defined(EXPERIMENTAL) && !defined(SQLITE_OMIT_LOAD_EXTENSION)  /* extension loading */
+
+/** .. method:: enableloadextension(enable)
+
+  Enables/disables `extension loading
+  <http://www.sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_
+  which is disabled by default.
+
+  :param enable: If True then extension loading is enabled, else it is disabled.
+
+  -* sqlite3_enable_load_extension
+
+  .. seealso::
+
+    * :meth:`~Connection.loadextension`
+*/
+
+static PyObject *
+Connection_enableloadextension(Connection *self, PyObject *enabled)
+{
+  int enabledp, res;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  /* get the boolean value */
+  enabledp=PyObject_IsTrue(enabled);
+  if(enabledp==-1) return NULL;
+  if (PyErr_Occurred()) return NULL;
+
+  /* call function */
+  APSW_FAULT_INJECT(EnableLoadExtensionFail, res=sqlite3_enable_load_extension(self->db, enabledp), res=SQLITE_IOERR);
+  SET_EXC(res, self->db);
+
+  /* done */
+  if (res==SQLITE_OK)
+    Py_RETURN_NONE;
+  return NULL;
+}
+
+/** .. method:: loadextension(filename[, entrypoint])
+
+  Loads `filename` as an `extension <http://www.sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_
+
+  :param filename: The file to load.  This must be Unicode or Unicode compatible
+
+  :param entrypoint: The initialization method to call.  If this
+    parameter is not supplied then the SQLite default of
+    ``sqlite3_extension_init`` is used.
+
+  :raises apsw.ExtensionLoadingError: if the extension could not be
+    loaded.  The exception string includes more details.
+
+  .. seealso::
+
+    * :meth:`~Connection.enableloadextension`
+*/
+static PyObject *
+Connection_loadextension(Connection *self, PyObject *args)
+{
+  int res;
+  char *zfile=NULL, *zproc=NULL, *errmsg=NULL;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+  
+  if(!PyArg_ParseTuple(args, "es|z:loadextension(filename, entrypoint=None)", STRENCODING, &zfile, &zproc))
+    return NULL;
+
+  APSW_BEGIN_ALLOW_THREADS
+    res=sqlite3_load_extension(self->db, zfile, zproc, &errmsg);
+  APSW_END_ALLOW_THREADS;
+  PyMem_Free(zfile);
+
+  /* load_extension doesn't set the error message on the db so we have to make exception manually */
+  if(res!=SQLITE_OK)
+    {
+      assert(errmsg);
+      PyErr_Format(ExcExtensionLoading, "ExtensionLoadingError: %s", errmsg?errmsg:"unspecified");
+      sqlite3_free(errmsg);
+      return NULL;
+    }
+  Py_RETURN_NONE;
+}
+
+#endif /* EXPERIMENTAL extension loading */
 
 
 /* USER DEFINED FUNCTION CODE.*/
@@ -1625,6 +1967,35 @@ cbdispatch_final(sqlite3_context *context)
   PyGILState_Release(gilstate);
 }
 
+/** .. method:: createscalarfunction(name, callable[, numargs=-1])
+
+  Registers a scalar function.  Scalar functions operate on one set of paramaters once.  
+
+  :param name: The string name of the function.  It should be less than 255 characters
+  :param callable: The function that will be called
+  :param numargs: How many arguments the function takes, with -1 meaning any number
+
+  !!! change code to use a list, never free, forget about ascii conversion
+
+  .. note:: 
+
+    You can register the same named function but with different
+    callables and `numargs`.  For example::
+
+      connection.createscalarfunction("toip", ipv4convert, 4)
+      connection.createscalarfunction("toip", ipv6convert, 16)
+      connection.createscalarfunction("toip", strconvert, -1)
+
+    The one with the correct `numargs` will be called and only if that
+    doesn't exist then the one with negative `numargs` will be called.
+
+  .. seealso::
+
+     * :ref:`Example <scalar-example>`
+     * :meth:`~Connection.createaggregatefunction`
+
+  -* sqlite3_create_function
+*/
 
 static PyObject *
 Connection_createscalarfunction(Connection *self, PyObject *args)
@@ -1707,6 +2078,48 @@ Connection_createscalarfunction(Connection *self, PyObject *args)
   
   Py_RETURN_NONE;
 }
+
+/** .. method:: createaggregatefunction(name, factory[, numargs=-1])
+
+  Registers an aggregate function.  Aggregate functions operate on all
+  the relevant rows such as counting how many there are.
+
+  :param name: The string name of the function.  It should be less than 255 characters
+  :param callable: The function that will be called
+  :param numargs: How many arguments the function takes, with -1 meaning any number
+
+  When a query starts, the `factory` will be called and must return a tuple of 3 items:
+
+    a context object
+       This can be of any type
+
+    a step function
+       This function is called once for each row.  The first parameter
+       will be the context object and the remaining parameters will be
+       from the SQL statement.  Any value returned will be ignored.
+
+    a final function
+       This function is called at the very end with the context object
+       as a parameter.  The value returned is set as the return for
+       the function. The final function is always called even if an
+       exception was raised by the step function. This allows you to
+       ensure any resources are cleaned up.
+
+  !!! change code to use a list, never free, forget about ascii conversion
+
+  .. note:: 
+
+    You can register the same named function but with different
+    callables and `numargs`.  See
+    :meth:`~Connection.createscalarfunction` for an example.
+
+  .. seealso::
+
+     * :ref:`Example <aggregate-example>`
+     * :meth:`~Connection.createscalarfunction`
+
+  -* sqlite3_create_function
+*/
 
 static PyObject *
 Connection_createaggregatefunction(Connection *self, PyObject *args)
@@ -1852,6 +2265,33 @@ collation_destroy(void *context)
   PyGILState_Release(gilstate);
 }
 
+/** .. method:: createcollation(name, callback)
+
+  You can control how SQLite sorts (termed `collation
+  <http://en.wikipedia.org/wiki/Collation>`_) when giving the
+  ``COLLATE`` term to a `SELECT
+  <http://www.sqlite.org/lang_select.html>`_.  For example your
+  collation could take into account locate or do numeric sorting.
+
+  The `callback` will be called with two items.  It should return -1
+  if the first is less then the second, 0 if they are equal, and 1 if
+  first is greater::
+
+     def mycollation(one, two):
+         if one < two:
+             return -1
+         if one == two:
+             return 0
+         if one > two:
+             return 1
+
+  .. seealso::
+
+    * :ref:`Example <collation-example>`
+
+  -* sqlite3_create_collation_v2
+*/
+
 static PyObject *
 Connection_createcollation(Connection *self, PyObject *args)
 {
@@ -1893,6 +2333,44 @@ Connection_createcollation(Connection *self, PyObject *args)
   
   Py_RETURN_NONE;
 }
+
+/** .. method:: filecontrol(op, pointer)
+
+  Calls the :meth:`~VFSFile.xFileControl` method on the :ref:`VFS`
+  implementing :class:`file access <VFSFile>` for the database.
+
+  :param op: A `numeric code
+    <http://sqlite.org/c3ref/c_fcntl_lockstate.html>`_ with values less
+    than 100 reserved for SQLite internal use.
+  :param pointer: A number which is treated as a ``void pointer`` at the C level.
+
+  The method does not return anything.  If you want data returned back
+  then the `pointer` needs to point to something mutable.  Here is an
+  example using `ctypes
+  <http://www.python.org/doc/2.5.2/lib/module-ctypes.html>`_ of
+  passing a Python dictionary to :meth:`~VFSFile.xFileControl` which
+  can then modify the dictionary to set return values::
+
+    obj={"foo": 1, 2: 3}                 # object we want to pass
+    objwrap=ctypes.py_object(obj)        # objwrap must live before and after the call else
+                                         # it gets garbage collected
+    connection.filecontrol(
+             123,                        # our op code
+             ctypes.addressof(objwrap))  # get pointer
+
+  The :meth:`~VFSFile.xFileControl` method then looks like this::
+
+    def xFileControl(self, op, pointer):
+        if op==123:                      # our op code
+            obj=ctypes.py_object.from_address(pointer).value
+            # play with obj - you can use id() to verify it is the same
+            print obj["foo"]
+            obj["result"]="it worked"
+        else:
+            raise Exception("Unknown file control "+`op`)
+
+  -* sqlite3_file_control
+*/
 
 static PyObject *
 Connection_filecontrol(Connection *self, PyObject *args)

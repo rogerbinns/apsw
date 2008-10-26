@@ -3,20 +3,41 @@
 # Work out how much coverage we actually have
 
 import glob
+import os
+
+def output(filename, percent, total):
+    # Python bug "% 3.2f" doesn't behave correctly (100.00 is formatted with leading space!)
+    op=["%-40s" % (filename,),
+        "% 3.2f%%" % (percent,),
+        " of % 6d" % (total,)]
+    if percent==100:
+        op[1]="100.00%"
+    print "".join(op)
+
 
 linesexecuted=0
 linestotal=0
 
-for f in glob.glob("*.c.gcov"):
+names=glob.glob("*.c.gcov")
+names.sort()
+
+for f in names:
     if f=="sqlite3.c.gcov":
         continue
+    fileexec=0
+    filetotal=0
     for line in open(f, "rtU"):
         line=line.split(":", 1)[0].strip()
         if line=="-":
             continue
         if line!="#####":
             linesexecuted+=1
+            fileexec+=1
         linestotal+=1
+        filetotal+=1
+    n="src/"+os.path.splitext(f)[0]
+    output(n, fileexec*100.0/filetotal, filetotal)
 
-print "Lines executed: %0.2f%% of %d" % (linesexecuted*100.0/linestotal, linestotal)
+print
+output("Total", linesexecuted*100.0/linestotal, linestotal)
         

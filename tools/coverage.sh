@@ -24,6 +24,6 @@ gcc -fPIC -shared -Isqlite3 -I. -o testextension.sqlext -Isqlite3 src/testextens
 set +e
 $PYTHON $args
 res=$?
-gcov src/apsw.c
+gcov src/apsw.c > /dev/null
 python tools/coverageanalyser.py
 exit $res

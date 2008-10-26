@@ -69,7 +69,7 @@ Example
             op.append(prefix+line)
             continue
         op.append("")
-        op.append("  .. code-block:: none")
+        op.append("  .. code-block:: text")
         op.append("")
         for line in open(".tmpop-%s-%d" % (filename, counter), "rtU"):
             line=line.rstrip()

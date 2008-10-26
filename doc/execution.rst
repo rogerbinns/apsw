@@ -136,3 +136,14 @@ storage) are used. See SQLite ticket `2125
 <http://www.sqlite.org/cvstrac/tktview?tn=2125>`_ and `3246
 <http://sqlite.org/cvstrac/tktview?tn=3246>`_ for more details.
 
+.. _statementcache:
+
+Statement Cache
+===============
+
+!!! fill this in
+
+Each connection maintains a cache mapping
+  SQL queries to a `prepared statement
+  <http://www.sqlite.org/c3ref/stmt.html>`_ to avoid the overhead of `repreparing <http://www.sqlite.org/c3ref/prepare.html>`_ queries that are executed mutl
+

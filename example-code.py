@@ -118,7 +118,7 @@ for row in cursor.executemany("select * from foo where x=?", ( [1], [2], [3] ) )
     print row
 
 ###
-### defining your own functions
+### defining your own functions  @@ scalar-example
 ###
 
 def ilove7(*args):
@@ -134,7 +134,7 @@ for row in cursor.execute("select seven(x,y) from foo"):
 #@@ENDCAPTURE
 
 ###
-### aggregate functions are more complex
+### aggregate functions are more complex @@ aggregate-example
 ###
 
 # here we return the longest item when represented as a string
@@ -161,7 +161,7 @@ for row in cursor.execute("select longest(x) from foo"):
     print row
 
 ###
-### Defining collations.  
+### Defining collations.  @@ collation-example
 ###
 
 # The default sorting mechanisms don't understand numbers at the end of strings
@@ -205,7 +205,7 @@ for row in cursor.execute("select * from s order by str collate strnum"):
 #@@ENDCAPTURE
 
 ###
-### Authorizer (eg if you want to control what user supplied SQL can do)
+### Authorizer (eg if you want to control what user supplied SQL can do) @@ authorizer-example
 ###
 
 def authorizer(operation, paramone, paramtwo, databasename, triggerorview):
@@ -454,7 +454,7 @@ os.remove("myobfudb")
 
 
 ###
-### Limits
+### Limits @@example-limit
 ###
 
 #@@CAPTURE
