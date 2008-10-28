@@ -2593,21 +2593,23 @@ class APSW(unittest.TestCase):
 
     def testIssue31(self):
         # http://code.google.com/p/apsw/issues/detail?id=31
-        
-        # The claim is that using the same connection in two threads
-        # on Windows results in the main thread and the same
-        # connection threads all hanging.
+        randomnumbers=[random.randint(0,10000) for _ in range(10000)]
 
-        self.db.cursor().execute("create table foo(x)")
+        cursor=self.db.cursor()
+        cursor.execute("create table foo(x); begin")
+        for num in randomnumbers:
+            cursor.execute("insert into foo values(?)", (num,))
+        cursor.execute("end")
+
+        self.db.createscalarfunction("timesten", lambda x: x*10)
+        
         def dostuff(n):
             # spend n seconds doing stuff to the database
             c=self.db.cursor()
             b4=time.time()
             while time.time()-b4<n:
-                c.executemany("insert into foo values(?)", randomintegers(20))
-                for row in c.execute("select * from foo"):
-                    pass
-                c.executemany("delete from foo where x=?", randomintegers(20))
+                sql="select timesten(x) from foo where x=%d order by x" % (random.choice(randomnumbers),)
+                c.execute(sql)
 
         threads=[ThreadRunner(dostuff, 5) for _ in range(20)]
         for t in threads:
@@ -2699,10 +2701,50 @@ class APSW(unittest.TestCase):
             db.close()
 
 
-    def sourceCheckFunction(self, filename, name, lines):
-        # Checks an individual function does things right
+    # calls that need protection
+    calls={
+        'sqlite3api': { # items of interest - sqlite3 calls
+                        'match': re.compile(r"(sqlite3_[A-Za-z0-9_]+)\s*\("),
+                        # what must also be on same or preceding line
+                        'needs': re.compile("PYSQLITE_CALL"),
 
-        # not checked
+           # except if match.group(1) matches this - these don't
+           # acquire db mutex so no need to wrap (determined by
+           # examining sqlite3.c).  If they acquire non-database
+           # mutexes then that is ok.
+
+           # In the case of sqlite3_result_*|declare_vtab, the mutex
+           # is already held by enclosing sqlite3_step and the methods
+           # methods will only be called from that same thread so it
+           # isn't a problem.
+                        'skipcalls': re.compile("^sqlite3_(blob_bytes|column_count|bind_parameter_count|data_count|vfs_.+|changes|total_changes|get_autocommit|last_insert_rowid|complete|interrupt|limit|free|threadsafe|value_.+|libversion|enable_shared_cache|initialize|shutdown|config|memory_.+|soft_heap_limit|randomness|release_memory|status|result_.+|user_data|mprintf|aggregate_context|declare_vtab)$"),
+                        # also ignore this file
+                        'skipfiles': re.compile(r"[/\\]apsw.c$"),
+                        # error message
+                        'desc': "sqlite3_ calls must wrap with PYSQLITE_CALL",
+                        },
+        'inuse':  {
+                        'match': re.compile(r"(convert_column_to_pyobject|statementcache_prepare|statementcache_finalize|statementcache_next)\s*\("),
+                        'needs': re.compile("INUSE_CALL"),
+                        'desc': "call needs INUSE wrapper",
+                        }
+        }
+    def sourceCheckMutexCall(self, filename, name, lines):
+        # we check that various calls are wrapped with various macros
+        for i,line in enumerate(lines):
+            for k,v in self.calls.items():
+                if v.get('skipfiles', None) and v['skipfiles'].match(filename):
+                    continue
+                mo=v['match'].search(line)
+                if mo:
+                    func=mo.group(1)
+                    if v.get('skipcalls', None) and v['skipcalls'].match(func):
+                        continue
+                    if not v["needs"].search(line) and not v["needs"].search(lines[i-1]):
+                        self.fail("%s: %s() line %d call to %s(): %s - %s\n" % (filename, name, i, func, v['desc'], line.strip()))
+
+    def sourceCheckFunction(self, filename, name, lines):
+        # not further checked
         if name.split("_")[0] in ("ZeroBlobBind", "APSWVFS", "APSWVFSFile", "APSWBuffer") :
                 return
 
@@ -2841,26 +2883,44 @@ class APSW(unittest.TestCase):
                 self.fail("// style comment in "+filename)
 
             # check check funcs
-            funcpat=re.compile(r"^(\w+_\w+)\s*\(\s*\w+\s*\*\s*self")
-            name=None
+            funcpat1=re.compile(r"^(\w+_\w+)\s*\(\s*\w+\s*\*\s*self")
+            funcpat2=re.compile(r"^(\w+)\s*\(")
+            name1=None
+            name2=None
             lines=[]
-            infunc=False
+            infunc=0
             for line in open(filename, "rtU"):
                 if line.startswith("}") and infunc:
-                    infunc=False
-                    self.sourceCheckFunction(filename, name, lines)
+                    if infunc==1:
+                        self.sourceCheckMutexCall(filename, name1, lines)
+                        self.sourceCheckFunction(filename, name1, lines)
+                    elif infunc==2:
+                        self.sourceCheckMutexCall(filename, name2, lines)
+                    else:
+                        assert False
+                    infunc=0
                     lines=[]
-                    name=None
+                    name1=None
+                    name2=None
                     continue
-                if name and line.startswith("{"):
-                    infunc=True
+                if name1 and line.startswith("{"):
+                    infunc=1
+                    continue
+                if name2 and line.startswith("{"):
+                    infunc=2
                     continue
                 if infunc:
                     lines.append(line)
                     continue
-                m=funcpat.match(line)
+                m=funcpat1.match(line)
                 if m:
-                    name=m.group(1)
+                    name1=m.group(1)
+                    continue
+                m=funcpat2.match(line)
+                if m:
+                    name2=m.group(1)
+                    continue
+                
 
     def testConfig(self):
         "Verify sqlite3_config wrapper"
@@ -3112,16 +3172,16 @@ class APSW(unittest.TestCase):
         # test raw file object
         self.db.close()
         db2.close()
-        f=ObfuscatedVFSFile("", "testdb", [apsw.SQLITE_OPEN_READONLY, 0])
+        f=ObfuscatedVFSFile("", "testdb", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
         del f # check closes
-        f=ObfuscatedVFSFile("", "testdb", [apsw.SQLITE_OPEN_READONLY, 0])
+        f=ObfuscatedVFSFile("", "testdb", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
         data=f.xRead(len(obfu), 0) # will encrypt it
         self.assertEqual(obfu, data)
         f.xClose()
         f.xClose()
-        f2=apsw.VFSFile("", "testdb", [apsw.SQLITE_OPEN_READONLY, 0])
+        f2=apsw.VFSFile("", "testdb", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
         del f2
-        f2=apsw.VFSFile("", "testdb2", [apsw.SQLITE_OPEN_READONLY, 0])
+        f2=apsw.VFSFile("", "testdb2", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
         data=f2.xRead(len(obfu), 0)
         self.assertEqual(obfu, data)
         f2.xClose()
@@ -3855,7 +3915,7 @@ class APSW(unittest.TestCase):
             # check it
             self.assertRaises(TypeError, xgle, 3, "seven")
             # cause an error
-            self.assertRaises(apsw.CantOpenError, vfs.xOpen, u("."), [0xfffffff,0])
+            self.assertRaises(apsw.CantOpenError, vfs.xOpen, u("."), [apsw.SQLITE_OPEN_READWRITE|apsw.SQLITE_OPEN_MAIN_DB,0])
             # check it works
             res=xgle("apswtest", 512)
             self.assertEqual(type(res), type(()))
@@ -3920,10 +3980,10 @@ class APSW(unittest.TestCase):
         testdb() # should work just fine
 
         # cause an open failure
-        self.assertRaises(apsw.CantOpenError, TestFile, ".", [apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
+        self.assertRaises(apsw.CantOpenError, TestFile, ".", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
 
         ## xRead
-        t=TestFile("testfile", [apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
+        t=TestFile("testfile", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
         self.assertRaises(TypeError, t.xRead, "three", "four")
         self.assertRaises(OverflowError, t.xRead, l("0xffffffffeeeeeeee0"), 1)
         self.assertRaises(OverflowError, t.xRead, 1, l("0xffffffffeeeeeeee0"))
@@ -3959,8 +4019,8 @@ class APSW(unittest.TestCase):
         ## xUnlock
         self.assertRaises(TypeError, t.xUnlock, "three")
         self.assertRaises(OverflowError, t.xUnlock, l("0xffffffffeeeeeeee0"))
-        # doesn't care about nonsensical levels
-        t.xUnlock(-1)
+        # doesn't care about nonsensical levels - assert fails in debug build
+        # t.xUnlock(-1)
         TestFile.xUnlock=TestFile.xUnlock1
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.xUnlock=TestFile.xUnlock2
@@ -3971,8 +4031,8 @@ class APSW(unittest.TestCase):
         ## xLock
         self.assertRaises(TypeError, t.xLock, "three")
         self.assertRaises(OverflowError, t.xLock, l("0xffffffffeeeeeeee0"))
-        # doesn't care about nonsensical levels
-        t.xLock(0xffffff)
+        # doesn't care about nonsensical levels - assert fails in debug build
+        # t.xLock(0xffffff)
         TestFile.xLock=TestFile.xLock1
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.xLock=TestFile.xLock2
@@ -4085,7 +4145,7 @@ class APSW(unittest.TestCase):
         del t
         gc.collect()
 
-        t=apsw.VFSFile("", "testfile2", [apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
+        t=apsw.VFSFile("", "testfile2", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
         t.xClose()
         # check all functions detect closed file
         for n in dir(t):
@@ -4663,13 +4723,13 @@ class APSW(unittest.TestCase):
         testdb(vfsname="faultvfs")
 
         ## xCloseFails
-        t=apsw.VFSFile("", "testfile", [apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
+        t=apsw.VFSFile("", "testfile", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
         apsw.faultdict["xCloseFails"]=True
         self.assertRaises(apsw.IOError, t.xClose)
         del t
         # now catch it in the destructor
         def foo():
-            t=apsw.VFSFile("", "testfile", [apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
+            t=apsw.VFSFile("", "testfile", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
             apsw.faultdict["xCloseFails"]=True
             del t
             gc.collect()

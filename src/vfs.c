@@ -1554,6 +1554,7 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
   PyObject *flags=NULL, *pyname=NULL, *utf8name=NULL;
   int xopenresult;
   int flagsout=0;
+  long flagsin;
   int res=-1; /* error */
 
   PyObject *itemzero=NULL, *itemone=NULL, *zero=NULL, *pyflagsout=NULL;
@@ -1599,6 +1600,15 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
   if(-1==PySequence_SetItem(flags, 1, zero))
     goto finally;
   
+  flagsin=PyIntLong_AsLong(itemzero);
+  if(flagsin!=(int)flagsin)
+    {
+      PyErr_Format(PyExc_OverflowError, "flags[0] is too big!");
+      AddTraceBackHere(__FILE__, __LINE__, "VFSFile.__init__", "{s: O}", "flags", flags);
+    }
+  if(PyErr_Occurred())
+    goto finally;
+
   vfstouse=sqlite3_vfs_find(vfs);
   if(!vfstouse)
     {
@@ -1607,7 +1617,7 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
     }
   file=PyMem_Malloc(vfstouse->szOsFile);
   if(!file) goto finally;
-  xopenresult=vfstouse->xOpen(vfstouse, (utf8name==Py_None)?NULL:PyBytes_AS_STRING(utf8name), file, (int)PyIntLong_AsLong(itemzero), &flagsout);
+  xopenresult=vfstouse->xOpen(vfstouse, (utf8name==Py_None)?NULL:PyBytes_AS_STRING(utf8name), file, (int)flagsin, &flagsout);
   SET_EXC(xopenresult, NULL);
   if(PyErr_Occurred())
     {

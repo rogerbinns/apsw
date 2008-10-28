@@ -24,6 +24,21 @@
  
 */
 
+/* used when there is no self and hence no self->inuse */
+#define _PYSQLITE_CALL(x) \
+  do { Py_BEGIN_ALLOW_THREADS { x; } Py_END_ALLOW_THREADS } while(0)
+
+#define INUSE_CALL(x)                               \
+  do {                                              \
+       assert(self->inuse==0); self->inuse=1;       \
+       { x; }                                       \
+       assert(self->inuse==1); self->inuse=0;       \
+  } while(0)
+
+/* normal use */
+#define PYSQLITE_CALL(y) INUSE_CALL(_PYSQLITE_CALL(y))
+
+
 #ifdef __GNUC__
 #define APSW_ARGUNUSED __attribute__ ((unused))
 #else
@@ -200,7 +215,9 @@ convert_value_to_pyobject(sqlite3_value *value)
 static PyObject *
 convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
 {
-  int coltype=sqlite3_column_type(stmt, col);
+  int coltype;
+
+  _PYSQLITE_CALL(coltype=sqlite3_column_type(stmt, col));
 
   APSW_FAULT_INJECT(UnknownColumnType,,coltype=12348);
 
@@ -208,7 +225,8 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
     {
     case SQLITE_INTEGER:
       {
-        sqlite3_int64 val=sqlite3_column_int64(stmt, col);
+        sqlite3_int64 val;
+        _PYSQLITE_CALL(val=sqlite3_column_int64(stmt, col));
 #if PY_MAJOR_VERSION<3
         if (val>=APSW_INT32_MIN && val<=APSW_INT32_MAX)
           return PyInt_FromLong((long)val);
@@ -217,16 +235,29 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
       }
 
     case SQLITE_FLOAT:
-      return PyFloat_FromDouble(sqlite3_column_double(stmt, col));
-      
+      { 
+        double d;
+        _PYSQLITE_CALL(d=sqlite3_column_double(stmt, col));
+        return PyFloat_FromDouble(d);
+      }
     case SQLITE_TEXT:
-      return convertutf8stringsize((const char*)sqlite3_column_text(stmt, col), sqlite3_column_bytes(stmt, col));
+      {
+        const char *data;
+        size_t len;
+        _PYSQLITE_CALL( (data=(const char*)sqlite3_column_text(stmt, col), len=sqlite3_column_bytes(stmt, col)) );
+        return convertutf8stringsize(data, len);
+      }
 
     case SQLITE_NULL:
       Py_RETURN_NONE;
 
     case SQLITE_BLOB:
-      return converttobytes(sqlite3_column_blob(stmt, col), sqlite3_column_bytes(stmt, col));
+      {
+        const void *data;
+        size_t len;
+        _PYSQLITE_CALL( (data=sqlite3_column_blob(stmt, col), len=sqlite3_column_bytes(stmt, col)) );
+        return converttobytes(data, len);
+      }
 
     default:
       PyErr_Format(APSWException, "Unknown sqlite column type %d!", coltype);
@@ -255,14 +286,3 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
 { if(!connection->db) { PyErr_Format(ExcConnectionClosed, "The connection has been closed"); return e; } }
 
 
-/* these two are used by Connection and Cursor */
-
-#define APSW_BEGIN_ALLOW_THREADS \
-  do { \
-      assert(self->inuse==0); self->inuse=1; \
-      Py_BEGIN_ALLOW_THREADS
-
-#define APSW_END_ALLOW_THREADS \
-     Py_END_ALLOW_THREADS; \
-     assert(self->inuse==1); self->inuse=0; \
-  } while(0)

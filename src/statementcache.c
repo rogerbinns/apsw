@@ -257,7 +257,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
           assert(val->incache);
           assert(val->vdbestatement);
           val->inuse=1;
-          sqlite3_clear_bindings(val->vdbestatement);
+          _PYSQLITE_CALL(sqlite3_clear_bindings(val->vdbestatement));
           /* unlink from lru tracking */
           if(sc->mru==val)
             sc->mru=val->lru_next;
@@ -292,7 +292,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
       assert(!val->incache);
       assert(!val->inuse);
       if(val->vdbestatement)
-        sqlite3_finalize(val->vdbestatement);
+        _PYSQLITE_CALL(sqlite3_finalize(val->vdbestatement));
       APSWBuffer_XDECREF_likely(val->utf8);
       APSWBuffer_XDECREF_unlikely(val->next);
       Py_XDECREF(val->origquery);
@@ -328,9 +328,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
      will always have had an extra zero on the end.  The assert is just to make
      sure */
   assert(buffer[buflen+1-1]==0);
-  Py_BEGIN_ALLOW_THREADS
-    res=sqlite3_prepare_v2(sc->db, buffer, buflen+1, &val->vdbestatement, &tail);
-  Py_END_ALLOW_THREADS;
+  _PYSQLITE_CALL(res=sqlite3_prepare_v2(sc->db, buffer, buflen+1, &val->vdbestatement, &tail));
 
   /* handle error */
   if(res!=SQLITE_OK)
@@ -379,7 +377,7 @@ statementcache_finalize(StatementCache *sc, APSWStatement *stmt)
   assert(stmt->inuse);
   stmt->inuse=0;
 
-  res=sqlite3_reset(stmt->vdbestatement);
+  _PYSQLITE_CALL(res=sqlite3_reset(stmt->vdbestatement));
 
   /* is it going to be put in cache? */
   if(sc->cache && stmt->vdbestatement && APSWBuffer_GET_SIZE(stmt->utf8)<sc->maxsize && (stmt->incache || !PyDict_Contains(sc->cache, stmt->utf8)))
@@ -492,7 +490,7 @@ statementcache_next(StatementCache *sc, APSWStatement **ppstmt)
   if(next)
     Py_INCREF(next);
 
-  res=statementcache_finalize(sc, *ppstmt);
+  res=statementcache_finalize(sc, *ppstmt); /* INUSE_CALL not needed here */
 
   if(res!=SQLITE_OK)
     goto error;
@@ -500,7 +498,7 @@ statementcache_next(StatementCache *sc, APSWStatement **ppstmt)
   if(next)
     {
       /* statementcache_prepare already sets exception */
-      *ppstmt=statementcache_prepare(sc, next);
+      *ppstmt=statementcache_prepare(sc, next);  /* INUSE_CALL not needed here */
       res=(*ppstmt)?SQLITE_OK:SQLITE_ERROR;
     }
   else
@@ -564,7 +562,7 @@ static void
 APSWStatement_dealloc(APSWStatement *stmt)
 {
   if(stmt->vdbestatement)
-    sqlite3_finalize(stmt->vdbestatement);
+    _PYSQLITE_CALL(sqlite3_finalize(stmt->vdbestatement));
   assert(stmt->inuse==0);
   APSWBuffer_XDECREF_likely(stmt->utf8);
   APSWBuffer_XDECREF_likely(stmt->next);

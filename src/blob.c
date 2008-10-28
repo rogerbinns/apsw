@@ -214,7 +214,8 @@ APSWBlob_dealloc(APSWBlob *self)
 {
   if(self->pBlob)
     {
-      int res=sqlite3_blob_close(self->pBlob);
+      int res;
+      PYSQLITE_CALL(res=sqlite3_blob_close(self->pBlob));
       if(res!=SQLITE_OK)
         {
           PyObject *err_type, *err_value, *err_traceback;
@@ -316,9 +317,7 @@ APSWBlob_read(APSWBlob *self, PyObject *args)
   if(!buffy) return NULL;
 
   thebuffer= PyBytes_AS_STRING(buffy);
-  APSW_BEGIN_ALLOW_THREADS
-    res=sqlite3_blob_read(self->pBlob, thebuffer, length, self->curoffset);
-  APSW_END_ALLOW_THREADS;
+  PYSQLITE_CALL(res=sqlite3_blob_read(self->pBlob, thebuffer, length, self->curoffset));
 
   if(res!=SQLITE_OK)
     {
@@ -444,9 +443,7 @@ APSWBlob_write(APSWBlob *self, PyObject *obj)
       return NULL;
     }
 
-  APSW_BEGIN_ALLOW_THREADS
-    res=sqlite3_blob_write(self->pBlob, buffer, size, self->curoffset);
-  APSW_END_ALLOW_THREADS;
+  PYSQLITE_CALL(res=sqlite3_blob_write(self->pBlob, buffer, size, self->curoffset));
 
   if(res!=SQLITE_OK)
     {
@@ -490,9 +487,7 @@ APSWBlob_close(APSWBlob *self, PyObject *args)
   if(!PyArg_ParseTuple(args, "|i:close(force=False)", &force))
     return NULL;
 
-  APSW_BEGIN_ALLOW_THREADS
-    res=sqlite3_blob_close(self->pBlob);
-  APSW_END_ALLOW_THREADS;
+  PYSQLITE_CALL(res=sqlite3_blob_close(self->pBlob));
 
   if(!force)
     SET_EXC(res, self->connection->db);

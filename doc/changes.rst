@@ -14,6 +14,13 @@ derived from `SQLite's speed test <http://www.sqlite.org/cvstrac/fileview?f=sqli
 The statement cache was completely rewritten.  It uses less memory and
 scales significantly better.
 
+It was possible to get a deadlock between the Python GIL and the
+SQLite database mutex when using the same :class:`Connection` across
+multiple threads.  Fixed by releasing the GIL in more places and added
+test that inspects the source to verify GIL/mutex handling.  Thanks to
+amicitas reporting this as `issue 31
+<http://code.google.com/p/apsw/issues/detail?id=31>`_.
+
 Documentation is now done using `Sphinx <http://sphinx.pocoo.org>`_
 which was adopted by Python 3.  This has allowed for richer
 documentation and more output formats such as PDF and `Windows CHM
