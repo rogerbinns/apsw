@@ -35,11 +35,9 @@ GENDOCS = \
 
 all: header docs
 
-# The various tools and sphinx generate a prodigious amount of output which
-# we send to dev null.  latex is whiny.
 docs: $(GENDOCS) doc/example.rst
 	env PYTHONPATH=. python tools/docmissing.py
-	make VERSION=$(VERSION) -C doc clean html htmlhelp  # | egrep -i "^(warning|error):"
+	make VERSION=$(VERSION) -C doc clean html htmlhelp 
 
 doc/example.rst: example-code.py tools/example2rst.py
 	env PYTHONPATH=. python tools/example2rst.py
