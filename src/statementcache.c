@@ -45,7 +45,7 @@
 /* Set to zero to disable statement object recycling.  Even small amount makes a big difference
    with diminishing returns based on how many the user program goes through without freeing and
    the interpretter gc intervals. */
-#define SC_NRECYCLE 0
+#define SC_NRECYCLE 32
 
 /* The maximum length of something in bytes that we would consider putting in the statement cache */
 #define SC_MAXSIZE 16384
@@ -297,6 +297,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
   if(sc->nrecycle)
     {
       val=sc->recyclelist[--sc->nrecycle];
+      assert(Py_REFCNT(val)==1);
       assert(!val->incache);
       assert(!val->inuse);
       if(val->vdbestatement)
@@ -466,7 +467,7 @@ statementcache_finalize(StatementCache *sc, APSWStatement *stmt)
           assert_not_in_dict(sc->cache, (PyObject*)evictee);
           assert(!PyErr_Occurred());
 #if SC_NRECYCLE > 0
-          assert(Py_REFCNT(stmt)==1);
+          assert(Py_REFCNT(evictee)==1);
           sc->recyclelist[sc->nrecycle++]=evictee;
           evictee->incache=0;
 #endif

@@ -2610,17 +2610,15 @@ class APSW(unittest.TestCase):
             b4=time.time()
             while time.time()-b4<n:
                 sql="select timesten(x) from foo where x=%d order by x" % (random.choice(randomnumbers),)
-                #sql="select x from foo where x=%d order by x" % (random.choice(randomnumbers),)
                 self.db.cursor().execute(sql)
 
-        threads=[ThreadRunner(dostuff, 60) for _ in range(20)]
+        threads=[ThreadRunner(dostuff, 10) for _ in range(20)]
         for t in threads:
             t.start()
 
         for t in threads:
             # if there were any errors then exceptions would be raised here
             t.go()
-            
 
     def testWriteUnraiseable(self):
         "Verify writeunraiseable replacement function"
