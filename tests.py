@@ -2593,10 +2593,11 @@ class APSW(unittest.TestCase):
 
     def testIssue31(self):
         # http://code.google.com/p/apsw/issues/detail?id=31
-        randomnumbers=[random.randint(0,10000) for _ in range(10000)]
+        randomnumbers=[random.randint(0,10000) for _ in xrange(10000)]
 
         cursor=self.db.cursor()
-        cursor.execute("create table foo(x); begin")
+        cursor.execute("create table foo(x)")
+        cursor.execute("begin")
         for num in randomnumbers:
             cursor.execute("insert into foo values(?)", (num,))
         cursor.execute("end")
@@ -2609,9 +2610,10 @@ class APSW(unittest.TestCase):
             b4=time.time()
             while time.time()-b4<n:
                 sql="select timesten(x) from foo where x=%d order by x" % (random.choice(randomnumbers),)
-                c.execute(sql)
+                #sql="select x from foo where x=%d order by x" % (random.choice(randomnumbers),)
+                self.db.cursor().execute(sql)
 
-        threads=[ThreadRunner(dostuff, 5) for _ in range(20)]
+        threads=[ThreadRunner(dostuff, 60) for _ in range(20)]
         for t in threads:
             t.start()
 
@@ -2723,15 +2725,17 @@ class APSW(unittest.TestCase):
                         # error message
                         'desc': "sqlite3_ calls must wrap with PYSQLITE_CALL",
                         },
-        'inuse':  {
+        'inuse':        {
                         'match': re.compile(r"(convert_column_to_pyobject|statementcache_prepare|statementcache_finalize|statementcache_next)\s*\("),
                         'needs': re.compile("INUSE_CALL"),
                         'desc': "call needs INUSE wrapper",
-                        }
+                        },
         }
     def sourceCheckMutexCall(self, filename, name, lines):
         # we check that various calls are wrapped with various macros
         for i,line in enumerate(lines):
+            if "PYSQLITE_CALL" in line and "Py" in line:
+                self.fail("%s: %s() line %d - Py call while GIL released - %s" % (filename, name, i, line.strip()))
             for k,v in self.calls.items():
                 if v.get('skipfiles', None) and v['skipfiles'].match(filename):
                     continue

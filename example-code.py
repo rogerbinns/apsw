@@ -304,7 +304,7 @@ blob.write("hello world, again")
 blob.close()
 
 ###
-### Virtual tables
+### Virtual tables  @@ example-vtable
 ###
 
 # This virtual table stores information about files in a set of

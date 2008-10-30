@@ -45,7 +45,10 @@
 /* Set to zero to disable statement object recycling.  Even small amount makes a big difference
    with diminishing returns based on how many the user program goes through without freeing and
    the interpretter gc intervals. */
-#define SC_NRECYCLE 32
+#define SC_NRECYCLE 0
+
+/* The maximum length of something in bytes that we would consider putting in the statement cache */
+#define SC_MAXSIZE 16384
 
 /* Define to do statement cache statistics */
 /* #define SC_STATS */
@@ -72,7 +75,6 @@ typedef struct StatementCache {
   unsigned numentries;              /* how many APSWStatement entries
                                        we have in cache */
   unsigned maxentries;              /* maximum number of entries */
-  Py_ssize_t maxsize;               /* largest query to store in cache */
   APSWStatement *mru;               /* most recently used entry (head of the list) */
   APSWStatement *lru;               /* least recently used entry (tail of the list) */
 #ifdef SC_STATS
@@ -109,6 +111,7 @@ statementcache_sanity_check(StatementCache *sc)
       assert(!sc->mru->lru_next);
       assert(sc->mru->incache);
       assert(sc->mru->vdbestatement);
+      assert(!sc->mru->inuse);
       return;
     }
 
@@ -124,6 +127,8 @@ statementcache_sanity_check(StatementCache *sc)
     {
       /* check item thinks it is in cache */
       assert(item->incache==1);
+      /* should not be inuse - inuse items are removed from lru list */
+      assert(!item->inuse);
       /* does prev actually go to prev? */
       assert(item->lru_prev==last);
       /* check for loops */
@@ -176,7 +181,7 @@ void assert_not_in_dict(PyObject *dict, PyObject *check)
 #define assert_not_in_dict(x,y)
 #endif
 
-/* Internal prepare routine after doing utf8 conversion.  Returns a new reference */
+/* Internal prepare routine after doing utf8 conversion.  Returns a new reference. Must be reentrant */
 static APSWStatement*
 statementcache_prepare(StatementCache *sc, PyObject *query)
 {
@@ -191,9 +196,9 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
     {
       /* Check to see if query is already in cache.  The size checks are to
          avoid calculating hashes on long strings */
-      if( sc->cache && ((PyUnicode_CheckExact(query) && PyUnicode_GET_DATA_SIZE(query)<16384)
+      if( sc->cache && ((PyUnicode_CheckExact(query) && PyUnicode_GET_DATA_SIZE(query) < SC_MAXSIZE)
 #if PY_MAJOR_VERSION < 3 
-          || (PyString_CheckExact(query) && PyString_GET_SIZE(query)<16384)
+          || (PyString_CheckExact(query) && PyString_GET_SIZE(query) < SC_MAXSIZE)
 #endif
                         ))
         {
@@ -229,7 +234,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
   assert(APSWBuffer_Check(utf8));
 
   /* if we have cache and utf8 is reasonable size? */
-  if(sc->cache && APSWBuffer_GET_SIZE(utf8) < sc->maxsize)
+  if(sc->cache && APSWBuffer_GET_SIZE(utf8) < SC_MAXSIZE)
     {
       /* then is it in the cache? */
       val=(APSWStatement*)PyDict_GetItem(sc->cache, utf8);
@@ -237,6 +242,8 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
 
   /* by this point we have created utf8 or added a reference to it */
  cachehit:
+  assert(APSWBuffer_Check(utf8));
+
 #ifdef SC_STATS
   if(val) 
     {
@@ -257,7 +264,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
           assert(val->incache);
           assert(val->vdbestatement);
           val->inuse=1;
-          _PYSQLITE_CALL(sqlite3_clear_bindings(val->vdbestatement));
+
           /* unlink from lru tracking */
           if(sc->mru==val)
             sc->mru=val->lru_next;
@@ -272,10 +279,11 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
             {
               assert(val->lru_next->lru_prev==val);
               val->lru_next->lru_prev=val->lru_prev;
-          }
+            }
           val->lru_prev=val->lru_next=0;
           statementcache_sanity_check(sc);
-          
+
+          _PYSQLITE_CALL(sqlite3_clear_bindings(val->vdbestatement));          
           Py_INCREF( (PyObject*)val);
           assert(PyObject_RichCompareBool(utf8, val->utf8, Py_EQ)==1);
           APSWBuffer_XDECREF_unlikely(utf8);
@@ -297,7 +305,10 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
       APSWBuffer_XDECREF_unlikely(val->next);
       Py_XDECREF(val->origquery);
       val->lru_prev=val->lru_next=0;
+      statementcache_sanity_check(sc);
     }
+#else
+  assert(!val);
 #endif
 
   if(!val)
@@ -355,7 +366,9 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
       val->inuse=0;
 #if SC_NRECYCLE > 0
       if(sc->nrecycle<SC_NRECYCLE)
-        sc->recyclelist[sc->nrecycle++]=val;
+        {
+          sc->recyclelist[sc->nrecycle++]=val;
+        }
       else
 #endif
         Py_DECREF(val);
@@ -364,7 +377,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
 }     
 
 
-/* consumes reference on stmt */
+/* Consumes reference on stmt.  This routine must be reentrant. */
 static int
 statementcache_finalize(StatementCache *sc, APSWStatement *stmt)
 {
@@ -374,68 +387,19 @@ statementcache_finalize(StatementCache *sc, APSWStatement *stmt)
      there is an existing exception hanging over our head */
   assert(!PyErr_Occurred());
 
+  statementcache_sanity_check(sc);
+
   assert(stmt->inuse);
-  stmt->inuse=0;
+
+  /* we do not release the lock until the last possible moment,
+     otherwise another thread could enter and reuse what we are in the
+     middle of disposing of */
 
   _PYSQLITE_CALL(res=sqlite3_reset(stmt->vdbestatement));
 
   /* is it going to be put in cache? */
-  if(sc->cache && stmt->vdbestatement && APSWBuffer_GET_SIZE(stmt->utf8)<sc->maxsize && (stmt->incache || !PyDict_Contains(sc->cache, stmt->utf8)))
+  if(stmt->incache || (sc->cache && stmt->vdbestatement && APSWBuffer_GET_SIZE(stmt->utf8) < SC_MAXSIZE && !PyDict_Contains(sc->cache, stmt->utf8)))
     {
-      /* we don't start doing lru tracking until dict is at least 80% full */
-      /* do we need to do an evict (but stmt may already be in cache so won't cause spill)? */
-      while(sc->numentries+1-stmt->incache > sc->maxentries)
-        {
-          APSWStatement *evictee=sc->lru;
-          statementcache_sanity_check(sc);
-
-          /* no possibles to evict? */
-          if(!sc->lru)
-            break;
-
-          /* only entry? */
-          if(!evictee->lru_prev)
-            {
-              assert(sc->mru==evictee);   /* points to sole entry */
-              assert(sc->lru==evictee);   /* points to sole entry */
-              assert(!evictee->lru_prev); /* should be anyone before */
-              assert(!evictee->lru_next); /* or after */
-              assert(evictee!=stmt);      /* we were inuse and so should be on evict list */
-              sc->mru=NULL;
-              sc->lru=NULL;
-              goto delevictee;
-            }
-          /* take out lru member */
-          sc->lru=evictee->lru_prev;
-          assert(sc->lru->lru_next==evictee);
-          sc->lru->lru_next=NULL;
-          
-        delevictee:
-          statementcache_sanity_check(sc);
-
-#if SC_NRECYCLE > 0
-          if(sc->nrecycle<SC_NRECYCLE)
-            Py_INCREF(evictee);
-#endif
-          if(evictee->origquery)
-            {
-              assert(evictee==(APSWStatement*)PyDict_GetItem(sc->cache, evictee->origquery));
-              PyDict_DelItem(sc->cache, evictee->origquery);
-              evictee->origquery=NULL;
-            }
-          assert(evictee==(APSWStatement*)PyDict_GetItem(sc->cache, evictee->utf8));
-          PyDict_DelItem(sc->cache, evictee->utf8);
-          assert_not_in_dict(sc->cache, (PyObject*)evictee);
-          assert(!PyErr_Occurred());
-#if SC_NRECYCLE > 0
-          assert(Py_REFCNT(stmt)==1);
-          sc->recyclelist[sc->nrecycle++]=evictee;
-          evictee->incache=0;
-#endif
-          sc->numentries -= 1;
-        }
-
-      statementcache_sanity_check(sc);
       /* add ourselves to cache */
       if(!stmt->incache)
         {
@@ -451,6 +415,70 @@ statementcache_finalize(StatementCache *sc, APSWStatement *stmt)
           stmt->incache=1;
           sc->numentries += 1;
         }
+
+      assert(PyDict_Contains(sc->cache, stmt->utf8));
+
+      /* do we need to do an evict? */
+      while(sc->numentries > sc->maxentries)
+        {
+          APSWStatement *evictee=sc->lru;
+          statementcache_sanity_check(sc);
+          assert(evictee!=stmt);      /* we were inuse and so should not be on evict list */
+
+          /* no possibles to evict? */
+          if(!sc->lru)
+            break;
+
+          /* only entry? */
+          if(!evictee->lru_prev)
+            {
+              assert(sc->mru==evictee);   /* points to sole entry */
+              assert(sc->lru==evictee);   /* points to sole entry */
+              assert(!evictee->lru_prev); /* should be anyone before */
+              assert(!evictee->lru_next); /* or after */
+              sc->mru=NULL;
+              sc->lru=NULL;
+              goto delevictee;
+            }
+          /* take out lru member */
+          sc->lru=evictee->lru_prev;
+          assert(sc->lru->lru_next==evictee);
+          sc->lru->lru_next=NULL;
+          
+        delevictee:
+          assert(!evictee->inuse);
+          assert(evictee->incache);
+          statementcache_sanity_check(sc);
+
+#if SC_NRECYCLE > 0
+          if(sc->nrecycle<SC_NRECYCLE)
+            Py_INCREF(evictee);
+#endif
+          if(evictee->origquery)
+            {
+              assert(evictee==(APSWStatement*)PyDict_GetItem(sc->cache, evictee->origquery));
+              PyDict_DelItem(sc->cache, evictee->origquery);
+              Py_DECREF(evictee->origquery);
+              evictee->origquery=NULL;
+            }
+          assert(evictee==(APSWStatement*)PyDict_GetItem(sc->cache, evictee->utf8));
+          PyDict_DelItem(sc->cache, evictee->utf8);
+          assert_not_in_dict(sc->cache, (PyObject*)evictee);
+          assert(!PyErr_Occurred());
+#if SC_NRECYCLE > 0
+          assert(Py_REFCNT(stmt)==1);
+          sc->recyclelist[sc->nrecycle++]=evictee;
+          evictee->incache=0;
+#endif
+          sc->numentries -= 1;
+          statementcache_sanity_check(sc);
+        }
+
+      statementcache_sanity_check(sc);
+
+      /* plumb ourselves into head of lru list */
+      assert(stmt->inuse);
+      stmt->inuse=0;
       stmt->lru_next=sc->mru;
       stmt->lru_prev=NULL;
       if(sc->mru)
@@ -460,9 +488,8 @@ statementcache_finalize(StatementCache *sc, APSWStatement *stmt)
         sc->lru=stmt;
       statementcache_sanity_check(sc);
     }
-  else
-    assert(!stmt->incache);
 
+  stmt->inuse=0;
 #if SC_NRECYCLE > 0
   if(!stmt->incache && sc->nrecycle<SC_NRECYCLE)
     {
@@ -471,7 +498,9 @@ statementcache_finalize(StatementCache *sc, APSWStatement *stmt)
     }
   else
 #endif
-    Py_DECREF(stmt);
+    {
+      Py_DECREF(stmt);
+    }
   return res;
 }
     
@@ -531,7 +560,6 @@ statementcache_init(sqlite3 *db, unsigned nentries)
         }
     }
   sc->maxentries=nentries;
-  sc->maxsize=8191;
   sc->mru=NULL;
   sc->lru=NULL;
 #if SC_NRECYCLE > 0

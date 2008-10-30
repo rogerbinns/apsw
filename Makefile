@@ -2,6 +2,9 @@
 VERSION=3.6.4-r1
 VERDIR=apsw-$(VERSION)
 
+# setup.py options for windows dist
+WINOPTS=--enable=fts  --enable=rtree
+
 SOURCEFILES = \
 	src/apsw.c \
 	src/apswbuffer.c \
@@ -35,6 +38,7 @@ all: header docs
 # The various tools and sphinx generate a prodigious amount of output which
 # we send to dev null.  latex is whiny.
 docs: $(GENDOCS) doc/example.rst
+	env PYTHONPATH=. python tools/docmissing.py
 	make VERSION=$(VERSION) -C doc clean html htmlhelp  # | egrep -i "^(warning|error):"
 
 doc/example.rst: example-code.py tools/example2rst.py
@@ -73,25 +77,29 @@ compile-win:
 	cmd /c del /s /q dist
 	cmd /c del /s /q build
 	-cmd /c md dist
-	c:/python23/python setup.py build --compile=mingw32 install 
+	c:/python23/python setup.py build --compile=mingw32 install $(WINOPTS)
 	c:/python23/python tests.py
-	c:/python23/python setup.py build --compile=mingw32 bdist_wininst
+	c:/python23/python setup.py build --compile=mingw32 bdist_wininst $(WINOPTS)
 	c:/python23/python example-code.py
-	c:/python24/python setup.py build --compile=mingw32 install 
+
+	c:/python24/python setup.py build --compile=mingw32 install $(WINOPTS)
 	c:/python24/python tests.py
-	c:/python24/python setup.py build --compile=mingw32 bdist_wininst
-	c:/python25/python setup.py build --compile=mingw32 install 
+	c:/python24/python setup.py build --compile=mingw32 bdist_wininst $(WINOPTS)
+
+	c:/python25/python setup.py build --compile=mingw32 install $(WINOPTS)
 	c:/python25/python tests.py
-	c:/python25/python setup.py build --compile=mingw32 bdist_wininst
+	c:/python25/python setup.py build --compile=mingw32 bdist_wininst $(WINOPTS)
+
 # See http://bugs.python.org/issue3308 if these fail to run with
 # missing symbols
-	c:/python26/python setup.py build --compile=mingw32 install 
+	c:/python26/python setup.py build --compile=mingw32 install $(WINOPTS)
 	c:/python26/python tests.py
-	c:/python26/python setup.py build --compile=mingw32 bdist_wininst
+	c:/python26/python setup.py build --compile=mingw32 bdist_wininst $(WINOPTS)
+
 # Beta release currently
-	c:/python30/python setup.py build --compile=mingw32 install 
+	c:/python30/python setup.py build --compile=mingw32 install $(WINOPTS)
 	c:/python30/python tests.py
-	c:/python30/python setup.py build --compile=mingw32 bdist_wininst
+	c:/python30/python setup.py build --compile=mingw32 bdist_wininst $(WINOPTS)
 
 
 source:

@@ -26,6 +26,11 @@ which was adopted by Python 3.  This has allowed for richer
 documentation and more output formats such as PDF and `Windows CHM
 <http://en.wikipedia.org/wiki/Microsoft_Compiled_HTML_Help>`_ format.
 
+The binary distribution for Windows includes the `full text search
+<http://www.sqlite.org/cvstrac/wiki?p=FtsUsage>`_ (FTS) and `Rtree
+<http://www.sqlite.org/cvstrac/fileview?f=sqlite/ext/rtree/README>`_
+extensions.  See also :ref:`setup_py_flags`.
+
 The source structure and files were reorganized to make it clearer
 where things are implemented and to make automatic extraction of
 documentation easier.

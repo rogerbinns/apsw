@@ -405,13 +405,22 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
      be a 32bit or 64bit quantity depending on the platform. */
 #if PY_MAJOR_VERSION < 3
   else if(PyInt_Check(obj))
-    PYSQLITE_CALL(res=sqlite3_bind_int64(self->statement->vdbestatement, arg, PyInt_AS_LONG(obj)));
+    {
+      long v=PyInt_AS_LONG(obj);
+      PYSQLITE_CALL(res=sqlite3_bind_int64(self->statement->vdbestatement, arg, v));
+    }
 #endif
   else if (PyLong_Check(obj))
-    /* nb: PyLong_AsLongLong can cause Python level error */
-    PYSQLITE_CALL(res=sqlite3_bind_int64(self->statement->vdbestatement, arg, PyLong_AsLongLong(obj)));
+    {
+      /* nb: PyLong_AsLongLong can cause Python level error */
+      long long v=PyLong_AsLongLong(obj);
+      PYSQLITE_CALL(res=sqlite3_bind_int64(self->statement->vdbestatement, arg, v));
+    }
   else if (PyFloat_Check(obj))
-    PYSQLITE_CALL(res=sqlite3_bind_double(self->statement->vdbestatement, arg, PyFloat_AS_DOUBLE(obj)));
+    {
+      double v=PyFloat_AS_DOUBLE(obj);
+      PYSQLITE_CALL(res=sqlite3_bind_double(self->statement->vdbestatement, arg, v));
+    }
   else if (PyUnicode_Check(obj))
     {
       const void *badptr=NULL;

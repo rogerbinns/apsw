@@ -143,7 +143,7 @@ APSWBuffer_hash(APSWBuffer *self)
   hash++; /* avoid collision */
 
   if(hash==-1)
-    hash=-2;
+    hash= -2;
 
   self->hash=hash;
   
@@ -184,7 +184,7 @@ APSWBuffer_FromObject(PyObject *base, Py_ssize_t offset, Py_ssize_t length)
       if(offset==0 && length==APSWBuffer_GET_SIZE(base))
         res->hash= ( (APSWBuffer*)base) -> hash;
       else
-        res->hash=-1;
+        res->hash= -1;
       
       return (PyObject*)res;
     }
@@ -201,7 +201,7 @@ APSWBuffer_FromObject(PyObject *base, Py_ssize_t offset, Py_ssize_t length)
   /* Performance hack. If the bytes/string we are copying from has
      already calculated a hash then use that rather than recalculating
      it ourselves. */
-  res->hash=-1;
+  res->hash= -1;
   assert(PyBytes_CheckExact(base));
   if(offset==0 && length==PyBytes_GET_SIZE(base))
     {
@@ -216,7 +216,7 @@ APSWBuffer_FromObject(PyObject *base, Py_ssize_t offset, Py_ssize_t length)
   if(res->hash!=-1)
     {
       long tmp=res->hash;
-      res->hash=-1;
+      res->hash= -1;
       assert(tmp==APSWBuffer_hash(res));
       res->hash=tmp;
     }

@@ -26,7 +26,7 @@
 
 /* used when there is no self and hence no self->inuse */
 #define _PYSQLITE_CALL(x) \
-  do { Py_BEGIN_ALLOW_THREADS { x; } Py_END_ALLOW_THREADS } while(0)
+  do { Py_BEGIN_ALLOW_THREADS { x; } Py_END_ALLOW_THREADS ; } while(0)
 
 #define INUSE_CALL(x)                               \
   do {                                              \
