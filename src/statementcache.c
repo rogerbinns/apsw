@@ -92,8 +92,15 @@ typedef struct StatementCache {
 static void 
 statementcache_sanity_check(StatementCache *sc)
 {
-  unsigned itemcountfwd, itemcountbackwd;
+  unsigned itemcountfwd, itemcountbackwd, i;
   APSWStatement *last, *item;
+
+#if SC_NRECYCLE > 0
+  /* also check the recycle list */
+  for(i=0;i<sc->nrecycle;i++)
+    assert(Py_REFCNT(sc->recyclelist[i])==1);
+  assert(sc->nrecycle<=SC_NRECYCLE);
+#endif
 
   /* make sure everything is fine */
   if(!sc->mru || !sc->lru)
@@ -451,6 +458,9 @@ statementcache_finalize(StatementCache *sc, APSWStatement *stmt)
           assert(evictee->incache);
           statementcache_sanity_check(sc);
 
+          /* only references should be the dict */
+          assert(Py_REFCNT(evictee)==1+!!evictee->origquery);
+
 #if SC_NRECYCLE > 0
           if(sc->nrecycle<SC_NRECYCLE)
             Py_INCREF(evictee);
@@ -466,10 +476,14 @@ statementcache_finalize(StatementCache *sc, APSWStatement *stmt)
           PyDict_DelItem(sc->cache, evictee->utf8);
           assert_not_in_dict(sc->cache, (PyObject*)evictee);
           assert(!PyErr_Occurred());
+
 #if SC_NRECYCLE > 0
-          assert(Py_REFCNT(evictee)==1);
-          sc->recyclelist[sc->nrecycle++]=evictee;
-          evictee->incache=0;
+          if(sc->nrecycle<SC_NRECYCLE)
+            {
+              assert(Py_REFCNT(evictee)==1);
+              sc->recyclelist[sc->nrecycle++]=evictee;
+              evictee->incache=0;
+            }
 #endif
           sc->numentries -= 1;
           statementcache_sanity_check(sc);
