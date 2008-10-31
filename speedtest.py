@@ -344,7 +344,7 @@ if options.correctness:
                 write(str(len(res[name]))+"\n")
                 continue
 
-            cursor=con.cursor
+            cursor=con.cursor()
             if test=='statements':
                 sql=withbindings
             elif test=='statements_nobindings':
@@ -356,12 +356,13 @@ if options.correctness:
                     l.append(row)
 
             res[name]=l
+            write(str(len(res[name]))+"\n")
 
     # All elements of res should be identical
     elements=res.keys()
     elements.sort()
     for i in range(0,len(elements)-1):
-        write("%s == %s %s\n" % (elements[i],"==", elements[i+1], res[elements[i]]==res[elements[i+1]]))
+        write("%s == %s %s\n" % (elements[i], elements[i+1], res[elements[i]]==res[elements[i+1]]))
 
     del res
 

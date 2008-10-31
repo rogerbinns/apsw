@@ -30,6 +30,22 @@
  
 */
 
+/** 
+APSW Module
+***********
+
+Things and stuff.!!!
+
+API Reference
+=============
+*/
+
+/** .. module:: apsw
+   :synopsis: Python access to SQLite database library
+
+*/
+
+
 /* Fight with setuptools over ndebug */
 #ifdef APSW_NO_NDEBUG
 #ifdef NDEBUG
@@ -151,18 +167,42 @@ static PyObject *apswmodule;
 
 
 /* MODULE METHODS */
+
+/** .. method:: sqlitelibversion() -> string
+
+  Returns the version of the SQLite library.  This value is queried at
+  run time from the library so if you use shared libraries it will be
+  the version in the shared library.
+
+  -* sqlite3_libversion
+*/
+
 static PyObject *
 getsqliteversion(void)
 {
   return MAKESTR(sqlite3_libversion());
 }
 
+/** .. method:: apswversion() -> string
+
+  Returns the APSW version.
+*/
 static PyObject *
 getapswversion(void)
 {
   return MAKESTR(APSW_VERSION);
 }
 
+/** .. method:: enablesharedcache(bool)
+
+  If you use the same :class:`Connection` across threads or use
+  multiple :class:`connections <Connection>` accessing the same file,
+  then SQLite can `share the cache between them
+  <http://www.sqlite.org/sharedcache.html>`_.  This can reduce memory
+  consumption and increase performance as well as improve concurrency.
+  
+  -* sqlite3_enable_shared_cache
+*/
 static PyObject *
 enablesharedcache(APSW_ARGUNUSED PyObject *self, PyObject *args)
 {
@@ -179,6 +219,13 @@ enablesharedcache(APSW_ARGUNUSED PyObject *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
+/** .. method:: initialize()
+
+  It is unlikely you will want to call this method as SQLite automatically initializes.
+
+  -* sqlite3_initialize
+*/
+
 static PyObject *
 initialize(void)
 {
@@ -194,6 +241,17 @@ initialize(void)
   Py_RETURN_NONE;
 }
 
+/** .. method:: shutdown()
+
+  It is unlikely you will want to call this method and there is no
+  need to do so.  It is a **really** bad idea to call it unless you
+  are absolutely sure all :class:`connections <Connection>`,
+  :class:`blobs <blob>`, :class:`cursors <Cursor>`, :class:`vfs <VFS>`
+  etc have been closed, deleted and garbage collected.
+
+  -* sqlite3_shutdown
+*/
+
 static PyObject *
 sqliteshutdown(void)
 {
@@ -207,6 +265,19 @@ sqliteshutdown(void)
 
   Py_RETURN_NONE;
 }
+
+/** .. method:: config(op[, *args])
+
+  :param op: A `configuration operation <http://sqlite.org/c3ref/c_config_chunkalloc.html>`_
+  :param args: Zero or more arguments as appropriate for `op`
+
+  Many operations don't make sense from a Python program.  Only the
+  following configuration operations are supported:
+  SQLITE_CONFIG_SINGLETHREAD, SQLITE_CONFIG_MULTITHREAD,
+  SQLITE_CONFIG_SERIALIZED and SQLITE_CONFIG_MEMSTATUS.
+
+  -* sqlite3_config
+*/
 
 #ifdef EXPERIMENTAL
 static PyObject *
@@ -259,12 +330,25 @@ config(APSW_ARGUNUSED PyObject *self, PyObject *args)
 }
 #endif /* EXPERIMENTAL */
 
+/** .. method:: memoryused() -> int
+
+  Returns the amount of memory SQLite is currently using.
+
+  -* sqlite3_memory_used
+*/
 static PyObject*
 memoryused(void)
 {
   return PyLong_FromLongLong(sqlite3_memory_used());
 }
 
+/** .. method:: memoryhighwater(reset=False) -> int
+
+  Returns the maximum amount of memory SQLite is has used.  If `reset`
+  is True then the high water mark is reset to the current value.
+
+  -* sqlite3_memory_highwater
+*/
 static PyObject*
 memoryhighwater(APSW_ARGUNUSED PyObject *self, PyObject *args)
 {
@@ -276,6 +360,13 @@ memoryhighwater(APSW_ARGUNUSED PyObject *self, PyObject *args)
   return PyLong_FromLongLong(sqlite3_memory_highwater(reset));
 }
 
+
+/** .. method:: softheaplimit(bytes)
+
+  Requests SQLite try to keep memory usage below `bytes` bytes.
+
+  -* sqlite3_soft_heap_limit
+*/
 static PyObject*
 softheaplimit(APSW_ARGUNUSED PyObject *self, PyObject *args)
 {
@@ -289,6 +380,15 @@ softheaplimit(APSW_ARGUNUSED PyObject *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
+/** .. method:: randomness(bytes)  -> data
+
+  Gets random data from SQLite's random number generator.
+
+  :param bytes: How many bytes to return
+  :rtype: (Python 2) string, (Python 3) bytes
+
+  -* sqlite3_randomness
+*/
 static PyObject*
 randomness(APSW_ARGUNUSED PyObject *self, PyObject *args)
 {
@@ -308,6 +408,14 @@ randomness(APSW_ARGUNUSED PyObject *self, PyObject *args)
   return bytes;
 }
 
+/** .. method:: releasememory(bytes) -> int
+
+  Requests SQLite try to free `bytes` bytes of memory.  Returns how
+  many bytes were freed.
+
+  -* sqlite3_release_memory
+*/
+
 static PyObject*
 releasememory(APSW_ARGUNUSED PyObject *self, PyObject *args)
 {
@@ -319,6 +427,17 @@ releasememory(APSW_ARGUNUSED PyObject *self, PyObject *args)
   return PyInt_FromLong(sqlite3_release_memory(amount));
 }
 
+/** .. method:: status(op, reset=False) -> (int, int)
+
+  Returns current and highwater measurements.
+
+  :param op: A `status parameter <http://sqlite.org/c3ref/c_status_malloc_size.html>`_
+  :param reset: If `True` then the highwater is set to the current value
+  :returns: A tuple of current value and highwater value
+  
+  -* sqlite3_status
+
+*/
 static PyObject *
 status(APSW_ARGUNUSED PyObject *self, PyObject *args)
 {
@@ -336,6 +455,11 @@ status(APSW_ARGUNUSED PyObject *self, PyObject *args)
   return Py_BuildValue("(ii)", current, highwater);
 }
 
+/** .. method:: vfsnames() -> list(string)
+
+  Returns a list of the current installed :ref:`vfs <vfs>`.  The first
+  item in the list the default vfs.
+*/
 static PyObject *
 vfsnames(APSW_ARGUNUSED PyObject *self)
 {
@@ -363,6 +487,19 @@ vfsnames(APSW_ARGUNUSED PyObject *self)
   return NULL;
 }
 
+/** .. method:: exceptionfor(int) -> Exception
+
+  If you would like to raise an exception that corresponds to a
+  particular SQLite `error code
+  <http://sqlite.org/c3ref/c_abort.html>`_ then call this function.
+  It also understands `extended error codes
+  <http://sqlite.org/c3ref/c_ioerr_access.html>`_.
+
+  For example to raise `http://sqlite.org/c3ref/c_ioerr_access.html <SQLITE_IOERR_ACCESS>`_::
+
+    raise apsw.exceptionfor(apsw.SQLITE_IOERR_ACCESS)
+
+*/
 static PyObject *
 getapswexceptionfor(APSW_ARGUNUSED PyObject *self, PyObject *pycode)
 {
@@ -573,13 +710,56 @@ PyInit_apsw(void)
     Py_INCREF(&APSWVFSFileType);
     PyModule_AddObject(m, "VFSFile", (PyObject*)&APSWVFSFileType);
     
+    /** .. attribute:: connection_hooks
+
+       The purpose of the hooks is to allow the easy registration of
+       :meth:`functions <Connection.createscalarfunction>`,
+       :ref:`virtual tables <virtualtables>` or similar items with
+       each Connection as it is created. The default value is an empty
+       list. Whenever a Connection is created, each item in
+       apsw.connection_hooks is invoked with a single parameter being
+       the new Connection object. If the hook raises an exception then
+       the creation of the Connection fails.
+    */
     hooks=PyList_New(0);
     if(!hooks) goto fail;
     PyModule_AddObject(m, "connection_hooks", hooks);
 
-    /* Version number */
+    /** .. data:: SQLITE_VERSION_NUMBER
+
+    The integer version number of SQLite that APSW was compiled
+    against.  For example SQLite 3.6.4 will have the value `3006004`.
+    This number may be different than the actual library in use if the
+    library is shared and has been updated.  Call
+    :meth:`sqlitelibversion` to get the actual library version.
+
+    */
     PyModule_AddIntConstant(m, "SQLITE_VERSION_NUMBER", SQLITE_VERSION_NUMBER);
     
+
+    /** 
+
+SQLite constants
+================
+
+SQLite has `many constants
+<http://sqlite.org/c3ref/constlist.html>`_ used in various
+interfaces.  To use a constant such as :const:`SQLITE_OK`, just
+use ``apsw.SQLITE_OK``.
+
+The same values can be used in different contexts. For example
+:const:`SQLITE_OK` and :const:`SQLITE_CREATE_INDEX` both have a value
+of zero. For each group of constants there is also a mapping (dict)
+available that you can supply a string to and get the corresponding
+numeric value, or supply a numeric value and get the corresponding
+string. These can help improve diagnostics/logging, calling other
+modules etc. For example::
+
+      apsw.mapping_authorizer_function["SQLITE_READ"]=20
+      apsw.mapping_authorizer_function[20]="SQLITE_READ"
+
+
+    */
 
     /* add in some constants and also put them in a corresponding mapping dictionary */
 
@@ -632,7 +812,6 @@ PyInit_apsw(void)
       END,
 
       /* vtable best index constraints */
-#if defined(SQLITE_INDEX_CONSTRAINT_EQ) && defined(SQLITE_INDEX_CONSTRAINT_MATCH)
       DICT("mapping_bestindex_constraints"),
       ADDINT(SQLITE_INDEX_CONSTRAINT_EQ),
       ADDINT(SQLITE_INDEX_CONSTRAINT_GT),
@@ -641,9 +820,8 @@ PyInit_apsw(void)
       ADDINT(SQLITE_INDEX_CONSTRAINT_GE),
       ADDINT(SQLITE_INDEX_CONSTRAINT_MATCH),
       END,
-#endif /* constraints */
 
-    /* extendended result codes */
+      /* extendended result codes */
       DICT("mapping_extended_result_codes"),
       ADDINT(SQLITE_IOERR_READ),
       ADDINT(SQLITE_IOERR_SHORT_READ),
@@ -662,7 +840,7 @@ PyInit_apsw(void)
       ADDINT(SQLITE_IOERR_LOCK),
       END,
 
-    /* error codes */
+      /* error codes */
       DICT("mapping_result_codes"),
       ADDINT(SQLITE_OK),
       ADDINT(SQLITE_ERROR),

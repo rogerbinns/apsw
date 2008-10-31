@@ -9,13 +9,13 @@ Exceptions
 
 .. class:: Error
 
-   .. attribute:: result
+.. attribute:: Error.result
 
          For exceptions corresponding to `SQLite error codes
          <http://sqlite.org/c3ref/c_abort.html>`_ codes this attribute
          is the numeric error code.
 
-   .. attribute:: extendedresult
+.. attribute:: Error.extendedresult
 
          APSW runs with `extended result codes
          <http://sqlite.org/c3ref/c_ioerr_blocked.html>`_ turned on.

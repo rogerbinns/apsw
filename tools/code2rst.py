@@ -99,7 +99,8 @@ def do_methods():
         # insert index stuff
         op.extend(indexop)
         # insert classname into dec
-        dec=re.sub(r"^(\.\.\s+method::\s+)()", r"\1"+curclass+".", dec)
+        if curclass:
+            dec=re.sub(r"^(\.\.\s+method::\s+)()", r"\1"+curclass+".", dec)
         op.append(dec)
         op.extend(d)
         op.append("")
@@ -155,7 +156,7 @@ for line in open(sys.argv[1], "rtU"):
         line=cursection
         if len(line):
             t=cursection.split()[1]
-            if t=="method::":
+            if t in ("method::", "attribute::", "data::"):
                 name=line.split()[2].split("(")[0]
                 methods[name]=curop
             elif t=="class::":
@@ -165,7 +166,7 @@ for line in open(sys.argv[1], "rtU"):
                 op.append("")
                 op.extend(curop)
             # I keep forgetting double colons
-            elif t.endswith("method:") or t.endswith("class:"):
+            elif t.endswith(":") and not t.endswith("::"):
                 raise Exception("You forgot double colons: "+line)
             else:
                 if methods:

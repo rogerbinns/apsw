@@ -2609,10 +2609,22 @@ class APSW(unittest.TestCase):
             c=self.db.cursor()
             b4=time.time()
             while time.time()-b4<n:
-                sql="select timesten(x) from foo where x=%d order by x" % (random.choice(randomnumbers),)
-                self.db.cursor().execute(sql)
+                i=random.choice(randomnumbers)
+                if i%3==0:
+                    sql="select timesten(x) from foo where x=%d order by x" % (i,)
+                    c.execute(sql)
+                elif i%3==1:
+                    sql="select timesten(x) from foo where x=? order by x"
+                    called=0
+                    for row in self.db.cursor().execute(sql, (i,)):
+                        called+=1
+                        self.failUnlessEqual(row[0], 10*i)
+                    self.failUnlessEqual(called, 1)
+                else:
+                    sql="select timesten(x) from foo where x=? order by x"
+                    self.db.cursor().execute(sql, (i,))
 
-        threads=[ThreadRunner(dostuff, 10) for _ in range(20)]
+        threads=[ThreadRunner(dostuff, 15) for _ in range(20)]
         for t in threads:
             t.start()
 

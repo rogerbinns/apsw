@@ -31,7 +31,8 @@ GENDOCS = \
 	doc/vfs.rst \
 	doc/vtable.rst \
 	doc/connection.rst \
-	doc/cursor.rst
+	doc/cursor.rst \
+	doc/apsw.rst
 
 all: header docs
 
@@ -52,17 +53,6 @@ linkcheck:
 header:
 	echo "#define APSW_VERSION \"$(VERSION)\"" > src/apswversion.h
 
-tidytoc:
-	python coloursrc.py
-	awk ' BEGIN {p=1} /<!--toc-->/ {p=0; print;next} /<!--endtoc-->/ {p=1} {if(p) print} ' < apsw.html > tmpfile
-	hypertoc --gen_anchors tmpfile >tmpfile2
-	hypertoc --gen_toc --inline --toc_tag '!--toc--' \
-	  --toc_label "" tmpfile2 | \
-	sed 's@\(<li><a href="#dbapinotes">\)@</ul></td><td valign="top"><ul>\1@' | \
-	grep -v '"list-style: none;"'> tmpfile
-	-tidy -q -indent -asxhtml -wrap 120 <tmpfile >apsw.html
-	@rm -f tmpfile tmpfile2 .tmpop-*
-	linkchecker -q --no-status --ignore-url="http://www.sqlite.org/cvstrac/tktview?tn=[0-9][0-9][0-9][0-9]" apsw.html
 
 # the funky test stuff is to exit successfully when grep has rc==1 since that means no lines found.
 showsymbols:
@@ -111,17 +101,15 @@ source:
 
 upload:
 	test -f tools/googlecode_upload.py
-	test -f apsw.html
 	test -f dist/$(VERDIR).zip
 	test -f dist/$(VERDIR).win32-py2.3.exe
 	test -f dist/$(VERDIR).win32-py2.4.exe
 	test -f dist/$(VERDIR).win32-py2.5.exe
 	test -f dist/$(VERDIR).win32-py2.6.exe
-	-rm -f $(VERDIR).html
+	# check for docs
 	python tools/googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.6 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.6.exe
 	python tools/googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.5 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.5.exe
 	python tools/googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.4 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.4.exe
 	python tools/googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.3 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.3.exe
 	python tools/googlecode_upload.py -p apsw -s "$(VERSION) (Source)" -l "Type-Source,OpSys-All" dist/$(VERDIR).zip
-	cp apsw.html $(VERDIR).html
-	python tools/googlecode_upload.py -p apsw -s "$(VERSION) (Documentation)" -l "Type-Docs" $(VERDIR).html
+	#	python tools/googlecode_upload.py -p apsw -s "$(VERSION) (Documentation)" -l "Type-Docs" $(VERDIR).html

@@ -25,6 +25,7 @@ Contents:
    download
    build
 
+   apsw
    connection
    cursor
    blob

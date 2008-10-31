@@ -25,7 +25,8 @@
 */
 
 
-/** .. _blobio:
+/** 
+.. _blobio:
 
 Blob Input/Output
 *****************
