@@ -33,6 +33,63 @@ def do_funclist():
         # ::TODO:: consider grabbing the page and extracting first <h2> to get
         # description of sqlite3 api
 
+def do_mappings():
+    consts={}
+    pages={}
+    baseurl="http://www.sqlite.org/c3ref/constlist.html"
+    page=urllib2.urlopen(baseurl).read()
+    vars=re.findall(r'<a href="([^"]+?/c3ref/[^<]+?\.html)["]>(SQLITE_.+?)<', page)
+    for relurl, var in vars:
+        # we skip some
+        if var in ("SQLITE_DONE", "SQLITE_ROW"):
+            continue
+        pg=urlparse.urljoin(baseurl, relurl)
+        consts[var]=pg
+        if pg not in pages:
+            pages[pg]={'vars': []}
+            # get the page title
+            page2=urllib2.urlopen(pg).read()
+            title=re.findall(r"<h2>(.+?)</h2>", page2)
+            pages[pg]['title']=title[1]
+            if pg.endswith("c_dbconfig_lookaside.html"): # duplicate description
+                pages[pg]['title']="Database Configuration Options"
+        pages[pg]['vars'].append(var)
+
+    maps=mappings.keys()
+    maps.sort()
+    for map in maps:
+        op.append(".. data:: "+map)
+        op.append("")
+        # which page does this correspond to?
+        m=mappings[map]
+        pg=None
+        for val in m:
+            if val=="SQLITE_OK": # present in multiple mappings
+                continue
+            # check that all values in mapping go to the same page
+            if pg is None:
+                pg=consts[val]
+                op.append("   `%s <%s>`_" % (pages[pg]['title'], pg))
+                op.append("")
+            else:
+                if consts[val]!=pg:
+                    print "These don't all map to the same page"
+                    print map
+                    for val in m:
+                        print "  ",consts[val],"\t",val
+                    sys.exit(1)
+        # check to see if apsw is missing any
+        for v in pages[pg]['vars']:
+            if v not in mappings[map]:
+                print "Mapping",map,"is missing",v
+                sys.exit(1)
+        vals=m[:]
+        vals.sort()
+        op.append("    %s" % (", ".join([":const:`"+v+"`" for v in vals]),))
+        op.append("")
+        
+    
+
 # we have our own markup to describe what sqlite3 calls we make using
 # -* and then a space seperated list.  Maybe this could just be
 # automatically derived from the source?
@@ -132,8 +189,24 @@ cursection=None
 incomment=False
 curclass=None
 
+if sys.argv[1]=="src/apsw.c":
+    mappingre=re.compile(r'\s*(ADDINT\s*\(\s*([^)]+)\).*|DICT\s*\(\s*"([^"]+)"\s*\)>*)')
+    mappings={}
+else:
+    mappings=None
+
 for line in open(sys.argv[1], "rtU"):
     line=line.rstrip()
+    if mappings is not None:
+        m=mappingre.match(line)
+        if m:
+            g=m.groups()
+            if g[2]:
+                curmapping=g[2]
+                mappings[curmapping]=[]
+            else:
+                mappings[curmapping].append(g[1])
+            
     if not incomment and line.lstrip().startswith("/**"):
         # a comment intended for us
         line=line.lstrip(" \t/*")
@@ -189,6 +262,9 @@ for line in open(sys.argv[1], "rtU"):
 
 if methods:
     do_methods()
+
+if mappings:
+    do_mappings()
 
 # remove double blank lines
 op2=[]

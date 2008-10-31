@@ -739,6 +739,8 @@ PyInit_apsw(void)
 
     /** 
 
+.. _sqliteconstants:
+
 SQLite constants
 ================
 
@@ -867,6 +869,8 @@ modules etc. For example::
       ADDINT(SQLITE_FORMAT),
       ADDINT(SQLITE_RANGE),
       ADDINT(SQLITE_NOTADB),
+      ADDINT(SQLITE_NOTFOUND),
+      ADDINT(SQLITE_TOOBIG),
       END,
 
       /* open flags */

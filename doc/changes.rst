@@ -251,7 +251,7 @@ available - see :ref:`exceptions` for more detail.
 :data:`Connection.hooks` added so you can easily register functions,
 virtual tables or similar items with each Connection as it is created.
 
-Added :ref:`mapping dicts <Module_constants>` which makes it easy to
+Added :ref:`mapping dicts <sqliteconstants>` which makes it easy to
 map the various constants between strings and ints.
 
 3.3.7-r1
