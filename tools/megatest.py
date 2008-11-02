@@ -34,7 +34,7 @@ def dotest(logdir, pybin, pylib, workdir, sqlitever):
     buildsqlite(workdir, sqlitever, os.path.abspath(os.path.join(logdir, "sqlitebuild.txt")))
     buildapsw(os.path.abspath(os.path.join(logdir, "buildapsw.txt")), pybin, workdir)
     # now the actual tests
-    run("cd %s ; env LD_LIBRARY_PATH=%s %s tests.py >%s 2>&1" % (workdir, pylib, pybin, os.path.abspath(os.path.join(logdir, "runtests.txt"))))
+    run("cd %s ; env LD_LIBRARY_PATH=%s %s tests.py -v >%s 2>&1" % (workdir, pylib, pybin, os.path.abspath(os.path.join(logdir, "runtests.txt"))))
 
 
 def runtest(workdir, pyver, ucs, sqlitever, logdir):
@@ -73,9 +73,9 @@ def main(PYVERS, UCSTEST, SQLITEVERS, concurrency):
                 print "Python",pyver,"ucs",ucs,"   SQLite",sqlitever
                 workdir=os.path.abspath(os.path.join("work", "py%s-ucs%d-sq%s" % (pyver, ucs, sqlitever)))
                 logdir=os.path.abspath(os.path.join("megatestresults", "py%s-ucs%d-sq%s" % (pyver, ucs, sqlitever)))
-                run("mkdir -p %s %s" % (workdir, logdir))
-                run("cp *.py *.c *.h "+workdir)
-                run("rm -f "+workdir+"/sqlite3.c || true")
+                run("mkdir -p %s/src %s" % (workdir, logdir))
+                run("cp *.py "+workdir)
+                run("cp src/*.c src/*.h "+workdir+"/src/")
 
                 queue.put({'workdir': workdir, 'pyver': pyver, 'ucs': ucs, 'sqlitever': sqlitever, 'logdir': logdir})
 
@@ -136,11 +136,11 @@ def buildsqlite(workdir, sqlitever, logfile):
         run("cd %s ; cvs -d :pserver:anonymous@www.sqlite.org:/sqlite checkout sqlite > %s 2>&1; mv sqlite sqlite3" % (workdir, logfile,))
         run('cd %s/sqlite3 ; ./configure --enable-loadextension --enable-threadsafe --disable-tcl >> %s 2>&1; make sqlite3.c >> %s 2>&1' % (workdir,logfile,logfile))
     else:
-        run("cd %s ; mkdir sqlite3 ; cd sqlite3 ; wget -q %s ; unzip -q %s sqlite3.c" % (workdir, sqliteurl(sqlitever), os.path.basename(sqliteurl(sqlitever))))
+        run("cd %s ; mkdir sqlite3 ; cd sqlite3 ; wget -q %s ; unzip -q %s " % (workdir, sqliteurl(sqlitever), os.path.basename(sqliteurl(sqlitever))))
     if sys.platform.startswith("darwin"):
-        run('cd %s ; gcc -fPIC -bundle -o testextension.sqlext -Isqlite3 -I. testextension.c' % (workdir,))
+        run('cd %s ; gcc -fPIC -bundle -o testextension.sqlext -Isqlite3 -I. src/testextension.c' % (workdir,))
     else:
-        run('cd %s ; gcc -fPIC -shared -o testextension.sqlext -Isqlite3 -I. testextension.c' % (workdir,))
+        run('cd %s ; gcc -fPIC -shared -o testextension.sqlext -Isqlite3 -I. src/testextension.c' % (workdir,))
 
 def buildapsw(outputfile, pybin, workdir):
     run("cd %s ; %s setup.py build >>%s 2>&1" % (workdir, pybin, outputfile))
