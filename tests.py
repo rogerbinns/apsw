@@ -2593,7 +2593,7 @@ class APSW(unittest.TestCase):
 
     def testIssue31(self):
         # http://code.google.com/p/apsw/issues/detail?id=31
-        randomnumbers=[random.randint(0,10000) for _ in xrange(10000)]
+        randomnumbers=[random.randint(0,10000) for _ in range(10000)]
 
         cursor=self.db.cursor()
         cursor.execute("create table foo(x)")
@@ -2619,7 +2619,8 @@ class APSW(unittest.TestCase):
                     for row in self.db.cursor().execute(sql, (i,)):
                         called+=1
                         self.failUnlessEqual(row[0], 10*i)
-                    self.failUnlessEqual(called, 1)
+                    # same value could be present multiple times
+                    self.failUnless(called>=1)
                 else:
                     sql="select timesten(x) from foo where x=? order by x"
                     self.db.cursor().execute(sql, (i,))
