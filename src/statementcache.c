@@ -462,8 +462,8 @@ statementcache_finalize(StatementCache *sc, APSWStatement *stmt)
           assert(Py_REFCNT(evictee)==1+!!evictee->origquery);
 
 #if SC_NRECYCLE > 0
-          if(sc->nrecycle<SC_NRECYCLE)
-            Py_INCREF(evictee);
+          /* we don't gc to run on object */
+          Py_INCREF(evictee);
 #endif
           if(evictee->origquery)
             {
@@ -483,6 +483,10 @@ statementcache_finalize(StatementCache *sc, APSWStatement *stmt)
               assert(Py_REFCNT(evictee)==1);
               sc->recyclelist[sc->nrecycle++]=evictee;
               evictee->incache=0;
+            }
+          else
+            {
+              Py_DECREF(evictee);
             }
 #endif
           sc->numentries -= 1;
