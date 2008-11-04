@@ -45,7 +45,7 @@ def rstout(filename):
 Example
 =======
 
-  .. code-block:: python
+.. code-block:: python
 """.split("\n"))
     counter=0
     prefix="    "
@@ -63,19 +63,19 @@ Example
                         op.insert(i, "")
                         op.insert(i, ".. _"+name+":")
                         op.insert(i, "")
-                        op.insert(i, "  .. code-block:: python")
+                        op.insert(i, ".. code-block:: python")
                         op.insert(i, "")
                         break
             op.append(prefix+line)
             continue
         op.append("")
-        op.append("  .. code-block:: text")
+        op.append(".. code-block:: text")
         op.append("")
         for line in open(".tmpop-%s-%d" % (filename, counter), "rtU"):
             line=line.rstrip()
             op.append("   "+line)
         op.append("")
-        op.append("  .. code-block:: python")
+        op.append(".. code-block:: python")
         op.append("")
         os.remove(".tmpop-%s-%d" % (filename, counter))
         counter+=1
