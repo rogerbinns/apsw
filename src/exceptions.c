@@ -156,8 +156,11 @@ static void make_exception(int res, sqlite3 *db)
     if (exc_descriptors[i].code==(res&0xff))
       {
 	PyObject *etype, *eval, *etb;
+        const char *errmsg=NULL;
+        if(db) errmsg=apsw_get_tls_error();
+        if(!errmsg) errmsg="error";
         assert(exc_descriptors[i].cls);
-        PyErr_Format(exc_descriptors[i].cls, "%sError: %s", exc_descriptors[i].name, db?(sqlite3_errmsg(db)):"error");
+        PyErr_Format(exc_descriptors[i].cls, "%sError: %s", exc_descriptors[i].name, errmsg);
 	PyErr_Fetch(&etype, &eval, &etb);
 	PyErr_NormalizeException(&etype, &eval, &etb);
 	PyObject_SetAttrString(eval, "result", Py_BuildValue("i", res&0xff));

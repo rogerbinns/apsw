@@ -363,7 +363,7 @@ APSWCursor_getdescription(APSWCursor *self)
       const char *colname;
       const char *coldesc;
 
-      PYSQLITE_CALL( (colname=sqlite3_column_name(self->statement->vdbestatement, i), coldesc=sqlite3_column_decltype(self->statement->vdbestatement, i)) );
+      PYSQLITE_VOID_CALL( (colname=sqlite3_column_name(self->statement->vdbestatement, i), coldesc=sqlite3_column_decltype(self->statement->vdbestatement, i)) );
       APSW_FAULT_INJECT(GetDescriptionFail,
       pair=Py_BuildValue("(O&O&)", 
 			 convertutf8string, colname,
@@ -400,26 +400,26 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
   assert(!PyErr_Occurred());
 
   if(obj==Py_None)
-    PYSQLITE_CALL(res=sqlite3_bind_null(self->statement->vdbestatement, arg));
+    PYSQLITE_CUR_CALL(res=sqlite3_bind_null(self->statement->vdbestatement, arg));
   /* Python uses a 'long' for storage of PyInt.  This could
      be a 32bit or 64bit quantity depending on the platform. */
 #if PY_MAJOR_VERSION < 3
   else if(PyInt_Check(obj))
     {
       long v=PyInt_AS_LONG(obj);
-      PYSQLITE_CALL(res=sqlite3_bind_int64(self->statement->vdbestatement, arg, v));
+      PYSQLITE_CUR_CALL(res=sqlite3_bind_int64(self->statement->vdbestatement, arg, v));
     }
 #endif
   else if (PyLong_Check(obj))
     {
       /* nb: PyLong_AsLongLong can cause Python level error */
       long long v=PyLong_AsLongLong(obj);
-      PYSQLITE_CALL(res=sqlite3_bind_int64(self->statement->vdbestatement, arg, v));
+      PYSQLITE_CUR_CALL(res=sqlite3_bind_int64(self->statement->vdbestatement, arg, v));
     }
   else if (PyFloat_Check(obj))
     {
       double v=PyFloat_AS_DOUBLE(obj);
-      PYSQLITE_CALL(res=sqlite3_bind_double(self->statement->vdbestatement, arg, v));
+      PYSQLITE_CUR_CALL(res=sqlite3_bind_double(self->statement->vdbestatement, arg, v));
     }
   else if (PyUnicode_Check(obj))
     {
@@ -437,7 +437,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
                 SET_EXC(SQLITE_TOOBIG, NULL);
 	      }
 	    else
-              PYSQLITE_CALL(res=USE16(sqlite3_bind_text)(self->statement->vdbestatement, arg, strdata, strbytes, SQLITE_TRANSIENT));
+              PYSQLITE_CUR_CALL(res=USE16(sqlite3_bind_text)(self->statement->vdbestatement, arg, strdata, strbytes, SQLITE_TRANSIENT));
           }
       UNIDATAEND(obj);
       if(!badptr) 
@@ -475,7 +475,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
                     res=SQLITE_TOOBIG;
 		  }
 		else
-                  PYSQLITE_CALL(res=USE16(sqlite3_bind_text)(self->statement->vdbestatement, arg, strdata, strbytes, SQLITE_TRANSIENT));
+                  PYSQLITE_CUR_CALL(res=USE16(sqlite3_bind_text)(self->statement->vdbestatement, arg, strdata, strbytes, SQLITE_TRANSIENT));
               }
           UNIDATAEND(str2);
           Py_DECREF(str2);
@@ -488,7 +488,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
       else
 	{
 	  assert(lenval<APSW_INT32_MAX);
-	  PYSQLITE_CALL(res=sqlite3_bind_text(self->statement->vdbestatement, arg, val, lenval, SQLITE_TRANSIENT));
+	  PYSQLITE_CUR_CALL(res=sqlite3_bind_text(self->statement->vdbestatement, arg, val, lenval, SQLITE_TRANSIENT));
 	}
     }
 #endif
@@ -507,11 +507,11 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
           SET_EXC(SQLITE_TOOBIG, NULL);
 	  return -1;
 	}
-      PYSQLITE_CALL(res=sqlite3_bind_blob(self->statement->vdbestatement, arg, buffer, buflen, SQLITE_TRANSIENT));
+      PYSQLITE_CUR_CALL(res=sqlite3_bind_blob(self->statement->vdbestatement, arg, buffer, buflen, SQLITE_TRANSIENT));
     }
   else if(PyObject_TypeCheck(obj, &ZeroBlobBindType)==1)
     {
-      PYSQLITE_CALL(res=sqlite3_bind_zeroblob(self->statement->vdbestatement, arg, ((ZeroBlobBind*)obj)->blobsize));
+      PYSQLITE_CUR_CALL(res=sqlite3_bind_zeroblob(self->statement->vdbestatement, arg, ((ZeroBlobBind*)obj)->blobsize));
     }
   else 
     {
@@ -532,7 +532,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
 static int
 APSWCursor_dobindings(APSWCursor *self)
 {
-  int nargs, arg, res, sz=0;
+  int nargs, arg, res=-1, sz=0;
   PyObject *obj;
 
   assert(!PyErr_Occurred());
@@ -556,7 +556,7 @@ APSWCursor_dobindings(APSWCursor *self)
 	  PyObject *keyo=NULL;
           const char *key;
 
-          PYSQLITE_CALL(key=sqlite3_bind_parameter_name(self->statement->vdbestatement, arg));
+          PYSQLITE_CUR_CALL(key=sqlite3_bind_parameter_name(self->statement->vdbestatement, arg));
 
           if(!key)
             {
@@ -712,7 +712,7 @@ APSWCursor_step(APSWCursor *self)
   for(;;)
     {
       assert(!PyErr_Occurred());
-      PYSQLITE_CALL(res=(self->statement->vdbestatement)?(sqlite3_step(self->statement->vdbestatement)):(SQLITE_DONE));
+      PYSQLITE_CUR_CALL(res=(self->statement->vdbestatement)?(sqlite3_step(self->statement->vdbestatement)):(SQLITE_DONE));
 
       switch(res&0xff)
         {
@@ -926,7 +926,7 @@ static PyObject *
 APSWCursor_execute(APSWCursor *self, PyObject *args)
 {
   int res;
-  int savedbindingsoffset;
+  int savedbindingsoffset=-1;
   PyObject *retval=NULL;
   PyObject *query;
 
@@ -1038,7 +1038,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
   PyObject *theiterable=NULL;
   PyObject *next=NULL;
   PyObject *query=NULL;
-  int savedbindingsoffset;
+  int savedbindingsoffset=-1;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self->connection, NULL);

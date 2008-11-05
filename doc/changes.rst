@@ -2,7 +2,7 @@ Change History
 **************
 .. currentmodule:: apsw
 
-3.6.4-r1
+3.6.5-r1
 ========
 
 The distribution now includes a speedtest script.  You can use this to
@@ -20,6 +20,9 @@ multiple threads.  Fixed by releasing the GIL in more places and added
 test that inspects the source to verify GIL/mutex handling.  Thanks to
 amicitas reporting this as `issue 31
 <http://code.google.com/p/apsw/issues/detail?id=31>`_.
+
+SQLite's API has been extended in 3.6.5 so that errors can be
+retrieved in a thread safe manner.  APSW now uses this API.
 
 Documentation is now done using `Sphinx <http://sphinx.pocoo.org>`_
 which was adopted by Python 3.  This has allowed for richer

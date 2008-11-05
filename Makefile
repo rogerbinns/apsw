@@ -1,8 +1,6 @@
 
-VERSION=3.6.4-r1
+VERSION=3.6.5-r1
 VERDIR=apsw-$(VERSION)
-
-http_proxy=http://192.168.1.25:8080
 
 # setup.py options for windows dist
 WINOPTS=--enable=fts  --enable=rtree
@@ -13,6 +11,7 @@ SOURCEFILES = \
 	src/apswversion.h \
 	src/blob.c \
 	src/exceptions.c \
+	src/osutil.c \
 	src/pointerlist.c \
 	src/pyutil.c \
 	src/statementcache.c \
@@ -47,10 +46,10 @@ doc/example.rst: example-code.py tools/example2rst.py
 
 # This is probably gnu make specific but only developers use this makefile
 $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
-	env http_proxy=$(http_proxy) python tools/code2rst.py $< $@
+	python tools/code2rst.py $< $@
 
 linkcheck:
-	make http_proxy=$(http_proxy) VERSION=$(VERSION) -C doc linkcheck 
+	make VERSION=$(VERSION) -C doc linkcheck 
 
 header:
 	echo "#define APSW_VERSION \"$(VERSION)\"" > src/apswversion.h

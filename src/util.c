@@ -24,9 +24,49 @@
  
 */
 
-/* used when there is no self and hence no self->inuse */
-#define _PYSQLITE_CALL(x) \
+/* These macros are to address several issues:
+
+  - Prevent simultaneous calls on the same object while the GIL is
+  released in one thread.  For example if a Cursor is executing
+  sqlite3_step with the GIL released, we don't want Cursor_execute
+  called on another thread since that will thrash what the first
+  thread is doing.  We use a member of Connection, Blob and Cursor
+  named 'inuse' to provide the simple exclusion.
+
+  - The GIL has to be released around all SQLite calls that take the
+  database mutex (which is most of them).  If the GIL is kept even for
+  trivial calls then deadlock will arise.  This is because if you have
+  multiple mutexes you must always acquire them in the same order, or
+  never hold more than one at a time.
+
+  - The SQLite error code is not threadsafe.  This is because the
+  error string is per database connection.  The call to sqlite3_errmsg
+  will return a pointer but that can be replaced by any other thread
+  with an error.  Consequently SQLite added sqlite3_db_mutex (see
+  sqlite-dev mailing list for 4 Nov 2008).  A far better workaround
+  would have been to make the SQLite error stuff be per thread just
+  like errno.  Instead I have had to roll my own thread local storage
+  system for storing the error message.
+*/
+
+/* call where no error is returned */
+#define _PYSQLITE_CALL_V(x) \
   do { Py_BEGIN_ALLOW_THREADS { x; } Py_END_ALLOW_THREADS ; } while(0)
+
+/* Calls where error could be set.  We assume that a variable 'res' is set.  Also need the db to take
+   the mutex on */
+#define _PYSQLITE_CALL_E(db, x)                     \
+do {                                                \
+  Py_BEGIN_ALLOW_THREADS                            \
+    {                                               \
+      sqlite3_mutex_enter(sqlite3_db_mutex(db));    \
+      x;                                            \
+      if(res!=SQLITE_OK)                            \
+        apsw_set_tls_error(sqlite3_errmsg((db)));   \
+      sqlite3_mutex_leave(sqlite3_db_mutex(db));    \
+    }                                               \
+  Py_END_ALLOW_THREADS;                             \
+ } while(0)
 
 #define INUSE_CALL(x)                               \
   do {                                              \
@@ -35,8 +75,21 @@
        assert(self->inuse==1); self->inuse=0;       \
   } while(0)
 
-/* normal use */
-#define PYSQLITE_CALL(y) INUSE_CALL(_PYSQLITE_CALL(y))
+/* call from blob code */
+#define PYSQLITE_BLOB_CALL(y) INUSE_CALL(_PYSQLITE_CALL_E(self->connection->db, y))
+
+/* call from connection code */
+#define PYSQLITE_CON_CALL(y)  INUSE_CALL(_PYSQLITE_CALL_E(self->db, y))
+
+/* call from cursor code - same as blob */
+#define PYSQLITE_CUR_CALL PYSQLITE_BLOB_CALL
+
+/* from statement cache */
+#define PYSQLITE_SC_CALL(y)   _PYSQLITE_CALL_E(sc->db, y)
+
+/* call to sqlite code that doesn't return an error */
+#define PYSQLITE_VOID_CALL(y) INUSE_CALL(_PYSQLITE_CALL_V(y))
+
 
 
 #ifdef __GNUC__
@@ -47,7 +100,7 @@
 
 
 
-/* used to decide if we will use int or long long, sqlite limit tests due to it not being 64 bit correct */
+/* used to decide if we will use int (4 bytes) or long long (8 bytes) */
 #define APSW_INT32_MIN (-2147483647-1)
 #define APSW_INT32_MAX 2147483647
 
@@ -217,7 +270,7 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
 {
   int coltype;
 
-  _PYSQLITE_CALL(coltype=sqlite3_column_type(stmt, col));
+  _PYSQLITE_CALL_V(coltype=sqlite3_column_type(stmt, col));
 
   APSW_FAULT_INJECT(UnknownColumnType,,coltype=12348);
 
@@ -226,7 +279,7 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
     case SQLITE_INTEGER:
       {
         sqlite3_int64 val;
-        _PYSQLITE_CALL(val=sqlite3_column_int64(stmt, col));
+        _PYSQLITE_CALL_V(val=sqlite3_column_int64(stmt, col));
 #if PY_MAJOR_VERSION<3
         if (val>=APSW_INT32_MIN && val<=APSW_INT32_MAX)
           return PyInt_FromLong((long)val);
@@ -237,14 +290,14 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
     case SQLITE_FLOAT:
       { 
         double d;
-        _PYSQLITE_CALL(d=sqlite3_column_double(stmt, col));
+        _PYSQLITE_CALL_V(d=sqlite3_column_double(stmt, col));
         return PyFloat_FromDouble(d);
       }
     case SQLITE_TEXT:
       {
         const char *data;
         size_t len;
-        _PYSQLITE_CALL( (data=(const char*)sqlite3_column_text(stmt, col), len=sqlite3_column_bytes(stmt, col)) );
+        _PYSQLITE_CALL_V( (data=(const char*)sqlite3_column_text(stmt, col), len=sqlite3_column_bytes(stmt, col)) );
         return convertutf8stringsize(data, len);
       }
 
@@ -255,7 +308,7 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
       {
         const void *data;
         size_t len;
-        _PYSQLITE_CALL( (data=sqlite3_column_blob(stmt, col), len=sqlite3_column_bytes(stmt, col)) );
+        _PYSQLITE_CALL_V( (data=sqlite3_column_blob(stmt, col), len=sqlite3_column_bytes(stmt, col)) );
         return converttobytes(data, len);
       }
 

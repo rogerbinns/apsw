@@ -34,7 +34,10 @@
 APSW Module
 ***********
 
-Things and stuff.!!!
+The module is the main interface to SQLite.  Methods and data on the
+module have process wide effects.  You can instantiate the
+:class:`Connection` and :class:`zeroblob` objects using
+``apsw.Connection(...)`` and ``apsw.zeroblob(...)`` respectively.
 
 API Reference
 =============
@@ -134,6 +137,9 @@ static PyObject *apswmodule;
 
 /* Make various versions of Python code compatible with each other */
 #include "pyutil.c"
+
+/* Operating system abstraction */
+#include "osutil.c"
 
 /* A list of pointers (used by Connection to keep track of Cursors) */
 #include "pointerlist.c"
@@ -495,7 +501,7 @@ vfsnames(APSW_ARGUNUSED PyObject *self)
   It also understands `extended error codes
   <http://sqlite.org/c3ref/c_ioerr_access.html>`_.
 
-  For example to raise `http://sqlite.org/c3ref/c_ioerr_access.html <SQLITE_IOERR_ACCESS>`_::
+  For example to raise `SQLITE_IOERR_ACCESS <http://sqlite.org/c3ref/c_ioerr_access.html>`_::
 
     raise apsw.exceptionfor(apsw.SQLITE_IOERR_ACCESS)
 
@@ -664,6 +670,13 @@ PyInit_apsw(void)
 
     assert(sizeof(int)==4);             /* we expect 32 bit ints */
     assert(sizeof(long long)==8);             /* we expect 64 bit long long */
+
+    /* check tls error stuff */
+    if(apsw_inittls())
+      {
+        PyErr_Format(PyExc_EnvironmentError, "Unable to initialize tls for error messages.");
+        goto fail;
+      }
 
     /* Check SQLite was compiled with thread safety */
     if(!sqlite3_threadsafe())
@@ -1066,3 +1079,4 @@ APSW_Should_Fault(const char *name)
   return res;
 }
 #endif
+

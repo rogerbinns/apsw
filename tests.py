@@ -332,7 +332,7 @@ class APSW(unittest.TestCase):
             db.setrollbackhook(lambda x=2: 1)
             db.setupdatehook(lambda x=3: 2)
             db.collationneeded(lambda x: 4)
-            for i in range(100):
+            for i in range(120):
                 c2=db.cursor()
                 c2.setrowtrace(lambda x: (x,))
                 c2.setexectrace(lambda x,y: True)
@@ -2610,10 +2610,10 @@ class APSW(unittest.TestCase):
             b4=time.time()
             while time.time()-b4<n:
                 i=random.choice(randomnumbers)
-                if i%3==0:
+                if i%5==0:
                     sql="select timesten(x) from foo where x=%d order by x" % (i,)
                     c.execute(sql)
-                elif i%3==1:
+                elif i%5==1:
                     sql="select timesten(x) from foo where x=? order by x"
                     called=0
                     for row in self.db.cursor().execute(sql, (i,)):
@@ -2621,6 +2621,16 @@ class APSW(unittest.TestCase):
                         self.failUnlessEqual(row[0], 10*i)
                     # same value could be present multiple times
                     self.failUnless(called>=1)
+                elif i%5==2:
+                    try:
+                        self.db.cursor().execute("deliberate syntax error")
+                    except apsw.SQLError:
+                        assert("deliberate" in str(sys.exc_info()[1]))
+                elif i%5==3:
+                    try:
+                        self.db.cursor().execute("bogus syntax error")
+                    except apsw.SQLError:
+                        assert("bogus" in str(sys.exc_info()[1]))                
                 else:
                     sql="select timesten(x) from foo where x=? order by x"
                     self.db.cursor().execute(sql, (i,))
@@ -2719,7 +2729,7 @@ class APSW(unittest.TestCase):
         'sqlite3api': { # items of interest - sqlite3 calls
                         'match': re.compile(r"(sqlite3_[A-Za-z0-9_]+)\s*\("),
                         # what must also be on same or preceding line
-                        'needs': re.compile("PYSQLITE_CALL"),
+                        'needs': re.compile("PYSQLITE(_|_BLOB_|_CON_|_CUR_|_SC_|_VOID_)CALL"),
 
            # except if match.group(1) matches this - these don't
            # acquire db mutex so no need to wrap (determined by
@@ -3227,10 +3237,16 @@ class APSW(unittest.TestCase):
             db=apsw.Connection("testdb")
             next(db.cursor().execute("select randomblob(10)"))
 
+        class RandomVFSUpper(apsw.VFS):
+            def __init__(self):
+                apsw.VFS.__init__(self, "randomupper", defvfs)
+
+            def xRandomness1(self, n):
+                return b("\xaa\xbb")
 
         class RandomVFS(apsw.VFS):
             def __init__(self):
-                apsw.VFS.__init__(self, "random", defvfs, makedefault=True)
+                apsw.VFS.__init__(self, "random", "randomupper", makedefault=True)
 
             def xRandomness1(self, bad, number, of, arguments):
                 1/0
@@ -3254,9 +3270,10 @@ class APSW(unittest.TestCase):
                 return 3
 
             def xRandomness99(self, n):
-                return super(RandomVFS, self).xRandomness(n+1)
+                return super(RandomVFS, self).xRandomness(n+2049)
 
         if hasattr(apsw, 'test_reset_rng'):
+            vfsupper=RandomVFSUpper()
             vfs=RandomVFS()
             self.assertRaises(TypeError, vfs.xRandomness, "jksdhfsd")
             self.assertRaises(TypeError, vfs.xRandomness, 3, 3)
@@ -3278,6 +3295,9 @@ class APSW(unittest.TestCase):
             self.assertRaisesUnraisable(TypeError, testrand)
             RandomVFS.xRandomness=RandomVFS.xRandomness99
             testrand() # shouldn't have problems
+            vfsupper.xRandomness=vfsupper.xRandomness1
+            testrand() # coverage
+            vfsupper.unregister()
             vfs.unregister()
 
         class ErrorVFS(apsw.VFS):
@@ -3551,15 +3571,18 @@ class APSW(unittest.TestCase):
                 super(TestFile, self).__init__("", name, [l("0xffffffffeeeeeeee0"), l("0xffffffffeeeeeeee0")])
 
             def init6(self, name, flags):
-                super(TestFile, self).__init__("", name, (6, 7))
+                super(TestFile, self).__init__("", name, [l("0xffffffffa"), 0]) # 64 bit int vs long overflow
 
             def init7(self, name, flags):
-                super(TestFile, self).__init__("bogus", name, flags)
+                super(TestFile, self).__init__("", name, (6, 7))
 
             def init8(self, name, flags):
-                super(TestFile, self).__init__("", name, (6, "six"))
+                super(TestFile, self).__init__("bogus", name, flags)
 
             def init9(self, name, flags):
+                super(TestFile, self).__init__("", name, (6, "six"))
+
+            def init10(self, name, flags):
                 class badlist(list): # only allows setting an element once
                     def __init__(self, *args):
                         super(badlist, self).__init__(args)
@@ -3984,12 +4007,14 @@ class APSW(unittest.TestCase):
         TestFile.__init__=TestFile.init5
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, OverflowError, testdb)
         TestFile.__init__=TestFile.init6
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, OverflowError, testdb)
         TestFile.__init__=TestFile.init7
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ValueError, testdb)
-        TestFile.__init__=TestFile.init8
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+        TestFile.__init__=TestFile.init8
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ValueError, testdb)
         TestFile.__init__=TestFile.init9
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+        TestFile.__init__=TestFile.init10
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ValueError, testdb)
         TestFile.__init__=TestFile.init99
         testdb() # should work just fine
@@ -4152,6 +4177,14 @@ class APSW(unittest.TestCase):
         if ctypes:
             objwrap=ctypes.py_object(True)
             testdb(closedb=False).filecontrol("main", 1028, ctypes.addressof(objwrap))
+        # for coverage
+        class VFSx(apsw.VFS):
+            def __init__(self):
+                apsw.VFS.__init__(self, "filecontrol", "apswtest")
+        vfs2=VFSx()
+        testdb(vfsname="filecontrol", closedb=False).filecontrol("main", 1027, 1027)
+        del vfs2
+            
 
         ## xClose
         t.xClose()

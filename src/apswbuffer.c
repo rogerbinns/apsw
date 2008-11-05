@@ -142,6 +142,7 @@ APSWBuffer_hash(APSWBuffer *self)
 
   hash++; /* avoid collision */
 
+  /* I tried to find a string that would have a hash of -2 but failed. */
   if(hash==-1)
     hash= -2;
 
@@ -180,11 +181,7 @@ APSWBuffer_FromObject(PyObject *base, Py_ssize_t offset, Py_ssize_t length)
       Py_INCREF(res->base);
       res->data=APSWBuffer_AS_STRING(base)+offset;
       res->length=length;
-      
-      if(offset==0 && length==APSWBuffer_GET_SIZE(base))
-        res->hash= ( (APSWBuffer*)base) -> hash;
-      else
-        res->hash= -1;
+      res->hash= -1;
       
       return (PyObject*)res;
     }
@@ -243,10 +240,7 @@ APSWBuffer_richcompare(APSWBuffer *left, APSWBuffer *right, int op)
   assert(left->hash!=-1);
   assert(right->hash!=-1);
   
-  if(left->hash != right->hash)
-    goto notequal;
-
-  if(left->length != right->length)
+  if(left->hash != right->hash || left->length != right->length)
     goto notequal;
 
   if(left->data == right->data)

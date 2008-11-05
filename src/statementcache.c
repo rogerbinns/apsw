@@ -290,7 +290,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
           val->lru_prev=val->lru_next=0;
           statementcache_sanity_check(sc);
 
-          _PYSQLITE_CALL(sqlite3_clear_bindings(val->vdbestatement));          
+          _PYSQLITE_CALL_V(sqlite3_clear_bindings(val->vdbestatement));          
           Py_INCREF( (PyObject*)val);
           assert(PyObject_RichCompareBool(utf8, val->utf8, Py_EQ)==1);
           APSWBuffer_XDECREF_unlikely(utf8);
@@ -308,7 +308,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
       assert(!val->incache);
       assert(!val->inuse);
       if(val->vdbestatement)
-        _PYSQLITE_CALL(sqlite3_finalize(val->vdbestatement));
+        _PYSQLITE_CALL_V(sqlite3_finalize(val->vdbestatement));
       APSWBuffer_XDECREF_likely(val->utf8);
       APSWBuffer_XDECREF_unlikely(val->next);
       Py_XDECREF(val->origquery);
@@ -347,7 +347,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
      will always have had an extra zero on the end.  The assert is just to make
      sure */
   assert(buffer[buflen+1-1]==0);
-  _PYSQLITE_CALL(res=sqlite3_prepare_v2(sc->db, buffer, buflen+1, &val->vdbestatement, &tail));
+  PYSQLITE_SC_CALL(res=sqlite3_prepare_v2(sc->db, buffer, buflen+1, &val->vdbestatement, &tail));
 
   /* handle error */
   if(res!=SQLITE_OK)
@@ -379,6 +379,11 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
         }
       else
 #endif
+        /* Getting this line to execute is hard as the statement would
+           have come from the recyclelist in the first place so there
+           will be a spot to return it to.  The only way to do it
+           would be some violent threading to refill the recyclelist
+           between this statement being taken out and returned */
         Py_DECREF(val);
     }
   return NULL;
@@ -403,7 +408,7 @@ statementcache_finalize(StatementCache *sc, APSWStatement *stmt)
      otherwise another thread could enter and reuse what we are in the
      middle of disposing of */
 
-  _PYSQLITE_CALL(res=sqlite3_reset(stmt->vdbestatement));
+  PYSQLITE_SC_CALL(res=sqlite3_reset(stmt->vdbestatement));
 
   /* is it going to be put in cache? */
   if(stmt->incache || (sc->cache && stmt->vdbestatement && APSWBuffer_GET_SIZE(stmt->utf8) < SC_MAXSIZE && !PyDict_Contains(sc->cache, stmt->utf8)))
@@ -609,7 +614,7 @@ static void
 APSWStatement_dealloc(APSWStatement *stmt)
 {
   if(stmt->vdbestatement)
-    _PYSQLITE_CALL(sqlite3_finalize(stmt->vdbestatement));
+    _PYSQLITE_CALL_V(sqlite3_finalize(stmt->vdbestatement));
   assert(stmt->inuse==0);
   APSWBuffer_XDECREF_likely(stmt->utf8);
   APSWBuffer_XDECREF_likely(stmt->next);

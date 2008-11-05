@@ -218,13 +218,13 @@ Connection_close(Connection *self, PyObject *args)
   statementcache_free(self->stmtcache);
   self->stmtcache=0;
 
-  PYSQLITE_CALL(
+  PYSQLITE_VOID_CALL(
     APSW_FAULT_INJECT(ConnectionCloseFail, res=sqlite3_close(self->db), res=SQLITE_IOERR)
     );
 
   if (res!=SQLITE_OK) 
     {
-      SET_EXC(res, self->db);
+      SET_EXC(res, NULL);
     }
 
   if(PyErr_Occurred())
@@ -261,7 +261,7 @@ Connection_dealloc(Connection* self)
           self->stmtcache=0;
         }
 
-      PYSQLITE_CALL(
+      PYSQLITE_VOID_CALL(
         APSW_FAULT_INJECT(DestructorCloseFail, res=sqlite3_close(self->db), res=SQLITE_IOERR);
         );
       self->db=0;
@@ -375,9 +375,10 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
 
   /* Technically there is a race condition as a vfs of the same name
      could be registered between our find and the open starting.
-     Don't do that! */
-  PYSQLITE_CALL(
-    vfsused=sqlite3_vfs_find(vfs);   res=sqlite3_open_v2(filename, &self->db, flags, vfs);
+     Don't do that!  We also have to manage the error message thread
+     safety manually as self->db is null on entry. */
+  PYSQLITE_VOID_CALL(
+    vfsused=sqlite3_vfs_find(vfs); res=sqlite3_open_v2(filename, &self->db, flags, vfs); if(res!=SQLITE_OK) apsw_set_tls_error(sqlite3_errmsg(self->db));
     );
   SET_EXC(res, self->db);  /* nb sqlite3_open always allocates the db even on error */
   
@@ -400,7 +401,7 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
   filename=NULL; /* connection has ownership now */
 
   /* get detailed error codes */
-  PYSQLITE_CALL(sqlite3_extended_result_codes(self->db, 1));
+  PYSQLITE_VOID_CALL(sqlite3_extended_result_codes(self->db, 1));
   
   /* call connection hooks */
   hooks=PyObject_GetAttrString(apswmodule, "connection_hooks");
@@ -487,7 +488,7 @@ Connection_blobopen(Connection *self, PyObject *args)
                        STRENCODING, &dbname, STRENCODING, &tablename, STRENCODING, &column, &rowid, &writing))
     return NULL;
 
-  PYSQLITE_CALL(res=sqlite3_blob_open(self->db, dbname, tablename, column, rowid, writing, &blob));
+  PYSQLITE_CON_CALL(res=sqlite3_blob_open(self->db, dbname, tablename, column, rowid, writing, &blob));
 
   PyMem_Free((void*)dbname);
   PyMem_Free((void*)tablename);
@@ -499,7 +500,7 @@ Connection_blobopen(Connection *self, PyObject *args)
   APSW_FAULT_INJECT(BlobAllocFails,apswblob=PyObject_New(struct APSWBlob, &APSWBlobType), (PyErr_NoMemory(), apswblob=NULL));
   if(!apswblob)
     {
-      PYSQLITE_CALL(sqlite3_blob_close(blob));
+      PYSQLITE_CON_CALL(sqlite3_blob_close(blob));
       return NULL;
     }
 
@@ -564,7 +565,7 @@ Connection_setbusytimeout(Connection *self, PyObject *args)
   if(!PyArg_ParseTuple(args, "i:setbusytimeout(millseconds)", &ms))
     return NULL;
 
-  PYSQLITE_CALL(res=sqlite3_busy_timeout(self->db, ms));
+  PYSQLITE_CON_CALL(res=sqlite3_busy_timeout(self->db, ms));
   SET_EXC(res, self->db);
   if(res!=SQLITE_OK) return NULL;
   
@@ -791,7 +792,7 @@ Connection_setupdatehook(Connection *self, PyObject *callable)
 
   if(callable==Py_None)
     {
-      PYSQLITE_CALL(sqlite3_update_hook(self->db, NULL, NULL));
+      PYSQLITE_VOID_CALL(sqlite3_update_hook(self->db, NULL, NULL));
       callable=NULL;
       goto finally;
     }
@@ -802,7 +803,7 @@ Connection_setupdatehook(Connection *self, PyObject *callable)
       return NULL;
     }
 
-  PYSQLITE_CALL(sqlite3_update_hook(self->db, updatecb, self));
+  PYSQLITE_VOID_CALL(sqlite3_update_hook(self->db, updatecb, self));
 
   Py_INCREF(callable);
 
@@ -861,7 +862,7 @@ Connection_setrollbackhook(Connection *self, PyObject *callable)
 
   if(callable==Py_None)
     {
-      PYSQLITE_CALL(sqlite3_rollback_hook(self->db, NULL, NULL));
+      PYSQLITE_VOID_CALL(sqlite3_rollback_hook(self->db, NULL, NULL));
       callable=NULL;
       goto finally;
     }
@@ -872,7 +873,7 @@ Connection_setrollbackhook(Connection *self, PyObject *callable)
       return NULL;
     }
 
-  PYSQLITE_CALL(sqlite3_rollback_hook(self->db, rollbackhookcb, self));
+  PYSQLITE_VOID_CALL(sqlite3_rollback_hook(self->db, rollbackhookcb, self));
 
   Py_INCREF(callable);
 
@@ -933,7 +934,7 @@ Connection_setprofile(Connection *self, PyObject *callable)
 
   if(callable==Py_None)
     {
-      PYSQLITE_CALL(sqlite3_profile(self->db, NULL, NULL));
+      PYSQLITE_VOID_CALL(sqlite3_profile(self->db, NULL, NULL));
       callable=NULL;
       goto finally;
     }
@@ -944,7 +945,7 @@ Connection_setprofile(Connection *self, PyObject *callable)
       return NULL;
     }
 
-  PYSQLITE_CALL(sqlite3_profile(self->db, profilecb, self));
+  PYSQLITE_VOID_CALL(sqlite3_profile(self->db, profilecb, self));
 
   Py_INCREF(callable);
 
@@ -1020,7 +1021,7 @@ Connection_setcommithook(Connection *self, PyObject *callable)
 
   if(callable==Py_None)
     {
-      PYSQLITE_CALL(sqlite3_commit_hook(self->db, NULL, NULL));
+      PYSQLITE_VOID_CALL(sqlite3_commit_hook(self->db, NULL, NULL));
       callable=NULL;
       goto finally;
     }
@@ -1031,7 +1032,7 @@ Connection_setcommithook(Connection *self, PyObject *callable)
       return NULL;
     }
 
-  PYSQLITE_CALL(sqlite3_commit_hook(self->db, commithookcb, self));
+  PYSQLITE_VOID_CALL(sqlite3_commit_hook(self->db, commithookcb, self));
 
   Py_INCREF(callable);
 
@@ -1107,7 +1108,7 @@ Connection_setprogresshandler(Connection *self, PyObject *args)
 
   if(callable==Py_None)
     {
-      PYSQLITE_CALL(sqlite3_progress_handler(self->db, 0, NULL, NULL));
+      PYSQLITE_VOID_CALL(sqlite3_progress_handler(self->db, 0, NULL, NULL));
       callable=NULL;
       goto finally;
     }
@@ -1118,7 +1119,7 @@ Connection_setprogresshandler(Connection *self, PyObject *args)
       return NULL;
     }
 
-  PYSQLITE_CALL(sqlite3_progress_handler(self->db, nsteps, progresshandlercb, self));
+  PYSQLITE_VOID_CALL(sqlite3_progress_handler(self->db, nsteps, progresshandlercb, self));
   Py_INCREF(callable);
 
  finally:
@@ -1223,7 +1224,7 @@ Connection_setauthorizer(Connection *self, PyObject *callable)
   if(callable==Py_None)
     {
       APSW_FAULT_INJECT(SetAuthorizerNullFail,
-                        PYSQLITE_CALL(res=sqlite3_set_authorizer(self->db, NULL, NULL)),
+                        PYSQLITE_CON_CALL(res=sqlite3_set_authorizer(self->db, NULL, NULL)),
                         res=SQLITE_IOERR);
       if(res!=SQLITE_OK)
         {
@@ -1241,7 +1242,7 @@ Connection_setauthorizer(Connection *self, PyObject *callable)
     }
 
   APSW_FAULT_INJECT(SetAuthorizerFail,
-                    PYSQLITE_CALL(res=sqlite3_set_authorizer(self->db, authorizercb, self)),
+                    PYSQLITE_CON_CALL(res=sqlite3_set_authorizer(self->db, authorizercb, self)),
                     res=SQLITE_IOERR);
   if(res!=SQLITE_OK)
     {
@@ -1315,7 +1316,7 @@ Connection_collationneeded(Connection *self, PyObject *callable)
   if(callable==Py_None)
     {
       APSW_FAULT_INJECT(CollationNeededNullFail,
-                        PYSQLITE_CALL(res=sqlite3_collation_needed(self->db, NULL, NULL)),
+                        PYSQLITE_CON_CALL(res=sqlite3_collation_needed(self->db, NULL, NULL)),
                         res=SQLITE_IOERR);
       if(res!=SQLITE_OK)
         {
@@ -1333,7 +1334,7 @@ Connection_collationneeded(Connection *self, PyObject *callable)
     }
 
   APSW_FAULT_INJECT(CollationNeededFail,
-                    PYSQLITE_CALL(res=sqlite3_collation_needed(self->db, self, collationneeded_cb)), 
+                    PYSQLITE_CON_CALL(res=sqlite3_collation_needed(self->db, self, collationneeded_cb)), 
                     res=SQLITE_IOERR);
   if(res!=SQLITE_OK)
     {
@@ -1417,7 +1418,7 @@ Connection_setbusyhandler(Connection *self, PyObject *callable)
   if(callable==Py_None)
     {
       APSW_FAULT_INJECT(SetBusyHandlerNullFail,
-                        PYSQLITE_CALL(res=sqlite3_busy_handler(self->db, NULL, NULL)),
+                        PYSQLITE_CON_CALL(res=sqlite3_busy_handler(self->db, NULL, NULL)),
                         res=SQLITE_IOERR);
       if(res!=SQLITE_OK)
         {
@@ -1435,7 +1436,7 @@ Connection_setbusyhandler(Connection *self, PyObject *callable)
     }
 
   APSW_FAULT_INJECT(SetBusyHandlerFail,
-                    PYSQLITE_CALL(res=sqlite3_busy_handler(self->db, busyhandlercb, self)),
+                    PYSQLITE_CON_CALL(res=sqlite3_busy_handler(self->db, busyhandlercb, self)),
                     res=SQLITE_IOERR);
   if(res!=SQLITE_OK)
     {
@@ -1484,7 +1485,7 @@ Connection_enableloadextension(Connection *self, PyObject *enabled)
 
   /* call function */
   APSW_FAULT_INJECT(EnableLoadExtensionFail, 
-                    PYSQLITE_CALL(res=sqlite3_enable_load_extension(self->db, enabledp)),
+                    PYSQLITE_CON_CALL(res=sqlite3_enable_load_extension(self->db, enabledp)),
                     res=SQLITE_IOERR);
   SET_EXC(res, self->db);
 
@@ -1523,7 +1524,7 @@ Connection_loadextension(Connection *self, PyObject *args)
   if(!PyArg_ParseTuple(args, "es|z:loadextension(filename, entrypoint=None)", STRENCODING, &zfile, &zproc))
     return NULL;
 
-  PYSQLITE_CALL(res=sqlite3_load_extension(self->db, zfile, zproc, &errmsg));
+  PYSQLITE_CON_CALL(res=sqlite3_load_extension(self->db, zfile, zproc, &errmsg));
 
   PyMem_Free(zfile);
 
@@ -2059,7 +2060,7 @@ Connection_createscalarfunction(Connection *self, PyObject *args)
   cbinfo->name=name;
   cbinfo->scalarfunc=callable;
 
-  PYSQLITE_CALL(
+  PYSQLITE_CON_CALL(
                 res=sqlite3_create_function(self->db,
                                             name,
                                             numargs,
@@ -2184,7 +2185,7 @@ Connection_createaggregatefunction(Connection *self, PyObject *args)
   cbinfo->name=name;
   cbinfo->aggregatefactory=callable;
 
-  PYSQLITE_CALL(
+  PYSQLITE_CON_CALL(
                 res=sqlite3_create_function(self->db,
                                             name,
                                             numargs,
@@ -2330,7 +2331,7 @@ Connection_createcollation(Connection *self, PyObject *args)
       return NULL;
     }
 
-  PYSQLITE_CALL(
+  PYSQLITE_CON_CALL(
                 res=sqlite3_create_collation_v2(self->db,
                                                 name,
                                                 SQLITE_UTF8,
@@ -2414,7 +2415,7 @@ Connection_filecontrol(Connection *self, PyObject *args)
       goto finally;
     }
 
-  PYSQLITE_CALL(res=sqlite3_file_control(self->db, dbname, op, ptr));
+  PYSQLITE_CON_CALL(res=sqlite3_file_control(self->db, dbname, op, ptr));
 
   SET_EXC(res, self->db);
 
@@ -2484,7 +2485,7 @@ Connection_createmodule(Connection *self, PyObject *args)
 
   /* ::TODO:: - can we call this with NULL to unregister a module? */
   APSW_FAULT_INJECT(CreateModuleFail, 
-                    PYSQLITE_CALL(res=sqlite3_create_module_v2(self->db, name, &apsw_vtable_module, vti, vtabFree)), 
+                    PYSQLITE_CON_CALL(res=sqlite3_create_module_v2(self->db, name, &apsw_vtable_module, vti, vtabFree)), 
                     res=SQLITE_IOERR);
   PyMem_Free(name);
   SET_EXC(res, self->db);
