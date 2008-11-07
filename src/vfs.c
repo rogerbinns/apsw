@@ -1675,11 +1675,6 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
       result=MakeSqliteMsgFromPyException(NULL);
       goto finally;
     }
-  if(pybuf==Py_None)
-    {
-      result=SQLITE_IOERR_SHORT_READ;
-      goto finally;
-    }
   if(PyUnicode_Check(pybuf) || !PyObject_CheckReadBuffer(pybuf))
     {
       PyErr_Format(PyExc_TypeError, "Object returned from xRead should be bytes/buffer/string");
@@ -1696,7 +1691,11 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
     }
 
   if(size<amount)
+    {
       result=SQLITE_IOERR_SHORT_READ;
+      memset(bufout, 0, amount); /* see http://www.sqlite.org/cvstrac/chngview?cn=5867 */
+      memcpy(bufout, buffer, size);
+    }
   else
     {
       memcpy(bufout, buffer, amount);
@@ -1705,7 +1704,7 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
   
  finally:
   if(PyErr_Occurred())
-    AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xRead", "{s: i, s: L, s: O}", "amount", amount, "offset", offset, "result", pybuf);
+    AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xRead", "{s: i, s: L, s: O}", "amount", amount, "offset", offset, "result", pybuf?pybuf:Py_None);
 
   Py_XDECREF(pybuf);
   FILEPOSTAMBLE;
@@ -1751,11 +1750,20 @@ apswvfsfilepy_xRead(APSWVFSFile *self, PyObject *args)
 
   if(res==SQLITE_OK)
     return buffy;
-    
-  Py_DECREF(buffy);
 
   if(res==SQLITE_IOERR_SHORT_READ)
-    Py_RETURN_NONE;
+    {
+      /* We don't know how short the read was, so look for first
+         non-trailing null byte.  See
+         http://www.sqlite.org/cvstrac/chngview?cn=5867 */
+      while(amount && PyBytes_AS_STRING(buffy)[amount-1]==0)
+        amount--;
+      _PyBytes_Resize(&buffy, amount);
+      return buffy;
+    }
+   
+  Py_DECREF(buffy);
+
 
   SET_EXC(res, NULL);
   return NULL;
