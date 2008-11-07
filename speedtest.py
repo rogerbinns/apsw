@@ -29,7 +29,7 @@ parser.add_option("--database", dest="database", default=":memory:",
                   help="The database file to use [Default %default]")
 parser.add_option("--tests", dest="tests", default="bigstmt,statements,statements_nobindings",
                   help="What tests to run [Default %default]")
-parser.add_option("--iterations", dest="iterations", default=3, type="int", metavar="N",
+parser.add_option("--iterations", dest="iterations", default=4, type="int", metavar="N",
                   help="How many times to run the tests [Default %default]")
 parser.add_option("--tests-detail", dest="tests_detail", default=False, action="store_true",
                   help="Print details of what the tests do.  (Does not run the tests)")
@@ -423,7 +423,8 @@ write("\nRunning tests\n")
 for i in range(options.iterations):
     write("%d/%d\n" % (i+1, options.iterations))
     for test in options.tests:
-        for driver in "apsw", "pysqlite":
+        # funky stuff is to alternate order each round
+        for driver in ( ("apsw", "pysqlite"), ("pysqlite", "apsw"))[i%2]:
             if getattr(options, driver):
                 name=driver+"_"+test
                 func=globals().get(name, None)
