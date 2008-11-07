@@ -235,24 +235,25 @@ class APSW(unittest.TestCase):
         'seek': 2
         }
 
+    def deltempfiles(self):
+        for name in ("testdb", "testdb2", "testfile", "testfile2", "testdb2x"):
+            for i in "-journal", "":
+                if os.path.exists(name+i):
+                    deletefile(name+i)
 
     def setUp(self):
         # clean out database and journals from last runs
         gc.collect()
-        for name in ("testdb", "testdb2", "testfile", "testfile2"):
-            for i in "-journal", "":
-                if os.path.exists(name+i):
-                    deletefile(name+i)
+        self.deltempfiles()
         self.db=apsw.Connection("testdb")
 
     def tearDown(self):
-        # we don't delete the database file itself.  it will be
-        # left around if there was a failure
         if self.db is not None:
             self.db.close(True)
         del self.db
         apsw.connection_hooks=[] # back to default value
         gc.collect()
+        self.deltempfiles()
 
     def assertTableExists(self, tablename):
         self.failUnlessEqual(next(self.db.cursor().execute("select count(*) from ["+tablename+"]"))[0], 0)
@@ -2686,12 +2687,28 @@ class APSW(unittest.TestCase):
         cur.execute("drop index foo_x")
         cur.execute("insert into foo values(1,2)") # cache hit, but needs reprepare
         cur.execute("drop table foo; create table foo(x)")
-        #cur.execute("insert into foo values(1,2)") # cache hit, but invalid sql
+        try:
+            cur.execute("insert into foo values(1,2)") # cache hit, but invalid sql
+        except (apsw.SQLError, apsw.SchemaChangeError):
+            pass
         cur.executemany("insert into foo values(?)", [[1],[2]])
         # overflow the statement cache
-        l=[self.db.cursor().execute("select x from foo") for i in range(scsize+200)]
+        l=[self.db.cursor().execute("select x from foo"+" "*i) for i in range(scsize+200)]
         del l
-        for _ in cur.execute("select * from foo"): pass
+        gc.collect()
+        # coverage
+        l=[]
+        for i in range(scsize+10):
+            l.append(self.db.cursor().execute("select x from foo"+" "*i))
+            for row in self.db.cursor().execute("select * from foo"):
+                pass
+        # other wrangling
+        l=[self.db.cursor().execute("select x from foo") for i in range(scsize+200)]
+        for i in range(scsize+200):
+            for row in self.db.cursor().execute("select * from foo"+" "*i):
+                pass
+        del l
+        gc.collect()
         db2=apsw.Connection("testdb", statementcachesize=scsize)
         cur2=db2.cursor()
         cur2.execute("create table bar(x,y)")
