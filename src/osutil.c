@@ -31,6 +31,8 @@
 
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
 
+#include <windows.h>
+
 static DWORD apswtlserrslot;
 
 BOOL WINAPI 
@@ -48,7 +50,7 @@ DllMain(HANDLE hinstDLL, DWORD dwReason, LPVOID lpvReserved)
       free(TlsGetValue(apswtlserrslot));
       return TRUE;
     case DLL_THREAD_ATTACH:
-      /* No code for thread attach since  TlsGetValue() will return NULL until a value is set */
+      /* No code for thread attach since TlsGetValue() will return NULL until a value is set */
       return TRUE;
     }
   return TRUE;
@@ -78,6 +80,8 @@ apsw_get_tls_error(void)
 
 #else
 /* use pthreads */
+
+#include <pthread.h>
 
 /* the pthread docs say to do this once stuff */
 static pthread_once_t apswtlserrslot_once = PTHREAD_ONCE_INIT;
