@@ -39,6 +39,7 @@ all: header docs
 
 docs: $(GENDOCS) doc/example.rst
 	env PYTHONPATH=. python tools/docmissing.py
+	env PYTHONPATH=. python tools/docupdate.py $(VERSION)
 	make VERSION=$(VERSION) -C doc clean html htmlhelp 
 
 doc/example.rst: example-code.py tools/example2rst.py

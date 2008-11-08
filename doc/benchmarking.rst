@@ -1,35 +1,99 @@
 .. _benchmarking:
 
-Compatibility and Benchmarking
-==============================
+Benchmarking
+============
 
+Before you do any benchmarking with APSW or other ways of accessing
+SQLite, you must understand how and when SQLite does transactions. See
+`transaction control
+<http://sqlite.org/lockingv3.html#transaction_control>`_.  **APSW does
+not alter SQLite's behaviour with transactions.**
 
-nested transactions
+Some access layers try to interpret your SQL and manage transactions
+behind your back, which may or may not work well with SQLite also
+doing its own transactions. You should always manage your transactions
+yourself.  For example to insert 1,000 rows wrap it in a single
+transaction else you will have 1,000 transactions. The best clue that
+you have one transaction per statement is having a maximum of 60
+statements per second. You need two drive rotations to do a
+transaction - the data has to be committed to the main file and the
+journal - and 7200 RPM drives do 120 rotations a second. On the other
+hand if you don't put in the transaction boundaries yourself and get
+more than 60 statements a second, then your access mechanism is
+silently starting transactions for you. This topic also comes up
+fairly frequently in the SQLite mailing list archives.
 
-also add info about speedtest 
+speedtest
+---------
 
-  <h1><a name="SQLiteVersionCompatibilityAndBenchmarking" id="SQLiteVersionCompatibilityAndBenchmarking">SQLite version
-  compatibility and benchmarking</a></h1>
+APSW includes a speed testing script as part of the :ref:`source
+distribution <source_and_binaries>`.  You can use the script to
+compare SQLite performance across different versions of SQLite,
+different host systems (hard drives and controllers matter) as well as
+between pysqlite and APSW.
 
-  <p>APSW binds to the C interface of SQLite. That interface is stable for each major version of SQLite (ie the C
-  interface for any SQLite 3.x is stable, but SQLite 4.x would be an incompatible change). Consequently you can use
-  APSW against any revision of SQLite with the same major version number. There are small enhancements to the C api
-  over time, and APSW adds support for them as appropriate. The version number of APSW covers the version these
-  enhancements were added. The vast majority of changes to SQLite are in the SQL syntax and engine. Those will be
-  picked up with any version of APSW. The one exception to this is experimental features in SQLite which may change API
-  between revisions. Consequently you will need to turn them off if you want to work against a variety of versions of
-  SQLite (see EXPERIMENTAL in <code>setup.py</code>). I strongly recommend you embed the SQLite library into APSW which
-  will put you in control of versions.</p>
+.. speedtest-begin
 
-  <p>Before you do any benchmarking with APSW or other ways of accessing SQLite, you must understand how and when
-  SQLite does transactions. See section 7.0, <i>Transaction Control At The SQL Level</i> of <a href=
-  "http://sqlite.org/lockingv3.html">sqlite.org/lockingv3.html</a>. <b>APSW does not alter SQLite's behaviour with
-  transactions.</b> Some access layers try to interpret your SQL and manage transactions behind your back, which may or
-  may not work well with SQLite also doing its own transactions. You should always manage your transactions yourself.
-  For example to insert 1,000 rows wrap it in a single transaction else you will have 1,000 transactions. The best clue
-  that you have one transaction per statement is having a maximum of 60 statements per second. You need two drive
-  rotations to do a transaction - the data has to be committed to the main file and the journal - and 7200 RPM drives
-  do 120 rotations a second. On the other hand if you don't put in the transaction boundaries yourself and get more
-  than 60 statements a second, then your access mechanism is silently starting transactions for you. This topic also
-  comes up fairly frequently in the SQLite mailing list archives.</p>
+.. code-block:: text
 
+    $ python speedtest.py --help
+    Usage: speedtest.py [options]
+    
+    Options:
+      -h, --help           show this help message and exit
+      --apsw               Include apsw in testing (False)
+      --pysqlite           Include pysqlite in testing (False)
+      --correctness        Do a correctness test
+      --scale=SCALE        How many statements to execute.  Each unit takes about
+                           2 seconds per test on memory only databases. [Default
+                           10]
+      --database=DATABASE  The database file to use [Default :memory:]
+      --tests=TESTS        What tests to run [Default
+                           bigstmt,statements,statements_nobindings]
+      --iterations=N       How many times to run the tests [Default 4]
+      --tests-detail       Print details of what the tests do.  (Does not run the
+                           tests)
+      --dump-sql=FILENAME  Name of file to dump SQL to.  This is useful for
+                           feeding into the SQLite command line shell.
+      --sc-size=N          Size of the statement cache. APSW will disable cache
+                           with value of zero.  Pysqlite ensures a minimum of 5
+                           [Default 100]
+    
+
+    $ python speedtest.py --tests-detail
+    bigstmt:
+    
+      Supplies the SQL as a single string consisting of multiple
+      statements.  apsw handles this normally via cursor.execute while
+      pysqlite requires that cursor.executescript is called.  The string
+      will be several kilobytes and with a factor of 50 will be in the
+      megabyte range.  This is the kind of query you would run if you were
+      restoring a database from a dump.
+    
+    statements:
+    
+      Runs the SQL queries but uses bindings (? parameters). eg::
+    
+        for i in range(3):
+           cursor.execute("insert into table foo values(?)", (i,))
+    
+      This test has many hits of the statement cache.
+    
+    statements_nobindings:
+    
+      Runs the SQL queries but doesn't use bindings. eg::
+    
+        cursor.execute("insert into table foo values(0)")
+        cursor.execute("insert into table foo values(1)")
+        cursor.execute("insert into table foo values(2)")
+    
+      This test has no statement cache hits and shows the overhead of
+           having a statement cache.
+    
+      In theory all the tests above should run in almost identical time
+      as well as when using the SQLite command line shell.  This tool
+      shows you what happens in practise.
+        
+    
+
+.. speedtest-end

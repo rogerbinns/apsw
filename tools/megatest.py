@@ -59,6 +59,7 @@ def main(PYVERS, UCSTEST, SQLITEVERS, concurrency):
     print "  ... removing old work directory"
     workdir=os.path.abspath("work")
     os.system("rm -rf %s 2>/dev/null ; mkdir %s" % (workdir, workdir))
+    os.system('rm -rf $HOME/.local/lib/python*/site-packages/apsw* 2>/dev/null')
     print "      done"
 
     queue=Queue.Queue()
@@ -119,9 +120,8 @@ def buildpython(workdir, pyver, ucs, logfilename):
     run("cd %s ; mkdir pyinst ; wget -q %s -O - | tar xf%s -  > %s 2>&1" % (workdir, url, tarx, logfilename))
     # See https://bugs.launchpad.net/ubuntu/+source/gcc-defaults/+bug/286334
     if pyver.startswith("2.3"):
-        # Setting OPT to -O3 -DPATH_MAX=4096 did not work
-        opt='CC=gcc-4.2'
-        # opt='OPT="-O3 -DPATH_MAX=MAXPATHLEN"' # this didn't work either
+        # https://bugs.launchpad.net/bugs/286334
+        opt='BASECFLAGS=-U_FORTIFY_SOURCE'
     else:
         opt=''
     run("cd %s ; cd Python-%s ; ./configure %s --disable-ipv6 --enable-unicode=ucs%d --prefix=%s/pyinst  >> %s 2>&1; make >>%s 2>&1; make  install >>%s 2>&1" % (workdir, pyver, opt, ucs, workdir, logfilename, logfilename, logfilename))
@@ -134,7 +134,7 @@ def buildsqlite(workdir, sqlitever, logfile):
     os.system("rm -rf '%s/sqlite3' '%s/sqlite3.c' 2>/dev/null" % (workdir,workdir))
     if sqlitever=="cvs":
         run("cd %s ; cvs -d :pserver:anonymous@www.sqlite.org:/sqlite checkout sqlite > %s 2>&1; mv sqlite sqlite3" % (workdir, logfile,))
-        run('cd %s/sqlite3 ; ./configure --enable-loadextension --enable-threadsafe --disable-tcl >> %s 2>&1; make sqlite3.c >> %s 2>&1' % (workdir,logfile,logfile))
+        run('( set -x ; cd %s/sqlite3 ; ./configure --enable-loadextension --enable-threadsafe --disable-tcl ; make sqlite3.c ; cp src/sqlite3ext.h . ) >> %s 2>&1' % (workdir,logfile))
     else:
         run("cd %s ; mkdir sqlite3 ; cd sqlite3 ; wget -q %s ; unzip -q %s " % (workdir, sqliteurl(sqlitever), os.path.basename(sqliteurl(sqlitever))))
     if sys.platform.startswith("darwin"):
@@ -152,7 +152,7 @@ def buildapsw(outputfile, pybin, workdir):
 
 # Default versions we support
 PYVERS=(
-    '3.0rc1',
+    '3.0rc2',
     '2.6',
     '2.5.2',
     '2.4.5',
@@ -162,9 +162,6 @@ PYVERS=(
     )
 
 SQLITEVERS=(
-    '3.6.4',
-    '3.6.3',
-    '3.6.2',
    )
 
 if __name__=='__main__':
@@ -201,4 +198,5 @@ if __name__=='__main__':
         sqlitevers.append("cvs")
     ucstest=[int(x) for x in options.ucs.split(",")]
     concurrency=int(options.concurrency)
+    sqlitevers=[x for x in sqlitevers if x]
     main(pyvers, ucstest, sqlitevers, concurrency)
