@@ -23,6 +23,8 @@ more than 60 statements a second, then your access mechanism is
 silently starting transactions for you. This topic also comes up
 fairly frequently in the SQLite mailing list archives.
 
+.. _speedtest:
+
 speedtest
 ---------
 

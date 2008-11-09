@@ -6,7 +6,12 @@ Download
 Source and binaries
 ===================
 
-You can download this release in source or binary form.
+You can download this release as binaries for Windows.  Just run the
+executable corresponding with the Python version you are using.
+
+Download in source form for other platforms or if you want to compile
+yourself on Windows.  See the :ref:`recommended <recommended_build>`
+way to build or all the :ref:`options available <building>`.
 
 .. downloads-begin
 

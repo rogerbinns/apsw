@@ -16,6 +16,8 @@ it works the way SQLite 3 does. (`pysqlite <http://www.pysqlite.org>`_
 is DBAPI compliant - see the :ref:`differences between apsw and
 pysqlite 2 <pysqlitediffs>`).
 
+APSW is hosted at http://code.google.com/p/apsw/
+
 Contents:
 
 .. toctree::

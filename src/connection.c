@@ -330,12 +330,12 @@ Connection_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED
 }
 
 
-/** .. method:: __init__(filename[, flags=SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs=None, statementcachesize=100])
+/** .. method:: __init__(filename, flags=SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs=None, statementcachesize=100)
 
   Opens the named database.  You can use ``:memory:`` to get a private temporary
   memory database that is not shared with any other connections.
 
-  :param flags: One or more of the `open flags <http://www.sqlite.org/c3ref/c_open_create.html>`_
+  :param flags: One or more of the `open flags <http://www.sqlite.org/c3ref/c_open_create.html>`_ orred together
   :param vfs: The name of the `vfs <http://www.sqlite.org/c3ref/vfs.html>`_ to use.  If :const:`None` then the default
      vfs will be used.
 
@@ -1190,8 +1190,8 @@ authorizercb(void *context, int operation, const char *paramone, const char *par
 
   Typical usage would be if you are running user supplied SQL and want
   to prevent running of create and drop operatings.  You should also
-  set the :class:`statementcachesize <Connection>` to zero.  !!!
-  mention authorizer in statement cache doc
+  set the :class:`statementcachesize <Connection>` to zero
+  (:ref:`statementcache`).
 
   The authorizer callback has 5 parameters:
 
@@ -1301,7 +1301,6 @@ collationneeded_cb(void *pAux, APSW_ARGUNUSED sqlite3 *db, int eTextRep, const c
   .. seealso::
 
     * :meth:`~Connection.createcollation`
-    * !!! collationneeded example
 
   -* sqlite3_collation_needed
 */
@@ -1987,8 +1986,6 @@ cbdispatch_final(sqlite3_context *context)
   :param callable: The function that will be called
   :param numargs: How many arguments the function takes, with -1 meaning any number
 
-  !!! change code to use a list, never free, forget about ascii conversion
-
   .. note:: 
 
     You can register the same named function but with different
@@ -2118,8 +2115,6 @@ Connection_createscalarfunction(Connection *self, PyObject *args)
        the function. The final function is always called even if an
        exception was raised by the step function. This allows you to
        ensure any resources are cleaned up.
-
-  !!! change code to use a list, never free, forget about ascii conversion
 
   .. note:: 
 

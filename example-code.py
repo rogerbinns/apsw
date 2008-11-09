@@ -16,7 +16,6 @@ print "SQLite header version",apsw.SQLITE_VERSION_NUMBER   # from the sqlite hea
 ### Opening/creating database
 ###
 
-if os.path.exists("dbfile"): os.remove("dbfile")
 connection=apsw.Connection("dbfile")
 cursor=connection.cursor()
 
@@ -482,7 +481,7 @@ except apsw.TooBigError:
 #@@ENDCAPTURE
 
 ###
-### Statistics
+### Statistics @@example-status
 ###
 
 #@@CAPTURE
@@ -496,3 +495,6 @@ print "SQLite memory usage current %d max %d" % apsw.status(apsw.SQLITE_STATUS_M
 # We can close connections manually (useful if you want to catch exceptions)
 # but you don't have to
 connection.close(True)  # force it since we want to exit
+
+# Delete database - we don't need it any more
+os.remove("dbfile")

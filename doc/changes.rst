@@ -5,11 +5,11 @@ Change History
 3.6.5-r1
 ========
 
-The distribution now includes a speedtest script.  You can use this to
-see how APSW performs relative to pysqlite, or to track performance
-differences between SQLite versions.  The underlying queries are
-derived from `SQLite's speed test <http://www.sqlite.org/cvstrac/fileview?f=sqlite/tool/mkspeedsql.tcl>`_
-!!!link to benchmarking doc
+The distribution now includes a :ref:`speedtest` script.  You can use
+this to see how APSW performs relative to pysqlite, or to track
+performance differences between SQLite versions.  The underlying
+queries are derived from `SQLite's speed test
+<http://www.sqlite.org/cvstrac/fileview?f=sqlite/tool/mkspeedsql.tcl>`_
 
 The statement cache was completely rewritten.  It uses less memory and
 scales significantly better.
@@ -23,6 +23,10 @@ amicitas reporting this as `issue 31
 
 SQLite's API has been extended in 3.6.5 so that errors can be
 retrieved in a thread safe manner.  APSW now uses this API.
+
+As a consequence of the prior two changes it is now possible and safe
+to use the same :class:`Connection` across as many threads as you want
+`concurrently <http://sqlite.org/threadsafe.html>`_.
 
 Documentation is now done using `Sphinx <http://sphinx.pocoo.org>`_
 which was adopted by Python 3.  This has allowed for richer
@@ -47,10 +51,13 @@ of behaviour without having to code everything else. See the
 :ref:`example <example-vfs>` where database files are obfuscated by
 XORing their contents.
 
-:file:`setup.py` now takes an optional :option:`--fetch-sqlite[=ver]` argument to automatically download
-and use the latest SQLite amalgamation (or a specified version). On non-Windows platforms it will also work out what
-compile flags SQLite needs (for example :const:`HAVE_USLEEP`, :const:`HAVE_LOCALTIME_R`). Several other options to
-:file:`setup.py` are also available to control enabling/omitting certains features and functionality. See
+:file:`setup.py` now takes an optional :option:`--fetch-sqlite[=ver]`
+argument to automatically download and use the latest SQLite
+amalgamation (or a specified version). On non-Windows platforms it
+will also work out what compile flags SQLite needs (for example
+:const:`HAVE_USLEEP`, :const:`HAVE_LOCALTIME_R`). Several other
+options to :file:`setup.py` are also available to control
+enabling/omitting certains features and functionality. See
 :ref:`building <Building>` for further details.
 
 APSW checks that SQLite was compiled to be `threadsafe <http://sqlite.org/c3ref/threadsafe.html>`_
@@ -233,7 +240,7 @@ All strings are returned as unicode.
 
 :func:`PyErr_WriteUnraisable` was used for errors in
 destructors. Unfortunately it is almost completely useless, merely
-printing !!!str() of the object and exception. This doesn't help in
+printing :func:`str` of the object and exception. This doesn't help in
 finding where in your code the issue arose so you could fix it. An
 internal APSW implementation generates a traceback and calls
 :func:`sys.excepthook`, the default implementation of which prints the

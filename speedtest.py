@@ -342,7 +342,6 @@ def doit():
         for b in bindings:
             for row in cursor.execute(*b): pass
 
-
     def apsw_statements_nobindings(con):
         "APSW individual statements without bindings"
         return apsw_statements(con, withoutbindings)
@@ -361,7 +360,7 @@ def doit():
             for driver in ( ("apsw", "pysqlite"), ("pysqlite", "apsw"))[i%2]:
                 if getattr(options, driver):
                     name=driver+"_"+test
-                    func=globals().get(name, None)
+                    func=locals().get(name, None)
                     if not func:
                         sys.stderr.write("No such test "+name+"\n")
                         sys.exit(1)
@@ -370,7 +369,7 @@ def doit():
                         os.remove(options.database)
                     write("\t"+func.__name__+(" "*(40-len(func.__name__))))
                     sys.stdout.flush()
-                    con=globals().get(driver+"_setup")(options.database)
+                    con=locals().get(driver+"_setup")(options.database)
                     gc.collect()
                     b4=time.time()
                     func(con)

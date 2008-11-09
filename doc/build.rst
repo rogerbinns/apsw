@@ -49,9 +49,6 @@ There are a number of APSW specific flags you can specify.
 |                                        | libraries on your developer or deployment machines. You can set the environment      |
 |                                        | variable :const:`http_proxy` to control proxy usage for the download.                |
 +----------------------------------------+--------------------------------------------------------------------------------------+
-| | :option:`--enable=ITEM`              | Enables a specific SQLite feature *ITEM*.  You can specify this option multiple      |
-|                                        | times.                                                                               |
-+----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--enable=fts`               | Enables the `full text search <http://www.sqlite.org/cvstrac/wiki?p=FtsUsage>`_      |
 |                                        | extension.                                                                           |
 |                                        | This flag only helps when using the amalgamation. If not using the                   | 
@@ -70,7 +67,7 @@ There are a number of APSW specific flags you can specify.
 |                                        | Note that you must have the ICU libraries on your machine which setup will           |
 |                                        | automatically try to find using :file:`icu-config`.                                  |
 |                                        | This flag only helps when using the amalgamation. If not using the                   | 
-|                                        | amalgamation then you need to seperately ensure rtree is enabled in the SQLite       |
+|                                        | amalgamation then you need to seperately ensure ICU is enabled in the SQLite         |
 |                                        | install.                                                                             |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--omit=ITEM`                | Causes various functionality to be omitted. For example                              |
@@ -122,7 +119,9 @@ These methods are tried in order:
   If you compiled SQLite with any OMIT flags (eg
   :const:`SQLITE_OMIT_LOAD_EXTENSION`) then you should include them in
   the :file:`setup.py` command. For this example you would use
-  :option:`setup.py --omit=load_extension` to add the same flags.</p>
+  :option:`setup.py --omit=load_extension` to add the same flags.
+
+.. _recommended_build:
 
 Recommended
 ===========
@@ -139,14 +138,14 @@ current directory being where you extracted the APSW source to.
       # Leave out --compile=mingw32 flag if using Microsoft compiler
     > python setup.py build --compile=mingw32 install --fetch-sqlite 
     > python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
-    > python test.py       # optional - checks everything works correctly</font>
+    > python tests.py       # optional - checks everything works correctly
 
 
   Mac/Linux etc::
 
     $ python setup.py install --fetch-sqlite
     $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"     
-    $ python test.py      ># optional - checks everything works correctly
+    $ python tests.py       # optional - checks everything works correctly
 
 .. note::
 

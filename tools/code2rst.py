@@ -98,8 +98,11 @@ def do_calls(line):
     assert line[0]=="-*"
     indexop=["", ".. index:: "+(", ".join(line[1:])), ""]
     saop=["", "Calls:"]
-    for func in line[1:]:
-        saop.append("  * `%s <%s>`_" % (func, funclist[func]))
+    if len(line[1:])==1:
+        saop[-1]=saop[-1]+" `%s <%s>`_"% (line[1], funclist[line[1]])
+    else:
+        for func in line[1:]:
+            saop.append("  * `%s <%s>`_" % (func, funclist[func]))
     saop.append("")
     return indexop, saop
              

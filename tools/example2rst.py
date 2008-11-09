@@ -4,7 +4,7 @@
 # the the text of the example code
 
 # Imports
-import string, sys, cStringIO, os
+import string, sys, cStringIO, os, re
 
 def docapture(filename):
     code=[]
@@ -45,6 +45,10 @@ def rstout(filename):
 Example
 =======
 
+This code demonstrates usage of the APSW api.  It gives you a good
+overview of all the things that can be done.  Also included is output
+so you can see what gets printed when you run the code.
+
 .. code-block:: python
 """.split("\n"))
     counter=0
@@ -71,9 +75,10 @@ Example
         op.append("")
         op.append(".. code-block:: text")
         op.append("")
+        op.append("   == Output ==")
         for line in open(".tmpop-%s-%d" % (filename, counter), "rtU"):
             line=line.rstrip()
-            op.append("   "+line)
+            op.append("   "+re.sub("u'([^']*)'", r"'\1'", line))
         op.append("")
         op.append(".. code-block:: python")
         op.append("")
@@ -82,36 +87,29 @@ Example
 
     ### Peephole optimizations
 
-    # get rid of double blank lines
-    op2=[]
-    for i in range(len(op)-1):
-        if len(op[i].strip())==0 and len(op[i+1].strip())==0:
-            continue
-        if len(op[i].strip())==0: # make whitespace only lines be zero length
-            op2.append("")
-        else:
-            op2.append(op[i])
-    op=op2
+    while True:
+        b4=op
+        # get rid of double blank lines
+        op2=[]
+        for i in range(len(op)):
+            if i+1<len(op) and len(op[i].strip())==0 and len(op[i+1].strip())==0:
+                continue
+            if len(op[i].strip())==0: # make whitespace only lines be zero length
+                op2.append("")
+            else:
+                op2.append(op[i])
+        op=op2
 
-    # if there is 4 or 2 space dot dot, blank line, zero space dot dot then drop 4 space
-    op2=[]
-    for i in range(len(op)-3):
-        if (op[i].startswith("    .. ") or op[i].startswith("  ..")) and \
-                 op[i+1]=="" and op[i+2].startswith(".. "):
-            continue
-        op2.append(op[i])
-    op=op2
-    
-    # get rid of double blank lines reintroduced by last step
-    op2=[]
-    for i in range(len(op)-1):
-        if len(op[i].strip())==0 and len(op[i+1].strip())==0:
-            continue
-        if len(op[i].strip())==0: # make whitespace only lines be zero length
-            op2.append("")
-        else:
+        # if there is a code block followed by a label then drop the code block
+        op2=[]
+        for i in range(len(op)):
+            if i+2<len(op) and op[i].startswith(".. code-block::") and op[i+2].startswith(".. _"):
+                continue
             op2.append(op[i])
-    op=op2
+        op=op2
+        
+        if op==b4:
+            break
 
 
     return op
@@ -119,4 +117,4 @@ Example
 if __name__ == "__main__":
   docapture("example-code.py")
   op=rstout("example-code.py")
-  open("doc/example.rst", "wt").write("\n".join(op))
+  open("doc/example.rst", "wt").write("\n".join(op)+"\n")

@@ -141,9 +141,27 @@ storage) are used. See SQLite ticket `2125
 Statement Cache
 ===============
 
-!!! fill this in
+Each :class:`Connection` maintains a cache mapping SQL queries to a
+`prepared statement <http://www.sqlite.org/c3ref/stmt.html>`_ to avoid
+the overhead of `repreparing
+<http://www.sqlite.org/c3ref/prepare.html>`_ queries that are executed
+multiple times.  This is a classic tradeoff using more memory to
+reduce CPU consumption.
 
-Each connection maintains a cache mapping
-  SQL queries to a `prepared statement
-  <http://www.sqlite.org/c3ref/stmt.html>`_ to avoid the overhead of `repreparing <http://www.sqlite.org/c3ref/prepare.html>`_ queries that are executed mutl
+By default there are up to 100 entries in the cache.  Once the cache
+is full, the least recently used item is discarded to make space for
+new items.
+
+You should pick a larger cache size if you have more than 100 unique
+queries that you run.  For example if you have 101 different queries
+you run in order then the cache will not help.
+
+You can also :class:`specify zero <Connection>` which will disable the
+statement cache.
+
+If you are using :meth:`authorizers <Connection.setauthorizer>` then
+you should disable the statement cache.  This is because the
+authorizer callback is only called while statements are being
+prepared.
+
 

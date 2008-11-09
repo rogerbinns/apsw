@@ -31,6 +31,9 @@
 */
 
 /** 
+.. module:: apsw
+   :synopsis: Python access to SQLite database library
+
 APSW Module
 ***********
 
@@ -42,12 +45,6 @@ module have process wide effects.  You can instantiate the
 API Reference
 =============
 */
-
-/** .. module:: apsw
-   :synopsis: Python access to SQLite database library
-
-*/
-
 
 /* Fight with setuptools over ndebug */
 #ifdef APSW_NO_NDEBUG
@@ -340,6 +337,10 @@ config(APSW_ARGUNUSED PyObject *self, PyObject *args)
 
   Returns the amount of memory SQLite is currently using.
 
+  .. seealso::
+    :meth:`status`
+
+
   -* sqlite3_memory_used
 */
 static PyObject*
@@ -352,6 +353,10 @@ memoryused(void)
 
   Returns the maximum amount of memory SQLite is has used.  If `reset`
   is True then the high water mark is reset to the current value.
+
+  .. seealso::
+
+    :meth:`status`
 
   -* sqlite3_memory_highwater
 */
@@ -441,6 +446,10 @@ releasememory(APSW_ARGUNUSED PyObject *self, PyObject *args)
   :param reset: If `True` then the highwater is set to the current value
   :returns: A tuple of current value and highwater value
   
+  .. seealso::
+
+    * :ref:`Status example <example-status>`
+
   -* sqlite3_status
 
 */
@@ -463,7 +472,7 @@ status(APSW_ARGUNUSED PyObject *self, PyObject *args)
 
 /** .. method:: vfsnames() -> list(string)
 
-  Returns a list of the current installed :ref:`vfs <vfs>`.  The first
+  Returns a list of the currently installed :ref:`vfs <vfs>`.  The first
   item in the list the default vfs.
 */
 static PyObject *

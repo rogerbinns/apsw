@@ -51,6 +51,7 @@ $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
 
 linkcheck:
 	make VERSION=$(VERSION) -C doc linkcheck 
+	cat doc/build/linkcheck/output.txt
 
 header:
 	echo "#define APSW_VERSION \"$(VERSION)\"" > src/apswversion.h
