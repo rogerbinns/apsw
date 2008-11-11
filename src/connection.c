@@ -118,7 +118,7 @@ static PyTypeObject ZeroBlobBindType;
 /** .. class:: Connection
 
 
-  Conceptually this object wraps a `sqlite3 pointer
+  This object wraps a `sqlite3 pointer
   <http://www.sqlite.org/c3ref/sqlite3.html>`_.
 */
 
@@ -333,7 +333,7 @@ Connection_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED
 /** .. method:: __init__(filename, flags=SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs=None, statementcachesize=100)
 
   Opens the named database.  You can use ``:memory:`` to get a private temporary
-  memory database that is not shared with any other connections.
+  in-memory database that is not shared with any other connections.
 
   :param flags: One or more of the `open flags <http://www.sqlite.org/c3ref/c_open_create.html>`_ orred together
   :param vfs: The name of the `vfs <http://www.sqlite.org/c3ref/vfs.html>`_ to use.  If :const:`None` then the default
@@ -468,6 +468,7 @@ finally:
    .. seealso::
 
      * :ref:`Blob I/O example <example-blobio>`
+     * `SQLite row ids <http://www.sqlite.org/autoinc.html>`_
 
    -* sqlite3_blob_open
 */
@@ -641,9 +642,11 @@ Connection_last_insert_rowid(Connection *self)
 /** .. method:: complete(statement) -> bool
 
   Returns True if the input string comprises one or more complete SQL
-  statements.  An example use would be if you were prompting the user
-  for SQL statements and needed to know if you had a whole statement,
-  or needed to ask for another line::
+  statements by looking for an unquoted trailing semi-colon.
+
+  An example use would be if you were prompting the user for SQL
+  statements and needed to know if you had a whole statement, or
+  needed to ask for another line::
 
     statement=raw_input("SQL> ")
     while not apsw.complete(statement):
@@ -682,7 +685,7 @@ Connection_complete(Connection *self, PyObject *args)
   Causes any pending operations on the database to abort at the
   earliest opportunity. You can call this from any thread.  For
   example you may have a long running query when the user presses the
-  stop button in your user interface.  :class:`apsw.InterruptedError`
+  stop button in your user interface.  :exc:`InterruptedError`
   will be raised in the query that got interrupted.
 
   -* sqlite3_interrupt
@@ -702,10 +705,10 @@ Connection_interrupt(Connection *self)
   returned.  If called with two then the limit is set to `newval`.
 
 
-  :param id: One of the `runtime limit ids <http://www.sqlite.org/c3ref/c_limit_attached.html>`
+  :param id: One of the `runtime limit ids <http://www.sqlite.org/c3ref/c_limit_attached.html>`_
   :param newval: The new limit.  This is a 32 bit signed integer even on 64 bit platforms.
 
-  :returns: The current value if `newval` was not provided or the old value if `newval` was provided.
+  :returns: The limit in place on entry to the call.
 
   -* sqlite3_limit
 
@@ -778,7 +781,7 @@ updatecb(void *context, int updatetype, char const *databasename, char const *ta
 
   .. seealso::
 
-      * !!! update hook example code
+      * :ref:`Example <example-updatehook>`
 
   -* sqlite3_update_hook
 */
@@ -916,9 +919,9 @@ profilecb(void *context, const char *statement, sqlite_uint64 runtime)
 
   Sets a callable which is invoked at the end of execution of each
   statement and passed the statement string and how long it took to
-  execute. (The execution time appears is in nanoseconds.) Note that
-  it is called only on completion. If for example you do a ``SELECT``
-  and only read the first result, then you won't reach the end of the
+  execute. (The execution time is in nanoseconds.) Note that it is
+  called only on completion. If for example you do a ``SELECT`` and
+  only read the first result, then you won't reach the end of the
   statement.
 
   -* sqlite3_profile
@@ -1008,6 +1011,10 @@ commithookcb(void *context)
   into a rollback. In the case of an exception in your callable, a
   non-zero (ie rollback) value is returned. 
 
+  .. seealso::
+
+    * :ref:`Example <example-commithook>`
+
   -* sqlite3_commit_hook
 
 */
@@ -1085,10 +1092,14 @@ progresshandlercb(void *context)
 
 /** .. method:: setprogresshandler(callable[, nsteps=20])
 
-  Sets a callable which is invoked every nsteps SQLite
+  Sets a callable which is invoked every `nsteps` SQLite
   inststructions. The callable should return a non-zero value to abort
   or zero to continue. (If there is an error in your Python callable
   then non-zero will be returned).
+
+  .. seealso::
+
+     * :ref:`Example <example-progress-handler>`
 
   -* sqlite3_progress_handler
 */
@@ -1189,9 +1200,8 @@ authorizercb(void *context, int operation, const char *paramone, const char *par
   particular action is ok to be part of the statement.
 
   Typical usage would be if you are running user supplied SQL and want
-  to prevent running of create and drop operatings.  You should also
-  set the :class:`statementcachesize <Connection>` to zero
-  (:ref:`statementcache`).
+  to prevent harmful operations.  You should also
+  set the :class:`statementcachesize <Connection>` to zero.
 
   The authorizer callback has 5 parameters:
 
@@ -1206,9 +1216,10 @@ authorizercb(void *context, int operation, const char *paramone, const char *par
   (:const:`SQLITE_DENY` is returned if there is an error in your
   Python code).
 
-  .. seealso:
+  .. seealso::
  
     * :ref:`Example <authorizer-example>`
+    * :ref:`statementcache`
 
   -* sqlite3_set_authorizer
 */
@@ -1504,7 +1515,7 @@ Connection_enableloadextension(Connection *self, PyObject *enabled)
     parameter is not supplied then the SQLite default of
     ``sqlite3_extension_init`` is used.
 
-  :raises apsw.ExtensionLoadingError: if the extension could not be
+  :raises ExtensionLoadingError: If the extension could not be
     loaded.  The exception string includes more details.
 
   .. seealso::
@@ -2282,7 +2293,7 @@ collation_destroy(void *context)
   <http://en.wikipedia.org/wiki/Collation>`_) when giving the
   ``COLLATE`` term to a `SELECT
   <http://www.sqlite.org/lang_select.html>`_.  For example your
-  collation could take into account locate or do numeric sorting.
+  collation could take into account locale or do numeric sorting.
 
   The `callback` will be called with two items.  It should return -1
   if the first is less then the second, 0 if they are equal, and 1 if
@@ -2430,11 +2441,11 @@ Connection_filecontrol(Connection *self, PyObject *args)
   method is useful if there are other C level libraries in the same
   process and you want them to use the APSW connection handle. The
   value is returned as a number using `PyLong_FromVoidPtr` under the
-  hood. You should also ensure that you hang on to the Connection
-  object for as long as the other libraries are using the handle or
-  increment the reference count on it. It is also a very good idea to
-  call :meth:`apsw.sqlitelibversion` and ensure it is the same as the
-  other libraries
+  hood. You should also ensure that increment the reference count on
+  the :class:`Connection` for as long as the other libraries are using
+  the pointer.  It is also a very good idea to call
+  :meth:`sqlitelibversion` and ensure it is the same as the other
+  libraries.
 
 */
 static PyObject*

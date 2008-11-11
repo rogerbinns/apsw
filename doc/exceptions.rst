@@ -5,9 +5,9 @@ Exceptions
 .. currentmodule:: apsw
 
 
-:class:`apsw.Error` is the base for apsw exceptions.
+:exc:`apsw.Error` is the base for APSW exceptions.
 
-.. class:: Error
+.. exception:: Error
 
 .. attribute:: Error.result
 
@@ -33,26 +33,31 @@ APSW specific exceptions
 
 The following exceptions happen when APSW detects various problems.
 
-ThreadingViolationError
+.. exception:: ThreadingViolationError
+
   You have used an object concurrently in two threads. For example you
   may try to use the same cursor in two different threads at the same
   time, or tried to close the same connection in two threads at the
   same time.
         
-IncompleteExecutionError
+.. exception:: IncompleteExecutionError
+
   You have tried to start a new SQL execute call before executing all
   the previous ones. See the :ref:`execution model <executionmodel>`
   for more details.
         
-ConnectionNotClosedError 
+.. exception:: ConnectionNotClosedError 
+
   This exception is no longer generated.  It was required in earlier
   releases due to constraints in threading usage with SQLite.
 
-ConnectionClosedError
+.. exception:: ConnectionClosedError
+
   You have called :meth:`Connection.close` and then continued to use
   the :class:`Connection` or associated :class:`cursors <Cursor>`.
 
-BindingsError
+.. exception:: BindingsError
+
   There are several causes for this exception.  When using tuples, an incorrect number of bindings where supplied::
 
      cursor.execute("select ?,?,?", (1,2))     # too few bindings
@@ -76,73 +81,180 @@ BindingsError
      values being None/NULL so that case will be caught.
 
 
-ExecutionCompleteError
+.. exception:: ExecutionCompleteError
+
   A statement is complete but you try to run it more anyway!
 
 
-ExecTraceAbort
+.. exception:: ExecTraceAbort
+
   The :ref:`execution tracer <executiontracer>` returned False so
   execution was aborted.
 
 
-ExtensionLoadingError
+.. exception:: ExtensionLoadingError
+
   An error happened loading an `extension
   <http://www.sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_.
 
-VFSNotImplementedError
+.. exception:: VFSNotImplementedError
+
   A call cannot be made to an inherited :ref:`VFS` method as the VFS
   does not implement the method.
 
-VFSFileClosedError
+.. exception:: VFSFileClosedError
+
   The VFS file is closed so the operation cannot be performed.
 
 
-SQLite exceptions
+SQLite Exceptions
 =================
 
 The table lists which Exception classes correspond to which `SQLite
 error codes <http://sqlite.org/c3ref/c_abort.html>`_.
 
 
-+--------------------------------------+---------------------------------------+
-| **General Errors**                   |  **Abort/Busy etc**                   |
-+-------------------+------------------+-------------------+-------------------+
-| SQLITE_ERROR      | SQLError         | SQLITE_ABORT      | AbortError        |
-+-------------------+------------------+-------------------+-------------------+
-| SQLITE_MISMATCH   | MismatchError    | SQLITE_BUSY       | BusyError         |
-+-------------------+------------------+-------------------+-------------------+
-|                                      | SQLITE_LOCKED     | LockedError       |
-+-------------------+------------------+-------------------+-------------------+
-| **Internal Errors**                  | SQLITE_INTERRUPT  | InterruptError    |
-+-------------------+------------------+-------------------+-------------------+
-| *SQLITE_INTERNAL* | InternalError    | SQLITE_SCHEMA     | SchemaChangeError |
-+-------------------+------------------+-------------------+-------------------+
-| *SQLITE_PROTOCOL* | ProtocolError    | SQLITE_CONSTRAINT | ConstraintError   |
-+-------------------+------------------+-------------------+-------------------+
-| SQLITE_MISUSE     | MisuseError      |                                       |
-+-------------------+------------------+-------------------+-------------------+
-| SQLITE_RANGE      | RangeError       | **Memory/Disk Etc**                   |
-+-------------------+------------------+-------------------+-------------------+
-|                                      | SQLITE_NOMEM      | NoMemError        |
-+--------------------------------------+-------------------+-------------------+
-| **Permissions etc**                  | SQLITE_IOERR      | IOError           |
-+-------------------+------------------+-------------------+-------------------+
-| SQLITE_PERM       | PermissionsError | SQLITE_CORRUPT    | CorruptError      |
-+-------------------+------------------+-------------------+-------------------+
-| SQLITE_READONLY   | ReadOnlyError    | SQLITE_FULL       | FullError         |
-+-------------------+------------------+-------------------+-------------------+
-| SQLITE_CANTOPEN   | CantOpenError    | SQLITE_TOOBIG     | TooBigError       |
-+-------------------+------------------+-------------------+-------------------+
-| SQLITE_AUTH       | AuthError        | SQLITE_NOLFS      | NoLFSError        |
-+-------------------+------------------+-------------------+-------------------+
-|                                      | SQLITE_EMPTY      | EmptyError        |
-+--------------------------------------+-------------------+-------------------+
-|                                      | SQLITE_FORMAT     | FormatError       |
-+--------------------------------------+-------------------+-------------------+
-|                                      | SQLITE_NOTADB     | NotADBError       |
-+--------------------------------------+-------------------+-------------------+
+General Errors
+^^^^^^^^^^^^^^
 
-Codes in *italics* are no longer issued by the SQLite core
+.. exception:: SQLError
+
+  :const:`SQLITE_ERROR`.  This error is documented as a bad SQL query or missing database,
+  but is also returned for a lot of other situations.  It is the
+  default error code unless there is a more specific one.  (See
+  `ticket 3456 <http://www.sqlite.org/cvstrac/tktview?tn=3456>`_.)
+
+.. exception:: MismatchError
+
+  :const:`SQLITE_MISMATCH`. Data type mismatch.  For example a rowid
+  or integer primary key must be an integer.
+
+Internal Errors
+^^^^^^^^^^^^^^^
+
+.. exception:: InternalError
+
+  :const:`SQLITE_INTERNAL`. (No longer used) Internal logic error in SQLite.
+
+.. exception:: ProtocolError
+
+  :const:`SQLITE_PROTOCOL`. (No longer used) Database lock protocol error.
+
+.. exception:: MisuseError
+
+  :const:`SQLITE_MISUSE`.  Library used incorrectly.  (This would be a bug in APSW).
+
+.. exception:: RangeError
+
+  :const:`SQLITE_RANGE`.  (Cannot be generated using APSW).  2nd parameter to `sqlite3_bind <http://www.sqlite.org/c3ref/bind_blob.html>`_ out of range
+
+Permissions Etc
+^^^^^^^^^^^^^^^
+
+.. exception:: PermissionsError
+
+  :const:`SQLITE_PERM`. Access permission denied by the operating system, or parts of the database are readonly such as a cursor.
+
+.. exception:: ReadOnlyError
+
+  :const:`SQLITE_READONLY`. Attempt to write a readonly database.
+
+.. exception:: CantOpenError
+
+  :const:`SQLITE_CANTOPEN`.  Unable to open the database file.
+
+.. exception:: AuthError
+
+  :const:`SQLITE_AUTH`.  :meth:`Authorization <Connection.setauthorizer>` denied.
+
+Abort/Busy Etc
+^^^^^^^^^^^^^^
+
+.. exception:: AbortError
+
+  :const:`SQLITE_ABORT`. Callback routine requested an abort.
+
+.. exception:: BusyError
+
+  :const:`SQLITE_BUSY`.  The database file is locked.  Use
+  :meth:`Connection.setbusytimeout` to change how long SQLite waits
+  for the database to be unlocked or :meth:`Connection.setbusyhandler`
+  to use your own handler.
+
+.. exception:: LockedError
+
+  :const:`SQLITE_LOCKED`.  A table in the database is locked.
+
+.. exception:: InterruptError
+
+  :const:`SQLITE_INTERRUPT`.  Operation terminated by
+  `sqlite3_interrupt <http://www.sqlite.org/c3ref/interrupt.html>`_ -
+  use :meth:`Connection.interrupt`.
+
+.. exception:: SchemaChangeError
+
+  :const:`SQLITE_SCHEMA`.  The database schema changed.  A
+  :meth:`prepared statement <Cursor.execute>` becomes invalid
+  if the database schema was changed.  Behind the scenes SQLite
+  reprepares the statement.  Another or the same :class:`Connection`
+  may change the schema again before the statement runs.  SQLite will
+  attempt up to 5 times before giving up and returning this error.
+
+.. exception:: ConstraintError
+
+  :const:`SQLITE_CONSTRAINT`. Abort due to `constraint
+  <http://www.sqlite.org/lang_createtable.html>`_ violation.  This
+  would happen if the schema required a column to be within a specific
+  range.  If you have multiple constraints, you `can't tell
+  <http://www.sqlite.org/cvstrac/tktview?tn=1648>`_ which one was the
+  cause.
+
+Memory/Disk
+^^^^^^^^^^^
+
+.. exception:: NoMemError
+
+  :const:`SQLITE_NOMEM`.  A memory allocation failed.
+
+.. exception:: IOError
+
+  :const:`SQLITE_IOERR`.  Some kind of disk I/O error occurred.  The
+  :ref:`extended error code <exceptions>` will give more detail.
+
+.. exception:: CorruptError
+
+  :const:`SQLITE_CORRUPT`.  The database disk image appears to be a
+  SQLite database but the values inside are inconsistent.
+
+.. exception:: FullError
+
+  :const:`SQLITE_FULL`.  The disk appears to be full.
+
+.. exception:: TooBigError
+
+  :const:`SQLITE_TOOBIG`.  String or BLOB exceeds size limit.  You can
+  change the limits using :meth:`Connection.limit`.
+
+.. exception:: NoLFSError
+
+  :const:`SQLITE_NOLFS`.  SQLite has attempted to use a feature not
+  supported by the operating system such as `large file support
+  <http://en.wikipedia.org/wiki/Large_file_support>`_.
+
+.. exception:: EmptyError
+
+  :const:`SQLITE_EMPTY`. Database is completely empty.
+
+.. exception:: FormatError
+
+  :const:`SQLITE_FORMAT`. (No longer used) `Auxiliary database <http://www.sqlite.org/lang_attach.html>`_ format error.
+
+.. exception:: NotADBError
+
+  :const:`SQLITE_NOTADB`.  File opened that is not a database file.
+  SQLite has a header on database files to verify they are indeed
+  SQLite databases.
+
 
 .. _augmentedstacktraces:
 

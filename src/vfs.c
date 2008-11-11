@@ -2229,7 +2229,7 @@ apswvfsfile_xCheckReservedLock(sqlite3_file *file, int *pResOut)
 
   Returns True if any database connection (in this or another process)
   has a lock other than `SQLITE_LOCK_NONE or SQLITE_LOCK_SHARED
-  <http://sqlite.org/c3ref/c_lock_exclusive.html>`_.>
+  <http://sqlite.org/c3ref/c_lock_exclusive.html>`_.
 */
 static PyObject *
 apswvfsfilepy_xCheckReservedLock(APSWVFSFile *self)

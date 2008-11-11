@@ -75,10 +75,9 @@ so you can see what gets printed when you run the code.
         op.append("")
         op.append(".. code-block:: text")
         op.append("")
-        op.append("   == Output ==")
         for line in open(".tmpop-%s-%d" % (filename, counter), "rtU"):
             line=line.rstrip()
-            op.append("   "+re.sub("u'([^']*)'", r"'\1'", line))
+            op.append("   | "+re.sub("u'([^']*)'", r"'\1'", line))
         op.append("")
         op.append(".. code-block:: python")
         op.append("")

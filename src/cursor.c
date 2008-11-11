@@ -74,7 +74,7 @@ trying to call :meth:`~Cursor.execute` in both at the same time, or
 
 Behind the scenes a :class:`Cursor` maps to a `SQLite statement
 <http://www.sqlite.org/c3ref/stmt.html>`_.  APSW maintains a
-:class:`cache <Connection>` so that the mapping is very fast, and the
+:ref:`cache <statementcache>` so that the mapping is very fast, and the
 SQLite objects are reused when possible.
 
 A unique feature of APSW is that your query can be multiple semi-colon

@@ -136,28 +136,29 @@ for row in cursor.execute("select seven(x,y) from foo"):
 ### aggregate functions are more complex @@ aggregate-example
 ###
 
-# here we return the longest item when represented as a string
+# Here we return the longest item when represented as a string.
 
-def longeststep(context, *args):
-    "are any of the arguments longer than our current candidate"
-    for arg in args:
-        if len( str(arg) ) > len( context['longest'] ):
-            context['longest']=str(arg)
+class longest:
+    def __init__(self):
+        self.longest=""
 
-def longestfinal(context):
-    "return the winner"
-    return context['longest']
+    def step(self, *args):
+        for arg in args:
+            if len( str(arg) ) > len (self.longest):
+                self.longest=str(arg)
 
-def longestfactory():
-    """called for a new query.  The first item returned can be
-    anything and is passed as the context to the step
-    and final methods.  We use a dict."""
-    return ( { 'longest': '' }, longeststep, longestfinal)
+    def final(self):
+        return self.longest
 
-connection.createaggregatefunction("longest", longestfactory)
+    @classmethod
+    def factory(cls):
+        return cls(), cls.step, cls.final
 
-for row in cursor.execute("select longest(x) from foo"):
+#@@CAPTURE
+connection.createaggregatefunction("longest", longest.factory)
+for row in cursor.execute("select longest(x,y) from foo"):
     print row
+#@@ENDCAPTURE
 
 ###
 ### Defining collations.  @@ collation-example
@@ -228,7 +229,7 @@ cursor.execute("select str from s limit 1")
 connection.setauthorizer(None)
 
 ###
-### progress handler (SQLite 3 experimental feature)
+### progress handler (SQLite 3 experimental feature) @@ example-progress-handler
 ###
 
 # something to give us large numbers of random numbers
@@ -265,7 +266,7 @@ for i in cursor.execute("select max(x) from bigone"):
 connection.setprogresshandler(None)
 
 ###
-### commit hook (SQLite3 experimental feature)
+### commit hook (SQLite3 experimental feature) @@ example-commithook
 ###
 
 def mycommithook():
@@ -277,6 +278,7 @@ def mycommithook():
     print "commits okay at this time"
     return 0  # let commit go ahead
 
+#@@CAPTURE
 connection.setcommithook(mycommithook)
 try:
     cursor.execute("begin; create table example(x,y,z); insert into example values (3,4,5) ; commit")
@@ -284,6 +286,23 @@ except apsw.ConstraintError:
     print "commit was not allowed"
 
 connection.setcommithook(None)
+#@@ENDCAPTURE
+
+###
+### update hook @@ example-updatehook
+###
+
+def myupdatehook(type, databasename, tablename, rowid):
+    print "Updated: %s database %s, table %s, row %d" % (
+        apsw.mapping_authorizer_function[type], databasename, tablename, rowid)
+
+#@@CAPTURE
+connection.setupdatehook(myupdatehook)
+cursor.execute("insert into s values(?)", ("file93",))
+cursor.execute("update s set str=? where str=?", ("file94", "file93"))
+cursor.execute("delete from s where str=?", ("file94",))
+connection.setupdatehook(None)
+#@@ENDCAPTURE
 
 ###
 ### Blob I/O    @@ example-blobio
