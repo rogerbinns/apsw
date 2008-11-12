@@ -10,6 +10,8 @@ SOURCEFILES = \
 	src/apswbuffer.c \
 	src/apswversion.h \
 	src/blob.c \
+	src/connection.c \
+	src/cursor.c \
 	src/exceptions.c \
 	src/osutil.c \
 	src/pointerlist.c \
@@ -52,6 +54,16 @@ $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
 linkcheck:
 	make VERSION=$(VERSION) -C doc linkcheck 
 
+publish: docs
+	if [ -d ../apsw-publish ] ; then rm -f ../apsw-publish/* ../apsw-publish/_static/* ../apsw-publish/_sources/* ; \
+	rsync -av doc/build/html/ ../apsw-publish/ ;  cd ../apsw-publish ; set -x ; \
+	svn propset svn:mime-type text/html `find . -name \*.html` ; \
+	svn propset svn:mime-type text/javascript `find . -name \*.js` ; \
+	svn propset svn:mime-type "text/plain; charset=UTF-8" `find . -name \*.txt` ; \
+	svn propset svn:mime-type image/png `find . -name \*.png` ; \
+	svn propset svn:mime-type text/css `find . -name \*.css` ; \
+	fi
+
 header:
 	echo "#define APSW_VERSION \"$(VERSION)\"" > src/apswversion.h
 
@@ -92,13 +104,13 @@ compile-win:
 	c:/python30/python setup.py build --compile=mingw32 bdist_wininst $(WINOPTS)
 
 
-source:
+source: docs
 	rm -rf $(VERDIR)
 	mkdir -p $(VERDIR)/src
 	cp  $(SOURCEFILES) $(VERDIR)/src/
 	cp $(OTHERFILES) $(VERDIR)
-	rm -rf dist
-	mkdir dist
+	cd $(VERDIR) ; mkdir doc ; cd doc ; unzip ../../dist/apswdoc-$(VERSION).zip
+	-rm -f dist/$(VERDIR).zip
 	zip -9 -r dist/$(VERDIR).zip $(VERDIR)
 
 upload:
@@ -108,10 +120,10 @@ upload:
 	test -f dist/$(VERDIR).win32-py2.4.exe
 	test -f dist/$(VERDIR).win32-py2.5.exe
 	test -f dist/$(VERDIR).win32-py2.6.exe
-	# check for docs
+	test -f dist/apswdoc-$(VERSION).chm
 	python tools/googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.6 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.6.exe
 	python tools/googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.5 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.5.exe
 	python tools/googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.4 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.4.exe
 	python tools/googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.3 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.3.exe
-	python tools/googlecode_upload.py -p apsw -s "$(VERSION) (Source)" -l "Type-Source,OpSys-All" dist/$(VERDIR).zip
-	#	python tools/googlecode_upload.py -p apsw -s "$(VERSION) (Documentation)" -l "Type-Docs" $(VERDIR).html
+	python tools/googlecode_upload.py -p apsw -s "$(VERSION) (Source, includes HTML documentation)" -l "Type-Source,OpSys-All" dist/$(VERDIR).zip
+	python tools/googlecode_upload.py -p apsw -s "$(VERSION) (Documentation - Compiled Help Format)" -l "Type-Docs" dist/apswdoc-$(VERSION).chm

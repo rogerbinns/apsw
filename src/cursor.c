@@ -62,6 +62,11 @@ syntax.  Additionally this is how `SQL injection attacks
   sql="insert into example values(:title, :isbn)"
   cursor.execute(sql, {"title": "string", "isbn": "8390823904"})
 
+  # You can use local variables as the dictionary
+  title="..."
+  isbn="...."
+  cursor.execute(sql, locals())
+
 Cursors are cheap.  Use as many as you need.  It is safe to use them
 across threads, such as calling :meth:`~Cursor.execute` in one thread,
 passing the cursor to another thread that then calls

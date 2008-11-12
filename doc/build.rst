@@ -8,29 +8,34 @@ setup.py
 
 Short story:  You run :file:`setup.py`
 
-+-------------------------------------------------------------+-----------------------------------------------------------------------+
-| Command                                                     |  Result                                                               |
-+=============================================================+=======================================================================+
-| | python setup.py install                                   | Compiles APSW with default Python compiler and                        |
-|                                                             | installs it into Python site library directory.                       |
-+-------------------------------------------------------------+-----------------------------------------------------------------------+
-| | python setup.py install :option:`--user`                  | (Python 2.6+, 3). Compiles APSW with default Python                   |
-|                                                             | compiler and installs it into a subdirectory of your home directory.  |
-|                                                             | See :pep:`370` for more details.                                      |
-+-------------------------------------------------------------+-----------------------------------------------------------------------+
-| | python setup.py build :option:`--compile=mingw32` install | On Windows this will use the                                          |
-|                                                             | `free <http://www.gnu.org/philosophy/free-sw.html>`_                  |
-|                                                             | `MinGW compiler <http://mingw.org>`_ `instead of                      |
-|                                                             | <http://boodebr.org/main/python/build-windows-extensions>`_ the       |
-|                                                             | Microsoft compilers.                                                  |
-+-------------------------------------------------------------+-----------------------------------------------------------------------+
-| | python setup.py build                                     | Compiles the extension but doesn't install it. The resulting file     |
-|                                                             | will be in a :file:`build` subdirectory named apsw.so or apsw.pyd.    |
-|                                                             | For example on a Linux 64 bit Python 2.5 installation the file is     |
-|                                                             | :file:`build/lib.linux-x86_64-2.5/apsw.so`. You can copy this file    |
-|                                                             | anywhere that is convenient for your scripts.                         |
-+-------------------------------------------------------------+-----------------------------------------------------------------------+
-
++-------------------------------------------------------------+-------------------------------------------------------------------------+
+| Command                                                     |  Result                                                                 |
++=============================================================+=========================================================================+
+| | python setup.py install                                   | Compiles APSW with default Python compiler and                          |
+|                                                             | installs it into Python site library directory.                         |
++-------------------------------------------------------------+-------------------------------------------------------------------------+
+| | python setup.py install :option:`--user`                  | (Python 2.6+, 3). Compiles APSW with default Python                     |
+|                                                             | compiler and installs it into a subdirectory of your home directory.    |
+|                                                             | See :pep:`370` for more details.                                        |
++-------------------------------------------------------------+-------------------------------------------------------------------------+
+| | python setup.py build :option:`--compile=mingw32` install | On Windows this will use the                                            |
+|                                                             | `free <http://www.gnu.org/philosophy/free-sw.html>`_                    |
+|                                                             | `MinGW compiler <http://mingw.org>`_ `instead of                        |
+|                                                             | <http://boodebr.org/main/python/build-windows-extensions>`_ the         |
+|                                                             | Microsoft compilers.                                                    |
++-------------------------------------------------------------+-------------------------------------------------------------------------+
+| | python setup.py build                                     | Compiles the extension but doesn't install it. The resulting file       |
+|                                                             | will be in a :file:`build` subdirectory named apsw.so or apsw.pyd.      |
+|                                                             | For example on a Linux 64 bit Python 2.5 installation the file is       |
+|                                                             | :file:`build/lib.linux-x86_64-2.5/apsw.so`. You can copy this file      |
+|                                                             | anywhere that is convenient for your scripts.                           |
++-------------------------------------------------------------+-------------------------------------------------------------------------+
+| | python setup.py build :option:`--debug` install           | Compiles APSW with debug information.  This also turns on `assertions   |
+|                                                             | <http://en.wikipedia.org/wiki/Assert.h>`_                               |
+|                                                             | in APSW that double check the code assumptions.  If you are using the   |
+|                                                             | SQLite amalgamation then assertions are turned on in that too.  Note    |
+|                                                             | that this will considerably slow down APSW and SQLite.                  |
++-------------------------------------------------------------+-------------------------------------------------------------------------+
 
 .. _setup_py_flags:
 
