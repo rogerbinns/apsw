@@ -685,7 +685,7 @@ Connection_complete(Connection *self, PyObject *args)
   Causes any pending operations on the database to abort at the
   earliest opportunity. You can call this from any thread.  For
   example you may have a long running query when the user presses the
-  stop button in your user interface.  :exc:`InterruptedError`
+  stop button in your user interface.  :exc:`InterruptError`
   will be raised in the query that got interrupted.
 
   -* sqlite3_interrupt
@@ -2441,7 +2441,7 @@ Connection_filecontrol(Connection *self, PyObject *args)
   method is useful if there are other C level libraries in the same
   process and you want them to use the APSW connection handle. The
   value is returned as a number using `PyLong_FromVoidPtr` under the
-  hood. You should also ensure that increment the reference count on
+  hood. You should also ensure that you increment the reference count on
   the :class:`Connection` for as long as the other libraries are using
   the pointer.  It is also a very good idea to call
   :meth:`sqlitelibversion` and ensure it is the same as the other

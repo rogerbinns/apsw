@@ -24,6 +24,9 @@ Consequently it does hide some of SQLite's nuances.
    needs are simple, and you don't use advanced SQL features or types.
 
 
+What APSW does better
+=====================
+
 APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite 3):
 
 * APSW stays up to date with SQLite.  As features are added and
@@ -36,10 +39,11 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
   without needing any additional level of locking.  pysqlite requires
   that the :class:`Connection` and any :class:`cursors <Cursor>` are
   used in the same thread.  You can disable its checking, but unless you
-  are very careful with you own mutexes you will have a crash.
+  are very careful with you own mutexes you will have a crash or a
+  deadlock.
  
-* APSW is a single file for the extension, apsw.pyd on Windows and
-  apsw.so on Unix/Mac. There are no other files needed and the build
+* APSW is a single file for the extension, :file:`apsw.pyd` on Windows and
+  :file:`apsw.so` on Unix/Mac. There are no other files needed and the build
   instructions show you how to include SQLite statically in this
   file. You can put this file anywhere your Python session can
   reach. pysqlite is one binary file and several .py files, all of
@@ -51,9 +55,8 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
 
 * APSW **always** handles Unicode correctly (this was one of the major
   reasons for writing it in the first place). pysqlite has since fixed
-  many of its issues but you are still <a href=
-  "http://initd.org/tracker/pysqlite/ticket/153">stuck with
-  some.
+  many of its issues but you are still `stuck with some
+  <http://initd.org/tracker/pysqlite/ticket/153>`_.
 
 * You can use semi-colons at the end of commands and you can have
   multiple commands in the execute string in APSW. There are no
@@ -85,7 +88,9 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
 * pysqlite swallows exceptions in your callbacks making it far harder
   to debug problems. That also prevents you from raising exceptions in
   your callbacks to be handled in your code that called
-  SQLite. pysqlite does let you turn on printing of tracebacks, but
+  SQLite. pysqlite does let you turn on `printing of tracebacks
+  <http://oss.itsystementwicklung.de/download/pysqlite/doc/sqlite3.html#sqlite3.enable_callback_tracebacks>`_,
+  but
   that is a poor substitute. apsw does the right thing as demonstrated
   by this example.
 
@@ -132,6 +137,15 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
   available than just what is printed out when exceptions happen like
   above. See :ref:`augmented stack traces <augmentedstacktraces>`
 
+* APSW has :ref:`execution and row tracers <tracing>`.  pysqlite has no 
+  equivalent to :ref:`execution tracers <executiontracer>` and does have
+  data adaptors which aren't the same thing as a :ref:`row tracer
+  <rowtracer>` (for example you can't skip rows or add a new column to
+  each row returned).  pysqlite does have a `row factory
+  <http://oss.itsystementwicklung.de/download/pysqlite/doc/sqlite3.html#accessing-columns-by-name-instead-of-by-index>`_
+  but you can easily emulate that with the row tracer and
+  :meth:`Cursor.getdescription`.
+
 * APSW has an exception corresponding to each SQLite error code and
   provides the extended error code.  pysqlite `combines several SQLite
   error codes
@@ -146,3 +160,32 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
   code.  The consequences of this are that APSW catches issues earlier
   and gives far better diagnostics.  As an example try returning an
   unsupported type from a registered scalar function.
+
+* APSW is faster than pysqlite in my testing.  Try the
+  :ref:`speedtest` benchmark.
+
+What pysqlite does better
+=========================
+
+* pysqlite has an `adaptor system
+  <http://oss.itsystementwicklung.de/download/pysqlite/doc/sqlite3.html#using-adapters-to-store-additional-python-types-in-sqlite-databases>`_
+  that lets you pretend SQLite stores and returns more types than it
+  really supports.  Note that the database won't be useful in a
+  non-pysqlite context (eg PHP code looking at the same database isn't
+  going to recognise your Point class).  You can implement something similar in APSW by intercepting :meth:`Cursor.execute` calls
+  that suitably mangles the bindings going to SQLite and does
+  something similar to the rows the iterator returns.
+
+* pysqlite lets you work with a database that contains invalid Unicode data by
+  setting a `text factory
+  <http://oss.itsystementwicklung.de/download/pysqlite/doc/sqlite3.html#sqlite3.Connection.text_factory>`_
+  that deals with the text data.  
+
+  APSW does not let you put non-Unicode data into the database in the first place and it will
+  be considered invalid by other tools reading the data (eg Java,
+  PHP).  If you somehow do manage to get non-Unicode data as a SQLite
+  string, you can cast it to a blob::
+
+     for row in cursor.execute("select CAST(column as BLOB) from table"):
+        # row[0] is buffer (py2) or bytes (py3) here
+        deal_with_binary_data(row[0])

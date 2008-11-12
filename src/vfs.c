@@ -31,7 +31,7 @@
 Virtual File System (VFS)
 *************************
 
-SQLite has new named `VFS functionality
+SQLite 3.6 has new `VFS functionality
 <http://sqlite.org/c3ref/vfs.html>`_ which defines the interface
 between the SQLite core and the underlying operating system. The
 majority of the functionality deals with files. APSW exposes this
@@ -71,8 +71,8 @@ To return an error from any routine you should raise an exception. The
 exception will be translated into the appropriate SQLite error code
 for SQLite. To return a specific SQLite error code use
 :meth:`exceptionfor`.  If the exception does not map to any specific
-error code then ":const:`SQLITE_ERROR` (which corresponds to
-:ref:`apsw.SQLError <exceptions>` is returned to SQLite.
+error code then :const:`SQLITE_ERROR` which corresponds to
+:exc:`SQLError` is returned to SQLite.
 
 The SQLite code that deals with VFS errors behaves in varying
 ways. Some routines have no way to return an error (eg `xDlOpen
@@ -85,7 +85,7 @@ parameter), others have any error values ignored (eg `xCurrentTime
 full error). Sometimes errors are ignored as they are harmless such as
 when a journal can't be deleted after a commit (the journal is marked
 as obsolete before being deleted).  Simple operations such as opening
-a database can result in hundreds of different VFS function calls such
+a database can result in many different VFS function calls such
 as hot journals being detected, locking, and read/writes for
 playback/rollback.
 
@@ -853,7 +853,7 @@ apswvfs_xDlError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
     :meth:`~VFS.xDlOpen` or :meth:`~VFS.xDlSym`, turn them into
     strings, save them, and return them in this routine. Note that the
     message may be truncated to 255 characters - see SQLite `ticket
-    3305 <http://www.sqlite.org/cvstrac/tktview?tn=3305>`_ If you have
+    3305 <http://www.sqlite.org/cvstrac/tktview?tn=3305>`_. If you have
     an error in this routine or return None then SQLite's generic
     message will be used.
 */
@@ -1028,7 +1028,7 @@ apswvfs_xSleep(sqlite3_vfs *vfs, int microseconds)
       operating system to sleep for. For example if your operating
       system sleep call only takes seconds then you would have to have
       rounded the microseconds number up to the nearest second and
-      should return that rouned up value.
+      should return that rounded up value.
 */
 static PyObject *
 apswvfspy_xSleep(APSWVFS *self, PyObject *args)
@@ -1808,7 +1808,7 @@ apswvfsfile_xWrite(sqlite3_file *file, const void *buffer, int amount, sqlite3_i
   underlying operating system to do a partial write. You will need to
   write the remaining data. 
 
-  :param offset: Where to start reading. This number may be 64 bit once the database is larger than 2GB.
+  :param offset: Where to start writing. This number may be 64 bit once the database is larger than 2GB.
   :param data: (Python 2) string, (Python 3) bytes
 */
 
@@ -1872,7 +1872,7 @@ apswvfsfile_xUnlock(sqlite3_file *file, int flag)
 
     Decrease the lock to the level specified which is one of the
     `SQLITE_LOCK <http://sqlite.org/c3ref/c_lock_exclusive.html>`_
-    family of constants.</p>
+    family of constants.
 */
 static PyObject *
 apswvfsfilepy_xUnlock(APSWVFSFile *self, PyObject *args)
@@ -1927,7 +1927,7 @@ apswvfsfile_xLock(sqlite3_file *file, int flag)
   Increase the lock to the level specified which is one of the
   `SQLITE_LOCK <http://sqlite.org/c3ref/c_lock_exclusive.html>`_
   family of constants. If you can't increase the lock level because
-  someone else has locked it, then raise ``apsw.BusyException``.
+  someone else has locked it, then raise :exc:`BusyError`.
 */
 static PyObject *
 apswvfsfilepy_xLock(APSWVFSFile *self, PyObject *args)
@@ -2078,8 +2078,8 @@ apswvfsfile_xSectorSize(sqlite3_file *file)
 /** .. method:: xSectorSize() -> int
 
     Return the native underlying sector size. SQLite uses the value
-    returned in determining the database page size. If you do not
-    implement the function or have an error then 512 (the SQLite
+    returned in determining the default database page size. If you do
+    not implement the function or have an error then 512 (the SQLite
     default) is returned.
 */
 static PyObject *

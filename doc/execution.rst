@@ -50,9 +50,9 @@ threads execute while SQLite is working.  (Technically the `GIL
 `sqlite3_prepare_v2 <http://sqlite.org/c3ref/prepare.html>`_,
 `sqlite3_step <http://sqlite.org/c3ref/step.html>`_ or
 `sqlite3_open_v2 <http://sqlite.org/c3ref/open.html>`_ are running, as
-well as many other functions that could take more than a trivial
-amount of time. The GIL is re-acquired while user defined functions,
-collations and the various hooks/handlers run.)</p>
+well as all other functions that could take more than a trivial amount
+of time or use the SQLite mutex. The GIL is re-acquired while user
+defined functions, collations and the various hooks/handlers run.)
 
 Note that you cannot use the same cursor object in multiple threads
 concurrently to execute statements. APSW will detect this and throw an
@@ -76,6 +76,8 @@ function or collation since these are called while executing a
 query. You can however make new cursors and use those without
 issue. You may want to remember the Connection object when you set
 your trace or user defined functions.
+
+.. _tracing:
 
 Tracing
 =======
@@ -105,7 +107,7 @@ tracer). It is called with two arguments. The first is a string which
 is the SQL statement about to be executed, and the second is the
 bindings used for that statement (and can be None). If the tracer
 return value evaluates to False/None then execution is aborted with an
-ExecTraceAbort exception.  See the :ref:`example <example-exectrace>`.
+:exc:`ExecTraceAbort` exception.  See the :ref:`example <example-exectrace>`.
 
 .. _rowtracer:
 

@@ -189,6 +189,8 @@ static PyTypeObject APSWBlobType;
 
   This object is created by :meth:`Connection.blobopen` and provides
   access to a blob in the database.  It behaves like a Python file.
+  At the C level it wraps a `sqlite3_blob
+  <http://sqlite.org/c3ref/blob.html>`_.
 
   .. note::
 
@@ -340,7 +342,7 @@ APSWBlob_read(APSWBlob *self, PyObject *args)
   :param whence: Use 0 if `offset` is relative to the begining of the blob,
                  1 if `offset` is relative to the current position,
                  and 2 if `offset` is relative to the end of the blob.
-  :raises ValueError: If the resulting offset is beyond the end of the blob.
+  :raises ValueError: If the resulting offset is before the begining (less than zero) or beyond the end of the blob.
 */
 
 static PyObject *
@@ -460,8 +462,8 @@ APSWBlob_write(APSWBlob *self, PyObject *obj)
 /** .. method:: close([force=False])
 
   Closes the blob.  Note that even if an error occurs the blob is
-  still closed `SQLite ticket 2815
-  <http://www.sqlite.org/cvstrac/tktview?tn=2815>`_.
+  still closed (see `SQLite ticket 2815
+  <http://www.sqlite.org/cvstrac/tktview?tn=2815>`_).
 
   .. note::
 

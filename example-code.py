@@ -20,7 +20,7 @@ connection=apsw.Connection("dbfile")
 cursor=connection.cursor()
 
 ###
-### simple statement
+### simple statement  @@ example-cursor
 ###
 
 cursor.execute("create table foo(x,y,z)")
@@ -105,7 +105,7 @@ cursor.setrowtrace(None)
 cursor.setexectrace(None)
 
 ###
-### executemany
+### executemany 
 ###
 
 # (This will work correctly with multiple statements, as well as statements that

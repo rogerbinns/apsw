@@ -271,8 +271,8 @@ if mappings:
 
 # remove double blank lines
 op2=[]
-for i in range(len(op)-1):
-    if len(op[i].strip())==0 and len(op[i+1].strip())==0:
+for i in range(len(op)):
+    if i+1<len(op) and len(op[i].strip())==0 and len(op[i+1].strip())==0:
         continue
     if len(op[i].strip())==0:
         op2.append("")

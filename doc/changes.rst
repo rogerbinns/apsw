@@ -389,7 +389,7 @@ constants for the authorizer function.  (These constants were
 introduced in SQLite 3.1.3).
 
 Changed various C++-isms into standard C (eg // comments and the
-placing of some :cmacro:`CHECK_THREAD` macro calls.
+placing of some :cmacro:`CHECK_THREAD` macro calls).
 
 Added module level function :meth:`~apsw.apswversion` which returns
 the version of APSW.

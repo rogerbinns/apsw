@@ -17,17 +17,24 @@ an extreme example, you could call :meth:`Cursor.next` in seperate
 threads each thread getting the next row.  You cannot use the cursor
 concurrently in multiple threads for example calling
 :meth:`Cursor.execute` at the same time.  If you attempt to do so then
-an exception will be raised.  Note that the Python Global Interpretter
-Lock (GIL) will prevent normal concurrency, except when the APSW code
-releases it.  The GIL is released during statement preparation and
-execution.
+an :exc:`exception <ThreadingViolationError>` will be raised. The
+Python Global Interpreter Lock (GIL) is released during all SQLite API
+calls allowing for maximum concurrency.
 
-Three different paramstyles are supported. You can use qmark
-`... WHERE name=?`, numeric `... WHERE name=?4` and named `... WHERE
-name=:name` or `... WHERE name=$name`. Note that SQLite starts
-parameter numbers from one not zero.
+Three different paramstyles are supported. Note that SQLite starts
+parameter numbers from one not zero when using *qmark/numeric* style.
 
-The DBAPI exceptions are not used.
++-----------------+---------------------------------+
+| qmark           | ``... WHERE name=?``            |
++-----------------+---------------------------------+
+| numeric         | ``... WHERE name=?4``           |
++-----------------+---------------------------------+
+| named           | | ``... WHERE name=:name``  or  |
+|                 | | ``... WHERE name=$name``      |
++-----------------+---------------------------------+
+
+The DBAPI exceptions are not used.  The :ref:`exceptions <exceptions>`
+used correspond to specific SQLite error codes.
 
 Connection Objects
 ==================
@@ -53,7 +60,7 @@ Use :meth:`Cursor.getdescription` instead of description. This
 information is only obtained on request.
 
 There is no rowcount.  Row counts don't make sense in SQLite any way.
-SQLite returns results on row at a time, not calculating the next
+SQLite returns results one row at a time, not calculating the next
 result row until you ask for it.  Consequently getting a rowcount
 would have to calculate all the result rows and would not reduce the
 amount of effort needed.
@@ -67,8 +74,8 @@ as an iterator to get the results (if any).
 it as an iterator to get the results (if any).
 
 fetchone is not available. Use the cursor as an iterator, or call
-:meth:`~Cursor.next` which raises StopIteration when there are no more
-results.
+:meth:`~Cursor.next` to get the next row, or raises StopIteration when
+there are no more results.
 
 fetchmany is not available. Simply use the cursor as an iterator or
 call :meth:`~Cursor.next` for however many results you want.
@@ -118,7 +125,10 @@ To get the last inserted row id, call
 :meth:`Connection.last_insert_rowid`. That stores the id from the last
 insert on any Cursor associated with the the Connection. You can also
 add `select last_insert_rowid() <http://www.sqlite.org/lang_corefunc.html>`_ to the end of your execute
-statements.
+statements::
+
+  for row in cursor.execute("BEGIN; INSERT ... ; INSERT ... ; SELECT last_insert_rowid(); COMMIT"):
+     lastrowid=row[0]
 
 There is no errorhandler attribute.
 

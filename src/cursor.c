@@ -33,7 +33,7 @@ A cursor encapsulates a SQL query and returning results.  To make a
 new cursor you should call :meth:`~Connection.cursor` on your
 database::
 
-  db=apsw.Connection("database")
+  db=apsw.Connection("databasefilename")
   cursor=db.cursor()
 
 A cursor executes SQL::
@@ -46,7 +46,7 @@ column values::
   for row in cursor.execute("select * from example"):
      print row
 
-There are two ways of supplying data to a query.  The really bad way is to compose a string::
+There are two ways of supplying data to a query.  The **really bad** way is to compose a string::
 
   sql="insert into example values('%s', %s)" % ("string", "8390823904")
   cursor.execute(sql)
@@ -64,13 +64,13 @@ syntax.  Additionally this is how `SQL injection attacks
 
 Cursors are cheap.  Use as many as you need.  It is safe to use them
 across threads, such as calling :meth:`~Cursor.execute` in one thread,
-passing the cursor to another thread that then ccalls
+passing the cursor to another thread that then calls
 :meth:`Cursor.next`.  The only thing you can't do is call methods at
 exactly the same time on the same cursor in two different threads - eg
 trying to call :meth:`~Cursor.execute` in both at the same time, or
 :meth:`~Cursor.execute` in one and :meth:`Cursor.next` in another.
 (If you do attempt this, it will be detected and
-:class:`apsw.ThreadingViolationError` will be raised.)  
+:exc:`ThreadingViolationError` will be raised.)  
 
 Behind the scenes a :class:`Cursor` maps to a `SQLite statement
 <http://www.sqlite.org/c3ref/stmt.html>`_.  APSW maintains a
@@ -878,7 +878,7 @@ APSWCursor_step(APSWCursor *self)
     :param statements: One or more SQL statements such as ``select *
       from books`` or ``begin; insert into books ...; select
       last_insert_rowid(); end``.
-    :param bindings: If supplied should either be a sequence or a dictionary.
+    :param bindings: If supplied should either be a sequence or a dictionary.  Each item must be one of the :ref:`supported types <types>`
 
     If you use numbered bindings in the query then supply a sequence.
     Any sequence will work including lists and iterators.  For
@@ -912,14 +912,15 @@ APSWCursor_step(APSWCursor *self)
           print row
 
     :raises TypeError: The bindings supplied were neither a dict nor a sequence
-    :raises apsw.BindingsError: You supplied too many or too few bindings for the statements
-    :raises apsw.IncompleteExecutionError: There are remaining unexecuted queries from your last execute
+    :raises BindingsError: You supplied too many or too few bindings for the statements
+    :raises IncompleteExecutionError: There are remaining unexecuted queries from your last execute
 
     -* sqlite3_prepare_v2 sqlite3_step sqlite3_bind_int64 sqlite3_bind_null sqlite3_bind_text sqlite3_bind_double sqlite3_bind_blob sqlite3_bind_zeroblob
 
     .. seealso::
 
        * :ref:`executionmodel`
+       * :ref:`Example <example-cursor>`
  
 */
 static PyObject *
@@ -1023,7 +1024,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
             (4, 92),
             (12, 12) )
 
-    cursor.executemany("insert into nums(?,?)", rows)
+    cursor.executemany("insert into nums values(?,?)", rows)
 
   The return is the cursor itself which acts as an iterator.  Your
   statements can return data.  See :meth:`~Cursor.execute` for more

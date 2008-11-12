@@ -20,7 +20,7 @@ Some examples of how you might use this:
 
 * Translating to/from information stored in other formats (eg a csv/ini format file)
 
-* Accessing the data remotely (eg you could make a table that backends into `Amazon's API <http://www.josephson.org/projects/pyamazon>`_
+* Accessing the data remotely (eg you could make a table that backends into `Amazon's API <http://www.josephson.org/projects/pyamazon>`_)
 
 * Dynamic information (eg currently running processes, files and directories, objects in your program)
 
@@ -32,15 +32,17 @@ Some examples of how you might use this:
 
 * There are other examples on the `SQLite page <http://www.sqlite.org/cvstrac/wiki?p=VirtualTables>`_
 
-You need to have 3 types of object. A module, a virtual table and a
-cursor. These are documented below. You can also read the `SQLite C
-method documentation
+You need to have 3 types of object. A :class:`module <VTModule>`, a
+:class:`virtual table <VTTable>` and a :class:`cursor
+<VTCursor>`. These are documented below. You can also read the `SQLite
+C method documentation
 <http://www.sqlite.org/cvstrac/wiki?p=VirtualTableMethods>`_.  At the
-C level, they are just one set of methods. At the Python/apsw level,
+C level, they are just one set of methods. At the Python/APSW level,
 they are split over the 3 types of object. The leading **x** is
-ommitted in Python. You can return SQLite error codes (eg
-:const:`SQLITE_READONLY` by raising the appropriate exceptions (eg
-:class:`apsw.ReadOnlyError`).
+omitted in Python. You can return SQLite error codes (eg
+:const:`SQLITE_READONLY`) by raising the appropriate exceptions (eg
+:exc:`ReadOnlyError`).  :meth:`exceptionfor` is a useful helper
+function to do the mapping.
 
 */
 
@@ -48,8 +50,8 @@ ommitted in Python. You can return SQLite error codes (eg
 
 .. note::
   
-  There is no actual `apsw.VTModule` class - it is just shown this way
-  for documentation convenience.  You module instance should implement
+  There is no actual `VTModule` class - it is just shown this way
+  for documentation convenience.  Your module instance should implement
   all the methods documented here.
 
 A module instance is used to create the virtual tables.  Once you have
@@ -197,7 +199,7 @@ vtabCreateOrConnect(sqlite3 *db,
 
     The parameters and return are identical to
     :meth:`~VTModule.Create`.  This method is called
-    when there are addition references to the table.  ie :meth:`~VTModule.Create` will be called the first time and
+    when there are additional references to the table.  :meth:`~VTModule.Create` will be called the first time and
     :meth:`~VTModule.Connect` after that. 
 
     The advise is to create caches, generated data and other
@@ -262,9 +264,9 @@ vtabConnect(sqlite3 *db,
 
   .. note::
    
-    There is no actual `apsw.VTTable` class - it is just shown this
-    way for documentation convenience.  You table instance should
-    implement all the methods documented here.
+    There is no actual `VTTable` class - it is just shown this way for
+    documentation convenience.  Your table instance should implement
+    the methods documented here.
 
 
   The :class:`VTTable` object contains knowledge of the indices, makes
@@ -279,10 +281,11 @@ vtabConnect(sqlite3 *db,
   type can be different between rows for the same column.  The virtual
   table routines identify the columns by number, starting at zero.
 
-  Each row has a **unique** 64 bit integer rowid with the
-  :class:`Cursor <VTCursor>` routines operating on this number, as
-  well as some of the :class:`Table <VTTable>` routines such as
-  :meth:`UpdateChangeRow <VTTable.UpdateChangeRow>`.
+  Each row has a **unique** 64 bit integer `rowid
+  <http://www.sqlite.org/autoinc.html>`_ with the :class:`Cursor
+  <VTCursor>` routines operating on this number, as well as some of
+  the :class:`Table <VTTable>` routines such as :meth:`UpdateChangeRow
+  <VTTable.UpdateChangeRow>`.
 
 */
 
@@ -425,7 +428,7 @@ vtabDisconnect(sqlite3_vtab *pVTab)
   evaluate the constraint itself. Your index choice returned from
   BestIndex will also be passed to the :meth:`~VTCursor.Filter` method on your cursor
   object. Note that SQLite may call this method multiple times trying
-  to find the most efficient way of answering a query. 
+  to find the most efficient way of answering a complex query. 
 
   **constraints**
   
@@ -433,8 +436,8 @@ vtabDisconnect(sqlite3_vtab *pVTab)
   items. The first item is the column number and the second item is
   the operation.
 
-     Example query: ``select * from foo where price >=74.99 and
-     quantity<=10 and customer=='Acme Widgets'``
+     Example query: ``select * from foo where price > 74.99 and
+     quantity<=10 and customer='Acme Widgets'``
 
      If customer is column 0, price column 2 and quantity column 5
      then the constraints will be::
@@ -446,8 +449,8 @@ vtabDisconnect(sqlite3_vtab *pVTab)
      Note that you do not get the value of the constraint (ie "Acme
      Widgets", 74.99 and 10 in this example).
 
-  If you do have any suitable indices then you return as a sequence
-  the same length as constraints with the members mapping to the
+  If you do have any suitable indices then you return a sequence the
+  same length as constraints with the members mapping to the
   constraints in order. Each can be one of None, an integer or a tuple
   of an integer and a boolean.  Conceptually SQLite is giving you a
   list of constraints and you are returning a list of the same length
@@ -472,7 +475,7 @@ vtabDisconnect(sqlite3_vtab *pVTab)
        set the boolean to False then SQLite won't do that double
        checking.
 
-  Example query: ``select * from foo where price >=74.99 and
+  Example query: ``select * from foo where price > 74.99 and
   quantity<=10 and customer=='Acme Widgets'``.  customer is column 0,
   price column 2 and quantity column 5.  You can index on customer
   equality and price.
@@ -534,7 +537,7 @@ vtabDisconnect(sqlite3_vtab *pVTab)
   4: estimated cost (default a huge number)
     Approximately how many disk operations are needed to provide the
     results. SQLite uses the cost to optimise queries. For example if
-    the query includes A or B and A has 2,000 operations and B has 100
+    the query includes *A or B* and A has 2,000 operations and B has 100
     then it is best to evaluate B before A.
 
   **A complete example**
@@ -969,7 +972,7 @@ vtabOpen(sqlite3_vtab *pVtab, sqlite3_vtab_cursor **ppCursor)
 
 /** .. method:: UpdateDeleteRow(rowid)
 
-  Delete to row with the specified `rowid`.
+  Delete the row with the specified `rowid`.
 
   :param rowid: 64 bit integer
 */
@@ -980,7 +983,7 @@ vtabOpen(sqlite3_vtab *pVtab, sqlite3_vtab_cursor **ppCursor)
   :param rowid: :const:`None` if you should choose the rowid yourself, else a 64 bit integer
   :param fields: A tuple of values the same length and order as columns in your table
 
-  :returns: If `rowid` was :const:`None` then return id you assigned
+  :returns: If `rowid` was :const:`None` then return the id you assigned
     to the row.  If `rowid` was not :const:`None` then the return value
     is ignored.
 */
@@ -1172,13 +1175,13 @@ vtabRename(sqlite3_vtab *pVtab, const char *zNew)
 
  .. note::
    
-    There is no actual `apsw.VTCursor` class - it is just shown this
+    There is no actual `VTCursor` class - it is just shown this
     way for documentation convenience.  Your cursor instance should
     implement all the methods documented here.
 
 
   The :class:`VTCursor` object is used for iterating over a table.
-  There may be many instances simultaneously so each one needs to keep
+  There may be many cursors simultaneously so each one needs to keep
   track of where it is.
 
   .. seealso::
@@ -1239,13 +1242,13 @@ vtabFilter(sqlite3_vtab_cursor *pCursor, int idxNum, const char *idxStr,
 
   Called to ask if we are at the end of the table. It is called after each call to Filter and Next.
 
-  :returns: True if the cursor is at a valid row of data, else False
+  :returns: False if the cursor is at a valid row of data, else True
 
   .. note::
 
     This method can only return True or False to SQLite.  If you have
     an exception in the method or provide a non-boolean return then
-    False will be returned to SQLite.
+    True (no more data) will be returned to SQLite.
 */
 
 static int
@@ -1287,8 +1290,8 @@ vtabEof(sqlite3_vtab_cursor *pCursor)
   Requests the value of the specified column `number` of the current
   row.  If `number` is -1 then return the rowid.
 
-  :returns: Must be one one of the `5
-    supported types <http://www.sqlite.org/datatype3.html>`_
+  :returns: Must be one one of the :ref:`5
+    supported types <types>`
 */
 /* forward decln */
 static void set_context_result(sqlite3_context *context, PyObject *obj);

@@ -1,3 +1,5 @@
+.. _types:
+
 Types
 *****
 
@@ -7,9 +9,9 @@ Read about `SQLite 3 types
 <http://www.sqlite.org/datatype3.html>`_. ASPW always maintains the
 correct type for values, and never converts them to something
 else. Note however that SQLite may convert types based on column
-affinity as described in that link. ASPW requires that all values
-supplied are one of the corresponding Python/SQLite types (or a
-subclass).
+affinity as `described <http://www.sqlite.org/datatype3.html>`_. ASPW
+requires that all values supplied are one of the corresponding
+Python/SQLite types (or a subclass).
 
 Mapping
 =======
@@ -29,6 +31,8 @@ Mapping
     
 * For Python 2 the buffer class is used for BLOB in SQLite. In Python
   3 the bytes type is used, although you can still supply buffers.
+
+.. _unicode:
 
 Unicode
 =======
@@ -77,7 +81,7 @@ hence sorting, upper/lower casing etc are limited and do not take
 locales into account.
 
 In summary, never confuse bytes with strings (which C sadly treats as
-the same thing).  Either always uses bytes (and SQLite blobs) for
+the same thing).  Either always use bytes (and SQLite blobs) for
 everything or use strings (and SQLite strings) for everything.  If you
 take the latter approach and have to deal with external input/output
 then you must know what encodings are being used and it is best to

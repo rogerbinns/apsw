@@ -24,8 +24,7 @@ Exceptions
 As an example, if SQLite issued a read request and the system returned
 less data than expected then :attr:`~Error.result` would have the value
 :const:`SQLITE_IOERR` while :attr:`~Error.extendedresult` would have
-the value :const:`SQLITE_IOERR` binary orred with
-:const:`SQLITE_IOERR_SHORT_READ`.
+the value :const:`SQLITE_IOERR_SHORT_READ`.
    
 
 APSW specific exceptions
@@ -106,11 +105,10 @@ The following exceptions happen when APSW detects various problems.
 
   The VFS file is closed so the operation cannot be performed.
 
-
 SQLite Exceptions
 =================
 
-The table lists which Exception classes correspond to which `SQLite
+The following lists which Exception classes correspond to which `SQLite
 error codes <http://sqlite.org/c3ref/c_abort.html>`_.
 
 
@@ -157,7 +155,7 @@ Permissions Etc
 
 .. exception:: ReadOnlyError
 
-  :const:`SQLITE_READONLY`. Attempt to write a readonly database.
+  :const:`SQLITE_READONLY`. Attempt to write to a readonly database.
 
 .. exception:: CantOpenError
 
