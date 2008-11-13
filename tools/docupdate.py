@@ -22,7 +22,11 @@ for line in open("doc/download.rst", "rtU"):
         op.append("")
         op.append("* `apsw-%s.zip" % (version,))
         op.append("  <%s/apsw-%s.zip>`_" % (url, version))
-        op.append("  (source)")
+        op.append("  (Source, includes this HTML Help)")
+        op.append("")
+        op.append("* `apsw-%s.chm" % (version,))
+        op.append("  <%s/apsw-%s.chm>`_" % (url, version))
+        op.append("  (Compiled HTML Help)")
         op.append("")
         for pyver in ("2.3", "2.4", "2.5", "2.6"):
             op.append("* `apsw-%s.win32-py%s.exe" % (version, pyver))

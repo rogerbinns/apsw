@@ -29,7 +29,7 @@ to use the same :class:`Connection` across as many threads as you want
 `concurrently <http://sqlite.org/threadsafe.html>`_.
 
 Documentation is now done using `Sphinx <http://sphinx.pocoo.org>`_
-which was adopted by Python 3.  This has allowed for richer
+which was adopted by Python 2.6 and 3.  This has allowed for richer
 documentation and more output formats such as PDF and `Windows CHM
 <http://en.wikipedia.org/wiki/Microsoft_Compiled_HTML_Help>`_ format.
 You can now find the documentation online at

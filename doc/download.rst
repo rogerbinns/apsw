@@ -17,7 +17,11 @@ way to build or all the :ref:`options available <building>`.
 
 * `apsw-3.6.5-r1.zip
   <http://apsw.googlecode.com/files/apsw-3.6.5-r1.zip>`_
-  (source)
+  (Source, includes this HTML Help)
+
+* `apsw-3.6.5-r1.chm
+  <http://apsw.googlecode.com/files/apsw-3.6.5-r1.chm>`_
+  (Compiled HTML Help)
 
 * `apsw-3.6.5-r1.win32-py2.3.exe
   <http://apsw.googlecode.com/files/apsw-3.6.5-r1.win32-py2.3.exe>`_
