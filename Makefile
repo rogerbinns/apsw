@@ -82,11 +82,11 @@ compile-win:
 	c:/python23/python setup.py build --compile=mingw32 install $(WINOPTS)
 	c:/python23/python tests.py
 	c:/python23/python setup.py build --compile=mingw32 bdist_wininst $(WINOPTS)
-	c:/python23/python example-code.py
 
 	c:/python24/python setup.py build --compile=mingw32 install $(WINOPTS)
 	c:/python24/python tests.py
 	c:/python24/python setup.py build --compile=mingw32 bdist_wininst $(WINOPTS)
+	c:/python24/python example-code.py
 
 	c:/python25/python setup.py build --compile=mingw32 install $(WINOPTS)
 	c:/python25/python tests.py

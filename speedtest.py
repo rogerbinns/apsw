@@ -351,7 +351,7 @@ def doit():
         return pysqlite_statements(con, withoutbindings)
 
     # Do the work
-    write("\nRunning tests\n")
+    write("\nRunning tests (results in seconds, lower is better)\n")
 
     for i in range(options.iterations):
         write("%d/%d\n" % (i+1, options.iterations))

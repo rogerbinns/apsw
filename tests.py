@@ -3819,9 +3819,7 @@ class APSW(unittest.TestCase):
         TestVFS.xFullPathname=TestVFS.xFullPathname3
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xFullPathname=TestVFS.xFullPathname4
-        if iswindows:
-            self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, apsw.CantOpenError, testdb)
-        else:
+        if not iswindows:
             # SQLite doesn't give an error even though the vfs is silently truncating
             # the full pathname.  See SQLite ticket 3373
             self.assertRaises(apsw.CantOpenError, testdb) # we get cantopen on the truncated fullname
