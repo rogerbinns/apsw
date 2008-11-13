@@ -32,7 +32,9 @@ APSW includes a speed testing script as part of the :ref:`source
 distribution <source_and_binaries>`.  You can use the script to
 compare SQLite performance across different versions of SQLite,
 different host systems (hard drives and controllers matter) as well as
-between pysqlite and APSW.
+between pysqlite and APSW.  The underlying queries are based on
+`SQLite's speed test
+<http://www.sqlite.org/cvstrac/fileview?f=sqlite/tool/mkspeedsql.tcl>`_.
 
 .. speedtest-begin
 

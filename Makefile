@@ -120,10 +120,10 @@ upload:
 	test -f dist/$(VERDIR).win32-py2.4.exe
 	test -f dist/$(VERDIR).win32-py2.5.exe
 	test -f dist/$(VERDIR).win32-py2.6.exe
-	test -f dist/apswdoc-$(VERSION).chm
+	test -f dist/$(VERDIR).chm
 	python tools/googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.6 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.6.exe
 	python tools/googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.5 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.5.exe
 	python tools/googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.4 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.4.exe
 	python tools/googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.3 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.3.exe
+	python tools/googlecode_upload.py -p apsw -s "$(VERSION) (Documentation - Compiled Help Format)" -l "Type-Docs" dist/$(VERDIR).chm
 	python tools/googlecode_upload.py -p apsw -s "$(VERSION) (Source, includes HTML documentation)" -l "Type-Source,OpSys-All" dist/$(VERDIR).zip
-	python tools/googlecode_upload.py -p apsw -s "$(VERSION) (Documentation - Compiled Help Format)" -l "Type-Docs" dist/apswdoc-$(VERSION).chm

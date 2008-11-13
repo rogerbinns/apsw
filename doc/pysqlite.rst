@@ -56,7 +56,7 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
 * APSW **always** handles Unicode correctly (this was one of the major
   reasons for writing it in the first place). pysqlite has since fixed
   many of its issues but you are still `stuck with some
-  <http://initd.org/tracker/pysqlite/ticket/153>`_.
+  <http://oss.itsystementwicklung.de/trac/pysqlite/ticket/153>`_.
 
 * You can use semi-colons at the end of commands and you can have
   multiple commands in the execute string in APSW. There are no
