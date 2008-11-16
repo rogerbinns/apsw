@@ -48,6 +48,19 @@ typedef int Py_ssize_t;
 #define Py_REFCNT(x) (((PyObject*)x)->ob_refcnt)
 #endif
 
+#ifndef Py_CLEAR
+#define Py_CLEAR(exp)                                   \
+         do                                             \
+           {                                            \
+             if(exp)                                    \
+               {                                        \
+                 PyObject *_tmpclear=(PyObject*)(exp);  \
+                 exp=0;                                 \
+                 Py_DECREF(_tmpclear);                  \
+               }                                        \
+           } while(0)
+#endif
+
 /* define as zero if not present - introduced in Python 2.6 */
 #ifndef Py_TPFLAGS_HAVE_VERSION_TAG
 #define Py_TPFLAGS_HAVE_VERSION_TAG 0
@@ -59,6 +72,23 @@ typedef int Py_ssize_t;
 #else
 #define MAKESTR  PyUnicode_FromString
 #endif
+
+/* Py 2 vs 3 can't decide how to start type initialization */
+#if PY_MAJOR_VERSION < 3
+/* The zero is ob_size */
+#define APSW_PYTYPE_INIT \
+  PyObject_HEAD_INIT(NULL)   0,
+#else
+#define APSW_PYTYPE_INIT PyVarObject_HEAD_INIT(NULL,0)
+#endif
+
+/* version tag? */
+#if PY_VERSION_HEX >= 0x02060000
+#define APSW_PYTYPE_VERSION ,0
+#else
+#define APSW_PYTYPE_VERSION
+#endif
+
 
 #if PY_MAJOR_VERSION < 3
 #define PyBytes_Check             PyString_Check

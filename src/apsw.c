@@ -138,9 +138,6 @@ static PyObject *apswmodule;
 /* Operating system abstraction */
 #include "osutil.c"
 
-/* A list of pointers (used by Connection to keep track of Cursors) */
-#include "pointerlist.c"
-
 /* Exceptions we can raise */
 #include "exceptions.c"
 
@@ -702,6 +699,7 @@ PyInit_apsw(void)
         || PyType_Ready(&APSWVFSFileType) <0
         || PyType_Ready(&APSWStatementType) <0
         || PyType_Ready(&APSWBufferType) <0
+        || PyType_Ready(&FunctionCBInfoType) <0
         )
       goto fail;
 

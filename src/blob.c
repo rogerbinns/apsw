@@ -112,12 +112,7 @@ ZeroBlobBind_init(ZeroBlobBind *self, PyObject *args, PyObject *kwargs)
 }
 
 static PyTypeObject ZeroBlobBindType = {
-#if PY_MAJOR_VERSION < 3
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-#else
-    PyVarObject_HEAD_INIT(NULL,0)
-#endif
+    APSW_PYTYPE_INIT
     "apsw.zeroblob",           /*tp_name*/
     sizeof(ZeroBlobBind),      /*tp_basicsize*/
     0,                         /*tp_itemsize*/
@@ -162,10 +157,8 @@ static PyTypeObject ZeroBlobBindType = {
     0,                         /* tp_cache */
     0,                         /* tp_subclasses */
     0,                         /* tp_weaklist */
-    0,                         /* tp_del */
-#if PY_VERSION_HEX>=0x02060000
-    0                          /* tp_version_tag */
-#endif
+    0                          /* tp_del */
+    APSW_PYTYPE_VERSION
 };
 
 
@@ -177,6 +170,7 @@ struct APSWBlob {
   sqlite3_blob *pBlob;
   unsigned inuse;                 /* track if we are in use preventing concurrent thread mangling */
   int curoffset;                  /* SQLite only supports 32 bit signed int offsets */
+  PyObject *weakreflist;          /* weak reference tracking */
 };
 
 typedef struct APSWBlob APSWBlob;
@@ -210,11 +204,15 @@ APSWBlob_init(APSWBlob *self, Connection *connection, sqlite3_blob *blob)
   self->pBlob=blob;
   self->curoffset=0;
   self->inuse=0;
+  self->weakreflist=NULL;
 }
 
 static void
 APSWBlob_dealloc(APSWBlob *self)
 {
+  if(self->weakreflist)
+    PyObject_ClearWeakRefs((PyObject*)self);
+  
   if(self->pBlob)
     {
       int res;
@@ -237,13 +235,8 @@ APSWBlob_dealloc(APSWBlob *self)
           PyErr_Clear();
         }
       self->pBlob=0;
-      pointerlist_remove(&self->connection->dependents, self);
     }
-  if(self->connection)
-    {
-      Py_DECREF(self->connection);
-      self->connection=0;
-    }
+  Py_CLEAR(self->connection);
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -494,10 +487,8 @@ APSWBlob_close(APSWBlob *self, PyObject *args)
 
   if(!force)
     SET_EXC(res, self->connection->db);
-  pointerlist_remove(&self->connection->dependents, self);
   self->pBlob=0; /* sqlite ticket #2815 */
-  Py_DECREF(self->connection);
-  self->connection=0;
+  Py_CLEAR(self->connection);
   if(!force && res!=SQLITE_OK)
     return NULL;   
  end:
@@ -522,12 +513,7 @@ static PyMethodDef APSWBlob_methods[]={
 };
 
 static PyTypeObject APSWBlobType = {
-#if PY_MAJOR_VERSION < 3
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-#else
-    PyVarObject_HEAD_INIT(NULL,0)
-#endif
+    APSW_PYTYPE_INIT
     "apsw.blob",               /*tp_name*/
     sizeof(APSWBlob),          /*tp_basicsize*/
     0,                         /*tp_itemsize*/
@@ -551,7 +537,7 @@ static PyTypeObject APSWBlobType = {
     0,		               /* tp_traverse */
     0,		               /* tp_clear */
     0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
+    offsetof(APSWBlob, weakreflist), /* tp_weaklistoffset */
     0,		               /* tp_iter */
     0,		               /* tp_iternext */
     APSWBlob_methods,          /* tp_methods */
@@ -572,9 +558,7 @@ static PyTypeObject APSWBlobType = {
     0,                         /* tp_cache */
     0,                         /* tp_subclasses */
     0,                         /* tp_weaklist */
-    0,                         /* tp_del */
-#if PY_VERSION_HEX>=0x02060000
-    0                          /* tp_version_tag */
-#endif
+    0                          /* tp_del */
+    APSW_PYTYPE_VERSION
 };
 

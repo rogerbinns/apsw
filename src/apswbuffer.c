@@ -227,7 +227,7 @@ APSWBuffer_dealloc(APSWBuffer *self)
 {
   if(self->base)
     assert(!APSWBuffer_Check(self->base));
-  Py_XDECREF(self->base);
+  Py_CLEAR(self->base);
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -258,12 +258,7 @@ APSWBuffer_richcompare(APSWBuffer *left, APSWBuffer *right, int op)
 
 static PyTypeObject APSWBufferType =
   {
-#if PY_MAJOR_VERSION < 3
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-#else
-    PyVarObject_HEAD_INIT(NULL,0)
-#endif
+    APSW_PYTYPE_INIT
     "apsw.APSWBuffer",         /*tp_name*/
     sizeof(APSWBuffer),        /*tp_basicsize*/
     0,                         /*tp_itemsize*/
@@ -308,8 +303,6 @@ static PyTypeObject APSWBufferType =
     0,                         /* tp_cache */
     0,                         /* tp_subclasses */
     0,                         /* tp_weaklist */
-    0,                         /* tp_del */
-#if PY_VERSION_HEX>=0x02060000
-    0                          /* tp_version_tag */
-#endif
+    0                          /* tp_del */
+    APSW_PYTYPE_VERSION
 };

@@ -2787,7 +2787,7 @@ class APSW(unittest.TestCase):
 
     def sourceCheckFunction(self, filename, name, lines):
         # not further checked
-        if name.split("_")[0] in ("ZeroBlobBind", "APSWVFS", "APSWVFSFile", "APSWBuffer") :
+        if name.split("_")[0] in ("ZeroBlobBind", "APSWVFS", "APSWVFSFile", "APSWBuffer", "FunctionCBInfo") :
                 return
 
         checks={

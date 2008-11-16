@@ -152,7 +152,9 @@ struct APSWCursor {
   /* tracing functions */
   PyObject *exectrace;
   PyObject *rowtrace;
-  
+
+  /* weak reference support */
+  PyObject *weakreflist;
 };
 
 typedef struct APSWCursor APSWCursor;
@@ -242,6 +244,10 @@ APSWCursor_dealloc(APSWCursor * self)
   PyObject *err_type, *err_value, *err_traceback;
   int have_error=PyErr_Occurred()?1:0;
 
+
+  if(self->weakreflist)
+    PyObject_ClearWeakRefs((PyObject*)self);
+
   /* do our finalisation ... */
 
   if (have_error)
@@ -258,21 +264,14 @@ APSWCursor_dealloc(APSWCursor * self)
     PyErr_Restore(err_type, err_value, err_traceback);
 
   /* we no longer need connection */
-  if(self->connection)
-    {
-      pointerlist_remove(&self->connection->dependents, self);
-      Py_DECREF(self->connection);
-      self->connection=0;
-    }
+  Py_CLEAR(self->connection);
 
   /* executemany iterator */
-  Py_XDECREF(self->emiter);
-  self->emiter=NULL;
+  Py_CLEAR(self->emiter);
 
   /* no need for tracing */
-  Py_XDECREF(self->exectrace);
-  Py_XDECREF(self->rowtrace);
-  self->exectrace=self->rowtrace=0;
+  Py_CLEAR(self->exectrace);
+  Py_CLEAR(self->rowtrace);
   
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
@@ -290,6 +289,7 @@ APSWCursor_init(APSWCursor *self, Connection *connection)
   self->exectrace=0;
   self->rowtrace=0;
   self->inuse=0;
+  self->weakreflist=NULL;
 }
 
 /** .. method:: getdescription() -> list
@@ -804,8 +804,7 @@ APSWCursor_step(APSWCursor *self)
           INUSE_CALL(statementcache_finalize(self->connection->stmtcache, self->statement));
           self->statement=NULL;
           /* don't need bindings from last round if emiter.next() */
-          Py_XDECREF(self->bindings);
-          self->bindings=0;
+          Py_CLEAR(self->bindings);
           self->bindingsoffset=0;
           /* verify type of next before putting in bindings */
           if(PyDict_Check(next))
@@ -1401,12 +1400,7 @@ static PyMethodDef APSWCursor_methods[] = {
 
 
 static PyTypeObject APSWCursorType = {
-#if PY_MAJOR_VERSION < 3
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-#else
-    PyVarObject_HEAD_INIT(NULL,0)
-#endif
+    APSW_PYTYPE_INIT
     "apsw.Cursor",             /*tp_name*/
     sizeof(APSWCursor),            /*tp_basicsize*/
     0,                         /*tp_itemsize*/
@@ -1434,7 +1428,7 @@ static PyTypeObject APSWCursorType = {
     0,		               /* tp_traverse */
     0,		               /* tp_clear */
     0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
+    offsetof(APSWCursor, weakreflist), /* tp_weaklistoffset */
     (getiterfunc)APSWCursor_iter,  /* tp_iter */
     (iternextfunc)APSWCursor_next, /* tp_iternext */
     APSWCursor_methods,            /* tp_methods */
@@ -1455,8 +1449,6 @@ static PyTypeObject APSWCursorType = {
     0,                         /* tp_cache */
     0,                         /* tp_subclasses */
     0,                         /* tp_weaklist */
-    0,                         /* tp_del */
-#if PY_VERSION_HEX>=0x02060000
-    0                          /* tp_version_tag */
-#endif
+    0                          /* tp_del */
+    APSW_PYTYPE_VERSION
 };

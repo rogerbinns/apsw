@@ -1,5 +1,5 @@
 
-VERSION=3.6.5-r1
+VERSION=3.xxx-r1
 VERDIR=apsw-$(VERSION)
 
 # setup.py options for windows dist
@@ -14,7 +14,6 @@ SOURCEFILES = \
 	src/cursor.c \
 	src/exceptions.c \
 	src/osutil.c \
-	src/pointerlist.c \
 	src/pyutil.c \
 	src/statementcache.c \
         src/traceback.c  \

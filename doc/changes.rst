@@ -2,6 +2,11 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.next-r1
+=========
+
+Various changes in data structures and containers to reduce code size.
+
 3.6.5-r1
 ========
 

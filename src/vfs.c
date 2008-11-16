@@ -1415,12 +1415,7 @@ static PyMethodDef APSWVFS_methods[]={
 
 static PyTypeObject APSWVFSType =
   {
-#if PY_MAJOR_VERSION < 3
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-#else
-    PyVarObject_HEAD_INIT(NULL,0)
-#endif
+    APSW_PYTYPE_INIT
     "apsw.VFS",                /*tp_name*/
     sizeof(APSWVFS),           /*tp_basicsize*/
     0,                         /*tp_itemsize*/
@@ -1465,10 +1460,8 @@ static PyTypeObject APSWVFSType =
     0,                         /* tp_cache */
     0,                         /* tp_subclasses */
     0,                         /* tp_weaklist */
-    0,                         /* tp_del */
-#if PY_VERSION_HEX>=0x02060000
-    0,                         /* tp_version */
-#endif
+    0                          /* tp_del */
+    APSW_PYTYPE_VERSION
   };
 
 
@@ -2410,12 +2403,7 @@ static PyMethodDef APSWVFSFile_methods[]={
 
 static PyTypeObject APSWVFSFileType =
   {
-#if PY_MAJOR_VERSION < 3
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-#else
-    PyVarObject_HEAD_INIT(NULL,0)
-#endif
+    APSW_PYTYPE_INIT
     "apsw.VFSFile",            /*tp_name*/
     sizeof(APSWVFSFile),       /*tp_basicsize*/
     0,                         /*tp_itemsize*/
@@ -2460,9 +2448,7 @@ static PyTypeObject APSWVFSFileType =
     0,                         /* tp_cache */
     0,                         /* tp_subclasses */
     0,                         /* tp_weaklist */
-    0,                         /* tp_del */
-#if PY_VERSION_HEX>=0x02060000
-    0                          /* tp_version_tag */
-#endif
+    0                          /* tp_del */
+    APSW_PYTYPE_VERSION
   };
 

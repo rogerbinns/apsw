@@ -42,13 +42,12 @@ processes.
 /* CALLBACK INFO */
 
 /* details of a registered function passed as user data to sqlite3_create_function */
-typedef struct _funccbinfo 
-{
-  struct _funccbinfo *next;       /* we use a linked list */
-  char *name;                     /* ascii function name which we uppercased */
+typedef struct FunctionCBInfo {
+  PyObject_HEAD
+  char *name;                     /* ascii function name */
   PyObject *scalarfunc;           /* the function to call for stepping */
   PyObject *aggregatefactory;     /* factory for aggregate functions */
-} funccbinfo;
+} FunctionCBInfo;
 
 /* a particular aggregate function instance used as sqlite3_aggregate_context */
 typedef struct _aggregatefunctioncontext 
@@ -57,8 +56,6 @@ typedef struct _aggregatefunctioncontext
   PyObject *stepfunc;             /* step function */
   PyObject *finalfunc;            /* final function */
 } aggregatefunctioncontext;
-
-static funccbinfo *freefunccbinfo(funccbinfo *);
 
 /* CONNECTION TYPE */
 
@@ -71,10 +68,11 @@ struct Connection {
 
   unsigned inuse;                 /* track if we are in use preventing concurrent thread mangling */
 
-  pointerlist dependents;         /* tracking cursors & blobs belonging to this connection */
   struct StatementCache *stmtcache;      /* prepared statement cache */
 
-  funccbinfo *functions;          /* linked list of registered functions */
+  PyObject *dependents;           /* tracking cursors & blobs belonging to this connection */
+  PyObject *dependent_remove;     /* dependents.remove for weak ref processing */
+  PyObject *functions;            /* list of registered functions */
 
   /* registered hooks/handlers (NULL or callable) */
   PyObject *busyhandler;     
@@ -115,6 +113,18 @@ struct ZeroBlobBind;
 static PyTypeObject ZeroBlobBindType;
 
 
+
+static void
+FunctionCBInfo_dealloc(FunctionCBInfo *self)
+{
+  if(self->name)
+    PyMem_Free(self->name);
+  Py_CLEAR(self->scalarfunc);
+  Py_CLEAR(self->aggregatefactory);
+  Py_TYPE(self)->tp_free((PyObject*)self);
+}
+
+
 /** .. class:: Connection
 
 
@@ -132,43 +142,18 @@ Connection_internal_cleanup(Connection *self)
       PyMem_Free((void*)self->filename);
       self->filename=0;
     }
-
-  Py_XDECREF(self->co_filename);
-  self->co_filename=0;
-
-  /* free functions */
-  {
-    funccbinfo *func=self->functions;
-    while((func=freefunccbinfo(func)));
-    self->functions=0;
-  }
-
-  Py_XDECREF(self->busyhandler);
-  self->busyhandler=0;
-
-  Py_XDECREF(self->rollbackhook);
-  self->rollbackhook=0;
-
-  Py_XDECREF(self->profile);
-  self->profile=0;
-
-  Py_XDECREF(self->updatehook);
-  self->updatehook=0;
-
-  Py_XDECREF(self->commithook);
-  self->commithook=0;
-
-  Py_XDECREF(self->progresshandler);
-  self->progresshandler=0;
   
-  Py_XDECREF(self->authorizer);
-  self->authorizer=0;
-
-  Py_XDECREF(self->collationneeded);
-  self->collationneeded=0;
-
-  Py_XDECREF(self->vfs);
-  self->vfs=0;
+  Py_CLEAR(self->co_filename);
+  Py_CLEAR(self->functions);
+  Py_CLEAR(self->busyhandler);
+  Py_CLEAR(self->rollbackhook);
+  Py_CLEAR(self->profile);
+  Py_CLEAR(self->updatehook);
+  Py_CLEAR(self->commithook);
+  Py_CLEAR(self->progresshandler);
+  Py_CLEAR(self->authorizer);
+  Py_CLEAR(self->collationneeded);
+  Py_CLEAR(self->vfs);
 }
 
 /** .. method:: close([force=False])
@@ -189,8 +174,8 @@ static PyObject *
 Connection_close(Connection *self, PyObject *args)
 {
   int res;
-  pointerlist_visit plv;
   int force=0;
+  Py_ssize_t i;
 
   if(!self->db)
     goto finally;
@@ -202,19 +187,22 @@ Connection_close(Connection *self, PyObject *args)
   if(!PyArg_ParseTuple(args, "|i:close(force=False)", &force))
     return NULL;
 
-  for(pointerlist_visit_begin(&self->dependents, &plv);
-      pointerlist_visit_finished(&plv);
-      pointerlist_visit_next(&plv))
+  /* Traverse dependents calling close.  This won't work too well if
+     calling close perturbs the list. */
+  for(i=0; i<PyList_GET_SIZE(self->dependents); i++)
     {
-      PyObject *closeres=NULL;
-      PyObject *obj=(PyObject*)pointerlist_visit_get(&plv);
+      PyObject *item, *closeres;
 
-      closeres=Call_PythonMethodV(obj, "close", 1, "(i)", force);
+      item=PyWeakref_GetObject(PyList_GET_ITEM(self->dependents, i));
+      if(!item || item==Py_None)
+        continue;
+      
+      closeres=Call_PythonMethodV(item, "close", 1, "(i)", force);
       Py_XDECREF(closeres);
       if(!closeres)
         return NULL;
     }
-
+      
   statementcache_free(self->stmtcache);
   self->stmtcache=0;
 
@@ -289,8 +277,9 @@ Connection_dealloc(Connection* self)
 
   /* Our dependents all hold a refcount on us, so they must have all
      released before this destructor could be called */
-  assert(self->dependents.numentries==0);
-  pointerlist_free(&self->dependents);
+  assert(PyList_GET_SIZE(self->dependents)==0);
+  Py_CLEAR(self->dependents);
+  Py_DECREF(self->dependent_remove);
 
   Connection_internal_cleanup(self);
 
@@ -304,17 +293,15 @@ Connection_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED
 
     self = (Connection *)type->tp_alloc(type, 0);
     if (self != NULL) {
-      /* Strictly speaking the memory was already zeroed.  This is
-         just defensive coding. */
       self->db=0;
       self->inuse=0;
       self->filename=0;
       self->co_linenumber=0;
       self->co_filename=0;
-      memset(&self->dependents, 0, sizeof(self->dependents));
-      pointerlist_init(&self->dependents);
+      self->dependents=PyList_New(0);
+      self->dependent_remove=PyObject_GetAttrString(self->dependents, "remove");
       self->stmtcache=0;
-      self->functions=0;
+      self->functions=PyList_New(0);
       self->busyhandler=0;
       self->rollbackhook=0;
       self->profile=0;
@@ -481,6 +468,7 @@ Connection_blobopen(Connection *self, PyObject *args)
   long long rowid;
   int writing;
   int res;
+  PyObject *weakref;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
@@ -505,8 +493,11 @@ Connection_blobopen(Connection *self, PyObject *args)
       return NULL;
     }
 
-  pointerlist_add(&self->dependents, apswblob);
+
   APSWBlob_init(apswblob, self, blob);
+  weakref=PyWeakref_NewRef((PyObject*)apswblob, self->dependent_remove);
+  PyList_Append(self->dependents, weakref);
+  Py_DECREF(weakref);
   return (PyObject*)apswblob;
 }
 
@@ -520,6 +511,7 @@ static PyObject *
 Connection_cursor(Connection *self)
 {
   struct APSWCursor* cursor = NULL;
+  PyObject *weakref;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self,NULL);
@@ -530,8 +522,10 @@ Connection_cursor(Connection *self)
 
   /* incref me since cursor holds a pointer */
   Py_INCREF((PyObject*)self);
-  pointerlist_add(&self->dependents, cursor);
   APSWCursor_init(cursor, self);
+  weakref=PyWeakref_NewRef((PyObject*)cursor, self->dependent_remove);
+  PyList_Append(self->dependents, weakref);
+  Py_DECREF(weakref);
   
   return (PyObject*)cursor;
 }
@@ -1553,33 +1547,68 @@ Connection_loadextension(Connection *self, PyObject *args)
 
 
 /* USER DEFINED FUNCTION CODE.*/
+static PyTypeObject FunctionCBInfoType =
+  {
+    APSW_PYTYPE_INIT
+    "apsw.FunctionCBInfo",     /*tp_name*/
+    sizeof(FunctionCBInfo),    /*tp_basicsize*/
+    0,                         /*tp_itemsize*/
+    (destructor)FunctionCBInfo_dealloc, /*tp_dealloc*/ 
+    0,                         /*tp_print*/
+    0,                         /*tp_getattr*/
+    0,                         /*tp_setattr*/
+    0,                         /*tp_compare*/
+    0,                         /*tp_repr*/
+    0,                         /*tp_as_number*/
+    0,                         /*tp_as_sequence*/
+    0,                         /*tp_as_mapping*/
+    0,                         /*tp_hash */
+    0,                         /*tp_call*/
+    0,                         /*tp_str*/
+    0,                         /*tp_getattro*/
+    0,                         /*tp_setattro*/
+    0,                         /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG, /*tp_flags*/
+    "FunctionCBInfo object",   /* tp_doc */
+    0,		               /* tp_traverse */
+    0,		               /* tp_clear */
+    0,		               /* tp_richcompare */
+    0,		               /* tp_weaklistoffset */
+    0,		               /* tp_iter */
+    0,		               /* tp_iternext */
+    0,                         /* tp_methods */
+    0,                         /* tp_members */
+    0,                         /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    0,                         /* tp_init */
+    0,                         /* tp_alloc */
+    0,                         /* tp_new */
+    0,                         /* tp_free */
+    0,                         /* tp_is_gc */
+    0,                         /* tp_bases */
+    0,                         /* tp_mro */
+    0,                         /* tp_cache */
+    0,                         /* tp_subclasses */
+    0,                         /* tp_weaklist */
+    0                          /* tp_del */
+    APSW_PYTYPE_VERSION
+  };
 
-/* We store the registered functions in a linked list hooked into the
-   connection object so we can free them.  There is probably a better
-   data structure to use but this was most convenient. */
 
-static funccbinfo *
-freefunccbinfo(funccbinfo *func)
-{
-  funccbinfo *fnext;
-  if(!func) 
-    return NULL;
-
-  if(func->name)
-    PyMem_Free(func->name);
-  Py_XDECREF(func->scalarfunc);
-  Py_XDECREF(func->aggregatefactory);
-  fnext=func->next;
-  PyMem_Free(func);
-  return fnext;
-}
-
-static funccbinfo *
+static FunctionCBInfo *
 allocfunccbinfo(void)
 {
-  funccbinfo *res=PyMem_Malloc(sizeof(funccbinfo));
+  FunctionCBInfo *res=PyObject_New(FunctionCBInfo, &FunctionCBInfoType);
   if(res)
-    memset(res, 0, sizeof(funccbinfo));
+    {
+      res->name=0;
+      res->scalarfunc=0;
+      res->aggregatefactory=0;
+    }
   return res;
 }
 
@@ -1763,7 +1792,7 @@ cbdispatch_func(sqlite3_context *context, int argc, sqlite3_value **argv)
   PyGILState_STATE gilstate;
   PyObject *pyargs=NULL;
   PyObject *retval=NULL;
-  funccbinfo *cbinfo=(funccbinfo*)sqlite3_user_data(context);
+  FunctionCBInfo *cbinfo=(FunctionCBInfo*)sqlite3_user_data(context);
   assert(cbinfo);
 
   gilstate=PyGILState_Ensure();
@@ -1811,7 +1840,7 @@ static aggregatefunctioncontext *
 getaggregatefunctioncontext(sqlite3_context *context)
 {
   aggregatefunctioncontext *aggfc=sqlite3_aggregate_context(context, sizeof(aggregatefunctioncontext));
-  funccbinfo *cbinfo;
+  FunctionCBInfo *cbinfo;
   PyObject *retval;
   /* have we seen it before? */
   if(aggfc->aggvalue) 
@@ -1821,7 +1850,7 @@ getaggregatefunctioncontext(sqlite3_context *context)
   aggfc->aggvalue=Py_None;
   Py_INCREF(Py_None);
 
-  cbinfo=(funccbinfo*)sqlite3_user_data(context);
+  cbinfo=(FunctionCBInfo*)sqlite3_user_data(context);
   assert(cbinfo);
   assert(cbinfo->aggregatefactory);
 
@@ -1919,7 +1948,7 @@ cbdispatch_step(sqlite3_context *context, int argc, sqlite3_value **argv)
   if(PyErr_Occurred())
     {
       char *funname=0;
-      funccbinfo *cbinfo=(funccbinfo*)sqlite3_user_data(context);
+      FunctionCBInfo *cbinfo=(FunctionCBInfo*)sqlite3_user_data(context);
       assert(cbinfo);
       funname=sqlite3_mprintf("user-defined-aggregate-step-%s", cbinfo->name);
       AddTraceBackHere(__FILE__, __LINE__, funname, "{s: i}", "NumberOfArguments", argc);
@@ -1977,7 +2006,7 @@ cbdispatch_final(sqlite3_context *context)
   if(PyErr_Occurred())
     {
       char *funname=0;
-      funccbinfo *cbinfo=(funccbinfo*)sqlite3_user_data(context);
+      FunctionCBInfo *cbinfo=(FunctionCBInfo*)sqlite3_user_data(context);
       assert(cbinfo);
       funname=sqlite3_mprintf("user-defined-aggregate-final-%s", cbinfo->name);
       AddTraceBackHere(__FILE__, __LINE__, funname, NULL);
@@ -2024,7 +2053,7 @@ Connection_createscalarfunction(Connection *self, PyObject *args)
   PyObject *callable;
   char *name=0;
   char *chk;
-  funccbinfo *cbinfo;
+  FunctionCBInfo *cbinfo;
   int res;
  
   CHECK_USE(NULL);
@@ -2053,8 +2082,6 @@ Connection_createscalarfunction(Connection *self, PyObject *args)
     if(*chk>='a' && *chk<='z')
       *chk-='a'-'A';
 
-  /* ::TODO:: check if name points to already defined function and free relevant funccbinfo */
-
   if(callable!=Py_None && !PyCallable_Check(callable))
     {
       PyMem_Free(name);
@@ -2062,42 +2089,47 @@ Connection_createscalarfunction(Connection *self, PyObject *args)
       return NULL;
     }
 
-  Py_INCREF(callable);
-
-  cbinfo=allocfunccbinfo();
-  cbinfo->name=name;
-  cbinfo->scalarfunc=callable;
+  if(callable==Py_None)
+    {
+      cbinfo=0;
+    }
+  else
+    {
+      cbinfo=allocfunccbinfo();
+      if(!cbinfo) goto finally;
+      cbinfo->name=name;
+      cbinfo->scalarfunc=callable;
+      Py_INCREF(callable);
+    }
 
   PYSQLITE_CON_CALL(
                 res=sqlite3_create_function(self->db,
                                             name,
                                             numargs,
-                                            SQLITE_UTF8,  /* it isn't very clear what this parameter does */
-                                            (callable!=Py_None)?cbinfo:NULL,
-                                            (callable!=Py_None)?cbdispatch_func:NULL,
+                                            SQLITE_UTF8,
+                                            cbinfo,
+                                            cbinfo?cbdispatch_func:NULL,
                                             NULL,
                                             NULL)
                 );
+  if(callable==Py_None)
+    PyMem_Free(name);
 
   if(res)
     {
-      freefunccbinfo(cbinfo);
       SET_EXC(res, self->db);
-      return NULL;
+      goto finally;
     }
 
-  if(callable!=Py_None)
-    {
-      /* put cbinfo into the linked list */
-      cbinfo->next=self->functions;
-      self->functions=cbinfo;
-    }
-  else
-    {
-      /* free it since we cancelled the function */
-      freefunccbinfo(cbinfo);
-    }
+  if(cbinfo)
+    PyList_Append(self->functions, (PyObject*)cbinfo);
   
+ finally:
+  /* cbinfo will be copied into list on success else we need to dump
+     it anyway */
+  Py_XDECREF(cbinfo);
+  if(PyErr_Occurred())
+    return NULL;
   Py_RETURN_NONE;
 }
 
@@ -2148,7 +2180,7 @@ Connection_createaggregatefunction(Connection *self, PyObject *args)
   PyObject *callable;
   char *name=0;
   char *chk;
-  funccbinfo *cbinfo;
+  FunctionCBInfo *cbinfo;
   int res;
 
   CHECK_USE(NULL);
@@ -2176,8 +2208,6 @@ Connection_createaggregatefunction(Connection *self, PyObject *args)
     if(*chk>='a' && *chk<='z')
       *chk-='a'-'A';
 
-  /* ::TODO:: check if name points to already defined function and free relevant funccbinfo */
-
   if(callable!=Py_None && !PyCallable_Check(callable))
     {
       PyMem_Free(name);
@@ -2185,42 +2215,47 @@ Connection_createaggregatefunction(Connection *self, PyObject *args)
       return NULL;
     }
 
-  Py_INCREF(callable);
+  if(callable==Py_None)
+    cbinfo=0;
+  else
+    {
+      cbinfo=allocfunccbinfo();
+      if(!cbinfo) goto finally;
 
-  cbinfo=allocfunccbinfo();
-  cbinfo->name=name;
-  cbinfo->aggregatefactory=callable;
+      cbinfo->name=name;
+      cbinfo->aggregatefactory=callable;
+      Py_INCREF(callable);
+    }
 
   PYSQLITE_CON_CALL(
                 res=sqlite3_create_function(self->db,
                                             name,
                                             numargs,
                                             SQLITE_UTF8,  /* it isn't very clear what this parameter does */
-                                            (callable!=Py_None)?cbinfo:NULL,
+                                            cbinfo,
                                             NULL,
-                                            (callable!=Py_None)?cbdispatch_step:NULL,
-                                            (callable!=Py_None)?cbdispatch_final:NULL)
+                                            cbinfo?cbdispatch_step:NULL,
+                                            cbinfo?cbdispatch_final:NULL)
                 );
+
+  if(callable==Py_None)
+    PyMem_Free(name);
 
   if(res)
     {
-      freefunccbinfo(cbinfo);
       SET_EXC(res, self->db);
-      return NULL;
+      goto finally;
     }
 
   if(callable!=Py_None)
-    {
-      /* put cbinfo into the linked list */
-      cbinfo->next=self->functions;
-      self->functions=cbinfo;
-    }
-  else
-    {
-      /* free things up */
-      freefunccbinfo(cbinfo);
-    }
-  
+    /* put cbinfo into the list */
+    PyList_Append(self->functions, (PyObject*)cbinfo);
+    
+
+ finally:
+  Py_XDECREF(cbinfo);
+  if(PyErr_Occurred())
+    return NULL;
   Py_RETURN_NONE;
 }
 
@@ -2572,12 +2607,7 @@ static PyMethodDef Connection_methods[] = {
 
 static PyTypeObject ConnectionType = 
   {
-#if PY_MAJOR_VERSION < 3
-    PyObject_HEAD_INIT(NULL)
-    0,                         /*ob_size*/
-#else
-    PyVarObject_HEAD_INIT(NULL,0)
-#endif
+    APSW_PYTYPE_INIT
     "apsw.Connection",         /*tp_name*/
     sizeof(Connection),        /*tp_basicsize*/
     0,                         /*tp_itemsize*/
@@ -2622,9 +2652,7 @@ static PyTypeObject ConnectionType =
     0,                         /* tp_cache */
     0,                         /* tp_subclasses */
     0,                         /* tp_weaklist */
-    0,                         /* tp_del */
-#if PY_VERSION_HEX>=0x02060000
-    0                          /* tp_version_tag */
-#endif
+    0                          /* tp_del */
+    APSW_PYTYPE_VERSION
 };
 
