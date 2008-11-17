@@ -89,7 +89,7 @@ separated statements.  For example::
 
 .. note::
 
-  SQLite fetches data as it is needed.  If table `example` had 10
+  SQLite fetches data as it is needed.  If table *example* had 10
   million rows it would only get the next row as requested (the for
   loop effectively calls :meth:`~Cursor.next` to get each row).  This
   code would not work as expected::
@@ -1148,7 +1148,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
 
   A cursor is open if there are remaining statements to execute (if
   your query included multiple statements), or if you called
-  :meth:`~Cursor.executemany` and not all of the `sequenceofbindings`
+  :meth:`~Cursor.executemany` and not all of the *sequenceofbindings*
   have been used yet.
 
   :param force: If False then you will get exceptions if there is
@@ -1256,13 +1256,13 @@ APSWCursor_iter(APSWCursor *self)
 
 /** .. method:: setexectrace(callable)
 
-  `callable` is called with the statement and bindings for each
+  *callable* is called with the statement and bindings for each
   :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
   cursor.  An example use is if you want to log all statements
   executed.  Your execution tracer can also abort execution of a
   statement.  See :ref:`executiontracer` for more details.
 
-  If `callable` is `None` then any existing execution tracer is
+  If *callable* is :const:`None` then any existing execution tracer is
   removed.
 */
 
@@ -1289,12 +1289,12 @@ APSWCursor_setexectrace(APSWCursor *self, PyObject *func)
 
 /** .. method:: setrowtrace(callable)
 
-  `callable` is called with each row being returned.  You can change
+  *callable* is called with each row being returned.  You can change
   the data that is returned or cause the row to be skipped altogether.
   An example use is if you want to log all rows returned.  See
   :ref:`rowtracer` for more details.
 
-  If `callable` is `None` then any existing row tracer is
+  If *callable* is :const:`None` then any existing row tracer is
   removed.
 */
 

@@ -40,7 +40,7 @@ Contents:
    dbapi
    pysqlite
    benchmarking
-   license
+   copyright
    changes
 
 Indices and tables

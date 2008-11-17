@@ -269,7 +269,7 @@ sqliteshutdown(void)
 /** .. method:: config(op[, *args])
 
   :param op: A `configuration operation <http://sqlite.org/c3ref/c_config_chunkalloc.html>`_
-  :param args: Zero or more arguments as appropriate for `op`
+  :param args: Zero or more arguments as appropriate for *op*
 
   Many operations don't make sense from a Python program.  Only the
   following configuration operations are supported:
@@ -348,7 +348,7 @@ memoryused(void)
 
 /** .. method:: memoryhighwater(reset=False) -> int
 
-  Returns the maximum amount of memory SQLite is has used.  If `reset`
+  Returns the maximum amount of memory SQLite is has used.  If *reset*
   is True then the high water mark is reset to the current value.
 
   .. seealso::
@@ -371,7 +371,7 @@ memoryhighwater(APSW_ARGUNUSED PyObject *self, PyObject *args)
 
 /** .. method:: softheaplimit(bytes)
 
-  Requests SQLite try to keep memory usage below `bytes` bytes.
+  Requests SQLite try to keep memory usage below *bytes* bytes.
 
   -* sqlite3_soft_heap_limit
 */
@@ -418,7 +418,7 @@ randomness(APSW_ARGUNUSED PyObject *self, PyObject *args)
 
 /** .. method:: releasememory(bytes) -> int
 
-  Requests SQLite try to free `bytes` bytes of memory.  Returns how
+  Requests SQLite try to free *bytes* bytes of memory.  Returns how
   many bytes were freed.
 
   -* sqlite3_release_memory
@@ -440,7 +440,7 @@ releasememory(APSW_ARGUNUSED PyObject *self, PyObject *args)
   Returns current and highwater measurements.
 
   :param op: A `status parameter <http://sqlite.org/c3ref/c_status_malloc_size.html>`_
-  :param reset: If `True` then the highwater is set to the current value
+  :param reset: If *True* then the highwater is set to the current value
   :returns: A tuple of current value and highwater value
   
   .. seealso::
@@ -748,7 +748,7 @@ PyInit_apsw(void)
     /** .. data:: SQLITE_VERSION_NUMBER
 
     The integer version number of SQLite that APSW was compiled
-    against.  For example SQLite 3.6.4 will have the value `3006004`.
+    against.  For example SQLite 3.6.4 will have the value *3006004*.
     This number may be different than the actual library in use if the
     library is shared and has been updated.  Call
     :meth:`sqlitelibversion` to get the actual library version.
@@ -939,9 +939,6 @@ modules etc. For example::
       ADDINT(SQLITE_CONFIG_MUTEX),
       ADDINT(SQLITE_CONFIG_GETMUTEX),
       ADDINT(SQLITE_CONFIG_LOOKASIDE),
-#ifdef SQLITE_CONFIG_CHUNKALLOC
-      ADDINT(SQLITE_CONFIG_CHUNKALLOC),
-#endif
       END,
 
       DICT("mapping_db_config"),

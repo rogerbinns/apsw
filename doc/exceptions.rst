@@ -73,7 +73,7 @@ The following exceptions happen when APSW detects various problems.
 
           cursor.execute("insert into foo values($a,:b,$c)", {'a': 1})
 
-     `b` and `c` are not in the dict.  For missing keys, None/NULL
+     *b* and *c* are not in the dict.  For missing keys, None/NULL
      will be used. This is so you don't have to add lots of spurious
      values to the supplied dict. If your schema requires every column
      have a value, then SQLite will generate an error due to some

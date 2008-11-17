@@ -329,12 +329,12 @@ APSWBlob_read(APSWBlob *self, PyObject *args)
 
 /** .. method:: seek(offset[, whence=0]) -> None
 
-  Changes current position to `offset` biased by `whence`.
+  Changes current position to *offset* biased by *whence*.
 
   :param offset: New position to seek to.  Can be positive or negative number.
-  :param whence: Use 0 if `offset` is relative to the begining of the blob,
-                 1 if `offset` is relative to the current position,
-                 and 2 if `offset` is relative to the end of the blob.
+  :param whence: Use 0 if *offset* is relative to the begining of the blob,
+                 1 if *offset* is relative to the current position,
+                 and 2 if *offset* is relative to the end of the blob.
   :raises ValueError: If the resulting offset is before the begining (less than zero) or beyond the end of the blob.
 */
 

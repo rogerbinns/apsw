@@ -50,7 +50,7 @@ function to do the mapping.
 
 .. note::
   
-  There is no actual `VTModule` class - it is just shown this way
+  There is no actual *VTModule* class - it is just shown this way
   for documentation convenience.  Your module instance should implement
   all the methods documented here.
 
@@ -264,7 +264,7 @@ vtabConnect(sqlite3 *db,
 
   .. note::
    
-    There is no actual `VTTable` class - it is just shown this way for
+    There is no actual *VTTable* class - it is just shown this way for
     documentation convenience.  Your table instance should implement
     the methods documented here.
 
@@ -972,19 +972,19 @@ vtabOpen(sqlite3_vtab *pVtab, sqlite3_vtab_cursor **ppCursor)
 
 /** .. method:: UpdateDeleteRow(rowid)
 
-  Delete the row with the specified `rowid`.
+  Delete the row with the specified *rowid*.
 
   :param rowid: 64 bit integer
 */
 /** .. method:: UpdateInsertRow(rowid, fields)  -> newrowid
 
-  Insert a row with the specified `rowid`.
+  Insert a row with the specified *rowid*.
 
   :param rowid: :const:`None` if you should choose the rowid yourself, else a 64 bit integer
   :param fields: A tuple of values the same length and order as columns in your table
 
-  :returns: If `rowid` was :const:`None` then return the id you assigned
-    to the row.  If `rowid` was not :const:`None` then the return value
+  :returns: If *rowid* was :const:`None` then return the id you assigned
+    to the row.  If *rowid* was not :const:`None` then the return value
     is ignored.
 */
 /** .. method:: UpdateChangeRow(row, newrowid, fields)
@@ -993,7 +993,7 @@ vtabOpen(sqlite3_vtab *pVtab, sqlite3_vtab_cursor **ppCursor)
   ``UPDATE table SET rowid=rowid+100 WHERE ...``
 
   :param row: The existing 64 bit integer rowid
-  :param newrowid: If not the same as `row` then also change the rowid to this.
+  :param newrowid: If not the same as *row* then also change the rowid to this.
   :param fields: A tuple of values the same length and order as columns in your table
 */
 static int
@@ -1175,7 +1175,7 @@ vtabRename(sqlite3_vtab *pVtab, const char *zNew)
 
  .. note::
    
-    There is no actual `VTCursor` class - it is just shown this
+    There is no actual *VTCursor* class - it is just shown this
     way for documentation convenience.  Your cursor instance should
     implement all the methods documented here.
 
@@ -1287,8 +1287,8 @@ vtabEof(sqlite3_vtab_cursor *pCursor)
 
 /** .. method:: Column(number)
 
-  Requests the value of the specified column `number` of the current
-  row.  If `number` is -1 then return the rowid.
+  Requests the value of the specified column *number* of the current
+  row.  If *number* is -1 then return the rowid.
 
   :returns: Must be one one of the :ref:`5
     supported types <types>`

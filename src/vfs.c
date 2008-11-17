@@ -544,7 +544,7 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
     This method should return a new file object based on name.  You
     can return a :class:`VFSFile` from a completely different VFS.
 
-    :param name: File to open.  Note that `name` may be None in which
+    :param name: File to open.  Note that *name* may be :const:`None` in which
         case you should open a temporary file with a name of your
         choosing.
 
@@ -1298,7 +1298,7 @@ APSWVFS_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED Py
       this value then SQLite will not `be able to open it
       <http://www.sqlite.org/cvstrac/tktview?tn=3373>`_.
 
-    :raises ValueError: If `base` is not None and the named vfs is not
+    :raises ValueError: If *base* is not :const:`None` and the named vfs is not
       currently registered.
 
     -* sqlite3_vfs_register sqlite3_vfs_find
@@ -1706,7 +1706,7 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
 
 /** .. method:: xRead(amount, offset) -> bytes
 
-    Read the specified `amount` of data starting at `offset`. You
+    Read the specified *amount* of data starting at *offset*. You
     should make every effort to read all the data requested, or return
     an error. If you have the file open for non-blocking I/O or if
     signals happen then it is possible for the underlying operating
@@ -1795,7 +1795,7 @@ apswvfsfile_xWrite(sqlite3_file *file, const void *buffer, int amount, sqlite3_i
 
 /** .. method:: xWrite(data, offset)
 
-  Write the `data` starting at absolute `offset`. You must write all the data
+  Write the *data* starting at absolute *offset*. You must write all the data
   requested, or return an error. If you have the file open for
   non-blocking I/O or if signals happen then it is possible for the
   underlying operating system to do a partial write. You will need to
@@ -1964,7 +1964,7 @@ apswvfsfile_xTruncate(sqlite3_file *file, sqlite3_int64 size)
 
 /** .. method:: xTruncate(newsize)
 
-  Set the file length to `newsize` (which may be more or less than the
+  Set the file length to *newsize* (which may be more or less than the
   current length).
 */
 static PyObject *

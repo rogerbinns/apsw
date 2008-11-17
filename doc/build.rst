@@ -66,7 +66,7 @@ There are a number of APSW specific flags you can specify.
 |                                        | amalgamation then you need to seperately ensure rtree is enabled in the SQLite       |
 |                                        | install.                                                                             |
 +----------------------------------------+--------------------------------------------------------------------------------------+
-| | :option:`--enable=icu`               | Enables the `Internation Components for Unicode                                      |
+| | :option:`--enable=icu`               | Enables the `International Components for Unicode                                    |
 |                                        | <http://en.wikipedia.org/wiki/International_Components_for_Unicode>`_  extension     |
 |                                        | (`README.txt <http://www.sqlite.org/cvstrac/fileview?f=sqlite/ext/icu/README.txt>`_) |
 |                                        | Note that you must have the ICU libraries on your machine which setup will           |
@@ -161,8 +161,8 @@ current directory being where you extracted the APSW source to.
 The extension just turns into a single file apsw.so (Linux/Mac) or
 apsw.pyd (Windows). You don't need to install it and can drop it into
 any directory that is more convenient for you and that your code can
-reach. To just do the build and not install, leave out `install` from
-the lines above and add `build` if it isn't already there.
+reach. To just do the build and not install, leave out *install* from
+the lines above and add *build* if it isn't already there.
 
 If you want to check that your build is correct then you can run the
 unit tests. Run :file:`python tests.py`. It will print the APSW file

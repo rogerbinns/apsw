@@ -164,7 +164,7 @@ Connection_internal_cleanup(Connection *self)
   closed when there are no more references.  It is ok to call the
   method multiple times.
 
-  If `force` is True then any exceptions are ignored.
+  If *force* is *True* then any exceptions are ignored.
 
    -* sqlite3_close
 */
@@ -695,8 +695,8 @@ Connection_interrupt(Connection *self)
 
 /** .. method:: limit(id[, newval]) -> int
 
-  If called with one parameter then the current limit for that `id` is
-  returned.  If called with two then the limit is set to `newval`.
+  If called with one parameter then the current limit for that *id* is
+  returned.  If called with two then the limit is set to *newval*.
 
 
   :param id: One of the `runtime limit ids <http://www.sqlite.org/c3ref/c_limit_attached.html>`_
@@ -755,8 +755,8 @@ updatecb(void *context, int updatetype, char const *databasename, char const *ta
 
 /** .. method:: setupdatehook(callable)
 
-  Calls `callable` whenever a row is updated, deleted or inserted.  If
-  `callable` is :const:`None` then any existing update hook is
+  Calls *callable* whenever a row is updated, deleted or inserted.  If
+  *callable* is :const:`None` then any existing update hook is
   removed.  The update hook cannot make changes to the database while
   the query is still executing, but can record them for later use or
   apply them in a different connection.
@@ -842,10 +842,10 @@ rollbackhookcb(void *context)
 
 /** .. method:: setrollbackhook(callable)
 
-  Sets a callable which is invoked during a rollback.  If `callable`
+  Sets a callable which is invoked during a rollback.  If *callable*
   is :const:`None` then any existing rollback hook is removed.
 
-  The `callable` is called with no parameters and the return value is ignored.
+  The *callable* is called with no parameters and the return value is ignored.
 
   -* sqlite3_rollback_hook
 */
@@ -1000,7 +1000,7 @@ commithookcb(void *context)
 
 /** .. method:: setcommithook(callable)
 
-  `callable` will be called just before a commit.  It should return
+  *callable* will be called just before a commit.  It should return
   zero for the commit to go ahead and non-zero for it to be turned
   into a rollback. In the case of an exception in your callable, a
   non-zero (ie rollback) value is returned. 
@@ -1086,9 +1086,9 @@ progresshandlercb(void *context)
 
 /** .. method:: setprogresshandler(callable[, nsteps=20])
 
-  Sets a callable which is invoked every `nsteps` SQLite
+  Sets a callable which is invoked every *nsteps* SQLite
   inststructions. The callable should return a non-zero value to abort
-  or zero to continue. (If there is an error in your Python callable
+  or zero to continue. (If there is an error in your Python *callable*
   then non-zero will be returned).
 
   .. seealso::
@@ -1288,7 +1288,7 @@ collationneeded_cb(void *pAux, APSW_ARGUNUSED sqlite3 *db, int eTextRep, const c
 
 /** .. method:: collationneeded(callable)
 
-  `callable` will be called if a statement requires a `collation
+  *callable* will be called if a statement requires a `collation
   <http://en.wikipedia.org/wiki/Collation>`_ that hasn't been
   registered. Your callable will be passed two parameters. The first
   is the connection object. The second is the name of the
@@ -1501,7 +1501,7 @@ Connection_enableloadextension(Connection *self, PyObject *enabled)
 
 /** .. method:: loadextension(filename[, entrypoint])
 
-  Loads `filename` as an `extension <http://www.sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_
+  Loads *filename* as an `extension <http://www.sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_
 
   :param filename: The file to load.  This must be Unicode or Unicode compatible
 
@@ -2029,14 +2029,14 @@ cbdispatch_final(sqlite3_context *context)
   .. note:: 
 
     You can register the same named function but with different
-    callables and `numargs`.  For example::
+    *callable* and *numargs*.  For example::
 
       connection.createscalarfunction("toip", ipv4convert, 4)
       connection.createscalarfunction("toip", ipv6convert, 16)
       connection.createscalarfunction("toip", strconvert, -1)
 
-    The one with the correct `numargs` will be called and only if that
-    doesn't exist then the one with negative `numargs` will be called.
+    The one with the correct *numargs* will be called and only if that
+    doesn't exist then the one with negative *numargs* will be called.
 
   .. seealso::
 
@@ -2142,7 +2142,7 @@ Connection_createscalarfunction(Connection *self, PyObject *args)
   :param callable: The function that will be called
   :param numargs: How many arguments the function takes, with -1 meaning any number
 
-  When a query starts, the `factory` will be called and must return a tuple of 3 items:
+  When a query starts, the *factory* will be called and must return a tuple of 3 items:
 
     a context object
        This can be of any type
@@ -2162,7 +2162,7 @@ Connection_createscalarfunction(Connection *self, PyObject *args)
   .. note:: 
 
     You can register the same named function but with different
-    callables and `numargs`.  See
+    callables and *numargs*.  See
     :meth:`~Connection.createscalarfunction` for an example.
 
   .. seealso::
@@ -2330,7 +2330,7 @@ collation_destroy(void *context)
   <http://www.sqlite.org/lang_select.html>`_.  For example your
   collation could take into account locale or do numeric sorting.
 
-  The `callback` will be called with two items.  It should return -1
+  The *callback* will be called with two items.  It should return -1
   if the first is less then the second, 0 if they are equal, and 1 if
   first is greater::
 
@@ -2404,7 +2404,7 @@ Connection_createcollation(Connection *self, PyObject *args)
   :param pointer: A number which is treated as a ``void pointer`` at the C level.
 
   The method does not return anything.  If you want data returned back
-  then the `pointer` needs to point to something mutable.  Here is an
+  then the *pointer* needs to point to something mutable.  Here is an
   example using `ctypes
   <http://www.python.org/doc/2.5.2/lib/module-ctypes.html>`_ of
   passing a Python dictionary to :meth:`~VFSFile.xFileControl` which
@@ -2475,7 +2475,7 @@ Connection_filecontrol(Connection *self, PyObject *args)
   <http://sqlite.org/c3ref/sqlite3.html>`_ for the connection. This
   method is useful if there are other C level libraries in the same
   process and you want them to use the APSW connection handle. The
-  value is returned as a number using `PyLong_FromVoidPtr` under the
+  value is returned as a number using :meth:`PyLong_FromVoidPtr` under the
   hood. You should also ensure that you increment the reference count on
   the :class:`Connection` for as long as the other libraries are using
   the pointer.  It is also a very good idea to call

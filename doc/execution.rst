@@ -36,7 +36,7 @@ example::
      File "<stdin>", line 1, in ?
    apsw.IncompleteExecutionError: Error: there are still remaining sql statements to execute
 
-Because I didn't read the results of `select * from foo` then the
+Because I didn't read the results of ``select * from foo`` then the
 following create table command didn't have a chance to get
 executed. On the next execute that condition is detected and an
 exception raised.
