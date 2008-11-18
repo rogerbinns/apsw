@@ -4802,6 +4802,14 @@ class APSW(unittest.TestCase):
         apsw.faultdict["vfsnamesfails"]=True
         self.assertRaises(MemoryError, apsw.vfsnames)
 
+        ## StatementCacheAllocFails
+        apsw.faultdict["StatementCacheAllocFails"]=True
+        try:
+            apsw.Connection(":memory:")
+            1/0
+        except MemoryError:
+            pass
+
 
 testtimeout=False # timeout testing adds several seconds to each run
 def testdb(filename="testdb2", vfsname="apswtest", closedb=True):

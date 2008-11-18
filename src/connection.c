@@ -418,7 +418,8 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
     {
       res=0;
       self->stmtcache=statementcache_init(self->db, statementcachesize);
-      goto finally;
+      if(self->stmtcache)
+        goto finally;
     }
 
  pyexception:
@@ -435,6 +436,7 @@ finally:
   Py_XDECREF(hooks);
   Py_XDECREF(hook);
   Py_XDECREF(hookresult);
+  assert(PyErr_Occurred() || res==0);
   return res;
 }
 

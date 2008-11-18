@@ -315,7 +315,7 @@ APSWCursor_init(APSWCursor *self, Connection *connection)
    which is also the way that Python works.  The variable ``a`` could
    contain an integer, and then you could put a string in it.  Other
    static languages such as C or other SQL databases only let you put
-   one type in - eg ``a`` could only every contain integer or string,
+   one type in - eg ``a`` could only contain an integer or a string,
    but never both.)
 
    Example::
@@ -775,29 +775,24 @@ APSWCursor_step(APSWCursor *self)
           if(!self->emiter)
             {
               /* no more so we finalize */
-              if(resetcursor(self, 0)!=SQLITE_OK)
-                {
-                  assert(PyErr_Occurred());
-                  return NULL; /* exception */
-                }
+              res=resetcursor(self, 0);
+              assert(res==SQLITE_OK);
               return (PyObject*)self;
             }
 
           /* we are in executemany mode */
           next=PyIter_Next(self->emiter);
           if(PyErr_Occurred())
-            return NULL;
+            {
+              assert(!next);
+              return NULL;
+            }
           
           if(!next)
             {
-              /* clear out statement if no more*/
-              if(resetcursor(self, 0)!=SQLITE_OK)
-                {
-                  assert(PyErr_Occurred());
-                  return NULL;
-                }
-
-            return (PyObject*)self;
+              res=resetcursor(self, 0);
+              assert(res==SQLITE_OK);
+              return (PyObject*)self;
             }
 
           /* we need to clear just completed and restart original executemany statement */

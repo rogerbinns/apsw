@@ -576,7 +576,9 @@ statementcache_init(sqlite3 *db, unsigned nentries)
   /* sc->cache is left as null if we aren't caching */
   if (nentries)
     {
-      sc->cache=PyDict_New();
+      APSW_FAULT_INJECT(StatementCacheAllocFails,
+                        sc->cache=PyDict_New(),
+                        sc->cache=PyErr_NoMemory());
       if(!sc->cache)
         {
           PyMem_Free(sc);
