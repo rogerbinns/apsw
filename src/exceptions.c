@@ -149,6 +149,10 @@ static int init_exceptions(PyObject *m)
 static void make_exception(int res, sqlite3 *db)
 {
   int i;
+  const char *errmsg=NULL;
+  
+  if(db) errmsg=apsw_get_tls_error();
+  if(!errmsg) errmsg="error";
 
   APSW_FAULT_INJECT(UnknownSQLiteErrorCode,,res=0xfe);
   
@@ -156,9 +160,6 @@ static void make_exception(int res, sqlite3 *db)
     if (exc_descriptors[i].code==(res&0xff))
       {
 	PyObject *etype, *eval, *etb;
-        const char *errmsg=NULL;
-        if(db) errmsg=apsw_get_tls_error();
-        if(!errmsg) errmsg="error";
         assert(exc_descriptors[i].cls);
         PyErr_Format(exc_descriptors[i].cls, "%sError: %s", exc_descriptors[i].name, errmsg);
 	PyErr_Fetch(&etype, &eval, &etb);
@@ -171,7 +172,7 @@ static void make_exception(int res, sqlite3 *db)
       }
 
   /* this line should only be reached if SQLite returns an error code not in the main list */
-  PyErr_Format(APSWException, "Error %d: %s", res, db?(sqlite3_errmsg(db)):"error");  
+  PyErr_Format(APSWException, "Error %d: %s", res, errmsg);  
 }
 
 /* Turns the current Python exception into an SQLite error code and

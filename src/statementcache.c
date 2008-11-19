@@ -188,6 +188,47 @@ void assert_not_in_dict(PyObject *dict, PyObject *check)
 #define assert_not_in_dict(x,y)
 #endif
 
+
+/* re-prepare for SQLITE_SCHEMA */
+static int
+statementcache_reprepare(StatementCache *sc, APSWStatement *statement)
+{
+  int res, res2;
+  sqlite3_stmt *newvdbe=0;
+  const char *tail;
+  const char *buffer;
+  Py_ssize_t buflen;
+
+  buffer=APSWBuffer_AS_STRING(statement->utf8);
+  buflen=APSWBuffer_GET_SIZE(statement->utf8);
+  /* see statementcache_prepare */
+  assert(buffer[buflen+1-1]==0);
+  PYSQLITE_SC_CALL(res=sqlite3_prepare(sc->db, buffer, buflen+1, &newvdbe, &tail));
+  if(res!=SQLITE_OK)
+    goto error;
+
+  /* the query size certainly shouldn't have changed! */
+  assert(statement->querylen==tail-buffer);
+  APSW_FAULT_INJECT(TransferBindingsFail,
+                    PYSQLITE_SC_CALL(res=sqlite3_transfer_bindings(statement->vdbestatement, newvdbe)),
+                    res=SQLITE_NOMEM);
+  if(res!=SQLITE_OK)
+    goto error;
+
+  PYSQLITE_SC_CALL(sqlite3_finalize(statement->vdbestatement));
+  statement->vdbestatement=newvdbe;
+  return SQLITE_OK;
+
+ error:
+  /* we don't want to clobber the errmsg so pretend everything is ok */
+  res2=res;
+  res=SQLITE_OK;
+  if(newvdbe)
+    PYSQLITE_SC_CALL(sqlite3_finalize(newvdbe));
+  
+  return res2;
+}
+
 /* Internal prepare routine after doing utf8 conversion.  Returns a new reference. Must be reentrant */
 static APSWStatement*
 statementcache_prepare(StatementCache *sc, PyObject *query)
@@ -347,7 +388,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
      will always have had an extra zero on the end.  The assert is just to make
      sure */
   assert(buffer[buflen+1-1]==0);
-  PYSQLITE_SC_CALL(res=sqlite3_prepare_v2(sc->db, buffer, buflen+1, &val->vdbestatement, &tail));
+  PYSQLITE_SC_CALL(res=sqlite3_prepare(sc->db, buffer, buflen+1, &val->vdbestatement, &tail));
 
   /* handle error */
   if(res!=SQLITE_OK)
@@ -390,9 +431,12 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
 }     
 
 
-/* Consumes reference on stmt.  This routine must be reentrant. */
+/* Consumes reference on stmt.  This routine must be reentrant. 
+   If reprepare_on_schema then if SQLITE_SCHEMA is the error, we reprepare
+   the statement and don't finalize.
+*/
 static int
-statementcache_finalize(StatementCache *sc, APSWStatement *stmt)
+statementcache_finalize(StatementCache *sc, APSWStatement *stmt, int reprepare_on_schema)
 {
   int res;
 
@@ -409,6 +453,12 @@ statementcache_finalize(StatementCache *sc, APSWStatement *stmt)
      middle of disposing of */
 
   PYSQLITE_SC_CALL(res=sqlite3_reset(stmt->vdbestatement));
+  if(res==SQLITE_SCHEMA && reprepare_on_schema)
+    {
+      res=statementcache_reprepare(sc, stmt);
+      if(res==SQLITE_OK)
+        return SQLITE_SCHEMA;
+    }
 
   /* is it going to be put in cache? */
   if(stmt->incache || (sc->cache && stmt->vdbestatement && APSWBuffer_GET_SIZE(stmt->utf8) < SC_MAXSIZE && !PyDict_Contains(sc->cache, stmt->utf8)))
@@ -543,7 +593,7 @@ statementcache_next(StatementCache *sc, APSWStatement **ppstmt)
   if(next)
     Py_INCREF(next);
 
-  res=statementcache_finalize(sc, *ppstmt); /* INUSE_CALL not needed here */
+  res=statementcache_finalize(sc, *ppstmt, 0); /* INUSE_CALL not needed here */
 
   if(res!=SQLITE_OK)
     goto error;

@@ -19,8 +19,6 @@ libraries=[]
 
 # We always want threadsafe
 define_macros.append( ('SQLITE_THREADSAFE', '1') )
-# We don't use any deprecated functions
-define_macros.append( ('SQLITE_OMIT_DEPRECATED', '1') )
 
 # This includes the functionality marked as experimental in SQLite 3.
 # Comment out the line to exclude them

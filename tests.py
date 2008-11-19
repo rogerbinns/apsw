@@ -1051,9 +1051,7 @@ class APSW(unittest.TestCase):
         # check it really has gone
         try:
             c.execute("select x from foo order by x collate strnum")
-        except (apsw.SQLError,apsw.SchemaChangeError):
-            # exception returned could be either depending on if
-            # statementcache is used.  See SQLite ticket 2158
+        except apsw.SQLError:
             pass
         # check statement still works
         for _ in c.execute("select x from foo"): pass
@@ -1085,9 +1083,7 @@ class APSW(unittest.TestCase):
         # check it really has gone
         try:
             c.execute("select x from foo order by x collate strnum")
-        except (apsw.SQLError,apsw.SchemaChangeError):
-            # exception returned could be either depending on if
-            # statementcache is used.  See SQLite ticket 2158
+        except apsw.SQLError:
             pass
 
 
@@ -2689,7 +2685,7 @@ class APSW(unittest.TestCase):
         cur.execute("drop table foo; create table foo(x)")
         try:
             cur.execute("insert into foo values(1,2)") # cache hit, but invalid sql
-        except (apsw.SQLError, apsw.SchemaChangeError):
+        except apsw.SQLError:
             pass
         cur.executemany("insert into foo values(?)", [[1],[2]])
         # overflow the statement cache
@@ -4809,6 +4805,22 @@ class APSW(unittest.TestCase):
             1/0
         except MemoryError:
             pass
+
+        ## TransferBindingsFail
+        apsw.faultdict["TransferBindingsFail"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.cursor().execute("create table foo(x,y); insert into foo values(3,4)")
+            db.cursor().execute("create index fooxy on foo(x,y)")
+            for row in db.cursor().execute("select * from foo"):
+                pass
+            db.cursor().execute("drop index fooxy")
+            for row in db.cursor().execute("select * from foo"):
+                pass
+            1/0
+        except apsw.NoMemError:
+            pass
+        
 
 
 testtimeout=False # timeout testing adds several seconds to each run

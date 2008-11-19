@@ -7,6 +7,21 @@ Change History
 
 Various changes in data structures and containers to reduce code size.
 
+Revert to using older SQLite APIs in order to work around `SQLite
+ticket 2158 <http://www.sqlite.org/cvstrac/tktview?tn=2158>`_.  (This
+also saves a little bit of SQLite memory usage).  The user visible
+effect was that you could get different exceptions and error text
+depending on whether a query was already in the :ref:`statement cache
+<statementcache>` or if you were multi-threading.  As an example, if
+you have a query that used an unknown collation then SQLite's `prepare
+<http://www.sqlite.org/c3ref/prepare.html>`_ returns
+:const:`SQLITE_ERROR` with error text about the bad collation.  If a
+query had already been prepared, the collation removed and then `run
+<http://www.sqlite.org/c3ref/step.html>`_ the new SQLite routines are
+returning :const:`SQLITE_SCHEMA` and generic ``schema changed`` error
+text.  Changing user defined functions could also cause a previously
+correct query to become invalid.
+
 3.6.5-r1
 ========
 

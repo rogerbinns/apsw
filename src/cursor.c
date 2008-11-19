@@ -176,17 +176,23 @@ resetcursor(APSWCursor *self, int force)
   if(nextquery) 
     Py_INCREF(nextquery);
 
-  Py_XDECREF(self->bindings);
-  self->bindings=NULL;
-  self->bindingsoffset= -1;
-
   if(self->statement)
     {
-      INUSE_CALL(res=statementcache_finalize(self->connection->stmtcache, self->statement));
+      INUSE_CALL(res=statementcache_finalize(self->connection->stmtcache, self->statement, !force));
       if(!force) /* we don't care about errors when forcing */
-	SET_EXC(res, self->connection->db);
+        {
+          if(res==SQLITE_SCHEMA)
+            {
+              Py_XDECREF(nextquery);
+              return res;
+            }
+          SET_EXC(res, self->connection->db);
+        }
       self->statement=0;
     }
+
+  Py_CLEAR(self->bindings);
+  self->bindingsoffset= -1;
 
   if(!force && self->status!=C_DONE && nextquery)
     {
@@ -733,20 +739,7 @@ APSWCursor_step(APSWCursor *self)
 	    }
           break;
 
-
-	case SQLITE_SCHEMA:
-	  /* We used to call statementcache_dup which did a reprepare.
-             To avoid race conditions with the statement cache (we
-             release the GIL around prepare now) we now just return
-             the error.  See SQLite ticket 2158.
-
-             ::TODO:: with the new fangled statementcache it is safe
-             to do a reprepare
-	   */
-
-        default: /* sqlite3_prepare_v2 introduced in 3.3.9 means the
-		    error code is returned from step as well as
-		    finalize/reset */
+        default:
           /* FALLTHRU */
         case SQLITE_ERROR:  /* SQLITE_BUSY is handled here as well */
           /* there was an error - we need to get actual error code from sqlite3_finalize */
@@ -759,9 +752,12 @@ APSWCursor_step(APSWCursor *self)
               res=resetcursor(self, 0);  /* this will get the error code for us */
               assert(res!=SQLITE_OK);
             }
+          if(res==SQLITE_SCHEMA && !PyErr_Occurred())
+            {
+              self->status=C_BEGIN;
+              continue;
+            }
           return NULL;
-
-          
         }
       assert(res==SQLITE_DONE);
 
@@ -796,7 +792,7 @@ APSWCursor_step(APSWCursor *self)
             }
 
           /* we need to clear just completed and restart original executemany statement */
-          INUSE_CALL(statementcache_finalize(self->connection->stmtcache, self->statement));
+          INUSE_CALL(statementcache_finalize(self->connection->stmtcache, self->statement, 0));
           self->statement=NULL;
           /* don't need bindings from last round if emiter.next() */
           Py_CLEAR(self->bindings);
