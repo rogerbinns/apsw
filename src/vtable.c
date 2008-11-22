@@ -76,6 +76,7 @@ way.  Note the (optional) arguments which are passed to the module.
 typedef struct {
   sqlite3_vtab used_by_sqlite; /* I don't touch this */
   PyObject *vtable;            /* object implementing vtable */
+  PyObject *functions;         /* functions returned by vtabFindFunction */
 } apsw_vtable;
 
 static struct {
@@ -340,6 +341,7 @@ vtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
 	sqlite3_free(pVtab->zErrMsg);
       
       Py_DECREF(vtable);
+      Py_XDECREF( ((apsw_vtable*)pVtab)->functions );
       PyMem_Free(pVtab);
       goto finally;
     }
@@ -1114,23 +1116,82 @@ vtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int64 *p
 }
 
 
-/** .. method:: FindFunction(name)
+/** .. method:: FindFunction(name, nargs) 
 
-  Called to find if the virtual table has its own implementation of a particular function.  This method is not yet implemented due to `SQLite ticket 2095 <http://www.sqlite.org/cvstrac/tktview?tn=2095>`_.
+  Called to find if the virtual table has its own implementation of a
+  particular scalar function. You should return the function if you
+  have it, else return None. You do not have to provide this method.
+
+  This method is called while SQLite is `preparing
+  <http://www.sqlite.org/c3ref/prepare.html>`_ a query.  If a query is
+  in the :ref:`statement cache <statementcache>` then *FindFunction*
+  won't be called again.  If you want to return different
+  implementations for the same function over time then you will need
+  to disable the :ref:`statement cache <statementcache>`.
+
+  :param name: The function name
+  :param nargs: How many arguments the function takes
+
+  .. seealso::
+
+    * :meth:`Connection.overloadfunction`
+
 */
 
-#if 0
-/* I can't implement this yet since I need to know when
-   ppArg will get freed.  See SQLite ticket 2095. */
+/*
+  We have to save everything returned for the lifetime of the table as
+  we don't know when it is no longer used due to `SQLite ticket 2095
+  <http://www.sqlite.org/cvstrac/tktview?tn=2095>`_.
 
+  This taps into the existing scalar function code in connection.c
+*/
 static int 
 vtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
-		 void (**pxFunc)(sqlite3_context*,int,sqlite3_value**),
+		 void (**pxFunc)(sqlite3_context*, int, sqlite3_value**),
 		 void **ppArg)
 { 
-  return 0;
+  PyGILState_STATE gilstate;
+  int sqliteres=0;
+  PyObject *vtable, *res=NULL;
+  FunctionCBInfo *cbinfo=NULL;
+  apsw_vtable *av=(apsw_vtable*)pVtab;
+
+  gilstate=PyGILState_Ensure();
+  vtable=av->vtable;
+
+  res=Call_PythonMethodV(vtable, "FindFunction", 0, "(Ni)", convertutf8string(zName), nArg);
+  if(res!=Py_None)
+    {
+      if(!av->functions)
+        {
+          APSW_FAULT_INJECT(FindFunctionAllocFailed,
+                            av->functions=PyList_New(0),
+                            av->functions=PyErr_NoMemory());
+        }
+      if(!av->functions)
+        {
+          assert(PyErr_Occurred());
+          goto error;
+        }
+      cbinfo=allocfunccbinfo();
+      if(!cbinfo) goto error;
+      /* it is 2008 and I have to write a strdup clone ... */
+      cbinfo->name=PyMem_Malloc(strlen(zName)+1);
+      if(!cbinfo->name) goto error;
+      strcpy(cbinfo->name, zName);
+      cbinfo->scalarfunc=res;
+      res=NULL;
+      sqliteres=1;
+      *pxFunc=cbdispatch_func;
+      *ppArg=cbinfo;
+      PyList_Append(av->functions, (PyObject*)cbinfo);
+    }
+ error:
+  Py_XDECREF(res);
+  Py_XDECREF(cbinfo);
+  PyGILState_Release(gilstate);
+  return sqliteres;
 }
-#endif
 
 /** .. method:: Rename(newname)
 
@@ -1460,7 +1521,7 @@ static struct sqlite3_module apsw_vtable_module=
     vtabSync, 
     vtabCommit, 
     vtabRollback,
-    0,                /* vtabFindFunction */
+    vtabFindFunction,
     vtabRename 
   };
 

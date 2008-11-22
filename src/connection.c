@@ -2543,6 +2543,45 @@ Connection_createmodule(Connection *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
+/** .. method:: overloadfunction(name, nargs)
+
+  Registers a placeholder function so that a virtual table can provide an implementation via
+  :meth:`VTTable.FindFunction`.
+
+  :param name: Function name
+  :param nargs: How many arguments the function takes
+
+  Due to `SQLite ticket 3507
+  <http://www.sqlite.org/cvstrac/tktview?tn=3507>`_ underlying errors
+  will not be returned.
+
+  -* sqlite3_overload_function
+*/
+static PyObject*
+Connection_overloadfunction(Connection *self, PyObject *args)
+{
+  char *name;
+  int nargs, res;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  if(!PyArg_ParseTuple(args, "esi:overloadfunction(name, nargs)", STRENCODING, &name, &nargs))
+    return NULL;
+
+  APSW_FAULT_INJECT(OverloadFails,
+                    PYSQLITE_CON_CALL(res=sqlite3_overload_function(self->db, name, nargs)),
+                    res=SQLITE_NOMEM);
+  PyMem_Free(name);
+
+  SET_EXC(res, self->db);
+
+  if(res)
+    return NULL;
+  
+  Py_RETURN_NONE;
+}
+
 
 static PyMethodDef Connection_methods[] = {
   {"cursor", (PyCFunction)Connection_cursor, METH_NOARGS,
@@ -2603,6 +2642,8 @@ static PyMethodDef Connection_methods[] = {
    "file control"},
   {"sqlite3pointer", (PyCFunction)Connection_sqlite3pointer, METH_NOARGS,
    "gets underlying pointer"},
+  {"overloadfunction", (PyCFunction)Connection_overloadfunction, METH_VARARGS,
+   "overloads function for virtual table"},
   {0, 0, 0, 0}  /* Sentinel */
 };
 

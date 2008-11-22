@@ -390,8 +390,8 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
   assert(buffer[buflen+1-1]==0);
   PYSQLITE_SC_CALL(res=sqlite3_prepare(sc->db, buffer, buflen+1, &val->vdbestatement, &tail));
 
-  /* handle error */
-  if(res!=SQLITE_OK)
+  /* Handle error.  We would have a Python error if vtable.FindFunction had an error */
+  if(res!=SQLITE_OK || PyErr_Occurred())
     {
       SET_EXC(res, sc->db);
       goto error;
@@ -595,8 +595,12 @@ statementcache_next(StatementCache *sc, APSWStatement **ppstmt)
 
   res=statementcache_finalize(sc, *ppstmt, 0); /* INUSE_CALL not needed here */
 
-  if(res!=SQLITE_OK)
-    goto error;
+  /* defensive coding.  res will never be an error as errors would
+     have been returned from earlier step call */
+     
+  assert(res==SQLITE_OK);
+    
+  if(res!=SQLITE_OK) goto error;
 
   if(next)
     {
@@ -604,8 +608,7 @@ statementcache_next(StatementCache *sc, APSWStatement **ppstmt)
       *ppstmt=statementcache_prepare(sc, next);  /* INUSE_CALL not needed here */
       res=(*ppstmt)?SQLITE_OK:SQLITE_ERROR;
     }
-  else
-    *ppstmt=NULL;
+  else *ppstmt=NULL;
 
  error:
   APSWBuffer_XDECREF_unlikely(next);

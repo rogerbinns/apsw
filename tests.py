@@ -1931,6 +1931,20 @@ class APSW(unittest.TestCase):
             def Rename3(self, x):
                 return ["thisshouldbeignored"*25, [1]]
 
+            def FindFunction1(self, too, many, args):
+                1/0
+
+            def FindFunction2(self, name, nargs):
+                1/0
+
+            def FindFunction3(self, name, nargs):
+                return "this isn't a function"
+
+            def FindFunction4(self, name, nargs):
+                if nargs==2:
+                    return lambda x,y: x+y
+                return None
+
         class Cursor:
 
             _bestindexreturn=99
@@ -2194,6 +2208,29 @@ class APSW(unittest.TestCase):
         cur.execute(sql)
         del VTable.Rename # method is optional
         cur.execute("alter table bar rename to foo") # put things back
+
+        # findfunction
+        # mess with overload function first
+        self.assertRaises(TypeError, self.db.overloadfunction, 1, 1)
+        # http://www.sqlite.org/cvstrac/tktview?tn=3507
+        # self.db.overloadfunction("a"*1024, 1)
+        self.db.overloadfunction("xyz", 2)
+        self.assertRaises(apsw.SQLError, cur.execute, "select xyz(item,description) from foo")
+        VTable.FindFunction=VTable.FindFunction1
+        self.assertRaises(TypeError, cur.execute, "select xyz(item,description) from foo ")
+        VTable.FindFunction=VTable.FindFunction2
+        self.assertRaises(ZeroDivisionError, cur.execute, "select xyz(item,description) from foo  ")
+        VTable.FindFunction=VTable.FindFunction3
+        try:
+            for row in cur.execute("select xyz(item,description) from foo   "):
+                pass
+            1/0
+        except TypeError:
+            pass
+        # this should work
+        VTable.FindFunction=VTable.FindFunction4
+        for row in cur.execute("select xyz(item,description) from foo    "):
+                pass
 
         # transaction control
         # Begin, Sync, Commit and rollback all use the same underlying code
@@ -4510,6 +4547,10 @@ class APSW(unittest.TestCase):
                 for i, row in enumerate(self.data):
                     if row[0]==rowid:
                         self.data[i]=[newrowid]+list(fields)
+
+            def FindFunction(self, *args):
+                return lambda *args: 1
+            
         class Cursor:
             def __init__(self, table):
                 self.table=table
@@ -4573,6 +4614,18 @@ class APSW(unittest.TestCase):
             db.createmodule("foo", Source())
             1/0
         except apsw.IOError:
+            pass
+
+        ## FindFunctionAllocFailed
+        apsw.faultdict["FindFunctionAllocFailed"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.overloadfunction("xyz", 2)
+            db.createmodule("foo", Source())
+            db.cursor().execute("create virtual table foo using foo()")
+            db.cursor().execute("select xyz(x,y) from foo")
+            1/0
+        except MemoryError:
             pass
 
         ## BlobDeallocException
@@ -4821,6 +4874,14 @@ class APSW(unittest.TestCase):
         except apsw.NoMemError:
             pass
         
+        ## OverloadFails
+        apsw.faultdict["OverloadFails"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.overloadfunction("foo", 1)
+            1/0
+        except apsw.NoMemError:
+            pass
 
 
 testtimeout=False # timeout testing adds several seconds to each run
