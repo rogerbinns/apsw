@@ -152,7 +152,7 @@ def buildapsw(outputfile, pybin, workdir):
 
 # Default versions we support
 PYVERS=(
-    '3.0rc2',
+    '3.0rc3',
     '2.6',
     '2.5.2',
     '2.4.5',
@@ -163,6 +163,7 @@ PYVERS=(
 
 SQLITEVERS=(
     '3.6.5',
+    '3.6.6'
    )
 
 if __name__=='__main__':
