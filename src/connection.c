@@ -160,9 +160,22 @@ Connection_internal_cleanup(Connection *self)
 
   Closes the database.  If there are any outstanding :class:`cursors
   <Cursor>` or :class:`blobs <blob>` then they are closed too.  It is
-  not necessary to call this method as the database is automatically
-  closed when there are no more references.  It is ok to call the
-  method multiple times.
+  normally not necessary to call this method as the database is
+  automatically closed when there are no more references.  It is ok to
+  call the method multiple times.
+
+  If your user defined functions or collations have direct or indirect
+  references to the Connection then it won't be automatically garbage
+  collected because of circular referencing that can't be
+  automatically broken.  Calling *close* will free all those objects
+  and what they reference.
+
+  SQLite is designed to survive power failures at even the most
+  awkward moments.  Consequently it doesn't matter if it is closed
+  when the process is exited, or even if the exit is graceful or
+  abrupt.  In the worst case of having a transaction in progress, that
+  transaction will be rolled back by the next program to open the
+  database.
 
   If *force* is *True* then any exceptions are ignored.
 
