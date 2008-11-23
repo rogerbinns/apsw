@@ -414,7 +414,7 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
   iterator=PyObject_GetIter(hooks);
   if(!iterator)
     {
-      AddTraceBackHere(__FILE__, __LINE__, "Connection.__init__", "{s: i}", "connection_hooks", hooks);
+      AddTraceBackHere(__FILE__, __LINE__, "Connection.__init__", "{s: O}", "connection_hooks", hooks);
       goto pyexception;
     }
 
