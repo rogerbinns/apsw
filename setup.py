@@ -89,9 +89,9 @@ if fetch:
         page=urlopen(URL).read()
         if py3:
             page=page.decode("iso8859_1")
-        match=re.search('"sqlite-amalgamation-3_([0-9]+)_([0-9]+).zip"', page)
+        match=re.search('"sqlite-amalgamation-3([0-9_]+).zip"', page)
         if match:
-            ver="3."+match.group(1)+"."+match.group(2)
+            ver="3."+match.group(1)[1:].replace("_", ".")
         else:
             write("Unable to determine current SQLite version.  Use --fetch-sqlite=VERSION", sys.stderr)
             write("to set version (for example --fetch-sqlite=3.6.2", sys.stderr)
