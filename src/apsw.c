@@ -939,6 +939,8 @@ modules etc. For example::
       ADDINT(SQLITE_CONFIG_MUTEX),
       ADDINT(SQLITE_CONFIG_GETMUTEX),
       ADDINT(SQLITE_CONFIG_LOOKASIDE),
+      ADDINT(SQLITE_CONFIG_GETPCACHE),
+      ADDINT(SQLITE_CONFIG_PCACHE),
       END,
 
       DICT("mapping_db_config"),
