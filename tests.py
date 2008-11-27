@@ -3943,79 +3943,80 @@ class APSW(unittest.TestCase):
         TestVFS.xOpen=TestVFS.xOpen99
         testdb()
 
-        ## xDlOpen
-        self.assertRaises(TypeError, vfs.xDlOpen, 3)
-        if py3:
-            self.assertRaises(TypeError, vfs.xDlOpen, b(r"\xfb\xfc\xfd\xfe\xff\xff\xff\xff"))
-        else:
-            self.assertRaises(UnicodeDecodeError, vfs.xDlOpen, b(r"\xfb\xfc\xfd\xfe\xff\xff\xff\xff"))
-        TestVFS.xDlOpen=TestVFS.xDlOpen1
-        self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
-        TestVFS.xDlOpen=TestVFS.xDlOpen2
-        self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
-        TestVFS.xDlOpen=TestVFS.xDlOpen3
-        # skip testing xDlOpen3 as python is happy to convert -1 to void ptr!
-        TestVFS.xDlOpen=TestVFS.xDlOpen4
-        self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
-        TestVFS.xDlOpen=TestVFS.xDlOpen5
-        self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
-        if py3:
-            TestVFS.xDlOpen=TestVFS.xDlOpen6
+        if os.path.exists(LOADEXTENSIONFILENAME):
+            ## xDlOpen
+            self.assertRaises(TypeError, vfs.xDlOpen, 3)
+            if py3:
+                self.assertRaises(TypeError, vfs.xDlOpen, b(r"\xfb\xfc\xfd\xfe\xff\xff\xff\xff"))
+            else:
+                self.assertRaises(UnicodeDecodeError, vfs.xDlOpen, b(r"\xfb\xfc\xfd\xfe\xff\xff\xff\xff"))
+            TestVFS.xDlOpen=TestVFS.xDlOpen1
             self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
-        TestVFS.xDlOpen=TestVFS.xDlOpen7
-        self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, OverflowError, testdb)
-        TestVFS.xDlOpen=TestVFS.xDlOpen99
-        testdb()
-
-        ## xDlSym
-        self.assertRaises(TypeError, vfs.xDlSym, 3)
-        self.assertRaises(TypeError, vfs.xDlSym, 3, 3)
-        self.assertRaises(TypeError, vfs.xDlSym, "three", "three")
-        TestVFS.xDlSym=TestVFS.xDlSym1
-        self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
-        TestVFS.xDlSym=TestVFS.xDlSym2
-        self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
-        TestVFS.xDlSym=TestVFS.xDlSym3
-        self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
-        TestVFS.xDlSym=TestVFS.xDlSym4
-        self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
-        if py3:
-            TestVFS.xDlSym=TestVFS.xDlSym5
+            TestVFS.xDlOpen=TestVFS.xDlOpen2
+            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
+            TestVFS.xDlOpen=TestVFS.xDlOpen3
+            # skip testing xDlOpen3 as python is happy to convert -1 to void ptr!
+            TestVFS.xDlOpen=TestVFS.xDlOpen4
             self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
-        TestVFS.xDlSym=TestVFS.xDlSym6
-        self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, OverflowError, testdb)
-        TestVFS.xDlSym=TestVFS.xDlSym99
-        testdb()
+            TestVFS.xDlOpen=TestVFS.xDlOpen5
+            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
+            if py3:
+                TestVFS.xDlOpen=TestVFS.xDlOpen6
+                self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
+            TestVFS.xDlOpen=TestVFS.xDlOpen7
+            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, OverflowError, testdb)
+            TestVFS.xDlOpen=TestVFS.xDlOpen99
+            testdb()
 
-        ## xDlClose
-        self.assertRaises(TypeError, vfs.xDlClose, "three")
-        self.assertRaises(OverflowError, vfs.xDlClose, l("0xffffffffffffffff10"))
-        TestVFS.xDlClose=TestVFS.xDlClose1
-        self.assertRaisesUnraisable(TypeError, testdb)
-        TestVFS.xDlClose=TestVFS.xDlClose2
-        self.assertRaisesUnraisable(ZeroDivisionError, testdb)
-        TestVFS.xDlClose=TestVFS.xDlClose3
-        self.assertRaisesUnraisable(TypeError, testdb)
-        TestVFS.xDlClose=TestVFS.xDlClose99
-        testdb()
+            ## xDlSym
+            self.assertRaises(TypeError, vfs.xDlSym, 3)
+            self.assertRaises(TypeError, vfs.xDlSym, 3, 3)
+            self.assertRaises(TypeError, vfs.xDlSym, "three", "three")
+            TestVFS.xDlSym=TestVFS.xDlSym1
+            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
+            TestVFS.xDlSym=TestVFS.xDlSym2
+            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
+            TestVFS.xDlSym=TestVFS.xDlSym3
+            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
+            TestVFS.xDlSym=TestVFS.xDlSym4
+            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
+            if py3:
+                TestVFS.xDlSym=TestVFS.xDlSym5
+                self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
+            TestVFS.xDlSym=TestVFS.xDlSym6
+            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, OverflowError, testdb)
+            TestVFS.xDlSym=TestVFS.xDlSym99
+            testdb()
 
-        ## xDlError
-        self.assertRaises(TypeError, vfs.xDlError, "three")
-        TestVFS.xDlError=TestVFS.xDlError1
-        self.assertRaisesUnraisable(TypeError, testdb)
-        TestVFS.xDlError=TestVFS.xDlError2
-        self.assertRaisesUnraisable(ZeroDivisionError, testdb)
-        TestVFS.xDlError=TestVFS.xDlError3
-        self.assertRaisesUnraisable(TypeError, testdb)
-        TestVFS.xDlError=TestVFS.xDlError4
-        self.assertRaisesUnraisable(TypeError, testdb)
-        if py3:
-            TestVFS.xDlError=TestVFS.xDlError5
+            ## xDlClose
+            self.assertRaises(TypeError, vfs.xDlClose, "three")
+            self.assertRaises(OverflowError, vfs.xDlClose, l("0xffffffffffffffff10"))
+            TestVFS.xDlClose=TestVFS.xDlClose1
             self.assertRaisesUnraisable(TypeError, testdb)
-        TestVFS.xDlError=TestVFS.xDlError6 # should not error
-        testdb()
-        TestVFS.xDlError=TestVFS.xDlError99
-        testdb()
+            TestVFS.xDlClose=TestVFS.xDlClose2
+            self.assertRaisesUnraisable(ZeroDivisionError, testdb)
+            TestVFS.xDlClose=TestVFS.xDlClose3
+            self.assertRaisesUnraisable(TypeError, testdb)
+            TestVFS.xDlClose=TestVFS.xDlClose99
+            testdb()
+
+            ## xDlError
+            self.assertRaises(TypeError, vfs.xDlError, "three")
+            TestVFS.xDlError=TestVFS.xDlError1
+            self.assertRaisesUnraisable(TypeError, testdb)
+            TestVFS.xDlError=TestVFS.xDlError2
+            self.assertRaisesUnraisable(ZeroDivisionError, testdb)
+            TestVFS.xDlError=TestVFS.xDlError3
+            self.assertRaisesUnraisable(TypeError, testdb)
+            TestVFS.xDlError=TestVFS.xDlError4
+            self.assertRaisesUnraisable(TypeError, testdb)
+            if py3:
+                TestVFS.xDlError=TestVFS.xDlError5
+                self.assertRaisesUnraisable(TypeError, testdb)
+            TestVFS.xDlError=TestVFS.xDlError6 # should not error
+            testdb()
+            TestVFS.xDlError=TestVFS.xDlError99
+            testdb()
 
         ## xSleep
         testtimeout=True
