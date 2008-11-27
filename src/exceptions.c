@@ -46,6 +46,71 @@ static void make_exception(int res, sqlite3 *db);
  check */
 #define SET_EXC(res,db)  { if(res != SQLITE_OK && !PyErr_Occurred()) make_exception(res,db); }
 
+/* A dictionary we store the last error from each thread in.  Used
+   thread local storage previously. The key is a PyLong of the thread
+   id and the value is a PyBytes. */
+static PyObject *tls_errmsg;
+
+/* This method is called with the database mutex held but the GIL
+   released.  Previous code used thread local storage which is a bit
+   too OS dependent (eg required a DllMain under Windows) but it
+   didn't need any Python code.  It is safe to acquire the GIL since
+   the db mutex has been acquired first so we are no different than a
+   user defined function. */
+static void
+apsw_set_errmsg(const char *msg)
+{
+  PyObject *key=NULL, *value=NULL;
+  PyObject *etype, *eval, *etb;
+
+  PyGILState_STATE gilstate=PyGILState_Ensure();
+  /* dictionary operations whine if there is an outstanding error */
+  PyErr_Fetch(&etype, &eval, &etb);
+
+  if(!tls_errmsg)
+    {
+      tls_errmsg=PyDict_New();
+      if(!tls_errmsg) goto finally;
+    }
+  key=PyLong_FromLong(PyThread_get_thread_ident());
+  if(!key) goto finally;
+  value=PyBytes_FromString(msg);
+  if(!value) goto finally;
+
+  PyDict_SetItem(tls_errmsg, key, value);
+
+ finally:
+  Py_XDECREF(key);
+  Py_XDECREF(value);
+  PyErr_Restore(etype, eval, etb);
+  PyGILState_Release(gilstate);
+}
+
+static const char *
+apsw_get_errmsg(void)
+{
+  const char *retval=NULL;
+  PyObject *key=NULL, *value;
+  
+  if(!tls_errmsg)
+    {
+      tls_errmsg=PyDict_New();
+      if(!tls_errmsg) return NULL;
+    }
+  
+  key=PyLong_FromLong(PyThread_get_thread_ident());
+  if(!key) goto finally;
+  value=PyDict_GetItem(tls_errmsg, key);
+  if(value)
+    retval=PyBytes_AsString(value);
+
+ finally:
+  Py_XDECREF(key);
+  /* value is borrowed */
+  return retval;
+}
+
+
 static struct { int code; const char *name; PyObject *cls;}
 exc_descriptors[]=
   {
@@ -151,7 +216,7 @@ static void make_exception(int res, sqlite3 *db)
   int i;
   const char *errmsg=NULL;
   
-  if(db) errmsg=apsw_get_tls_error();
+  if(db) errmsg=apsw_get_errmsg();
   if(!errmsg) errmsg="error";
 
   APSW_FAULT_INJECT(UnknownSQLiteErrorCode,,res=0xfe);

@@ -7,6 +7,16 @@ Change History
 
 Various changes in data structures and containers to reduce code size.
 
+Changed the code to handle SQLite errors to only use Python
+functionality and no operating system functionality (thread local
+storage).  This also addresses `issue 36
+<http://code.google.com/p/apsw/issues/detail?id=36>`_ where Vista was
+not binary compatible with XP.
+
+You can now install :class:`Connection` wide :meth:`execution
+<Connection.setexectrace>` and :meth:`row <Connection.setrowtrace>`
+:ref:`tracers <tracing>`.
+
 Revert to using older SQLite APIs in order to work around `SQLite
 ticket 2158 <http://www.sqlite.org/cvstrac/tktview?tn=2158>`_.  (This
 also saves a little bit of SQLite memory usage).  The user visible

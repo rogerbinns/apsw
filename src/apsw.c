@@ -135,9 +135,6 @@ static PyObject *apswmodule;
 /* Make various versions of Python code compatible with each other */
 #include "pyutil.c"
 
-/* Operating system abstraction */
-#include "osutil.c"
-
 /* Exceptions we can raise */
 #include "exceptions.c"
 
@@ -594,6 +591,7 @@ static PyObject *
 apsw_fini(APSW_ARGUNUSED PyObject *self)
 {
   APSWBuffer_fini();
+  Py_XDECREF(tls_errmsg);
 
   Py_RETURN_NONE;
 }
@@ -676,13 +674,6 @@ PyInit_apsw(void)
 
     assert(sizeof(int)==4);             /* we expect 32 bit ints */
     assert(sizeof(long long)==8);             /* we expect 64 bit long long */
-
-    /* check tls error stuff */
-    if(apsw_inittls())
-      {
-        PyErr_Format(PyExc_EnvironmentError, "Unable to initialize tls for error messages.");
-        goto fail;
-      }
 
     /* Check SQLite was compiled with thread safety */
     if(!sqlite3_threadsafe())

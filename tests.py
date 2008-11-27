@@ -219,7 +219,9 @@ class APSW(unittest.TestCase):
         'setprogresshandler': 2,
         'enableloadextension': 1,
         'createmodule': 2,
-        'filecontrol': 3
+        'filecontrol': 3,
+        'setexectrace': 1,
+        'setrowtrace': 1,
         }
 
     cursor_nargs={
@@ -686,6 +688,7 @@ class APSW(unittest.TestCase):
         c.execute("create table one(x,y,z)")
         self.failUnlessEqual(len(cmds),0)
         self.assertRaises(TypeError, c.setexectrace, 12) # must be callable
+        self.assertRaises(TypeError, self.db.setexectrace, 12) # must be callable
         c.setexectrace(tracefunc)
         statements=[
             ("insert into one values(?,?,?)", (1,2,3)),
@@ -759,6 +762,34 @@ class APSW(unittest.TestCase):
             return BadIsTrue()
         c.setexectrace(tracefunc)
         self.assertRaises(ZeroDivisionError, c.execute, "select max(x) from two")
+        # connection based tracing
+        self.assertEqual( self.db.getexectrace(), None )
+        traced=[False, False]
+        def contrace(*args):
+            traced[0]=True
+            return True
+        def curtrace(*args):
+            traced[1]=True
+            return True
+        c.setexectrace(curtrace)
+        c.execute("select 3")
+        self.assertEqual( traced, [False, True] )
+        traced=[False, False]
+        self.db.setexectrace(contrace)
+        c.execute("select 3")
+        self.assertEqual( traced, [False, True] )
+        traced=[False, False]
+        c.setexectrace(None)
+        c.execute("select 3")
+        self.assertEqual( traced, [False, False] )
+        traced=[False, False]
+        self.db.cursor().execute("select 3")
+        self.assertEqual( traced, [True, False] )
+        self.assertEqual( self.db.getexectrace(), contrace )
+        self.assertEqual( c.getexectrace(), None )
+        self.assertEqual( self.db.cursor().getexectrace(), None )
+        c.setexectrace(curtrace)
+        self.assertEqual( c.getexectrace(), curtrace )
 
     def testRowTracing(self):
         "Verify row tracing"
@@ -810,6 +841,32 @@ class APSW(unittest.TestCase):
             countertoo+=1
         c.setrowtrace(None)
         self.failUnlessEqual(countertoo, 5) # half the rows should be skipped
+        # connection based
+        self.assertRaises(TypeError, self.db.setrowtrace, 12)
+        self.assertEqual( self.db.getrowtrace(), None)
+        traced=[False, False]
+        def contrace(row):
+            traced[0]=True
+            return row
+        def curtrace(row):
+            traced[1]=True
+            return row
+        for row in c.execute("select 3"): pass
+        self.assertEqual( traced, [False, False])
+        traced=[False, False]
+        self.db.setrowtrace(contrace)
+        for row in self.db.cursor().execute("select 3"): pass
+        self.assertEqual( traced, [True, False])
+        traced=[False, False]
+        c.setrowtrace(curtrace)
+        for row in c.execute("select 3"): pass
+        self.assertEqual( traced, [False, True])
+        traced=[False, False]
+        c.setrowtrace(None)
+        for row in c.execute("select 3"): pass
+        self.assertEqual( traced, [False, False])
+        self.assertEqual( self.db.getrowtrace(), contrace)
+        
 
     def testScalarFunctions(self):
         "Verify scalar functions"

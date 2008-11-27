@@ -62,7 +62,7 @@ do {                                                \
       sqlite3_mutex_enter(sqlite3_db_mutex(db));    \
       x;                                            \
       if(res!=SQLITE_OK)                            \
-        apsw_set_tls_error(sqlite3_errmsg((db)));   \
+        apsw_set_errmsg(sqlite3_errmsg((db)));   \
       sqlite3_mutex_leave(sqlite3_db_mutex(db));    \
     }                                               \
   Py_END_ALLOW_THREADS;                             \

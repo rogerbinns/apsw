@@ -83,6 +83,8 @@ struct Connection {
   PyObject *progresshandler;      
   PyObject *authorizer;
   PyObject *collationneeded;
+  PyObject *exectrace;
+  PyObject *rowtrace;
 
   /* if we are using one of our VFS since sqlite doesn't reference count them */
   PyObject *vfs;
@@ -153,6 +155,8 @@ Connection_internal_cleanup(Connection *self)
   Py_CLEAR(self->progresshandler);
   Py_CLEAR(self->authorizer);
   Py_CLEAR(self->collationneeded);
+  Py_CLEAR(self->exectrace);
+  Py_CLEAR(self->rowtrace);
   Py_CLEAR(self->vfs);
 }
 
@@ -323,6 +327,8 @@ Connection_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED
       self->progresshandler=0;
       self->authorizer=0;
       self->collationneeded=0;
+      self->exectrace=0;
+      self->rowtrace=0;
       self->vfs=0;
     }
 
@@ -378,7 +384,7 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
      Don't do that!  We also have to manage the error message thread
      safety manually as self->db is null on entry. */
   PYSQLITE_VOID_CALL(
-    vfsused=sqlite3_vfs_find(vfs); res=sqlite3_open_v2(filename, &self->db, flags, vfs); if(res!=SQLITE_OK) apsw_set_tls_error(sqlite3_errmsg(self->db));
+    vfsused=sqlite3_vfs_find(vfs); res=sqlite3_open_v2(filename, &self->db, flags, vfs); if(res!=SQLITE_OK) apsw_set_errmsg(sqlite3_errmsg(self->db));
     );
   SET_EXC(res, self->db);  /* nb sqlite3_open always allocates the db even on error */
   
@@ -2595,6 +2601,126 @@ Connection_overloadfunction(Connection *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
+/** .. method:: setexectrace(callable)
+
+  *callable* is called with the statement and bindings for each
+  :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
+  Connection, unless the :class:`Cursor` installed its own
+  tracer. Your execution tracer can also abort execution of a
+  statement.
+
+  If *callable* is :const:`None` then any existing execution tracer is
+  removed.
+
+  .. seealso::
+
+    * :ref:`tracing`
+    * :ref:`rowtracer`
+    * :meth:`Cursor.setexectrace`
+*/
+
+static PyObject *
+Connection_setexectrace(Connection *self, PyObject *func)
+{
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  if(func!=Py_None && !PyCallable_Check(func))
+    {
+      PyErr_SetString(PyExc_TypeError, "parameter must be callable");
+      return NULL;
+    }
+
+  if(func!=Py_None)
+    Py_INCREF(func);
+  Py_XDECREF(self->exectrace);
+  self->exectrace=(func==Py_None)?0:func;
+
+  Py_RETURN_NONE;
+}
+
+
+/** .. method:: setrowtrace(callable)
+
+  *callable* is called with each row being returned for
+  :class:`cursors <Cursor>` associated with this Connection, unless
+  the Cursor installed its own tracer.  You can change the data that
+  is returned or cause the row to be skipped altogether.
+
+  If *callable* is :const:`None` then any existing row tracer is
+  removed.
+
+  .. seealso::
+
+    * :ref:`tracing`
+    * :ref:`rowtracer`
+    * :meth:`Cursor.setexectrace`  
+*/
+
+static PyObject *
+Connection_setrowtrace(Connection *self, PyObject *func)
+{
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  if(func!=Py_None && !PyCallable_Check(func))
+    {
+      PyErr_SetString(PyExc_TypeError, "parameter must be callable");
+      return NULL;
+    }
+
+  if(func!=Py_None)
+    Py_INCREF(func);
+  Py_XDECREF(self->rowtrace);
+  self->rowtrace=(func==Py_None)?0:func;
+
+  Py_RETURN_NONE;
+}
+
+/** .. method:: getexectrace() -> callable or None
+
+  Returns the currently installed (via :meth:`~Connection.setexectrace`)
+  execution tracer.
+
+  .. seealso::
+
+    * :ref:`tracing`
+*/
+static PyObject *
+Connection_getexectrace(Connection *self)
+{
+  PyObject *ret;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  ret=(self->exectrace)?(self->exectrace):Py_None;
+  Py_INCREF(ret);
+  return ret;
+}
+
+/** .. method:: getrowtrace() -> callable or None
+
+  Returns the currently installed (via :meth:`~Connection.setrowtrace`)
+  row tracer.
+
+  .. seealso::
+
+    * :ref:`tracing`
+*/
+static PyObject *
+Connection_getrowtrace(Connection *self)
+{
+  PyObject *ret;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  ret=(self->rowtrace)?(self->rowtrace):Py_None;
+  Py_INCREF(ret);
+  return ret;
+}
+
 
 static PyMethodDef Connection_methods[] = {
   {"cursor", (PyCFunction)Connection_cursor, METH_NOARGS,
@@ -2657,6 +2783,14 @@ static PyMethodDef Connection_methods[] = {
    "gets underlying pointer"},
   {"overloadfunction", (PyCFunction)Connection_overloadfunction, METH_VARARGS,
    "overloads function for virtual table"},
+  {"setexectrace", (PyCFunction)Connection_setexectrace, METH_O,
+   "Installs a function called for every statement executed"},
+  {"setrowtrace", (PyCFunction)Connection_setrowtrace, METH_O,
+   "Installs a function called for every row returned"},
+  {"getexectrace", (PyCFunction)Connection_getexectrace, METH_NOARGS,
+   "Returns the current exec tracer function"},
+  {"getrowtrace", (PyCFunction)Connection_getrowtrace, METH_NOARGS,
+   "Returns the current row tracer function"},
   {0, 0, 0, 0}  /* Sentinel */
 };
 

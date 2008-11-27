@@ -162,6 +162,13 @@ static PyTypeObject APSWCursorType;
 
 /* CURSOR CODE */
 
+/* Macro for getting a tracer.  If our tracer is NULL or None then return 0 else return connection tracer */
+
+#define ROWTRACE   ( (self->rowtrace && self->rowtrace!=Py_None) ? self->rowtrace : ( (self->rowtrace==Py_None) ? 0 : self->connection->rowtrace ) )
+
+#define EXECTRACE  ( (self->exectrace && self->exectrace!=Py_None) ? self->exectrace : ( (self->exectrace==Py_None) ? 0 : self->connection->exectrace ) )
+
+
 /* Do finalization and free resources.  Returns the SQLITE error code */
 static int
 resetcursor(APSWCursor *self, int force)
@@ -642,7 +649,7 @@ APSWCursor_doexectrace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
   PyObject *bindings=NULL;
   int result;
 
-  assert(self->exectrace);
+  assert(EXECTRACE);
   assert(self->statement);
 
   /* make a string of the command */
@@ -677,7 +684,7 @@ APSWCursor_doexectrace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
       Py_INCREF(bindings);
     }
 
-  retval=PyObject_CallFunction(self->exectrace, "OO", sqlcmd, bindings);
+  retval=PyObject_CallFunction(EXECTRACE, "OO", sqlcmd, bindings);
   Py_DECREF(sqlcmd);
   Py_DECREF(bindings);
   if(!retval) 
@@ -704,9 +711,9 @@ APSWCursor_doexectrace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
 static PyObject*
 APSWCursor_dorowtrace(APSWCursor *self, PyObject *retval)
 {
-  assert(self->rowtrace);
+  assert(ROWTRACE);
 
-  retval=PyEval_CallObject(self->rowtrace, retval);
+  retval=PyEval_CallObject(ROWTRACE, retval);
   if(!retval) 
     return NULL;
   
@@ -834,10 +841,8 @@ APSWCursor_step(APSWCursor *self)
         }
 
       assert(self->statement);
-      if(self->exectrace)
-        {
-          savedbindingsoffset=self->bindingsoffset;
-        }
+      savedbindingsoffset=self->bindingsoffset;
+
       assert(!PyErr_Occurred());
 
       if(APSWCursor_dobindings(self))
@@ -846,7 +851,7 @@ APSWCursor_step(APSWCursor *self)
           return NULL;
         }
 
-      if(self->exectrace)
+      if(EXECTRACE)
         {
           if(APSWCursor_doexectrace(self, savedbindingsoffset))
             {
@@ -974,8 +979,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
   assert(!PyErr_Occurred());
 
   self->bindingsoffset=0;
-  if(self->exectrace)
-    savedbindingsoffset=0;
+  savedbindingsoffset=0;
 
   if(APSWCursor_dobindings(self))
     {
@@ -983,7 +987,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
       return NULL;
     }
 
-  if(self->exectrace)
+  if(EXECTRACE)
     {
       if(APSWCursor_doexectrace(self, savedbindingsoffset))
         {
@@ -1098,8 +1102,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
   Py_INCREF(self->emoriginalquery);
 
   self->bindingsoffset=0;
-  if(self->exectrace)
-    savedbindingsoffset=0;
+  savedbindingsoffset=0;
 
   if(APSWCursor_dobindings(self))
     {
@@ -1107,7 +1110,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
       return NULL;
     }
 
-  if(self->exectrace)
+  if(EXECTRACE)
     {
       if(APSWCursor_doexectrace(self, savedbindingsoffset))
         {
@@ -1216,7 +1219,7 @@ APSWCursor_next(APSWCursor *self)
       if(!item) goto error;
       PyTuple_SET_ITEM(retval, i, item);
     }
-  if(self->rowtrace)
+  if(ROWTRACE)
     {
       PyObject *r2=APSWCursor_dorowtrace(self, retval);
       Py_DECREF(retval);
@@ -1249,12 +1252,16 @@ APSWCursor_iter(APSWCursor *self)
 
   *callable* is called with the statement and bindings for each
   :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
-  cursor.  An example use is if you want to log all statements
-  executed.  Your execution tracer can also abort execution of a
-  statement.  See :ref:`executiontracer` for more details.
+  cursor.
 
   If *callable* is :const:`None` then any existing execution tracer is
   removed.
+
+  .. seealso::
+
+    * :ref:`tracing`
+    * :ref:`executiontracer`
+    * :meth:`Connection.setexectrace`
 */
 
 static PyObject *
@@ -1269,11 +1276,9 @@ APSWCursor_setexectrace(APSWCursor *self, PyObject *func)
       return NULL;
     }
 
-  if(func!=Py_None)
-    Py_INCREF(func);
-
+  Py_INCREF(func);
   Py_XDECREF(self->exectrace);
-  self->exectrace=(func!=Py_None)?func:NULL;
+  self->exectrace=func;
 
   Py_RETURN_NONE;
 }
@@ -1282,11 +1287,15 @@ APSWCursor_setexectrace(APSWCursor *self, PyObject *func)
 
   *callable* is called with each row being returned.  You can change
   the data that is returned or cause the row to be skipped altogether.
-  An example use is if you want to log all rows returned.  See
-  :ref:`rowtracer` for more details.
 
   If *callable* is :const:`None` then any existing row tracer is
   removed.
+
+  .. seealso::
+
+    * :ref:`tracing`
+    * :ref:`rowtracer`
+    * :meth:`Connection.setexectrace`
 */
 
 static PyObject *
@@ -1301,11 +1310,9 @@ APSWCursor_setrowtrace(APSWCursor *self, PyObject *func)
       return NULL;
     }
 
-  if(func!=Py_None)
-    Py_INCREF(func);
-
+  Py_INCREF(func);
   Py_XDECREF(self->rowtrace);
-  self->rowtrace=(func!=Py_None)?func:NULL;
+  self->rowtrace=func;
 
   Py_RETURN_NONE;
 }
@@ -1314,6 +1321,10 @@ APSWCursor_setrowtrace(APSWCursor *self, PyObject *func)
 
   Returns the currently installed (via :meth:`~Cursor.setexectrace`)
   execution tracer.
+
+  .. seealso::
+
+    * :ref:`tracing`
 */
 static PyObject *
 APSWCursor_getexectrace(APSWCursor *self)
@@ -1332,6 +1343,10 @@ APSWCursor_getexectrace(APSWCursor *self)
 
   Returns the currently installed (via :meth:`~Cursor.setrowtrace`)
   row tracer.
+
+  .. seealso::
+
+    * :ref:`tracing`
 */
 static PyObject *
 APSWCursor_getrowtrace(APSWCursor *self)
@@ -1376,8 +1391,6 @@ static PyMethodDef APSWCursor_methods[] = {
    "Installs a function called for every row returned"},
   {"getexectrace", (PyCFunction)APSWCursor_getexectrace, METH_NOARGS,
    "Returns the current exec tracer function"},
-  {"getrowtrace", (PyCFunction)APSWCursor_getrowtrace, METH_NOARGS,
-   "Returns the current row tracer function"},
   {"getrowtrace", (PyCFunction)APSWCursor_getrowtrace, METH_NOARGS,
    "Returns the current row tracer function"},
   {"getconnection", (PyCFunction)APSWCursor_getconnection, METH_NOARGS,

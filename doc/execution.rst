@@ -82,7 +82,8 @@ your trace or user defined functions.
 Tracing
 =======
 
-You can install tracers on a cursor as an easy way of seeing exactly
+You can install tracers on :class:`cursors <Cursor>` or
+:class:`connections <Connection>` as an easy way of seeing exactly
 what gets executed and what is returned. The tracers can also abort
 execution and cause different values to be returned. This is very
 useful for diagnostics and testing without having to modify your main
@@ -100,26 +101,36 @@ Execution Tracer
 ----------------
 
 
-The :meth:`execution tracer <Connection.setexectrace>` is called after
-an SQL statement has been prepared. (ie syntax errors will have caused
-an exception during preparation so you won't see them with a
-tracer). It is called with two arguments. The first is a string which
-is the SQL statement about to be executed, and the second is the
-bindings used for that statement (and can be None). If the tracer
-return value evaluates to False/None then execution is aborted with an
-:exc:`ExecTraceAbort` exception.  See the :ref:`example <example-exectrace>`.
+The execution tracer is called after an SQL statement has been
+prepared. (ie syntax errors will have caused an exception during
+preparation so you won't see them with a tracer). It is called with
+two arguments. The first is a string which is the SQL statement about
+to be executed, and the second is the bindings used for that statement
+(and can be None). If the tracer return value evaluates to False/None
+then execution is aborted with an :exc:`ExecTraceAbort` exception.
+See the :ref:`example <example-exectrace>`.  
+
+Execution tracers can be installed on a specific cursor by calling
+:meth:`Cursor.setexectrace` or for all cursors by calling
+:meth:`Connection.setexectrace`, with the cursor tracer taking
+priority.
 
 .. _rowtracer:
 
 Row Tracer
 ----------
 
-The :meth:`row tracer <Connection.setrowtrace>` is called before each
-row is returned. The arguments are the items about to be
-returned. Whatever you return from the tracer is what is actually
-returned to the caller of :meth:`~Cursor.execute`. If you return None
-then the whole row is skipped. See the :ref:`example
-<example-rowtrace>`.
+The row tracer is called before each row is returned. The argument is
+a tuple of the values about to be returned. Whatever you return from
+the tracer is what is actually returned to the caller of
+:meth:`~Cursor.execute`. If you return None then the whole row is
+skipped. See the :ref:`example <example-rowtrace>`.
+
+Row tracers can be installed on a specific cursor by calling
+:meth:`Cursor.setrowtrace` or for all cursors by calling
+:meth:`Connection.setrowtrace`, with the cursor tracer taking
+priority.
+
 
 .. _x64bitpy25:
 
