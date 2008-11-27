@@ -74,7 +74,7 @@ apsw_set_errmsg(const char *msg)
     }
   key=PyLong_FromLong(PyThread_get_thread_ident());
   if(!key) goto finally;
-  value=PyBytes_FromString(msg);
+  value=PyBytes_FromStringAndSize(msg, strlen(msg));
   if(!value) goto finally;
 
   PyDict_SetItem(tls_errmsg, key, value);
