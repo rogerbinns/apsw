@@ -1380,6 +1380,20 @@ APSWCursor_getconnection(APSWCursor *self)
   return (PyObject*)self->connection;
 }
 
+/** .. method:: fetchall() -> list
+
+  Returns all remaining result rows as a list.  This method is defined
+  in DBAPI.  It is a longer way of doing ``list(cursor)``.
+*/
+static PyObject *
+APSWCursor_fetchall(APSWCursor *self)
+{
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self->connection, NULL);
+
+  return PySequence_List((PyObject*)self);
+}
+
 static PyMethodDef APSWCursor_methods[] = {
   {"execute", (PyCFunction)APSWCursor_execute, METH_VARARGS,
    "Executes one or more statements" },
@@ -1399,6 +1413,8 @@ static PyMethodDef APSWCursor_methods[] = {
    "Returns the description for the current row"},
   {"close", (PyCFunction)APSWCursor_close, METH_VARARGS,
    "Closes the cursor" },
+  {"fetchall", (PyCFunction)APSWCursor_fetchall, METH_NOARGS,
+   "Fetches all result rows" },
   {0, 0, 0, 0}  /* Sentinel */
 };
 

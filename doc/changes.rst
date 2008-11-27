@@ -11,11 +11,15 @@ Changed the code to handle SQLite errors to only use Python
 functionality and no operating system functionality (thread local
 storage).  This also addresses `issue 36
 <http://code.google.com/p/apsw/issues/detail?id=36>`_ where Vista was
-not binary compatible with XP.
+not binary compatible with XP.  Thanks to Rudolf Gaertner for
+assistance in detecting and diagnosing this issue.
 
 You can now install :class:`Connection` wide :meth:`execution
 <Connection.setexectrace>` and :meth:`row <Connection.setrowtrace>`
 :ref:`tracers <tracing>`.
+
+Due to popular demand, added :meth:`Cursor.fetchall`.  This is a
+longer way of typing ``list(cursor)``.
 
 Revert to using older SQLite APIs in order to work around `SQLite
 ticket 2158 <http://www.sqlite.org/cvstrac/tktview?tn=2158>`_.  (This

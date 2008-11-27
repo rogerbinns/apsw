@@ -80,8 +80,8 @@ there are no more results.
 fetchmany is not available. Simply use the cursor as an iterator or
 call :meth:`~Cursor.next` for however many results you want.
 
-fetchall is not available. Simply use the cursor as an iterator, call
-:meth:`~Cursor.next`, or use list::
+fetchall is available, but not too useful. Simply use the cursor as an
+iterator, call :meth:`~Cursor.next`, or use list which is less typing::
 
   all=list(cursor.execute("...."))
 

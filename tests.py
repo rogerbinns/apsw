@@ -537,6 +537,9 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.SQLError, c.execute, "create table bar(x,y,z); this is a syntax error; create table bam(x,y,z)")
         self.assertTableExists("bar")
         self.assertTableNotExists("bam")
+        # fetchall
+        self.assertEqual(c.fetchall(), [])
+        self.assertEqual(c.execute("select 3; select 4").fetchall(), [(3,), (4,)] )
 
     def testTypes(self):
         "Check type information is maintained"
