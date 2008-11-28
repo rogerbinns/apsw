@@ -21,6 +21,11 @@ You can now install :class:`Connection` wide :meth:`execution
 Due to popular demand, added :meth:`Cursor.fetchall`.  This is a
 longer way of typing ``list(cursor)``.
 
+Added attributes to the :class:`Connection` class -
+:attr:`~Connection.filename`, :attr:`~Connection.open_flags` and
+:attr:`~Connection.open_vfs`.  These let you track how the database
+was opened.
+
 Revert to using older SQLite APIs in order to work around `SQLite
 ticket 2158 <http://www.sqlite.org/cvstrac/tktview?tn=2158>`_.  (This
 also saves a little bit of SQLite memory usage).  The user visible

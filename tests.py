@@ -2459,8 +2459,11 @@ class APSW(unittest.TestCase):
             args=("one", "two", "three")[:nargs.get(func,0)]
 
             try:
-                getattr(self.db, func)(*args)
-                self.fail("connection method "+func+" didn't notice that the connection is closed")
+                # attributes come back as None after a close
+                func=getattr(self.db, func)
+                if func:
+                    func(*args)
+                    self.fail("connection method "+func+" didn't notice that the connection is closed")
             except apsw.ConnectionClosedError:
                 pass
 

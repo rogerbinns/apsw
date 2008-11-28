@@ -210,9 +210,8 @@ APSWBlob_init(APSWBlob *self, Connection *connection, sqlite3_blob *blob)
 static void
 APSWBlob_dealloc(APSWBlob *self)
 {
-  if(self->weakreflist)
-    PyObject_ClearWeakRefs((PyObject*)self);
-  
+  APSW_CLEAR_WEAKREFS;
+
   if(self->pBlob)
     {
       int res;
@@ -488,7 +487,7 @@ APSWBlob_close(APSWBlob *self, PyObject *args)
   if(!force)
     SET_EXC(res, self->connection->db);
   self->pBlob=0; /* sqlite ticket #2815 */
-  Py_CLEAR(self->connection);
+
   if(!force && res!=SQLITE_OK)
     return NULL;   
  end:

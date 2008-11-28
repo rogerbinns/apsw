@@ -62,10 +62,6 @@ typedef struct _aggregatefunctioncontext
 struct Connection { 
   PyObject_HEAD
   sqlite3 *db;                    /* the actual database connection */
-  const char *filename;           /* utf8 filename of the database */
-  int co_linenumber;              /* line number of allocation */
-  PyObject *co_filename;          /* filename of allocation */
-
   unsigned inuse;                 /* track if we are in use preventing concurrent thread mangling */
 
   struct StatementCache *stmtcache;      /* prepared statement cache */
@@ -88,6 +84,11 @@ struct Connection {
 
   /* if we are using one of our VFS since sqlite doesn't reference count them */
   PyObject *vfs;
+
+  /* informational attributes */
+  PyObject *filename;
+  PyObject *open_flags;
+  PyObject *open_vfs;
 };
 
 typedef struct Connection Connection;
@@ -139,13 +140,6 @@ FunctionCBInfo_dealloc(FunctionCBInfo *self)
 static void
 Connection_internal_cleanup(Connection *self)
 {
-  if(self->filename)
-    {
-      PyMem_Free((void*)self->filename);
-      self->filename=0;
-    }
-  
-  Py_CLEAR(self->co_filename);
   Py_CLEAR(self->functions);
   Py_CLEAR(self->busyhandler);
   Py_CLEAR(self->rollbackhook);
@@ -158,6 +152,9 @@ Connection_internal_cleanup(Connection *self)
   Py_CLEAR(self->exectrace);
   Py_CLEAR(self->rowtrace);
   Py_CLEAR(self->vfs);
+  Py_CLEAR(self->filename);
+  Py_CLEAR(self->open_flags);
+  Py_CLEAR(self->open_vfs);
 }
 
 /** .. method:: close([force=False])
@@ -274,20 +271,15 @@ Connection_dealloc(Connection* self)
       if(res!=SQLITE_OK)
         {
           /* not allowed to clobber existing exception */
-          PyObject *etype=NULL, *evalue=NULL, *etraceback=NULL, *utf8filename=NULL;
+          PyObject *etype=NULL, *evalue=NULL, *etraceback=NULL;
           PyErr_Fetch(&etype, &evalue, &etraceback);
 
-          utf8filename=getutf8string(self->co_filename);
-          
           PyErr_Format(ExcConnectionNotClosed, 
-                       "apsw.Connection on \"%s\" at address %p, allocated at %s:%d. The destructor "
+                       "apsw.Connection at address %p. The destructor "
                        "has encountered an error %d closing the connection, but cannot raise an exception.",
-                       self->filename?self->filename:"NULL", self,
-                       PyBytes_AsString(utf8filename), self->co_linenumber,
-                       res);
+                       self, res);
           
           apsw_write_unraiseable(NULL);
-          Py_XDECREF(utf8filename);
           PyErr_Restore(etype, evalue, etraceback);
         }
     }
@@ -312,9 +304,6 @@ Connection_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED
     if (self != NULL) {
       self->db=0;
       self->inuse=0;
-      self->filename=0;
-      self->co_linenumber=0;
-      self->co_filename=0;
       self->dependents=PyList_New(0);
       self->dependent_remove=PyObject_GetAttrString(self->dependents, "remove");
       self->stmtcache=0;
@@ -330,6 +319,9 @@ Connection_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED
       self->exectrace=0;
       self->rowtrace=0;
       self->vfs=0;
+      self->filename=0;
+      self->open_flags=0;
+      self->open_vfs=0;
     }
 
     return (PyObject *)self;
@@ -365,7 +357,6 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
 {
   static char *kwlist[]={"filename", "flags", "vfs", "statementcachesize", NULL};
   PyObject *hooks=NULL, *hook=NULL, *iterator=NULL, *hookargs=NULL, *hookresult=NULL;
-  PyFrameObject *frame;
   char *filename=NULL;
   int res=0;
   int flags=SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
@@ -398,13 +389,10 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
       self->vfs=pyvfsused;
     }
 
-  /* record where it was allocated */
-  frame = PyThreadState_GET()->frame;
-  self->co_linenumber=PyCode_Addr2Line(frame->f_code, frame->f_lasti);
-  self->co_filename=frame->f_code->co_filename;
-  Py_INCREF(self->co_filename);
-  self->filename=filename;
-  filename=NULL; /* connection has ownership now */
+  /* record information */
+  self->filename=convertutf8string(filename);
+  self->open_flags=PyInt_FromLong(flags);
+  self->open_vfs=convertutf8string(vfsused->zName);
 
   /* get detailed error codes */
   PYSQLITE_VOID_CALL(sqlite3_extended_result_codes(self->db, 1));
@@ -2721,6 +2709,28 @@ Connection_getrowtrace(Connection *self)
   return ret;
 }
 
+/** .. attribute:: filename
+
+  The filename used to open the database.
+*/
+
+/** .. attribute:: open_flags
+
+  The integer flags used to open the database.
+*/
+
+/** .. attribute:: open_vfs
+
+  The string name of the vfs used to open the database.
+*/
+
+static PyMemberDef Connection_members[] = {
+  /* name type offset flags doc */
+  {"filename", T_OBJECT, offsetof(Connection, filename), READONLY, "Filename connection was opened with"},
+  {"open_flags", T_OBJECT, offsetof(Connection, open_flags), READONLY, "list of [flagsin, flagsout] used to open connection"},
+  {"open_vfs", T_OBJECT, offsetof(Connection, open_vfs), READONLY, "VFS name used to open database"},
+  {0, 0, 0, 0, 0}
+};
 
 static PyMethodDef Connection_methods[] = {
   {"cursor", (PyCFunction)Connection_cursor, METH_NOARGS,
@@ -2825,7 +2835,7 @@ static PyTypeObject ConnectionType =
     0,		               /* tp_iter */
     0,		               /* tp_iternext */
     Connection_methods,        /* tp_methods */
-    0,                         /* tp_members */
+    Connection_members,        /* tp_members */
     0,                         /* tp_getset */
     0,                         /* tp_base */
     0,                         /* tp_dict */

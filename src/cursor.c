@@ -257,9 +257,7 @@ APSWCursor_dealloc(APSWCursor * self)
   PyObject *err_type, *err_value, *err_traceback;
   int have_error=PyErr_Occurred()?1:0;
 
-
-  if(self->weakreflist)
-    PyObject_ClearWeakRefs((PyObject*)self);
+  APSW_CLEAR_WEAKREFS;
 
   /* do our finalisation ... */
 

@@ -107,6 +107,18 @@ typedef int Py_ssize_t;
 #define PyInt_FromLong            PyLong_FromLong
 #endif
 
+/* we clear weakref lists when close is called on a blob/cursor as
+   well as when it is deallocated */
+#define APSW_CLEAR_WEAKREFS                             \
+  do {                                                  \
+    if(self->weakreflist)                               \
+      {                                                 \
+        PyObject_ClearWeakRefs((PyObject*)self);        \
+        self->weakreflist=0;                            \
+      }                                                 \
+  } while(0)
+
+
 #if PY_VERSION_HEX<0x02040000
 /* Introduced in Python 2.4 */
 static int PyDict_Contains(PyObject *dict, PyObject *key)

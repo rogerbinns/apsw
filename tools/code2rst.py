@@ -160,7 +160,7 @@ def do_methods():
         op.extend(indexop)
         # insert classname into dec
         if curclass:
-            dec=re.sub(r"^(\.\.\s+method::\s+)()", r"\1"+curclass+".", dec)
+            dec=re.sub(r"^(\.\.\s+(method|attribute)::\s+)()", r"\1"+curclass+".", dec)
         op.append(dec)
         op.extend(d)
         op.append("")
