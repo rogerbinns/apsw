@@ -335,15 +335,27 @@ class APSW(unittest.TestCase):
             db.setrollbackhook(lambda x=2: 1)
             db.setupdatehook(lambda x=3: 2)
             db.collationneeded(lambda x: 4)
+            def rt1(c,r):
+                db.setrowtrace(rt2)
+                return r
+            def rt2(c,r):
+                c.setrowtrace(rt1)
+                return r
+            def et1(c,s,b):
+                db.setexectrace(et2)
+                return True
+            def et2(c,s,b):
+                c.setexectrace(et1)
+                return True
             for i in range(120):
                 c2=db.cursor()
-                c2.setrowtrace(lambda x: (x,))
-                c2.setexectrace(lambda x,y: True)
+                c2.setrowtrace(rt1)
+                c2.setexectrace(et1)
                 for row in c2.execute("select * from foo"+" "*i):  # spaces on end defeat statement cache
                     pass
             del c2
             db.close()
-            del db
+
 
     def testBindings(self):
         "Check bindings work correctly"
@@ -685,7 +697,7 @@ class APSW(unittest.TestCase):
         "Verify tracing of executed statements and bindings"
         c=self.db.cursor()
         cmds=[] # this is maniulated in tracefunc
-        def tracefunc(cmd, bindings):
+        def tracefunc(cursor, cmd, bindings):
             cmds.append( (cmd, bindings) )
             return True
         c.execute("create table one(x,y,z)")
@@ -708,7 +720,7 @@ class APSW(unittest.TestCase):
         self.failUnlessEqual(cmds, statements)
         # tracefunc can abort execution
         count=next(c.execute("select count(*) from one"))[0]
-        def tracefunc(cmd, bindings):
+        def tracefunc(cursor, cmd, bindings):
             return False # abort
         c.setexectrace(tracefunc)
         self.assertRaises(apsw.ExecTraceAbort, c.execute, "insert into one values(1,2,3)")
@@ -716,7 +728,7 @@ class APSW(unittest.TestCase):
         c.setexectrace(None)
         self.failUnlessEqual(count, next(c.execute("select count(*) from one"))[0])
         # error in tracefunc
-        def tracefunc(cmd, bindings):
+        def tracefunc(cursor, cmd, bindings):
             1/0
         c.setexectrace(tracefunc)
         self.assertRaises(ZeroDivisionError, c.execute, "insert into one values(1,2,3)")
@@ -724,7 +736,7 @@ class APSW(unittest.TestCase):
         self.failUnlessEqual(count, next(c.execute("select count(*) from one"))[0])
         # test across executemany and multiple statments
         counter=[0]
-        def tracefunc(cmd, bindings):
+        def tracefunc(cursor, cmd, bindings):
             counter[0]=counter[0]+1
             return True
         c.setexectrace(tracefunc)
@@ -737,7 +749,7 @@ class APSW(unittest.TestCase):
         # error in func but only after a while
         c.execute("delete from two")
         counter[0]=0
-        def tracefunc(cmd, bindings):
+        def tracefunc(cursor, cmd, bindings):
             counter[0]=counter[0]+1
             if counter[0]>3:
                 1/0
@@ -751,7 +763,7 @@ class APSW(unittest.TestCase):
         # check the first statements got executed
         self.failUnlessEqual(3, next(c.execute("select max(x) from two"))[0])
         # executemany
-        def tracefunc(cmd, bindings):
+        def tracefunc(cursor, cmd, bindings):
             1/0
         c.setexectrace(tracefunc)
         self.assertRaises(ZeroDivisionError, c.executemany, "select ?", [(1,)])
@@ -800,8 +812,8 @@ class APSW(unittest.TestCase):
         c.execute("create table foo(x,y,z)")
         vals=(1,2,3)
         c.execute("insert into foo values(?,?,?)", vals)
-        def tracefunc(*result):
-            return tuple([7 for i in result])
+        def tracefunc(cursor, row):
+            return tuple([7 for i in row])
         # should get original row back
         self.failUnlessEqual(next(c.execute("select * from foo")), vals)
         self.assertRaises(TypeError, c.setrowtrace, 12) # must be callable
@@ -809,7 +821,7 @@ class APSW(unittest.TestCase):
         self.failUnless(c.getrowtrace() is tracefunc)
         # all values replaced with 7
         self.failUnlessEqual(next(c.execute("select * from foo")), tuple([7]*len(vals)))
-        def tracefunc(*result):
+        def tracefunc(cursor, row):
             return (7,)
         # a single 7
         c.setrowtrace(tracefunc)
@@ -833,7 +845,7 @@ class APSW(unittest.TestCase):
         c.execute("create table bar(x)")
         c.executemany("insert into bar values(?)", [[x] for x in range(10)])
         counter=[0]
-        def tracefunc(*args):
+        def tracefunc(cursor, args):
             counter[0]=counter[0]+1
             if counter[0]%2:
                 return None
@@ -848,21 +860,21 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, self.db.setrowtrace, 12)
         self.assertEqual( self.db.getrowtrace(), None)
         traced=[False, False]
-        def contrace(row):
+        def contrace(cursor, row):
             traced[0]=True
             return row
-        def curtrace(row):
+        def curtrace(cursor, row):
             traced[1]=True
             return row
-        for row in c.execute("select 3"): pass
+        for row in c.execute("select 3,3"): pass
         self.assertEqual( traced, [False, False])
         traced=[False, False]
         self.db.setrowtrace(contrace)
-        for row in self.db.cursor().execute("select 3"): pass
+        for row in self.db.cursor().execute("select 3,3"): pass
         self.assertEqual( traced, [True, False])
         traced=[False, False]
         c.setrowtrace(curtrace)
-        for row in c.execute("select 3"): pass
+        for row in c.execute("select 3,3"): pass
         self.assertEqual( traced, [False, True])
         traced=[False, False]
         c.setrowtrace(None)

@@ -18,6 +18,11 @@ You can now install :class:`Connection` wide :meth:`execution
 <Connection.setexectrace>` and :meth:`row <Connection.setrowtrace>`
 :ref:`tracers <tracing>`.
 
+The callbacks for execution and row tracers have a different signature
+to include the cursor the execution or row happened on.  This is a
+backwards incompatible change.  See :ref:`tracing <tracing>` for
+details.
+
 Due to popular demand, added :meth:`Cursor.fetchall`.  This is a
 longer way of typing ``list(cursor)``.
 

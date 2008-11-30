@@ -44,6 +44,7 @@ docs: $(GENDOCS) doc/example.rst
 	make VERSION=$(VERSION) -C doc clean html htmlhelp 
 
 doc/example.rst: example-code.py tools/example2rst.py
+	rm -f dbfile
 	env PYTHONPATH=. python tools/example2rst.py
 
 # This is probably gnu make specific but only developers use this makefile

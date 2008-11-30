@@ -2591,8 +2591,8 @@ Connection_overloadfunction(Connection *self, PyObject *args)
 
 /** .. method:: setexectrace(callable)
 
-  *callable* is called with the statement and bindings for each
-  :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
+  *callable* is called with the cursor, statement and bindings for
+  each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
   Connection, unless the :class:`Cursor` installed its own
   tracer. Your execution tracer can also abort execution of a
   statement.

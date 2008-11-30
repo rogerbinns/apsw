@@ -645,9 +645,11 @@ APSWCursor_doexectrace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
   PyObject *retval=NULL;
   PyObject *sqlcmd=NULL;
   PyObject *bindings=NULL;
+  PyObject *exectrace;
   int result;
 
-  assert(EXECTRACE);
+  exectrace=EXECTRACE;
+  assert(exectrace);
   assert(self->statement);
 
   /* make a string of the command */
@@ -682,9 +684,8 @@ APSWCursor_doexectrace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
       Py_INCREF(bindings);
     }
 
-  retval=PyObject_CallFunction(EXECTRACE, "OO", sqlcmd, bindings);
-  Py_DECREF(sqlcmd);
-  Py_DECREF(bindings);
+  retval=PyObject_CallFunction(exectrace, "ONN", self, sqlcmd, bindings);
+
   if(!retval) 
     {
       assert(PyErr_Occurred());
@@ -709,13 +710,11 @@ APSWCursor_doexectrace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
 static PyObject*
 APSWCursor_dorowtrace(APSWCursor *self, PyObject *retval)
 {
-  assert(ROWTRACE);
+  PyObject *rowtrace=ROWTRACE;
 
-  retval=PyEval_CallObject(ROWTRACE, retval);
-  if(!retval) 
-    return NULL;
-  
-  return retval;
+  assert(rowtrace);
+
+  return PyObject_CallFunction(rowtrace, "OO", self, retval);
 }
 
 /* Returns a borrowed reference to self if all is ok, else NULL on error */
@@ -1248,8 +1247,8 @@ APSWCursor_iter(APSWCursor *self)
 
 /** .. method:: setexectrace(callable)
 
-  *callable* is called with the statement and bindings for each
-  :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
+  *callable* is called with the cursor, statement and bindings for
+  each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
   cursor.
 
   If *callable* is :const:`None` then any existing execution tracer is
@@ -1283,8 +1282,9 @@ APSWCursor_setexectrace(APSWCursor *self, PyObject *func)
 
 /** .. method:: setrowtrace(callable)
 
-  *callable* is called with each row being returned.  You can change
-  the data that is returned or cause the row to be skipped altogether.
+  *callable* is called with cursor and row being returned.  You can
+  change the data that is returned or cause the row to be skipped
+  altogether.
 
   If *callable* is :const:`None` then any existing row tracer is
   removed.

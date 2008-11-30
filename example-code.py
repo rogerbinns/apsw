@@ -72,7 +72,7 @@ cursor.execute("insert into foo values(:alpha, :beta, :gamma)", {'alpha': 1, 'be
 ### tracing execution @@ example-exectrace
 ###
 
-def mytrace(statement, bindings):
+def mytrace(cursor, statement, bindings):
     "Called just before executing each statement"
     print "SQL:",statement
     if bindings:
@@ -88,11 +88,11 @@ cursor.execute("drop table bar ; create table bar(x,y,z); select * from foo wher
 ### tracing results @@ example-rowtrace
 ###
 
-def rowtrace(*results):
+def rowtrace(cursor, row):
     """Called with each row of results before they are handed off.  You can return None to
     cause the row to be skipped or a different set of values to return"""
-    print "Row:",results
-    return results
+    print "Row:", row
+    return row
 
 #@@CAPTURE
 cursor.setrowtrace(rowtrace)
