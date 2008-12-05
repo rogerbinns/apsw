@@ -13,7 +13,6 @@ SOURCEFILES = \
 	src/connection.c \
 	src/cursor.c \
 	src/exceptions.c \
-	src/osutil.c \
 	src/pyutil.c \
 	src/statementcache.c \
         src/traceback.c  \
