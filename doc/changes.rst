@@ -2,8 +2,11 @@ Change History
 **************
 .. currentmodule:: apsw
 
-3.next-r1
-=========
+3.6.6.2-r1
+==========
+
+Windows binary download for Python 3.0 is :ref:`available
+<source_and_binaries>`.
 
 Various changes in data structures and containers to reduce code size.
 
@@ -13,6 +16,10 @@ storage).  This also addresses `issue 36
 <http://code.google.com/p/apsw/issues/detail?id=36>`_ where Vista was
 not binary compatible with XP.  Thanks to Rudolf Gaertner for
 assistance in detecting and diagnosing this issue.
+
+:class:`Connections <Connection>`, :class:`cursors <Cursor>` and
+:class:`blobs <blob>` can be used by `weak references
+<http://docs.python.org/library/weakref.html>`_.
 
 You can now install :class:`Connection` wide :meth:`execution
 <Connection.setexectrace>` and :meth:`row <Connection.setrowtrace>`
@@ -30,6 +37,9 @@ Added attributes to the :class:`Connection` class -
 :attr:`~Connection.filename`, :attr:`~Connection.open_flags` and
 :attr:`~Connection.open_vfs`.  These let you track how the database
 was opened.
+
+Added a :ref:`apswtrace <apswtrace>` script to allow easy SQL tracing
+without having to modify your code.
 
 Revert to using older SQLite APIs in order to work around `SQLite
 ticket 2158 <http://www.sqlite.org/cvstrac/tktview?tn=2158>`_.  (This

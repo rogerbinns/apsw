@@ -77,6 +77,52 @@ query. You can however make new cursors and use those without
 issue. You may want to remember the Connection object when you set
 your trace or user defined functions.
 
+.. _x64bitpy25:
+
+64 bit hosts, Python 2.5+
+=========================
+
+Prior to Python 2.5, you were limited to 32 bit quantities for items
+in Python such as the length of strings, number of items in a sequence
+etc. Python 2.5 and above use 64 bit limits on 64 bit hosts.  APSW
+will work correctly with those items in Python 2.5 and above that use
+64 bits. Unfortunately SQLite is limited to 32 bit quantities for
+strings, blobs, number of columns etc even when compiled for 64
+bit. Consequently you will get a TooBig exception from APSW which
+checks if strings/buffers longer than 1GB or 2GB (depends on internal
+storage) are used. See SQLite ticket `2125
+<http://www.sqlite.org/cvstrac/tktview?tn=2125>`_ and `3246
+<http://sqlite.org/cvstrac/tktview?tn=3246>`_ for more details.
+
+.. _statementcache:
+
+Statement Cache
+===============
+
+Each :class:`Connection` maintains a cache mapping SQL queries to a
+`prepared statement <http://www.sqlite.org/c3ref/stmt.html>`_ to avoid
+the overhead of `repreparing
+<http://www.sqlite.org/c3ref/prepare.html>`_ queries that are executed
+multiple times.  This is a classic tradeoff using more memory to
+reduce CPU consumption.
+
+By default there are up to 100 entries in the cache.  Once the cache
+is full, the least recently used item is discarded to make space for
+new items.
+
+You should pick a larger cache size if you have more than 100 unique
+queries that you run.  For example if you have 101 different queries
+you run in order then the cache will not help.
+
+You can also :class:`specify zero <Connection>` which will disable the
+statement cache.
+
+If you are using :meth:`authorizers <Connection.setauthorizer>` then
+you should disable the statement cache.  This is because the
+authorizer callback is only called while statements are being
+prepared.
+
+
 .. _tracing:
 
 Tracing
@@ -103,7 +149,6 @@ code.
 
 Execution Tracer
 ----------------
-
 
 The execution tracer is called after an SQL statement has been
 prepared. (ie syntax errors will have caused an exception during
@@ -149,50 +194,203 @@ Row tracers can be installed on a specific cursor by calling
 :meth:`Connection.setrowtrace`, with the cursor tracer taking
 priority.
 
+.. _apswtrace:
 
-.. _x64bitpy25:
+APSW Trace
+==========
 
-64 bit hosts, Python 2.5+
-=========================
+APSW includes a tracing script as part of the :ref:`source
+distribution <source_and_binaries>` named :file:`apswtrace.py`.  This
+script lets you easily trace SQL execution as well as providing a
+summary report without modifying your code.  If it is installed
+anywhere on your :envvar:`PYTHONPATH` then you can invoke it with
+``-m``::
 
-Prior to Python 2.5, you were limited to 32 bit quantities for items
-in Python such as the length of strings, number of items in a sequence
-etc. Python 2.5 and above use 64 bit limits on 64 bit hosts.  APSW
-will work correctly with those items in Python 2.5 and above that use
-64 bits. Unfortunately SQLite is limited to 32 bit quantities for
-strings, blobs, number of columns etc even when compiled for 64
-bit. Consequently you will get a TooBig exception from APSW which
-checks if strings/buffers longer than 1GB or 2GB (depends on internal
-storage) are used. See SQLite ticket `2125
-<http://www.sqlite.org/cvstrac/tktview?tn=2125>`_ and `3246
-<http://sqlite.org/cvstrac/tktview?tn=3246>`_ for more details.
+  $ python -m apswtrace [apswtrace options] yourscript.py [your options]
 
-.. _statementcache:
+You can also invoke it directly::
 
-Statement Cache
-===============
+  $ python /path/to/apswtrace.py [apswtrace options] yourscript.py [your options]
 
-Each :class:`Connection` maintains a cache mapping SQL queries to a
-`prepared statement <http://www.sqlite.org/c3ref/stmt.html>`_ to avoid
-the overhead of `repreparing
-<http://www.sqlite.org/c3ref/prepare.html>`_ queries that are executed
-multiple times.  This is a classic tradeoff using more memory to
-reduce CPU consumption.
+All output is UTF-8 encoded.  The following options are available:
 
-By default there are up to 100 entries in the cache.  Once the cache
-is full, the least recently used item is discarded to make space for
-new items.
+.. code-block:: text
 
-You should pick a larger cache size if you have more than 100 unique
-queries that you run.  For example if you have 101 different queries
-you run in order then the cache will not help.
+  $ python tools/apswtrace.py --help
+  Usage: apswtrace.py [options] pythonscript.py [pythonscriptoptions]
 
-You can also :class:`specify zero <Connection>` which will disable the
-statement cache.
+  This script runs a Python program that uses APSW and reports on SQL queries
+  without modifying the program.  This is done by using connection_hooks and
+  registering row and execution tracers.  See APSW documentation for more
+  details on the output.
 
-If you are using :meth:`authorizers <Connection.setauthorizer>` then
-you should disable the statement cache.  This is because the
-authorizer callback is only called while statements are being
-prepared.
+  Options:
+    -h, --help            show this help message and exit
+    -o OUTPUT, --ouput=OUTPUT
+                          Where to send the output.  Use a filename, a single
+                          dash for stdout, or the words stdout and stderr.
+                          [stdout]
+    -s, --sql             Log SQL statements as they are executed. [False]
+    -r, --rows            Log returned rows as they are returned (turns on sql).
+                          [False]
+    -t, --timestamps      Include timestamps in logging
+    -i, --thread          Include thread id in logging
+    -l LENGTH, --length=LENGTH
+                          Max amount of a string to print [30]
+    --no-report           A summary report is normally generated at program
+                          exit.  This turns off the report and saves memory.
+    --report-items=N      How many items to report in top lists [15]
+
+This is sample output with the following options: :option:`--sql`,
+:option:`--rows`, :option:`--timestamps`, :option:`--thread`
+
+.. code-block:: text
+
+  1e0e5a0 0.152 7fccea8456e0 OPEN: ":memory:" unix READWRITE|CREATE
+  1f72ac0 0.161 7fccea8456e0 OPEN: "testdb" unix READWRITE|CREATE
+  1f6b8d0 0.162 7fccea8456e0 CURSORFROM: 1f72ac0 DB: "testdb"
+  1f6b8d0 0.162 7fccea8456e0 SQL: create table foo(x,y,z)
+  1f6b8d0 0.239 7fccea8456e0 CURSORFROM: 1f72ac0 DB: "testdb"
+  1f6b8d0 0.239 7fccea8456e0 SQL: insert into foo values(?,?,?) BINDINGS: ("kjfhgk", "gkjlfdhgjkhsdfkjg", "gklsdfjgkldfjhnbnvc,mnxb,mnxcv..")
+  1f6b8d0 0.242 7fccea8456e0 CURSORFROM: 1f72ac0 DB: "testdb"
+  1f6b8d0 0.242 7fccea8456e0 SQL: insert into foo values(?,?,?) BINDINGS: ("gdfklhj", ":gjkhgfdsgfd", "gjkfhgjkhdfkjh")
+  1f6b8d0 0.244 7fccea8456e0 CURSORFROM: 1f72ac0 DB: "testdb"
+  1f6b8d0 0.245 7fccea8456e0 SQL: insert into foo values(?,?,?) BINDINGS: ("gdfjkhg", "gkjlfd", "")
+  1f6b8d0 0.247 7fccea8456e0 CURSORFROM: 1f72ac0 DB: "testdb"
+  1f6b8d0 0.247 7fccea8456e0 SQL: insert into foo values(?,?,?) BINDINGS: (1, 2, 30)
+  1f6b8d0 0.257 7fccea8456e0 CURSORFROM: 1f72ac0 DB: "testdb"
+  1f6b8d0 0.257 7fccea8456e0 SQL: select longest(x,y,z) from foo
+  1f6b8d0 0.257 7fccea8456e0 ROW: ("gklsdfjgkldfjhnbnvc,mnxb,mnxcv..")
+
+Each row starts with the following fields:
+
+  id
+    This is the `id
+    <http://docs.python.org/library/functions.html#id>`_ of the
+    :class:`Cursor` or :class:`Connection`.  You can easily `filter
+    <http://en.wikipedia.org/wiki/Grep>`_ the log if you just want to
+    find out what happened on a specific cursor or connection.
+
+  timestamp
+    This is time since the program started in seconds
+
+  threadid
+    The unique `thread identifier
+    <http://docs.python.org/library/thread.html#thread.get_ident>`_
+
+  
+The remainder of the line has one of the following forms:
+
+  OPEN: "dbname" vfs open_flags
+    A :class:`Connection` has been opened.  The *dbname* is the
+    filename exactly as given in the call to
+    :class:`Connection`. *vfs* is the name of the :ref:`VFS <vfs>`
+    used to open the database. *open_flags* is the set of :data:`flags
+    <apsw.mapping_open_flags>` supplied with the leading *SQLITE_OPEN*
+    prefix omitted.
+
+  CURSORFROM: connectionid DB: "dbname"
+    A cursor has been allocated.  The *id* at the begining of this row
+    is of the new cursor.  *connectionid* is the id of the Connection
+    it was created from.  The *dbname* is provided for convenience.
+    This message is logged the first time a cursor issues a query.
+
+  SQL: query BINDINGS: bindings
+    A query was issued on a cursor.
+
+  ROW: row
+    A result row was returned by a cursor.
+
+A report is also generated by default.  This is example output from
+running the test suite.  When calculating time for queries, your code
+execution time is included as well.  For example if your query
+returned 10 rows and you slept for 1 second on reading each row then
+the time for the query will be recorded as 10 seconds.  Because you
+can have multiple queries active at the same time, as well as across
+multiple threads, the total processing time can be larger than the
+program run time.  The processing time is only recorded for queries
+that have no results or where you read all the result rows.
+Processing time also includes waiting time on busy connections.
+
+  .. code-block:: text
+  
+    APSW TRACE SUMMARY REPORT
+
+    Program run time                    83.073 seconds
+    Total connections                   1308
+    Total cursors                       3082
+    Number of threads used for queries  21
+    Total queries                       127973
+    Number of distinct queries          578
+    Number of rows returned             2369
+    Time spent processing queries       120.530 seconds
+
+This shows how many times each query was run.
+
+  .. code-block:: text
+  
+    MOST POPULAR QUERIES
+
+     121451 insert into foo values(?)
+       1220 insert into abc values(1,2,?)
+       1118 select x from foo
+        909 select timesten(x) from foo where x=? order by x
+        654 select * from foo
+        426 update t1 set b=b||a||b
+        146 begin
+         88 create table foo(x,y)
+         79 insert into foo values(1,2)
+         76 rollback
+         71 pragma locking_mode=exclusive
+         71 insert into t1 values(2, 'abcdefghijklmnopqrstuvwxyz')
+         71 insert into t1 values(1, 'abcdefghijklmnopqrstuvwxyz')
+         71 insert into t1 select 4-a, b from t2
+         71 insert into foo values(date('now'), date('now'))
+
+This shows how many times a query was run and the sum of the
+processing times in seconds.  The ``begin immediate`` query
+illustrates how time spent busy waiting is included.
+
+  .. code-block:: text
+
+    LONGEST RUNNING - AGGREGATE
+   
+        413   94.305 select timesten(x) from foo where x=? order by x
+     120637   12.941 select * from foo
+         12    4.115 begin immediate
+     121449    2.179 insert into foo values(?)
+       1220    1.509 insert into abc values(1,2,?)
+          3    1.380 create index foo_x on foo(x)
+        426    0.715 update t1 set b=b||a||b
+         38    0.420 insert into foo values(?,?)
+         71    0.241 create table t1(a unique, b)
+         88    0.206 create table foo(x,y)
+         61    0.170 create table abc(a,b,c)
+         27    0.165 insert into foo values(?,?,?)
+          1    0.158 select row,x,snap(x) from foo
+         80    0.150 insert into foo values(1,2)
+         71    0.127 insert into foo values(date('now'), date('now'))
+
+This shows the longest running queries with time in seconds. 
+
+  .. code-block:: text
+
+    LONGEST RUNNING - INDIVIDUAL
+
+      3.001 begin immediate
+      1.377 create index foo_x on foo(x)
+      1.102 begin immediate
+      0.944 select timesten(x) from foo where x=? order by x
+      0.893 select timesten(x) from foo where x=? order by x
+      0.817 select timesten(x) from foo where x=? order by x
+      0.816 select timesten(x) from foo where x=? order by x
+      0.786 select timesten(x) from foo where x=? order by x
+      0.783 select timesten(x) from foo where x=? order by x
+      0.713 select timesten(x) from foo where x=? order by x
+      0.701 select timesten(x) from foo where x=? order by x
+      0.651 select timesten(x) from foo where x=? order by x
+      0.646 select timesten(x) from foo where x=? order by x
+      0.631 select timesten(x) from foo where x=? order by x
+      0.620 select timesten(x) from foo where x=? order by x
 
 

@@ -59,6 +59,8 @@ Cursor Objects
 Use :meth:`Cursor.getdescription` instead of description. This
 information is only obtained on request.
 
+.. _rowcount:
+
 There is no rowcount.  Row counts don't make sense in SQLite any way.
 SQLite returns results one row at a time, not calculating the next
 result row until you ask for it.  Consequently getting a rowcount
