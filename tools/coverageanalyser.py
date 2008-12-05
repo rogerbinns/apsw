@@ -4,6 +4,10 @@
 
 import glob
 import os
+import sys
+
+out=sys.stdout.write
+
 
 def output(filename, percent, total):
     # Python bug "% 3.2f" doesn't behave correctly (100.00 is formatted with leading space!)
@@ -12,7 +16,7 @@ def output(filename, percent, total):
         " of % 6d" % (total,)]
     if percent==100:
         op[1]="100.00%"
-    print "".join(op)
+    out("".join(op)+"\n")
 
 
 linesexecuted=0
@@ -38,6 +42,6 @@ for f in names:
     n="src/"+os.path.splitext(f)[0]
     output(n, fileexec*100.0/filetotal, filetotal)
 
-print
+out("\n")
 output("Total", linesexecuted*100.0/linestotal, linestotal)
         
