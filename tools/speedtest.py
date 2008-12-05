@@ -15,7 +15,8 @@ import optparse
 
 # This would be a py 2 vs py 3 funky thing
 write=sys.stdout.write
-
+if sys.version_info>=(3,):
+    xrange=range
 
 def doit():
     options.tests=[t.strip() for t in options.tests.split(",")]
