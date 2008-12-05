@@ -175,7 +175,7 @@ statementcache_sanity_check(StatementCache *sc)
 }
 
 /* verifies a particular value is not in the dictionary */
-void assert_not_in_dict(PyObject *dict, PyObject *check)
+static void assert_not_in_dict(PyObject *dict, PyObject *check)
 {
   PyObject *key, *value;
   Py_ssize_t pos=0;
