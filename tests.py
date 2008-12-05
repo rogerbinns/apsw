@@ -245,6 +245,7 @@ class APSW(unittest.TestCase):
 
     def setUp(self):
         # clean out database and journals from last runs
+        self.saved_connection_hooks=apsw.connection_hooks
         gc.collect()
         self.deltempfiles()
         self.db=apsw.Connection("testdb")
@@ -253,7 +254,7 @@ class APSW(unittest.TestCase):
         if self.db is not None:
             self.db.close(True)
         del self.db
-        apsw.connection_hooks=[] # back to default value
+        apsw.connection_hooks=self.saved_connection_hooks # back to original value
         gc.collect()
         self.deltempfiles()
 
@@ -695,6 +696,7 @@ class APSW(unittest.TestCase):
 
     def testExecTracing(self):
         "Verify tracing of executed statements and bindings"
+        self.db.setexectrace(None)
         c=self.db.cursor()
         cmds=[] # this is maniulated in tracefunc
         def tracefunc(cursor, cmd, bindings):
@@ -808,6 +810,7 @@ class APSW(unittest.TestCase):
 
     def testRowTracing(self):
         "Verify row tracing"
+        self.db.setrowtrace(None)
         c=self.db.cursor()
         c.execute("create table foo(x,y,z)")
         vals=(1,2,3)
@@ -3367,7 +3370,7 @@ class APSW(unittest.TestCase):
                 apsw.VFS.__init__(self, "randomupper", defvfs)
 
             def xRandomness1(self, n):
-                return b("\xaa\xbb")
+                return b(r"\xaa\xbb")
 
         class RandomVFS(apsw.VFS):
             def __init__(self):
@@ -5128,7 +5131,7 @@ if __name__=='__main__':
         
     # In py3 gc and sys can end up being None even though we take care not to delete them
     for k in list(sys.modules.keys()):
-        if k not in ('gc', 'sys'):
+        if k not in ('gc', 'sys', '__main__'):
             try:
                 del sys.modules[k]
             except:
