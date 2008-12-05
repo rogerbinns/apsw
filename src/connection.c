@@ -89,6 +89,10 @@ struct Connection {
   PyObject *filename;
   PyObject *open_flags;
   PyObject *open_vfs;
+
+  /* weak reference support */
+  PyObject *weakreflist;
+
 };
 
 typedef struct Connection Connection;
@@ -253,6 +257,7 @@ Connection_close(Connection *self, PyObject *args)
 static void
 Connection_dealloc(Connection* self)
 {
+  APSW_CLEAR_WEAKREFS;
   if(self->db)
     {
       int res;
@@ -322,6 +327,7 @@ Connection_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED
       self->filename=0;
       self->open_flags=0;
       self->open_vfs=0;
+      self->weakreflist=0;
     }
 
     return (PyObject *)self;
@@ -416,7 +422,7 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
     {
       hookresult=PyEval_CallObject(hook, hookargs);
       if(!hookresult) 
-	goto pyexception;
+        goto pyexception;
       Py_DECREF(hook);
       Py_DECREF(hookresult);
     }
@@ -431,10 +437,12 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
 
  pyexception:
   /* clean up db since it is useless - no need for user to call close */
+  assert(PyErr_Occurred());
   res= -1;
   sqlite3_close(self->db);  /* PYSQLITE_CALL not needed since noone else can have a reference to this connection */
   self->db=0;
   Connection_internal_cleanup(self);
+  assert(PyErr_Occurred());
 
 finally:
   if(filename) PyMem_Free(filename);
@@ -2630,7 +2638,7 @@ Connection_setexectrace(Connection *self, PyObject *func)
 
 /** .. method:: setrowtrace(callable)
 
-  *callable* is called with each row being returned for
+  *callable* is called with the cursor and row being returned for
   :class:`cursors <Cursor>` associated with this Connection, unless
   the Cursor installed its own tracer.  You can change the data that
   is returned or cause the row to be skipped altogether.
@@ -2708,6 +2716,7 @@ Connection_getrowtrace(Connection *self)
   Py_INCREF(ret);
   return ret;
 }
+
 
 /** .. attribute:: filename
 
@@ -2831,7 +2840,7 @@ static PyTypeObject ConnectionType =
     0,		               /* tp_traverse */
     0,		               /* tp_clear */
     0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
+    offsetof(Connection, weakreflist),	/* tp_weaklistoffset */
     0,		               /* tp_iter */
     0,		               /* tp_iternext */
     Connection_methods,        /* tp_methods */

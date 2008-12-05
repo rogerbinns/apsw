@@ -111,6 +111,22 @@ ZeroBlobBind_init(ZeroBlobBind *self, PyObject *args, PyObject *kwargs)
   return 0;
 }
 
+/** .. method:: length() -> int
+ 
+  Size of zero blob in bytes.
+*/
+static PyObject *
+ZeroBlobBind_len(ZeroBlobBind *self)
+{
+  return PyInt_FromLong(self->blobsize);
+}
+
+static PyMethodDef ZeroBlobBind_methods[] = {
+  {"length", (PyCFunction)ZeroBlobBind_len, METH_NOARGS,
+   "Size of zero blob"},
+  {0,0,0,0}
+};
+
 static PyTypeObject ZeroBlobBindType = {
     APSW_PYTYPE_INIT
     "apsw.zeroblob",           /*tp_name*/
@@ -139,7 +155,7 @@ static PyTypeObject ZeroBlobBindType = {
     0,		               /* tp_weaklistoffset */
     0,		               /* tp_iter */
     0,		               /* tp_iternext */
-    0,                         /* tp_methods */
+    ZeroBlobBind_methods,      /* tp_methods */
     0,                         /* tp_members */
     0,                         /* tp_getset */
     0,                         /* tp_base */
