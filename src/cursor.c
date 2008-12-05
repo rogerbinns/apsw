@@ -26,6 +26,8 @@
 
 /** 
 
+.. _cursors:
+
 Cursors (executing SQL)
 ***********************
 
@@ -1269,7 +1271,7 @@ APSWCursor_setexectrace(APSWCursor *self, PyObject *func)
 
   if(func!=Py_None && !PyCallable_Check(func))
     {
-      PyErr_SetString(PyExc_TypeError, "parameter must be callable");
+      PyErr_SetString(PyExc_TypeError, "parameter must be callable or None");
       return NULL;
     }
 
@@ -1304,7 +1306,7 @@ APSWCursor_setrowtrace(APSWCursor *self, PyObject *func)
 
   if(func!=Py_None && !PyCallable_Check(func))
     {
-      PyErr_SetString(PyExc_TypeError, "parameter must be callable");
+      PyErr_SetString(PyExc_TypeError, "parameter must be callable or None");
       return NULL;
     }
 
