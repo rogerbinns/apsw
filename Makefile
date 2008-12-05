@@ -43,7 +43,7 @@ docs: $(GENDOCS) doc/example.rst
 	env PYTHONPATH=. python tools/docupdate.py $(VERSION)
 	make VERSION=$(VERSION) -C doc clean html htmlhelp 
 
-doc/example.rst: example-code.py tools/example2rst.py
+doc/example.rst: example-code.py tools/example2rst.py src/apswversion.h
 	rm -f dbfile
 	env PYTHONPATH=. python tools/example2rst.py
 
