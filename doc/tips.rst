@@ -70,7 +70,7 @@ example would be wanting a :ref:`rowcount <rowcount>` or batching returned rows.
 the code source compatible with other database drivers).
 
 APSW does not provide a way to subclass the cursor class or any other
-form of factory.  Consequently if you will have to subclass the
+form of factory.  Consequently you will have to subclass the
 :class:`Connection` and provide an alternate implementation of
 :meth:`Connection.cursor`.  You should encapsulate the APSW cursor -
 ie store it as a member of your cursor class and forward calls as

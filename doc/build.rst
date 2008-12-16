@@ -54,7 +54,7 @@ There are a number of APSW specific flags you can specify.
 |                                        | libraries on your developer or deployment machines. You can set the environment      |
 |                                        | variable :const:`http_proxy` to control proxy usage for the download.                |
 +----------------------------------------+--------------------------------------------------------------------------------------+
-| | :option:`--enable=fts`               | Enables the `full text search <http://www.sqlite.org/cvstrac/wiki?p=FtsUsage>`_      |
+| | :option:`--enable=fts3`              | Enables the `full text search <http://www.sqlite.org/cvstrac/wiki?p=FtsUsage>`_      |
 |                                        | extension.                                                                           |
 |                                        | This flag only helps when using the amalgamation. If not using the                   | 
 |                                        | amalgamation then you need to seperately ensure fts is enabled in the SQLite         |
