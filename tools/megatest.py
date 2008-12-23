@@ -154,8 +154,8 @@ def buildapsw(outputfile, pybin, workdir):
 PYVERS=(
     '3.0',
     '2.6.1',
-    '2.5.2',
-    '2.4.5',
+    '2.5.4',
+    '2.4.6',
     '2.3.7',
     'system',
     # '2.2.3',  - apsw not supported on 2.2 as it needs GILstate
@@ -166,6 +166,7 @@ SQLITEVERS=(
     '3.6.6',
     '3.6.6.1',
     '3.6.6.2',
+    '3.6.7'
    )
 
 if __name__=='__main__':
