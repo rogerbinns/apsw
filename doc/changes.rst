@@ -2,6 +2,29 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.6.10-r1
+=========
+
+You can use the database as a `context manager
+<http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
+as defined in :pep:`0343`.  When you use *with* a transaction is
+started.  If the block finishes with an exception then the transaction
+is rolled back, otherwise it is committed.  For example::
+
+  with connection:
+      call_a_function(connection)
+      call_another(connection)
+      with connection:
+          # nested is supported
+          call_function(connection)
+          with connection as db:
+              # You can also use 'as'
+              call_function2(db)
+
+Behind the scenes the `savepoint
+<http://www.sqlite.org/lang_savepoint.html>`_ functionality introduced
+in SQLite 3.6.8 is used.
+
 3.6.6.2-r1
 ==========
 

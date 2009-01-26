@@ -85,6 +85,10 @@ struct Connection {
   /* if we are using one of our VFS since sqlite doesn't reference count them */
   PyObject *vfs;
 
+  /* used for nested with (contextmanager) statements - a list used as
+     a stack */
+  PyObject *contexts;
+
   /* informational attributes */
   PyObject *filename;
   PyObject *open_flags;
@@ -156,6 +160,7 @@ Connection_internal_cleanup(Connection *self)
   Py_CLEAR(self->exectrace);
   Py_CLEAR(self->rowtrace);
   Py_CLEAR(self->vfs);
+  Py_CLEAR(self->contexts);
   Py_CLEAR(self->filename);
   Py_CLEAR(self->open_flags);
   Py_CLEAR(self->open_vfs);
@@ -324,6 +329,7 @@ Connection_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED
       self->exectrace=0;
       self->rowtrace=0;
       self->vfs=0;
+      self->contexts=0;
       self->filename=0;
       self->open_flags=0;
       self->open_vfs=0;
@@ -2717,6 +2723,129 @@ Connection_getrowtrace(Connection *self)
   return ret;
 }
 
+/** .. method:: __enter__() -> context 
+
+  You can use the database as a `context manager
+  <http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
+  as defined in :pep:`0343`.  When you use *with* a transaction is
+  started.  If the block finishes with an exception then the
+  transaction is rolled back, otherwise it is committed.  For example::
+
+    with connection:
+        call_a_function(connection)
+        call_another(connection)
+        with connection:
+            # nested is supported
+            call_function(connection)
+            with connection as db:
+                # You can also use 'as'
+                call_function2(db)
+
+  Behind the scenes the `savepoint
+  <http://www.sqlite.org/lang_savepoint.html>`_ functionality introduced in
+  SQLite 3.6.8 is used.
+*/
+static PyObject *
+Connection_enter(Connection *self)
+{
+  PyObject *spname;
+  long sp;
+  char *sql;
+  int res;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  /* we use a randomly generated number as part of the savepoint
+     name */
+  sqlite3_randomness(sizeof(sp), &sp);
+  APSW_FAULT_INJECT(ConnectionEnterNumFailed, spname=PyLong_FromLong(sp), spname=PyErr_NoMemory());
+  if(!spname) goto error;
+  
+  /* append to context stack */
+  if(!self->contexts)
+    {
+      self->contexts=PyList_New(0);
+      if(!self->contexts) goto error;
+    }
+  if(PyList_Append(self->contexts, spname)!=0) goto error;
+  Py_CLEAR(spname); /* owned by contexts list now */
+  
+  sql=sqlite3_mprintf("SAVEPOINT \"apsw-%ld\"", sp);
+  if(!sql) return PyErr_NoMemory();
+  APSW_FAULT_INJECT(ConnectionEnterExecFailed,
+                    PYSQLITE_CON_CALL(res=sqlite3_exec(self->db, sql, 0, 0, 0)),
+                    res=SQLITE_NOMEM);
+  sqlite3_free(sql);
+  SET_EXC(res, self->db);
+  if(res)
+    return NULL;
+  
+  Py_INCREF(self);
+  return (PyObject*)self;
+
+ error:
+  Py_XDECREF(spname);
+  return NULL;
+}
+
+/** .. method:: __exit__() -> False
+
+  Implements context manager in conjunction with
+  :meth:`~Connection.__enter__`.  Any exception that happened in the
+  *with* block is raised after commiting or rolling back the
+  savepoint. 
+*/
+
+static PyObject *
+Connection_exit(Connection *self, PyObject *args)
+{
+  PyObject *etype, *evalue, *etb;
+  long sp;
+  PyObject *spname;
+  char *sql;
+  int res=SQLITE_OK, res2=SQLITE_OK;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  if(!PyArg_ParseTuple(args, "OOO", &etype, &evalue, &etb))
+    return NULL;
+
+  /* the builtin python __exit__ implementations don't error if you
+     call __exit__ without corresponding enters */
+  if(!self->contexts || PyList_GET_SIZE(self->contexts)==0)
+    Py_RETURN_FALSE;
+
+  /* borrowed ref */
+  spname=PyList_GET_ITEM(self->contexts, PyList_GET_SIZE(self->contexts)-1);
+  sp=PyLong_AsLong(spname);
+  /* pop last item off list */
+  PyList_SetSlice(self->contexts, PyList_GET_SIZE(self->contexts)-1, PyList_GET_SIZE(self->contexts), NULL);
+
+  /* if we are rolling back then we also have to do a release
+     otherwise a started transaction is still in effect */
+  if(etype!=Py_None || evalue!=Py_None || etb!=Py_None)
+    {
+      sql=sqlite3_mprintf("ROLLBACK TO SAVEPOINT \"apsw-%ld\"", sp);
+      if(!sql) return PyErr_NoMemory();
+      PYSQLITE_CON_CALL(res=sqlite3_exec(self->db, sql, 0, 0, 0));
+      res2=res;
+      sqlite3_free(sql);
+      SET_EXC(res, self->db);
+    }
+  
+  sql=sqlite3_mprintf("RELEASE SAVEPOINT \"apsw-%ld\"", sp);
+  if(!sql) return PyErr_NoMemory();
+  PYSQLITE_CON_CALL(res=sqlite3_exec(self->db, sql, 0, 0, 0));
+  sqlite3_free(sql);
+  SET_EXC(res, self->db);
+  if(res || res2)
+    return NULL;
+
+  Py_RETURN_FALSE;
+}
+
 
 /** .. attribute:: filename
 
@@ -2810,6 +2939,10 @@ static PyMethodDef Connection_methods[] = {
    "Returns the current exec tracer function"},
   {"getrowtrace", (PyCFunction)Connection_getrowtrace, METH_NOARGS,
    "Returns the current row tracer function"},
+  {"__enter__", (PyCFunction)Connection_enter, METH_NOARGS,
+   "Context manager entry"},
+  {"__exit__", (PyCFunction)Connection_exit, METH_VARARGS,
+   "Context manager exit"},
   {0, 0, 0, 0}  /* Sentinel */
 };
 

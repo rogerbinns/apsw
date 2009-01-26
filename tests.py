@@ -103,7 +103,17 @@ def ehook(etype, evalue, etraceback):
     traceback.print_tb(etraceback)
 sys.excepthook=ehook
 
-
+# exec is a huge amount of fun having different syntax
+if py3:
+    def execwrapper(astring, theglobals, thelocals):
+        thelocals=thelocals.copy()
+        thelocals["astring"]=astring
+        exec("exec(astring, theglobals, thelocals)")
+else:
+    def execwrapper(astring, theglobals, thelocals):
+        thelocals=thelocals.copy()
+        thelocals["astring"]=astring
+        exec ("exec astring in theglobals, thelocals")
 
 # helper functions
 def randomintegers(howmany):
@@ -222,6 +232,8 @@ class APSW(unittest.TestCase):
         'filecontrol': 3,
         'setexectrace': 1,
         'setrowtrace': 1,
+        '__enter__': 0,
+        '__exit__': 3
         }
 
     cursor_nargs={
@@ -2470,7 +2482,9 @@ class APSW(unittest.TestCase):
 
         self.db.close()
         nargs=self.connection_nargs
-        for func in [x for x in dir(self.db) if not x.startswith("__") and not x in ("close",)]:
+        tested=0
+        for func in [x for x in dir(self.db) if x in nargs or (not x.startswith("__") and not x in ("close",))]:
+            tested+=1
             args=("one", "two", "three")[:nargs.get(func,0)]
 
             try:
@@ -2481,16 +2495,20 @@ class APSW(unittest.TestCase):
                     self.fail("connection method "+func+" didn't notice that the connection is closed")
             except apsw.ConnectionClosedError:
                 pass
+        self.assert_(tested>len(nargs))
 
         # do the same thing, but for cursor
         nargs=self.cursor_nargs
+        tested=0
         for func in [x for x in dir(cur) if not x.startswith("__") and not x in ("close",)]:
+            tested+=1
             args=("one", "two", "three")[:nargs.get(func,0)]
             try:
                 getattr(cur, func)(*args)
                 self.fail("cursor method "+func+" didn't notice that the connection is closed")
             except apsw.ConnectionClosedError:
                 pass
+        self.assert_(tested>=len(nargs))
 
     def testClosing(self):
         "Verify behaviour of close() functions"
@@ -4327,6 +4345,105 @@ class APSW(unittest.TestCase):
             if n not in ('xClose', 'excepthook') and not n.startswith("__"):
                 self.assertRaises(apsw.VFSFileClosedError, getattr(t, n))
 
+    def testWith(self):
+        "Context manager functionality"
+        # we need py 2.5 for with stuff
+        if sys.version_info<(2,5):
+            return
+        prefix="\n"
+        if sys.version_info<(2,6):
+            prefix="from __future__ import with_statement\n"
+
+        def run(s):
+            # ensure indentation matches first line
+            s=s.strip("\n")
+            s=s.rstrip(" ")
+            s=(len(s)-len(s.lstrip(" ")))*" "+prefix+s
+            l=locals().copy()
+            l["self"]=self
+            # now remove indentation
+            s=s.split("\n")
+            p=len(s[0])-len(s[0].lstrip("  "))
+            s="\n".join([s[p:] for s in s])
+            execwrapper(s, globals(), l)
+
+        # Does it work?
+        # the autocommit tests are to make sure we are not in a transaction
+        self.assertEqual(True, self.db.getautocommit())
+        self.assertTableNotExists("foo1")
+        run("with self.db as db: db.cursor().execute('create table foo1(x)')")
+        self.assertTableExists("foo1")
+        self.assertEqual(True, self.db.getautocommit())
+
+        # with an error
+        self.assertEqual(True, self.db.getautocommit())
+        self.assertTableNotExists("foo2")
+        try:
+            run("""
+            with self.db as db:
+                db.cursor().execute('create table foo2(x)')
+                1/0
+                """)
+        except ZeroDivisionError:
+            pass
+        self.assertTableNotExists("foo2")
+        self.assertEqual(True, self.db.getautocommit())
+
+        # nested - simple - success
+        run("""
+        with self.db as db:
+           self.assertEqual(False, self.db.getautocommit())
+           db.cursor().execute('create table foo2(x)')
+           with db as db2:
+              self.assertEqual(False, self.db.getautocommit())
+              db.cursor().execute('create table foo3(x)')
+              with db2 as db3:
+                 self.assertEqual(False, self.db.getautocommit())
+                 db.cursor().execute('create table foo4(x)')
+        """)
+        self.assertEqual(True, self.db.getautocommit())
+        self.assertTableExists("foo2")
+        self.assertTableExists("foo3")
+        self.assertTableExists("foo4")
+
+        # nested - simple - failure
+        try:
+            run("""
+        self.db.cursor().execute('begin; create table foo5(x)')
+        with self.db as db:
+           self.assertEqual(False, self.db.getautocommit())
+           db.cursor().execute('create table foo6(x)')
+           with db as db2:
+              self.assertEqual(False, self.db.getautocommit())
+              db.cursor().execute('create table foo7(x)')
+              with db2 as db3:
+                 self.assertEqual(False, self.db.getautocommit())
+                 db.cursor().execute('create table foo8(x)')
+                 1/0
+        """)
+        except ZeroDivisionError:
+            pass
+        self.assertEqual(False, self.db.getautocommit())
+        self.db.cursor().execute("commit")
+        self.assertEqual(True, self.db.getautocommit())
+        self.assertTableExists("foo5")
+        self.assertTableNotExists("foo6")
+        self.assertTableNotExists("foo7")
+        self.assertTableNotExists("foo8")
+
+        # improve coverage and various corner cases
+        self.db.__enter__()
+        self.assertRaises(TypeError, self.db.__exit__, 1)
+        for i in range(10):
+            self.db.__exit__(None, None, None)
+
+        # make an exit fail
+        self.db.__enter__()
+        self.db.cursor().execute("commit")
+        # deliberately futz with the outstanding transaction
+        self.assertRaises(apsw.SQLError, self.db.__exit__, None, None, None)
+        self.db.__exit__(None, None, None) # extra exit should be harmless
+        
     # Note that faults fire only once, so there is no need to reset
     # them.  The testing for objects bigger than 2GB is done in
     # testLargeObjects
@@ -4961,6 +5078,25 @@ class APSW(unittest.TestCase):
             1/0
         except apsw.NoMemError:
             pass
+
+        ## ConnectionEnterNumFailed
+        apsw.faultdict["ConnectionEnterNumFailed"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.__enter__()
+            1/0
+        except MemoryError:
+            pass
+
+        ## ConnectionEnterExecFailed
+        apsw.faultdict["ConnectionEnterExecFailed"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.__enter__()
+            1/0
+        except apsw.NoMemError:
+            pass
+        
 
 
 testtimeout=False # timeout testing adds several seconds to each run
