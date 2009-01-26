@@ -15,32 +15,32 @@ way to build or all the :ref:`options available <building>`.
 
 .. downloads-begin
 
-* `apsw-3.6.6.2-r1.zip
-  <http://apsw.googlecode.com/files/apsw-3.6.6.2-r1.zip>`_
+* `apsw-3.6.10-r1.zip
+  <http://apsw.googlecode.com/files/apsw-3.6.10-r1.zip>`_
   (Source, includes this HTML Help)
 
-* `apsw-3.6.6.2-r1.chm
-  <http://apsw.googlecode.com/files/apsw-3.6.6.2-r1.chm>`_
+* `apsw-3.6.10-r1.chm
+  <http://apsw.googlecode.com/files/apsw-3.6.10-r1.chm>`_
   (Compiled HTML Help)
 
-* `apsw-3.6.6.2-r1.win32-py2.3.exe
-  <http://apsw.googlecode.com/files/apsw-3.6.6.2-r1.win32-py2.3.exe>`_
+* `apsw-3.6.10-r1.win32-py2.3.exe
+  <http://apsw.googlecode.com/files/apsw-3.6.10-r1.win32-py2.3.exe>`_
   (Windows Python 2.3)
 
-* `apsw-3.6.6.2-r1.win32-py2.4.exe
-  <http://apsw.googlecode.com/files/apsw-3.6.6.2-r1.win32-py2.4.exe>`_
+* `apsw-3.6.10-r1.win32-py2.4.exe
+  <http://apsw.googlecode.com/files/apsw-3.6.10-r1.win32-py2.4.exe>`_
   (Windows Python 2.4)
 
-* `apsw-3.6.6.2-r1.win32-py2.5.exe
-  <http://apsw.googlecode.com/files/apsw-3.6.6.2-r1.win32-py2.5.exe>`_
+* `apsw-3.6.10-r1.win32-py2.5.exe
+  <http://apsw.googlecode.com/files/apsw-3.6.10-r1.win32-py2.5.exe>`_
   (Windows Python 2.5)
 
-* `apsw-3.6.6.2-r1.win32-py2.6.exe
-  <http://apsw.googlecode.com/files/apsw-3.6.6.2-r1.win32-py2.6.exe>`_
+* `apsw-3.6.10-r1.win32-py2.6.exe
+  <http://apsw.googlecode.com/files/apsw-3.6.10-r1.win32-py2.6.exe>`_
   (Windows Python 2.6)
 
-* `apsw-3.6.6.2-r1.win32-py3.0.exe
-  <http://apsw.googlecode.com/files/apsw-3.6.6.2-r1.win32-py3.0.exe>`_
+* `apsw-3.6.10-r1.win32-py3.0.exe
+  <http://apsw.googlecode.com/files/apsw-3.6.10-r1.win32-py3.0.exe>`_
   (Windows Python 3.0)
 
 .. downloads-end
