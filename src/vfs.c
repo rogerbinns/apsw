@@ -1285,7 +1285,7 @@ APSWVFS_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED Py
 
     :param name: The name to register this vfs under.  If the name
                  already exists then this vfs will replace the prior one of the
-                 same name.  Use :meth:`Connection.vfsnames` to get a list of
+                 same name.  Use :meth:`apsw.vfsnames` to get a list of
                  registered vfs names.
     :param base: If you would like to inherit behaviour from an
                  already registered vfs then give their name.  To inherit from the

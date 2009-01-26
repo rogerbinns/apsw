@@ -25,6 +25,13 @@ Behind the scenes the `savepoint
 <http://www.sqlite.org/lang_savepoint.html>`_ functionality introduced
 in SQLite 3.6.8 is used.
 
+Added constants:
+
+  * SQLITE_SAVEPOINT (authorizer code)
+  * SQLITE_IOERR_CLOSE (extended result code)
+  * SQLITE_IOERR_DIR_CLOSE (extended result code)
+
+
 3.6.6.2-r1
 ==========
 

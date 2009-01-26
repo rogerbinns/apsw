@@ -467,7 +467,7 @@ status(APSW_ARGUNUSED PyObject *self, PyObject *args)
 /** .. method:: vfsnames() -> list(string)
 
   Returns a list of the currently installed :ref:`vfs <vfs>`.  The first
-  item in the list the default vfs.
+  item in the list is the default vfs.
 */
 static PyObject *
 vfsnames(APSW_ARGUNUSED PyObject *self)
@@ -822,6 +822,7 @@ modules etc. For example::
       ADDINT(SQLITE_CREATE_VTABLE),
       ADDINT(SQLITE_DROP_VTABLE),
       ADDINT(SQLITE_FUNCTION),
+      ADDINT(SQLITE_SAVEPOINT),
       END,
 
       /* vtable best index constraints */
@@ -851,6 +852,8 @@ modules etc. For example::
       ADDINT(SQLITE_IOERR_ACCESS),
       ADDINT(SQLITE_IOERR_CHECKRESERVEDLOCK),
       ADDINT(SQLITE_IOERR_LOCK),
+      ADDINT(SQLITE_IOERR_CLOSE),
+      ADDINT(SQLITE_IOERR_DIR_CLOSE),
       END,
 
       /* error codes */
