@@ -1,7 +1,7 @@
 Copyright and License
 =====================
 
-Copyright (C) 2004-2008 `Roger Binns <mailto:rogerb@rogerbinns.com>`_
+Copyright (C) 2004-2009 `Roger Binns <mailto:rogerb@rogerbinns.com>`_
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any damages

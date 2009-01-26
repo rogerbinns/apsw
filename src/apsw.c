@@ -7,7 +7,7 @@
   It assumes we are running as 32 bit int with a 64 bit long long type
   available.
 
-  Copyright (C) 2004-2008 Roger Binns <rogerb@rogerbinns.com>
+  Copyright (C) 2004-2009 Roger Binns <rogerb@rogerbinns.com>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any

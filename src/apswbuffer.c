@@ -1,7 +1,7 @@
 /*
   A lightweight buffer class that works across Python 2 and 3.
 
-  Copyright (C) 2008 Roger Binns <rogerb@rogerbinns.com>
+  Copyright (C) 2008-2009 Roger Binns <rogerb@rogerbinns.com>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any

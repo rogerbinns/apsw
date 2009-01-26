@@ -36,7 +36,7 @@ master_doc = 'index'
 
 # General substitutions.
 project = u'APSW'
-copyright = u'2004-2008, Roger Binns <rogerb@rogerbinns.com>'
+copyright = u'2004-2009, Roger Binns <rogerb@rogerbinns.com>'
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
