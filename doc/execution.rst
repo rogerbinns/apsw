@@ -172,6 +172,12 @@ Execution tracers can be installed on a specific cursor by calling
 :meth:`Connection.setexectrace`, with the cursor tracer taking
 priority.
 
+If you use the Connection meth:`with <Connection.__enter__>` statement
+and have a Connection execution tracer then your callback will also be
+called when APSW creates and releases/rollbacks savepoints.  Instead
+of the first argument being a cursor, it will be the connection itself
+since there is no cursor involved.
+
 .. _rowtracer:
 
 Row Tracer

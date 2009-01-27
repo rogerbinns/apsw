@@ -15,7 +15,9 @@ for an example.
 Behind the scenes the `savepoint
 <http://www.sqlite.org/lang_savepoint.html>`_ functionality introduced
 in SQLite 3.6.8 is used.  Consequently :class:`Connection` *with*
-blocks can be nested.
+blocks can be nested.  If you use Connection level :ref:`execution
+tracers <executiontracer>` then they will be called with the savepoint
+SQL statements.
 
 Added :ref:`constants <sqliteconstants>`:
 

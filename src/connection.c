@@ -2753,7 +2753,7 @@ Connection_enter(Connection *self)
 {
   PyObject *spname;
   long sp;
-  char *sql;
+  char *sql=0;
   int res;
 
   CHECK_USE(NULL);
@@ -2771,23 +2771,52 @@ Connection_enter(Connection *self)
       self->contexts=PyList_New(0);
       if(!self->contexts) goto error;
     }
-  if(PyList_Append(self->contexts, spname)!=0) goto error;
-  Py_CLEAR(spname); /* owned by contexts list now */
-  
+
   sql=sqlite3_mprintf("SAVEPOINT \"apsw-%ld\"", sp);
   if(!sql) return PyErr_NoMemory();
+
+  /* exec tracing - we allow it to prevent */
+  if(self->exectrace && self->exectrace!=Py_None)
+    {
+      int result;
+      PyObject *retval=PyObject_CallFunction(self->exectrace, "OsO", self, sql, Py_None);
+      if(!retval) goto error;
+      result=PyObject_IsTrue(retval);
+      Py_DECREF(retval);
+      if(result==-1)
+        {
+          assert(PyErr_Occurred());
+          goto error;
+        }
+      if(result==0)
+        {
+          PyErr_Format(ExcTraceAbort, "Aborted by false/null return value of exec tracer");
+          goto error;
+        }
+      assert(result==1);
+    }
+
+  if(PyList_Append(self->contexts, spname)!=0) goto error;
+  Py_CLEAR(spname); /* owned by contexts list now */
+
   APSW_FAULT_INJECT(ConnectionEnterExecFailed,
                     PYSQLITE_CON_CALL(res=sqlite3_exec(self->db, sql, 0, 0, 0)),
                     res=SQLITE_NOMEM);
   sqlite3_free(sql);
   SET_EXC(res, self->db);
   if(res)
-    return NULL;
+    {
+      /* remove from contexts list */
+      PyList_SetSlice(self->contexts, PyList_GET_SIZE(self->contexts)-1, PyList_GET_SIZE(self->contexts), NULL);
+      return NULL;
+    }
   
   Py_INCREF(self);
   return (PyObject*)self;
 
  error:
+  assert(PyErr_Occurred());
+  if(sql) sqlite3_free(sql);
   Py_XDECREF(spname);
   return NULL;
 }
@@ -2807,13 +2836,13 @@ Connection_exit(Connection *self, PyObject *args)
   long sp;
   PyObject *spname;
   char *sql;
-  int res=SQLITE_OK, res2=SQLITE_OK;
+  int res=SQLITE_OK, res2=SQLITE_OK, res3=SQLITE_OK, res4=SQLITE_OK;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if(!PyArg_ParseTuple(args, "OOO", &etype, &evalue, &etb))
-    return NULL;
+  /* We always take the last item off the contexts list, irrespective
+     of how this function returns - (ie successful or error) */
 
   /* the builtin python __exit__ implementations don't error if you
      call __exit__ without corresponding enters */
@@ -2826,12 +2855,21 @@ Connection_exit(Connection *self, PyObject *args)
   /* pop last item off list */
   PyList_SetSlice(self->contexts, PyList_GET_SIZE(self->contexts)-1, PyList_GET_SIZE(self->contexts), NULL);
 
+  if(!PyArg_ParseTuple(args, "OOO", &etype, &evalue, &etb))
+    return NULL;
+
   /* if we are rolling back then we also have to do a release
      otherwise a started transaction is still in effect */
   if(etype!=Py_None || evalue!=Py_None || etb!=Py_None)
     {
       sql=sqlite3_mprintf("ROLLBACK TO SAVEPOINT \"apsw-%ld\"", sp);
       if(!sql) return PyErr_NoMemory();
+      if(self->exectrace && self->exectrace!=Py_None)
+        {
+          PyObject *result=PyObject_CallFunction(self->exectrace, "OsO", self, sql, Py_None);
+          if(!result) res3=SQLITE_ERROR;
+          Py_XDECREF(result);
+        }
       PYSQLITE_CON_CALL(res=sqlite3_exec(self->db, sql, 0, 0, 0));
       res2=res;
       sqlite3_free(sql);
@@ -2840,11 +2878,20 @@ Connection_exit(Connection *self, PyObject *args)
   
   sql=sqlite3_mprintf("RELEASE SAVEPOINT \"apsw-%ld\"", sp);
   if(!sql) return PyErr_NoMemory();
+  if(self->exectrace && self->exectrace!=Py_None)
+    {
+      PyObject *result=PyObject_CallFunction(self->exectrace, "OsO", self, sql, Py_None);
+      if(!result) res4=SQLITE_ERROR;
+      Py_XDECREF(result); 
+    }
   PYSQLITE_CON_CALL(res=sqlite3_exec(self->db, sql, 0, 0, 0));
   sqlite3_free(sql);
   SET_EXC(res, self->db);
-  if(res || res2)
-    return NULL;
+  if(res || res2 || res3 || res4) 
+    {
+      assert(PyErr_Occurred());
+      return NULL;
+    }
 
   Py_RETURN_FALSE;
 }

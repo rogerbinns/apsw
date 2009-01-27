@@ -4443,6 +4443,51 @@ class APSW(unittest.TestCase):
         # deliberately futz with the outstanding transaction
         self.assertRaises(apsw.SQLError, self.db.__exit__, None, None, None)
         self.db.__exit__(None, None, None) # extra exit should be harmless
+
+        # exectracing
+        traces=[]
+        def et(con, sql, bindings):
+            if con==self.db:
+                traces.append(sql)
+            return True
+
+        self.db.setexectrace(et)
+        try:
+            run("""
+                 with self.db as db:
+                   db.cursor().execute('create table foo2(x)')
+                """)
+        except apsw.SQLError: # table already exists so we should get an error
+            pass
+
+        # check we saw the right things in the traces
+        self.assert_(len(traces)==3)
+        for s in traces:
+            self.assert_("SAVEPOINT" in s.upper())
+
+        def et(*args):
+            return BadIsTrue()
+        self.db.setexectrace(et)
+        try:
+            run("""
+                 with self.db as db:
+                   db.cursor().execute('create table etfoo2(x)')
+                """)
+        except ZeroDivisionError:
+            pass
+        self.assertTableNotExists("etfoo2")
+        def et(*args):
+            return False
+        self.db.setexectrace(et)
+        try:
+            run("""
+                 with self.db as db:
+                   db.cursor().execute('create table etfoo2(x)')
+                """)
+        except apsw.ExecTraceAbort:
+            pass
+        self.assertTableNotExists("etfoo2")
+        
         
     # Note that faults fire only once, so there is no need to reset
     # them.  The testing for objects bigger than 2GB is done in
