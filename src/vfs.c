@@ -684,8 +684,8 @@ apswvfspy_xDlOpen(APSWVFS *self, PyObject *args)
   return PyLong_FromVoidPtr(res);
 }
 
-static void*
-apswvfs_xDlSym(sqlite3_vfs *vfs, void *handle, const char *zName)
+static void
+(*apswvfs_xDlSym(sqlite3_vfs *vfs, void *handle, const char *zName))(void)
 {
   PyObject *pyresult=NULL;
   void *result=NULL;

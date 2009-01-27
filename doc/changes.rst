@@ -36,6 +36,10 @@ error to the caller.  :meth:`VFSFile.xFileControl` is now called so a
 user implemented one must call any base it inherits from for SQLite to
 function normally.
 
+Updated the xDlSym VFS routine to have the different but compatible
+type signature as changed in SQLite 3.6.7 to deal with pedantic
+compiler warnings.
+
 
 3.6.6.2-r1
 ==========
