@@ -2451,7 +2451,8 @@ Connection_createcollation(Connection *self, PyObject *args)
             print obj["foo"]
             obj["result"]="it worked"
         else:
-            raise Exception("Unknown file control "+`op`)
+            # pass to parent/superclass
+            super(MyFile, self).xFileControl(op, pointer)
 
   -* sqlite3_file_control
 */

@@ -993,7 +993,16 @@ modules etc. For example::
       ADDINT(SQLITE_SYNC_NORMAL),
       ADDINT(SQLITE_SYNC_FULL),
       ADDINT(SQLITE_SYNC_DATAONLY),
-      END};
+      END,
+
+      DICT("mapping_file_control"),
+      ADDINT(SQLITE_FCNTL_LOCKSTATE),
+      ADDINT(SQLITE_GET_LOCKPROXYFILE),
+      ADDINT(SQLITE_SET_LOCKPROXYFILE),
+      ADDINT(SQLITE_LAST_ERRNO),
+      END
+
+      };
  
  
  for(i=0;i<sizeof(integers)/sizeof(integers[0]); i++)

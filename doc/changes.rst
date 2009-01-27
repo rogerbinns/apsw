@@ -28,6 +28,13 @@ Added :ref:`constants <sqliteconstants>`:
   * SQLITE_SAVEPOINT (authorizer code)
   * SQLITE_IOERR_CLOSE (extended result code)
   * SQLITE_IOERR_DIR_CLOSE (extended result code)
+  * New mapping: SQLITE_FCNTL_LOCKSTATE, SQLITE_GET_LOCKPROXYFILE, SQLITE_SET_LOCKPROXYFILE, SQLITE_LAST_ERRNO.  SQLite does not document the purpose of these except the first one.
+
+Updated :ref:`vfs` test code.  SQLite's routines that call
+:meth:`VFSFile.xTruncate` used to ignore errors but now return an
+error to the caller.  :meth:`VFSFile.xFileControl` is now called so a
+user implemented one must call any base it inherits from for SQLite to
+function normally.
 
 
 3.6.6.2-r1

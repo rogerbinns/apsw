@@ -2279,6 +2279,19 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
    :param op: A numeric code.  Codes below 100 are reserved for SQLite
      internal use.
    :param ptr: An integer corresponding to a pointer at the C level.
+
+   As of SQLite 3.6.10, this method is called by SQLite if you have
+   inherited from an underlying VFSFile.  Consequently ensure you pass
+   any unrecognised codes through to your super class.  For example::
+
+            def xFileControl(self, op, ptr):
+                if op==1027:
+                    process_quick(ptr)
+                elif op==1028:
+                    obj=ctypes.py_object.from_address(ptr).value
+                else:
+                    # this ensures superclass implementation is called
+                    super(MyFile, self).xFileControl(op, ptr)
 */
 static PyObject *
 apswvfsfilepy_xFileControl(APSWVFSFile *self, PyObject *args)

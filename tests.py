@@ -3886,7 +3886,7 @@ class APSW(unittest.TestCase):
                     if ctypes:
                         assert(True is ctypes.py_object.from_address(ptr).value)
                 else:
-                    raise Exception("Unknown op "+str(op))
+                    return super(TestFile, self).xFileControl(op, ptr)
 
         # check initialization
         self.assertRaises(TypeError, apsw.VFS, "3", 3)
@@ -4234,9 +4234,9 @@ class APSW(unittest.TestCase):
             # see http://www.sqlite.org/cvstrac/tktview?tn=3415
             self.assertRaises(apsw.IOError, t.xTruncate, -77)
         TestFile.xTruncate=TestFile.xTruncate1
-        self.assertRaisesUnraisable(TypeError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.xTruncate=TestFile.xTruncate2
-        self.assertRaisesUnraisable(ZeroDivisionError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
         TestFile.xTruncate=TestFile.xTruncate99
         testdb()
         
@@ -4312,10 +4312,12 @@ class APSW(unittest.TestCase):
         self.assertRaises(OverflowError, t.xFileControl, 10, l("0xffffffffeeeeeeee0"))
         self.assertRaises(TypeError, t.xFileControl, 10, "three")
         self.assertRaises(apsw.SQLError, t.xFileControl, 2000, 3000)
+        fc1=testdb(closedb=False).filecontrol
+        fc2=testdb(closedb=False).filecontrol
         TestFile.xFileControl=TestFile.xFileControl1
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb(closedb=False).filecontrol, "main", 1027, 1027)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, fc1, "main", 1027, 1027)
         TestFile.xFileControl=TestFile.xFileControl2
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb(closedb=False).filecontrol, "main", 1027, 1027)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, fc2, "main", 1027, 1027)
         TestFile.xFileControl=TestFile.xFileControl99
         # these should work
         testdb(closedb=False).filecontrol("main", 1027, 1027)
