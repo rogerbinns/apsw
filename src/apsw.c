@@ -654,7 +654,7 @@ static struct PyModuleDef apswmoduledef={
   0,
   0,
   0,
-  0,
+  0
 };
 #endif
 
