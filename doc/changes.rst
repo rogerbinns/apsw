@@ -19,6 +19,10 @@ blocks can be nested.  If you use Connection level :ref:`execution
 tracers <executiontracer>` then they will be called with the savepoint
 SQL statements.
 
+You can also use :class:`blobs <blob>` as a context manager which
+ensures it is always closed when finished using it.  See
+:meth:`blob.__enter__` for an example.
+
 Added :ref:`constants <sqliteconstants>`:
 
   * SQLITE_SAVEPOINT (authorizer code)

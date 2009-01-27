@@ -495,7 +495,7 @@ APSWBlob_close(APSWBlob *self, PyObject *args)
   if(!self->pBlob) goto end;
   CHECK_USE(NULL);
 
-  if(!PyArg_ParseTuple(args, "|i:close(force=False)", &force))
+  if(args && !PyArg_ParseTuple(args, "|i:close(force=False)", &force))
     return NULL;
 
   PYSQLITE_BLOB_CALL(res=sqlite3_blob_close(self->pBlob));
@@ -510,6 +510,52 @@ APSWBlob_close(APSWBlob *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
+/** .. method:: __enter__() -> context 
+
+  You can use a blob as a `context manager
+  <http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
+  as defined in :pep:`0343`.  When you use *with* statement,
+  the blob is always :meth:`closed <~blob.close>` on exit from the block, even if an
+  exception occurred in the block.
+
+  For example::
+
+    with connection.blobopen() as blob:
+        blob.write("...")
+        res=blob.read(1024)
+
+*/
+
+static PyObject *
+APSWBlob_enter(APSWBlob *self)
+{
+  CHECK_USE(NULL);
+  CHECK_BLOB_CLOSED;
+
+  Py_INCREF(self);
+  return (PyObject *)self;
+}
+
+/** .. method:: __exit__() -> False
+
+  Implements context manager in conjunction with
+  :meth:`~blob.__enter__`.  Any exception that happened in the
+  *with* block is raised after closing the blob.
+*/
+
+static PyObject *
+APSWBlob_exit(APSWBlob *self, APSW_ARGUNUSED PyObject *args)
+{
+  PyObject *res;
+  CHECK_USE(NULL);
+  CHECK_BLOB_CLOSED;
+
+  res=APSWBlob_close(self, NULL);
+  Py_XDECREF(res);
+  if(!res) return NULL;
+
+  Py_RETURN_FALSE;
+}
 
 static PyMethodDef APSWBlob_methods[]={
   {"length", (PyCFunction)APSWBlob_length, METH_NOARGS,
@@ -524,6 +570,10 @@ static PyMethodDef APSWBlob_methods[]={
    "Writes data to blob"},
   {"close", (PyCFunction)APSWBlob_close, METH_VARARGS,
    "Closes blob"},
+  {"__enter__", (PyCFunction)APSWBlob_enter, METH_NOARGS,
+   "Context manager entry"},
+  {"__exit__", (PyCFunction)APSWBlob_exit, METH_VARARGS,
+   "Context manager exit"},
   {0,0,0,0} /* Sentinel */
 };
 

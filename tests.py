@@ -4354,13 +4354,15 @@ class APSW(unittest.TestCase):
         if sys.version_info<(2,6):
             prefix="from __future__ import with_statement\n"
 
-        def run(s):
+        def run(s, **kwargs):
             # ensure indentation matches first line
             s=s.strip("\n")
             s=s.rstrip(" ")
             s=(len(s)-len(s.lstrip(" ")))*" "+prefix+s
             l=locals().copy()
             l["self"]=self
+            for k,v in kwargs.items():
+                l[k]=v
             # now remove indentation
             s=s.split("\n")
             p=len(s[0])-len(s[0].lstrip("  "))
@@ -4486,7 +4488,35 @@ class APSW(unittest.TestCase):
                 """)
         except apsw.ExecTraceAbort:
             pass
+        self.db.setexectrace(None)
         self.assertTableNotExists("etfoo2")
+
+        # test blobs with context manager
+        self.db.cursor().execute("create table blobby(x); insert into blobby values(x'aabbccddee')")
+        rowid=self.db.last_insert_rowid()
+        blob=self.db.blobopen('main', 'blobby', 'x', rowid, 0)
+        run("""
+          with blob as b:
+                self.assertEqual(id(blob), id(b))
+                b.read(1)
+          """, blob=blob)
+        # blob gives ValueError if you do operating on closed blob
+        self.assertRaises(ValueError, blob.read) 
+
+        self.db.cursor().execute("insert into blobby values(x'aabbccddee')")
+        rowid=self.db.last_insert_rowid()
+        blob=self.db.blobopen('main', 'blobby', 'x', rowid, 0)
+        try:
+            run("""
+              with blob as b:
+                  self.assertEqual(id(blob), id(b))
+                  1/0
+                  b.read(1)
+                  """, blob=blob)
+        except ZeroDivisionError:
+            # blob gives ValueError if you do operating on closed blob
+            self.assertRaises(ValueError, blob.read) 
+
         
         
     # Note that faults fire only once, so there is no need to reset
