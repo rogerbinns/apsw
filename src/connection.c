@@ -1535,6 +1535,8 @@ Connection_enableloadextension(Connection *self, PyObject *enabled)
   :raises ExtensionLoadingError: If the extension could not be
     loaded.  The exception string includes more details.
 
+  -* sqlite3_load_extension
+
   .. seealso::
 
     * :meth:`~Connection.enableloadextension`
@@ -2732,14 +2734,15 @@ Connection_getrowtrace(Connection *self)
   transaction is rolled back, otherwise it is committed.  For example::
 
     with connection:
-        call_a_function(connection)
-        call_another(connection)
+        connection.cursor().execute("....")
         with connection:
             # nested is supported
             call_function(connection)
+            connection.cursor().execute("...")
             with connection as db:
                 # You can also use 'as'
                 call_function2(db)
+                db.cursor().execute("...")
 
   Behind the scenes the `savepoint
   <http://www.sqlite.org/lang_savepoint.html>`_ functionality introduced in
