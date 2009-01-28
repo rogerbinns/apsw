@@ -85,7 +85,6 @@ class APSWTracer(object):
             return self.formatbinary(obj)
         if isinstance(obj, self.zeroblob):
             return "zeroblob(%d)" % (obj.length(),)
-        import pdb ; pdb.set_trace()
         return repr(obj)
 
     def formatstring(self, obj, quote='"', checkmaxlen=True):
@@ -120,8 +119,15 @@ class APSWTracer(object):
     else:
         formatbinary=formatbinarypy3
 
-    def profiler(self, sql, nanoseconds):
+    def sanitizesql(self, sql):
         sql=sql.strip("; \t\r\n")
+        while sql.startswith("--"):
+            sql=sql.split("\n", 1)[1]
+            sql=sql.lstrip("; \t\r\n")
+        return sql
+            
+    def profiler(self, sql, nanoseconds):
+        sql=self.sanitizesql(sql)
         if sql not in self.timings:
             self.timings[sql]=[nanoseconds]
         else:
@@ -135,7 +141,7 @@ class APSWTracer(object):
         if tid not in self.threadsused:
             self.threadsused[tid]=True
         if self.options.report:
-            fix=sql.strip("; \t\r\n")
+            fix=self.sanitizesql(sql)
             if fix not in self.queries:
                 self.queries[fix]=1
             else:
@@ -236,61 +242,69 @@ class APSWTracer(object):
         if not self.options.report:
             return
         w=lambda *args: self.writer(self.u+" ".join(args))
-        w("APSW TRACE SUMMARY REPORT")
-        w()
-        w("Program run time                   ", "%.03f seconds" % (time.time()-self.timestart,))
-        w("Total connections                  ", str(self.numconnections))
-        w("Total cursors                      ", str(self.numcursors))
-        w("Number of threads used for queries ", str(len(self.threadsused)))
+        if "summary" in self.options.reports:
+            w("APSW TRACE SUMMARY REPORT")
+            w()
+            w("Program run time                   ", "%.03f seconds" % (time.time()-self.timestart,))
+            w("Total connections                  ", str(self.numconnections))
+            w("Total cursors                      ", str(self.numcursors))
+            w("Number of threads used for queries ", str(len(self.threadsused)))
         total=0
         for k,v in self.queries.items():
             total+=v
-        w("Total queries                      ", str(total))
-        w("Number of distinct queries         ", str(len(self.queries)))
-        w("Number of rows returned            ", str(self.rowsreturned))
-        total=0
-        for k,v in self.timings.items():
-            for v2 in v:
-                total+=v2
-        w("Time spent processing queries      ", "%.03f seconds" % (total/1000000000.0))
+        fmtq=len("%d" % (total,))+1
+        if "summary" in self.options.reports:
+            w("Total queries                      ", str(total))
+            w("Number of distinct queries         ", str(len(self.queries)))
+            w("Number of rows returned            ", str(self.rowsreturned))
+            total=0
+            for k,v in self.timings.items():
+                for v2 in v:
+                    total+=v2
+            w("Time spent processing queries      ", "%.03f seconds" % (total/1000000000.0))
 
         # show most popular queries
-        w()
-        w("MOST POPULAR QUERIES")
-        w()
-        fmtc=None
-        for count, query in self.mostpopular(self.options.reportn):
-            if fmtc is None:
-                fmtc="% "+str(1+len(str(count)))+"d"
-            w(fmtc % (count,), self.formatstring(query, '', False))
+        if "popular" in self.options.reports:
+            w()
+            w("MOST POPULAR QUERIES")
+            w()
+            for count, query in self.mostpopular(self.options.reportn):
+                w("% *d" % (fmtq, count,), self.formatstring(query, '', False))
 
         # show longest running (aggregate)
-        w()
-        w("LONGEST RUNNING - AGGREGATE")
-        w()
-        fmtt=None
-        qfmt=None
-        for total, count, query in self.longestrunningaggregate(self.options.reportn):
-            if fmtt is None:
-                fmtt=len(str(int(total/1000000000)))
-            if qfmt is None:
-                qfmt=fmtc+" % "+str(6+fmtt)+".3f"
-            w(qfmt % (count, total/1000000000.0), self.formatstring(query, '', False))
+        if "aggregate" in self.options.reports:
+            w()
+            w("LONGEST RUNNING - AGGREGATE")
+            w()
+            fmtt=None
+            for total, count, query in self.longestrunningaggregate(self.options.reportn):
+                if fmtt is None:
+                    fmtt=len(fmtfloat(int(total/1000000000.0)))+1
+                w("% *d %s" % (fmtq, count, fmtfloat(total/1000000000.0, total=fmtt)), self.formatstring(query, '', False))
 
         # show longest running (individual)
-        w()
-        w("LONGEST RUNNING - INDIVIDUAL")
-        w()
-        fmt=None
-        for t,query in self.longestrunningindividual(self.options.reportn):
-            if fmt is None:
-                fmt="% "+str(6+len(str(int(t/1000000000))))+".3f"
-            w(fmt % (t/1000000000.0,), self.formatstring(query, '', False))
+        if "individual" in self.options.reports:
+            w()
+            w("LONGEST RUNNING - INDIVIDUAL")
+            w()
+            fmtt=None
+            for t,query in self.longestrunningindividual(self.options.reportn):
+                if fmtt is None:
+                    fmtt=len(fmtfloat(int(total/1000000000.0)))+1
+                w(fmtfloat(t/1000000000.0, total=fmtt), self.formatstring(query, '', False))
+
+def fmtfloat(n, decimals=3, total=None):
+    s="%d.%0*d" % (int(n), decimals, (n-int(n))*decimals)
+    if total:
+        s=(" "*total+s)[-total:]
+    return s
 
 def main():
     import optparse
     import os
     import sys
+
+    reports=("summary", "popular", "aggregate", "individual")
 
     parser=optparse.OptionParser(usage="%prog [options] pythonscript.py [pythonscriptoptions]",
                                  description="This script runs a Python program that uses APSW "
@@ -313,9 +327,16 @@ def main():
                       help="A summary report is normally generated at program exit.  This turns off the report and saves memory.")
     parser.add_option("--report-items", dest="reportn", metavar="N", default=15, type="int",
                       help="How many items to report in top lists [%default]")
+    parser.add_option("--reports", dest="reports", default=",".join(reports),
+                      help="Which reports to show [%default]")
 
     parser.disable_interspersed_args()
     options, args=parser.parse_args()
+
+    options.reports=[x.strip() for x in options.reports.split(",") if x.strip()]
+    for r in options.reports:
+        if r not in reports:
+            parser.error(r+" is not a valid report.  You should supply one or more of "+", ".join(reports))
 
     if options.rows:
         options.sql=True
