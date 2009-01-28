@@ -43,7 +43,10 @@ def doit():
             return con
 
     if options.pysqlite:
-        from pysqlite2 import dbapi2 as pysqlite
+        try:
+            from pysqlite2 import dbapi2 as pysqlite
+        except ImportError:
+            import sqlite3 as pysqlite
 
         write("Testing with pysqlite file "+pysqlite.__file__+"\n")
         write("          pysqlite version "+pysqlite.version+"\n")

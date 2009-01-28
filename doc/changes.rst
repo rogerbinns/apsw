@@ -40,6 +40,13 @@ Updated the xDlSym VFS routine to have the different but compatible
 type signature as changed in SQLite 3.6.7 to deal with pedantic
 compiler warnings.
 
+Fixed bug in :ref:`apswtrace <apswtrace>` that could result in poorly
+formatted times.  Leading comments are also stripped for queries
+printed in the final reports.  You can also request subsets of the
+reports.
+
+The :ref:`speedtest` script will now fallback to the Python builtin
+sqlite3 module if it can't find an externally installed pysqlite.
 
 3.6.6.2-r1
 ==========
