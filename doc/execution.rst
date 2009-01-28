@@ -222,7 +222,7 @@ All output is UTF-8 encoded.  The following options are available:
 
 .. code-block:: text
 
-  $ python tools/apswtrace.py --help
+  $ python apswtrace.py --help
   Usage: apswtrace.py [options] pythonscript.py [pythonscriptoptions]
 
   This script runs a Python program that uses APSW and reports on SQL queries
@@ -246,6 +246,8 @@ All output is UTF-8 encoded.  The following options are available:
     --no-report           A summary report is normally generated at program
                           exit.  This turns off the report and saves memory.
     --report-items=N      How many items to report in top lists [15]
+    --reports=REPORTS     Which reports to show
+                          [summary,popular,aggregate,individual]
 
 This is sample output with the following options: :option:`--sql`,
 :option:`--rows`, :option:`--timestamps`, :option:`--thread`

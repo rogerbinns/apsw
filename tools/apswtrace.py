@@ -146,13 +146,15 @@ class APSWTracer(object):
                 self.queries[fix]=1
             else:
                 self.queries[fix]=self.queries[fix]+1
-        wr=weakref.ref(cursor, self.cursorfinished)
-        if wr not in self.newcursor:
-            self.newcursor[wr]=True
-            self.numcursors+=1
+        if not isinstance(cursor, apsw.Connection):
+            wr=weakref.ref(cursor, self.cursorfinished)
+            if wr not in self.newcursor:
+                self.newcursor[wr]=True
+                self.numcursors+=1
         if self.options.sql:
-            self.log(id(cursor), "CURSORFROM:", "%x" % (id(cursor.getconnection()),),
-                     "DB:", self.formatstring(cursor.getconnection().filename, checkmaxlen=False))
+            if not isinstance(cursor, apsw.Connection):
+                self.log(id(cursor), "CURSORFROM:", "%x" % (id(cursor.getconnection()),),
+                         "DB:", self.formatstring(cursor.getconnection().filename, checkmaxlen=False))
             args=[id(cursor), "SQL:", self.formatstring(sql, '', False)]
             if bindings:
                 args.extend(["BINDINGS:", self.format(bindings)])

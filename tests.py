@@ -2492,7 +2492,7 @@ class APSW(unittest.TestCase):
                 func=getattr(self.db, func)
                 if func:
                     func(*args)
-                    self.fail("connection method "+func+" didn't notice that the connection is closed")
+                    self.fail("connection method "+str(func)+" didn't notice that the connection is closed")
             except apsw.ConnectionClosedError:
                 pass
         self.assert_(tested>len(nargs))
@@ -5154,15 +5154,6 @@ class APSW(unittest.TestCase):
             db.overloadfunction("foo", 1)
             1/0
         except apsw.NoMemError:
-            pass
-
-        ## ConnectionEnterNumFailed
-        apsw.faultdict["ConnectionEnterNumFailed"]=True
-        try:
-            db=apsw.Connection(":memory:")
-            db.__enter__()
-            1/0
-        except MemoryError:
             pass
 
         ## ConnectionEnterExecFailed
