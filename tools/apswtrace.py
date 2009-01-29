@@ -10,9 +10,6 @@ import weakref
 class APSWTracer(object):
 
     def __init__(self, options):
-        import apsw
-        self.mapping_open_flags=apsw.mapping_open_flags
-        self.zeroblob=apsw.zeroblob
         if sys.version_info<(3,):
             self.u=eval("u''")
             import thread
@@ -35,13 +32,16 @@ class APSWTracer(object):
         else:
             self._writer=open(options.output, "wt").write
 
-        if True:
-            try:
-                import apsw
-                apsw.connection_hooks.append(self.connection_hook)
-            except:
-                sys.stderr.write(self.u+"Unable to import apsw\n")
-                raise
+        try:
+            import apsw
+            apsw.connection_hooks.append(self.connection_hook)
+        except:
+            sys.stderr.write(self.u+"Unable to import apsw\n")
+            raise
+
+        self.mapping_open_flags=apsw.mapping_open_flags
+        self.zeroblob=apsw.zeroblob
+        self.apswConnection=apsw.Connection
 
         self.newcursor={}
         self.threadsused={} # really want a set
@@ -146,13 +146,13 @@ class APSWTracer(object):
                 self.queries[fix]=1
             else:
                 self.queries[fix]=self.queries[fix]+1
-        if not isinstance(cursor, apsw.Connection):
+        if not isinstance(cursor, self.apswConnection):
             wr=weakref.ref(cursor, self.cursorfinished)
             if wr not in self.newcursor:
                 self.newcursor[wr]=True
                 self.numcursors+=1
         if self.options.sql:
-            if not isinstance(cursor, apsw.Connection):
+            if not isinstance(cursor, self.apswConnection):
                 self.log(id(cursor), "CURSORFROM:", "%x" % (id(cursor.getconnection()),),
                          "DB:", self.formatstring(cursor.getconnection().filename, checkmaxlen=False))
             args=[id(cursor), "SQL:", self.formatstring(sql, '', False)]
