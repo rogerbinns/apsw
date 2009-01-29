@@ -227,16 +227,10 @@ class APSWTracer(object):
         res=[]
         for k,v in self.timings.items():
             for t in v:
-                if len(res)<howmany:
-                    res.append( (t, k) )
-                    res.sort()
-                    res.reverse()
-                else:
-                    if t>res[-1][0]:
-                        res.append( (t, k) )
-                        res.sort()
-                        res.reverse()
-                        res=res[:howmany]
+                res.append( (t, k) )
+        res.sort()
+        res.reverse()
+        res=res[:howmany]
         return res
 
     def report(self):
@@ -281,7 +275,7 @@ class APSWTracer(object):
             fmtt=None
             for total, count, query in self.longestrunningaggregate(self.options.reportn):
                 if fmtt is None:
-                    fmtt=len(fmtfloat(int(total/1000000000.0)))+1
+                    fmtt=len(fmtfloat(total/1000000000.0))+1
                 w("% *d %s" % (fmtq, count, fmtfloat(total/1000000000.0, total=fmtt)), self.formatstring(query, '', False))
 
         # show longest running (individual)
@@ -292,11 +286,12 @@ class APSWTracer(object):
             fmtt=None
             for t,query in self.longestrunningindividual(self.options.reportn):
                 if fmtt is None:
-                    fmtt=len(fmtfloat(int(total/1000000000.0)))+1
+                    fmtt=len(fmtfloat(total/1000000000.0))+1
                 w(fmtfloat(t/1000000000.0, total=fmtt), self.formatstring(query, '', False))
 
 def fmtfloat(n, decimals=3, total=None):
-    s="%d.%0*d" % (int(n), decimals, (n-int(n))*decimals)
+    "Work around borken python float formatting"
+    s="%0.*f" % (decimals, n)
     if total:
         s=(" "*total+s)[-total:]
     return s
