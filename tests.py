@@ -198,11 +198,16 @@ def deletefile(name):
     l=list("abcdefghijklmn")
     random.shuffle(l)
     newname="n-"+"".join(l)
+    count=0
     while os.path.exists(name):
+        count+=1
         try:
             os.rename(name, newname)
         except:
+            if count>30: # 3 seconds we have been at this!
+                raise
             # Make windows happy
+            time.sleep(0.1)
             gc.collect()
     if os.path.exists(newname):
         bgdelq.put(newname)
@@ -4312,13 +4317,15 @@ class APSW(unittest.TestCase):
         self.assertRaises(OverflowError, t.xFileControl, 10, l("0xffffffffeeeeeeee0"))
         self.assertRaises(TypeError, t.xFileControl, 10, "three")
         self.assertRaises(apsw.SQLError, t.xFileControl, 2000, 3000)
-        fc1=testdb(closedb=False).filecontrol
-        fc2=testdb(closedb=False).filecontrol
+        fc1=testdb("testdb", closedb=False).filecontrol
+        fc2=testdb("testdb2", closedb=False).filecontrol
         TestFile.xFileControl=TestFile.xFileControl1
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, fc1, "main", 1027, 1027)
         TestFile.xFileControl=TestFile.xFileControl2
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, fc2, "main", 1027, 1027)
         TestFile.xFileControl=TestFile.xFileControl99
+        del fc1
+        del fc2
         # these should work
         testdb(closedb=False).filecontrol("main", 1027, 1027)
         if ctypes:
