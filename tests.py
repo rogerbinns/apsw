@@ -4198,9 +4198,9 @@ class APSW(unittest.TestCase):
         self.assertRaises([apsw.IOError, apsw.FullError][iswindows], t.xWrite, b("foo"), -7)
         self.assertRaises(TypeError, t.xWrite, u("foo"), 0)
         TestFile.xWrite=TestFile.xWrite1
-        self.assertRaises(apsw.FullError, self.assertRaisesUnraisable, TypeError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.xWrite=TestFile.xWrite2
-        self.assertRaises(apsw.FullError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
         TestFile.xWrite=TestFile.xWrite3
         self.assertRaises([apsw.IOError, apsw.FullError][iswindows], self.assertRaisesUnraisable, [apsw.IOError, apsw.FullError][iswindows], testdb)
         TestFile.xWrite=TestFile.xWrite99
