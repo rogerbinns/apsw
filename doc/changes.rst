@@ -2,6 +2,16 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.6.11-r1
+=========
+
+Updated a VFS test to reflect changes in SQLite underlying error
+handling.  (Previously SQLite almost always returned :exc:`FullError`
+on any write that had an error but now returns :exc:`SQLiteError`.)
+
+You can now use the hot backup functionality introduced in SQLite
+3.6.11.
+
 3.6.10-r1
 =========
 

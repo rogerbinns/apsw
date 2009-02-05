@@ -39,7 +39,7 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
   without needing any additional level of locking.  pysqlite requires
   that the :class:`Connection` and any :class:`cursors <Cursor>` are
   used in the same thread.  You can disable its checking, but unless you
-  are very careful with you own mutexes you will have a crash or a
+  are very careful with your own mutexes you will have a crash or a
   deadlock.
  
 * APSW is a single file for the extension, :file:`apsw.pyd` on Windows and
