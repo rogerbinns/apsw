@@ -115,13 +115,18 @@ struct APSWBlob;
 static void APSWBlob_init(struct APSWBlob *self, Connection *connection, sqlite3_blob *blob);
 static PyTypeObject APSWBlobType;
 
+#ifdef EXPERIMENTAL
+struct APSWBackup;
+static void APSWBackup_init(struct APSWBackup *self, Connection *connection, sqlite3_backup *backup);
+static PyTypeObject APSWBackupType;
+#endif
+
 struct APSWCursor;
 static void APSWCursor_init(struct APSWCursor *, Connection *);
 static PyTypeObject APSWCursorType;
 
 struct ZeroBlobBind;
 static PyTypeObject ZeroBlobBindType;
-
 
 
 static void
@@ -133,7 +138,6 @@ FunctionCBInfo_dealloc(FunctionCBInfo *self)
   Py_CLEAR(self->aggregatefactory);
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
-
 
 /** .. class:: Connection
 
@@ -521,6 +525,95 @@ Connection_blobopen(Connection *self, PyObject *args)
   Py_DECREF(weakref);
   return (PyObject*)apswblob;
 }
+
+
+#ifdef EXPERIMENTAL
+/** .. method:: backup(databasename, sourceconnection, sourcedatabasename)  -> backup
+
+   Opens a :ref:`backup object <Backup>`.  All data will be copied from source
+   database to this database.
+
+   :param databasename: Name of the database.  This will be ``main`` for
+     the main connection and the name you specified for `attached
+     <http://www.sqlite.org/lang_attach.html>`_ databases.
+   :param sourceconnection: The :class:`Connection` to copy a database from.
+   :param sourcedatabasename: Name of the database in the source (eg ``main``).
+
+   :rtype: :class:`backup`
+
+   .. seealso::
+
+     * :ref:`Backup`
+
+   -* sqlite3_backup_init
+*/
+static PyObject *
+Connection_backup(Connection *self, PyObject *args)
+{
+  struct APSWBackup *apswbackup=0;
+  sqlite3_backup *backup=0;
+  int res;
+  PyObject *result=NULL, *source=NULL;
+  const char *databasename=NULL;
+  const char *sourcedatabasename=NULL;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+  
+  if(!PyArg_ParseTuple(args, "esOes:blobopen(databasename, sourceconnection, sourcedatabasename)", 
+                       STRENCODING, &databasename, &source, STRENCODING, &sourcedatabasename))
+    return NULL;
+
+  if(Py_TYPE(source)!=&ConnectionType)
+    {
+      PyErr_Format(PyExc_ValueError, "source connection needs to be a Connection instance");
+      goto finally;
+    }
+
+  if(!((Connection*)source)->db)
+    {
+      PyErr_Format(PyExc_ValueError, "source connection is closed!");
+      goto finally;
+    }
+
+  if(!((Connection*)source)->inuse)
+    {
+      PyErr_Format(ExcThreadingViolation, "source connection is in concurrent use in another thread");
+      goto finally;
+    }
+
+  PYSQLITE_CON_CALL( (backup=sqlite3_backup_init(self->db, databasename, ((Connection*)source)->db, sourcedatabasename),
+                      res=backup?SQLITE_OK:sqlite3_extended_errcode(self->db)) );
+
+  if(res)
+    {
+      SET_EXC(res, self->db);
+      goto finally;
+    }
+
+  apswbackup=PyObject_New(struct APSWBackup, &APSWBackupType);
+  if(!apswbackup)
+    goto finally;
+
+  APSWBackup_init(apswbackup, self, backup);
+  backup=NULL;
+  PyList_Append(self->dependents, (PyObject*)apswbackup);
+
+  finally:
+  /* check errors occurred vs result */
+  assert(result?(PyErr_Occurred()==NULL):(PyErr_Occurred()!=NULL));
+  assert(result?(backup==NULL):1);
+  if (backup) sqlite3_backup_finish(backup);
+  if (databasename) PyMem_Free((void*)databasename);
+  if (sourcedatabasename) PyMem_Free((void*)sourcedatabasename);
+
+  /* if inuse is set then we must be returning result */
+  assert( (self->inuse) ? (!!result):(result==NULL));
+
+  return result;
+}
+#endif
+
 
 /** .. method:: cursor() -> Cursor
 
@@ -2947,6 +3040,8 @@ static PyMethodDef Connection_methods[] = {
 #endif
   {"createmodule", (PyCFunction)Connection_createmodule, METH_VARARGS,
    "registers a virtual table"},
+  {"backup", (PyCFunction)Connection_backup, METH_VARARGS,
+   "starts a backup"},
 #endif
   {"filecontrol", (PyCFunction)Connection_filecontrol, METH_VARARGS,
    "file control"},

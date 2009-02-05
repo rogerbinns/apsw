@@ -9,6 +9,7 @@ SOURCEFILES = \
 	src/apsw.c \
 	src/apswbuffer.c \
 	src/apswversion.h \
+	src/backup.c \
 	src/blob.c \
 	src/connection.c \
 	src/cursor.c \
@@ -34,7 +35,8 @@ GENDOCS = \
 	doc/vtable.rst \
 	doc/connection.rst \
 	doc/cursor.rst \
-	doc/apsw.rst
+	doc/apsw.rst \
+	doc/backup.rst
 
 all: header docs
 
@@ -57,11 +59,11 @@ linkcheck:
 publish: docs
 	if [ -d ../apsw-publish ] ; then rm -f ../apsw-publish/* ../apsw-publish/_static/* ../apsw-publish/_sources/* ; \
 	rsync -av doc/build/html/ ../apsw-publish/ ;  cd ../apsw-publish ; set -x ; \
-	svn propset svn:mime-type text/html `find . -name \*.html` ; \
-	svn propset svn:mime-type text/javascript `find . -name \*.js` ; \
-	svn propset svn:mime-type "text/plain; charset=UTF-8" `find . -name \*.txt` ; \
-	svn propset svn:mime-type image/png `find . -name \*.png` ; \
-	svn propset svn:mime-type text/css `find . -name \*.css` ; \
+	svn -q propset svn:mime-type text/html `find . -name \*.html` ; \
+	svn -q propset svn:mime-type text/javascript `find . -name \*.js` ; \
+	svn -q propset svn:mime-type "text/plain; charset=UTF-8" `find . -name \*.txt` ; \
+	svn -q propset svn:mime-type image/png `find . -name \*.png` ; \
+	svn -q propset svn:mime-type text/css `find . -name \*.css` ; \
 	fi
 
 header:

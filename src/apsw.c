@@ -150,6 +150,9 @@ static PyObject *apswmodule;
 /* connections */
 #include "connection.c"
 
+/* backup */
+#include "backup.c"
+
 /* Zeroblob and blob */
 #include "blob.c"
 

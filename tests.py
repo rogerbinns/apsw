@@ -4374,7 +4374,7 @@ class APSW(unittest.TestCase):
                 l[k]=v
             # now remove indentation
             s=s.split("\n")
-            p=len(s[0])-len(s[0].lstrip("  "))
+            p=len(s[0])-len(s[0].lstrip(" "))
             s="\n".join([s[p:] for s in s])
             execwrapper(s, globals(), l)
 
@@ -4509,7 +4509,7 @@ class APSW(unittest.TestCase):
                 self.assertEqual(id(blob), id(b))
                 b.read(1)
           """, blob=blob)
-        # blob gives ValueError if you do operating on closed blob
+        # blob gives ValueError if you do operations on closed blob
         self.assertRaises(ValueError, blob.read) 
 
         self.db.cursor().execute("insert into blobby values(x'aabbccddee')")
@@ -4524,14 +4524,57 @@ class APSW(unittest.TestCase):
                   """, blob=blob)
         except ZeroDivisionError:
             # blob gives ValueError if you do operating on closed blob
-            self.assertRaises(ValueError, blob.read) 
+            self.assertRaises(ValueError, blob.read)
 
+        # backup code
+        db2=apsw.Connection(":memory:")
+        run("""
+          with db2.backup("main", self.db, "main") as b:
+             while not b.done:
+                b.step(1)
+                print b.remaining, b.pagecount
+          """)
+        self.assertEqual(b.done, True)
+        self.assertDbIdentical(self.db, "main", db2, "main")
+
+    def testBackup(self):
+        "Verify hot backup functionality"
+        db2=apsw.Connection(":memory:")
+        db2.cursor().execute("create table a(x)")
+        for i in range(1,11):
+            db2.cursor().execute("insert into a values(?)", ("aaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"*i*8192,))
+
+        # standard usage
+        b=self.db.backup("main", db2, "main")
+        try:
+            self.assertRaises(ValueError, b.step, 0)
+            self.assertRaises(ValueError, b.step, -3)
+            self.assertRaises(TypeError, b.step, '3')
+            while not b.done:
+                b.step(1)
+                print b.remaining, b.pagecount
+        finally:
+            b.finish()
+        self.assertDbIdentical(self.db, "main", db2, "main")
+        self.db.cursor().execute("drop table a")
+
+        # don't clean up
+        b=self.db.backup("main", db2, "main")
+        while not b.done:
+            b.step(1)
+            print b.remaining, b.pagecount
+        self.assertDbIdentical(self.db, "main", db2, "main")
+        del b
+        del db2
+        self.db=None
+        gc.collect()
         
         
     # Note that faults fire only once, so there is no need to reset
     # them.  The testing for objects bigger than 2GB is done in
     # testLargeObjects
     def testzzFaultInjection(self):
+        "Deliberately inject faults to exercise all code paths"
         if not hasattr(apsw, "faultdict"):
             return
 
