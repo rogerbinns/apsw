@@ -4537,13 +4537,17 @@ class APSW(unittest.TestCase):
         self.assertEqual(b.done, True)
         self.assertDbIdentical(self.db, "main", db2, "main")
 
+    def fillWithRandomStuff(self, db, seed=1):
+        "Fills a database with random content"
+        db.cursor().execute("create table a(x)")
+        for i in range(1,11):
+            db.cursor().execute("insert into a values(?)", ("aaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"*i*8192,))
+
     def testBackup(self):
         "Verify hot backup functionality"
         db2=apsw.Connection(":memory:")
-        db2.cursor().execute("create table a(x)")
-        for i in range(1,11):
-            db2.cursor().execute("insert into a values(?)", ("aaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"*i*8192,))
-
+        self.fillWithRandomStuff(db2)
+        
         # standard usage
         b=self.db.backup("main", db2, "main")
         try:
@@ -4568,6 +4572,19 @@ class APSW(unittest.TestCase):
         del db2
         self.db=None
         gc.collect()
+
+        # check dest db can't be used for anything else
+        db2=apsw.Connection(":memory:")
+        c=db2.cursor()
+        c.execute("create table x(y); insert into x values(3); select * from x")
+        self.db=apsw.Connection(":memory:")
+        self.fillWithRandomStuff(self.db)
+        b=db2.backup("main", self.db, "main")
+        # with the backup object existing, all operations on db2 should fail
+        db2.cursor().execute("select * from sqlite_master")
+        1/0
+        c.next()
+        1/0
         
         
     # Note that faults fire only once, so there is no need to reset

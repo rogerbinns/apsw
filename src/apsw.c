@@ -694,6 +694,9 @@ PyInit_apsw(void)
         || PyType_Ready(&APSWStatementType) <0
         || PyType_Ready(&APSWBufferType) <0
         || PyType_Ready(&FunctionCBInfoType) <0
+#ifdef EXPERIMENTAL
+        || PyType_Ready(&APSWBackupType) <0
+#endif
         )
       goto fail;
 
@@ -714,7 +717,7 @@ PyInit_apsw(void)
     Py_INCREF(&ConnectionType);
     PyModule_AddObject(m, "Connection", (PyObject *)&ConnectionType);
     
-    /* we don't add cursor to the module since users shouldn't be able to instantiate them directly */
+    /* we don't add cursor, blob or backup to the module since users shouldn't be able to instantiate them directly */
     
     Py_INCREF(&ZeroBlobBindType);
     PyModule_AddObject(m, "zeroblob", (PyObject *)&ZeroBlobBindType);

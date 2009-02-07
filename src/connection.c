@@ -117,7 +117,7 @@ static PyTypeObject APSWBlobType;
 
 #ifdef EXPERIMENTAL
 struct APSWBackup;
-static void APSWBackup_init(struct APSWBackup *self, Connection *connection, sqlite3_backup *backup);
+static void APSWBackup_init(struct APSWBackup *self, Connection *dest, Connection *source, sqlite3_backup *backup);
 static PyTypeObject APSWBackupType;
 #endif
 
@@ -553,7 +553,8 @@ Connection_backup(Connection *self, PyObject *args)
   struct APSWBackup *apswbackup=0;
   sqlite3_backup *backup=0;
   int res;
-  PyObject *result=NULL, *source=NULL;
+  PyObject *result=NULL;
+  Connection *source=NULL;
   const char *databasename=NULL;
   const char *sourcedatabasename=NULL;
 
@@ -570,19 +571,19 @@ Connection_backup(Connection *self, PyObject *args)
       goto finally;
     }
 
-  if(!((Connection*)source)->db)
+  if(!source->db)
     {
       PyErr_Format(PyExc_ValueError, "source connection is closed!");
       goto finally;
     }
 
-  if(!((Connection*)source)->inuse)
+  if(!source->inuse)
     {
       PyErr_Format(ExcThreadingViolation, "source connection is in concurrent use in another thread");
       goto finally;
     }
 
-  PYSQLITE_CON_CALL( (backup=sqlite3_backup_init(self->db, databasename, ((Connection*)source)->db, sourcedatabasename),
+  PYSQLITE_CON_CALL( (backup=sqlite3_backup_init(self->db, databasename, source->db, sourcedatabasename),
                       res=backup?SQLITE_OK:sqlite3_extended_errcode(self->db)) );
 
   if(res)
@@ -595,7 +596,7 @@ Connection_backup(Connection *self, PyObject *args)
   if(!apswbackup)
     goto finally;
 
-  APSWBackup_init(apswbackup, self, backup);
+  APSWBackup_init(apswbackup, self, source, backup);
   backup=NULL;
   PyList_Append(self->dependents, (PyObject*)apswbackup);
 

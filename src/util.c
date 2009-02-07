@@ -90,7 +90,8 @@ do {                                                \
 /* call to sqlite code that doesn't return an error */
 #define PYSQLITE_VOID_CALL(y) INUSE_CALL(_PYSQLITE_CALL_V(y))
 
-
+/* call from backup code */
+#define PYSQLITE_BACKUP_CALL(y) INUSE_CALL(_PYSQLITE_CALL_E(self->dest->db, y))
 
 #ifdef __GNUC__
 #define APSW_ARGUNUSED __attribute__ ((unused))
@@ -326,16 +327,17 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
 
 /* used by Connection and Cursor */
 #define CHECK_USE(e)                                                \
+  do \
   { if(self->inuse)                                                                                 \
       {    /* raise exception if we aren't already in one */                                                                         \
            if (!PyErr_Occurred())                                                                                                    \
              PyErr_Format(ExcThreadingViolation, "You are trying to use the same object concurrently in two threads which is not allowed."); \
            return e;                                                                                                                 \
       }                                                                                                                              \
-  }
+  } while(0)
 
 /* used by Connection */
-#define CHECK_CLOSED(connection,e) \
-{ if(!connection->db) { PyErr_Format(ExcConnectionClosed, "The connection has been closed"); return e; } }
+#define CHECK_CLOSED(connection,e) do \
+    { if(!connection->db) { PyErr_Format(ExcConnectionClosed, "The connection has been closed"); return e; } } while(0)
 
 
