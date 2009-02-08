@@ -171,10 +171,10 @@ Connection_internal_cleanup(Connection *self)
 /** .. method:: close([force=False])
 
   Closes the database.  If there are any outstanding :class:`cursors
-  <Cursor>` or :class:`blobs <blob>` then they are closed too.  It is
-  normally not necessary to call this method as the database is
-  automatically closed when there are no more references.  It is ok to
-  call the method multiple times.
+  <Cursor>`, :class:`blobs <blob>` or :class:`backups <backup>` then
+  they are closed too.  It is normally not necessary to call this
+  method as the database is automatically closed when there are no
+  more references.  It is ok to call the method multiple times.
 
   If your user defined functions or collations have direct or indirect
   references to the Connection then it won't be automatically garbage
@@ -187,7 +187,7 @@ Connection_internal_cleanup(Connection *self)
   when the process is exited, or even if the exit is graceful or
   abrupt.  In the worst case of having a transaction in progress, that
   transaction will be rolled back by the next program to open the
-  database.
+  database, reverting the database to a know good state.
 
   If *force* is *True* then any exceptions are ignored.
 
@@ -225,7 +225,12 @@ Connection_close(Connection *self, PyObject *args)
       closeres=Call_PythonMethodV(item, "close", 1, "(i)", force);
       Py_XDECREF(closeres);
       if(!closeres)
-        return NULL;
+        {
+          /* should only get exceptions if force is false */
+          assert(!force);
+          assert(PyErr_Occurred());
+          return NULL;
+        }
     }
       
   statementcache_free(self->stmtcache);
@@ -554,6 +559,7 @@ Connection_backup(Connection *self, PyObject *args)
   sqlite3_backup *backup=0;
   int res;
   PyObject *result=NULL;
+  PyObject *weakref=NULL;
   Connection *source=NULL;
   const char *databasename=NULL;
   const char *sourcedatabasename=NULL;
@@ -577,7 +583,7 @@ Connection_backup(Connection *self, PyObject *args)
       goto finally;
     }
 
-  if(!source->inuse)
+  if(source->inuse)
     {
       PyErr_Format(ExcThreadingViolation, "source connection is in concurrent use in another thread");
       goto finally;
@@ -597,8 +603,23 @@ Connection_backup(Connection *self, PyObject *args)
     goto finally;
 
   APSWBackup_init(apswbackup, self, source, backup);
+  Py_INCREF(self);
+  Py_INCREF(source);
   backup=NULL;
-  PyList_Append(self->dependents, (PyObject*)apswbackup);
+  
+  /* add to dependent lists */
+  weakref=PyWeakref_NewRef((PyObject*)apswbackup, self->dependent_remove);
+  if(!weakref) goto finally;
+  if(PyList_Append(self->dependents, weakref)) goto finally;
+  Py_DECREF(weakref);
+  weakref=PyWeakref_NewRef((PyObject*)apswbackup, ((Connection*)source)->dependent_remove);
+  if(!weakref) goto finally;
+  if(PyList_Append(((Connection*)source)->dependents, weakref)) goto finally;
+  Py_DECREF(weakref);
+  weakref=0;
+
+  result=(PyObject*)apswbackup;
+  apswbackup=NULL;
 
   finally:
   /* check errors occurred vs result */
@@ -607,6 +628,8 @@ Connection_backup(Connection *self, PyObject *args)
   if (backup) sqlite3_backup_finish(backup);
   if (databasename) PyMem_Free((void*)databasename);
   if (sourcedatabasename) PyMem_Free((void*)sourcedatabasename);
+  Py_XDECREF(apswbackup);
+  Py_XDECREF(weakref);
 
   /* if inuse is set then we must be returning result */
   assert( (self->inuse) ? (!!result):(result==NULL));

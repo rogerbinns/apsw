@@ -46,7 +46,7 @@ Here is an example usage using the **with** statement to ensure
   with db.backup("main", source, "main") as b:
       while not b.done:
           b.step(100)
-          print b.remaining, b.pagecount
+          print b.remaining, b.pagecount, "\r",
 
 If you are not using **with** then you'll need to ensure
 :meth:`~backup.finish` is called::
@@ -56,7 +56,7 @@ If you are not using **with** then you'll need to ensure
   try:
       while not b.done:
           b.step(100)
-          print b.remaining, b.pagecount
+          print b.remaining, b.pagecount, "\r",
   finally:
       b.finish()
 
@@ -94,6 +94,7 @@ struct APSWBackup
   sqlite3_backup *backup;
   PyObject *done;
   int inuse;
+  PyObject *weakreflist;
 };
 
 typedef struct APSWBackup APSWBackup;
@@ -103,18 +104,15 @@ APSWBackup_init(APSWBackup *self, Connection *dest, Connection *source, sqlite3_
 {
   assert(dest->inuse==0);
   dest->inuse=1;
+  assert(source->inuse==0);
  
-  Py_INCREF(dest);
-  Py_INCREF(source);
-
   self->dest=dest;
   self->source=source;
   self->backup=backup;
   self->done=Py_False;
   Py_INCREF(self->done);
   self->inuse=0;
-
-  /* ::TODO:: add to dependents? */
+  self->weakreflist=NULL;
 }
 
 /* returns non-zero if it set an exception */
@@ -140,9 +138,6 @@ APSWBackup_close_internal(APSWBackup *self, int force)
   assert(self->dest->inuse);
   self->dest->inuse=0;
 
-  Py_CLEAR(self->dest);
-  Py_CLEAR(self->source);
-
   if(setexc)
     {
       assert(PyErr_Occurred());
@@ -154,7 +149,12 @@ APSWBackup_close_internal(APSWBackup *self, int force)
 static void
 APSWBackup_dealloc(APSWBackup *self)
 {
+  APSW_CLEAR_WEAKREFS;
+
   APSWBackup_close_internal(self, 1);
+
+  Py_CLEAR(self->dest);
+  Py_CLEAR(self->source);
 
   Py_CLEAR(self->done);
 }
@@ -194,9 +194,12 @@ APSWBackup_step(APSWBackup *self, PyObject *args)
 
   if(res==SQLITE_DONE)
     {
-      Py_CLEAR(self->done);
-      self->done=Py_True;
-      Py_INCREF(self->done);
+      if(self->done!=Py_True)
+        {
+          Py_CLEAR(self->done);
+          self->done=Py_True;
+          Py_INCREF(self->done);
+        }
       res=SQLITE_OK;
     }
 
@@ -265,9 +268,9 @@ APSWBackup_close(APSWBackup *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
-/** .. method:: remaining()
+/** .. attribute:: remaining
 
-  Returns how many pages were remaining to be copied after the last
+  Read only. How many pages were remaining to be copied after the last
   step.  If you haven't called :meth:`~backup.step` or the backup
   object has been :meth:`finished <~backup.finish>` then zero is
   returned.
@@ -275,15 +278,15 @@ APSWBackup_close(APSWBackup *self, PyObject *args)
   -* sqlite3_backup_remaining
 */
 static PyObject *
-APSWBackup_remaining(APSWBackup *self)
+APSWBackup_get_remaining(APSWBackup *self, APSW_ARGUNUSED void *ignored)
 {
   CHECK_USE(NULL);
   return PyInt_FromLong(self->backup?sqlite3_backup_remaining(self->backup):0);
 }
 
-/** .. method:: pagecount()
+/** .. attribute:: pagecount
 
-  Returns how many pages were in the source database after the last
+  Read only. How many pages were in the source database after the last
   step.  If you haven't called :meth:`~backup.step` or the backup
   object has been :meth:`finished <~backup.finish>` then zero is
   returned.
@@ -291,7 +294,7 @@ APSWBackup_remaining(APSWBackup *self)
   -* sqlite3_backup_pagecount
 */
 static PyObject *
-APSWBackup_pagecount(APSWBackup *self)
+APSWBackup_get_pagecount(APSWBackup *self, APSW_ARGUNUSED void *ignored)
 {
   CHECK_USE(NULL);
   return PyInt_FromLong(self->backup?sqlite3_backup_pagecount(self->backup):0);
@@ -361,6 +364,13 @@ static PyMemberDef backup_members[] = {
   {0,0,0,0,0}
 };
 
+static PyGetSetDef backup_getset[] = {
+  /* name getter setter doc closure */
+  {"remaining", (getter)APSWBackup_get_remaining, NULL, "Pages still to be copied", NULL},
+  {"pagecount", (setter)APSWBackup_get_pagecount, NULL, "Total pages in source database", NULL},
+  {0,0,0,0,0}
+};
+
 static PyMethodDef backup_methods[] = {
   {"__enter__", (PyCFunction)APSWBackup_enter, METH_NOARGS,
    "Context manager entry"},
@@ -372,12 +382,6 @@ static PyMethodDef backup_methods[] = {
    "Commits or rollsback backup"},
   {"close", (PyCFunction)APSWBackup_close, METH_VARARGS,
    "Alternate way to finish"},
-  {"remaining", (PyCFunction)APSWBackup_remaining, METH_NOARGS,
-   "How many pages remain to be copied after the last step"},
-  {"pagecount", (PyCFunction)APSWBackup_pagecount, METH_NOARGS,
-   "How many pages there are in the source database"},
-
-
   {0,0,0,0}
 };
 
@@ -407,12 +411,12 @@ static PyTypeObject APSWBackupType =
     0,		               /* tp_traverse */
     0,		               /* tp_clear */
     0,		               /* tp_richcompare */
-    0,	                       /* tp_weaklistoffset */
+    offsetof(APSWBackup,weakreflist), /* tp_weaklistoffset */
     0,		               /* tp_iter */
     0,		               /* tp_iternext */
     backup_methods,            /* tp_methods */
     backup_members,            /* tp_members */
-    0,                         /* tp_getset */
+    backup_getset,             /* tp_getset */
     0,                         /* tp_base */
     0,                         /* tp_dict */
     0,                         /* tp_descr_get */

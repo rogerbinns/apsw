@@ -4533,7 +4533,7 @@ class APSW(unittest.TestCase):
              while not b.done:
                 b.step(1)
                 print b.remaining, b.pagecount
-          """)
+          """, db2=db2)
         self.assertEqual(b.done, True)
         self.assertDbIdentical(self.db, "main", db2, "main")
 
@@ -4543,6 +4543,27 @@ class APSW(unittest.TestCase):
         for i in range(1,11):
             db.cursor().execute("insert into a values(?)", ("aaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"*i*8192,))
 
+    def assertDbIdentical(self, db1, db2):
+        "Ensures databases are identical"
+        c1=db1.cursor()
+        c2=db2.cursor()
+        self.assertEqual(
+            list(c1.execute("select * from sqlite_master order by _ROWID_")),
+            list(c2.execute("select * from sqlite_master order by _ROWID_"))
+            )
+        for table in db1.cursor().execute("select name from sqlite_master where type='table'"):
+            table=table[0]
+            self.assertEqual(
+                list(c1.execute("select * from [%s] order by _ROWID_" % (table,))),
+                list(c2.execute("select * from [%s] order by _ROWID_" % (table,))),
+                )
+        for table in db2.cursor().execute("select name from sqlite_master where type='table'"):
+            table=table[0]
+            self.assertEqual(
+                list(c1.execute("select * from [%s] order by _ROWID_" % (table,))),
+                list(c2.execute("select * from [%s] order by _ROWID_" % (table,))),
+                )
+
     def testBackup(self):
         "Verify hot backup functionality"
         db2=apsw.Connection(":memory:")
@@ -4550,24 +4571,20 @@ class APSW(unittest.TestCase):
         
         # standard usage
         b=self.db.backup("main", db2, "main")
+        self.assertRaises(TypeError, b.step, '3')
         try:
-            self.assertRaises(ValueError, b.step, 0)
-            self.assertRaises(ValueError, b.step, -3)
-            self.assertRaises(TypeError, b.step, '3')
             while not b.done:
                 b.step(1)
-                print b.remaining, b.pagecount
         finally:
             b.finish()
-        self.assertDbIdentical(self.db, "main", db2, "main")
+        self.assertDbIdentical(self.db, db2)
         self.db.cursor().execute("drop table a")
 
         # don't clean up
         b=self.db.backup("main", db2, "main")
         while not b.done:
             b.step(1)
-            print b.remaining, b.pagecount
-        self.assertDbIdentical(self.db, "main", db2, "main")
+        self.assertDbIdentical(self.db, db2)
         del b
         del db2
         self.db=None
