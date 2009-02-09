@@ -4582,8 +4582,12 @@ class APSW(unittest.TestCase):
 
         # don't clean up
         b=self.db.backup("main", db2, "main")
-        while not b.done:
-            b.step(1)
+        try:
+            while not b.done:
+                b.step(1)
+        finally:
+            b.finish()
+        
         self.assertDbIdentical(self.db, db2)
         del b
         del db2
@@ -4598,10 +4602,10 @@ class APSW(unittest.TestCase):
         self.fillWithRandomStuff(self.db)
         b=db2.backup("main", self.db, "main")
         # with the backup object existing, all operations on db2 should fail
-        db2.cursor().execute("select * from sqlite_master")
-        1/0
-        c.next()
-        1/0
+        self.assertRaises(apsw.ThreadingViolationError, db2.cursor)
+        # finish and then trying to step
+        b.finish()
+        b.step()
         
         
     # Note that faults fire only once, so there is no need to reset

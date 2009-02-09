@@ -566,6 +566,28 @@ Connection_backup(Connection *self, PyObject *args)
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
+
+  /* self (destination) can't be used if there are outstanding blobs, cursors or backups */
+  if(PyList_GET_SIZE(self->dependents))
+    {
+      PyObject *args=NULL, *etype, *evalue, *etb;
+
+      args=PyTuple_New(2);
+      if(!args) goto thisfinally;
+      PyTuple_SET_ITEM(args, 0, MAKESTR("The destination database has outstanding objects open on it.  They must all be closed for the backup to proceed (otherwise corruption would be possible.)"));
+      PyTuple_SET_ITEM(args, 1, self->dependents);
+      Py_INCREF(self->dependents);
+
+      PyErr_SetObject(ExcThreadingViolation, args);
+      
+      PyErr_Fetch(&etype, &evalue, &etb);
+      PyErr_NormalizeException(&etype, &evalue, &etb);
+      PyErr_Restore(etype, evalue, etb);
+
+    thisfinally:
+      Py_XDECREF(args);
+      goto finally;
+    }
   
   if(!PyArg_ParseTuple(args, "esOes:blobopen(databasename, sourceconnection, sourcedatabasename)", 
                        STRENCODING, &databasename, &source, STRENCODING, &sourcedatabasename))

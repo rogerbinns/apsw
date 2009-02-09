@@ -367,7 +367,7 @@ static PyMemberDef backup_members[] = {
 static PyGetSetDef backup_getset[] = {
   /* name getter setter doc closure */
   {"remaining", (getter)APSWBackup_get_remaining, NULL, "Pages still to be copied", NULL},
-  {"pagecount", (setter)APSWBackup_get_pagecount, NULL, "Total pages in source database", NULL},
+  {"pagecount", (getter)APSWBackup_get_pagecount, NULL, "Total pages in source database", NULL},
   {0,0,0,0,0}
 };
 
