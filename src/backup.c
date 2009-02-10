@@ -157,6 +157,8 @@ APSWBackup_dealloc(APSWBackup *self)
   Py_CLEAR(self->source);
 
   Py_CLEAR(self->done);
+
+  Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 /** .. method:: step([npages=All])
@@ -229,6 +231,7 @@ APSWBackup_finish(APSWBackup *self)
   int setexc;
   CHECK_USE(NULL);
   
+  /* We handle CHECK_BACKUP_CLOSED internally */
   if(!self->backup)
     Py_RETURN_NONE;
 
@@ -256,6 +259,7 @@ APSWBackup_close(APSWBackup *self, PyObject *args)
 
   CHECK_USE(NULL);
 
+  /* We handle CHECK_BACKUP_CLOSED internally */
   if(!self->backup)
     Py_RETURN_NONE; /* already closed */
 
@@ -333,7 +337,7 @@ APSWBackup_exit(APSWBackup *self, PyObject *args)
   if(!PyArg_ParseTuple(args, "OOO", &etype, &evalue, &etb))
     return NULL;
 
-  /* If already closed then we are fine */
+  /* If already closed then we are fine - CHECK_BACKUP_CLOSED not needed*/
   if(!self->backup)
     Py_RETURN_FALSE;
 

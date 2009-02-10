@@ -212,15 +212,20 @@ Connection_close(Connection *self, PyObject *args)
   if(!PyArg_ParseTuple(args, "|i:close(force=False)", &force))
     return NULL;
 
-  /* Traverse dependents calling close.  This won't work too well if
-     calling close perturbs the list. */
-  for(i=0; i<PyList_GET_SIZE(self->dependents); i++)
+  /* Traverse dependents calling close.  We assume the list may be
+     perturbed by item we just called close on being removed from the
+     list. */
+  for(i=0; i<PyList_GET_SIZE(self->dependents);)
     {
-      PyObject *item, *closeres;
+      PyObject *item, *closeres, *orig;
 
-      item=PyWeakref_GetObject(PyList_GET_ITEM(self->dependents, i));
+      orig=PyList_GET_ITEM(self->dependents, i);
+      item=PyWeakref_GetObject(orig);
       if(!item || item==Py_None)
-        continue;
+        {
+          i++;
+          continue;
+        }
       
       closeres=Call_PythonMethodV(item, "close", 1, "(i)", force);
       Py_XDECREF(closeres);
@@ -230,6 +235,11 @@ Connection_close(Connection *self, PyObject *args)
           assert(!force);
           assert(PyErr_Occurred());
           return NULL;
+        }
+      if(orig==PyList_GET_ITEM(self->dependents, i))
+        {
+          /* list was not perturbed */
+          i++;
         }
     }
       
@@ -647,7 +657,7 @@ Connection_backup(Connection *self, PyObject *args)
   /* check errors occurred vs result */
   assert(result?(PyErr_Occurred()==NULL):(PyErr_Occurred()!=NULL));
   assert(result?(backup==NULL):1);
-  if (backup) sqlite3_backup_finish(backup);
+  if (backup) PYSQLITE_CON_CALL(sqlite3_backup_finish(backup)); 
   if (databasename) PyMem_Free((void*)databasename);
   if (sourcedatabasename) PyMem_Free((void*)sourcedatabasename);
   Py_XDECREF(apswbackup);
