@@ -168,6 +168,85 @@ Connection_internal_cleanup(Connection *self)
   Py_CLEAR(self->open_vfs);
 }
 
+static int 
+Connection_close_internal(Connection *self, int force)
+{
+  Py_ssize_t i;
+  int res;
+  PyObject *etype, *eval, *etb;
+
+  if(force==2)
+    PyErr_Fetch(&etype, &eval, &etb);
+
+  /* Traverse dependents calling close.  We assume the list may be
+     perturbed by item we just called close on being removed from the
+     list. */
+  for(i=0; i<PyList_GET_SIZE(self->dependents);)
+    {
+      PyObject *item, *closeres, *orig;
+
+      orig=PyList_GET_ITEM(self->dependents, i);
+      item=PyWeakref_GetObject(orig);
+      if(!item || item==Py_None)
+        {
+          i++;
+          continue;
+        }
+      
+      closeres=Call_PythonMethodV(item, "close", 1, "(i)", !!force);
+      Py_XDECREF(closeres);
+      if(!closeres)
+        {
+          assert(PyErr_Occurred());
+          if(force==2)
+            apsw_write_unraiseable(NULL);
+          else
+            return 1;
+        }
+      if(i<PyList_GET_SIZE(self->dependents) && orig==PyList_GET_ITEM(self->dependents, i))
+        {
+          /* list was not perturbed */
+          i++;
+        }
+    }
+      
+  if(self->stmtcache)
+    statementcache_free(self->stmtcache);
+  self->stmtcache=0;
+
+  PYSQLITE_VOID_CALL(
+    APSW_FAULT_INJECT(ConnectionCloseFail, res=sqlite3_close(self->db), res=SQLITE_IOERR)
+    );
+
+  self->db=0;
+
+  if (res!=SQLITE_OK) 
+    {
+      SET_EXC(res, NULL);
+      if(force==2)
+        {
+          PyErr_Format(ExcConnectionNotClosed, 
+                       "apsw.Connection at address %p. The destructor "
+                       "has encountered an error %d closing the connection, but cannot raise an exception.",
+                       self, res);
+          apsw_write_unraiseable(NULL);
+        }
+    }
+
+  Connection_internal_cleanup(self);
+
+  if(PyErr_Occurred())
+    {
+      assert(force!=2);
+      AddTraceBackHere(__FILE__, __LINE__, "Connection.close", NULL);
+      return 1;
+    }
+
+  if(force==2)
+    PyErr_Restore(etype, eval, etb);
+  return 0;
+}
+
 /** .. method:: close([force=False])
 
   Closes the database.  If there are any outstanding :class:`cursors
@@ -198,12 +277,7 @@ Connection_internal_cleanup(Connection *self)
 static PyObject *
 Connection_close(Connection *self, PyObject *args)
 {
-  int res;
   int force=0;
-  Py_ssize_t i;
-
-  if(!self->db)
-    goto finally;
 
   CHECK_USE(NULL);
 
@@ -212,67 +286,14 @@ Connection_close(Connection *self, PyObject *args)
   if(!PyArg_ParseTuple(args, "|i:close(force=False)", &force))
     return NULL;
 
-  /* Traverse dependents calling close.  We assume the list may be
-     perturbed by item we just called close on being removed from the
-     list. */
-  for(i=0; i<PyList_GET_SIZE(self->dependents);)
+  force=!!force; /* must be zero or one */
+
+  if(Connection_close_internal(self, force))
     {
-      PyObject *item, *closeres, *orig;
-
-      orig=PyList_GET_ITEM(self->dependents, i);
-      item=PyWeakref_GetObject(orig);
-      if(!item || item==Py_None)
-        {
-          i++;
-          continue;
-        }
-      
-      closeres=Call_PythonMethodV(item, "close", 1, "(i)", force);
-      Py_XDECREF(closeres);
-      if(!closeres)
-        {
-          /* should only get exceptions if force is false */
-          assert(!force);
-          assert(PyErr_Occurred());
-          return NULL;
-        }
-      if(orig==PyList_GET_ITEM(self->dependents, i))
-        {
-          /* list was not perturbed */
-          i++;
-        }
-    }
-      
-  statementcache_free(self->stmtcache);
-  self->stmtcache=0;
-
-  PYSQLITE_VOID_CALL(
-    APSW_FAULT_INJECT(ConnectionCloseFail, res=sqlite3_close(self->db), res=SQLITE_IOERR)
-    );
-
-  if (res!=SQLITE_OK) 
-    {
-      SET_EXC(res, NULL);
-    }
-
-  if(PyErr_Occurred())
-    {
-      AddTraceBackHere(__FILE__, __LINE__, "Connection.close", NULL);
-    }
-
-  /* note: SQLite ignores error returns from vtabDisconnect, so the
-     database still ends up closed and we return an exception! */
-
-  if(res!=SQLITE_OK)
+      assert(PyErr_Occurred());
       return NULL;
+    }
 
-  self->db=0;
-
-  Connection_internal_cleanup(self);
-
- finally:
-  if(PyErr_Occurred())
-    return NULL;
   Py_RETURN_NONE;
 }
 
@@ -280,44 +301,14 @@ static void
 Connection_dealloc(Connection* self)
 {
   APSW_CLEAR_WEAKREFS;
-  if(self->db)
-    {
-      int res;
 
-      if(self->stmtcache)
-        {
-          statementcache_free(self->stmtcache);
-          self->stmtcache=0;
-        }
-
-      PYSQLITE_VOID_CALL(
-        APSW_FAULT_INJECT(DestructorCloseFail, res=sqlite3_close(self->db), res=SQLITE_IOERR);
-        );
-      self->db=0;
-
-      if(res!=SQLITE_OK)
-        {
-          /* not allowed to clobber existing exception */
-          PyObject *etype=NULL, *evalue=NULL, *etraceback=NULL;
-          PyErr_Fetch(&etype, &evalue, &etraceback);
-
-          PyErr_Format(ExcConnectionNotClosed, 
-                       "apsw.Connection at address %p. The destructor "
-                       "has encountered an error %d closing the connection, but cannot raise an exception.",
-                       self, res);
-          
-          apsw_write_unraiseable(NULL);
-          PyErr_Restore(etype, evalue, etraceback);
-        }
-    }
+  Connection_close_internal(self, 2);
 
   /* Our dependents all hold a refcount on us, so they must have all
      released before this destructor could be called */
   assert(PyList_GET_SIZE(self->dependents)==0);
   Py_CLEAR(self->dependents);
   Py_DECREF(self->dependent_remove);
-
-  Connection_internal_cleanup(self);
 
   Py_TYPE(self)->tp_free((PyObject*)self);
 }

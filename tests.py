@@ -2939,7 +2939,7 @@ class APSW(unittest.TestCase):
 
             "Connection":
                 {
-                  "skip": ("internal_cleanup", "dealloc", "init", "close", "interrupt"),
+                  "skip": ("internal_cleanup", "dealloc", "init", "close", "interrupt", "close_internal"),
                   "req":
                       {
                          "use": "CHECK_USE",
@@ -4661,19 +4661,20 @@ class APSW(unittest.TestCase):
                 pass
 
         ## ConnectionCloseFail
-        apsw.faultdict["ConnectionCloseFail"]=True
-        try:
-            db=apsw.Connection(":memory:")
-            db.cursor().execute("select 3")
-            db.close(True)
-            1/0
-        except apsw.IOError:
-            pass
+        if not os.getenv("APSW_NO_MEMLEAK"):
+            apsw.faultdict["ConnectionCloseFail"]=True
+            try:
+                db=apsw.Connection(":memory:")
+                db.cursor().execute("select 3")
+                db.close(True)
+                1/0
+            except apsw.IOError:
+                pass
 
-        ## DestructorCloseFail
+        ## ConnectionCloseFail in destructor
         if not os.getenv("APSW_NO_MEMLEAK"):
             # test
-            apsw.faultdict["DestructorCloseFail"]=True
+            apsw.faultdict["ConnectionCloseFail"]=True
             def f():
                 db=apsw.Connection(":memory:")
                 db.cursor().execute("select 3")
