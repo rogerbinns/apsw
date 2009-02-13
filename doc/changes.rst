@@ -12,6 +12,8 @@ on any write that had an error but now returns :exc:`SQLiteError`.)
 You can now use the hot backup functionality introduced in SQLite
 3.6.11.
 
+Changed close methods so that Connections can be released earlier.
+
 3.6.10-r1
 =========
 

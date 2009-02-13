@@ -338,6 +338,6 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
 
 /* used by Connection */
 #define CHECK_CLOSED(connection,e) do \
-    { if(!connection->db) { PyErr_Format(ExcConnectionClosed, "The connection has been closed"); return e; } } while(0)
+    { if(!(connection) || !(connection)->db) { PyErr_Format(ExcConnectionClosed, "The connection has been closed"); return e; } } while(0)
 
 

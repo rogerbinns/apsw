@@ -2928,7 +2928,7 @@ class APSW(unittest.TestCase):
         checks={
             "APSWCursor":
                 {
-                  "skip": ("dealloc", "init", "dobinding", "dobindings", "doexectrace", "dorowtrace", "step", "close"),
+                  "skip": ("dealloc", "init", "dobinding", "dobindings", "doexectrace", "dorowtrace", "step", "close", "close_internal"),
                   "req":
                       {
                          "use": "CHECK_USE",
@@ -2939,7 +2939,7 @@ class APSW(unittest.TestCase):
 
             "Connection":
                 {
-                  "skip": ("internal_cleanup", "dealloc", "init", "close", "interrupt", "close_internal"),
+                  "skip": ("internal_cleanup", "dealloc", "init", "close", "interrupt", "close_internal", "remove_dependent"),
                   "req":
                       {
                          "use": "CHECK_USE",

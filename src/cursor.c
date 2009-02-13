@@ -171,7 +171,7 @@ static PyTypeObject APSWCursorType;
 #define EXECTRACE  ( (self->exectrace && self->exectrace!=Py_None) ? self->exectrace : ( (self->exectrace==Py_None) ? 0 : self->connection->exectrace ) )
 
 
-/* Do finalization and free resources.  Returns the SQLITE error code */
+/* Do finalization and free resources.  Returns the SQLITE error code.  If force is 2 then don't raise any exceptions */
 static int
 resetcursor(APSWCursor *self, int force)
 {
@@ -182,8 +182,7 @@ resetcursor(APSWCursor *self, int force)
   if(force)
     PyErr_Fetch(&etype, &eval, &etb);
 
-  if(nextquery) 
-    Py_INCREF(nextquery);
+  Py_XINCREF(nextquery);
 
   if(self->statement)
     {
@@ -234,10 +233,8 @@ resetcursor(APSWCursor *self, int force)
         }
     }
      
-  Py_XDECREF(self->emiter);
-  self->emiter=NULL;
-  Py_XDECREF(self->emoriginalquery);
-  self->emoriginalquery=NULL;
+  Py_CLEAR(self->emiter);
+  Py_CLEAR(self->emoriginalquery);
 
   self->status=C_DONE;
 
@@ -247,37 +244,39 @@ resetcursor(APSWCursor *self, int force)
       AddTraceBackHere(__FILE__, __LINE__, "resetcursor", "{s: i}", "res", res);
     }
 
-  if(force && (etype || eval || etb))
+  if(force)
     PyErr_Restore(etype, eval, etb);
 
   return res;
 }
 
-static void
-APSWCursor_dealloc(APSWCursor * self)
+static int
+APSWCursor_close_internal(APSWCursor *self, int force)
 {
   PyObject *err_type, *err_value, *err_traceback;
-  int have_error=PyErr_Occurred()?1:0;
+  int res;
 
-  APSW_CLEAR_WEAKREFS;
+  if(force==2)
+    PyErr_Fetch(&err_type, &err_value, &err_traceback);
 
-  /* do our finalisation ... */
+  res=resetcursor(self, force);
 
-  if (have_error)
+  if(force==2)
+      PyErr_Restore(err_type, err_value, err_traceback);
+  else
     {
-      /* remember the existing error so that resetcursor won't immediately return */
-      PyErr_Fetch(&err_type, &err_value, &err_traceback);
+      if(res)
+        {
+          assert(PyErr_Occurred());
+          return 1;
+        }
+      assert(!PyErr_Occurred());
     }
 
-  resetcursor(self, /* force = */ 1);
-  assert(!PyErr_Occurred());
-
-  if (have_error)
-    /* restore earlier error if there was one */
-    PyErr_Restore(err_type, err_value, err_traceback);
-
-  /* we no longer need connection */
-  Py_CLEAR(self->connection);
+  /* Remove from connection dependents list.  Has to be done before we decref self->connection
+     otherwise connection could dealloc and we'd still be in list */
+  if(self->connection)
+    Connection_remove_dependent(self->connection, (PyObject*)self);
 
   /* executemany iterator */
   Py_CLEAR(self->emiter);
@@ -285,7 +284,20 @@ APSWCursor_dealloc(APSWCursor * self)
   /* no need for tracing */
   Py_CLEAR(self->exectrace);
   Py_CLEAR(self->rowtrace);
-  
+
+  /* we no longer need connection */
+  Py_CLEAR(self->connection);
+
+  return 0;
+}
+
+static void
+APSWCursor_dealloc(APSWCursor * self)
+{
+  APSW_CLEAR_WEAKREFS;
+
+  APSWCursor_close_internal(self, 2);
+
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -1155,22 +1167,20 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
 static PyObject *
 APSWCursor_close(APSWCursor *self, PyObject *args)
 {
-  int res;
   int force=0;
 
   CHECK_USE(NULL);
-  if (!self->connection->db) /* if connection is closed, then we must also be closed */
+  if(!self->connection)
     Py_RETURN_NONE;
 
   if(!PyArg_ParseTuple(args, "|i:close(force=False)", &force))
     return NULL;
 
-  res=resetcursor(self, force);
-  if(res!=SQLITE_OK)
-    {
-      assert(PyErr_Occurred());
+  APSWCursor_close_internal(self, !!force);
+
+  if(PyErr_Occurred())
       return NULL;
-    }
+
   Py_RETURN_NONE;
 }
 

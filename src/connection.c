@@ -308,9 +308,24 @@ Connection_dealloc(Connection* self)
      released before this destructor could be called */
   assert(PyList_GET_SIZE(self->dependents)==0);
   Py_CLEAR(self->dependents);
-  Py_DECREF(self->dependent_remove);
+  Py_CLEAR(self->dependent_remove);
 
   Py_TYPE(self)->tp_free((PyObject*)self);
+}
+
+static void
+Connection_remove_dependent(Connection *self, PyObject *o)
+{
+  Py_ssize_t i;
+
+  for(i=0;i<PyList_GET_SIZE(self->dependents);i++)
+    {
+      if(PyWeakref_GetObject(PyList_GET_ITEM(self->dependents, i))==o)
+        {
+          PyList_SetSlice(self->dependents, i, i+1, NULL);
+          break;
+        }
+    }
 }
 
 static PyObject*
