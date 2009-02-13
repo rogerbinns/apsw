@@ -666,7 +666,7 @@ Connection_backup(Connection *self, PyObject *args)
   if (backup) PYSQLITE_CON_CALL(sqlite3_backup_finish(backup)); 
   if (databasename) PyMem_Free((void*)databasename);
   if (sourcedatabasename) PyMem_Free((void*)sourcedatabasename);
-  Py_XDECREF(apswbackup);
+  Py_XDECREF((PyObject*)apswbackup);
   Py_XDECREF(weakref);
 
   /* if inuse is set then we must be returning result */
