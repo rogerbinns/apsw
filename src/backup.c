@@ -127,10 +127,28 @@ APSWBackup_close_internal(APSWBackup *self, int force)
     return 0;
 
   PYSQLITE_BACKUP_CALL(res=sqlite3_backup_finish(self->backup));
-  if(res && !force)
+  if(res)
     {
-      SET_EXC(res, self->dest->db);
-      setexc=1;
+      switch(force)
+        {
+        case 0:
+          SET_EXC(res, self->dest->db);
+          setexc=1;
+          break;
+        case 1:
+          break;
+        case 2:
+          {
+            PyObject *etype, *eval, *etb;
+            PyErr_Fetch(&etype, &eval, &etb);
+
+            SET_EXC(res, self->dest->db);
+            apsw_write_unraiseable(NULL);
+
+            PyErr_Restore(etype, eval, etb);
+            break;
+          }
+        }
     }
  
   self->backup=0;
@@ -138,12 +156,13 @@ APSWBackup_close_internal(APSWBackup *self, int force)
   assert(self->dest->inuse);
   self->dest->inuse=0;
 
-  if(setexc)
-    {
-      assert(PyErr_Occurred());
-      return 1;
-    }
-  return 0;
+  Connection_remove_dependent(self->dest, (PyObject*)self);
+  Connection_remove_dependent(self->source, (PyObject*)self);
+
+  Py_CLEAR(self->dest);
+  Py_CLEAR(self->source);
+
+  return setexc;
 }
 
 static void
@@ -151,10 +170,7 @@ APSWBackup_dealloc(APSWBackup *self)
 {
   APSW_CLEAR_WEAKREFS;
 
-  APSWBackup_close_internal(self, 1);
-
-  Py_CLEAR(self->dest);
-  Py_CLEAR(self->source);
+  APSWBackup_close_internal(self, 2);
 
   Py_CLEAR(self->done);
 

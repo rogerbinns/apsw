@@ -573,7 +573,7 @@ Connection_backup(Connection *self, PyObject *args)
 {
   struct APSWBackup *apswbackup=0;
   sqlite3_backup *backup=0;
-  int res;
+  int res=-123456; /* stupid compiler */
   PyObject *result=NULL;
   PyObject *weakref=NULL;
   Connection *source=NULL;
