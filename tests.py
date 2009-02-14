@@ -2950,7 +2950,7 @@ class APSW(unittest.TestCase):
 
             "APSWBlob":
                {
-                  "skip":  ("dealloc", "init", "close"),
+                  "skip":  ("dealloc", "init", "close", "close_internal"),
                   "req":
                       {
                         "use": "CHECK_USE",
@@ -5005,7 +5005,6 @@ class APSW(unittest.TestCase):
             pass
 
         ## BlobDeallocException
-        apsw.faultdict["BlobDeallocException"]=True
         def f():
             db=apsw.Connection(":memory:")
             db.cursor().execute("create table foo(b);insert into foo(rowid,b) values(2,x'aabbccddee')")

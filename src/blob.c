@@ -223,10 +223,17 @@ APSWBlob_init(APSWBlob *self, Connection *connection, sqlite3_blob *blob)
   self->weakreflist=NULL;
 }
 
-static void
-APSWBlob_dealloc(APSWBlob *self)
+static int
+APSWBlob_close_internal(APSWBlob *self, int force)
 {
-  APSW_CLEAR_WEAKREFS;
+  int setexc=0;
+  PyObject *err_type, *err_value, *err_traceback;
+
+  if(force==2)
+    PyErr_Fetch(&err_type, &err_value, &err_traceback);    
+
+  /* note that sqlite3_blob_close always works even if an error is
+     returned - see sqlite ticket #2815 */
 
   if(self->pBlob)
     {
@@ -234,24 +241,44 @@ APSWBlob_dealloc(APSWBlob *self)
       PYSQLITE_BLOB_CALL(res=sqlite3_blob_close(self->pBlob));
       if(res!=SQLITE_OK)
         {
-          PyObject *err_type, *err_value, *err_traceback;
-          int have_error;
-
-          APSW_FAULT_INJECT(BlobDeallocException,,PyErr_NoMemory());
-
-          have_error=PyErr_Occurred()?1:0;
-          if(have_error)
-            PyErr_Fetch(&err_type, &err_value, &err_traceback);
-          SET_EXC(res, self->connection->db);
-          apsw_write_unraiseable(NULL);
-          if(have_error)
-            PyErr_Restore(err_type, err_value, err_traceback);
-          /* destructors can't throw exceptions */
-          PyErr_Clear();
+          switch(force)
+            {
+            case 0:
+              SET_EXC(res, self->connection->db);
+              setexc=1;
+              break;
+            case 1:
+              break;
+            case 2:
+              SET_EXC(res, self->connection->db);
+              apsw_write_unraiseable(NULL);            
+            }         
         }
       self->pBlob=0;
     }
+
+ /* Remove from connection dependents list.  Has to be done before we
+     decref self->connection otherwise connection could dealloc and
+     we'd still be in list */
+  if(self->connection)
+    Connection_remove_dependent(self->connection, (PyObject*)self);
+  
   Py_CLEAR(self->connection);
+
+  if(force==2)
+    PyErr_Restore(err_type, err_value, err_traceback);
+
+  return setexc;
+}
+
+
+static void
+APSWBlob_dealloc(APSWBlob *self)
+{
+  APSW_CLEAR_WEAKREFS;
+
+  APSWBlob_close_internal(self, 2);
+
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -489,24 +516,19 @@ APSWBlob_write(APSWBlob *self, PyObject *obj)
 static PyObject *
 APSWBlob_close(APSWBlob *self, PyObject *args)
 {
-  int res;
+  int setexc;
   int force=0;
-  /* we allow close to be called multiple times */
-  if(!self->pBlob) goto end;
+
   CHECK_USE(NULL);
 
   if(args && !PyArg_ParseTuple(args, "|i:close(force=False)", &force))
     return NULL;
 
-  PYSQLITE_BLOB_CALL(res=sqlite3_blob_close(self->pBlob));
+  setexc=APSWBlob_close_internal(self, !!force);
 
-  if(!force)
-    SET_EXC(res, self->connection->db);
-  self->pBlob=0; /* sqlite ticket #2815 */
+  if(setexc)
+    return NULL;
 
-  if(!force && res!=SQLITE_OK)
-    return NULL;   
- end:
   Py_RETURN_NONE;
 }
 

@@ -671,6 +671,7 @@ Connection_backup(Connection *self, PyObject *args)
 
   /* if inuse is set then we must be returning result */
   assert( (self->inuse) ? (!!result):(result==NULL));
+  assert( result?(self->inuse):(!self->inuse));
 
   return result;
 }
