@@ -2342,7 +2342,7 @@ class APSW(unittest.TestCase):
         for _ in cur2.execute("select * from foo"): pass
         VTable.Disconnect=VTable.Disconnect1
         self.assertRaises(TypeError, db.close) # nb close succeeds!
-        self.assertRaises(apsw.ConnectionClosedError, cur2.execute, "select * from foo")
+        self.assertRaises(apsw.CursorClosedError, cur2.execute, "select * from foo")
         del db
         db=apsw.Connection("testdb")
         db.createmodule("testmod2", Source())
@@ -2350,7 +2350,7 @@ class APSW(unittest.TestCase):
         for _ in cur2.execute("select * from foo"): pass
         VTable.Disconnect=VTable.Disconnect2
         self.assertRaises(ZeroDivisionError, db.close) # nb close succeeds!
-        self.assertRaises(apsw.ConnectionClosedError, cur2.execute, "select * from foo")
+        self.assertRaises(apsw.CursorClosedError, cur2.execute, "select * from foo")
         del db
         db=apsw.Connection("testdb")
         db.createmodule("testmod2", Source())
@@ -2512,7 +2512,7 @@ class APSW(unittest.TestCase):
             try:
                 getattr(cur, func)(*args)
                 self.fail("cursor method "+func+" didn't notice that the connection is closed")
-            except apsw.ConnectionClosedError:
+            except apsw.CursorClosedError:
                 pass
         self.assert_(tested>=len(nargs))
 
@@ -2932,7 +2932,7 @@ class APSW(unittest.TestCase):
                   "req":
                       {
                          "use": "CHECK_USE",
-                         "closed": "CHECK_CLOSED",
+                         "closed": "CHECK_CURSOR_CLOSED",
                       },
                   "order": ("use", "closed")
                 },
@@ -4539,16 +4539,14 @@ class APSW(unittest.TestCase):
             self.assertRaises(ValueError, blob.read)
 
         # backup code
-        return # ::TODO:: 
         db2=apsw.Connection(":memory:")
         run("""
           with db2.backup("main", self.db, "main") as b:
              while not b.done:
                 b.step(1)
-                print b.remaining, b.pagecount
+          self.assertEqual(b.done, True)
+          self.assertDbIdentical(self.db, db2)
           """, db2=db2)
-        self.assertEqual(b.done, True)
-        self.assertDbIdentical(self.db, "main", db2, "main")
 
     def fillWithRandomStuff(self, db, seed=1):
         "Fills a database with random content"
@@ -4586,6 +4584,9 @@ class APSW(unittest.TestCase):
         b=self.db.backup("main", db2, "main")
         self.assertRaises(TypeError, b.step, '3')
         try:
+            b.step(1)
+            self.assert_(b.remaining > 0)
+            self.assert_(b.pagecount > 0)
             while not b.done:
                 b.step(1)
         finally:
@@ -4594,7 +4595,6 @@ class APSW(unittest.TestCase):
         self.db.cursor().execute("drop table a")
 
         # don't clean up
-        return # ::TODO::
         b=self.db.backup("main", db2, "main")
         try:
             while not b.done:
@@ -4605,6 +4605,7 @@ class APSW(unittest.TestCase):
         self.assertDbIdentical(self.db, db2)
         del b
         del db2
+        fname=self.db.filename
         self.db=None
         gc.collect()
 
@@ -4614,12 +4615,58 @@ class APSW(unittest.TestCase):
         c.execute("create table x(y); insert into x values(3); select * from x")
         self.db=apsw.Connection(":memory:")
         self.fillWithRandomStuff(self.db)
+        self.assertRaises(apsw.ThreadingViolationError, db2.backup, "main", self.db, "main")
+        c.close()
         b=db2.backup("main", self.db, "main")
+        # double check cursor really is dead
+        self.assertRaises(apsw.CursorClosedError, c.execute, "select 3")
         # with the backup object existing, all operations on db2 should fail
         self.assertRaises(apsw.ThreadingViolationError, db2.cursor)
         # finish and then trying to step
         b.finish()
-        b.step()
+        self.assertRaises(apsw.ConnectionClosedError, b.step)
+
+        # make step and finish fail with locked error
+        self.db=apsw.Connection(fname)
+        def lockerr():
+            db2=apsw.Connection(self.db.filename)
+            db2.cursor().execute("begin exclusive")
+            db3=apsw.Connection(self.db.filename)
+            b=db3.backup("main", self.db, "main")
+            # if step gets busy then so does finish, but step has to be called at least once
+            self.assertRaises(apsw.BusyError, b.step)
+            return b
+        
+        b=lockerr()
+        b.close(True)
+        del b
+        b=lockerr()
+        self.assertRaises(apsw.BusyError, b.close, False)
+        del b
+
+        b=lockerr()
+        self.assertRaises(apsw.BusyError, b.finish)
+        b.finish() # should be ok the second time
+        del b
+
+        b=lockerr()
+        self.assertRaises(TypeError, b.close, "3")
+        self.assertRaises(apsw.BusyError, b.close, False)
+        b.close()  # should also be ok
+        del b
+        
+        def f():
+            b=lockerr()
+            del b
+            gc.collect()
+        self.assertRaisesUnraisable(apsw.BusyError, f)
+
+        # coverage
+        b=lockerr()
+        self.assertRaises(TypeError, b.__exit__, 3)
+        self.assertRaises(apsw.BusyError, b.__exit__, None, None, None)
+        b.__exit__(None, None, None)
+        
         
         
     # Note that faults fire only once, so there is no need to reset
