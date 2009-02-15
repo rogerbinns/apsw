@@ -376,7 +376,7 @@ APSWCursor_getdescription(APSWCursor *self)
   PyObject *pair=NULL;
 
   CHECK_USE(NULL);
-  CHECK_CLOSED(self->connection,NULL);
+  CHECK_CURSOR_CLOSED(NULL);
 
   if(!self->statement)
     {
@@ -943,7 +943,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
   PyObject *query;
 
   CHECK_USE(NULL);
-  CHECK_CLOSED(self->connection, NULL);
+  CHECK_CURSOR_CLOSED(NULL);
 
   res=resetcursor(self, /* force= */ 0);
   if(res!=SQLITE_OK)
@@ -1052,7 +1052,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
   int savedbindingsoffset=-1;
 
   CHECK_USE(NULL);
-  CHECK_CLOSED(self->connection, NULL);
+  CHECK_CURSOR_CLOSED(NULL);
 
   res=resetcursor(self, /* force= */ 0);
   if(res!=SQLITE_OK)
@@ -1201,7 +1201,7 @@ APSWCursor_next(APSWCursor *self)
   int i;
 
   CHECK_USE(NULL);
-  CHECK_CLOSED(self->connection, NULL);
+  CHECK_CURSOR_CLOSED(NULL);
 
  again:
   if(self->status==C_BEGIN)
@@ -1251,7 +1251,7 @@ static PyObject *
 APSWCursor_iter(APSWCursor *self)
 {
   CHECK_USE(NULL);
-  CHECK_CLOSED(self->connection, NULL);
+  CHECK_CURSOR_CLOSED(NULL);
 
   Py_INCREF(self);
   return (PyObject*)self;
@@ -1277,7 +1277,7 @@ static PyObject *
 APSWCursor_setexectrace(APSWCursor *self, PyObject *func)
 {
   CHECK_USE(NULL);
-  CHECK_CLOSED(self->connection, NULL);
+  CHECK_CURSOR_CLOSED(NULL);
 
   if(func!=Py_None && !PyCallable_Check(func))
     {
@@ -1312,7 +1312,7 @@ static PyObject *
 APSWCursor_setrowtrace(APSWCursor *self, PyObject *func)
 {
   CHECK_USE(NULL);
-  CHECK_CLOSED(self->connection, NULL);
+  CHECK_CURSOR_CLOSED(NULL);
 
   if(func!=Py_None && !PyCallable_Check(func))
     {
@@ -1342,7 +1342,7 @@ APSWCursor_getexectrace(APSWCursor *self)
   PyObject *ret;
 
   CHECK_USE(NULL);
-  CHECK_CLOSED(self->connection, NULL);
+  CHECK_CURSOR_CLOSED(NULL);
 
   ret=(self->exectrace)?(self->exectrace):Py_None;
   Py_INCREF(ret);
@@ -1363,7 +1363,7 @@ APSWCursor_getrowtrace(APSWCursor *self)
 {
   PyObject *ret;
   CHECK_USE(NULL);
-  CHECK_CLOSED(self->connection, NULL);
+  CHECK_CURSOR_CLOSED(NULL);
   ret =(self->rowtrace)?(self->rowtrace):Py_None;
   Py_INCREF(ret);
   return ret;
@@ -1384,7 +1384,7 @@ static PyObject *
 APSWCursor_getconnection(APSWCursor *self)
 {
   CHECK_USE(NULL);
-  CHECK_CLOSED(self->connection, NULL);
+  CHECK_CURSOR_CLOSED(NULL);
 
   Py_INCREF(self->connection);
   return (PyObject*)self->connection;
@@ -1399,7 +1399,7 @@ static PyObject *
 APSWCursor_fetchall(APSWCursor *self)
 {
   CHECK_USE(NULL);
-  CHECK_CLOSED(self->connection, NULL);
+  CHECK_CURSOR_CLOSED(NULL);
 
   return PySequence_List((PyObject*)self);
 }

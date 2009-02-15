@@ -35,6 +35,7 @@ static PyObject *ExcComplete;  /* query is finished */
 static PyObject *ExcTraceAbort; /* aborted by exectrace */
 static PyObject *ExcExtensionLoading; /* error loading extension */
 static PyObject *ExcConnectionNotClosed; /* connection wasn't closed when destructor called */
+static PyObject *ExcCursorClosed; /* cursor object was closed when function called */
 static PyObject *ExcConnectionClosed; /* connection was closed when function called */
 static PyObject *ExcVFSNotImplemented; /* base vfs doesn't implment function */
 static PyObject *ExcVFSFileClosed;     /* attempted operation on closed file */
@@ -181,6 +182,7 @@ static int init_exceptions(PyObject *m)
     {&ExcExtensionLoading, "ExtensionLoadingError"},
     {&ExcConnectionNotClosed, "ConnectionNotClosedError"},
     {&ExcConnectionClosed, "ConnectionClosedError"},
+    {&ExcCursorClosed, "CursorClosedError"},
     {&ExcVFSNotImplemented, "VFSNotImplementedError"},
     {&ExcVFSFileClosed, "VFSFileClosedError"}
   };

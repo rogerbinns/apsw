@@ -362,7 +362,7 @@ APSWBackup_exit(APSWBackup *self, PyObject *args)
      close exception has more detail.  At the time of writing this
      code the step method only set an error code but not an error
      message */
-  setexc=APSWBackup_close_internal(self, etype||evalue||etb);
+  setexc=APSWBackup_close_internal(self, etype!=Py_None||evalue!=Py_None||etb!=Py_None);
 
   if(setexc)
     {
@@ -370,7 +370,7 @@ APSWBackup_exit(APSWBackup *self, PyObject *args)
       return NULL;
     }
 
-  Py_RETURN_NONE;
+  Py_RETURN_FALSE;
 }
 
 
