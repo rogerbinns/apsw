@@ -92,12 +92,9 @@ apsw_get_errmsg(void)
 {
   const char *retval=NULL;
   PyObject *key=NULL, *value;
-  
-  if(!tls_errmsg)
-    {
-      tls_errmsg=PyDict_New();
-      if(!tls_errmsg) return NULL;
-    }
+
+  /* set should always have been called first */
+  assert(tls_errmsg);
   
   key=PyLong_FromLong(PyThread_get_thread_ident());
   if(!key) goto finally;

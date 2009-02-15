@@ -3200,6 +3200,7 @@ class APSW(unittest.TestCase):
         cur.execute("delete from foo; insert into foo values(?)", (derived(28),))
         v=next(cur.execute("select * from foo"))[0]
         self.assertEqual(v, b(r"\x00"*28))
+        self.assertEqual(apsw.zeroblob(91210).length(), 91210)
 
     def testBlobIO(self):
         "Verify Blob input/output"
@@ -3287,6 +3288,10 @@ class APSW(unittest.TestCase):
         # try to go beyond end
         self.assertRaises(ValueError, blobrw.write, b(" "*100000))
         self.assertRaises(TypeError, blobrw.close, "elephant")
+        # coverage
+        blobro=self.db.blobopen("main", "foo", "x", rowid, False)
+        self.assertRaises(apsw.ReadOnlyError, blobro.write, b("abcd"))
+        blobro.close(True)
 
     def testBlobReadError(self):
         "Ensure blob read errors are handled well"
@@ -4577,10 +4582,44 @@ class APSW(unittest.TestCase):
 
     def testBackup(self):
         "Verify hot backup functionality"
+        # bad calls
+        self.assertRaises(TypeError, self.db.backup, "main", "main", "main", "main")
+        self.assertRaises(TypeError, self.db.backup, "main", 3, "main")
+        db2=apsw.Connection(":memory:")
+        db2.close()
+        self.assertRaises(ValueError, self.db.backup, "main", db2, "main")
+        # can't copy self
+        self.assertRaises(ValueError, self.db.backup, "main", self.db, "it doesn't care what is here")
+
+        # try and get inuse error
+        dbt=apsw.Connection(":memory:")
+        vals={"stop": False, "raised": False}
+        def wt():
+            # worker thread spins grabbing and releasing inuse flag
+            while not vals["stop"]:
+                try:
+                    dbt.setbusytimeout(100)
+                except apsw.ThreadingViolationError:
+                    # this means main thread grabbed inuse first
+                    pass
+        t=ThreadRunner(wt)
+        t.start()
+        b4=time.time()
+        # try to get inuse error for 30 seconds
+        try:
+            try:
+                while not vals["stop"] and time.time()-b4<30:
+                    self.db.backup("main", dbt, "main").close()
+            except apsw.ThreadingViolationError:
+                vals["stop"]=True
+                vals["raised"]=True
+        finally:
+            vals["stop"]=True
+
+        # standard usage
         db2=apsw.Connection(":memory:")
         self.fillWithRandomStuff(db2)
         
-        # standard usage
         b=self.db.backup("main", db2, "main")
         self.assertRaises(TypeError, b.step, '3')
         try:
@@ -5313,7 +5352,24 @@ class APSW(unittest.TestCase):
             1/0
         except apsw.NoMemError:
             pass
-        
+
+        ## BackupInitFails
+        apsw.faultdict["BackupInitFails"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.backup("main", apsw.Connection(":memory:"), "main")
+            1/0
+        except apsw.NoMemError:
+            pass
+
+        ## BackupNewFails
+        apsw.faultdict["BackupNewFails"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.backup("main", apsw.Connection(":memory:"), "main")
+            1/0
+        except MemoryError:
+            pass
 
 
 testtimeout=False # timeout testing adds several seconds to each run

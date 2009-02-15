@@ -104,7 +104,7 @@ APSWBackup_init(APSWBackup *self, Connection *dest, Connection *source, sqlite3_
 {
   assert(dest->inuse==0);
   dest->inuse=1;
-  assert(source->inuse==0);
+  assert(source->inuse==1);  /* set by caller */
  
   self->dest=dest;
   self->source=source;

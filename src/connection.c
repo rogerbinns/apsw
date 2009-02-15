@@ -579,6 +579,7 @@ Connection_backup(Connection *self, PyObject *args)
   Connection *source=NULL;
   const char *databasename=NULL;
   const char *sourcedatabasename=NULL;
+  int isetsourceinuse=0;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
@@ -611,7 +612,7 @@ Connection_backup(Connection *self, PyObject *args)
 
   if(Py_TYPE(source)!=&ConnectionType)
     {
-      PyErr_Format(PyExc_ValueError, "source connection needs to be a Connection instance");
+      PyErr_Format(PyExc_TypeError, "source connection needs to be a Connection instance");
       goto finally;
     }
 
@@ -627,8 +628,19 @@ Connection_backup(Connection *self, PyObject *args)
       goto finally;
     }
 
-  PYSQLITE_CON_CALL( (backup=sqlite3_backup_init(self->db, databasename, source->db, sourcedatabasename),
-                      res=backup?SQLITE_OK:sqlite3_extended_errcode(self->db)) );
+  if(source->db==self->db)
+    {
+      PyErr_Format(PyExc_ValueError, "source and destination are the same which sqlite3_backup doesn't allow");
+      goto finally;
+    }
+
+  source->inuse=1;
+  isetsourceinuse=1;
+
+  APSW_FAULT_INJECT(BackupInitFails,
+                    PYSQLITE_CON_CALL( (backup=sqlite3_backup_init(self->db, databasename, source->db, sourcedatabasename),
+                                        res=backup?SQLITE_OK:sqlite3_extended_errcode(self->db)) ),
+                    res=SQLITE_NOMEM);
 
   if(res)
     {
@@ -636,7 +648,9 @@ Connection_backup(Connection *self, PyObject *args)
       goto finally;
     }
 
-  apswbackup=PyObject_New(struct APSWBackup, &APSWBackupType);
+  APSW_FAULT_INJECT(BackupNewFails,
+                    apswbackup=PyObject_New(struct APSWBackup, &APSWBackupType),
+                    apswbackup=PyErr_NoMemory());
   if(!apswbackup)
     goto finally;
 
@@ -663,7 +677,7 @@ Connection_backup(Connection *self, PyObject *args)
   /* check errors occurred vs result */
   assert(result?(PyErr_Occurred()==NULL):(PyErr_Occurred()!=NULL));
   assert(result?(backup==NULL):1);
-  if (backup) PYSQLITE_CON_CALL(sqlite3_backup_finish(backup)); 
+  if (backup) PYSQLITE_VOID_CALL(sqlite3_backup_finish(backup)); 
   if (databasename) PyMem_Free((void*)databasename);
   if (sourcedatabasename) PyMem_Free((void*)sourcedatabasename);
   Py_XDECREF((PyObject*)apswbackup);
@@ -672,7 +686,7 @@ Connection_backup(Connection *self, PyObject *args)
   /* if inuse is set then we must be returning result */
   assert( (self->inuse) ? (!!result):(result==NULL));
   assert( result?(self->inuse):(!self->inuse));
-
+  if(isetsourceinuse) source->inuse=0;
   return result;
 }
 #endif
