@@ -116,7 +116,7 @@ APSWBackup_init(APSWBackup *self, Connection *dest, Connection *source, sqlite3_
 }
 
 /* returns non-zero if it set an exception */
-int
+static int
 APSWBackup_close_internal(APSWBackup *self, int force)
 {
   int res, setexc=0;
