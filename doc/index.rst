@@ -32,6 +32,7 @@ Contents:
    connection
    cursor
    blob
+   backup
    vtable
    vfs
 

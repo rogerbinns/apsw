@@ -29,6 +29,9 @@
 #ifdef EXPERIMENTAL
 
 /** 
+
+.. _backup:
+
 Backup
 ******
 
@@ -263,7 +266,7 @@ APSWBackup_finish(APSWBackup *self)
   Does the same thing as :meth:`~backup.finish`.  This extra api is
   provided to give the same api as other APSW objects such as
   :meth:`Connection.close`, :meth:`blob.close` and
-  :meth:`cursor.close`.  It is safe to call this method multiple
+  :meth:`Cursor.close`.  It is safe to call this method multiple
   times.
 
   :param force: If true then any exceptions are ignored.
@@ -325,7 +328,7 @@ APSWBackup_get_pagecount(APSWBackup *self, APSW_ARGUNUSED void *ignored)
   You can use the backup object as a `context manager
   <http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
   as defined in :pep:`0343`.  The :meth:`~backup.__exit__` method ensures that backup
-  is :meth:`finished <~backup.finish>`.
+  is :meth:`finished <backup.finish>`.
 */
 static PyObject *
 APSWBackup_enter(APSWBackup *self)
@@ -340,7 +343,7 @@ APSWBackup_enter(APSWBackup *self)
 /** .. method:: __exit__() -> False
 
   Implements context manager in conjunction with :meth:`~backup.__enter__` ensuring 
-  that the copy is :meth:`finished <~backup.finish>`.
+  that the copy is :meth:`finished <backup.finish>`.
 */
 static PyObject *
 APSWBackup_exit(APSWBackup *self, PyObject *args)

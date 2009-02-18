@@ -5,12 +5,12 @@ Change History
 3.6.11-r1
 =========
 
-You can now use the hot backup functionality introduced in SQLite
-3.6.11.
+You can now use the `hot backup functionality
+<http://www.sqlite.org/backup.html>`_ introduced in SQLite 3.6.11.
 
 Updated a VFS test to reflect changes in SQLite underlying error
 handling.  (Previously SQLite almost always returned :exc:`FullError`
-on any write that had an error but now returns :exc:`SQLiteError`.)
+on any write that had an error but now returns :exc:`SQLError`.)
 
 Changed close methods so that Connections can be released earlier.
 

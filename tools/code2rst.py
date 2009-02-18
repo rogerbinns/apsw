@@ -32,10 +32,6 @@ def do_funclist():
         funclist[func]=urlparse.urljoin(baseurl, relurl)
         # ::TODO:: consider grabbing the page and extracting first <h2> to get
         # description of sqlite3 api
-    if 'sqlite3_backup_init' not in funclist:
-        print "Warning: Using beta documentation for sqlite3_backup API"
-        for f in 'init', 'step', 'finish', 'pagecount', 'remaining':
-            funclist['sqlite3_backup_'+f]="http://www.sqlite.org/draft/c3ref/backup_finish.html"
 
 def do_mappings():
     consts={}
