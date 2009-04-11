@@ -153,6 +153,10 @@ exc_descriptors[]=
 
 /* EXCEPTION CODE */
 
+/* MS compiler is stupid and requires this pulled out */
+
+typedef struct {PyObject **var; const char *name; } APSWExceptionMapping;
+
 static int init_exceptions(PyObject *m)
 {
   char buffy[100]; /* more than enough for anyone :-) */
@@ -170,7 +174,7 @@ static int init_exceptions(PyObject *m)
   if(PyModule_AddObject(m, "Error", (PyObject *)APSWException))
     return -1;
 
-  struct {PyObject **var; const char *name; } apswexceptions[]={
+  APSWExceptionMapping apswexceptions[]={
     {&ExcThreadingViolation, "ThreadingViolationError"},
     {&ExcIncomplete, "IncompleteExecutionError"},
     {&ExcBindings, "BindingsError"},
