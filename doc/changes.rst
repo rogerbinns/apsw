@@ -2,6 +2,11 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.6.13-r1
+=========
+
+Added SQLITE_LOCKED_SHAREDCACHE `extended error code <http://sqlite.org/c3ref/c_ioerr_access.html>`_.
+
 3.6.11-r1
 =========
 

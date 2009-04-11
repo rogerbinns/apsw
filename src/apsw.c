@@ -860,6 +860,7 @@ modules etc. For example::
       ADDINT(SQLITE_IOERR_LOCK),
       ADDINT(SQLITE_IOERR_CLOSE),
       ADDINT(SQLITE_IOERR_DIR_CLOSE),
+      ADDINT(SQLITE_LOCKED_SHAREDCACHE),
       END,
 
       /* error codes */
