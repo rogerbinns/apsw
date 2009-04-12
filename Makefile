@@ -38,7 +38,11 @@ GENDOCS = \
 	doc/apsw.rst \
 	doc/backup.rst
 
+.PHONY : all docs doc header linkcheck publish showsymbols compile-win source upload
+
 all: header docs
+
+doc: docs
 
 docs: $(GENDOCS) doc/example.rst
 	env PYTHONPATH=. python tools/docmissing.py

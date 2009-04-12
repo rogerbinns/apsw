@@ -19,7 +19,7 @@ on any write that had an error but now returns :exc:`SQLError`.)
 
 Changed close methods so that Connections can be released earlier.
 
-In prior releases a :meth:`closed <Cursor.close>` could still be used
+In prior releases a :meth:`closed cursor <Cursor.close>` could still be used
 (reincarnated).  That is no longer the case and you will get
 :exc:`CursorClosedError`.
 

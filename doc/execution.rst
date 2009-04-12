@@ -9,7 +9,7 @@ Execution and tracing
 Execution model
 ===============
 
-This section only matters if you give multiple SQL statements in one go to :meth:`Cursor.execute`.
+This section only matters if you give multiple SQL statements in one go to :exc:`Cursor.execute`.
 (Statements are seperated by semi-colons.)
 
 SQLite does execution in two steps. First a statement is prepared,
