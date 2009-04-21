@@ -63,7 +63,7 @@ PYTHON=python # use whatever is in the path
 INCLUDEDIR=`$PYTHON -c "import distutils.sysconfig, sys; sys.stdout.write(distutils.sysconfig.get_python_inc())"`
 set -x
 rm -f apsw.o apsw.so
-gcc -pthread -fno-strict-aliasing  -g $opt -D_FORTIFY_SOURCE=2 -fPIC -W -Wall $cflags -DEXPERIMENTAL -DSQLITE_THREADSAFE=1 -DAPSW_USE_SQLITE_AMALGAMATION=\"sqlite3.c\" -I$INCLUDEDIR -Isrc -I. -Isqlite3 -c src/apsw.c
+gcc -pthread -fno-strict-aliasing  -g $opt -fPIC -W -Wall $cflags -DEXPERIMENTAL -DSQLITE_THREADSAFE=1 -DAPSW_USE_SQLITE_AMALGAMATION=\"sqlite3.c\" -I$INCLUDEDIR -Isrc -I. -Isqlite3 -c src/apsw.c
 gcc -pthread  -g $opt -shared apsw.o -o apsw.so
 time env $apswopt valgrind $options $PYTHON $args
 
