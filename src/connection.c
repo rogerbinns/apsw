@@ -650,7 +650,7 @@ Connection_backup(Connection *self, PyObject *args)
 
   APSW_FAULT_INJECT(BackupNewFails,
                     apswbackup=PyObject_New(struct APSWBackup, &APSWBackupType),
-                    apswbackup=PyErr_NoMemory());
+                    apswbackup=(struct APSWBackup*)PyErr_NoMemory());
   if(!apswbackup)
     goto finally;
 
