@@ -3930,11 +3930,11 @@ class APSW(unittest.TestCase):
         TestVFS.xDelete=TestVFS.xDelete1
         self.assertRaises([apsw.CantOpenError, apsw.IOError][iswindows], self.assertRaisesUnraisable, [apsw.CantOpenError, apsw.IOError][iswindows], testdb)
         TestVFS.xDelete=TestVFS.xDelete2
-        self.assertRaises([apsw.CantOpenError, apsw.SQLError][iswindows], self.assertRaisesUnraisable, TypeError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xDelete=TestVFS.xDelete3
-        self.assertRaises([apsw.CantOpenError, apsw.SQLError][iswindows], self.assertRaisesUnraisable, ZeroDivisionError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
         TestVFS.xDelete=TestVFS.xDelete4
-        self.assertRaises([apsw.CantOpenError, apsw.SQLError][iswindows], self.assertRaisesUnraisable, TypeError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xDelete=TestVFS.xDelete99
         testdb()
 

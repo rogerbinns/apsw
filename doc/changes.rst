@@ -7,6 +7,10 @@ Change History
 
 Added SQLITE_LOCKED_SHAREDCACHE `extended error code <http://sqlite.org/c3ref/c_ioerr_access.html>`_.
 
+Updated tests as the VFS delete error handling code in SQLite now
+returns the same high level error code between Windows and
+non-Windows.
+
 3.6.11-r1
 =========
 
