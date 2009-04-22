@@ -11,6 +11,9 @@ Updated tests as the VFS delete error handling code in SQLite now
 returns the same high level error code between Windows and
 non-Windows.
 
+The CHM format help file produced by the Windows HTML Help Compiler is
+viewable again under Windows HTML Help Viewer.
+
 3.6.11-r1
 =========
 
