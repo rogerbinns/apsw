@@ -21,7 +21,7 @@ way to build or all the :ref:`options available <building>`.
 
 * `apsw-3.6.13-r1.chm
   <http://apsw.googlecode.com/files/apsw-3.6.13-r1.chm>`_
-  (Compiled HTML Help)
+  (Compiled HTML Help) `Seeing blank content? <http://weblog.helpware.net/?p=36>`_ `MSKB 902225 <http://support.microsoft.com/kb/902225/>`_
 
 * `apsw-3.6.13-r1.win32-py2.3.exe
   <http://apsw.googlecode.com/files/apsw-3.6.13-r1.win32-py2.3.exe>`_
