@@ -122,7 +122,7 @@ static struct {
   };
 
 static int 
-vtabCreateOrConnect(sqlite3 *db, 
+apswvtabCreateOrConnect(sqlite3 *db, 
 		    void *pAux, 
 		    int argc, 
 		    const char *const *argv,
@@ -245,14 +245,14 @@ vtabCreateOrConnect(sqlite3 *db,
 */
 
 static int 
-vtabCreate(sqlite3 *db, 
+apswvtabCreate(sqlite3 *db, 
 	   void *pAux, 
 	   int argc, 
 	   const char *const *argv,
 	   sqlite3_vtab **pVTab,
 	   char **errmsg)
 {
-  return vtabCreateOrConnect(db, pAux, argc, argv, pVTab, errmsg, 0);
+  return apswvtabCreateOrConnect(db, pAux, argc, argv, pVTab, errmsg, 0);
 }
 
 /** .. method:: Create(connection, modulename, databasename, tablename, *args)  -> [ sql string, table object ]
@@ -275,14 +275,14 @@ vtabCreate(sqlite3 *db,
 */
 
 static int 
-vtabConnect(sqlite3 *db, 
+apswvtabConnect(sqlite3 *db, 
 	   void *pAux, 
 	   int argc, 
 	   const char *const *argv,
 	   sqlite3_vtab **pVTab,
 	   char **errmsg)
 {
-  return vtabCreateOrConnect(db, pAux, argc, argv, pVTab, errmsg, 1);
+  return apswvtabCreateOrConnect(db, pAux, argc, argv, pVTab, errmsg, 1);
 }
 
 /** .. class:: VTTable
@@ -315,7 +315,7 @@ vtabConnect(sqlite3 *db,
 */
 
 static void
-vtabFree(void *context)
+apswvtabFree(void *context)
 {
   vtableinfo *vti=(vtableinfo*)context;
   PyGILState_STATE gilstate;
@@ -346,7 +346,7 @@ static struct
 
 /* See SQLite ticket 2099 */
 static int
-vtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
+apswvtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
 { 
   PyObject *vtable, *res=NULL;
   PyGILState_STATE gilstate;
@@ -405,9 +405,9 @@ vtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
 */
 
 static int
-vtabDestroy(sqlite3_vtab *pVTab)
+apswvtabDestroy(sqlite3_vtab *pVTab)
 {
-  return vtabDestroyOrDisconnect(pVTab, 0);
+  return apswvtabDestroyOrDisconnect(pVTab, 0);
 }
 
 /** .. method:: Disconnect()
@@ -418,9 +418,9 @@ vtabDestroy(sqlite3_vtab *pVTab)
 */
 
 static int
-vtabDisconnect(sqlite3_vtab *pVTab)
+apswvtabDisconnect(sqlite3_vtab *pVTab)
 {
-  return vtabDestroyOrDisconnect(pVTab, 1);
+  return apswvtabDestroyOrDisconnect(pVTab, 1);
 }
 
 
@@ -604,7 +604,7 @@ vtabDisconnect(sqlite3_vtab *pVTab)
 */
 
 static int
-vtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
+apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
 {
   PyGILState_STATE gilstate;
   PyObject *vtable;
@@ -903,7 +903,7 @@ static struct {
   };
 
 static int
-vtabTransactionMethod(sqlite3_vtab *pVtab, int stringindex)
+apswvtabTransactionMethod(sqlite3_vtab *pVtab, int stringindex)
 {
   PyObject *vtable, *res=NULL;
   PyGILState_STATE gilstate;
@@ -927,27 +927,27 @@ vtabTransactionMethod(sqlite3_vtab *pVtab, int stringindex)
 }
 
 static int 
-vtabBegin(sqlite3_vtab *pVtab) 
+apswvtabBegin(sqlite3_vtab *pVtab) 
 { 
-  return vtabTransactionMethod(pVtab, 0);
+  return apswvtabTransactionMethod(pVtab, 0);
 }
 
 static int 
-vtabSync(sqlite3_vtab *pVtab) 
+apswvtabSync(sqlite3_vtab *pVtab) 
 { 
-  return vtabTransactionMethod(pVtab, 1);
+  return apswvtabTransactionMethod(pVtab, 1);
 }
 
 static int 
-vtabCommit(sqlite3_vtab *pVtab) 
+apswvtabCommit(sqlite3_vtab *pVtab) 
 { 
-  return vtabTransactionMethod(pVtab, 2);
+  return apswvtabTransactionMethod(pVtab, 2);
 }
 
 static int 
-vtabRollback(sqlite3_vtab *pVtab) 
+apswvtabRollback(sqlite3_vtab *pVtab) 
 { 
-  return vtabTransactionMethod(pVtab, 3);
+  return apswvtabTransactionMethod(pVtab, 3);
 }
 
 /** .. method:: Open()
@@ -962,7 +962,7 @@ typedef struct {
 
 
 static int
-vtabOpen(sqlite3_vtab *pVtab, sqlite3_vtab_cursor **ppCursor)
+apswvtabOpen(sqlite3_vtab *pVtab, sqlite3_vtab_cursor **ppCursor)
 { 
   PyObject *vtable=NULL, *res=NULL;
   PyGILState_STATE gilstate;
@@ -1023,7 +1023,7 @@ vtabOpen(sqlite3_vtab *pVtab, sqlite3_vtab_cursor **ppCursor)
   :param fields: A tuple of values the same length and order as columns in your table
 */
 static int
-vtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int64 *pRowid)
+apswvtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int64 *pRowid)
 {
   PyObject *vtable, *args=NULL, *res=NULL;
   PyGILState_STATE gilstate;
@@ -1170,7 +1170,7 @@ vtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int64 *p
   This taps into the existing scalar function code in connection.c
 */
 static int 
-vtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
+apswvtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
 		 void (**pxFunc)(sqlite3_context*, int, sqlite3_value**),
 		 void **ppArg)
 { 
@@ -1226,7 +1226,7 @@ vtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
 
 */
 static int
-vtabRename(sqlite3_vtab *pVtab, const char *zNew)
+apswvtabRename(sqlite3_vtab *pVtab, const char *zNew)
 {
   PyGILState_STATE gilstate;
   PyObject *vtable, *res=NULL, *newname=NULL;
@@ -1285,7 +1285,7 @@ vtabRename(sqlite3_vtab *pVtab, const char *zNew)
   be zero, indexstring will be None and constraintargs will be empty).
 */
 static int
-vtabFilter(sqlite3_vtab_cursor *pCursor, int idxNum, const char *idxStr,
+apswvtabFilter(sqlite3_vtab_cursor *pCursor, int idxNum, const char *idxStr,
                   int argc, sqlite3_value **sqliteargv)
 { 
   PyObject *cursor, *argv=NULL, *res=NULL;
@@ -1337,7 +1337,7 @@ vtabFilter(sqlite3_vtab_cursor *pCursor, int idxNum, const char *idxStr,
 */
 
 static int
-vtabEof(sqlite3_vtab_cursor *pCursor)
+apswvtabEof(sqlite3_vtab_cursor *pCursor)
 { 
   PyObject *cursor, *res=NULL;
   PyGILState_STATE gilstate;
@@ -1382,7 +1382,7 @@ vtabEof(sqlite3_vtab_cursor *pCursor)
 static void set_context_result(sqlite3_context *context, PyObject *obj);
 
 static int
-vtabColumn(sqlite3_vtab_cursor *pCursor, sqlite3_context *result, int ncolumn)
+apswvtabColumn(sqlite3_vtab_cursor *pCursor, sqlite3_context *result, int ncolumn)
 { 
   PyObject *cursor, *res=NULL;
   PyGILState_STATE gilstate;
@@ -1422,7 +1422,7 @@ vtabColumn(sqlite3_vtab_cursor *pCursor, sqlite3_context *result, int ncolumn)
   appropriate indexed and constrained row.
 */
 static int
-vtabNext(sqlite3_vtab_cursor *pCursor)
+apswvtabNext(sqlite3_vtab_cursor *pCursor)
 { 
   PyObject *cursor, *res=NULL;
   PyGILState_STATE gilstate;
@@ -1455,7 +1455,7 @@ vtabNext(sqlite3_vtab_cursor *pCursor)
   exception.
 */
 static int
-vtabClose(sqlite3_vtab_cursor *pCursor)
+apswvtabClose(sqlite3_vtab_cursor *pCursor)
 {
   PyObject *cursor, *res=NULL;
   PyGILState_STATE gilstate;
@@ -1488,7 +1488,7 @@ vtabClose(sqlite3_vtab_cursor *pCursor)
   Return the current rowid.
 */
 static int
-vtabRowid(sqlite3_vtab_cursor *pCursor, sqlite3_int64 *pRowid)
+apswvtabRowid(sqlite3_vtab_cursor *pCursor, sqlite3_int64 *pRowid)
 { 
   PyObject *cursor, *res=NULL, *pyrowid=NULL;
   PyGILState_STATE gilstate;
@@ -1528,25 +1528,25 @@ vtabRowid(sqlite3_vtab_cursor *pCursor, sqlite3_int64 *pRowid)
 static struct sqlite3_module apsw_vtable_module=
   {
     1,                    /* version */
-    vtabCreate,           /* methods */
-    vtabConnect,          
-    vtabBestIndex,        
-    vtabDisconnect,
-    vtabDestroy,
-    vtabOpen,
-    vtabClose, 
-    vtabFilter, 
-    vtabNext, 
-    vtabEof, 
-    vtabColumn,
-    vtabRowid, 
-    vtabUpdate, 
-    vtabBegin, 
-    vtabSync, 
-    vtabCommit, 
-    vtabRollback,
-    vtabFindFunction,
-    vtabRename 
+    apswvtabCreate,           /* methods */
+    apswvtabConnect,          
+    apswvtabBestIndex,        
+    apswvtabDisconnect,
+    apswvtabDestroy,
+    apswvtabOpen,
+    apswvtabClose, 
+    apswvtabFilter, 
+    apswvtabNext, 
+    apswvtabEof, 
+    apswvtabColumn,
+    apswvtabRowid, 
+    apswvtabUpdate, 
+    apswvtabBegin, 
+    apswvtabSync, 
+    apswvtabCommit, 
+    apswvtabRollback,
+    apswvtabFindFunction,
+    apswvtabRename 
   };
 
 /**

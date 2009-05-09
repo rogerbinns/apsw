@@ -2687,7 +2687,7 @@ Connection_sqlite3pointer(Connection *self)
 }
 
 static struct sqlite3_module apsw_vtable_module;
-static void vtabFree(void *context);
+static void apswvtabFree(void *context);
 
 /** .. method:: createmodule(name, datasource)
     
@@ -2720,7 +2720,7 @@ Connection_createmodule(Connection *self, PyObject *args)
 
   /* ::TODO:: - can we call this with NULL to unregister a module? */
   APSW_FAULT_INJECT(CreateModuleFail, 
-                    PYSQLITE_CON_CALL(res=sqlite3_create_module_v2(self->db, name, &apsw_vtable_module, vti, vtabFree)), 
+                    PYSQLITE_CON_CALL(res=sqlite3_create_module_v2(self->db, name, &apsw_vtable_module, vti, apswvtabFree)), 
                     res=SQLITE_IOERR);
   PyMem_Free(name);
   SET_EXC(res, self->db);

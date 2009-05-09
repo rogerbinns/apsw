@@ -2,6 +2,12 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.6.14-r1
+=========
+
+Changed some internal symbol names so they won't clash with similar
+ones used by SQLite in the amalgamation.
+
 3.6.13-r1
 =========
 
