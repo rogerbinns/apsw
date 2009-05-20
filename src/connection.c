@@ -427,7 +427,8 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
   /* record information */
   self->filename=convertutf8string(filename);
   self->open_flags=PyInt_FromLong(flags);
-  self->open_vfs=convertutf8string(vfsused->zName);
+  if(vfsused)
+    self->open_vfs=convertutf8string(vfsused->zName);
 
   /* get detailed error codes */
   PYSQLITE_VOID_CALL(sqlite3_extended_result_codes(self->db, 1));
