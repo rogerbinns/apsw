@@ -66,6 +66,49 @@ for v in sys.argv:
 sys.argv=argv2
 
 if fetch:
+    # A function for verifying downloads
+    def verifyurl(url, data):
+        d=["%s" % (len(data),)]
+        try:
+            import hashlib
+            d.append(hashlib.sha1(data).hexdigest())
+            d.append(hashlib.md5(data).hexdigest())
+        except ImportError:
+            import sha
+            d.append(sha.new(data).hexdigest())
+            import md5
+            d.append(md5.new(data).hexdigest())
+
+        write("Length:", d[0], " SHA1:", d[1], " MD5:", d[2])
+        sums=os.path.join(os.path.dirname(__file__), "checksums")
+        for line in open(sums, "rtU"):
+            line=line.strip()
+            if len(line)==0 or line[0]=="#":
+                continue
+            l=[l.strip() for l in line.split()]
+            if len(l)!=4:
+                write("Invalid line in checksums file:", line, sys.stderr)
+                raise ValueError("Bad checksums file")
+            if l[0]==url:
+                if l[1:]==d:
+                    write("Checksums verified")
+                    return
+                if l[1]!=d[0]:
+                    write("Length does not match.  Expected", l[1], "download was", d[0])
+                if l[2]!=d[1]:
+                    write("SHA does not match.  Expected", l[2], "download was", d[1])
+                if l[3]!=d[2]:
+                    write("MD5 does not match.  Expected", l[3], "download was", d[2])
+                write("The download does not match the checksums distributed with APSW.\n"
+                      "The download should not have changed since the checksums were\n"
+                      "generated.  The cause could be anything from network corruption\n"
+                      "to a malicious attack.")
+                raise ValueError("Checksums do not match")
+        # no matching line
+        write("(Not verified.  No match in checksums file)")
+
+
+if fetch:
     if py3:
         import urllib.request
         urlopen=urllib.request.urlopen
@@ -100,11 +143,12 @@ if fetch:
         ver=fetch[len("--fetch-sqlite="):]
     if simple:
         ver=ver.replace(".", "_")
-        AURL="http://sqlite.org/sqlite-amalgamation-%s.zip" % (ver,)
+        AURL="http://www.sqlite.org/sqlite-amalgamation-%s.zip" % (ver,)
     else:
         AURL="http://www.sqlite.org/sqlite-amalgamation-%s.tar.gz" % (ver,)
     write("Fetching", AURL)
     data=urlopen(AURL).read()
+    verifyurl(AURL, data)
     data=bytesio(data)
     if simple:
         zip=zipfile.ZipFile(data, "r")

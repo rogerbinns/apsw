@@ -2,11 +2,16 @@ Change History
 **************
 .. currentmodule:: apsw
 
-3.6.14-r1
-=========
+3.6.14.1-r1
+===========
 
 Changed some internal symbol names so they won't clash with similar
 ones used by SQLite in the amalgamation.
+
+Added a checksums file so that when :file:`setup.py` downloads SQLite,
+we know it hasn't been tampered with.  (The :ref:`--fetch-sqlite
+<setup_py_flags>` argument can be used to automatically download
+SQLite.)
 
 3.6.13-r1
 =========

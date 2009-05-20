@@ -23,6 +23,7 @@ SOURCEFILES = \
 	src/vtable.c
 
 OTHERFILES = \
+	checksums \
 	mingwsetup.bat  \
 	setup.py  \
 	tools/speedtest.py \

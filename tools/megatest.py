@@ -75,7 +75,7 @@ def main(PYVERS, UCSTEST, SQLITEVERS, concurrency):
                 workdir=os.path.abspath(os.path.join("work", "py%s-ucs%d-sq%s" % (pyver, ucs, sqlitever)))
                 logdir=os.path.abspath(os.path.join("megatestresults", "py%s-ucs%d-sq%s" % (pyver, ucs, sqlitever)))
                 run("mkdir -p %s/src %s" % (workdir, logdir))
-                run("cp *.py "+workdir)
+                run("cp *.py checksums "+workdir)
                 run("cp src/*.c src/*.h "+workdir+"/src/")
 
                 queue.put({'workdir': workdir, 'pyver': pyver, 'ucs': ucs, 'sqlitever': sqlitever, 'logdir': logdir})

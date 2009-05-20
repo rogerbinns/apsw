@@ -1,0 +1,22 @@
+# This file contains checksums/hashes of SQLite so that we can verify
+# downloads using --fetch-sqlite argument to setup.py have not been
+# tampered with.  See
+# http://apsw.googlecode.com/svn/publish/build.html#additional-setup-py-flags
+# for information on setup.py flags.
+
+# Format is URL length SHA1 MD5 all on one line.  Yes SHA1 and MD5 are
+# considered weakened, but it would take a fairly incredible feat to
+# come up with something that has the same length and SHA1 and MD5
+# hashes.  This extra checking mechanism is to give you a little bit
+# more peace of mind because the SQLite releases are not signed in any
+# way.
+
+
+http://www.sqlite.org/sqlite-amalgamation-3_6_14_1.zip    1014848 a426a62f04142a2fc2a9596af477c4575742f732 8a98eddece622de7f567133b48b4aeb1
+http://www.sqlite.org/sqlite-amalgamation-3.6.14.1.tar.gz 1334026 dcadd7ab32f65b98291957ad71a7018709ccd7a6 c2b877d0b7f8cb342e61808367256cf3
+http://www.sqlite.org/sqlite-amalgamation-3_6_14.zip    1014742 aeb5a4b3483356f54f01a9a7e26693a287a6ca77 89cf60ea385413fd34b129891e478611
+http://www.sqlite.org/sqlite-amalgamation-3.6.14.tar.gz 1333914 1280f8ece456ca1d3f7b37baba06b840fa841518 cfe9d3021cfdb58e2b02a36a4cb6b70c
+http://www.sqlite.org/sqlite-amalgamation-3_6_13.zip    1005601 db16b16ba24e104462ee76628dbdda5d09099b9c 1793f01161129f9687fe7d47f6c301d3
+http://www.sqlite.org/sqlite-amalgamation-3.6.13.tar.gz 1707254 950855d9eed9b8bd6fad406cece5a24b640c3e3f 681722e7cdc6d9ab3be836736ed50641
+http://www.sqlite.org/sqlite-amalgamation-3_6_12.zip    1000496 6945caf694391afdc9710a7df6da544cc668997d 7e592dccdbfe35a623b2410302aca506
+http://www.sqlite.org/sqlite-amalgamation-3.6.12.tar.gz 1333056 206cb5de9f41f7d45183187bad066f9a42e6cba2 067eb6e08ecc37fcd6d14f18cba68a39
