@@ -31,7 +31,7 @@ def run(cmd):
 
 
 def dotest(logdir, pybin, pylib, workdir, sqlitever):
-    buildsqlite(workdir, sqlitever, os.path.abspath(os.path.join(logdir, "sqlitebuild.txt")))
+    buildsqlite(workdir, sqlitever, pybin, os.path.abspath(os.path.join(logdir, "sqlitebuild.txt")))
     buildapsw(os.path.abspath(os.path.join(logdir, "buildapsw.txt")), pybin, workdir)
     # now the actual tests
     run("cd %s ; env LD_LIBRARY_PATH=%s %s tests.py -v >%s 2>&1" % (workdir, pylib, pybin, os.path.abspath(os.path.join(logdir, "runtests.txt"))))
@@ -106,9 +106,6 @@ def getpyurl(pyver):
         dirver='2.3'
     return "http://python.org/ftp/python/%s/Python-%s.tgz" % (dirver,pyver)
 
-def sqliteurl(sqlitever):
-    return "http://sqlite.org/sqlite-amalgamation-%s.zip" % (sqlitever.replace('.', '_'),)
-
 def buildpython(workdir, pyver, ucs, logfilename):
     if pyver=="system": return "/usr/bin/python", ""
     url=getpyurl(pyver)
@@ -124,19 +121,20 @@ def buildpython(workdir, pyver, ucs, logfilename):
         opt='BASECFLAGS=-U_FORTIFY_SOURCE'
     else:
         opt=''
-    run("cd %s ; cd Python-%s ; ./configure %s --disable-ipv6 --enable-unicode=ucs%d --prefix=%s/pyinst  >> %s 2>&1; make >>%s 2>&1; make  install >>%s 2>&1" % (workdir, pyver, opt, ucs, workdir, logfilename, logfilename, logfilename))
-    suf=""
-    if pyver>="3.0":
-        suf="3.0"
-    return os.path.join(workdir, "pyinst", "bin", "python"+suf), os.path.join(workdir, "pyinst", "lib")
+    if pyver>="3":
+        full="full"
+    else:
+        full=""
+    run("cd %s ; cd Python-%s ; ./configure %s --disable-ipv6 --enable-unicode=ucs%d --prefix=%s/pyinst  >> %s 2>&1; make >>%s 2>&1; make  %sinstall >>%s 2>&1" % (workdir, pyver, opt, ucs, workdir, logfilename, logfilename, full, logfilename))
+    return os.path.join(workdir, "pyinst", "bin", "python"), os.path.join(workdir, "pyinst", "lib")
     
-def buildsqlite(workdir, sqlitever, logfile):
+def buildsqlite(workdir, sqlitever, pybin, logfile):
     os.system("rm -rf '%s/sqlite3' '%s/sqlite3.c' 2>/dev/null" % (workdir,workdir))
     if sqlitever=="cvs":
         run("cd %s ; cvs -d :pserver:anonymous@www.sqlite.org:/sqlite checkout sqlite > %s 2>&1; mv sqlite sqlite3" % (workdir, logfile,))
         run('( set -x ; cd %s/sqlite3 ; ./configure --enable-loadextension --enable-threadsafe --disable-tcl ; make sqlite3.c ; cp src/sqlite3ext.h . ) >> %s 2>&1' % (workdir,logfile))
     else:
-        run("cd %s ; mkdir sqlite3 ; cd sqlite3 ; wget -q %s ; unzip -q %s " % (workdir, sqliteurl(sqlitever), os.path.basename(sqliteurl(sqlitever))))
+        run("cd %s ;  %s setup.py --fetch-sqlite=%s >> %s 2>&1 || true; test -f sqlite3/sqlite3.c" % (workdir, pybin, sqlitever, logfile))
     if sys.platform.startswith("darwin"):
         run('cd %s ; gcc -fPIC -bundle -o testextension.sqlext -Isqlite3 -I. src/testextension.c' % (workdir,))
     else:
@@ -152,6 +150,7 @@ def buildapsw(outputfile, pybin, workdir):
 
 # Default versions we support
 PYVERS=(
+    '3.1b1',
     '3.0.1',
     '2.6.1',
     '2.5.4',
@@ -165,6 +164,7 @@ SQLITEVERS=(
     '3.6.12',
     '3.6.13',
     '3.6.14',
+    '3.6.14.1',
    )
 
 if __name__=='__main__':
