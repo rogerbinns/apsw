@@ -58,7 +58,7 @@ def main(PYVERS, UCSTEST, SQLITEVERS, concurrency):
     os.system("rm -rf apsw.so megatestresults 2>/dev/null ; mkdir megatestresults")
     print "  ... removing old work directory"
     workdir=os.path.abspath("work")
-    os.system("rm -rf %s 2>/dev/null ; mkdir %s" % (workdir, workdir))
+    os.system("rm -rf %s/* 2>/dev/null ; mkdir -p %s" % (workdir, workdir))
     os.system('rm -rf $HOME/.local/lib/python*/site-packages/apsw* 2>/dev/null')
     print "      done"
 
@@ -125,7 +125,7 @@ def buildpython(workdir, pyver, ucs, logfilename):
         full="full"
     else:
         full=""
-    run("cd %s ; cd Python-%s ; ./configure %s --disable-ipv6 --enable-unicode=ucs%d --prefix=%s/pyinst  >> %s 2>&1; make >>%s 2>&1; make  %sinstall >>%s 2>&1" % (workdir, pyver, opt, ucs, workdir, logfilename, logfilename, full, logfilename))
+    run("cd %s ; cd Python-%s ; ./configure %s --disable-ipv6 --enable-unicode=ucs%d --prefix=%s/pyinst  >> %s 2>&1; make >>%s 2>&1; make  %sinstall >>%s 2>&1 ; make clean" % (workdir, pyver, opt, ucs, workdir, logfilename, logfilename, full, logfilename))
     return os.path.join(workdir, "pyinst", "bin", "python"), os.path.join(workdir, "pyinst", "lib")
     
 def buildsqlite(workdir, sqlitever, pybin, logfile):
