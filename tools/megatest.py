@@ -125,7 +125,7 @@ def buildpython(workdir, pyver, ucs, logfilename):
         full="full"
     else:
         full=""
-    run("cd %s ; cd Python-%s ; ./configure %s --disable-ipv6 --enable-unicode=ucs%d --prefix=%s/pyinst  >> %s 2>&1; make >>%s 2>&1; make  %sinstall >>%s 2>&1 ; make clean" % (workdir, pyver, opt, ucs, workdir, logfilename, logfilename, full, logfilename))
+    run("cd %s ; cd Python-%s ; ./configure %s --disable-ipv6 --enable-unicode=ucs%d --prefix=%s/pyinst  >> %s 2>&1; make >>%s 2>&1; make  %sinstall >>%s 2>&1 ; make clean >/dev/null" % (workdir, pyver, opt, ucs, workdir, logfilename, logfilename, full, logfilename))
     return os.path.join(workdir, "pyinst", "bin", "python"), os.path.join(workdir, "pyinst", "lib")
     
 def buildsqlite(workdir, sqlitever, pybin, logfile):
