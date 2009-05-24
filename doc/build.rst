@@ -181,17 +181,17 @@ alongside the tests. Reported issues also have test cases to ensure
 the issue doesn't happen or doesn't happen again.::
   
   $ python tests.py
-                  Python /usr/bin/python (2, 5, 2, 'final', 0)
+                  Python /usr/bin/python (2, 6, 2, 'final', 0)
   Testing with APSW file /space/apsw/apsw.so
-            APSW version 3.6.3-r1
-      SQLite lib version 3.6.3
-  SQLite headers version 3006003
-  .........................................................
+            APSW version 3.6.14.1-r1
+      SQLite lib version 3.6.14.1
+  SQLite headers version 3006014
+      Using amalgamation True
+  ............................................................
   ----------------------------------------------------------------------
-  Ran 57 tests in 36.258s
-
+  Ran 60 tests in 90.770s
+  
   OK
-
 
 The tests also ensure that as much APSW code as possible is executed
 including alternate paths through the code.  95.5% of the APSW code is

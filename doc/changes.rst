@@ -6,7 +6,13 @@ Change History
 ===========
 
 Changed some internal symbol names so they won't clash with similar
-ones used by SQLite in the amalgamation.
+new ones used by SQLite in the amalgamation.
+
+Added :attr:`apsw.using_amalgamation` so you can tell if APSW was
+compiled using the `SQLite amalgamation
+<http://www.sqlite.org/cvstrac/wiki?p=TheAmalgamation>`__.  Using the
+amalgamation means that SQLite shared libraries are not used and will
+not affect your code.
 
 Added a checksums file so that when :file:`setup.py` downloads SQLite,
 we know it hasn't been tampered with.  (The :ref:`--fetch-sqlite
