@@ -131,8 +131,8 @@ def buildpython(workdir, pyver, ucs, logfilename):
 def buildsqlite(workdir, sqlitever, pybin, logfile):
     os.system("rm -rf '%s/sqlite3' '%s/sqlite3.c' 2>/dev/null" % (workdir,workdir))
     if sqlitever=="cvs":
-        run("cd %s ; cvs -d :pserver:anonymous@www.sqlite.org:/sqlite checkout sqlite > %s 2>&1; mv sqlite sqlite3" % (workdir, logfile,))
-        run('( set -x ; cd %s/sqlite3 ; ./configure --enable-loadextension --enable-threadsafe --disable-tcl ; make sqlite3.c ; cp src/sqlite3ext.h . ) >> %s 2>&1' % (workdir,logfile))
+        run("cd %s ; cvs -d :pserver:anonymous@www.sqlite.org:/sqlite checkout sqlite > %s 2>&1" % (workdir, logfile,))
+        run('( set -x ; cd %s/sqlite ; make -f Makefile.linux-gcc sqlite3.c ; cp src/sqlite3ext.h . ; cd .. ; mv sqlite sqlite3 ) >> %s 2>&1' % (workdir,logfile))
     else:
         run("cd %s ;  %s setup.py --fetch-sqlite=%s >> %s 2>&1 || true; test -f sqlite3/sqlite3.c" % (workdir, pybin, sqlitever, logfile))
     if sys.platform.startswith("darwin"):
@@ -165,6 +165,7 @@ SQLITEVERS=(
     '3.6.13',
     '3.6.14',
     '3.6.14.1',
+    '3.6.14.2',
    )
 
 if __name__=='__main__':

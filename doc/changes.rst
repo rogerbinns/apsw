@@ -2,6 +2,13 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.6.14.2-r1
+===========
+
+Updated test code because SQLite 3.6.15 returns a different error code
+on trying to register a function with too many arguments (see `SQLite
+ticket #3875 <http://www.sqlite.org/cvstrac/tktview?tn=3875>`_).
+
 3.6.14.1-r1
 ===========
 

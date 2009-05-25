@@ -912,7 +912,11 @@ class APSW(unittest.TestCase):
             return 7
         self.assertRaises(TypeError, self.db.createscalarfunction, "twelve", 12) # must be callable
         self.assertRaises(TypeError, self.db.createscalarfunction, "twelve", 12, 27, 28) # too many params
-        self.assertRaises(apsw.SQLError, self.db.createscalarfunction, "twelve", ilove7, 900) # too many args
+        try:
+            self.db.createscalarfunction("twelve", ilove7, 900) # too many args
+        except (apsw.SQLError, apsw.MisuseError):
+            # http://www.sqlite.org/cvstrac/tktview?tn=3875
+            pass
         self.assertRaises(TypeError, self.db.createscalarfunction, u(r"twelve\N{BLACK STAR}"), ilove7) # must be ascii
         self.db.createscalarfunction("seven", ilove7)
         c.execute("create table foo(x,y,z)")
@@ -925,7 +929,10 @@ class APSW(unittest.TestCase):
         for row in c.execute("select null"): pass # no active sql now
         self.db.createscalarfunction("seven", None)
         # function names are limited to 255 characters - SQLerror is the rather unintuitive error return
-        self.assertRaises(apsw.SQLError, self.db.createscalarfunction, "a"*300, ilove7)
+        try:
+            self.db.createscalarfunction("a"*300, ilove7)
+        except (apsw.SQLError, apsw.MisuseError):
+            pass # see sqlite ticket #3875
         # have an error in a function
         def badfunc(*args):
             return 1/0
@@ -983,7 +990,11 @@ class APSW(unittest.TestCase):
 
         self.assertRaises(TypeError, self.db.createaggregatefunction,True, True, True, True) # wrong number/type of params
         self.assertRaises(TypeError, self.db.createaggregatefunction,"twelve", 12) # must be callable
-        self.assertRaises(apsw.SQLError, self.db.createaggregatefunction, "twelve", longest.factory, 923) # max args is 127
+        try:
+            self.db.createaggregatefunction("twelve", longest.factory, 923) # max args is 127
+        except (apsw.SQLError, apsw.MisuseError):
+            # used to be SQLerror then changed http://www.sqlite.org/cvstrac/tktview?tn=3875
+            pass 
         self.assertRaises(TypeError, self.db.createaggregatefunction, u(r"twelve\N{BLACK STAR}"), 12) # must be ascii
         self.db.createaggregatefunction("twelve", None)
         self.db.createaggregatefunction("longest", longest.factory)

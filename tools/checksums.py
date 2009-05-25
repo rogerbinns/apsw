@@ -4,6 +4,7 @@ import urllib2
 import hashlib
 
 sqlitevers=(
+    '3.6.14.2',
     '3.6.14.1',
     '3.6.14',
     '3.6.13',
@@ -42,9 +43,17 @@ def check(url, data):
 
 for v in sqlitevers:
     AURL="http://www.sqlite.org/sqlite-amalgamation-%s.zip" % (v.replace(".", "_"),)
-    data=urllib2.urlopen(AURL).read()
+    try:
+        data=urllib2.urlopen(AURL).read()
+    except:
+        print AURL
+        raise
     check(AURL, data)
     AURL="http://www.sqlite.org/sqlite-amalgamation-%s.tar.gz" % (v,)
-    data=urllib2.urlopen(AURL).read()
+    try:
+        data=urllib2.urlopen(AURL).read()
+    except:
+        print AURL
+        raise
     check(AURL, data)
     
