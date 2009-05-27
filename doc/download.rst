@@ -47,13 +47,15 @@ way to build or all the :ref:`options available <building>`.
 
 Some Linux distributions also have packages.
 
-+-------------------+----------------------------------------------------------------------------+
-| Debian/Ubuntu     | Install `python-apsw <http://packages.debian.org/python-apsw>`__           |
-+-------------------+----------------------------------------------------------------------------+
-| Gentoo            | Install `dev-python/apsw <http://www.gentoo-portage.com/dev-python/apsw>`_ |
-+-------------------+----------------------------------------------------------------------------+
-| Arch Linux        | Install `python-apsw <http://aur.archlinux.org/packages.php?ID=5537>`__    |
-+-------------------+----------------------------------------------------------------------------+
++-------------------+----------------------------------------------------------------------------------+
+| Debian            | Install `python-apsw <http://packages.debian.org/python-apsw>`__                 |
++-------------------+----------------------------------------------------------------------------------+
+| Ubuntu            | Install `python-apsw <http://packages.ubuntu.com/search?keywords=python-apsw>`__ |
++-------------------+----------------------------------------------------------------------------------+
+| Gentoo            | Install `dev-python/apsw <http://www.gentoo-portage.com/dev-python/apsw>`_       |
++-------------------+----------------------------------------------------------------------------------+
+| Arch Linux        | Install `python-apsw <http://aur.archlinux.org/packages.php?ID=5537>`__          |
++-------------------+----------------------------------------------------------------------------------+
 
 Note that these may trail the SQLite and APSW releases by a year, or more.
 
