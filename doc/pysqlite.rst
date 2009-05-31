@@ -146,6 +146,11 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
   but you can easily emulate that with the row tracer and
   :meth:`Cursor.getdescription`.
 
+* APSW has an :ref:`apswtrace <apswtrace>` utlity script that traces
+  execution and results in your code without having to modify it in
+  any way.  It also outputs summary reports making it easy to see what
+  your most time consuming queries are, which are most popular etc.
+
 * APSW has an exception corresponding to each SQLite error code and
   provides the extended error code.  pysqlite `combines several SQLite
   error codes

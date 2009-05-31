@@ -151,8 +151,9 @@ class APSWTracer(object):
             if wr not in self.newcursor:
                 self.newcursor[wr]=True
                 self.numcursors+=1
-                self.log(id(cursor), "CURSORFROM:", "%x" % (id(cursor.getconnection()),),
-                         "DB:", self.formatstring(cursor.getconnection().filename, checkmaxlen=False))
+                if self.options.sql:
+                    self.log(id(cursor), "CURSORFROM:", "%x" % (id(cursor.getconnection()),),
+                             "DB:", self.formatstring(cursor.getconnection().filename, checkmaxlen=False))
         if self.options.sql:
             args=[id(cursor), "SQL:", self.formatstring(sql, '', False)]
             if bindings:
@@ -307,7 +308,7 @@ def main():
                                  "and reports on SQL queries without modifying the program.  This is "
                                  "done by using connection_hooks and registering row and execution "
                                  "tracers.  See APSW documentation for more details on the output.")
-    parser.add_option("-o", "--ouput", dest="output", default="stdout",
+    parser.add_option("-o", "--output", dest="output", default="stdout",
                       help="Where to send the output.  Use a filename, a single dash for stdout, or the words stdout and stderr. [%default]")
     parser.add_option("-s", "--sql", dest="sql", default=False, action="store_true",
                       help="Log SQL statements as they are executed. [%default]")

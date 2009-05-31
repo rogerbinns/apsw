@@ -2,6 +2,12 @@ Change History
 **************
 .. currentmodule:: apsw
 
+next
+====
+
+Corrected spelling of option in :ref:`apswtrace <apswtrace>` and only
+output CURSORFROM if SQL tracing is on.
+
 3.6.14.2-r1
 ===========
 

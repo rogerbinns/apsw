@@ -232,7 +232,7 @@ All output is UTF-8 encoded.  The following options are available:
 
   Options:
     -h, --help            show this help message and exit
-    -o OUTPUT, --ouput=OUTPUT
+    -o OUTPUT, --output=OUTPUT
                           Where to send the output.  Use a filename, a single
                           dash for stdout, or the words stdout and stderr.
                           [stdout]
