@@ -121,12 +121,15 @@ def buildpython(workdir, pyver, ucs, logfilename):
         opt='BASECFLAGS=-U_FORTIFY_SOURCE'
     else:
         opt=''
-    if pyver>="3":
-        full="full"
+    if pyver.startswith("3.0"):
+        full="full" # 3.1 rc 1 doesn't need 'fullinstall'
     else:
         full=""
     run("cd %s ; cd Python-%s ; ./configure %s --disable-ipv6 --enable-unicode=ucs%d --prefix=%s/pyinst  >> %s 2>&1; make >>%s 2>&1; make  %sinstall >>%s 2>&1 ; make clean >/dev/null" % (workdir, pyver, opt, ucs, workdir, logfilename, logfilename, full, logfilename))
-    return os.path.join(workdir, "pyinst", "bin", "python"), os.path.join(workdir, "pyinst", "lib")
+    suf=""
+    if pyver>="3.1":
+        suf="3"
+    return os.path.join(workdir, "pyinst", "bin", "python"+suf), os.path.join(workdir, "pyinst", "lib")
     
 def buildsqlite(workdir, sqlitever, pybin, logfile):
     os.system("rm -rf '%s/sqlite3' '%s/sqlite3.c' 2>/dev/null" % (workdir,workdir))
@@ -150,7 +153,7 @@ def buildapsw(outputfile, pybin, workdir):
 
 # Default versions we support
 PYVERS=(
-    '3.1b1',
+    '3.1rc1',
     '3.0.1',
     '2.6.1',
     '2.5.4',
