@@ -100,7 +100,7 @@ separated statements.  For example::
        cursor.execute("insert .....")
 
   The nested :meth:`~Cursor.execute` would start a new query
-  abandoning any remaining results from the ``SELECT``.  There are two
+  abandoning any remaining results from the ``SELECT`` cursor.  There are two
   ways to work around this.  Use a different cursor::
 
     for row in cursor1.execute("select * from example"):
@@ -121,6 +121,7 @@ separated statements.  For example::
 
   * `SQLite transactions <http://www.sqlite.org/lang_transaction.html>`_
   * `Atomic commit <http://www.sqlite.org/atomiccommit.html>`_
+  * `Example of changing the database while running a query problem <http://www.mail-archive.com/sqlite-users@sqlite.org/msg42660.html>`_
   * :ref:`Benchmarking`
 
 */
