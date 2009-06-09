@@ -507,7 +507,7 @@ class APSW(unittest.TestCase):
 
         # give bad params
         self.assertRaises(TypeError, c.execute)
-        self.assertRaises(TypeError, "foo", "bar", "bam")
+        self.assertRaises(TypeError, c.execute, "foo", "bar", "bam")
 
         # empty statements
         c.execute("")
