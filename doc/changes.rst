@@ -5,6 +5,10 @@ Change History
 next
 ====
 
+Fixed `issue 50 <http://code.google.com/p/apsw/issues/detail?id=50>`_
+where :meth:`blob.read` was returning :const:`None` on end of file
+instead of the documented (and correct) empty string/bytes.
+
 Corrected spelling of option in :ref:`apswtrace <apswtrace>` and only
 output CURSORFROM if SQL tracing is on.
 

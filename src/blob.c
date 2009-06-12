@@ -309,7 +309,7 @@ APSWBlob_length(APSWBlob *self)
 
   Reads amount of data requested, or till end of file, whichever is
   earlier. Attempting to read beyond the end of the blob returns the
-  empty string, in the same manner as end of file on normal file
+  empty string/bytes, in the same manner as end of file on normal file
   objects.
 
   :rtype: (Python 2) string  (Python 3) bytes
@@ -336,11 +336,11 @@ APSWBlob_read(APSWBlob *self, PyObject *args)
   if(!PyArg_ParseTuple(args, "|i:read(numbytes=remaining)", &length))
     return NULL;
 
-  /* eof? */
-  if(self->curoffset==sqlite3_blob_bytes(self->pBlob))
-    Py_RETURN_NONE;
-
-  if(length==0)
+  if(
+     (self->curoffset==sqlite3_blob_bytes(self->pBlob)) /* eof */
+     ||
+     (length==0)
+     )
     return PyBytes_FromStringAndSize(NULL, 0);
 
   if(length<0)

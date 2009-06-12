@@ -2791,6 +2791,32 @@ class APSW(unittest.TestCase):
             # if there were any errors then exceptions would be raised here
             t.go()
 
+    def testIssue50(self):
+        "Check Blob.read return value on eof"
+        # first get what the system returns on eof
+        if iswindows:
+            f=open("nul", "rb")
+        else:
+            f=open("/dev/null", "rb")
+        try:
+            # deliberately hit eof
+            f.read()
+            # now try to read some more
+            feof=f.read(10)
+        finally:
+            f.close()
+        cur=self.db.cursor()
+        # make a blob to play with
+        rowid=next(cur.execute("create table foo(x blob); insert into foo values(zeroblob(98765)); select rowid from foo"))[0]
+        blobro=self.db.blobopen("main", "foo", "x", rowid, False)
+        try:
+            blobro.read(98765)
+            beof=blobro.read(10)
+            self.assertEqual(type(beof), type(feof))
+            self.assertEqual(beof, feof)
+        finally:
+            blobro.close()
+
     def testWriteUnraiseable(self):
         "Verify writeunraiseable replacement function"
         def unraise():
@@ -3244,7 +3270,7 @@ class APSW(unittest.TestCase):
             x=blobro.read(step)
             self.assertEqual(zero*step, x)
         x=blobro.read(10)
-        self.assertEqual(x, None)
+        self.assertEqual(x, BYTES(""))
         blobro.seek(0,1)
         self.assertEqual(blobro.tell(), 98765)
         blobro.seek(0)
