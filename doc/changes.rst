@@ -2,8 +2,8 @@ Change History
 **************
 .. currentmodule:: apsw
 
-next
-====
+3.6.15-r1
+=========
 
 Fixed `issue 50 <http://code.google.com/p/apsw/issues/detail?id=50>`_
 where :meth:`blob.read` was returning :const:`None` on end of file

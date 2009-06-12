@@ -1,5 +1,5 @@
 
-VERSION=3.6.14.2-r1
+VERSION=3.6.15-r1
 VERDIR=apsw-$(VERSION)
 
 # setup.py options for windows dist
