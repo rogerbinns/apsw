@@ -100,7 +100,11 @@ def getpyurl(pyver):
     elif 'rc' in dirver:
         dirver=dirver.split('rc')[0]
     if pyver>'2.3.0':
-        return "http://python.org/ftp/python/%s/Python-%s.tar.bz2" % (dirver,pyver)
+        # Upper or lower case 'p' in download filename is somewhat random
+        p='P'
+        if pyver in ("3.1rc2",):
+            p='p'
+        return "http://python.org/ftp/python/%s/%sython-%s.tar.bz2" % (dirver,p,pyver)
     if pyver=='2.3.0':
         pyver='2.3'
         dirver='2.3'
@@ -114,7 +118,7 @@ def buildpython(workdir, pyver, ucs, logfilename):
     else:
         tarx="z"
     if pyver=="2.3.0": pyver="2.3"    
-    run("cd %s ; mkdir pyinst ; wget -q %s -O - | tar xf%s -  > %s 2>&1" % (workdir, url, tarx, logfilename))
+    run("cd %s ; mkdir pyinst ; ( echo \"Getting %s\"; wget -q %s -O - | tar xf%s -  ) > %s 2>&1" % (workdir, url, url, tarx, logfilename))
     # See https://bugs.launchpad.net/ubuntu/+source/gcc-defaults/+bug/286334
     if pyver.startswith("2.3"):
         # https://bugs.launchpad.net/bugs/286334
@@ -125,7 +129,7 @@ def buildpython(workdir, pyver, ucs, logfilename):
         full="full" # 3.1 rc 1 doesn't need 'fullinstall'
     else:
         full=""
-    run("cd %s ; cd Python-%s ; ./configure %s --disable-ipv6 --enable-unicode=ucs%d --prefix=%s/pyinst  >> %s 2>&1; make >>%s 2>&1; make  %sinstall >>%s 2>&1 ; make clean >/dev/null" % (workdir, pyver, opt, ucs, workdir, logfilename, logfilename, full, logfilename))
+    run("cd %s ; cd *ython-%s ; ./configure %s --disable-ipv6 --enable-unicode=ucs%d --prefix=%s/pyinst  >> %s 2>&1; make >>%s 2>&1; make  %sinstall >>%s 2>&1 ; make clean >/dev/null" % (workdir, pyver, opt, ucs, workdir, logfilename, logfilename, full, logfilename))
     suf=""
     if pyver>="3.1":
         suf="3"
@@ -153,7 +157,7 @@ def buildapsw(outputfile, pybin, workdir):
 
 # Default versions we support
 PYVERS=(
-    '3.1rc1',
+    '3.1rc2',
     '3.0.1',
     '2.6.1',
     '2.5.4',
