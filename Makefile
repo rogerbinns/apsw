@@ -1,5 +1,5 @@
 
-VERSION=3.6.15-r1
+VERSION=3.6.16-r1
 VERDIR=apsw-$(VERSION)
 
 # setup.py options for windows dist
@@ -109,6 +109,10 @@ compile-win:
 	c:/python30/python tests.py
 	c:/python30/python setup.py build --compile=mingw32 bdist_wininst $(WINOPTS)
 
+	c:/python31/python setup.py build --compile=mingw32 install $(WINOPTS)
+	c:/python31/python tests.py
+	c:/python31/python setup.py build --compile=mingw32 bdist_wininst $(WINOPTS)
+
 
 source: docs
 	rm -rf $(VERDIR)
@@ -127,7 +131,9 @@ upload:
 	test -f dist/$(VERDIR).win32-py2.5.exe
 	test -f dist/$(VERDIR).win32-py2.6.exe
 	test -f dist/$(VERDIR).win32-py3.0.exe
+	test -f dist/$(VERDIR).win32-py3.1.exe
 	test -f dist/$(VERDIR).chm
+	python tools/googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 3.1 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py3.1.exe
 	python tools/googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 3.0 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py3.0.exe
 	python tools/googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.6 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.6.exe
 	python tools/googlecode_upload.py -p apsw -s "$(VERSION) Windows Python 2.5 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.5.exe
