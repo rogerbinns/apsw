@@ -2,6 +2,13 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.6.16-r1
+=========
+
+Windows binary distribution includes Python 3.1.
+
+Trivial tweaks to keep MSVC happy.
+
 3.6.15-r1
 =========
 
