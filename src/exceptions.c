@@ -163,17 +163,6 @@ static int init_exceptions(PyObject *m)
   unsigned int i;
   PyObject *obj;
 
-  /* PyModule_AddObject uses borrowed reference so we incref whatever
-     we give to it, so we still have a copy to use */
-
-  /* custom ones first */
-
-  APSWException=PyErr_NewException("apsw.Error", NULL, NULL);
-  if(!APSWException) return -1;
-  Py_INCREF(APSWException);
-  if(PyModule_AddObject(m, "Error", (PyObject *)APSWException))
-    return -1;
-
   APSWExceptionMapping apswexceptions[]={
     {&ExcThreadingViolation, "ThreadingViolationError"},
     {&ExcIncomplete, "IncompleteExecutionError"},
@@ -187,6 +176,18 @@ static int init_exceptions(PyObject *m)
     {&ExcVFSNotImplemented, "VFSNotImplementedError"},
     {&ExcVFSFileClosed, "VFSFileClosedError"}
   };
+
+
+  /* PyModule_AddObject uses borrowed reference so we incref whatever
+     we give to it, so we still have a copy to use */
+
+  /* custom ones first */
+
+  APSWException=PyErr_NewException("apsw.Error", NULL, NULL);
+  if(!APSWException) return -1;
+  Py_INCREF(APSWException);
+  if(PyModule_AddObject(m, "Error", (PyObject *)APSWException))
+    return -1;
 
   for(i=0; i<sizeof(apswexceptions)/sizeof(apswexceptions[0]); i++)
     {

@@ -800,6 +800,8 @@ modules etc. For example::
 
     /* add in some constants and also put them in a corresponding mapping dictionary */
 
+    {
+
     /* sentinel should be a number that doesn't exist */
 #define SENTINEL -786343
 #define DICT(n) {n, SENTINEL}
@@ -1067,6 +1069,8 @@ modules etc. For example::
    }
  /* should have ended with END so thedict should be NULL */
  assert(thedict==NULL);
+
+ }
 
  if(!PyErr_Occurred())
       {

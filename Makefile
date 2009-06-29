@@ -108,10 +108,11 @@ compile-win:
 	c:/python30/python setup.py build --compile=mingw32 install $(WINOPTS)
 	c:/python30/python tests.py
 	c:/python30/python setup.py build --compile=mingw32 bdist_wininst $(WINOPTS)
-
-	c:/python31/python setup.py build --compile=mingw32 install $(WINOPTS)
+        # They went out of their way to prevent mingw from working.  You
+        # have to install msvc.  Google for "visual c++ express edition".
+	c:/python31/python setup.py build install $(WINOPTS)
 	c:/python31/python tests.py
-	c:/python31/python setup.py build --compile=mingw32 bdist_wininst $(WINOPTS)
+	c:/python31/python setup.py build bdist_wininst $(WINOPTS)
 
 
 source: docs

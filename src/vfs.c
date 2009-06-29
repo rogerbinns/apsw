@@ -222,7 +222,7 @@ across.
 
 typedef struct 
 {
-  PyObject_HEAD;
+  PyObject_HEAD
   sqlite3_vfs *basevfs;         /* who we inherit from (might be null) */
   sqlite3_vfs *containingvfs;   /* pointer given to sqlite for this instance */
   int registered;               /* are we currently registered? */
@@ -239,7 +239,7 @@ typedef struct /* inherits */
 /* this is only used if there is inheritance */
 typedef struct
 {
-  PyObject_HEAD;
+  PyObject_HEAD
   struct sqlite3_file *base;
 } APSWVFSFile;
 
