@@ -1,0 +1,15 @@
+syntax: glob
+testextension.sqlext
+testdbx-journal
+testdbx
+*~
+*.so
+*.o
+*.gcno
+*.gcda
+*.gcov
+sqlite3/
+build/
+dist/
+sqlite3.h
+sqlite3.c
