@@ -13,3 +13,4 @@ build/
 dist/
 sqlite3.h
 sqlite3.c
+sqlite3ext.h
