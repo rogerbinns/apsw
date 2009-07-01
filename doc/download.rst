@@ -62,5 +62,5 @@ Note that these may trail the SQLite and APSW releases by a year, or more.
 Source code control
 ===================
 
-The source is controlled by Subversion documented at
+The source is controlled by Mercurial documented at
 http://code.google.com/p/apsw/source/checkout

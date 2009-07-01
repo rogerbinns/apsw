@@ -2,6 +2,13 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.6.17-r1
+=========
+
+APSW has migrated from Subversion to `Mercurial
+<http://mercurial.selenic.com/wiki/>`_ for source code control.
+Hosting remains at `Google Code <http://code.google.com/p/apsw/>`_
+
 3.6.16-r1
 =========
 
