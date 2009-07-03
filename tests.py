@@ -5315,7 +5315,9 @@ class APSW(unittest.TestCase):
 
         ## xUnlockFails
         apsw.faultdict["xUnlockFails"]=True
-        self.assertRaises(apsw.IOError, self.assertRaisesUnraisable, apsw.IOError, apsw.Connection("testdb", vfs="faultvfs").cursor().execute, "select * from dummy1")
+        # Used to wrap in self.assertRaises(apsw.IOError, ...) but SQLite no longer passes on the error.
+        # See http://www.sqlite.org/cvstrac/tktview?tn=3946
+        self.assertRaisesUnraisable(apsw.IOError, apsw.Connection("testdb", vfs="faultvfs").cursor().execute, "select * from dummy1")
 
         ## xSyncFails
         apsw.faultdict["xSyncFails"]=True

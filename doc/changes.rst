@@ -9,6 +9,10 @@ APSW has migrated from Subversion to `Mercurial
 <http://mercurial.selenic.com/wiki/>`_ for source code control.
 Hosting remains at `Google Code <http://code.google.com/p/apsw/>`_
 
+Updated a test due to VFS xUnlock errors now being ignored sometimes
+by SQLite (`SQLite ticket 3946
+<http://www.sqlite.org/cvstrac/tktview?tn=3946`_).
+
 3.6.16-r1
 =========
 
