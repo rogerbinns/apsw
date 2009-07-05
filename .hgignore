@@ -1,4 +1,6 @@
 syntax: glob
+MANIFEST.in.tmp
+MANIFEST
 testextension.sqlext
 testdbx-journal
 testdbx

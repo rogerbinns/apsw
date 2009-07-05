@@ -233,6 +233,7 @@ for path in amalgamation:
         # we also add the directory to include path since icu tries to use it
         include_dirs.append(os.path.dirname(path))
         write("SQLite: Using amalgamation", path)
+        amalgamationpath=path
         break
     
 if not usingamalgamation:
@@ -280,7 +281,34 @@ if addicuinclib:
         write("ICU: Unable to determine includes/libraries for ICU using icu-config")
         write("ICU: You will need to manually edit setup.py to set them")
 
+# Now do some chicanery.  If a source distribution is requested and
+# --fetch-sqlite was requested then make sure the sqlite amalgamation
+# ends up as part of the source distribution.
 
+if "sdist" in sys.argv:
+    pos=sys.argv.index("sdist")+1
+    # Make sure the manifest is regenerated
+    sys.argv.insert(pos, "--force-manifest")
+    if fetch and usingamalgamation:
+        # Use a temporary file for the manifest
+        tmpmanifest="MANIFEST.in.tmp"
+        sys.argv.insert(pos, "--template="+tmpmanifest)
+        try:
+            os.remove(tmpmanifest)
+        except:
+            pass
+        min=open("MANIFEST.in", "rU")
+        mout=open(tmpmanifest, "wt")
+        for line in min:
+            mout.write(line)
+        min.close()
+        # os.path.relpath emulation
+        amalrelpath=amalgamationpath[len(os.path.dirname(os.path.abspath(__file__)))+1:]
+        mout.write("include "+amalrelpath+"\n")
+        # also include headers and extension headers
+        mout.write("include "+amalrelpath.replace("sqlite3.c", "sqlite3.h")+"\n")
+        mout.write("include "+amalrelpath.replace("sqlite3.c", "sqlite3ext.h")+"\n")
+        mout.close()
 
 # work out version number
 version=open("src/apswversion.h", "rtU").read().split()[2].strip('"')
