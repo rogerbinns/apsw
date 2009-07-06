@@ -57,24 +57,30 @@ class run_tests(Command):
 
     description="Run test suite"
 
+
+    # I did originally try using 'verbose' as the option but it turns
+    # out that is builtin and defaults to 1 (--quiet is also builtin
+    # and forces verbose to 0)
     user_options=[
-        ("verbose", "v", "Show each test being run"),
+        ("show-tests", "s", "Show each test being run"),
         ]
 
+    # see if you can find boolean_options documented anywhere
+    boolean_options=['show-tests']
+
     def initialize_options(self):
-        self.verbose=False
+        self.show_tests=0
 
     def finalize_options(self):
-        if self.verbose:
-            self.verbose=1
-        else:
-            self.verbose=0
-
+        pass
+    
     def run(self):
         import unittest
         import tests
         suite=unittest.TestLoader().loadTestsFromModule(tests)
-        result=unittest.TextTestRunner(verbosity=self.verbose).run(suite)
+        # verbosity of zero doesn't print anything, one prints a dot
+        # per test and two prints each test name
+        result=unittest.TextTestRunner(verbosity=self.show_tests+1).run(suite)
         if not result.wasSuccessful():
             sys.exit(1)
 
