@@ -5,7 +5,7 @@ import sys
 import shlex
 import glob
 
-from distutils.core import setup, Extension
+from distutils.core import setup, Extension, Command
 
 ##
 ## Do your customizations here or by creating a setup.cfg as documented at
@@ -51,6 +51,33 @@ def write(*args):
     dest.flush()
 
 py3=sys.version_info>=(3,0)
+
+# Run test suite
+class run_tests(Command):
+
+    description="Run test suite"
+
+    user_options=[
+        ("verbose", "v", "Show each test being run"),
+        ]
+
+    def initialize_options(self):
+        self.verbose=False
+
+    def finalize_options(self):
+        if self.verbose:
+            self.verbose=1
+        else:
+            self.verbose=0
+
+    def run(self):
+        import unittest
+        import tests
+        suite=unittest.TestLoader().loadTestsFromModule(tests)
+        result=unittest.TextTestRunner(verbosity=self.verbose).run(suite)
+        if not result.wasSuccessful():
+            sys.exit(1)
+
 
 # Should we automatically fetch SQLite amalgamation?
 fetch=None
@@ -314,5 +341,9 @@ complete SQLite API into Python.""",
                              library_dirs=library_dirs,
                              libraries=libraries,
                              define_macros=define_macros,
-                             depends=depends)])
+                             depends=depends)],
+
+
+      cmdclass={'test': run_tests}
+      )
 
