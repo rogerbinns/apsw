@@ -28,7 +28,7 @@ for line in open("doc/download.rst", "rtU"):
         op.append("  <%s/apsw-%s.chm>`_" % (url, version))
         op.append("  (Compiled HTML Help) `Seeing blank content? <http://weblog.helpware.net/?p=36>`_ `MSKB 902225 <http://support.microsoft.com/kb/902225/>`_")
         op.append("")
-        for pyver in ("2.3", "2.4", "2.5", "2.6", "3.0"):
+        for pyver in ("2.3", "2.4", "2.5", "2.6", "3.0", "3.1"):
             op.append("* `apsw-%s.win32-py%s.exe" % (version, pyver))
             op.append("  <%s/apsw-%s.win32-py%s.exe>`_" % (url, version, pyver))
             op.append("  (Windows Python %s)" % (pyver,))
