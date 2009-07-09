@@ -195,7 +195,7 @@ The tests also ensure that as much APSW code as possible is executed
 including alternate paths through the code.  95.5% of the APSW code is
 executed by the tests. If you checkout the APSW source then there is
 an script `coverage.sh
-<http://code.google.com/p/apsw/source/browse/apsw/trunk/tools/coverage.sh>`_
+<http://code.google.com/p/apsw/source/browse/tools/coverage.sh>`_
 that enables extra code that deliberately induces extra conditions
 such as memory allocation failures, SQLite returning undocumented
 error codes etc. That brings coverage up to 99.6% of the code.
@@ -204,14 +204,14 @@ A memory checker `Valgrind <http://valgrind.org>`_ is used while
 running the test suite. The test suite is run 150 times to makes any
 memory leaks or similar issues stand out. A checking version of Python
 is also used.  See `valgrind.sh
-<http://code.google.com/p/apsw/source/browse/apsw/trunk/tools/valgrind.sh>`_
+<http://code.google.com/p/apsw/source/browse/tools/valgrind.sh>`_
 in the source.
 
 To ensure compatibility with the various Python versions, a script
 downloads and compiles all supported Python versions in both 2 byte
 and 4 byte Unicode character configurations against the APSW and
 SQLite supported versions running the tests. See `megatest.py
-<http://code.google.com/p/apsw/source/browse/apsw/trunk/tools/megatest.py>`_
+<http://code.google.com/p/apsw/source/browse/tools/megatest.py>`_
 in the source.
 
 In short both SQLite and APSW have a lot of testing!
