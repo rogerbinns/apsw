@@ -1,4 +1,12 @@
 syntax: glob
+doc/vfs.rst
+doc/example.rst
+doc/cursor.rst
+doc/connection.rst
+doc/blob.rst
+doc/backup.rst
+doc/apsw.rst
+doc/vtable.rst
 *.pyc
 testextension.sqlext
 testdbx-journal
