@@ -8,17 +8,20 @@ import apsw
 import sys
 
 write=sys.stdout.write
-write("                Python "+sys.executable+" "+str(sys.version_info)+"\n")
-write("Testing with APSW file "+apsw.__file__+"\n")
-write("          APSW version "+apsw.apswversion()+"\n")
-write("    SQLite lib version "+apsw.sqlitelibversion()+"\n")
-write("SQLite headers version "+str(apsw.SQLITE_VERSION_NUMBER)+"\n")
-write("    Using amalgamation "+str(apsw.using_amalgamation)+"\n")
 
-if [int(x) for x in apsw.sqlitelibversion().split(".")]<[3,6,12]:
-    write("You are using an earlier version of SQLite than recommended\n")
 
-sys.stdout.flush()
+def print_version_info(write=write):
+    write("                Python "+sys.executable+" "+str(sys.version_info)+"\n")
+    write("Testing with APSW file "+apsw.__file__+"\n")
+    write("          APSW version "+apsw.apswversion()+"\n")
+    write("    SQLite lib version "+apsw.sqlitelibversion()+"\n")
+    write("SQLite headers version "+str(apsw.SQLITE_VERSION_NUMBER)+"\n")
+    write("    Using amalgamation "+str(apsw.using_amalgamation)+"\n")
+
+    if [int(x) for x in apsw.sqlitelibversion().split(".")]<[3,6,12]:
+        write("You are using an earlier version of SQLite than recommended\n")
+
+    sys.stdout.flush()
 
 # sigh
 iswindows=sys.platform in ('win32', 'win64')
@@ -5504,8 +5507,14 @@ else:
 MEMLEAKITERATIONS=1000
 PROFILESTEPS=100000
 
-if __name__=='__main__':
 
+def setup(write=write):
+    """Call this if importing this test suite as it will ensure tests
+    we can't run are removed etc.  It will also print version
+    information."""
+
+    print_version_info(write)
+    
     apsw.config(apsw.SQLITE_CONFIG_MEMSTATUS, True) # ensure memory tracking is on
     apsw.initialize() # manual call for coverage
     memdb=apsw.Connection(":memory:")
@@ -5523,7 +5532,11 @@ if __name__=='__main__':
         sys.stdout.flush()
 
     del memdb
+    
 
+if __name__=='__main__':
+    setup()
+    
     if os.getenv("APSW_NO_MEMLEAK"):
         # Delete tests that have to deliberately leak memory
         # del APSW.testWriteUnraiseable  (used to but no more)

@@ -11,8 +11,8 @@ Short story:  You run :file:`setup.py`
 +-------------------------------------------------------------+-------------------------------------------------------------------------+
 | Command                                                     |  Result                                                                 |
 +=============================================================+=========================================================================+
-| | python setup.py install                                   | Compiles APSW with default Python compiler and                          |
-|                                                             | installs it into Python site library directory.                         |
+| | python setup.py install test                              | Compiles APSW with default Python compiler, installs it into Python     |
+|                                                             | site library directory and then runs the test suite.                    |
 +-------------------------------------------------------------+-------------------------------------------------------------------------+
 | | python setup.py install :option:`--user`                  | (Python 2.6+, 3). Compiles APSW with default Python                     |
 |                                                             | compiler and installs it into a subdirectory of your home directory.    |
@@ -24,11 +24,9 @@ Short story:  You run :file:`setup.py`
 |                                                             | <http://boodebr.org/main/python/build-windows-extensions>`_ the         |
 |                                                             | Microsoft compilers.                                                    |
 +-------------------------------------------------------------+-------------------------------------------------------------------------+
-| | python setup.py build                                     | Compiles the extension but doesn't install it. The resulting file       |
-|                                                             | will be in a :file:`build` subdirectory named apsw.so or apsw.pyd.      |
-|                                                             | For example on a Linux 64 bit Python 2.5 installation the file is       |
-|                                                             | :file:`build/lib.linux-x86_64-2.5/apsw.so`. You can copy this file      |
-|                                                             | anywhere that is convenient for your scripts.                           |
+| | python setup.py build_ext --force --inplace test          | Compiles the extension but doesn't install it. The resulting file       |
+|                                                             | will be in the current directory named apsw.so (Unix/Mac) or            |
+|                                                             | apsw.pyd (Windows). The test suite is then run.                         |
 +-------------------------------------------------------------+-------------------------------------------------------------------------+
 | | python setup.py build :option:`--debug` install           | Compiles APSW with debug information.  This also turns on `assertions   |
 |                                                             | <http://en.wikipedia.org/wiki/Assert.h>`_                               |
@@ -180,7 +178,7 @@ testing modules to verify correct operation. New code is developed
 alongside the tests. Reported issues also have test cases to ensure
 the issue doesn't happen or doesn't happen again.::
   
-  $ python tests.py
+  $ python setup.py test
                   Python /usr/bin/python (2, 6, 2, 'final', 0)
   Testing with APSW file /space/apsw/apsw.so
             APSW version 3.6.14.1-r1
