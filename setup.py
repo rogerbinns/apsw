@@ -77,6 +77,7 @@ class run_tests(Command):
     def run(self):
         import unittest
         import tests
+        tests.setup()
         suite=unittest.TestLoader().loadTestsFromModule(tests)
         # verbosity of zero doesn't print anything, one prints a dot
         # per test and two prints each test name
