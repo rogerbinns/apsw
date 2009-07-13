@@ -3,7 +3,7 @@ VERSION=3.6.16-r1
 VERDIR=apsw-$(VERSION)
 
 # setup.py options for windows dist
-WINOPTS=--enable=fts  --enable=rtree
+WINOPTS=--enable=fts3 --enable=fts3_parenthesis --enable=rtree
 
 SOURCEFILES = \
 	src/apsw.c \
