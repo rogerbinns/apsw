@@ -1666,6 +1666,69 @@ class APSW(unittest.TestCase):
         apsw.enablesharedcache(True)
         apsw.enablesharedcache(False)
 
+    # A check that various extensions (such as fts3, rtree, icu)
+    # actually work.  We don't know if they were supposed to be
+    # compiled in or not so the assumption is that they aren't.
+    # However if --enable=EXT is in sys.argv and setup.py is being run
+    # then it sets environment variables saying the extensions *must*
+    # be present.  See
+    # http://code.google.com/p/apsw/issues/detail?id=55 for what led
+    # to this.
+    def checkOptionalExtension(self, name, testquery):
+        try:
+            present=False
+            apsw.Connection(":memory:").cursor().execute(testquery)
+            present=True
+        except apsw.Error:
+            pass
+        if os.getenv("APSW_TEST_"+name.upper()):
+            self.assertEqual(present, True)
+        return present
+
+    def testFTS3Extension(self):
+        "Check FTS3 extension (if present)"
+        if not self.checkOptionalExtension("fts3", "create virtual table foo using fts3()"):
+            return
+        c=self.db.cursor()
+        data={
+            'cake': 'flour, eggs, milk',
+            'bbq ribs': 'ribs, hot sauce',
+            'mayo': 'oil, Eggs',
+            'glue': 'Egg',
+            'salmon': 'Fish',
+            'burger': 'Mechanically recovered meat',
+            # From http://www.sqlite.org/cvstrac/wiki?p=FtsUsage
+            'broccoli stew': 'broccoli peppers cheese tomatoes',
+            'pumpkin stew': 'pumpkin onions garlic celery',
+            'broccoli pie': 'broccoli cheese onions flour',
+            'pumpkin pie': 'pumpkin sugar flour butter'
+            }
+            
+        c.execute("create virtual table test using fts3(name, ingredients)")
+        c.executemany("insert into test values(?,?)", data.items())
+
+        def check(pattern, expectednames):
+            names=list(c.execute("select name from test where ingredients match ?", (pattern,)))
+            names.sort()
+            expectednames=list(expectednames)
+            expectednames.sort()
+            self.assertEqual(names, expectednames)
+
+        check('onions cheese', [('broccoli pie',)])
+        
+
+    # Note the normal testName - invoked from testOptionalExtensions
+    def testRTreeExtension(self):
+        "Check RTree extension if present"
+        if not self.checkOptionalExtension("rtree", "create virtual table foo using rtree(one, two, three, four, five)"):
+            return
+
+    # Note the normal testName - invoked from testOptionalExtensions
+    def extICUTest(self):
+        if not self.checkOptionalExtension("icu", "select lower('I', 'tr_tr')"):
+            return
+        
+
     def testTracebacks(self):
         "Verify augmented tracebacks"
         return

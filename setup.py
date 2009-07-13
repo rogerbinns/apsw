@@ -30,9 +30,11 @@ addicuinclib=False
 argv2=[]
 for v in sys.argv:
     if v.startswith("--enable="):
-        define_macros.append( ('SQLITE_ENABLE_'+v[len("--enable="):].upper(), 1) )
-        if v[len("--enable="):].upper()=="ICU":
+        what=v[len("--enable="):]
+        define_macros.append( ('SQLITE_ENABLE_'+what.upper(), 1) )
+        if what.upper()=="ICU":
             addicuinclib=True
+        os.putenv("APSW_TEST_"+what.upper(), "1")
     elif v.startswith("--omit="):
         define_macros.append( ('SQLITE_OMIT_'+v[len("--omit="):].upper(), 1) )
     else:
