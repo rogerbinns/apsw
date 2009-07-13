@@ -86,34 +86,16 @@ compile-win:
 	cmd /c del /s /q dist
 	cmd /c del /s /q build
 	-cmd /c md dist
-	c:/python23/python setup.py build --compile=mingw32 install $(WINOPTS)
-	c:/python23/python tests.py
-	c:/python23/python setup.py build --compile=mingw32 bdist_wininst $(WINOPTS)
-
-	c:/python24/python setup.py build --compile=mingw32 install $(WINOPTS)
-	c:/python24/python tests.py
-	c:/python24/python setup.py build --compile=mingw32 bdist_wininst $(WINOPTS)
-	c:/python24/python example-code.py
-
-	c:/python25/python setup.py build --compile=mingw32 install $(WINOPTS)
-	c:/python25/python tests.py
-	c:/python25/python setup.py build --compile=mingw32 bdist_wininst $(WINOPTS)
-
-# See http://bugs.python.org/issue3308 if these fail to run with
-# missing symbols
-	c:/python26/python setup.py build --compile=mingw32 install $(WINOPTS)
-	c:/python26/python tests.py
-	c:/python26/python setup.py build --compile=mingw32 bdist_wininst $(WINOPTS)
-
-	c:/python30/python setup.py build --compile=mingw32 install $(WINOPTS)
-	c:/python30/python tests.py
-	c:/python30/python setup.py build --compile=mingw32 bdist_wininst $(WINOPTS)
-        # They went out of their way to prevent mingw from working.  You
+	c:/python23/python setup.py build --compile=mingw32 install $(WINOPTS) test bdist_wininst
+	c:/python24/python setup.py build --compile=mingw32 install $(WINOPTS) test bdist_wininst
+	c:/python25/python setup.py build --compile=mingw32 install $(WINOPTS) test bdist_wininst
+# See http://bugs.python.org/issue3308 if 2.6+ or 3.0+ fail to run with
+# missing symbols/dll issues
+	c:/python26/python setup.py build --compile=mingw32 install $(WINOPTS) test bdist_wininst
+	c:/python30/python setup.py build --compile=mingw32 install $(WINOPTS) test bdist_wininst
+        # They went out of their way to prevent mingw from working with 3.1.  You
         # have to install msvc.  Google for "visual c++ express edition".
-	c:/python31/python setup.py build install $(WINOPTS)
-	c:/python31/python tests.py
-	c:/python31/python setup.py build bdist_wininst $(WINOPTS)
-
+	c:/python31/python setup.py build install $(WINOPTS) test bdist_wininst
 
 source: docs
 	rm -rf $(VERDIR)
