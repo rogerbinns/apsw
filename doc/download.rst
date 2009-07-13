@@ -7,7 +7,12 @@ Source and binaries
 ===================
 
 You can download this release as binaries for Windows.  Just run the
-executable corresponding with the Python version you are using.
+executable corresponding with the Python version you are using.  The
+Windows binaries all include the `FTS3
+<http://www.sqlite.org/cvstrac/wiki?p=FtsUsage>`__ and `RTree
+<http://www.sqlite.org/cvstrac/fileview?f=sqlite/ext/rtree/README>`__
+extensions.  (`FTS3_PARENTHESIS
+<http://www.sqlite.org/compile.html#enable_fts3_parenthesis>`_ is on.)
 
 Download in source form for other platforms or if you want to compile
 yourself on Windows.  See the :ref:`recommended <recommended_build>`
@@ -21,7 +26,7 @@ way to build or all the :ref:`options available <building>`.
 
 * `apsw-3.6.16-r1.chm
   <http://apsw.googlecode.com/files/apsw-3.6.16-r1.chm>`_
-  (Compiled HTML Help) `Seeing blank content? <http://weblog.helpware.net/?p=36>`_ `MSKB 902225 <http://support.microsoft.com/kb/902225/>`_
+  (Compiled HTML Help) `Seeing blank content? <http://weblog.helpware.net/?p=36>`_ & `MSKB 902225 <http://support.microsoft.com/kb/902225/>`_
 
 * `apsw-3.6.16-r1.win32-py2.3.exe
   <http://apsw.googlecode.com/files/apsw-3.6.16-r1.win32-py2.3.exe>`_
