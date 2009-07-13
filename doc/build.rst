@@ -77,7 +77,9 @@ There are a number of APSW specific flags you can specify.
 |                                        | :option:`--omit=load_extension` will omit code to do with loading extensions. If     |
 |                                        | using the amalgamation then this will omit the functionality from APSW and           |
 |                                        | SQLite, otherwise the functionality will only be omitted from APSW (ie the code      |
-|                                        | will still be in SQLite, APSW just won't call it)                                    |
+|                                        | will still be in SQLite, APSW just won't call it). In almost all cases you will need |
+|                                        | to regenerate the SQLite source because the omits also alter the generated SQL       |
+|                                        | parser. See `http://www.sqlite.org/compile.html#omitfeatures`_.                      |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 
 Finding SQLite 3
