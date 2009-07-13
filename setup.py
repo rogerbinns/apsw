@@ -25,6 +25,17 @@ define_macros.append( ('EXPERIMENTAL', '1') )
 ## End of customizations
 ##
 
+# python 2 and 3 print equivalent
+def write(*args):
+    # py2 won't allow keyword arg on end, so work around it
+    dest=sys.stdout
+    if args[-1]==sys.stderr:
+        dest=args[-1]
+        args=args[:-1]
+    dest.write(" ".join(args)+"\n")
+    dest.flush()
+
+
 addicuinclib=False
 # Look for various omits and enables
 argv2=[]
@@ -35,6 +46,17 @@ for v in sys.argv:
         if what.upper()=="ICU":
             addicuinclib=True
         os.putenv("APSW_TEST_"+what.upper(), "1")
+        # See issue #55 where I had left of the 3 in fts3.  This code
+        # tries to catch misspelling the name of an extension.
+        # However the SQLITE_ENABLE prefix is also used by other
+        # options - see http://www.sqlite.org/compile.html but almost
+        # all of those have _ in them, so our abbreviated and
+        # hopefully future proof test
+        if "_" not in what.lower() and \
+           "memsys" not in what.lower() and \
+           what.lower() not in ("fts3", "rtree", "icu", "iotrace"):
+            write("Unknown enable "+what, sys.stderr)
+            sys.exit(1)
     elif v.startswith("--omit="):
         define_macros.append( ('SQLITE_OMIT_'+v[len("--omit="):].upper(), 1) )
     else:
@@ -42,15 +64,6 @@ for v in sys.argv:
 sys.argv=argv2
 
 
-# python 2 and 3 print equivalent
-def write(*args):
-    # py2 won't allow keyword arg on end, so work around it
-    dest=sys.stdout
-    if args[-1]==sys.stderr:
-        dest=args[-1]
-        args=args[:-1]
-    dest.write(" ".join(args)+"\n")
-    dest.flush()
 
 py3=sys.version_info>=(3,0)
 
