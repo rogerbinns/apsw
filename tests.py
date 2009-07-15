@@ -1708,13 +1708,15 @@ class APSW(unittest.TestCase):
         c.executemany("insert into test values(?,?)", data.items())
 
         def check(pattern, expectednames):
-            names=list(c.execute("select name from test where ingredients match ?", (pattern,)))
+            names=[n[0] for n in c.execute("select name from test where ingredients match ?", (pattern,))]
             names.sort()
             expectednames=list(expectednames)
             expectednames.sort()
             self.assertEqual(names, expectednames)
 
-        check('onions cheese', [('broccoli pie',)])
+        check('onions cheese', ['broccoli pie'])
+        check('eggs OR oil', ['cake', 'mayo'])
+        check('"pumpkin onions"', ['pumpkin stew'])
         
 
     # Note the normal testName - invoked from testOptionalExtensions
@@ -1722,12 +1724,45 @@ class APSW(unittest.TestCase):
         "Check RTree extension if present"
         if not self.checkOptionalExtension("rtree", "create virtual table foo using rtree(one, two, three, four, five)"):
             return
+        c=self.db.cursor()
+        data=(
+            (1, 2, 3, 4),
+            (5.1, 6, 7.2, 8),
+            (1, 4, 9, 12),
+            (77, 77.1, 3, 9),
+            )
+        c.execute("create virtual table test using rtree(ii, x1, x2, y1, y2)")
+        for i,row in enumerate(data):
+            c.execute("insert into test values(?,?,?,?,?)", (i, row[0], row[1], row[2], row[3]))
+
+        def check(pattern, expectedrows):
+            rows=[n[0] for n in c.execute("select ii from test where "+pattern)]
+            rows.sort()
+            expectedrows=list(expectedrows)
+            expectedrows.sort()
+            self.assertEqual(rows, expectedrows)
+
+        check("x1>2 AND x2<7 AND y1>17.2 AND y2<=8", [])
+        check("x1>5 AND x2<=6 AND y1>-11 AND y2<=8", [1])
 
     # Note the normal testName - invoked from testOptionalExtensions
-    def extICUTest(self):
+    def testICUExtension(self):
         if not self.checkOptionalExtension("icu", "select lower('I', 'tr_tr')"):
             return
-        
+
+        c=self.db.cursor()
+        # we compare SQLite standard vs icu
+        def check(text, locale, func="lower", equal=False):
+            q="select "+func+"(?%s)"
+            sqlite=c.execute(q % ("",), (text,)).fetchall()
+            icu=c.execute(q % (",'"+locale+"'",), (text,)).fetchall()
+            if equal:
+                self.assertEqual(sqlite, icu)
+            else:
+                self.assertNotEqual(sqlite, icu)
+
+        check("I", "tr_tr")
+        check("I", "en_us", equal=True)
 
     def testTracebacks(self):
         "Verify augmented tracebacks"
