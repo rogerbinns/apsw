@@ -100,6 +100,19 @@ class run_tests(Command):
         if not result.wasSuccessful():
             sys.exit(1)
 
+# A hack we dont't document
+class build_test_extension(Command):
+    description="Compiles APSW test loadable extension"
+
+
+    user_options=[]
+
+    def initialize_options(self):
+        pass
+    def finalize_options(self):
+        pass
+    def run(self):
+        os.system("gcc -fPIC -shared -o testextension.sqlext -Isqlite3 -I. src/testextension.c")
 
 # Should we automatically fetch SQLite amalgamation?
 fetch=None
@@ -394,6 +407,7 @@ complete SQLite API into Python.""",
                              depends=depends)],
 
 
-      cmdclass={'test': run_tests}
+      cmdclass={'test': run_tests,
+                'build_test_extension': build_test_extension}
       )
 

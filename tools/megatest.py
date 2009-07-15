@@ -31,10 +31,13 @@ def run(cmd):
 
 
 def dotest(logdir, pybin, pylib, workdir, sqlitever):
-    buildsqlite(workdir, sqlitever, pybin, os.path.abspath(os.path.join(logdir, "sqlitebuild.txt")))
-    buildapsw(os.path.abspath(os.path.join(logdir, "buildapsw.txt")), pybin, workdir)
-    # now the actual tests
-    run("cd %s ; env LD_LIBRARY_PATH=%s %s tests.py -v >%s 2>&1" % (workdir, pylib, pybin, os.path.abspath(os.path.join(logdir, "runtests.txt"))))
+    if sqlitever=="cvs":
+        buildsqlite(workdir, sqlitever, pybin, os.path.abspath(os.path.join(logdir, "sqlitebuild.txt")))
+        buildapsw(os.path.abspath(os.path.join(logdir, "buildapsw.txt")), pybin, workdir)
+        run("cd %s ; env LD_LIBRARY_PATH=%s %s tests.py -v >%s 2>&1" % (workdir, pylib, pybin, os.path.abspath(os.path.join(logdir, "runtests.txt"))))
+    else:
+        # for non-cvs we do the fetch/build/test all at once
+        run("cd %s ; env LD_LIBRARY_PATH=%s %s setup.py build_test_extension build_ext --inplace --force --enable=fts3 --enable=rtree test -v --fetch-sqlite=%s >%s 2>&1" % (workdir, pylib, pybin, sqlitever, os.path.abspath(os.path.join(logdir, "buildruntests.txt"))))
 
 
 def runtest(workdir, pyver, ucs, sqlitever, logdir):
@@ -159,7 +162,7 @@ def buildapsw(outputfile, pybin, workdir):
 PYVERS=(
     '3.1',
     '3.0.1',
-    '2.6.1',
+    '2.6.2',
     '2.5.4',
     '2.4.6',
     '2.3.7',
