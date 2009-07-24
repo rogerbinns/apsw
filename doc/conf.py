@@ -178,3 +178,9 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
+
+# pdf stuff
+# ---------
+pdf_documents=[
+  ('index', project, "%s %s Documentation" % (project, version), 'Roger Binns <rogerb@rogerbinns.com>'),
+]
