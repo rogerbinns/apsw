@@ -79,7 +79,8 @@ There are a number of APSW specific flags you can specify.
 |                                        | SQLite, otherwise the functionality will only be omitted from APSW (ie the code      |
 |                                        | will still be in SQLite, APSW just won't call it). In almost all cases you will need |
 |                                        | to regenerate the SQLite source because the omits also alter the generated SQL       |
-|                                        | parser. See `http://www.sqlite.org/compile.html#omitfeatures`_.                      |
+|                                        | parser. See `the relevant SQLite documentation                                       |
+|                                        | <http://www.sqlite.org/compile.html#omitfeatures>`_.                                 |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 
 Finding SQLite 3
