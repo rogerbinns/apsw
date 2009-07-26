@@ -45,7 +45,7 @@ all: header docs
 
 doc: docs
 
-docs: $(GENDOCS) doc/example.rst
+docs: $(GENDOCS) doc/example.rst doc/.static
 	env PYTHONPATH=. python tools/docmissing.py
 	env PYTHONPATH=. python tools/docupdate.py $(VERSION)
 	make VERSION=$(VERSION) -C doc clean html htmlhelp 
@@ -53,6 +53,9 @@ docs: $(GENDOCS) doc/example.rst
 doc/example.rst: example-code.py tools/example2rst.py src/apswversion.h
 	rm -f dbfile
 	env PYTHONPATH=. python tools/example2rst.py
+
+doc/.static:
+	mkdir -p doc/.static
 
 # This is probably gnu make specific but only developers use this makefile
 $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
