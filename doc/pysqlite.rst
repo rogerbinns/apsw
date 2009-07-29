@@ -21,7 +21,7 @@ Consequently it does hide some of SQLite's nuances.
    I suggest using APSW when you want to directly use SQLite and its
    functionality or are using your own code to deal with database
    independence rather than DBAPI.  Use pysqlite and DBAPI if your
-   needs are simple, and you don't use advanced SQL features or types.
+   needs are simple, and you don't want to use SQLite features.
 
 
 What APSW does better
@@ -33,7 +33,8 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
   functionality changed in SQLite, APSW tracks them.
 
 * APSW gives all functionality of SQLite including :ref:`virtual
-  tables`, :ref:`VFS` and :ref:`BLOB I/O <blobio>`
+  tables`, :ref:`VFS`, :ref:`BLOB I/O <blobio>` and :ref:`backups
+  <backup>`.
 
 * You can use the same :class:`Connection` across threads with APSW
   without needing any additional level of locking.  pysqlite requires
@@ -43,15 +44,22 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
   deadlock.
  
 * APSW is a single file for the extension, :file:`apsw.pyd` on Windows and
-  :file:`apsw.so` on Unix/Mac. There are no other files needed and the build
-  instructions show you how to include SQLite statically in this
-  file. You can put this file anywhere your Python session can
+  :file:`apsw.so` on Unix/Mac. There are no other files needed and the :ref:`build
+  instructions <building>` show you how to include SQLite statically
+  in this file. You can put this file anywhere your Python session can
   reach. pysqlite is one binary file and several .py files, all of
   which need to be available.
 
 * **Nothing** happens behind your back. By default pysqlite tries to
   manage transactions by parsing your SQL for you, but you can turn it
   off. This can result in very unexpected behaviour with pysqlite.
+
+* When using a :class:`Connection` as a :meth:`context manager
+  <Connection.__enter__>` APSW uses SQLite's ability to have `nested
+  transactions <http://www.sqlite.org/lang_savepoint.html>`__.
+  pysqlite only deals with one transaction at a time and cannot next
+  them.  (Savepoints were introduced in SQLite 3.6.8 - another
+  illustration of the benefits of keeping up to date with SQLite.)
 
 * APSW **always** handles Unicode correctly (this was one of the major
   reasons for writing it in the first place). pysqlite has since fixed
@@ -146,7 +154,7 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
   but you can easily emulate that with the row tracer and
   :meth:`Cursor.getdescription`.
 
-* APSW has an :ref:`apswtrace <apswtrace>` utlity script that traces
+* APSW has an :ref:`apswtrace <apswtrace>` utility script that traces
   execution and results in your code without having to modify it in
   any way.  It also outputs summary reports making it easy to see what
   your most time consuming queries are, which are most popular etc.

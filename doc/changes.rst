@@ -21,7 +21,8 @@ can do the building and testing all in one go.  Sample command line::
 
   $ python setup.py install test
 
-Extra document about :ref:`using omit <setup_py_flags>` with setup.py.
+Extra documentation about :ref:`using omit <setup_py_flags>` with
+setup.py.
 
 The test suite will now check the functionality of the FTS3, RTree and
 ICU extensions if they were included.  (The Windows binary distribution
@@ -30,6 +31,8 @@ includes FTS3 and RTree by default.)
 Fixed `issue 55 <http://code.google.com/p/apsw/issues/detail?id=55>`_
 where FTS3 was unintentionally omitted from the Windows binary
 distribution.
+
+Various documentation updates.
 
 3.6.16-r1
 =========

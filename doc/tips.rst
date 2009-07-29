@@ -6,6 +6,28 @@ Tips
 These tips are based on mailing list postings.  You are recommended to
 read all the documentation as well.
 
+SQLite is different
+===================
+
+While SQLite provides a SQL database like many others out there, it is
+also unique in many ways.  Read about the unique features at the
+`SQLite website <http://www.sqlite.org/different.html>`__.
+
+Cursors
+=======
+
+SQLite only calculates each result row as you request it.  For example
+if your query returns 10 million rows SQLite will not calculate all 10
+million up front.  Instead the next row will be calculated as you ask
+for it.
+
+Cursors on the same :ref:`Connection <connections>` are not isolated
+from each other.  Anything done on one cursor is immediately visible
+to all other Cursors on the same connection.  This still applies if
+you start transactions.  Connections are isolated from each other.
+
+Read more about :ref:`Cursors <cursors>`.
+
 Bindings
 ========
 

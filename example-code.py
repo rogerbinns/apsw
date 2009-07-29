@@ -502,6 +502,23 @@ except apsw.TooBigError:
 #@@ENDCAPTURE
 
 ###
+### Backup to memory @@example-backup
+###
+
+# We will copy the disk database into a memory database
+
+memcon=apsw.Connection(":memory:")
+
+# Copy into memory
+with memcon.backup("main", connection, "main") as backup:
+    backup.step() # copy whole database in one go
+
+# There will be no disk accesses for this query
+for row in memcon.cursor().execute("select * from s"):
+    pass
+
+
+###
 ### Statistics @@example-status
 ###
 

@@ -26,6 +26,8 @@
 
 /** 
 
+.. _connections:
+
 Connections to a database
 *************************
 

@@ -50,7 +50,7 @@ column values::
 
 There are two ways of supplying data to a query.  The **really bad** way is to compose a string::
 
-  sql="insert into example values('%s', %s)" % ("string", "8390823904")
+  sql="insert into example values('%s', %d)" % ("string", 8390823904)
   cursor.execute(sql)
 
 If there were any single quotes in string then you would have invalid
@@ -58,11 +58,11 @@ syntax.  Additionally this is how `SQL injection attacks
 <http://en.wikipedia.org/wiki/SQL_injection>`_ happen. Instead you should use bindings::
 
   sql="insert into example values(?, ?)"
-  cursor.execute(sql, ("string", "8390823904"))
+  cursor.execute(sql, ("string", 8390823904))
 
   # You can also use dictionaries
   sql="insert into example values(:title, :isbn)"
-  cursor.execute(sql, {"title": "string", "isbn": "8390823904"})
+  cursor.execute(sql, {"title": "string", "isbn": 8390823904})
 
   # You can use local variables as the dictionary
   title="..."
@@ -116,6 +116,15 @@ separated statements.  For example::
   about the database changing while doing the ``select``.  You should
   also understand transactions and where to put the transaction
   boundaries.
+
+.. note::
+
+  Cursors on the same :ref:`Connection <connections>` are not isolated
+  from each other.  Anything done on one cursor is immediately visible
+  to all other Cursors on the same connection.  This still applies if
+  you start transactions.  Connections are isolated from each other
+  with cursors on other connections not seeing changes until they are
+  committed.
 
 .. seealso::
 

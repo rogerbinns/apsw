@@ -180,11 +180,11 @@ APSWBackup_dealloc(APSWBackup *self)
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
-/** .. method:: step([npages=All])
+/** .. method:: step([npages=All]) -> bool
 
   Copies *npages* pages from the source to destination database.  The source database is locked during the copy so
   using smaller values allows other access to the source database.  The destination database is always locked until the
-  backup object is :meth:`finished <~backup.finish>`.
+  backup object is :meth:`finished <backup.finish>`.
 
   :param npages: How many pages to copy. If the parameter is omitted
      or negative then all remaining pages are copied. The default page
@@ -295,7 +295,7 @@ APSWBackup_close(APSWBackup *self, PyObject *args)
 
   Read only. How many pages were remaining to be copied after the last
   step.  If you haven't called :meth:`~backup.step` or the backup
-  object has been :meth:`finished <~backup.finish>` then zero is
+  object has been :meth:`finished <backup.finish>` then zero is
   returned.
 
   -* sqlite3_backup_remaining
@@ -311,7 +311,7 @@ APSWBackup_get_remaining(APSWBackup *self, APSW_ARGUNUSED void *ignored)
 
   Read only. How many pages were in the source database after the last
   step.  If you haven't called :meth:`~backup.step` or the backup
-  object has been :meth:`finished <~backup.finish>` then zero is
+  object has been :meth:`finished <backup.finish>` then zero is
   returned.
 
   -* sqlite3_backup_pagecount
