@@ -142,16 +142,11 @@ current directory being where you extracted the APSW source to.
   Windows::
 
       # Leave out --compile=mingw32 flag if using Microsoft compiler
-    > python setup.py build --compile=mingw32 install --fetch-sqlite 
-    > python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"
-    > python tests.py       # optional - checks everything works correctly
-
+    > python setup.py build --compile=mingw32 install test --fetch-sqlite
 
   Mac/Linux etc::
 
-    $ python setup.py install --fetch-sqlite
-    $ python -c "import apsw ; print  apsw.sqlitelibversion(), apsw.apswversion()"     
-    $ python tests.py       # optional - checks everything works correctly
+    $ python setup.py install test --fetch-sqlite 
 
 .. note::
 
@@ -165,10 +160,8 @@ any directory that is more convenient for you and that your code can
 reach. To just do the build and not install, leave out *install* from
 the lines above and add *build* if it isn't already there.
 
-If you want to check that your build is correct then you can run the
-unit tests. Run :file:`python tests.py`. It will print the APSW file
-used, APSW and SQLite versions and then run lots of tests all of which
-should pass.
+The test suite will be run. It will print the APSW file used, APSW and
+SQLite versions and then run lots of tests all of which should pass.
 
 Testing
 =======
@@ -184,14 +177,14 @@ the issue doesn't happen or doesn't happen again.::
   $ python setup.py test
                   Python /usr/bin/python (2, 6, 2, 'final', 0)
   Testing with APSW file /space/apsw/apsw.so
-            APSW version 3.6.14.1-r1
-      SQLite lib version 3.6.14.1
-  SQLite headers version 3006014
+            APSW version 3.6.16-r1
+      SQLite lib version 3.6.16
+  SQLite headers version 3006016
       Using amalgamation True
-  ............................................................
-  ----------------------------------------------------------------------
-  Ran 60 tests in 90.770s
-  
+................................................................
+----------------------------------------------------------------------
+Ran 64 tests in 92.076s
+
   OK
 
 The tests also ensure that as much APSW code as possible is executed
