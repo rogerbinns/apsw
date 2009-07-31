@@ -5,31 +5,6 @@ VERDIR=apsw-$(VERSION)
 # setup.py options for windows dist
 WINOPTS=--enable=fts3 --enable=fts3_parenthesis --enable=rtree
 
-SOURCEFILES = \
-	src/apsw.c \
-	src/apswbuffer.c \
-	src/apswversion.h \
-	src/backup.c \
-	src/blob.c \
-	src/connection.c \
-	src/cursor.c \
-	src/exceptions.c \
-	src/pyutil.c \
-	src/statementcache.c \
-        src/traceback.c  \
-	src/testextension.c  \
-	src/util.c \
-	src/vfs.c \
-	src/vtable.c
-
-OTHERFILES = \
-	checksums \
-	mingwsetup.bat  \
-	setup.py  \
-	tools/speedtest.py \
-	tools/apswtrace.py \
-	tests.py
-
 GENDOCS = \
 	doc/blob.rst \
 	doc/vfs.rst \
@@ -39,7 +14,7 @@ GENDOCS = \
 	doc/apsw.rst \
 	doc/backup.rst
 
-.PHONY : all docs doc header linkcheck publish showsymbols compile-win source upload
+.PHONY : all docs doc header linkcheck publish showsymbols compile-win source source_nocheck upload 
 
 all: header docs
 
@@ -80,7 +55,9 @@ header:
 
 # the funky test stuff is to exit successfully when grep has rc==1 since that means no lines found.
 showsymbols:
-	test -f apsw.so # ensure file exists
+	rm -f apsw.so
+	python setup.py build_ext --inplace --force
+	test -f apsw.so
 	set +e; nm --extern-only --defined-only apsw.so | egrep -v ' (__bss_start|_edata|_end|_fini|_init|initapsw)$$' ; test $$? -eq 1 || false
 
 # You need to use the MinGW version of make. 
@@ -100,14 +77,22 @@ compile-win:
         # have to install msvc.  Google for "visual c++ express edition".
 	c:/python31/python setup.py build install $(WINOPTS) test bdist_wininst
 
-source: docs
-	rm -rf $(VERDIR)
-	mkdir -p $(VERDIR)/src
-	cp  $(SOURCEFILES) $(VERDIR)/src/
-	cp $(OTHERFILES) $(VERDIR)
-	cd $(VERDIR) ; mkdir doc ; cd doc ; unzip ../../dist/apswdoc-$(VERSION).zip
-	-rm -f dist/$(VERDIR).zip
-	zip -9 -r dist/$(VERDIR).zip $(VERDIR)
+# I can't figure out a way to include the docs into the source zip
+# but with the path in the zip being different than the path in the
+# filesystem using sdist
+source_nocheck: docs
+	python setup.py sdist --formats zip --no-defaults
+	set -e ; cd doc/build ; rm -rf $(VERDIR)/doc ; mkdir -p $(VERDIR) ; ln -s ../html $(VERDIR)/doc ; zip -9rDq ../../dist/$(VERDIR).zip $(VERDIR) ; rm -rf $(VERDIR)
+
+# Make the source and then check it builds and tests correctly.  This will catch missing files etc
+source: source_nocheck
+	mkdir -p work
+	rm -rf work/$(VERDIR)
+	cd work ; unzip -q ../dist/$(VERDIR).zip
+	cd work/$(VERDIR) ; python setup.py build_ext --inplace --fetch-sqlite
+	cd work/$(VERDIR) ; gcc -fPIC -shared -o ./testextension.sqlext -I. -Isqlite3 src/testextension.c
+	cd work/$(VERDIR) ; python setup.py test
+	for f in doc/vfs.html doc/_sources/pysqlite.txt tools/apswtrace.py ; do test -f work/$(VERDIR)/$$f ; done
 
 upload:
 	test -f tools/googlecode_upload.py
