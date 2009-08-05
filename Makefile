@@ -89,9 +89,7 @@ source: source_nocheck
 	mkdir -p work
 	rm -rf work/$(VERDIR)
 	cd work ; unzip -q ../dist/$(VERDIR).zip
-	cd work/$(VERDIR) ; python setup.py build_ext --inplace --fetch-sqlite
-	cd work/$(VERDIR) ; gcc -fPIC -shared -o ./testextension.sqlext -I. -Isqlite3 src/testextension.c
-	cd work/$(VERDIR) ; python setup.py test
+	cd work/$(VERDIR) ; python setup.py build_ext --inplace --fetch-sqlite build_test_extension test
 	for f in doc/vfs.html doc/_sources/pysqlite.txt tools/apswtrace.py ; do test -f work/$(VERDIR)/$$f ; done
 
 upload:
