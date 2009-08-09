@@ -739,6 +739,7 @@ Connection_cursor(Connection *self)
   .. seealso::
 
      * :meth:`Connection.setbusyhandler`
+     * :ref:`Busy handling <busyhandling>`
 
   -* sqlite3_busy_timeout
 */
@@ -1601,6 +1602,7 @@ busyhandlercb(void *context, int ncall)
    .. seealso::
 
      * :meth:`Connection.setbusytimeout`
+     * :ref:`Busy handling <busyhandling>`
 
    -* sqlite3_busy_handler
 

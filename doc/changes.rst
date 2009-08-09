@@ -16,7 +16,7 @@ by SQLite (`SQLite ticket 3946
 The downloads page in the help didn't mention the Windows Python 3.1
 installer.
 
-Running the test suite is now integrated into file:`setup.py` so you
+Running the test suite is now integrated into :file:`setup.py` so you
 can do the building and testing all in one go.  Sample command line::
 
   $ python setup.py install test

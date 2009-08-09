@@ -104,6 +104,47 @@ If you want to change the rows returned then use a :ref:`row tracer
 :meth:`Cursor.getdescription` and return a dictionary instead of a
 tuple.
 
+.. _busyhandling:
+
+Busy handling
+=============
+
+SQLite uses locks to coordinate access to the database by multiple
+connections (within the same process or in a different process).  The
+general goal is to have the locks be as lax as possible (allowing
+concurrency) and when using more restrictive locks to keep them for as
+short a time as possible.  See the `SQLite documentation
+<http://www.sqlite.org/lockingv3.html>`__ for more details.
+
+By default you will get a :exc:`BusyError` if a lock cannot be
+acquired.  You can set a :meth:`timeout <Connection.setbusytimeout>`
+which will keep retrying or a :meth:`callback
+<Connection.setbusyhandler>` where you decide what to do.
+
+Shared Cache Mode
+=================
+
+SQLite supports a `shared cache mode
+<http://www.sqlite.org/sharedcache.html>`__ where multiple connections
+to the same database can share a cache instead of having their own.
+It is not recommended that you use this mode.
+
+A big issue is that :ref:`busy handling <busyhandling>` is not done
+the same way.  The timeouts and handlers are ignored and instead
+:const:`SQLITE_LOCKED_SHAREDCACHE` extended error is returned.
+Consequently you will have to do your own busy handling.  (`SQLite
+ticket 2010 <http://www.sqlite.org/cvstrac/tktview?tn=2010>`__, `APSW
+ticket 59 <http://code.google.com/p/apsw/issues/detail?id=59>`__)
+
+The amount of memory and I/O saved is trivial compared to Python's
+overal memory and I/O consumption.  You may also need to tune the
+shared cache's memory back up to what it would have been with seperate
+connections to get the same performance.
+
+The shared cache mode is targetted at embedded systems where every
+byte of memory and I/O matters.  For example an MP3 player may only
+have kilobytes of memory available for SQLite.
+
 Database schema
 ===============
 
