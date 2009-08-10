@@ -121,6 +121,8 @@ acquired.  You can set a :meth:`timeout <Connection.setbusytimeout>`
 which will keep retrying or a :meth:`callback
 <Connection.setbusyhandler>` where you decide what to do.
 
+.. _sharedcache:
+
 Shared Cache Mode
 =================
 

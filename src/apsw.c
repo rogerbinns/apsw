@@ -198,8 +198,8 @@ getapswversion(void)
   If you use the same :class:`Connection` across threads or use
   multiple :class:`connections <Connection>` accessing the same file,
   then SQLite can `share the cache between them
-  <http://www.sqlite.org/sharedcache.html>`_.  This can reduce memory
-  consumption and increase performance as well as improve concurrency.
+  <http://www.sqlite.org/sharedcache.html>`_.  It is :ref:`not
+  recommended <sharedcache>` that you use this.
   
   -* sqlite3_enable_shared_cache
 */
