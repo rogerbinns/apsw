@@ -1814,17 +1814,17 @@ class APSW(unittest.TestCase):
         class Source:
             def Create1(self, *args):
                 e=apsw.IOError()
-                e.extendedresult=apsw.SQLITE_IOERR_BLOCKED
+                e.extendedresult=apsw.SQLITE_IOERR_ACCESS
                 raise e
 
             def Create2(self, *args):
                 e=apsw.IOError()
-                e.extendedresult=long(apsw.SQLITE_IOERR_BLOCKED)
+                e.extendedresult=long(apsw.SQLITE_IOERR_ACCESS)
                 raise e
 
             def Create3(self, *args):
                 e=apsw.IOError()
-                e.extendedresult=(long("0x80")<<32)+apsw.SQLITE_IOERR_BLOCKED # bigger than 32 bits
+                e.extendedresult=(long("0x80")<<32)+apsw.SQLITE_IOERR_ACCESS # bigger than 32 bits
                 raise e
 
 
@@ -1847,7 +1847,7 @@ class APSW(unittest.TestCase):
             if sys.version_info<(2,4):
                 return
 
-            self.failUnlessEqual(value.extendedresult& ((long(0xffff)<<16)|long(0xffff)), apsw.SQLITE_IOERR_BLOCKED)
+            self.failUnlessEqual(value.extendedresult& ((long(0xffff)<<16)|long(0xffff)), apsw.SQLITE_IOERR_ACCESS)
 
     def testVtables(self):
         "Test virtual table functionality"
