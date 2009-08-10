@@ -66,16 +66,16 @@ compile-win:
 	cmd /c del /s /q dist
 	cmd /c del /s /q build
 	-cmd /c md dist
-	c:/python23/python setup.py build --compile=mingw32 install $(WINOPTS) test bdist_wininst
-	c:/python24/python setup.py build --compile=mingw32 install $(WINOPTS) test bdist_wininst
-	c:/python25/python setup.py build --compile=mingw32 install $(WINOPTS) test bdist_wininst
+	c:/python23/python setup.py build --compile=mingw32 install $(WINOPTS) build_test_extension test bdist_wininst
+	c:/python24/python setup.py build --compile=mingw32 install $(WINOPTS) build_test_extension test bdist_wininst
+	c:/python25/python setup.py build --compile=mingw32 install $(WINOPTS) build_test_extension test bdist_wininst
 # See http://bugs.python.org/issue3308 if 2.6+ or 3.0+ fail to run with
 # missing symbols/dll issues
-	c:/python26/python setup.py build --compile=mingw32 install $(WINOPTS) test bdist_wininst
-	c:/python30/python setup.py build --compile=mingw32 install $(WINOPTS) test bdist_wininst
+	c:/python26/python setup.py build --compile=mingw32 install $(WINOPTS) build_test_extension test bdist_wininst
+	c:/python30/python setup.py build --compile=mingw32 install $(WINOPTS) build_test_extension test bdist_wininst
         # They went out of their way to prevent mingw from working with 3.1.  You
         # have to install msvc.  Google for "visual c++ express edition".
-	c:/python31/python setup.py build install $(WINOPTS) test bdist_wininst
+	c:/python31/python setup.py build install $(WINOPTS) build_test_extension test bdist_wininst
 
 # I can't figure out a way to include the docs into the source zip
 # but with the path in the zip being different than the path in the
