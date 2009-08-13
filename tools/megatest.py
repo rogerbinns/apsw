@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+# See the accompanying LICENSE file.
+
 """This file runs the test suite against several versions of SQLite
 and Python to make sure everything is ok in the various combinations.
 It only runs on a UNIX like environment.

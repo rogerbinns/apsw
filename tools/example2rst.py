@@ -1,5 +1,7 @@
 # Python code
-
+#
+# See the accompanying LICENSE file.
+#
 # The purpose of this file is to produce rst output interspersed into
 # the the text of the example code
 

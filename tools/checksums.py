@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-
+#
+# See the accompanying LICENSE file.
+#
 import urllib2
 import hashlib
 

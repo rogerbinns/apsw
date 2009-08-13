@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# See the accompanying LICENSE file.
+
 # APSW test suite - runs under both Python 2 and Python 3 hence a lot
 # of wierd constructs to be simultaneously compatible with both.
 # (2to3 is not used).

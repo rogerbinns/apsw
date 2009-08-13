@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-
+#
+# See the accompanying LICENSE file.
+#
 # Do speed tests.  The tests try to correspond to
 # http://www.sqlite.org/cvstrac/fileview?f=sqlite/tool/mkspeedsql.tcl
 # This file needs to run under both Python 2 and Python 3 hence a few

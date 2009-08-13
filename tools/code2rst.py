@@ -1,5 +1,7 @@
 # Python
-
+#
+# See the accompanying LICENSE file.
+#
 # Extracts rst function comments and dumps them to a file
 
 import sys

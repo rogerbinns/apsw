@@ -1,5 +1,7 @@
 # python
-
+#
+# See the accompanying LICENSE file.
+#
 # Find things that haven't been documented and should be or have been
 # but don't exist.
 

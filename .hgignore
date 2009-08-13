@@ -1,4 +1,5 @@
 syntax: glob
+tools/googlecode_upload.py
 :memory:
 doc/vfs.rst
 doc/example.rst

@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# See the accompanying LICENSE file.
+
 import os
 import sys
 import shlex

@@ -1,5 +1,7 @@
 # python
-
+#
+# See the accompanying LICENSE file.
+#
 # various automagic documentation updates
 
 import sys

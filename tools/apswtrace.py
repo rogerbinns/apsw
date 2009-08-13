@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-
+#
+# See the accompanying LICENSE file.
+#
 # This module lets you automatically trace SQL operations in a program
 # using APSW without having to modify the program in any way.
 

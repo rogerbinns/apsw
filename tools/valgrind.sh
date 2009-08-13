@@ -1,6 +1,8 @@
 #!/bin/bash 
 # Run valgrind on testsuite
 #
+# See the accompanying LICENSE file.
+#
 # You should build a debug Python, with this being an example using /space/pydebug as
 # the root.
 #

@@ -1,5 +1,7 @@
 # python
-
+#
+# See the accompanying LICENSE file.
+#
 # Work out how much coverage we actually have
 
 import glob

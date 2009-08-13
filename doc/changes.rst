@@ -2,6 +2,13 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.6.18-r1
+=========
+
+The APSW license has been updated to allow you (at your option) to use
+any `OSI approved license
+<http://opensource.org/licenses/alphabetical>`__.
+
 3.6.17-r1
 =========
 
