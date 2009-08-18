@@ -162,7 +162,7 @@ def buildapsw(outputfile, pybin, workdir):
 
 # Default versions we support
 PYVERS=(
-    '3.1',
+    '3.1.1',
     '3.0.1',
     '2.6.2',
     '2.5.4',
