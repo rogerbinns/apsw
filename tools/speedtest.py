@@ -19,8 +19,17 @@ import optparse
 write=sys.stdout.write
 if sys.version_info>=(3,):
     xrange=range
+    unichr=chr
+
+# Sigh
+try:
+    maxuni=0x10ffff
+    unichr(maxuni)
+except ValueError:
+    maxuni=0xffff
 
 def doit():
+    random.seed(0)
     options.tests=[t.strip() for t in options.tests.split(",")]
 
     write("         Python %s %s\n" % (sys.executable, str(sys.version_info)))
@@ -65,19 +74,21 @@ def doit():
           "eighteen", "nineteen")
     tens=("", "ten", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety")
 
-    def number_name(n):
+    others=("thousand", "hundred", "zero")
+
+    def _number_name(n):
         if n>=1000:
-            txt="%s thousand" % (number_name(n/1000),)
+            txt="%s %s" % (_number_name(int(n/1000)), others[0])
             n=n%1000
         else:
             txt=""
 
         if n>=100:
-            txt=txt+" "+ones[n/100]+" hundred"
+            txt=txt+" "+ones[int(n/100)]+" "+others[1]
             n=n%100
 
         if n>=20:
-            txt=txt+" "+tens[n/10]
+            txt=txt+" "+tens[int(n/10)]
             n=n%10
 
         if n>0:
@@ -86,10 +97,37 @@ def doit():
         txt=txt.strip()
 
         if txt=="":
-            txt="zero"
+            txt=others[2]
 
         return txt
 
+    def unicodify(text):
+        if options.unicode and len(text):
+            newt=[]
+            c=options.unicode/100.0
+            for t in text:
+                if random.random()>c:
+                    newt.append(t)
+                    continue
+                while True:
+                    t=random.randint(0xa1, maxuni)
+                    # we don't want the surrogate range or apostrophe
+                    if t<0xd800 or t>0xdfff: break
+                newt.append(unichr(t))
+            text="".join(newt)
+        return text
+
+    if options.unicode:
+        ones=tuple([unicodify(s) for s in ones])
+        tens=tuple([unicodify(s) for s in tens])
+        others=tuple([unicodify(s) for s in others])
+
+    def number_name(n):
+        text=_number_name(n)
+        if options.size:
+            text=text*int(random.randint(0, options.size)/len(text))
+        return text
+    
     def getlines(scale=50, bindings=False):
         random.seed(0)
 
@@ -314,7 +352,7 @@ def doit():
     if options.dump_filename or "bigstmt" in options.tests:
         text=";\n".join([x[0] for x in getlines(scale=options.scale)])+";" # pysqlite requires final semicolon
         if options.dump_filename:
-            open(options.dump_filename, "wt").write(text)
+            open(options.dump_filename, "wt").write(text.encode("utf8"))
             sys.exit(0)
 
     if "statements" in options.tests:
@@ -330,7 +368,11 @@ def doit():
 
     def apsw_bigstmt(con):
         "APSW big statement"
-        for row in con.cursor().execute(text): pass
+        try:
+            for row in con.cursor().execute(text): pass
+        except:
+            import pdb ; pdb.set_trace()
+            pass
 
     def pysqlite_bigstmt(con):
         "pysqlite big statement"
@@ -411,6 +453,11 @@ parser.add_option("--dump-sql", dest="dump_filename", metavar="FILENAME",
                   help="Name of file to dump SQL to.  This is useful for feeding into the SQLite command line shell.")
 parser.add_option("--sc-size", dest="scsize", type="int", default=100, metavar="N",
                   help="Size of the statement cache. APSW will disable cache with value of zero.  Pysqlite ensures a minimum of 5 [Default %default]")
+parser.add_option("--unicode", dest="unicode", type="int", default=0,
+                  help="Percentage of text that is unicode characters [Default %default]")
+parser.add_option("--data-size", dest="size", type="int", default=0,  metavar="SIZE",
+                  help="Maximum size in characters of data items - keep this number small unless you are on 64 bits and have lots of memory with a small scale - you can easily consume multiple gigabytes [Default same as original TCL speedtest]")
+                 
 
 tests_detail="""\
 bigstmt:
@@ -420,7 +467,8 @@ bigstmt:
   pysqlite requires that cursor.executescript is called.  The string
   will be several kilobytes and with a factor of 50 will be in the
   megabyte range.  This is the kind of query you would run if you were
-  restoring a database from a dump.
+  restoring a database from a dump.  (Note that pysqlite silently
+  ignores returned data which also makes it execute faster).
 
 statements:
 

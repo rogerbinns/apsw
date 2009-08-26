@@ -62,7 +62,13 @@ between pysqlite and APSW.  The underlying queries are based on
       --sc-size=N          Size of the statement cache. APSW will disable cache
                            with value of zero.  Pysqlite ensures a minimum of 5
                            [Default 100]
-    
+      --unicode=UNICODE    Percentage of text that is unicode characters [Default
+                           0]
+      --data-size=SIZE     Maximum size in characters of data items - keep this
+                           number small unless you are on 64 bits and have lots of
+                           memory with a small scale - you can easily consume
+                           multiple gigabytes [Default same as original TCL
+                           speedtest]
 
     $ python speedtest.py --tests-detail
     bigstmt:
