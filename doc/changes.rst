@@ -9,6 +9,13 @@ The APSW license has been updated to allow you (at your option) to use
 any `OSI approved license
 <http://opensource.org/licenses/alphabetical>`__.
 
+The :ref:`speedtest` has been updated to (optionally) use unicode
+characters and to (optionally) increase the sizes of data items.
+
+Fixed error handling code to not record SQLite error strings in some
+situations where it was not necessary.  This results in the code
+executing a little faster.
+
 3.6.17-r1
 =========
 

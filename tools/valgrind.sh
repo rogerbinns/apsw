@@ -25,7 +25,7 @@
 # # PyFrame_MAXFREELIST
 # # PyMethod_MAXFREELIST
 # s="_MAXFREELIST=0"
-# ./configure --with-pydebug --without-pymalloc --prefix=/space/pydebug \
+# ./configure --enable-unicode=ucs4 --with-pydebug --without-pymalloc --prefix=/space/pydebug \
 # CPPFLAGS="-DPyDict$s -DPyTuple$s -DPyUnicode$s -DPySet$s -DPyCFunction$s -DPyList$s -DPyFrame$s -DPyMethod$s"
 # 
 # make install
@@ -56,7 +56,7 @@ then
 else
    options="--tool=callgrind"
    cflags=""
-   opt="-O3"
+   opt="-O2"
    apswopt=""
 fi
 
