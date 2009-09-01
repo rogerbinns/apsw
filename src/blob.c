@@ -484,7 +484,11 @@ APSWBlob_write(APSWBlob *self, PyObject *obj)
 
      In some cases errors that technically occurred in the
      :meth:`~blob.read` and :meth:`~blob.write` routines may not be
-     reported until close is called.
+     reported until close is called.  Similarly errors that occurred
+     in those methods (eg calling :meth:`~blob.write` on a read-only
+     blob) may also be re-reported in :meth:`~blob.close`.  (This
+     behaviour is what the underlying SQLite APIs do - it is not APSW
+     doing it.)
 
   It is okay to call :meth:`~blob.close` multiple times.
 
