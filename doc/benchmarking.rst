@@ -69,6 +69,7 @@ between pysqlite and APSW.  The underlying queries are based on
                            memory with a small scale - you can easily consume
                            multiple gigabytes [Default same as original TCL
                            speedtest]
+    
 
     $ python speedtest.py --tests-detail
     bigstmt:
@@ -78,7 +79,8 @@ between pysqlite and APSW.  The underlying queries are based on
       pysqlite requires that cursor.executescript is called.  The string
       will be several kilobytes and with a factor of 50 will be in the
       megabyte range.  This is the kind of query you would run if you were
-      restoring a database from a dump.
+      restoring a database from a dump.  (Note that pysqlite silently
+      ignores returned data which also makes it execute faster).
     
     statements:
     
