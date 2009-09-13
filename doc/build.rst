@@ -123,8 +123,8 @@ These methods are tried in order:
 .. note::
 
   If you compiled SQLite with any OMIT flags (eg
-  :const:`SQLITE_OMIT_LOAD_EXTENSION`) then you should include them in
-  the :file:`setup.py` command. For this example you would use
+  :const:`SQLITE_OMIT_LOAD_EXTENSION`) then you must include them in
+  the :file:`setup.py` command or file. For this example you could use
   :option:`setup.py --omit=load_extension` to add the same flags.
 
 .. _recommended_build:
