@@ -11,6 +11,8 @@
 # more peace of mind because the SQLite releases are not signed in any
 # way.
 
+http://www.sqlite.org/sqlite-amalgamation-3_6_18.zip    1065661 14579567e5ec4a694c81447a559d6cef88b444dd e352533acafbacfbb2d0b277cc00afac
+http://www.sqlite.org/sqlite-amalgamation-3.6.18.tar.gz 1384835 440752ad048e5ec3394002b866eecb08ef864c3d 18c9f044e2f50cdab3bca87386d4fcc8
 http://www.sqlite.org/sqlite-amalgamation-3_6_17.zip    1041204 25d372c21c0123f6eed09a362d54b025e9667f21 f4cca29a2d2cc5e46b45c6f9ad0f5df7
 http://www.sqlite.org/sqlite-amalgamation-3.6.17.tar.gz 1360523 8de30d82f38012cb2fbee1c6a1be0d8615d483b2 3172f8a23e7e7f0e5b295062e339a149
 http://www.sqlite.org/sqlite-amalgamation-3_6_16.zip    1033866 e6b1ffb5c9de6deeade44c36d09b5d557298a7d2 eecdad3547b58444407f59963c76a441
