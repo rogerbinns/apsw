@@ -2,6 +2,16 @@ Change History
 **************
 .. currentmodule:: apsw
 
+next
+====
+
+Added the `SQLITE_LIMIT_TRIGGER_DEPTH
+<http://www.sqlite.org/c3ref/c_limit_attached.html>`__,
+`SQLITE_OPEN_PRIVATECACHE
+<http://www.sqlite.org/c3ref/c_open_create.html>`__ and
+`SQLITE_OPEN_SHAREDCACHE
+<http://www.sqlite.org/c3ref/c_open_create.html>`__ constants.
+
 3.6.18-r1
 =========
 

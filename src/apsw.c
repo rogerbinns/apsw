@@ -910,6 +910,8 @@ modules etc. For example::
       ADDINT(SQLITE_OPEN_MASTER_JOURNAL),
       ADDINT(SQLITE_OPEN_NOMUTEX),
       ADDINT(SQLITE_OPEN_FULLMUTEX),
+      ADDINT(SQLITE_OPEN_PRIVATECACHE),
+      ADDINT(SQLITE_OPEN_SHAREDCACHE),
       END,
 
       /* limits */
@@ -924,6 +926,7 @@ modules etc. For example::
       ADDINT(SQLITE_LIMIT_ATTACHED),
       ADDINT(SQLITE_LIMIT_LIKE_PATTERN_LENGTH),
       ADDINT(SQLITE_LIMIT_VARIABLE_NUMBER),
+      ADDINT(SQLITE_LIMIT_TRIGGER_DEPTH),
       /* We don't include the MAX limits - see http://code.google.com/p/apsw/issues/detail?id=17 */
       END,
 
