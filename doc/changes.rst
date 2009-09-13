@@ -498,7 +498,7 @@ APSW had the following changes:
 * When exceptions occur, dummy frames are added to the traceback in the
   C code. This makes it a lot easier to tell why code was called if you
   encounter an exception. See :ref:`augmented stack traces
-  <augmentedstacktraces` for details.
+  <augmentedstacktraces>` for details.
 * String values (traditional and Unicode) work correctly if they have
   embedded NULL characters (ie not truncated at the NULL).
 * You can load SQLite shared library extensions.
