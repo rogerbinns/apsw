@@ -2,6 +2,7 @@ Copyright and License
 =====================
 
 Copyright (C) 2004-2009 `Roger Binns <mailto:rogerb@rogerbinns.com>`_
+See src/traceback.c for code by Greg Ewing.
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any damages
@@ -22,3 +23,7 @@ freely, subject to the following restrictions:
 * This notice may not be removed or altered from any source
   distribution.
 
+
+Alternatively you may strike the license above and use it under any
+OSI approved open source license such as those listed at
+http://opensource.org/licenses/alphabetical
