@@ -788,6 +788,7 @@ modules etc. For example::
 #define END {NULL, 0}
 #define ADDINT(n) {#n, n}
 
+    static const
     struct { const char *name; int value; } integers[]={
       DICT("mapping_authorizer_return"),
       ADDINT(SQLITE_DENY),
