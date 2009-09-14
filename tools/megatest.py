@@ -33,12 +33,12 @@ def run(cmd):
 
 
 def dotest(logdir, pybin, pylib, workdir, sqlitever):
-    if sqlitever=="cvs":
+    if sqlitever=="fossil":
         buildsqlite(workdir, sqlitever, pybin, os.path.abspath(os.path.join(logdir, "sqlitebuild.txt")))
         buildapsw(os.path.abspath(os.path.join(logdir, "buildapsw.txt")), pybin, workdir)
         run("cd %s ; env LD_LIBRARY_PATH=%s %s tests.py -v >%s 2>&1" % (workdir, pylib, pybin, os.path.abspath(os.path.join(logdir, "runtests.txt"))))
     else:
-        # for non-cvs we do the fetch/build/test all at once
+        # for non-fossil we do the fetch/build/test all at once
         run("cd %s ; env LD_LIBRARY_PATH=%s %s setup.py build_test_extension build_ext --inplace --force --enable=fts3 --enable=rtree test -v --fetch-sqlite=%s >%s 2>&1" % (workdir, pylib, pybin, sqlitever, os.path.abspath(os.path.join(logdir, "buildruntests.txt"))))
 
 
@@ -142,9 +142,10 @@ def buildpython(workdir, pyver, ucs, logfilename):
     
 def buildsqlite(workdir, sqlitever, pybin, logfile):
     os.system("rm -rf '%s/sqlite3' '%s/sqlite3.c' 2>/dev/null" % (workdir,workdir))
-    if sqlitever=="cvs":
-        run("cd %s ; cvs -d :pserver:anonymous@www.sqlite.org:/sqlite checkout sqlite > %s 2>&1" % (workdir, logfile,))
-        run('( set -x ; cd %s/sqlite ; make -f Makefile.linux-gcc sqlite3.c ; cp src/sqlite3ext.h . ; cd .. ; mv sqlite sqlite3 ) >> %s 2>&1' % (workdir,logfile))
+    if sqlitever=="fossil":
+        run("cd %s ; wget -O sqlite3.zip http://www.sqlite.org/src/zip/sqlite3.zip?uuid=trunk > %s 2>&1" % (workdir, logfile,))
+        # SQLite has to be in a directory named 'sqlite' otherwise the make step fails, so we have to do silly rename games
+        run('( set -x ; cd %s ; unzip sqlite3.zip ; mv sqlite3 sqlite ; cd sqlite ; make -f Makefile.linux-gcc sqlite3.c ; cp src/sqlite3ext.h . ; cd .. ; mv sqlite sqlite3 ) >> %s 2>&1' % (workdir,logfile))
     else:
         run("cd %s ;  %s setup.py --fetch-sqlite=%s >> %s 2>&1 || true; test -f sqlite3/sqlite3.c" % (workdir, pybin, sqlitever, logfile))
     if sys.platform.startswith("darwin"):
@@ -195,7 +196,7 @@ if __name__=='__main__':
     parser=optparse.OptionParser()
     parser.add_option("--pyvers", dest="pyvers", help="Which Python versions to test against [%default]", default=",".join(PYVERS))
     parser.add_option("--sqlitevers", dest="sqlitevers", help="Which SQLite versions to test against [%default]", default=",".join(SQLITEVERS))
-    parser.add_option("--cvs", dest="cvs", help="Also test current SQLite CVS version [%default]", default=False, action="store_true")
+    parser.add_option("--fossil", dest="fossil", help="Also test current SQLite FOSSIL version [%default]", default=False, action="store_true")
     parser.add_option("--ucs", dest="ucs", help="Unicode character widths to test in bytes [%default]", default="2,4")
     parser.add_option("--tasks", dest="concurrency", help="Number of simultaneous builds/tests to run [%default]", default=concurrency)
 
@@ -206,8 +207,8 @@ if __name__=='__main__':
 
     pyvers=options.pyvers.split(",")
     sqlitevers=options.sqlitevers.split(",")
-    if options.cvs:
-        sqlitevers.append("cvs")
+    if options.fossil:
+        sqlitevers.append("fossil")
     ucstest=[int(x) for x in options.ucs.split(",")]
     concurrency=int(options.concurrency)
     sqlitevers=[x for x in sqlitevers if x]
