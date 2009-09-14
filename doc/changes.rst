@@ -12,6 +12,10 @@ Added the `SQLITE_LIMIT_TRIGGER_DEPTH
 `SQLITE_OPEN_SHAREDCACHE
 <http://www.sqlite.org/c3ref/c_open_create.html>`__ constants.
 
+The :file:`setup.py` file now has the various options available made
+applicable to appropriate commands only.  Read the :ref:`updated
+documentation <setup_py_flags>`.
+
 3.6.18-r1
 =========
 

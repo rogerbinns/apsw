@@ -6,7 +6,9 @@ Building
 setup.py
 ========
 
-Short story:  You run :file:`setup.py`
+Short story: You run :file:`setup.py` but you should ideally follow
+the :ref:`recommended way <recommended_build>` which will also fetch
+needed components for you.
 
 +-------------------------------------------------------------+-------------------------------------------------------------------------+
 | Command                                                     |  Result                                                                 |
@@ -40,18 +42,68 @@ Short story:  You run :file:`setup.py`
 Additional :file:`setup.py` flags
 =================================
 
-There are a number of APSW specific flags you can specify.
+There are a number of APSW specific flags to commands you can specify.
+
+fetch
+-----
+
+:file:`setup.py` can automatically fetch SQLite and other optional
+components.  You can set the environment variable :const:`http_proxy`
+to control proxy usage for the download. **Note** the files downloaded
+are modified from their originals to ensure various names do not
+clash, adjust them to the download platform and to graft them cleanly
+into the APSW module.  You should not commit them to source code
+control systems (download seperately if you need clean files).
+
+If any files are downloaded then the build step will automatically use
+them.  This still applies when you do later builds without
+re-fetching.
+
+  | python setup.py fetch *options*
 
 +----------------------------------------+--------------------------------------------------------------------------------------+
-| | :option:`--fetch-sqlite`             | Automatically downloads the latest or the specified version of the SQLite            |
-| | :option:`--fetch-sqlite=VERSION`     | amalgamation and uses it for the APSW extension. On non-Windows platforms it         |
+| fetch flag                             |  Result                                                                              |
++========================================+======================================================================================+
+| | :option:`--version=VERSION`          | By default the `SQLite download page                                                 |
+|                                        | <http://sqlite.org/download.html>`__ is                                              |
+|                                        | consulted to find the current SQLite version                                         |
+|                                        | which you can override using this flag.                                              |
++----------------------------------------+--------------------------------------------------------------------------------------+
+| | :option:`--all`                      | Gets all components listed below.                                                    |
++----------------------------------------+--------------------------------------------------------------------------------------+
+| | :option:`--sqlite`                   | Automatically downloads the `SQLite amalgamation                                     |
+|                                        | <http://www.sqlite.org/cvstrac/wiki?p=TheAmalgamation>` On non-Windows platforms it  |
 |                                        | will also work out what compile flags SQLite needs (for example                      |
 |                                        | :const:`HAVE_USLEEP`, :const:`HAVE_LOCALTIME_R`). The amalgamation is the            |
 |                                        | preferred way to use SQLite as you have total control over what components are       |
 |                                        | included or excluded (see below) and have no dependencies on any existing            |
-|                                        | libraries on your developer or deployment machines. You can set the environment      |
-|                                        | variable :const:`http_proxy` to control proxy usage for the download.                |
+|                                        | libraries on your developer or deployment machines. The amalgamation includes the    |
+|                                        | fts3, rtree and icu extensions.                                                      |
 +----------------------------------------+--------------------------------------------------------------------------------------+
+| | :option:`--asyncvfs`                 | Downloads the `Asynchronous VFS                                                      |
+|                                        | <http://www.sqlite.org/src/finfo?name=ext/async/README.txt>`__                       |
++----------------------------------------+--------------------------------------------------------------------------------------+
+| | :option:`--genfkey`                  | Downloads the code to generate triggers emulating foreign key constraints. The code  |
+|                                        | is extracted from the SQLite shell (see `SQLite ticket 3687                          |
+|                                        | <http://www.sqlite.org/cvstrac/tktview?tn=3687>`__)                                  |
++----------------------------------------+--------------------------------------------------------------------------------------+
+
+build/build_ext
+---------------
+
+You can enable or omit certain functionality by specifying flags to
+the build and/or build_ext commands of :file:`setup.py`.
+
+  | python setup.py build *options*
+
+Note that the options do not accumulate.  If you want to specify multiple enables or omits then you
+need to give the flag once and giving a comma seperated list.  For example:
+
+  | python setup.py build --enable=fts3,rtree,icu
+
++----------------------------------------+--------------------------------------------------------------------------------------+
+| build/build_ext flag                   | Result                                                                               |
++========================================+======================================================================================+
 | | :option:`--enable=fts3`              | Enables the `full text search <http://www.sqlite.org/cvstrac/wiki?p=FtsUsage>`_      |
 |                                        | extension.                                                                           |
 |                                        | This flag only helps when using the amalgamation. If not using the                   | 
@@ -125,7 +177,7 @@ These methods are tried in order:
   If you compiled SQLite with any OMIT flags (eg
   :const:`SQLITE_OMIT_LOAD_EXTENSION`) then you must include them in
   the :file:`setup.py` command or file. For this example you could use
-  :option:`setup.py --omit=load_extension` to add the same flags.
+  :option:`setup.py build --omit=load_extension` to add the same flags.
 
 .. _recommended_build:
 
@@ -142,15 +194,15 @@ current directory being where you extracted the APSW source to.
   Windows::
 
       # Leave out --compile=mingw32 flag if using Microsoft compiler
-    > python setup.py build --compile=mingw32 install test --fetch-sqlite
+    > python setup.py fetch --sqlite build --compile=mingw32 install test
 
   Mac/Linux etc::
 
-    $ python setup.py install test --fetch-sqlite 
+    $ python setup.py fetch --sqlite install test 
 
 .. note::
 
-  There will be many warnings during the compilation step about
+  There will be some warnings during the compilation step about
   sqlite3.c, `but they are harmless <http://sqlite.org/faq.html#q17>`_
 
 
@@ -162,6 +214,19 @@ the lines above and add *build* if it isn't already there.
 
 The test suite will be run. It will print the APSW file used, APSW and
 SQLite versions and then run lots of tests all of which should pass.
+
+Source distribution (advanced)
+==============================
+
+If you want to make a source distribution or a binary distribution
+that creates a source distribution such as `bdist_rpm` then you can
+have the SQLite amalgamation automatically included as part of it.  If
+you specify the fetch command as part of the same command line then
+everything fetched is included in the source distribution.  For
+example this will fetch all components, include them in the source
+distribution and build a rpm using those components::
+
+  $ python setup.py fetch --all bdist_rpm
 
 Testing
 =======
