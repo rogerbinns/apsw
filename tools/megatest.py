@@ -35,11 +35,10 @@ def run(cmd):
 def dotest(logdir, pybin, pylib, workdir, sqlitever):
     if sqlitever=="fossil":
         buildsqlite(workdir, sqlitever, pybin, os.path.abspath(os.path.join(logdir, "sqlitebuild.txt")))
-        buildapsw(os.path.abspath(os.path.join(logdir, "buildapsw.txt")), pybin, workdir)
-        run("cd %s ; env LD_LIBRARY_PATH=%s %s tests.py -v >%s 2>&1" % (workdir, pylib, pybin, os.path.abspath(os.path.join(logdir, "runtests.txt"))))
+        run("cd %s ; env LD_LIBRARY_PATH=%s %s setup.py build_test_extension build_ext --inplace --force --enable=fts3,rtree,icu test -v >%s 2>&1" % (workdir, pylib, pybin, os.path.abspath(os.path.join(logdir, "runtests.txt"))))
     else:
         # for non-fossil we do the fetch/build/test all at once
-        run("cd %s ; env LD_LIBRARY_PATH=%s %s setup.py build_test_extension build_ext --inplace --force --enable=fts3 --enable=rtree test -v --fetch-sqlite=%s >%s 2>&1" % (workdir, pylib, pybin, sqlitever, os.path.abspath(os.path.join(logdir, "buildruntests.txt"))))
+        run("cd %s ; env LD_LIBRARY_PATH=%s %s setup.py fetch --version=%s --sqlite build_test_extension build_ext --inplace --force --enable=fts3,rtree,icu test -v >%s 2>&1" % (workdir, pylib, pybin, sqlitever, os.path.abspath(os.path.join(logdir, "buildruntests.txt"))))
 
 
 def runtest(workdir, pyver, ucs, sqlitever, logdir):
@@ -142,24 +141,10 @@ def buildpython(workdir, pyver, ucs, logfilename):
     
 def buildsqlite(workdir, sqlitever, pybin, logfile):
     os.system("rm -rf '%s/sqlite3' '%s/sqlite3.c' 2>/dev/null" % (workdir,workdir))
-    if sqlitever=="fossil":
-        run("cd %s ; wget -O sqlite3.zip http://www.sqlite.org/src/zip/sqlite3.zip?uuid=trunk > %s 2>&1" % (workdir, logfile,))
-        # SQLite has to be in a directory named 'sqlite' otherwise the make step fails, so we have to do silly rename games
-        run('( set -x ; cd %s ; unzip sqlite3.zip ; mv sqlite3 sqlite ; cd sqlite ; make -f Makefile.linux-gcc sqlite3.c ; cp src/sqlite3ext.h . ; cd .. ; mv sqlite sqlite3 ) >> %s 2>&1' % (workdir,logfile))
-    else:
-        run("cd %s ;  %s setup.py --fetch-sqlite=%s >> %s 2>&1 || true; test -f sqlite3/sqlite3.c" % (workdir, pybin, sqlitever, logfile))
-    if sys.platform.startswith("darwin"):
-        run('cd %s ; gcc -fPIC -bundle -o testextension.sqlext -Isqlite3 -I. src/testextension.c' % (workdir,))
-    else:
-        run('cd %s ; gcc -fPIC -shared -o testextension.sqlext -Isqlite3 -I. src/testextension.c' % (workdir,))
-
-def buildapsw(outputfile, pybin, workdir):
-    run("cd %s ; %s setup.py build >>%s 2>&1" % (workdir, pybin, outputfile))
-    if pybin=="/usr/bin/python":
-        run("cd %s ; cp build/*/apsw.so ." % (workdir,))
-    else:
-        run("cd %s ; %s setup.py install >>%s 2>&1" % (workdir, pybin, outputfile))
-
+    assert sqlitever=="fossil"
+    run("cd %s ; wget -O sqlite3.zip http://www.sqlite.org/src/zip/sqlite3.zip?uuid=trunk > %s 2>&1" % (workdir, logfile,))
+    # SQLite has to be in a directory named 'sqlite' otherwise the make step fails, so we have to do silly rename games
+    run('( set -x ; cd %s ; unzip sqlite3.zip ; mv sqlite3 sqlite ; cd sqlite ; make -f Makefile.linux-gcc sqlite3.c ; cp src/sqlite3ext.h . ; cd .. ; mv sqlite sqlite3 ) >> %s 2>&1' % (workdir,logfile))
 
 # Default versions we support
 PYVERS=(

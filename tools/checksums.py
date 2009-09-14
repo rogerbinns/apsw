@@ -48,6 +48,7 @@ def check(url, data):
 
 
 for v in sqlitevers:
+    # Windows amalgamation
     AURL="http://www.sqlite.org/sqlite-amalgamation-%s.zip" % (v.replace(".", "_"),)
     try:
         data=urllib2.urlopen(AURL).read()
@@ -55,7 +56,16 @@ for v in sqlitevers:
         print AURL
         raise
     check(AURL, data)
+    # All other platforms amalgamation
     AURL="http://www.sqlite.org/sqlite-amalgamation-%s.tar.gz" % (v,)
+    try:
+        data=urllib2.urlopen(AURL).read()
+    except:
+        print AURL
+        raise
+    check(AURL, data)
+    # asyncvfs
+    AURL="http://www.sqlite.org/sqlite-%s.tar.gz" % (v,)
     try:
         data=urllib2.urlopen(AURL).read()
     except:

@@ -1,5 +1,5 @@
 # This file contains checksums/hashes of SQLite so that we can verify
-# downloads using --fetch-sqlite argument to setup.py have not been
+# downloads using fetch command to setup.py have not been
 # tampered with.  See
 # http://apsw.googlecode.com/svn/publish/build.html#additional-setup-py-flags
 # for information on setup.py flags.
@@ -29,3 +29,12 @@ http://www.sqlite.org/sqlite-amalgamation-3_6_13.zip    1005601 db16b16ba24e1044
 http://www.sqlite.org/sqlite-amalgamation-3.6.13.tar.gz 1707254 950855d9eed9b8bd6fad406cece5a24b640c3e3f 681722e7cdc6d9ab3be836736ed50641
 http://www.sqlite.org/sqlite-amalgamation-3_6_12.zip    1000496 6945caf694391afdc9710a7df6da544cc668997d 7e592dccdbfe35a623b2410302aca506
 http://www.sqlite.org/sqlite-amalgamation-3.6.12.tar.gz 1333056 206cb5de9f41f7d45183187bad066f9a42e6cba2 067eb6e08ecc37fcd6d14f18cba68a39
+http://www.sqlite.org/sqlite-3.6.18.tar.gz 2892345 0200f366657b00396bdc45ebd5b9ab6891ff825e 54fa7782a56edf0bf6016a2548b86c4c
+http://www.sqlite.org/sqlite-3.6.17.tar.gz 2926671 fa71b93563809ce666c3d6ccd7b6bcaaafc433b3 f89f62afc765e08b3f0e47cdc47a15d4
+http://www.sqlite.org/sqlite-3.6.16.tar.gz 2822505 70ef5ab724816cd6c755f21e6e9d8a9c6b517045 d7c57e91fbeb630c19f82eec3ef73dae
+http://www.sqlite.org/sqlite-3.6.15.tar.gz 2818619 e1592b5ba35c40fbcb2cb8dc0cab669cfde04dd3 ccde887ffc8a26251f3514d54594ff92
+http://www.sqlite.org/sqlite-3.6.14.2.tar.gz 2896850 19206a419e39bb2de01ed12c2d95c928e97e7252 4c074691b48cd45854899ae4fece6301
+http://www.sqlite.org/sqlite-3.6.14.1.tar.gz 2803028 d4c4c505e8d332fe61421dfb5cc22a97f5c854c4 cc3b6bede1f96ab9f78674f6482ffb8d
+http://www.sqlite.org/sqlite-3.6.14.tar.gz 2894263 0e22b901fe905826c192f305b7934eb4fefcb15b 4883696b283bae0838a2d468f2232437
+http://www.sqlite.org/sqlite-3.6.13.tar.gz 2780584 632b5661ba7f59e92ce805ebcdf2cc3e9b28a051 652a01797e7538811e4997a5847bc026
+http://www.sqlite.org/sqlite-3.6.12.tar.gz 2769510 05ffb484d264030de41ee4bde0915bf1900d5f32 13600865a69a3f54d2ac42a0d6b743db

@@ -3,7 +3,7 @@ VERSION=3.6.18-r1
 VERDIR=apsw-$(VERSION)
 
 # setup.py options for windows dist
-WINOPTS=--enable=fts3 --enable=fts3_parenthesis --enable=rtree
+WINOPTS=--enable=fts3,fts3_parenthesis,rtree
 
 GENDOCS = \
 	doc/blob.rst \
@@ -56,7 +56,7 @@ header:
 # the funky test stuff is to exit successfully when grep has rc==1 since that means no lines found.
 showsymbols:
 	rm -f apsw.so
-	python setup.py build_ext --inplace --force
+	python setup.py build_ext --inplace --force --enable=fts3,rtree,icu
 	test -f apsw.so
 	set +e; nm --extern-only --defined-only apsw.so | egrep -v ' (__bss_start|_edata|_end|_fini|_init|initapsw)$$' ; test $$? -eq 1 || false
 
@@ -89,8 +89,11 @@ source: source_nocheck
 	mkdir -p work
 	rm -rf work/$(VERDIR)
 	cd work ; unzip -q ../dist/$(VERDIR).zip
-	cd work/$(VERDIR) ; python setup.py build_ext --inplace --fetch-sqlite build_test_extension test
+	# Make certain various files do/do not exist
 	for f in doc/vfs.html doc/_sources/pysqlite.txt tools/apswtrace.py ; do test -f work/$(VERDIR)/$$f ; done
+	for f in sqlite3.c sqlite3/sqlite3.c ; do test ! -f work/$(VERDIR)/$$f ; done
+	# Test code works
+	cd work/$(VERDIR) ; python setup.py fetch --all build_ext --inplace --enable=fts3,rtree,icu build_test_extension test
 
 upload:
 	@if [ -z "$(GC_USER)" ] ; then echo "Specify googlecode user by setting GC_USER environment variable" ; exit 1 ; fi
