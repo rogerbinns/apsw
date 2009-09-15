@@ -580,6 +580,165 @@ apsw_fini(APSW_ARGUNUSED PyObject *self)
 }
 #endif
 
+#ifdef APSW_USE_SQLITE_ASYNCVFS_H
+#include APSW_USE_SQLITE_ASYNCVFS_H
+
+/** .. method:: async_initialize(parentvfs, makedefault) -> string
+
+  Registers the asyncvfs.  It is safe to call this method multiple
+  times, with subsequent calls having no effect.
+
+  :param parentvfs: Name of the vfs to use for I/O operations.  Use an empty string for the default
+  :param makedefault: Make the async vfs be the default vfs.
+  :returns: A string containg the name of the default vfs.
+
+  Note that this method cannot return string errors as part of
+  exceptions, just generic error codes and messages.  For example if
+  you specify a non-existent parentvfs then you just get
+  :exc:`apsw.SQLError` with the text `error`.  The `source
+  <http://www.sqlite.org/cvstrac/fileview?f=sqlite/ext/async/sqlite3async.h>`__
+  lists what error codes could be returned.
+
+  .. seealso::
+
+  * :ref:`ext-asyncvfs`
+*/
+static PyObject *
+apsw_async_initialize(APSW_ARGUNUSED PyObject *self, PyObject *args)
+{
+  char *vfsname=NULL;
+  int makedefault=0;
+  int res;
+
+  if(!PyArg_ParseTuple(args, "esi", STRENCODING, &vfsname, &makedefault))
+    return NULL;
+
+  if(!*vfsname)
+    {
+      PyMem_Free(vfsname);
+      vfsname=NULL;
+    }
+
+  _PYSQLITE_CALL_V(res=sqlite3async_initialize(vfsname, makedefault));
+  PyMem_Free(vfsname);
+  if(res!=SQLITE_OK)
+    {
+      SET_EXC(res, NULL);
+      return NULL;
+    }
+
+  return convertutf8string(SQLITEASYNC_VFSNAME);
+}
+
+/** .. method:: async_shutdown()
+
+  Unregisters the asyncvfs.  It is safe to call this method multiple
+  times with subsequent calls having no effect.  It is not recommended
+  that you call this method.  It deallocates everything immediately
+  making no checks if anything is in use.  If you want to call it then
+  only do so once you are absolutely sure that all databases, files,
+  vfs, threads and other objects it references have been closed and
+  freed.
+*/
+static PyObject *
+apsw_async_shutdown(APSW_ARGUNUSED PyObject *self)
+{
+  _PYSQLITE_CALL_V(sqlite3async_shutdown());
+
+  Py_RETURN_NONE;
+}
+
+/** .. method:: async_control(op[, params])
+
+    :param op: The operation code (eg SQLITE_ASYNC_HALT)
+    :param params: Optional additional parameters depending on the opcode.
+    :returns: None or additional information requested
+
+    This table summarises the parameters taken and value returned
+    depending on the operation.
+
+    +-----------------------------------+--------------+---------+
+    | op                                | params       | result  |
+    +===================================+==============+=========+
+    | SQLITEASYNC_HALT                  | int          | None    |
+    +-----------------------------------+--------------+---------+
+    | SQLITEASYNC_GET_HALT              |              | int     |
+    +-----------------------------------+--------------+---------+
+    | SQLITEASYNC_DELAY                 | int          | None    |
+    +-----------------------------------+--------------+---------+
+    | SQLITEASYNC_GET_DELAY             |              | int     |
+    +-----------------------------------+--------------+---------+
+    | SQLITEASYNC_LOCKFILES             | int          | None    |
+    +-----------------------------------+--------------+---------+
+    | SQLITEASYNC_GET_LOCKFILES         |              | int     |
+    +-----------------------------------+--------------+---------+
+*/
+static PyObject *
+apsw_async_control(APSW_ARGUNUSED PyObject *self, PyObject *args)
+{
+  int op, inparam, outparam,res;
+  if(!PyTuple_Check(args) || PyTuple_GET_SIZE(args)<1)
+    {
+      PyErr_Format(PyExc_TypeError, "Args should be a tuple of at least one item");
+      return NULL;
+    }
+  if(!PyIntLong_Check(PyTuple_GET_ITEM(args, 0)))
+    {
+      PyErr_Format(PyExc_TypeError, "Arg 0 must be a number");
+      return NULL;
+    }
+
+  switch(PyIntLong_AsLong(PyTuple_GET_ITEM(args, 0)))
+    {
+    case SQLITEASYNC_HALT:
+    case SQLITEASYNC_DELAY:
+    case SQLITEASYNC_LOCKFILES:
+      if(!PyArg_ParseTuple(args, "ii", &op, &inparam))
+	return NULL;
+      _PYSQLITE_CALL_V(res=sqlite3async_control(op, inparam));
+      if(res!=SQLITE_OK)
+	{
+	  SET_EXC(res, NULL);
+	  return NULL;
+	}
+      Py_RETURN_NONE;
+
+    case SQLITEASYNC_GET_HALT:
+    case SQLITEASYNC_GET_DELAY:
+    case SQLITEASYNC_GET_LOCKFILES:
+      if(!PyArg_ParseTuple(args, "i", &op))
+	return NULL;
+      _PYSQLITE_CALL_V(res=sqlite3async_control(op, &outparam));
+      if(res!=SQLITE_OK)
+	{
+	  SET_EXC(res, NULL);
+	  return NULL;
+	}
+      return PyInt_FromLong(outparam);
+
+    default:
+      PyErr_Format(PyExc_ValueError, "Unknown operation argument");
+      return NULL;
+    }
+}
+
+/** .. method:: async_run()
+
+  Call this method from a worker thread and it will do all the
+  asynchronous I/O.
+*/
+
+static PyObject *
+apsw_async_run(APSW_ARGUNUSED PyObject *self)
+{
+  _PYSQLITE_CALL_V(sqlite3async_run());
+
+  Py_RETURN_NONE;
+}
+
+
+#endif
+
 
 static PyMethodDef module_methods[] = {
   {"sqlitelibversion", (PyCFunction)getsqliteversion, METH_NOARGS,
@@ -621,6 +780,16 @@ static PyMethodDef module_methods[] = {
    "Calls xGetLastError routine"},
   {"_fini", (PyCFunction)apsw_fini, METH_NOARGS,
    "Frees all caches and recycle lists"},
+#endif
+#ifdef APSW_USE_SQLITE_ASYNCVFS_H
+  {"async_initialize", (PyCFunction)apsw_async_initialize, METH_VARARGS,
+   "Initializes the asyncvfs extension"},
+  {"async_shutdown", (PyCFunction)apsw_async_shutdown, METH_NOARGS,
+   "Frees all asyncvfs objects"},
+  {"async_control", (PyCFunction)apsw_async_control, METH_VARARGS,
+   "Control operation of asyncvfs"},
+  {"async_run", (PyCFunction)apsw_async_run, METH_NOARGS,
+   "Does the background async I/O"},
 #endif
   {0, 0, 0, 0}  /* Sentinel */
 };
@@ -1011,6 +1180,25 @@ modules etc. For example::
       ADDINT(SQLITE_GET_LOCKPROXYFILE),
       ADDINT(SQLITE_SET_LOCKPROXYFILE),
       ADDINT(SQLITE_LAST_ERRNO),
+      END,
+
+#ifdef APSW_USE_SQLITE_ASYNCVFS_H
+      DICT("mapping_asyncvfs_control"),
+      ADDINT(SQLITEASYNC_HALT),
+      ADDINT(SQLITEASYNC_GET_HALT),
+      ADDINT(SQLITEASYNC_DELAY),
+      ADDINT(SQLITEASYNC_GET_DELAY),
+      ADDINT(SQLITEASYNC_LOCKFILES),
+      ADDINT(SQLITEASYNC_GET_LOCKFILES),
+      END,
+
+      DICT("mapping_asyncvfs_control_halt"),
+      ADDINT(SQLITEASYNC_HALT_NEVER),
+      ADDINT(SQLITEASYNC_HALT_NOW),
+      ADDINT(SQLITEASYNC_HALT_IDLE),
+      END,
+#endif
+
       END
 
       };
@@ -1108,3 +1296,8 @@ APSW_Should_Fault(const char *name)
 }
 #endif
 
+/* async vfs */
+#ifdef APSW_USE_SQLITE_ASYNCVFS_C
+#define SQLITE_ENABLE_ASYNCIO
+#include APSW_USE_SQLITE_ASYNCVFS_C
+#endif

@@ -1,4 +1,6 @@
 syntax: glob
+sqlite3async.h
+sqlite3async.c
 callgrind.out.*
 tools/googlecode_upload.py
 :memory:

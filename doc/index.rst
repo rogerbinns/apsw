@@ -27,6 +27,7 @@ Contents:
    example
    download
    build
+   extensions
 
    apsw
    connection

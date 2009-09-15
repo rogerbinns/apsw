@@ -65,26 +65,30 @@ def do_mappings():
         # which page does this correspond to?
         m=mappings[map]
         pg=None
-        for val in m:
-            if val=="SQLITE_OK": # present in multiple mappings
-                continue
-            # check that all values in mapping go to the same page
-            if pg is None:
-                pg=consts[val]
-                op.append("   `%s <%s>`_" % (pages[pg]['title'], pg))
-                op.append("")
-            else:
-                if consts[val]!=pg:
-                    print "These don't all map to the same page"
-                    print map
-                    for val in m:
-                        print "  ",consts[val],"\t",val
+        if map.startswith("mapping_asyncvfs_"):
+            op.append("   `asyncvfs <http://www.sqlite.org/src/dir?name=ext/async>`__ (if compiled in)")
+            op.append("")
+        else:
+            for val in m:
+                if val=="SQLITE_OK": # present in multiple mappings
+                    continue
+                # check that all values in mapping go to the same page
+                if pg is None:
+                    pg=consts[val]
+                    op.append("   `%s <%s>`__" % (pages[pg]['title'], pg))
+                    op.append("")
+                else:
+                    if consts[val]!=pg:
+                        print "These don't all map to the same page"
+                        print map
+                        for val in m:
+                            print "  ",consts[val],"\t",val
+                        sys.exit(1)
+            # check to see if apsw is missing any
+            for v in pages[pg]['vars']:
+                if v not in mappings[map]:
+                    print "Mapping",map,"is missing",v
                     sys.exit(1)
-        # check to see if apsw is missing any
-        for v in pages[pg]['vars']:
-            if v not in mappings[map]:
-                print "Mapping",map,"is missing",v
-                sys.exit(1)
         vals=m[:]
         vals.sort()
         op.append("    %s" % (", ".join([":const:`"+v+"`" for v in vals]),))

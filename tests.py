@@ -4847,7 +4847,39 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.BusyError, b.__exit__, None, None, None)
         b.__exit__(None, None, None)
         
-        
+
+    def testAsyncVFS(self):
+        if not hasattr(apsw, "async_initialize"):
+            return
+
+        self.assertRaises(TypeError, apsw.async_initialize)
+        self.assertRaises(TypeError, apsw.async_initialize, 3, 4)
+        self.assertRaises(TypeError, apsw.async_initialize, None, 3)
+        self.assertRaises(apsw.SQLError, apsw.async_initialize, "nonexistent vfs", 3)
+
+        # check it works registered as default
+        names=apsw.vfsnames()
+        v=apsw.async_initialize("", True)
+        names2=apsw.vfsnames()
+        self.assertEqual(len(names2), len(names)+1)
+        self.assertNotEqual(names[0], names2[0])
+        self.assertEqual(v, names2[0])
+        self.assert_(v not in names)
+
+        self.assertRaises(TypeError, apsw.async_shutdown, 3)
+        apsw.async_shutdown()
+        # make sure it is gone
+        self.assertEqual(names, apsw.vfsnames())
+
+        # check it works not registered as default
+        names=apsw.vfsnames()
+        v2=apsw.async_initialize("", 0)
+        names2=apsw.vfsnames()
+        self.assertEqual(len(names2), len(names)+1)
+        self.assertEqual(names[0], names2[0])
+        self.assert_(v2 in names2)
+        self.assert_(v2 not in names)
+        self.assertEqual(v, v2)
         
     # Note that faults fire only once, so there is no need to reset
     # them.  The testing for objects bigger than 2GB is done in

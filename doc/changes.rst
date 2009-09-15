@@ -16,6 +16,10 @@ The :file:`setup.py` file now has the various options available made
 applicable to appropriate commands only.  Read the :ref:`updated
 documentation <setup_py_flags>`.
 
+You can now specify :option:`build --enable=stat2` to :file:`setup.py`
+to enable `advanced statistics gathering
+<http://www.sqlite.org/compile.html#enable_stat2>` for query planning.
+
 3.6.18-r1
 =========
 

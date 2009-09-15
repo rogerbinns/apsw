@@ -247,7 +247,7 @@ class fetch(Command):
             raise ValueError("No components downloaded")
 
     def fixupasyncvfs(self, fname, code):
-        write("fixupasyncvfs %s %d" % (fname, len(code.read())))
+        open(os.path.join(os.path.dirname(__file__), fname), "wt").write(code.read())
 
     def extractgenfkey(self, code):
         write("extractgenfkey %d" % (len(code.read()),))
@@ -355,6 +355,12 @@ def findamalgamation():
             return path
     return None
 
+def findasyncvfs():
+    path=os.path.join(os.path.dirname(os.path.abspath(__file__)), "sqlite3async.c")
+    if os.path.exists(path):
+        return path
+    return None
+
 beparent=build_ext.build_ext
 class apsw_build_ext(beparent):
 
@@ -430,7 +436,7 @@ class apsw_build_ext(beparent):
                 # hopefully future proof test
                 if "_" not in e.lower() and \
                        "memsys" not in e.lower() and \
-                       e.lower() not in ("fts3", "rtree", "icu", "iotrace"):
+                       e.lower() not in ("fts3", "rtree", "icu", "iotrace", "stat2"):
                     write("Unknown enable "+e, sys.stderr)
                     raise ValueError("Bad enable "+e)
 
@@ -464,9 +470,23 @@ class apsw_build_ext(beparent):
                     ext.libraries.append(part[2:])
                     foundicu=True
 
-            if not foundicu:
+            if foundicu:
+                write("ICU: Added includes, flags and libraries from icu-config")
+            else:
                 write("ICU: Unable to determine includes/libraries for ICU using icu-config")
                 write("ICU: You will need to manually edit setup.py or setup.cfg to set them")
+
+        # asyncvfs
+        path=findasyncvfs()
+        if path:
+            if sys.platform=="win32":
+                # double quotes get consumed by windows arg processing
+                ext.define_macros.append( ('APSW_USE_SQLITE_ASYNCVFS_C', '\\"'+path+'\\"') )
+                ext.define_macros.append( ('APSW_USE_SQLITE_ASYNCVFS_H', '\\"'+path[:-1]+'h\\"') )
+            else:
+                ext.define_macros.append( ('APSW_USE_SQLITE_ASYNCVFS_C', '"'+path+'"') )
+                ext.define_macros.append( ('APSW_USE_SQLITE_ASYNCVFS_H', '"'+path[:-1]+'h"') )
+            write("AsyncVFS: "+path)
 
         # done ...
         return v
@@ -486,7 +506,7 @@ class apsw_sdist(sparent):
         # Now do some chicanery.  If a source distribution is requested and
         # fetch --sqlite was requested then make sure the sqlite amalgamation
         # ends up as part of the source distribution.
-        if "sqlite" in fetch_parts:
+        if fetch_parts:
             # Use a temporary file for the manifest
             tmpmanifest="MANIFEST.in.tmp"
             self.template=tmpmanifest
@@ -500,17 +520,28 @@ class apsw_sdist(sparent):
                 mout.write(line)
             min.close()
             # os.path.relpath emulation
-            amalgamationpath=findamalgamation()
-            amalrelpath=amalgamationpath[len(os.path.dirname(os.path.abspath(__file__)))+1:]
-            mout.write("include "+amalrelpath+"\n")
-            # also include headers and extension headers
-            mout.write("include "+amalrelpath.replace("sqlite3.c", "sqlite3.h")+"\n")
-            mout.write("include "+amalrelpath.replace("sqlite3.c", "sqlite3ext.h")+"\n")
+            if "sqlite" in fetch_parts:
+                amalgamationpath=findamalgamation()
+                amalrelpath=amalgamationpath[len(os.path.dirname(os.path.abspath(__file__)))+1:]
+                mout.write("include "+amalrelpath+"\n")
+                # also include headers and extension headers
+                mout.write("include "+amalrelpath.replace("sqlite3.c", "sqlite3.h")+"\n")
+                mout.write("include "+amalrelpath.replace("sqlite3.c", "sqlite3ext.h")+"\n")
+
+            if "asyncvfs" in fetch_parts:
+                asyncpath=findasyncvfs()
+                asyncpath=asyncpath[len(os.path.dirname(os.path.abspath(__file__)))+1:]
+                mout.write("include "+asyncpath+"\n")
+                mout.write("include "+asyncpath[:-1]+"h\n")
+
             mout.close()
 
 
 # We depend on every .[ch] file in src
 depends=[f for f in glob.glob("src/*.[ch]") if f!="src/apsw.c"]
+for f in (findamalgamation(), findasyncvfs()):
+    if f:
+        depends.append(f)
 
 
 # work out version number

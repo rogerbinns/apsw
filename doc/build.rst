@@ -80,12 +80,10 @@ re-fetching.
 |                                        | libraries on your developer or deployment machines. The amalgamation includes the    |
 |                                        | fts3, rtree and icu extensions.                                                      |
 +----------------------------------------+--------------------------------------------------------------------------------------+
-| | :option:`--asyncvfs`                 | Downloads the `Asynchronous VFS                                                      |
-|                                        | <http://www.sqlite.org/src/finfo?name=ext/async/README.txt>`__                       |
+| | :option:`--asyncvfs`                 | Downloads the :ref:`Asynchronous VFS <ext-asyncvfs>`                                 |
 +----------------------------------------+--------------------------------------------------------------------------------------+
-| | :option:`--genfkey`                  | Downloads the code to generate triggers emulating foreign key constraints. The code  |
-|                                        | is extracted from the SQLite shell (see `SQLite ticket 3687                          |
-|                                        | <http://www.sqlite.org/cvstrac/tktview?tn=3687>`__)                                  |
+| | :option:`--genfkey`                  | Downloads the code to :ref:`generate triggers emulating foreign key constraints      |
+|                                        | <ext-genfkey>`.                                                                      |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 
 build/build_ext
