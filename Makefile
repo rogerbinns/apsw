@@ -20,7 +20,7 @@ all: header docs
 
 doc: docs
 
-docs: $(GENDOCS) doc/example.rst doc/.static
+docs: build_ext $(GENDOCS) doc/example.rst doc/.static
 	env PYTHONPATH=. http_proxy= python tools/docmissing.py
 	env PYTHONPATH=. http_proxy= python tools/docupdate.py $(VERSION)
 	make VERSION=$(VERSION) -C doc clean html htmlhelp 
@@ -35,6 +35,9 @@ doc/.static:
 # This is probably gnu make specific but only developers use this makefile
 $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
 	env http_proxy= python tools/code2rst.py $< $@
+
+build_ext:
+	python setup.py fetch --all build_ext --inplace --force
 
 linkcheck:
 	make VERSION=$(VERSION) -C doc linkcheck 
