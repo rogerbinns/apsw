@@ -20,6 +20,10 @@ You can now specify :option:`build --enable=stat2` to :file:`setup.py`
 to enable `advanced statistics gathering
 <http://www.sqlite.org/compile.html#enable_stat2>` for query planning.
 
+:file:`setup.py` can automatically fetch the :ref:`ext-asyncvfs`
+extension for you.  If the source is present when APSW is built then
+it will be automatically included and the API provided.
+
 3.6.18-r1
 =========
 

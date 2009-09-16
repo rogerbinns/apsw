@@ -581,6 +581,9 @@ apsw_fini(APSW_ARGUNUSED PyObject *self)
 #endif
 
 #ifdef APSW_USE_SQLITE_ASYNCVFS_H
+
+#define SQLITE3ASYNC_API static
+
 #include APSW_USE_SQLITE_ASYNCVFS_H
 
 /** .. method:: async_initialize(parentvfs, makedefault) -> string
@@ -677,6 +680,7 @@ static PyObject *
 apsw_async_control(APSW_ARGUNUSED PyObject *self, PyObject *args)
 {
   int op, inparam, outparam,res;
+
   if(!PyTuple_Check(args) || PyTuple_GET_SIZE(args)<1)
     {
       PyErr_Format(PyExc_TypeError, "Args should be a tuple of at least one item");
@@ -706,9 +710,10 @@ apsw_async_control(APSW_ARGUNUSED PyObject *self, PyObject *args)
     case SQLITEASYNC_GET_HALT:
     case SQLITEASYNC_GET_DELAY:
     case SQLITEASYNC_GET_LOCKFILES:
-      if(!PyArg_ParseTuple(args, "i", &op))
-	return NULL;
+      op=PyIntLong_AsLong(PyTuple_GET_ITEM(args, 0));
+      assert(!PyErr_Occurred());
       _PYSQLITE_CALL_V(res=sqlite3async_control(op, &outparam));
+      APSW_FAULT_INJECT(AsyncControlFails,,res=SQLITE_NOMEM);
       if(res!=SQLITE_OK)
 	{
 	  SET_EXC(res, NULL);
@@ -725,9 +730,10 @@ apsw_async_control(APSW_ARGUNUSED PyObject *self, PyObject *args)
 /** .. method:: async_run()
 
   Call this method from a worker thread and it will do all the
-  asynchronous I/O.
+  asynchronous I/O.  You can get the function to exit by calling
+  :func:`async_control` with a first parameter of :const:`SQLITEASYNC_HALT` and
+  a second parameter of :const:`SQLITEASYNC_HALT_NOW`.
 */
-
 static PyObject *
 apsw_async_run(APSW_ARGUNUSED PyObject *self)
 {
@@ -1180,9 +1186,10 @@ modules etc. For example::
       ADDINT(SQLITE_GET_LOCKPROXYFILE),
       ADDINT(SQLITE_SET_LOCKPROXYFILE),
       ADDINT(SQLITE_LAST_ERRNO),
-      END,
+      END
 
 #ifdef APSW_USE_SQLITE_ASYNCVFS_H
+      ,
       DICT("mapping_asyncvfs_control"),
       ADDINT(SQLITEASYNC_HALT),
       ADDINT(SQLITEASYNC_GET_HALT),
@@ -1196,11 +1203,8 @@ modules etc. For example::
       ADDINT(SQLITEASYNC_HALT_NEVER),
       ADDINT(SQLITEASYNC_HALT_NOW),
       ADDINT(SQLITEASYNC_HALT_IDLE),
-      END,
-#endif
-
       END
-
+#endif
       };
  
  

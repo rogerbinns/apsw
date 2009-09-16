@@ -247,7 +247,20 @@ class fetch(Command):
             raise ValueError("No components downloaded")
 
     def fixupasyncvfs(self, fname, code):
-        open(os.path.join(os.path.dirname(__file__), fname), "wt").write(code.read())
+        n=os.path.join(os.path.dirname(__file__), fname)
+        # see http://www.sqlite.org/src/info/084941461f
+        afs=re.compile(r"^(int asyncFileSize\()")
+        proto=re.compile(r"^(\w+\s+sqlite3async_(initialize|shutdown|control|run)\()")
+        o=open(n, "wt")
+        try:
+            for line in code:
+                line=afs.sub(r"static \1", line)
+                line=proto.sub(r"SQLITE3ASYNC_API \1", line)
+                o.write(line)
+        except:
+            o.close()
+            os.remove(n)
+            raise
 
     def extractgenfkey(self, code):
         write("extractgenfkey %d" % (len(code.read()),))

@@ -28,11 +28,12 @@ names=glob.glob("*.c.gcov")
 names.sort()
 
 for f in names:
-    if f=="sqlite3.c.gcov":
+    if f in ("sqlite3.c.gcov", "sqlite3async.c.gcov"):
         continue
     fileexec=0
     filetotal=0
     for line in open(f, "rtU"):
+        if ":" not in line: continue
         line=line.split(":", 1)[0].strip()
         if line=="-":
             continue

@@ -262,7 +262,7 @@ class APSW(unittest.TestCase):
         }
 
     def deltempfiles(self):
-        for name in ("testdb", "testdb2", "testfile", "testfile2", "testdb2x"):
+        for name in ("testdb", "testdb2", "testfile", "testfile2", "testdb2x", "testdb-async"):
             for i in "-journal", "":
                 if os.path.exists(name+i):
                     deletefile(name+i)
@@ -4880,6 +4880,59 @@ class APSW(unittest.TestCase):
         self.assert_(v2 in names2)
         self.assert_(v2 not in names)
         self.assertEqual(v, v2)
+
+        # create the database and write to it, but without starting the worker thread
+        # so the disk file should remain zero length
+        fn="testdb-async"
+        self.db=apsw.Connection(fn, vfs=v2)
+        self.assertEqual(os.stat(fn).st_size, 0)
+        cur=self.db.cursor()
+        cur.execute("create table foo(x,y);insert into foo values(1,2)")
+        self.assertEqual(os.stat(fn).st_size, 0)
+        # Do a worker thread
+        d={
+            'workerstarted': False,
+            'workerfinished': False
+            }
+        def worker():
+            d['workerstarted']=True
+            self.assertRaises(TypeError, apsw.async_run, 3)
+            apsw.async_run()
+            d['workerfinished']=True
+        t=ThreadRunner(worker)
+        t.start()
+        time.sleep(1)
+        self.assertEqual(d['workerstarted'], True)
+        self.assertEqual(d['workerfinished'], False)
+
+        ### check async_control
+        # non-existent opcode
+        self.assertRaises(ValueError, apsw.async_control, 89547)
+        # insufficient args
+        self.assertRaises(TypeError, apsw.async_control)
+        # bad arg
+        self.assertRaises(TypeError, apsw.async_control, "three")
+        # misuse
+        self.assertRaises(apsw.MisuseError, apsw.async_control, apsw.SQLITEASYNC_DELAY, -3)
+        # too many params
+        self.assertRaises(TypeError, apsw.async_control, apsw.SQLITEASYNC_HALT, 1, 2, 3)
+        # too few params
+        self.assertRaises(TypeError, apsw.async_control, apsw.SQLITEASYNC_DELAY)
+        # try setting and getting
+        origdelay=apsw.async_control(apsw.SQLITEASYNC_GET_DELAY)
+        apsw.async_control(apsw.SQLITEASYNC_DELAY, origdelay+1)
+        newdelay=apsw.async_control(apsw.SQLITEASYNC_GET_DELAY)
+        self.assertEqual(origdelay+1, newdelay)
+
+        ### Tell worker to quit
+        apsw.async_control(apsw.SQLITEASYNC_HALT, apsw.SQLITEASYNC_HALT_NOW)
+        time.sleep(1)
+        self.assertEqual(d['workerfinished'], True)
+
+        # catch any exceptions in worker thread
+        t.go()
+        
+        
         
     # Note that faults fire only once, so there is no need to reset
     # them.  The testing for objects bigger than 2GB is done in
@@ -5545,6 +5598,11 @@ class APSW(unittest.TestCase):
             1/0
         except MemoryError:
             pass
+
+        ## AsyncControlFails
+        if hasattr(apsw, "async_control"):
+            apsw.faultdict["AsyncControlFails"]=True
+            self.assertRaises(apsw.NoMemError, apsw.async_control, apsw.SQLITEASYNC_GET_HALT)
 
 
 testtimeout=False # timeout testing adds several seconds to each run

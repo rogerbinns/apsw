@@ -15,8 +15,15 @@ rm -f *.gcda *.gcov *.gcno apsw.so
 # find python
 PYTHON=python # use whatever is in the path
 INCLUDEDIR=`$PYTHON -c "import distutils.sysconfig,sys; sys.stdout.write(distutils.sysconfig.get_python_inc())"`
+
+CFLAGS=''
+
+if [ -f sqlite3async.c ]
+then
+   CFLAGS='-DAPSW_USE_SQLITE_ASYNCVFS_C="sqlite3async.c" -DAPSW_USE_SQLITE_ASYNCVFS_H="sqlite3async.h"'
+fi
 set -x
-gcc -pthread -fno-strict-aliasing -ftest-coverage -fprofile-arcs -g -fPIC -Wall -Wextra -DEXPERIMENTAL -DSQLITE_DEBUG -DAPSW_USE_SQLITE_AMALGAMATION=\"sqlite3.c\" -DAPSW_NO_NDEBUG -DAPSW_TESTFIXTURES -I$INCLUDEDIR -I. -Isqlite3 -Isrc -c src/apsw.c
+gcc -pthread -fno-strict-aliasing -ftest-coverage -fprofile-arcs -g -fPIC -Wall -Wextra $CFLAGS -DEXPERIMENTAL -DSQLITE_DEBUG -DAPSW_USE_SQLITE_AMALGAMATION=\"sqlite3.c\" -DAPSW_NO_NDEBUG -DAPSW_TESTFIXTURES -I$INCLUDEDIR -I. -Isqlite3 -Isrc -c src/apsw.c
 gcc -pthread -ftest-coverage -fprofile-arcs -g -shared apsw.o -o apsw.so
 gcc -fPIC -shared -Isqlite3 -I. -o testextension.sqlext -Isqlite3 src/testextension.c
 set +e
