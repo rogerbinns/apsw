@@ -14,7 +14,7 @@ GENDOCS = \
 	doc/apsw.rst \
 	doc/backup.rst
 
-.PHONY : all docs doc header linkcheck publish showsymbols compile-win source source_nocheck upload 
+.PHONY : all docs doc header linkcheck publish showsymbols compile-win source source_nocheck upload tags
 
 all: header docs
 
@@ -118,3 +118,7 @@ upload:
 	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 2.3 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.3.exe
 	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) (Documentation only - Compiled Help Format)" -l "Type-Docs" dist/$(VERDIR).chm
 	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) (Source, includes HTML documentation)" -l "Type-Source,OpSys-All" dist/$(VERDIR).zip
+
+tags:
+	rm -f TAGS
+	ctags-exuberant -e --recurse --exclude=build --exclude=work .

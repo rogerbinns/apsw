@@ -1,4 +1,5 @@
 syntax: glob
+TAGS
 sqlite3async.h
 sqlite3async.c
 callgrind.out.*
