@@ -88,6 +88,15 @@ class build_test_extension(Command):
     def run(self):
         os.system("gcc -fPIC -shared -o testextension.sqlext -Isqlite3 -I. src/testextension.c")
 
+
+# deal with various python version compatibility issues
+def fixupcode(code):
+    if sys.version_info<(2,5):
+        return [l+"\n" for l in code.read().split("\n")]
+    if sys.version_info>(3,0):
+        return [l.decode("iso8859-1") for l in code]
+    return code
+
 fetch_parts=[]
 
 class fetch(Command):
@@ -253,8 +262,7 @@ class fetch(Command):
         proto=re.compile(r"^(\w+\s+sqlite3async_(initialize|shutdown|control|run)\()")
         o=open(n, "wt")
         try:
-            for line in code.read().split("\n"): # py23 doesn't do readline
-                line=line+"\n"
+            for line in fixupcode(code):
                 line=afs.sub(r"static \1", line)
                 line=proto.sub(r"SQLITE3ASYNC_API \1", line)
                 o.write(line)
@@ -267,8 +275,7 @@ class fetch(Command):
     def extractgenfkey(self, code):
         genfkey=[]
         ingkey=False
-        for line in code.read().split("\n"):
-            line=line+"\n"
+        for line in fixupcode(code):
             if "** Begin genfkey logic." in line:
                 ingkey=True
                 genfkey.append("/*\n")
