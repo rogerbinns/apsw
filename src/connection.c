@@ -362,6 +362,7 @@ Connection_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED
 
   .. seealso::
 
+    * :attr:`apsw.connection_hooks`
     * :ref:`statementcache`
     * :ref:`vfs`
 

@@ -887,11 +887,16 @@ PyInit_apsw(void)
        The purpose of the hooks is to allow the easy registration of
        :meth:`functions <Connection.createscalarfunction>`,
        :ref:`virtual tables <virtualtables>` or similar items with
-       each Connection as it is created. The default value is an empty
+       each :class:`Connection` as it is created. The default value is an empty
        list. Whenever a Connection is created, each item in
        apsw.connection_hooks is invoked with a single parameter being
        the new Connection object. If the hook raises an exception then
        the creation of the Connection fails.
+
+       If you wanted to store your own defined functions in the
+       database then you could define a hook that looked in the
+       relevant tables, got the Python text and turned it into the
+       functions.
     */
     hooks=PyList_New(0);
     if(!hooks) goto fail;
