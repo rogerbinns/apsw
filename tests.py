@@ -211,7 +211,17 @@ def deletefile(name):
             os.rename(name, newname)
         except:
             if count>30: # 3 seconds we have been at this!
-                raise
+                # So give up and give it a stupid name.  The sooner
+                # this so called operating system withers into obscurity
+                # the better
+                n=list("abcdefghijklmnopqrstuvwxyz")
+                random.shuffle(n)
+                n="".join(n)
+                try:
+                    os.rename(name, "windowssucks-"+n+".deletememanually")
+                except:
+                    pass
+                break
             # Make windows happy
             time.sleep(0.1)
             gc.collect()
