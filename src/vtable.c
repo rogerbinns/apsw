@@ -1180,10 +1180,8 @@ apswvtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
         }
       cbinfo=allocfunccbinfo();
       if(!cbinfo) goto error;
-      /* it is 2008 and I have to write a strdup clone ... */
-      cbinfo->name=PyMem_Malloc(strlen(zName)+1);
+      cbinfo->name=apsw_strdup(zName);
       if(!cbinfo->name) goto error;
-      strcpy(cbinfo->name, zName);
       cbinfo->scalarfunc=res;
       res=NULL;
       sqliteres=1;

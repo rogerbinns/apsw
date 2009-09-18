@@ -1,4 +1,7 @@
 syntax: glob
+testdb-async
+apsw.pyd
+sqlite3genfkey.c
 TAGS
 sqlite3async.h
 sqlite3async.c

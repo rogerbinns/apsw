@@ -3025,6 +3025,136 @@ Connection_exit(Connection *self, PyObject *args)
   Py_RETURN_FALSE;
 }
 
+#ifdef APSW_USE_SQLITE_GENFKEY
+#include APSW_USE_SQLITE_GENFKEY
+
+struct GenfkeyCtx
+{
+  int ignore_errors;
+  unsigned nerrors;
+  int drop;
+
+  PyObject *sqllist;
+  char *error;
+  PyObject *cursor_execute;
+};
+
+/* This is substantially similar in spirit to genfkeyCmdCb in SQLite's
+   shell.c */
+
+static int genfkey_callback(void *pCtx, int eType, const char *sql)
+{
+  struct GenfkeyCtx *ctx=(struct GenfkeyCtx*)pCtx;
+  
+  assert(eType==GENFKEY_ERROR || etype==GENFKEY_CREATETRIGGER || etype==GENFKEY_DROPTRIGGER);
+
+  if(eType==GENFKEY_ERROR && !ctx->ignore_errors)
+    {
+      if(!ctx->error)
+	ctx->error=apsw_strdup(sql);
+      ctx->nerrors++;
+      return SQLITE_ERROR;
+    }
+
+  if( ctx->nerrors==0 && /* no errors */
+      (eType==GENFKEY_CREATETRIGGER ||  /* creating trigger */
+       (eType==GENFKEY_DROPTRIGGER && ctx->drop) /* drop trigger and we want them */
+       ))
+    {
+      if(ctx->cursor_execute)
+	{
+	  PyObject *args=NULL, *pysql=NULL, *res=NULL;
+	  int ret=SQLITE_OK;
+	  
+	  args=PyTuple_New(1);
+	  if(!args) goto endblock;
+	  pysql=convertutf8string(sql);
+	  if(!pysql) goto endblock;
+	  PyTuple_SET_ITEM(args, 0, pysql);
+	  pysql=NULL;
+
+	  res=PyEval_CallObject(ctx->cursor_execute, args);
+	  if(!res)
+	    ret=MakeSqliteMsgFromPyException(NULL);
+
+	endblock:
+	  assert(!pysql);
+	  Py_XDECREF(args);
+	  Py_XDECREF(res);
+	  return ret;
+	}
+      /* save string to list */
+      {
+	PyObject *pysql=NULL;
+	pysql=convertutf8string(sql);
+	if(!pysql)
+	  goto blockerror;
+
+	PyString_Concat(&ctx->sqllist, pysql);
+	if(!ctx->sqllist) goto blockerror;
+	Py_DECREF(pysql);
+	return SQLITE_OK;
+      blockerror:
+	Py_XDECREF(pysql);
+	return MakeSqliteMsgFromPyException(NULL);
+      }
+    }
+
+  /* ignore it */
+  return SQLITE_OK;
+}
+
+static PyObject *
+Connection_genfkey(Connection *self, PyObject *args, PyObject *kwargs)
+{
+  static char *kwlist[]={"drop", "ignore_errors", "execsql", NULL};
+  int rc, execsql=0;
+  struct GenfkeyCtx ctx;
+  PyObject *res=NULL;
+
+  memset(&ctx, 0, sizeof(ctx));
+  ctx.drop=1;
+
+  if(!PyArg_ParseTupleAndKeywords(args, kwargs, "|iii:genfkey(drop=True, ignore_errors=False, execsql=False)", kwlist,
+				  &ctx.drop, &ctx.ignore_errors, &execsql))
+    return NULL;
+
+  if(execsql)
+    {
+      PyObject *cursor=Call_PythonMethod((PyObject*)self, "cursor", 1, NULL);
+      assert(cursor);
+      ctx.cursor_execute=PyObject_GetAttrString(cursor, "execute");
+      Py_DECREF(cursor);
+      if(!ctx.cursor_execute) goto finally;
+    }
+  else
+    {
+      ctx.sqllist=PyUnicode_FromUnicode(NULL, 0);
+      if(!ctx.sqllist) goto finally;
+    }
+
+  rc=genfkey_create_triggers(self->db, "main", &ctx, genfkey_callback);
+  if(rc!=SQLITE_OK)
+    {
+      if(!PyErr_Occurred())
+	/* dig error text out of ctx-> error */
+	PyErr_Format(APSWException, "Genfkey error: %s", ctx.error?ctx.error:"<unknown>");
+      goto finally;
+    }
+  assert(!PyErr_Occurred());
+  if(ctx.sqllist)
+    res=ctx.sqllist;
+  else
+    res=Py_None;
+  Py_INCREF(res);
+
+ finally:
+  Py_CLEAR(ctx.sqllist);
+  PyMem_Free(ctx.error);
+  Py_CLEAR(ctx.cursor_execute);
+  return res;
+}
+#endif
 
 /** .. attribute:: filename
 
@@ -3124,6 +3254,10 @@ static PyMethodDef Connection_methods[] = {
    "Context manager entry"},
   {"__exit__", (PyCFunction)Connection_exit, METH_VARARGS,
    "Context manager exit"},
+#ifdef APSW_USE_SQLITE_GENFKEY
+  {"genfkey", (PyCFunction)Connection_genfkey, METH_VARARGS|METH_KEYWORDS,
+   "Generates triggers emulating foreign key constraints"},
+#endif
   {0, 0, 0, 0}  /* Sentinel */
 };
 

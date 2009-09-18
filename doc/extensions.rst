@@ -3,7 +3,8 @@ Extensions
 
 SQLite includes a number of extensions providing additional
 functionality.  All extensions are disabled by default and you need to
-take steps to enable them.
+take steps to have them available at compilation time, to enable them
+and then to use them.
 
 .. _ext-asyncvfs:
 
