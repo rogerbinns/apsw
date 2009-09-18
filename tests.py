@@ -4145,7 +4145,7 @@ class APSW(unittest.TestCase):
         TestVFS.xOpen=TestVFS.xOpen99
         testdb()
 
-        if os.path.exists(LOADEXTENSIONFILENAME):
+        if hasattr(self.db, "enableloadextension") and os.path.exists(LOADEXTENSIONFILENAME):
             ## xDlOpen
             self.assertRaises(TypeError, vfs.xDlOpen, 3)
             if py3:
