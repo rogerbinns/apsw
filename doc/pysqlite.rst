@@ -57,7 +57,7 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
 * When using a :class:`Connection` as a :meth:`context manager
   <Connection.__enter__>` APSW uses SQLite's ability to have `nested
   transactions <http://www.sqlite.org/lang_savepoint.html>`__.
-  pysqlite only deals with one transaction at a time and cannot next
+  pysqlite only deals with one transaction at a time and cannot nest
   them.  (Savepoints were introduced in SQLite 3.6.8 - another
   illustration of the benefits of keeping up to date with SQLite.)
 
