@@ -253,17 +253,48 @@ class fetch(Command):
         proto=re.compile(r"^(\w+\s+sqlite3async_(initialize|shutdown|control|run)\()")
         o=open(n, "wt")
         try:
-            for line in code:
+            for line in code.read().split("\n"): # py23 doesn't do readline
+                line=line+"\n"
                 line=afs.sub(r"static \1", line)
                 line=proto.sub(r"SQLITE3ASYNC_API \1", line)
                 o.write(line)
+            o.close()
         except:
             o.close()
             os.remove(n)
             raise
 
     def extractgenfkey(self, code):
-        write("extractgenfkey %d" % (len(code.read()),))
+        genfkey=[]
+        ingkey=False
+        for line in code.read().split("\n"):
+            line=line+"\n"
+            if "** Begin genfkey logic." in line:
+                ingkey=True
+                genfkey.append("/*\n")
+                genfkey.append(line)
+                continue
+            if "/* End genfkey logic. */" in line:
+                ingkey=False
+                genfkey.append(line)
+                break
+            if ingkey:
+                genfkey.append(line)
+
+        if not genfkey:
+            write("Failed to extract genfkey code", sys.stderr)
+            raise ValueError("Unrecognised code")
+            
+        n=os.path.join(os.path.dirname(__file__), "sqlite3genfkey.c")
+        o=open(n, "wt")
+        try:
+            for l in genfkey:
+                o.write(l)
+            o.close()
+        except:
+            o.close()
+            os.remove(n)
+            raise
     
     # A function for verifying downloads
     def verifyurl(self, url, data):
@@ -370,6 +401,12 @@ def findamalgamation():
 
 def findasyncvfs():
     path=os.path.join(os.path.dirname(os.path.abspath(__file__)), "sqlite3async.c")
+    if os.path.exists(path):
+        return path
+    return None
+
+def findgenfkey():
+    path=os.path.join(os.path.dirname(os.path.abspath(__file__)), "sqlite3genfkey.c")
     if os.path.exists(path):
         return path
     return None
@@ -501,6 +538,16 @@ class apsw_build_ext(beparent):
                 ext.define_macros.append( ('APSW_USE_SQLITE_ASYNCVFS_H', '"'+path[:-1]+'h"') )
             write("AsyncVFS: "+path)
 
+        # genfkey
+        path=findgenfkey()
+        if path:
+            if sys.platform=="win32":
+                # double quotes get consumed by windows arg processing
+                ext.define_macros.append( ('APSW_USE_SQLITE_GENFKEY', '\\"'+path+'\\"') )
+            else:
+                ext.define_macros.append( ('APSW_USE_SQLITE_GENFKEY', '"'+path+'"') )
+            write("GenFKey: "+path)
+
         # done ...
         return v
    
@@ -547,12 +594,17 @@ class apsw_sdist(sparent):
                 mout.write("include "+asyncpath+"\n")
                 mout.write("include "+asyncpath[:-1]+"h\n")
 
+            if "genfkey" in fetch_parts:
+                genfkeypath=findgenfkey()
+                genfkeypath=genfkeypathpath[len(os.path.dirname(os.path.abspath(__file__)))+1:]
+                mout.write("include "+genfkeypath+"\n")
+
             mout.close()
 
 
 # We depend on every .[ch] file in src
 depends=[f for f in glob.glob("src/*.[ch]") if f!="src/apsw.c"]
-for f in (findamalgamation(), findasyncvfs()):
+for f in (findamalgamation(), findasyncvfs(), findgenfkey()):
     if f:
         depends.append(f)
 
