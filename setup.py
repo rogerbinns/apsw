@@ -275,6 +275,8 @@ class fetch(Command):
     def extractgenfkey(self, code):
         genfkey=[]
         ingkey=False
+        ast=re.compile(r"^(struct SchemaTable {)")
+        dsp=re.compile(r"^(int detectSchemaProblem\()")
         for line in fixupcode(code):
             if "** Begin genfkey logic." in line:
                 ingkey=True
@@ -286,6 +288,8 @@ class fetch(Command):
                 genfkey.append(line)
                 break
             if ingkey:
+                line=ast.sub(r"static \1", line)
+                line=dsp.sub(r"static \1", line)
                 genfkey.append(line)
 
         if not genfkey:
