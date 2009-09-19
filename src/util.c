@@ -331,7 +331,7 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
     } while(0)
          
 /* It is 2009 - why do I have to write this? */
-char *apsw_strdup(const char *source)
+static char *apsw_strdup(const char *source)
 {
   char *res=PyMem_Malloc(strlen(source)+1);
   if(res)
