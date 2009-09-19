@@ -3035,7 +3035,7 @@ struct GenfkeyCtx
   int drop;
 
   PyObject *sqllist;
-  char *error;
+  PyObject *errorlist;
   PyObject *cursor_execute;
 };
 
@@ -3045,15 +3045,60 @@ struct GenfkeyCtx
 static int genfkey_callback(void *pCtx, int eType, const char *sql)
 {
   struct GenfkeyCtx *ctx=(struct GenfkeyCtx*)pCtx;
+  int retval=SQLITE_OK;
+  PyGILState_STATE gilstate;
+
+  assert(eType==GENFKEY_ERROR || eType==GENFKEY_CREATETRIGGER || eType==GENFKEY_DROPTRIGGER);
+  gilstate=PyGILState_Ensure();
   
-  assert(eType==GENFKEY_ERROR || etype==GENFKEY_CREATETRIGGER || etype==GENFKEY_DROPTRIGGER);
 
   if(eType==GENFKEY_ERROR && !ctx->ignore_errors)
     {
-      if(!ctx->error)
-	ctx->error=apsw_strdup(sql);
+      PyObject *newstr=NULL, *newline=NULL, *sqlstr=NULL;
+      retval=SQLITE_ERROR;
       ctx->nerrors++;
-      return SQLITE_ERROR;
+      
+      APSW_FAULT_INJECT(GenfkeySQLConvFails,
+			sqlstr=convertutf8string(sql),
+			sqlstr=PyErr_NoMemory());
+      if(!sqlstr) 
+	goto end;
+
+      if(!ctx->errorlist)
+	{
+	  ctx->errorlist=sqlstr;
+	  retval=SQLITE_OK;
+	  goto end;
+	}
+      /* add a newline */
+      APSW_FAULT_INJECT(GenfkeyNewlineFails,
+			newline=convertutf8string("\n"),
+			newline=PyErr_NoMemory());
+      if(!newline) 
+	goto end;
+      APSW_FAULT_INJECT(GenfkeyNewlineConcatFails,
+			newstr=PyUnicode_Concat(ctx->errorlist, newline),
+			newstr=PyErr_NoMemory());
+      Py_DECREF(newline);
+      if(!newstr) 
+	{
+	  Py_DECREF(sqlstr);
+	  goto end;
+	}
+      Py_DECREF(ctx->errorlist);
+      ctx->errorlist=newstr;
+      APSW_FAULT_INJECT(GenfkeyErrorConcatFails,
+			newstr=PyUnicode_Concat(ctx->errorlist, sqlstr),
+			newstr=PyErr_NoMemory());
+      Py_DECREF(sqlstr);
+      if(!newstr)
+	goto end;
+
+      Py_DECREF(ctx->errorlist);
+      ctx->errorlist=newstr;
+
+      retval=SQLITE_OK;
+      goto end;
     }
 
   if( ctx->nerrors==0 && /* no errors */
@@ -3064,46 +3109,85 @@ static int genfkey_callback(void *pCtx, int eType, const char *sql)
       if(ctx->cursor_execute)
 	{
 	  PyObject *args=NULL, *pysql=NULL, *res=NULL;
-	  int ret=SQLITE_OK;
+	  int ret=SQLITE_ERROR;
 	  
-	  args=PyTuple_New(1);
-	  if(!args) goto endblock;
-	  pysql=convertutf8string(sql);
-	  if(!pysql) goto endblock;
+	  APSW_FAULT_INJECT(GenfkeyExecTupleNewFails,
+			    args=PyTuple_New(1),
+			    args=PyErr_NoMemory());
+	  if(!args) 
+	    goto endblock;
+	  APSW_FAULT_INJECT(GenfkeySQLConvertFails,
+			    pysql=convertutf8string(sql),
+			    pysql=PyErr_NoMemory());
+	  if(!pysql) 
+	    goto endblock;
 	  PyTuple_SET_ITEM(args, 0, pysql);
 	  pysql=NULL;
 
 	  res=PyEval_CallObject(ctx->cursor_execute, args);
 	  if(!res)
 	    ret=MakeSqliteMsgFromPyException(NULL);
+	  else
+	    ret=SQLITE_OK;
 
 	endblock:
 	  assert(!pysql);
 	  Py_XDECREF(args);
 	  Py_XDECREF(res);
-	  return ret;
+	  retval=ret;
+	  goto end;
 	}
       /* save string to list */
       {
-	PyObject *pysql=NULL;
-	pysql=convertutf8string(sql);
+	PyObject *pysql=NULL, *newstr=NULL;
+	APSW_FAULT_INJECT(GenfkeySaveSQLConvertFails,
+			  pysql=convertutf8string(sql),
+			  pysql=PyErr_NoMemory());
 	if(!pysql)
 	  goto blockerror;
 
-	PyString_Concat(&ctx->sqllist, pysql);
-	if(!ctx->sqllist) goto blockerror;
+	APSW_FAULT_INJECT(GenfkeySaveSQLConcatFails,
+			  newstr=PyUnicode_Concat(ctx->sqllist, pysql),
+			  newstr=PyErr_NoMemory());
+	if(!newstr) 
+	  goto blockerror;
+	Py_DECREF(ctx->sqllist);
+	ctx->sqllist=newstr;
 	Py_DECREF(pysql);
-	return SQLITE_OK;
+	goto end;
       blockerror:
 	Py_XDECREF(pysql);
-	return MakeSqliteMsgFromPyException(NULL);
+	retval=MakeSqliteMsgFromPyException(NULL);
+	goto end;
       }
     }
 
   /* ignore it */
-  return SQLITE_OK;
+
+ end:
+  PyGILState_Release(gilstate);
+  return retval;
 }
 
+/** .. method:: genfkey(drop=True, ignore_errors=False, execsql=False) -> sql
+
+  Calls the :ref:`genfkey extension <ext-genfkey>` which emulates
+  foreign key constraints by using triggers.
+
+  :param drop: By default any existing genkey created triggers are dropped first.
+  :param ignore_errors: The initial parsing of the schema and triggers
+       may result in errors such as foreign keys against tables that do not
+       exist or columns that are not unique.  If *ignore_errors* is True
+       then those errors are ignored.
+  :param execsql: By default the SQL code is returned as a string.  If *execsql* is True
+        then the code is immediately executed.  Any :ref:`execution tracers <tracing>` you
+        have installed will see the SQL as it is executed.
+  :returns: If *execsql* is True then None is returned, else the sql is returned for
+        you to execute or store as appropriate.
+  :raises GenfkeyError: There are errors in the foreign key constraints and *ignore_errors*
+        is False.  The exception text is directly from the tool and describes the errors
+        found.
+*/
 static PyObject *
 Connection_genfkey(Connection *self, PyObject *args, PyObject *kwargs)
 {
@@ -3111,6 +3195,9 @@ Connection_genfkey(Connection *self, PyObject *args, PyObject *kwargs)
   int rc, execsql=0;
   struct GenfkeyCtx ctx;
   PyObject *res=NULL;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
 
   memset(&ctx, 0, sizeof(ctx));
   ctx.drop=1;
@@ -3123,22 +3210,31 @@ Connection_genfkey(Connection *self, PyObject *args, PyObject *kwargs)
     {
       PyObject *cursor=Call_PythonMethod((PyObject*)self, "cursor", 1, NULL);
       assert(cursor);
-      ctx.cursor_execute=PyObject_GetAttrString(cursor, "execute");
+      APSW_FAULT_INJECT(GenfkeyGetCursorExecuteFails,
+			ctx.cursor_execute=PyObject_GetAttrString(cursor, "execute"),
+			ctx.cursor_execute=PyErr_NoMemory());
       Py_DECREF(cursor);
-      if(!ctx.cursor_execute) goto finally;
+      if(!ctx.cursor_execute) 
+	goto finally;
     }
   else
     {
-      ctx.sqllist=PyUnicode_FromUnicode(NULL, 0);
-      if(!ctx.sqllist) goto finally;
+      APSW_FAULT_INJECT(GenfkeySQLListAllocateFails,
+			ctx.sqllist=PyUnicode_FromUnicode(NULL, 0),
+			ctx.sqllist=PyErr_NoMemory());
+      if(!ctx.sqllist) 
+	goto finally;
     }
 
-  rc=genfkey_create_triggers(self->db, "main", &ctx, genfkey_callback);
+  INUSE_CALL(_PYSQLITE_CALL_V(rc=genfkey_create_triggers(self->db, "main", &ctx, genfkey_callback)));
+  if(ctx.errorlist && !PyErr_Occurred())
+    {
+      rc=SQLITE_ERROR;
+      PyErr_SetObject(ExcGenfkey, ctx.errorlist);
+    }
   if(rc!=SQLITE_OK)
     {
-      if(!PyErr_Occurred())
-	/* dig error text out of ctx-> error */
-	PyErr_Format(APSWException, "Genfkey error: %s", ctx.error?ctx.error:"<unknown>");
+      assert(PyErr_Occurred());
       goto finally;
     }
   assert(!PyErr_Occurred());
@@ -3150,7 +3246,6 @@ Connection_genfkey(Connection *self, PyObject *args, PyObject *kwargs)
 
  finally:
   Py_CLEAR(ctx.sqllist);
-  PyMem_Free(ctx.error);
   Py_CLEAR(ctx.cursor_execute);
   return res;
 }

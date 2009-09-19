@@ -11,6 +11,8 @@ else
 fi
 
 # Measure code coverage
+GCOVOPTS="-b -c"
+GCOVOPTS=""
 rm -f *.gcda *.gcov *.gcno apsw.so
 # find python
 PYTHON=python # use whatever is in the path
@@ -22,6 +24,10 @@ if [ -f sqlite3async.c ]
 then
    CFLAGS='-DAPSW_USE_SQLITE_ASYNCVFS_C="sqlite3async.c" -DAPSW_USE_SQLITE_ASYNCVFS_H="sqlite3async.h"'
 fi
+if [ -f sqlite3genfkey.c ]
+then
+   CFLAGS="$CFLAGS -DAPSW_USE_SQLITE_GENFKEY=\"sqlite3genfkey.c\""
+fi
 set -x
 gcc -pthread -fno-strict-aliasing -ftest-coverage -fprofile-arcs -g -fPIC -Wall -Wextra $CFLAGS -DEXPERIMENTAL -DSQLITE_DEBUG -DAPSW_USE_SQLITE_AMALGAMATION=\"sqlite3.c\" -DAPSW_NO_NDEBUG -DAPSW_TESTFIXTURES -I$INCLUDEDIR -I. -Isqlite3 -Isrc -c src/apsw.c
 gcc -pthread -ftest-coverage -fprofile-arcs -g -shared apsw.o -o apsw.so
@@ -29,6 +35,6 @@ gcc -fPIC -shared -Isqlite3 -I. -o testextension.sqlext -Isqlite3 src/testextens
 set +e
 $PYTHON $args
 res=$?
-gcov -b -c src/apsw.c > /dev/null
+gcov $GCOVOPTS src/apsw.c > /dev/null
 python tools/coverageanalyser.py
 exit $res

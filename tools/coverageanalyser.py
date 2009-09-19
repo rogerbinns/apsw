@@ -28,7 +28,7 @@ names=glob.glob("*.c.gcov")
 names.sort()
 
 for f in names:
-    if f in ("sqlite3.c.gcov", "sqlite3async.c.gcov"):
+    if f.startswith("sqlite3"):
         continue
     fileexec=0
     filetotal=0

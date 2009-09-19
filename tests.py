@@ -595,7 +595,7 @@ class APSW(unittest.TestCase):
         vals=("a simple string",  # "ascii" string
               "0123456789"*200000, # a longer string
               u(r"a \u1234 unicode \ufe54 string \u0089"),  # simple unicode string
-              u(r"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET} "), # funky unicode
+              u(r"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET} "), # funky unicode or an episode of b5
               u(r"\N{MUSICAL SYMBOL G CLEF}"), # http://www.cmlenz.net/archives/2008/07/the-truth-about-unicode-in-python
               97, # integer
               2147483647,   # numbers on 31 bit boundary (32nd bit used for integer sign), and then
@@ -4859,9 +4859,7 @@ class APSW(unittest.TestCase):
         
 
     def testAsyncVFS(self):
-        if not hasattr(apsw, "async_initialize"):
-            return
-
+        "Tests the asynchronous VFS"
         self.assertRaises(TypeError, apsw.async_initialize)
         self.assertRaises(TypeError, apsw.async_initialize, 3, 4)
         self.assertRaises(TypeError, apsw.async_initialize, None, 3)
@@ -4942,7 +4940,66 @@ class APSW(unittest.TestCase):
         # catch any exceptions in worker thread
         t.go()
         
-        
+
+    def testGenfkey(self):
+        "Tests the foreign key emulation via triggers functionality"
+        # First simple test - does it work?
+        schema="""
+          CREATE TABLE parent(a, b, c, PRIMARY KEY(a, b));
+          CREATE TABLE child(d, e, f, FOREIGN KEY(d, e) REFERENCES parent(a, b));
+          """
+        shouldfail="insert into child values(3,4,5)"
+        cur=self.db.cursor()
+        cur.execute(schema)
+        # genfkey not run yet so this should work
+        cur.execute(shouldfail)
+        self.db.genfkey(execsql=True)
+        self.assertRaises(apsw.ConstraintError, cur.execute, shouldfail)
+
+        # check drop flag works
+        sql=self.db.genfkey(drop=True)
+        self.assert_("DROP" in sql)
+        sql=self.db.genfkey(drop=False)
+        self.assert_("DROP" not in sql)
+
+        # errors flag
+        for i in (1,2):
+            cur.execute("CREATE TABLE baddy%d(d,e,f, FOREIGN KEY(d, e) REFERENCES notexists(a, b))" % (i,))
+        sql=self.db.genfkey(ignore_errors=True)
+        self.assert_("baddy" not in sql)
+        try:
+            self.db.genfkey()
+        except apsw.GenfkeyError:
+            value=sys.exc_info()[1]
+            self.assert_("baddy1" in value.args[0])
+            self.assert_("baddy2" in value.args[0])
+        cur.execute("drop table baddy1;drop table baddy2")
+
+        # make execute fail
+        def failer(*args):
+            1/0
+        self.db.setexectrace(failer)
+        self.assertRaises(ZeroDivisionError, self.db.genfkey, execsql=True)
+        self.db.setexectrace(None)
+        # should work fine now
+        self.db.genfkey(execsql=True)
+
+        # arg parsing
+        self.assertRaises(TypeError, self.db.genfkey, spuds=3)
+        self.assertRaises(TypeError, self.db.genfkey, "three")
+
+        # lots of unicode
+        def uc(s):
+            return s.replace("parent", u(r"[$\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}$\N{LATIN SMALL LETTER O WITH DIAERESIS}\N{LATIN SMALL LETTER A WITH TILDE}]")).\
+                   replace("child", u(r"[\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}\N{WHITE STAR}]")).\
+                   replace("a,", u(r"[\N{LIGHTNING}\N{COMET}\N{MUSICAL SYMBOL G CLEF}],"))
+        schema2=uc(schema)
+        sf2=uc(shouldfail)
+        cur.execute("drop table parent; drop table child")
+        cur.execute(schema2)
+        self.db.genfkey()
+        self.db.genfkey(execsql=True)
+        self.assertRaises(apsw.ConstraintError, cur.execute, sf2)
         
     # Note that faults fire only once, so there is no need to reset
     # them.  The testing for objects bigger than 2GB is done in
@@ -5614,6 +5671,51 @@ class APSW(unittest.TestCase):
             apsw.faultdict["AsyncControlFails"]=True
             self.assertRaises(apsw.NoMemError, apsw.async_control, apsw.SQLITEASYNC_GET_HALT)
 
+        # A bazillion issues with strings in genfkey
+        db=apsw.Connection(":memory:")
+        if hasattr(db, "genfkey"):
+            cur=db.cursor()
+            # good ones
+            cur.execute("CREATE TABLE parent(a, b, c, PRIMARY KEY(a, b));CREATE TABLE child(d, e, f, FOREIGN KEY(d, e) REFERENCES parent(a, b));")
+            # bad ones
+            cur.execute("CREATE TABLE bad1(d,e,f, FOREIGN KEY(d,e) REFERENCES notexist(a,b));CREATE TABLE bad2(a, FOREIGN KEY(a) REFERENCES another(e))")
+            ## GenfkeySQLConvFails
+            apsw.faultdict["GenfkeySQLConvFails"]=True
+            self.assertRaises(MemoryError, db.genfkey)
+            ## GenfkeyNewlineFails
+            apsw.faultdict["GenfkeyNewlineFails"]=True
+            self.assertRaises(MemoryError, db.genfkey)
+            ## GenfkeyNewlineConcatFails
+            apsw.faultdict["GenfkeyNewlineConcatFails"]=True
+            self.assertRaises(MemoryError, db.genfkey)
+            ## GenfkeyErrorConcatFails
+            apsw.faultdict["GenfkeyErrorConcatFails"]=True
+            self.assertRaises(MemoryError, db.genfkey)
+
+            # don't need errors any more
+            cur.execute("drop table bad1; drop table bad2")
+
+            ## GenfkeyExecTupleNewFails
+            apsw.faultdict["GenfkeyExecTupleNewFails"]=True
+            self.assertRaises(MemoryError, db.genfkey, execsql=True)
+            ## GenfkeySQLConvertFails
+            apsw.faultdict["GenfkeySQLConvertFails"]=True
+            self.assertRaises(MemoryError, db.genfkey, execsql=True)
+            ## GenfkeySaveSQLConvertFails
+            apsw.faultdict["GenfkeySaveSQLConvertFails"]=True
+            self.assertRaises(MemoryError, db.genfkey)
+            ## GenfkeySaveSQLConcatFails
+            apsw.faultdict["GenfkeySaveSQLConcatFails"]=True
+            self.assertRaises(MemoryError, db.genfkey)
+
+            ## GenfkeyGetCursorExecuteFails
+            apsw.faultdict["GenfkeyGetCursorExecuteFails"]=True
+            self.assertRaises(MemoryError, db.genfkey, execsql=True)
+            ## GenfkeySQLListAllocateFails
+            apsw.faultdict["GenfkeySQLListAllocateFails"]=True
+            self.assertRaises(MemoryError, db.genfkey)
+            
+
 
 testtimeout=False # timeout testing adds several seconds to each run
 def testdb(filename="testdb2", vfsname="apswtest", closedb=True):
@@ -5720,6 +5822,12 @@ def setup(write=write):
     memdb=apsw.Connection(":memory:")
     if not getattr(memdb, "enableloadextension", None):
         del APSW.testLoadExtension
+
+    if not hasattr(apsw, "async_initialize"):
+        del APSW.testAsyncVFS
+
+    if not hasattr(memdb, "genfkey"):
+        del APSW.testGenfkey
 
     # We can do extension loading but no extension present ...
     if getattr(memdb, "enableloadextension", None) and not os.path.exists(LOADEXTENSIONFILENAME):
