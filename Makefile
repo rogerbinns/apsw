@@ -1,9 +1,9 @@
 
-VERSION=3.6.18-r1
-VERDIR=apsw-$(VERSION)
+SQLITEVERSION=3.6.18
+APSWSUFFIX=-r1
 
-# setup.py options for windows dist
-WINOPTS=--enable=fts3,fts3_parenthesis,rtree
+VERSION=$(SQLITEVERSION)$(APSWSUFFIX)
+VERDIR=apsw-$(VERSION)
 
 GENDOCS = \
 	doc/blob.rst \
@@ -37,7 +37,7 @@ $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
 	env http_proxy= python tools/code2rst.py $< $@
 
 build_ext:
-	python setup.py fetch --all build_ext --inplace --force
+	python setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --force --enable-all-extensions
 
 linkcheck:
 	make VERSION=$(VERSION) -C doc linkcheck 
@@ -63,26 +63,30 @@ showsymbols:
 	test -f apsw.so
 	set +e; nm --extern-only --defined-only apsw.so | egrep -v ' (__bss_start|_edata|_end|_fini|_init|initapsw)$$' ; test $$? -eq 1 || false
 
+WINBUILD=fetch --version=$(SQLITEVERSION) build --enable-all-extensions --compile=mingw32 install build_test_extension test bdist_wininst
+WINMSBUILD=fetch --version=$(SQLITEVERSION) build --enable-all-extensions install build_test_extension test bdist_wininst
+
 # You need to use the MinGW version of make. 
 compile-win:
 	-del /q apsw.pyd
 	cmd /c del /s /q dist
 	cmd /c del /s /q build
 	-cmd /c md dist
-	c:/python23/python setup.py build --compile=mingw32 install $(WINOPTS) build_test_extension test bdist_wininst
-	c:/python24/python setup.py build --compile=mingw32 install $(WINOPTS) build_test_extension test bdist_wininst
-	c:/python25/python setup.py build --compile=mingw32 install $(WINOPTS) build_test_extension test bdist_wininst
+	c:/python23/python setup.py $(WINBUILD)
+	c:/python24/python setup.py $(WINBUILD)
+	c:/python25/python setup.py $(WINBUILD)
 # See http://bugs.python.org/issue3308 if 2.6+ or 3.0+ fail to run with
 # missing symbols/dll issues
-	c:/python26/python setup.py build --compile=mingw32 install $(WINOPTS) build_test_extension test bdist_wininst
-	c:/python30/python setup.py build --compile=mingw32 install $(WINOPTS) build_test_extension test bdist_wininst
+	c:/python26/python setup.py $(WINBUILD)
+	c:/python30/python setup.py $(WINBUILD)
         # They went out of their way to prevent mingw from working with 3.1.  You
-        # have to install msvc.  Google for "visual c++ express edition".
-	c:/python31/python setup.py build install $(WINOPTS) build_test_extension test bdist_wininst
+        # have to install msvc.  Google for "visual c++ express edition" and hope the right
+	# version is still available.
+	c:/python31/python setup.py $(WINMSBUILD)
 
 # I can't figure out a way to include the docs into the source zip
 # but with the path in the zip being different than the path in the
-# filesystem using sdist
+# filesystem using sdist so manually hack it.
 source_nocheck: docs
 	python setup.py sdist --formats zip --no-defaults
 	set -e ; cd doc/build ; rm -rf $(VERDIR)/doc ; mkdir -p $(VERDIR) ; ln -s ../html $(VERDIR)/doc ; zip -9rDq ../../dist/$(VERDIR).zip $(VERDIR) ; rm -rf $(VERDIR)
@@ -92,11 +96,11 @@ source: source_nocheck
 	mkdir -p work
 	rm -rf work/$(VERDIR)
 	cd work ; unzip -q ../dist/$(VERDIR).zip
-	# Make certain various files do/do not exist
+# Make certain various files do/do not exist
 	for f in doc/vfs.html doc/_sources/pysqlite.txt tools/apswtrace.py ; do test -f work/$(VERDIR)/$$f ; done
 	for f in sqlite3.c sqlite3/sqlite3.c ; do test ! -f work/$(VERDIR)/$$f ; done
-	# Test code works
-	cd work/$(VERDIR) ; python setup.py fetch --all build_ext --inplace --enable=fts3,rtree,icu build_test_extension test
+# Test code works
+	cd work/$(VERDIR) ; python setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --enable=fts3,rtree,icu build_test_extension test
 
 upload:
 	@if [ -z "$(GC_USER)" ] ; then echo "Specify googlecode user by setting GC_USER environment variable" ; exit 1 ; fi

@@ -4939,6 +4939,10 @@ class APSW(unittest.TestCase):
 
         # catch any exceptions in worker thread
         t.go()
+
+        # clean up so the test can be run multiple times
+        self.db.close()
+        apsw.async_shutdown()
         
 
     def testGenfkey(self):

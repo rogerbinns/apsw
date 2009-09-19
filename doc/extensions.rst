@@ -1,3 +1,7 @@
+.. currentmodule:: apsw
+
+.. _extensions:
+
 Extensions
 **********
 
@@ -43,8 +47,19 @@ telling it when the writer code should exit.  This is a simple example::
     # Tell worker to exit now
     apsw.async_control(apsw.SQLITEASYNC_HALT, apsw.SQLITEASYNC_HALT_NOW)
 
+.. _ext-fts3:
+
 FTS3
 ====
+
+This is the third version of the `full text search
+<http://www.sqlite.org/cvstrac/wiki?p=FtsUsage>`__ extension.  It
+makes it easy to find words in multi-word text fields.  You must
+enable the extension via :ref:`setup.py build flags
+<setup_build_flags>` before it will work.  There are no additional
+APIs and the `documented SQL
+<http://www.sqlite.org/cvstrac/wiki?p=FtsUsage>`__ works as is.
+
 
 
 .. _ext-genfkey:
@@ -82,9 +97,28 @@ To use create your tables specifying the constraints then run
       """)
     db.genfkey(execsql=True)
 
+.. _ext-icu:
 
 ICU
 ===
 
+The ICU extension provides an `International Components for Unicode
+<http://en.wikipedia.org/wiki/International_Components_for_Unicode>`__
+interface, in particular enabling you do sorting and regular
+expressions in a locale aware way.  The `documentation
+<http://www.sqlite.org/cvstrac/fileview?f=sqlite/ext/icu/README.txt>`__
+shows how to use it.
+
+.. _ext-rtree:
+
 RTree
 =====
+
+The RTree extension provides a `spatial table
+<http://en.wikipedia.org/wiki/R-tree>`_ - see the `README
+<http://www.sqlite.org/cvstrac/fileview?f=sqlite/ext/rtree/README>`__.
+You must enable the extension via :ref:`setup.py build flags
+<setup_build_flags>` before it will work.  There are no additional
+APIs and the `documented SQL
+<http://www.sqlite.org/cvstrac/fileview?f=sqlite/ext/rtree/README>`__
+works as is.

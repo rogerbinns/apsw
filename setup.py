@@ -379,25 +379,29 @@ class fetch(Command):
 # We allow enable/omit to be specified to build and then pass them to build_ext
 build_enable=None
 build_omit=None
+build_enable_all_extensions=False
 
 bparent=build.build
 class apsw_build(bparent):
     user_options=bparent.user_options+\
                   [ ("enable=", None, "Enable SQLite options (comma seperated list)"),
                     ("omit=", None, "Omit SQLite functionality (comma seperated list)"),
+                    ("enable-all-extensions", None, "Enable all SQLite extensions"),
                     ]
-
+    boolean_options=bparent.boolean_options+["enable-all-extensions"]
     
     def initialize_options(self):
         v=bparent.initialize_options(self)
         self.enable=None
         self.omit=None
+        self.enable_all_extensions=build_enable_all_extensions
         return v
 
     def finalize_options(self):
-        global build_enable, build_omit
+        global build_enable, build_omit, build_enable_all_extensions
         build_enable=self.enable
         build_omit=self.omit
+        build_enable_all_extensions=self.enable_all_extensions
         return bparent.finalize_options(self)
 
 def findamalgamation():
@@ -422,23 +426,42 @@ def findgenfkey():
         return path
     return None
 
+def find_in_path(name):
+    for loc in os.getenv("PATH").split(os.pathsep):
+        f=os.path.abspath(os.path.join(loc, name))
+        if os.path.exists(f) or os.path.exists(f.lower()) or os.path.exists(f.lower()+".exe"):
+            return f
+    return None
+
 beparent=build_ext.build_ext
 class apsw_build_ext(beparent):
 
     user_options=beparent.user_options+\
                   [ ("enable=", None, "Enable SQLite options (comma seperated list)"),
                     ("omit=", None, "Omit SQLite functionality (comma seperated list)"),
+                    ("enable-all-extensions", None, "Enable all SQLite extensions"),
                     ]
+    boolean_options=beparent.boolean_options+["enable-all-extensions"]
 
     
     def initialize_options(self):
         v=beparent.initialize_options(self)
         self.enable=build_enable
         self.omit=build_omit
+        self.enable_all_extensions=build_enable_all_extensions
         return v
    
     def finalize_options(self):
         v=beparent.finalize_options(self)
+
+        if self.enable_all_extensions:
+            exts=["fts3", "fts3_parenthesis", "rtree"]
+            if find_in_path("icu-config"):
+                exts.append("icu")
+            if not self.enable:
+                self.enable=",".join(exts)
+            else:
+                self.enable=self.enable+","+",".join(exts)
 
         ext=self.extensions[0]
 

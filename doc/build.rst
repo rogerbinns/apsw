@@ -72,8 +72,8 @@ re-fetching.
 | | :option:`--all`                      | Gets all components listed below.                                                    |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--sqlite`                   | Automatically downloads the `SQLite amalgamation                                     |
-|                                        | <http://www.sqlite.org/cvstrac/wiki?p=TheAmalgamation>` On non-Windows platforms it  |
-|                                        | will also work out what compile flags SQLite needs (for example                      |
+|                                        | <http://www.sqlite.org/cvstrac/wiki?p=TheAmalgamation>`__ On non-Windows platforms   |
+|                                        | it will also work out what compile flags SQLite needs (for example                   |
 |                                        | :const:`HAVE_USLEEP`, :const:`HAVE_LOCALTIME_R`). The amalgamation is the            |
 |                                        | preferred way to use SQLite as you have total control over what components are       |
 |                                        | included or excluded (see below) and have no dependencies on any existing            |
@@ -86,6 +86,8 @@ re-fetching.
 |                                        | <ext-genfkey>`.                                                                      |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 
+.. _setup_build_flags:
+
 build/build_ext
 ---------------
 
@@ -97,26 +99,26 @@ the build and/or build_ext commands of :file:`setup.py`.
 Note that the options do not accumulate.  If you want to specify multiple enables or omits then you
 need to give the flag once and giving a comma seperated list.  For example:
 
-  | python setup.py build --enable=fts3,rtree,icu
+  | python setup.py build --enable=fts3,fts3_parenthesis,rtree,icu
 
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | build/build_ext flag                   | Result                                                                               |
 +========================================+======================================================================================+
-| | :option:`--enable=fts3`              | Enables the `full text search <http://www.sqlite.org/cvstrac/wiki?p=FtsUsage>`_      |
-|                                        | extension.                                                                           |
-|                                        | This flag only helps when using the amalgamation. If not using the                   | 
-|                                        | amalgamation then you need to seperately ensure fts is enabled in the SQLite         |
-|                                        | install.                                                                             |
+| | :option:`--enable-all-extensions`    | Enables the FTS3, RTree and ICU extensions (if *icu-config* is on your path).        |
 +----------------------------------------+--------------------------------------------------------------------------------------+
-| | :option:`--enable=rtree`             | Enables the spatial table `rtree <http://en.wikipedia.org/wiki/R-tree>`_             |
-|                                        | (`README <http://www.sqlite.org/cvstrac/fileview?f=sqlite/ext/rtree/README>`_)       |
+| | :option:`--enable=fts3`              | Enables the :ref:`full text search extension <ext-fts3>`.                            |
+|                                        | This flag only helps when using the amalgamation. If not using the                   | 
+|                                        | amalgamation then you need to seperately ensure fts3 is enabled in the SQLite        |
+|                                        | install. You are likely to want the `parenthesis option                              |
+|                                        | <http://www.sqlite.org/compile.html#enable_fts3_parenthesis>` on unless you have     |
+|                                        | legacy code (`--enable-all-extensions` turns it on).                                 |
++----------------------------------------+--------------------------------------------------------------------------------------+
+| | :option:`--enable=rtree`             | Enables the :ref:`spatial table extension <ext-rtree>`.                              |
 |                                        | This flag only helps when using the amalgamation. If not using the                   | 
 |                                        | amalgamation then you need to seperately ensure rtree is enabled in the SQLite       |
 |                                        | install.                                                                             |
 +----------------------------------------+--------------------------------------------------------------------------------------+
-| | :option:`--enable=icu`               | Enables the `International Components for Unicode                                    |
-|                                        | <http://en.wikipedia.org/wiki/International_Components_for_Unicode>`_  extension     |
-|                                        | (`README.txt <http://www.sqlite.org/cvstrac/fileview?f=sqlite/ext/icu/README.txt>`_) |
+| | :option:`--enable=icu`               | Enables the :ref:`International Components for Unicode extension <ext-icu>`.         |
 |                                        | Note that you must have the ICU libraries on your machine which setup will           |
 |                                        | automatically try to find using :file:`icu-config`.                                  |
 |                                        | This flag only helps when using the amalgamation. If not using the                   | 
@@ -183,20 +185,21 @@ Recommended
 ===========
 
 These instructions show how to build automatically downloading and
-using the amalgamation. Any existing SQLite on your system is ignored
-at build time and runtime. (Note that you can even use APSW in the
-same process as a different SQLite is used by other libraries - this
-happens a lot on Mac.) You should follow these instructions with your
-current directory being where you extracted the APSW source to.
+using the amalgamation plus other :ref:`extensions`. Any existing SQLite on
+your system is ignored at build time and runtime. (Note that you can
+even use APSW in the same process as a different SQLite is used by
+other libraries - this happens a lot on Mac.) You should follow these
+instructions with your current directory being where you extracted the
+APSW source to.
 
   Windows::
 
       # Leave out --compile=mingw32 flag if using Microsoft compiler
-    > python setup.py fetch --sqlite build --compile=mingw32 install test
+    > python setup.py fetch --all build --enable-all-extensions --compile=mingw32 install test
 
   Mac/Linux etc::
 
-    $ python setup.py fetch --sqlite install test 
+    $ python setup.py fetch --all build --enable-all-extensions install test 
 
 .. note::
 
@@ -208,7 +211,7 @@ The extension just turns into a single file apsw.so (Linux/Mac) or
 apsw.pyd (Windows). You don't need to install it and can drop it into
 any directory that is more convenient for you and that your code can
 reach. To just do the build and not install, leave out *install* from
-the lines above and add *build* if it isn't already there.
+the lines above.
 
 The test suite will be run. It will print the APSW file used, APSW and
 SQLite versions and then run lots of tests all of which should pass.
@@ -229,7 +232,8 @@ distribution and build a rpm using those components::
 Testing
 =======
 
-SQLite itself is extensively tested. It has considerably more code
+SQLite itself is `extensively tested
+<http://www.sqlite.org/testing.html>`__. It has considerably more code
 dedicated to testing than makes up the actual database functionality.
 
 APSW includes a :file:`tests.py` file which uses the standard Python
