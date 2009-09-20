@@ -109,13 +109,6 @@ The following exceptions happen when APSW detects various problems.
 
   The VFS file is closed so the operation cannot be performed.
 
-.. exception:: GenfkeyError
-
-  This exception is raised by :meth:`Connection.genfkey` (part of the
-  :ref:`genfkey extension <ext-genfkey>`) when there are errors in the
-  foreign keys such as references to tables that do not exist or
-  columns that are not unique.
-
 SQLite Exceptions
 =================
 

@@ -19,7 +19,6 @@ static PyObject *ExcCursorClosed; /* cursor object was closed when function call
 static PyObject *ExcConnectionClosed; /* connection was closed when function called */
 static PyObject *ExcVFSNotImplemented; /* base vfs doesn't implment function */
 static PyObject *ExcVFSFileClosed;     /* attempted operation on closed file */
-static PyObject *ExcGenfkey; /* foreign key error */
 
 static void make_exception(int res, sqlite3 *db);
 
@@ -155,8 +154,7 @@ static int init_exceptions(PyObject *m)
     {&ExcConnectionClosed, "ConnectionClosedError"},
     {&ExcCursorClosed, "CursorClosedError"},
     {&ExcVFSNotImplemented, "VFSNotImplementedError"},
-    {&ExcVFSFileClosed, "VFSFileClosedError"},
-    {&ExcGenfkey, "GenfkeyError"}
+    {&ExcVFSFileClosed, "VFSFileClosedError"}
   };
 
 

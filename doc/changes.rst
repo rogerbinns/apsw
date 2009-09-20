@@ -25,10 +25,6 @@ planning.
 extension for you.  If the source is present when APSW is built then
 it will be automatically included and the API provided.
 
-:file:`setup.py` can automatically fetch the :ref:`ext-genfkey`
-extension for you.  If the source is present when APSW is built then
-it will be automatically included and the API provided.
-
 3.6.18-r1
 =========
 

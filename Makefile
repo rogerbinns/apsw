@@ -59,7 +59,7 @@ header:
 # the funky test stuff is to exit successfully when grep has rc==1 since that means no lines found.
 showsymbols:
 	rm -f apsw.so
-	python setup.py build_ext --inplace --force --enable=fts3,rtree,icu
+	python setup.py build_ext --inplace --force --enable-all-extensions
 	test -f apsw.so
 	set +e; nm --extern-only --defined-only apsw.so | egrep -v ' (__bss_start|_edata|_end|_fini|_init|initapsw)$$' ; test $$? -eq 1 || false
 
@@ -100,7 +100,7 @@ source: source_nocheck
 	for f in doc/vfs.html doc/_sources/pysqlite.txt tools/apswtrace.py ; do test -f work/$(VERDIR)/$$f ; done
 	for f in sqlite3.c sqlite3/sqlite3.c ; do test ! -f work/$(VERDIR)/$$f ; done
 # Test code works
-	cd work/$(VERDIR) ; python setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --enable=fts3,rtree,icu build_test_extension test
+	cd work/$(VERDIR) ; python setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --enable-all-extensions build_test_extension test
 
 upload:
 	@if [ -z "$(GC_USER)" ] ; then echo "Specify googlecode user by setting GC_USER environment variable" ; exit 1 ; fi

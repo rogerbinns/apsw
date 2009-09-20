@@ -60,43 +60,6 @@ enable the extension via :ref:`setup.py build flags
 APIs and the `documented SQL
 <http://www.sqlite.org/cvstrac/wiki?p=FtsUsage>`__ works as is.
 
-
-
-.. _ext-genfkey:
-
-Genfkey
-=======
-
-SQLite doesn't natively support `foreign key constraints
-<http://en.wikipedia.org/wiki/Foreign_key>`__ (where the values in one
-table are constrained by values in another such as requiring an
-employee location id in an employee table be a valid id from the
-location table).
-
-Fortunately the constraints can be emulated using triggers.  SQLite
-has had a tool known as **genfkey** for a while that does so.  It was
-originally a seperate program and is no part of the shell. See the
-`README
-<http://www.sqlite.org/cvstrac/fileview?f=sqlite/tool/genfkey.README>`__.
-
-APSW is able to provide this functionality too.  Behind the scenes the
-code is extracted from the SQLite shell (see `SQLite ticket 3687
-<http://www.sqlite.org/cvstrac/tktview?tn=3687>`__).
-
-To enable it you must have used :option:`fetch --genfkey` to
-:file:`setup.py` at some point.  It is enabled by the downloaded file
-:file:`sqlite3genfkey.c` being present in the same directory as
-:file:`setup.py`.
-
-To use create your tables specifying the constraints then run
-:meth:`Connection.genfkey`.  This is a simple example::
-
-    db.cursor().execute("""
-        CREATE TABLE parent(a, b, c, PRIMARY KEY(a, b));
-        CREATE TABLE child(d, e, f, FOREIGN KEY(d, e) REFERENCES parent(a, b));
-      """)
-    db.genfkey(execsql=True)
-
 .. _ext-icu:
 
 ICU

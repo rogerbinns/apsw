@@ -105,16 +105,14 @@ class fetch(Command):
         ("version=", None, "Which version of SQLite/components to get (default current)"),
         ("sqlite", None, "Download SQLite amalgamation"),
         ("asyncvfs", None, "Download the asynchronous vfs"),
-        ("genfkey", None, "Download the generate foreign key triggers code"),
         ("all", None, "Download all downloadable components"),
         ]
-    boolean_options=['sqlite', 'asyncvfs', 'genfkey', 'all']
+    boolean_options=['sqlite', 'asyncvfs',  'all']
 
     def initialize_options(self):
         self.version=None
         self.sqlite=False
         self.asyncvfs=False
-        self.genfkey=False
         self.all=False
 
     def finalize_options(self):
@@ -234,21 +232,6 @@ class fetch(Command):
                 raise ValueError("Unable to correctly get asyncvfs parts")
             downloaded+=1
 
-        if self.genfkey:
-            write("  Getting genfkey code")
-            data=self.download("http://www.sqlite.org/sqlite-%s.tar.gz" % (self.version,))
-            tar=tarfile.open("nonexistentname to keep old python happy", 'r', data)
-            found=0
-            for member in tar.getmembers():
-                if member.name.endswith("/src/shell.c"):
-                    self.extractgenfkey(tar.extractfile(member))
-                    found+=1
-            tar.close()
-            if found!=1:
-                write("Found shell.c %d times - should have been exactly once" % (found,), sys.stderr)
-                raise ValueError("Unable to correctly get genfkey")
-            downloaded+=1
-
         if not downloaded:
             write("You didn't specify any components to fetch.  Use")
             write("   setup.py fetch --help")
@@ -272,41 +255,6 @@ class fetch(Command):
             os.remove(n)
             raise
 
-    def extractgenfkey(self, code):
-        genfkey=[]
-        ingkey=False
-        ast=re.compile(r"^(struct SchemaTable {)")
-        dsp=re.compile(r"^(int detectSchemaProblem\()")
-        for line in fixupcode(code):
-            if "** Begin genfkey logic." in line:
-                ingkey=True
-                genfkey.append("/*\n")
-                genfkey.append(line)
-                continue
-            if "/* End genfkey logic. */" in line:
-                ingkey=False
-                genfkey.append(line)
-                break
-            if ingkey:
-                line=ast.sub(r"static \1", line)
-                line=dsp.sub(r"static \1", line)
-                genfkey.append(line)
-
-        if not genfkey:
-            write("Failed to extract genfkey code", sys.stderr)
-            raise ValueError("Unrecognised code")
-            
-        n=os.path.join(os.path.dirname(__file__), "sqlite3genfkey.c")
-        o=open(n, "wt")
-        try:
-            for l in genfkey:
-                o.write(l)
-            o.close()
-        except:
-            o.close()
-            os.remove(n)
-            raise
-    
     # A function for verifying downloads
     def verifyurl(self, url, data):
         d=["%s" % (len(data),)]
@@ -416,12 +364,6 @@ def findamalgamation():
 
 def findasyncvfs():
     path=os.path.join(os.path.dirname(os.path.abspath(__file__)), "sqlite3async.c")
-    if os.path.exists(path):
-        return path
-    return None
-
-def findgenfkey():
-    path=os.path.join(os.path.dirname(os.path.abspath(__file__)), "sqlite3genfkey.c")
     if os.path.exists(path):
         return path
     return None
@@ -572,16 +514,6 @@ class apsw_build_ext(beparent):
                 ext.define_macros.append( ('APSW_USE_SQLITE_ASYNCVFS_H', '"'+path[:-1]+'h"') )
             write("AsyncVFS: "+path)
 
-        # genfkey
-        path=findgenfkey()
-        if path:
-            if sys.platform=="win32":
-                # double quotes get consumed by windows arg processing
-                ext.define_macros.append( ('APSW_USE_SQLITE_GENFKEY', '\\"'+path+'\\"') )
-            else:
-                ext.define_macros.append( ('APSW_USE_SQLITE_GENFKEY', '"'+path+'"') )
-            write("GenFKey: "+path)
-
         # done ...
         return v
    
@@ -628,17 +560,12 @@ class apsw_sdist(sparent):
                 mout.write("include "+asyncpath+"\n")
                 mout.write("include "+asyncpath[:-1]+"h\n")
 
-            if "genfkey" in fetch_parts:
-                genfkeypath=findgenfkey()
-                genfkeypath=genfkeypathpath[len(os.path.dirname(os.path.abspath(__file__)))+1:]
-                mout.write("include "+genfkeypath+"\n")
-
             mout.close()
 
 
 # We depend on every .[ch] file in src
 depends=[f for f in glob.glob("src/*.[ch]") if f!="src/apsw.c"]
-for f in (findamalgamation(), findasyncvfs(), findgenfkey()):
+for f in (findamalgamation(), findasyncvfs()):
     if f:
         depends.append(f)
 
