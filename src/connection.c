@@ -3040,22 +3040,26 @@ struct GenfkeyCtx
 };
 
 /* This is substantially similar in spirit to genfkeyCmdCb in SQLite's
-   shell.c */
+   shell.c.
+
+   I used to return errors from this routine (ie something other than
+   SQLITE_OK) but that resulted in memory and file leaks from the
+   SQLite code, so now SQLITE_OK is always returned.
+*/
 
 static int genfkey_callback(void *pCtx, int eType, const char *sql)
 {
   struct GenfkeyCtx *ctx=(struct GenfkeyCtx*)pCtx;
-  int retval=SQLITE_OK;
   PyGILState_STATE gilstate;
 
   assert(eType==GENFKEY_ERROR || eType==GENFKEY_CREATETRIGGER || eType==GENFKEY_DROPTRIGGER);
   gilstate=PyGILState_Ensure();
-  
+  if(PyErr_Occurred())
+    goto end;
 
   if(eType==GENFKEY_ERROR && !ctx->ignore_errors)
     {
       PyObject *newstr=NULL, *newline=NULL, *sqlstr=NULL;
-      retval=SQLITE_ERROR;
       ctx->nerrors++;
       
       APSW_FAULT_INJECT(GenfkeySQLConvFails,
@@ -3067,7 +3071,6 @@ static int genfkey_callback(void *pCtx, int eType, const char *sql)
       if(!ctx->errorlist)
 	{
 	  ctx->errorlist=sqlstr;
-	  retval=SQLITE_OK;
 	  goto end;
 	}
       /* add a newline */
@@ -3097,7 +3100,6 @@ static int genfkey_callback(void *pCtx, int eType, const char *sql)
       Py_DECREF(ctx->errorlist);
       ctx->errorlist=newstr;
 
-      retval=SQLITE_OK;
       goto end;
     }
 
@@ -3109,7 +3111,6 @@ static int genfkey_callback(void *pCtx, int eType, const char *sql)
       if(ctx->cursor_execute)
 	{
 	  PyObject *args=NULL, *pysql=NULL, *res=NULL;
-	  int ret=SQLITE_ERROR;
 	  
 	  APSW_FAULT_INJECT(GenfkeyExecTupleNewFails,
 			    args=PyTuple_New(1),
@@ -3125,16 +3126,11 @@ static int genfkey_callback(void *pCtx, int eType, const char *sql)
 	  pysql=NULL;
 
 	  res=PyEval_CallObject(ctx->cursor_execute, args);
-	  if(!res)
-	    ret=MakeSqliteMsgFromPyException(NULL);
-	  else
-	    ret=SQLITE_OK;
 
 	endblock:
 	  assert(!pysql);
 	  Py_XDECREF(args);
 	  Py_XDECREF(res);
-	  retval=ret;
 	  goto end;
 	}
       /* save string to list */
@@ -3157,7 +3153,6 @@ static int genfkey_callback(void *pCtx, int eType, const char *sql)
 	goto end;
       blockerror:
 	Py_XDECREF(pysql);
-	retval=MakeSqliteMsgFromPyException(NULL);
 	goto end;
       }
     }
@@ -3166,7 +3161,7 @@ static int genfkey_callback(void *pCtx, int eType, const char *sql)
 
  end:
   PyGILState_Release(gilstate);
-  return retval;
+  return SQLITE_OK;
 }
 
 /** .. method:: genfkey(drop=True, ignore_errors=False, execsql=False) -> sql

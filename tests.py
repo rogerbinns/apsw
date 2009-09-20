@@ -4984,6 +4984,7 @@ class APSW(unittest.TestCase):
         def failer(*args):
             1/0
         self.db.setexectrace(failer)
+        self.db.genfkey(execsql=True)
         self.assertRaises(ZeroDivisionError, self.db.genfkey, execsql=True)
         self.db.setexectrace(None)
         # should work fine now
