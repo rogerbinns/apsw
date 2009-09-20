@@ -44,8 +44,8 @@ telling it when the writer code should exit.  This is a simple example::
     cur.execute("..")
     # Close db
     db.close()
-    # Tell worker to exit now
-    apsw.async_control(apsw.SQLITEASYNC_HALT, apsw.SQLITEASYNC_HALT_NOW)
+    # Tell worker to quit when queue is empty
+    apsw.async_control(apsw.SQLITEASYNC_HALT, apsw.SQLITEASYNC_HALT_IDLE)
 
 .. _ext-fts3:
 
