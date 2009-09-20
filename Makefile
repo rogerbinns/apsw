@@ -63,8 +63,8 @@ showsymbols:
 	test -f apsw.so
 	set +e; nm --extern-only --defined-only apsw.so | egrep -v ' (__bss_start|_edata|_end|_fini|_init|initapsw)$$' ; test $$? -eq 1 || false
 
-WINBUILD=fetch --version=$(SQLITEVERSION) build --enable-all-extensions --compile=mingw32 install build_test_extension test bdist_wininst
-WINMSBUILD=fetch --version=$(SQLITEVERSION) build --enable-all-extensions install build_test_extension test bdist_wininst
+WINBUILD=fetch --version=$(SQLITEVERSION) --all build --enable-all-extensions --compile=mingw32 install build_test_extension test bdist_wininst
+WINMSBUILD=fetch --version=$(SQLITEVERSION) --all build --enable-all-extensions install build_test_extension test bdist_wininst
 
 # You need to use the MinGW version of make. 
 compile-win:
