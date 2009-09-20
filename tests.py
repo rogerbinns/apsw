@@ -4933,7 +4933,8 @@ class APSW(unittest.TestCase):
         self.assertEqual(origdelay+1, newdelay)
 
         ### Tell worker to quit
-        apsw.async_control(apsw.SQLITEASYNC_HALT, apsw.SQLITEASYNC_HALT_NOW)
+        self.db.close()
+        apsw.async_control(apsw.SQLITEASYNC_HALT, apsw.SQLITEASYNC_HALT_IDLE)
         time.sleep(1)
         self.assertEqual(d['workerfinished'], True)
 
@@ -4941,7 +4942,7 @@ class APSW(unittest.TestCase):
         t.go()
 
         # clean up so the test can be run multiple times
-        self.db.close()
+        apsw.async_control(apsw.SQLITEASYNC_HALT, apsw.SQLITEASYNC_HALT_NEVER)
         apsw.async_shutdown()
         
 
