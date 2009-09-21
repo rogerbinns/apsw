@@ -1360,7 +1360,7 @@ class APSW(unittest.TestCase):
         took=after-b4
         # this sometimes fails in virtualized environments due to time
         # going backwards or not going forwards consistently.
-        if took<TIMEOUT:
+        if took+1<TIMEOUT:
             write("Timeout was %d seconds but only %f seconds elapsed!" % (TIMEOUT, took))
             self.failUnless(took>=TIMEOUT)
 
