@@ -66,7 +66,13 @@ showsymbols:
 WINBUILD=fetch --version=$(SQLITEVERSION) --all build --enable-all-extensions --compile=mingw32 install build_test_extension test bdist_wininst
 WINMSBUILD=fetch --version=$(SQLITEVERSION) --all build --enable-all-extensions install build_test_extension test bdist_wininst
 
-# You need to use the MinGW version of make. 
+# You need to use the MinGW version of make.  See
+# http://bugs.python.org/issue3308 if 2.6+ or 3.0+ fail to run with
+# missing symbols/dll issues.  For Python 3.1 they went out of their
+# way to prevent mingw from working.  You have to install msvc.
+# Google for "visual c++ express edition" and hope the right version
+# is still available.
+
 compile-win:
 	-del /q apsw.pyd
 	cmd /c del /s /q dist
@@ -75,13 +81,8 @@ compile-win:
 	c:/python23/python setup.py $(WINBUILD)
 	c:/python24/python setup.py $(WINBUILD)
 	c:/python25/python setup.py $(WINBUILD)
-# See http://bugs.python.org/issue3308 if 2.6+ or 3.0+ fail to run with
-# missing symbols/dll issues
 	c:/python26/python setup.py $(WINBUILD)
 	c:/python30/python setup.py $(WINBUILD)
-        # They went out of their way to prevent mingw from working with 3.1.  You
-        # have to install msvc.  Google for "visual c++ express edition" and hope the right
-	# version is still available.
 	c:/python31/python setup.py $(WINMSBUILD)
 
 # I can't figure out a way to include the docs into the source zip
