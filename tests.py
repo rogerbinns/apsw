@@ -1357,7 +1357,12 @@ class APSW(unittest.TestCase):
         except apsw.BusyError:
             pass
         after=time.time()
-        self.failUnless(after-b4>=TIMEOUT)
+        took=after-b4
+        # this sometimes fails in virtualized environments due to time
+        # going backwards or not going forwards consistently.
+        if took<TIMEOUT:
+            write("Timeout was %d seconds but only %f seconds elapsed!" % (TIMEOUT, took))
+            self.failUnless(took>=TIMEOUT)
 
         # check clearing of handler
         c2.execute("rollback")
