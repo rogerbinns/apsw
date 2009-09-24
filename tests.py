@@ -20,7 +20,7 @@ def print_version_info(write=write):
     write("SQLite headers version "+str(apsw.SQLITE_VERSION_NUMBER)+"\n")
     write("    Using amalgamation "+str(apsw.using_amalgamation)+"\n")
 
-    if [int(x) for x in apsw.sqlitelibversion().split(".")]<[3,6,12]:
+    if [int(x) for x in apsw.sqlitelibversion().split(".")]<[3,6,18]:
         write("You are using an earlier version of SQLite than recommended\n")
 
     sys.stdout.flush()
@@ -5620,6 +5620,80 @@ class APSW(unittest.TestCase):
             apsw.faultdict["AsyncControlFails"]=True
             self.assertRaises(apsw.NoMemError, apsw.async_control, apsw.SQLITEASYNC_GET_HALT)
 
+    # This test is run last by deliberate name choice.  If it did
+    # uncover any bugs there isn't much that can be done to turn the
+    # checker off.
+    def testzzForkChecker(self):
+        "Test detection of using objects across fork"
+        # need to free up everything that already exists
+        self.db.close()
+        gc.collect()
+        # install it
+        apsw.fork_checker()
+        # return some objects
+        def getstuff():
+            db=apsw.Connection(":memory:")
+            cur=db.cursor()
+            for row in cur.execute("create table foo(x);insert into foo values(1);insert into foo values(x'aabbcc'); select last_insert_rowid()"):
+                blobid=row[0]
+            blob=db.blobopen("main", "foo", "x", blobid, 0)
+            db2=apsw.Connection(":memory:")
+            backup=db2.backup("main", db, "main")
+            return (db,cur,blob,backup)
+        # test the objects
+        def teststuff(db, cur, blob, backup):
+            if db:
+                db.cursor().execute("select 3")
+            if cur:
+                cur.execute("select 3")
+            if blob:
+                blob.read(1)
+            if backup:
+                backup.step()
+
+        # Sanity check
+        teststuff(*getstuff())
+        # get some to use in parent
+        parent=getstuff()
+        # to be used (and fail with error) in child
+        child=getstuff()
+
+        def childtest(*args):
+            # we can't use unittest methods here since we are in a different process
+            val=args[0]
+            args=args[1:]
+            # this should work
+            teststuff(*getstuff())
+            # ignore the unraiseable stuff sent to sys.excepthook
+            def eh(*args): pass
+            sys.excepthook=eh
+            # call with each seperate item to check
+            try:
+                for i in range(len(args)):
+                    a=[None]*len(args)
+                    a[i]=args[i]
+                    try:
+                        teststuff(*a)
+                    except apsw.ForkingViolationError:
+                        pass
+            except apsw.ForkingViolationError:
+                # we get one final exception "between" line due to the
+                # nature of how the exception is raised
+                pass
+            # this should work again
+            teststuff(*getstuff())
+            val.value=1
+
+        import multiprocessing
+        val=multiprocessing.Value("i", 0)
+        p=multiprocessing.Process(target=childtest, args=[val]+list(child))
+        p.start()
+        p.join()
+        self.assertEqual(1, val.value) # did child complete ok?
+        teststuff(*parent)
+
+
+
 testtimeout=False # timeout testing adds several seconds to each run
 def testdb(filename="testdb2", vfsname="apswtest", closedb=True):
     "This method causes all parts of a vfs to be executed"
@@ -5728,6 +5802,18 @@ def setup(write=write):
 
     if not hasattr(apsw, "async_initialize"):
         del APSW.testAsyncVFS
+
+    forkcheck=False
+    if hasattr(apsw, "fork_checker") and hasattr(os, "fork"):
+        try:
+            import multiprocessing
+            forkcheck=True
+        except ImportError:
+            pass
+
+    # we also remove forkchecker if doing multiple iterations
+    if not forkcheck or os.getenv("APSW_TEST_ITERATIONS"):
+        del APSW.testzzForkChecker
 
     # We can do extension loading but no extension present ...
     if getattr(memdb, "enableloadextension", None) and not os.path.exists(LOADEXTENSIONFILENAME):

@@ -745,6 +745,258 @@ apsw_async_run(APSW_ARGUNUSED PyObject *self)
 
 #endif
 
+#ifdef APSW_FORK_CHECKER
+
+/* 
+   We want to verify that SQLite objects are not used across forks.
+   One way is to modify all calls to SQLite to do the checking but
+   this is a pain as well as a performance hit.  Instead we use the
+   approach of providing an alternative mutex implementation since
+   pretty much every SQLite API call takes and releases a mutex.
+
+   Our diverted functions check the process id on calls and set the
+   process id on allocating a mutex.  We have to avoid the checks for
+   the static mutexes.  
+
+   This code also doesn't bother with some things like checking malloc
+   results.  It is intended to only be used to verify correctness with
+   test suites.  The code that sets Python exceptions is also very
+   brute force and is likely to cause problems.  That however is a
+   good thing - you will really be sure there is a problem!
+ */
+
+typedef struct 
+{
+  pid_t pid;
+  sqlite3_mutex *underlying_mutex;
+} apsw_mutex;
+
+static apsw_mutex* apsw_mutexes[]=
+  {
+    NULL, /* not used - fast */
+    NULL, /* not used - recursive */
+    NULL, /* from this point on corresponds to the various static mutexes */
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL
+  };
+
+static sqlite3_mutex_methods apsw_orig_mutex_methods;
+
+static int
+apsw_xMutexInit(void)
+{
+  return apsw_orig_mutex_methods.xMutexInit();
+}
+
+static int
+apsw_xMutexEnd(void)
+{
+  return apsw_orig_mutex_methods.xMutexEnd();
+}
+
+static sqlite3_mutex*
+apsw_xMutexAlloc(int which)
+{
+  switch(which)
+    {
+    case SQLITE_MUTEX_FAST:
+    case SQLITE_MUTEX_RECURSIVE:
+      {
+	apsw_mutex *am;
+	sqlite3_mutex *m=apsw_orig_mutex_methods.xMutexAlloc(which);
+	
+	if(!m) return m;
+
+	am=malloc(sizeof(apsw_mutex));
+	am->pid=getpid();
+	am->underlying_mutex=m;
+	return (sqlite3_mutex*)am;
+      }
+    default:
+      /* verify we have space */
+      assert(which<sizeof(apsw_mutexes)/sizeof(apsw_mutexes[0]));
+      /* fill in if missing */
+      if(!apsw_mutexes[which])
+	{
+	  apsw_mutexes[which]=malloc(sizeof(apsw_mutex));
+	  apsw_mutexes[which]->pid=0;
+	  apsw_mutexes[which]->underlying_mutex=apsw_orig_mutex_methods.xMutexAlloc(which);
+	}
+      return (sqlite3_mutex*)apsw_mutexes[which];
+    }
+}
+
+static int
+apsw_check_mutex(apsw_mutex *am)
+{
+  if(am->pid && am->pid!=getpid())
+    {
+      PyGILState_STATE gilstate;
+      gilstate=PyGILState_Ensure();
+      PyErr_Format(ExcForkingViolation, "SQLite object allocated in one process is being used in another (across a fork)");
+      apsw_write_unraiseable(NULL);
+      PyErr_Format(ExcForkingViolation, "SQLite object allocated in one process is being used in another (across a fork)");
+      PyGILState_Release(gilstate);
+      return SQLITE_MISUSE;
+    }
+  return SQLITE_OK;
+}
+
+static void
+apsw_xMutexFree(sqlite3_mutex *mutex)
+{
+  apsw_mutex* am=(apsw_mutex*)mutex;
+  apsw_check_mutex(am);
+  apsw_orig_mutex_methods.xMutexFree(am->underlying_mutex);
+}
+
+static void
+apsw_xMutexEnter(sqlite3_mutex *mutex)
+{
+  apsw_mutex* am=(apsw_mutex*)mutex;
+  apsw_check_mutex(am);
+  apsw_orig_mutex_methods.xMutexEnter(am->underlying_mutex);
+}
+
+static int
+apsw_xMutexTry(sqlite3_mutex *mutex)
+{
+  apsw_mutex* am=(apsw_mutex*)mutex;
+  if(apsw_check_mutex(am)) return SQLITE_MISUSE;
+  return apsw_orig_mutex_methods.xMutexTry(am->underlying_mutex);
+}
+
+static void
+apsw_xMutexLeave(sqlite3_mutex *mutex)
+{
+  apsw_mutex* am=(apsw_mutex*)mutex;
+  apsw_check_mutex(am);
+  apsw_orig_mutex_methods.xMutexLeave(am->underlying_mutex);
+}
+
+#ifdef SQLITE_DEBUG
+static int xMutexHeld
+apsw_xMutexHeld(sqlite3_mutex *mutex)
+{
+  apsw_mutex* am=(apsw_mutex*)mutex;
+  apsw_check_mutex(am);
+  apsw_orig_mutex_methods.xMutexHeld(am->underlying_mutex);
+}
+
+static int xMutexHeld
+apsw_xMutexNotheld(sqlite3_mutex *mutex)
+{
+  apsw_mutex* am=(apsw_mutex*)mutex;
+  apsw_check_mutex(am);
+  apsw_orig_mutex_methods.xMutexNotheld(am->underlying_mutex);
+}
+#endif
+
+static sqlite3_mutex_methods apsw_mutex_methods=
+  {
+    apsw_xMutexInit,
+    apsw_xMutexEnd,
+    apsw_xMutexAlloc,
+    apsw_xMutexFree,
+    apsw_xMutexEnter,
+    apsw_xMutexTry,
+    apsw_xMutexLeave,
+#ifdef SQLITE_DEBUG
+    apsw_xMutexHeld,
+    apsw_xMutexNotheld
+#else
+    0,
+    0
+#endif
+  };
+
+
+/** .. method:: fork_checker()
+
+  **Note** This method is not available on Windows as it does not
+  support the fork system call.
+
+  SQLite does not allow the use of database connections across `forked
+  <http://en.wikipedia.org/wiki/Fork_(operating_system)>`__ processes
+  (see the `SQLite FAQ Q6 <http://www.sqlite.org/faq.html#q6>`__).
+  (Forking creates a child process that is a duplicate of the parent
+  including the state of all data structures in the program.  If you
+  do this to SQLite then parent and child would both consider
+  themselves owners of open databases and silently corrupt each
+  other's work and interfere with each other's locks.)
+
+  One example of how you may end up using fork is if you use the
+  `multiprocessing module
+  <http://docs.python.org/library/multiprocessing.html>`__ which uses
+  fork to make child processes.
+
+  If you do use fork or multiprocessing on a platform that supports
+  fork then you **must** ensure database connections and their objects
+  (cursors, backup, blobs etc) are not used in the parent process, or
+  are all closed before calling fork or starting a `Process
+  <http://docs.python.org/library/multiprocessing.html#process-and-exceptions>`__.
+  (Note you must call close to ensure the underlying SQLite objects
+  are closed.  It is also a good idea to call `gc.collect(2)
+  <http://docs.python.org/library/gc.html#gc.collect>`__ to ensure
+  anything you may have missed is also deallocated.)
+
+  Once you run this method, extra checking code is inserted into
+  SQLite's mutex operations (at a very small performance penalty) that
+  verifies objects are not used across processes.  You will get a
+  :exc:`ForkingViolationError` if you do so.  Note that due to the way
+  Python's internals work, the exception will be delivered to
+  `sys.excepthook` in addition to the normal exception mechanisms and
+  may be reported by Python after the line where the issue actually
+  arose.
+
+  You should only call this method as the first line after importing
+  APSW, as it has to shutdown and re-initialize SQLite.  If you have
+  any SQLite objects already allocated when calling the method then
+  the program will later crash.  The recommended use is to use the fork
+  checking as part of your test suite.
+*/
+static PyObject *
+apsw_fork_checker(APSW_ARGUNUSED PyObject *self)
+{
+  int rc;
+
+  /* ignore multiple attempts to use this routine */
+  if(apsw_orig_mutex_methods.xMutexInit) goto ok;
+
+
+  /* Ensure mutex methods available and installed */
+  rc=sqlite3_initialize();
+  if(rc) goto fail;
+
+  /* then do a shutdown as we can't get or change mutex while sqlite is running */
+  rc=sqlite3_shutdown();
+  if(rc) goto fail;
+  
+  rc=sqlite3_config(SQLITE_CONFIG_GETMUTEX, &apsw_orig_mutex_methods);
+  if(rc) goto fail;
+  
+  rc=sqlite3_config(SQLITE_CONFIG_MUTEX, &apsw_mutex_methods);
+  if(rc) goto fail;
+
+  /* start back up again */
+  rc=sqlite3_initialize();
+  if(rc) goto fail;
+
+ ok:
+  Py_RETURN_NONE;
+  
+ fail:
+  assert(rc!=SQLITE_OK);
+  SET_EXC(rc, NULL);
+  return NULL;
+}
+#endif
 
 static PyMethodDef module_methods[] = {
   {"sqlitelibversion", (PyCFunction)getsqliteversion, METH_NOARGS,
@@ -796,6 +1048,10 @@ static PyMethodDef module_methods[] = {
    "Control operation of asyncvfs"},
   {"async_run", (PyCFunction)apsw_async_run, METH_NOARGS,
    "Does the background async I/O"},
+#endif
+#ifdef APSW_FORK_CHECKER
+  {"fork_checker", (PyCFunction)apsw_fork_checker, METH_NOARGS,
+   "Installs fork checking code"},
 #endif
   {0, 0, 0, 0}  /* Sentinel */
 };

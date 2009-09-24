@@ -38,6 +38,10 @@ The following exceptions happen when APSW detects various problems.
   may try to use the same cursor in two different threads at the same
   time, or tried to close the same connection in two threads at the
   same time.
+
+.. exception:: ForkingViolationError
+
+  See :meth:`apsw.fork_checker`.
         
 .. exception:: IncompleteExecutionError
 
