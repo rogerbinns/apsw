@@ -1,4 +1,5 @@
 syntax: glob
+*.orig
 testdb-async
 apsw.pyd
 sqlite3genfkey.c
