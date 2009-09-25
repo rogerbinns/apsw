@@ -26,9 +26,9 @@ extension for you.  If the source is present when APSW is built then
 it will be automatically included and the :meth:`API
 <async_initialize>` provided.
 
-A :meth:`fork_checker` is available which detects when you have used
-SQLite objects across a fork.  This is possible on Unix like operating
-systems, especially if you use the `multiprocessing module
+A :meth:`fork_checker` is available which turns on detection when you
+have used SQLite objects across a fork.  This is possible on Unix like
+operating systems, especially if you use the `multiprocessing module
 <http://docs.python.org/library/multiprocessing.html>`__.
 
 3.6.18-r1

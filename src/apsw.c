@@ -953,7 +953,8 @@ static sqlite3_mutex_methods apsw_mutex_methods=
   Python's internals work, the exception will be delivered to
   `sys.excepthook` in addition to the normal exception mechanisms and
   may be reported by Python after the line where the issue actually
-  arose.
+  arose.  (Destructors of objects you didn't close also run between
+  lines.)
 
   You should only call this method as the first line after importing
   APSW, as it has to shutdown and re-initialize SQLite.  If you have
