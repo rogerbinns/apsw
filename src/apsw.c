@@ -881,20 +881,20 @@ apsw_xMutexLeave(sqlite3_mutex *mutex)
 }
 
 #ifdef SQLITE_DEBUG
-static int xMutexHeld
+static int
 apsw_xMutexHeld(sqlite3_mutex *mutex)
 {
   apsw_mutex* am=(apsw_mutex*)mutex;
   apsw_check_mutex(am);
-  apsw_orig_mutex_methods.xMutexHeld(am->underlying_mutex);
+  return apsw_orig_mutex_methods.xMutexHeld(am->underlying_mutex);
 }
 
-static int xMutexHeld
+static int
 apsw_xMutexNotheld(sqlite3_mutex *mutex)
 {
   apsw_mutex* am=(apsw_mutex*)mutex;
   apsw_check_mutex(am);
-  apsw_orig_mutex_methods.xMutexNotheld(am->underlying_mutex);
+  return apsw_orig_mutex_methods.xMutexNotheld(am->underlying_mutex);
 }
 #endif
 
