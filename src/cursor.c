@@ -215,7 +215,7 @@ resetcursor(APSWCursor *self, int force)
         {
           Py_DECREF(next);
           res=SQLITE_ERROR;
-          assert(PyErr_Occurred()));
+          assert(PyErr_Occurred());
         }
     }
      
