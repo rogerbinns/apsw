@@ -63,11 +63,12 @@ fi
 DEFS=""
 if [ -f sqlite3async.c ]
 then 
-   DEFS="$DEFS -DAPSW_USE_SQLITE_ASYNCVFS_C=\"sqlite3async.c\" -DAPSW_USE_SQLITE_ASYNCVFS_H=\"sqlite3async.h\""
+    DEFS="$DEFS -DAPSW_USE_SQLITE_ASYNCVFS_C=\"sqlite3async.c\" -DAPSW_USE_SQLITE_ASYNCVFS_H=\"sqlite3async.h\""
 fi
-if [ -f sqlite3genfkey.c ]
+
+if [ -f sqlite3/sqlite3config.h ]
 then
-   DEFS="$DEFS -DAPSW_USE_SQLITE_GENFKEY=\"sqlite3genfkey.c\""
+    DEFS="$DEFS -DAPSW_USE_SQLITE_CONFIG=\"sqlite3/sqlite3config.h\""
 fi
 # find python
 PYTHON=python # use whatever is in the path

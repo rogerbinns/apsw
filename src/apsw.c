@@ -33,6 +33,10 @@ API Reference
 #endif
 #endif
 
+#ifdef APSW_USE_SQLITE_CONFIG
+#include APSW_USE_SQLITE_CONFIG
+#endif
+
 /* SQLite amalgamation */
 #ifdef APSW_USE_SQLITE_AMALGAMATION
 /* See SQLite ticket 2554 */

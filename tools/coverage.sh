@@ -22,11 +22,15 @@ CFLAGS=''
 
 if [ -f sqlite3async.c ]
 then
-   CFLAGS='-DAPSW_USE_SQLITE_ASYNCVFS_C="sqlite3async.c" -DAPSW_USE_SQLITE_ASYNCVFS_H="sqlite3async.h"'
+    CFLAGS='-DAPSW_USE_SQLITE_ASYNCVFS_C="sqlite3async.c" -DAPSW_USE_SQLITE_ASYNCVFS_H="sqlite3async.h"'
 fi
 if [ -f sqlite3genfkey.c ]
 then
-   CFLAGS="$CFLAGS -DAPSW_USE_SQLITE_GENFKEY=\"sqlite3genfkey.c\""
+    CFLAGS="$CFLAGS -DAPSW_USE_SQLITE_GENFKEY=\"sqlite3genfkey.c\""
+fi
+if [ -f sqlite3/sqlite3config.h ]
+then
+    CFLAGS="$CFLAGS -DAPSW_USE_SQLITE_CONFIG=\"sqlite3/sqlite3config.h\""
 fi
 set -x
 gcc -pthread -fno-strict-aliasing -ftest-coverage -fprofile-arcs -g -fPIC -Wall -Wextra $CFLAGS -DEXPERIMENTAL -DSQLITE_DEBUG -DAPSW_USE_SQLITE_AMALGAMATION=\"sqlite3.c\" -DAPSW_NO_NDEBUG -DAPSW_TESTFIXTURES -I$INCLUDEDIR -I. -Isqlite3 -Isrc -c src/apsw.c
