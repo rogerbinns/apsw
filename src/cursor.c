@@ -215,11 +215,7 @@ resetcursor(APSWCursor *self, int force)
         {
           Py_DECREF(next);
           res=SQLITE_ERROR;
-          if (!PyErr_Occurred())
-	    /* Technically this line won't get executed since the
-	       block above will already have set ExcIncomplete.
-	       Leaving it in as defensive coding. */
-            PyErr_Format(ExcIncomplete, "Error: there are still many remaining sql statements to execute");
+          assert(PyErr_Occurred()));
         }
     }
      
