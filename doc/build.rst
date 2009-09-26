@@ -69,6 +69,8 @@ re-fetching.
 |                                        | consulted to find the current SQLite version                                         |
 |                                        | which you can override using this flag.                                              |
 +----------------------------------------+--------------------------------------------------------------------------------------+
+| | :option:`--missing-checksum-ok`      | Allows setup to continue if the :ref:`checksum <fetch_checksums>` is missing.        |
++----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--all`                      | Gets all components listed below.                                                    |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--sqlite`                   | Automatically downloads the `SQLite amalgamation                                     |
@@ -82,6 +84,31 @@ re-fetching.
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--asyncvfs`                 | Downloads the :ref:`Asynchronous VFS <ext-asyncvfs>`                                 |
 +----------------------------------------+--------------------------------------------------------------------------------------+
+
+.. _fetch_checksums:
+
+.. note::
+
+  The SQLite downloads are not `digitally signed
+  <http://en.wikipedia.org/wiki/Digital_signature>`__ which means you
+  have no way of verifying they were produced by the SQLite team or
+  were not modified between the SQLite servers and your computer.
+
+  Consequently APSW ships with a :file:`checksums` `file
+  <http://code.google.com/p/apsw/source/browse/checksums>`__ that
+  includes checksums for the various SQLite downloads.  If the
+  download does not match the checksum then it is rejected and an
+  error occurs.
+
+  The SQLite download page is not checksummed, so in theory a bad guy
+  could modify it to point at a malicious download version instead.
+  (setup only uses the page to determine the current version number -
+  the SQLite download site URL is hard coded.)
+
+  If the URL is not listed in the checksums file then setup aborts.
+  You can use :option:`--missing-checksum-ok` to continue.  You are
+  recommended instead to update the checksums file with the
+  correct information.
 
 .. _setup_build_flags:
 
@@ -226,12 +253,13 @@ Source distribution (advanced)
 ==============================
 
 If you want to make a source distribution or a binary distribution
-that creates a source distribution such as `bdist_rpm` then you can
-have the SQLite amalgamation automatically included as part of it.  If
-you specify the fetch command as part of the same command line then
-everything fetched is included in the source distribution.  For
-example this will fetch all components, include them in the source
-distribution and build a rpm using those components::
+that creates an intermediate source distribution such as `bdist_rpm`
+then you can have the SQLite amalgamation automatically included as
+part of it.  If you specify the fetch command as part of the same
+command line then everything fetched is included in the source
+distribution.  For example this will fetch all components, include
+them in the source distribution and build a rpm using those
+components::
 
   $ python setup.py fetch --all bdist_rpm
 

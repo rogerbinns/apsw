@@ -39,6 +39,9 @@ to the build/build_ext commands to explicitly disable/enable extension
 loading.  (`Issue 67
 <http://code.google.com/p/apsw/issues/detail?id=67>`__).
 
+:ref:`setup.py <building>` will now abort on a download that has no
+checksum.  See :ref:`more information <fetch_checksums>` on checksums.
+
 3.6.18-r1
 =========
 

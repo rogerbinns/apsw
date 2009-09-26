@@ -103,27 +103,29 @@ class fetch(Command):
     description="Automatically downloads SQLite and components"
     user_options=[
         ("version=", None, "Which version of SQLite/components to get (default current)"),
+        ("missing-checksum-ok", None, "Continue on a missing checksum (default abort)"),
         ("sqlite", None, "Download SQLite amalgamation"),
         ("asyncvfs", None, "Download the asynchronous vfs"),
         ("all", None, "Download all downloadable components"),
         ]
-    boolean_options=['sqlite', 'asyncvfs',  'all']
+    fetch_options=['sqlite', 'asyncvfs']
+    boolean_options=fetch_options+['all', 'missing-checksum-ok']
 
     def initialize_options(self):
         self.version=None
         self.sqlite=False
         self.asyncvfs=False
         self.all=False
+        self.missing_checksum_ok=False
 
     def finalize_options(self):
         # If all is selected then turn on all components
         global fetch_parts
         if self.all:
-            for i in self.boolean_options:
+            for i in self.fetch_options:
                     setattr(self, i, True)
-        for i in self.boolean_options:
-            if i!="all":
-                fetch_parts.append(i)
+        for i in self.fetch_options:
+            fetch_parts.append(i)
 
     def run(self):
         # work out the version
@@ -298,7 +300,9 @@ class fetch(Command):
                       "to a malicious attack.")
                 raise ValueError("Checksums do not match")
         # no matching line
-        write("    (Not verified.  No match in checksums file)")        
+        write("    (Not verified.  No match in checksums file)")
+        if not self.missing_checksum_ok:
+            raise ValueError("No checksum available.  Use --missing-checksum-ok option to continue")
 
     # download a url
     def download(self, url, text=False, checksum=True):
