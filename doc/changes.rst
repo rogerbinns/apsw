@@ -31,6 +31,14 @@ have used SQLite objects across a fork.  This is possible on Unix like
 operating systems, especially if you use the `multiprocessing module
 <http://docs.python.org/library/multiprocessing.html>`__.
 
+Extension loading is now compiled in by default when using the
+amalgamation and compiled out when using existing libraries.  This is
+more likely to match your machine.  You can use
+:option:`--omit=load_extension` or :option:`--enable=load_extension`
+to the build/build_ext commands to explicitly disable/enable extension
+loading.  (`Issue 67
+<http://code.google.com/p/apsw/issues/detail?id=67>`__).
+
 3.6.18-r1
 =========
 

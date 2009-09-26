@@ -132,6 +132,14 @@ need to give the flag once and giving a comma seperated list.  For example:
 |                                        | <http://www.sqlite.org/compile.html#omitfeatures>`_.                                 |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 
+.. note::
+
+  Extension loading is enabled by default when using the amalgamation
+  and disabled when using existing libraries as this most closely
+  matches current practise.  Use :option:`--omit=load_extension` or
+  :option:`--enable=load_extension` to explicity disable/enable the
+  extension loading code.
+
 Finding SQLite 3
 ================
 
@@ -208,7 +216,8 @@ The extension just turns into a single file apsw.so (Linux/Mac) or
 apsw.pyd (Windows). You don't need to install it and can drop it into
 any directory that is more convenient for you and that your code can
 reach. To just do the build and not install, leave out *install* from
-the lines above.
+the lines above. (Use *build_ext --inplace* to have the extension put
+in the main directory.)
 
 The test suite will be run. It will print the APSW file used, APSW and
 SQLite versions and then run lots of tests all of which should pass.

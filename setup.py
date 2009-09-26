@@ -443,7 +443,9 @@ class apsw_build_ext(beparent):
             # we also add the directory to include path since icu tries to use it
             ext.include_dirs.append(os.path.dirname(path))
             write("SQLite: Using amalgamation", path)
+            load_extension=True
         else:
+            load_extension=False
             d=os.path.join(os.path.dirname(os.path.abspath(__file__)), "sqlite3")
             if os.path.isdir(d):
                 write("SQLite: Using include/libraries in sqlite3 subdirectory")
@@ -465,6 +467,9 @@ class apsw_build_ext(beparent):
         if self.enable:
             for e in self.enable.split(","):
                 e=e.strip()
+                if e.lower()=="load_extension":
+                    load_extension=True
+                    continue
                 ext.define_macros.append( ("SQLITE_ENABLE_"+e.upper(), 1) )
                 if e.upper()=="ICU":
                     addicuinclib=True
@@ -485,7 +490,12 @@ class apsw_build_ext(beparent):
         if self.omit:
             for e in self.omit.split(","):
                 e=e.strip()
+                if e.lower()=="load_extension":
+                    load_extension=False
                 ext.define_macros.append( ("SQLITE_OMIT_"+e.upper(), 1) )
+
+        if not load_extension:
+            ext.define_macros.append( ("SQLITE_OMIT_LOAD_EXTENSION", 1) )
 
         # icu
         if addicuinclib:
