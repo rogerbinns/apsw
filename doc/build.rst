@@ -68,19 +68,29 @@ re-fetching.
 |                                        | <http://sqlite.org/download.html>`__ is                                              |
 |                                        | consulted to find the current SQLite version                                         |
 |                                        | which you can override using this flag.                                              |
+|                                        |                                                                                      |
+|                                        | .. note::                                                                            |
+|                                        |                                                                                      |
+|                                        |    You can also specify `fossil` as the version                                      |
+|                                        |    and the current development version from `SQLite's source tracking system         |
+|                                        |    <http://www.sqlite.org/src/timeline>`__ will be used.  (The system is named       |
+|                                        |    `Fossil <http://www.fossil-scm.org>`__.) Note that checksums can't be checked     |
+|                                        |    for fossil. You will also need TCL and make installed for the amalgamation to     |
+|                                        |    build as well as several other common Unix tools.  (ie this is very unlikely to   |
+|                                        |    work on Windows.)                                                                 |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--missing-checksum-ok`      | Allows setup to continue if the :ref:`checksum <fetch_checksums>` is missing.        |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--all`                      | Gets all components listed below.                                                    |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--sqlite`                   | Automatically downloads the `SQLite amalgamation                                     |
-|                                        | <http://www.sqlite.org/cvstrac/wiki?p=TheAmalgamation>`__ On non-Windows platforms   |
-|                                        | it will also work out what compile flags SQLite needs (for example                   |
-|                                        | :const:`HAVE_USLEEP`, :const:`HAVE_LOCALTIME_R`). The amalgamation is the            |
+|                                        | <http://www.sqlite.org/cvstrac/wiki?p=TheAmalgamation>`__. The amalgamation is the   |
 |                                        | preferred way to use SQLite as you have total control over what components are       |
 |                                        | included or excluded (see below) and have no dependencies on any existing            |
 |                                        | libraries on your developer or deployment machines. The amalgamation includes the    |
-|                                        | fts3, rtree and icu extensions.                                                      |
+|                                        | fts3, rtree and icu extensions. On non-Windows platforms, any existing               |
+|                                        | :file:`sqlite3/` directory will be erased and the downloaded code placed in a newly  |
+|                                        | created :file:`sqlite3/` directory.                                                  |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--asyncvfs`                 | Downloads the :ref:`Asynchronous VFS <ext-asyncvfs>`                                 |
 +----------------------------------------+--------------------------------------------------------------------------------------+
@@ -109,6 +119,37 @@ re-fetching.
   You can use :option:`--missing-checksum-ok` to continue.  You are
   recommended instead to update the checksums file with the
   correct information.
+
+.. _fetch_configure:
+
+.. note::
+
+  (This note only applies to non-Windows platforms.)  By default the
+  amalgamation will work on your platform.  It detects
+  the operating system (and compiler if relevant) and uses the
+  appropriate APIs.  However it then only uses the oldest known
+  working APIs.  For example it will use the *sleep* system call.
+  More recent APIs may exist but the amalgamation needs to be told
+  they exist.  As an example *sleep* can only sleep in increments of
+  one second while the *usleep* system call can sleep in increments of
+  one microsecond. The default SQLite busy handler does small sleeps
+  (eg 1/50th of a second) backing off as needed.  If *sleep* is used
+  then those will all be a minimum of a second.  A second example is
+  that the traditional APIs for getting time information are not
+  re-entrant and cannot be used concurrently from multiple threads.
+  Consequently SQLite has mutexes to ensure that concurrent calls do
+  not happen.  However you can tell it you have more recent re-entrant
+  versions of the calls and it won't need to bother with the mutexes.
+
+  After fetching the amalgamation, setup automatically determines what
+  new APIs you have by running the :file:`configure` script that comes
+  with SQLite and noting the output.  The information is placed in
+  :file:`sqlite3/sqlite3config.h`.  The build stage will automatically
+  take note of this as needed.
+
+  If you get the fossil version then the configure script does not
+  work.  Instead the fetch will save and re-use any pre-existing
+  :file:`sqlite3/sqlite3config.h`.
 
 .. _setup_build_flags:
 

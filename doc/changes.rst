@@ -42,6 +42,10 @@ loading.  (`Issue 67
 :ref:`setup.py <building>` will now abort on a download that has no
 checksum.  See :ref:`more information <fetch_checksums>` on checksums.
 
+:ref:`setup.py <setup_py_flags>` can also fetch the version of SQLite
+currently under development before a release.  Use
+:option:`--version=fossil`.
+
 3.6.18-r1
 =========
 

@@ -93,8 +93,12 @@ class build_test_extension(Command):
 def fixupcode(code):
     if sys.version_info<(2,5):
         return [l+"\n" for l in code.read().split("\n")]
-    if sys.version_info>(3,0):
-        return [l.decode("iso8859-1") for l in code]
+    if sys.version_info>=(3,0):
+        if type(code)!=bytes:
+            code=code.read()
+        if type(code)==bytes:
+            code=code.decode("iso8859-1")
+        return [l+"\n" for l in code.split("\n")]
     return code
 
 fetch_parts=[]
@@ -145,7 +149,10 @@ class fetch(Command):
 
         ## The amalgamation
         if self.sqlite:
-            write("  Getting the SQLite amalgamation")
+            if self.version=="fossil":
+                write("  Getting current trunk from fossil")
+            else:
+                write("  Getting the SQLite amalgamation")
             simple=sys.platform in ('win32', 'win64')
 
             if simple:
@@ -154,7 +161,13 @@ class fetch(Command):
             else:
                 AURL="http://www.sqlite.org/sqlite-amalgamation-%s.tar.gz" % (self.version,)
 
-            data=self.download(AURL)
+            checksum=True
+            if self.version=="fossil":
+                simple=False
+                AURL="http://www.sqlite.org/src/zip/sqlite3.zip?uuid=trunk"
+                checksum=False
+
+            data=self.download(AURL, checksum=checksum)
 
             if simple:
                 zip=zipfile.ZipFile(data, "r")
@@ -162,17 +175,13 @@ class fetch(Command):
                     write("Extracting", name)
                     # If you get an exception here then the archive doesn't contain the files it should
                     open(name, "wb").write(zip.read(name))
+                zip.close()
             else:
                 # we need to run configure to get various -DHAVE_foo flags on non-windows platforms
-                # if you get an exception here it is likely that you don't have the python zlib module
-                tar=tarfile.open("nonexistentname to keep old python happy", 'r', data)
-                configmember=None
-                for member in tar.getmembers():
-                    tar.extract(member)
-                    # find first file named configure
-                    if not configmember and member.name.endswith("/configure"):
-                        configmember=member
-                tar.close()
+                # delete existing sqlite3 directory if it exists, but save sqlite3config.h if it exists
+                sqlite3config_h=None
+                if os.path.exists("sqlite3/sqlite3config.h"):
+                    sqlite3config_h=open("sqlite3/sqlite3config.h", "rb").read()
                 if os.path.exists('sqlite3'):
                     for dirpath, dirnames, filenames in os.walk('sqlite3', topdown=False):
                         for file in filenames:
@@ -180,57 +189,100 @@ class fetch(Command):
                         for dir in dirnames:
                             os.rmdir(os.path.join(dirpath, dir))
                     os.rmdir('sqlite3')
-                # the directory name has changed a bit with each release so try to work out what it is
-                if not configmember:
-                    write("Unable to determine directory it extracted to.", dest=sys.stderr)
-                    sys.exit(19)
-                dirname=configmember.name.split('/')[0]
-                os.rename(dirname, 'sqlite3')
-                os.chdir('sqlite3')
-                write("    Running configure to work out SQLite compilation flags")
-                res=os.system("./configure >/dev/null")
-                defline=None
-                for line in open("Makefile"):
-                    if line.startswith("DEFS = "):
-                        defline=line
-                        break
-                if not defline:
-                    write("Unable to determine compile flags.  Edit the top of sqlite3/sqlite3.c to manually set.", dest=sys.stderr)
-                    sys.exit(18)
-                defs=[]
-                for part in shlex.split(defline):
-                    if part.startswith("-DHAVE"):
-                        part=part[2:]
-                        if '=' in part:
-                            part=part.split('=', 1)
+                if self.version=="fossil":
+                    zip=zipfile.ZipFile(data, "r")
+                    for name in zip.namelist():
+                        # extract
+                        if name.endswith("/"):
+                            os.mkdir(name)
                         else:
-                            part=(part, )
-                        defs.append(part)
-                op=open("sqlite3config.h", "wt")
-                op.write("""
+                            open(name, "wb").write(zip.read(name))
+                    zip.close()
+                else:
+                    # if you get an exception here it is likely that you don't have the python zlib module
+                    tar=tarfile.open("nonexistentname to keep old python happy", 'r', data)
+                    configmember=None
+                    for member in tar.getmembers():
+                        tar.extract(member)
+                        # find first file named configure
+                        if not configmember and member.name.endswith("/configure"):
+                            configmember=member
+                    tar.close()
+                    # the directory name has changed a bit with each release so try to work out what it is
+                    if not configmember:
+                        write("Unable to determine directory it extracted to.", dest=sys.stderr)
+                        sys.exit(19)
+                    dirname=configmember.name.split('/')[0]
+                    os.rename(dirname, 'sqlite3')
+                os.chdir('sqlite3')
+                if self.version=="fossil":
+                    write("    Building amalgamation from fossil")
+                    res=os.system("make TOP=. -f Makefile.linux-gcc sqlite3.c && cp src/sqlite3ext.h .")
+                    defs=[]
+                    if sqlite3config_h:
+                        open("sqlite3config.h", "wb").write(sqlite3config_h)
+                else:
+                    write("    Running configure to work out SQLite compilation flags")
+                    res=os.system("./configure >/dev/null")
+                    defline=None
+                    for line in open("Makefile"):
+                        if line.startswith("DEFS = "):
+                            defline=line
+                            break
+                    if not defline:
+                        write("Unable to determine compile flags.  Create sqlite3/sqlite3config.h to manually set.", sys.stderr)
+                        sys.exit(18)
+                    defs=[]
+                    for part in shlex.split(defline):
+                        if part.startswith("-DHAVE"):
+                            part=part[2:]
+                            if '=' in part:
+                                part=part.split('=', 1)
+                            else:
+                                part=(part, )
+                            defs.append(part)
+                if res!=0:
+                    raise ValueError("Command execution failed")
+                if defs:
+                    op=open("sqlite3config.h", "wt")
+                    op.write("""
 /* This file was generated by parsing how configure altered the Makefile
    which isn't used when building python extensions.  It is specific to the
    machine and developer components on which it was run. */
    \n""")
                                
-                for define in defs:
-                    op.write('#define %s %s\n' % tuple(define))
-                op.close()
+                    for define in defs:
+                        op.write('#define %s %s\n' % tuple(define))
+                    op.close()
                 os.chdir("..")
             downloaded+=1
 
         if self.asyncvfs:
             write("  Getting the async vfs extension")
-            data=self.download("http://www.sqlite.org/sqlite-%s.tar.gz" % (self.version,))
-            tar=tarfile.open("nonexistentname to keep old python happy", 'r', data)
+            if self.version=="fossil":
+                AURL="http://www.sqlite.org/src/zip/sqlite3.zip?uuid=trunk"
+            else:
+                AURL="http://www.sqlite.org/sqlite-%s.tar.gz" % (self.version,)
+            data=self.download(AURL, checksum=not self.version=="fossil")
+
+            if self.version=="fossil":
+                archive=zipfile.ZipFile(data, "r")
+                members=archive.namelist()
+                extractfile=archive.read
+            else:
+                archive=tarfile.open("nonexistentname to keep old python happy", 'r', data)
+                members=[a.name for a in archive.getmembers()]
+                extractfile=archive.extractfile
+                
             lookfor=("sqlite3async.c", "sqlite3async.h")
             found=[0]*len(lookfor)
-            for member in tar.getmembers():
+            for member in members:
                 for i,n in enumerate(lookfor):
-                    if member.name.endswith("/ext/async/"+n):
-                        self.fixupasyncvfs(n, tar.extractfile(member))
+                    if member.endswith("/ext/async/"+n):
+                        self.fixupasyncvfs(n, extractfile(member))
                         found[i]+=1
-            tar.close()
+                        
+            archive.close()
             if found!=[1]*len(lookfor):
                 for i,f in enumerate(lookfor):
                     if found[i]!=1:
