@@ -89,10 +89,13 @@ class build_test_extension(Command):
         os.system("gcc -fPIC -shared -o testextension.sqlext -Isqlite3 -I. src/testextension.c")
 
 
-# deal with various python version compatibility issues
+# deal with various python version compatibility issues with how
+# to treat returned web data as lines of text
 def fixupcode(code):
     if sys.version_info<(2,5):
-        return [l+"\n" for l in code.read().split("\n")]
+        if type(code)!=str:
+            code=code.read()
+        return [l+"\n" for l in code.split("\n")]
     if sys.version_info>=(3,0):
         if type(code)!=bytes:
             code=code.read()
