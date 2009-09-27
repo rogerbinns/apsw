@@ -86,7 +86,12 @@ class build_test_extension(Command):
     def finalize_options(self):
         pass
     def run(self):
-        os.system("gcc -fPIC -shared -o testextension.sqlext -Isqlite3 -I. src/testextension.c")
+        shared="shared"
+        if sys.platform.startswith("darwin"):
+            shared="bundle"
+        res=os.system("gcc -fPIC -%s -o testextension.sqlext -Isqlite3 -I. src/testextension.c" % (shared,))
+        if res!=0:
+            raise RuntimeError("Building test extension failed")
 
 
 # deal with various python version compatibility issues with how

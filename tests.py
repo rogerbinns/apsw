@@ -4898,10 +4898,12 @@ class APSW(unittest.TestCase):
         # so the disk file should remain zero length
         fn="testdb-async"
         self.db=apsw.Connection(fn, vfs=v2)
-        self.assertEqual(os.stat(fn).st_size, 0)
+        # Due to macos bugs SQLite writes the first byte of the file sometimes
+        # so length with be zero on other platforms and zero or one on macos.
+        self.assert_(os.stat(fn).st_size<=1)
         cur=self.db.cursor()
         cur.execute("create table foo(x,y);insert into foo values(1,2)")
-        self.assertEqual(os.stat(fn).st_size, 0)
+        self.assert_(os.stat(fn).st_size<=1)
         # Do a worker thread
         d={
             'workerstarted': False,
