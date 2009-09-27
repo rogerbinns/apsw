@@ -684,7 +684,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
 	  /* or an integer */
 	  if(PyIntLong_Check(constraint))
 	    {
-	      indexinfo->aConstraintUsage[i].argvIndex=PyIntLong_AsLong(constraint);
+	      indexinfo->aConstraintUsage[i].argvIndex=PyIntLong_AsLong(constraint)+1;
 	      Py_DECREF(constraint);
 	      continue;
 	    }
@@ -710,7 +710,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
 	  omitv=PyObject_IsTrue(omit);
 	  if(omitv==-1) 
             goto constraintfail;
-          indexinfo->aConstraintUsage[i].argvIndex=PyIntLong_AsLong(argvindex);
+          indexinfo->aConstraintUsage[i].argvIndex=PyIntLong_AsLong(argvindex)+1;
 	  indexinfo->aConstraintUsage[i].omit=omitv;
 	  Py_DECREF(constraint);
 	  Py_DECREF(argvindex);

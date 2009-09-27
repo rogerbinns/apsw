@@ -2191,17 +2191,17 @@ class APSW(unittest.TestCase):
                 if self._bestindexreturn==1:
                     assert idxnum==0
                     assert idxstr==None
-                    assert constraintargs==('A', 12.4, 'A', -1000)
+                    assert constraintargs==('foo', 'A', 12.4, 'A', -1000)
                     return
                 if self._bestindexreturn==2:
                     assert idxnum==997
                     assert idxstr==None
-                    assert constraintargs==('A', 12.4, 'A', -1000)
+                    assert constraintargs==('foo', 'A', 12.4, 'A', -1000)
                     return
                 # 3 or more
                 assert idxnum==997
                 assert idxstr==u(r"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}")
-                assert constraintargs==('A', 12.4, 'A', -1000)
+                assert constraintargs==('foo', 'A', 12.4, 'A', -1000)
 
             def Filter(self,  *args):
                 self.Filter99(*args)

@@ -5,6 +5,12 @@ Change History
 next
 ====
 
+Fixed `issue 72 <http://code.google.com/p/apsw/issues/detail?id=72>`__
+where APSW wasn't zero basing virtual table :meth:`~VTTable.BestIndex`
+constraints returned as documented.  If you have working BestIndex
+code then you need to update it for this release.  Thanks to Lefteris
+for finding this issue.
+
 Added the `SQLITE_LIMIT_TRIGGER_DEPTH
 <http://www.sqlite.org/c3ref/c_limit_attached.html>`__,
 `SQLITE_OPEN_PRIVATECACHE
