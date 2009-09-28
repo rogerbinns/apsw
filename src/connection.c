@@ -809,46 +809,6 @@ Connection_last_insert_rowid(Connection *self)
   return PyLong_FromLongLong(sqlite3_last_insert_rowid(self->db));
 }
 
-/** .. method:: complete(statement) -> bool
-
-  Returns True if the input string comprises one or more complete SQL
-  statements by looking for an unquoted trailing semi-colon.
-
-  An example use would be if you were prompting the user for SQL
-  statements and needed to know if you had a whole statement, or
-  needed to ask for another line::
-
-    statement=raw_input("SQL> ")
-    while not apsw.complete(statement):
-       more=raw_input("  .. ")
-       statement=statement+"\n"+more
-
-  -* sqlite3_complete
-*/
-static PyObject *
-Connection_complete(Connection *self, PyObject *args)
-{
-  char *statements=NULL;
-  int res;
-
-  CHECK_USE(NULL);
-  CHECK_CLOSED(self,NULL);
-  
-  if(!PyArg_ParseTuple(args, "es:complete(statement)", STRENCODING, &statements))
-    return NULL;
-
-  res=sqlite3_complete(statements);
-
-  PyMem_Free(statements);
-
-  if(res)
-    {
-      Py_INCREF(Py_True);
-      return Py_True;
-    }
-  Py_INCREF(Py_False);
-  return Py_False;
-}
 
 /** .. method:: interrupt()
 
@@ -3073,8 +3033,6 @@ static PyMethodDef Connection_methods[] = {
    "Creates a collation function"},
   {"last_insert_rowid", (PyCFunction)Connection_last_insert_rowid, METH_NOARGS,
    "Returns rowid for last insert"},
-  {"complete", (PyCFunction)Connection_complete, METH_VARARGS,
-   "Checks if a SQL statement is complete"},
   {"collationneeded", (PyCFunction)Connection_collationneeded, METH_O,
    "Sets collation needed callback"},
   {"setauthorizer", (PyCFunction)Connection_setauthorizer, METH_O,

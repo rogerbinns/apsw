@@ -236,7 +236,6 @@ class APSW(unittest.TestCase):
 
     connection_nargs={ # number of args for function.  those not listed take zero
         'createaggregatefunction': 2,
-        'complete': 1,
         'createcollation': 2,
         'createscalarfunction': 2,
         'collationneeded': 1,
@@ -1274,18 +1273,18 @@ class APSW(unittest.TestCase):
         "Completeness of SQL statement checking"
         # the actual underlying routine just checks that there is a semi-colon
         # at the end, not inside any quotes etc
-        self.failUnlessEqual(False, self.db.complete("select * from"))
-        self.failUnlessEqual(False, self.db.complete("select * from \";\""))
-        self.failUnlessEqual(False, self.db.complete("select * from \";"))
-        self.failUnlessEqual(True, self.db.complete("select * from foo; select *;"))
-        self.failUnlessEqual(False, self.db.complete("select * from foo where x=1"))
-        self.failUnlessEqual(True, self.db.complete("select * from foo;"))
-        self.failUnlessEqual(True, self.db.complete(u(r"select '\u9494\ua7a7';")))
+        self.failUnlessEqual(False, apsw.complete("select * from"))
+        self.failUnlessEqual(False, apsw.complete("select * from \";\""))
+        self.failUnlessEqual(False, apsw.complete("select * from \";"))
+        self.failUnlessEqual(True, apsw.complete("select * from foo; select *;"))
+        self.failUnlessEqual(False, apsw.complete("select * from foo where x=1"))
+        self.failUnlessEqual(True, apsw.complete("select * from foo;"))
+        self.failUnlessEqual(True, apsw.complete(u(r"select '\u9494\ua7a7';")))
         if not py3:
-            self.assertRaises(UnicodeDecodeError, self.db.complete, "select '\x94\xa7';")
-        self.assertRaises(TypeError, self.db.complete, 12) # wrong type
-        self.assertRaises(TypeError, self.db.complete)     # not enough args
-        self.assertRaises(TypeError, self.db.complete, "foo", "bar") # too many args
+            self.assertRaises(UnicodeDecodeError, apsw.complete, "select '\x94\xa7';")
+        self.assertRaises(TypeError, apsw.complete, 12) # wrong type
+        self.assertRaises(TypeError, apsw.complete)     # not enough args
+        self.assertRaises(TypeError, apsw.complete, "foo", "bar") # too many args
 
     def testBusyHandling(self):
         "Verify busy handling"

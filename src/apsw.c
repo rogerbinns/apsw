@@ -528,6 +528,44 @@ getapswexceptionfor(APSW_ARGUNUSED PyObject *self, PyObject *pycode)
   return result;
 }
 
+/** .. method:: complete(statement) -> bool
+
+  Returns True if the input string comprises one or more complete SQL
+  statements by looking for an unquoted trailing semi-colon.
+
+  An example use would be if you were prompting the user for SQL
+  statements and needed to know if you had a whole statement, or
+  needed to ask for another line::
+
+    statement=raw_input("SQL> ")
+    while not apsw.complete(statement):
+       more=raw_input("  .. ")
+       statement=statement+"\n"+more
+
+  -* sqlite3_complete
+*/
+static PyObject *
+apswcomplete(Connection *self, PyObject *args)
+{
+  char *statements=NULL;
+  int res;
+
+  if(!PyArg_ParseTuple(args, "es:complete(statement)", STRENCODING, &statements))
+    return NULL;
+
+  res=sqlite3_complete(statements);
+
+  PyMem_Free(statements);
+
+  if(res)
+    {
+      Py_INCREF(Py_True);
+      return Py_True;
+    }
+  Py_INCREF(Py_False);
+  return Py_False;
+}
+
 #if defined(APSW_TESTFIXTURES) && defined(APSW_USE_SQLITE_AMALGAMATION)
 /* a routine to reset the random number generator so that we can test xRandomness */
 static PyObject *
@@ -1034,6 +1072,8 @@ static PyMethodDef module_methods[] = {
    "Obtains random bytes"},
   {"exceptionfor", (PyCFunction)getapswexceptionfor, METH_O,
    "Returns exception instance corresponding to supplied sqlite error code"},
+  {"complete", (PyCFunction)apswcomplete, METH_VARARGS,
+   "Tests if a complete SQLite statement has been supplied (ie ends with ;)"},
 #if defined(APSW_TESTFIXTURES) && defined(APSW_USE_SQLITE_AMALGAMATION)
   {"test_reset_rng", (PyCFunction)apsw_test_reset_rng, METH_NOARGS,
    "Resets random number generator so we can test vfs xRandomness"},

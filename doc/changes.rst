@@ -5,11 +5,18 @@ Change History
 next
 ====
 
-Fixed `issue 72 <http://code.google.com/p/apsw/issues/detail?id=72>`__
-where APSW wasn't zero basing virtual table :meth:`~VTTable.BestIndex`
+**Backwards incompatible change** Fixed `issue 72
+<http://code.google.com/p/apsw/issues/detail?id=72>`__ where APSW
+wasn't zero basing virtual table :meth:`~VTTable.BestIndex`
 constraints returned as documented.  If you have working BestIndex
 code then you need to update it for this release.  Thanks to Lefteris
 for finding this issue.
+
+**Backwards incompatible change** The :meth:`~apsw.complete` method
+has moved from :class:`Connection` to :mod:`apsw` where it should have
+been all along.  You should now call :meth:`apsw.complete` instead.  (It
+even had an example showing it to be part of the module and not a
+specific connection!)
 
 Added the `SQLITE_LIMIT_TRIGGER_DEPTH
 <http://www.sqlite.org/c3ref/c_limit_attached.html>`__,
@@ -33,8 +40,9 @@ it will be automatically included and the :meth:`API
 <async_initialize>` provided.
 
 A :meth:`fork_checker` is available which turns on detection when you
-have used SQLite objects across a fork.  This is possible on Unix like
-operating systems, especially if you use the `multiprocessing module
+have used SQLite objects across a fork (a **very** bad thing).  This
+is possible on Unix like operating systems, especially if you use the
+`multiprocessing module
 <http://docs.python.org/library/multiprocessing.html>`__.
 
 Extension loading is now compiled in by default when using the
