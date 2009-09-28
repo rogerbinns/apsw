@@ -1843,7 +1843,7 @@ class APSW(unittest.TestCase):
                 e.extendedresult=(long("0x80")<<32)+apsw.SQLITE_IOERR_ACCESS # bigger than 32 bits
                 raise e
 
-
+        if not hasattr(self.db, "createmodule"): return
         self.db.createmodule("foo", Source())
         for i in "1", "2", "3":
             Source.Create=getattr(Source, "Create"+i)
@@ -4699,6 +4699,7 @@ class APSW(unittest.TestCase):
             self.assertRaises(ValueError, blob.read)
 
         # backup code
+        if not hasattr(self.db, "backup"): return # experimental
         db2=apsw.Connection(":memory:")
         run("""
           with db2.backup("main", self.db, "main") as b:
@@ -5639,7 +5640,10 @@ class APSW(unittest.TestCase):
                 blobid=row[0]
             blob=db.blobopen("main", "foo", "x", blobid, 0)
             db2=apsw.Connection(":memory:")
-            backup=db2.backup("main", db, "main")
+            if hasattr(db2, "backup"):
+                backup=db2.backup("main", db, "main")
+            else:
+                backup=None
             return (db,cur,blob,backup)
         # test the objects
         def teststuff(db, cur, blob, backup):
@@ -5794,8 +5798,9 @@ def setup(write=write):
     information."""
 
     print_version_info(write)
-    
-    apsw.config(apsw.SQLITE_CONFIG_MEMSTATUS, True) # ensure memory tracking is on
+
+    if hasattr(apsw, "config"):
+        apsw.config(apsw.SQLITE_CONFIG_MEMSTATUS, True) # ensure memory tracking is on
     apsw.initialize() # manual call for coverage
     memdb=apsw.Connection(":memory:")
     if not getattr(memdb, "enableloadextension", None):
@@ -5815,6 +5820,19 @@ def setup(write=write):
     # we also remove forkchecker if doing multiple iterations
     if not forkcheck or os.getenv("APSW_TEST_ITERATIONS"):
         del APSW.testzzForkChecker
+
+    # These tests are of experimental features
+    if not hasattr(memdb, "backup"):
+        del APSW.testBackup
+    if not hasattr(apsw, "config"):
+        del APSW.testConfig
+    if not hasattr(memdb, "limit"):
+        del APSW.testLimits
+    if not hasattr(memdb, "setprofile"):
+        del APSW.testProfile
+    if not hasattr(memdb, "createmodule"):
+        del APSW.testVtables
+        del APSW.testVTableExample
 
     # We can do extension loading but no extension present ...
     if getattr(memdb, "enableloadextension", None) and not os.path.exists(LOADEXTENSIONFILENAME):

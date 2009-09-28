@@ -847,7 +847,6 @@ Connection_interrupt(Connection *self)
     * :ref:`Example <example-limit>`
 
 */
-#ifdef EXPERIMENTAL
 static PyObject *
 Connection_limit(Connection *self, PyObject *args)
 {
@@ -861,7 +860,6 @@ Connection_limit(Connection *self, PyObject *args)
 
   return PyLong_FromLong(res);
 }
-#endif
 
 static void
 updatecb(void *context, int updatetype, char const *databasename, char const *tablename, sqlite3_int64 rowid)
@@ -1092,7 +1090,6 @@ Connection_setprofile(Connection *self, PyObject *callable)
 #endif /* EXPERIMENTAL - sqlite3_profile */
 
 
-#ifdef EXPERIMENTAL      /* commit hook */
 static int 
 commithookcb(void *context)
 {
@@ -1180,9 +1177,7 @@ Connection_setcommithook(Connection *self, PyObject *callable)
 
   Py_RETURN_NONE;
 }
-#endif  /* EXPERIMENTAL sqlite3_commit_hook */
 
-#ifdef EXPERIMENTAL      /* sqlite3_progress_handler */
 static int 
 progresshandlercb(void *context)
 {
@@ -1270,7 +1265,6 @@ Connection_setprogresshandler(Connection *self, PyObject *args)
 
   Py_RETURN_NONE;
 }
-#endif  /* EXPERIMENTAL sqlite3_progress_handler */
 
 static int 
 authorizercb(void *context, int operation, const char *paramone, const char *paramtwo, const char *databasename, const char *triggerview)
@@ -2632,6 +2626,8 @@ Connection_sqlite3pointer(Connection *self)
   return PyLong_FromVoidPtr(self->db);
 }
 
+#ifdef EXPERIMENTAL
+
 static struct sqlite3_module apsw_vtable_module;
 static void apswvtabFree(void *context);
 
@@ -2719,6 +2715,8 @@ Connection_overloadfunction(Connection *self, PyObject *args)
   
   Py_RETURN_NONE;
 }
+
+#endif
 
 /** .. method:: setexectrace(callable)
 
@@ -3043,15 +3041,15 @@ static PyMethodDef Connection_methods[] = {
    "Sets a callable invoked before each rollback"},
   {"blobopen", (PyCFunction)Connection_blobopen, METH_VARARGS,
    "Opens a blob for i/o"},
-#ifdef EXPERIMENTAL
-  {"limit", (PyCFunction)Connection_limit, METH_VARARGS,
-   "Gets and sets limits"},
-  {"setprofile", (PyCFunction)Connection_setprofile, METH_O,
-   "Sets a callable invoked with profile information after each statement"},
-  {"setcommithook", (PyCFunction)Connection_setcommithook, METH_O,
-   "Sets a callable invoked before each commit"},
   {"setprogresshandler", (PyCFunction)Connection_setprogresshandler, METH_VARARGS,
    "Sets a callback invoked periodically during long running calls"},
+  {"setcommithook", (PyCFunction)Connection_setcommithook, METH_O,
+   "Sets a callback invoked on each commit"},
+  {"limit", (PyCFunction)Connection_limit, METH_VARARGS,
+   "Gets and sets limits"},
+#ifdef EXPERIMENTAL
+  {"setprofile", (PyCFunction)Connection_setprofile, METH_O,
+   "Sets a callable invoked with profile information after each statement"},
 #if !defined(SQLITE_OMIT_LOAD_EXTENSION)
   {"enableloadextension", (PyCFunction)Connection_enableloadextension, METH_O,
    "Enables loading of SQLite extensions from shared libraries"},
@@ -3060,6 +3058,8 @@ static PyMethodDef Connection_methods[] = {
 #endif
   {"createmodule", (PyCFunction)Connection_createmodule, METH_VARARGS,
    "registers a virtual table"},
+  {"overloadfunction", (PyCFunction)Connection_overloadfunction, METH_VARARGS,
+   "overloads function for virtual table"},
   {"backup", (PyCFunction)Connection_backup, METH_VARARGS,
    "starts a backup"},
 #endif
@@ -3067,8 +3067,6 @@ static PyMethodDef Connection_methods[] = {
    "file control"},
   {"sqlite3pointer", (PyCFunction)Connection_sqlite3pointer, METH_NOARGS,
    "gets underlying pointer"},
-  {"overloadfunction", (PyCFunction)Connection_overloadfunction, METH_VARARGS,
-   "overloads function for virtual table"},
   {"setexectrace", (PyCFunction)Connection_setexectrace, METH_O,
    "Installs a function called for every statement executed"},
   {"setrowtrace", (PyCFunction)Connection_setrowtrace, METH_O,
