@@ -949,7 +949,8 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
 
   query=PyTuple_GET_ITEM(args, 0);
   if (PyTuple_GET_SIZE(args)==2)
-    self->bindings=PyTuple_GET_ITEM(args, 1);
+    if (PyTuple_GET_ITEM(args, 1)!=Py_None)
+      self->bindings=PyTuple_GET_ITEM(args, 1);
 
   if(self->bindings)
     {
