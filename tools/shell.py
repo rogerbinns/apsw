@@ -4,6 +4,8 @@ import sys
 import apsw
 import shlex
 import os
+import csv
+import re
 
 print "apsw is",apsw.__file__
 
@@ -43,12 +45,21 @@ class Shell:
         self.dbfilename=None
         self.prompt=    "sqlite> "
         self.moreprompt="    ..> "
-        self.seperator="|"
+        self.separator="|"
         self.bail=False
         self.echo=False
         self.header=False
         self.nullvalue=""
         self.output=self.output_list
+        self.widths=[]
+        # do we truncate output in list mode?  (explain doesn't, regular does)
+        self.truncate=True
+        # a stack of previous outputs. turning on explain saves previous, off restores
+        self._output_stack=[]
+        # save initial (default) output settings
+        self.push_output()
+
+        # other stuff
         self.encoding=encoding
         if stdin is None: stdin=sys.stdin
         if stdout is None: stdout=sys.stdout
@@ -142,9 +153,9 @@ class Shell:
                 # A pretty gnarly thing to do
                 sys.exit(0)
             
-            # only remaining args are output modes
+            # only remaining known args are output modes
             if getattr(self, "output_"+args[0], None):
-                self.output=getattr(self, "output_"+args[0])
+                self.command_mode(args[:1])
                 args=args[1:]
                 continue
                 
@@ -158,6 +169,9 @@ class Shell:
 
         for s in sqls:
             self.process_sql(s)
+
+    def process_unknown_args(self, args):
+        return None
 
     def usage(self):
         "Returns the usage message"
@@ -187,10 +201,220 @@ OPTIONS include:
 """
         return msg.lstrip()
 
+    ###
+    ### The various output routines.  They are always called with the
+    ### header irrespective of the setting allowing for some per query
+    ### setup. (see output_column for example).
+    ### 
+    ###
+
+    if sys.version_info>=(3,0):
+        _string_types=(str,)
+        _binary_types=(bytes,)
+    else:
+        _string_types=(str,unicode)
+        _binary_types=(buffer,)
+
+    def _fmt_text_col(self, v):
+        if v is None:
+            return self.nullvalue
+        elif isinstance(v, self._string_types):
+            return v
+        elif isinstance(v, self._binary_types):
+            # sqlite gives back raw bytes!
+            return "<Binary data>"
+        else:
+            return "%s" % (v,)
+            
+
+    def output_column(self, header, line):
+        """Items left aligned in space padded columns
+
+        The SQLite shell has rather bizarre behaviour.  If the width hasn't been
+        specified for a column then 10 is used unless the column name (header) is
+        longer in which case that is used.
+        """
+        # as an optimization we calculate self._actualwidths which is
+        # reset for each query
+        if header:
+            # calculate _actualwidths
+            widths=self.widths[:len(line)]
+            while len(widths)<len(line):
+                i=len(widths)
+                text=self._fmt_text_col(line[i])
+                if len(text)<10:
+                    widths.append(10)
+                else:
+                    widths.append(len(text))
+            self._actualwidths=widths
+                                        
+            if self.header:
+                # output the headers
+                self.output_column(False, line)
+                self.output_column(False, ["-"*widths[i] for i in range(len(widths))])
+
+            return
+
+        if self.truncate:
+            cols=["%-*.*s" % (self._actualwidths[i], self._actualwidths[i], self._fmt_text_col(line[i])) for i in range(len(line))]
+        else:
+            cols=["%-*s" % (self._actualwidths[i],  self._fmt_text_col(line[i])) for i in range(len(line))]
+        self._write(self.stdout, " ".join(cols)+"\n")
+
+    def output_csv(self, header, line):
+        "Items in csv format using current separator"
+        # we use self._csv for the work, setup when header is
+        # supplied. _csv is a tuple of a StringIO and the csv.writer
+        # instance
+        if header:
+            if sys.version_info<(3,0):
+                import StringIO
+                s=StringIO.StringIO()
+            else:
+                import io
+                s=io.StringIO()
+            import csv
+            writer=csv.writer(s, delimiter=self.separator)
+            self._csv=(s, writer)
+            if self.header:
+                self.output_csv(False, line)
+            return
+        line=[self._fmt_text_col(l) for l in line]
+        self._csv[1].writerow(line)
+        t=self._csv[0].getvalue()
+        self._csv[0].truncate(0)
+        if t.endswith("\r\n"):
+            t=t[:-2]
+        elif t.endswith("\r") or t.endswith("\n"):
+            t=t[:-1]
+        self._write(self.stdout, t+"\n")
+
+    def _fmt_sql_identifier(self, v):
+        "Return the string quoted if needed"
+        nonalnum=re.sub("[A-Za-z_0-9]+", "", v)
+        if len(nonalnum)==0:
+            return v
+        # double quote it unless there are any
+        if '"' in nonalnum:
+            return "[%s]" % (v,)
+        return '"%s"' % (v,)
+
+    def _fmt_sql_value(self, v):
+        if v is None:
+            return "NULL"
+        elif isinstance(v, self._string_types):
+            return "'"+v.replace("'", "''")+"'"
+        elif isinstance(v, self._binary_types):
+            res=["X'"]
+            if sys.version_info<(3,0):
+                trans=lambda x: ord(x)
+            else:
+                trans=lambda x: x
+            for byte in v:
+                res.append("%02X" % (trans(byte),))
+            res.append("'")
+            return "".join(res)
+        else:
+            return "%s" % (v,)
+
+    def output_insert(self, header, line):
+        if header:
+            return
+        out="INSERT INTO "+self._fmt_sql_identifier(self._output_table)+" VALUES("+",".join([self._fmt_sql_value(l) for l in line])+");\n"
+        self._write(self.stdout, out)
+
+    def output_line(self, header, line):
+        if header:
+            w=5
+            for l in line:
+                if len(l)>w:
+                    w=len(l)
+            self._line_info=(w, line)
+            return
+        w=self._line_info[0]
+        for i in range(len(line)):
+            self._write(self.stdout, "%*s = %s\n" % (w, self._line_info[1][i], self._fmt_text_col(line[i])))
+        self._write(self.stdout, "\n")
+
     def output_list(self, header, line):
         "All items on one line with separator"
-        print header, line
+        if header and not self.header:
+            return
+        fmt=self._fmt_text_col
+        self._write(self.stdout, self.separator.join([fmt(x) for x in line])+"\n")
 
+    def _fmt_html_col(self, v):
+        return self._fmt_text_col(v).\
+           replace("&", "&amp;"). \
+           replace("<", "&gt;"). \
+           replace(">", "&lt;")
+        
+
+    def output_html(self, header, line):
+        "HTML table style"
+        if header and not self.header:
+            return
+        line=[self._fmt_html_col(l) for l in line]
+        out=["<TR>"]
+        for l in line:
+            out.append(("<TD>","<TH>")[header])
+            out.append(l)
+            out.append(("</TD>\n","</TH>\n")[header])
+        out.append("</TR>\n")
+        self._write(self.stdout, "".join(out))
+
+    def _backslashify(self, s):
+        v=['"']
+        for c in s:
+            if c=="\\":
+                v.append("\\\\")
+            elif c=="\r":
+                v.append("\\r")
+            elif c=="\n":
+                v.append("\\n")
+            elif c=="\t":
+                v.append("\\t")
+            else:
+                # in theory could check for how 'printable' the char is
+                v.append(c)
+        v.append('"')
+        return "".join(v)
+
+    # bytes that are ok in C strings - no need for quoting
+    _printable=[ord(x) for x in
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*()`_-+={}[]:;,.<>/?|"
+                ]
+
+    def _fmt_c_string(self, v):
+        if isinstance(v, self._string_types):
+            return self._backslashify(v)
+        elif v is None:
+            return '"'+self.nullvalue+'"'
+        elif isinstance(v, self._binary_types):
+            res=['"']
+            if sys.version_info<(3,0):
+                o=lambda x: ord(x)
+            else:
+                o=lambda x: x
+            for c in v:
+                if o(c) in self._printable:
+                    res.append(o)
+                else:
+                    res.append("\\x%02X" % (o(c),))
+            res.append('"')
+            return "".join(res)
+        else:
+            return '"%s"' % (v,)
+    
+
+    def output_tcl(self, header, line):
+        "Outputs TCL/C style strings using current separator"
+        # In theory you could paste the output into your source ...
+        if header and not self.header:
+            return
+        self._write(self.stdout, self.separator.join([self._fmt_c_string(l) for l in line])+"\n")
+
+        
     def cmdloop(self, intro=None, display_exceptions=True):
         """Runs the main command loop.
 
@@ -277,9 +501,10 @@ Enter SQL statements terminated with a ";"
         eval=sys.exc_info()[1] # py2&3 compatible way of doing this
         if not display or isinstance(eval, SystemExit):
             raise
-        if isinstance(eval, (self.Error, apsw.Error)):
+        if isinstance(eval, (self.Error, apsw.Error, ValueError)):
             text=eval.args[0]
         else:
+            print sys.exc_info()
             import pdb ; pdb.set_trace()
             pass
         if not text.endswith("\n"):
@@ -313,10 +538,9 @@ Enter SQL statements terminated with a ";"
         # processing loop
         for row in cur.execute(sql, bindings):
             if state['newsql']:
-                # output a header
-                if self.header:
-                    cols=[h for h,d in cur.getdescription()]
-                    self.output(True, cols)
+                # output a header always
+                cols=[h for h,d in cur.getdescription()]
+                self.output(True, cols)
                 state['newsql']=False
             self.output(False, row)
             
@@ -325,6 +549,8 @@ Enter SQL statements terminated with a ";"
         It is split into parts using the shlex.split function which is roughly the
         same method used by Unix/POSIX shells.
         """
+        if self.echo:
+            self._write(self.stderr, cmd+"\n")
         cmd=shlex.split(cmd)
         assert cmd[0][0]=="."
         cmd[0]=cmd[0][1:]
@@ -334,10 +560,244 @@ Enter SQL statements terminated with a ";"
         exit=bool(fn(cmd[1:]))
         return exit
 
+    def command_bail(self, cmd):
+        if len(cmd)!=1:
+            raise self.Error("bail 'ON' or 'OFF'")
+        if cmd[0].lower()=="on":
+            self.bail=True
+        elif cmd[0].lower()=="off":
+            self.bail=False
+        else:
+            raise self.Error("Expected 'ON' or 'OFF'")
+        return False
+
+    def command_echo(self, cmd):
+        if len(cmd)!=1:
+            raise self.Error("echo 'ON' or 'OFF'")
+        if cmd[0].lower()=="on":
+            self.echo=True
+        elif cmd[0].lower()=="off":
+            self.echo=False
+        else:
+            raise self.Error("Expected 'ON' or 'OFF'")
+        return False
+
     def command_exit(self, cmd):
         if len(cmd):
             raise self.Error("Exit doesn't take any parameters")
         return True
+
+    def command_explain(self, cmd):
+        if len(cmd)>1:
+            raise self.Error("explain takes at most one parameter")
+        if len(cmd)==0 or cmd[0].lower()=="on":
+            self.push_output()
+            self.header=True
+            self.widths=[4,13,4,4,4,13,2,13]
+            self.truncate=False
+            self.output=self.output_column
+        elif cmd[0].lower()=="off":
+            self.pop_output()
+        else:
+            raise self.Error("Unknown value for explain")
+
+    def command_header(self, cmd):
+        if len(cmd)!=1:
+            raise self.Error("header takes exactly one parameter")
+        if cmd[0].lower()=="on":
+            self.header=True
+        elif cmd[0].lower()=="off":
+            self.header=False
+        else:
+            raise self.Error("Expected 'ON' or 'OFF'")
+        return False
+
+    command_headers=command_header
+
+    _output_modes=None
+    
+    def command_mode(self, cmd):
+        if len(cmd) in (1,2):
+            w=cmd[0]
+            if w=="tabs":
+                w="list"
+            m=getattr(self, "output_"+w, None)
+            if w!="insert":
+                if len(cmd)==2:
+                    raise self.Error("Output mode %s doesn't take parameters" % (cmd[0]))
+            if m:
+                self.output=m
+                # set some defaults
+                self.truncate=True
+                if cmd[0]=="csv":
+                    self.separator=","
+                elif cmd[0]=="tabs":
+                    self.separator="\t"
+                else:
+                    pass
+                    #self.separator=self._output_stack[0]["separator"]
+                if w=="insert":
+                    if len(cmd)==2:
+                        self._output_table=cmd[1]
+                    else:
+                        self._output_table="table"
+                return False
+        if not self._output_modes:
+            self._cache_output_modes()
+        raise self.Error("Expected a valid output mode: "+", ".join(self._output_modes))
+
+    # needed so command completion can call it
+    def _cache_output_modes(self):
+        modes=[m[len("output_"):] for m in dir(self) if m.startswith("output_")]
+        modes.append("tabs")
+        modes.sort()
+        self._output_modes=modes
+
+    def command_separator(self, cmd):
+        if len(cmd)!=1:
+            raise self.Error("separator takes exactly one parameter")
+        self.separator=self.fixup_backslashes(cmd[0])
+        return False
+
+    _shows=("echo", "explain", "headers", "mode", "nullvalue", "output", "separator", "width")
+
+    def command_show(self, cmd):
+        if len(cmd)>1:
+            raise self.Error("show takes at most one parameter")
+        if len(cmd):
+            what=cmd[0]
+            if what not in _shows:
+                raise self.Error("Unknown show: '%s'" % (what,))
+        else:
+            what=None
+
+        outs=[]
+        for i in self._shows:
+            k=i
+            if what and i!=what:
+                continue
+            # boolean settings
+            if i in ("echo", "headers"):
+                if i=="headers": i="header"
+                v="off"
+                if getattr(self, i):
+                    v="on"
+            elif i=="explain":
+                # we cheat by looking at truncate setting!
+                v="on"
+                if self.truncate:
+                    v="off"
+            elif i in ("nullvalue", "separator"):
+                v='"'+self._backslashify(getattr(self, i))+'"'
+            elif i=="mode":
+                if not self._output_modes:
+                    self._cache_output_modes()
+                for v in self._output_modes:
+                    if self.output==getattr(self, "output_"+v):
+                        break
+                else:
+                    assert False, "Bug: didn't find output mode"
+            elif i=="output":
+                if self.stdout is self.original_stdout:
+                    v="stdout"
+                else:
+                    v=self.stdout.name
+            elif i=="width":
+                v=" ".join(["%d"%(i,) for i in self.widths])
+            else:
+                assert False, "Bug: unknown show handling"
+            outs.append( (k,v) )
+
+        # find width of k column
+        l=0
+        for k,v in outs:
+            if len(k)>l:
+                l=len(k)
+
+        for k,v in outs:
+            self._write(self.stdout, "%*.*s: %s\n" % (l,l, k, v))
+            
+        return False
+            
+
+    def command_width(self, cmd):
+        # Code is a bit crazy.  SQLite sets the widths as specified
+        # except a zero truncates the widths at that point.  If the
+        # new widths are less than old then old ones longer than new
+        # ones remain.
+        #
+        # sqlite> .width 1 2 3 0 4 5 6
+        #   width: 1 2 3 
+        # sqlite> .width 99
+        #   width: 99 2 3 
+        #
+        # This whole zero behaviour is probably because it doesn't
+        # check the numbers are actually valid - just uses atoi
+        w=[]
+        for i in cmd:
+            try:
+                n=int(i)
+                if n==0:
+                    self.widths=w
+                    return
+                w.append(n)
+            except:
+                raise self.Error("'%s' is not a valid number" % (i,))
+        self.widths=w+self.widths[len(w):]
+        return False
+
+
+    def push_output(self):
+        o={}
+        for k in "separator", "header", "nullvalue", "output", "widths", "truncate":
+            o[k]=getattr(self, k)
+        self._output_stack.append(o)
+
+    def pop_output(self):
+        # first item should always be present
+        assert len(self._output_stack)
+        if len(self._output_stack)==1:
+            o=self._output_stack[0]
+        else:
+            o=self._output_stack.pop()
+        for k,v in o.items():
+            setattr(self,k,v)
+            
+
+    def fixup_backslashes(self, s):
+        """Implements for various backlash sequences in s
+
+        This function is needed because shlex does not do it for us.
+        """
+        if "\\" not in s: return s
+        # See the resolve_backslashes function in SQLite shell source
+        res=[]
+        i=0
+        while i<len(s):
+            if s[i]!="\\":
+                res.append(s[i])
+                i+=1
+                continue
+            i+=1
+            if i>=len(s):
+                raise self.Error("Backslash with nothing following")
+            c=s[i]
+            i+=1 # advance again
+            if c=="\\":
+                res.append(c)
+                continue
+            if c=="n":
+                res.append("\n")
+                continue
+            if c=="t":
+                res.append("\t")
+                continue
+            if c=="r":
+                res.append("\r")
+                continue
+            raise self.Error("Unknown backslash sequence \\"+c)
+        return "".join(res)
+                
 
     if sys.version_info<(3,0):
         def _write(self, dest, text):
@@ -384,7 +844,7 @@ Enter SQL statements terminated with a ";"
         """Return a possible completion for readline
 
         This function is called with state starting at zero to get the
-        first completion, the one etc until you return None.  The best
+        first completion, then one etc until you return None.  The best
         implementation is to generate the list when state==0, save it,
         and provide members on each increase.
         """
@@ -396,7 +856,7 @@ Enter SQL statements terminated with a ";"
             beg=readline.get_begidx()
             end=readline.get_endidx()
             # Are we matching a command?
-            if line[:end].startswith("."):
+            if line.startswith("."):
                 self.completions=self.complete_command(line, token, beg, end)
             else:
                 self.completions=self.complete_sql(line, token, beg, end)
@@ -435,9 +895,8 @@ Enter SQL statements terminated with a ";"
                     for col in (1,2):
                         if row[col] not in other and not row[col].startswith("sqlite_"):
                             other.append(row[col])
-                    # http://www.sqlite.org/src/tktview/668fe2263793beea87df571d646a0b8be2ecc4dc
-                    if row[0]=="table" and db=="main":
-                        for table in cur.execute("pragma table_info([%s])" % (row[1],)).fetchall():
+                    if row[0]=="table":
+                        for table in cur.execute("pragma [%s].table_info([%s])" % (db, row[1],)).fetchall():
                             if table[1] not in other:
                                 other.append(table[1])
                             for item in table[2].split():
@@ -472,6 +931,18 @@ Enter SQL statements terminated with a ";"
                         if w not in res:
                             res.append(w)
         return res
+
+    _builtin_commands=None
+
+    def complete_command(self, line, token, beg, end):
+        if not self._builtin_commands:
+            self._builtin_commands=["."+x[len("command_"):] for x in dir(self) if x.startswith("command_") and x!="command_headers"]
+        if beg==0:
+            return [x for x in self._builtin_commands if x.startswith(token)]
+        return None
+        # could in theory work out parameter completions too
+        print "\n",`line`,`token`,beg,end
+        return None
 
 if __name__=='__main__':
     try:
