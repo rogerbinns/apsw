@@ -6,6 +6,7 @@ import shlex
 import os
 import csv
 import re
+import textwrap
 
 print "apsw is",apsw.__file__
 
@@ -363,6 +364,39 @@ OPTIONS include:
         out.append("</TR>\n")
         self._write(self.stdout, "".join(out))
 
+    def _fmt_python(self, v):
+        if v is None:
+            return "None"
+        elif isinstance(v, self._string_types):
+            # ::TODO:: we need to \u escape stuff
+            # if something is entirely in ascii then
+            # no need for u prefix
+            return repr(v)
+        elif isinstance(v, self._binary_types):
+            if sys.version_info<(3,0):
+                res=["buffer(\""]
+                for i in v:
+                    if ord(i) in self._printable:
+                        res.append(i)
+                    else:
+                        res.append("\\x%02X" % (ord(i),))
+                res.append("\")")
+                return "".join(res)
+            else:
+                res=['b"']
+                for i in v:
+                    res.append("%02X" % (i,))
+                res.append('"')
+                return "".join(res)
+        else:
+            return "%s" % (v,)
+
+    def output_python(self, header, line):
+        "Tuples in Python source form for each row"
+        if header and not self.header:
+            return
+        self._write(self.stdout, '('+", ".join([self._fmt_python(l) for l in line])+"),\n")
+
     def _backslashify(self, s):
         v=['"']
         for c in s:
@@ -476,16 +510,19 @@ Enter SQL statements terminated with a ";"
                             command=command+"\n"+line
                     if exit: break
                     try:
+                        # To match sqlite shell we only bail on sql not commands
+                        canbail=True # ::TODO:: set this back to false
                         if command[0]==".":
                             exit=self.process_command(command)
                             continue
+                        canbail=True
                         self.process_sql(command)
                     except KeyboardInterrupt:
                         self.db.interrupt()
                         raise
                     except:
                         self.handle_exception(display_exceptions)
-                        if self.bail:
+                        if canbail and self.bail:
                             break
                 except KeyboardInterrupt:
                     self._write(self.stdout, "^C\n")
@@ -504,7 +541,8 @@ Enter SQL statements terminated with a ";"
         if isinstance(eval, (self.Error, apsw.Error, ValueError)):
             text=eval.args[0]
         else:
-            print sys.exc_info()
+            import traceback
+            traceback.print_exc()
             import pdb ; pdb.set_trace()
             pass
         if not text.endswith("\n"):
@@ -560,7 +598,48 @@ Enter SQL statements terminated with a ";"
         exit=bool(fn(cmd[1:]))
         return exit
 
+    ###
+    ### Commands start here
+    ###
+
+    # Note that doc text is used for generating help output.
+
+    def command_backup(self, cmd):
+        """backup ?DB? FILE: Backup DB (default "main") to FILE
+
+        Copies the contents of the current database to FILE
+        overwriting whatever was in FILE.  If you have attached databases
+        then you can specify their name instead of the default of "main".
+
+        The backup is done at the page level - SQLite copies the pages
+        as is.  There is no round trip through SQL code.
+        """
+        dbname="main"
+        if len(cmd)==1:
+            fname=cmd[0]
+        elif len(cmd)==2:
+            dbname=cmd[0]
+            fname=cmd[1]
+        else:
+            raise self.Error("Backup takes one or two parameters")
+        self.ensure_db()
+        out=apsw.Connection(fname)
+        b=out.backup(dbname, self.db, "main")
+        try:
+            while not b.done:
+                b.step()
+        finally:
+            b.finish()
+            out.close()
+        return False
+
     def command_bail(self, cmd):
+        """bail ON|OFF: Stop after hitting a SQL error (default OFF)
+
+        If an error is encountered while processing SQL then exit.
+        Errors in dot commands do not cause an exit no matter what the
+        bail setting.
+        """
         if len(cmd)!=1:
             raise self.Error("bail 'ON' or 'OFF'")
         if cmd[0].lower()=="on":
@@ -572,6 +651,11 @@ Enter SQL statements terminated with a ";"
         return False
 
     def command_echo(self, cmd):
+        """echo ON|OFF: If ON then each SQL statement or command is printed before execution (default OFF)
+
+        The SQL statement or command is sent to error output so that
+        it is not intermingled with regular output.
+        """
         if len(cmd)!=1:
             raise self.Error("echo 'ON' or 'OFF'")
         if cmd[0].lower()=="on":
@@ -583,11 +667,25 @@ Enter SQL statements terminated with a ";"
         return False
 
     def command_exit(self, cmd):
+        """exit:Exit this program
+
+        """
         if len(cmd):
             raise self.Error("Exit doesn't take any parameters")
         return True
 
     def command_explain(self, cmd):
+        """explain ON|OFF: Set output mode suitable for explain (default OFF)
+
+        Explain shows the underlying SQLite virtual machine code for a
+        statement.  You need to prefix the SQL with explain.  For example:
+
+           explain select * from table;
+
+        This output mode formats the explain output nicely.  If you do
+        '.explain OFF' then the output mode and settings in place when
+        you did '.explain ON' are restored.
+        """
         if len(cmd)>1:
             raise self.Error("explain takes at most one parameter")
         if len(cmd)==0 or cmd[0].lower()=="on":
@@ -602,6 +700,9 @@ Enter SQL statements terminated with a ";"
             raise self.Error("Unknown value for explain")
 
     def command_header(self, cmd):
+        """header(s) ON|OFF: Display the column names in output (default OFF)
+
+        """
         if len(cmd)!=1:
             raise self.Error("header takes exactly one parameter")
         if cmd[0].lower()=="on":
@@ -614,9 +715,100 @@ Enter SQL statements terminated with a ";"
 
     command_headers=command_header
 
+    _help_info=None
+    
+    def command_help(self, cmd):
+        """help ?COMMAND?: Shows list of commands and their usage.  If COMMAND is specified then shows detail about that COMMAND.  ('.help all' will show detailed help about all commands.)
+        """
+        if not self._help_info:
+            # buildup help database
+            self._help_info={}
+            for c in dir(self):
+                if not c.startswith("command_"):
+                    continue
+                # help is 3 parts
+                # - the syntax string (eg backup ?dbname? filename)
+                # - the one liner description (eg saves database to filename)
+                # - the multi-liner detailed description
+                # We grab this from the doc string for the function in the form
+                #   syntax: one liner\nmulti\nliner
+                d=getattr(self, c).__doc__
+                assert d, c+" command must have documentation"
+                c=c[len("command_"):]
+                while d[0]=="\n":
+                    d=d[1:]
+                parts=d.split("\n", 1)
+                firstline=parts[0].strip().split(":", 1)
+                assert len(firstline)==2, c+" command must have usage: description doc"
+                if c=="mode":
+                    if not self._output_modes:
+                        self._cache_output_modes()
+                    firstline[1]=firstline[1]+" ".join(self._output_modes)
+                multi=textwrap.dedent(parts[1])
+                if len(multi.strip())==0: # All whitespace
+                    multi=None
+                else:
+                    multi=multi.strip("\n")
+                    # we need to keep \n\n as a newline but turn all others into spaces
+                    multi=multi.replace("\n\n", "\x00")
+                    multi=multi.replace("\n", " ")
+                    multi=multi.replace("\x00", "\n\n")
+                self._help_info[c]=('.'+firstline[0].strip(), firstline[1].strip(), multi)
+
+        tw=self._terminal_width()
+        if len(cmd)==0:
+            commands=self._help_info.keys()
+            commands.sort()
+            w=0
+            for command in commands:
+                if len(self._help_info[command][0])>w:
+                    w=len(self._help_info[command][0])
+            out=[]
+            for command in commands:
+                hi=self._help_info[command]
+                # usage string
+                out.append(hi[0])
+                # space padding (including 2 for between columns)
+                out.append(" "*(2+w-len(hi[0])))
+                # usage message wrapped if need be
+                out.append(("\n"+" "*(2+w)).join(textwrap.wrap(hi[1], tw-w-2)))
+                # newline
+                out.append("\n")
+            self._write(self.stderr, "".join(out))
+        else:
+            if cmd[0]=="all":
+                cmd=self._help_info.keys()
+                cmd.sort()
+            for command in cmd:
+                if command not in self._help_info:
+                    raise self.Error("No such command \"%s\"" % (command,))
+                out=[]
+                hi=self._help_info[command]
+                # usage string
+                out.append(hi[0])
+                # space padding (2)
+                out.append("  ")
+                # usage message wrapped if need be
+                out.append(("\n"+" "*(2+len(hi[0]))).join(textwrap.wrap(hi[1], tw-len(hi[0])-2))+"\n")
+                if hi[2]:
+                    # two newlines
+                    out.append("\n")
+                    # detailed message
+                    out.append(textwrap.fill(hi[2], tw))
+                    # last newline
+                    out.append("\n")
+                # if not first one then print separator header
+                if command!=cmd[0]:
+                    self._write(self.stderr, "\n"+"="*(tw-4)+"\n")
+                self._write(self.stderr, "".join(out))
+        return False
+        
     _output_modes=None
     
     def command_mode(self, cmd):
+        """mode MODE ?TABLE?: Sets output mode to one of
+
+        """
         if len(cmd) in (1,2):
             w=cmd[0]
             if w=="tabs":
@@ -653,7 +845,44 @@ Enter SQL statements terminated with a ";"
         modes.sort()
         self._output_modes=modes
 
+    def command_restore(self, cmd):
+        """restore ?DB? FILE:
+        
+        Copies the contents of FILE to the current database (default "main").
+        The backup is done at the page level - SQLite copies the pages as
+        is.  There is no round trip through SQL code
+        """
+        dbname="main"
+        if len(cmd)==1:
+            fname=cmd[0]
+        elif len(cmd)==2:
+            dbname=cmd[0]
+            fname=cmd[1]
+        else:
+            raise self.Error("Restore takes one or two parameters")
+        self.ensure_db()
+        input=apsw.Connection(fname)
+        b=self.db.backup(dbname, input, "main")
+        try:
+            while not b.done:
+                b.step()
+        finally:
+            b.finish()
+            input.close()
+        return False
+
     def command_separator(self, cmd):
+        """separator STRING: Change separator for output mode and .import
+
+        You can use quotes and backslashes.  For example to set the
+        separator to space tab space you can use:
+
+          .separator " \t "
+
+        The setting is automatically changed when you switch to csv or
+        tabs output mode.  You should also set it before doing an
+        import (ie , for CSV and \t for TSV).
+        """
         if len(cmd)!=1:
             raise self.Error("separator takes exactly one parameter")
         self.separator=self.fixup_backslashes(cmd[0])
@@ -662,6 +891,8 @@ Enter SQL statements terminated with a ";"
     _shows=("echo", "explain", "headers", "mode", "nullvalue", "output", "separator", "width")
 
     def command_show(self, cmd):
+        """show: Show the current values for various settings.
+        """
         if len(cmd)>1:
             raise self.Error("show takes at most one parameter")
         if len(cmd):
@@ -721,6 +952,12 @@ Enter SQL statements terminated with a ";"
             
 
     def command_width(self, cmd):
+        """width NUM NUM ...: Set the column widths for "column" mode
+
+        In "column" output mode, each column is a fixed width with values truncated to
+        fit.  The default column width is 10 characters which you can change
+        column by column with this command.
+        """
         # Code is a bit crazy.  SQLite sets the widths as specified
         # except a zero truncates the widths at that point.  If the
         # new widths are less than old then old ones longer than new
@@ -746,6 +983,30 @@ Enter SQL statements terminated with a ";"
         self.widths=w+self.widths[len(w):]
         return False
 
+    def _terminal_width(self):
+        try:
+            if sys.platform=="win32":
+                import ctypes, struct
+                h=ctypes.windll.kernel32.GetStdHandle(-12) # -12 is stderr
+                buf=ctypes.create_string_buffer(22)
+                if windll.kernel32.GetConsoleScreenBufferInfo(h, buf):
+                    _,_,_,_,_,left,top,right,bottom,_,_=struct.unpack("hhhhHhhhhhh", buf.raw)
+                    return right-left+1
+                raise Exception()
+            else:
+                # posix
+                import struct, fcntl, termios
+                s=struct.pack('HHHH', 0,0,0,0)
+                x=fcntl.ioctl(2, termios.TIOCGWINSZ, s)
+                return struct.unpack('HHHH', x)[1]
+        except:
+            try:
+                v=int(os.getenv("COLUMNS"))
+                if v<10:
+                    return 80
+                return v
+            except:
+                return 80
 
     def push_output(self):
         o={}
