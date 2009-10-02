@@ -36,6 +36,7 @@ Contents:
    backup
    vtable
    vfs
+   shell
 
    exceptions
    types

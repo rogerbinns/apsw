@@ -23,7 +23,7 @@ import sys, os
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = []
+extensions = ['sphinx.ext.autodoc'] #, 'sphinx.ext.intersphinx']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['.templates']
@@ -184,3 +184,16 @@ latex_documents = [
 pdf_documents=[
   ('index', project, "%s %s Documentation" % (project, version), 'Roger Binns <rogerb@rogerbinns.com>'),
 ]
+
+
+
+### Extra gunk
+
+def skip_Shell_members(app, what, name, obj, skip, options):
+    if name.startswith("command_") or name.startswith("output_"):
+        print "skipping", name
+        return True
+    return skip
+
+def setup(app):
+    app.connect('autodoc-skip-member', skip_Shell_members)

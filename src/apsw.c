@@ -1102,6 +1102,8 @@ static PyMethodDef module_methods[] = {
 };
 
 
+static void add_shell(PyObject *module);
+
 
 #if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef apswmoduledef={
@@ -1554,6 +1556,8 @@ modules etc. For example::
 
  }
 
+ add_shell(m);
+
  if(!PyErr_Occurred())
       {
         return
@@ -1570,6 +1574,60 @@ modules etc. For example::
           NULL
 #endif
           ;
+}
+
+static void
+add_shell(PyObject *apswmodule)
+{
+  /* It is ridiculously complicated to get this to work.  All I want
+     is to execute the #included string which defines a class named
+     Shell and to have that then live in the APSW module.
+     Unfortunately the Python documentation truly sucks and leaves out
+     any useful information about this sort of thing.  As a double
+     bonus the interpretter crashes a lot.
+
+     In the table below, L means locals and G means globals as passed
+     to PyRun_String:
+
+     G=PyModule_GetDict(PyImport_AddModule("__main__"))
+     L=PyModule_GetDict(PyImport_AddModule("__main__"))
+     Imports end up in main namespace, Shell class is __main__.Shell
+
+     G=PyModule_GetDict(PyImport_AddModule("__main__"))
+     L=PyModule_GetDict(apswmodule)
+     'sys' is not defined within the class scope (really!) but is outside
+
+     G=PyModule_GetDict(apswmodule)
+     L=PyModule_GetDict(PyImport_AddModule("__main__"))
+     __import__ not found
+
+     G=PyModule_GetDict(PyImport_AddModule("__main__"))
+     L=NULL
+     Shell isn't defined anywhere
+
+     G=PyModule_GetDict(PyImport_AddModule("__main__"))
+     L=apswmodule
+     "bad argument to internal function"
+
+  */
+  
+  PyObject *res=NULL, *maindict=NULL, *apswdict, *tmp;
+
+  maindict=PyModule_GetDict(PyImport_AddModule("__main__"));
+  apswdict=PyModule_GetDict(apswmodule);
+  tmp=PyDict_GetItemString(maindict, "__builtins__");
+  Py_INCREF(tmp);
+  PyDict_SetItemString(apswdict, "__builtins__", tmp);
+
+  res=PyRun_StringFlags(
+#include "shell.c"
+		   ,Py_file_input,
+		   apswdict,
+		   apswdict,
+		   NULL);
+  if(!res) PyErr_Print();
+  assert(res);
+  Py_XDECREF(res);
 }
 
 #ifdef APSW_TESTFIXTURES

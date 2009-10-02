@@ -8,8 +8,6 @@ import csv
 import re
 import textwrap
 
-print "apsw is",apsw.__file__
-
 class Shell:
     """Implements the SQLite shell
 
@@ -169,7 +167,10 @@ class Shell:
             self.read_file_named(f)
 
         for s in sqls:
-            self.process_sql(s)
+            if s.startswith("."):
+                self.process_command(s)
+            else:
+                self.process_sql(s)
 
     def process_unknown_args(self, args):
         return None
@@ -178,7 +179,7 @@ class Shell:
         "Returns the usage message"
 
         msg="""
-Usage: program [OPTIONS] FILENAME [SQL] [MORESQL...]
+Usage: program [OPTIONS] FILENAME [SQL|CMD] [SQL|CMD]...
 FILENAME is the name of a SQLite database. A new database is
 created if the file does not exist.
 OPTIONS include:
@@ -499,6 +500,7 @@ Enter SQL statements terminated with a ";"
                         break
                     #  ignore blank/whitespace only lines at statement/command boundaries
                     if len(command.strip())==0: continue
+                    if command[0]=="?": command=".help"
                     # If not a dot command then keep getting more until complete
                     while len(command) and command[0]!="." and not apsw.complete(command):
                         line=self._getline(self.moreprompt)
@@ -735,6 +737,7 @@ Enter SQL statements terminated with a ";"
                 d=getattr(self, c).__doc__
                 assert d, c+" command must have documentation"
                 c=c[len("command_"):]
+                if c=="headers": continue
                 while d[0]=="\n":
                     d=d[1:]
                 parts=d.split("\n", 1)
@@ -753,9 +756,14 @@ Enter SQL statements terminated with a ";"
                     multi=multi.replace("\n\n", "\x00")
                     multi=multi.replace("\n", " ")
                     multi=multi.replace("\x00", "\n\n")
+                    multi=multi.split("\n\n")
                 self._help_info[c]=('.'+firstline[0].strip(), firstline[1].strip(), multi)
 
+        self._write(self.stderr, "\n")
+
         tw=self._terminal_width()
+        if tw<32:
+            tw=32
         if len(cmd)==0:
             commands=self._help_info.keys()
             commands.sort()
@@ -779,7 +787,13 @@ Enter SQL statements terminated with a ";"
             if cmd[0]=="all":
                 cmd=self._help_info.keys()
                 cmd.sort()
+            w=0
+            for command in self._help_info:
+                if len(self._help_info[command][0])>w:
+                    w=len(self._help_info[command][0])
+
             for command in cmd:
+                if command=="headers": command="header"
                 if command not in self._help_info:
                     raise self.Error("No such command \"%s\"" % (command,))
                 out=[]
@@ -787,20 +801,22 @@ Enter SQL statements terminated with a ";"
                 # usage string
                 out.append(hi[0])
                 # space padding (2)
-                out.append("  ")
+                out.append(" "*(2+w-len(hi[0])))
                 # usage message wrapped if need be
-                out.append(("\n"+" "*(2+len(hi[0]))).join(textwrap.wrap(hi[1], tw-len(hi[0])-2))+"\n")
+                out.append(("\n"+" "*(2+w)).join(textwrap.wrap(hi[1], tw-w-2))+"\n")
                 if hi[2]:
-                    # two newlines
+                    # newlines
                     out.append("\n")
                     # detailed message
-                    out.append(textwrap.fill(hi[2], tw))
-                    # last newline
-                    out.append("\n")
+                    for i,para in enumerate(hi[2]):
+                        out.append(textwrap.fill(para, tw)+"\n")
+                        if i<len(hi[2])-1:
+                            out.append("\n")
                 # if not first one then print separator header
                 if command!=cmd[0]:
-                    self._write(self.stderr, "\n"+"="*(tw-4)+"\n")
+                    self._write(self.stderr, "\n"+"="*tw+"\n")
                 self._write(self.stderr, "".join(out))
+        self._write(self.stderr, "\n")
         return False
         
     _output_modes=None
@@ -846,11 +862,11 @@ Enter SQL statements terminated with a ";"
         self._output_modes=modes
 
     def command_restore(self, cmd):
-        """restore ?DB? FILE:
+        """restore ?DB? FILE: Restore database from FILE into DB (default "main")
         
         Copies the contents of FILE to the current database (default "main").
         The backup is done at the page level - SQLite copies the pages as
-        is.  There is no round trip through SQL code
+        is.  There is no round trip through SQL code.
         """
         dbname="main"
         if len(cmd)==1:
@@ -877,11 +893,11 @@ Enter SQL statements terminated with a ";"
         You can use quotes and backslashes.  For example to set the
         separator to space tab space you can use:
 
-          .separator " \t "
+          .separator " \\t "
 
         The setting is automatically changed when you switch to csv or
         tabs output mode.  You should also set it before doing an
-        import (ie , for CSV and \t for TSV).
+        import (ie , for CSV and \\t for TSV).
         """
         if len(cmd)!=1:
             raise self.Error("separator takes exactly one parameter")
@@ -989,7 +1005,7 @@ Enter SQL statements terminated with a ";"
                 import ctypes, struct
                 h=ctypes.windll.kernel32.GetStdHandle(-12) # -12 is stderr
                 buf=ctypes.create_string_buffer(22)
-                if windll.kernel32.GetConsoleScreenBufferInfo(h, buf):
+                if ctypes.windll.kernel32.GetConsoleScreenBufferInfo(h, buf):
                     _,_,_,_,_,left,top,right,bottom,_,_=struct.unpack("hhhhHhhhhhh", buf.raw)
                     return right-left+1
                 raise Exception()
@@ -1068,7 +1084,7 @@ Enter SQL statements terminated with a ";"
                 text=unicode(text)
             encoding=getattr(dest, "encoding", self.encoding)
             if encoding is None: encoding=self.encoding
-            dest.write(text.decode(encoding))
+            dest.write(text.encode(encoding))
     else:
         def _write(self, dest, text):
             "Writes unicode/bytes to dest"

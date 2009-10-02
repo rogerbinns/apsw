@@ -1,4 +1,5 @@
 syntax: glob
+src/shell.c
 *.orig
 testdb-async
 apsw.pyd

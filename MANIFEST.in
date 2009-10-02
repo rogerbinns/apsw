@@ -22,5 +22,7 @@ include mingwsetup.bat
 include setup.py
 include tools/speedtest.py
 include tools/apswtrace.py
+# shell is not needed at runtime - we compile it into the C source
+include tools/shell.py
 include tests.py
 

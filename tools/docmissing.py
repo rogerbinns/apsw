@@ -66,8 +66,8 @@ for name, obj in ( ('Connection', con),
     for c in dir(obj):
         if c.startswith("__"): continue
         if name=="apsw":
-            # ignore constants for moment
-            if type(getattr(apsw, c))==type(3):
+            # ignore constants and modules
+            if type(getattr(apsw, c)) in (type(3), type(sys)):
                 continue
             # ignore debugging thingies
             if c.startswith("test_") or c in ("faultdict", "_fini"):
@@ -76,7 +76,7 @@ for name, obj in ( ('Connection', con),
             if isinstance(getattr(apsw, c), type) and issubclass(getattr(apsw,c), Exception):
                 continue
             # ignore classes !!!
-            if c in ("Connection", "VFS", "VFSFile", "zeroblob"):
+            if c in ("Connection", "VFS", "VFSFile", "zeroblob", "Shell"):
                 continue
             # ignore mappings !!!
             if c.startswith("mapping_"):

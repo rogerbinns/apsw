@@ -23,7 +23,7 @@ doc: docs
 docs: build_ext $(GENDOCS) doc/example.rst doc/.static
 	env PYTHONPATH=. http_proxy= python tools/docmissing.py
 	env PYTHONPATH=. http_proxy= python tools/docupdate.py $(VERSION)
-	make VERSION=$(VERSION) -C doc clean html htmlhelp 
+	make PYTHONPATH="`pwd`" VERSION=$(VERSION) -C doc clean html htmlhelp 
 
 doc/example.rst: example-code.py tools/example2rst.py src/apswversion.h
 	rm -f dbfile
