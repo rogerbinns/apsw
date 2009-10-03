@@ -11,6 +11,7 @@
 */
 
 /** 
+
 .. module:: apsw
    :synopsis: Python access to SQLite database library
 
@@ -1041,6 +1042,14 @@ apsw_fork_checker(APSW_ARGUNUSED PyObject *self)
 }
 #endif
 
+
+/** .. automethod:: main()
+
+  Sphinx automethod is too stupid, so this text is replaced by
+  my code with the actual docstring from tools.py:main().
+*/
+
+
 static PyMethodDef module_methods[] = {
   {"sqlitelibversion", (PyCFunction)getsqliteversion, METH_NOARGS,
    "Return the version of the SQLite library"},
@@ -1579,45 +1588,11 @@ modules etc. For example::
 static void
 add_shell(PyObject *apswmodule)
 {
-  /* It is ridiculously complicated to get this to work.  All I want
-     is to execute the #included string which defines a class named
-     Shell and to have that then live in the APSW module.
-     Unfortunately the Python documentation truly sucks and leaves out
-     any useful information about this sort of thing.  As a double
-     bonus the interpretter crashes a lot.
-
-     In the table below, L means locals and G means globals as passed
-     to PyRun_String:
-
-     G=PyModule_GetDict(PyImport_AddModule("__main__"))
-     L=PyModule_GetDict(PyImport_AddModule("__main__"))
-     Imports end up in main namespace, Shell class is __main__.Shell
-
-     G=PyModule_GetDict(PyImport_AddModule("__main__"))
-     L=PyModule_GetDict(apswmodule)
-     'sys' is not defined within the class scope (really!) but is outside
-
-     G=PyModule_GetDict(apswmodule)
-     L=PyModule_GetDict(PyImport_AddModule("__main__"))
-     __import__ not found
-
-     G=PyModule_GetDict(PyImport_AddModule("__main__"))
-     L=NULL
-     Shell isn't defined anywhere
-
-     G=PyModule_GetDict(PyImport_AddModule("__main__"))
-     L=apswmodule
-     "bad argument to internal function"
-
-  */
-  
-  PyObject *res=NULL, *maindict=NULL, *apswdict, *tmp;
+  PyObject *res=NULL, *maindict=NULL, *apswdict;
 
   maindict=PyModule_GetDict(PyImport_AddModule("__main__"));
   apswdict=PyModule_GetDict(apswmodule);
-  tmp=PyDict_GetItemString(maindict, "__builtins__");
-  Py_INCREF(tmp);
-  PyDict_SetItemString(apswdict, "__builtins__", tmp);
+  PyDict_SetItemString(apswdict, "__builtins__", PyDict_GetItemString(maindict, "__builtins__"));
 
   res=PyRun_StringFlags(
 #include "shell.c"

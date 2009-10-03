@@ -18,7 +18,7 @@ for filename in glob.glob("doc/*.rst"):
         line=line.strip().split()
 
         if len(line)>=2:
-            if line[0]==".." and line[1] in ("method::", "attribute::"):
+            if line[0]==".." and line[1] in ("method::", "automethod::", "attribute::"):
                 funcname=line[2].split("(")[0].strip()
 
                 if "." in funcname:

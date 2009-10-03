@@ -665,6 +665,8 @@ def create_c_file(src, dest):
     for line in open(src, "rtU"):
         if "if__name__=='__main__':" in line.replace(" ",""):
             break
+        if line.strip().startswith('#'): # full line comment
+            continue
         line=line.replace("\\", "\\\\").\
               replace('"', '\\"')
         out.append('  "'+line.rstrip()+'\\n"')

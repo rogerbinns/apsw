@@ -9,18 +9,39 @@ import re
 import textwrap
 
 class Shell:
-    """Implements the SQLite shell
+    """Implements a SQLite shell
+
+    The commands and behaviour are modelled after the `interactive
+    shell <http://www.sqlite.org/sqlite.html>`__ that is part of
+    SQLite.
 
     You can inherit from this class to embed in your own code and user
     interface.  Internally everything is handled as unicode.
     Conversions only happen at the point of input or output which you
     can override in your own code.
 
-    This version fixes a number of bugs present in the sqlite shell.
-    Its control-C handling is also friendlier.
+    This implementation fixes a number of bugs/quirks present in the
+    sqlite shell.  Its control-C handling is also friendlier.  Some
+    examples:
 
     * http://www.sqlite.org/src/info/eb620916be
     * http://www.sqlite.org/src/info/f12a9eeedc
+    * http://www.sqlite.org/src/info/72adc99de9
+    * http://www.sqlite.org/src/info/f5cb008a65
+    * http://www.sqlite.org/src/info/c25aab7e7e
+
+    Shell commands begin with a dot (eg .help).  They are implemented
+    as a method named after the command (eg command_help).  The method
+    is passed one parameter which is the list of arguments to the
+    command.  The command should return True if the interactive loop
+    should exit.
+
+    Output modes are implemented by functions named after the mode (eg
+    output_column).
+
+    When you request help the help information is automatically
+    generated from the docstrings for the command and output
+    functions.
     """
 
     class Error(Exception):
@@ -82,6 +103,15 @@ class Shell:
         call this multiple times.  We try to be compatible with SQLite shell
         argument parsing.
 
+        :param args: A list of string options.  Do not include the
+           program as args[0]
+        
+        :returns: A tuple of (databasefilename, initfiles,
+           sqlncommands).  This is provided for informational purposes
+           only - they have already been acted upon.  An example use
+           is that the SQLite shell does not enter the main interactive
+           loop if any sql/commands were provided.
+
         The first non-option is the database file name.  Each
         remaining non-option is treated as a complete input (ie it
         isn't joined with others looking for ;).
@@ -92,7 +122,7 @@ class Shell:
         # we don't use optparse as we need to use single dashes for
         # options - all hand parsed
         if not args:
-            return
+            return None, [], []
 
         options=True
         havedbname=False
@@ -172,6 +202,8 @@ class Shell:
             else:
                 self.process_sql(s)
 
+        return self.dbfilename, inits, sqls
+
     def process_unknown_args(self, args):
         return None
 
@@ -230,11 +262,12 @@ OPTIONS include:
             
 
     def output_column(self, header, line):
-        """Items left aligned in space padded columns
-
-        The SQLite shell has rather bizarre behaviour.  If the width hasn't been
-        specified for a column then 10 is used unless the column name (header) is
-        longer in which case that is used.
+        """
+        Items left aligned in space padded columns.  They are
+        truncated if they do not fit. If the width hasn't been
+        specified for a column then 10 is used unless the column name
+        (header) is longer in which case that is used.  Use the .width
+        command to change column sizes.
         """
         # as an optimization we calculate self._actualwidths which is
         # reset for each query
@@ -264,7 +297,12 @@ OPTIONS include:
         self._write(self.stdout, " ".join(cols)+"\n")
 
     def output_csv(self, header, line):
-        "Items in csv format using current separator"
+        """
+        Items in csv format (comma separated).  Use tabs mode for tab
+        separated.  You can use the .separator command to use a
+        different one after switching mode.
+        """
+        
         # we use self._csv for the work, setup when header is
         # supplied. _csv is a tuple of a StringIO and the csv.writer
         # instance
@@ -275,8 +313,11 @@ OPTIONS include:
             else:
                 import io
                 s=io.StringIO()
+            quote='"'
+            if self.separator=="\t":
+                quote=""
             import csv
-            writer=csv.writer(s, delimiter=self.separator)
+            writer=csv.writer(s, delimiter=self.separator, quote=quote)
             self._csv=(s, writer)
             if self.header:
                 self.output_csv(False, line)
@@ -320,12 +361,21 @@ OPTIONS include:
             return "%s" % (v,)
 
     def output_insert(self, header, line):
+        """
+        Line as a SQL insert statement.  The table name is "table"
+        unless you specified a different one as the second parameter
+        to the .mode command.
+        """
         if header:
             return
         out="INSERT INTO "+self._fmt_sql_identifier(self._output_table)+" VALUES("+",".join([self._fmt_sql_value(l) for l in line])+");\n"
         self._write(self.stdout, out)
 
     def output_line(self, header, line):
+        """
+        One value per line in the form 'column = value' with a blank
+        line between rows.
+        """
         if header:
             w=5
             for l in line:
@@ -457,7 +507,6 @@ OPTIONS include:
         :param display_exceptions: If True then when exceptions happen they are displayed else
             they are raised.  If displayed and bail is True then the loop exits.
         """
-             
         if intro is None:
             intro=u"""
 SQLite version %s (APSW %s)
@@ -743,11 +792,12 @@ Enter SQL statements terminated with a ";"
                 parts=d.split("\n", 1)
                 firstline=parts[0].strip().split(":", 1)
                 assert len(firstline)==2, c+" command must have usage: description doc"
+                multi=textwrap.dedent(parts[1])
                 if c=="mode":
                     if not self._output_modes:
                         self._cache_output_modes()
-                    firstline[1]=firstline[1]+" ".join(self._output_modes)
-                multi=textwrap.dedent(parts[1])
+                    firstline[1]=firstline[1]+" "+" ".join(self._output_modes)
+                    multi=multi+"\n\n"+"\n\n".join(self._output_modes_detail)
                 if len(multi.strip())==0: # All whitespace
                     multi=None
                 else:
@@ -854,12 +904,24 @@ Enter SQL statements terminated with a ";"
             self._cache_output_modes()
         raise self.Error("Expected a valid output mode: "+", ".join(self._output_modes))
 
-    # needed so command completion can call it
+    # needed so command completion and help can use it
     def _cache_output_modes(self):
         modes=[m[len("output_"):] for m in dir(self) if m.startswith("output_")]
         modes.append("tabs")
         modes.sort()
         self._output_modes=modes
+
+        detail=[]
+
+        for m in modes:
+            if m=='tabs': continue
+            d=getattr(self, "output_"+m).__doc__
+            assert d, "output mode "+m+" needs doc"
+            d=d.replace("\n", " ").strip()
+            while "  " in d:
+                d=d.replace("  ", " ")
+            detail.append(m+": "+d)
+        self._output_modes_detail=detail
 
     def command_restore(self, cmd):
         """restore ?DB? FILE: Restore database from FILE into DB (default "main")
@@ -1156,8 +1218,8 @@ Enter SQL statements terminated with a ";"
            SAVEPOINT SELECT SET TABLE TEMP TEMPORARY THEN TO TRANSACTION TRIGGER
            UNION UNIQUE UPDATE USING VACUUM VALUES VIEW VIRTUAL WHEN WHERE""".split()
 
-    _sqlite_special_names="""_ROWID_ MAIN OID ROWID SQLITE_MASTER
-           SQLITE_SEQUENCE SQLITE_TEMP_MASTER TEMP""".split()
+    _sqlite_special_names="""_ROWID_ OID ROWID SQLITE_MASTER
+           SQLITE_SEQUENCE""".split()
 
     def complete_sql(self, line, token, beg, end):
         """Provide some completions for SQL"""
@@ -1221,10 +1283,23 @@ Enter SQL statements terminated with a ";"
         print "\n",`line`,`token`,beg,end
         return None
 
-if __name__=='__main__':
+def main():
+    # Docstring must start on second line
+    """
+    Call this to run the interactive shell.  It automatically passes
+    in sys.argv and exits Python when done.
+
+    """
     try:
-        s=Shell(args=sys.argv[1:])
-        s.cmdloop()
+        s=Shell()
+        pa=s.process_args(sys.argv[1:])
+        if len(pa[2])==0:
+            # only enter interactive loop if no commands/sql were on command line
+            s.cmdloop()
     except:
-        print "exception exit", sys.exc_info()
-        pass
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
+
+if __name__=='__main__':
+    main()

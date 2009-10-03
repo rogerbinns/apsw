@@ -18,6 +18,13 @@ been all along.  You should now call :meth:`apsw.complete` instead.  (It
 even had an example showing it to be part of the module and not a
 specific connection!)
 
+There is now an :class:`interactive shell <Shell>` very similar to
+that `provided by SQLite <http://www.sqlite.org/sqlite.html>`__.  You
+can embed it in your own program, inherit from it to provide more
+commands and output modes, or just run it like this::
+
+  $ python -c "import apsw ; apsw.main()"
+
 Added the `SQLITE_LIMIT_TRIGGER_DEPTH
 <http://www.sqlite.org/c3ref/c_limit_attached.html>`__,
 `SQLITE_OPEN_PRIVATECACHE

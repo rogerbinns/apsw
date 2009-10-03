@@ -191,7 +191,6 @@ pdf_documents=[
 
 def skip_Shell_members(app, what, name, obj, skip, options):
     if name.startswith("command_") or name.startswith("output_"):
-        print "skipping", name
         return True
     return skip
 

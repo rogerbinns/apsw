@@ -167,8 +167,15 @@ def do_methods():
         # insert classname into dec
         if curclass:
             dec=re.sub(r"^(\.\.\s+(method|attribute)::\s+)()", r"\1"+curclass+".", dec)
-        op.append(dec)
-        op.extend(d)
+        if "automethod" in dec and "main()" in dec and 'SQLITE_VERSION_NUMBER' in keys:
+            # we have to 'automethod' main ourselves since sphinx is too stupid
+            # to get the module right
+            op.append(".. method:: main()\n")
+            import imp
+            op.extend(imp.load_source("apswshell", "tools/shell.py").main.__doc__.split("\n"))
+        else:
+            op.append(dec)
+            op.extend(d)
         op.append("")
         op.extend(fixup(op, saop))
 
@@ -238,7 +245,7 @@ for line in open(sys.argv[1], "rtU"):
         line=cursection
         if len(line):
             t=cursection.split()[1]
-            if t in ("method::", "attribute::", "data::"):
+            if t in ("automethod::", "method::", "attribute::", "data::"):
                 name=line.split()[2].split("(")[0]
                 methods[name]=curop
             elif t=="class::":

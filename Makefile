@@ -34,7 +34,7 @@ doc/.static:
 
 # This is probably gnu make specific but only developers use this makefile
 $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
-	env http_proxy= python tools/code2rst.py $< $@
+	env PYTHONPATH=. http_proxy= python tools/code2rst.py $< $@
 
 build_ext:
 	python setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --force --enable-all-extensions
