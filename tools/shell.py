@@ -86,10 +86,11 @@ class Shell:
         if stderr is None: stderr=sys.stderr
         self.stdin=stdin
         self.stdout=stdout
-        self.original_stdout=self.stdout
         self.stderr=stderr
         self.interactive=stdin.isatty() and stdout.isatty()
-        self.out=self.stdout
+        self._input_stack=[]
+        self.input_line_number=0
+        self.push_input()
         
         if args:
             try:
@@ -313,11 +314,11 @@ OPTIONS include:
             else:
                 import io
                 s=io.StringIO()
-            quote='"'
+            quotechar='"'
             if self.separator=="\t":
-                quote=""
+                quotechar=""
             import csv
-            writer=csv.writer(s, delimiter=self.separator, quote=quote)
+            writer=csv.writer(s, delimiter=self.separator, quotechar=quotechar)
             self._csv=(s, writer)
             if self.header:
                 self.output_csv(False, line)
@@ -543,41 +544,15 @@ Enter SQL statements terminated with a ";"
                     # table and column names which could have changed
                     # with last executed SQL
                     self._completion_cache=None
+                command=self._getcompleteline()
+                if command is None:
+                    return
                 try:
-                    command=self._getline(self.prompt)
-                    if command is None: # eof
+                    exit=self.process_complete_line(command)
+                except:
+                    self.handle_exception(display_exceptions)
+                    if self.bail:
                         break
-                    #  ignore blank/whitespace only lines at statement/command boundaries
-                    if len(command.strip())==0: continue
-                    if command[0]=="?": command=".help"
-                    # If not a dot command then keep getting more until complete
-                    while len(command) and command[0]!="." and not apsw.complete(command):
-                        line=self._getline(self.moreprompt)
-                        if line is None: # eof
-                            self._write(self.stderr, "Incomplete SQL: %s\n" % (command,))
-                            exit=True
-                            break
-                        else:
-                            command=command+"\n"+line
-                    if exit: break
-                    try:
-                        # To match sqlite shell we only bail on sql not commands
-                        canbail=True # ::TODO:: set this back to false
-                        if command[0]==".":
-                            exit=self.process_command(command)
-                            continue
-                        canbail=True
-                        self.process_sql(command)
-                    except KeyboardInterrupt:
-                        self.db.interrupt()
-                        raise
-                    except:
-                        self.handle_exception(display_exceptions)
-                        if canbail and self.bail:
-                            break
-                except KeyboardInterrupt:
-                    self._write(self.stdout, "^C\n")
-                    self.stdout.flush()
         finally:
             if using_readline:
                 readline.set_completer(old_completer)
@@ -701,6 +676,26 @@ Enter SQL statements terminated with a ";"
             raise self.Error("Expected 'ON' or 'OFF'")
         return False
 
+    def command_databases(self, cmd):
+        """databases: Lists names and files of attached databases
+
+        """
+        if len(cmd):
+            raise self.Error("databases command doesn't take any parameters")
+        self.push_output()
+        self.header=True
+        self.output=self.output_column
+        self.truncate=False
+        self.widths=[3,15,58];
+        oldecho=self.echo
+        self.echo=False
+        try:
+            self.process_sql("pragma database_list")
+        finally:
+            self.echo=oldecho
+            self.pop_output()
+        return False
+
     def command_echo(self, cmd):
         """echo ON|OFF: If ON then each SQL statement or command is printed before execution (default OFF)
 
@@ -792,7 +787,10 @@ Enter SQL statements terminated with a ";"
                 parts=d.split("\n", 1)
                 firstline=parts[0].strip().split(":", 1)
                 assert len(firstline)==2, c+" command must have usage: description doc"
-                multi=textwrap.dedent(parts[1])
+                if len(parts)==1 or len(parts[1].strip())==0: # work around textwrap bug
+                    multi=""
+                else:
+                    multi=textwrap.dedent(parts[1])
                 if c=="mode":
                     if not self._output_modes:
                         self._cache_output_modes()
@@ -868,13 +866,32 @@ Enter SQL statements terminated with a ";"
                 self._write(self.stderr, "".join(out))
         self._write(self.stderr, "\n")
         return False
-        
+
+
+    def command_indices(self, cmd):
+        """indices TABLE: Lists all indices on table TABLE
+
+        """
+        if len(cmd)!=1:
+            raise self.Error("indices takes one table name")
+        self.push_output()
+        self.header=False
+        self.output=self.output_list
+        oldecho=self.echo
+        self.echo=False
+        try:
+            self.process_sql("SELECT name FROM sqlite_master WHERE type='index' AND tbl_name LIKE ?1 "
+                             "UNION ALL SELECT name FROM sqlite_temp_master WHERE type='index' AND tbl_name LIKE"
+                             "?1 ORDER by 1", cmd)
+        finally:
+            self.echo=oldecho
+            self.pop_output()
+        return False
+    
     _output_modes=None
     
     def command_mode(self, cmd):
-        """mode MODE ?TABLE?: Sets output mode to one of
-
-        """
+        """mode MODE ?TABLE?: Sets output mode to one of"""
         if len(cmd) in (1,2):
             w=cmd[0]
             if w=="tabs":
@@ -923,6 +940,25 @@ Enter SQL statements terminated with a ";"
             detail.append(m+": "+d)
         self._output_modes_detail=detail
 
+    def command_read(self, cmd):
+        """read FILENAME: Processes SQL and commands in FILENAME"""
+        if len(cmd)!=1:
+            raise self.Error("read takes a single filename")
+        f=open(cmd[0], "rtU")
+        try:
+            self.push_input()
+            self.stdin=f
+            self.interactive=False
+            self.input_line_number=0
+            exit=False
+            while not exit:
+                line=self._getcompleteline()
+                exit=self.process_complete_line(line)
+                
+        finally:
+            self.pop_input()
+            f.close()
+
     def command_restore(self, cmd):
         """restore ?DB? FILE: Restore database from FILE into DB (default "main")
         
@@ -949,6 +985,34 @@ Enter SQL statements terminated with a ";"
             input.close()
         return False
 
+    def command_schema(self, cmd):
+        """schema ?TABLE? [TABLE...]: Shows SQL for table
+
+        If you give one or more tables then their schema is listed
+        (including indices).  If you don't specify any then all
+        schemas are listed. TABLE is a like pattern so you can % for
+        wildcards.
+        """
+        self.push_output()
+        self.output=self.output_list
+        self.header=False
+        oldecho=self.echo
+        self.echo=False
+        try:
+            if len(cmd)==0:
+                cmd=['%']
+            for n in cmd:
+                self.process_sql("SELECT sql||';' FROM "
+                                 "(SELECT sql sql, type type, tbl_name tbl_name, name name "
+                                 "FROM sqlite_master WHERE name LIKE ?1 UNION ALL "
+                                 "SELECT sql, type, tbl_name, name FROM sqlite_temp_master) "
+                                 "WHERE name like ?1 AND type!='meta' AND sql NOTNULL AND name NOT LIKE 'sqlite_%' "
+                                 "ORDER BY substr(type,2,1), name", (n,))
+        finally:
+            self.pop_output()
+            self.echo=oldecho
+        
+
     def command_separator(self, cmd):
         """separator STRING: Change separator for output mode and .import
 
@@ -969,8 +1033,7 @@ Enter SQL statements terminated with a ";"
     _shows=("echo", "explain", "headers", "mode", "nullvalue", "output", "separator", "width")
 
     def command_show(self, cmd):
-        """show: Show the current values for various settings.
-        """
+        """show: Show the current values for various settings."""
         if len(cmd)>1:
             raise self.Error("show takes at most one parameter")
         if len(cmd):
@@ -1007,7 +1070,7 @@ Enter SQL statements terminated with a ";"
                 else:
                     assert False, "Bug: didn't find output mode"
             elif i=="output":
-                if self.stdout is self.original_stdout:
+                if self.stdout is self._input_stack[0]["stdout"]:
                     v="stdout"
                 else:
                     v=self.stdout.name
@@ -1028,6 +1091,54 @@ Enter SQL statements terminated with a ";"
             
         return False
             
+    def command_tables(self, cmd):
+        """tables ?PATTERN?: Lists names of tables matching LIKE pattern
+
+        This also returns views.
+        """
+        self.push_output()
+        self.output=self.output_list
+        self.header=False
+        oldecho=self.echo
+        self.echo=False
+        try:
+            if len(cmd)==0:
+                cmd=['%']
+
+            # The SQLite shell code filters out sqlite_ prefixes if
+            # you specified an argument else leaves them in.  It also
+            # has a hand coded output mode that does space separation
+            # plus wrapping at 80 columns.
+            for n in cmd:
+                self.process_sql("SELECT name FROM sqlite_master "
+                                 "WHERE type IN ('table', 'view') AND name NOT LIKE 'sqlite_%' "
+                                 "AND name like ?1 "
+                                 "UNION ALL "
+                                 "SELECT name FROM sqlite_temp_master "
+                                 "WHERE type IN ('table', 'view') AND name NOT LIKE 'sqlite_%' "
+                                 "ORDER BY 1", (n,))
+        finally:
+            self.pop_output()
+            self.echo=oldecho
+        return False
+
+    def command_timeout(self, cmd):
+        """timeout MS: Try opening locked tables for MS milliseconds
+
+        If a database is locked by another process SQLite will keep
+        retrying.  This sets how many thousandths of a second it will
+        keep trying for.
+        """
+        if len(cmd)!=1:
+            raise self.Error("timeout takes a number")
+        try:
+            t=int(cmd[0])
+        except:
+            raise self.Error("%s is not a number" % (cmd[0],))
+        self.ensure_db()
+        self.db.setbusytimeout(t)
+        return False
+
 
     def command_width(self, cmd):
         """width NUM NUM ...: Set the column widths for "column" mode
@@ -1156,7 +1267,7 @@ Enter SQL statements terminated with a ";"
             else:
                 dest.write(text)
 
-    def _getline(self, prompt):
+    def _getline(self, prompt=""):
         """Returns a single line of input (may be incomplete SQL)
 
         If EOF is reached then return None.  Do not include trailing
@@ -1177,7 +1288,66 @@ Enter SQL statements terminated with a ";"
             return None
         if line[-1]=="\n":
             line=line[:-1]
+        self.input_line_number+=1
         return line
+
+    def _getcompleteline(self):
+        """Returns a complete input.
+
+        For dot commands it will be one line.  For SQL statements it
+        will be as many as is necessary to have a complete statement
+        (ie ; terminated).  Returns None on end of file"""
+        try:
+            command=self._getline(self.prompt)
+            if command is None:
+                return None
+            if len(command.strip())==0:
+                return ""
+            if command[0]=="?": command=".help "+command[1:]
+            # incomplete SQL?
+            while command[0]!="." and not apsw.complete(command):
+                line=self._getline(self.moreprompt)
+                if line is None: # unexpected eof
+                    self._write(self.stderr, "Incomplete SQL (line %d of %s): %s\n" % (self.input_line_number, self.stdin.filename, line))
+                    if self.bail:
+                        raise self.Error("Incomplete SQL and end of input")
+                    return None
+                command=command+"\n"+command
+            return command
+        except KeyboardInterrupt:
+            self.handle_interrupt()
+            return ""
+        
+    def handle_interrupt(self):
+        if self.db:
+            self.db.interrupt()
+        if not self.bail and self.interactive:
+            self._write(self.stderr, "^C\n")
+            return 
+        raise
+
+    def process_complete_line(self, command):
+        try:
+            if command[0]==".":
+                exit=self.process_command(command)
+            else:
+                self.process_sql(command)
+                return False
+        except KeyboardInterrupt:
+            self.handle_interrupt()
+            return False
+
+    def push_input(self):
+        d={}
+        for i in "interactive", "stdin", "stdout", "stderr", "input_line_number":
+            d[i]=getattr(self, i)
+        self._input_stack.append(d)
+
+    def pop_input(self):
+        assert(len(self._input_stack))>1
+        d=self._input_stack.pop()
+        for k,v in d.items():
+            setattr(self, k, v)
         
     def complete(self, token, state):
         """Return a possible completion for readline
