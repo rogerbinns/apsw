@@ -138,7 +138,7 @@ def buildpython(workdir, pyver, ucs, logfilename):
 PYVERS=(
     '3.1.1',
     '3.0.1',
-    '2.6.2',
+    '2.6.3',
     '2.5.4',
     '2.4.6',
     '2.3.7',
