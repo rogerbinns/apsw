@@ -7,6 +7,7 @@ import os
 import csv
 import re
 import textwrap
+import time
 
 class Shell:
     """Implements a SQLite shell
@@ -48,7 +49,7 @@ class Shell:
         "Class raised on errors"
         pass
     
-    def __init__(self, stdin=None, stdout=None, stderr=None, encoding="utf8", display_exceptions=True, args=None):
+    def __init__(self, stdin=None, stdout=None, stderr=None, encoding="utf8", args=None):
         """Create instance, set defaults and do argument processing.
 
         :param stdin: Where to read input from (default sys.stdin)
@@ -68,9 +69,11 @@ class Shell:
         self.separator="|"
         self.bail=False
         self.echo=False
+        self.timer=False
         self.header=False
         self.nullvalue=""
         self.output=self.output_list
+        self._output_table="table"
         self.widths=[]
         # do we truncate output in list mode?  (explain doesn't, regular does)
         self.truncate=True
@@ -96,8 +99,8 @@ class Shell:
             try:
                 self.process_args(args)
             except:
-                self.handle_exception(display_exceptions)
-                raise
+                if self.handle_exception():
+                    raise
 
     def process_args(self, args):
         """Process command line options specified in args.  It is safe to
@@ -154,7 +157,7 @@ class Shell:
                     raise self.Error("You need to specify a filename after -init")
                 inits.append(args[1])
                 args=args[2:]
-                contintue
+                continue
 
             if args[0]=="header" or args[0]=="noheader":
                 self.header=args[0]=="header"
@@ -195,7 +198,7 @@ class Shell:
             args=newargs
             
         for f in inits:
-            self.read_file_named(f)
+            self.command_read([f])
 
         for s in sqls:
             if s.startswith("."):
@@ -501,12 +504,11 @@ OPTIONS include:
         self._write(self.stdout, self.separator.join([self._fmt_c_string(l) for l in line])+"\n")
 
         
-    def cmdloop(self, intro=None, display_exceptions=True):
+    def cmdloop(self, intro=None):
         """Runs the main command loop.
 
-        :param intro: Initial text banner to display.  Make sure you newline terminate it.
-        :param display_exceptions: If True then when exceptions happen they are displayed else
-            they are raised.  If displayed and bail is True then the loop exits.
+        :param intro: Initial text banner to display instead of the
+           default.  Make sure you newline terminate it.
         """
         if intro is None:
             intro=u"""
@@ -518,7 +520,7 @@ Enter SQL statements terminated with a ";"
         if self.interactive and intro:
             if sys.version_info<(3,0):
                 intro=unicode(intro)
-            self._write(self.out, intro)
+            self._write(self.stdout, intro)
 
         using_readline=False
         try:
@@ -533,10 +535,6 @@ Enter SQL statements terminated with a ";"
             pass
 
         try:
-            # Keyboard interrupt handling interrupts any current
-            # operations, prints out ^C and resets back to a normal
-            # prompt.  With SQLite shell you are screwed if on second
-            # or more line of SQL statement.
             exit=False
             while not exit:
                 if using_readline:
@@ -550,30 +548,35 @@ Enter SQL statements terminated with a ";"
                 try:
                     exit=self.process_complete_line(command)
                 except:
-                    self.handle_exception(display_exceptions)
-                    if self.bail:
-                        break
+                    if self.handle_exception():
+                        raise
         finally:
             if using_readline:
                 readline.set_completer(old_completer)
                 readline.set_history_length(256)
                 readline.write_history_file(os.path.expanduser(self.history_file))
 
-    def handle_exception(self, display=True):
-        "Handles the current exception.  If display is True then it is displayed, else it is raised"
+    def handle_exception(self):
+        "Handles the current exception.  Returns True if the exception should be re-raised"
         eval=sys.exc_info()[1] # py2&3 compatible way of doing this
-        if not display or isinstance(eval, SystemExit):
+        if isinstance(eval, SystemExit):
             raise
+        if isinstance(eval, KeyboardInterrupt):
+            self.handle_interrupt()
+            if self.interactive:
+                return False
+            return True
         if isinstance(eval, (self.Error, apsw.Error, ValueError)):
             text=eval.args[0]
         else:
             import traceback
             traceback.print_exc()
-            import pdb ; pdb.set_trace()
-            pass
+            text=eval.args[0]
+            
         if not text.endswith("\n"):
             text=text+"\n"
         self._write(self.stderr, text)
+        
 
     def ensure_db(self):
         "The database isn't opened until first use.  This function ensures it is now open"
@@ -582,21 +585,37 @@ Enter SQL statements terminated with a ";"
                 self.dbfilename=":memory:"
             self.db=apsw.Connection(self.dbfilename)
 
-    def process_sql(self, sql, bindings=None):
-        "Processes SQL text consisting of one or more statements"
+    def process_sql(self, sql, bindings=None, internal=False):
+        """Processes SQL text consisting of one or more statements
+
+        :param sql: SQL to execute
+
+        :param bindings: bindings for the *sql*
+        
+        :param internal: If True then this is an internal execution
+          (eg the .tables or .database command).  When exectuting
+          internal sql timings are not shown nor is the SQL echoed
+        """
         self.ensure_db()
         cur=self.db.cursor()
         # we need to know when each new statement is executed
-        state={'newsql': True}
+        state={'newsql': True, 'timing': None}
         def et(cur, sql, bindings):
             state['newsql']=True
+            # if time reporting, do so now
+            if not internal and self.timer:
+                if state['timing']:
+                    self.display_timing(state['timing'], self._get_resource_usage())
             # print statement if echo is on
-            if self.echo:
+            if not internal and self.echo:
                 # ? should we strip leading and trailing whitespace? backslash quote stuff?
                 if bindings:
                     self._write(self.stderr, u"%s [%s]\n" % (sql, bindings))
                 else:
                     self._write(self.stderr, sql+"\n")
+            # save resource from begining of command (ie don't include echo time above)
+            if not internal and self.timer:
+                state['timing']=self._get_resource_usage()
             return True
         cur.setexectrace(et)
         # processing loop
@@ -607,6 +626,8 @@ Enter SQL statements terminated with a ";"
                 self.output(True, cols)
                 state['newsql']=False
             self.output(False, row)
+        if not internal and self.timer:
+            self.display_timing(state['timing'], self._get_resource_usage())
             
     def process_command(self, cmd):
         """Processes a dot command.
@@ -687,14 +708,153 @@ Enter SQL statements terminated with a ";"
         self.output=self.output_column
         self.truncate=False
         self.widths=[3,15,58];
-        oldecho=self.echo
-        self.echo=False
         try:
-            self.process_sql("pragma database_list")
+            self.process_sql("pragma database_list", internal=True)
         finally:
-            self.echo=oldecho
             self.pop_output()
         return False
+
+    def command_dump(self, cmd):
+        """dump ?TABLE? [TABLE...]: Dumps all or specified tables in SQL text format
+
+        The table name is treated as like pattern so you can use % as
+        a wildcard.  You can use dump to make a text based backup of
+        the database.  It is also useful for comparing differences or
+        making the data available to other databases.
+
+        Indices, views and triggers for the table(s) are also dumped.
+        """
+        # Simple tables are easy to dump.  More complicated is dealing
+        # with virtual tables, foreign keys etc.
+
+        # Lock the database while doing the dump so nothing changes
+        # under our feet
+        self.process_sql("BEGIN IMMEDIATE", internal=True)
+
+        try:
+            # first pass -see if virtual tables or foreign keys are in
+            # use.  If they are we emit pragmas to deal with them, but
+            # prefer not to emit them
+            v={"virtuals": False,
+               "foreigns": False}
+            def check(name, sql):
+                if name=="sqlite_sequence":
+                    return
+                sql=sql.lower()
+                if re.match(r"^\s*create\s+virtual\s+.*", sql):
+                    v["virtuals"]=True
+                # pragma table_info doesn't tell us if foreign keys
+                # are involved so we guess if any the various strings are
+                # in the sql somewhere
+                if re.match(r".*\b(foreign\s*key|references)\b.*", sql):
+                    v["foreigns"]=True
+
+            
+                
+            if len(cmd)==0:
+                cmd=["%"]
+
+            tables=[]
+            for pattern in cmd:
+                for name,sql in self.db.cursor().execute("SELECT name,sql FROM sqlite_master "
+                                                         "WHERE sql NOT NULL AND type='table' "
+                                                         "AND tbl_name LIKE ?1 AND name NOT LIKE 'sqlite_%'", (pattern,)):
+                    check(name, sql)
+                    tables.append(name)
+
+            if not tables:
+                return
+
+            if len(cmd)==0:
+                pats="(All)"
+            else:
+                pats=", ".join(cmd)
+            self._write(self.stdout, "-- SQLite dump (by APSW %s)\n" % (apsw.apswversion(),))
+            self._write(self.stdout, "-- SQLite version %s\n-- Date: %s\n-- Tables like: %s\n" %
+                        (apsw.sqlitelibversion(), time.strftime("%c"), pats))
+            self._write(self.stdout, "-- Database: "+self.db.filename+"\n\n")
+
+            tables.sort(lambda x,y: cmp(x.lower(), y.lower()))
+            virtuals=v["virtuals"]
+            foreigns=v["foreigns"]
+
+            if virtuals:
+                self._write(self.stdout, "-- This pragma is needed to restore virtual tables\n"
+                            "PRAGMA writable_schema=ON;\n")
+            if foreigns:
+                self._write(self.stdout, "-- This pragma turns off checking of foreign keys\n"
+                            "-- as tables would be inconsistent while restoring\n"
+                            "PRAGMA foreign_keys=OFF;\n")
+
+            # do the table dumping loops
+            oldtable=self._output_table
+            try:
+                self.push_output()
+                self.output=self.output_insert
+                # Dump the table
+                for table in tables:
+                    for sql in self.db.cursor().execute("SELECT sql FROM sqlite_master WHERE name=?1 AND type='table'", (table,)):
+                        self._write(self.stdout, "\n-- Table   "+table+"\n")
+                        self._write(self.stdout, "DROP TABLE IF EXISTS "+self._fmt_sql_identifier(table)+";\n")
+                        self._write(self.stdout, sql[0]+";\n")
+                        self._output_table=table
+                        self.process_sql("select * from "+self._fmt_sql_identifier(table), internal=True)
+                        # Now any indices or triggers
+                        first=True
+                        for name,sql in self.db.cursor().execute("SELECT name,sql FROM sqlite_master "
+                                                                 "WHERE sql NOT NULL AND type IN ('index', 'trigger') "
+                                                                 "AND tbl_name=?1 AND name NOT LIKE 'sqlite_%' "
+                                                                 "ORDER BY lower(name)", (table,)):
+                            if first:
+                                self._write(self.stdout, "-- Triggers and indices on  "+table+"\n")
+                                first=False
+                            self._write(self.stdout, sql+";\n")
+
+                # views done last
+                first=True
+                for pattern in cmd:
+                    for name,sql in self.db.cursor().execute("SELECT name,sql FROM sqlite_master "
+                                                             "WHERE sql NOT NULL AND type='view' "
+                                                             "AND name LIKE ?1 AND name NOT LIKE 'sqlite_%' "
+                                                             "ORDER BY lower(name)", (pattern,)):
+                        if first:
+                            self._write(self.stdout, "\n-- Views\n")
+                            first=False
+                        self._write(self.stdout, sql+";\n")
+                    
+                # sqlite sequence
+                # does it exist
+                if len(self.db.cursor().execute("select * from sqlite_master where name='sqlite_sequence'").fetchall()):
+                    first=True
+                    for t in tables:
+                        v=self.db.cursor().execute("select seq from sqlite_sequence where name=?1", (t,)).fetchall()
+                        if len(v):
+                            assert len(v)==1
+                            if first:
+                                self._write(self.stdout, "\n-- For primary key autoincrements the next id\n"
+                                            "-- to use is stored in sqlite_sequence\n")
+                                first=False
+                            self._write(self.stdout, 'DELETE FROM sqlite_sequence WHERE name=%s\n' % (self._fmt_sql_value(t),))
+                            self._write(self.stdout, 'INSERT INTO sqlite_sequence VALUES (%s, %s)\n' % (self._fmt_sql_value(t), v[0][0]))
+            finally:
+                self.pop_output()
+                self._output_table=oldtable
+
+            # cleanup pragmas
+            if foreigns or virtuals:
+                self._write(self.stdout, "\n")
+            if foreigns:
+                self._write(self.stdout, "-- Restoring foreign checking back to default\n"
+                            "PRAGMA foreign_keys=ON;\n")
+            if virtuals:
+                self._write(self.stdout, "-- Restoring writable_schema back to default\n"
+                            "PRAGMA writable_schema=OFF;\n")
+
+            # Save it all
+            self._write(self.stdout, "\nCOMMIT;\n")
+        finally:
+            self.process_sql("END", internal=True)
+        
 
     def command_echo(self, cmd):
         """echo ON|OFF: If ON then each SQL statement or command is printed before execution (default OFF)
@@ -713,11 +873,15 @@ Enter SQL statements terminated with a ";"
         return False
 
     def command_exit(self, cmd):
-        """exit:Exit this program
-
-        """
+        """exit:Exit this program"""
         if len(cmd):
             raise self.Error("Exit doesn't take any parameters")
+        return True
+
+    def command_quit(self, cmd):
+        """quit:Exit this program"""
+        if len(cmd):
+            raise self.Error("Quit doesn't take any parameters")
         return True
 
     def command_explain(self, cmd):
@@ -877,14 +1041,11 @@ Enter SQL statements terminated with a ";"
         self.push_output()
         self.header=False
         self.output=self.output_list
-        oldecho=self.echo
-        self.echo=False
         try:
             self.process_sql("SELECT name FROM sqlite_master WHERE type='index' AND tbl_name LIKE ?1 "
                              "UNION ALL SELECT name FROM sqlite_temp_master WHERE type='index' AND tbl_name LIKE"
-                             "?1 ORDER by 1", cmd)
+                             "?1 ORDER by 1", cmd, internal=True)
         finally:
-            self.echo=oldecho
             self.pop_output()
         return False
     
@@ -941,23 +1102,34 @@ Enter SQL statements terminated with a ";"
         self._output_modes_detail=detail
 
     def command_read(self, cmd):
-        """read FILENAME: Processes SQL and commands in FILENAME"""
+        """read FILENAME: Processes SQL and commands in FILENAME (or Python if FILENAME ends with .py)
+
+        Treats the specified file as input (a mixture or SQL and/or
+        dot commands).  If the filename ends in .py then it is treated
+        as Python code instead.
+
+        For Python code the symbol 'shell' refers to the instance of
+        the shell and 'apsw' is the apsw module.
+        """
         if len(cmd)!=1:
             raise self.Error("read takes a single filename")
-        f=open(cmd[0], "rtU")
-        try:
-            self.push_input()
-            self.stdin=f
-            self.interactive=False
-            self.input_line_number=0
-            exit=False
-            while not exit:
-                line=self._getcompleteline()
-                exit=self.process_complete_line(line)
-                
-        finally:
-            self.pop_input()
-            f.close()
+        if cmd[0].lower().endswith(".py"):
+            execfile(cmd[0], globals(), {'apsw': apsw, 'shell': self})
+        else:
+            f=open(cmd[0], "rtU")
+            try:
+                self.push_input()
+                self.stdin=f
+                self.interactive=False
+                self.input_line_number=0
+                exit=False
+                while not exit:
+                    line=self._getcompleteline()
+                    exit=self.process_complete_line(line)
+
+            finally:
+                self.pop_input()
+                f.close()
 
     def command_restore(self, cmd):
         """restore ?DB? FILE: Restore database from FILE into DB (default "main")
@@ -996,8 +1168,6 @@ Enter SQL statements terminated with a ";"
         self.push_output()
         self.output=self.output_list
         self.header=False
-        oldecho=self.echo
-        self.echo=False
         try:
             if len(cmd)==0:
                 cmd=['%']
@@ -1007,10 +1177,9 @@ Enter SQL statements terminated with a ";"
                                  "FROM sqlite_master WHERE name LIKE ?1 UNION ALL "
                                  "SELECT sql, type, tbl_name, name FROM sqlite_temp_master) "
                                  "WHERE name like ?1 AND type!='meta' AND sql NOTNULL AND name NOT LIKE 'sqlite_%' "
-                                 "ORDER BY substr(type,2,1), name", (n,))
+                                 "ORDER BY substr(type,2,1), name", (n,), internal=True)
         finally:
             self.pop_output()
-            self.echo=oldecho
         
 
     def command_separator(self, cmd):
@@ -1099,8 +1268,6 @@ Enter SQL statements terminated with a ";"
         self.push_output()
         self.output=self.output_list
         self.header=False
-        oldecho=self.echo
-        self.echo=False
         try:
             if len(cmd)==0:
                 cmd=['%']
@@ -1116,10 +1283,9 @@ Enter SQL statements terminated with a ";"
                                  "UNION ALL "
                                  "SELECT name FROM sqlite_temp_master "
                                  "WHERE type IN ('table', 'view') AND name NOT LIKE 'sqlite_%' "
-                                 "ORDER BY 1", (n,))
+                                 "ORDER BY 1", (n,), internal=True)
         finally:
             self.pop_output()
-            self.echo=oldecho
         return False
 
     def command_timeout(self, cmd):
@@ -1139,6 +1305,24 @@ Enter SQL statements terminated with a ";"
         self.db.setbusytimeout(t)
         return False
 
+    def command_timer(self, cmd):
+        """timer ON|OFF: Control printing of time and resource usage after each query
+
+        The values displayed are in seconds when shown as floating
+        point or an absolute count.  Only items that have changed
+        since starting the query are shown.  On non-Windows platforms
+        considerably more information can be shown.
+        """
+        if len(cmd)!=1 or cmd[0].lower() not in ("on", "off"):
+            raise self.Error("Expected ON or OFF")
+        if cmd[0].lower()=="on":
+            try:
+                self._get_resource_usage()
+            except:
+                raise self.Error("Timing not supported by this Python version/platform")
+            self.timer=True
+        else:
+            self.timer=False
 
     def command_width(self, cmd):
         """width NUM NUM ...: Set the column widths for "column" mode
@@ -1284,7 +1468,7 @@ Enter SQL statements terminated with a ";"
                 line=self.stdin.readline()
         except EOFError:
             return None
-        if len(line)==0:
+        if len(line)==0: # always a \n on the end normally so this is EOF
             return None
         if line[-1]=="\n":
             line=line[:-1]
@@ -1312,7 +1496,7 @@ Enter SQL statements terminated with a ";"
                     if self.bail:
                         raise self.Error("Incomplete SQL and end of input")
                     return None
-                command=command+"\n"+command
+                command=command+"\n"+line
             return command
         except KeyboardInterrupt:
             self.handle_interrupt()
@@ -1328,6 +1512,8 @@ Enter SQL statements terminated with a ";"
 
     def process_complete_line(self, command):
         try:
+            if len(command.strip())==0:
+                return False
             if command[0]==".":
                 exit=self.process_command(command)
             else:
@@ -1452,6 +1638,67 @@ Enter SQL statements terminated with a ";"
         # could in theory work out parameter completions too
         print "\n",`line`,`token`,beg,end
         return None
+
+    def _get_resource_usage(self):
+        if sys.platform=="win32":
+            try:
+                import ctypes, time
+            except ImportError:
+                return None
+            # All 4 out params have to be present.  FILETIME is really
+            # just a 64 bit quantity in 100 nanosecond granularity
+            dummy=ctypes.c_ulonglong()
+            utime=ctypes.c_ulonglong()
+            stime=ctypes.c_ulonglong()
+            rc=ctypes.windll.kernel32.GetProcessTimes(
+                ctypes.windll.kernel32.GetCurrentProcess(),
+                ctypes.byref(dummy),  # creation time
+                ctypes.byref(dummy),  # exit time
+                ctypes.byref(stime),
+                ctypes.byref(utime))
+            if rc:
+                return {'Wall clock': time.time(),
+                        'User time': float(utime)/10000000,
+                        'System time': float(stime)/10000000}
+            return None
+        else:
+            import resource, time
+            r=resource.getrusage(resource.RUSAGE_SELF)
+            res={'Wall clock': time.time()}
+            for i,desc in ( ("utime", "User time"),
+                       ("stime", "System time"),
+                       ("maxrss", "Max rss"),
+                       ("idrss", "Memory"),
+                       ("isrss", "Stack"),
+                       ("minflt", "PF (no I/O)"),
+                       ("majfl", "PF (I/O)"),
+                       ("inblock", "Blocks in"),
+                       ("oublock", "Blocks out"),
+                       ("nsignals", "Signals"),
+                       ("nvcsw", "Voluntary context switches"),
+                       ("nivcsw", "Involunary context switches"),
+                       ):
+                f="ru_"+i
+                if hasattr(r, f):
+                    res[desc]=getattr(r,f)
+            return res
+
+    def display_timing(self, b4, after):
+        v=b4.keys()
+        for i in after:
+            if i not in v:
+                v.append(i)
+        v.sort()
+        for k in v:
+            if k in b4 and k in after:
+                one=b4[k]
+                two=after[k]
+                val=two-one
+                if val:
+                    if type(val)==float:
+                        self._write(self.stderr, "%s: %.4f\n" % (k, val))
+                    else:
+                        self._write(self.stderr, "%s: %d\n" % (k, val))
 
 def main():
     # Docstring must start on second line
