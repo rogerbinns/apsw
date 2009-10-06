@@ -374,6 +374,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
   if(res!=SQLITE_OK || PyErr_Occurred())
     {
       SET_EXC(res, sc->db);
+      AddTraceBackHere(__FILE__, __LINE__, "sqlite3_prepare", "{s: N}", "sql", convertutf8stringsize(buffer, buflen));
       goto error;
     }
 

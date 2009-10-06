@@ -969,7 +969,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
   INUSE_CALL(self->statement=statementcache_prepare(self->connection->stmtcache, query));
   if (!self->statement)
     {
-      AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_execute.sqlite3_prepare_v2", "{s: O, s: O}", 
+      AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_execute.sqlite3_prepare", "{s: O, s: O}", 
 		       "Connection", self->connection, 
 		       "statement", query);
       return NULL;

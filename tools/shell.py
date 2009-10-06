@@ -24,7 +24,7 @@ class Shell:
 
     This implementation fixes a number of bugs/quirks present in the
     sqlite shell.  Its control-C handling is also friendlier.  Some
-    examples:
+    examples of issues not present in this implementation:
 
     * http://www.sqlite.org/src/info/eb620916be
     * http://www.sqlite.org/src/info/f12a9eeedc
@@ -57,8 +57,6 @@ class Shell:
         :param stdin: Where to read input from (default sys.stdin)
         :param stdout: Where to send output (default sys.stdout)
         :param stderr: Where to send errors (default sys.stderr)
-        :param display_exceptions: If True then exceptions are displayed on stderr,
-           They are then re-raised.
         :param args: This should be program arguments only (ie if
            passing in sys.argv do not include sys.argv[0] which is the
            program name.
@@ -93,17 +91,23 @@ class Shell:
         self.stdout=stdout
         self._original_stdout=stdout
         self.stderr=stderr
-        self.interactive=stdin.isatty() and stdout.isatty()
+        # we don't become interactive until the command line args are
+        # successfully parsed and acted upon
+        self.interactive=False
         self._input_stack=[]
         self.input_line_number=0
         self.push_input()
+        self._input_descriptions=[]
         
         if args:
             try:
                 self.process_args(args)
             except:
+                if len(self._input_descriptions):
+                    self._input_descriptions.append("Processing command line arguments")
                 if self.handle_exception():
                     raise
+        self.interactive=self.stdin.isatty() and self.stdout.isatty()
 
     def process_args(self, args):
         """Process command line options specified in args.  It is safe to
@@ -197,10 +201,11 @@ class Shell:
                 
             newargs=self.process_unknown_args(args)
             if newargs is None:
-                raise self.Error(usage())
+                raise self.Error(self.usage())
             args=newargs
             
         for f in inits:
+            print f
             self.command_read([f])
 
         for s in sqls:
@@ -538,19 +543,20 @@ Enter SQL statements terminated with a ";"
             pass
 
         try:
-            exit=False
-            while not exit:
+            while True:
+                self._input_descriptions=[]
                 if using_readline:
                     # we drop completion cache because it contains
                     # table and column names which could have changed
                     # with last executed SQL
                     self._completion_cache=None
                 command=self._getcompleteline()
-                if command is None:
+                if command is None: # EOF
                     return
                 try:
-                    exit=self.process_complete_line(command)
+                    self.process_complete_line(command)
                 except:
+                    self._append_input_description()
                     if self.handle_exception():
                         raise
         finally:
@@ -564,22 +570,30 @@ Enter SQL statements terminated with a ";"
         eval=sys.exc_info()[1] # py2&3 compatible way of doing this
         if isinstance(eval, SystemExit):
             raise
+
         if isinstance(eval, KeyboardInterrupt):
             self.handle_interrupt()
-            if self.interactive:
-                return False
-            return True
-        if isinstance(eval, (self.Error, apsw.Error, ValueError)):
+            text="Interrupted"
+        elif isinstance(eval, (self.Error, apsw.Error, ValueError)):
             text=eval.args[0]
         else:
             import traceback
             traceback.print_exc()
-            text=eval.args[0]
+            text=str(eval.args[0])
             
         if not text.endswith("\n"):
             text=text+"\n"
+
+        if len(self._input_descriptions):
+            for i in range(len(self._input_descriptions)):
+                if i==0:
+                    pref="At "
+                else:
+                    pref=" "*i+"From "
+                self._write(self.stderr, pref+self._input_descriptions[i]+"\n")
+            
         self._write(self.stderr, text)
-        
+        return self.bail
 
     def ensure_db(self):
         "The database isn't opened until first use.  This function ensures it is now open"
@@ -622,13 +636,37 @@ Enter SQL statements terminated with a ";"
             return True
         cur.setexectrace(et)
         # processing loop
-        for row in cur.execute(sql, bindings):
-            if state['newsql']:
-                # output a header always
-                cols=[h for h,d in cur.getdescription()]
-                self.output(True, cols)
-                state['newsql']=False
-            self.output(False, row)
+        try:
+            for row in cur.execute(sql, bindings):
+                if state['newsql']:
+                    # output a header always
+                    cols=[h for h,d in cur.getdescription()]
+                    self.output(True, cols)
+                    state['newsql']=False
+                self.output(False, row)
+        except:
+            # If echo is on and the sql to execute is a syntax error
+            # then the exec tracer won't have seen it so it won't be
+            # printed and the user will be wondering exactly what sql
+            # had the error.  We look in the traceback and deduce if
+            # the error was happening in a prepare or not.  Also we
+            # need to ignore the case where SQLITE_SCHEMA happened and
+            # a reprepare is being done since the exec tracer will
+            # have been called in that situation.
+            if not internal and self.echo:
+                tb=sys.exc_info()[2]
+                last=None
+                while tb:
+                    last=tb.tb_frame
+                    tb=tb.tb_next
+                    
+                if last and last.f_code.co_name=="sqlite3_prepare" \
+                   and last.f_code.co_filename.endswith("statementcache.c") \
+                   and "sql" in last.f_locals:
+                    self._write(self.stderr, last.f_locals["sql"]+"\n")
+                raise
+                    
+                
         if not internal and self.timer:
             self.display_timing(state['timing'], self._get_resource_usage())
             
@@ -645,8 +683,8 @@ Enter SQL statements terminated with a ";"
         fn=getattr(self, "command_"+cmd[0], None)
         if not fn:
             raise self.Error("Unknown command \"%s\".  Enter \".help\" for help" % (cmd[0],))
-        exit=bool(fn(cmd[1:]))
-        return exit
+        res=fn(cmd[1:])
+        assert res is None, "command_"+cmd[0]+" returned "+`res`
 
     ###
     ### Commands start here
@@ -681,14 +719,13 @@ Enter SQL statements terminated with a ";"
         finally:
             b.finish()
             out.close()
-        return False
 
     def command_bail(self, cmd):
-        """bail ON|OFF: Stop after hitting a SQL error (default OFF)
+        """bail ON|OFF: Stop after hitting an error (default OFF)
 
-        If an error is encountered while processing SQL then exit.
-        Errors in dot commands do not cause an exit no matter what the
-        bail setting.
+        If an error is encountered while processing commands or SQL
+        then exit.  (Note this is different than SQLite shell which
+        only exits for errors in SQL.)
         """
         if len(cmd)!=1:
             raise self.Error("bail 'ON' or 'OFF'")
@@ -698,7 +735,6 @@ Enter SQL statements terminated with a ";"
             self.bail=False
         else:
             raise self.Error("Expected 'ON' or 'OFF'")
-        return False
 
     def command_databases(self, cmd):
         """databases: Lists names and files of attached databases
@@ -715,7 +751,6 @@ Enter SQL statements terminated with a ";"
             self.process_sql("pragma database_list", internal=True)
         finally:
             self.pop_output()
-        return False
 
     def command_dump(self, cmd):
         """dump ?TABLE? [TABLE...]: Dumps all or specified tables in SQL text format
@@ -905,7 +940,6 @@ Enter SQL statements terminated with a ";"
             self.echo=False
         else:
             raise self.Error("Expected 'ON' or 'OFF'")
-        return False
 
     def command_encoding(self, cmd):
         """encoding ENCODING: Set the encoding used for new files opened via .output and imports
@@ -941,13 +975,13 @@ Enter SQL statements terminated with a ";"
         """exit:Exit this program"""
         if len(cmd):
             raise self.Error("Exit doesn't take any parameters")
-        return True
+        sys.exit(0)
 
     def command_quit(self, cmd):
         """quit:Exit this program"""
         if len(cmd):
             raise self.Error("Quit doesn't take any parameters")
-        return True
+        sys.exit(0)
 
     def command_explain(self, cmd):
         """explain ON|OFF: Set output mode suitable for explain (default OFF)
@@ -986,7 +1020,6 @@ Enter SQL statements terminated with a ";"
             self.header=False
         else:
             raise self.Error("Expected 'ON' or 'OFF'")
-        return False
 
     command_headers=command_header
 
@@ -1094,7 +1127,6 @@ Enter SQL statements terminated with a ";"
                     self._write(self.stderr, "\n"+"="*tw+"\n")
                 self._write(self.stderr, "".join(out))
         self._write(self.stderr, "\n")
-        return False
 
     def command_import(self, cmd):
         """import FILE TABLE: Imports separated data from FILE into TABLE
@@ -1184,7 +1216,6 @@ Enter SQL statements terminated with a ";"
                              "?1 ORDER by 1", cmd, internal=True)
         finally:
             self.pop_output()
-        return False
 
     def command_load(self, cmd):
         """load FILE ?ENTRY?: Loads a SQLite extension library
@@ -1243,7 +1274,7 @@ Enter SQL statements terminated with a ";"
                         self._output_table=cmd[1]
                     else:
                         self._output_table="table"
-                return False
+                return
         if not self._output_modes:
             self._cache_output_modes()
         raise self.Error("Expected a valid output mode: "+", ".join(self._output_modes))
@@ -1363,6 +1394,11 @@ Enter SQL statements terminated with a ";"
                 while not exit:
                     line=self._getcompleteline()
                     exit=self.process_complete_line(line)
+            except:
+                eval=sys.exc_info()[1]
+                if not isinstance(eval, SystemExit):
+                    self._append_input_description()
+                raise
 
             finally:
                 self.pop_input()
@@ -1392,7 +1428,6 @@ Enter SQL statements terminated with a ";"
         finally:
             b.finish()
             input.close()
-        return False
 
     def command_schema(self, cmd):
         """schema ?TABLE? [TABLE...]: Shows SQL for table
@@ -1434,7 +1469,6 @@ Enter SQL statements terminated with a ";"
         if len(cmd)!=1:
             raise self.Error("separator takes exactly one parameter")
         self.separator=self.fixup_backslashes(cmd[0])
-        return False
 
     _shows=("echo", "explain", "headers", "mode", "nullvalue", "output", "separator", "width")
 
@@ -1495,8 +1529,6 @@ Enter SQL statements terminated with a ";"
         for k,v in outs:
             self._write(self.stdout, "%*.*s: %s\n" % (l,l, k, v))
             
-        return False
-            
     def command_tables(self, cmd):
         """tables ?PATTERN?: Lists names of tables matching LIKE pattern
 
@@ -1523,7 +1555,6 @@ Enter SQL statements terminated with a ";"
                                  "ORDER BY 1", (n,), internal=True)
         finally:
             self.pop_output()
-        return False
 
     def command_timeout(self, cmd):
         """timeout MS: Try opening locked tables for MS milliseconds
@@ -1540,7 +1571,6 @@ Enter SQL statements terminated with a ";"
             raise self.Error("%s is not a number" % (cmd[0],))
         self.ensure_db()
         self.db.setbusytimeout(t)
-        return False
 
     def command_timer(self, cmd):
         """timer ON|OFF: Control printing of time and resource usage after each query
@@ -1591,7 +1621,6 @@ Enter SQL statements terminated with a ";"
             except:
                 raise self.Error("'%s' is not a valid number" % (i,))
         self.widths=w+self.widths[len(w):]
-        return False
 
     def _terminal_width(self):
         try:
@@ -1634,6 +1663,14 @@ Enter SQL statements terminated with a ";"
         for k,v in o.items():
             setattr(self,k,v)
             
+    def _append_input_description(self):
+        if self.interactive:
+            return
+        res=[]
+        res.append("Line %d" % (self.input_line_number,))
+        if self.stdin.name:
+            res.append(": "+self.stdin.name)
+        self._input_descriptions.append(" ".join(res))
 
     def fixup_backslashes(self, s):
         """Implements for various backlash sequences in s
@@ -2031,7 +2068,7 @@ Enter SQL statements terminated with a ";"
                         self._write(self.stderr, "%s: %d\n" % (k, val))
 
 def main():
-    # Docstring must start on second line
+    # Docstring must start on second line so dedenting works correctly
     """
     Call this to run the interactive shell.  It automatically passes
     in sys.argv and exits Python when done.
@@ -2039,13 +2076,17 @@ def main():
     """
     try:
         s=Shell()
-        pa=s.process_args(sys.argv[1:])
+        try:
+            pa=s.process_args(sys.argv[1:])
+        except:
+            if len(s._input_descriptions):
+                s._input_descriptions.append("Processing command line")
+            s.handle_exception()
+            return
         if len(pa[2])==0:
             # only enter interactive loop if no commands/sql were on command line
             s.cmdloop()
     except:
-        import traceback
-        traceback.print_exc()
         sys.exit(1)
 
 if __name__=='__main__':
