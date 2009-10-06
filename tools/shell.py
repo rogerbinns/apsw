@@ -761,7 +761,8 @@ Enter SQL statements terminated with a ";"
         making the data available to other databases.  Indices and
         triggers for the table(s) are also dumped.  Finally views
         matching the table pattern name are dumped (it isn't possible
-        to work out which views access which table).
+        to work out which views access which table and views can
+        access multiple tables anyway).
 
         Note that if you are dumping virtual tables such as used by
         the FTS3 module then they may use other tables to store
