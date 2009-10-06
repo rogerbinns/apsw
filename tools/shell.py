@@ -787,10 +787,13 @@ Enter SQL statements terminated with a ";"
             # use.  If they are we emit pragmas to deal with them, but
             # prefer not to emit them
             v={"virtuals": False,
-               "foreigns": False}
+               "foreigns": False,
+               "analyze_needed": []}
             def check(name, sql):
-                if name=="sqlite_sequence":
-                    return
+                if name.lower().startswith("sqlite_stat"):
+                    v["analyze_needed"].append(name)
+                if name.lower().startswith("sqlite_"):
+                    return False
                 sql=sql.lower()
                 if re.match(r"^\s*create\s+virtual\s+.*", sql):
                     v["virtuals"]=True
@@ -799,6 +802,7 @@ Enter SQL statements terminated with a ";"
                 # in the sql somewhere
                 if re.match(r".*\b(foreign\s*key|references)\b.*", sql):
                     v["foreigns"]=True
+                return True
 
             if len(cmd)==0:
                 cmd=["%"]
@@ -807,12 +811,23 @@ Enter SQL statements terminated with a ";"
             for pattern in cmd:
                 for name,sql in self.db.cursor().execute("SELECT name,sql FROM sqlite_master "
                                                          "WHERE sql NOT NULL AND type='table' "
-                                                         "AND tbl_name LIKE ?1 AND name NOT LIKE 'sqlite_%'", (pattern,)):
-                    check(name, sql)
-                    tables.append(name)
+                                                         "AND tbl_name LIKE ?1", (pattern,)):
+                    if check(name, sql):
+                        tables.append(name)
 
             if not tables:
                 return
+
+            # will we need to analyze anything later?
+            if v["analyze_needed"]:
+                analyze_needed=[]
+                for stat in v["analyze_needed"]:
+                    for name in tables:
+                        if len(self.db.cursor().execute("select * from "+self._fmt_sql_identifier(stat)+" WHERE tbl=?", (name,)).fetchall()):
+                            if name not in analyze_needed:
+                                analyze_needed.append(name)
+            del v["analyze_needed"]
+
 
             def blank():
                 self._write(self.stdout, "\n")
@@ -831,6 +846,12 @@ Enter SQL statements terminated with a ";"
             comment("Date: " +time.strftime("%c"))
             comment("Tables like: "+pats)
             comment("Database: "+self.db.filename)
+            try:
+                import getpass
+                import socket
+                comment("User: %s @ %s" % (getpass.getuser(), socket.gethostname()))
+            except ImportError:
+                pass
             blank()
 
             self._write(self.stdout, "BEGIN TRANSACTION;\n")
@@ -918,6 +939,13 @@ Enter SQL statements terminated with a ";"
                 comment("Restoring writable schema back to default")
                 self._write(self.stdout, "PRAGMA writable_schema=OFF;\n")
             if foreigns or virtuals:
+                blank()
+
+            # analyze
+            if analyze_needed:
+                comment("You had used the analyze command before.  Rerun for this new data.")
+                for n in analyze_needed:
+                    self._write(self.stdout, "ANALYZE "+self._fmt_sql_identifier(n)+";\n")
                 blank()
 
             # Save it all
