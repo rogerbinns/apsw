@@ -913,7 +913,8 @@ Enter SQL statements terminated with a ";"
         SQLite and APSW work internally using Unicode and characters.
         Files however are a sequence of bytes.  An encoding describes
         how to convert between bytes and characters.  The default
-        encoding is utf8.
+        encoding is utf8 and that is generally the best value to use
+        when other programs give you a choice.
 
         For the default input/output/error streams on startup the
         shell defers to Python's detection of encoding.  For example
@@ -1718,6 +1719,7 @@ Enter SQL statements terminated with a ";"
         will be as many as is necessary to have a complete statement
         (ie ; terminated).  Returns None on end of file"""
         try:
+            self._completion_first=True
             command=self._getline(self.prompt)
             if command is None:
                 return None
@@ -1726,6 +1728,7 @@ Enter SQL statements terminated with a ";"
             if command[0]=="?": command=".help "+command[1:]
             # incomplete SQL?
             while command[0]!="." and not apsw.complete(command):
+                self._completion_first=False
                 line=self._getline(self.moreprompt)
                 if line is None: # unexpected eof
                     self._write(self.stderr, "Incomplete SQL (line %d of %s): %s\n" % (self.input_line_number, self.stdin.filename, line))
@@ -1787,10 +1790,15 @@ Enter SQL statements terminated with a ";"
             beg=readline.get_begidx()
             end=readline.get_endidx()
             # Are we matching a command?
-            if line.startswith("."):
-                self.completions=self.complete_command(line, token, beg, end)
-            else:
-                self.completions=self.complete_sql(line, token, beg, end)
+            try:
+                if self._completion_first and line.startswith("."):
+                    self.completions=self.complete_command(line, token, beg, end)
+                else:
+                    self.completions=self.complete_sql(line, token, beg, end)
+            except:
+                import traceback
+                traceback.print_exc()
+                raise
 
         if state>len(self.completions):
             return None
@@ -1809,10 +1817,64 @@ Enter SQL statements terminated with a ";"
            REGEXP REINDEX RELEASE RENAME REPLACE RESTRICT RIGHT ROLLBACK ROW
            SAVEPOINT SELECT SET TABLE TEMP TEMPORARY THEN TO TRANSACTION TRIGGER
            UNION UNIQUE UPDATE USING VACUUM VALUES VIEW VIRTUAL WHEN WHERE""".split()
+    # add a space after each of them except functions which get parentheses
+    _sqlite_keywords=[x+(" ", "(")[x in ("VALUES", "CAST")] for x in _sqlite_keywords]
 
     _sqlite_special_names="""_ROWID_ OID ROWID SQLITE_MASTER
            SQLITE_SEQUENCE""".split()
 
+    _sqlite_functions="""abs( changes() coalesce( glob( ifnull( hex( last_insert_rowid()
+           length( load_extension( lower( ltrim( max( min( nullif( quote( random() randomblob(
+           replace( round( rtrim( soundex( sqlite_source_id() sqlite_version() substr(
+           total_changes() trim( typeof( upper( zeroblob( date( time( datetime( julianday(
+           strftime(""".split()
+
+    _pragmas_bool=("yes", "true", "on", "no", "false", "off")
+    _pragmas={"auto_vacuum=": ("NONE", "FULL", "INCREMENTAL"),
+              "cache_size=": None,
+              "case_sensitive_like=": _pragmas_bool,
+              "count_changes=": _pragmas_bool,
+              "default_cache_size=": None,
+              "encoding=": None,
+              # ('"UTF-8"', '"UTF-16"', '"UTF-16le"', '"UTF16-16be"'),
+              # too hard to get " to be part of token just in this special case
+              "full_column_names=": _pragmas_bool,
+              "fullfsync=": _pragmas_bool,
+              "incremental_vacuum(": None,
+              "journal_mode=": ("DELETE", "TRUNCATE", "PERSIST", "MEMORY", "OFF"),
+              "journal_size_limit=": None,
+              "legacy_file_format=": _pragmas_bool,
+              "locking_mode=": ("NORMAL", "EXCLUSIVE"),
+              "page_size=": None,
+              "max_page_count=": None,
+              "read_uncommitted=": _pragmas_bool,
+              "recursive_triggers=": _pragmas_bool,
+              "reverse_unordered_selects=": _pragmas_bool,
+              "short_column_names=": _pragmas_bool,
+              "synchronous=": ("OFF", "NORMAL", "FULL"),
+              "temp_store=": ("DEFAULT", "FILE", "MEMORY"),
+              "temp_store_directory=": None,
+              "collation_list;": None,
+              "database_list;": None,
+              "foreign_key_list(": None,
+              "freelist_count;": None,
+              "index_info(": None,
+              "index_list(": None,
+              "page_count;": None,
+              "table_info(": None,
+              "schema_version": None,
+              "user_version": None,
+              "integrity_check": None,
+              "quick_check": None,
+              "writable_schema": _pragmas_bool,
+              "foreign_keys": _pragmas_bool
+              }
+
+    def _get_prev_tokens(self, line, end):
+        "Returns the tokens prior to pos end in the line"
+        return re.findall(r'"?\w+"?', line[:end])
+        
+        
     def complete_sql(self, line, token, beg, end):
         """Provide some completions for SQL"""
         if self._completion_cache is None:
@@ -1834,13 +1896,46 @@ Enter SQL statements terminated with a ";"
                                 if item not in other:
                                     other.append(item)
 
-            self._completion_cache=[self._sqlite_keywords, self._sqlite_special_names, collations, databases, other]
-            for i in len(self._completion_cache):
+            self._completion_cache=[self._sqlite_keywords, self._sqlite_functions, self._sqlite_special_names, collations, databases, other]
+            for i in range(len(self._completion_cache)):
                 self._completion_cache[i].sort()
+
+        # be somewhat sensible about pragmas
+        if "pragma " in line.lower():
+            t=self._get_prev_tokens(line.lower(), end)
+
+            # pragma foo = bar
+            if len(t)>2 and t[-3]=="pragma":
+                # t[-2] should be a valid one
+                for p in self._pragmas:
+                    if p.replace("=","")==t[-2]:
+                        vals=self._pragmas[p]
+                        if not vals:
+                            return []
+                        return [x+";" for x in vals if x.startswith(token)]
+            # at equals?
+            if len(t)>1 and t[-2]=="pragma" and line[:end].replace(" ","").endswith("="):
+                for p in self._pragmas:
+                    if p.replace("=","")==t[-1]:
+                        vals=self._pragmas[p]
+                        if not vals:
+                            return []
+                        return vals
+            # pragma foo
+            if len(t)>1 and t[-2]=="pragma":
+                res=[x for x in self._pragmas.keys() if x.startswith(token)]
+                res.sort()
+                return res
+
+            # pragma
+            if len(t) and t[-1]=="pragma":
+                res=self._pragmas.keys()
+                res.sort()
+                return res
 
         # This is currently not context sensitive (eg it doesn't look
         # to see if last token was 'FROM' and hence next should only
-        # be table names.  That is a SMOP.
+        # be table names.  That is a SMOP like pragmas above
         res=[]
         ut=token.upper()
         for corpus in self._completion_cache:
@@ -1869,10 +1964,9 @@ Enter SQL statements terminated with a ";"
         if not self._builtin_commands:
             self._builtin_commands=["."+x[len("command_"):] for x in dir(self) if x.startswith("command_") and x!="command_headers"]
         if beg==0:
-            return [x for x in self._builtin_commands if x.startswith(token)]
-        return None
-        # could in theory work out parameter completions too
-        print "\n",`line`,`token`,beg,end
+            # some commands don't need a space because they take no
+            # params but who cares?
+            return [x+" " for x in self._builtin_commands if x.startswith(token)]
         return None
 
     def _get_resource_usage(self):
