@@ -8,6 +8,7 @@ import csv
 import re
 import textwrap
 import time
+import codecs
 
 class Shell:
     """Implements a SQLite shell
@@ -30,6 +31,7 @@ class Shell:
     * http://www.sqlite.org/src/info/72adc99de9
     * http://www.sqlite.org/src/info/f5cb008a65
     * http://www.sqlite.org/src/info/c25aab7e7e
+    * http://www.sqlite.org/src/info/6da68f691b
 
     Shell commands begin with a dot (eg .help).  They are implemented
     as a method named after the command (eg command_help).  The method
@@ -89,6 +91,7 @@ class Shell:
         if stderr is None: stderr=sys.stderr
         self.stdin=stdin
         self.stdout=stdout
+        self._original_stdout=stdout
         self.stderr=stderr
         self.interactive=stdin.isatty() and stdout.isatty()
         self._input_stack=[]
@@ -177,9 +180,9 @@ class Shell:
             if args[0] in ("separator", "nullvalue", "encoding"):
                 if len(args)<2:
                     raise self.Error("You need to specify a value after -"+args[0])
-                setattr(self, args[0], args[1])
+                getattr(self, "command_"+args[0])([args[1]])
                 args=args[2:]
-                contintue
+                continue
 
             if args[0]=="version":
                 self._write(self.stdout, apsw.sqlitelibversion()+"\n")
@@ -720,9 +723,22 @@ Enter SQL statements terminated with a ";"
         The table name is treated as like pattern so you can use % as
         a wildcard.  You can use dump to make a text based backup of
         the database.  It is also useful for comparing differences or
-        making the data available to other databases.
+        making the data available to other databases.  Indices and
+        triggers for the table(s) are also dumped.  Finally views
+        matching the table pattern name are dumped (it isn't possible
+        to work out which views access which table).
 
-        Indices, views and triggers for the table(s) are also dumped.
+        Note that if you are dumping virtual tables such as used by
+        the FTS3 module then they may use other tables to store
+        information.  For example if you create a FTS3 table named
+        *recipes* then it also creates *recipes_content*,
+        *recipes_segdir* etc.  Consequently to dump this example
+        correctly use::
+
+           .dump recipes recipes_%
+
+        If the database is empty or no tables/views match then there
+        is no output.
         """
         # Simple tables are easy to dump.  More complicated is dealing
         # with virtual tables, foreign keys etc.
@@ -749,8 +765,6 @@ Enter SQL statements terminated with a ";"
                 if re.match(r".*\b(foreign\s*key|references)\b.*", sql):
                     v["foreigns"]=True
 
-            
-                
             if len(cmd)==0:
                 cmd=["%"]
 
@@ -765,26 +779,42 @@ Enter SQL statements terminated with a ";"
             if not tables:
                 return
 
-            if len(cmd)==0:
-                pats="(All)"
-            else:
-                pats=", ".join(cmd)
-            self._write(self.stdout, "-- SQLite dump (by APSW %s)\n" % (apsw.apswversion(),))
-            self._write(self.stdout, "-- SQLite version %s\n-- Date: %s\n-- Tables like: %s\n" %
-                        (apsw.sqlitelibversion(), time.strftime("%c"), pats))
-            self._write(self.stdout, "-- Database: "+self.db.filename+"\n\n")
+            def blank():
+                self._write(self.stdout, "\n")
+
+            tw=self._terminal_width()
+            if tw<40:
+                tw=40
+            if tw>76:
+                tw=76
+            def comment(s):
+                self._write(self.stdout, textwrap.fill(s, tw, initial_indent="-- ", subsequent_indent="--   ")+"\n")
+
+            pats=", ".join([(x,"(All)")[x=="%"] for x in cmd])
+            comment("SQLite dump (by APSW %s)" % (apsw.apswversion(),))
+            comment("SQLite version " + apsw.sqlitelibversion())
+            comment("Date: " +time.strftime("%c"))
+            comment("Tables like: "+pats)
+            comment("Database: "+self.db.filename)
+            blank()
+
+            self._write(self.stdout, "BEGIN TRANSACTION;\n")
+            blank()
 
             tables.sort(lambda x,y: cmp(x.lower(), y.lower()))
             virtuals=v["virtuals"]
             foreigns=v["foreigns"]
 
             if virtuals:
-                self._write(self.stdout, "-- This pragma is needed to restore virtual tables\n"
-                            "PRAGMA writable_schema=ON;\n")
+                comment("This pragma is needed to restore virtual tables")
+                self._write(self.stdout, "PRAGMA writable_schema=ON;\n")
             if foreigns:
-                self._write(self.stdout, "-- This pragma turns off checking of foreign keys\n"
-                            "-- as tables would be inconsistent while restoring\n"
-                            "PRAGMA foreign_keys=OFF;\n")
+                comment("This pragma turns off checking of foreign keys "
+                        "as tables would be inconsistent while restoring")
+                self._write(self.stdout, "PRAGMA foreign_keys=OFF;\n")
+
+            if virtuals or foreigns:
+                blank()
 
             # do the table dumping loops
             oldtable=self._output_table
@@ -794,7 +824,7 @@ Enter SQL statements terminated with a ";"
                 # Dump the table
                 for table in tables:
                     for sql in self.db.cursor().execute("SELECT sql FROM sqlite_master WHERE name=?1 AND type='table'", (table,)):
-                        self._write(self.stdout, "\n-- Table   "+table+"\n")
+                        comment("Table  "+table)
                         self._write(self.stdout, "DROP TABLE IF EXISTS "+self._fmt_sql_identifier(table)+";\n")
                         self._write(self.stdout, sql[0]+";\n")
                         self._output_table=table
@@ -806,10 +836,10 @@ Enter SQL statements terminated with a ";"
                                                                  "AND tbl_name=?1 AND name NOT LIKE 'sqlite_%' "
                                                                  "ORDER BY lower(name)", (table,)):
                             if first:
-                                self._write(self.stdout, "-- Triggers and indices on  "+table+"\n")
+                                comment("Triggers and indices on  "+table)
                                 first=False
                             self._write(self.stdout, sql+";\n")
-
+                        blank()
                 # views done last
                 first=True
                 for pattern in cmd:
@@ -818,9 +848,12 @@ Enter SQL statements terminated with a ";"
                                                              "AND name LIKE ?1 AND name NOT LIKE 'sqlite_%' "
                                                              "ORDER BY lower(name)", (pattern,)):
                         if first:
-                            self._write(self.stdout, "\n-- Views\n")
+                            comment("Views")
                             first=False
+                        self._write(self.stdout, "DROP VIEW IF EXISTS %s;\n" % (self._fmt_sql_identifier(name),))
                         self._write(self.stdout, sql+";\n")
+                if not first:
+                    blank()
                     
                 # sqlite sequence
                 # does it exist
@@ -831,27 +864,29 @@ Enter SQL statements terminated with a ";"
                         if len(v):
                             assert len(v)==1
                             if first:
-                                self._write(self.stdout, "\n-- For primary key autoincrements the next id\n"
-                                            "-- to use is stored in sqlite_sequence\n")
+                                comment("For primary key autoincrements the next id "
+                                        "to use is stored in sqlite_sequence")
                                 first=False
                             self._write(self.stdout, 'DELETE FROM sqlite_sequence WHERE name=%s\n' % (self._fmt_sql_value(t),))
                             self._write(self.stdout, 'INSERT INTO sqlite_sequence VALUES (%s, %s)\n' % (self._fmt_sql_value(t), v[0][0]))
+                    if not first:
+                        blank()
             finally:
                 self.pop_output()
                 self._output_table=oldtable
 
             # cleanup pragmas
-            if foreigns or virtuals:
-                self._write(self.stdout, "\n")
             if foreigns:
-                self._write(self.stdout, "-- Restoring foreign checking back to default\n"
-                            "PRAGMA foreign_keys=ON;\n")
+                comment("Restoring foreign key checking back to default")
+                self._write(self.stdout, "PRAGMA foreign_keys=ON;\n")
             if virtuals:
-                self._write(self.stdout, "-- Restoring writable_schema back to default\n"
-                            "PRAGMA writable_schema=OFF;\n")
+                comment("Restoring writable schema back to default")
+                self._write(self.stdout, "PRAGMA writable_schema=OFF;\n")
+            if foreigns or virtuals:
+                blank()
 
             # Save it all
-            self._write(self.stdout, "\nCOMMIT;\n")
+            self._write(self.stdout, "COMMIT TRANSACTION;\n")
         finally:
             self.process_sql("END", internal=True)
         
@@ -871,6 +906,35 @@ Enter SQL statements terminated with a ";"
         else:
             raise self.Error("Expected 'ON' or 'OFF'")
         return False
+
+    def command_encoding(self, cmd):
+        """encoding ENCODING: Set the encoding used for new files opened via .output and imports
+
+        SQLite and APSW work internally using Unicode and characters.
+        Files however are a sequence of bytes.  An encoding describes
+        how to convert between bytes and characters.  The default
+        encoding is utf8.
+
+        For the default input/output/error streams on startup the
+        shell defers to Python's detection of encoding.  For example
+        on Windows it asks what code page is in use and on Unix it
+        looks at the LC_CTYPE environment variable.  You can set the
+        PYTHONIOENCODING environment variable to override this
+        detection.
+
+        This command affects files opened after setting the encoding
+        as well as imports.
+
+        Read this link:  http://www.joelonsoftware.com/articles/Unicode.html
+        """
+        if len(cmd)!=1:
+            raise self.Error("Encoding takes one argument")
+
+        try:
+            codecs.lookup(cmd[0])
+        except LookupError:
+            raise self.Error("No known encoding '%s'" % (cmd[0],))
+        self.encoding=cmd[0]
 
     def command_exit(self, cmd):
         """exit:Exit this program"""
@@ -1031,7 +1095,79 @@ Enter SQL statements terminated with a ";"
         self._write(self.stderr, "\n")
         return False
 
+    def command_import(self, cmd):
+        """import FILE TABLE: Imports separated data from FILE into TABLE
 
+        Reads data from the file into the named table using the
+        current separator and encoding.  For example if the separator
+        is currently a comma then the file should be CSV (comma
+        separated values).
+
+        All values read in are supplied to SQLite as strings.  If you
+        want SQLite to treat them as other types then declare your
+        columns appropriately.  For example declaring a column 'REAL'
+        will result in the values being stored as floating point if
+        they can be safely converted.  See this page for more details:
+
+          http://www.sqlite.org/datatype3.html
+
+        Another alternative is to create a tempory table, insert the
+        values into that and then use casting.
+
+          CREATE TEMPORARY TABLE import(a,b,c);
+          
+          .import filename import
+
+          CREATE TABLE final AS SELECT cast(a as BLOB), cast(b as INTEGER), cast(c as CHAR) from import;
+                
+          DROP TABLE import;
+
+        You can also get more sophisticated using the SQL CASE
+        operator.  For example this will turn zero length strings into
+        null:
+
+          SELECT CASE col WHEN '' THEN null ELSE col END FROM ...
+        """
+        if len(cmd)!=2:
+            raise self.Error("import takes two parameters")
+
+        self.ensure_db()
+        try:
+            final=None
+            # start transaction so database can't be changed
+            # underneath us
+            self.db.cursor().execute("BEGIN IMMEDIATE")
+            final="ROLLBACK"
+
+            # how many columns?
+            ncols=len(self.db.cursor().execute("pragma table_info("+self._fmt_sql_identifier(cmd[1])+")").fetchall())
+            if ncols<1:
+                raise self.Error("No such table '%s'" % (cmd[1],))
+
+            quotechar='"'
+            if self.separator=="\t":
+                quotechar=None
+
+            cur=self.db.cursor()
+            sql="insert into %s values(%s)" % (self._fmt_sql_identifier(cmd[1]), ",".join("?"*ncols))
+            row=1
+            for line in csv.reader(codecs.open(cmd[0], "r", self.encoding), delimiter=self.separator, quotechar=quotechar):
+                if len(line)!=ncols:
+                    raise self.Error("row %d has %d columns but should have %d" % (row, len(line), ncols))
+                try:
+                    cur.execute(sql, line)
+                except:
+                    self._write(self.stderr, "Error inserting row %d" % (row,))
+                    raise
+                row+=1
+
+            self.db.cursor().execute("COMMIT")
+
+        except:
+            if final:
+                self.db.cursor().execute(final)
+            raise
+        
     def command_indices(self, cmd):
         """indices TABLE: Lists all indices on table TABLE
 
@@ -1048,6 +1184,35 @@ Enter SQL statements terminated with a ";"
         finally:
             self.pop_output()
         return False
+
+    def command_load(self, cmd):
+        """load FILE ?ENTRY?: Loads a SQLite extension library
+
+        Note: Extension loading may not be enabled in the SQLite
+        library version you are using.
+
+        Extensions are an easy way to add new functions and
+        functionality.  For a useful extension look at the bottom of
+        http://www.sqlite.org/contrib
+
+        By default sqlite3_extension_init is called in the library but
+        you can specify an alternate entry point.
+
+        If you get an error about the extension not being found you
+        may need to explicitly specify the directory.  For example if
+        it is in the current directory then use:
+
+          .load ./extension.so
+        """
+        if len(cmd)<1 or len(cmd)>2:
+            raise self.Error("load takes one or two parameters")
+        self.ensure_db()
+        try:
+            self.db.enableloadextension(True)
+        except:
+            raise self.Error("Extension loading is not supported")
+
+        self.db.loadextension(*cmd)
     
     _output_modes=None
     
@@ -1100,6 +1265,77 @@ Enter SQL statements terminated with a ";"
                 d=d.replace("  ", " ")
             detail.append(m+": "+d)
         self._output_modes_detail=detail
+
+    def command_nullvalue(self, cmd):
+        """nullvalue STRING: Print STRING in place of null values
+
+        This affects textual output modes like column and list and
+        sets how SQL null values are shown.  The default is a zero
+        length string.  Insert mode and dumps are not affected by this
+        setting.  You can use double quotes to supply a zero length
+        string.  For example:
+
+          .nullvalue ""         # the default
+          .nullvalue <NULL>     # rather obvious
+          .nullvalue " \\t "     # A tab surrounded by spaces
+        """
+        if len(cmd)!=1:
+            raise self.Error("nullvalue takes exactly one parameter")
+        self.nullvalue=self.fixup_backslashes(cmd[0])
+
+    def command_output(self, cmd):
+        """output FILENAME: Send output to FILENAME (or stdout)
+
+        If the FILENAME is stdout then output is sent to standard
+        output from when the shell was started.  The file is opened
+        using the current encoding (change with .encoding command).
+        """
+        # Flush everything
+        self.stdout.flush()
+        self.stderr.flush()
+        if hasattr(self.stdin, "flush"):
+            self.stdin.flush()
+
+        # we will also close stdout but only do so once we have a
+        # replacement so that stdout is always valid
+            
+        if len(cmd)!=1:
+            raise self.Error("You must specify a filename")
+
+        fname=cmd[0]
+        if fname=="stdout":
+            old=None
+            if self.stdout!=self._original_stdout:
+                old=self.stdout
+            self.stdout=self._original_stdout
+            if old is not None: # done here in case close raises exception
+                old.close()
+            return
+
+        newf=codecs.open(fname, "w", self.encoding)
+        old=None
+        self.stdout=newf
+        if old is not None:
+            old.close()
+
+    def command_prompt(self, cmd):
+        """prompt MAIN ?CONTINUE?: Changes the prompts for first line and continuation lines
+
+        The default is to print 'sqlite> ' for the main prompt where
+        you can enter a dot command or a SQL statement.  If the SQL
+        statement is complete (eg not ; terminated) then you are
+        prompted for more using the continuation prompt which defaults
+        to ' ..> '.  Example:
+
+          .prompt "Yes, Master> " "More, Master> "
+
+        You can use backslash escapes such as \\n and \\t.
+        """
+        if len(cmd)<1 or len(cmd)>2:
+            raise self.Error("prompt takes one or two arguments")
+        self.prompt=self.fixup_backslashes(cmd[0])
+        if len(cmd)==2:
+            self.moreprompt=self.fixup_backslashes(cmd[1])
 
     def command_read(self, cmd):
         """read FILENAME: Processes SQL and commands in FILENAME (or Python if FILENAME ends with .py)
