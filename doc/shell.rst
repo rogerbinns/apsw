@@ -119,6 +119,43 @@ is one at http://ipython.scipy.org/moin/PyReadline/Intro which works.
 However if the shell offers no completions it will start matching
 filenames even if they make no sense in the context.
 
+Unicode
+=======
+
+SQLite only works with `Unicode
+<http://en.wikipedia.org/wiki/Unicode>`__ strings.  All data supplied
+to it should be Unicode and all data retrieved is Unicode.  (APSW
+functions the same way because of this.)
+
+At the technical level there is a difference between bytes and
+characters.  Bytes are how data is stored in files and transmitted
+over the network.  In order to turn bytes into characters and
+characters into bytes an encoding has to be used.  Some example
+encodings are ASCII, UTF-8, ISO8859-1, SJIS etc.  (With the exception
+of UTF-8/16/32, other encodings can only map a very small subset of
+Unicode.)
+
+If the shell reads data that is not valid for the input encoding or
+cannot convert Unicode to the output encoding then you will get an
+error.
+
+When the shell starts Python automatically detects the encodings to
+use for console input and output.  (For example on Unix like systems
+the LC_CTYPE environment is sometimes used.  On Windows you can find
+out the `code page <http://en.wikipedia.org/wiki/Code_page>`__.)  You
+can override this autodetection by setting the PYTHONIOENCODING
+environment variable.
+
+There is also a .encoding command.  This sets what encoding is used
+for any subsequent .read and .output commands but does not affect
+existing open files and console.  When other programs offer you a
+choice for encoding the best value to pick is UTF8 as it allows full
+representation of Unicode.
+
+This `Joel on Software article
+<http://www.joelonsoftware.com/articles/Unicode.html>`__ contains an
+excellent overview of character sets, code pages and Unicode.
+
 Shell class
 ===========
 

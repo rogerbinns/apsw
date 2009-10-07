@@ -205,7 +205,6 @@ class Shell:
             args=newargs
             
         for f in inits:
-            print f
             self.command_read([f])
 
         for s in sqls:
@@ -550,15 +549,19 @@ Enter SQL statements terminated with a ";"
                     # table and column names which could have changed
                     # with last executed SQL
                     self._completion_cache=None
-                command=self._getcompleteline()
-                if command is None: # EOF
-                    return
                 try:
+                    command=self._getcompleteline()
+                    if command is None: # EOF
+                        return
                     self.process_complete_line(command)
                 except:
                     self._append_input_description()
-                    if self.handle_exception():
-                        raise
+                    try:
+                        if self.handle_exception():
+                            raise
+                    except UnicodeDecodeError:
+                        if self.handle_exception():
+                            raise
         finally:
             if using_readline:
                 readline.set_completer(old_completer)
@@ -575,11 +578,13 @@ Enter SQL statements terminated with a ";"
             self.handle_interrupt()
             text="Interrupted"
         elif isinstance(eval, (self.Error, apsw.Error, ValueError)):
-            text=eval.args[0]
+            text=str(eval)
+        elif isinstance(eval, UnicodeDecodeError):
+            text="UD: "+str(eval)
         else:
             import traceback
             traceback.print_exc()
-            text=str(eval.args[0])
+            text=str(eval)
             
         if not text.endswith("\n"):
             text=text+"\n"
@@ -664,7 +669,7 @@ Enter SQL statements terminated with a ";"
                    and last.f_code.co_filename.endswith("statementcache.c") \
                    and "sql" in last.f_locals:
                     self._write(self.stderr, last.f_locals["sql"]+"\n")
-                raise
+            raise
                     
                 
         if not internal and self.timer:
@@ -820,15 +825,15 @@ Enter SQL statements terminated with a ";"
                 return
 
             # will we need to analyze anything later?
+            analyze_needed=[]
             if v["analyze_needed"]:
-                analyze_needed=[]
                 for stat in v["analyze_needed"]:
                     for name in tables:
                         if len(self.db.cursor().execute("select * from "+self._fmt_sql_identifier(stat)+" WHERE tbl=?", (name,)).fetchall()):
                             if name not in analyze_needed:
                                 analyze_needed.append(name)
             del v["analyze_needed"]
-
+            analyze_needed.sort()
 
             def blank():
                 self._write(self.stdout, "\n")
@@ -989,7 +994,7 @@ Enter SQL statements terminated with a ";"
         This command affects files opened after setting the encoding
         as well as imports.
 
-        Read this link:  http://www.joelonsoftware.com/articles/Unicode.html
+        See the online APSW documentation for more details.
         """
         if len(cmd)!=1:
             raise self.Error("Encoding takes one argument")
@@ -1213,19 +1218,35 @@ Enter SQL statements terminated with a ";"
             cur=self.db.cursor()
             sql="insert into %s values(%s)" % (self._fmt_sql_identifier(cmd[1]), ",".join("?"*ncols))
             row=1
-            for line in csv.reader(codecs.open(cmd[0], "r", self.encoding), delimiter=self.separator, quotechar=quotechar):
+            ###
+            ### csv module is not good at unicode so we have to
+            ### indirect unless utf8 is in use
+            ###
+            if self.encoding.lower()=="utf8": # no need for tempfile
+                thefile=open(cmd[0], "rb")
+            else:
+                import tempfile
+                thefile=tempfile.TemporaryFile(prefix="apsw_import")
+                for line in codecs.open(cmd[0], "r", self.encoding):
+                    thefile.write(line.encode("utf8"))
+                # move back to begining
+                thefile.seek(0,0)
+                    
+            for line in csv.reader(thefile, delimiter=self.separator, quotechar=quotechar):
                 if len(line)!=ncols:
                     raise self.Error("row %d has %d columns but should have %d" % (row, len(line), ncols))
                 try:
+                    line=[l.decode("utf8") for l in line]
                     cur.execute(sql, line)
                 except:
                     self._write(self.stderr, "Error inserting row %d" % (row,))
                     raise
                 row+=1
-
+            thefile.close()
             self.db.cursor().execute("COMMIT")
 
         except:
+            import traceback ; traceback.print_exc()
             if final:
                 self.db.cursor().execute(final)
             raise
@@ -1744,15 +1765,12 @@ Enter SQL statements terminated with a ";"
                 text=unicode(text)
             encoding=getattr(dest, "encoding", self.encoding)
             if encoding is None: encoding=self.encoding
-            dest.write(text.encode(encoding))
+            text=text.encode(encoding)
+            dest.write(text)
     else:
         def _write(self, dest, text):
             "Writes unicode/bytes to dest"
-            if type(text) is bytes:
-                assert(hasattr(dest, buffer))
-                dest.buffer.write(text)
-            else:
-                dest.write(text)
+            dest.write(text)
 
     def _getline(self, prompt=""):
         """Returns a single line of input (may be incomplete SQL)
@@ -1769,13 +1787,15 @@ Enter SQL statements terminated with a ";"
                 if self.interactive:
                     self._write(self.stdout, prompt)
                 line=self.stdin.readline()  # includes newline unless last line of file doesn't have one
+            self.input_line_number+=1
+            if sys.version_info<(3,0):
+                line=unicode(line)
         except EOFError:
             return None
         if len(line)==0: # always a \n on the end normally so this is EOF
             return None
         if line[-1]=="\n":
             line=line[:-1]
-        self.input_line_number+=1
         return line
 
     def _getcompleteline(self):
@@ -2116,6 +2136,7 @@ def main():
             # only enter interactive loop if no commands/sql were on command line
             s.cmdloop()
     except:
+        import traceback ; traceback.print_exc()
         sys.exit(1)
 
 if __name__=='__main__':
