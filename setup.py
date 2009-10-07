@@ -667,6 +667,8 @@ def create_c_file(src, dest):
             break
         if line.strip().startswith('#'): # full line comment
             continue
+        if line.strip()=="import apsw":
+            continue
         line=line.replace("\\", "\\\\").\
               replace('"', '\\"')
         out.append('  "'+line.rstrip()+'\\n"')

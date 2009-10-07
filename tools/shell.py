@@ -57,6 +57,8 @@ class Shell:
         :param stdin: Where to read input from (default sys.stdin)
         :param stdout: Where to send output (default sys.stdout)
         :param stderr: Where to send errors (default sys.stderr)
+        :param encoding: Default encoding.  If you want stdin/out/err to use a particular encoding
+           then you need to provide them already configured that way.
         :param args: This should be program arguments only (ie if
            passing in sys.argv do not include sys.argv[0] which is the
            program name.
@@ -518,7 +520,7 @@ OPTIONS include:
            default.  Make sure you newline terminate it.
         """
         if intro is None:
-            intro=u"""
+            intro="""
 SQLite version %s (APSW %s)
 Enter ".help" for instructions
 Enter SQL statements terminated with a ";"
@@ -572,16 +574,18 @@ Enter SQL statements terminated with a ";"
         "Handles the current exception.  Returns True if the exception should be re-raised"
         eval=sys.exc_info()[1] # py2&3 compatible way of doing this
         if isinstance(eval, SystemExit):
+            eval._handle_exception_saw_this=True
             raise
 
         if isinstance(eval, KeyboardInterrupt):
             self.handle_interrupt()
             text="Interrupted"
-        elif isinstance(eval, (self.Error, apsw.Error, ValueError)):
+        elif isinstance(eval, (self.Error, apsw.Error, ValueError, UnicodeDecodeError)):
             text=str(eval)
-        elif isinstance(eval, UnicodeDecodeError):
-            text="UD: "+str(eval)
         else:
+            # The traceback is currently debugging code and will be
+            # removed.  It is to help with development and testing and
+            # seeing what kinds of errors we get
             import traceback
             traceback.print_exc()
             text=str(eval)
@@ -598,6 +602,7 @@ Enter SQL statements terminated with a ";"
                 self._write(self.stderr, pref+self._input_descriptions[i]+"\n")
             
         self._write(self.stderr, text)
+        eval._handle_exception_saw_this=True
         return self.bail
 
     def ensure_db(self):
@@ -632,7 +637,7 @@ Enter SQL statements terminated with a ";"
             if not internal and self.echo:
                 # ? should we strip leading and trailing whitespace? backslash quote stuff?
                 if bindings:
-                    self._write(self.stderr, u"%s [%s]\n" % (sql, bindings))
+                    self._write(self.stderr, "%s [%s]\n" % (sql, bindings))
                 else:
                     self._write(self.stderr, sql+"\n")
             # save resource from begining of command (ie don't include echo time above)
@@ -689,7 +694,6 @@ Enter SQL statements terminated with a ";"
         if not fn:
             raise self.Error("Unknown command \"%s\".  Enter \".help\" for help" % (cmd[0],))
         res=fn(cmd[1:])
-        assert res is None, "command_"+cmd[0]+" returned "+`res`
 
     ###
     ### Commands start here
@@ -863,7 +867,14 @@ Enter SQL statements terminated with a ";"
             self._write(self.stdout, "BEGIN TRANSACTION;\n")
             blank()
 
-            tables.sort(lambda x,y: cmp(x.lower(), y.lower()))
+            # different python versions have different requirements
+            # about specifying cmp to sort routine so we use this
+            # portable workaround with a decorated list instead
+            dectables=[(x.lower(), x) for x in tables]
+            dectables.sort()
+            tables=[y for x,y in dectables]
+
+            
             virtuals=v["virtuals"]
             foreigns=v["foreigns"]
 
@@ -949,7 +960,7 @@ Enter SQL statements terminated with a ";"
 
             # analyze
             if analyze_needed:
-                comment("You had used the analyze command before.  Rerun for this new data.")
+                comment("You had used the analyze command on these tables before.  Rerun for this new data.")
                 for n in analyze_needed:
                     self._write(self.stdout, "ANALYZE "+self._fmt_sql_identifier(n)+";\n")
                 blank()
@@ -1109,7 +1120,7 @@ Enter SQL statements terminated with a ";"
         if tw<32:
             tw=32
         if len(cmd)==0:
-            commands=self._help_info.keys()
+            commands=list(self._help_info.keys())
             commands.sort()
             w=0
             for command in commands:
@@ -1129,7 +1140,7 @@ Enter SQL statements terminated with a ";"
             self._write(self.stderr, "".join(out))
         else:
             if cmd[0]=="all":
-                cmd=self._help_info.keys()
+                cmd=list(self._help_info.keys())
                 cmd.sort()
             w=0
             for command in self._help_info:
@@ -1246,7 +1257,6 @@ Enter SQL statements terminated with a ";"
             self.db.cursor().execute("COMMIT")
 
         except:
-            import traceback ; traceback.print_exc()
             if final:
                 self.db.cursor().execute(final)
             raise
@@ -1767,10 +1777,13 @@ Enter SQL statements terminated with a ";"
             if encoding is None: encoding=self.encoding
             text=text.encode(encoding)
             dest.write(text)
+
+        _raw_input=raw_input
     else:
         def _write(self, dest, text):
             "Writes unicode/bytes to dest"
             dest.write(text)
+        _raw_input=input
 
     def _getline(self, prompt=""):
         """Returns a single line of input (may be incomplete SQL)
@@ -1782,7 +1795,7 @@ Enter SQL statements terminated with a ";"
         self.stderr.flush()
         try:
             if self.interactive and self.stdin is sys.stdin:
-                line=raw_input(prompt)+"\n" # raw_input excludes newline
+                line=self._raw_input(prompt)+"\n" # raw_input excludes newline
             else:
                 if self.interactive:
                     self._write(self.stdout, prompt)
@@ -1882,8 +1895,9 @@ Enter SQL statements terminated with a ";"
                 else:
                     self.completions=self.complete_sql(line, token, beg, end)
             except:
-                import traceback
-                traceback.print_exc()
+                # Readline swallows any exceptions we raise.  We
+                # shouldn't be raising any so this is to catch that
+                import traceback ; traceback.print_exc()
                 raise
 
         if state>len(self.completions):
@@ -2015,7 +2029,7 @@ Enter SQL statements terminated with a ";"
 
             # pragma
             if len(t) and t[-1]=="pragma":
-                res=self._pragmas.keys()
+                res=list(self._pragmas.keys())
                 res.sort()
                 return res
 
@@ -2100,7 +2114,7 @@ Enter SQL statements terminated with a ";"
             return res
 
     def display_timing(self, b4, after):
-        v=b4.keys()
+        v=list(b4.keys())
         for i in after:
             if i not in v:
                 v.append(i)
@@ -2136,7 +2150,12 @@ def main():
             # only enter interactive loop if no commands/sql were on command line
             s.cmdloop()
     except:
-        import traceback ; traceback.print_exc()
+        v=sys.exc_info()[1]
+        if hasattr(v, "_handle_exception_saw_this") and v._handle_exception_saw_this:
+            pass
+        else:
+            # Where did this exception come from?
+            import traceback ; traceback.print_exc()
         sys.exit(1)
 
 if __name__=='__main__':

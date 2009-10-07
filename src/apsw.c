@@ -1593,6 +1593,7 @@ add_shell(PyObject *apswmodule)
   maindict=PyModule_GetDict(PyImport_AddModule("__main__"));
   apswdict=PyModule_GetDict(apswmodule);
   PyDict_SetItemString(apswdict, "__builtins__", PyDict_GetItemString(maindict, "__builtins__"));
+  PyDict_SetItemString(apswdict, "apsw", apswmodule);
 
   res=PyRun_StringFlags(
 #include "shell.c"
