@@ -1,4 +1,4 @@
-.. currentmodule: apsw
+.. currentmodule:: apsw
 
 .. _shell:
 
@@ -99,9 +99,8 @@ The following command lne options are accepted:
      -separator 'x'       set output field separator (|)
      -nullvalue 'text'    set text string for NULL values
      -version             show SQLite version
-     -encoding 'name'     treat terminal and text/files as this encoding
-                          unless Python already detected it from environment
-                          variables etc (default usually utf8)
+     -encoding 'name'     the encoding to use for files
+                          opened via .import, .read & .output
   
 
 .. usage-end:
@@ -113,11 +112,11 @@ To interrupt the shell press Control-C. (On Windows if you press
 Control-Break then the program will be instantly aborted.)
 
 For Windows users you won't have command line editing and completion
-unless you install a ` readline module
+unless you install a `readline module
 <http://docs.python.org/library/readline.html>`__.  Fortunately there
 is one at http://ipython.scipy.org/moin/PyReadline/Intro which works.
-However if the shell offers no completions it will start matching
-filenames even if they make no sense in the context.
+However if ths :class:`Shell` offers no completions it will start
+matching filenames even if they make no sense in the context.
 
 Unicode
 =======
@@ -141,10 +140,10 @@ error.
 
 When the shell starts Python automatically detects the encodings to
 use for console input and output.  (For example on Unix like systems
-the LC_CTYPE environment is sometimes used.  On Windows you can find
-out the `code page <http://en.wikipedia.org/wiki/Code_page>`__.)  You
-can override this autodetection by setting the PYTHONIOENCODING
-environment variable.
+the LC_CTYPE environment variable is sometimes used.  On Windows it
+can find out the `code page
+<http://en.wikipedia.org/wiki/Code_page>`__.)  You can override this
+autodetection by setting the PYTHONIOENCODING environment variable.
 
 There is also a .encoding command.  This sets what encoding is used
 for any subsequent .read and .output commands but does not affect
@@ -160,6 +159,14 @@ Shell class
 ===========
 
 This is the API should you want to integrate the code into your shell.
+Not shown here are the functions that implement various commands.
+They are named after the command.  For example .exit is implemented by
+command_exit.  You can add new commands by having your subclass have
+the relevant functions.  The doc string of the function is used by the
+help command.  Output modes work in a similar way.  For example there
+is an output_html method and again doc strings are used by the help
+function and you add more by just implementing an appropriately named
+method.
 
 .. autoclass:: apsw.Shell
      :members:

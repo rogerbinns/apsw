@@ -13,6 +13,18 @@ import codecs
 class Shell:
     """Implements a SQLite shell
 
+    :param stdin: Where to read input from (default sys.stdin)
+    :param stdout: Where to send output (default sys.stdout)
+    :param stderr: Where to send errors (default sys.stderr)
+    :param encoding: Default encoding for files opened/created by the
+      Shell.  If you want stdin/out/err to use a particular encoding
+      then you need to provide them already configured that way.
+    :param args: This should be program arguments only (ie if
+      passing in sys.argv do not include sys.argv[0] which is the
+      program name.  You can also pass in None and then call
+      :meth:`process_args` if you want to catch any errors
+      in handling the arguments yourself.
+
     The commands and behaviour are modelled after the `interactive
     shell <http://www.sqlite.org/sqlite.html>`__ that is part of
     SQLite.
@@ -45,24 +57,26 @@ class Shell:
     When you request help the help information is automatically
     generated from the docstrings for the command and output
     functions.
+
+    You should not use a Shell object concurrently from multiple
+    threads.  It is one huge set of state information which would
+    become inconsistent if used simultaneously, and then give baffling
+    errors.  It is safe to call methods one at a time from different
+    threads.  ie it doesn't care what thread calls methods as long as
+    you don't call more than one concurrently.
     """
 
     class Error(Exception):
-        "Class raised on errors"
+        """Class raised on errors.  The expectation is that the error
+        will be displayed by the shell as text so there are no
+        specific subclasses as the distinctions between different
+        types of errors doesn't matter."""
         pass
     
     def __init__(self, stdin=None, stdout=None, stderr=None, encoding="utf8", args=None):
-        """Create instance, set defaults and do argument processing.
-
-        :param stdin: Where to read input from (default sys.stdin)
-        :param stdout: Where to send output (default sys.stdout)
-        :param stderr: Where to send errors (default sys.stderr)
-        :param encoding: Default encoding.  If you want stdin/out/err to use a particular encoding
-           then you need to provide them already configured that way.
-        :param args: This should be program arguments only (ie if
-           passing in sys.argv do not include sys.argv[0] which is the
-           program name.
-        """
+        """Create instance, set defaults and do argument processing."""
+        # The parameter doc has to be in main class doc as sphinx
+        # ignores any described here
         self.history_file="~/.sqlite_history"
         self.db=None
         self.dbfilename=None
@@ -107,8 +121,8 @@ class Shell:
             except:
                 if len(self._input_descriptions):
                     self._input_descriptions.append("Processing command line arguments")
-                if self.handle_exception():
-                    raise
+                self.handle_exception()
+
         self.interactive=self.stdin.isatty() and self.stdout.isatty()
 
     def process_args(self, args):
@@ -127,10 +141,12 @@ class Shell:
 
         The first non-option is the database file name.  Each
         remaining non-option is treated as a complete input (ie it
-        isn't joined with others looking for ;).
+        isn't joined with others looking for a trailing semi-colon).
 
-        SQLite shell uses single dash in front of options.  We allow
-        both single and double dashes.
+        The SQLite shell uses single dash in front of options.  We
+        allow both single and double dashes.  When an unrecognized
+        argument is encountered then
+        :meth:`process_unknown_args` is called.
         """
         # we don't use optparse as we need to use single dashes for
         # options - all hand parsed
@@ -191,7 +207,7 @@ class Shell:
                 continue
 
             if args[0]=="version":
-                self._write(self.stdout, apsw.sqlitelibversion()+"\n")
+                self.write(self.stdout, apsw.sqlitelibversion()+"\n")
                 # A pretty gnarly thing to do
                 sys.exit(0)
             
@@ -218,10 +234,19 @@ class Shell:
         return self.dbfilename, inits, sqls
 
     def process_unknown_args(self, args):
+        """This is called when :meth:`process_args` encounters an
+        argument it doesn't understand.  Override this method if you
+        want to be able to understand additional command line arguments.
+
+        :param args: A list of the remaining arguments
+        :returns: None if you don't recognize the argument either.  Otherwise
+           return the list of remaining arguments after you have processed
+           yours.
+        """
         return None
 
     def usage(self):
-        "Returns the usage message"
+        "Returns the usage message.  Make sure it is newline terminated"
 
         msg="""
 Usage: program [OPTIONS] FILENAME [SQL|CMD] [SQL|CMD]...
@@ -242,18 +267,17 @@ OPTIONS include:
    -separator 'x'       set output field separator (|)
    -nullvalue 'text'    set text string for NULL values
    -version             show SQLite version
-   -encoding 'name'     treat terminal and text/files as this encoding
-                        unless Python already detected it from environment
-                        variables etc (default usually utf8)
+   -encoding 'name'     the encoding to use for files
+                        opened via .import, .read & .output
 """
         return msg.lstrip()
 
     ###
-    ### The various output routines.  They are always called with the
-    ### header irrespective of the setting allowing for some per query
-    ### setup. (see output_column for example).
-    ### 
+    ### Value formatting routines.  They take a value and return a
+    ### text formatting of them.  Mostly used by the various output's
+    ### but also by random other pieces of code.
     ###
+
 
     if sys.version_info>=(3,0):
         _string_types=(str,)
@@ -262,7 +286,114 @@ OPTIONS include:
         _string_types=(str,unicode)
         _binary_types=(buffer,)
 
+    # bytes that are ok in C strings - no need for quoting
+    _printable=[ord(x) for x in
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*()`_-+={}[]:;,.<>/?|"
+                ]
+
+    def _fmt_c_string(self, v):
+        "Format as a C string including surrounding double quotes"
+        if isinstance(v, self._string_types):
+            op=['"']
+            for c in v:
+                if c=="\\":
+                    op.append("\\\\")
+                elif c=="\r":
+                    op.append("\\r")
+                elif c=="\n":
+                    op.append("\\n")
+                elif c=="\t":
+                    op.append("\\t")
+                elif ord(c) not in self._printable:
+                    op.append("\\"+c)
+                else:
+                    op.append(c)
+            op.append('"')
+            return "".join(op)
+        elif v is None:
+            return '"'+self.nullvalue+'"'
+        elif isinstance(v, self._binary_types):
+            if sys.version_info<(3,0):
+                o=lambda x: ord(x)
+                fromc=lambda x: x
+            else:
+                o=lambda x: x
+                fromc=lambda x: chr(x)
+            res=['"']
+            for c in v:
+                if toint(c) in self._printable:
+                    res.append(fromc(o))
+                else:
+                    res.append("\\x%02X" % (o(c),))
+            res.append('"')
+            return "".join(res)
+        else:
+            # number of some kind
+            return '"%s"' % (v,)
+
+    def _fmt_html_col(self, v):
+        "Format as HTML (mainly escaping &/</>"
+        return self._fmt_text_col(v).\
+           replace("&", "&amp;"). \
+           replace("<", "&gt;"). \
+           replace(">", "&lt;")
+
+    def _fmt_python(self, v):
+        "Format as python literal"
+        if v is None:
+            return "None"
+        elif isinstance(v, self._string_types):
+            return repr(v)
+        elif isinstance(v, self._binary_types):
+            if sys.version_info<(3,0):
+                res=["buffer(\""]
+                for i in v:
+                    if ord(i) in self._printable:
+                        res.append(i)
+                    else:
+                        res.append("\\x%02X" % (ord(i),))
+                res.append("\")")
+                return "".join(res)
+            else:
+                res=['b"']
+                for i in v:
+                    res.append("%02X" % (i,))
+                res.append('"')
+                return "".join(res)
+        else:
+            return "%s" % (v,)
+
+    def _fmt_sql_identifier(self, v):
+        "Return the identifier quoted in SQL syntax if needed (eg table and column names)"
+        nonalnum=re.sub("[A-Za-z_0-9]+", "", v)
+        if len(nonalnum)==0:
+            return v
+        # double quote it unless there are any double quotes in it
+        if '"' in nonalnum:
+            return "[%s]" % (v,)
+        return '"%s"' % (v,)
+
+    def _fmt_sql_value(self, v):
+        "Return as a SQL literal"
+        if v is None:
+            return "NULL"
+        elif isinstance(v, self._string_types):
+            return "'"+v.replace("'", "''")+"'"
+        elif isinstance(v, self._binary_types):
+            res=["X'"]
+            if sys.version_info<(3,0):
+                trans=lambda x: ord(x)
+            else:
+                trans=lambda x: x
+            for byte in v:
+                res.append("%02X" % (trans(byte),))
+            res.append("'")
+            return "".join(res)
+        else:
+            return "%s" % (v,)
+
     def _fmt_text_col(self, v):
+        "Regular text formatting"
         if v is None:
             return self.nullvalue
         elif isinstance(v, self._string_types):
@@ -272,15 +403,21 @@ OPTIONS include:
             return "<Binary data>"
         else:
             return "%s" % (v,)
-            
+        
+    ###
+    ### The various output routines.  They are always called with the
+    ### header irrespective of the setting allowing for some per query
+    ### setup. (see output_column for example).  The doc strings are
+    ### used to generate help.
+    ###            
 
     def output_column(self, header, line):
         """
         Items left aligned in space padded columns.  They are
         truncated if they do not fit. If the width hasn't been
         specified for a column then 10 is used unless the column name
-        (header) is longer in which case that is used.  Use the .width
-        command to change column sizes.
+        (header) is longer in which case that width is used.  Use the
+        .width command to change column sizes.
         """
         # as an optimization we calculate self._actualwidths which is
         # reset for each query
@@ -307,7 +444,7 @@ OPTIONS include:
             cols=["%-*.*s" % (self._actualwidths[i], self._actualwidths[i], self._fmt_text_col(line[i])) for i in range(len(line))]
         else:
             cols=["%-*s" % (self._actualwidths[i],  self._fmt_text_col(line[i])) for i in range(len(line))]
-        self._write(self.stdout, " ".join(cols)+"\n")
+        self.write(self.stdout, " ".join(cols)+"\n")
 
     def output_csv(self, header, line):
         """
@@ -326,9 +463,9 @@ OPTIONS include:
             else:
                 import io
                 s=io.StringIO()
-            quotechar='"'
-            if self.separator=="\t":
-                quotechar=""
+            quotechar=None
+            if self.separator==",":
+                quotechar='"'
             import csv
             writer=csv.writer(s, delimiter=self.separator, quotechar=quotechar)
             self._csv=(s, writer)
@@ -343,46 +480,31 @@ OPTIONS include:
             t=t[:-2]
         elif t.endswith("\r") or t.endswith("\n"):
             t=t[:-1]
-        self._write(self.stdout, t+"\n")
+        self.write(self.stdout, t+"\n")
 
-    def _fmt_sql_identifier(self, v):
-        "Return the string quoted if needed"
-        nonalnum=re.sub("[A-Za-z_0-9]+", "", v)
-        if len(nonalnum)==0:
-            return v
-        # double quote it unless there are any
-        if '"' in nonalnum:
-            return "[%s]" % (v,)
-        return '"%s"' % (v,)
-
-    def _fmt_sql_value(self, v):
-        if v is None:
-            return "NULL"
-        elif isinstance(v, self._string_types):
-            return "'"+v.replace("'", "''")+"'"
-        elif isinstance(v, self._binary_types):
-            res=["X'"]
-            if sys.version_info<(3,0):
-                trans=lambda x: ord(x)
-            else:
-                trans=lambda x: x
-            for byte in v:
-                res.append("%02X" % (trans(byte),))
-            res.append("'")
-            return "".join(res)
-        else:
-            return "%s" % (v,)
+    def output_html(self, header, line):
+        "HTML table style"
+        if header and not self.header:
+            return
+        line=[self._fmt_html_col(l) for l in line]
+        out=["<TR>"]
+        for l in line:
+            out.append(("<TD>","<TH>")[header])
+            out.append(l)
+            out.append(("</TD>\n","</TH>\n")[header])
+        out.append("</TR>\n")
+        self.write(self.stdout, "".join(out))
 
     def output_insert(self, header, line):
         """
-        Line as a SQL insert statement.  The table name is "table"
+        Lines as SQL insert statements.  The table name is "table"
         unless you specified a different one as the second parameter
         to the .mode command.
         """
         if header:
             return
         out="INSERT INTO "+self._fmt_sql_identifier(self._output_table)+" VALUES("+",".join([self._fmt_sql_value(l) for l in line])+");\n"
-        self._write(self.stdout, out)
+        self.write(self.stdout, out)
 
     def output_line(self, header, line):
         """
@@ -398,120 +520,33 @@ OPTIONS include:
             return
         w=self._line_info[0]
         for i in range(len(line)):
-            self._write(self.stdout, "%*s = %s\n" % (w, self._line_info[1][i], self._fmt_text_col(line[i])))
-        self._write(self.stdout, "\n")
+            self.write(self.stdout, "%*s = %s\n" % (w, self._line_info[1][i], self._fmt_text_col(line[i])))
+        self.write(self.stdout, "\n")
 
     def output_list(self, header, line):
         "All items on one line with separator"
         if header and not self.header:
             return
         fmt=self._fmt_text_col
-        self._write(self.stdout, self.separator.join([fmt(x) for x in line])+"\n")
+        self.write(self.stdout, self.separator.join([fmt(x) for x in line])+"\n")
 
-    def _fmt_html_col(self, v):
-        return self._fmt_text_col(v).\
-           replace("&", "&amp;"). \
-           replace("<", "&gt;"). \
-           replace(">", "&lt;")
-        
-
-    def output_html(self, header, line):
-        "HTML table style"
-        if header and not self.header:
-            return
-        line=[self._fmt_html_col(l) for l in line]
-        out=["<TR>"]
-        for l in line:
-            out.append(("<TD>","<TH>")[header])
-            out.append(l)
-            out.append(("</TD>\n","</TH>\n")[header])
-        out.append("</TR>\n")
-        self._write(self.stdout, "".join(out))
-
-    def _fmt_python(self, v):
-        if v is None:
-            return "None"
-        elif isinstance(v, self._string_types):
-            # ::TODO:: we need to \u escape stuff
-            # if something is entirely in ascii then
-            # no need for u prefix
-            return repr(v)
-        elif isinstance(v, self._binary_types):
-            if sys.version_info<(3,0):
-                res=["buffer(\""]
-                for i in v:
-                    if ord(i) in self._printable:
-                        res.append(i)
-                    else:
-                        res.append("\\x%02X" % (ord(i),))
-                res.append("\")")
-                return "".join(res)
-            else:
-                res=['b"']
-                for i in v:
-                    res.append("%02X" % (i,))
-                res.append('"')
-                return "".join(res)
-        else:
-            return "%s" % (v,)
 
     def output_python(self, header, line):
         "Tuples in Python source form for each row"
         if header and not self.header:
             return
-        self._write(self.stdout, '('+", ".join([self._fmt_python(l) for l in line])+"),\n")
-
-    def _backslashify(self, s):
-        v=['"']
-        for c in s:
-            if c=="\\":
-                v.append("\\\\")
-            elif c=="\r":
-                v.append("\\r")
-            elif c=="\n":
-                v.append("\\n")
-            elif c=="\t":
-                v.append("\\t")
-            else:
-                # in theory could check for how 'printable' the char is
-                v.append(c)
-        v.append('"')
-        return "".join(v)
-
-    # bytes that are ok in C strings - no need for quoting
-    _printable=[ord(x) for x in
-                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*()`_-+={}[]:;,.<>/?|"
-                ]
-
-    def _fmt_c_string(self, v):
-        if isinstance(v, self._string_types):
-            return self._backslashify(v)
-        elif v is None:
-            return '"'+self.nullvalue+'"'
-        elif isinstance(v, self._binary_types):
-            res=['"']
-            if sys.version_info<(3,0):
-                o=lambda x: ord(x)
-            else:
-                o=lambda x: x
-            for c in v:
-                if o(c) in self._printable:
-                    res.append(o)
-                else:
-                    res.append("\\x%02X" % (o(c),))
-            res.append('"')
-            return "".join(res)
-        else:
-            return '"%s"' % (v,)
-    
+        self.write(self.stdout, '('+", ".join([self._fmt_python(l) for l in line])+"),\n")
 
     def output_tcl(self, header, line):
         "Outputs TCL/C style strings using current separator"
         # In theory you could paste the output into your source ...
         if header and not self.header:
             return
-        self._write(self.stdout, self.separator.join([self._fmt_c_string(l) for l in line])+"\n")
+        self.write(self.stdout, self.separator.join([self._fmt_c_string(l) for l in line])+"\n")
 
+    ###
+    ### Various routines
+    ###
         
     def cmdloop(self, intro=None):
         """Runs the main command loop.
@@ -529,7 +564,7 @@ Enter SQL statements terminated with a ";"
         if self.interactive and intro:
             if sys.version_info<(3,0):
                 intro=unicode(intro)
-            self._write(self.stdout, intro)
+            self.write(self.stdout, intro)
 
         using_readline=False
         try:
@@ -552,18 +587,16 @@ Enter SQL statements terminated with a ";"
                     # with last executed SQL
                     self._completion_cache=None
                 try:
-                    command=self._getcompleteline()
+                    command=self.getcompleteline()
                     if command is None: # EOF
                         return
                     self.process_complete_line(command)
                 except:
                     self._append_input_description()
                     try:
-                        if self.handle_exception():
-                            raise
+                        self.handle_exception()
                     except UnicodeDecodeError:
-                        if self.handle_exception():
-                            raise
+                        self.handle_exception()
         finally:
             if using_readline:
                 readline.set_completer(old_completer)
@@ -571,7 +604,8 @@ Enter SQL statements terminated with a ";"
                 readline.write_history_file(os.path.expanduser(self.history_file))
 
     def handle_exception(self):
-        "Handles the current exception.  Returns True if the exception should be re-raised"
+        """Handles the current exception, printing a message to stderr as appropriate.
+        It will reraise the exception if necessary (eg if bail is true)"""
         eval=sys.exc_info()[1] # py2&3 compatible way of doing this
         if isinstance(eval, SystemExit):
             eval._handle_exception_saw_this=True
@@ -580,7 +614,7 @@ Enter SQL statements terminated with a ";"
         if isinstance(eval, KeyboardInterrupt):
             self.handle_interrupt()
             text="Interrupted"
-        elif isinstance(eval, (self.Error, apsw.Error, ValueError, UnicodeDecodeError)):
+        elif isinstance(eval, (self.Error, apsw.Error, UnicodeDecodeError)):
             text=str(eval)
         else:
             # The traceback is currently debugging code and will be
@@ -599,14 +633,15 @@ Enter SQL statements terminated with a ";"
                     pref="At "
                 else:
                     pref=" "*i+"From "
-                self._write(self.stderr, pref+self._input_descriptions[i]+"\n")
+                self.write(self.stderr, pref+self._input_descriptions[i]+"\n")
             
-        self._write(self.stderr, text)
+        self.write(self.stderr, text)
         eval._handle_exception_saw_this=True
-        return self.bail
+        if self.bail:
+            raise
 
     def ensure_db(self):
-        "The database isn't opened until first use.  This function ensures it is now open"
+        "The database isn't opened until first use.  This function ensures it is now open."
         if not self.db:
             if not self.dbfilename:
                 self.dbfilename=":memory:"
@@ -621,7 +656,7 @@ Enter SQL statements terminated with a ";"
         
         :param internal: If True then this is an internal execution
           (eg the .tables or .database command).  When exectuting
-          internal sql timings are not shown nor is the SQL echoed
+          internal sql timings are not shown nor is the SQL echoed.
         """
         self.ensure_db()
         cur=self.db.cursor()
@@ -632,17 +667,17 @@ Enter SQL statements terminated with a ";"
             # if time reporting, do so now
             if not internal and self.timer:
                 if state['timing']:
-                    self.display_timing(state['timing'], self._get_resource_usage())
+                    self.display_timing(state['timing'], self.get_resource_usage())
             # print statement if echo is on
             if not internal and self.echo:
                 # ? should we strip leading and trailing whitespace? backslash quote stuff?
                 if bindings:
-                    self._write(self.stderr, "%s [%s]\n" % (sql, bindings))
+                    self.write(self.stderr, "%s [%s]\n" % (sql, bindings))
                 else:
-                    self._write(self.stderr, sql+"\n")
+                    self.write(self.stderr, sql+"\n")
             # save resource from begining of command (ie don't include echo time above)
             if not internal and self.timer:
-                state['timing']=self._get_resource_usage()
+                state['timing']=self.get_resource_usage()
             return True
         cur.setexectrace(et)
         # processing loop
@@ -673,12 +708,11 @@ Enter SQL statements terminated with a ";"
                 if last and last.f_code.co_name=="sqlite3_prepare" \
                    and last.f_code.co_filename.endswith("statementcache.c") \
                    and "sql" in last.f_locals:
-                    self._write(self.stderr, last.f_locals["sql"]+"\n")
+                    self.write(self.stderr, last.f_locals["sql"]+"\n")
             raise
-                    
                 
         if not internal and self.timer:
-            self.display_timing(state['timing'], self._get_resource_usage())
+            self.display_timing(state['timing'], self.get_resource_usage())
             
     def process_command(self, cmd):
         """Processes a dot command.
@@ -686,7 +720,7 @@ Enter SQL statements terminated with a ";"
         same method used by Unix/POSIX shells.
         """
         if self.echo:
-            self._write(self.stderr, cmd+"\n")
+            self.write(self.stderr, cmd+"\n")
         cmd=shlex.split(cmd)
         assert cmd[0][0]=="."
         cmd[0]=cmd[0][1:]
@@ -840,7 +874,7 @@ Enter SQL statements terminated with a ";"
             analyze_needed.sort()
 
             def blank():
-                self._write(self.stdout, "\n")
+                self.write(self.stdout, "\n")
 
             tw=self._terminal_width()
             if tw<40:
@@ -848,7 +882,7 @@ Enter SQL statements terminated with a ";"
             if tw>76:
                 tw=76
             def comment(s):
-                self._write(self.stdout, textwrap.fill(s, tw, initial_indent="-- ", subsequent_indent="--   ")+"\n")
+                self.write(self.stdout, textwrap.fill(s, tw, initial_indent="-- ", subsequent_indent="--   ")+"\n")
 
             pats=", ".join([(x,"(All)")[x=="%"] for x in cmd])
             comment("SQLite dump (by APSW %s)" % (apsw.apswversion(),))
@@ -864,7 +898,7 @@ Enter SQL statements terminated with a ";"
                 pass
             blank()
 
-            self._write(self.stdout, "BEGIN TRANSACTION;\n")
+            self.write(self.stdout, "BEGIN TRANSACTION;\n")
             blank()
 
             # different python versions have different requirements
@@ -880,11 +914,11 @@ Enter SQL statements terminated with a ";"
 
             if virtuals:
                 comment("This pragma is needed to restore virtual tables")
-                self._write(self.stdout, "PRAGMA writable_schema=ON;\n")
+                self.write(self.stdout, "PRAGMA writable_schema=ON;\n")
             if foreigns:
                 comment("This pragma turns off checking of foreign keys "
                         "as tables would be inconsistent while restoring")
-                self._write(self.stdout, "PRAGMA foreign_keys=OFF;\n")
+                self.write(self.stdout, "PRAGMA foreign_keys=OFF;\n")
 
             if virtuals or foreigns:
                 blank()
@@ -898,8 +932,8 @@ Enter SQL statements terminated with a ";"
                 for table in tables:
                     for sql in self.db.cursor().execute("SELECT sql FROM sqlite_master WHERE name=?1 AND type='table'", (table,)):
                         comment("Table  "+table)
-                        self._write(self.stdout, "DROP TABLE IF EXISTS "+self._fmt_sql_identifier(table)+";\n")
-                        self._write(self.stdout, sql[0]+";\n")
+                        self.write(self.stdout, "DROP TABLE IF EXISTS "+self._fmt_sql_identifier(table)+";\n")
+                        self.write(self.stdout, sql[0]+";\n")
                         self._output_table=table
                         self.process_sql("select * from "+self._fmt_sql_identifier(table), internal=True)
                         # Now any indices or triggers
@@ -911,7 +945,7 @@ Enter SQL statements terminated with a ";"
                             if first:
                                 comment("Triggers and indices on  "+table)
                                 first=False
-                            self._write(self.stdout, sql+";\n")
+                            self.write(self.stdout, sql+";\n")
                         blank()
                 # views done last
                 first=True
@@ -923,8 +957,8 @@ Enter SQL statements terminated with a ";"
                         if first:
                             comment("Views")
                             first=False
-                        self._write(self.stdout, "DROP VIEW IF EXISTS %s;\n" % (self._fmt_sql_identifier(name),))
-                        self._write(self.stdout, sql+";\n")
+                        self.write(self.stdout, "DROP VIEW IF EXISTS %s;\n" % (self._fmt_sql_identifier(name),))
+                        self.write(self.stdout, sql+";\n")
                 if not first:
                     blank()
                     
@@ -940,8 +974,8 @@ Enter SQL statements terminated with a ";"
                                 comment("For primary key autoincrements the next id "
                                         "to use is stored in sqlite_sequence")
                                 first=False
-                            self._write(self.stdout, 'DELETE FROM sqlite_sequence WHERE name=%s\n' % (self._fmt_sql_value(t),))
-                            self._write(self.stdout, 'INSERT INTO sqlite_sequence VALUES (%s, %s)\n' % (self._fmt_sql_value(t), v[0][0]))
+                            self.write(self.stdout, 'DELETE FROM sqlite_sequence WHERE name=%s\n' % (self._fmt_sql_value(t),))
+                            self.write(self.stdout, 'INSERT INTO sqlite_sequence VALUES (%s, %s)\n' % (self._fmt_sql_value(t), v[0][0]))
                     if not first:
                         blank()
             finally:
@@ -951,10 +985,10 @@ Enter SQL statements terminated with a ";"
             # cleanup pragmas
             if foreigns:
                 comment("Restoring foreign key checking back to default")
-                self._write(self.stdout, "PRAGMA foreign_keys=ON;\n")
+                self.write(self.stdout, "PRAGMA foreign_keys=ON;\n")
             if virtuals:
                 comment("Restoring writable schema back to default")
-                self._write(self.stdout, "PRAGMA writable_schema=OFF;\n")
+                self.write(self.stdout, "PRAGMA writable_schema=OFF;\n")
             if foreigns or virtuals:
                 blank()
 
@@ -962,11 +996,11 @@ Enter SQL statements terminated with a ";"
             if analyze_needed:
                 comment("You had used the analyze command on these tables before.  Rerun for this new data.")
                 for n in analyze_needed:
-                    self._write(self.stdout, "ANALYZE "+self._fmt_sql_identifier(n)+";\n")
+                    self.write(self.stdout, "ANALYZE "+self._fmt_sql_identifier(n)+";\n")
                 blank()
 
             # Save it all
-            self._write(self.stdout, "COMMIT TRANSACTION;\n")
+            self.write(self.stdout, "COMMIT TRANSACTION;\n")
         finally:
             self.process_sql("END", internal=True)
         
@@ -1114,7 +1148,7 @@ Enter SQL statements terminated with a ";"
                     multi=multi.split("\n\n")
                 self._help_info[c]=('.'+firstline[0].strip(), firstline[1].strip(), multi)
 
-        self._write(self.stderr, "\n")
+        self.write(self.stderr, "\n")
 
         tw=self._terminal_width()
         if tw<32:
@@ -1137,7 +1171,7 @@ Enter SQL statements terminated with a ";"
                 out.append(("\n"+" "*(2+w)).join(textwrap.wrap(hi[1], tw-w-2)))
                 # newline
                 out.append("\n")
-            self._write(self.stderr, "".join(out))
+            self.write(self.stderr, "".join(out))
         else:
             if cmd[0]=="all":
                 cmd=list(self._help_info.keys())
@@ -1169,9 +1203,9 @@ Enter SQL statements terminated with a ";"
                             out.append("\n")
                 # if not first one then print separator header
                 if command!=cmd[0]:
-                    self._write(self.stderr, "\n"+"="*tw+"\n")
-                self._write(self.stderr, "".join(out))
-        self._write(self.stderr, "\n")
+                    self.write(self.stderr, "\n"+"="*tw+"\n")
+                self.write(self.stderr, "".join(out))
+        self.write(self.stderr, "\n")
 
     def command_import(self, cmd):
         """import FILE TABLE: Imports separated data from FILE into TABLE
@@ -1250,7 +1284,7 @@ Enter SQL statements terminated with a ";"
                     line=[l.decode("utf8") for l in line]
                     cur.execute(sql, line)
                 except:
-                    self._write(self.stderr, "Error inserting row %d" % (row,))
+                    self.write(self.stderr, "Error inserting row %d" % (row,))
                     raise
                 row+=1
             thefile.close()
@@ -1450,10 +1484,11 @@ Enter SQL statements terminated with a ";"
                 self.stdin=f
                 self.interactive=False
                 self.input_line_number=0
-                exit=False
-                while not exit:
+                while True:
                     line=self._getcompleteline()
-                    exit=self.process_complete_line(line)
+                    if line is None:
+                        break
+                    self.process_complete_line(line)
             except:
                 eval=sys.exc_info()[1]
                 if not isinstance(eval, SystemExit):
@@ -1512,7 +1547,6 @@ Enter SQL statements terminated with a ";"
                                  "ORDER BY substr(type,2,1), name", (n,), internal=True)
         finally:
             self.pop_output()
-        
 
     def command_separator(self, cmd):
         """separator STRING: Change separator for output mode and .import
@@ -1560,7 +1594,7 @@ Enter SQL statements terminated with a ";"
                 if self.truncate:
                     v="off"
             elif i in ("nullvalue", "separator"):
-                v='"'+self._backslashify(getattr(self, i))+'"'
+                v=self._fmt_c_string(getattr(self, i))
             elif i=="mode":
                 if not self._output_modes:
                     self._cache_output_modes()
@@ -1570,7 +1604,7 @@ Enter SQL statements terminated with a ";"
                 else:
                     assert False, "Bug: didn't find output mode"
             elif i=="output":
-                if self.stdout is self._input_stack[0]["stdout"]:
+                if self.stdout is self._output_stack[0]["stdout"]:
                     v="stdout"
                 else:
                     v=self.stdout.name
@@ -1587,7 +1621,7 @@ Enter SQL statements terminated with a ";"
                 l=len(k)
 
         for k,v in outs:
-            self._write(self.stdout, "%*.*s: %s\n" % (l,l, k, v))
+            self.write(self.stdout, "%*.*s: %s\n" % (l,l, k, v))
             
     def command_tables(self, cmd):
         """tables ?PATTERN?: Lists names of tables matching LIKE pattern
@@ -1683,6 +1717,8 @@ Enter SQL statements terminated with a ";"
         self.widths=w+self.widths[len(w):]
 
     def _terminal_width(self):
+        """Works out the terminal width which is used for word wrapping
+        some output (eg .help)"""
         try:
             if sys.platform=="win32":
                 import ctypes, struct
@@ -1708,12 +1744,28 @@ Enter SQL statements terminated with a ";"
                 return 80
 
     def push_output(self):
+        """Saves the current output settings onto a stack.  See
+        :meth:`pop_output` for more details as to why you would use
+        this."""
         o={}
         for k in "separator", "header", "nullvalue", "output", "widths", "truncate":
             o[k]=getattr(self, k)
         self._output_stack.append(o)
 
     def pop_output(self):
+        """Restores most recently pushed output.  There are many
+        output parameters such as nullvalue, mode
+        (list/tcl/html/insert etc), column widths, header etc.  If you
+        temporarily need to change some settings then
+        :meth:`push_output`, change the settings and then pop the old
+        ones back.
+
+        A simple example is implementing a command like .dump.  Push
+        the current output, change the mode to insert so we get SQL
+        inserts printed and then pop to go back to what was there
+        before.
+
+        """
         # first item should always be present
         assert len(self._output_stack)
         if len(self._output_stack)==1:
@@ -1724,6 +1776,11 @@ Enter SQL statements terminated with a ";"
             setattr(self,k,v)
             
     def _append_input_description(self):
+        """When displaying an error in :meth:`handle_exception` we
+        want to give context such as when the commands being executed
+        came from a .read command (which in turn could execute another
+        .read).
+        """
         if self.interactive:
             return
         res=[]
@@ -1733,7 +1790,8 @@ Enter SQL statements terminated with a ";"
         self._input_descriptions.append(" ".join(res))
 
     def fixup_backslashes(self, s):
-        """Implements for various backlash sequences in s
+        """Implements the various backlash sequences in s such as
+        turning \\t into a tab.
 
         This function is needed because shlex does not do it for us.
         """
@@ -1768,8 +1826,8 @@ Enter SQL statements terminated with a ";"
                 
 
     if sys.version_info<(3,0):
-        def _write(self, dest, text):
-            "Writes text to dest using encoding"
+        def write(self, dest, text):
+            """Writes text to dest.  dest will typically be one of self.stdout or self.stderr."""
             # ensure text is unicode
             if type(text)!=unicode:
                 text=unicode(text)
@@ -1780,13 +1838,13 @@ Enter SQL statements terminated with a ";"
 
         _raw_input=raw_input
     else:
-        def _write(self, dest, text):
-            "Writes unicode/bytes to dest"
+        def write(self, dest, text):
+            "Writes text to dest.  dest will typically be one of self.stdout or self.stderr."
             dest.write(text)
         _raw_input=input
 
-    def _getline(self, prompt=""):
-        """Returns a single line of input (may be incomplete SQL)
+    def getline(self, prompt=""):
+        """Returns a single line of input (may be incomplete SQL) from self.stdin.
 
         If EOF is reached then return None.  Do not include trailing
         newline in return.
@@ -1798,7 +1856,7 @@ Enter SQL statements terminated with a ";"
                 line=self._raw_input(prompt)+"\n" # raw_input excludes newline
             else:
                 if self.interactive:
-                    self._write(self.stdout, prompt)
+                    self.write(self.stdout, prompt)
                 line=self.stdin.readline()  # includes newline unless last line of file doesn't have one
             self.input_line_number+=1
             if sys.version_info<(3,0):
@@ -1811,15 +1869,16 @@ Enter SQL statements terminated with a ";"
             line=line[:-1]
         return line
 
-    def _getcompleteline(self):
+    def getcompleteline(self):
         """Returns a complete input.
 
         For dot commands it will be one line.  For SQL statements it
-        will be as many as is necessary to have a complete statement
-        (ie ; terminated).  Returns None on end of file"""
+        will be as many as is necessary to have a
+        :meth:`~apsw.complete` statement (ie semicolon terminated).
+        Returns None on end of file."""
         try:
             self._completion_first=True
-            command=self._getline(self.prompt)
+            command=self.getline(self.prompt)
             if command is None:
                 return None
             if len(command.strip())==0:
@@ -1828,9 +1887,10 @@ Enter SQL statements terminated with a ";"
             # incomplete SQL?
             while command[0]!="." and not apsw.complete(command):
                 self._completion_first=False
-                line=self._getline(self.moreprompt)
+                line=self.getline(self.moreprompt)
                 if line is None: # unexpected eof
-                    self._write(self.stderr, "Incomplete SQL (line %d of %s): %s\n" % (self.input_line_number, self.stdin.filename, line))
+                    # ::TODO:: raise exception and use handlexception for this instead
+                    self.write(self.stderr, "Incomplete SQL (line %d of %s): %s\n" % (self.input_line_number, self.stdin.filename, line))
                     if self.bail:
                         raise self.Error("Incomplete SQL and end of input")
                     return None
@@ -1841,33 +1901,41 @@ Enter SQL statements terminated with a ";"
             return ""
         
     def handle_interrupt(self):
+        """Deal with keyboard interrupt (typically Control-C).  It
+        will :meth:`~Connection.interrupt` the database and print"^C" if interactive."""
         if self.db:
             self.db.interrupt()
         if not self.bail and self.interactive:
-            self._write(self.stderr, "^C\n")
+            self.write(self.stderr, "^C\n")
             return 
         raise
 
     def process_complete_line(self, command):
+        """Given some text will call the appropriate method to process
+        it (eg :meth:`process_sql` or :meth:`process_command`)"""
         try:
             if len(command.strip())==0:
-                return False
+                return
             if command[0]==".":
-                exit=self.process_command(command)
+                self.process_command(command)
             else:
                 self.process_sql(command)
-                return False
         except KeyboardInterrupt:
             self.handle_interrupt()
-            return False
 
     def push_input(self):
+        """Saves the current input paramaters to a stack.  See :meth:`pop_input`."""
         d={}
-        for i in "interactive", "stdin", "stdout", "stderr", "input_line_number":
+        for i in "interactive", "stdin", "input_line_number":
             d[i]=getattr(self, i)
         self._input_stack.append(d)
 
     def pop_input(self):
+        """Restore most recently pushed input parameters (interavtive,
+        self.stdin, linenumber etc).  Use this if implementing a
+        command like read.  Push the current input, read the file and
+        then pop the input to go back to before.
+        """
         assert(len(self._input_stack))>1
         d=self._input_stack.pop()
         for k,v in d.items():
@@ -1877,7 +1945,7 @@ Enter SQL statements terminated with a ";"
         """Return a possible completion for readline
 
         This function is called with state starting at zero to get the
-        first completion, then one etc until you return None.  The best
+        first completion, then one/two/three etc until you return None.  The best
         implementation is to generate the list when state==0, save it,
         and provide members on each increase.
         """
@@ -1976,7 +2044,13 @@ Enter SQL statements terminated with a ";"
         
         
     def complete_sql(self, line, token, beg, end):
-        """Provide some completions for SQL"""
+        """Provide some completions for SQL
+        :param line: The current complete input line
+        :param token: The word readline is looking for matches
+        :param beg: Integer offset of token in line
+        :param end: Integer end of token in line
+        :return: A list of completions, or an empty list if none
+        """
         if self._completion_cache is None:
             self.ensure_db()
             cur=self.db.cursor()
@@ -2061,6 +2135,13 @@ Enter SQL statements terminated with a ";"
     _builtin_commands=None
 
     def complete_command(self, line, token, beg, end):
+        """Provide some completions for dot commands
+        :param line: The current complete input line
+        :param token: The word readline is looking for matches
+        :param beg: Integer offset of token in line
+        :param end: Integer end of token in line
+        :return: A list of completions, or an empty list if none
+        """
         if not self._builtin_commands:
             self._builtin_commands=["."+x[len("command_"):] for x in dir(self) if x.startswith("command_") and x!="command_headers"]
         if beg==0:
@@ -2069,7 +2150,10 @@ Enter SQL statements terminated with a ";"
             return [x+" " for x in self._builtin_commands if x.startswith(token)]
         return None
 
-    def _get_resource_usage(self):
+    def get_resource_usage(self):
+        """Return a dict of various numbers (ints or floats).  The
+        .timer command shows the difference between before and after
+        results of what this returns by calling :meth:`display_timing`"""
         if sys.platform=="win32":
             try:
                 import ctypes, time
@@ -2114,6 +2198,9 @@ Enter SQL statements terminated with a ";"
             return res
 
     def display_timing(self, b4, after):
+        """Writes the difference between b4 and after to self.stderr.
+        The data is dictionaries returned from
+        :meth:`get_resource_usage`."""
         v=list(b4.keys())
         for i in after:
             if i not in v:
@@ -2126,15 +2213,15 @@ Enter SQL statements terminated with a ";"
                 val=two-one
                 if val:
                     if type(val)==float:
-                        self._write(self.stderr, "%s: %.4f\n" % (k, val))
+                        self.write(self.stderr, "%s: %.4f\n" % (k, val))
                     else:
-                        self._write(self.stderr, "%s: %d\n" % (k, val))
+                        self.write(self.stderr, "%s: %d\n" % (k, val))
 
 def main():
     # Docstring must start on second line so dedenting works correctly
     """
     Call this to run the interactive shell.  It automatically passes
-    in sys.argv and exits Python when done.
+    in sys.argv[1:] and exits Python when done.
 
     """
     try:
