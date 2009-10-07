@@ -81,3 +81,47 @@ for line in open("doc/benchmarking.rst", "rtU"):
 op="\n".join(op)
 if op!=benchmark:
     open("doc/benchmarking.rst", "wt").write(op)
+
+# shell stuff
+
+import apsw, StringIO
+shell=apsw.Shell()
+incomment=False
+op=[]
+for line in open("doc/shell.rst", "rtU"):
+    line=line.rstrip()
+    if line==".. help-begin:":
+        op.append(line)
+        incomment=True
+        op.append("")
+        op.append(".. code-block:: text")
+        op.append("")
+        s=StringIO.StringIO()
+        def tw(*args):
+            return 80
+        shell.stderr=s
+        shell._terminal_width=tw
+        shell.command_help([])
+        op.extend(["  "+x for x in s.getvalue().split("\n")])
+        op.append("")
+        continue
+    if line==".. usage-begin:":
+        op.append(line)
+        incomment=True
+        op.append("")
+        op.append(".. code-block:: text")
+        op.append("")
+        op.extend(["  "+x for x in shell.usage().split("\n")])
+        op.append("")
+        continue
+    if line==".. help-end:":
+        incomment=False
+    if line==".. usage-end:":
+        incomment=False
+    if incomment:
+        continue
+    op.append(line)
+
+op="\n".join(op)
+if op!=open("doc/shell.rst", "rtU").read():
+    open("doc/shell.rst", "wt").write(op)

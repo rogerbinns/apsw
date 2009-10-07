@@ -1764,11 +1764,11 @@ Enter SQL statements terminated with a ";"
         self.stderr.flush()
         try:
             if self.interactive and self.stdin is sys.stdin:
-                line=raw_input(prompt)
+                line=raw_input(prompt)+"\n" # raw_input excludes newline
             else:
                 if self.interactive:
                     self._write(self.stdout, prompt)
-                line=self.stdin.readline()
+                line=self.stdin.readline()  # includes newline unless last line of file doesn't have one
         except EOFError:
             return None
         if len(line)==0: # always a \n on the end normally so this is EOF
