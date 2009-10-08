@@ -5053,11 +5053,10 @@ class APSW(unittest.TestCase):
         # did they actually turn on?
         isempty(fh[1])
         isempty(fh[2])
-        s.process_args(["testdb", "select 3"])
+        s.process_args(["testdb", ".mode column", "select 3"])
         isempty(fh[2])
         self.assert_("3" in fh[1].getvalue())
-        print fh[1].getvalue()
-        
+        self.assert_("----" in fh[1].getvalue())
 
     # This one uses the coverage module
     def _testShellWithCoverage(self):
