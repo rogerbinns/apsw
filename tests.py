@@ -4987,11 +4987,23 @@ class APSW(unittest.TestCase):
         # empty args
         self.assertEqual( (None, [], []), s.process_args(None))
 
-        # no param
+        # input description
         reset()
-        shellclass(args=["-init"], **kwargs)
-        isempty(fh[1])
-        self.assert_("specify a filename" in fh[2].getvalue())
+        open("test-shell-1", "wt").write("syntax error")
+        try:
+            shellclass(args=["testdb", ".read test-shell-1"], **kwargs)
+        except shellclass.Error:
+            self.assert_("test-shell-1" in fh[2].getvalue())
+            isempty(fh[1])
+
+        # Check single and double dash behave the same
+        reset()
+        try:
+            shellclass(args=["-init"], **kwargs)
+        except shellclass.Error:
+            isempty(fh[1])
+            self.assert_("specify a filename" in fh[2].getvalue())
+            
         reset()
         s=shellclass(**kwargs)
         try:
@@ -4999,12 +5011,67 @@ class APSW(unittest.TestCase):
         except shellclass.Error:
             self.assert_("specify a filename" in str(sys.exc_info()[1]))
 
+        # various command line options
+        # an invalid one
+        reset()
+        try:
+            shellclass(args=["---tripledash"], **kwargs)
+        except shellclass.Error:
+            isempty(fh[1])
+            self.assert_("-tripledash" in fh[2].getvalue())
+            self.assert_("--tripledash" not in fh[2].getvalue())
+
+        ###
+        ### --init
+        ###
+        reset()
+        open("test-shell-1", "wt").write("syntax error")
+        try:
+            shellclass(args=["-init", "test-shell-1"], **kwargs)
+        except shellclass.Error:
+            # we want to make sure it read the file
+            isempty(fh[1])
+            self.assert_("syntax error" in fh[2].getvalue())
+        reset()
+        open("test-shell-1", "wt").write("select 3;")
+        shellclass(args=["-init", "test-shell-1"], **kwargs)
+        # we want to make sure it read the file
+        isempty(fh[2])
+        self.assert_("3" in fh[1].getvalue())
+
+        ###
+        ### header
+        ###
+        reset()
+        s=shellclass(**kwargs)
+        s.process_args(["--header"])
+        self.assertEqual(s.header, True)
+        s.process_args(["--noheader"])
+        self.assertEqual(s.header, False)
+        s.process_args(["--noheader", "-header", "-noheader", "--header"])
+        self.assertEqual(s.header, True)
+        # did they actually turn on?
+        isempty(fh[1])
+        isempty(fh[2])
+        s.process_args(["testdb", "select 3"])
+        isempty(fh[2])
+        self.assert_("3" in fh[1].getvalue())
+        print fh[1].getvalue()
+        
+
     # This one uses the coverage module
     def _testShellWithCoverage(self):
         "Check Shell functionality (with coverage)"
         import coverage
         import imp
-        coverage.start()
+        # I had problems with the compiled bytecode being around
+        for suff in "c","o":
+            try:
+                os.remove("tools/shell.py"+suff)
+            except:
+                pass
+            
+        coverage.start()                         
         covshell=imp.load_source("shell_coverage", "tools/shell.py")
         try:
             self._originaltestShell(shellclass=covshell.Shell)

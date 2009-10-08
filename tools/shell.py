@@ -109,7 +109,7 @@ class Shell:
         self.stderr=stderr
         # we don't become interactive until the command line args are
         # successfully parsed and acted upon
-        self.interactive=False
+        self.interactive=None
         self._input_stack=[]
         self.input_line_number=0
         self.push_input()
@@ -122,8 +122,10 @@ class Shell:
                 if len(self._input_descriptions):
                     self._input_descriptions.append("Processing command line arguments")
                 self.handle_exception()
+                raise
 
-        self.interactive=self.stdin.isatty() and self.stdout.isatty()
+        if self.interactive is None:
+            self.interactive=self.stdin.isatty() and self.stdout.isatty()
 
     def process_args(self, args):
         """Process command line options specified in args.  It is safe to
@@ -153,13 +155,17 @@ class Shell:
         if not args:
             return None, [], []
 
+        # are options still valid?
         options=True
+        # have we seen the database name?
         havedbname=False
+        # List of init files to read
         inits=[]
+        # List of sql/dot commands
         sqls=[]
 
         while args:
-            if not args[0].startswith("-"):
+            if not options or not args[0].startswith("-"):
                 options=False
                 if not havedbname:
                     # grab new database
@@ -172,10 +178,8 @@ class Shell:
                 args=args[1:]
                 continue
 
-            # remove initial single or double dash
+            # remove initial single or double dash         
             args[0]=args[0][1:]
-            if args[0].startswith("-"):
-                args[0]=args[0][1:]
             if args[0].startswith("-"):
                 args[0]=args[0][1:]
 
@@ -212,6 +216,10 @@ class Shell:
                 self.write(self.stdout, apsw.sqlitelibversion()+"\n")
                 # A pretty gnarly thing to do
                 sys.exit(0)
+
+            if args[0]=="help":
+                self.write(self.stderr, self.usage())
+                sys.exit(0)
             
             # only remaining known args are output modes
             if getattr(self, "output_"+args[0], None):
@@ -221,17 +229,14 @@ class Shell:
                 
             newargs=self.process_unknown_args(args)
             if newargs is None:
-                raise self.Error(self.usage())
+                raise self.Error("Unrecognized argument '"+args[0]+"'")
             args=newargs
             
         for f in inits:
             self.command_read([f])
 
         for s in sqls:
-            if s.startswith("."):
-                self.process_command(s)
-            else:
-                self.process_sql(s)
+            self.process_complete_line(s)
 
         return self.dbfilename, inits, sqls
 
@@ -725,7 +730,12 @@ Enter SQL statements terminated with a ";"
         """
         if self.echo:
             self.write(self.stderr, cmd+"\n")
-        cmd=shlex.split(cmd)
+        # broken with unicode on Python 2!!!
+        if sys.version_info<(3,0):
+            cmd=cmd.encode("utf8")
+            cmd=[c.decode("utf8") for c in shlex.split(cmd)]
+        else:
+            cmd=shlex.split(cmd)
         assert cmd[0][0]=="."
         cmd[0]=cmd[0][1:]
         fn=getattr(self, "command_"+cmd[0], None)
@@ -1489,7 +1499,7 @@ Enter SQL statements terminated with a ";"
                 self.interactive=False
                 self.input_line_number=0
                 while True:
-                    line=self._getcompleteline()
+                    line=self.getcompleteline()
                     if line is None:
                         break
                     self.process_complete_line(line)
@@ -1893,11 +1903,7 @@ Enter SQL statements terminated with a ";"
                 self._completion_first=False
                 line=self.getline(self.moreprompt)
                 if line is None: # unexpected eof
-                    # ::TODO:: raise exception and use handlexception for this instead
-                    self.write(self.stderr, "Incomplete SQL (line %d of %s): %s\n" % (self.input_line_number, self.stdin.filename, line))
-                    if self.bail:
-                        raise self.Error("Incomplete SQL and end of input")
-                    return None
+                    raise self.Error("Incomplete SQL (line %d of %s): %s\n" % (self.input_line_number, self.stdin.name, command))
                 command=command+"\n"+line
             return command
         except KeyboardInterrupt:
