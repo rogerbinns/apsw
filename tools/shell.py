@@ -176,6 +176,8 @@ class Shell:
             args[0]=args[0][1:]
             if args[0].startswith("-"):
                 args[0]=args[0][1:]
+            if args[0].startswith("-"):
+                args[0]=args[0][1:]
 
             if args[0]=="init":
                 if len(args)<2:
@@ -238,7 +240,9 @@ class Shell:
         argument it doesn't understand.  Override this method if you
         want to be able to understand additional command line arguments.
 
-        :param args: A list of the remaining arguments
+        :param args: A list of the remaining arguments.  The initial one will
+           have had the leading dashes removed (eg if it was --foo on the command
+           line then args[0] will be "foo"
         :returns: None if you don't recognize the argument either.  Otherwise
            return the list of remaining arguments after you have processed
            yours.

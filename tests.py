@@ -271,7 +271,8 @@ class APSW(unittest.TestCase):
         }
 
     def deltempfiles(self):
-        for name in ("testdb", "testdb2", "testfile", "testfile2", "testdb2x", "testdb-async"):
+        for name in ("testdb", "testdb2", "testfile", "testfile2", "testdb2x", "testdb-async",
+                     "test-shell-1", "test-shell-2", "test-shell-3"):
             for i in "-journal", "":
                 if os.path.exists(name+i):
                     deletefile(name+i)
@@ -424,7 +425,7 @@ class APSW(unittest.TestCase):
         vals=(
             (apsw.BindingsError, "(?,?,?)", (1,2)), # too few
             (apsw.BindingsError, "(?,?,?)", (1,2,3,4)), # too many
-            (TypeError,          "(?,?,?)", None), # none at all
+            (apsw.BindingsError,          "(?,?,?)", None), # none at all
             (apsw.BindingsError, "(?,?,?)", {'a': 1}), # ? type, dict bindings (note that the reverse will work since all
                                                        # named bindings are also implicitly numbered
             (TypeError,          "(?,?,?)", 2),    # not a dict or sequence
@@ -4951,6 +4952,67 @@ class APSW(unittest.TestCase):
         # clean up so the test can be run multiple times
         apsw.async_control(apsw.SQLITEASYNC_HALT, apsw.SQLITEASYNC_HALT_NEVER)
         apsw.async_shutdown()
+
+
+    def testShell(self, shellclass=None):
+        "Check Shell functionality"
+        if sys.version<(3,0):
+            import StringIO
+        else:
+            import io as StringIO
+
+        if shellclass is None:
+            shellclass=apsw.Shell
+
+        fh=StringIO.StringIO(), StringIO.StringIO(), StringIO.StringIO()
+        kwargs={"stdin": fh[0], "stdout": fh[1], "stderr": fh[2]}
+        def reset():
+            for i in fh:
+                i.truncate(0)
+
+        def isempty(x):
+            self.assertEqual(x.getvalue(), "")
+
+        # Make one
+        shellclass(stdin=fh[0], stdout=fh[1], stderr=fh[2])
+
+        # Lets give it some harmless sql arguments and do a sanity check
+        s=shellclass(args=["testdb", "create table x(x)", "insert into x values(1)"], **kwargs)
+        self.assertEqual(s.db.filename, "testdb")
+        # do a dump and check our table is there with its values
+        s.command_dump([])
+        self.assert_("x(x)" in fh[1].getvalue())
+        self.assert_("(1);" in fh[1].getvalue())
+
+        # empty args
+        self.assertEqual( (None, [], []), s.process_args(None))
+
+        # no param
+        reset()
+        shellclass(args=["-init"], **kwargs)
+        isempty(fh[1])
+        self.assert_("specify a filename" in fh[2].getvalue())
+        reset()
+        s=shellclass(**kwargs)
+        try:
+            s.process_args(["--init"])
+        except shellclass.Error:
+            self.assert_("specify a filename" in str(sys.exc_info()[1]))
+
+    # This one uses the coverage module
+    def _testShellWithCoverage(self):
+        "Check Shell functionality (with coverage)"
+        import coverage
+        import imp
+        coverage.start()
+        covshell=imp.load_source("shell_coverage", "tools/shell.py")
+        try:
+            self._originaltestShell(shellclass=covshell.Shell)
+        finally:
+            coverage.stop()
+            coverage.annotate(morfs=[covshell])
+            os.rename("tools/shell.py,cover", "shell.py.gcov")
+            
         
     # Note that faults fire only once, so there is no need to reset
     # them.  The testing for objects bigger than 2GB is done in
@@ -5843,6 +5905,12 @@ def setup(write=write):
             write("  gcc -fPIC -shared -o "+LOADEXTENSIONFILENAME+" -I. -Isqlite3 src/testextension.c\n")
         del APSW.testLoadExtension
         sys.stdout.flush()
+
+    # coverage testing of the shell
+    if os.getenv("APSW_SHELL_COVERAGE"):
+        import coverage
+        APSW._originaltestShell=APSW.testShell
+        APSW.testShell=APSW._testShellWithCoverage
 
     del memdb
     
