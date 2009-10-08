@@ -1931,7 +1931,7 @@ Enter SQL statements terminated with a ";"
         self._input_stack.append(d)
 
     def pop_input(self):
-        """Restore most recently pushed input parameters (interavtive,
+        """Restore most recently pushed input parameters (interactive,
         self.stdin, linenumber etc).  Use this if implementing a
         command like read.  Push the current input, read the file and
         then pop the input to go back to before.
