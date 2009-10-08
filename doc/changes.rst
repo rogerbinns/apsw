@@ -445,7 +445,7 @@ Fixed `issue 15 <http://code.google.com/p/apsw/issues/detail?id=15>`_
 releasing the GIL around calls to sqlite3_prepare.
 
 Fixed `issue 7 <http://code.google.com/p/apsw/issues/detail?id=7>`_
-ensuring that extension module filenames are converted to utf8.</li>
+ensuring that extension module filenames are converted to utf8.
 
 Use the `sqlite3_open_v2 <http://sqlite.org/c3ref/open.html>`_
 interface which allows specifying which vfs to use. This release does
