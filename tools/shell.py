@@ -95,8 +95,6 @@ class Shell:
         self.truncate=True
         # a stack of previous outputs. turning on explain saves previous, off restores
         self._output_stack=[]
-        # save initial (default) output settings
-        self.push_output()
 
         # other stuff
         self.encoding=encoding
@@ -113,6 +111,7 @@ class Shell:
         self._input_stack=[]
         self.input_line_number=0
         self.push_input()
+        self.push_output()
         self._input_descriptions=[]
         
         if args:
@@ -330,8 +329,8 @@ OPTIONS include:
                 fromc=lambda x: chr(x)
             res=['"']
             for c in v:
-                if toint(c) in self._printable:
-                    res.append(fromc(o))
+                if o(c) in self._printable:
+                    res.append(fromc(c))
                 else:
                     res.append("\\x%02X" % (o(c),))
             res.append('"')
@@ -623,14 +622,16 @@ Enter SQL statements terminated with a ";"
         if isinstance(eval, KeyboardInterrupt):
             self.handle_interrupt()
             text="Interrupted"
-        elif isinstance(eval, (self.Error, apsw.Error, UnicodeDecodeError)):
+        elif isinstance(eval, (self.Error, apsw.Error, UnicodeDecodeError, IOError)):
             text=str(eval)
         else:
             # The traceback is currently debugging code and will be
             # removed.  It is to help with development and testing and
-            # seeing what kinds of errors we get
-            import traceback
-            traceback.print_exc()
+            # seeing what kinds of errors we get.  ZeroDivisionError
+            # is deliberately in test suite so don't print them out.
+            if sys.exc_info()[0]!=ZeroDivisionError:
+                import traceback
+                traceback.print_exc()
             text=str(eval)
             
         if not text.endswith("\n"):
@@ -931,7 +932,8 @@ Enter SQL statements terminated with a ";"
                 self.write(self.stdout, "PRAGMA writable_schema=ON;\n")
             if foreigns:
                 comment("This pragma turns off checking of foreign keys "
-                        "as tables would be inconsistent while restoring")
+                        "as tables would be inconsistent while restoring.  It was introduced "
+                        "in SQLite 3.6.19.")
                 self.write(self.stdout, "PRAGMA foreign_keys=OFF;\n")
 
             if virtuals or foreigns:
@@ -998,7 +1000,7 @@ Enter SQL statements terminated with a ";"
 
             # cleanup pragmas
             if foreigns:
-                comment("Restoring foreign key checking back to default")
+                comment("Restoring foreign key checking back on.  Note that SQLite 3.6.19 is off by default")
                 self.write(self.stdout, "PRAGMA foreign_keys=ON;\n")
             if virtuals:
                 comment("Restoring writable schema back to default")
@@ -1618,10 +1620,10 @@ Enter SQL statements terminated with a ";"
                 else:
                     assert False, "Bug: didn't find output mode"
             elif i=="output":
-                if self.stdout is self._output_stack[0]["stdout"]:
+                if self.stdout is self._original_stdout:
                     v="stdout"
                 else:
-                    v=self.stdout.name
+                    v=getattr(self.stdout, "name", "<unknown stdout>")
             elif i=="width":
                 v=" ".join(["%d"%(i,) for i in self.widths])
             else:
@@ -1799,8 +1801,7 @@ Enter SQL statements terminated with a ";"
             return
         res=[]
         res.append("Line %d" % (self.input_line_number,))
-        if self.stdin.name:
-            res.append(": "+self.stdin.name)
+        res.append(": "+getattr(self.stdin, "name", "<stdin>"))
         self._input_descriptions.append(" ".join(res))
 
     def fixup_backslashes(self, s):
@@ -1903,7 +1904,7 @@ Enter SQL statements terminated with a ";"
                 self._completion_first=False
                 line=self.getline(self.moreprompt)
                 if line is None: # unexpected eof
-                    raise self.Error("Incomplete SQL (line %d of %s): %s\n" % (self.input_line_number, self.stdin.name, command))
+                    raise self.Error("Incomplete SQL (line %d of %s): %s\n" % (self.input_line_number, getattr(self.stdin, "name", "<stdin>"), command))
                 command=command+"\n"+line
             return command
         except KeyboardInterrupt:

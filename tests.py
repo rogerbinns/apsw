@@ -4973,6 +4973,11 @@ class APSW(unittest.TestCase):
         def isempty(x):
             self.assertEqual(x.getvalue(), "")
 
+        def cmd(c):
+            p=fh[0].tell()
+            fh[0].write(c)
+            fh[0].seek(p)
+
         # Make one
         shellclass(stdin=fh[0], stdout=fh[1], stderr=fh[2])
 
@@ -5040,7 +5045,7 @@ class APSW(unittest.TestCase):
         self.assert_("3" in fh[1].getvalue())
 
         ###
-        ### header
+        ### --header
         ###
         reset()
         s=shellclass(**kwargs)
@@ -5058,6 +5063,124 @@ class APSW(unittest.TestCase):
         self.assert_("3" in fh[1].getvalue())
         self.assert_("----" in fh[1].getvalue())
 
+        ###
+        ### --echo, --bail, --interactive
+        ###
+        reset()
+        for v in ("echo", "bail", "interactive"):
+            s=shellclass(**kwargs)
+            b4=getattr(s,v)
+            s.process_args(["--"+v])
+            # setting should have changed
+            self.assertNotEqual(b4, getattr(s,v))
+            isempty(fh[1])
+            isempty(fh[2])
+
+        ###
+        ### --batch
+        ###
+        reset()
+        s=shellclass(**kwargs)
+        s.interactive=True
+        s.process_args(["-batch"])
+        self.assertEqual(s.interactive, False)
+        isempty(fh[1])
+        isempty(fh[2])
+
+        ###
+        ### --separator, --nullvalue, --encoding
+        ###
+        for v,val in ("separator", "\n"), ("nullvalue", "abcdef"), ("encoding", "iso8859-1"):
+            reset()
+            s=shellclass(args=["--"+v, val], **kwargs)
+            # We need the eval because shell processes backslashes in
+            # string.  After deliberating that is the right thing to
+            # do
+            self.assertEqual(val, getattr(s,v))
+            isempty(fh[1])
+            isempty(fh[2])
+            self.assertRaises(shellclass.Error, shellclass, args=["-"+v, val, "--"+v], **kwargs)
+            isempty(fh[1])
+            self.assert_(v in fh[2].getvalue())
+
+        ###
+        ### --version
+        ###
+        reset()
+        self.assertRaises(SystemExit, shellclass, args=["--version"], **kwargs)
+        # it writes to stdout
+        isempty(fh[2])
+        self.assert_(apsw.sqlitelibversion() in fh[1].getvalue())
+
+        ###
+        ### --help
+        ###
+        reset()
+        self.assertRaises(SystemExit, shellclass, args=["--help"], **kwargs)
+        # it writes to stderr
+        isempty(fh[1])
+        self.assert_("-version" in fh[2].getvalue())
+
+        ###
+        ### Items that correspond to output mode
+        ###
+        reset()
+        shellclass(args=["--python", "--column", "--python", ":memory:", "create table x(x)", "insert into x values(x'aa')", "select * from x;"], **kwargs)
+        isempty(fh[2])
+        self.assert_("bytes" in fh[1].getvalue() or "buffer" in fh[1].getvalue())
+
+        ###
+        ### Is process_unknown_args called as documented?
+        ###
+        reset()
+        class s2(shellclass):
+            def process_unknown_args(self, args):
+                1/0
+        self.assertRaises(ZeroDivisionError, s2, args=["--unknown"], **kwargs)
+        isempty(fh[1])
+        self.assert_("integer division" in fh[2].getvalue())
+
+        class s3(shellclass):
+            def process_unknown_args(_, args):
+                self.assertEqual(args[0:2], ["myoption", "myvalue"])
+                return args[2:]
+        reset()
+        self.assertRaises(s3.Error, s3, args=["--python", "--myoption", "myvalue", "--init"], **kwargs)
+        isempty(fh[1])
+        self.assert_("-init" in fh[2].getvalue())
+
+        ###
+        ### Output formats - column
+        ###
+        reset()
+        s=shellclass(**kwargs)
+        x='a'*20
+        cmd(".mode column\n.header ON\nselect '"+x+"';")
+        s.cmdloop()
+        isempty(fh[2])
+        # colwidth should be 2 more
+        sep='-'*(len(x)+2) # apostrophes quoting string in column header
+        out=fh[1].getvalue().replace("\n", "")
+        self.assertEqual(len(out.split(sep)), 2)
+        self.assertEqual(len(out.split(sep)[0]), len(x)+2) # plus two apostrophes
+        self.assertEqual(len(out.split(sep)[1]), len(x)+2) # same
+        self.assert_("  " in out.split(sep)[1]) # space padding
+        # make sure truncation happens
+        reset()
+        cmd(".width 5\nselect '"+x+"';\n")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assert_("a"*6 not in fh[1].getvalue())
+        # explain mode doesn't truncate
+        reset()
+        cmd("create table %s(x);create index %s on x(x);\n.explain\nexplain select * from x where x=7;\n" % (x,x))
+        s.cmdloop()
+        isempty(fh[2])
+        print fh[1].getvalue()
+        self.assert_(x in fh[1].getvalue())
+        
+        
+        
     # This one uses the coverage module
     def _testShellWithCoverage(self):
         "Check Shell functionality (with coverage)"
