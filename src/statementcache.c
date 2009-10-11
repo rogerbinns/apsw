@@ -224,7 +224,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
     {
       /* Check to see if query is already in cache.  The size checks are to
          avoid calculating hashes on long strings */
-      if( sc->cache && ((PyUnicode_CheckExact(query) && PyUnicode_GET_DATA_SIZE(query) < SC_MAXSIZE)
+      if( sc->cache && sc->numentries && ((PyUnicode_CheckExact(query) && PyUnicode_GET_DATA_SIZE(query) < SC_MAXSIZE)
 #if PY_MAJOR_VERSION < 3 
           || (PyString_CheckExact(query) && PyString_GET_SIZE(query) < SC_MAXSIZE)
 #endif
@@ -262,7 +262,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
   assert(APSWBuffer_Check(utf8));
 
   /* if we have cache and utf8 is reasonable size? */
-  if(sc->cache && APSWBuffer_GET_SIZE(utf8) < SC_MAXSIZE)
+  if(sc->cache && sc->numentries && APSWBuffer_GET_SIZE(utf8) < SC_MAXSIZE)
     {
       /* then is it in the cache? */
       val=(APSWStatement*)PyDict_GetItem(sc->cache, utf8);
