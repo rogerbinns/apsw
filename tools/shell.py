@@ -44,6 +44,11 @@ class Shell:
     * http://www.sqlite.org/src/info/f5cb008a65
     * http://www.sqlite.org/src/info/c25aab7e7e
     * http://www.sqlite.org/src/info/6da68f691b
+    * http://www.sqlite.org/src/info/2cb66577f6
+
+    Errors and diagnostics are only ever sent to error output
+    (self.stderr) and never to the regular output (self.stdout).  This
+    means using shell output is always easy and consistent.
 
     Shell commands begin with a dot (eg .help).  They are implemented
     as a method named after the command (eg command_help).  The method
@@ -286,13 +291,8 @@ OPTIONS include:
     ### but also by random other pieces of code.
     ###
 
-
-    if sys.version_info>=(3,0):
-        _string_types=(str,)
-        _binary_types=(bytes,)
-    else:
-        _string_types=(str,unicode)
-        _binary_types=(buffer,)
+    _binary_type = eval(("buffer","bytes") [sys.version_info>=(3,0)])
+    _basestring = eval(("basestring", "str") [sys.version_info>=(3,0)])
 
     # bytes that are ok in C strings - no need for quoting
     _printable=[ord(x) for x in
@@ -301,7 +301,7 @@ OPTIONS include:
 
     def _fmt_c_string(self, v):
         "Format as a C string including surrounding double quotes"
-        if isinstance(v, self._string_types):
+        if isinstance(v, self._basestring):
             op=['"']
             for c in v:
                 if c=="\\":
@@ -320,7 +320,7 @@ OPTIONS include:
             return "".join(op)
         elif v is None:
             return '"'+self.nullvalue+'"'
-        elif isinstance(v, self._binary_types):
+        elif isinstance(v, self._binary_type):
             if sys.version_info<(3,0):
                 o=lambda x: ord(x)
                 fromc=lambda x: x
@@ -343,16 +343,18 @@ OPTIONS include:
         "Format as HTML (mainly escaping &/</>"
         return self._fmt_text_col(v).\
            replace("&", "&amp;"). \
-           replace("<", "&gt;"). \
-           replace(">", "&lt;")
+           replace(">", "&gt;"). \
+           replace("<", "&lt;"). \
+           replace("'", "&apos;"). \
+           replace('"', "&quot;")
 
     def _fmt_python(self, v):
         "Format as python literal"
         if v is None:
             return "None"
-        elif isinstance(v, self._string_types):
+        elif isinstance(v, self._basestring):
             return repr(v)
-        elif isinstance(v, self._binary_types):
+        elif isinstance(v, self._binary_type):
             if sys.version_info<(3,0):
                 res=["buffer(\""]
                 for i in v:
@@ -385,9 +387,9 @@ OPTIONS include:
         "Return as a SQL literal"
         if v is None:
             return "NULL"
-        elif isinstance(v, self._string_types):
+        elif isinstance(v, self._basestring):
             return "'"+v.replace("'", "''")+"'"
-        elif isinstance(v, self._binary_types):
+        elif isinstance(v, self._binary_type):
             res=["X'"]
             if sys.version_info<(3,0):
                 trans=lambda x: ord(x)
@@ -404,9 +406,9 @@ OPTIONS include:
         "Regular text formatting"
         if v is None:
             return self.nullvalue
-        elif isinstance(v, self._string_types):
+        elif isinstance(v, self._basestring):
             return v
-        elif isinstance(v, self._binary_types):
+        elif isinstance(v, self._binary_type):
             # sqlite gives back raw bytes!
             return "<Binary data>"
         else:
@@ -466,16 +468,16 @@ OPTIONS include:
         # instance
         if header:
             if sys.version_info<(3,0):
-                import StringIO
-                s=StringIO.StringIO()
+                import StringIO as io
             else:
                 import io
-                s=io.StringIO()
+            s=io.StringIO()
             quotechar=None
             if self.separator==",":
                 quotechar='"'
+            sep=self.separator
             import csv
-            writer=csv.writer(s, delimiter=self.separator, quotechar=quotechar)
+            writer=csv.writer(s, delimiter=self.separator.encode("utf8"), quotechar=quotechar)
             self._csv=(s, writer)
             if self.header:
                 self.output_csv(False, line)
@@ -484,10 +486,11 @@ OPTIONS include:
         self._csv[1].writerow(line)
         t=self._csv[0].getvalue()
         self._csv[0].truncate(0)
-        if t.endswith("\r\n"):
-            t=t[:-2]
-        elif t.endswith("\r") or t.endswith("\n"):
-            t=t[:-1]
+        # csv lib always does DOS eol
+        assert(t.endswith("\r\n"))
+        t=t[:-2]
+        # should not be other eol irregularities
+        assert(not t.endswith("\r") and not  t.endswith("\n"))
         self.write(self.stdout, t+"\n")
 
     def output_html(self, header, line):
@@ -1496,20 +1499,21 @@ Enter SQL statements terminated with a ";"
         else:
             f=open(cmd[0], "rtU")
             try:
-                self.push_input()
-                self.stdin=f
-                self.interactive=False
-                self.input_line_number=0
-                while True:
-                    line=self.getcompleteline()
-                    if line is None:
-                        break
-                    self.process_complete_line(line)
-            except:
-                eval=sys.exc_info()[1]
-                if not isinstance(eval, SystemExit):
-                    self._append_input_description()
-                raise
+                try:
+                    self.push_input()
+                    self.stdin=f
+                    self.interactive=False
+                    self.input_line_number=0
+                    while True:
+                        line=self.getcompleteline()
+                        if line is None:
+                            break
+                        self.process_complete_line(line)
+                except:
+                    eval=sys.exc_info()[1]
+                    if not isinstance(eval, SystemExit):
+                        self._append_input_description()
+                    raise
 
             finally:
                 self.pop_input()

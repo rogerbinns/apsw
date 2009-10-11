@@ -73,8 +73,9 @@ def main(PYVERS, UCSTEST, SQLITEVERS, concurrency):
                 print "Python",pyver,"ucs",ucs,"   SQLite",sqlitever
                 workdir=os.path.abspath(os.path.join("work", "py%s-ucs%d-sq%s" % (pyver, ucs, sqlitever)))
                 logdir=os.path.abspath(os.path.join("megatestresults", "py%s-ucs%d-sq%s" % (pyver, ucs, sqlitever)))
-                run("mkdir -p %s/src %s" % (workdir, logdir))
+                run("mkdir -p %s/src %s/tools %s" % (workdir, workdir, logdir))
                 run("cp *.py checksums "+workdir)
+                run("cp tools/*.py "+workdir+"/tools/")
                 run("cp src/*.c src/*.h "+workdir+"/src/")
 
                 queue.put({'workdir': workdir, 'pyver': pyver, 'ucs': ucs, 'sqlitever': sqlitever, 'logdir': logdir})
@@ -90,7 +91,6 @@ def main(PYVERS, UCSTEST, SQLITEVERS, concurrency):
     for t in threads:
         t.join()
     print "\nFinished"
-
 
 def getpyurl(pyver):
     dirver=pyver

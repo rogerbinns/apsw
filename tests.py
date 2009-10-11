@@ -1686,11 +1686,10 @@ class APSW(unittest.TestCase):
     # A check that various extensions (such as fts3, rtree, icu)
     # actually work.  We don't know if they were supposed to be
     # compiled in or not so the assumption is that they aren't.
-    # However if --enable=EXT is in sys.argv and setup.py is being run
-    # then it sets environment variables saying the extensions *must*
-    # be present.  See
-    # http://code.google.com/p/apsw/issues/detail?id=55 for what led
-    # to this.
+    # However setup.py is being run then it sets environment variables
+    # saying the extensions *must* be present if they were enabled.
+    # See http://code.google.com/p/apsw/issues/detail?id=55 for what
+    # led to this.
     def checkOptionalExtension(self, name, testquery):
         try:
             present=False
@@ -1735,8 +1734,6 @@ class APSW(unittest.TestCase):
         check('eggs OR oil', ['cake', 'mayo'])
         check('"pumpkin onions"', ['pumpkin stew'])
         
-
-    # Note the normal testName - invoked from testOptionalExtensions
     def testRTreeExtension(self):
         "Check RTree extension if present"
         if not self.checkOptionalExtension("rtree", "create virtual table foo using rtree(one, two, three, four, five)"):
@@ -1762,8 +1759,8 @@ class APSW(unittest.TestCase):
         check("x1>2 AND x2<7 AND y1>17.2 AND y2<=8", [])
         check("x1>5 AND x2<=6 AND y1>-11 AND y2<=8", [1])
 
-    # Note the normal testName - invoked from testOptionalExtensions
     def testICUExtension(self):
+        "Check ICU extension if present"
         if not self.checkOptionalExtension("icu", "select lower('I', 'tr_tr')"):
             return
 
@@ -4956,7 +4953,7 @@ class APSW(unittest.TestCase):
 
     def testShell(self, shellclass=None):
         "Check Shell functionality"
-        if sys.version<(3,0):
+        if sys.version_info<(3,0):
             import StringIO
         else:
             import io as StringIO
@@ -5173,12 +5170,103 @@ class APSW(unittest.TestCase):
         self.assert_("a"*6 not in fh[1].getvalue())
         # explain mode doesn't truncate
         reset()
-        cmd("create table %s(x);create index %s on x(x);\n.explain\nexplain select * from x where x=7;\n" % (x,x))
+        cmd("create table %s(x);create index %s_ on %s(x);\n.explain\nexplain select * from %s where x=7;\n" % (x,x,x,x))
         s.cmdloop()
         isempty(fh[2])
-        print fh[1].getvalue()
         self.assert_(x in fh[1].getvalue())
-        
+        # check null and blobs
+        reset()
+        nv="ThIsNuLlVaLuE"
+        cmd(".nullvalue %s\nselect null, x'aaee';\n" % (nv,))
+        s.cmdloop()
+        isempty(fh[2])
+        self.assert_(nv in fh[1].getvalue())
+        # do not output blob as is
+        self.assert_("\xaa" not in fh[1].getvalue())
+
+        ###
+        ### Output formats - csv
+        ###
+        reset()
+        # mode change should reset separator
+        cmd(".separator F\n.mode csv\nselect 3,3;\n")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assert_("3,3" in fh[1].getvalue())
+        # tab sep
+        reset()
+        cmd(".separator '\\t'\nselect 3,3;\n")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assert_("3\t3" in fh[1].getvalue())
+        # back to comma
+        reset()
+        cmd(".mode csv\nselect 3,3;\n")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assert_("3,3" in fh[1].getvalue())
+        # quoting
+        reset()
+        cmd(".header ON\nselect 3 as [\"one\"], 4 as [\t];\n")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assert_('"""one""",\t' in fh[1].getvalue())
+        # custom sep
+        reset()
+        cmd(".separator |\nselect 3 as [\"one\"], 4 as [\t];\n")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assert_("3|4\n" in fh[1].getvalue())
+        self.assert_('"one"|\t\n' in fh[1].getvalue())
+
+        ###
+        ### Output formats - html
+        ###
+        reset()
+        cmd(".mode html\n.header OFF\nselect 3,4;\n")
+        s.cmdloop()
+        isempty(fh[2])
+        # should be no header
+        self.assert_("<th>" not in fh[1].getvalue().lower())
+        # does it actually work?
+        self.assert_("<td>3</td>" in fh[1].getvalue().lower())
+        # check quoting works
+        reset()
+        cmd(".header ON\nselect 3 as [<>&];\n")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assert_("<th>&lt;&gt;&amp;</th>" in fh[1].getvalue().lower())
+        # do we output rows?
+        self.assert_("<tr>" in fh[1].getvalue().lower())
+        self.assert_("</tr>" in fh[1].getvalue().lower())
+
+        ###
+        ### Output formats - insert
+        ###
+        reset()
+        all="3,3.1,'3.11',null,x'0311'"
+        cmd(".mode insert\n.header OFF\nselect "+all+";\n")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assert_(all in fh[1].getvalue().lower())
+        # empty values
+        reset()
+        all="0,0.0,'',null,x''"
+        cmd("select "+all+";\n")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assert_(all in fh[1].getvalue().lower())
+        # header, separator and nullvalue should make no difference 
+        save=fh[1].getvalue()
+        reset()
+        cmd(".header ON\n.separator %\n.nullvalue +\nselect "+all+";\n")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assertEqual(save, fh[1].getvalue())
+
+        ###
+        ### Output formats - line
+        ###
         
         
     # This one uses the coverage module
