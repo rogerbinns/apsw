@@ -5124,7 +5124,7 @@ class APSW(unittest.TestCase):
         reset()
         shellclass(args=["--python", "--column", "--python", ":memory:", "create table x(x)", "insert into x values(x'aa')", "select * from x;"], **kwargs)
         isempty(fh[2])
-        self.assert_("bytes" in fh[1].getvalue() or "buffer" in fh[1].getvalue())
+        self.assert_('b"' in fh[1].getvalue() or "buffer(" in fh[1].getvalue())
 
         ###
         ### Is process_unknown_args called as documented?
@@ -5135,7 +5135,7 @@ class APSW(unittest.TestCase):
                 1/0
         self.assertRaises(ZeroDivisionError, s2, args=["--unknown"], **kwargs)
         isempty(fh[1])
-        self.assert_("integer division" in fh[2].getvalue())
+        self.assert_("division" in fh[2].getvalue()) # py2 says "integer division", py3 says "int division"
 
         class s3(shellclass):
             def process_unknown_args(_, args):
@@ -5263,16 +5263,100 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[2])
         self.assertEqual(save, fh[1].getvalue())
+        # check the table name
+        self.assert_(fh[1].getvalue().lower().startswith("insert into table values"))
+        reset()
+        cmd(".mode insert funkychicken\nselect "+all+";\n")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assert_(fh[1].getvalue().lower().startswith("insert into funkychicken values"))
 
         ###
         ### Output formats - line
         ###
+        reset()
+        cmd(".header OFF\n.nullvalue *\n.mode line\nselect 3 as a, null as b, 0.0 as c, 'a' as d, x'aa' as e;\n")
+        s.cmdloop()
+        isempty(fh[2])
+        out=fh[1].getvalue().replace(" ","")
+        self.assert_("a=3\n" in out)
+        self.assert_("b=*\n" in out)
+        self.assert_("c=0.0\n" in out)
+        self.assert_("d=a\n" in out)
+        self.assert_("e=<Binarydata>\n" in out)
+        self.assertEqual(7, len(out.split("\n"))) # one for each col plus two trailing newlines
+        # header should make no difference
+        reset()
+        cmd(".header ON\n.nullvalue *\n.mode line\nselect 3 as a, null as b, 0.0 as c, 'a' as d, x'aa' as e;\n")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assertEqual(out, fh[1].getvalue().replace(" ",""))
+        # wide column name
+        reset()
+        ln="kjsfhgjksfdjkgfhkjsdlafgjkhsdkjahfkjdsajfhsdja"*12
+        cmd("select 3 as %s, 3 as %s1;" % (ln,ln))
+        s.cmdloop()
+        isempty(fh[2])
+        self.assertEqual(fh[1].getvalue(), " %s = 3\n%s1 = 3\n\n" % (ln,ln))
+
+        ###
+        ### Output formats - list
+        ###
+        reset()
+        cmd(".header off\n.mode list\n.nullvalue (\n.separator &\nselect 3 as a, null as b, 0.0 as c, 'a' as d, x'aa' as e;\n")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assertEqual(fh[1].getvalue(), '3&(&0.0&a&<Binary data>\n')
+        reset()
+        # header on
+        cmd(".header on\n.mode list\n.nullvalue (\n.separator &\nselect 3 as a, null as b, 0.0 as c, 'a' as d, x'aa' as e;\n")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assert_(fh[1].getvalue().startswith("a&b&c&d&e\n"))
+
+        ###
+        ### Output formats - python
+        ###
+        reset()
+        cmd(".header off\n.mode python\nselect 3 as a, null as b, 0.0 as c, 'a' as d, x'aa44bb' as e;\n")
+        s.cmdloop()
+        isempty(fh[2])
+        v=eval(fh[1].getvalue())
+        self.assertEqual(len(v), 1) # 1 tuple
+        self.assertEqual(v, ( (3, None, 0.0, 'a', b(r"\xaa\x44\xbb")), ))
+        reset()
+        cmd(".header on\n.mode python\nselect 3 as a, null as b, 0.0 as c, 'a' as d, x'aa44bb' as e;\n")
+        s.cmdloop()
+        isempty(fh[2])
+        v=eval("("+fh[1].getvalue()+")") # need parentheses otherwise indent rules apply
+        self.assertEqual(len(v), 2) # headers and row
+        self.assertEqual(v, ( ("a", "b", "c", "d", "e"), (3, None, 0.0, 'a', b(r"\xaa\x44\xbb")), ))
+        
+        ###
+        ### Output formats - TCL
+        ###
+        reset()
+        cmd(".header off\n.mode tcl\n.separator -\n.nullvalue ?\nselect 3 as a, null as b, 0.0 as c, 'a' as d, x'aa44bb' as e;\n")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assertEqual(fh[1].getvalue(), '"3"-"?"-"0.0"-"a"-"\\xAAD\\xBB"\n')
+        reset()
+        cmd(".header on\nselect 3 as a, null as b, 0.0 as c, 'a' as d, x'aa44bb' as e;\n")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assert_('"a"-"b"-"c"-"d"-"e"' in fh[1].getvalue())
         
         
     # This one uses the coverage module
     def _testShellWithCoverage(self):
         "Check Shell functionality (with coverage)"
-        import coverage
+        # We currently allow coverage module to not exist which helps
+        # with debugging
+        try:
+            import coverage
+        except ImportError:
+            coverage=None
+            
         import imp
         # I had problems with the compiled bytecode being around
         for suff in "c","o":
@@ -5280,15 +5364,16 @@ class APSW(unittest.TestCase):
                 os.remove("tools/shell.py"+suff)
             except:
                 pass
-            
-        coverage.start()                         
+
+        if coverage: coverage.start()                         
         covshell=imp.load_source("shell_coverage", "tools/shell.py")
         try:
             self._originaltestShell(shellclass=covshell.Shell)
         finally:
-            coverage.stop()
-            coverage.annotate(morfs=[covshell])
-            os.rename("tools/shell.py,cover", "shell.py.gcov")
+            if coverage:
+                coverage.stop()
+                coverage.annotate(morfs=[covshell])
+                os.rename("tools/shell.py,cover", "shell.py.gcov")
             
         
     # Note that faults fire only once, so there is no need to reset
@@ -6185,7 +6270,6 @@ def setup(write=write):
 
     # coverage testing of the shell
     if os.getenv("APSW_SHELL_COVERAGE"):
-        import coverage
         APSW._originaltestShell=APSW.testShell
         APSW.testShell=APSW._testShellWithCoverage
 
