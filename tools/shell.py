@@ -10,6 +10,7 @@ import textwrap
 import time
 import codecs
 
+
 class Shell:
     """Implements a SQLite shell
 
@@ -77,7 +78,7 @@ class Shell:
         specific subclasses as the distinctions between different
         types of errors doesn't matter."""
         pass
-    
+
     def __init__(self, stdin=None, stdout=None, stderr=None, encoding="utf8", args=None):
         """Create instance, set defaults and do argument processing."""
         # The parameter doc has to be in main class doc as sphinx
@@ -118,7 +119,7 @@ class Shell:
         self.push_input()
         self.push_output()
         self._input_descriptions=[]
-        
+
         if args:
             try:
                 self.process_args(args)
@@ -291,7 +292,7 @@ OPTIONS include:
     ### but also by random other pieces of code.
     ###
 
-    _binary_type = eval(("buffer","bytes") [sys.version_info>=(3,0)])
+    _binary_type = eval(("buffer", "bytes") [sys.version_info>=(3,0)])
     _basestring = eval(("basestring", "str") [sys.version_info>=(3,0)])
 
     # bytes that are ok in C strings - no need for quoting
@@ -453,7 +454,7 @@ OPTIONS include:
         if self.truncate:
             cols=["%-*.*s" % (self._actualwidths[i], self._actualwidths[i], self._fmt_text_col(line[i])) for i in range(len(line))]
         else:
-            cols=["%-*s" % (self._actualwidths[i],  self._fmt_text_col(line[i])) for i in range(len(line))]
+            cols=["%-*s" % (self._actualwidths[i], self._fmt_text_col(line[i])) for i in range(len(line))]
         self.write(self.stdout, " ".join(cols)+"\n")
 
     def output_csv(self, header, line):
@@ -807,7 +808,7 @@ Enter SQL statements terminated with a ";"
         self.header=True
         self.output=self.output_column
         self.truncate=False
-        self.widths=[3,15,58];
+        self.widths=[3,15,58]
         try:
             self.process_sql("pragma database_list", internal=True)
         finally:
@@ -951,10 +952,19 @@ Enter SQL statements terminated with a ";"
                 for table in tables:
                     for sql in self.db.cursor().execute("SELECT sql FROM sqlite_master WHERE name=?1 AND type='table'", (table,)):
                         comment("Table  "+table)
-                        self.write(self.stdout, "DROP TABLE IF EXISTS "+self._fmt_sql_identifier(table)+";\n")
-                        self.write(self.stdout, sql[0]+";\n")
-                        self._output_table=table
-                        self.process_sql("select * from "+self._fmt_sql_identifier(table), internal=True)
+                        # Special treatment for virtual tables - they
+                        # get called back on drops and creates and
+                        # could thwart us so we have to manipulate
+                        # sqlite_master directly
+                        if sql[0].lower().split()[:3]==["create", "virtual", "table"]:
+                            self.write(self.stdout, "DELETE FROM sqlite_master WHERE name="+self._fmt_sql_value(table)+" AND type='table';\n")
+                            self.write(self.stdout, "INSERT INTO sqlite_master(type,name,tbl_name,rootpage,sql) VALUES('table',%s,%s,0,%s);\n"
+                                       % (self._fmt_sql_value(table), self._fmt_sql_value(table), self._fmt_sql_value(sql[0])))
+                        else:
+                            self.write(self.stdout, "DROP TABLE IF EXISTS "+self._fmt_sql_identifier(table)+";\n")
+                            self.write(self.stdout, sql[0]+";\n")
+                            self._output_table=table
+                            self.process_sql("select * from "+self._fmt_sql_identifier(table), internal=True)
                         # Now any indices or triggers
                         first=True
                         for name,sql in self.db.cursor().execute("SELECT name,sql FROM sqlite_master "
@@ -1980,7 +1990,7 @@ Enter SQL statements terminated with a ";"
             except:
                 # Readline swallows any exceptions we raise.  We
                 # shouldn't be raising any so this is to catch that
-                import traceback ; traceback.print_exc()
+                import traceback; traceback.print_exc()
                 raise
 
         if state>len(self.completions):
@@ -2232,6 +2242,7 @@ Enter SQL statements terminated with a ";"
                     else:
                         self.write(self.stderr, "%s: %d\n" % (k, val))
 
+
 def main():
     # Docstring must start on second line so dedenting works correctly
     """
@@ -2257,7 +2268,7 @@ def main():
             pass
         else:
             # Where did this exception come from?
-            import traceback ; traceback.print_exc()
+            import traceback; traceback.print_exc()
         sys.exit(1)
 
 if __name__=='__main__':
