@@ -368,7 +368,10 @@ OPTIONS include:
             else:
                 res=['b"']
                 for i in v:
-                    res.append("%02X" % (i,))
+                    if i in self._printable:
+                        res.append(chr(i))
+                    else:
+                        res.append("\\x%02X" % (i,))
                 res.append('"')
                 return "".join(res)
         else:
@@ -461,7 +464,10 @@ OPTIONS include:
         """
         Items in csv format (comma separated).  Use tabs mode for tab
         separated.  You can use the .separator command to use a
-        different one after switching mode.
+        different one after switching mode.  A separator of comma uses
+        double quotes for quoting while other separators do not do any
+        quoting.  The Python csv library used for this only supports
+        single character separators.
         """
         
         # we use self._csv for the work, setup when header is
@@ -470,15 +476,18 @@ OPTIONS include:
         if header:
             if sys.version_info<(3,0):
                 import StringIO as io
+                # Python 2 barfs on unicode delimiter
+                fixdelim=lambda x: x.encode("utf8")
             else:
                 import io
+                fixdelim=lambda x: x
             s=io.StringIO()
-            quotechar=None
+            quotechar='\x00'
             if self.separator==",":
                 quotechar='"'
             sep=self.separator
             import csv
-            writer=csv.writer(s, delimiter=self.separator.encode("utf8"), quotechar=quotechar)
+            writer=csv.writer(s, delimiter=fixdelim(self.separator), quotechar=quotechar)
             self._csv=(s, writer)
             if self.header:
                 self.output_csv(False, line)
@@ -1287,7 +1296,7 @@ Enter SQL statements terminated with a ";"
 
             quotechar='"'
             if self.separator=="\t":
-                quotechar=None
+                quotechar='\x00'
 
             cur=self.db.cursor()
             sql="insert into %s values(%s)" % (self._fmt_sql_identifier(cmd[1]), ",".join("?"*ncols))
