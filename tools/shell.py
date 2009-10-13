@@ -654,7 +654,8 @@ Enter SQL statements terminated with a ";"
         if isinstance(eval, KeyboardInterrupt):
             self.handle_interrupt()
             text="Interrupted"
-        elif isinstance(eval, (self.Error, apsw.Error, UnicodeDecodeError, IOError)):
+        # ValueError comes from shlex.split
+        elif isinstance(eval, (self.Error, apsw.Error, UnicodeDecodeError, IOError, ValueError)):
             text=str(eval)
         else:
             # The traceback is currently debugging code and will be
@@ -780,6 +781,13 @@ Enter SQL statements terminated with a ";"
     ### Commands start here
     ###
 
+    def _boolean_command(self, name, cmd):
+        "Parse and verify boolean parameter"
+        if len(cmd)!=1 or cmd[0].lower() not in ("on", "off"):
+            raise self.Error(name+" expected ON or OFF")
+        return cmd[0].lower()=="on"
+
+
     # Note that doc text is used for generating help output.
 
     def command_backup(self, cmd):
@@ -810,6 +818,7 @@ Enter SQL statements terminated with a ";"
             b.finish()
             out.close()
 
+
     def command_bail(self, cmd):
         """bail ON|OFF: Stop after hitting an error (default OFF)
 
@@ -817,14 +826,7 @@ Enter SQL statements terminated with a ";"
         then exit.  (Note this is different than SQLite shell which
         only exits for errors in SQL.)
         """
-        if len(cmd)!=1:
-            raise self.Error("bail 'ON' or 'OFF'")
-        if cmd[0].lower()=="on":
-            self.bail=True
-        elif cmd[0].lower()=="off":
-            self.bail=False
-        else:
-            raise self.Error("Expected 'ON' or 'OFF'")
+        self.bail=self._boolean_command("bail", cmd)
 
     def command_databases(self, cmd):
         """databases: Lists names and files of attached databases
@@ -1076,14 +1078,7 @@ Enter SQL statements terminated with a ";"
         The SQL statement or command is sent to error output so that
         it is not intermingled with regular output.
         """
-        if len(cmd)!=1:
-            raise self.Error("echo 'ON' or 'OFF'")
-        if cmd[0].lower()=="on":
-            self.echo=True
-        elif cmd[0].lower()=="off":
-            self.echo=False
-        else:
-            raise self.Error("Expected 'ON' or 'OFF'")
+        self.echo=self._boolean_command("echo", cmd)
 
     def command_encoding(self, cmd):
         """encoding ENCODING: Set the encoding used for new files opened via .output and imports
@@ -1139,31 +1134,20 @@ Enter SQL statements terminated with a ";"
         '.explain OFF' then the output mode and settings in place when
         you did '.explain ON' are restored.
         """
-        if len(cmd)>1:
-            raise self.Error("explain takes at most one parameter")
-        if len(cmd)==0 or cmd[0].lower()=="on":
+        if len(cmd)==0 or self._boolean_command("explain", cmd):
             self.push_output()
             self.header=True
             self.widths=[4,13,4,4,4,13,2,13]
             self.truncate=False
             self.output=self.output_column
-        elif cmd[0].lower()=="off":
-            self.pop_output()
         else:
-            raise self.Error("Unknown value for explain")
+            self.pop_output()
 
     def command_header(self, cmd):
         """header(s) ON|OFF: Display the column names in output (default OFF)
 
         """
-        if len(cmd)!=1:
-            raise self.Error("header takes exactly one parameter")
-        if cmd[0].lower()=="on":
-            self.header=True
-        elif cmd[0].lower()=="off":
-            self.header=False
-        else:
-            raise self.Error("Expected 'ON' or 'OFF'")
+        self.header=self._boolean_command("header", cmd)
 
     command_headers=command_header
 
@@ -1740,11 +1724,9 @@ Enter SQL statements terminated with a ";"
         since starting the query are shown.  On non-Windows platforms
         considerably more information can be shown.
         """
-        if len(cmd)!=1 or cmd[0].lower() not in ("on", "off"):
-            raise self.Error("Expected ON or OFF")
-        if cmd[0].lower()=="on":
+        if self._boolean_command("timer", cmd):
             try:
-                self._get_resource_usage()
+                self.get_resource_usage()
             except:
                 raise self.Error("Timing not supported by this Python version/platform")
             self.timer=True
