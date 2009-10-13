@@ -46,6 +46,8 @@ class Shell:
     * http://www.sqlite.org/src/info/c25aab7e7e
     * http://www.sqlite.org/src/info/6da68f691b
     * http://www.sqlite.org/src/info/2cb66577f6
+    * http://www.sqlite.org/src/info/7b61b6c6ce
+    * http://www.sqlite.org/src/info/ee19e690ec
 
     Errors and diagnostics are only ever sent to error output
     (self.stderr) and never to the regular output (self.stdout).  This
@@ -472,29 +474,46 @@ OPTIONS include:
         
         # we use self._csv for the work, setup when header is
         # supplied. _csv is a tuple of a StringIO and the csv.writer
-        # instance
+        # instance.
+
+        # Sigh
+        if sys.version_info<(3,0):
+            fixdata=lambda x: x.encode("utf8")
+        else:
+            fixdata=lambda x: x
+            
         if header:
             if sys.version_info<(3,0):
                 import StringIO as io
-                # Python 2 barfs on unicode delimiter
-                fixdelim=lambda x: x.encode("utf8")
             else:
                 import io
-                fixdelim=lambda x: x
-            s=io.StringIO()
-            quotechar='\x00'
-            if self.separator==",":
-                quotechar='"'
-            sep=self.separator
             import csv
-            writer=csv.writer(s, delimiter=fixdelim(self.separator), quotechar=quotechar)
+            s=io.StringIO()
+            kwargs={}
+            if self.separator==",":
+                kwargs["dialect"]="excel"
+            elif self.separator=="\t":
+                kwargs["dialect"]="excel-tab"
+            else:
+                kwargs["quoting"]=csv.QUOTE_NONE
+                kwargs["delimiter"]=fixdata(self.separator)
+                kwargs["doublequote"]=False
+                # csv module is bug ridden junk - I already say no
+                # quoting so it still looks for the quotechar and then
+                # gets upset that it can't be quoted.  Which bit of no
+                # quoting was ambiguous?
+                kwargs["quotechar"]="\x00"
+                
+            writer=csv.writer(s, **kwargs)
             self._csv=(s, writer)
             if self.header:
                 self.output_csv(False, line)
             return
-        line=[self._fmt_text_col(l) for l in line]
+        line=[fixdata(self._fmt_text_col(l)) for l in line]
         self._csv[1].writerow(line)
         t=self._csv[0].getvalue()
+        if sys.version_info<(3,0):
+            t=t.encode("utf8")
         self._csv[0].truncate(0)
         # csv lib always does DOS eol
         assert(t.endswith("\r\n"))
@@ -1039,6 +1058,14 @@ Enter SQL statements terminated with a ";"
 
             # Save it all
             self.write(self.stdout, "COMMIT TRANSACTION;\n")
+
+            # virtual and schema reread
+            if virtuals:
+                blank()
+                comment("We need to force SQLite to reread the schema because otherwise it doesn't know that "
+                        "the virtual tables we inserted directly into sqlite_master exist.  See "
+                        "last comments of http://www.sqlite.org/cvstrac/tktview?tn=3425")
+                self.write(self.stdout, "BEGIN;\nCREATE TABLE no_such_table(x,y,z);\nROLLBACK;\n")
         finally:
             self.process_sql("END", internal=True)
         
