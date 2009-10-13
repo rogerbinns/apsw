@@ -5147,10 +5147,23 @@ class APSW(unittest.TestCase):
         self.assert_("-init" in fh[2].getvalue())
 
         ###
-        ### Output formats - column
+        ### Some test data
         ###
         reset()
         s=shellclass(**kwargs)
+        cmd(u("create table nastydata(x,y); insert into nastydata values(null,'xxx\\u1234\\uabcd\\U00012345yyy\r\n\t\"this \\is nasty\u0001stuff!');"))
+        s.cmdloop()
+        def testnasty():
+            reset()
+            cmd(".header OFF\nselect * from nastydata;")
+            s.cmdloop()
+            isempty(fh[2])
+            self.assert_(len(fh[1].getvalue())>0)
+
+        ###
+        ### Output formats - column
+        ###
+        reset()
         x='a'*20
         cmd(".mode column\n.header ON\nselect '"+x+"';")
         s.cmdloop()
@@ -5183,6 +5196,11 @@ class APSW(unittest.TestCase):
         self.assert_(nv in fh[1].getvalue())
         # do not output blob as is
         self.assert_("\xaa" not in fh[1].getvalue())
+        # undo explain
+        reset()
+        cmd(".explain OFF\n")
+        s.cmdloop()
+        testnasty()
 
         ###
         ### Output formats - csv
@@ -5218,7 +5236,8 @@ class APSW(unittest.TestCase):
         isempty(fh[2])
         self.assert_("3|4\n" in fh[1].getvalue())
         self.assert_('"one"|\t\n' in fh[1].getvalue())
-
+        # testnasty() is pointless with csv due to buggy module
+        
         ###
         ### Output formats - html
         ###
@@ -5239,7 +5258,8 @@ class APSW(unittest.TestCase):
         # do we output rows?
         self.assert_("<tr>" in fh[1].getvalue().lower())
         self.assert_("</tr>" in fh[1].getvalue().lower())
-
+        testnasty()
+        
         ###
         ### Output formats - insert
         ###
@@ -5270,7 +5290,8 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[2])
         self.assert_(fh[1].getvalue().lower().startswith("insert into funkychicken values"))
-
+        testnasty()
+        
         ###
         ### Output formats - line
         ###
@@ -5298,7 +5319,8 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[2])
         self.assertEqual(fh[1].getvalue(), " %s = 3\n%s1 = 3\n\n" % (ln,ln))
-
+        testnasty()
+        
         ###
         ### Output formats - list
         ###
@@ -5313,7 +5335,8 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[2])
         self.assert_(fh[1].getvalue().startswith("a&b&c&d&e\n"))
-
+        testnasty()
+        
         ###
         ### Output formats - python
         ###
@@ -5331,6 +5354,7 @@ class APSW(unittest.TestCase):
         v=eval("("+fh[1].getvalue()+")") # need parentheses otherwise indent rules apply
         self.assertEqual(len(v), 2) # headers and row
         self.assertEqual(v, ( ("a", "b", "c", "d", "e"), (3, None, 0.0, 'a', b(r"\xaa\x44\xbb")), ))
+        testnasty()
         
         ###
         ### Output formats - TCL
@@ -5345,7 +5369,87 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[2])
         self.assert_('"a"-"b"-"c"-"d"-"e"' in fh[1].getvalue())
-        
+        testnasty()
+
+        # What happens if db cannot be opened?
+        s.process_args(args=["/"])
+        reset()
+        cmd("select * from sqlite_master;\n.bail on\nselect 3;\n")
+        self.assertRaises(apsw.CantOpenError, s.cmdloop)
+        isempty(fh[1])
+        self.assert_("unable to open database file" in fh[2].getvalue())
+
+        # echo testing - multiple statements
+        s.process_args([":memory:"]) # back to memory db
+        reset()
+        cmd(".bail off\n.echo on\nselect 3;\n")
+        s.cmdloop()
+        self.assert_("select 3;\n" in fh[2].getvalue())
+        # multiline
+        reset()
+        cmd("select 3;select 4;\n")
+        s.cmdloop()
+        self.assert_("select 3;\n" in fh[2].getvalue())
+        self.assert_("select 4;\n" in fh[2].getvalue())
+        # multiline with error
+        reset()
+        cmd("select 3;select error;select 4;\n")
+        s.cmdloop()
+        self.assert_("select 3;\n" in fh[2].getvalue())
+        # apsw can't tell where erroneous command ends so all processing on the line stops
+        self.assert_("select error;select 4;\n" in fh[2].getvalue())
+        # is timing info output correctly?
+        reset()
+        timersupported=False
+        try:
+            cmd(".bail on\n.echo off\n.timer on\n.timer off\n")
+            s.cmdloop()
+            timersupported=True
+        except s.Error:
+            pass
+
+        if timersupported:
+            reset()
+            # create something that should take some time to execute
+            s.db.cursor().execute("create table xyz(x); begin;")
+            s.db.cursor().executemany("insert into xyz values(?)", randomintegers(4000))
+            s.db.cursor().execute("end")
+            reset()
+            # this takes .6 seconds on my machine so we should
+            # definitely have non-zero timing information
+            cmd(".timer ON\nselect max(x),min(x),max(x+x),min(x-x) from xyz union select x+max(x),x-min(x),3,4 from xyz union select x,x,x,x from xyz union select x,x,x,x from xyz;select 3;\n")
+            s.cmdloop()
+            self.assert_(len(fh[1].getvalue()))
+            self.assert_(len(fh[2].getvalue()))
+        cmd(".bail off")
+        s.cmdloop()
+
+        # command handling
+        reset()
+        cmd(".nonexist 'unclosed")
+        s.cmdloop()
+        isempty(fh[1])
+        self.assert_("no closing quotation" in fh[2].getvalue().lower())
+        reset()
+        cmd(".notexist       ")
+        s.cmdloop()
+        isempty(fh[1])
+        self.assert_('Unknown command "notexist"' in fh[2].getvalue())
+
+        ###
+        ### Commands - backup
+        ###
+
+        reset()
+        cmd(".backup with too many parameters")
+        s.cmdloop()
+        isempty(fh[1])
+        self.assert_(len(fh[2].getvalue()))
+        reset()
+        cmd(".backup ") # too few
+        s.cmdloop()
+        isempty(fh[1])
+        self.assert_(len(fh[2].getvalue()))
         
     # This one uses the coverage module
     def _testShellWithCoverage(self):
