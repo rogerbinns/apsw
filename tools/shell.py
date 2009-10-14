@@ -880,11 +880,8 @@ Enter SQL statements terminated with a ";"
             # use.  If they are we emit pragmas to deal with them, but
             # prefer not to emit them
             v={"virtuals": False,
-               "foreigns": False,
-               "analyze_needed": []}
+               "foreigns": False}
             def check(name, sql):
-                if name.lower().startswith("sqlite_stat"):
-                    v["analyze_needed"].append(name)
                 if name.lower().startswith("sqlite_"):
                     return False
                 sql=sql.lower()
@@ -903,9 +900,9 @@ Enter SQL statements terminated with a ";"
             tables=[]
             for pattern in cmd:
                 for name,sql in self.db.cursor().execute("SELECT name,sql FROM sqlite_master "
-                                                         "WHERE sql NOT NULL AND type='table' "
+                                                         "WHERE sql NOT NULL AND type IN ('table','view') "
                                                          "AND tbl_name LIKE ?1", (pattern,)):
-                    if check(name, sql):
+                    if check(name, sql) and name not in tables:
                         tables.append(name)
 
             if not tables:
@@ -913,25 +910,18 @@ Enter SQL statements terminated with a ";"
 
             # will we need to analyze anything later?
             analyze_needed=[]
-            if v["analyze_needed"]:
-                for stat in v["analyze_needed"]:
-                    for name in tables:
-                        if len(self.db.cursor().execute("select * from "+self._fmt_sql_identifier(stat)+" WHERE tbl=?", (name,)).fetchall()):
-                            if name not in analyze_needed:
-                                analyze_needed.append(name)
-            del v["analyze_needed"]
+            for stat in self.db.cursor().execute("select name from sqlite_master where sql not null and type='table' and tbl_name like 'sqlite_stat%'"):
+                for name in tables:
+                    if len(self.db.cursor().execute("select * from "+self._fmt_sql_identifier(stat[0])+" WHERE tbl=?", (name,)).fetchall()):
+                        if name not in analyze_needed:
+                            analyze_needed.append(name)
             analyze_needed.sort()
 
             def blank():
                 self.write(self.stdout, "\n")
 
-            tw=self._terminal_width()
-            if tw<40:
-                tw=40
-            if tw>76:
-                tw=76
             def comment(s):
-                self.write(self.stdout, textwrap.fill(s, tw, initial_indent="-- ", subsequent_indent="--   ")+"\n")
+                self.write(self.stdout, textwrap.fill(s, 78, initial_indent="-- ", subsequent_indent="-- ")+"\n")
 
             pats=", ".join([(x,"(All)")[x=="%"] for x in cmd])
             comment("SQLite dump (by APSW %s)" % (apsw.apswversion(),))
@@ -1008,11 +998,10 @@ Enter SQL statements terminated with a ";"
                         blank()
                 # views done last
                 first=True
-                for pattern in cmd:
+                for table in tables:
                     for name,sql in self.db.cursor().execute("SELECT name,sql FROM sqlite_master "
                                                              "WHERE sql NOT NULL AND type='view' "
-                                                             "AND name LIKE ?1 AND name NOT LIKE 'sqlite_%' "
-                                                             "ORDER BY lower(name)", (pattern,)):
+                                                             "AND name=?1", (table,)):
                         if first:
                             comment("Views")
                             first=False
@@ -1033,8 +1022,8 @@ Enter SQL statements terminated with a ";"
                                 comment("For primary key autoincrements the next id "
                                         "to use is stored in sqlite_sequence")
                                 first=False
-                            self.write(self.stdout, 'DELETE FROM sqlite_sequence WHERE name=%s\n' % (self._fmt_sql_value(t),))
-                            self.write(self.stdout, 'INSERT INTO sqlite_sequence VALUES (%s, %s)\n' % (self._fmt_sql_value(t), v[0][0]))
+                            self.write(self.stdout, 'DELETE FROM sqlite_sequence WHERE name=%s;\n' % (self._fmt_sql_value(t),))
+                            self.write(self.stdout, 'INSERT INTO sqlite_sequence VALUES (%s, %s);\n' % (self._fmt_sql_value(t), v[0][0]))
                     if not first:
                         blank()
             finally:
@@ -1875,12 +1864,9 @@ Enter SQL statements terminated with a ";"
     if sys.version_info<(3,0):
         def write(self, dest, text):
             """Writes text to dest.  dest will typically be one of self.stdout or self.stderr."""
-            # ensure text is unicode
+            # ensure text is unicode to catch codeset issues here
             if type(text)!=unicode:
                 text=unicode(text)
-            encoding=getattr(dest, "encoding", self.encoding)
-            if encoding is None: encoding=self.encoding
-            text=text.encode(encoding)
             dest.write(text)
 
         _raw_input=raw_input

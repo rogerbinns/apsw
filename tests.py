@@ -272,7 +272,8 @@ class APSW(unittest.TestCase):
 
     def deltempfiles(self):
         for name in ("testdb", "testdb2", "testfile", "testfile2", "testdb2x", "testdb-async",
-                     "test-shell-1", "test-shell-2", "test-shell-3"):
+                     "test-shell-1", "test-shell-2", "test-shell-3",
+                     "test-shell-in", "test-shell-out", "test-shell-err"):
             for i in "-journal", "":
                 if os.path.exists(name+i):
                     deletefile(name+i)
@@ -4953,27 +4954,36 @@ class APSW(unittest.TestCase):
 
     def testShell(self, shellclass=None):
         "Check Shell functionality"
-        if sys.version_info<(3,0):
-            import StringIO
-        else:
-            import io as StringIO
-
         if shellclass is None:
             shellclass=apsw.Shell
 
-        fh=StringIO.StringIO(), StringIO.StringIO(), StringIO.StringIO()
+        # I originally tried to use stringio for this but it barfs
+        # badly over non-ascii stuff and there was no way to may all the python
+        # versions simultaneously happy
+        import codecs
+        fh=[codecs.open("test-shell-"+t, "w+b", encoding="utf8") for t in ("in", "out", "err")]
         kwargs={"stdin": fh[0], "stdout": fh[1], "stderr": fh[2]}
         def reset():
             for i in fh:
                 i.truncate(0)
+                i.seek(0)
 
         def isempty(x):
-            self.assertEqual(x.getvalue(), "")
+            self.assertEqual(get(x), "")
+
+        def isnotempty(x):
+            self.assertNotEqual(len(get(x)), 0)
 
         def cmd(c):
-            p=fh[0].tell()
+            assert fh[0].tell()==0
+            fh[0].truncate(0)
             fh[0].write(c)
-            fh[0].seek(p)
+            fh[0].seek(0)
+
+        def get(x):
+            x.seek(0)
+            return x.read()
+            
 
         # Make one
         shellclass(stdin=fh[0], stdout=fh[1], stderr=fh[2])
@@ -4983,8 +4993,8 @@ class APSW(unittest.TestCase):
         self.assertEqual(s.db.filename, "testdb")
         # do a dump and check our table is there with its values
         s.command_dump([])
-        self.assert_("x(x)" in fh[1].getvalue())
-        self.assert_("(1);" in fh[1].getvalue())
+        self.assert_("x(x)" in get(fh[1]))
+        self.assert_("(1);" in get(fh[1]))
 
         # empty args
         self.assertEqual( (None, [], []), s.process_args(None))
@@ -4995,7 +5005,7 @@ class APSW(unittest.TestCase):
         try:
             shellclass(args=["testdb", ".read test-shell-1"], **kwargs)
         except shellclass.Error:
-            self.assert_("test-shell-1" in fh[2].getvalue())
+            self.assert_("test-shell-1" in get(fh[2]))
             isempty(fh[1])
 
         # Check single and double dash behave the same
@@ -5004,7 +5014,7 @@ class APSW(unittest.TestCase):
             shellclass(args=["-init"], **kwargs)
         except shellclass.Error:
             isempty(fh[1])
-            self.assert_("specify a filename" in fh[2].getvalue())
+            self.assert_("specify a filename" in get(fh[2]))
             
         reset()
         s=shellclass(**kwargs)
@@ -5020,8 +5030,8 @@ class APSW(unittest.TestCase):
             shellclass(args=["---tripledash"], **kwargs)
         except shellclass.Error:
             isempty(fh[1])
-            self.assert_("-tripledash" in fh[2].getvalue())
-            self.assert_("--tripledash" not in fh[2].getvalue())
+            self.assert_("-tripledash" in get(fh[2]))
+            self.assert_("--tripledash" not in get(fh[2]))
 
         ###
         ### --init
@@ -5033,13 +5043,13 @@ class APSW(unittest.TestCase):
         except shellclass.Error:
             # we want to make sure it read the file
             isempty(fh[1])
-            self.assert_("syntax error" in fh[2].getvalue())
+            self.assert_("syntax error" in get(fh[2]))
         reset()
         open("test-shell-1", "wt").write("select 3;")
         shellclass(args=["-init", "test-shell-1"], **kwargs)
         # we want to make sure it read the file
         isempty(fh[2])
-        self.assert_("3" in fh[1].getvalue())
+        self.assert_("3" in get(fh[1]))
 
         ###
         ### --header
@@ -5057,8 +5067,8 @@ class APSW(unittest.TestCase):
         isempty(fh[2])
         s.process_args(["testdb", ".mode column", "select 3"])
         isempty(fh[2])
-        self.assert_("3" in fh[1].getvalue())
-        self.assert_("----" in fh[1].getvalue())
+        self.assert_("3" in get(fh[1]))
+        self.assert_("----" in get(fh[1]))
 
         ###
         ### --echo, --bail, --interactive
@@ -5098,7 +5108,7 @@ class APSW(unittest.TestCase):
             isempty(fh[2])
             self.assertRaises(shellclass.Error, shellclass, args=["-"+v, val, "--"+v], **kwargs)
             isempty(fh[1])
-            self.assert_(v in fh[2].getvalue())
+            self.assert_(v in get(fh[2]))
 
         ###
         ### --version
@@ -5107,7 +5117,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(SystemExit, shellclass, args=["--version"], **kwargs)
         # it writes to stdout
         isempty(fh[2])
-        self.assert_(apsw.sqlitelibversion() in fh[1].getvalue())
+        self.assert_(apsw.sqlitelibversion() in get(fh[1]))
 
         ###
         ### --help
@@ -5116,7 +5126,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(SystemExit, shellclass, args=["--help"], **kwargs)
         # it writes to stderr
         isempty(fh[1])
-        self.assert_("-version" in fh[2].getvalue())
+        self.assert_("-version" in get(fh[2]))
 
         ###
         ### Items that correspond to output mode
@@ -5124,7 +5134,7 @@ class APSW(unittest.TestCase):
         reset()
         shellclass(args=["--python", "--column", "--python", ":memory:", "create table x(x)", "insert into x values(x'aa')", "select * from x;"], **kwargs)
         isempty(fh[2])
-        self.assert_('b"' in fh[1].getvalue() or "buffer(" in fh[1].getvalue())
+        self.assert_('b"' in get(fh[1]) or "buffer(" in get(fh[1]))
 
         ###
         ### Is process_unknown_args called as documented?
@@ -5135,7 +5145,7 @@ class APSW(unittest.TestCase):
                 1/0
         self.assertRaises(ZeroDivisionError, s2, args=["--unknown"], **kwargs)
         isempty(fh[1])
-        self.assert_("division" in fh[2].getvalue()) # py2 says "integer division", py3 says "int division"
+        self.assert_("division" in get(fh[2])) # py2 says "integer division", py3 says "int division"
 
         class s3(shellclass):
             def process_unknown_args(_, args):
@@ -5144,21 +5154,28 @@ class APSW(unittest.TestCase):
         reset()
         self.assertRaises(s3.Error, s3, args=["--python", "--myoption", "myvalue", "--init"], **kwargs)
         isempty(fh[1])
-        self.assert_("-init" in fh[2].getvalue())
+        self.assert_("-init" in get(fh[2]))
 
         ###
         ### Some test data
         ###
         reset()
         s=shellclass(**kwargs)
-        cmd(u("create table nastydata(x,y); insert into nastydata values(null,'xxx\\u1234\\uabcd\\U00012345yyy\r\n\t\"this \\is nasty\u0001stuff!');"))
         s.cmdloop()
         def testnasty():
             reset()
-            cmd(".header OFF\nselect * from nastydata;")
+            # py 3 barfs with any codepoints above 0xffff whining
+            # about surrogates not being allowed.  If only it
+            # implemented unicode properly.
+            cmd(u("create table if not exists nastydata(x,y); insert into nastydata values(null,'xxx\\u1234\\uabcdyyy\r\n\t\"this \\is nasty\u0001stuff!');"))
+            s.cmdloop()
+            isempty(fh[1])
+            isempty(fh[2])
+            reset()
+            cmd(".bail on\n.header OFF\nselect * from nastydata;")
             s.cmdloop()
             isempty(fh[2])
-            self.assert_(len(fh[1].getvalue())>0)
+            isnotempty(fh[1])
 
         ###
         ### Output formats - column
@@ -5170,7 +5187,7 @@ class APSW(unittest.TestCase):
         isempty(fh[2])
         # colwidth should be 2 more
         sep='-'*(len(x)+2) # apostrophes quoting string in column header
-        out=fh[1].getvalue().replace("\n", "")
+        out=get(fh[1]).replace("\n", "")
         self.assertEqual(len(out.split(sep)), 2)
         self.assertEqual(len(out.split(sep)[0]), len(x)+2) # plus two apostrophes
         self.assertEqual(len(out.split(sep)[1]), len(x)+2) # same
@@ -5180,22 +5197,22 @@ class APSW(unittest.TestCase):
         cmd(".width 5\nselect '"+x+"';\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_("a"*6 not in fh[1].getvalue())
+        self.assert_("a"*6 not in get(fh[1]))
         # explain mode doesn't truncate
         reset()
         cmd("create table %s(x);create index %s_ on %s(x);\n.explain\nexplain select * from %s where x=7;\n" % (x,x,x,x))
         s.cmdloop()
         isempty(fh[2])
-        self.assert_(x in fh[1].getvalue())
+        self.assert_(x in get(fh[1]))
         # check null and blobs
         reset()
         nv="ThIsNuLlVaLuE"
         cmd(".nullvalue %s\nselect null, x'aaee';\n" % (nv,))
         s.cmdloop()
         isempty(fh[2])
-        self.assert_(nv in fh[1].getvalue())
+        self.assert_(nv in get(fh[1]))
         # do not output blob as is
-        self.assert_("\xaa" not in fh[1].getvalue())
+        self.assert_(u("\xaa") not in get(fh[1]))
         # undo explain
         reset()
         cmd(".explain OFF\n")
@@ -5210,32 +5227,32 @@ class APSW(unittest.TestCase):
         cmd(".separator F\n.mode csv\nselect 3,3;\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_("3,3" in fh[1].getvalue())
+        self.assert_("3,3" in get(fh[1]))
         # tab sep
         reset()
         cmd(".separator '\\t'\nselect 3,3;\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_("3\t3" in fh[1].getvalue())
+        self.assert_("3\t3" in get(fh[1]))
         # back to comma
         reset()
         cmd(".mode csv\nselect 3,3;\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_("3,3" in fh[1].getvalue())
+        self.assert_("3,3" in get(fh[1]))
         # quoting
         reset()
         cmd(".header ON\nselect 3 as [\"one\"], 4 as [\t];\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_('"""one""",\t' in fh[1].getvalue())
+        self.assert_('"""one""",\t' in get(fh[1]))
         # custom sep
         reset()
         cmd(".separator |\nselect 3 as [\"one\"], 4 as [\t];\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_("3|4\n" in fh[1].getvalue())
-        self.assert_('"one"|\t\n' in fh[1].getvalue())
+        self.assert_("3|4\n" in get(fh[1]))
+        self.assert_('"one"|\t\n' in get(fh[1]))
         # testnasty() is pointless with csv due to buggy module
         
         ###
@@ -5246,18 +5263,18 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[2])
         # should be no header
-        self.assert_("<th>" not in fh[1].getvalue().lower())
+        self.assert_("<th>" not in get(fh[1]).lower())
         # does it actually work?
-        self.assert_("<td>3</td>" in fh[1].getvalue().lower())
+        self.assert_("<td>3</td>" in get(fh[1]).lower())
         # check quoting works
         reset()
         cmd(".header ON\nselect 3 as [<>&];\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_("<th>&lt;&gt;&amp;</th>" in fh[1].getvalue().lower())
+        self.assert_("<th>&lt;&gt;&amp;</th>" in get(fh[1]).lower())
         # do we output rows?
-        self.assert_("<tr>" in fh[1].getvalue().lower())
-        self.assert_("</tr>" in fh[1].getvalue().lower())
+        self.assert_("<tr>" in get(fh[1]).lower())
+        self.assert_("</tr>" in get(fh[1]).lower())
         testnasty()
         
         ###
@@ -5268,28 +5285,28 @@ class APSW(unittest.TestCase):
         cmd(".mode insert\n.header OFF\nselect "+all+";\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_(all in fh[1].getvalue().lower())
+        self.assert_(all in get(fh[1]).lower())
         # empty values
         reset()
         all="0,0.0,'',null,x''"
         cmd("select "+all+";\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_(all in fh[1].getvalue().lower())
+        self.assert_(all in get(fh[1]).lower())
         # header, separator and nullvalue should make no difference 
-        save=fh[1].getvalue()
+        save=get(fh[1])
         reset()
         cmd(".header ON\n.separator %\n.nullvalue +\nselect "+all+";\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assertEqual(save, fh[1].getvalue())
+        self.assertEqual(save, get(fh[1]))
         # check the table name
-        self.assert_(fh[1].getvalue().lower().startswith("insert into table values"))
+        self.assert_(get(fh[1]).lower().startswith("insert into table values"))
         reset()
         cmd(".mode insert funkychicken\nselect "+all+";\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_(fh[1].getvalue().lower().startswith("insert into funkychicken values"))
+        self.assert_(get(fh[1]).lower().startswith("insert into funkychicken values"))
         testnasty()
         
         ###
@@ -5299,7 +5316,7 @@ class APSW(unittest.TestCase):
         cmd(".header OFF\n.nullvalue *\n.mode line\nselect 3 as a, null as b, 0.0 as c, 'a' as d, x'aa' as e;\n")
         s.cmdloop()
         isempty(fh[2])
-        out=fh[1].getvalue().replace(" ","")
+        out=get(fh[1]).replace(" ","")
         self.assert_("a=3\n" in out)
         self.assert_("b=*\n" in out)
         self.assert_("c=0.0\n" in out)
@@ -5311,14 +5328,14 @@ class APSW(unittest.TestCase):
         cmd(".header ON\n.nullvalue *\n.mode line\nselect 3 as a, null as b, 0.0 as c, 'a' as d, x'aa' as e;\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assertEqual(out, fh[1].getvalue().replace(" ",""))
+        self.assertEqual(out, get(fh[1]).replace(" ",""))
         # wide column name
         reset()
         ln="kjsfhgjksfdjkgfhkjsdlafgjkhsdkjahfkjdsajfhsdja"*12
         cmd("select 3 as %s, 3 as %s1;" % (ln,ln))
         s.cmdloop()
         isempty(fh[2])
-        self.assertEqual(fh[1].getvalue(), " %s = 3\n%s1 = 3\n\n" % (ln,ln))
+        self.assertEqual(get(fh[1]), " %s = 3\n%s1 = 3\n\n" % (ln,ln))
         testnasty()
         
         ###
@@ -5328,13 +5345,13 @@ class APSW(unittest.TestCase):
         cmd(".header off\n.mode list\n.nullvalue (\n.separator &\nselect 3 as a, null as b, 0.0 as c, 'a' as d, x'aa' as e;\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assertEqual(fh[1].getvalue(), '3&(&0.0&a&<Binary data>\n')
+        self.assertEqual(get(fh[1]), '3&(&0.0&a&<Binary data>\n')
         reset()
         # header on
         cmd(".header on\n.mode list\n.nullvalue (\n.separator &\nselect 3 as a, null as b, 0.0 as c, 'a' as d, x'aa' as e;\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_(fh[1].getvalue().startswith("a&b&c&d&e\n"))
+        self.assert_(get(fh[1]).startswith("a&b&c&d&e\n"))
         testnasty()
         
         ###
@@ -5344,14 +5361,14 @@ class APSW(unittest.TestCase):
         cmd(".header off\n.mode python\nselect 3 as a, null as b, 0.0 as c, 'a' as d, x'aa44bb' as e;\n")
         s.cmdloop()
         isempty(fh[2])
-        v=eval(fh[1].getvalue())
+        v=eval(get(fh[1]))
         self.assertEqual(len(v), 1) # 1 tuple
         self.assertEqual(v, ( (3, None, 0.0, 'a', b(r"\xaa\x44\xbb")), ))
         reset()
         cmd(".header on\n.mode python\nselect 3 as a, null as b, 0.0 as c, 'a' as d, x'aa44bb' as e;\n")
         s.cmdloop()
         isempty(fh[2])
-        v=eval("("+fh[1].getvalue()+")") # need parentheses otherwise indent rules apply
+        v=eval("("+get(fh[1])+")") # need parentheses otherwise indent rules apply
         self.assertEqual(len(v), 2) # headers and row
         self.assertEqual(v, ( ("a", "b", "c", "d", "e"), (3, None, 0.0, 'a', b(r"\xaa\x44\xbb")), ))
         testnasty()
@@ -5363,12 +5380,12 @@ class APSW(unittest.TestCase):
         cmd(".header off\n.mode tcl\n.separator -\n.nullvalue ?\nselect 3 as a, null as b, 0.0 as c, 'a' as d, x'aa44bb' as e;\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assertEqual(fh[1].getvalue(), '"3"-"?"-"0.0"-"a"-"\\xAAD\\xBB"\n')
+        self.assertEqual(get(fh[1]), '"3"-"?"-"0.0"-"a"-"\\xAAD\\xBB"\n')
         reset()
         cmd(".header on\nselect 3 as a, null as b, 0.0 as c, 'a' as d, x'aa44bb' as e;\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_('"a"-"b"-"c"-"d"-"e"' in fh[1].getvalue())
+        self.assert_('"a"-"b"-"c"-"d"-"e"' in get(fh[1]))
         testnasty()
 
         # What happens if db cannot be opened?
@@ -5377,27 +5394,27 @@ class APSW(unittest.TestCase):
         cmd("select * from sqlite_master;\n.bail on\nselect 3;\n")
         self.assertRaises(apsw.CantOpenError, s.cmdloop)
         isempty(fh[1])
-        self.assert_("unable to open database file" in fh[2].getvalue())
+        self.assert_("unable to open database file" in get(fh[2]))
 
         # echo testing - multiple statements
         s.process_args([":memory:"]) # back to memory db
         reset()
         cmd(".bail off\n.echo on\nselect 3;\n")
         s.cmdloop()
-        self.assert_("select 3;\n" in fh[2].getvalue())
+        self.assert_("select 3;\n" in get(fh[2]))
         # multiline
         reset()
         cmd("select 3;select 4;\n")
         s.cmdloop()
-        self.assert_("select 3;\n" in fh[2].getvalue())
-        self.assert_("select 4;\n" in fh[2].getvalue())
+        self.assert_("select 3;\n" in get(fh[2]))
+        self.assert_("select 4;\n" in get(fh[2]))
         # multiline with error
         reset()
         cmd("select 3;select error;select 4;\n")
         s.cmdloop()
-        self.assert_("select 3;\n" in fh[2].getvalue())
+        self.assert_("select 3;\n" in get(fh[2]))
         # apsw can't tell where erroneous command ends so all processing on the line stops
-        self.assert_("select error;select 4;\n" in fh[2].getvalue())
+        self.assert_("select error;select 4;\n" in get(fh[2]))
         # is timing info output correctly?
         reset()
         timersupported=False
@@ -5419,8 +5436,9 @@ class APSW(unittest.TestCase):
             # definitely have non-zero timing information
             cmd(".timer ON\nselect max(x),min(x),max(x+x),min(x-x) from xyz union select x+max(x),x-min(x),3,4 from xyz union select x,x,x,x from xyz union select x,x,x,x from xyz;select 3;\n")
             s.cmdloop()
-            self.assert_(len(fh[1].getvalue()))
-            self.assert_(len(fh[2].getvalue()))
+            isnotempty(fh[1])
+            isnotempty(fh[2])
+        reset()
         cmd(".bail off\n.timer off")
         s.cmdloop()
 
@@ -5429,12 +5447,12 @@ class APSW(unittest.TestCase):
         cmd(".nonexist 'unclosed")
         s.cmdloop()
         isempty(fh[1])
-        self.assert_("no closing quotation" in fh[2].getvalue().lower())
+        self.assert_("no closing quotation" in get(fh[2]).lower())
         reset()
         cmd(".notexist       ")
         s.cmdloop()
         isempty(fh[1])
-        self.assert_('Unknown command "notexist"' in fh[2].getvalue())
+        self.assert_('Unknown command "notexist"' in get(fh[2]))
 
         ###
         ### Commands - backup and restore
@@ -5444,22 +5462,22 @@ class APSW(unittest.TestCase):
         cmd(".backup with too many parameters")
         s.cmdloop()
         isempty(fh[1])
-        self.assert_(len(fh[2].getvalue()))
+        isnotempty(fh[2])
         reset()
         cmd(".backup ") # too few
         s.cmdloop()
         isempty(fh[1])
-        self.assert_(len(fh[2].getvalue()))
+        isnotempty(fh[2])
         reset()
         cmd(".restore with too many parameters")
         s.cmdloop()
         isempty(fh[1])
-        self.assert_(len(fh[2].getvalue()))
+        isnotempty(fh[2])
         reset()
         cmd(".restore ") # too few
         s.cmdloop()
         isempty(fh[1])
-        self.assert_(len(fh[2].getvalue()))
+        isnotempty(fh[2])
         # bogus filenames
         for i in ('/', '"main" /'):
             for c in (".backup ", ".restore "):
@@ -5467,7 +5485,7 @@ class APSW(unittest.TestCase):
                 cmd(c+i)
                 s.cmdloop()
                 isempty(fh[1])
-                self.assert_(len(fh[2].getvalue()))
+                isnotempty(fh[2])
 
         def randomtable(cur, dbname=None):
             name=list("abcdefghijklmnopqrstuvwxtz")
@@ -5481,12 +5499,18 @@ class APSW(unittest.TestCase):
             cur.execute("end")
             return name
 
-        # straight forward backup
+        # Straight forward backup.  The gc.collect() is needed because
+        # non-gc cursors hanging around will prevent the backup from
+        # happening.
         n=randomtable(s.db.cursor())
         contents=s.db.cursor().execute("select * from "+n).fetchall()
         reset()
         cmd(".backup testdb2")
+        gc.collect()
         s.cmdloop()
+        isempty(fh[1])
+        isempty(fh[2])
+        reset()
         cmd("drop table "+n+";")
         s.cmdloop()
         isempty(fh[1])
@@ -5494,6 +5518,7 @@ class APSW(unittest.TestCase):
         self.assert_(os.path.isfile("testdb2"))
         reset()
         cmd(".restore testdb2")
+        gc.collect()
         s.cmdloop()
         isempty(fh[1])
         isempty(fh[2])
@@ -5508,12 +5533,14 @@ class APSW(unittest.TestCase):
         n=randomtable(s.db.cursor(), "memdb")
         contents=s.db.cursor().execute("select * from memdb."+n).fetchall()
         reset()
+        gc.collect()
         cmd(".backup memdb testdb2")
         s.cmdloop()
         isempty(fh[1])
         isempty(fh[2])
         s.db.cursor().execute("detach memdb; attach ':memory:' as memdb2")
         reset()
+        gc.collect()
         cmd(".restore memdb2 testdb2")
         s.cmdloop()
         isempty(fh[1])
@@ -5531,17 +5558,17 @@ class APSW(unittest.TestCase):
         cmd(".bail")
         s.cmdloop()
         isempty(fh[1])
-        self.assert_(len(fh[2].getvalue()))
+        isnotempty(fh[2])
         reset()
         cmd(".bail on\n.mode list\nselect 3;\nselect error;\nselect 4;\n")
         self.assertRaises(apsw.Error, s.cmdloop)
-        self.assert_("3" in fh[1].getvalue())
-        self.assert_("4" not in fh[1].getvalue())
+        self.assert_("3" in get(fh[1]))
+        self.assert_("4" not in get(fh[1]))
         reset()
         cmd(".bail oFf\n.mode list\nselect 3;\nselect error;\nselect 4;\n")
         s.cmdloop()
-        self.assert_("3" in fh[1].getvalue())
-        self.assert_("4" in fh[1].getvalue())
+        self.assert_("3" in get(fh[1]))
+        self.assert_("4" in get(fh[1]))
 
         ###
         ### Commands - databases
@@ -5550,7 +5577,7 @@ class APSW(unittest.TestCase):
         cmd(".databases foo")
         s.cmdloop()
         isempty(fh[1])
-        self.assert_(len(fh[2].getvalue()))
+        isnotempty(fh[2])
         # clean things up
         s=shellclass(**kwargs)
         reset()
@@ -5558,27 +5585,147 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[2])
         for i in "main", "name", "file":
-            self.assert_(i in fh[1].getvalue())
+            self.assert_(i in get(fh[1]))
         reset()
         cmd("attach 'testdb' as quack;\n.databases")
         s.cmdloop()
         isempty(fh[2])
         for i in "main", "name", "file", "testdb", "quack":
-            self.assert_(i in fh[1].getvalue())
+            self.assert_(i in get(fh[1]))
         reset()
         cmd("detach quack;")
         s.cmdloop()
         isempty(fh[2])
         for i in "testdb", "quack":
-            self.assert_(i not in fh[1].getvalue())
+            self.assert_(i not in get(fh[1]))
 
         ###
         ### Commands - dump
         ###
         reset()
-        
-                         
-        
+        cmd("create     table foo(x); create table bar(x);\n.dump foox")
+        s.cmdloop()
+        isempty(fh[1])
+        isempty(fh[2])
+        reset()
+        cmd(".dump foo")
+        s.cmdloop()
+        isempty(fh[2])
+        for i in "foo", "create table", "begin", "commit":
+            self.assert_(i in get(fh[1]).lower())
+        self.assert_("bar" not in get(fh[1]).lower())
+        # can we do virtual tables?
+        reset()
+        if self.checkOptionalExtension("fts3", "create virtual table foo using fts3()"):
+            reset()
+            cmd("CREATE virtual TaBlE    fts3     using fts3(colA FRED  , colB JOHN DOE);\n"
+                "insert into fts3 values('one', 'two');insert into fts3 values('onee', 'two');\n"
+                "insert into fts3 values('one', 'two two two');")
+            s.cmdloop()
+            isempty(fh[1])
+            isempty(fh[2])
+            reset()
+            cmd(".dump")
+            s.cmdloop()
+            isempty(fh[2])
+            v=get(fh[1])
+            for i in "pragma writable_schema", "create virtual table fts3", "cola fred", "colb john doe":
+                self.assert_(i in v.lower())
+        # analyze
+        reset()
+        cmd("drop table bar;create table bar(x unique,y);create index barf on bar(x,y);create index barff on bar(y);insert into bar values(3,4);\nanalyze;\n.dump bar")
+        s.cmdloop()
+        isempty(fh[2])
+        v=get(fh[1])
+        for i in "analyze bar", "create index barf":
+            self.assert_(i in v.lower())
+        self.assert_("autoindex" not in v.lower()) # created by sqlite to do unique constraint
+        self.assert_("sqlite_sequence" not in v.lower()) # not autoincrements
+        # repeat but all tables
+        reset()
+        cmd(".dump")
+        s.cmdloop()
+        isempty(fh[2])
+        v=get(fh[1])
+        for i in "analyze bar", "create index barf":
+            self.assert_(i in v.lower())
+        self.assert_("autoindex" not in v.lower()) # created by sqlite to do unique constraint
+        # foreign keys
+        reset()
+        cmd("create table xxx(z references bar(x));\n.dump")
+        s.cmdloop()
+        isempty(fh[2])
+        v=get(fh[1])
+        for i in "foreign_keys", "references":
+            self.assert_(i in v.lower())
+        # views
+        reset()
+        cmd("create view noddy as select * from foo;\n.dump noddy")
+        s.cmdloop()
+        isempty(fh[2])
+        v=get(fh[1])
+        for i in "drop view", "create view noddy":
+            self.assert_(i in v.lower())
+        # autoincrement
+        reset()
+        cmd("create table abc(x INTEGER PRIMARY KEY AUTOINCREMENT); insert into abc values(null);insert into abc values(null);\n.dump")
+        s.cmdloop()
+        isempty(fh[2])
+        v=get(fh[1])
+        for i in "sqlite_sequence", "'abc', 2":
+            self.assert_(i in v.lower())
+        # some nasty stuff
+        reset()
+        cmd(u("create table nastydata(x,y); insert into nastydata values(null,'xxx\\u1234\\uabcd\\U00012345yyy\r\n\t\"this \\is nasty\u0001stuff!');"))
+        s.cmdloop()
+        isempty(fh[1])
+        isempty(fh[2])
+        reset()
+        cmd(".dump")
+        s.cmdloop()
+        isempty(fh[2])
+        v=get(fh[1])
+        self.assert_("nasty" in v)
+        self.assert_("stuff" in v)
+        # sanity check the dumps
+        reset()
+        cmd(v) # should run just fine
+        s.cmdloop()
+        isempty(fh[1])
+        isempty(fh[2])
+        # drop all the tables we made to do another dump and compare with before
+        for t in "abc", "bar", "foo", "fts3", "xxx", "noddy", "sqlite_sequence", "sqlite_stat1":
+            reset()
+            cmd("drop table %s;drop view %s;" % (t,t))
+            s.cmdloop() # there will be errors which we ignore
+        reset()
+        cmd(v)
+        s.cmdloop()
+        isempty(fh[1])
+        isempty(fh[2])
+        # another dump
+        reset()
+        cmd(".dump")
+        s.cmdloop()
+        isempty(fh[2])
+        v2=get(fh[1])
+        v=re.sub("^-- Date:.*", "", v)
+        v2=re.sub("^-- Date:.*", "", v2)
+        self.assertEqual(v, v2)
+        # clean database
+        reset()
+        s=shellclass(args=[':memory:'], **kwargs)
+        cmd(v)
+        s.cmdloop()
+        isempty(fh[1])
+        isempty(fh[2])
+        reset()
+        cmd(v2+"\n.dump")
+        s.cmdloop()
+        isempty(fh[2])
+        v3=get(fh[1])
+        v3=re.sub("^-- Date:.*", "", v3)
+        self.assertEqual(v, v3)
 
         
     # This one uses the coverage module
