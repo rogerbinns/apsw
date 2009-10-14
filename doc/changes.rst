@@ -2,8 +2,8 @@ Change History
 **************
 .. currentmodule:: apsw
 
-next
-====
+3.6.19-r1
+=========
 
 **Backwards incompatible change** Fixed `issue 72
 <http://code.google.com/p/apsw/issues/detail?id=72>`__ where APSW
