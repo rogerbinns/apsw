@@ -5727,6 +5727,41 @@ class APSW(unittest.TestCase):
         v3=re.sub("^-- Date:.*", "", v3)
         self.assertEqual(v, v3)
 
+        ###
+        ### Command - echo
+        ###
+        reset()
+        cmd(".echo")
+        s.cmdloop()
+        isempty(fh[1])
+        isnotempty(fh[2])
+        reset()
+        cmd(".echo bananas")
+        s.cmdloop()
+        isempty(fh[1])
+        isnotempty(fh[2])
+        reset()
+        cmd(".echo on on")
+        s.cmdloop()
+        isempty(fh[1])
+        isnotempty(fh[2])
+        reset()
+        cmd(".echo off\nselect 3;")
+        s.cmdloop()
+        self.assert_("3" in get(fh[1]))
+        self.assert_("select 3" not in get(fh[2]))
+        reset()
+        cmd(".echo on\nselect 3;")
+        s.cmdloop()
+        self.assert_("3" in get(fh[1]))
+        self.assert_("select 3" in get(fh[2]))
+        # more complex testing is done earlier including multiple statements and errors
+
+        ###
+        ### Command - encoding
+        ###
+        
+        
         
     # This one uses the coverage module
     def _testShellWithCoverage(self):

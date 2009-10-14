@@ -1893,7 +1893,10 @@ Enter SQL statements terminated with a ";"
                 line=self.stdin.readline()  # includes newline unless last line of file doesn't have one
             self.input_line_number+=1
             if sys.version_info<(3,0):
-                line=unicode(line)
+                if type(line)!=unicode:
+                    enc=getattr(self.stdin, "encoding", self.encoding)
+                    if not enc: enc=self.encoding
+                    line=line.decode(enc)
         except EOFError:
             return None
         if len(line)==0: # always a \n on the end normally so this is EOF
@@ -2184,10 +2187,7 @@ Enter SQL statements terminated with a ";"
         .timer command shows the difference between before and after
         results of what this returns by calling :meth:`display_timing`"""
         if sys.platform=="win32":
-            try:
-                import ctypes, time
-            except ImportError:
-                return None
+            import ctypes, time
             # All 4 out params have to be present.  FILETIME is really
             # just a 64 bit quantity in 100 nanosecond granularity
             dummy=ctypes.c_ulonglong()
@@ -2203,7 +2203,7 @@ Enter SQL statements terminated with a ";"
                 return {'Wall clock': time.time(),
                         'User time': float(utime)/10000000,
                         'System time': float(stime)/10000000}
-            return None
+            return {}
         else:
             import resource, time
             r=resource.getrusage(resource.RUSAGE_SELF)
