@@ -810,7 +810,7 @@ Enter SQL statements terminated with a ";"
             raise self.Error("Backup takes one or two parameters")
         self.ensure_db()
         out=apsw.Connection(fname)
-        b=out.backup(dbname, self.db, "main")
+        b=out.backup("main", self.db, dbname)
         try:
             while not b.done:
                 b.step()
@@ -2269,17 +2269,7 @@ def main():
 
     """
     try:
-        s=Shell()
-        try:
-            pa=s.process_args(sys.argv[1:])
-        except:
-            if len(s._input_descriptions):
-                s._input_descriptions.append("Processing command line")
-            s.handle_exception()
-            return
-        if len(pa[2])==0:
-            # only enter interactive loop if no commands/sql were on command line
-            s.cmdloop()
+        Shell(args=sys.argv[1:]).cmdloop()
     except:
         v=sys.exc_info()[1]
         if hasattr(v, "_handle_exception_saw_this") and v._handle_exception_saw_this:

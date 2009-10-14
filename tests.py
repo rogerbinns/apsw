@@ -5421,7 +5421,7 @@ class APSW(unittest.TestCase):
             s.cmdloop()
             self.assert_(len(fh[1].getvalue()))
             self.assert_(len(fh[2].getvalue()))
-        cmd(".bail off")
+        cmd(".bail off\n.timer off")
         s.cmdloop()
 
         # command handling
@@ -5437,7 +5437,7 @@ class APSW(unittest.TestCase):
         self.assert_('Unknown command "notexist"' in fh[2].getvalue())
 
         ###
-        ### Commands - backup
+        ### Commands - backup and restore
         ###
 
         reset()
@@ -5450,6 +5450,136 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[1])
         self.assert_(len(fh[2].getvalue()))
+        reset()
+        cmd(".restore with too many parameters")
+        s.cmdloop()
+        isempty(fh[1])
+        self.assert_(len(fh[2].getvalue()))
+        reset()
+        cmd(".restore ") # too few
+        s.cmdloop()
+        isempty(fh[1])
+        self.assert_(len(fh[2].getvalue()))
+        # bogus filenames
+        for i in ('/', '"main" /'):
+            for c in (".backup ", ".restore "):
+                reset()
+                cmd(c+i)
+                s.cmdloop()
+                isempty(fh[1])
+                self.assert_(len(fh[2].getvalue()))
+
+        def randomtable(cur, dbname=None):
+            name=list("abcdefghijklmnopqrstuvwxtz")
+            random.shuffle(name)
+            name="".join(name)
+            fullname=name
+            if dbname:
+                fullname=dbname+"."+fullname
+            cur.execute("begin;create table %s(x)" % (fullname,))
+            cur.executemany("insert into %s values(?)" % (fullname,), randomintegers(400))
+            cur.execute("end")
+            return name
+
+        # straight forward backup
+        n=randomtable(s.db.cursor())
+        contents=s.db.cursor().execute("select * from "+n).fetchall()
+        reset()
+        cmd(".backup testdb2")
+        s.cmdloop()
+        cmd("drop table "+n+";")
+        s.cmdloop()
+        isempty(fh[1])
+        isempty(fh[2])
+        self.assert_(os.path.isfile("testdb2"))
+        reset()
+        cmd(".restore testdb2")
+        s.cmdloop()
+        isempty(fh[1])
+        isempty(fh[2])
+        newcontents=s.db.cursor().execute("select * from "+n).fetchall()
+        # no guarantee of result order
+        contents.sort()
+        newcontents.sort()
+        self.assertEqual(contents, newcontents)
+
+        # do they pay attention to the dbname
+        s.db.cursor().execute("attach ':memory:' as memdb")
+        n=randomtable(s.db.cursor(), "memdb")
+        contents=s.db.cursor().execute("select * from memdb."+n).fetchall()
+        reset()
+        cmd(".backup memdb testdb2")
+        s.cmdloop()
+        isempty(fh[1])
+        isempty(fh[2])
+        s.db.cursor().execute("detach memdb; attach ':memory:' as memdb2")
+        reset()
+        cmd(".restore memdb2 testdb2")
+        s.cmdloop()
+        isempty(fh[1])
+        isempty(fh[2])
+        newcontents=s.db.cursor().execute("select * from memdb2."+n).fetchall()
+        # no guarantee of result order
+        contents.sort()
+        newcontents.sort()
+        self.assertEqual(contents, newcontents)
+        
+        ###
+        ### Commands - bail
+        ###
+        reset()
+        cmd(".bail")
+        s.cmdloop()
+        isempty(fh[1])
+        self.assert_(len(fh[2].getvalue()))
+        reset()
+        cmd(".bail on\n.mode list\nselect 3;\nselect error;\nselect 4;\n")
+        self.assertRaises(apsw.Error, s.cmdloop)
+        self.assert_("3" in fh[1].getvalue())
+        self.assert_("4" not in fh[1].getvalue())
+        reset()
+        cmd(".bail oFf\n.mode list\nselect 3;\nselect error;\nselect 4;\n")
+        s.cmdloop()
+        self.assert_("3" in fh[1].getvalue())
+        self.assert_("4" in fh[1].getvalue())
+
+        ###
+        ### Commands - databases
+        ###
+        reset()
+        cmd(".databases foo")
+        s.cmdloop()
+        isempty(fh[1])
+        self.assert_(len(fh[2].getvalue()))
+        # clean things up
+        s=shellclass(**kwargs)
+        reset()
+        cmd(".header oFF\n.databases")
+        s.cmdloop()
+        isempty(fh[2])
+        for i in "main", "name", "file":
+            self.assert_(i in fh[1].getvalue())
+        reset()
+        cmd("attach 'testdb' as quack;\n.databases")
+        s.cmdloop()
+        isempty(fh[2])
+        for i in "main", "name", "file", "testdb", "quack":
+            self.assert_(i in fh[1].getvalue())
+        reset()
+        cmd("detach quack;")
+        s.cmdloop()
+        isempty(fh[2])
+        for i in "testdb", "quack":
+            self.assert_(i not in fh[1].getvalue())
+
+        ###
+        ### Commands - dump
+        ###
+        reset()
+        
+                         
+        
+
         
     # This one uses the coverage module
     def _testShellWithCoverage(self):
