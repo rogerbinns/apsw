@@ -272,7 +272,7 @@ class APSW(unittest.TestCase):
 
     def deltempfiles(self):
         for name in ("testdb", "testdb2", "testfile", "testfile2", "testdb2x", "testdb-async",
-                     "test-shell-1", "test-shell-2", "test-shell-3",
+                     "test-shell-1", "test-shell-1.py",
                      "test-shell-in", "test-shell-out", "test-shell-err"):
             for i in "-journal", "":
                 if os.path.exists(name+i):
@@ -5709,8 +5709,8 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[2])
         v2=get(fh[1])
-        v=re.sub("^-- Date:.*", "", v)
-        v2=re.sub("^-- Date:.*", "", v2)
+        v=re.sub("-- Date:.*", "", v)
+        v2=re.sub("-- Date:.*", "", v2)
         self.assertEqual(v, v2)
         # clean database
         reset()
@@ -5724,7 +5724,7 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[2])
         v3=get(fh[1])
-        v3=re.sub("^-- Date:.*", "", v3)
+        v3=re.sub("-- Date:.*", "", v3)
         self.assertEqual(v, v3)
 
         ###
@@ -5760,9 +5760,270 @@ class APSW(unittest.TestCase):
         ###
         ### Command - encoding
         ###
+        for i in ".encoding one two", ".encoding", ".encoding utf8 another":
+            reset()
+            cmd(i)
+            s.cmdloop()
+            isempty(fh[1])
+            isnotempty(fh[2])
+        reset()
+        cmd(".encoding this-does-not-exist")
+        s.cmdloop()
+        isempty(fh[1])
+        self.assert_("no known encoding" in get(fh[2]).lower())
+        # use iso8859-1 to make sure data is read correctly - it
+        # differs from utf8
+        us=u(r"unitestdata \xaa\x89 34")
+        codecs.open("test-shell-1", "w", "iso8859-1").write("insert into enctest values('%s');\n" % (us,))
+        gc.collect()
+        reset()
+        cmd(".encoding iso8859-1\ncreate table enctest(x);\n.echo on\n.read test-shell-1\n.echo off")
+        s.cmdloop()
+        self.assertEqual(s.db.cursor().execute("select * from enctest").fetchall()[0][0],
+                         us)
+        self.assert_(us in get(fh[2]))
+        reset()
+        codecs.open("test-shell-1", "w", "iso8859-1").write(us+"\n")
+        cmd("drop table enctest;create table enctest(x);\n.import test-shell-1 enctest")
+        s.cmdloop()
+        isempty(fh[2])
+        isempty(fh[1])
+        self.assertEqual(s.db.cursor().execute("select * from enctest").fetchall()[0][0],
+                         us)
+        reset()
+        cmd(".output test-shell-1\n.mode list\nselect * from enctest;")
+        s.cmdloop()
+        self.assertEqual(open("test-shell-1", "rb").read().strip(), # skip eol
+                         us.encode("iso8859-1"))
+        reset()
+        cmd(".output stdout\nselect '%s';\n" % (us,))
+        s.cmdloop()
+        isempty(fh[2])
+        self.assert_(us in get(fh[1]))
+
+        ###
+        ### Command - exit & quit
+        ###
+        for i in ".exit", ".quit":
+            reset()
+            cmd(i)
+            self.assertRaises(SystemExit, s.cmdloop)
+            isempty(fh[1])
+            isempty(fh[2])
+            reset()
+            cmd(i+" jjgflk")
+            s.cmdloop()
+            isempty(fh[1])
+            isnotempty(fh[2])
+
+        ###
+        ### Command explain and header are tested above
+        ###
+        # pass
+
+        ###
+        ### Command help
+        ###
+        reset()
+        cmd(".help\n.help all\n.help import backup")
+        s.cmdloop()
+        isempty(fh[1])
+        for i in ".import", "Reads data from the file":
+            self.assert_(i in get(fh[2]))
+        reset()
+        cmd(".help backup notexist import")
+        s.cmdloop()
+        isempty(fh[1])
+        for i in "Copies the contents", "No such command":
+            self.assert_(i in get(fh[2]))
+        # screw up terminal width
+        origtw=s._terminal_width
+        def tw(*args): return 7
+        s._terminal_width=tw
+        reset()
+        cmd(".bail on\n.help all\n.bail off")
+        s.cmdloop()
+        isempty(fh[1])
+        isnotempty(fh[2])
+
+        ###
+        ### Command - import
+        ###
+        # check it fundamentally works
+        reset()
+        cmd(".encoding utf16\ncreate table imptest(x real, y char);\n"
+            "insert into imptest values(3.1, 'xabc');\n"
+            "insert into imptest values(3.2, 'xabfff\"ffffc');\n"
+            ".output test-shell-1\n.mode csv\nselect * from imptest;\n"
+            ".output stdout")
+        s.cmdloop()
+        isempty(fh[1])
+        isempty(fh[2])
+        # make sure encoding took
+        if sys.version_info>=(3,0):
+            self.assert_(b("xab") not in open("test-shell-1", "rb").read())
+        else:
+            self.assert_("xab" not in open("test-shell-1", "rb").read())
+        data=s.db.cursor().execute("select * from imptest; delete from imptest").fetchall()
+        self.assertEqual(2, len(data))
+        reset()
+        cmd(".import test-shell-1 imptest")
+        s.cmdloop()
+        isempty(fh[1])
+        isempty(fh[2])
+        newdata=s.db.cursor().execute("select * from imptest; drop table imptest").fetchall()
+        data.sort()
+        newdata.sort()
+        self.assertEqual(data, newdata)
+        # error handling
+        for i in ".import", ".import one", ".import one two three", ".import nosuchfile nosuchtable", ".import nosuchfile sqlite_master":
+            reset()
+            cmd(i)
+            s.cmdloop()
+            isempty(fh[1])
+            isnotempty(fh[2])
+        # wrong number of columns
+        reset()
+        cmd("create table imptest(x,y);\n.mode tabs\n.output test-shell-1\nselect 3,4;select 5,6;select 7,8,9;")
+        s.cmdloop()
+        isempty(fh[1])
+        isempty(fh[2])
+        reset()
+        cmd(".output stdout\n.import test-shell-1 imptest")
+        s.cmdloop()
+        isempty(fh[1])
+        isnotempty(fh[2])
+        reset()
+        # check it was done in a transaction and aborted
+        self.assertEqual(0, s.db.cursor().execute("select count(*) from imptest").fetchall()[0][0])
+
+        ###
+        ### Command - indices
+        ###
+        for i in ".indices", ".indices one two":
+            reset()
+            cmd(i)
+            s.cmdloop()
+            isempty(fh[1])
+            isnotempty(fh[2])
+        reset()
+        cmd("create table indices(x unique, y unique); create index shouldseethis on indices(x,y);")
+        s.cmdloop()
+        isempty(fh[1])
+        isempty(fh[2])
+        reset()
+        cmd(".indices indices")
+        s.cmdloop()
+        isempty(fh[2])
+        for i in "shouldseethis", "autoindex":
+            self.assert_(i in get(fh[1]))
+
+        ###
+        ### Command - load
+        ###
+        if hasattr(APSW, "testLoadExtension"):
+            lf=LOADEXTENSIONFILENAME
+            for i in ".load", ".load one two three":
+                reset()
+                cmd(i)
+                s.cmdloop()
+                isempty(fh[1])
+                isnotempty(fh[2])
+            reset()
+            cmd(".load nosuchfile")
+            s.cmdloop()
+            isempty(fh[1])
+            self.assert_("nosuchfile" in get(fh[2]))
+            reset()
+            cmd(".mode list\n.load "+lf+" alternate_sqlite3_extension_init\nselect doubleup(2);")
+            s.cmdloop()
+            isempty(fh[2])
+            self.assert_("4" in get(fh[1]))
+            reset()
+            cmd(".mode list\n.load "+lf+"\nselect half(2);")
+            s.cmdloop()
+            isempty(fh[2])
+            self.assert_("1" in get(fh[1]))
+
+        ###
+        ### Command - mode
+        ###
+        # already thoroughly tested in code above
+        for i in ".mode", ".mode foo more", ".mode invalid":
+            reset()
+            cmd(i)
+            s.cmdloop()
+            isempty(fh[1])
+            isnotempty(fh[2])
+
+        ###
+        ### command nullvalue & separator
+        ###
+        # already tested in code above
+        for i in ".nullvalue", ".nullvalue jkhkl lkjkj", ".separator", ".separator one two":
+            reset()
+            cmd(i)
+            b4=s.nullvalue, s.separator
+            s.cmdloop()
+            isempty(fh[1])
+            isnotempty(fh[2])
+            self.assertEqual(b4, (s.nullvalue, s.separator))
+
+        ###
+        ### command output
+        ###
+        for i in ".output", ".output too many args", ".output "+os.sep:
+            reset()
+            cmd(i)
+            b4=s.stdout
+            s.cmdloop()
+            isempty(fh[1])
+            isnotempty(fh[2])
+            self.assertEqual(b4, s.stdout)
+
+        ###
+        ### Command prompt
+        ###
+        # not much to test until pty testing is working
+        for i in ".prompt", ".prompt too many args":
+            reset()
+            cmd(i)
+            b4=s.prompt,s.moreprompt
+            s.cmdloop()
+            isempty(fh[1])
+            isnotempty(fh[2])
+            self.assertEqual(b4, (s.prompt, s.moreprompt))
+
+        ###
+        ### Command read
+        ###
+        # pretty much thoroughly tested above
+        open("test-shell-1.py", "wt").write("""
+assert apsw
+assert shell
+shell.write(shell.stdout, "hello world\\n")
+""")
+        for i in ".read", ".read one two", ".read "+os.sep:
+            reset()
+            cmd(i)
+            s.cmdloop()
+            isempty(fh[1])
+            isnotempty(fh[2])
+
+        reset()
+        cmd(".read test-shell-1.py")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assert_("hello world" in get(fh[1]))
+
+        # restore tested with backup
+
+        ###
+        ### Command - schema
+        ###
+            
         
-        
-        
+            
     # This one uses the coverage module
     def _testShellWithCoverage(self):
         "Check Shell functionality (with coverage)"

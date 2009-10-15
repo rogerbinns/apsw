@@ -669,7 +669,7 @@ def create_c_file(src, dest):
     for line in open(src, "rtU"):
         if "if__name__=='__main__':" in line.replace(" ",""):
             break
-        if line.lstrip().startswith('#'): # full line comment
+        if line.strip().startswith('#'): # full line comment
             continue
         if line.strip()=="import apsw":
             continue
@@ -683,7 +683,8 @@ def create_c_file(src, dest):
         out.append('  "'+line.rstrip()+'\\n"')
         if comma:
             out[-1]=out[-1]+","
-    out.append('""') # just in case the last thing was a comma
+    if out[-1].endswith(","):
+        out[-1]=out[-1][:-1]
     out[1]='"%s",' % ("%s" * percents,)
     open(dest, "wt").write("\n".join(out))
 

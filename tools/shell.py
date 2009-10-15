@@ -10,7 +10,6 @@ import textwrap
 import time
 import codecs
 
-
 class Shell:
     """Implements a SQLite shell
 
@@ -19,7 +18,7 @@ class Shell:
     :param stderr: Where to send errors (default sys.stderr)
     :param encoding: Default encoding for files opened/created by the
       Shell.  If you want stdin/out/err to use a particular encoding
-      then you need to provide them already configured that way.
+      then you need to provide them `already configured <http://docs.python.org/library/codecs.html#codecs.open>`__ that way.
     :param args: This should be program arguments only (ie if
       passing in sys.argv do not include sys.argv[0] which is the
       program name.  You can also pass in None and then call
@@ -56,8 +55,7 @@ class Shell:
     Shell commands begin with a dot (eg .help).  They are implemented
     as a method named after the command (eg command_help).  The method
     is passed one parameter which is the list of arguments to the
-    command.  The command should return True if the interactive loop
-    should exit.
+    command.
 
     Output modes are implemented by functions named after the mode (eg
     output_column).
@@ -280,6 +278,7 @@ OPTIONS include:
    -html                set output mode to 'html'
    -line                set output mode to 'line'
    -list                set output mode to 'list'
+   -python              set output mode to 'python'
    -separator 'x'       set output field separator (|)
    -nullvalue 'text'    set text string for NULL values
    -version             show SQLite version
@@ -487,7 +486,6 @@ OPTIONS include:
                 import StringIO as io
             else:
                 import io
-            import csv
             s=io.StringIO()
             kwargs={}
             if self.separator==",":
@@ -654,17 +652,7 @@ Enter SQL statements terminated with a ";"
         if isinstance(eval, KeyboardInterrupt):
             self.handle_interrupt()
             text="Interrupted"
-        # ValueError comes from shlex.split
-        elif isinstance(eval, (self.Error, apsw.Error, UnicodeDecodeError, IOError, ValueError)):
-            text=str(eval)
         else:
-            # The traceback is currently debugging code and will be
-            # removed.  It is to help with development and testing and
-            # seeing what kinds of errors we get.  ZeroDivisionError
-            # is deliberately in test suite so don't print them out.
-            if sys.exc_info()[0]!=ZeroDivisionError:
-                import traceback
-                traceback.print_exc()
             text=str(eval)
             
         if not text.endswith("\n"):
@@ -758,9 +746,11 @@ Enter SQL statements terminated with a ";"
             self.display_timing(state['timing'], self.get_resource_usage())
             
     def process_command(self, cmd):
-        """Processes a dot command.
-        It is split into parts using the shlex.split function which is roughly the
-        same method used by Unix/POSIX shells.
+        """Processes a dot command.  It is split into parts using the
+        `shlex.split
+        <http://docs.python.org/library/shlex.html#shlex.split>`__
+        function which is roughly the same method used by Unix/POSIX
+        shells.
         """
         if self.echo:
             self.write(self.stderr, cmd+"\n")
@@ -1294,32 +1284,48 @@ Enter SQL statements terminated with a ";"
             if ncols<1:
                 raise self.Error("No such table '%s'" % (cmd[1],))
 
-            quotechar='"'
-            if self.separator=="\t":
-                quotechar='\x00'
-
             cur=self.db.cursor()
             sql="insert into %s values(%s)" % (self._fmt_sql_identifier(cmd[1]), ",".join("?"*ncols))
-            row=1
-            ###
-            ### csv module is not good at unicode so we have to
-            ### indirect unless utf8 is in use
-            ###
-            if self.encoding.lower()=="utf8": # no need for tempfile
-                thefile=open(cmd[0], "rb")
+
+            if sys.version_info<(3,0):
+                ###
+                ### csv module is not good at unicode so we have to
+                ### indirect unless utf8 is in use
+                ###
+                if self.encoding.lower()=="utf8": # no need for tempfile
+                    thefile=open(cmd[0], "rb")
+                else:
+                    import tempfile
+                    thefile=tempfile.TemporaryFile(prefix="apsw_import")
+                    thefile.write(codecs.open(cmd[0], "r", self.encoding).read().encode("utf8"))
+                    # move back to begining
+                    thefile.seek(0,0)
             else:
-                import tempfile
-                thefile=tempfile.TemporaryFile(prefix="apsw_import")
-                for line in codecs.open(cmd[0], "r", self.encoding):
-                    thefile.write(line.encode("utf8"))
-                # move back to begining
-                thefile.seek(0,0)
-                    
-            for line in csv.reader(thefile, delimiter=self.separator, quotechar=quotechar):
+                thefile=codecs.open(cmd[0], "r", self.encoding)
+
+            # see output_csv for the thinking behind these
+            if sys.version_info<(3,0):
+                fixapi=lambda x: x.encode("utf8")
+                fixdata=lambda x: x.decode("utf8")
+            else:
+                fixapi=lambda x: x
+                fixdata=lambda x: x
+            kwargs={}
+            if self.separator==",":
+                kwargs["dialect"]="excel"
+            elif self.separator=="\t":
+                kwargs["dialect"]="excel-tab"
+            else:
+                kwargs["quoting"]=csv.QUOTE_NONE
+                kwargs["delimiter"]=fixapi(self.separator)
+                kwargs["doublequote"]=False
+                kwargs["quotechar"]="\x00"
+            row=1
+            for line in csv.reader(thefile, **kwargs):
                 if len(line)!=ncols:
                     raise self.Error("row %d has %d columns but should have %d" % (row, len(line), ncols))
                 try:
-                    line=[l.decode("utf8") for l in line]
+                    line=[fixdata(l) for l in line]
                     cur.execute(sql, line)
                 except:
                     self.write(self.stderr, "Error inserting row %d" % (row,))
@@ -1344,8 +1350,8 @@ Enter SQL statements terminated with a ";"
         self.output=self.output_list
         try:
             self.process_sql("SELECT name FROM sqlite_master WHERE type='index' AND tbl_name LIKE ?1 "
-                             "UNION ALL SELECT name FROM sqlite_temp_master WHERE type='index' AND tbl_name LIKE"
-                             "?1 ORDER by 1", cmd, internal=True)
+                             "UNION ALL SELECT name FROM sqlite_temp_master WHERE type='index' AND tbl_name LIKE "
+                             "?1 ORDER by name", cmd, internal=True)
         finally:
             self.pop_output()
 
@@ -1478,6 +1484,8 @@ Enter SQL statements terminated with a ";"
 
         newf=codecs.open(fname, "w", self.encoding)
         old=None
+        if self.stdout!=self._original_stdout:
+            old=self.stdout
         self.stdout=newf
         if old is not None:
             old.close()
@@ -1514,9 +1522,14 @@ Enter SQL statements terminated with a ";"
         if len(cmd)!=1:
             raise self.Error("read takes a single filename")
         if cmd[0].lower().endswith(".py"):
-            execfile(cmd[0], globals(), {'apsw': apsw, 'shell': self})
+            locals_d={'apsw': apsw, 'shell': self}
+            if sys.version_info<(3,0):
+                execfile(cmd[0], globals(), locals_d)
+            else:
+                # compile step is needed to associate name with code
+                exec(compile(open(cmd[0]).read(), cmd[0], 'exec'), globals(), locals_d)
         else:
-            f=open(cmd[0], "rtU")
+            f=codecs.open(cmd[0], "rU", self.encoding)
             try:
                 try:
                     self.push_input()
@@ -1827,7 +1840,7 @@ Enter SQL statements terminated with a ";"
 
     def fixup_backslashes(self, s):
         """Implements the various backlash sequences in s such as
-        turning \\t into a tab.
+        turning \\\\t into a tab.
 
         This function is needed because shlex does not do it for us.
         """
@@ -2077,6 +2090,7 @@ Enter SQL statements terminated with a ";"
         
     def complete_sql(self, line, token, beg, end):
         """Provide some completions for SQL
+        
         :param line: The current complete input line
         :param token: The word readline is looking for matches
         :param beg: Integer offset of token in line
@@ -2168,6 +2182,7 @@ Enter SQL statements terminated with a ";"
 
     def complete_command(self, line, token, beg, end):
         """Provide some completions for dot commands
+        
         :param line: The current complete input line
         :param token: The word readline is looking for matches
         :param beg: Integer offset of token in line
