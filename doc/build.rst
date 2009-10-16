@@ -175,7 +175,7 @@ need to give the flag once and giving a comma seperated list.  For example:
 |                                        | This flag only helps when using the amalgamation. If not using the                   | 
 |                                        | amalgamation then you need to seperately ensure fts3 is enabled in the SQLite        |
 |                                        | install. You are likely to want the `parenthesis option                              |
-|                                        | <http://www.sqlite.org/compile.html#enable_fts3_parenthesis>` on unless you have     |
+|                                        | <http://www.sqlite.org/compile.html#enable_fts3_parenthesis>`__ on unless you have   |
 |                                        | legacy code (`--enable-all-extensions` turns it on).                                 |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--enable=rtree`             | Enables the :ref:`spatial table extension <ext-rtree>`.                              |
@@ -212,12 +212,12 @@ Finding SQLite 3
 ================
 
 SQLite 3 is needed during the build process. If you specify
-:option:`--fetch-sqlite` anywhere on the :file:`setup.py` command line
+:option:`fetch --sqlite` to the :file:`setup.py` command line
 then it will automatically fetch the current version of the SQLite
 amalgamation. (The current version is determined by parsing the
 `SQLite download page <http://www.sqlite.org/download.html>`_). You
 can manually specify the version, for example
-:option:`--fetch-sqlite=3.6.1`.
+:option:`fetch --sqlite --version=3.6.1`.
 
 These methods are tried in order:
 

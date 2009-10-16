@@ -1998,6 +1998,11 @@ Enter SQL statements terminated with a ";"
         first completion, then one/two/three etc until you return None.  The best
         implementation is to generate the list when state==0, save it,
         and provide members on each increase.
+
+        The default implementation extracts the current full input
+        from readline and then calls :meth:`complete_command` or
+        :meth:`complete_sql` as appropriate saving the results for
+        subsequent calls.
         """
         if state==0:
             import readline

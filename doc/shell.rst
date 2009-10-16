@@ -147,9 +147,9 @@ can find out the `code page
 autodetection by setting the PYTHONIOENCODING environment variable.
 
 There is also a .encoding command.  This sets what encoding is used
-for any subsequent .read and .output commands but does not affect
-existing open files and console.  When other programs offer you a
-choice for encoding the best value to pick is UTF8 as it allows full
+for any subsequent .read, .import and .output commands but does not
+affect existing open files and console.  When other programs offer you
+a choice for encoding the best value to pick is UTF8 as it allows full
 representation of Unicode.
 
 This `Joel on Software article

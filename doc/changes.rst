@@ -67,7 +67,8 @@ checksum.  See :ref:`more information <fetch_checksums>` on checksums.
 currently under development before a release.  Use
 :option:`--version=fossil`.
 
-Updated which code uses expermental SQLite APIs based on changes in
+Updated which code uses `experimental SQLite APIs
+<http://sqlite.org/c3ref/experimental.html>`__ based on changes in
 SQLite.  The test suite will also work correctly with experimental on
 or off.  (It is on by default.)
 
