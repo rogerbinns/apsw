@@ -5947,7 +5947,7 @@ class APSW(unittest.TestCase):
             cmd(".load nosuchfile")
             s.cmdloop()
             isempty(fh[1])
-            self.assert_("nosuchfile" in get(fh[2]))
+            self.assert_("nosuchfile" in get(fh[2]) or "ExtensionLoadingError" in get(fh[2]))
             reset()
             cmd(".mode list\n.load "+lf+" alternate_sqlite3_extension_init\nselect doubleup(2);")
             s.cmdloop()
@@ -7066,6 +7066,8 @@ def setup(write=write):
     if hasattr(apsw, "fork_checker") and hasattr(os, "fork"):
         try:
             import multiprocessing
+            # sometimes the import works but doing anything fails
+            val=multiprocessing.Value("i", 0)
             forkcheck=True
         except ImportError:
             pass

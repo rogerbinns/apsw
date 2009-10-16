@@ -33,7 +33,7 @@ def run(cmd):
 
 
 def dotest(logdir, pybin, pylib, workdir, sqlitever):
-    run("cd %s ; env LD_LIBRARY_PATH=%s %s setup.py fetch --version=%s --sqlite build_test_extension build_ext --inplace --force --enable=fts3,rtree,icu test -v >%s 2>&1" % (workdir, pylib, pybin, sqlitever, os.path.abspath(os.path.join(logdir, "buildruntests.txt"))))
+    run("cd %s ; env LD_LIBRARY_PATH=%s %s setup.py fetch --version=%s --sqlite build_test_extension build_ext --inplace --force --enable-all-extensions test -v >%s 2>&1" % (workdir, pylib, pybin, sqlitever, os.path.abspath(os.path.join(logdir, "buildruntests.txt"))))
 
 
 def runtest(workdir, pyver, ucs, sqlitever, logdir):
