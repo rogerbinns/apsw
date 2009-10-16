@@ -96,6 +96,7 @@ The following command lne options are accepted:
      -html                set output mode to 'html'
      -line                set output mode to 'line'
      -list                set output mode to 'list'
+     -python              set output mode to 'python'
      -separator 'x'       set output field separator (|)
      -nullvalue 'text'    set text string for NULL values
      -version             show SQLite version

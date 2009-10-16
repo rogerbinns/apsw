@@ -380,9 +380,12 @@ OPTIONS include:
 
     def _fmt_sql_identifier(self, v):
         "Return the identifier quoted in SQL syntax if needed (eg table and column names)"
+        if not len(v): # yes sqlite does allow zero length identifiers
+            return '""'
         nonalnum=re.sub("[A-Za-z_0-9]+", "", v)
         if len(nonalnum)==0:
-            return v
+            if v.upper() not in self._sqlite_reserved:
+                return v
         # double quote it unless there are any double quotes in it
         if '"' in nonalnum:
             return "[%s]" % (v,)
@@ -437,15 +440,14 @@ OPTIONS include:
         # as an optimization we calculate self._actualwidths which is
         # reset for each query
         if header:
-            # calculate _actualwidths
-            widths=self.widths[:len(line)]
-            while len(widths)<len(line):
-                i=len(widths)
-                text=self._fmt_text_col(line[i])
-                if len(text)<10:
-                    widths.append(10)
-                else:
-                    widths.append(len(text))
+            def gw(n):
+                if n<len(self.widths) and self.widths[n]>0:
+                    return n
+                # if width is not present or <1 then autosize
+                text=self._fmt_text_col(line[n])
+                return max(len(text), 10)
+                
+            widths=[gw(i) for i in range(len(line))]
             self._actualwidths=widths
                                         
             if self.header:
@@ -1593,9 +1595,9 @@ Enter SQL statements terminated with a ";"
             for n in cmd:
                 self.process_sql("SELECT sql||';' FROM "
                                  "(SELECT sql sql, type type, tbl_name tbl_name, name name "
-                                 "FROM sqlite_master WHERE name LIKE ?1 UNION ALL "
+                                 "FROM sqlite_master UNION ALL "
                                  "SELECT sql, type, tbl_name, name FROM sqlite_temp_master) "
-                                 "WHERE name like ?1 AND type!='meta' AND sql NOTNULL AND name NOT LIKE 'sqlite_%' "
+                                 "WHERE tbl_name LIKE ?1 AND type!='meta' AND sql NOTNULL AND name NOT LIKE 'sqlite_%' "
                                  "ORDER BY substr(type,2,1), name", (n,), internal=True)
         finally:
             self.pop_output()
@@ -1624,7 +1626,7 @@ Enter SQL statements terminated with a ";"
             raise self.Error("show takes at most one parameter")
         if len(cmd):
             what=cmd[0]
-            if what not in _shows:
+            if what not in self._shows:
                 raise self.Error("Unknown show: '%s'" % (what,))
         else:
             what=None
@@ -1673,7 +1675,7 @@ Enter SQL statements terminated with a ";"
                 l=len(k)
 
         for k,v in outs:
-            self.write(self.stdout, "%*.*s: %s\n" % (l,l, k, v))
+            self.write(self.stderr, "%*.*s: %s\n" % (l,l, k, v))
             
     def command_tables(self, cmd):
         """tables ?PATTERN?: Lists names of tables matching LIKE pattern
@@ -1707,7 +1709,8 @@ Enter SQL statements terminated with a ";"
 
         If a database is locked by another process SQLite will keep
         retrying.  This sets how many thousandths of a second it will
-        keep trying for.
+        keep trying for.  If you supply zero or a negative number then
+        all busy handlers are disabled.
         """
         if len(cmd)!=1:
             raise self.Error("timeout takes a number")
@@ -1754,6 +1757,8 @@ Enter SQL statements terminated with a ";"
         #
         # This whole zero behaviour is probably because it doesn't
         # check the numbers are actually valid - just uses atoi
+        if len(cmd)==0:
+            raise self.Error("You need to specify some widths!")
         w=[]
         for i in cmd:
             try:
@@ -2030,6 +2035,9 @@ Enter SQL statements terminated with a ";"
            REGEXP REINDEX RELEASE RENAME REPLACE RESTRICT RIGHT ROLLBACK ROW
            SAVEPOINT SELECT SET TABLE TEMP TEMPORARY THEN TO TRANSACTION TRIGGER
            UNION UNIQUE UPDATE USING VACUUM VALUES VIEW VIRTUAL WHEN WHERE""".split()
+    # reserved words need to be quoted.  Only a subset of the above are reserved
+    # but what the heck
+    _sqlite_reserved=_sqlite_keywords
     # add a space after each of them except functions which get parentheses
     _sqlite_keywords=[x+(" ", "(")[x in ("VALUES", "CAST")] for x in _sqlite_keywords]
 

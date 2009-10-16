@@ -5301,7 +5301,7 @@ class APSW(unittest.TestCase):
         isempty(fh[2])
         self.assertEqual(save, get(fh[1]))
         # check the table name
-        self.assert_(get(fh[1]).lower().startswith("insert into table values"))
+        self.assert_(get(fh[1]).lower().startswith('insert into "table" values'))
         reset()
         cmd(".mode insert funkychicken\nselect "+all+";\n")
         s.cmdloop()
@@ -5676,7 +5676,9 @@ class APSW(unittest.TestCase):
             self.assert_(i in v.lower())
         # some nasty stuff
         reset()
-        cmd(u("create table nastydata(x,y); insert into nastydata values(null,'xxx\\u1234\\uabcd\\U00012345yyy\r\n\t\"this \\is nasty\u0001stuff!');"))
+        cmd(u("create table nastydata(x,y); insert into nastydata values(null,'xxx\\u1234\\uabcd\\U00012345yyy\r\n\t\"this \\is nasty\u0001stuff!');"
+              'create table "table"([except] int); create table [](""); create table [using]("&");'
+              ))
         s.cmdloop()
         isempty(fh[1])
         isempty(fh[2])
@@ -6021,8 +6023,146 @@ shell.write(shell.stdout, "hello world\\n")
         ###
         ### Command - schema
         ###
+        # make sure it works
+        reset()
+        cmd(".schema")
+        s.cmdloop()
+        isempty(fh[2])
+        isnotempty(fh[1])
+        reset()
+        cmd("create table schematest(x);create index unrelatedname on schematest(x);\n.schema schematest foo notexist foo")
+        s.cmdloop()
+        isempty(fh[2])
+        for i in "schematest", "unrelatedname":
+            self.assert_(i in get(fh[1]))
+
+        # separator done earlier
+        
+        ###
+        ### Command - show
+        ###
+        # set all settings to known values
+        resetcmd=".echo off\n.explain off\n.headers off\n.mode list\n.nullvalue ''\n.output stdout\n.separator |\n.width 1 2 3"
+        reset()
+        cmd(resetcmd)
+        s.cmdloop()
+        isempty(fh[2])
+        isempty(fh[1])
+        reset()
+        cmd(".show")
+        s.cmdloop()
+        isempty(fh[1])
+        isnotempty(fh[2])
+        baseline=get(fh[2])
+        for i in ".echo on", ".explain", ".headers on", ".mode column", ".nullvalue T",".separator %", ".width 8 9 1":
+            reset()
+            cmd(resetcmd)
+            s.cmdloop()
+            isempty(fh[1])
+            if not get(fh[2]).startswith(".echo off"):
+                isempty(fh[2])
+            reset()
+            cmd(i+"\n.show")
+            s.cmdloop()
+            isempty(fh[1])
+            # check size has not changed much
+            self.assert_(abs(len(get(fh[2]))-len(baseline))<14) 
+            
+        # output
+        reset()
+        cmd(".output test-shell-1\n.show")
+        s.cmdloop()
+        isempty(fh[1])
+        self.assert_("output: test-shell-1" in get(fh[2]))
+        reset()
+        cmd(".output stdout\n.show")
+        s.cmdloop()
+        isempty(fh[1])
+        self.assert_("output: stdout" in get(fh[2]))
+        self.assert_(not os.path.exists("stdout"))
+        # errors
+        reset()
+        cmd(".show one two")
+        s.cmdloop()
+        isempty(fh[1])
+        self.assert_("at most one parameter" in get(fh[2]))
+        reset()
+        cmd(".show notexist")
+        s.cmdloop()
+        isempty(fh[1])
+        self.assert_("notexist: " not in get(fh[2]))
+
+        ###
+        ### Command tables
+        ###
+        reset()
+        cmd(".tables")
+        s.cmdloop()
+        isempty(fh[2])
+        isnotempty(fh[1])
+        reset()
+        cmd("create table tabletest(x);create index tabletest1 on tabletest(x);create index noway on tabletest(x);\n.tables tabletest\n.tables")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assert_("tabletest" in get(fh[1]))
+        self.assert_("tabletest1" not in get(fh[1]))
+        self.assert_("noway" not in get(fh[1]))
+
+        ###
+        ### Command timeout
+        ###
+        for i in (".timeout", ".timeout ksdjfh", ".timeout 6576 78987"):
+            reset()
+            cmd(i)
+            s.cmdloop()
+            isempty(fh[1])
+            isnotempty(fh[2])
+        for i in (".timeout 1000", ".timeout 0", ".timeout -33"):
+            reset()
+            cmd(i)
+            s.cmdloop()
+            isempty(fh[1])
+            isempty(fh[2])
+
+        # timer is tested earlier
+
+        ###
+        ### Command width
+        ###
+        # does it work?
+        reset()
+        cmd(".width 10 10 10 0")
+        s.cmdloop()
+        isempty(fh[1])
+        isempty(fh[2])
+
+        def getw():
+            reset()
+            cmd(".show width")
+            s.cmdloop()
+            isempty(fh[1])
+            return [int(x) for x in get(fh[2]).split()[1:]]
+
+        self.assertEqual([10,10,10], getw())
+        # some errors
+        for i in ".width", ".width foo", ".width 1 2 3 seven 3":
+            reset()
+            cmd(i)
+            s.cmdloop()
+            isempty(fh[1])
+            isnotempty(fh[2])
+            self.assertEqual([10,10,10], getw())
+        # various bizarre dealings with zero etc
+        for i,r in ("9 0 9", [9]), ("10 -3 10 -3", [10,-3,10,-3]), ("0", []):
+            reset()
+            cmd(".width "+i)
+            s.cmdloop()
+            isempty(fh[1])
+            isempty(fh[2])
+            self.assertEqual(r, getw())
             
         
+
             
     # This one uses the coverage module
     def _testShellWithCoverage(self):
