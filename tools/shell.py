@@ -671,7 +671,10 @@ Enter SQL statements terminated with a ";"
                 readline.set_completer(self.complete)
                 readline.parse_and_bind("tab: complete")
                 using_readline=True
-                readline.read_history_file(os.path.expanduser(self.history_file))
+                try:
+                    readline.read_history_file(os.path.expanduser(self.history_file))
+                except IOError:
+                    pass
         except ImportError:
             pass
 

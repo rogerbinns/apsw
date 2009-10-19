@@ -45,7 +45,7 @@ In addition to executing SQL, these are the commands available:
   .indices TABLE              Lists all indices on table TABLE
   .load FILE ?ENTRY?          Loads a SQLite extension library
   .mode MODE ?TABLE?          Sets output mode to one of column csv html insert
-                              line list python tabs tcl
+                              json line list python tabs tcl
   .nullvalue STRING           Print STRING in place of null values
   .output FILENAME            Send output to FILENAME (or stdout)
   .prompt MAIN ?CONTINUE?     Changes the prompts for first line and continuation
