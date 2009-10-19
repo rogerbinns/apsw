@@ -996,7 +996,6 @@ Enter SQL statements terminated with a ";"
             dectables.sort()
             tables=[y for x,y in dectables]
 
-            
             virtuals=v["virtuals"]
             foreigns=v["foreigns"]
 
@@ -1045,17 +1044,18 @@ Enter SQL statements terminated with a ";"
                                 first=False
                             self.write(self.stdout, sql+";\n")
                         blank()
-                # views done last
+                # Views done last.  They have to be done in the same order as they are in sqlite_master
+                # as they could refer to each other
                 first=True
-                for table in tables:
-                    for name,sql in self.db.cursor().execute("SELECT name,sql FROM sqlite_master "
-                                                             "WHERE sql NOT NULL AND type='view' "
-                                                             "AND name=?1", (table,)):
-                        if first:
-                            comment("Views")
-                            first=False
-                        self.write(self.stdout, "DROP VIEW IF EXISTS %s;\n" % (self._fmt_sql_identifier(name),))
-                        self.write(self.stdout, sql+";\n")
+                for name,sql in self.db.cursor().execute("SELECT name,sql FROM sqlite_master "
+                                                         "WHERE sql NOT NULL AND type='view' "
+                                                         "AND name IN ( "+",".join([self._fmt_sql_value(i) for i in tables])+
+                                                         ") ORDER BY _ROWID_"):
+                    if first:
+                        comment("Views")
+                        first=False
+                    self.write(self.stdout, "DROP VIEW IF EXISTS %s;\n" % (self._fmt_sql_identifier(name),))
+                    self.write(self.stdout, sql+";\n")
                 if not first:
                     blank()
                     

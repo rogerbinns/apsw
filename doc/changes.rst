@@ -5,6 +5,11 @@ Change History
 next
 ====
 
+The :ref:`shell` .dump command now outputs views in the order they
+were created rather than alphabetical as views could reference each
+other. (`Issue 82
+<http://code.google.com/p/apsw/issues/detail?id=82>`__)
+
 The :ref:`shell` .dump command now outputs the `user_version
 <http://sqlite.org/pragma.html#version>`__ as a comment.  It is used
 by some programs (such as Firefox) to keep track of the schema

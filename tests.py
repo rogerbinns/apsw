@@ -5726,6 +5726,18 @@ class APSW(unittest.TestCase):
         v=get(fh[1])
         for i in "drop view", "create view noddy":
             self.assert_(i in v.lower())
+        # issue82 - view ordering
+        reset()
+        cmd("create table issue82(x);create view issue82_2 as select * from issue82; create view issue82_1 as select count(*) from issue82_2;\n.dump issue82%")
+        s.cmdloop()
+        isempty(fh[2])
+        v=get(fh[1])
+        s.db.cursor().execute("drop table issue82 ; drop view issue82_1 ; drop view issue82_2")
+        reset()
+        cmd(v)
+        s.cmdloop()
+        isempty(fh[1])
+        isempty(fh[2])
         # autoincrement
         reset()
         cmd("create table abc(x INTEGER PRIMARY KEY AUTOINCREMENT); insert into abc values(null);insert into abc values(null);\n.dump")
@@ -5765,7 +5777,8 @@ class APSW(unittest.TestCase):
         isempty(fh[1])
         isempty(fh[2])
         # drop all the tables we made to do another dump and compare with before
-        for t in "abc", "bar", "foo", "fts3", "xxx", "noddy", "sqlite_sequence", "sqlite_stat1":
+        for t in "abc", "bar", "foo", "fts3", "xxx", "noddy", "sqlite_sequence", "sqlite_stat1", \
+                "issue82", "issue82_1", "issue82_2":
             reset()
             cmd("drop table %s;drop view %s;" % (t,t))
             s.cmdloop() # there will be errors which we ignore
