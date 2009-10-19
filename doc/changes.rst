@@ -2,6 +2,16 @@ Change History
 **************
 .. currentmodule:: apsw
 
+next
+====
+
+The :ref:`shell` .dump command now outputs the `user_version
+<http://sqlite.org/pragma.html#version>`__ as a comment.  It is used
+by some programs (such as Firefox) to keep track of the schema
+version.
+
+The :ref:`shell` can now output in `JSON <http://json.org>`__.
+
 3.6.19-r1
 =========
 

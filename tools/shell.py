@@ -9,6 +9,7 @@ import re
 import textwrap
 import time
 import codecs
+import base64
 
 class Shell:
     """Implements a SQLite shell
@@ -350,6 +351,50 @@ OPTIONS include:
            replace("'", "&apos;"). \
            replace('"', "&quot;")
 
+    def _fmt_json_value(self, v):
+        "Format a value."
+        if isinstance(v, self._basestring):
+            # we assume utf8 so only some characters need to be escaed
+            op=['"']
+            for c in v:
+                if c=="\\":
+                    op.append("\\\\")
+                elif c=="\r":
+                    op.append("\\r")
+                elif c=="\n":
+                    op.append("\\n")
+                elif c=="\t":
+                    op.append("\\t")
+                elif c=="/": # yes you have to escape forward slash for some reason
+                    op.append("\\/")
+                elif c=='"':
+                    op.append("\\"+c)
+                elif c=="\\b":
+                    op.append("\\b")
+                elif c=="\\f":
+                    op.append("\\f")
+                else:
+                    # It isn't clear when \u sequences *must* be used.
+                    # Assuming not needed due to utf8 output which
+                    # corresponds to what rfc4627 implies.
+                    op.append(c)
+            op.append('"')
+            return "".join(op)
+        elif v is None:
+            return 'null'
+        elif isinstance(v, self._binary_type):
+            if sys.version_info<(3,0):
+                o=base64.encodestring(v)
+            else:
+                o=base64.encodebytes(v).decode("ascii")
+            if o[-1]=="\n":
+                o=o[:-1]
+            return '"'+o+'"'
+        else:
+            # number of some kind
+            return '%s' % (v,)       
+        
+
     def _fmt_python(self, v):
         "Format as python literal"
         if v is None:
@@ -545,6 +590,18 @@ OPTIONS include:
             return
         out="INSERT INTO "+self._fmt_sql_identifier(self._output_table)+" VALUES("+",".join([self._fmt_sql_value(l) for l in line])+");\n"
         self.write(self.stdout, out)
+
+    def output_json(self, header, line):
+        """
+        Each line as a JSON object with a trailing comma.  Blobs are
+        output as base64 encoded strings.  You should be using UTF8
+        output encoding.
+        """
+        if header:
+            self._output_json_cols=line
+            return
+        out=["%s: %s" % (self._fmt_json_value(k), self._fmt_json_value(line[i])) for i,k in enumerate(self._output_json_cols)]
+        self.write(self.stdout, "{ "+", ".join(out)+"},\n")
 
     def output_line(self, header, line):
         """
@@ -1037,6 +1094,13 @@ Enter SQL statements terminated with a ";"
                 comment("You had used the analyze command on these tables before.  Rerun for this new data.")
                 for n in analyze_needed:
                     self.write(self.stdout, "ANALYZE "+self._fmt_sql_identifier(n)+";\n")
+                blank()
+
+            # user version pragma
+            uv=self.db.cursor().execute("pragma user_version").fetchall()[0][0]
+            if uv:
+                comment("Your database may need this.  It is sometimes used to keep track of the schema version (eg Firefox does this).")
+                comment("pragma user_version=%d;" % (uv,))
                 blank()
 
             # Save it all

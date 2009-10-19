@@ -5265,7 +5265,7 @@ class APSW(unittest.TestCase):
         isempty(fh[2])
         self.assert_("3|4\n" in get(fh[1]))
         self.assert_('"one"|\t\n' in get(fh[1]))
-        # testnasty() is pointless with csv due to buggy module
+        # testnasty() - csv module is pretty much broken
         
         ###
         ### Output formats - html
@@ -5319,6 +5319,54 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[2])
         self.assert_(get(fh[1]).lower().startswith("insert into funkychicken values"))
+        testnasty()
+
+        ###
+        ### Output formats - json
+        ###
+        reset()
+        all="3,2.2,'string',null,x'0311'"
+        cmd(".mode json\n.header ON\n select "+all+";")
+        s.cmdloop()
+        isempty(fh[2])
+        v=get(fh[1]).strip()
+        v=v[:-1] # remove trailing comma
+        havejson=False
+        try:
+            import json
+            havejson=True
+        except ImportError:
+            try:
+                import simplejson as json
+                havejson=True
+            except ImportError:
+                pass
+        if havejson:
+            out=json.loads(v)
+            self.assertEqual(out,
+                             {
+                                 "3": 3,
+                                 "2.2": 2.2,
+                                 "'string'": "string",
+                                 "null": None,
+                                 "x'0311'": "AxE="
+                                 })
+        # a regular table
+        reset()
+        cmd("create table jsontest([int], [float], [string], [null], [blob]);insert into jsontest values("+all+");select * from jsontest;")
+        s.cmdloop()
+        isempty(fh[2])
+        v=get(fh[1]).strip()[:-1]
+        if havejson:
+            out=json.loads(v)
+            self.assertEqual(out,
+                             {
+                                 "int": 3,
+                                 "float": 2.2,
+                                 "string": "string",
+                                 "null": None,
+                                 "blob": "AxE="
+                                 })
         testnasty()
         
         ###
@@ -5686,6 +5734,15 @@ class APSW(unittest.TestCase):
         v=get(fh[1])
         for i in "sqlite_sequence", "'abc', 2":
             self.assert_(i in v.lower())
+        # user version
+        self.assert_("user_version" not in v)
+        reset()
+        cmd("pragma user_version=27;\n.dump")
+        s.cmdloop()
+        isempty(fh[2])
+        v=get(fh[1])
+        self.assert_("pragma user_version=27;" in v)
+        s.db.cursor().execute("pragma user_version=0")
         # some nasty stuff
         reset()
         cmd(u("create table nastydata(x,y); insert into nastydata values(null,'xxx\\u1234\\uabcd\\U00012345yyy\r\n\t\"this \\is nasty\u0001stuff!');"
