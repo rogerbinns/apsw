@@ -208,6 +208,7 @@ class fetch(Command):
                     zip.close()
                 else:
                     # if you get an exception here it is likely that you don't have the python zlib module
+                    import zlib
                     tar=tarfile.open("nonexistentname to keep old python happy", 'r', data)
                     configmember=None
                     for member in tar.getmembers():
@@ -278,6 +279,7 @@ class fetch(Command):
                 members=archive.namelist()
                 extractfile=archive.read
             else:
+                import zlib
                 archive=tarfile.open("nonexistentname to keep old python happy", 'r', data)
                 members=[a.name for a in archive.getmembers()]
                 extractfile=archive.extractfile
