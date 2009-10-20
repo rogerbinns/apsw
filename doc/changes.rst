@@ -23,6 +23,10 @@ next
    <http://code.google.com/p/apsw/issues/detail?id=83>`__ - exception
    if history file didn't exist
 
+ * You can right justify output in column mode by specifying negative
+   widths. (`Issue 84
+   <http://code.google.com/p/apsw/issues/detail?id=84>`__)
+
 
 
 3.6.19-r1

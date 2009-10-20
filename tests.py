@@ -5210,9 +5210,19 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[2])
         self.assert_("a"*6 not in get(fh[1]))
+        # right justification
+        reset()
+        cmd(".header off\n.width -3 -3\nselect 3,3;\n.width 3 3\nselect 3,3;")
+        s.cmdloop()
+        isempty(fh[2])
+        v=get(fh[1])
+        self.assert_(v.startswith("  3    3"))
+        v=v.split("\n")
+        self.assertNotEqual(v[0], v[1])
+        self.assertEqual(len(v[0]), len(v[1]))
         # explain mode doesn't truncate
         reset()
-        cmd("create table %s(x);create index %s_ on %s(x);\n.explain\nexplain select * from %s where x=7;\n" % (x,x,x,x))
+        cmd(".header on\ncreate table %s(x);create index %s_ on %s(x);\n.explain\nexplain select * from %s where x=7;\n" % (x,x,x,x))
         s.cmdloop()
         isempty(fh[2])
         self.assert_(x in get(fh[1]))
@@ -6225,7 +6235,7 @@ shell.write(shell.stdout, "hello world\\n")
             isempty(fh[1])
             return [int(x) for x in get(fh[2]).split()[1:]]
 
-        self.assertEqual([10,10,10], getw())
+        self.assertEqual([10,10,10,0], getw())
         # some errors
         for i in ".width", ".width foo", ".width 1 2 3 seven 3":
             reset()
@@ -6233,9 +6243,8 @@ shell.write(shell.stdout, "hello world\\n")
             s.cmdloop()
             isempty(fh[1])
             isnotempty(fh[2])
-            self.assertEqual([10,10,10], getw())
-        # various bizarre dealings with zero etc
-        for i,r in ("9 0 9", [9]), ("10 -3 10 -3", [10,-3,10,-3]), ("0", []):
+            self.assertEqual([10,10,10,0], getw())
+        for i,r in ("9 0 9", [9,0,9]), ("10 -3 10 -3", [10,-3,10,-3]), ("0", [0]):
             reset()
             cmd(".width "+i)
             s.cmdloop()

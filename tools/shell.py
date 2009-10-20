@@ -486,27 +486,29 @@ OPTIONS include:
         # reset for each query
         if header:
             def gw(n):
-                if n<len(self.widths) and self.widths[n]>0:
-                    return n
-                # if width is not present or <1 then autosize
+                if n<len(self.widths) and self.widths[n]!=0:
+                    return self.widths[n]
+                # if width is not present or 0 then autosize
                 text=self._fmt_text_col(line[n])
                 return max(len(text), 10)
                 
             widths=[gw(i) for i in range(len(line))]
-            self._actualwidths=widths
-                                        
+
+            if self.truncate:
+                self._actualwidths=["%"+("-%d.%ds", "%d.%ds")[w<0]%(abs(w), abs(w)) for w in widths]
+            else:
+                self._actualwidths=["%"+("-%ds", "%ds")[w<0]%(abs(w),) for w in widths]
+
             if self.header:
                 # output the headers
                 self.output_column(False, line)
-                self.output_column(False, ["-"*widths[i] for i in range(len(widths))])
+                self.output_column(False, ["-"*abs(widths[i]) for i in range(len(widths))])
 
             return
 
-        if self.truncate:
-            cols=["%-*.*s" % (self._actualwidths[i], self._actualwidths[i], self._fmt_text_col(line[i])) for i in range(len(line))]
-        else:
-            cols=["%-*s" % (self._actualwidths[i], self._fmt_text_col(line[i])) for i in range(len(line))]
-        self.write(self.stdout, " ".join(cols)+"\n")
+        cols=[self._actualwidths[i] % (self._fmt_text_col(line[i]),) for i in range(len(line))]
+        # sqlite shell uses two spaces between columns
+        self.write(self.stdout, "  ".join(cols)+"\n")
 
     def output_csv(self, header, line):
         """
@@ -1809,34 +1811,18 @@ Enter SQL statements terminated with a ";"
         """width NUM NUM ...: Set the column widths for "column" mode
 
         In "column" output mode, each column is a fixed width with values truncated to
-        fit.  The default column width is 10 characters which you can change
-        column by column with this command.
+        fit.  Specify new widths using this command.  Use a negative number
+        to right justify and zero for default column width.
         """
-        # Code is a bit crazy.  SQLite sets the widths as specified
-        # except a zero truncates the widths at that point.  If the
-        # new widths are less than old then old ones longer than new
-        # ones remain.
-        #
-        # sqlite> .width 1 2 3 0 4 5 6
-        #   width: 1 2 3 
-        # sqlite> .width 99
-        #   width: 99 2 3 
-        #
-        # This whole zero behaviour is probably because it doesn't
-        # check the numbers are actually valid - just uses atoi
         if len(cmd)==0:
             raise self.Error("You need to specify some widths!")
         w=[]
         for i in cmd:
             try:
-                n=int(i)
-                if n==0:
-                    self.widths=w
-                    return
-                w.append(n)
+                w.append(int(i))
             except:
                 raise self.Error("'%s' is not a valid number" % (i,))
-        self.widths=w+self.widths[len(w):]
+        self.widths=w
 
     def _terminal_width(self):
         """Works out the terminal width which is used for word wrapping
