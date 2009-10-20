@@ -44,10 +44,6 @@ way to build or all the :ref:`options available <building>`.
   <http://apsw.googlecode.com/files/apsw-3.6.19-r1.win32-py2.6.exe>`_
   (Windows Python 2.6)
 
-* `apsw-3.6.19-r1.win32-py3.0.exe
-  <http://apsw.googlecode.com/files/apsw-3.6.19-r1.win32-py3.0.exe>`_
-  (Windows Python 3.0)
-
 * `apsw-3.6.19-r1.win32-py3.1.exe
   <http://apsw.googlecode.com/files/apsw-3.6.19-r1.win32-py3.1.exe>`_
   (Windows Python 3.1)

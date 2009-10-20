@@ -27,6 +27,10 @@ next
    widths. (`Issue 84
    <http://code.google.com/p/apsw/issues/detail?id=84>`__)
 
+Support for Python 3.0 has been dropped as it has been `end of lifed
+<http://www.python.org/download/releases/3.0.1/>`__.  Use Python 3.1
+onwards.
+
 
 
 3.6.19-r1
