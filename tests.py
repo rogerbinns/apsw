@@ -2933,6 +2933,22 @@ class APSW(unittest.TestCase):
         finally:
             blobro.close()
 
+    def testTicket2158(self):
+        "Check we are not affected by SQLite ticket #2158"
+        # http://www.sqlite.org/cvstrac/tktview?tn=2158
+        def dummy(x,y):
+            if x<y: return -1
+            if x>y: return 1
+            return 0
+        self.db.createcollation("dummy", dummy)
+        cur=self.db.cursor()
+        cur.execute("create table foo(x)")
+        cur.executemany("insert into foo values(?)", randomintegers(20))
+        for row in cur.execute("select * from foo order by x collate dummy"):
+            pass
+        self.db.createcollation("dummy", None)
+        self.assertRaises(apsw.SQLError, cur.execute, "select * from foo order by x collate dummy")
+
     def testWriteUnraiseable(self):
         "Verify writeunraiseable replacement function"
         def unraise():
