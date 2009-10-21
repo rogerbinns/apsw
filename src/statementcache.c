@@ -178,12 +178,17 @@ statementcache_reprepare(StatementCache *sc, APSWStatement *statement)
   const char *tail;
   const char *buffer;
   Py_ssize_t buflen;
+  int usepreparev2;
 
+  usepreparev2=sqlite3_bind_parameter_count(statement->vdbestatement);
   buffer=APSWBuffer_AS_STRING(statement->utf8);
   buflen=APSWBuffer_GET_SIZE(statement->utf8);
   /* see statementcache_prepare */
   assert(buffer[buflen+1-1]==0);
-  PYSQLITE_SC_CALL(res=sqlite3_prepare(sc->db, buffer, buflen+1, &newvdbe, &tail));
+  PYSQLITE_SC_CALL(res=usepreparev2?
+		   sqlite3_prepare_v2(sc->db, buffer, buflen+1, &newvdbe, &tail):  /* PYSQLITE_SC_CALL */
+		   sqlite3_prepare(sc->db, buffer, buflen+1, &newvdbe, &tail)      /* PYSQLITE_SC_CALL */
+		   );
   if(res!=SQLITE_OK)
     goto error;
 
@@ -200,6 +205,8 @@ statementcache_reprepare(StatementCache *sc, APSWStatement *statement)
   return SQLITE_OK;
 
  error:
+  SET_EXC(res, sc->db);
+  AddTraceBackHere(__FILE__, __LINE__, "sqlite3_prepare", "{s: N}", "sql", convertutf8stringsize(buffer, buflen));
   /* we don't want to clobber the errmsg so pretend everything is ok */
   res2=res;
   res=SQLITE_OK;
@@ -211,7 +218,7 @@ statementcache_reprepare(StatementCache *sc, APSWStatement *statement)
 
 /* Internal prepare routine after doing utf8 conversion.  Returns a new reference. Must be reentrant */
 static APSWStatement*
-statementcache_prepare(StatementCache *sc, PyObject *query)
+statementcache_prepare(StatementCache *sc, PyObject *query, int usepreparev2)
 {
   APSWStatement *val=NULL;
   const char *buffer;
@@ -368,7 +375,9 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
      will always have had an extra zero on the end.  The assert is just to make
      sure */
   assert(buffer[buflen+1-1]==0);
-  PYSQLITE_SC_CALL(res=sqlite3_prepare(sc->db, buffer, buflen+1, &val->vdbestatement, &tail));
+  PYSQLITE_SC_CALL(res=(usepreparev2)?
+		   sqlite3_prepare_v2(sc->db, buffer, buflen+1, &val->vdbestatement, &tail):  /* PYSQLITE_SC_CALL */
+		   sqlite3_prepare(sc->db, buffer, buflen+1, &val->vdbestatement, &tail));    /* PYSQLITE_SC_CALL */
 
   /* Handle error.  We would have a Python error if vtable.FindFunction had an error */
   if(res!=SQLITE_OK || PyErr_Occurred())
@@ -566,7 +575,7 @@ statementcache_finalize(StatementCache *sc, APSWStatement *stmt, int reprepare_o
    new reference on one returned
 */
 static int
-statementcache_next(StatementCache *sc, APSWStatement **ppstmt)
+statementcache_next(StatementCache *sc, APSWStatement **ppstmt, int usepreparev2)
 {
   PyObject *next=(*ppstmt)->next;
   int res;
@@ -586,7 +595,7 @@ statementcache_next(StatementCache *sc, APSWStatement **ppstmt)
   if(next)
     {
       /* statementcache_prepare already sets exception */
-      *ppstmt=statementcache_prepare(sc, next);  /* INUSE_CALL not needed here */
+      *ppstmt=statementcache_prepare(sc, next, usepreparev2);  /* INUSE_CALL not needed here */
       res=(*ppstmt)?SQLITE_OK:SQLITE_ERROR;
     }
   else *ppstmt=NULL;

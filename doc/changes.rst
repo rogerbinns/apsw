@@ -31,7 +31,12 @@ Support for Python 3.0 has been dropped as it has been `end of lifed
 <http://www.python.org/download/releases/3.0.1/>`__.  Use Python 3.1
 onwards.
 
-
+Changes to how some statements are `prepared
+<http://www.sqlite.org/c3ref/prepare.html>`__ to allow the new RANGE
+and LIKE optimisations with bound variables introduced in SQLite
+3.6.20 to be used.  See `issue 85
+<http://code.google.com/p/apsw/issues/detail?id=85>`__ for the long
+and gory details.
 
 3.6.19-r1
 =========

@@ -820,13 +820,13 @@ APSWCursor_step(APSWCursor *self)
         {
           /* we are going again in executemany mode */
           assert(self->emiter);
-          INUSE_CALL(self->statement=statementcache_prepare(self->connection->stmtcache, self->emoriginalquery));
+          INUSE_CALL(self->statement=statementcache_prepare(self->connection->stmtcache, self->emoriginalquery, 1));
           res=(self->statement)?SQLITE_OK:SQLITE_ERROR;
         }
       else
         {
           /* next sql statement */
-          INUSE_CALL(res=statementcache_next(self->connection->stmtcache, &self->statement));
+          INUSE_CALL(res=statementcache_next(self->connection->stmtcache, &self->statement, !!self->bindings));
           SET_EXC(res, self->connection->db);
         }
 
@@ -966,7 +966,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
 
   assert(!self->statement);
   assert(!PyErr_Occurred());
-  INUSE_CALL(self->statement=statementcache_prepare(self->connection->stmtcache, query));
+  INUSE_CALL(self->statement=statementcache_prepare(self->connection->stmtcache, query, !!self->bindings));
   if (!self->statement)
     {
       AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_execute.sqlite3_prepare", "{s: O, s: O}", 
@@ -1086,10 +1086,10 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
   assert(!self->statement);
   assert(!PyErr_Occurred());
   assert(!self->statement);
-  INUSE_CALL(self->statement=statementcache_prepare(self->connection->stmtcache, query));
+  INUSE_CALL(self->statement=statementcache_prepare(self->connection->stmtcache, query, 1));
   if (!self->statement)
     {
-      AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_executemany.sqlite3_prepare_v2", "{s: O, s: O}", 
+      AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_executemany.sqlite3_prepare", "{s: O, s: O}", 
 		       "Connection", self->connection, 
 		       "statement", query);
       return NULL;
