@@ -2175,12 +2175,16 @@ Enter SQL statements terminated with a ";"
                         if row[col] not in other and not row[col].startswith("sqlite_"):
                             other.append(row[col])
                     if row[0]=="table":
-                        for table in cur.execute("pragma [%s].table_info([%s])" % (db, row[1],)).fetchall():
-                            if table[1] not in other:
-                                other.append(table[1])
-                            for item in table[2].split():
-                                if item not in other:
-                                    other.append(item)
+                        try:
+                            for table in cur.execute("pragma [%s].table_info([%s])" % (db, row[1],)).fetchall():
+                                if table[1] not in other:
+                                    other.append(table[1])
+                                for item in table[2].split():
+                                    if item not in other:
+                                        other.append(item)
+                        except apsw.SQLError:
+                            # See http://code.google.com/p/apsw/issues/detail?id=86
+                            pass
 
             self._completion_cache=[self._sqlite_keywords, self._sqlite_functions, self._sqlite_special_names, collations, databases, other]
             for i in range(len(self._completion_cache)):
