@@ -5912,6 +5912,25 @@ class APSW(unittest.TestCase):
         self.assert_(us in get(fh[1]))
 
         ###
+        ### Command - exceptions
+        ###
+        reset()
+        cmd("syntax error;")
+        s.cmdloop()
+        isempty(fh[1])
+        isnotempty(fh[2])
+        self.assert_(len(get(fh[2]).split("\n"))<5)
+        reset()
+        cmd(".exceptions on\nsyntax error;")
+        s.cmdloop()
+        isempty(fh[1])
+        isnotempty(fh[2])
+        self.assert_(len(get(fh[2]).split("\n"))>10)
+        self.assert_("sql = " in get(fh[2]))
+        # deliberately leave exceptions on
+
+
+        ###
         ### Command - exit & quit
         ###
         for i in ".exit", ".quit":
@@ -6150,7 +6169,7 @@ shell.write(shell.stdout, "hello world\\n")
         ### Command - show
         ###
         # set all settings to known values
-        resetcmd=".echo off\n.explain off\n.headers off\n.mode list\n.nullvalue ''\n.output stdout\n.separator |\n.width 1 2 3"
+        resetcmd=".echo off\n.explain off\n.headers off\n.mode list\n.nullvalue ''\n.output stdout\n.separator |\n.width 1 2 3\n.exceptions off"
         reset()
         cmd(resetcmd)
         s.cmdloop()
@@ -6162,7 +6181,7 @@ shell.write(shell.stdout, "hello world\\n")
         isempty(fh[1])
         isnotempty(fh[2])
         baseline=get(fh[2])
-        for i in ".echo on", ".explain", ".headers on", ".mode column", ".nullvalue T",".separator %", ".width 8 9 1":
+        for i in ".echo on", ".explain", ".headers on", ".mode column", ".nullvalue T",".separator %", ".width 8 9 1", ".exceptions on":
             reset()
             cmd(resetcmd)
             s.cmdloop()

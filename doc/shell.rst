@@ -34,6 +34,8 @@ In addition to executing SQL, these are the commands available:
                               before execution (default OFF)
   .encoding ENCODING          Set the encoding used for new files opened via
                               .output and imports
+  .exceptions ON|OFF          If ON then detailed tracebacks are shown on
+                              exceptions (default OFF)
   .exit                       Exit this program
   .explain ON|OFF             Set output mode suitable for explain (default OFF)
   .header(s) ON|OFF           Display the column names in output (default OFF)

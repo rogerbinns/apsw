@@ -43,6 +43,10 @@ and gory details.
    (`Issue 86
    <http://code.google.com/p/apsw/issues/detail?id=86>`__)
 
+ * You can now get detailed tracebacks including local variables using
+   the ".exception ON" command.  This is useful when developing
+   virtual tables and similar functionality.
+
 3.6.19-r1
 =========
 
