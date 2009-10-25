@@ -84,6 +84,7 @@ class Shell:
         """Create instance, set defaults and do argument processing."""
         # The parameter doc has to be in main class doc as sphinx
         # ignores any described here
+        self.exceptions=False
         self.history_file="~/.sqlite_history"
         self.db=None
         self.dbfilename=None
@@ -708,7 +709,7 @@ Enter SQL statements terminated with a ";"
     def handle_exception(self):
         """Handles the current exception, printing a message to stderr as appropriate.
         It will reraise the exception if necessary (eg if bail is true)"""
-        eval=sys.exc_info()[1] # py2&3 compatible way of doing this
+        eclass,eval,etb=sys.exc_info() # py2&3 compatible way of doing this
         if isinstance(eval, SystemExit):
             eval._handle_exception_saw_this=True
             raise
@@ -731,6 +732,26 @@ Enter SQL statements terminated with a ";"
                 self.write(self.stderr, pref+self._input_descriptions[i]+"\n")
             
         self.write(self.stderr, text)
+        if self.exceptions:
+            stack=[]
+            while etb:
+                stack.append(etb.tb_frame)
+                etb = etb.tb_next
+
+            for frame in stack:
+                self.write(self.stderr, "\nFrame %s in %s at line %d\n" %
+                           (frame.f_code.co_name, frame.f_code.co_filename,
+                            frame.f_lineno))
+                vars=list(frame.f_locals.items())
+                vars.sort()
+                for k,v in vars:
+                    try:
+                        v=repr(v)[:80]
+                    except:
+                        v="<Unable to convert to string>"
+                    self.write(self.stderr, "%10s = %s\n" % (k,v))
+            self.write(self.stderr, "\n%s: %s\n" % (eclass, repr(eval)))
+            
         eval._handle_exception_saw_this=True
         if self.bail:
             raise
@@ -1159,6 +1180,19 @@ Enter SQL statements terminated with a ";"
         except LookupError:
             raise self.Error("No known encoding '%s'" % (cmd[0],))
         self.encoding=cmd[0]
+
+    def command_exceptions(self, cmd):
+        """exceptions ON|OFF: If ON then detailed tracebacks are shown on exceptions (default OFF)
+
+        Normally when an exception occurs the error string only is
+        displayed.  However it is sometimes useful to get a full
+        traceback.  An example would be when you are developing
+        virtual tables and using the shell to exercise them.  In
+        addition to displaying each stack frame, the local variables
+        within each frame are also displayed.
+        """
+        self.exceptions=self._boolean_command("exceptions", cmd)
+
 
     def command_exit(self, cmd):
         """exit:Exit this program"""
@@ -1687,7 +1721,7 @@ Enter SQL statements terminated with a ";"
             raise self.Error("separator takes exactly one parameter")
         self.separator=self.fixup_backslashes(cmd[0])
 
-    _shows=("echo", "explain", "headers", "mode", "nullvalue", "output", "separator", "width")
+    _shows=("echo", "explain", "headers", "mode", "nullvalue", "output", "separator", "width", "exceptions")
 
     def command_show(self, cmd):
         """show: Show the current values for various settings."""
@@ -1706,7 +1740,7 @@ Enter SQL statements terminated with a ";"
             if what and i!=what:
                 continue
             # boolean settings
-            if i in ("echo", "headers"):
+            if i in ("echo", "headers", "exceptions"):
                 if i=="headers": i="header"
                 v="off"
                 if getattr(self, i):
@@ -2175,12 +2209,16 @@ Enter SQL statements terminated with a ";"
                         if row[col] not in other and not row[col].startswith("sqlite_"):
                             other.append(row[col])
                     if row[0]=="table":
-                        for table in cur.execute("pragma [%s].table_info([%s])" % (db, row[1],)).fetchall():
-                            if table[1] not in other:
-                                other.append(table[1])
-                            for item in table[2].split():
-                                if item not in other:
-                                    other.append(item)
+                        try:
+                            for table in cur.execute("pragma [%s].table_info([%s])" % (db, row[1],)).fetchall():
+                                if table[1] not in other:
+                                    other.append(table[1])
+                                for item in table[2].split():
+                                    if item not in other:
+                                        other.append(item)
+                        except apsw.SQLError:
+                            # See http://code.google.com/p/apsw/issues/detail?id=86
+                            pass
 
             self._completion_cache=[self._sqlite_keywords, self._sqlite_functions, self._sqlite_special_names, collations, databases, other]
             for i in range(len(self._completion_cache)):
