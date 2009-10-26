@@ -233,6 +233,10 @@ def deletefile(name):
 # main test class/code
 class APSW(unittest.TestCase):
 
+    if sys.version_info<(2,4):
+        def assertTrue(self, condition):
+            self.assert_(condition)
+
 
     connection_nargs={ # number of args for function.  those not listed take zero
         'createaggregatefunction': 2,
@@ -294,7 +298,7 @@ class APSW(unittest.TestCase):
         self.deltempfiles()
 
     def assertTableExists(self, tablename):
-        self.failUnlessEqual(next(self.db.cursor().execute("select count(*) from ["+tablename+"]"))[0], 0)
+        self.assertEqual(next(self.db.cursor().execute("select count(*) from ["+tablename+"]"))[0], 0)
 
     def assertTableNotExists(self, tablename):
         # you get SQLError if the table doesn't exist!
@@ -414,12 +418,12 @@ class APSW(unittest.TestCase):
 
         for str,bindings in vals:
             c.execute("insert into foo values"+str, bindings)
-            self.failUnlessEqual(next(c.execute("select * from foo")), (1,2,3))
+            self.assertEqual(next(c.execute("select * from foo")), (1,2,3))
             c.execute("delete from foo")
 
         # currently missing dict keys come out as null
         c.execute("insert into foo values(:a,:b,$c)", {'a': 1, 'c':3}) # 'b' deliberately missing
-        self.failUnlessEqual((1,None,3), next(c.execute("select * from foo")))
+        self.assertEqual((1,None,3), next(c.execute("select * from foo")))
         c.execute("delete from foo")
 
         # these ones should cause errors
@@ -442,12 +446,12 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.BindingsError, c.execute, "insert into foo values(?,?,?); insert into foo values(?,?,?)",
                           (101,100,101,1000,103,104,105)) # too many
         # check the relevant statements did or didn't execute as appropriate
-        self.failUnlessEqual(next(self.db.cursor().execute("select count(*) from foo where x=99"))[0], 1)
-        self.failUnlessEqual(next(self.db.cursor().execute("select count(*) from foo where x=102"))[0], 1)
-        self.failUnlessEqual(next(self.db.cursor().execute("select count(*) from foo where x=100"))[0], 1)
-        self.failUnlessEqual(next(self.db.cursor().execute("select count(*) from foo where x=1000"))[0], 0)
-        self.failUnlessEqual(next(self.db.cursor().execute("select count(*) from foo where x=101"))[0], 1)
-        self.failUnlessEqual(next(self.db.cursor().execute("select count(*) from foo where x=105"))[0], 0)
+        self.assertEqual(next(self.db.cursor().execute("select count(*) from foo where x=99"))[0], 1)
+        self.assertEqual(next(self.db.cursor().execute("select count(*) from foo where x=102"))[0], 1)
+        self.assertEqual(next(self.db.cursor().execute("select count(*) from foo where x=100"))[0], 1)
+        self.assertEqual(next(self.db.cursor().execute("select count(*) from foo where x=1000"))[0], 0)
+        self.assertEqual(next(self.db.cursor().execute("select count(*) from foo where x=101"))[0], 1)
+        self.assertEqual(next(self.db.cursor().execute("select count(*) from foo where x=105"))[0], 0)
 
         # check there are some bindings!
         self.assertRaises(apsw.BindingsError, c.execute, "create table bar(x,y,z);insert into bar values(?,?,?)")
@@ -456,7 +460,7 @@ class APSW(unittest.TestCase):
         vals=( (1,2,3), (4,5,6), (7,8,9) )
         c.executemany("insert into foo values(?,?,?);", vals)
         for x,y,z in vals:
-            self.failUnlessEqual(next(c.execute("select * from foo where x=?",(x,))), (x,y,z))
+            self.assertEqual(next(c.execute("select * from foo where x=?",(x,))), (x,y,z))
 
         # with an iterator
         def myvals():
@@ -485,7 +489,7 @@ class APSW(unittest.TestCase):
                 yield {'a': i, 'b': i*10, 'c': i*100}
             1/0
         self.assertRaises(ZeroDivisionError, c.executemany, "insert into foo values($a,:b,$c)", myvals())
-        self.failUnlessEqual(next(c.execute("select count(*) from foo"))[0], 2)
+        self.assertEqual(next(c.execute("select count(*) from foo"))[0], 2)
         c.execute("delete from foo")
 
         # return bad type from iterator after a while
@@ -495,7 +499,7 @@ class APSW(unittest.TestCase):
             yield self
 
         self.assertRaises(TypeError, c.executemany, "insert into foo values($a,:b,$c)", myvals())
-        self.failUnlessEqual(next(c.execute("select count(*) from foo"))[0], 2)
+        self.assertEqual(next(c.execute("select count(*) from foo"))[0], 2)
         c.execute("delete from foo")
 
         # some errors in executemany
@@ -513,7 +517,7 @@ class APSW(unittest.TestCase):
             c.executemany("insert into xxset values(?,?,?)", (set((4,5,6)),))
             result=[(1,2,3), (4,5,6)]
             for i,v in enumerate(c.execute("select * from xxset order by x")):
-                self.failUnlessEqual(v, result[i])
+                self.assertEqual(v, result[i])
 
     def testCursor(self):
         "Check functionality of the cursor"
@@ -530,7 +534,7 @@ class APSW(unittest.TestCase):
         c.execute(" ;\n\t\r;;")
 
         # unicode
-        self.failUnlessEqual(3, next(c.execute(u("select 3")))[0])
+        self.assertEqual(3, next(c.execute(u("select 3")))[0])
         if not py3:
             self.assertRaises(UnicodeDecodeError, c.execute, "\x99\xaa\xbb\xcc")
 
@@ -540,16 +544,16 @@ class APSW(unittest.TestCase):
         entry=-1
         for entry,values in enumerate(c.execute("select * from foo")):
             pass
-        self.failUnlessEqual(entry,-1, "No rows should have been returned")
+        self.assertEqual(entry,-1, "No rows should have been returned")
         # add ten rows
         for i in range(10):
             c.execute("insert into foo values(1,2,3)")
         for entry,values in enumerate(c.execute("select * from foo")):
             # check we get back out what we put in
-            self.failUnlessEqual(values, (1,2,3))
-        self.failUnlessEqual(entry, 9, "There should have been ten rows")
+            self.assertEqual(values, (1,2,3))
+        self.assertEqual(entry, 9, "There should have been ten rows")
         # does getconnection return the right object
-        self.failUnless(c.getconnection() is self.db)
+        self.assertTrue(c.getconnection() is self.db)
         # check getdescription - note column with space in name and [] syntax to quote it
         cols=(
             ("x a space", "integer"),
@@ -562,7 +566,7 @@ class APSW(unittest.TestCase):
         c.execute("drop table foo; create table foo (%s)" % (", ".join(["[%s] %s" % (n,t) for n,t in cols]),))
         c.execute("insert into foo([x a space]) values(1)")
         for row in c.execute("select * from foo"):
-            self.failUnlessEqual(cols, c.getdescription())
+            self.assertEqual(cols, c.getdescription())
         # execution is complete ...
         self.assertRaises(apsw.ExecutionCompleteError, c.getdescription)
         self.assertRaises(StopIteration, lambda xx=0: next(c))
@@ -613,7 +617,7 @@ class APSW(unittest.TestCase):
               b("".join(["\\x%02x" % (x,) for x in range(256)])), # string
               b("".join(["\\x%02x" % (x,) for x in range(256)])*20000),  # non-trivial size
               None,  # our good friend NULL/None
-              1.1,  # floating point can't be compared exactly - failUnlessAlmostEqual is used to check
+              1.1,  # floating point can't be compared exactly - assertAlmostEqual is used to check
               10.2, # see Appendix B in the Python Tutorial
               1.3,
               1.45897589347E97,
@@ -635,12 +639,12 @@ class APSW(unittest.TestCase):
         for row,v,fv in c.execute("select row,x,snap(x) from foo"):
             count+=1
             if type(vals[row]) is float:
-                self.failUnlessAlmostEqual(vals[row], v)
-                self.failUnlessAlmostEqual(vals[row], fv)
+                self.assertAlmostEqual(vals[row], v)
+                self.assertAlmostEqual(vals[row], fv)
             else:
-                self.failUnlessEqual(vals[row], v)
-                self.failUnlessEqual(vals[row], fv)
-        self.failUnlessEqual(count, len(vals))
+                self.assertEqual(vals[row], v)
+                self.assertEqual(vals[row], fv)
+        self.assertEqual(count, len(vals))
 
         # check some out of bounds conditions
         # integer greater than signed 64 quantity (SQLite only supports up to that)
@@ -657,7 +661,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, c.execute, "insert into foo values(9999,?)", (dir,))  # function
 
         # check nothing got inserted
-        self.failUnlessEqual(0, next(c.execute("select count(*) from foo where row=9999"))[0])
+        self.assertEqual(0, next(c.execute("select count(*) from foo where row=9999"))[0])
 
         # playing with default encoding and non-ascii strings - py2 only
         if py3: return
@@ -672,10 +676,10 @@ class APSW(unittest.TestCase):
                 self.db.createscalarfunction("encoding", encoding)
                 sys.setdefaultencoding("utf8")
                 for row in c.execute("select encoding(3)"):
-                    self.failUnlessEqual(v, row[0])
+                    self.assertEqual(v, row[0])
                 c.execute("insert into foo values(1234,?)", (v.encode("utf8"),))
                 for row in c.execute("select x from foo where rowid="+str(self.db.last_insert_rowid())):
-                    self.failUnlessEqual(v, row[0])
+                    self.assertEqual(v, row[0])
         finally:
             sys.setdefaultencoding(enc)
 
@@ -738,7 +742,7 @@ class APSW(unittest.TestCase):
             cmds.append( (cmd, bindings) )
             return True
         c.execute("create table one(x,y,z)")
-        self.failUnlessEqual(len(cmds),0)
+        self.assertEqual(len(cmds),0)
         self.assertRaises(TypeError, c.setexectrace, 12) # must be callable
         self.assertRaises(TypeError, self.db.setexectrace, 12) # must be callable
         c.setexectrace(tracefunc)
@@ -748,13 +752,13 @@ class APSW(unittest.TestCase):
             ]
         for cmd,values in statements:
             c.execute(cmd, values)
-        self.failUnlessEqual(cmds, statements)
-        self.failUnless(c.getexectrace() is tracefunc)
+        self.assertEqual(cmds, statements)
+        self.assertTrue(c.getexectrace() is tracefunc)
         c.setexectrace(None)
-        self.failUnless(c.getexectrace() is None)
+        self.assertTrue(c.getexectrace() is None)
         c.execute("create table bar(x,y,z)")
         # cmds should be unchanged
-        self.failUnlessEqual(cmds, statements)
+        self.assertEqual(cmds, statements)
         # tracefunc can abort execution
         count=next(c.execute("select count(*) from one"))[0]
         def tracefunc(cursor, cmd, bindings):
@@ -763,14 +767,14 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.ExecTraceAbort, c.execute, "insert into one values(1,2,3)")
         # table should not have been modified
         c.setexectrace(None)
-        self.failUnlessEqual(count, next(c.execute("select count(*) from one"))[0])
+        self.assertEqual(count, next(c.execute("select count(*) from one"))[0])
         # error in tracefunc
         def tracefunc(cursor, cmd, bindings):
             1/0
         c.setexectrace(tracefunc)
         self.assertRaises(ZeroDivisionError, c.execute, "insert into one values(1,2,3)")
         c.setexectrace(None)
-        self.failUnlessEqual(count, next(c.execute("select count(*) from one"))[0])
+        self.assertEqual(count, next(c.execute("select count(*) from one"))[0])
         # test across executemany and multiple statments
         counter=[0]
         def tracefunc(cursor, cmd, bindings):
@@ -779,10 +783,10 @@ class APSW(unittest.TestCase):
         c.setexectrace(tracefunc)
         c.execute("create table two(x);insert into two values(1); insert into two values(2); insert into two values(?); insert into two values(?)",
                   (3, 4))
-        self.failUnlessEqual(counter[0], 5)
+        self.assertEqual(counter[0], 5)
         counter[0]=0
         c.executemany("insert into two values(?); insert into two values(?)", [[n,n+1] for n in range(5)])
-        self.failUnlessEqual(counter[0], 10)
+        self.assertEqual(counter[0], 10)
         # error in func but only after a while
         c.execute("delete from two")
         counter[0]=0
@@ -795,10 +799,10 @@ class APSW(unittest.TestCase):
         self.assertRaises(ZeroDivisionError, c.execute,
                           "insert into two values(1); insert into two values(2); insert into two values(?); insert into two values(?)",
                           (3, 4))
-        self.failUnlessEqual(counter[0], 4)
+        self.assertEqual(counter[0], 4)
         c.setexectrace(None)
         # check the first statements got executed
-        self.failUnlessEqual(3, next(c.execute("select max(x) from two"))[0])
+        self.assertEqual(3, next(c.execute("select max(x) from two"))[0])
         # executemany
         def tracefunc(cursor, cmd, bindings):
             1/0
@@ -853,20 +857,20 @@ class APSW(unittest.TestCase):
         def tracefunc(cursor, row):
             return tuple([7 for i in row])
         # should get original row back
-        self.failUnlessEqual(next(c.execute("select * from foo")), vals)
+        self.assertEqual(next(c.execute("select * from foo")), vals)
         self.assertRaises(TypeError, c.setrowtrace, 12) # must be callable
         c.setrowtrace(tracefunc)
-        self.failUnless(c.getrowtrace() is tracefunc)
+        self.assertTrue(c.getrowtrace() is tracefunc)
         # all values replaced with 7
-        self.failUnlessEqual(next(c.execute("select * from foo")), tuple([7]*len(vals)))
+        self.assertEqual(next(c.execute("select * from foo")), tuple([7]*len(vals)))
         def tracefunc(cursor, row):
             return (7,)
         # a single 7
         c.setrowtrace(tracefunc)
-        self.failUnlessEqual(next(c.execute("select * from foo")), (7,))
+        self.assertEqual(next(c.execute("select * from foo")), (7,))
         # no alteration again
         c.setrowtrace(None)
-        self.failUnlessEqual(next(c.execute("select * from foo")), vals)
+        self.assertEqual(next(c.execute("select * from foo")), vals)
         # error in function
         def tracefunc(*result):
             1/0
@@ -878,7 +882,7 @@ class APSW(unittest.TestCase):
         except ZeroDivisionError:
             pass
         c.setrowtrace(None)
-        self.failUnlessEqual(next(c.execute("select * from foo")), vals)
+        self.assertEqual(next(c.execute("select * from foo")), vals)
         # returning null
         c.execute("create table bar(x)")
         c.executemany("insert into bar values(?)", [[x] for x in range(10)])
@@ -893,7 +897,7 @@ class APSW(unittest.TestCase):
         for row in c.execute("select * from bar"):
             countertoo+=1
         c.setrowtrace(None)
-        self.failUnlessEqual(countertoo, 5) # half the rows should be skipped
+        self.assertEqual(countertoo, 5) # half the rows should be skipped
         # connection based
         self.assertRaises(TypeError, self.db.setrowtrace, 12)
         self.assertEqual( self.db.getrowtrace(), None)
@@ -939,7 +943,7 @@ class APSW(unittest.TestCase):
         for i in range(10):
             c.execute("insert into foo values(?,?,?)", (i,i,i))
         for i in range(10):
-            self.failUnlessEqual( (7,), next(c.execute("select seven(x,y,z) from foo where x=?", (i,))))
+            self.assertEqual( (7,), next(c.execute("select seven(x,y,z) from foo where x=?", (i,))))
         # clear func
         self.assertRaises(apsw.BusyError, self.db.createscalarfunction,"seven", None) # active select above so no funcs can be changed
         for row in c.execute("select null"): pass # no active sql now
@@ -1026,7 +1030,7 @@ class APSW(unittest.TestCase):
             c.execute("insert into foo values(?,?,?)", v)
 
         v=next(c.execute("select longest(x,y,z) from foo"))[0]
-        self.failUnlessEqual(v, vals[0][2])
+        self.assertEqual(v, vals[0][2])
 
         # SQLite doesn't allow step functions to return an error, so we have to defer to the final
         def badfactory():
@@ -1148,7 +1152,7 @@ class APSW(unittest.TestCase):
         valsrev=valsrev[1:]+valsrev[:1] # except one out of order
         c.executemany("insert into foo values(?)", [(x,) for x in valsrev])
         for i,row in enumerate(c.execute("select x from foo order by x collate strnum")):
-            self.failUnlessEqual(vals[i], row[0])
+            self.assertEqual(vals[i], row[0])
 
         # collation function with an error
         def collerror(*args):
@@ -1182,8 +1186,8 @@ class APSW(unittest.TestCase):
         def cn1(): pass
         def cn2(x, y): 1/0
         def cn3(x, y):
-            self.assert_(x is self.db)
-            self.failUnlessEqual(y, "strnum")
+            self.assertTrue(x is self.db)
+            self.assertEqual(y, "strnum")
             self.db.createcollation("strnum", strnumcollate)
 
         self.db.collationneeded(cn1)
@@ -1236,9 +1240,9 @@ class APSW(unittest.TestCase):
         self.assertRaises(ZeroDivisionError, c.execute, "update foo set x=-10")
         self.db.setprogresshandler(None) # clear ph so next line runs
         # none should have taken
-        self.failUnlessEqual(0, next(c.execute("select count(*) from foo where x=-10"))[0])
+        self.assertEqual(0, next(c.execute("select count(*) from foo where x=-10"))[0])
         # and previous ph should not have been called
-        self.failUnlessEqual(saved, phcalledcount[0])
+        self.assertEqual(saved, phcalledcount[0])
         def ph():
             return BadIsTrue()
         self.db.setprogresshandler(ph, 1)
@@ -1252,12 +1256,12 @@ class APSW(unittest.TestCase):
             c.execute("insert into foo values(?)", (i+1000,))
         c.execute("commit")
         c.execute("update foo set x=0 where x>=1000")
-        self.failUnlessEqual(100, self.db.changes())
+        self.assertEqual(100, self.db.changes())
         c.execute("begin")
         for i in range(100):
             c.execute("insert into foo values(?)", (i+1000,))
         c.execute("commit")
-        self.failUnlessEqual(300, self.db.totalchanges())
+        self.assertEqual(300, self.db.totalchanges())
 
     def testLastInsertRowId(self):
         "Check last insert row id"
@@ -1265,23 +1269,23 @@ class APSW(unittest.TestCase):
         c.execute("create table foo (x integer primary key)")
         for i in range(10):
             c.execute("insert into foo values(?)", (i,))
-            self.failUnlessEqual(i, self.db.last_insert_rowid())
+            self.assertEqual(i, self.db.last_insert_rowid())
         # get a 64 bit value
         v=2**40
         c.execute("insert into foo values(?)", (v,))
-        self.failUnlessEqual(v, self.db.last_insert_rowid())
+        self.assertEqual(v, self.db.last_insert_rowid())
 
     def testComplete(self):
         "Completeness of SQL statement checking"
         # the actual underlying routine just checks that there is a semi-colon
         # at the end, not inside any quotes etc
-        self.failUnlessEqual(False, apsw.complete("select * from"))
-        self.failUnlessEqual(False, apsw.complete("select * from \";\""))
-        self.failUnlessEqual(False, apsw.complete("select * from \";"))
-        self.failUnlessEqual(True, apsw.complete("select * from foo; select *;"))
-        self.failUnlessEqual(False, apsw.complete("select * from foo where x=1"))
-        self.failUnlessEqual(True, apsw.complete("select * from foo;"))
-        self.failUnlessEqual(True, apsw.complete(u(r"select '\u9494\ua7a7';")))
+        self.assertEqual(False, apsw.complete("select * from"))
+        self.assertEqual(False, apsw.complete("select * from \";\""))
+        self.assertEqual(False, apsw.complete("select * from \";"))
+        self.assertEqual(True, apsw.complete("select * from foo; select *;"))
+        self.assertEqual(False, apsw.complete("select * from foo where x=1"))
+        self.assertEqual(True, apsw.complete("select * from foo;"))
+        self.assertEqual(True, apsw.complete(u(r"select '\u9494\ua7a7';")))
         if not py3:
             self.assertRaises(UnicodeDecodeError, apsw.complete, "select '\x94\xa7';")
         self.assertRaises(TypeError, apsw.complete, 12) # wrong type
@@ -1333,7 +1337,7 @@ class APSW(unittest.TestCase):
                 self.fail("Transaction wasn't exclusive")
         except apsw.BusyError:
             pass
-        self.failUnlessEqual(bhcalled[0], 4)
+        self.assertEqual(bhcalled[0], 4)
 
         # Close and reopen again
         del c
@@ -1363,7 +1367,7 @@ class APSW(unittest.TestCase):
         # going backwards or not going forwards consistently.
         if took+1<TIMEOUT:
             write("Timeout was %d seconds but only %f seconds elapsed!" % (TIMEOUT, took))
-            self.failUnless(took>=TIMEOUT)
+            self.assertTrue(took>=TIMEOUT)
 
         # check clearing of handler
         c2.execute("rollback")
@@ -1375,7 +1379,7 @@ class APSW(unittest.TestCase):
         except apsw.BusyError:
             pass
         after=time.time()
-        self.failUnless(after-b4<TIMEOUT)
+        self.assertTrue(after-b4<TIMEOUT)
 
         # Close and reopen again
         del c
@@ -1561,13 +1565,13 @@ class APSW(unittest.TestCase):
         c.execute("drop index foo_x")
         self.db.setprofile(profile)
         for val2 in c.execute("select max(x) from foo"): pass
-        self.failUnlessEqual(val1, val2)
-        self.failUnless(len(profileinfo)>=2) # see SQLite ticket 2157
-        self.failUnlessEqual(profileinfo[0][0], profileinfo[-1][0])
-        self.failUnlessEqual("select max(x) from foo", profileinfo[0][0])
-        self.failUnlessEqual("select max(x) from foo", profileinfo[-1][0])
+        self.assertEqual(val1, val2)
+        self.assertTrue(len(profileinfo)>=2) # see SQLite ticket 2157
+        self.assertEqual(profileinfo[0][0], profileinfo[-1][0])
+        self.assertEqual("select max(x) from foo", profileinfo[0][0])
+        self.assertEqual("select max(x) from foo", profileinfo[-1][0])
         # the query using the index should take way less time
-        self.failUnless(profileinfo[0][1]<profileinfo[-1][1])
+        self.assertTrue(profileinfo[0][1]<profileinfo[-1][1])
         def profile(*args):
             1/0
         self.db.setprofile(profile)
@@ -1580,7 +1584,7 @@ class APSW(unittest.TestCase):
         self.db.setprofile(profile)
         self.db.setupdatehook(uh)
         self.assertRaises(ZeroDivisionError, c.execute, "insert into foo values(3)")
-        self.failUnlessEqual(wasrun[0], False)
+        self.assertEqual(wasrun[0], False)
         self.db.setprofile(None)
         self.db.setupdatehook(None)
 
@@ -1659,16 +1663,16 @@ class APSW(unittest.TestCase):
         count=0
         for row,v,fv in c.execute("select row,str,snap(str) from foo"):
             count+=1
-            self.failUnlessEqual(vals[row], v)
-            self.failUnlessEqual(vals[row], fv)
-        self.failUnlessEqual(count, len(vals))
+            self.assertEqual(vals[row], v)
+            self.assertEqual(vals[row], fv)
+        self.assertEqual(count, len(vals))
 
         # check execute
         for v in vals:
-            self.failUnlessEqual(v, next(c.execute("select ?", (v,)))[0])
+            self.assertEqual(v, next(c.execute("select ?", (v,)))[0])
             # nulls not allowed in main query string, so lets check the other bits (unicode etc)
             v2=v.replace("\0", " zero ")
-            self.failUnlessEqual(v2, next(c.execute("select '%s'" % (v2,)))[0])
+            self.assertEqual(v2, next(c.execute("select '%s'" % (v2,)))[0])
 
         # ::TODO:: check collations
 
@@ -1815,13 +1819,13 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, self.db.loadextension, "foo", "bar", 12)
         self.db.loadextension(LOADEXTENSIONFILENAME)
         c=self.db.cursor()
-        self.failUnlessEqual(1, next(c.execute("select half(2)"))[0])
+        self.assertEqual(1, next(c.execute("select half(2)"))[0])
         # second entry point hasn't been called yet
         self.assertRaises(apsw.SQLError, c.execute, "select doubleup(2)")
         # load using other entry point
         self.assertRaises(apsw.ExtensionLoadingError, self.db.loadextension, LOADEXTENSIONFILENAME, "doesntexist")
         self.db.loadextension(LOADEXTENSIONFILENAME, "alternate_sqlite3_extension_init")
-        self.failUnlessEqual(4, next(c.execute("select doubleup(2)"))[0])
+        self.assertEqual(4, next(c.execute("select doubleup(2)"))[0])
 
 
     def testMakeSqliteMsgFromException(self):
@@ -1853,16 +1857,16 @@ class APSW(unittest.TestCase):
                 klass,value,tb=sys.exc_info()
             # check types and values
             if i=="3":
-                self.failUnlessEqual(klass, ValueError)
+                self.assertEqual(klass, ValueError)
                 continue
-            self.failUnlessEqual(klass, apsw.IOError)
-            self.assert_(isinstance(value, apsw.IOError))
+            self.assertEqual(klass, apsw.IOError)
+            self.assertTrue(isinstance(value, apsw.IOError))
             # python 2.3 totally messes up on long<->int and signed conversions causing the test to fail
             # but the code is fine - so just ignore rest of test for py2.3
             if sys.version_info<(2,4):
                 return
 
-            self.failUnlessEqual(value.extendedresult& ((long(0xffff)<<16)|long(0xffff)), apsw.SQLITE_IOERR_ACCESS)
+            self.assertEqual(value.extendedresult& ((long(0xffff)<<16)|long(0xffff)), apsw.SQLITE_IOERR_ACCESS)
 
     def testVtables(self):
         "Test virtual table functionality"
@@ -2389,7 +2393,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(OverflowError, cur.execute, sql)
         VTable.UpdateInsertRow=VTable.UpdateInsertRow7
         cur.execute(sql)
-        self.failUnlessEqual(self.db.last_insert_rowid(), 9223372036854775807)
+        self.assertEqual(self.db.last_insert_rowid(), 9223372036854775807)
         VTable.UpdateInsertRow=VTable.UpdateInsertRow8
         cur.execute("insert into foo (rowid,name, description) values(-12,'gunk', 'foo')")
 
@@ -2584,7 +2588,7 @@ class APSW(unittest.TestCase):
             if file[colnum]>bigmanual[0]:
                 bigmanual=file[colnum], file[1], file[2]
 
-        self.failUnlessEqual(bigsql, bigmanual)
+        self.assertEqual(bigsql, bigmanual)
 
         # Find the oldest file (SQL)
         for oldestsql in cur.execute("select st_ctime,name,directory from files order by st_ctime limit 1"):
@@ -2596,7 +2600,7 @@ class APSW(unittest.TestCase):
             if file[colnum]<oldestmanual[0]:
                 oldestmanual=file[colnum], file[1], file[2]
 
-        self.failUnlessEqual( oldestmanual, oldestsql)
+        self.assertEqual( oldestmanual, oldestsql)
 
 
     def testClosingChecks(self):
@@ -2629,7 +2633,7 @@ class APSW(unittest.TestCase):
                     self.fail("connection method "+str(func)+" didn't notice that the connection is closed")
             except apsw.ConnectionClosedError:
                 pass
-        self.assert_(tested>len(nargs))
+        self.assertTrue(tested>len(nargs))
 
         # do the same thing, but for cursor
         nargs=self.cursor_nargs
@@ -2642,7 +2646,7 @@ class APSW(unittest.TestCase):
                 self.fail("cursor method "+func+" didn't notice that the connection is closed")
             except apsw.CursorClosedError:
                 pass
-        self.assert_(tested>=len(nargs))
+        self.assertTrue(tested>=len(nargs))
 
     def testClosing(self):
         "Verify behaviour of close() functions"
@@ -2744,9 +2748,9 @@ class APSW(unittest.TestCase):
             cur.execute("select * from sqlite_master")
         except:
             klass,e,tb=sys.exc_info()
-            self.failUnless(isinstance(e, apsw.NotADBError))
-            self.failUnlessEqual(e.result, apsw.SQLITE_NOTADB);
-            self.failUnlessEqual(e.extendedresult&0xff, apsw.SQLITE_NOTADB)
+            self.assertTrue(isinstance(e, apsw.NotADBError))
+            self.assertEqual(e.result, apsw.SQLITE_NOTADB);
+            self.assertEqual(e.extendedresult&0xff, apsw.SQLITE_NOTADB)
         db.close(True)
 
         try:
@@ -2763,11 +2767,11 @@ class APSW(unittest.TestCase):
         old=self.db.limit(apsw.SQLITE_LIMIT_LENGTH)
         self.db.limit(apsw.SQLITE_LIMIT_LENGTH, 1023)
         self.assertRaises(apsw.TooBigError, c.execute, "insert into foo values(?)", ("y"*1024,))
-        self.failUnlessEqual(1023, self.db.limit(apsw.SQLITE_LIMIT_LENGTH, 0))
+        self.assertEqual(1023, self.db.limit(apsw.SQLITE_LIMIT_LENGTH, 0))
         # bug in sqlite - see http://www.sqlite.org/cvstrac/tktview?tn=3085
         if False:
             c.execute("insert into foo values(?)", ("x"*1024,))
-            self.failUnlessEqual(apsw.SQLITE_MAX_LENGTH, self.db.limit(apsw.SQLITE_LIMIT_LENGTH))
+            self.assertEqual(apsw.SQLITE_MAX_LENGTH, self.db.limit(apsw.SQLITE_LIMIT_LENGTH))
 
     def testConnectionHooks(self):
         "Verify connection hooks"
@@ -2882,9 +2886,9 @@ class APSW(unittest.TestCase):
                     called=0
                     for row in self.db.cursor().execute(sql, (i,)):
                         called+=1
-                        self.failUnlessEqual(row[0], 10*i)
+                        self.assertEqual(row[0], 10*i)
                     # same value could be present multiple times
-                    self.failUnless(called>=1)
+                    self.assertTrue(called>=1)
                 elif i%5==2:
                     try:
                         self.db.cursor().execute("deliberate syntax error")
@@ -2979,7 +2983,7 @@ class APSW(unittest.TestCase):
         sys.stderr.close()
         v=open("errout.txt", "rt").read()
         deletefile("errout.txt")
-        self.failUnless(len(v))
+        self.assertTrue(len(v))
         sys.excepthook=xx
         sys.stderr=yy
 
@@ -3039,10 +3043,10 @@ class APSW(unittest.TestCase):
             c.execute("pragma encoding=\"%s\"" % (encoding,))
             for row in c.execute("pragma encoding"):
                 # we use startswith as UTF-16 will be returned with le/be suffix
-                self.assert_(row[0].startswith(encoding))
+                self.assertTrue(row[0].startswith(encoding))
             c.execute("create table foo(x); insert into foo values(?)", (text,))
             for row in c.execute("select * from foo"):
-                self.failUnlessEqual(row[0], text)
+                self.assertEqual(row[0], text)
             db.close()
 
 
@@ -3308,7 +3312,7 @@ class APSW(unittest.TestCase):
     def testMemory(self):
         "Verify memory tracking functions"
         self.assertNotEqual(apsw.memoryused(), 0)
-        self.assert_(apsw.memoryhighwater() >= apsw.memoryused())
+        self.assertTrue(apsw.memoryhighwater() >= apsw.memoryused())
         self.assertRaises(TypeError, apsw.memoryhighwater, "eleven")
         apsw.memoryhighwater(True)
         self.assertEqual(apsw.memoryhighwater(), apsw.memoryused())
@@ -3318,7 +3322,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, apsw.releasememory, 1, 2)
         self.assertRaises(OverflowError, apsw.releasememory, l("0xffffffffee"))
         res=apsw.releasememory(0x7fffffff)
-        self.assert_(type(res) in (int, long))
+        self.assertTrue(type(res) in (int, long))
 
     def testRandomness(self):
         "Verify randomness routine"
@@ -3332,7 +3336,7 @@ class APSW(unittest.TestCase):
 
     def testSqlite3Pointer(self):
         self.assertRaises(TypeError, self.db.sqlite3pointer, 7)
-        self.assert_(type(self.db.sqlite3pointer()) in (int,long))
+        self.assertTrue(type(self.db.sqlite3pointer()) in (int,long))
         self.assertEqual(self.db.sqlite3pointer(), self.db.sqlite3pointer())
         self.assertNotEqual(self.db.sqlite3pointer(), apsw.Connection(":memory:").sqlite3pointer())
 
@@ -3345,7 +3349,7 @@ class APSW(unittest.TestCase):
             res=apsw.status(getattr(apsw, i))
             self.assertEqual(len(res), 2)
             self.assertEqual(type(res), tuple)
-            self.assert_(res[0]<=res[1])
+            self.assertTrue(res[0]<=res[1])
 
     def testZeroBlob(self):
         "Verify handling of zero blobs"
@@ -3394,7 +3398,7 @@ class APSW(unittest.TestCase):
         # check vals
         self.assertEqual(blobro.length(), 98765)
         self.assertEqual(blobro.length(), 98765)
-        self.failUnlessEqual(blobro.read(0), BYTES(""))
+        self.assertEqual(blobro.read(0), BYTES(""))
         zero=BYTES(r"\x00")
         step=5 # must be exact multiple of size
         assert(blobro.length()%step==0)
@@ -3407,7 +3411,7 @@ class APSW(unittest.TestCase):
         self.assertEqual(blobro.tell(), 98765)
         blobro.seek(0)
         self.assertEqual(blobro.tell(), 0)
-        self.failUnlessEqual(len(blobro.read(11119999)), 98765)
+        self.assertEqual(len(blobro.read(11119999)), 98765)
         blobro.seek(2222)
         self.assertEqual(blobro.tell(), 2222)
         blobro.seek(0,0)
@@ -3477,7 +3481,7 @@ class APSW(unittest.TestCase):
             1/0
         except:
             klass,value=sys.exc_info()[:2]
-            self.assert_(klass is apsw.AbortError)
+            self.assertTrue(klass is apsw.AbortError)
 
     def testVFS(self):
         "Verify VFS functionality"
@@ -4083,7 +4087,7 @@ class APSW(unittest.TestCase):
         # check initialization
         self.assertRaises(TypeError, apsw.VFS, "3", 3)
         self.assertRaises(ValueError, apsw.VFS, "never", "klgfkljdfsljgklfjdsglkdfs")
-        self.assert_("never" not in apsw.vfsnames())
+        self.assertTrue("never" not in apsw.vfsnames())
         TestVFS.__init__=TestVFS.init1
         vfs=TestVFS()
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, apsw.VFSNotImplementedError, testdb)
@@ -4659,9 +4663,9 @@ class APSW(unittest.TestCase):
             pass
 
         # check we saw the right things in the traces
-        self.assert_(len(traces)==3)
+        self.assertTrue(len(traces)==3)
         for s in traces:
-            self.assert_("SAVEPOINT" in s.upper())
+            self.assertTrue("SAVEPOINT" in s.upper())
 
         def et(*args):
             return BadIsTrue()
@@ -4795,8 +4799,8 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, b.step, '3')
         try:
             b.step(1)
-            self.assert_(b.remaining > 0)
-            self.assert_(b.pagecount > 0)
+            self.assertTrue(b.remaining > 0)
+            self.assertTrue(b.pagecount > 0)
             while not b.done:
                 b.step(1)
         finally:
@@ -4892,7 +4896,7 @@ class APSW(unittest.TestCase):
         self.assertEqual(len(names2), len(names)+1)
         self.assertNotEqual(names[0], names2[0])
         self.assertEqual(v, names2[0])
-        self.assert_(v not in names)
+        self.assertTrue(v not in names)
 
         self.assertRaises(TypeError, apsw.async_shutdown, 3)
         apsw.async_shutdown()
@@ -4905,8 +4909,8 @@ class APSW(unittest.TestCase):
         names2=apsw.vfsnames()
         self.assertEqual(len(names2), len(names)+1)
         self.assertEqual(names[0], names2[0])
-        self.assert_(v2 in names2)
-        self.assert_(v2 not in names)
+        self.assertTrue(v2 in names2)
+        self.assertTrue(v2 not in names)
         self.assertEqual(v, v2)
 
         # create the database and write to it, but without starting the worker thread
@@ -4915,10 +4919,10 @@ class APSW(unittest.TestCase):
         self.db=apsw.Connection(fn, vfs=v2)
         # Due to macos bugs SQLite writes the first byte of the file sometimes
         # so length with be zero on other platforms and zero or one on macos.
-        self.assert_(os.stat(fn).st_size<=1)
+        self.assertTrue(os.stat(fn).st_size<=1)
         cur=self.db.cursor()
         cur.execute("create table foo(x,y);insert into foo values(1,2)")
-        self.assert_(os.stat(fn).st_size<=1)
+        self.assertTrue(os.stat(fn).st_size<=1)
         # Do a worker thread
         d={
             'workerstarted': False,
@@ -5021,8 +5025,8 @@ class APSW(unittest.TestCase):
         self.assertEqual(s.db.filename, "testdb")
         # do a dump and check our table is there with its values
         s.command_dump([])
-        self.assert_("x(x)" in get(fh[1]))
-        self.assert_("(1);" in get(fh[1]))
+        self.assertTrue("x(x)" in get(fh[1]))
+        self.assertTrue("(1);" in get(fh[1]))
 
         # empty args
         self.assertEqual( (None, [], []), s.process_args(None))
@@ -5033,7 +5037,7 @@ class APSW(unittest.TestCase):
         try:
             shellclass(args=["testdb", ".read test-shell-1"], **kwargs)
         except shellclass.Error:
-            self.assert_("test-shell-1" in get(fh[2]))
+            self.assertTrue("test-shell-1" in get(fh[2]))
             isempty(fh[1])
 
         # Check single and double dash behave the same
@@ -5042,14 +5046,14 @@ class APSW(unittest.TestCase):
             shellclass(args=["-init"], **kwargs)
         except shellclass.Error:
             isempty(fh[1])
-            self.assert_("specify a filename" in get(fh[2]))
+            self.assertTrue("specify a filename" in get(fh[2]))
             
         reset()
         s=shellclass(**kwargs)
         try:
             s.process_args(["--init"])
         except shellclass.Error:
-            self.assert_("specify a filename" in str(sys.exc_info()[1]))
+            self.assertTrue("specify a filename" in str(sys.exc_info()[1]))
 
         # various command line options
         # an invalid one
@@ -5058,8 +5062,8 @@ class APSW(unittest.TestCase):
             shellclass(args=["---tripledash"], **kwargs)
         except shellclass.Error:
             isempty(fh[1])
-            self.assert_("-tripledash" in get(fh[2]))
-            self.assert_("--tripledash" not in get(fh[2]))
+            self.assertTrue("-tripledash" in get(fh[2]))
+            self.assertTrue("--tripledash" not in get(fh[2]))
 
         ###
         ### --init
@@ -5071,13 +5075,13 @@ class APSW(unittest.TestCase):
         except shellclass.Error:
             # we want to make sure it read the file
             isempty(fh[1])
-            self.assert_("syntax error" in get(fh[2]))
+            self.assertTrue("syntax error" in get(fh[2]))
         reset()
         open("test-shell-1", "wt").write("select 3;")
         shellclass(args=["-init", "test-shell-1"], **kwargs)
         # we want to make sure it read the file
         isempty(fh[2])
-        self.assert_("3" in get(fh[1]))
+        self.assertTrue("3" in get(fh[1]))
 
         ###
         ### --header
@@ -5095,8 +5099,8 @@ class APSW(unittest.TestCase):
         isempty(fh[2])
         s.process_args(["testdb", ".mode column", "select 3"])
         isempty(fh[2])
-        self.assert_("3" in get(fh[1]))
-        self.assert_("----" in get(fh[1]))
+        self.assertTrue("3" in get(fh[1]))
+        self.assertTrue("----" in get(fh[1]))
 
         ###
         ### --echo, --bail, --interactive
@@ -5136,7 +5140,7 @@ class APSW(unittest.TestCase):
             isempty(fh[2])
             self.assertRaises(shellclass.Error, shellclass, args=["-"+v, val, "--"+v], **kwargs)
             isempty(fh[1])
-            self.assert_(v in get(fh[2]))
+            self.assertTrue(v in get(fh[2]))
 
         ###
         ### --version
@@ -5145,7 +5149,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(SystemExit, shellclass, args=["--version"], **kwargs)
         # it writes to stdout
         isempty(fh[2])
-        self.assert_(apsw.sqlitelibversion() in get(fh[1]))
+        self.assertTrue(apsw.sqlitelibversion() in get(fh[1]))
 
         ###
         ### --help
@@ -5154,7 +5158,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(SystemExit, shellclass, args=["--help"], **kwargs)
         # it writes to stderr
         isempty(fh[1])
-        self.assert_("-version" in get(fh[2]))
+        self.assertTrue("-version" in get(fh[2]))
 
         ###
         ### Items that correspond to output mode
@@ -5162,7 +5166,7 @@ class APSW(unittest.TestCase):
         reset()
         shellclass(args=["--python", "--column", "--python", ":memory:", "create table x(x)", "insert into x values(x'aa')", "select * from x;"], **kwargs)
         isempty(fh[2])
-        self.assert_('b"' in get(fh[1]) or "buffer(" in get(fh[1]))
+        self.assertTrue('b"' in get(fh[1]) or "buffer(" in get(fh[1]))
 
         ###
         ### Is process_unknown_args called as documented?
@@ -5173,7 +5177,7 @@ class APSW(unittest.TestCase):
                 1/0
         self.assertRaises(ZeroDivisionError, s2, args=["--unknown"], **kwargs)
         isempty(fh[1])
-        self.assert_("division" in get(fh[2])) # py2 says "integer division", py3 says "int division"
+        self.assertTrue("division" in get(fh[2])) # py2 says "integer division", py3 says "int division"
 
         class s3(shellclass):
             def process_unknown_args(_, args):
@@ -5182,7 +5186,7 @@ class APSW(unittest.TestCase):
         reset()
         self.assertRaises(s3.Error, s3, args=["--python", "--myoption", "myvalue", "--init"], **kwargs)
         isempty(fh[1])
-        self.assert_("-init" in get(fh[2]))
+        self.assertTrue("-init" in get(fh[2]))
 
         ###
         ### Some test data
@@ -5219,20 +5223,20 @@ class APSW(unittest.TestCase):
         self.assertEqual(len(out.split(sep)), 2)
         self.assertEqual(len(out.split(sep)[0]), len(x)+2) # plus two apostrophes
         self.assertEqual(len(out.split(sep)[1]), len(x)+2) # same
-        self.assert_("  " in out.split(sep)[1]) # space padding
+        self.assertTrue("  " in out.split(sep)[1]) # space padding
         # make sure truncation happens
         reset()
         cmd(".width 5\nselect '"+x+"';\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_("a"*6 not in get(fh[1]))
+        self.assertTrue("a"*6 not in get(fh[1]))
         # right justification
         reset()
         cmd(".header off\n.width -3 -3\nselect 3,3;\n.width 3 3\nselect 3,3;")
         s.cmdloop()
         isempty(fh[2])
         v=get(fh[1])
-        self.assert_(v.startswith("  3    3"))
+        self.assertTrue(v.startswith("  3    3"))
         v=v.split("\n")
         self.assertNotEqual(v[0], v[1])
         self.assertEqual(len(v[0]), len(v[1]))
@@ -5241,16 +5245,16 @@ class APSW(unittest.TestCase):
         cmd(".header on\ncreate table %s(x);create index %s_ on %s(x);\n.explain\nexplain select * from %s where x=7;\n" % (x,x,x,x))
         s.cmdloop()
         isempty(fh[2])
-        self.assert_(x in get(fh[1]))
+        self.assertTrue(x in get(fh[1]))
         # check null and blobs
         reset()
         nv="ThIsNuLlVaLuE"
         cmd(".nullvalue %s\nselect null, x'aaee';\n" % (nv,))
         s.cmdloop()
         isempty(fh[2])
-        self.assert_(nv in get(fh[1]))
+        self.assertTrue(nv in get(fh[1]))
         # do not output blob as is
-        self.assert_(u("\xaa") not in get(fh[1]))
+        self.assertTrue(u("\xaa") not in get(fh[1]))
         # undo explain
         reset()
         cmd(".explain OFF\n")
@@ -5265,32 +5269,32 @@ class APSW(unittest.TestCase):
         cmd(".separator F\n.mode csv\nselect 3,3;\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_("3,3" in get(fh[1]))
+        self.assertTrue("3,3" in get(fh[1]))
         # tab sep
         reset()
         cmd(".separator '\\t'\nselect 3,3;\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_("3\t3" in get(fh[1]))
+        self.assertTrue("3\t3" in get(fh[1]))
         # back to comma
         reset()
         cmd(".mode csv\nselect 3,3;\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_("3,3" in get(fh[1]))
+        self.assertTrue("3,3" in get(fh[1]))
         # quoting
         reset()
         cmd(".header ON\nselect 3 as [\"one\"], 4 as [\t];\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_('"""one""",\t' in get(fh[1]))
+        self.assertTrue('"""one""",\t' in get(fh[1]))
         # custom sep
         reset()
         cmd(".separator |\nselect 3 as [\"one\"], 4 as [\t];\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_("3|4\n" in get(fh[1]))
-        self.assert_('"one"|\t\n' in get(fh[1]))
+        self.assertTrue("3|4\n" in get(fh[1]))
+        self.assertTrue('"one"|\t\n' in get(fh[1]))
         # testnasty() - csv module is pretty much broken
         
         ###
@@ -5301,18 +5305,18 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[2])
         # should be no header
-        self.assert_("<th>" not in get(fh[1]).lower())
+        self.assertTrue("<th>" not in get(fh[1]).lower())
         # does it actually work?
-        self.assert_("<td>3</td>" in get(fh[1]).lower())
+        self.assertTrue("<td>3</td>" in get(fh[1]).lower())
         # check quoting works
         reset()
         cmd(".header ON\nselect 3 as [<>&];\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_("<th>&lt;&gt;&amp;</th>" in get(fh[1]).lower())
+        self.assertTrue("<th>&lt;&gt;&amp;</th>" in get(fh[1]).lower())
         # do we output rows?
-        self.assert_("<tr>" in get(fh[1]).lower())
-        self.assert_("</tr>" in get(fh[1]).lower())
+        self.assertTrue("<tr>" in get(fh[1]).lower())
+        self.assertTrue("</tr>" in get(fh[1]).lower())
         testnasty()
         
         ###
@@ -5323,14 +5327,14 @@ class APSW(unittest.TestCase):
         cmd(".mode insert\n.header OFF\nselect "+all+";\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_(all in get(fh[1]).lower())
+        self.assertTrue(all in get(fh[1]).lower())
         # empty values
         reset()
         all="0,0.0,'',null,x''"
         cmd("select "+all+";\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_(all in get(fh[1]).lower())
+        self.assertTrue(all in get(fh[1]).lower())
         # header, separator and nullvalue should make no difference 
         save=get(fh[1])
         reset()
@@ -5339,12 +5343,12 @@ class APSW(unittest.TestCase):
         isempty(fh[2])
         self.assertEqual(save, get(fh[1]))
         # check the table name
-        self.assert_(get(fh[1]).lower().startswith('insert into "table" values'))
+        self.assertTrue(get(fh[1]).lower().startswith('insert into "table" values'))
         reset()
         cmd(".mode insert funkychicken\nselect "+all+";\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_(get(fh[1]).lower().startswith("insert into funkychicken values"))
+        self.assertTrue(get(fh[1]).lower().startswith("insert into funkychicken values"))
         testnasty()
 
         ###
@@ -5403,11 +5407,11 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[2])
         out=get(fh[1]).replace(" ","")
-        self.assert_("a=3\n" in out)
-        self.assert_("b=*\n" in out)
-        self.assert_("c=0.0\n" in out)
-        self.assert_("d=a\n" in out)
-        self.assert_("e=<Binarydata>\n" in out)
+        self.assertTrue("a=3\n" in out)
+        self.assertTrue("b=*\n" in out)
+        self.assertTrue("c=0.0\n" in out)
+        self.assertTrue("d=a\n" in out)
+        self.assertTrue("e=<Binarydata>\n" in out)
         self.assertEqual(7, len(out.split("\n"))) # one for each col plus two trailing newlines
         # header should make no difference
         reset()
@@ -5437,7 +5441,7 @@ class APSW(unittest.TestCase):
         cmd(".header on\n.mode list\n.nullvalue (\n.separator &\nselect 3 as a, null as b, 0.0 as c, 'a' as d, x'aa' as e;\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_(get(fh[1]).startswith("a&b&c&d&e\n"))
+        self.assertTrue(get(fh[1]).startswith("a&b&c&d&e\n"))
         testnasty()
         
         ###
@@ -5471,7 +5475,7 @@ class APSW(unittest.TestCase):
         cmd(".header on\nselect 3 as a, null as b, 0.0 as c, 'a' as d, x'aa44bb' as e;\n")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_('"a"-"b"-"c"-"d"-"e"' in get(fh[1]))
+        self.assertTrue('"a"-"b"-"c"-"d"-"e"' in get(fh[1]))
         testnasty()
 
         # What happens if db cannot be opened?
@@ -5480,27 +5484,27 @@ class APSW(unittest.TestCase):
         cmd("select * from sqlite_master;\n.bail on\nselect 3;\n")
         self.assertRaises(apsw.CantOpenError, s.cmdloop)
         isempty(fh[1])
-        self.assert_("unable to open database file" in get(fh[2]))
+        self.assertTrue("unable to open database file" in get(fh[2]))
 
         # echo testing - multiple statements
         s.process_args([":memory:"]) # back to memory db
         reset()
         cmd(".bail off\n.echo on\nselect 3;\n")
         s.cmdloop()
-        self.assert_("select 3;\n" in get(fh[2]))
+        self.assertTrue("select 3;\n" in get(fh[2]))
         # multiline
         reset()
         cmd("select 3;select 4;\n")
         s.cmdloop()
-        self.assert_("select 3;\n" in get(fh[2]))
-        self.assert_("select 4;\n" in get(fh[2]))
+        self.assertTrue("select 3;\n" in get(fh[2]))
+        self.assertTrue("select 4;\n" in get(fh[2]))
         # multiline with error
         reset()
         cmd("select 3;select error;select 4;\n")
         s.cmdloop()
-        self.assert_("select 3;\n" in get(fh[2]))
+        self.assertTrue("select 3;\n" in get(fh[2]))
         # apsw can't tell where erroneous command ends so all processing on the line stops
-        self.assert_("select error;select 4;\n" in get(fh[2]))
+        self.assertTrue("select error;select 4;\n" in get(fh[2]))
         # is timing info output correctly?
         reset()
         timersupported=False
@@ -5533,12 +5537,12 @@ class APSW(unittest.TestCase):
         cmd(".nonexist 'unclosed")
         s.cmdloop()
         isempty(fh[1])
-        self.assert_("no closing quotation" in get(fh[2]).lower())
+        self.assertTrue("no closing quotation" in get(fh[2]).lower())
         reset()
         cmd(".notexist       ")
         s.cmdloop()
         isempty(fh[1])
-        self.assert_('Unknown command "notexist"' in get(fh[2]))
+        self.assertTrue('Unknown command "notexist"' in get(fh[2]))
 
         ###
         ### Commands - backup and restore
@@ -5601,7 +5605,7 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[1])
         isempty(fh[2])
-        self.assert_(os.path.isfile("testdb2"))
+        self.assertTrue(os.path.isfile("testdb2"))
         reset()
         cmd(".restore testdb2")
         gc.collect()
@@ -5648,13 +5652,13 @@ class APSW(unittest.TestCase):
         reset()
         cmd(".bail on\n.mode list\nselect 3;\nselect error;\nselect 4;\n")
         self.assertRaises(apsw.Error, s.cmdloop)
-        self.assert_("3" in get(fh[1]))
-        self.assert_("4" not in get(fh[1]))
+        self.assertTrue("3" in get(fh[1]))
+        self.assertTrue("4" not in get(fh[1]))
         reset()
         cmd(".bail oFf\n.mode list\nselect 3;\nselect error;\nselect 4;\n")
         s.cmdloop()
-        self.assert_("3" in get(fh[1]))
-        self.assert_("4" in get(fh[1]))
+        self.assertTrue("3" in get(fh[1]))
+        self.assertTrue("4" in get(fh[1]))
 
         ###
         ### Commands - databases
@@ -5671,19 +5675,19 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[2])
         for i in "main", "name", "file":
-            self.assert_(i in get(fh[1]))
+            self.assertTrue(i in get(fh[1]))
         reset()
         cmd("attach 'testdb' as quack;\n.databases")
         s.cmdloop()
         isempty(fh[2])
         for i in "main", "name", "file", "testdb", "quack":
-            self.assert_(i in get(fh[1]))
+            self.assertTrue(i in get(fh[1]))
         reset()
         cmd("detach quack;")
         s.cmdloop()
         isempty(fh[2])
         for i in "testdb", "quack":
-            self.assert_(i not in get(fh[1]))
+            self.assertTrue(i not in get(fh[1]))
 
         ###
         ### Commands - dump
@@ -5698,8 +5702,8 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[2])
         for i in "foo", "create table", "begin", "commit":
-            self.assert_(i in get(fh[1]).lower())
-        self.assert_("bar" not in get(fh[1]).lower())
+            self.assertTrue(i in get(fh[1]).lower())
+        self.assertTrue("bar" not in get(fh[1]).lower())
         # can we do virtual tables?
         reset()
         if self.checkOptionalExtension("fts3", "create virtual table foo using fts3()"):
@@ -5716,7 +5720,7 @@ class APSW(unittest.TestCase):
             isempty(fh[2])
             v=get(fh[1])
             for i in "pragma writable_schema", "create virtual table fts3", "cola fred", "colb john doe":
-                self.assert_(i in v.lower())
+                self.assertTrue(i in v.lower())
         # analyze
         reset()
         cmd("drop table bar;create table bar(x unique,y);create index barf on bar(x,y);create index barff on bar(y);insert into bar values(3,4);\nanalyze;\n.dump bar")
@@ -5724,9 +5728,9 @@ class APSW(unittest.TestCase):
         isempty(fh[2])
         v=get(fh[1])
         for i in "analyze bar", "create index barf":
-            self.assert_(i in v.lower())
-        self.assert_("autoindex" not in v.lower()) # created by sqlite to do unique constraint
-        self.assert_("sqlite_sequence" not in v.lower()) # not autoincrements
+            self.assertTrue(i in v.lower())
+        self.assertTrue("autoindex" not in v.lower()) # created by sqlite to do unique constraint
+        self.assertTrue("sqlite_sequence" not in v.lower()) # not autoincrements
         # repeat but all tables
         reset()
         cmd(".dump")
@@ -5734,8 +5738,8 @@ class APSW(unittest.TestCase):
         isempty(fh[2])
         v=get(fh[1])
         for i in "analyze bar", "create index barf":
-            self.assert_(i in v.lower())
-        self.assert_("autoindex" not in v.lower()) # created by sqlite to do unique constraint
+            self.assertTrue(i in v.lower())
+        self.assertTrue("autoindex" not in v.lower()) # created by sqlite to do unique constraint
         # foreign keys
         reset()
         cmd("create table xxx(z references bar(x));\n.dump")
@@ -5743,7 +5747,7 @@ class APSW(unittest.TestCase):
         isempty(fh[2])
         v=get(fh[1])
         for i in "foreign_keys", "references":
-            self.assert_(i in v.lower())
+            self.assertTrue(i in v.lower())
         # views
         reset()
         cmd("create view noddy as select * from foo;\n.dump noddy")
@@ -5751,7 +5755,7 @@ class APSW(unittest.TestCase):
         isempty(fh[2])
         v=get(fh[1])
         for i in "drop view", "create view noddy":
-            self.assert_(i in v.lower())
+            self.assertTrue(i in v.lower())
         # issue82 - view ordering
         reset()
         cmd("create table issue82(x);create view issue82_2 as select * from issue82; create view issue82_1 as select count(*) from issue82_2;\n.dump issue82%")
@@ -5771,15 +5775,15 @@ class APSW(unittest.TestCase):
         isempty(fh[2])
         v=get(fh[1])
         for i in "sqlite_sequence", "'abc', 2":
-            self.assert_(i in v.lower())
+            self.assertTrue(i in v.lower())
         # user version
-        self.assert_("user_version" not in v)
+        self.assertTrue("user_version" not in v)
         reset()
         cmd("pragma user_version=27;\n.dump")
         s.cmdloop()
         isempty(fh[2])
         v=get(fh[1])
-        self.assert_("pragma user_version=27;" in v)
+        self.assertTrue("pragma user_version=27;" in v)
         s.db.cursor().execute("pragma user_version=0")
         # some nasty stuff
         reset()
@@ -5794,8 +5798,8 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[2])
         v=get(fh[1])
-        self.assert_("nasty" in v)
-        self.assert_("stuff" in v)
+        self.assertTrue("nasty" in v)
+        self.assertTrue("stuff" in v)
         # sanity check the dumps
         reset()
         cmd(v) # should run just fine
@@ -5858,13 +5862,13 @@ class APSW(unittest.TestCase):
         reset()
         cmd(".echo off\nselect 3;")
         s.cmdloop()
-        self.assert_("3" in get(fh[1]))
-        self.assert_("select 3" not in get(fh[2]))
+        self.assertTrue("3" in get(fh[1]))
+        self.assertTrue("select 3" not in get(fh[2]))
         reset()
         cmd(".echo on\nselect 3;")
         s.cmdloop()
-        self.assert_("3" in get(fh[1]))
-        self.assert_("select 3" in get(fh[2]))
+        self.assertTrue("3" in get(fh[1]))
+        self.assertTrue("select 3" in get(fh[2]))
         # more complex testing is done earlier including multiple statements and errors
 
         ###
@@ -5880,7 +5884,7 @@ class APSW(unittest.TestCase):
         cmd(".encoding this-does-not-exist")
         s.cmdloop()
         isempty(fh[1])
-        self.assert_("no known encoding" in get(fh[2]).lower())
+        self.assertTrue("no known encoding" in get(fh[2]).lower())
         # use iso8859-1 to make sure data is read correctly - it
         # differs from utf8
         us=u(r"unitestdata \xaa\x89 34")
@@ -5891,7 +5895,7 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         self.assertEqual(s.db.cursor().execute("select * from enctest").fetchall()[0][0],
                          us)
-        self.assert_(us in get(fh[2]))
+        self.assertTrue(us in get(fh[2]))
         reset()
         codecs.open("test-shell-1", "w", "iso8859-1").write(us+"\n")
         cmd("drop table enctest;create table enctest(x);\n.import test-shell-1 enctest")
@@ -5909,7 +5913,7 @@ class APSW(unittest.TestCase):
         cmd(".output stdout\nselect '%s';\n" % (us,))
         s.cmdloop()
         isempty(fh[2])
-        self.assert_(us in get(fh[1]))
+        self.assertTrue(us in get(fh[1]))
 
         ###
         ### Command - exceptions
@@ -5919,14 +5923,14 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[1])
         isnotempty(fh[2])
-        self.assert_(len(get(fh[2]).split("\n"))<5)
+        self.assertTrue(len(get(fh[2]).split("\n"))<5)
         reset()
         cmd(".exceptions on\nsyntax error;")
         s.cmdloop()
         isempty(fh[1])
         isnotempty(fh[2])
-        self.assert_(len(get(fh[2]).split("\n"))>10)
-        self.assert_("sql = " in get(fh[2]))
+        self.assertTrue(len(get(fh[2]).split("\n"))>10)
+        self.assertTrue("sql = " in get(fh[2]))
         # deliberately leave exceptions on
 
 
@@ -5958,13 +5962,13 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[1])
         for i in ".import", "Reads data from the file":
-            self.assert_(i in get(fh[2]))
+            self.assertTrue(i in get(fh[2]))
         reset()
         cmd(".help backup notexist import")
         s.cmdloop()
         isempty(fh[1])
         for i in "Copies the contents", "No such command":
-            self.assert_(i in get(fh[2]))
+            self.assertTrue(i in get(fh[2]))
         # screw up terminal width
         origtw=s._terminal_width
         def tw(*args): return 7
@@ -5990,9 +5994,9 @@ class APSW(unittest.TestCase):
         isempty(fh[2])
         # make sure encoding took
         if sys.version_info>=(3,0):
-            self.assert_(b("xab") not in open("test-shell-1", "rb").read())
+            self.assertTrue(b("xab") not in open("test-shell-1", "rb").read())
         else:
-            self.assert_("xab" not in open("test-shell-1", "rb").read())
+            self.assertTrue("xab" not in open("test-shell-1", "rb").read())
         data=s.db.cursor().execute("select * from imptest; delete from imptest").fetchall()
         self.assertEqual(2, len(data))
         reset()
@@ -6045,7 +6049,7 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[2])
         for i in "shouldseethis", "autoindex":
-            self.assert_(i in get(fh[1]))
+            self.assertTrue(i in get(fh[1]))
 
         ###
         ### Command - load
@@ -6062,17 +6066,17 @@ class APSW(unittest.TestCase):
             cmd(".load nosuchfile")
             s.cmdloop()
             isempty(fh[1])
-            self.assert_("nosuchfile" in get(fh[2]) or "ExtensionLoadingError" in get(fh[2]))
+            self.assertTrue("nosuchfile" in get(fh[2]) or "ExtensionLoadingError" in get(fh[2]))
             reset()
             cmd(".mode list\n.load "+lf+" alternate_sqlite3_extension_init\nselect doubleup(2);")
             s.cmdloop()
             isempty(fh[2])
-            self.assert_("4" in get(fh[1]))
+            self.assertTrue("4" in get(fh[1]))
             reset()
             cmd(".mode list\n.load "+lf+"\nselect half(2);")
             s.cmdloop()
             isempty(fh[2])
-            self.assert_("1" in get(fh[1]))
+            self.assertTrue("1" in get(fh[1]))
 
         ###
         ### Command - mode
@@ -6143,7 +6147,7 @@ shell.write(shell.stdout, "hello world\\n")
         cmd(".read test-shell-1.py")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_("hello world" in get(fh[1]))
+        self.assertTrue("hello world" in get(fh[1]))
 
         # restore tested with backup
 
@@ -6161,7 +6165,7 @@ shell.write(shell.stdout, "hello world\\n")
         s.cmdloop()
         isempty(fh[2])
         for i in "schematest", "unrelatedname":
-            self.assert_(i in get(fh[1]))
+            self.assertTrue(i in get(fh[1]))
 
         # separator done earlier
         
@@ -6193,31 +6197,31 @@ shell.write(shell.stdout, "hello world\\n")
             s.cmdloop()
             isempty(fh[1])
             # check size has not changed much
-            self.assert_(abs(len(get(fh[2]))-len(baseline))<14) 
+            self.assertTrue(abs(len(get(fh[2]))-len(baseline))<14) 
             
         # output
         reset()
         cmd(".output test-shell-1\n.show")
         s.cmdloop()
         isempty(fh[1])
-        self.assert_("output: test-shell-1" in get(fh[2]))
+        self.assertTrue("output: test-shell-1" in get(fh[2]))
         reset()
         cmd(".output stdout\n.show")
         s.cmdloop()
         isempty(fh[1])
-        self.assert_("output: stdout" in get(fh[2]))
-        self.assert_(not os.path.exists("stdout"))
+        self.assertTrue("output: stdout" in get(fh[2]))
+        self.assertTrue(not os.path.exists("stdout"))
         # errors
         reset()
         cmd(".show one two")
         s.cmdloop()
         isempty(fh[1])
-        self.assert_("at most one parameter" in get(fh[2]))
+        self.assertTrue("at most one parameter" in get(fh[2]))
         reset()
         cmd(".show notexist")
         s.cmdloop()
         isempty(fh[1])
-        self.assert_("notexist: " not in get(fh[2]))
+        self.assertTrue("notexist: " not in get(fh[2]))
 
         ###
         ### Command tables
@@ -6231,9 +6235,9 @@ shell.write(shell.stdout, "hello world\\n")
         cmd("create table tabletest(x);create index tabletest1 on tabletest(x);create index noway on tabletest(x);\n.tables tabletest\n.tables")
         s.cmdloop()
         isempty(fh[2])
-        self.assert_("tabletest" in get(fh[1]))
-        self.assert_("tabletest1" not in get(fh[1]))
-        self.assert_("noway" not in get(fh[1]))
+        self.assertTrue("tabletest" in get(fh[1]))
+        self.assertTrue("tabletest1" not in get(fh[1]))
+        self.assertTrue("noway" not in get(fh[1]))
 
         ###
         ### Command timeout
@@ -6344,8 +6348,8 @@ shell.write(shell.stdout, "hello world\\n")
             1/0
         except:
             klass,value=sys.exc_info()[:2]
-            self.assert_(klass is apsw.Error)
-            self.assert_("254" in str(value))
+            self.assertTrue(klass is apsw.Error)
+            self.assertTrue("254" in str(value))
 
         ## AsWriteBufferFails
         if not py3:
@@ -6436,7 +6440,7 @@ shell.write(shell.stdout, "hello world\\n")
             1/0
         except apsw.IOError:
             klass,value=sys.exc_info()[:2]
-            self.assert_(klass is apsw.IOError)
+            self.assertTrue(klass is apsw.IOError)
 
         ## SetAuthorizerFail
         apsw.faultdict["SetAuthorizerFail"]=True
@@ -6455,7 +6459,7 @@ shell.write(shell.stdout, "hello world\\n")
             1/0
         except apsw.IOError:
             klass,value=sys.exc_info()[:2]
-            self.assert_(klass is apsw.IOError)
+            self.assertTrue(klass is apsw.IOError)
 
         ## CollationNeededFail
         apsw.faultdict["CollationNeededFail"]=True
@@ -6465,7 +6469,7 @@ shell.write(shell.stdout, "hello world\\n")
             1/0
         except:
             klass,value=sys.exc_info()[:2]
-            self.assert_(klass is apsw.IOError)
+            self.assertTrue(klass is apsw.IOError)
 
         ##EnableLoadExtensionFail
         apsw.faultdict["EnableLoadExtensionFail"]=True
@@ -6503,8 +6507,8 @@ shell.write(shell.stdout, "hello world\\n")
             1/0
         except:
             klass,value=sys.exc_info()[:2]
-            self.assert_(klass is apsw.Error)
-            self.assert_("123456" in str(value))
+            self.assertTrue(klass is apsw.Error)
+            self.assertTrue("123456" in str(value))
 
         ## UnknownColumnType
         apsw.faultdict["UnknownColumnType"]=True
@@ -6515,8 +6519,8 @@ shell.write(shell.stdout, "hello world\\n")
             1/0
         except:
             klass,value=sys.exc_info()[:2]
-            self.assert_(klass is apsw.Error)
-            self.assert_("12348" in str(value))
+            self.assertTrue(klass is apsw.Error)
+            self.assertTrue("12348" in str(value))
 
         ## SetContextResultUnicodeConversionFails
         apsw.faultdict["SetContextResultUnicodeConversionFails"]=True
@@ -6872,12 +6876,12 @@ shell.write(shell.stdout, "hello world\\n")
         ## APSWVFSBadVersion
         apsw.faultdict["APSWVFSBadVersion"]=True
         self.assertRaises(ValueError, apsw.VFS, "foo", "")
-        self.assert_("foo" not in apsw.vfsnames())
+        self.assertTrue("foo" not in apsw.vfsnames())
 
         ## APSWVFSRegistrationFails
         apsw.faultdict["APSWVFSRegistrationFails"]=True
         self.assertRaises(apsw.NoMemError, apsw.VFS, "foo", "")
-        self.assert_("foo" not in apsw.vfsnames())
+        self.assertTrue("foo" not in apsw.vfsnames())
 
         ## xReadReadBufferFail
         apsw.Connection("testdb", vfs="faultvfs").cursor().execute("create table dummy1(x,y)")
