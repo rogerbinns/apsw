@@ -47,6 +47,9 @@ and gory details.
    the ".exception ON" command.  This is useful when developing
    virtual tables and similar functionality.
 
+ * You can now terminate a SQL statement with "go" or "/" on a line
+   by itself.
+
 3.6.19-r1
 =========
 
