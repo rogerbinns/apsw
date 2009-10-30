@@ -1090,15 +1090,15 @@ Enter SQL statements terminated with a ";"
                 if len(self.db.cursor().execute("select * from sqlite_master where name='sqlite_sequence'").fetchall()):
                     first=True
                     for t in tables:
-                        v=self.db.cursor().execute("select seq from sqlite_sequence where name=?1", (t,)).fetchall()
+                        v=self.db.cursor().execute("select seq from main.sqlite_sequence where name=?1", (t,)).fetchall()
                         if len(v):
                             assert len(v)==1
                             if first:
                                 comment("For primary key autoincrements the next id "
                                         "to use is stored in sqlite_sequence")
                                 first=False
-                            self.write(self.stdout, 'DELETE FROM sqlite_sequence WHERE name=%s;\n' % (self._fmt_sql_value(t),))
-                            self.write(self.stdout, 'INSERT INTO sqlite_sequence VALUES (%s, %s);\n' % (self._fmt_sql_value(t), v[0][0]))
+                            self.write(self.stdout, 'DELETE FROM main.sqlite_sequence WHERE name=%s;\n' % (self._fmt_sql_value(t),))
+                            self.write(self.stdout, 'INSERT INTO main.sqlite_sequence VALUES (%s, %s);\n' % (self._fmt_sql_value(t), v[0][0]))
                     if not first:
                         blank()
             finally:
@@ -1627,12 +1627,13 @@ Enter SQL statements terminated with a ";"
         if len(cmd)!=1:
             raise self.Error("read takes a single filename")
         if cmd[0].lower().endswith(".py"):
-            locals_d={'apsw': apsw, 'shell': self}
+            g={}
+            g.update({'apsw': apsw, 'shell': self})
             if sys.version_info<(3,0):
-                execfile(cmd[0], globals(), locals_d)
+                execfile(cmd[0], g, g)
             else:
                 # compile step is needed to associate name with code
-                exec(compile(open(cmd[0]).read(), cmd[0], 'exec'), globals(), locals_d)
+                exec(compile(open(cmd[0]).read(), cmd[0], 'exec'), g, g)
         else:
             f=codecs.open(cmd[0], "rU", self.encoding)
             try:
@@ -2204,7 +2205,11 @@ Enter SQL statements terminated with a ";"
             databases=[row[1] for row in cur.execute("pragma database_list")]
             other=[]
             for db in databases:
-                for row in cur.execute("select * from [%s].sqlite_master" % (db,)).fetchall():
+                if db=="temp":
+                    master="sqlite_temp_master"
+                else:
+                    master="[%s].sqlite_master" % (db,)
+                for row in cur.execute("select * from "+master).fetchall():
                     for col in (1,2):
                         if row[col] not in other and not row[col].startswith("sqlite_"):
                             other.append(row[col])

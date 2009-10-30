@@ -11,7 +11,10 @@ import couchdb
 import random
 from uuid import uuid4
 
+couchdb
+
 class Source:
+
     "Called when a table is created"
     def Create(self, db, modulename, dbname, tablename, *args):
         # args[0] must be url of couchdb authentication information.
@@ -33,8 +36,11 @@ class Source:
             else:
                 1/0
 
+        # use this for permanent tables
         maptable="%s.%s" % (self._fmt_sql_identifier(dbname),
                             self._fmt_sql_identifier(tablename+"_idmap"))
+        # and this for temp
+        maptable=self._fmt_sql_identifier(tablename+"_idmap")
 
         t=Table(db, cdb, cols, maptable)
 
@@ -65,9 +71,13 @@ class Table:
         self.cdb=cdb
         self.cols=cols
         self.maptable=maptable
-        self.pending_updates=[]
-        self.maxbatch=1
+        self.pending_updates={}
+        self.rbatch=1
+        self.wbatch=1
         self.revcache={}
+
+    def Destroy(self):
+        self.adb.cursor().execute("drop table if  exists "+self.maptable)
 
     def BestIndex(self, *args):
         print "bestindex",`args`
@@ -89,12 +99,53 @@ class Table:
             # autogenerate
             _id=uuid4().hex
         data=dict(zip(self.cols, fields))
-        self.pending_updates.append(data)
+        data["_id"]=_id
+        self.pending_updates[_id]=data
 
-        if len(self.pending_updates)>=self.maxbatch:
+        if len(self.pending_updates)>=self.wbatch:
             self.flushpending()
             
         return self.getrowforid(_id)
+
+    def UpdateDeleteRow(self, rowid):
+        row=self.adb.cursor().execute("select _id from "+self.maptable+" where _rowid_=?", (rowid,)).fetchall()
+        assert len(row)
+        _id=row[0][0]
+        # now find it in revcache
+        _rev=self.revcache.get(_id, None)
+        d={"_id": _id, "_deleted": True}
+        if _rev:
+            d["_rev"]=_rev
+        self.pending_updates[_id]=d
+        if len(self.pending_updates)>=self.wbatch:
+            self.flushpending()
+
+    def UpdateChangeRow(self, rowid, newrowid, fields):
+        if newrowid!=rowid:
+            raise Exception("You cannot change the rowid")
+        # find id
+        _id=None
+        if "_id" in self.cols:
+            _id=fields[self.cols.index("_id")]
+        if _id is None:
+            row=self.adb.cursor().execute("select _id from "+self.maptable+" where _rowid_=?", (rowid,)).fetchall()
+            assert len(row)
+            _id=row[0][0]
+
+        # now find rev
+        _rev=None
+        if "_rev" in self.cols:
+            _rev=fields[self.cols.index("_rev")]
+        if _rev is None:
+            _rev=self.revcache.get(_id)
+
+        d=dict(zip(self.cols, fields))
+        d["_rev"]=_rev
+        d["_id"]=_id
+        self.pending_updates[_id]=d
+        if len(self.pending_updates)>=self.wbatch:
+            self.flushpending()
+        
 
     def revcache_add(self, _id, _rev):
         if len(self.revcache)>110:
@@ -112,11 +163,14 @@ class Table:
         if not len(self.pending_updates):
             return
         
-        p=self.pending_updates
-        self.pending_updates=[]
+        p=self.pending_updates.values()
+        self.pending_updates={}
+        fails=[]
         for i, (success, docid, rev_or_exc) in enumerate(self.cdb.update(p)):
             if not success:
-                raise Exception("Failed to create/update: %s\nData: %s" % (rev_or_exc, p[i]))
+                fails.append("%s: %s\nData: %s" % (docid, rev_or_exc, p[i]))
+        if fails:
+            raise Exception("Failed to create/update %d documents" % (len(fails),), fails)
         
 
     def Begin(self):
@@ -194,30 +248,19 @@ class Query:
 
     def current(self):
         return self.curval["id"], self.curval["value"][0], self.curval["value"][1:]
-        
-
-if True:
-
-    import os
-    try:
-        os.remove("testdb")
-        os.remove("testdb-journal")
-    except:
-        pass
-
-    db=apsw.Connection("testdb")
-    db.createmodule("couchdb", Source())
-    db.cursor().execute("create virtual table test using couchdb('http://localhost:5984', 'test', 'recipe', 'word')")
-    db.cursor().execute("begin")
-    for i in range(10):
-        db.cursor().execute("insert into test values(?,?)", ("a"*i, "b"*(100-i)))
-    db.cursor().execute("commit")
-
-    for row in db.cursor().execute("select _rowid_,* from test"):
-        print `row`
 
 
-else:
-    q=Query(couchdb.Server('http://localhost:5984')["test"], ["recipe", "word", "fred"])
-    while not q.eof():
-        print `q.current()`
+
+
+# register if invoked from shell
+thesource=Source()
+def register(db, thesource=thesource):
+    db.createmodule("couchdb", thesource)
+
+if 'shell' in locals() and hasattr(shell, "db") and isinstance(shell.db, apsw.Connection):
+    register(shell.db)
+
+apsw.connection_hooks.append(register)
+    
+del thesource
+del register
