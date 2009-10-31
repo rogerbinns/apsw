@@ -2366,9 +2366,9 @@ Enter SQL statements terminated with a ";"
                 val=two-one
                 if val:
                     if type(val)==float:
-                        self.write(self.stderr, "%s: %.4f\n" % (k, val))
+                        self.write(self.stderr, "+ %s: %.4f\n" % (k, val))
                     else:
-                        self.write(self.stderr, "%s: %d\n" % (k, val))
+                        self.write(self.stderr, "+ %s: %d\n" % (k, val))
 
 
 def main():
