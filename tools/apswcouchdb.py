@@ -62,19 +62,20 @@ class Source:
 class Table:
 
     def __init__(self, adb, cdb, cols, maptable):
-        # a temporary table that maps between couchdb _id field for
+        # A temporary table that maps between couchdb _id field for
         # each document and the rowid needed to implement a virtual
         # table. _rowid_ is the 64 bit int id autoassigned by SQLIte.
-        adb.cursor().execute("create temporary table if not exists %s(_id UNIQUE)" % (maptable,))
+        # We also keep track of the _rev for each document so that
+        # updates can be done
+        adb.cursor().execute("create temporary table if not exists %s(_id UNIQUE, _rev)" % (maptable,))
 
         self.adb=adb
         self.cdb=cdb
         self.cols=cols
         self.maptable=maptable
         self.pending_updates={}
-        self.rbatch=1
-        self.wbatch=1
-        self.revcache={}
+        self.rbatch=5000
+        self.wbatch=5000
 
     def Destroy(self):
         self.adb.cursor().execute("drop table if  exists "+self.maptable)
@@ -108,11 +109,10 @@ class Table:
         return self.getrowforid(_id)
 
     def UpdateDeleteRow(self, rowid):
-        row=self.adb.cursor().execute("select _id from "+self.maptable+" where _rowid_=?", (rowid,)).fetchall()
+        row=self.adb.cursor().execute("select _id,_rev from "+self.maptable+" where _rowid_=?", (rowid,)).fetchall()
         assert len(row)
         _id=row[0][0]
-        # now find it in revcache
-        _rev=self.revcache.get(_id, None)
+        _rev=row[0][1]
         d={"_id": _id, "_deleted": True}
         if _rev:
             d["_rev"]=_rev
@@ -123,21 +123,9 @@ class Table:
     def UpdateChangeRow(self, rowid, newrowid, fields):
         if newrowid!=rowid:
             raise Exception("You cannot change the rowid")
-        # find id
-        _id=None
-        if "_id" in self.cols:
-            _id=fields[self.cols.index("_id")]
-        if _id is None:
-            row=self.adb.cursor().execute("select _id from "+self.maptable+" where _rowid_=?", (rowid,)).fetchall()
-            assert len(row)
-            _id=row[0][0]
-
-        # now find rev
-        _rev=None
-        if "_rev" in self.cols:
-            _rev=fields[self.cols.index("_rev")]
-        if _rev is None:
-            _rev=self.revcache.get(_id)
+        row=self.adb.cursor().execute("select _id,_rev from "+self.maptable+" where _rowid_=?", (rowid,)).fetchall()
+        assert len(row)
+        _id,_rev=row[0]
 
         d=dict(zip(self.cols, fields))
         d["_rev"]=_rev
@@ -146,16 +134,8 @@ class Table:
         if len(self.pending_updates)>=self.wbatch:
             self.flushpending()
         
-
-    def revcache_add(self, _id, _rev):
-        if len(self.revcache)>110:
-            # remove 10 random members
-            for i in random.sample(self.revcache.keys(), 10):
-                del self.revcache[i]
-        self.revcache[_id]=_rev
-
     def getrowforid(self, _id):
-        return self.adb.cursor().execute("insert or ignore into "+self.maptable+" values(?);"
+        return self.adb.cursor().execute("insert or ignore into "+self.maptable+"(_id) values(?);"
                                         "select _rowid_ from "+self.maptable+" where _id=?",
                                         (_id, _id)).fetchall()[0][0]
 
@@ -166,43 +146,45 @@ class Table:
         p=self.pending_updates.values()
         self.pending_updates={}
         fails=[]
+        c=self.adb.cursor()
         for i, (success, docid, rev_or_exc) in enumerate(self.cdb.update(p)):
-            if not success:
+            if success:
+                c.execute("update "+self.maptable+" set _rev=? where _id=?", (rev_or_exc, docid))
+            else:
                 fails.append("%s: %s\nData: %s" % (docid, rev_or_exc, p[i]))
         if fails:
-            raise Exception("Failed to create/update %d documents" % (len(fails),), fails)
-        
+                raise Exception("Failed to create/update %d documents" % (len(fails),), fails)
 
     def Begin(self):
-        print "begin"
         self.flushpending()
 
     def Sync(self):
-        print "sync"
         self.flushpending()
 
     def Commit(self):
-        print "commit"
         self.flushpending()
 
     def Rollback(self):
-        print "rollback"
-        self.flushpending()
+        # Note that we probably already committed stuff anyway so we
+        # can't do a true rollback
+        self.pending_updates={}
 
 class Cursor:
     def __init__(self, table):
         self.t=table
 
     def Filter(self, *args):
-        # back to begining
-        self.query=Query(self.t.cdb, self.t.cols)
+        # back to begining - we flush any outstanding changes so that we don't have to
+        # merge pending updates with server data
+        self.t.flushpending()
+        self.query=Query(self.t.cdb, self.t.cols, batch=self.t.rbatch)
 
     def Eof(self):
         # Eof is called before next so we do all the work in eof
         r=self.query.eof()
         if not r:
             self._id, self._rev, self._values = self.query.current()
-            self.t.revcache_add(self._id, self._rev)
+            self.t.adb.cursor().execute("update "+self.t.maptable+" set _rev=? where _rowid_=?", (self._rev, self.Rowid()))
         return r
 
     def Rowid(self):
