@@ -9,12 +9,19 @@
 import apsw
 import couchdb
 import random
+import sys
 from uuid import uuid4
-
-couchdb
 
 class Source:
 
+    # javascript function that returns all keys of a doc in a view
+    _allkeysfunc="""
+    function(doc) {
+    for(var i in doc)
+       if(i.charAt(0)!='_')
+           emit(null, i);
+        }"""
+    
     "Called when a table is created"
     def Create(self, db, modulename, dbname, tablename, *args):
         # args[0] must be url of couchdb authentication information.
@@ -34,7 +41,11 @@ class Source:
             if c!='+':
                 cols.append(c)
             else:
-                1/0
+                autocols=[row["value"] for row in cdb.query(self._allkeysfunc, limit=1000)]
+                autocols.sort()
+                for c in autocols:
+                    if c not in cols:
+                        cols.append(c)
 
         # use this for permanent tables
         maptable="%s.%s" % (self._fmt_sql_identifier(dbname),
@@ -80,9 +91,12 @@ class Table:
     def Destroy(self):
         self.adb.cursor().execute("drop table if  exists "+self.maptable)
 
-    def BestIndex(self, *args):
-        print "bestindex",`args`
-        return None
+    def BestIndex(self, constraints, orderbys):
+        return [[(i,False) for i in range(len(constraints))], # constraintarg position for cursor.filter
+                0,                                  # index number
+                repr(constraints),                  # index string
+                False,                              # orderby consumed
+                1]                                  # cost
 
     def Open(self):
         return Cursor(self)
@@ -170,14 +184,48 @@ class Table:
         self.pending_updates={}
 
 class Cursor:
+
+    opmap={
+        apsw.SQLITE_INDEX_CONSTRAINT_EQ: '==',
+        apsw.SQLITE_INDEX_CONSTRAINT_GE: '>=',
+        apsw.SQLITE_INDEX_CONSTRAINT_GT: '>',
+        apsw.SQLITE_INDEX_CONSTRAINT_LE: '<=',
+        apsw.SQLITE_INDEX_CONSTRAINT_LT: '<',
+        apsw.SQLITE_INDEX_CONSTRAINT_MATCH: None
+        }
+
+    _binary_type = eval(("buffer", "bytes") [sys.version_info>=(3,0)])
+    _basestring = eval(("basestring", "str") [sys.version_info>=(3,0)])
+
+    def _jsquoute(self, v):
+        if isinstance(v, self._binary_type):
+            raise Exception("Javascript does not support binary")
+        if isinstance(v, self._basestring):
+            return '"'+ \
+                   v.replace("\\", "\\\\") \
+                   .replace('"', '\\"') \
+                   +'"'
+        if v is None:
+            return null
+        # integer
+        return str(v)
+    
     def __init__(self, table):
         self.t=table
 
-    def Filter(self, *args):
+    def Filter(self, indexnum, indexname, args):
         # back to begining - we flush any outstanding changes so that we don't have to
         # merge pending updates with server data
         self.t.flushpending()
-        self.query=Query(self.t.cdb, self.t.cols, batch=self.t.rbatch)
+        q=None
+        if indexname:
+            idx=eval(indexname)
+            q=[]
+            for ((col,constraint), arg) in zip(idx, args):
+                q.append("doc['%s']%s%s" % (self.t.cols[col], self.opmap[constraint], self._jsquoute(arg)))
+            q=" && ".join(q)
+            
+        self.query=Query(self.t.cdb, self.t.cols, q, self.t.rbatch)
 
     def Eof(self):
         # Eof is called before next so we do all the work in eof
@@ -207,8 +255,11 @@ class Query:
         self.cdb=cdb
         self.mapfn='''
         function(doc) {
-          emit(null, [doc._rev, %s]);
+          /*<QUERY>*/
+             emit(null, [doc._rev, %s]);
         }''' % (",".join(["doc['%s']===undefined?null:doc['%s']" % (c,c) for c in cols]),)
+        if query:
+            self.mapfn=self.mapfn.replace("/*<QUERY>*/", "if("+query+")")
         self.iter=iter(cdb.query(self.mapfn, limit=batch))
         self.returned=0
         self.batch=batch

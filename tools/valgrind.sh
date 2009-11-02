@@ -54,7 +54,7 @@ then
    APSW_TEST_ITERATIONS=${APSW_TEST_ITERATIONS:=150}
    apswopt="APSW_NO_MEMLEAK=t APSW_TEST_ITERATIONS=$APSW_TEST_ITERATIONS"
 else
-   options="--tool=callgrind"
+   options="--tool=callgrind --dump-instr=yes --trace-jump=yes"
    cflags=""
    opt="-O2"
    apswopt=""
