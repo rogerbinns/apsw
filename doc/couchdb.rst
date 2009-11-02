@@ -52,7 +52,7 @@ registering with the shell if appropriate.
 Each virtual table maps to a CouchDB database.  The database needs to
 exist already.  Use the following SQL to create the virtual table::
 
-  create virtual table mytable using couchdb('http://localhost:5984', 'col1', 'col2', 'col3');
+  create virtual table mytable using couchdb('http://localhost:5984', 'dbname', 'col1', 'col2', 'col3');
 
 From that point on you can do regular SQL operations against
 *mytable*.  When you drop the table it does not delete the CouchDB
