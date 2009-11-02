@@ -206,11 +206,13 @@ APSW Trace
 ==========
 
 APSW includes a tracing script as part of the :ref:`source
-distribution <source_and_binaries>` named :file:`apswtrace.py`.  This
-script lets you easily trace SQL execution as well as providing a
-summary report without modifying your code.  If it is installed
-anywhere on your :envvar:`PYTHONPATH` then you can invoke it with
-``-m``::
+distribution <source_and_binaries>` named :file:`apswtrace.py`, or you
+can get a copy directly from `source control
+<http://code.google.com/p/apsw/source/browse/tools/apswtrace.py>`__
+(choose "View Raw File").  This script lets you easily trace SQL
+execution as well as providing a summary report without modifying your
+code.  If it is installed anywhere on your :envvar:`PYTHONPATH` then
+you can invoke it with ``-m``::
 
   $ python -m apswtrace [apswtrace options] yourscript.py [your options]
 

@@ -44,6 +44,7 @@ Contents:
    dbapi
    pysqlite
    benchmarking
+   couchdb
    copyright
    changes
 
