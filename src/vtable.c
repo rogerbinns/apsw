@@ -1380,7 +1380,7 @@ apswvtabColumn(sqlite3_vtab_cursor *pCursor, sqlite3_context *result, int ncolum
  pyexception: /* we had an exception in python code */
   assert(PyErr_Occurred());
   sqliteres=MakeSqliteMsgFromPyException(&(pCursor->pVtab->zErrMsg)); /* SQLite flaw: errMsg should be on the cursor not the table! */
-  AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xColumn", "{s: O}", "self", cursor);
+  AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xColumn", "{s: O, s: O}", "self", cursor, "res", res?res:Py_None);
 
  finally:
   Py_XDECREF(res);

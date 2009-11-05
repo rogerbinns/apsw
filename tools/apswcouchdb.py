@@ -22,8 +22,8 @@ class Source:
            emit(null, i);
         }"""
     
-    "Called when a table is created"
     def Create(self, db, modulename, dbname, tablename, *args):
+        "Called when a table is created"
         # args[0] must be url of couchdb authentication information.
         # For example http://user:pass@example.com
         # args[1] is db name'
@@ -31,7 +31,7 @@ class Source:
         # sqlite provides the args still quoted etc.  We have to strip
         # them off.
 
-        args=[eval(a.replace("\\", "\\\\")) for a in args]
+        args=[self._unquote(a) for a in args]
         
         server=couchdb.Server(args[0])
         cdb=server[args[1]]
@@ -69,6 +69,29 @@ class Source:
             return "[%s]" % (v,)
         return '"%s"' % (v,)
 
+    def _unquote(self, v):
+        "A somewhat lenient sql value/identifier parser"
+        # remove whitespace
+        v=v.strip()
+        quote=None
+        if v[0] in ('"', "'"):
+            quote=v[0]
+            v=v[1:]
+        res=[]
+        while len(v):
+            if v[0]==quote:
+                if v[1:].startswith(quote):
+                    res=append(quote)
+                    v=v[2:]
+                    continue
+                # must be endquote
+                v=v[1:]
+                if len(v):
+                    raise Exception("Trailing text after endquote: "+repr(v))
+                continue
+            res.append(v[0])
+            v=v[1:]
+        return "".join(res)
 
 class Table:
 

@@ -118,7 +118,7 @@ For Windows users you won't have command line editing and completion
 unless you install a `readline module
 <http://docs.python.org/library/readline.html>`__.  Fortunately there
 is one at http://ipython.scipy.org/moin/PyReadline/Intro which works.
-However if ths :class:`Shell` offers no completions it will start
+However if this :class:`Shell` offers no completions it will start
 matching filenames even if they make no sense in the context.
 
 Unicode

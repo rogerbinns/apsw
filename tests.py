@@ -6291,9 +6291,6 @@ shell.write(shell.stdout, "hello world\\n")
             isempty(fh[2])
             self.assertEqual(r, getw())
             
-        
-
-            
     # This one uses the coverage module
     def _testShellWithCoverage(self):
         "Check Shell functionality (with coverage)"
@@ -6321,8 +6318,41 @@ shell.write(shell.stdout, "hello world\\n")
                 coverage.stop()
                 coverage.annotate(morfs=[covshell])
                 os.rename("tools/shell.py,cover", "shell.py.gcov")
-            
+
+
+    def testCouchDB(self):
+        "Check APSW/CouchDB virtual table"
+        import couchdb
+        couch=os.getenv("APSW_COUCHDB")
+        server=couchdb.Server(couch)
+        try:
+            import imp
+            mod=imp.load_source("apswcouchdb", "tools/apswcouchdb.py")
+            # cause it to register
+            self.db=apsw.Connection(":memory:")
+            # sanity check
+            server.create("apswtest")
+            self.db.cursor().execute("create virtual table test using couchdb('%s', 'apswtest', one, 'two')" % (couch,))
+            self.assertEqual(0, len(self.db.cursor().execute("select * from test").fetchall()))
+            server["apswtest"].create({"one": 1})
+            server["apswtest"].create({"two": 1})
+            self.assertEqual(2, len(self.db.cursor().execute("select * from test").fetchall()))
+        finally:
+            for dbname in "apswtest", "apswtest2":
+                if dbname in server:
+                    server.delete(dbname)
         
+
+    def _testCouchDBWithCoverage(self):
+        import coverage
+        coverage.start()
+        try:
+            self._originaltestCouchDB()
+        finally:
+            coverage.stop()
+            coverage.annotate(morfs=["tools/apswcouchdb.py"])
+            os.rename("tools/apswcouchdb.py,cover", "apswcouchdb.py.gcov")
+            
     # Note that faults fire only once, so there is no need to reset
     # them.  The testing for objects bigger than 2GB is done in
     # testLargeObjects
@@ -7217,10 +7247,17 @@ def setup(write=write):
         del APSW.testLoadExtension
         sys.stdout.flush()
 
+    # Couchdb?
+    if not os.getenv("APSW_COUCHDB"):
+        del APSW.testCouchDB
+
     # coverage testing of the shell
-    if os.getenv("APSW_SHELL_COVERAGE"):
+    if os.getenv("APSW_PY_COVERAGE"):
         APSW._originaltestShell=APSW.testShell
         APSW.testShell=APSW._testShellWithCoverage
+        if hasattr(APSW, "testCouchDB"):
+            APSW._originaltestCouchDB=APSW.testCouchDB
+            APSW.testCouchDB=APSW._testCouchDBWithCoverage
 
     del memdb
     
