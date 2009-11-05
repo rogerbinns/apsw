@@ -6,6 +6,7 @@ import urllib2
 import hashlib
 
 sqlitevers=(
+    '3.6.20',
     '3.6.19',
     '3.6.18',
     '3.6.17',

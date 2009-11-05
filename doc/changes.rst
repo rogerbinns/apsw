@@ -2,8 +2,8 @@ Change History
 **************
 .. currentmodule:: apsw
 
-next
-====
+3.6.20-r1
+=========
 
 Support for Python 3.0 has been dropped as it has been `end of lifed
 <http://www.python.org/download/releases/3.0.1/>`__.  Use Python 3.1
