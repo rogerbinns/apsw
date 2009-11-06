@@ -12,8 +12,8 @@ is also web based using `HTTP
 access and `JSON <http://json.org/>`__ for data representation.
 
 The APSW source distribution now includes a :ref:`virtual table
-implementation <virtualtables>`__ that lets you access CouchDB
-databases from SQLite, including both read and write access.
+implementation <virtualtables>` that lets you access CouchDB databases
+from SQLite, including both read and write access.
 
 Some suggested uses:
 
@@ -27,10 +27,8 @@ Some suggested uses:
    SQLite and CouchDB.
 
  * Using the SQLite :ref:`FTS3 full text search extension <ext-fts3>`
-   for data in CuochDB.
+   for data in CouchDB.
    
-
-
 Getting it
 ==========
 
@@ -56,7 +54,7 @@ registering with the shell if appropriate.
 Each virtual table maps to a CouchDB database.  The database needs to
 exist already.  Use the following SQL to create the virtual table::
 
-  create virtual table mytable using couchdb('http://localhost:5984', 'dbname', 'col1', 'col2', 'col3');
+  create virtual table mytable using couchdb('http://localhost:5984', 'dbname', col1, col2, col3);
 
 From that point on you can do regular SQL operations against *mytable*
 where each row will correspond to a document from *dbname*.  When you

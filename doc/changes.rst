@@ -16,39 +16,45 @@ and LIKE optimisations with bound variables introduced in SQLite
 <http://code.google.com/p/apsw/issues/detail?id=85>`__ for the long
 and gory details.
 
+You can now access `CouchDB <http://couchdb.apache.org>`__ using a
+virtual table.  This lets you easily bidirectionally transfer data
+between SQLite and CouchDB as well as work on data in both sources at
+the same time.  Other example uses are in the :ref:`documentation
+<couchdb>`.
+
 :ref:`Shell <shell>` changes:
 
- * .dump command now outputs views in the order they were created
-   rather than alphabetical as views could reference each
-   other. (`Issue 82
-   <http://code.google.com/p/apsw/issues/detail?id=82>`__)
+* .dump command now outputs views in the order they were created
+  rather than alphabetical as views could reference each
+  other. (`Issue 82
+  <http://code.google.com/p/apsw/issues/detail?id=82>`__)
 
- * .dump command now outputs the `user_version
-   <http://sqlite.org/pragma.html#version>`__ as a comment.  It is
-   used by some programs (such as Firefox) to keep track of the schema
-   version.
+* .dump command now outputs the `user_version
+  <http://sqlite.org/pragma.html#version>`__ as a comment.  It is
+  used by some programs (such as Firefox) to keep track of the schema
+  version.
 
- * Can now output in `JSON <http://json.org>`__.
+* Can now output in `JSON <http://json.org>`__.
 
- * Fixed `Issue 83
-   <http://code.google.com/p/apsw/issues/detail?id=83>`__ - exception
-   if history file didn't exist
+* Fixed `Issue 83
+  <http://code.google.com/p/apsw/issues/detail?id=83>`__ - exception
+  if history file didn't exist
 
- * You can right justify output in column mode by specifying negative
-   widths. (`Issue 84
-   <http://code.google.com/p/apsw/issues/detail?id=84>`__)
+* You can right justify output in column mode by specifying negative
+  widths. (`Issue 84
+  <http://code.google.com/p/apsw/issues/detail?id=84>`__)
 
- * You no longer get a traceback doing completions if there is a
-   virtual table in the database but the module is not loaded.
-   (`Issue 86
-   <http://code.google.com/p/apsw/issues/detail?id=86>`__)
+* You no longer get a traceback doing completions if there is a
+  virtual table in the database but the module is not loaded.
+  (`Issue 86
+  <http://code.google.com/p/apsw/issues/detail?id=86>`__)
 
- * You can now get detailed tracebacks including local variables using
-   the ".exception ON" command.  This is useful when developing
-   virtual tables and similar functionality.
+* You can now get detailed tracebacks including local variables using
+  the ".exception ON" command.  This is useful when developing
+  virtual tables and similar functionality.
 
- * You can now terminate a SQL statement with "go" or "/" on a line
-   by itself.
+* You can now terminate a SQL statement with "go" or "/" on a line
+  by itself.
 
 3.6.19-r1
 =========
@@ -637,7 +643,7 @@ default for SQLite. I don't believe these are generally useful except
 in some corner cases and so they aren't wrapped. However please shout
 if you do need them.  Note that :func:`Cursor.getdescription` will
 already give you generally useful information. (Also see the `pragmas
-<http://sqlite.org/pragma.html>`_
+<http://sqlite.org/pragma.html>`_)
 
 The test code has been converted into using the unittest module. Run
 :command:`python tests.py -v` to get the tests run. There should be no
