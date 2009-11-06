@@ -10,9 +10,14 @@ import apsw
 import couchdb
 import random
 import sys
+import pickle
 from uuid import uuid4
 
 class Source:
+
+    def __init__(self):
+        self.rbatch=5000
+        self.wbatch=5000
 
     # javascript function that returns all keys of a doc in a view
     _allkeysfunc="""
@@ -53,7 +58,7 @@ class Source:
         # and this for temp
         maptable=self._fmt_sql_identifier(tablename+"_idmap")
 
-        t=Table(db, cdb, cols, maptable)
+        t=Table(self, db, cdb, cols, maptable)
 
         sql="create table ignored("+",".join([self._fmt_sql_identifier(c) for c in cols])+")"
         return sql, t
@@ -69,25 +74,30 @@ class Source:
             return "[%s]" % (v,)
         return '"%s"' % (v,)
 
-    def _unquote(self, v):
+    def _unquote(self, val):
         "A somewhat lenient sql value/identifier parser"
         # remove whitespace
-        v=v.strip()
+        v=val.strip()
         quote=None
-        if v[0] in ('"', "'"):
+        if v[0] in ('"', "'", '['):
             quote=v[0]
+            if quote=='[': quote=']'
             v=v[1:]
+        else:
+            if len(v.split())>1:
+                raise ValueError("You cannot specify column types or defaults: %s" % (v,))
+            return v
         res=[]
         while len(v):
             if v[0]==quote:
-                if v[1:].startswith(quote):
-                    res=append(quote)
+                if quote!=']' and v[1:].startswith(quote):
+                    res.append(quote)
                     v=v[2:]
                     continue
                 # must be endquote
                 v=v[1:]
                 if len(v):
-                    raise Exception("Trailing text after endquote: "+repr(v))
+                    raise ValueError("Trailing text after endquote: "+repr(val))
                 continue
             res.append(v[0])
             v=v[1:]
@@ -95,7 +105,7 @@ class Source:
 
 class Table:
 
-    def __init__(self, adb, cdb, cols, maptable):
+    def __init__(self, source, adb, cdb, cols, maptable):
         # A temporary table that maps between couchdb _id field for
         # each document and the rowid needed to implement a virtual
         # table. _rowid_ is the 64 bit int id autoassigned by SQLIte.
@@ -103,13 +113,12 @@ class Table:
         # updates can be done
         adb.cursor().execute("create temporary table if not exists %s(_id UNIQUE, _rev)" % (maptable,))
 
+        self.s=source
         self.adb=adb
         self.cdb=cdb
         self.cols=cols
         self.maptable=maptable
         self.pending_updates={}
-        self.rbatch=5000
-        self.wbatch=5000
 
     def Destroy(self):
         self.adb.cursor().execute("drop table if  exists "+self.maptable)
@@ -127,7 +136,18 @@ class Table:
     def Rename(self):
         raise Exception("Rename not supported")
 
+    _binary_type = eval(("buffer", "bytes") [sys.version_info>=(3,0)])
+    def _unpickle(self, fields):
+        res=[]
+        for f in fields:
+            if isinstance(f, self._binary_type):
+                res.append(pickle.loads(f))
+            else:
+                res.append(f)
+        return res
+
     def UpdateInsertRow(self, rowid, fields):
+        fields=self._unpickle(fields)
         if rowid is not None:
             raise Exception("You cannot specify the rowid")
         _id=None
@@ -140,7 +160,7 @@ class Table:
         data["_id"]=_id
         self.pending_updates[_id]=data
 
-        if len(self.pending_updates)>=self.wbatch:
+        if len(self.pending_updates)>=self.s.wbatch:
             self.flushpending()
             
         return self.getrowforid(_id)
@@ -154,10 +174,11 @@ class Table:
         if _rev:
             d["_rev"]=_rev
         self.pending_updates[_id]=d
-        if len(self.pending_updates)>=self.wbatch:
+        if len(self.pending_updates)>=self.s.wbatch:
             self.flushpending()
 
     def UpdateChangeRow(self, rowid, newrowid, fields):
+        fields=self._unpickle(fields)
         if newrowid!=rowid:
             raise Exception("You cannot change the rowid")
         row=self.adb.cursor().execute("select _id,_rev from "+self.maptable+" where _rowid_=?", (rowid,)).fetchall()
@@ -168,7 +189,7 @@ class Table:
         d["_rev"]=_rev
         d["_id"]=_id
         self.pending_updates[_id]=d
-        if len(self.pending_updates)>=self.wbatch:
+        if len(self.pending_updates)>=self.s.wbatch:
             self.flushpending()
         
     def getrowforid(self, _id):
@@ -219,6 +240,9 @@ class Cursor:
 
     _binary_type = eval(("buffer", "bytes") [sys.version_info>=(3,0)])
     _basestring = eval(("basestring", "str") [sys.version_info>=(3,0)])
+    _sqlite_types=(_basestring, type(None), type(1), type(1.1))
+    if sys.version_info<(3,0):
+        _sqlite_types=_sqlite_types+(type(eval("100L")),)
 
     def _jsquoute(self, v):
         if isinstance(v, self._binary_type):
@@ -248,7 +272,7 @@ class Cursor:
                 q.append("doc['%s']%s%s" % (self.t.cols[col], self.opmap[constraint], self._jsquoute(arg)))
             q=" && ".join(q)
             
-        self.query=Query(self.t.cdb, self.t.cols, q, self.t.rbatch)
+        self.query=Query(self.t.cdb, self.t.cols, q, self.t.s.rbatch)
 
     def Eof(self):
         # Eof is called before next so we do all the work in eof
@@ -264,7 +288,10 @@ class Cursor:
     def Column(self, which):
         if which<0:
             return self.Rowid()
-        return self._values[which]
+        val=self._values[which]
+        if isinstance(val, self._sqlite_types):
+            return val
+        return self._binary_type(pickle.dumps(val, -1))
 
     def Next(self):
         pass

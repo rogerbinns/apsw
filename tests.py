@@ -6330,16 +6330,44 @@ shell.write(shell.stdout, "hello world\\n")
             mod=imp.load_source("apswcouchdb", "tools/apswcouchdb.py")
             # cause it to register
             self.db=apsw.Connection(":memory:")
-            # sanity check
+            # sanity check - does it fundamentally work?
             server.create("apswtest")
-            self.db.cursor().execute("create virtual table test using couchdb('%s', 'apswtest', one, 'two')" % (couch,))
+            c=self.db.cursor()
+            c.execute("create virtual table test using couchdb('%s', 'apswtest', one \n\t, 'two')" % (couch,))
             self.assertEqual(0, len(self.db.cursor().execute("select * from test").fetchall()))
             server["apswtest"].create({"one": 1})
             server["apswtest"].create({"two": 1})
             self.assertEqual(2, len(self.db.cursor().execute("select * from test").fetchall()))
+            self.assertEqual(1, len(self.db.cursor().execute("select * from test where one=1").fetchall()))
+            c.execute("drop table test")
+            ### real testing starts here
+            # not allowed to specify types etc
+            self.assertRaises(ValueError, c.execute, "create virtual table test using couchdb('%s', 'apswtest', one two, 'two')" % (couch,))
+            self.assertRaises(ValueError, c.execute, "create virtual table test using couchdb('%s', 'apswtest', 'one't, 'two')" % (couch,))
+            # check quoting
+            for q,v in ("'abc''def'", "abc'def"), ("[abc[]", "abc["), ('""', ""):
+                c.execute("drop table if exists test")
+                c.execute("create virtual table test using couchdb('%s', apswtest, %s)" % (couch, q))
+                self.assertEqual([v], [row[1] for row in c.execute("pragma table_info(test)")])
+                server["apswtest"].create({v: 12})
+                print q,v
+                self.assertEqual(1, len(c.execute("select * from test where %s=12" % (q,)).fetchall()))
+            # check plus works
+            c.execute("drop table if exists test")
+            server["apswtest"].create({"three": 1})
+            c.execute("create virtual table test using couchdb('%s', 'apswtest', three, '+', '+')" % (couch,))
+            cols=[row[1] for row in c.execute("pragma table_info(test)")]
+            self.assertEqual(cols, ["three", "one", "two"])
+            # make sure table name quoting works
+            for name in '"test].("', '[test"]':
+                c.execute("create virtual table %s using couchdb('%s', 'apswtest', '+')" % (name, couch))
+                # getting items forces the idmap to be used
+                self.assertEqual(3, len(c.execute("select * from "+name).fetchall()))
+
+            # does setting batch size work?
         finally:
-            for dbname in "apswtest", "apswtest2":
-                if dbname in server:
+            for dbname in server:
+                if dbname.startswith("apswtest"):
                     server.delete(dbname)
         
 
