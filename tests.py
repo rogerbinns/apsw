@@ -6325,49 +6325,102 @@ shell.write(shell.stdout, "hello world\\n")
         import couchdb
         couch=os.getenv("APSW_COUCHDB")
         server=couchdb.Server(couch)
+        # this is to allow multiple tests to run concurrently against
+        # the same couchdb server
+        apswtest="apswtest_"+"%09d" % (random.randint(0,1000000000),)
         try:
+            # NOTE: The current shipping CouchDB python library is
+            # broken if you create documents.  It will create them
+            # twice. If you include an _id then you get an update
+            # conflict.  This bug has been fixed in the Ubuntu version
+            # but not in the PyPI version.  Make sure to always use
+            # update() to create/change documents and not any of the
+            # other functions.
             import imp
             mod=imp.load_source("apswcouchdb", "tools/apswcouchdb.py")
             # cause it to register
             self.db=apsw.Connection(":memory:")
             # sanity check - does it fundamentally work?
-            server.create("apswtest")
+            server.create(apswtest)
             c=self.db.cursor()
-            c.execute("create virtual table test using couchdb('%s', 'apswtest', one \n\t, 'two')" % (couch,))
+            c.execute("create virtual table test using couchdb('%s', %s, one \n\t, 'two')" % (couch,apswtest))
             self.assertEqual(0, len(self.db.cursor().execute("select * from test").fetchall()))
-            server["apswtest"].create({"one": 1})
-            server["apswtest"].create({"two": 1})
+            server[apswtest].update([{"_id": "1", "one": 1}, {"_id": "2", "two": 2}])
             self.assertEqual(2, len(self.db.cursor().execute("select * from test").fetchall()))
             self.assertEqual(1, len(self.db.cursor().execute("select * from test where one=1").fetchall()))
             c.execute("drop table test")
             ### real testing starts here
             # not allowed to specify types etc
-            self.assertRaises(ValueError, c.execute, "create virtual table test using couchdb('%s', 'apswtest', one two, 'two')" % (couch,))
-            self.assertRaises(ValueError, c.execute, "create virtual table test using couchdb('%s', 'apswtest', 'one't, 'two')" % (couch,))
+            self.assertRaises(ValueError, c.execute, "create virtual table test using couchdb('%s', %s, one two, 'two')" % (couch,apswtest))
+            self.assertRaises(ValueError, c.execute, "create virtual table test using couchdb('%s', '%s', 'one't, 'two')" % (couch,apswtest))
             # check quoting
-            for q,v in ("'abc''def'", "abc'def"), ("[abc[]", "abc["), ('""', ""):
+            checkcols=["one", "two"]
+            for q,v in ("abc", "abc"), ("[abc\"def]", "abc\"def"),  ('"abc\'\'def"', "abc''def"), ('""', ""):
                 c.execute("drop table if exists test")
-                c.execute("create virtual table test using couchdb('%s', apswtest, %s)" % (couch, q))
+                sql="create virtual table test using couchdb('%s', %s, %s)" % (couch, apswtest, q)
+                c.execute(sql)
                 self.assertEqual([v], [row[1] for row in c.execute("pragma table_info(test)")])
-                server["apswtest"].create({v: 12})
-                print q,v
+                server[apswtest].update([{v: 12}])
+                checkcols.append(v)
                 self.assertEqual(1, len(c.execute("select * from test where %s=12" % (q,)).fetchall()))
             # check plus works
             c.execute("drop table if exists test")
-            server["apswtest"].create({"three": 1})
-            c.execute("create virtual table test using couchdb('%s', 'apswtest', three, '+', '+')" % (couch,))
+            server[apswtest].update([{"three": 1}])
+            c.execute("create virtual table test using couchdb('%s', %s, three, '+', '+')" % (couch,apswtest))
             cols=[row[1] for row in c.execute("pragma table_info(test)")]
-            self.assertEqual(cols, ["three", "one", "two"])
+            checkcols.sort()
+            checkcols=["three"]+checkcols
+            self.assertEqual(cols, checkcols)
             # make sure table name quoting works
             for name in '"test].("', '[test"]':
-                c.execute("create virtual table %s using couchdb('%s', 'apswtest', '+')" % (name, couch))
+                c.execute("create virtual table %s using couchdb('%s', '%s', '+')" % (name, couch, apswtest))
                 # getting items forces the idmap to be used
-                self.assertEqual(3, len(c.execute("select * from "+name).fetchall()))
+                self.assertEqual(7, len(c.execute("select * from "+name).fetchall()))
+            # check types
+            c.execute("drop table test")
+            c.execute("create virtual table test using couchdb('%s', '%s', val)" % (couch,apswtest))
+            c.execute("delete from test")
+            # Taken from testTypes with blob/binary removed
+            vals=("a simple string",  # "ascii" string
+                  "0123456789"*200000, # a longer string
+                  u(r"a \u1234 unicode ' \ufe54 string \u0089"),  # simple unicode string
+                  u(r"\N{BLACK STAR} \" \N{WHITE STAR} \N{LIGHTNING} \N{COMET} "), # funky unicode or an episode of b5
+                  u(r"\N{MUSICAL SYMBOL G CLEF}"), # http://www.cmlenz.net/archives/2008/07/the-truth-about-unicode-in-python
+                  97, # integer
+                  2147483647,   # numbers on 31 bit boundary (32nd bit used for integer sign), and then
+                  -2147483647,  # start using 32nd bit (must be represented by 64bit to avoid losing
+                  long(2147483648),  # detail)
+                  long(-2147483648),
+                  long(2147483999),
+                  long(-2147483999),
+                  992147483999,
+                  -992147483999,
+                  9223372036854775807,
+                  -9223372036854775808,
+                  None,  # our good friend NULL/None
+                  1.1,  # floating point can't be compared exactly - assertAlmostEqual is used to check
+                  10.2, # see Appendix B in the Python Tutorial
+                  1.3,
+                  1.45897589347E97,
+                  5.987987/8.7678678687676786,
+                  math.pi,
+                  True,  # derived from integer
+                  False
+                  )
+            for v in vals:
+                c.execute("delete from test")
+                print (repr(v)[:60])
+                if v==9223372036854775807:
+                    #raw_input("break now")
+                    pass
+                c.execute("insert into test values(?)", (v,))
+                self.assertEqual([(v,)], c.execute("select * from test").fetchall())
+                self.assertEqual([(v,)], c.execute("select * from test where val=?", (v,)).fetchall())
 
             # does setting batch size work?
         finally:
             for dbname in server:
-                if dbname.startswith("apswtest"):
+                if dbname.startswith(apswtest):
                     server.delete(dbname)
         
 

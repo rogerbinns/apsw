@@ -11,7 +11,17 @@ import couchdb
 import random
 import sys
 import pickle
-from uuid import uuid4
+try:
+    from uuid import uuid4
+except ImportError:
+    class dummyuuid:
+        pass
+
+    def uuid4():
+        x="".join(["%02x" % (random.randint(0,255),) for _ in range(16)])
+        o=dummyuuid
+        o.hex=x
+        return o
 
 class Source:
 
@@ -61,6 +71,7 @@ class Source:
         t=Table(self, db, cdb, cols, maptable)
 
         sql="create table ignored("+",".join([self._fmt_sql_identifier(c) for c in cols])+")"
+
         return sql, t
 
     Connect=Create
@@ -124,6 +135,8 @@ class Table:
         self.adb.cursor().execute("drop table if  exists "+self.maptable)
 
     def BestIndex(self, constraints, orderbys):
+        if not constraints and not orderbys:
+            return None
         return [[(i,False) for i in range(len(constraints))], # constraintarg position for cursor.filter
                 0,                                  # index number
                 repr(constraints),                  # index string
@@ -260,6 +273,10 @@ class Cursor:
     def __init__(self, table):
         self.t=table
 
+    def _quote(self, c):
+        return c.replace("\\", "\\\\"). \
+               replace("'", "\\'")
+
     def Filter(self, indexnum, indexname, args):
         # back to begining - we flush any outstanding changes so that we don't have to
         # merge pending updates with server data
@@ -269,7 +286,7 @@ class Cursor:
             idx=eval(indexname)
             q=[]
             for ((col,constraint), arg) in zip(idx, args):
-                q.append("doc['%s']%s%s" % (self.t.cols[col], self.opmap[constraint], self._jsquoute(arg)))
+                q.append("doc['%s']%s%s" % (self._quote(self.t.cols[col]), self.opmap[constraint], self._jsquoute(arg)))
             q=" && ".join(q)
             
         self.query=Query(self.t.cdb, self.t.cols, q, self.t.s.rbatch)
@@ -301,13 +318,18 @@ class Cursor:
 
 class Query:
     """Encapsulates a couchdb query dealing with batching and EOF testing"""
+
+    def _quote(self, c):
+        return c.replace("\\", "\\\\"). \
+               replace("'", "\\'")
+    
     def __init__(self, cdb, cols, query=None, batch=3):
         self.cdb=cdb
         self.mapfn='''
         function(doc) {
           /*<QUERY>*/
              emit(null, [doc._rev, %s]);
-        }''' % (",".join(["doc['%s']===undefined?null:doc['%s']" % (c,c) for c in cols]),)
+        }''' % (",".join(["doc['%s']===undefined?null:doc['%s']" % (self._quote(c),self._quote(c)) for c in cols]),)
         if query:
             self.mapfn=self.mapfn.replace("/*<QUERY>*/", "if("+query+")")
         self.iter=iter(cdb.query(self.mapfn, limit=batch))
