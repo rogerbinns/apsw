@@ -193,7 +193,9 @@ Indices
   temporary they will eventually be discarded by CouchDB.
 
   This also means that Javascript's rules are used for evaluation in
-  circumstances such as comparing strings to integers.
+  circumstances such as comparing strings to integers.  However SQL
+  rules are used for nulls - they are not equal to each other or any
+  other value.
 
   SQLite only supports one index per query.  If all the constraints
   are joined by **and** then this module can tell SQLite it has one

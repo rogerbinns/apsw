@@ -14,6 +14,7 @@ import pickle
 try:
     from uuid import uuid4
 except ImportError:
+    # This happens on Python 2.4
     class dummyuuid:
         pass
 
@@ -146,8 +147,8 @@ class Table:
     def Open(self):
         return Cursor(self)
 
-    def Rename(self):
-        raise Exception("Rename not supported")
+    def Rename(self, newname):
+        raise NotImplementedError("Rename not supported")
 
     _binary_type = eval(("buffer", "bytes") [sys.version_info>=(3,0)])
     def _unpickle(self, fields):
@@ -258,15 +259,14 @@ class Cursor:
         _sqlite_types=_sqlite_types+(type(eval("100L")),)
 
     def _jsquoute(self, v):
-        if isinstance(v, self._binary_type):
-            raise Exception("Javascript does not support binary")
+        assert not isinstance(v, self._binary_type)
         if isinstance(v, self._basestring):
             return '"'+ \
                    v.replace("\\", "\\\\") \
                    .replace('"', '\\"') \
                    +'"'
         if v is None:
-            return null
+            return "null"
         # integer
         return str(v)
     
@@ -286,7 +286,18 @@ class Cursor:
             idx=eval(indexname)
             q=[]
             for ((col,constraint), arg) in zip(idx, args):
-                q.append("doc['%s']%s%s" % (self._quote(self.t.cols[col]), self.opmap[constraint], self._jsquoute(arg)))
+                if isinstance(arg, self._binary_type):
+                    v=pickle.loads(arg)
+                    if constraint!=apsw.SQLITE_INDEX_CONSTRAINT_EQ:
+                        raise ValueError("You can only do equality with blobs not "+self.opmap[constraint])
+                    # The various python json modules encode to a
+                    # string slightly differently so
+                    # toJSON(doc['field']) can't be used.
+                    q.append("areObjectsEqual(doc['%s'], %s)" % (
+                        self._quote(self.t.cols[col]),
+                        couchdb.json.encode(v)))
+                else:
+                    q.append("(doc['%s']%s%s)" % (self._quote(self.t.cols[col]), self.opmap[constraint], self._jsquoute(arg)))
             q=" && ".join(q)
             
         self.query=Query(self.t.cdb, self.t.cols, q, self.t.s.rbatch)
@@ -325,13 +336,37 @@ class Query:
     
     def __init__(self, cdb, cols, query=None, batch=3):
         self.cdb=cdb
+        # what an incredibly stupid language that it takes this much
+        # code just to determine if two objects are equal
         self.mapfn='''
-        function(doc) {
-          /*<QUERY>*/
-             emit(null, [doc._rev, %s]);
-        }''' % (",".join(["doc['%s']===undefined?null:doc['%s']" % (self._quote(c),self._quote(c)) for c in cols]),)
+function _areObjectsEqual(left,right) {
+  if(left===right)                   return true;
+  if (typeof left != typeof right)   return false;
+  if(typeof left != 'object')        return left==right;
+  if(left.length !== right.length)   return false;
+  for(var i in left)
+       if(!areObjectsEqual(left[i], right[i]))
+         return false;
+  for(var i in right)
+       if(!areObjectsEqual(left[i], right[i]))
+         return false;         
+  return true;
+}
+
+function areObjectsEqual(left, right) {
+  var res=_areObjectsEqual(left, right);
+  log(""+res+" "+left+" - "+right);
+  return res;
+}
+
+function(doc) {
+  /*<QUERY>*/
+     emit(null, [doc._rev, %s]);
+            }''' % \
+        (",".join(["doc['%s']===undefined?null:doc['%s']" % (self._quote(c),self._quote(c)) for c in cols]),)
         if query:
             self.mapfn=self.mapfn.replace("/*<QUERY>*/", "if("+query+")")
+            print query[:1000]
         self.iter=iter(cdb.query(self.mapfn, limit=batch))
         self.returned=0
         self.batch=batch

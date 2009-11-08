@@ -39,6 +39,7 @@ import random
 import time
 import threading
 import glob
+import pickle
 
 if py3:
     import queue as Queue
@@ -6355,14 +6356,18 @@ shell.write(shell.stdout, "hello world\\n")
             self.assertRaises(ValueError, c.execute, "create virtual table test using couchdb('%s', '%s', 'one't, 'two')" % (couch,apswtest))
             # check quoting
             checkcols=["one", "two"]
-            for q,v in ("abc", "abc"), ("[abc\"def]", "abc\"def"),  ('"abc\'\'def"', "abc''def"), ('""', ""):
+            for q,v in ("abc", "abc"), ("'abc''def'", "abc'def"), ("[abc\"def]", "abc\"def"),  ('"abc\'\'def"', "abc''def"), ('""', ""):
                 c.execute("drop table if exists test")
                 sql="create virtual table test using couchdb('%s', %s, %s)" % (couch, apswtest, q)
                 c.execute(sql)
                 self.assertEqual([v], [row[1] for row in c.execute("pragma table_info(test)")])
-                server[apswtest].update([{v: 12}])
+                # if an id is not specified then gets added twice - sigh
+                server[apswtest].update([{"_id": v+"abcddd", v: 12}])
                 checkcols.append(v)
+                if v=="abc'def":
+                    q="\"abc'def\""
                 self.assertEqual(1, len(c.execute("select * from test where %s=12" % (q,)).fetchall()))
+
             # check plus works
             c.execute("drop table if exists test")
             server[apswtest].update([{"three": 1}])
@@ -6375,7 +6380,7 @@ shell.write(shell.stdout, "hello world\\n")
             for name in '"test].("', '[test"]':
                 c.execute("create virtual table %s using couchdb('%s', '%s', '+')" % (name, couch, apswtest))
                 # getting items forces the idmap to be used
-                self.assertEqual(7, len(c.execute("select * from "+name).fetchall()))
+                self.assertEqual(9, len(c.execute("select * from "+name).fetchall()))
             # check types
             c.execute("drop table test")
             c.execute("create virtual table test using couchdb('%s', '%s', val)" % (couch,apswtest))
@@ -6395,27 +6400,63 @@ shell.write(shell.stdout, "hello world\\n")
                   long(-2147483999),
                   992147483999,
                   -992147483999,
-                  9223372036854775807,
-                  -9223372036854775808,
+                  # see http://article.gmane.org/gmane.comp.db.couchdb.user/4969 for why these two are commented out
+                  # 9223372036854775807,
+                  # -9223372036854775808,
                   None,  # our good friend NULL/None
-                  1.1,  # floating point can't be compared exactly - assertAlmostEqual is used to check
-                  10.2, # see Appendix B in the Python Tutorial
+                  # Floating point won't compare exactly unless
+                  # CPython, JSON, Erlang and Javascript all get the
+                  # exact same bit representation for a number.  That
+                  # happens to be the case for these values.
+                  1.1,  
+                  10.2, 
                   1.3,
                   1.45897589347E97,
-                  5.987987/8.7678678687676786,
-                  math.pi,
                   True,  # derived from integer
                   False
                   )
             for v in vals:
                 c.execute("delete from test")
-                print (repr(v)[:60])
-                if v==9223372036854775807:
-                    #raw_input("break now")
-                    pass
                 c.execute("insert into test values(?)", (v,))
                 self.assertEqual([(v,)], c.execute("select * from test").fetchall())
-                self.assertEqual([(v,)], c.execute("select * from test where val=?", (v,)).fetchall())
+                if v is None:
+                    comp="ISNULL"
+                    bindings=None
+                else:
+                    comp="=?"
+                    bindings=(v,)
+                self.assertEqual([(v,)], c.execute("select * from test where val "+comp, bindings).fetchall())
+            # blob/binary
+            vals=[
+                # some objects that can be converted to/from json but
+                # are not primitive SQLite types
+                {},
+                {"a": 1, "b": 3},
+                [], [None, None],
+                [99, 98, 97],
+                {"float": 1.1, "none": None, "string": u(r"\N{MUSICAL SYMBOL G CLEF} \" \N{WHITE STAR} \N{LIGHTNING}"), "integer": 3},
+                [[[{}], {"a": [{}]}, "a"], ["a", 3]]
+                ]
+            # and make it a bit more interesting by including itself
+            vals.append(vals)
+            for v in vals:
+                c.execute("delete from test")
+                pv=pickle.dumps(v, -1)
+                if sys.version_info<(3,):
+                    pv=buffer(pv)
+                c.execute("insert into test values(?)", (pv,))
+                self.assertEqual(1, len(c.execute("select * from test where val=?", (pv,)).fetchall()))
+                c.execute("delete from test")
+                server[apswtest].update([{"_id": "bug workaround", "val": v}])
+                back=c.execute("select * from test").fetchall()[0][0]
+                self.assertEqual(pickle.loads(back), v)
+                self.assertEqual(1, len(c.execute("select * from test where val=?", (pv,)).fetchall()))
+                
+
+            # rename
+            self.assertRaises(NotImplementedError, c.execute, "ALTER TABLE test RENAME TO foo")
+            # check test was not renamed
+            c.execute("select * from test").fetchall()
 
             # does setting batch size work?
         finally:
