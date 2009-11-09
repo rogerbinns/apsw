@@ -6428,17 +6428,22 @@ shell.write(shell.stdout, "hello world\\n")
                 self.assertEqual([(v,)], c.execute("select * from test where val "+comp, bindings).fetchall())
             # blob/binary
             vals=[
-                # some objects that can be converted to/from json but
-                # are not primitive SQLite types
+                # Some objects that can be converted to/from json but
+                # are not primitive SQLite types.  Note that if doing
+                # equality testing then all strings must be unicode
+                # otherwise they won't match strings coming from the
+                # server as pickle does unicode strings and normal
+                # strings differently.
                 {},
-                {"a": 1, "b": 3},
+                {u("a"): 1, u("b"): 3},
                 [], [None, None],
                 [99, 98, 97],
-                {"float": 1.1, "none": None, "string": u(r"\N{MUSICAL SYMBOL G CLEF} \" \N{WHITE STAR} \N{LIGHTNING}"), "integer": 3},
-                [[[{}], {"a": [{}]}, "a"], ["a", 3]]
+                {u("float"): 1.1, u("none"): None, u("string"): u(r"\N{MUSICAL SYMBOL G CLEF} \" \N{WHITE STAR} \N{LIGHTNING}"), u("integer"): 3},
+                [[[{}], {u("a"): [{}]}, u("a")], [u("a"), 3]]
                 ]
             # and make it a bit more interesting by including itself
-            vals.append(vals)
+            vals.append(vals[:])
+            
             for v in vals:
                 c.execute("delete from test")
                 pv=pickle.dumps(v, -1)
@@ -6451,14 +6456,109 @@ shell.write(shell.stdout, "hello world\\n")
                 back=c.execute("select * from test").fetchall()[0][0]
                 self.assertEqual(pickle.loads(back), v)
                 self.assertEqual(1, len(c.execute("select * from test where val=?", (pv,)).fetchall()))
-                
 
-            # rename
+            # now try to insert stuff that can't be converted to JSON
+            vals=[
+                object(),
+                APSW,
+                ZeroDivisionError,
+                ]
+            for v in vals:
+                pv=pickle.dumps(v, -1)
+                if sys.version_info<(3,):
+                    pv=buffer(pv)
+                try:
+                    c.execute("insert into test values(?)", (pv,))
+                except TypeError:
+                    self.assert_("json" in str(sys.exc_info()[1]).lower())
+
+            # not pickled binary data
+            try:
+                c.execute("insert into test values(?)", (b(r"\x01\x01\x02\x02"),))
+                1/0
+            except:
+                # the actual exception depends on how pickle interpreted the binary data
+                self.assertNotEqual(ZeroDivisionError, sys.exc_info()[0])
+
+            ### insert
+            c.execute("delete from test")
+            self.assertRaises(ValueError, c.execute, "insert into test(_rowid_, val) values (99999, 7)")
+            c.execute("drop table test")
+            c.execute("create virtual table test using couchdb('%s', '%s', _id, val)" % (couch,apswtest))
+            myid="how is this for a funky string"
+            c.execute("insert into test values(?, 7)", (myid,))
+            self.assertEqual([(myid,)], c.execute("select _id from test where val=7").fetchall())
+            # should not be allowed to add a dupe
+            self.assertRaises(couchdb.client.ResourceConflict, c.execute, "insert into test values(?, 8)", (myid,))
+
+            ### delete
+            def counttest():
+                return c.execute("select count(*) from test").fetchall()[0][0]
+            c.execute("insert into test(val) values(9)")
+            self.assertEqual(2, counttest())
+            # non-existent rowid
+            c.execute("delete from test where _rowid_=87987")
+            self.assertEqual(2, counttest())
+            rid=c.execute("select _rowid_ from test where val=9").fetchall()[0][0]
+            c.execute("delete from test where _rowid_=?", (rid,))
+            self.assertEqual(1, counttest())
+            c.execute("delete from test where _id=?", (myid,))
+            self.assertEqual(0, counttest())
+
+            ### update
+            c.execute("update test set val=2 where val!=0")
+            self.assertEqual(0, counttest())
+            server[apswtest].update([{"_id": "1", "val": 1}, {"_id": "2", "val": 2}])
+            c.execute("update test set val=val*10 where val!=0")
+            r=[row[0] for row in c.execute("select val from test")]
+            r.sort()
+            self.assertEqual([10,20], r)
+            # try to change rowid
+            self.assertRaises(ValueError, c.execute, "update test  set _rowid_=_rowid_*1000")
+            # try to change _id
+            self.assertRaises(ValueError, c.execute, "update test set _id='xxx' where _id='1'")
+            # test deepupdate works
+            c.execute("delete from test")
+            server[apswtest].update([{"_id": "1", "val": 1, "one": 1, "two": 2}])
+            c.execute("update test set val=val*10")
+            now=dict(server[apswtest]["1"])
+            del now["_rev"]
+            self.assertEqual({"_id": "1", "val": 10, "one": 1, "two": 2}, now)
+            c.execute("select couchdb_config('deep-update', 0)")
+            c.execute("update test set val=val*10")
+            now=dict(server[apswtest]["1"])
+            del now["_rev"]
+            self.assertEqual({"_id": "1", "val": 100}, now)
+            
+            ### table rename
             self.assertRaises(NotImplementedError, c.execute, "ALTER TABLE test RENAME TO foo")
             # check test was not renamed
             c.execute("select * from test").fetchall()
 
-            # does setting batch size work?
+            ### get/setconfig
+            self.assertRaises(TypeError, c.execute, "select couchdb_config('not exist')")
+            self.assertRaises(TypeError, c.execute, "select couchdb_config('not exist', 1)")
+            self.assertRaises(apsw.SQLError, c.execute, "select couchdb_config()")
+            self.assertRaises(apsw.SQLError, c.execute, "select couchdb_config('read-batch', 1, 2)")
+            self.assertRaises(ValueError, c.execute, "select couchdb_config('read-batch', 'xx')")
+            for n in -10, 0:
+                self.assertRaises(ValueError, c.execute, "select couchdb_config('read-batch', ?)", (n,))
+                self.assertRaises(ValueError, c.execute, "select couchdb_config('write-batch', ?)", (n,))
+            for n in -1, 2, 3:
+                self.assertRaises(ValueError, c.execute, "select couchdb_config('deep-update', ?)", (n,))
+            
+            ### does setting batch size work?
+            allin=list(range(129))
+            allout=[(i,) for i in range(129)]
+            for batch in 1,2,3, 7, 39, 100, 127, 128, 129, 130:
+                c.execute("select couchdb_config('read-batch', ?), couchdb_config('write-batch', ?)", (batch, batch))
+                self.assertEqual([(batch,batch)], c.execute("select couchdb_config('read-batch'), couchdb_config('write-batch')").fetchall())
+                self.assertEqual(0, c.execute("delete from test; select count(*) from test; begin").fetchall()[0][0])
+                for i in allin:
+                    c.execute("insert into test(val) values(?)", (i,))
+                c.execute("commit")
+                self.assertEqual(allout, c.execute("select val from test order by val").fetchall())
+
         finally:
             for dbname in server:
                 if dbname.startswith(apswtest):

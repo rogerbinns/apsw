@@ -28,6 +28,9 @@ Some suggested uses:
 
  * Using the SQLite :ref:`FTS3 full text search extension <ext-fts3>`
    for data in CouchDB.
+
+ * Using the SQLite :ref:`RTree extension <ext-rtree>` to do spacial
+   queries.
    
 Getting it
 ==========
@@ -111,11 +114,12 @@ Scalability
   larger the number the fewer HTTP requests are made but more memory
   is consumed. You can change this number like this::
 
-    select apswcouchdb_config('read-batch', 2000);
-    select apswcouchdb_config('write-batch', 10000);
+    select couchdb_config('read-batch', 2000);
+    select couchdb_config('write-batch', 10000);
 
   If you are debugging code then setting them to 1 will cause an
-  immediate HTTP request per row/document read or written.
+  immediate HTTP request per row/document read or written rather than
+  waiting till the batch is full or for a transaction boundary.
 
 Transactions
 
@@ -123,7 +127,7 @@ Transactions
   transactions.  CouchDB is atomic but does not support transactions.
   Any outstanding batched updates are also flushed on SQLite
   transaction boundaries as well as other points such as when a cursor
-  starts from the begining again.  This means that a rollback can only
+  starts from the beginning again.  This means that a rollback can only
   discard unflushed pending updates but not undo earlier updates
   within the SQL transaction.
 
@@ -158,13 +162,29 @@ Types
   Values in JSON that have no SQLite equivalent such as a list are
   `pickled <http://docs.python.org/library/pickle>`__ and supplied to
   SQLite as a blob.  Similarly any blob supplied to SQLite intended
-  for CouchDB must be pickled Python data.
+  for CouchDB must be pickled Python data.  Use ``-1`` as the pickle
+  version (selects binary encoding).
 
   Note that this module has no affinity rules.  Whatever type is
   supplied at the SQL level is then sent as the same type to CouchDB.
   You cannot specify types when creating the virtual table.  If you
   need affinity then use an intermediary temporary table as the
   example in the next section shows.
+
+  .. note::
+
+    Although JSON has separate Integer and Float types, Javascript
+    itself does not and stores everything as a floating point number
+    which has about 15 digits of precision. Python, Erlang and CouchDB
+    support arbitrary large numbers but data that passes through a
+    Javascript view server will lose precision.  For example
+    9223372036854775807 will come back as 9223372036854776000
+    (different last 4 digits).
+
+    For Python 2 note that Pickle encodes strings and unicode strings
+    differently even when they have same ASCII contents.  If you are
+    trying to do an equality check then ensure all strings including
+    dictionary keys are unicode before pickling.
 
 Writing
 

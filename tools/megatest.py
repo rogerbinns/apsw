@@ -53,7 +53,7 @@ def threadrun(queue):
             sys.stdout.flush()
         except:
             # uncomment to debug problems with this script
-            # traceback.print_exc()
+            #traceback.print_exc()
             print "\nFAILED", d
         
 def main(PYVERS, UCSTEST, SQLITEVERS, concurrency):
@@ -163,7 +163,14 @@ SQLITEVERS=(
 
 def couchp(pyver):
     # should we try to support couchdb?
-    return pyver!="system" and pyver<"3" and pyver>="2.4" and couchdb
+    if couchdb and pyver=="system":
+        try:
+            import couchdb as ignored
+            import httplib2
+            return True
+        except ImportError:
+            return False
+    return pyver<"3" and pyver>="2.4" and couchdb
 
 if __name__=='__main__':
     nprocs=0

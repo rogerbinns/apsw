@@ -29,6 +29,32 @@ class Source:
     def __init__(self):
         self.rbatch=5000
         self.wbatch=5000
+        self.deepupdate=True
+
+    _cfgmap={"read-batch": "rbatch",
+             "write-batch": "wbatch",
+             "deep-update": "deepupdate"}
+
+    def getconfig(self, item):
+        if item not in self._cfgmap:
+            return ValueError("Unknown config item "+str(item))
+        return getattr(self, self._cfgmap[item])
+
+    def setconfig(self, item, value):
+        if item not in self._cfgmap:
+            return ValueError("Unknown config item "+str(item))
+        # currently all ints
+        if sys.version_info<(3,):
+            value=int(value)
+        else:
+            value=long(value)
+        if item in ("read-batch", "write-batch"):
+            if value<1:
+                raise ValueError("%s value must be greater than zero: %d" % (item, value))
+        elif item=="deep-update":
+            if value not in (0,1):
+                raise ValueError("%s value must be zero or one: %d" % (item, value))
+        setattr(self, self._cfgmap[item], value)
 
     # javascript function that returns all keys of a doc in a view
     _allkeysfunc="""
@@ -51,6 +77,20 @@ class Source:
         
         server=couchdb.Server(args[0])
         cdb=server[args[1]]
+
+        # There is a nasty bug in httplib2 which is used by
+        # python-couchdb that causes double submission of some
+        # requests.  This is the workaround.  The code above is left
+        # in because it produces better exceptions if supplied with
+        # invalid data and the code below can be deleted once the
+        # bug is fixed.
+        # http://code.google.com/p/couchdb-python/issues/detail?id=85
+        # http://code.google.com/p/httplib2/issues/detail?id=67
+        a=args[0]
+        if not a.endswith("/"):
+            a=a+"/"
+        a=a+args[1]
+        cdb=couchdb.Database(a)
 
         cols=[]
         for c in args[2:]:
@@ -136,8 +176,13 @@ class Table:
         self.adb.cursor().execute("drop table if  exists "+self.maptable)
 
     def BestIndex(self, constraints, orderbys):
+        # nothing to index
         if not constraints and not orderbys:
             return None
+        # we don't have an index on rowid
+        for col,op in constraints:
+            if col<0:
+                return None
         return [[(i,False) for i in range(len(constraints))], # constraintarg position for cursor.filter
                 0,                                  # index number
                 repr(constraints),                  # index string
@@ -163,7 +208,7 @@ class Table:
     def UpdateInsertRow(self, rowid, fields):
         fields=self._unpickle(fields)
         if rowid is not None:
-            raise Exception("You cannot specify the rowid")
+            raise ValueError("You cannot specify the rowid")
         _id=None
         if "_id" in self.cols:
             _id=fields[self.cols.index("_id")]
@@ -194,12 +239,23 @@ class Table:
     def UpdateChangeRow(self, rowid, newrowid, fields):
         fields=self._unpickle(fields)
         if newrowid!=rowid:
-            raise Exception("You cannot change the rowid")
+            raise ValueError("You cannot change the rowid")
         row=self.adb.cursor().execute("select _id,_rev from "+self.maptable+" where _rowid_=?", (rowid,)).fetchall()
         assert len(row)
         _id,_rev=row[0]
-
-        d=dict(zip(self.cols, fields))
+        if "_id" in self.cols and fields[self.cols.index("_id")]!=_id:
+            raise ValueError("You cannot change the _id")
+        if self.s.deepupdate:
+            d=dict(self.cdb[_id])
+            if d["_rev"]!=_rev:
+                raise couchdb.client.ResourceConflict("Document has changed on server")
+            for k,v in zip(self.cols, fields):
+                if v is None and k not in d:
+                    pass
+                else:
+                    d[k]=v
+        else:
+            d=dict(zip(self.cols, fields))
         d["_rev"]=_rev
         d["_id"]=_id
         self.pending_updates[_id]=d
@@ -225,7 +281,7 @@ class Table:
             else:
                 fails.append("%s: %s\nData: %s" % (docid, rev_or_exc, p[i]))
         if fails:
-                raise Exception("Failed to create/update %d documents" % (len(fails),), fails)
+                raise couchdb.client.ResourceConflict("Failed to create/update %d documents" % (len(fails),), fails)
 
     def Begin(self):
         self.flushpending()
@@ -366,36 +422,34 @@ function(doc) {
         (",".join(["doc['%s']===undefined?null:doc['%s']" % (self._quote(c),self._quote(c)) for c in cols]),)
         if query:
             self.mapfn=self.mapfn.replace("/*<QUERY>*/", "if("+query+")")
-            print query[:1000]
-        self.iter=iter(cdb.query(self.mapfn, limit=batch))
-        self.returned=0
+        res=cdb.query(self.mapfn, limit=batch)
+        self.more=len(res)>=batch
+        self.iter=iter(res)
         self.batch=batch
 
     def eof(self):
         while True:
             for self.curval in self.iter:
-                self.returned+=1
                 return False
 
-            if not self.returned:
-                # iterator returned no rows so we are at the end
+            if not self.more:
                 self.curval=None
                 return True
 
             # setup next batch
-            self.iter=iter(self.cdb.query(self.mapfn, limit=self.batch, skip=1, startkey=None, startkey_docid=self.curval["id"]))
-            self.returned=0
+            res=self.cdb.query(self.mapfn, limit=self.batch, skip=1, startkey=None, startkey_docid=self.curval["id"])
+            self.more=len(res)>=self.batch
+            self.iter=iter(res)
 
     def current(self):
         return self.curval["id"], self.curval["value"][0], self.curval["value"][1:]
-
-
-
 
 # register if invoked from shell
 thesource=Source()
 def register(db, thesource=thesource):
     db.createmodule("couchdb", thesource)
+    db.createscalarfunction("couchdb_config", thesource.getconfig, 1)
+    db.createscalarfunction("couchdb_config", thesource.setconfig, 2)
 
 if 'shell' in locals() and hasattr(shell, "db") and isinstance(shell.db, apsw.Connection):
     register(shell.db)
