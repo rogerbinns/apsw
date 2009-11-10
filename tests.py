@@ -6329,6 +6329,12 @@ shell.write(shell.stdout, "hello world\\n")
         # this is to allow multiple tests to run concurrently against
         # the same couchdb server
         apswtest="apswtest_"+"%09d" % (random.randint(0,1000000000),)
+        # See Create in apswcouchdb.py for why this is needed
+        a=couch
+        if not a.endswith("/"):
+            a=a+"/"
+        a=a+apswtest
+        cdb=couchdb.Database(a)
         try:
             # NOTE: The current shipping CouchDB python library is
             # broken if you create documents.  It will create them
@@ -6346,7 +6352,7 @@ shell.write(shell.stdout, "hello world\\n")
             c=self.db.cursor()
             c.execute("create virtual table test using couchdb('%s', %s, one \n\t, 'two')" % (couch,apswtest))
             self.assertEqual(0, len(self.db.cursor().execute("select * from test").fetchall()))
-            server[apswtest].update([{"_id": "1", "one": 1}, {"_id": "2", "two": 2}])
+            cdb.update([{"_id": "1", "one": 1}, {"_id": "2", "two": 2}])
             self.assertEqual(2, len(self.db.cursor().execute("select * from test").fetchall()))
             self.assertEqual(1, len(self.db.cursor().execute("select * from test where one=1").fetchall()))
             c.execute("drop table test")
@@ -6362,7 +6368,7 @@ shell.write(shell.stdout, "hello world\\n")
                 c.execute(sql)
                 self.assertEqual([v], [row[1] for row in c.execute("pragma table_info(test)")])
                 # if an id is not specified then gets added twice - sigh
-                server[apswtest].update([{"_id": v+"abcddd", v: 12}])
+                cdb.update([{"_id": v+"abcddd", v: 12}])
                 checkcols.append(v)
                 if v=="abc'def":
                     q="\"abc'def\""
@@ -6370,7 +6376,7 @@ shell.write(shell.stdout, "hello world\\n")
 
             # check plus works
             c.execute("drop table if exists test")
-            server[apswtest].update([{"three": 1}])
+            cdb.update([{"three": 1}])
             c.execute("create virtual table test using couchdb('%s', %s, three, '+', '+')" % (couch,apswtest))
             cols=[row[1] for row in c.execute("pragma table_info(test)")]
             checkcols.sort()
@@ -6380,7 +6386,7 @@ shell.write(shell.stdout, "hello world\\n")
             for name in '"test].("', '[test"]':
                 c.execute("create virtual table %s using couchdb('%s', '%s', '+')" % (name, couch, apswtest))
                 # getting items forces the idmap to be used
-                self.assertEqual(9, len(c.execute("select * from "+name).fetchall()))
+                self.assertEqual(8, len(c.execute("select * from "+name).fetchall()))
             # check types
             c.execute("drop table test")
             c.execute("create virtual table test using couchdb('%s', '%s', val)" % (couch,apswtest))
@@ -6433,13 +6439,18 @@ shell.write(shell.stdout, "hello world\\n")
                 # equality testing then all strings must be unicode
                 # otherwise they won't match strings coming from the
                 # server as pickle does unicode strings and normal
-                # strings differently.
+                # strings differently.  And different Python versions
+                # end up treating pure ASCII strings from JSON as
+                # unicode or str.  By putting a non-ascii char in
+                # every string we force use of unicode and not str.
+                # If you remove the unicode you will get some test
+                # failures and diagnostics printed in a block below.
                 {},
-                {u("a"): 1, u("b"): 3},
+                {u("a \N{WHITE STAR}"): 1, u("b \N{WHITE STAR}"): 3},
                 [], [None, None],
                 [99, 98, 97],
-                {u("float"): 1.1, u("none"): None, u("string"): u(r"\N{MUSICAL SYMBOL G CLEF} \" \N{WHITE STAR} \N{LIGHTNING}"), u("integer"): 3},
-                [[[{}], {u("a"): [{}]}, u("a")], [u("a"), 3]]
+                {u("float \N{WHITE STAR}"): 1.1, u("none \N{WHITE STAR}"): None, u("string \N{WHITE STAR}"): u(r"\N{MUSICAL SYMBOL G CLEF} \" \N{WHITE STAR} \N{LIGHTNING}"), u("integer \N{WHITE STAR}"): 3},
+                [[[{}], {u("a\N{WHITE STAR}"): [{}]}, u("a\N{WHITE STAR}")], [u("a\N{WHITE STAR}"), 3]]
                 ]
             # and make it a bit more interesting by including itself
             vals.append(vals[:])
@@ -6450,9 +6461,21 @@ shell.write(shell.stdout, "hello world\\n")
                 if sys.version_info<(3,):
                     pv=buffer(pv)
                 c.execute("insert into test values(?)", (pv,))
-                self.assertEqual(1, len(c.execute("select * from test where val=?", (pv,)).fetchall()))
+                if 1!=len(c.execute("select * from test where val=?", (pv,)).fetchall()):
+                    # This has failed a lot due to roundtrips through
+                    # pickle, CouchDB and JSON and pure ascii vs
+                    # unicode strings.  Do some deeper analysis before
+                    # raising the error.
+                    def hexdump(s):
+                        return "".join(["%02x" % ord(x) for x in s])
+                    write("Item: %s\n" % (repr(v),))
+                    write("Pickle of item: %s\n" % (hexdump(pv),))
+                    xx=c.execute("select val from test").fetchall()[0][0]
+                    write("Pickle from server: %s\n" % (hexdump(xx),))
+                    write("Unpickle from server: %s\n" % (repr(pickle.loads(xx)),))
+                    self.assertEqual(1, len(c.execute("select * from test where val=?", (pv,)).fetchall()))
                 c.execute("delete from test")
-                server[apswtest].update([{"_id": "bug workaround", "val": v}])
+                cdb.update([{"_id": "bug workaround", "val": v}])
                 back=c.execute("select * from test").fetchall()[0][0]
                 self.assertEqual(pickle.loads(back), v)
                 self.assertEqual(1, len(c.execute("select * from test where val=?", (pv,)).fetchall()))
@@ -6508,7 +6531,7 @@ shell.write(shell.stdout, "hello world\\n")
             ### update
             c.execute("update test set val=2 where val!=0")
             self.assertEqual(0, counttest())
-            server[apswtest].update([{"_id": "1", "val": 1}, {"_id": "2", "val": 2}])
+            cdb.update([{"_id": "1", "val": 1}, {"_id": "2", "val": 2}])
             c.execute("update test set val=val*10 where val!=0")
             r=[row[0] for row in c.execute("select val from test")]
             r.sort()
@@ -6519,14 +6542,14 @@ shell.write(shell.stdout, "hello world\\n")
             self.assertRaises(ValueError, c.execute, "update test set _id='xxx' where _id='1'")
             # test deepupdate works
             c.execute("delete from test")
-            server[apswtest].update([{"_id": "1", "val": 1, "one": 1, "two": 2}])
+            cdb.update([{"_id": "1", "val": 1, "one": 1, "two": 2}])
             c.execute("update test set val=val*10")
-            now=dict(server[apswtest]["1"])
+            now=dict(cdb["1"])
             del now["_rev"]
             self.assertEqual({"_id": "1", "val": 10, "one": 1, "two": 2}, now)
             c.execute("select couchdb_config('deep-update', 0)")
             c.execute("update test set val=val*10")
-            now=dict(server[apswtest]["1"])
+            now=dict(cdb["1"])
             del now["_rev"]
             self.assertEqual({"_id": "1", "val": 100}, now)
             

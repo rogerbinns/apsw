@@ -77,7 +77,9 @@ Automatic column names
   be examined to see what keys they have.  Any that you have not
   already specified as a column will be added to the column list in
   alphabetical order.  Only keys without a leading underscore are
-  considered.
+  considered::
+
+    create virtual table mytable using couchdb('http://localhost:5984', 'dbname', '+');
 
 Document Ids and Rowids
 
@@ -121,6 +123,40 @@ Scalability
   immediate HTTP request per row/document read or written rather than
   waiting till the batch is full or for a transaction boundary.
 
+Updates
+
+  SQLite (and SQL) define a fixed list of columns for each row while
+  CouchDB can have zero or more keys per document.  In normal use of
+  this module you would have listed a subset of the possible keys as
+  columns for SQLite.  CouchDB does an update by supplying a complete
+  new document.  If an update specified only the keys/columns declared
+  at the SQLite level then other keys would be lost.  Consequently on
+  each update this module has to obtain the document and update the
+  fields specified via SQL.  Obtaining these documents as needed one
+  at a time slows down updates, but does prevent them from losing any
+  fields not known to SQL.  If you have specified all the fields in
+  SQL then you can off this behaviour saving one HTTP request per
+  document updated::
+
+    select couchdb_config('deep-update', 0);
+
+None/null/undefined
+
+  In SQL null means a value is not present.  No two nulls are equal to
+  each other plus `other quirks <http://www.sqlite.org/nulls.html>`__.
+  In Python None is a value more like a non-type specific zero
+  although it is a singleton.  Javascript has both undefined with a
+  SQL null like meaning and null with Python None like meaning.  JSON
+  can represent null but not undefined.
+
+  Whenever a key is not present in a document but a value is required
+  by SQLite then null is returned.  When creating or updating
+  documents, a value of null from SQLite is treated as meaning you do
+  not want the key in the document.  (Reading it back will still get
+  you a null in SQLite even though technically the document value is
+  undefined.)  This means that you cannot use this module to set a
+  value in a CouchDB document to null - the key will not be present.
+
 Transactions
 
   SQLite has the same transaction boundaries as SQL and supports
@@ -143,7 +179,9 @@ Types
   | Float      | double         | Real         |
   +------------+----------------+--------------+
   | Integer    | int (unlimited)| int (max 64  |
-  |            |                | bit)         |
+  | (Actually  |                | bit)         |
+  | stored as  |                |              |
+  | a float)   |                |              |
   +------------+----------------+--------------+
   | String     | unicode        | char         |
   +------------+----------------+--------------+
@@ -185,13 +223,6 @@ Types
     differently even when they have same ASCII contents.  If you are
     trying to do an equality check then ensure all strings including
     dictionary keys are unicode before pickling.
-
-Writing
-
-  The SQLite API requires supplying a value for all columns.  If a
-  CouchDB document does not have a particular column/key then
-  null/None is used.  On writing back the value for that key will then
-  become null.
 
 Indices
 

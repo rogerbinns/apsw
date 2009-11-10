@@ -215,7 +215,7 @@ class Table:
         if _id is None:
             # autogenerate
             _id=uuid4().hex
-        data=dict(zip(self.cols, fields))
+        data=dict([(k,v) for k,v in zip(self.cols, fields) if v is not None])
         data["_id"]=_id
         self.pending_updates[_id]=data
 
@@ -255,7 +255,7 @@ class Table:
                 else:
                     d[k]=v
         else:
-            d=dict(zip(self.cols, fields))
+            d=dict([(k,v) for k,v in zip(self.cols, fields) if v is not None])
         d["_rev"]=_rev
         d["_id"]=_id
         self.pending_updates[_id]=d
