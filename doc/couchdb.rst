@@ -29,7 +29,7 @@ Some suggested uses:
  * Using the SQLite :ref:`FTS3 full text search extension <ext-fts3>`
    for data in CouchDB.
 
- * Using the SQLite :ref:`RTree extension <ext-rtree>` to do spacial
+ * Using the SQLite :ref:`RTree extension <ext-rtree>` to do spatial
    queries.
    
 Getting it
@@ -50,11 +50,11 @@ Usage
 
 To use with your code, place the :file:`apswcouchdb.py` file anywhere
 you can import it.  To use it with the APSW :ref:`shell` use the the
-.read command specifying the filename.  The virtual table will be
+``.read`` command specifying the filename.  The virtual table will be
 automatically installed via the :attr:`connection_hooks` mechanism and
 registering with the shell if appropriate.
 
-Each virtual table maps to a CouchDB database.  The database needs to
+A virtual table maps to a CouchDB database.  The database needs to
 exist already.  Use the following SQL to create the virtual table::
 
   create virtual table mytable using couchdb('http://localhost:5984', 'dbname', col1, col2, col3);
@@ -100,9 +100,7 @@ Scalability
 
   It is intended that you can use the virtual table with large
   databases.  For example development and profiling were done with a
-  200,000 document database using over 2GB of storage.  If you are
-  dealing with just a handful of documents then you'll likely find
-  `Futon <http://couchdb.apache.org/screenshots.html>`__ a better fit.
+  200,000 document database using over 2GB of storage. 
 
   This means that behind the scenes the CouchDB `bulk API
   <http://wiki.apache.org/couchdb/HTTP_Bulk_Document_API>`__ is used.
@@ -224,13 +222,13 @@ Types
     trying to do an equality check then ensure all strings including
     dictionary keys are unicode before pickling.
 
-Indices
+Expressions
 
   SQL is accelerated by using indices.  These are
   precomputed/presorted views of the data and used when evaluating
   queries like ``select * from items where price > 74.99 and
   quantity<=10 and customer='Acme Widgets'`` in order to avoid
-  visiting every row in the table.
+  visiting every row in the table. 
 
   If you have constraints like the above then this module uses a
   CouchDB `temporary view
@@ -240,7 +238,7 @@ Indices
 
   With a large number of documents the view can take quite a while for
   CouchDB to calculate but is still quicker than sucking down all the
-  data for SQLite to do so in most cases.  Because the views are
+  data for SQLite to calculate in most cases.  Because the views are
   temporary they will eventually be discarded by CouchDB.
 
   This also means that Javascript's rules are used for evaluation in
@@ -254,6 +252,40 @@ Indices
   can only be used for one side of the **or** expression with SQLite
   having to evaluate the other.
 
+  You can get SQLite to do the row/document filtering (which means
+  retreiving all documents) like this::
+
+    select couchdb_config('server-eval', 0);
+
+Configuration summary
+
+  You can change behaviour of the module by using the
+  ``couchdb_config`` SQL function.  If you call with one argument then
+  it returns the current value and with two sets the value.  The
+  various options are described in more detail in the relevant
+  sections above.
+
+  +-----------------+---------+-------------------------------------------+
+  | Option          | Default | Description                               |
+  +=================+=========+===========================================+
+  | read-batch      | 5,000   | How many documents are retrieved at a time|
+  |                 |         | from the server                           |
+  +-----------------+---------+-------------------------------------------+
+  | write-batch     | 5,000   | How many documents being created/changed  |
+  |                 |         | are saved up before sending in one request|
+  |                 |         | to the bulk api on the server             |
+  +-----------------+---------+-------------------------------------------+
+  | deep-update     | 1 (True)| If a change is made to a row/document then|
+  |                 |         | the original is retreived from the server |
+  |                 |         | (one at a time) so that the keys not      |
+  |                 |         | specified as SQL level columns aren't lost|
+  +-----------------+---------+-------------------------------------------+ 
+  | server-eval     | 1 (True)| SQL column expressions are evaluated in   |
+  |                 |         | the server (by claiming there is an index)|
+  |                 |         | rather than downloading all documents     |
+  |                 |         | and having SQLite do the evaluation.      |
+  +-----------------+---------+-------------------------------------------+ 
+
 Examples
 ========
 
@@ -265,7 +297,7 @@ is to import it into a temporary SQLite table.  It could be imported
 directly to CouchDB but then we wouldn't have the ability to specify
 `column affinity <http://www.sqlite.org/datatype3.html>`__ and all
 data would end up as strings in CouchDB.  I am using a real estate CSV
-file in this example against the SQLite shell::
+file in this example against the :ref:`SQLite shell <shell>`::
 
      -- Specify affinities in temporary table so numbers from
      -- the CSV end up as numbers and not strings
@@ -288,6 +320,8 @@ file in this example against the SQLite shell::
 
      -- No longer need the temporary table
      drop table refixup;
+
+Use ``.help import`` for more hints on importing data.
 
 Using FTS3
 ----------

@@ -30,10 +30,12 @@ class Source:
         self.rbatch=5000
         self.wbatch=5000
         self.deepupdate=True
+        self.servereval=True
 
     _cfgmap={"read-batch": "rbatch",
              "write-batch": "wbatch",
-             "deep-update": "deepupdate"}
+             "deep-update": "deepupdate",
+             "server-eval": "servereval"}
 
     def getconfig(self, item):
         if item not in self._cfgmap:
@@ -51,7 +53,7 @@ class Source:
         if item in ("read-batch", "write-batch"):
             if value<1:
                 raise ValueError("%s value must be greater than zero: %d" % (item, value))
-        elif item=="deep-update":
+        elif item in ("deep-update", "server-eval"):
             if value not in (0,1):
                 raise ValueError("%s value must be zero or one: %d" % (item, value))
         setattr(self, self._cfgmap[item], value)
@@ -176,6 +178,8 @@ class Table:
         self.adb.cursor().execute("drop table if  exists "+self.maptable)
 
     def BestIndex(self, constraints, orderbys):
+        if not self.s.servereval:
+            return None
         # nothing to index
         if not constraints and not orderbys:
             return None
@@ -362,7 +366,10 @@ class Cursor:
         # Eof is called before next so we do all the work in eof
         r=self.query.eof()
         if not r:
-            self._id, self._rev, self._values = self.query.current()
+            doc=self.query.current()
+            self._id=doc["_id"]
+            self._rev=doc["_rev"]
+            self._values = doc
             self.t.adb.cursor().execute("update "+self.t.maptable+" set _rev=? where _rowid_=?", (self._rev, self.Rowid()))
         return r
 
@@ -372,7 +379,7 @@ class Cursor:
     def Column(self, which):
         if which<0:
             return self.Rowid()
-        val=self._values[which]
+        val=self._values.get(self.t.cols[which], None)
         if isinstance(val, self._sqlite_types):
             return val
         return self._binary_type(pickle.dumps(val, -1))
@@ -389,12 +396,10 @@ class Query:
     def _quote(self, c):
         return c.replace("\\", "\\\\"). \
                replace("'", "\\'")
-    
-    def __init__(self, cdb, cols, query=None, batch=3):
-        self.cdb=cdb
-        # what an incredibly stupid language that it takes this much
-        # code just to determine if two objects are equal
-        self.mapfn='''
+
+    # what an incredibly stupid language that it takes this much
+    # code just to determine if two objects are equal
+    mapfunction='''
 function _areObjectsEqual(left,right) {
   if(left===right)                   return true;
   if (typeof left != typeof right)   return false;
@@ -417,12 +422,16 @@ function areObjectsEqual(left, right) {
 
 function(doc) {
   /*<QUERY>*/
-     emit(null, [doc._rev, %s]);
-            }''' % \
-        (",".join(["doc['%s']===undefined?null:doc['%s']" % (self._quote(c),self._quote(c)) for c in cols]),)
+     emit(null, null);
+}'''     
+    def __init__(self, cdb, cols, query=None, batch=3):
+        self.cdb=cdb
         if query:
-            self.mapfn=self.mapfn.replace("/*<QUERY>*/", "if("+query+")")
-        res=cdb.query(self.mapfn, limit=batch)
+            self.mapfn=self.mapfunction.replace("/*<QUERY>*/", "if("+query+")")
+            res=cdb.query(self.mapfn, limit=batch, include_docs=True)
+        else:
+            self.mapfn=None
+            res=cdb.view("_all_docs", limit=batch, include_docs=True)
         self.more=len(res)>=batch
         self.iter=iter(res)
         self.batch=batch
@@ -437,12 +446,15 @@ function(doc) {
                 return True
 
             # setup next batch
-            res=self.cdb.query(self.mapfn, limit=self.batch, skip=1, startkey=None, startkey_docid=self.curval["id"])
+            if self.mapfn:
+                res=self.cdb.query(self.mapfn, limit=self.batch, skip=1, startkey=None, startkey_docid=self.curval["id"], include_docs=True)
+            else:
+                res=self.cdb.view("_all_docs", limit=self.batch, skip=1, startkey=None, startkey_docid=self.curval["id"], include_docs=True)
             self.more=len(res)>=self.batch
             self.iter=iter(res)
 
     def current(self):
-        return self.curval["id"], self.curval["value"][0], self.curval["value"][1:]
+        return self.curval["doc"]
 
 # register if invoked from shell
 thesource=Source()

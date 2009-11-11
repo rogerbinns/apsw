@@ -6321,7 +6321,7 @@ shell.write(shell.stdout, "hello world\\n")
                 os.rename("tools/shell.py,cover", "shell.py.gcov")
 
 
-    def testCouchDB(self):
+    def testCouchDB(self, servereval=True):
         "Check APSW/CouchDB virtual table"
         import couchdb
         couch=os.getenv("APSW_COUCHDB")
@@ -6350,6 +6350,7 @@ shell.write(shell.stdout, "hello world\\n")
             # sanity check - does it fundamentally work?
             server.create(apswtest)
             c=self.db.cursor()
+            c.execute("select couchdb_config('server-eval', ?)", (servereval,))
             c.execute("create virtual table test using couchdb('%s', %s, one \n\t, 'two')" % (couch,apswtest))
             self.assertEqual(0, len(self.db.cursor().execute("select * from test").fetchall()))
             cdb.update([{"_id": "1", "one": 1}, {"_id": "2", "two": 2}])
@@ -6571,16 +6572,19 @@ shell.write(shell.stdout, "hello world\\n")
                 self.assertRaises(ValueError, c.execute, "select couchdb_config('deep-update', ?)", (n,))
             
             ### does setting batch size work?
-            allin=list(range(129))
-            allout=[(i,) for i in range(129)]
+            rbatch,wbatch=c.execute("select couchdb_config('read-batch'), couchdb_config('write-batch')").fetchall()[0]
+            all=[(i,) for i in range(129)]
             for batch in 1,2,3, 7, 39, 100, 127, 128, 129, 130:
                 c.execute("select couchdb_config('read-batch', ?), couchdb_config('write-batch', ?)", (batch, batch))
                 self.assertEqual([(batch,batch)], c.execute("select couchdb_config('read-batch'), couchdb_config('write-batch')").fetchall())
                 self.assertEqual(0, c.execute("delete from test; select count(*) from test; begin").fetchall()[0][0])
-                for i in allin:
-                    c.execute("insert into test(val) values(?)", (i,))
+                c.executemany("insert into test(val) values(?)", all)
                 c.execute("commit")
-                self.assertEqual(allout, c.execute("select val from test order by val").fetchall())
+                self.assertEqual(all, c.execute("select val from test order by val").fetchall())
+            # set back to original values
+            c.execute("select couchdb_config('read-batch', ?), couchdb_config('write-batch', ?)", (rbatch, wbatch))
+            if servereval:
+                getattr(self, "_originaltestCouchDB", self.testCouchDB)(servereval=False)
 
         finally:
             for dbname in server:
