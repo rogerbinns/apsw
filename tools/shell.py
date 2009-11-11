@@ -2339,13 +2339,17 @@ Enter SQL statements terminated with a ";"
                        ("maxrss", "Max rss"),
                        ("idrss", "Memory"),
                        ("isrss", "Stack"),
+                       ("ixrss", "Shared Memory"),
                        ("minflt", "PF (no I/O)"),
-                       ("majfl", "PF (I/O)"),
+                       ("majflt", "PF (I/O)"),
                        ("inblock", "Blocks in"),
                        ("oublock", "Blocks out"),
                        ("nsignals", "Signals"),
                        ("nvcsw", "Voluntary context switches"),
                        ("nivcsw", "Involunary context switches"),
+                       ("msgrcv", "Messages received"),
+                       ("msgsnd", "Messages sent"),
+                       ("nswap", "Swaps"),
                        ):
                 f="ru_"+i
                 if hasattr(r, f):
