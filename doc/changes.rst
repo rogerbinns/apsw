@@ -2,6 +2,13 @@ Change History
 **************
 .. currentmodule:: apsw
 
+next-r1
+=======
+
+Source and binary files are now digitally signed which means you can
+verify they have not been tampered with.  See :ref:`verifydownload`
+for instructions.
+
 3.6.20-r1
 =========
 

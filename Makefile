@@ -119,6 +119,10 @@ upload:
 	test -f dist/$(VERDIR).win32-py2.6.exe
 	test -f dist/$(VERDIR).win32-py3.1.exe
 	test -f dist/$(VERDIR).chm
+	-rm -f dist/$(VERDIR)-sigs.zip dist/*.asc
+	for f in dist/* ; do gpg --use-agent --clearsign "$$f" ; done
+	cd dist ; zip -m $(VERDIR)-sigs.zip *.asc
+	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) GPG signatures for all files" -l "Type-Signatures,OpSys-All" dist/$(VERDIR)-sigs.zip
 	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 3.1 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py3.1.exe
 	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 2.6 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.6.exe
 	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 2.5 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.5.exe

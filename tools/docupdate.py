@@ -35,11 +35,18 @@ for line in open("doc/download.rst", "rtU"):
             op.append("  <%s/apsw-%s.win32-py%s.exe>`_" % (url, version, pyver))
             op.append("  (Windows Python %s)" % (pyver,))
             op.append("")
+        op.append("* `apsw-%s-sigs.zip " % (version,))
+        op.append("  <%s/apsw-%s-sigs.zip>`_" % (url, version))
+        op.append("  GPG signatures for all files")
+        op.append("")
+                  
         continue
     if line==".. downloads-end":
         incomment=False
     if incomment:
         continue
+    if line.lstrip().startswith("$ gpg --verify apsw"):
+        line=line[:line.index("$")]+"$ gpg --verify apsw-%s.zip.asc" % (version,)
     op.append(line)
 
 op="\n".join(op)

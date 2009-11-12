@@ -48,6 +48,10 @@ way to build or all the :ref:`options available <building>`.
   <http://apsw.googlecode.com/files/apsw-3.6.20-r1.win32-py3.1.exe>`_
   (Windows Python 3.1)
 
+* `apsw-3.6.20-r1-sigs.zip 
+  <http://apsw.googlecode.com/files/apsw-3.6.20-r1-sigs.zip>`_
+  GPG signatures for all files
+
 .. downloads-end
 
 Some Linux distributions also have packages.
@@ -63,6 +67,47 @@ Some Linux distributions also have packages.
 +-------------------+----------------------------------------------------------------------------------+
 
 Note that these may trail the SQLite and APSW releases by a year, or more.
+
+.. _verifydownload:
+
+Verifying your download
+=======================
+
+Downloads are now digitally signed so you can verify they have not
+been tampered with.  Download and extract the zip file of signatures
+listed above.  These instructions are for `GNU Privacy Guard
+<http://www.gnupg.org/>`__.  (GPG is installed as standard on most
+Unix/Linux platforms and can be downloaded for Windows.)
+
+Verify
+
+  To verify a file just use --verify specifying the corresponding
+  ``.asc`` filename.  This example verifies the source::
+
+      $ gpg --verify apsw-3.6.20-r1.zip.asc
+      gpg: Signature made ... date ... using DSA key ID 0DFBD904
+      gpg: Good signature from "Roger Binns <rogerb@rogerbinns.com>"
+
+  If you get a "good signature" then the file has not been tampered with
+  and you are good to go.
+
+Getting the signing key
+
+  You may not have the signing key available in which case the last
+  line will be something like this::
+
+   gpg: Can't check signature: public key not found
+
+  You can get a copy of the key using this command::
+
+    $ gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys 0DFBD904
+    gpg: requesting key 0DFBD904 from hkp server keyserver.ubuntu.com
+    gpg: /home/username/.gnupg/trustdb.gpg: trustdb created
+    gpg: key 0DFBD904: public key "Roger Binns <rogerb@rogerbinns.com>" imported
+    gpg: Total number processed: 1
+    gpg:               imported: 1
+
+  Repeat the verify step.
 
 Source code control
 ===================
