@@ -63,8 +63,7 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
 
 * APSW **always** handles Unicode correctly (this was one of the major
   reasons for writing it in the first place). pysqlite has since fixed
-  many of its issues but you are still `stuck with some
-  <http://oss.itsystementwicklung.de/trac/pysqlite/ticket/153>`_.
+  many of its issues but you are still stuck with some.
 
 * You can use semi-colons at the end of commands and you can have
   multiple commands in the execute string in APSW. There are no
@@ -97,7 +96,7 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
   to debug problems. That also prevents you from raising exceptions in
   your callbacks to be handled in your code that called
   SQLite. pysqlite does let you turn on `printing of tracebacks
-  <http://oss.itsystementwicklung.de/download/pysqlite/doc/sqlite3.html#sqlite3.enable_callback_tracebacks>`_,
+  <http://pysqlite.googlecode.com/svn/doc/sqlite3.html#sqlite3.enable_callback_tracebacks>`_,
   but
   that is a poor substitute. apsw does the right thing as demonstrated
   by this example.
@@ -150,7 +149,7 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
   data adaptors which aren't the same thing as a :ref:`row tracer
   <rowtracer>` (for example you can't skip rows or add a new column to
   each row returned).  pysqlite does have a `row factory
-  <http://oss.itsystementwicklung.de/download/pysqlite/doc/sqlite3.html#accessing-columns-by-name-instead-of-by-index>`_
+  <http://pysqlite.googlecode.com/svn/doc/sqlite3.html#accessing-columns-by-name-instead-of-by-index>`_
   but you can easily emulate that with the row tracer and
   :meth:`Cursor.getdescription`.
 
@@ -160,11 +159,9 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
   your most time consuming queries are, which are most popular etc.
 
 * APSW has an exception corresponding to each SQLite error code and
-  provides the extended error code.  pysqlite `combines several SQLite
-  error codes
-  <http://oss.itsystementwicklung.de/trac/pysqlite/ticket/206>`_ into
-  corresponding DBAPI exceptions.  This is a good example of the
-  difference in approach of the two wrappers.
+  provides the extended error code.  pysqlite combines several SQLite
+  error codes into corresponding DBAPI exceptions.  This is a good
+  example of the difference in approach of the two wrappers.
 
 * The APSW test suite is larger and tests more functionality. Code
   coverage by the test suite is 99.6%. pysqlite is good at 81% for C
@@ -181,7 +178,7 @@ What pysqlite does better
 =========================
 
 * pysqlite has an `adaptor system
-  <http://oss.itsystementwicklung.de/download/pysqlite/doc/sqlite3.html#using-adapters-to-store-additional-python-types-in-sqlite-databases>`_
+  <http://pysqlite.googlecode.com/svn/doc/sqlite3.html#using-adapters-to-store-additional-python-types-in-sqlite-databases>`_
   that lets you pretend SQLite stores and returns more types than it
   really supports.  Note that the database won't be useful in a
   non-pysqlite context (eg PHP code looking at the same database isn't
@@ -191,7 +188,7 @@ What pysqlite does better
 
 * pysqlite lets you work with a database that contains invalid Unicode data by
   setting a `text factory
-  <http://oss.itsystementwicklung.de/download/pysqlite/doc/sqlite3.html#sqlite3.Connection.text_factory>`_
+  <http://pysqlite.googlecode.com/svn/doc/sqlite3.html#sqlite3.Connection.text_factory>`_
   that deals with the text data.  
 
   APSW does not let you put non-Unicode data into the database in the first place and it will
