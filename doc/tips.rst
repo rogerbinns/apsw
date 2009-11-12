@@ -60,15 +60,35 @@ Then proceed to give the `Joel Unicode article
 <http://www.joelonsoftware.com/articles/Unicode.html>`_ to all people
 involved.
 
+Parsing SQL
+===========
+
+Sometimes you want to know what a particular SQL statement does.  The
+SQLite query parser directly generates VDBE byte code and cannot be
+hooked into.  There is however an easier way.
+
+Make a new :class:`Connection` object making sure the statement cache
+is disabled (size zero).  Install an :ref:`execution tracer
+<executiontracer>` that returns ``apsw.SQLITE_DENY`` which will
+prevent any queries from running.  Install an :meth:`authorizer
+<Connection.setauthorizer>`.
+
+Then call :meth:`Cursor.execute` on your query.  Your authorizer will
+then be called (multiple times if necessary) with details of what the
+query does including expanding views and triggers that fire.  Finally
+the execution tracer will fire.  If the query string had multiple
+statements then the execution tracer lets you know how long the first
+statement was.
+
 Unexpected behaviour
 ====================
 
 Occasionally you may get different results than you expected.  Before
 littering your code with *print*, try :ref:`apswtrace <apswtrace>`
 with all options turned on to see exactly what is going on. You can
-also use the SQLite shell to dump the contents of your database to a
-text file.  For example you could dump it before and after a run to
-see what changed.
+also use the :ref:`SQLite shell <shell>` to dump the contents of your
+database to a text file.  For example you could dump it before and
+after a run to see what changed.
 
 One fairly common gotcha is using double quotes instead of single
 quotes.  (This wouldn't be a problem if you use bindings!)  SQL

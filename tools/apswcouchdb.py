@@ -183,9 +183,9 @@ class Table:
         # nothing to index
         if not constraints and not orderbys:
             return None
-        # we don't have an index on rowid
+        # we don't have an index on rowid, and don't do match
         for col,op in constraints:
-            if col<0:
+            if col<0 or op==apsw.SQLITE_INDEX_CONSTRAINT_MATCH:
                 return None
         return [[(i,False) for i in range(len(constraints))], # constraintarg position for cursor.filter
                 0,                                  # index number
@@ -309,7 +309,6 @@ class Cursor:
         apsw.SQLITE_INDEX_CONSTRAINT_GT: '>',
         apsw.SQLITE_INDEX_CONSTRAINT_LE: '<=',
         apsw.SQLITE_INDEX_CONSTRAINT_LT: '<',
-        apsw.SQLITE_INDEX_CONSTRAINT_MATCH: None
         }
 
     _binary_type = eval(("buffer", "bytes") [sys.version_info>=(3,0)])

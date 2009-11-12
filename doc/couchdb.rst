@@ -66,9 +66,66 @@ usernames and passwords then specify them as part of the url::
 
   http://username:password@localhost:5984
 
+Examples
+========
 
-Notes
-=====
+Importing CSV data
+------------------
+
+We want to import some CSV data to a CouchDB database.  The first step
+is to import it into a temporary SQLite table.  It could be imported
+directly to CouchDB but then we wouldn't have the ability to specify
+`column affinity <http://www.sqlite.org/datatype3.html>`__ and all
+data would end up as strings in CouchDB.  I am using a real estate CSV
+file in this example against the :ref:`SQLite shell <shell>`::
+
+     -- Specify affinities in temporary table so numbers from
+     -- the CSV end up as numbers and not strings
+     create temporary table refixup(street char, city char, 
+         zip char, state char, beds int, baths int, sqft real, 
+         type char, sale_date char, price int, latitude real, 
+         longitude real);
+
+     -- Do the actual import
+     .mode csv
+     .import realestatetransactions.csv refixup
+
+     -- Create the CouchDB virtual table with the same column names
+     create virtual table realestate using couchdb('http://localhost:5984', 
+         realestate, street, city, zip, state, beds, baths, 
+         sqft, type, sale_date, price, latitude, longitude);
+
+     -- Copy the data from the temporary table to CouchDB
+     insert into realestate select * from refixup;
+
+     -- No longer need the temporary table
+     drop table refixup;
+
+Use ``.help import`` for more hints on importing data.
+
+Using FTS3
+----------
+
+In this example we have CouchDB documents that are recipes.  The
+CouchDB _id field is the recipe name::
+
+     -- Virtual table
+     create virtual table recipes using couchdb('http://localhost:5984',
+        _id, ingredients);
+ 
+     -- FTS table
+     create virtual table recipesearch using fts3(name, ingredients);
+
+     -- Copy the data from CouchDB to FTS3
+     insert into recipesearch(name, ingredients) 
+        select _id,ingredients from recipes;
+
+     -- Which ones have these ingredients
+     select name as _id from recipesearch where ingredients
+         MATCH 'onions cheese';
+
+Implementation Notes
+====================
 
 Automatic column names
 
@@ -286,60 +343,3 @@ Configuration summary
   |                 |         | and having SQLite do the evaluation.      |
   +-----------------+---------+-------------------------------------------+ 
 
-Examples
-========
-
-Importing CSV data
-------------------
-
-We want to import some CSV data to a CouchDB database.  The first step
-is to import it into a temporary SQLite table.  It could be imported
-directly to CouchDB but then we wouldn't have the ability to specify
-`column affinity <http://www.sqlite.org/datatype3.html>`__ and all
-data would end up as strings in CouchDB.  I am using a real estate CSV
-file in this example against the :ref:`SQLite shell <shell>`::
-
-     -- Specify affinities in temporary table so numbers from
-     -- the CSV end up as numbers and not strings
-     create temporary table refixup(street char, city char, 
-         zip char, state char, beds int, baths int, sqft real, 
-         type char, sale_date char, price int, latitude real, 
-         longitude real);
-
-     -- Do the actual import
-     .mode csv
-     .import realestatetransactions.csv refixup
-
-     -- Create the CouchDB virtual table with the same column names
-     create virtual table realestate using couchdb('http://localhost:5984', 
-         realestate, street, city, zip, state, beds, baths, 
-         sqft, type, sale_date, price, latitude, longitude);
-
-     -- Copy the data from the temporary table to CouchDB
-     insert into realestate select * from refixup;
-
-     -- No longer need the temporary table
-     drop table refixup;
-
-Use ``.help import`` for more hints on importing data.
-
-Using FTS3
-----------
-
-In this example we have CouchDB documents that are recipes.  The
-CouchDB _id field is the recipe name::
-
-     -- Virtual table
-     create virtual table recipes using couchdb('http://localhost:5984',
-        _id, ingredients);
- 
-     -- FTS table
-     create virtual table recipesearch using fts3(name, ingredients);
-
-     -- Copy the data from CouchDB to FTS3
-     insert into recipesearch(name, ingredients) 
-        select _id,ingredients from recipes;
-
-     -- Which ones have these ingredients
-     select name as _id from recipesearch where ingredients
-         MATCH 'onions cheese';
