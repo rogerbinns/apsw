@@ -74,7 +74,7 @@ specific thing `ICU
 <http://en.wikipedia.org/wiki/International_Components_for_Unicode>`_.
 A default SQLite compilation only deals with the 26 letter Roman
 alphabet.  If you enable ICU with SQLite then you get `good stuff
-<http://www.sqlite.org/cvstrac/fileview?f=sqlite/ext/icu/README.txt>`_.
+<http://www.sqlite.org/src/finfo?name=ext/icu/README.txt>`_.
 See the :ref:`building` section on how to enable ICU for SQLite with
 APSW.  Note that Python does not currently include ICU support and
 hence sorting, upper/lower casing etc are limited and do not take

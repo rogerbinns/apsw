@@ -352,7 +352,7 @@ The distribution now includes a :ref:`speedtest` script.  You can use
 this to see how APSW performs relative to pysqlite, or to track
 performance differences between SQLite versions.  The underlying
 queries are derived from `SQLite's speed test
-<http://www.sqlite.org/cvstrac/fileview?f=sqlite/tool/mkspeedsql.tcl>`_
+<http://www.sqlite.org/src/finfo?name=tool/mkspeedsql.tcl>`_
 
 The statement cache was completely rewritten.  It uses less memory and
 scales significantly better.
@@ -383,7 +383,7 @@ offline use.
 
 The binary distribution for Windows includes the `full text search
 <http://www.sqlite.org/cvstrac/wiki?p=FtsUsage>`_ (FTS) and `Rtree
-<http://www.sqlite.org/cvstrac/fileview?f=sqlite/ext/rtree/README>`_
+<http://www.sqlite.org/src/finfo?name=ext/rtree/README>`_
 extensions.  See also :ref:`setup_py_flags`.
 
 The source structure and files were reorganized to make it clearer

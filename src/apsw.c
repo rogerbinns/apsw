@@ -21,7 +21,7 @@ APSW Module
 The module is the main interface to SQLite.  Methods and data on the
 module have process wide effects.  You can instantiate the
 :class:`Connection` and :class:`zeroblob` objects using
-``apsw.Connection(...)`` and ``apsw.zeroblob(...)`` respectively.
+:meth:`Connection` and :meth:`zeroblob` respectively.
 
 API Reference
 =============
@@ -642,7 +642,7 @@ apsw_fini(APSW_ARGUNUSED PyObject *self)
   exceptions, just generic error codes and messages.  For example if
   you specify a non-existent parentvfs then you just get
   :exc:`apsw.SQLError` with the text `error`.  The `source
-  <http://www.sqlite.org/cvstrac/fileview?f=sqlite/ext/async/sqlite3async.h>`__
+  <http://www.sqlite.org/src/finfo?name=ext/async/sqlite3async.h>`__
   lists what error codes could be returned.
 
   .. seealso::

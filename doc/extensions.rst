@@ -69,7 +69,7 @@ The ICU extension provides an `International Components for Unicode
 <http://en.wikipedia.org/wiki/International_Components_for_Unicode>`__
 interface, in particular enabling you do sorting and regular
 expressions in a locale aware way.  The `documentation
-<http://www.sqlite.org/cvstrac/fileview?f=sqlite/ext/icu/README.txt>`__
+<http://www.sqlite.org/src/finfo?name=ext/icu/README.txt>`__
 shows how to use it.
 
 .. _ext-rtree:
@@ -79,9 +79,9 @@ RTree
 
 The RTree extension provides a `spatial table
 <http://en.wikipedia.org/wiki/R-tree>`_ - see the `README
-<http://www.sqlite.org/cvstrac/fileview?f=sqlite/ext/rtree/README>`__.
+<http://www.sqlite.org/src/finfo?name=ext/rtree/README>`__.
 You must enable the extension via :ref:`setup.py build flags
 <setup_build_flags>` before it will work.  There are no additional
 APIs and the `documented SQL
-<http://www.sqlite.org/cvstrac/fileview?f=sqlite/ext/rtree/README>`__
+<http://www.sqlite.org/src/finfo?name=ext/rtree/README>`__
 works as is.

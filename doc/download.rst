@@ -8,10 +8,8 @@ Source and binaries
 
 You can download this release as binaries for Windows.  Just run the
 executable corresponding with the Python version you are using.  The
-Windows binaries all include the `FTS3
-<http://www.sqlite.org/cvstrac/wiki?p=FtsUsage>`__ and `RTree
-<http://www.sqlite.org/cvstrac/fileview?f=sqlite/ext/rtree/README>`__
-extensions.  (`FTS3_PARENTHESIS
+Windows binaries all include the :ref:`FTS3 <ext-fts3>` and
+:ref:`RTree <ext-rtree>` extensions.  (`FTS3_PARENTHESIS
 <http://www.sqlite.org/compile.html#enable_fts3_parenthesis>`_ is on.)
 
 Download in source form for other platforms or if you want to compile
