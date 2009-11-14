@@ -9,6 +9,9 @@ Source and binary files are now digitally signed which means you can
 verify they have not been tampered with.  See :ref:`verifydownload`
 for instructions.
 
+The pragmas generated for a shell dump are emitted outside the
+transaction as they have no effect inside the transaction.
+
 3.6.20-r1
 =========
 

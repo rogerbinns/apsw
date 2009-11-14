@@ -1012,9 +1012,6 @@ Enter SQL statements terminated with a ";"
                 pass
             blank()
 
-            self.write(self.stdout, "BEGIN TRANSACTION;\n")
-            blank()
-
             # different python versions have different requirements
             # about specifying cmp to sort routine so we use this
             # portable workaround with a decorated list instead
@@ -1036,6 +1033,9 @@ Enter SQL statements terminated with a ";"
 
             if virtuals or foreigns:
                 blank()
+
+            self.write(self.stdout, "BEGIN TRANSACTION;\n")
+            blank()
 
             # do the table dumping loops
             oldtable=self._output_table
@@ -1105,16 +1105,6 @@ Enter SQL statements terminated with a ";"
                 self.pop_output()
                 self._output_table=oldtable
 
-            # cleanup pragmas
-            if foreigns:
-                comment("Restoring foreign key checking back on.  Note that SQLite 3.6.19 is off by default")
-                self.write(self.stdout, "PRAGMA foreign_keys=ON;\n")
-            if virtuals:
-                comment("Restoring writable schema back to default")
-                self.write(self.stdout, "PRAGMA writable_schema=OFF;\n")
-            if foreigns or virtuals:
-                blank()
-
             # analyze
             if analyze_needed:
                 comment("You had used the analyze command on these tables before.  Rerun for this new data.")
@@ -1132,13 +1122,22 @@ Enter SQL statements terminated with a ";"
             # Save it all
             self.write(self.stdout, "COMMIT TRANSACTION;\n")
 
-            # virtual and schema reread
+            # cleanup pragmas
+            if foreigns:
+                blank()
+                comment("Restoring foreign key checking back on.  Note that SQLite 3.6.19 is off by default")
+                self.write(self.stdout, "PRAGMA foreign_keys=ON;\n")
             if virtuals:
+                blank()
+                comment("Restoring writable schema back to default")
+                self.write(self.stdout, "PRAGMA writable_schema=OFF;\n")
+                # schema reread
                 blank()
                 comment("We need to force SQLite to reread the schema because otherwise it doesn't know that "
                         "the virtual tables we inserted directly into sqlite_master exist.  See "
                         "last comments of http://www.sqlite.org/cvstrac/tktview?tn=3425")
                 self.write(self.stdout, "BEGIN;\nCREATE TABLE no_such_table(x,y,z);\nROLLBACK;\n")
+
         finally:
             self.process_sql("END", internal=True)
         
