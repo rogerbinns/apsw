@@ -12,6 +12,9 @@ for instructions.
 The pragmas generated for a shell dump are emitted outside the
 transaction as they have no effect inside the transaction.
 
+Removed some unintentional logging code left in :ref:`CouchDB virtual
+table <couchdb>` code.
+
 3.6.20-r1
 =========
 
@@ -385,7 +388,7 @@ http://apsw.googlecode.com/svn/publish/index.html or in the
 offline use.
 
 The binary distribution for Windows includes the `full text search
-<http://www.sqlite.org/cvstrac/wiki?p=FtsUsage>`_ (FTS) and `Rtree
+<http://www.sqlite.org/fts3.html>` (FTS) and `Rtree
 <http://www.sqlite.org/src/finfo?name=ext/rtree/README>`_
 extensions.  See also :ref:`setup_py_flags`.
 

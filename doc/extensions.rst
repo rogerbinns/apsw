@@ -53,12 +53,12 @@ FTS3
 ====
 
 This is the third version of the `full text search
-<http://www.sqlite.org/cvstrac/wiki?p=FtsUsage>`__ extension.  It
+<http://www.sqlite.org/fts3.html` extension.  It
 makes it easy to find words in multi-word text fields.  You must
 enable the extension via :ref:`setup.py build flags
 <setup_build_flags>` before it will work.  There are no additional
 APIs and the `documented SQL
-<http://www.sqlite.org/cvstrac/wiki?p=FtsUsage>`__ works as is.
+<http://www.sqlite.org/fts3.html>` works as is.
 
 .. _ext-icu:
 

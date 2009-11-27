@@ -399,7 +399,7 @@ class Query:
     # what an incredibly stupid language that it takes this much
     # code just to determine if two objects are equal
     mapfunction='''
-function _areObjectsEqual(left,right) {
+function areObjectsEqual(left,right) {
   if(left===right)                   return true;
   if (typeof left != typeof right)   return false;
   if(typeof left != 'object')        return left==right;
@@ -411,12 +411,6 @@ function _areObjectsEqual(left,right) {
        if(!areObjectsEqual(left[i], right[i]))
          return false;         
   return true;
-}
-
-function areObjectsEqual(left, right) {
-  var res=_areObjectsEqual(left, right);
-  log(""+res+" "+left+" - "+right);
-  return res;
 }
 
 function(doc) {
