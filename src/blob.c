@@ -477,8 +477,7 @@ APSWBlob_write(APSWBlob *self, PyObject *obj)
 /** .. method:: close([force=False])
 
   Closes the blob.  Note that even if an error occurs the blob is
-  still closed (see `SQLite ticket 2815
-  <http://www.sqlite.org/cvstrac/tktview?tn=2815>`_).
+  still closed (see :cvstrac:`2815`).
 
   .. note::
 

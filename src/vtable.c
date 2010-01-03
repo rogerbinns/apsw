@@ -380,9 +380,8 @@ apswvtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
   The opposite of :meth:`VTModule.Create`.  This method is called when
   the table is no longer used.  Note that you must always release
   resources even if you intend to return an error, as it will not be
-  called again on error.  SQLite may also `leak memory
-  <http://www.sqlite.org/cvstrac/tktview?tn=2099>`_ if you return an
-  error.
+  called again on error.  SQLite may also :cvstrac:`leak memory
+  <2099>` if you return an error.  
 */
 
 static int

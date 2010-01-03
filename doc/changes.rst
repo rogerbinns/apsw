@@ -161,8 +161,7 @@ APSW has migrated from Subversion to `Mercurial
 Hosting remains at `Google Code <http://code.google.com/p/apsw/>`_
 
 Updated a test due to VFS xUnlock errors now being ignored sometimes
-by SQLite (`SQLite ticket 3946
-<http://www.sqlite.org/cvstrac/tktview?tn=3946>`_).
+by SQLite (:cvstrac:`3946`).
 
 The downloads page in the help didn't mention the Windows Python 3.1
 installer.
@@ -203,8 +202,8 @@ output CURSORFROM if SQL tracing is on.
 ===========
 
 Updated test code because SQLite 3.6.15 returns a different error code
-on trying to register a function with too many arguments (see `SQLite
-ticket #3875 <http://www.sqlite.org/cvstrac/tktview?tn=3875>`_).
+on trying to register a function with too many arguments (see
+:cvstrac:`3875`).
 
 3.6.14.1-r1
 ===========
@@ -336,13 +335,13 @@ was opened.
 Added a :ref:`apswtrace <apswtrace>` script to allow easy SQL tracing
 without having to modify your code.
 
-Revert to using older SQLite APIs in order to work around `SQLite
-ticket 2158 <http://www.sqlite.org/cvstrac/tktview?tn=2158>`_.  (This
-also saves a little bit of SQLite memory usage).  The user visible
-effect was that you could get different exceptions and error text
-depending on whether a query was already in the :ref:`statement cache
-<statementcache>` or if you were multi-threading.  As an example, if
-you have a query that used an unknown collation then SQLite's `prepare
+Revert to using older SQLite APIs in order to work around
+:cvstrac:`2158`.  (This also saves a little bit of SQLite memory
+usage).  The user visible effect was that you could get different
+exceptions and error text depending on whether a query was already in
+the :ref:`statement cache <statementcache>` or if you were
+multi-threading.  As an example, if you have a query that used an
+unknown collation then SQLite's `prepare
 <http://www.sqlite.org/c3ref/prepare.html>`_ returns
 :const:`SQLITE_ERROR` with error text about the bad collation.  If a
 query had already been prepared, the collation removed and then `run
@@ -388,9 +387,9 @@ http://apsw.googlecode.com/svn/publish/index.html or in the
 offline use.
 
 The binary distribution for Windows includes the `full text search
-<http://www.sqlite.org/fts3.html>` (FTS) and `Rtree
-<http://www.sqlite.org/src/finfo?name=ext/rtree/README>`_
-extensions.  See also :ref:`setup_py_flags`.
+<http://www.sqlite.org/fts3.html>`__ (FTS) and `Rtree
+<http://www.sqlite.org/src/finfo?name=ext/rtree/README>`_ extensions.
+See also :ref:`setup_py_flags`.
 
 The source structure and files were reorganized to make it clearer
 where things are implemented and to make automatic extraction of

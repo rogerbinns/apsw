@@ -333,8 +333,8 @@ memoryused(void)
 
 /** .. method:: memoryhighwater(reset=False) -> int
 
-  Returns the maximum amount of memory SQLite is has used.  If *reset*
-  is True then the high water mark is reset to the current value.
+  Returns the maximum amount of memory SQLite has used.  If *reset* is
+  True then the high water mark is reset to the current value.
 
   .. seealso::
 

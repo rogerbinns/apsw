@@ -23,7 +23,15 @@ import sys, os
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc'] #, 'sphinx.ext.intersphinx']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.extlinks'] #, 'sphinx.ext.intersphinx']
+
+
+extlinks={
+    'cvstrac': ('http://www.sqlite.org/cvstrac/tktview?tn=%s',
+                'SQLite ticket #'),
+    'sqliteapi': ('http://www.sqlite.org/c3ref/%s.html', 'XXYouShouldNotSeeThisXX')
+    }
+    
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['.templates']

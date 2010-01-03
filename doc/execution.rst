@@ -90,9 +90,8 @@ will work correctly with those items in Python 2.5 and above that use
 strings, blobs, number of columns etc even when compiled for 64
 bit. Consequently you will get a TooBig exception from APSW which
 checks if strings/buffers longer than 1GB or 2GB (depends on internal
-storage) are used. See SQLite ticket `2125
-<http://www.sqlite.org/cvstrac/tktview?tn=2125>`_ and `3246
-<http://sqlite.org/cvstrac/tktview?tn=3246>`_ for more details.
+storage) are used. See :cvstrac:`2125` and :cvstrac:`3246 <3246>` for
+more details.
 
 .. _statementcache:
 

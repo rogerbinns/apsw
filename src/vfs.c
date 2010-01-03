@@ -59,14 +59,14 @@ ways. Some routines have no way to return an error (eg `xDlOpen
 <http://www.sqlite.org/c3ref/vfs.html>`_ just returns zero/NULL on
 being unable to load a library, `xSleep
 <http://www.sqlite.org/c3ref/vfs.html>`_ has no error return
-parameter), others have any error values ignored (eg `xCurrentTime
-<http://www.sqlite.org/cvstrac/tktview?tn=3394>`_), others are unified
-(eg almost any error in xWrite will be returned to the user as disk
-full error). Sometimes errors are ignored as they are harmless such as
-when a journal can't be deleted after a commit (the journal is marked
-as obsolete before being deleted).  Simple operations such as opening
-a database can result in many different VFS function calls such
-as hot journals being detected, locking, and read/writes for
+parameter), others have any error values ignored (eg
+:cvstrac:`xCurrentTime <3394>`), others are unified (eg almost any
+error in xWrite will be returned to the user as disk full
+error). Sometimes errors are ignored as they are harmless such as when
+a journal can't be deleted after a commit (the journal is marked as
+obsolete before being deleted).  Simple operations such as opening a
+database can result in many different VFS function calls such as hot
+journals being detected, locking, and read/writes for
 playback/rollback.
 
 To avoid confusion with exceptions being raised in the VFS and
@@ -832,10 +832,9 @@ apswvfs_xDlError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
     a generic message. To implement this method, catch exceptions in
     :meth:`~VFS.xDlOpen` or :meth:`~VFS.xDlSym`, turn them into
     strings, save them, and return them in this routine. Note that the
-    message may be truncated to 255 characters - see SQLite `ticket
-    3305 <http://www.sqlite.org/cvstrac/tktview?tn=3305>`_. If you have
-    an error in this routine or return None then SQLite's generic
-    message will be used.
+    message may be truncated to 255 characters - see
+    :cvstrac:`3305`. If you have an error in this routine or return
+    None then SQLite's generic message will be used.  
 */
 static PyObject *
 apswvfspy_xDlError(APSWVFS *self)
@@ -1024,7 +1023,7 @@ apswvfspy_xSleep(APSWVFS *self, PyObject *args)
   return PyLong_FromLong(self->basevfs->xSleep(self->basevfs, microseconds));
 }
 
-/* See http://www.sqlite.org/cvstrac/tktview?tn=3394 for SQLite implementation issues */
+/* See :cvstrac:`3394` for SQLite implementation issues */
 static int
 apswvfs_xCurrentTime(sqlite3_vfs *vfs, double *julian)
 {
@@ -1056,8 +1055,7 @@ apswvfs_xCurrentTime(sqlite3_vfs *vfs, double *julian)
   number where the integer portion is the day and the fractional part
   is the time. Do not adjust for timezone (ie use `UTC
   <http://en.wikipedia.org/wiki/Universal_Time>`_). Although SQLite
-  allows for an error return, that is `ignored
-  <http://www.sqlite.org/cvstrac/tktview?tn=3394>`_.
+  allows for an error return, that is :cvstrac:`ignored <3394>`.
 */
 static PyObject *
 apswvfspy_xCurrentTime(APSWVFS *self)
@@ -1123,8 +1121,8 @@ apswvfs_xGetLastError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
 
    This method is to return text describing the last error that
    happened in this thread. If not implemented SQLite's more generic
-   message is used. However the method is `never called
-   <http://www.sqlite.org/cvstrac/tktview?tn=3337>`_ by SQLite.
+   message is used. However the method is :cvstrac:`never called
+   <3337>` by SQLite.  
 */
 static PyObject *
 apswvfspy_xGetLastError(APSWVFS *self)
@@ -1275,8 +1273,7 @@ APSWVFS_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED Py
       vfs.
     :param maxpathname: The maximum length of database name in bytes
       when represented in UTF-8.  If a pathname is passed in longer than
-      this value then SQLite will not `be able to open it
-      <http://www.sqlite.org/cvstrac/tktview?tn=3373>`_.
+      this value then SQLite will not :cvstrac:`be able to open it <3373>`.
 
     :raises ValueError: If *base* is not :const:`None` and the named vfs is not
       currently registered.

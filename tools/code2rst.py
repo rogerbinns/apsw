@@ -100,15 +100,26 @@ def do_mappings():
 # -* and then a space seperated list.  Maybe this could just be
 # automatically derived from the source?
 def do_calls(line):
+    c3refurl="http://www.sqlite.org/c3ref/"
     line=line.strip().split()
     assert line[0]=="-*"
     indexop=["", ".. index:: "+(", ".join(line[1:])), ""]
     saop=["", "Calls:"]
-    if len(line[1:])==1:
-        saop[-1]=saop[-1]+" `%s <%s>`_"% (line[1], funclist[line[1]])
+
+    calls=[]
+
+    for func in line[1:]:
+        if funclist[func].startswith(c3refurl):
+            calls.append(":sqliteapi:`%s <%s>`" % (func, funclist[func][len(c3refurl):-5]))
+        else:
+            calls.append("`%s <%s>`_"% (func, funclist[func]))
+
+    if len(calls)==1:
+        saop[-1]=saop[-1]+" "+calls[0]
     else:
-        for func in line[1:]:
-            saop.append("  * `%s <%s>`_" % (func, funclist[func]))
+        for c in calls:
+            saop.append("  * "+c)
+                        
     saop.append("")
     return indexop, saop
              
