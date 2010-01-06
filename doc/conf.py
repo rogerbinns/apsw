@@ -153,6 +153,8 @@ html_last_updated_fmt = '%b %d, %Y'
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'apsw'
 
+html_theme_options = {'stickysidebar': True}
+
 
 # Options for LaTeX output
 # ------------------------
