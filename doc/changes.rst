@@ -2,6 +2,21 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.6.22-r1
+=========
+
+Made it possible to run distutils 'sdist' from an already produced
+source that was made from 'sdist'.  This was necessary for some Python
+virtual package environments.  Note that the recursive result does not
+include the HTML help as distutils has no way of including content in
+a reparented location.  (`Issue 89
+<http://code.google.com/p/apsw/issues/detail?id=89>`__).
+
+Various settings are output as pragma statements when making a dump
+such as page size, encoding, auto_vacuum etc.  The pragmas are
+commented out.  (`Issue 90
+<http://code.google.com/p/apsw/issues/detail?id=90>`__).
+
 3.6.21-r1
 =========
 

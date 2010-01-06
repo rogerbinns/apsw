@@ -1012,6 +1012,15 @@ Enter SQL statements terminated with a ";"
                 pass
             blank()
 
+            comment("The values of various per-database settings")
+            comment("PRAGMA page_size="+str(self.db.cursor().execute("pragma page_size").fetchall()[0][0])+";\n")
+            comment("PRAGMA encoding='"+self.db.cursor().execute("pragma encoding").fetchall()[0][0]+"';\n")
+            vac={0: "NONE", 1: "FULL", 2: "INCREMENTAL"}
+            vacvalue=self.db.cursor().execute("pragma auto_vacuum").fetchall()[0][0]
+            comment("PRAGMA auto_vacuum="+vac.get(vacvalue, str(vacvalue))+";\n")
+            comment("PRAGMA max_page_count="+str(self.db.cursor().execute("pragma max_page_count").fetchall()[0][0])+";\n")
+            blank()
+
             # different python versions have different requirements
             # about specifying cmp to sort routine so we use this
             # portable workaround with a decorated list instead
