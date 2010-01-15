@@ -7,6 +7,7 @@ import sys
 import shlex
 import glob
 import re
+import time
 import zipfile, tarfile
 
 from distutils.core import setup, Extension, Command
@@ -380,7 +381,19 @@ class fetch(Command):
             bytesio=cStringIO.StringIO
 
         write("    Fetching", url)
-        page=urlopen(url).read()
+        count=0
+        while True:
+            try:
+                if count:
+                    write("        Try #",str(count+1))
+                page=urlopen(url).read()
+                break
+            except:
+                write("       Error ", str(sys.exc_info()[1]))
+                time.sleep(1.3)
+                count+=1
+                if count>=5:
+                    raise
 
         if text:
             if py3:
