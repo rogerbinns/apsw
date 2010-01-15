@@ -217,6 +217,18 @@ static void make_exception(int res, sqlite3 *db)
 	PyErr_NormalizeException(&etype, &eval, &etb);
 	PyObject_SetAttrString(eval, "result", Py_BuildValue("i", res&0xff));
 	PyObject_SetAttrString(eval, "extendedresult", Py_BuildValue("i", res));
+	if(db)
+	  {
+	    /* Issue 92 - add errno.  Note we do not know which db the error occurred on */
+	    int errno_value=0;
+	    /* We can't use PYSQLITE_CALL_V as it requires circular #includes */
+	    Py_BEGIN_ALLOW_THREADS
+	      {
+		sqlite3_file_control(db, NULL, SQLITE_LAST_ERRNO, &errno_value);
+	      }
+	    Py_END_ALLOW_THREADS;
+	    PyObject_SetAttrString(eval, "errno", Py_BuildValue("i", errno_value));
+	  }
 	PyErr_Restore(etype, eval, etb);
         assert(PyErr_Occurred());
         return;

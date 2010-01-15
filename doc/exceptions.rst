@@ -21,6 +21,21 @@ Exceptions
          <http://sqlite.org/c3ref/c_ioerr_blocked.html>`_ turned on.
          This attribute includes the detailed code.
 
+.. attribute:: Error.errno
+
+         The last errno value is retrieved if possible.  The value
+	 corresponds to `errno
+	 <http://www.opengroup.org/onlinepubs/009695399/functions/errno.html>`__
+	 on Unix/POSIX like systems and `GetLastError()
+	 <http://msdn.microsoft.com/en-us/library/ms679360%28VS.85%29.aspx>`__
+	 on Windows.  The value is saved by the :ref:`vfs` when a call
+	 fails and retrieved by APSW when constructing an exception.
+	 Note that APSW does not know which attached database the
+	 error occurred on, requesting the value for the main
+	 database.  The individual VFS may also not be as diligent
+	 about storing the value in all error locations.  The Windows
+	 and Unix/POSIX VFS currently implement this functionality.
+
 As an example, if SQLite issued a read request and the system returned
 less data than expected then :attr:`~Error.result` would have the value
 :const:`SQLITE_IOERR` while :attr:`~Error.extendedresult` would have

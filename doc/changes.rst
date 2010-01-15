@@ -2,6 +2,12 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.6.23-r1
+=========
+
+errno is now set on :attr:`exceptions <Error.errno>` when available
+(`Issue 92 <http://code.google.com/p/apsw/issues/detail?id=92>`__).
+
 3.6.22-r1
 =========
 

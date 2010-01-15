@@ -175,3 +175,4 @@ tables and fields to have and how to link them.  The technique used to
 design SQL schemas is called `normalization
 <http://en.wikipedia.org/wiki/Database_normalization>`_.  The page
 also shows common pitfalls if you don't normalize your schema.
+
