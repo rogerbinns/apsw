@@ -98,7 +98,9 @@ def main(PYVERS, UCSTEST, SQLITEVERS, concurrency):
 
 def getpyurl(pyver):
     dirver=pyver
-    if 'b' in dirver:
+    if 'a' in dirver:
+        dirver=dirver.split('a')[0]
+    elif 'b' in dirver:
         dirver=dirver.split('b')[0]
     elif 'rc' in dirver:
         dirver=dirver.split('rc')[0]
@@ -147,6 +149,7 @@ def buildpython(workdir, pyver, ucs, logfilename):
 # Default versions we support
 PYVERS=(
     '3.1.1',
+    '2.7a3',
     '2.6.4',
     '2.5.4',
     '2.4.6',
