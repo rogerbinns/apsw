@@ -77,7 +77,7 @@ this::
 
   $ python -c "import apsw;apsw.main()"  [options and arguments]
 
-The following command lne options are accepted:
+The following command line options are accepted:
 
 .. usage-begin:
 

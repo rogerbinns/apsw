@@ -4991,8 +4991,8 @@ class APSW(unittest.TestCase):
             shellclass=apsw.Shell
 
         # I originally tried to use stringio for this but it barfs
-        # badly over non-ascii stuff and there was no way to may all the python
-        # versions simultaneously happy
+        # badly over non-ascii stuff and there was no way to make all
+        # the python versions simultaneously happy
         import codecs
         fh=[codecs.open("test-shell-"+t, "w+b", encoding="utf8") for t in ("in", "out", "err")]
         kwargs={"stdin": fh[0], "stdout": fh[1], "stderr": fh[2]}
