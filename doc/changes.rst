@@ -5,8 +5,6 @@ Change History
 3.6.23-r1
 =========
 
-errno is now set on :attr:`exceptions <Error.errno>` when available
-(`Issue 92 <http://code.google.com/p/apsw/issues/detail?id=92>`__).
 
 If setup is downloading files and an error occurs then it retries up
 to 5 times.
