@@ -1042,6 +1042,39 @@ apsw_fork_checker(APSW_ARGUNUSED PyObject *self)
 }
 #endif
 
+static PyObject*
+get_compile_options(void)
+{
+  int i, count=0;
+  const char *opt;
+  PyObject *tmpstring;
+  PyObject *res=0;
+
+  for(i=0;;i++)
+    {
+      opt=sqlite3_compileoption_get(i); /* No PYSQLITE_CALL needed */
+      if(!opt)
+	break;
+    }
+  count=i;
+
+  res=PyTuple_New(count);
+  if(!res) goto fail;
+  for(i=0;i<count;i++)
+    {
+      opt=sqlite3_compileoption_get(i);
+      assert(opt);
+      tmpstring=PyString_FromString(opt);
+      if(!tmpstring) goto fail;
+      PyTuple_SET_ITEM(res, i, tmpstring);
+    }
+
+  return res;
+ fail:
+  Py_XDECREF(res);
+  return NULL;
+}
+
 
 /** .. automethod:: main()
 
@@ -1566,6 +1599,8 @@ modules etc. For example::
  }
 
  add_shell(m);
+
+ PyModule_AddObject(m, "compile_options", get_compile_options());
 
  if(!PyErr_Occurred())
       {
