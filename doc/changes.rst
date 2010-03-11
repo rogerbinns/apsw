@@ -5,9 +5,13 @@ Change History
 3.6.23-r1
 =========
 
-
 If setup is downloading files and an error occurs then it retries up
 to 5 times.
+
+Added SQLITE_CONFIG_LOG and SQLITE_OPEN_AUTOPROXY constants.
+
+Added :attr:`apsw.compile_options` which tells you what compilation
+defines SQLite was compiled with.
 
 3.6.22-r1
 =========

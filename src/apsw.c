@@ -1042,6 +1042,15 @@ apsw_fork_checker(APSW_ARGUNUSED PyObject *self)
 }
 #endif
 
+/** .. attribute:: compile_options
+
+    A tuple of the options used to compile SQLite.  For example it
+    will be something like this::
+
+        ('ENABLE_LOCKING_STYLE=0', 'TEMP_STORE=1', 'THREADSAFE=1')
+
+    -* sqlite3_compileoption_get
+*/
 static PyObject*
 get_compile_options(void)
 {
@@ -1438,6 +1447,7 @@ modules etc. For example::
       ADDINT(SQLITE_OPEN_FULLMUTEX),
       ADDINT(SQLITE_OPEN_PRIVATECACHE),
       ADDINT(SQLITE_OPEN_SHAREDCACHE),
+      ADDINT(SQLITE_OPEN_AUTOPROXY),
       END,
 
       /* limits */
@@ -1469,6 +1479,7 @@ modules etc. For example::
       ADDINT(SQLITE_CONFIG_MUTEX),
       ADDINT(SQLITE_CONFIG_GETMUTEX),
       ADDINT(SQLITE_CONFIG_LOOKASIDE),
+      ADDINT(SQLITE_CONFIG_LOG),
 #ifdef SQLITE_CONFIG_GETPCACHE
       ADDINT(SQLITE_CONFIG_GETPCACHE),
 #endif
