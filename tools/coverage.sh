@@ -24,10 +24,6 @@ if [ -f sqlite3async.c ]
 then
     CFLAGS='-DAPSW_USE_SQLITE_ASYNCVFS_C="sqlite3async.c" -DAPSW_USE_SQLITE_ASYNCVFS_H="sqlite3async.h"'
 fi
-if [ -f sqlite3genfkey.c ]
-then
-    CFLAGS="$CFLAGS -DAPSW_USE_SQLITE_GENFKEY=\"sqlite3genfkey.c\""
-fi
 if [ -f sqlite3/sqlite3config.h ]
 then
     CFLAGS="$CFLAGS -DAPSW_USE_SQLITE_CONFIG=\"sqlite3/sqlite3config.h\""
