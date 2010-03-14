@@ -10,8 +10,11 @@ to 5 times.
 
 Added SQLITE_CONFIG_LOG and SQLITE_OPEN_AUTOPROXY constants.
 
-Added :attr:`apsw.compile_options` which tells you what compilation
-defines SQLite was compiled with.
+Added :attr:`compile_options` which tells you what compilation defines
+SQLite was compiled with.
+
+Added :meth:`log` to call the SQLite logging interface, and updated
+:meth:`config` so you can set log destination function.
 
 3.6.22-r1
 =========

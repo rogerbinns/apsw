@@ -2802,6 +2802,14 @@ class APSW(unittest.TestCase):
         db=apsw.Connection(":memory:")
         db.close()
 
+    def testCompileOptions(self):
+        "Verify getting compile options"
+        # We don't know what the right answers are, so just check
+        # there are more than zero entries.
+        v=apsw.compile_options
+        self.assertEqual(type(v), tuple)
+        self.assert_(len(v)>1)
+
     def testIssue4(self):
         # http://code.google.com/p/apsw/issues/detail?id=4
         connection = apsw.Connection(":memory:")
@@ -3283,7 +3291,6 @@ class APSW(unittest.TestCase):
                 if m:
                     name2=m.group(1)
                     continue
-                
 
     def testConfig(self):
         "Verify sqlite3_config wrapper"
@@ -4972,6 +4979,44 @@ class APSW(unittest.TestCase):
         apsw.async_control(apsw.SQLITEASYNC_HALT, apsw.SQLITEASYNC_HALT_NEVER)
         apsw.async_shutdown()
 
+    def testLog(self):
+        "Verifies logging functions"
+        self.assertRaises(TypeError, apsw.log)
+        self.assertRaises(TypeError, apsw.log, 1)
+        self.assertRaises(TypeError, apsw.log, 1, 2)
+        self.assertRaises(TypeError, apsw.log, 1, 2, 3)
+        self.assertRaises(TypeError, apsw.log, 1, None)
+        apsw.log(apsw.SQLITE_MISUSE, "Hello world") # nothing should happen
+        self.assertRaises(TypeError, apsw.config, apsw.SQLITE_CONFIG_LOG, 2)
+        # Can't change once SQLite is initialised
+        self.assertRaises(apsw.MisuseError, apsw.config, apsw.SQLITE_CONFIG_LOG, None)
+        # shutdown
+        self.db=None
+        gc.collect()
+        apsw.shutdown()
+        try:
+            apsw.config(apsw.SQLITE_CONFIG_LOG, None)
+            apsw.log(apsw.SQLITE_MISUSE, "Hello world")
+            called=[0]
+            def handler(code, message, called=called):
+                called[0]+=1
+                self.assertEqual(code, apsw.SQLITE_MISUSE)
+                self.assertEqual(message, u(r"a \u1234 unicode ' \ufe54 string \u0089"))
+            apsw.config(apsw.SQLITE_CONFIG_LOG, handler)
+            apsw.log(apsw.SQLITE_MISUSE, u(r"a \u1234 unicode ' \ufe54 string \u0089"))
+            self.assertEqual(called[0], 1)
+            def badhandler(code, message, called=called):
+                called[0]+=1
+                self.assertEqual(code, apsw.SQLITE_NOMEM)
+                self.assertEqual(message, u(r"Xa \u1234 unicode ' \ufe54 string \u0089"))
+                1/0
+            apsw.config(apsw.SQLITE_CONFIG_LOG, badhandler)
+            self.assertRaisesUnraisable(ZeroDivisionError, apsw.log, apsw.SQLITE_NOMEM, u(r"Xa \u1234 unicode ' \ufe54 string \u0089"))
+            self.assertEqual(called[0], 2)
+        finally:
+            gc.collect()
+            apsw.shutdown()
+            apsw.config(apsw.SQLITE_CONFIG_LOG, None)
 
     def testShell(self, shellclass=None):
         "Check Shell functionality"
@@ -7372,9 +7417,9 @@ def testdb(filename="testdb2", vfsname="apswtest", closedb=True):
 
     # cause truncate to be called
     # see sqlite test/pager3.test where this (public domain) code is taken from
-    # I had to add the pragma locking_mode to get it to work
+    # I had to add the pragma journal_mode to get it to work
     c=db.cursor()
-    for row in c.execute("pragma locking_mode=exclusive"):
+    for row in c.execute("pragma journal_mode=truncate"):
         pass
 
     c.execute("""

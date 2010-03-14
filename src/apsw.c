@@ -257,14 +257,52 @@ sqliteshutdown(void)
   :param args: Zero or more arguments as appropriate for *op*
 
   Many operations don't make sense from a Python program.  Only the
-  following configuration operations are supported:
+  following configuration operations are supported: SQLITE_CONFIG_LOG,
   SQLITE_CONFIG_SINGLETHREAD, SQLITE_CONFIG_MULTITHREAD,
   SQLITE_CONFIG_SERIALIZED and SQLITE_CONFIG_MEMSTATUS.
+
+  See :func:`log` for an example of using SQLITE_CONFIG_LOG.
 
   -* sqlite3_config
 */
 
 #ifdef EXPERIMENTAL
+static PyObject *logger_cb=NULL;
+
+static void 
+apsw_logger(void *arg, int errcode, const char *message)
+{
+  PyGILState_STATE gilstate;
+  PyObject *etype=NULL, *evalue=NULL, *etraceback=NULL;
+  PyObject *res=NULL;
+  PyObject *msgaspystring=NULL;
+
+  gilstate=PyGILState_Ensure();
+  assert(arg==logger_cb);
+  assert(arg);
+  PyErr_Fetch(&etype, &evalue, &etraceback);
+
+  msgaspystring=convertutf8string(message);
+  if(msgaspystring)
+    res=PyEval_CallFunction(arg, "iO", errcode, msgaspystring);
+  if(!res)
+    {
+      AddTraceBackHere(__FILE__, __LINE__, "Call_Logger",
+		       "{s: O, s: i, s: s}", 
+		       "logger", arg,
+		       "errcode", errcode,
+		       "message", message);
+      apsw_write_unraiseable(NULL);
+    }
+  else
+    Py_DECREF(res);
+
+  Py_XDECREF(msgaspystring);
+  if(etype || evalue || etraceback)
+    PyErr_Restore(etype, evalue, etraceback);
+  PyGILState_Release(gilstate);
+}
+
 static PyObject *
 config(APSW_ARGUNUSED PyObject *self, PyObject *args)
 {
@@ -301,6 +339,35 @@ config(APSW_ARGUNUSED PyObject *self, PyObject *args)
         break;
       }
       
+    case SQLITE_CONFIG_LOG:
+      {
+	PyObject *logger;
+	if(!PyArg_ParseTuple(args, "iO", &optdup, &logger))
+	  return NULL;
+	if(logger==Py_None)
+	  {
+	    res=sqlite3_config((int)opt, NULL);
+	    if(res==SQLITE_OK)
+	      Py_CLEAR(logger_cb);
+	  }
+	else if(!PyCallable_Check(logger))
+	  {
+	    PyErr_Format(PyExc_TypeError, "Logger should be None or a callable");
+	    return NULL;
+	  }
+	else
+	  {
+	    res=sqlite3_config((int)opt, apsw_logger, logger);
+	    if(res==SQLITE_OK)
+	      {
+		Py_CLEAR(logger_cb);
+		logger_cb=logger;
+		Py_INCREF(logger);
+	      }
+	  }
+	break;
+      }
+
     default:
       PyErr_Format(PyExc_TypeError, "Unknown config type %d", (int)opt);
       return NULL;
@@ -1071,7 +1138,7 @@ get_compile_options(void)
   if(!res) goto fail;
   for(i=0;i<count;i++)
     {
-      opt=sqlite3_compileoption_get(i);
+      opt=sqlite3_compileoption_get(i); /* No PYSQLITE_CALL needed */
       assert(opt);
       tmpstring=PyString_FromString(opt);
       if(!tmpstring) goto fail;
@@ -1091,6 +1158,42 @@ get_compile_options(void)
   my code with the actual docstring from tools.py:main().
 */
 
+#ifdef EXPERIMENTAL
+/** .. method:: log(level, message)
+
+    Calls the SQLite logging interface.  Note that you must format the
+    message before passing it to this method::
+
+        apsw.log(apsw.SQLITE_NOMEM, "Need %d bytes of memory" % (1234,))
+
+    To set your own logger use::
+
+        def handler(errcode, message):
+           print errcode, message
+        apsw.config(apsw.SQLITE_CONFIG_LOG, handler)
+
+    *handler* will be called with two arguments.  The first will be a
+    numeric error code and the second will be a message string.  Note
+    that the handler has to be set before any other calls to SQLite.
+    Once SQLite is initialised you cannot change the logger - a
+    :exc:`MisuseError` will happen (this restriction is in SQLite not
+    APSW).
+
+    -* sqlite3_log
+ */
+static PyObject *
+apsw_log(APSW_ARGUNUSED PyObject *self, PyObject *args)
+{
+  int level;
+  char *message;
+  if(!PyArg_ParseTuple(args, "ies", &level, STRENCODING, &message))
+    return NULL;
+  sqlite3_log(level, "%s", message); /* PYSQLITE_CALL not needed */
+  PyMem_Free(message);
+  Py_RETURN_NONE;
+}
+#endif
+
 
 static PyMethodDef module_methods[] = {
   {"sqlitelibversion", (PyCFunction)getsqliteversion, METH_NOARGS,
@@ -1108,6 +1211,8 @@ static PyMethodDef module_methods[] = {
 #ifdef EXPERIMENTAL
   {"config", (PyCFunction)config, METH_VARARGS,
    "Calls sqlite3_config"},
+  {"log", (PyCFunction)apsw_log, METH_VARARGS,
+   "Calls sqlite3_log"},
 #endif
   {"memoryused", (PyCFunction)memoryused, METH_NOARGS,
    "Current SQLite memory in use"},

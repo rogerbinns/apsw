@@ -148,7 +148,7 @@ Internal Errors
 
 .. exception:: MisuseError
 
-  :const:`SQLITE_MISUSE`.  Library used incorrectly.  (This would be a bug in APSW).
+  :const:`SQLITE_MISUSE`.  SQLite library used incorrectly.
 
 .. exception:: RangeError
 
