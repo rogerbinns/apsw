@@ -4988,6 +4988,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, apsw.log, 1, None)
         apsw.log(apsw.SQLITE_MISUSE, "Hello world") # nothing should happen
         self.assertRaises(TypeError, apsw.config, apsw.SQLITE_CONFIG_LOG, 2)
+        self.assertRaises(TypeError, apsw.config, apsw.SQLITE_CONFIG_LOG)
         # Can't change once SQLite is initialised
         self.assertRaises(apsw.MisuseError, apsw.config, apsw.SQLITE_CONFIG_LOG, None)
         # shutdown
@@ -7591,6 +7592,7 @@ if __name__=='__main__':
     # clean up sqlite and apsw
     gc.collect() # all cursors & connections must be gone
     apsw.shutdown()
+    apsw.config(apsw.SQLITE_CONFIG_LOG, None)
     if hasattr(apsw, "_fini"):
         apsw._fini()
         gc.collect()

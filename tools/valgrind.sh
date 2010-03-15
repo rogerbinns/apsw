@@ -48,7 +48,7 @@ fi
 
 if [ -z "$CALLGRIND" ]
 then 
-   options="--track-fds=yes --num-callers=100 $showleaks --freelist-vol=500000000"
+   options="--track-fds=yes --num-callers=50 $showleaks --freelist-vol=500000000"
    cflags="-DAPSW_TESTFIXTURES -DAPSW_NO_NDEBUG"
    opt="-Os"
    APSW_TEST_ITERATIONS=${APSW_TEST_ITERATIONS:=150}
