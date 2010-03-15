@@ -613,7 +613,7 @@ getapswexceptionfor(APSW_ARGUNUSED PyObject *self, PyObject *pycode)
   -* sqlite3_complete
 */
 static PyObject *
-apswcomplete(Connection *self, PyObject *args)
+apswcomplete(APSW_ARGUNUSED Connection *self, PyObject *args)
 {
   char *statements=NULL;
   int res;
@@ -1140,7 +1140,7 @@ get_compile_options(void)
     {
       opt=sqlite3_compileoption_get(i); /* No PYSQLITE_CALL needed */
       assert(opt);
-      tmpstring=PyString_FromString(opt);
+      tmpstring=MAKESTR(opt);
       if(!tmpstring) goto fail;
       PyTuple_SET_ITEM(res, i, tmpstring);
     }
