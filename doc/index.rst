@@ -1,7 +1,7 @@
 APSW documentation
 ==================
 
-.. centered:: APSW |version| 66th March 2010.
+.. centered:: APSW |version| 16th March 2010.
 
 Use with SQLite 3.6.23 or later, Python 2.3 or later including Python
 3.
