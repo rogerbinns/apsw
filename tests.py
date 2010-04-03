@@ -5056,6 +5056,7 @@ class APSW(unittest.TestCase):
         def cmd(c):
             assert fh[0].tell()==0
             fh[0].truncate(0)
+            fh[0].seek(0)
             fh[0].write(c)
             fh[0].seek(0)
 

@@ -2,6 +2,13 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.6.23.1-r1
+===========
+
+Shell CSV output under Python 3.1 is corrected (work around Python 3.1
+StringIO incompatibility with other Python versions).
+
+
 3.6.23-r1
 =========
 

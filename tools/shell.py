@@ -562,6 +562,7 @@ OPTIONS include:
         t=self._csv[0].getvalue()
         if sys.version_info<(3,0):
             t=t.encode("utf8")
+        self._csv[0].seek(0)
         self._csv[0].truncate(0)
         # csv lib always does DOS eol
         assert(t.endswith("\r\n"))
