@@ -148,9 +148,9 @@ def buildpython(workdir, pyver, ucs, logfilename):
     
 # Default versions we support
 PYVERS=(
-    '3.1.1',
-    '2.7a3',
-    '2.6.4',
+    '3.1.2',
+    '2.7a4',
+    '2.6.5',
     '2.5.4',
     '2.4.6',
     '2.3.7',
@@ -159,6 +159,7 @@ PYVERS=(
     )
 
 SQLITEVERS=(
+    '3.6.23.1',
     '3.6.23',
    )
 
