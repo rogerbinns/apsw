@@ -6,7 +6,12 @@ Change History
 ===========
 
 Shell CSV output under Python 3.1 is corrected (work around Python 3.1
-StringIO incompatibility with other Python versions).
+StringIO bug/incompatibility with other Python versions).
+
+Simplified access to the shell's :attr:`database <Shell.db>` from the
+API.
+
+Added a shell :ref:`example <example-shell>`.
 
 
 3.6.23-r1

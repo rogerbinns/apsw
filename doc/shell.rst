@@ -121,6 +121,17 @@ is one at http://ipython.scipy.org/moin/PyReadline/Intro which works.
 However if this :class:`Shell` offers no completions it will start
 matching filenames even if they make no sense in the context.
 
+Example
+=======
+
+All examples of using the SQLite shell should work as is, plus you get
+extra features and functionality like command line completion and
+better dumps.
+
+You can also use the shell programmatically (or even interactively and
+programmatically at the same time).  See the :ref:`example
+<example-shell>` for using the API.
+
 Unicode
 =======
 

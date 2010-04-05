@@ -11,7 +11,7 @@ import time
 import codecs
 import base64
 
-class Shell:
+class Shell(object):
     """Implements a SQLite shell
 
     :param stdin: Where to read input from (default sys.stdin)
@@ -25,6 +25,7 @@ class Shell:
       program name.  You can also pass in None and then call
       :meth:`process_args` if you want to catch any errors
       in handling the arguments yourself.
+    :param db: A existing :class:`Connection` you wish to use
 
     The commands and behaviour are modelled after the `interactive
     shell <http://www.sqlite.org/sqlite.html>`__ that is part of
@@ -80,14 +81,19 @@ class Shell:
         types of errors doesn't matter."""
         pass
 
-    def __init__(self, stdin=None, stdout=None, stderr=None, encoding="utf8", args=None):
+    def __init__(self, stdin=None, stdout=None, stderr=None, encoding="utf8", args=None, db=None):
         """Create instance, set defaults and do argument processing."""
+        super(Shell, self).__init__()
         # The parameter doc has to be in main class doc as sphinx
         # ignores any described here
         self.exceptions=False
         self.history_file="~/.sqlite_history"
-        self.db=None
+        self._db=None
         self.dbfilename=None
+        if db:
+            self.db=db, db.filename
+        else:    
+            self.db=None, None
         self.prompt=    "sqlite> "
         self.moreprompt="    ..> "
         self.separator="|"
@@ -132,7 +138,26 @@ class Shell:
                 raise
 
         if self.interactive is None:
-            self.interactive=self.stdin.isatty() and self.stdout.isatty()
+            self.interactive=getattr(self.stdin, "isatty", False) and self.stdin.isatty() and getattr(self.stdout, "isatty", False) and self.stdout.isatty()
+
+    def _ensure_db(self):
+        "The database isn't opened until first use.  This function ensures it is now open."
+        if not self._db:
+            if not self.dbfilename:
+                self.dbfilename=":memory:"
+            self._db=apsw.Connection(self.dbfilename)
+        return self._db
+
+    def _set_db(self, newv):
+        "Sets the open database (or None) and filename"
+        (db, dbfilename)=newv
+        if self._db:
+            self._db.close()
+            self._db=None
+        self._db=db
+        self.dbfilename=dbfilename
+
+    db=property(_ensure_db, _set_db, None, "The current :class:`Connection`")
 
     def process_args(self, args):
         """Process command line options specified in args.  It is safe to
@@ -176,9 +201,7 @@ class Shell:
                 options=False
                 if not havedbname:
                     # grab new database
-                    if self.db: self.db.close()
-                    self.db=None
-                    self.dbfilename=args[0]
+                    self.db=None, args[0]
                     havedbname=True
                 else:
                     sqls.append(args[0])
@@ -757,13 +780,6 @@ Enter SQL statements terminated with a ";"
         if self.bail:
             raise
 
-    def ensure_db(self):
-        "The database isn't opened until first use.  This function ensures it is now open."
-        if not self.db:
-            if not self.dbfilename:
-                self.dbfilename=":memory:"
-            self.db=apsw.Connection(self.dbfilename)
-
     def process_sql(self, sql, bindings=None, internal=False):
         """Processes SQL text consisting of one or more statements
 
@@ -775,7 +791,6 @@ Enter SQL statements terminated with a ";"
           (eg the .tables or .database command).  When exectuting
           internal sql timings are not shown nor is the SQL echoed.
         """
-        self.ensure_db()
         cur=self.db.cursor()
         # we need to know when each new statement is executed
         state={'newsql': True, 'timing': None}
@@ -884,7 +899,6 @@ Enter SQL statements terminated with a ";"
             fname=cmd[1]
         else:
             raise self.Error("Backup takes one or two parameters")
-        self.ensure_db()
         out=apsw.Connection(fname)
         b=out.backup("main", self.db, dbname)
         try:
@@ -1385,7 +1399,6 @@ Enter SQL statements terminated with a ";"
         if len(cmd)!=2:
             raise self.Error("import takes two parameters")
 
-        self.ensure_db()
         try:
             final=None
             # start transaction so database can't be changed
@@ -1490,7 +1503,6 @@ Enter SQL statements terminated with a ";"
         """
         if len(cmd)<1 or len(cmd)>2:
             raise self.Error("load takes one or two parameters")
-        self.ensure_db()
         try:
             self.db.enableloadextension(True)
         except:
@@ -1681,7 +1693,6 @@ Enter SQL statements terminated with a ";"
             fname=cmd[1]
         else:
             raise self.Error("Restore takes one or two parameters")
-        self.ensure_db()
         input=apsw.Connection(fname)
         b=self.db.backup(dbname, input, "main")
         try:
@@ -1831,7 +1842,6 @@ Enter SQL statements terminated with a ";"
             t=int(cmd[0])
         except:
             raise self.Error("%s is not a number" % (cmd[0],))
-        self.ensure_db()
         self.db.setbusytimeout(t)
 
     def command_timer(self, cmd):
@@ -2052,8 +2062,7 @@ Enter SQL statements terminated with a ";"
     def handle_interrupt(self):
         """Deal with keyboard interrupt (typically Control-C).  It
         will :meth:`~Connection.interrupt` the database and print"^C" if interactive."""
-        if self.db:
-            self.db.interrupt()
+        self.db.interrupt()
         if not self.bail and self.interactive:
             self.write(self.stderr, "^C\n")
             return 
@@ -2210,7 +2219,6 @@ Enter SQL statements terminated with a ";"
         :return: A list of completions, or an empty list if none
         """
         if self._completion_cache is None:
-            self.ensure_db()
             cur=self.db.cursor()
             collations=[row[1] for row in cur.execute("pragma collation_list")]
             databases=[row[1] for row in cur.execute("pragma database_list")]

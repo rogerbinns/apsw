@@ -517,6 +517,28 @@ with memcon.backup("main", connection, "main") as backup:
 for row in memcon.cursor().execute("select * from s"):
     pass
 
+###
+### Shell  @@ example-shell
+###
+
+# Here we use the shell to do a csv export providing the existing db
+# connection
+
+# Export to a StringIO
+import StringIO as io # use io in Python 3
+output=io.StringIO()
+shell=apsw.Shell(stdout=output, db=connection)
+# How to execute a dot command
+shell.process_command(".mode csv")
+# How to execute SQL
+shell.process_sql("create table csvtest(x,y); insert into csvtest values(3,4); insert into csvtest values('ab', NULL)")
+# Let the shell figure out SQL vs dot command
+shell.process_complete_line("select * from csvtest")
+
+# Verify output
+#@@CAPTURE
+print output.getvalue()
+#@@ENDCAPTURE
 
 ###
 ### Statistics @@example-status
