@@ -40,6 +40,7 @@ import time
 import threading
 import glob
 import pickle
+import shutil
 
 if py3:
     import queue as Queue
@@ -190,7 +191,10 @@ def bgdel():
         name=q.get()
         while os.path.exists(name):
             try:
-                os.remove(name)
+                if os.path.isfile(name):
+                    os.remove(name)
+                else:
+                    shutil.rmtree(name)
             except:
                 pass
             if os.path.exists(name):
@@ -1303,15 +1307,17 @@ class APSW(unittest.TestCase):
         db2=apsw.Connection("testdb")
         c2=db2.cursor()
         c2.execute("begin exclusive")
-        self.assertRaises(apsw.BusyError, c.execute, "begin immediate ; select * from foo")
+        try:
+            self.assertRaises(apsw.BusyError, c.execute, "begin immediate ; select * from foo")
+        finally:
+            del c2
+            db2.close()
+            del db2
 
         # close and reopen databases - sqlite will return Busy immediately to a connection
         # it previously returned busy to
         del c
-        del c2
-        db2.close()
         self.db.close()
-        del db2
         del self.db
         self.db=apsw.Connection("testdb")
         db2=apsw.Connection("testdb")
@@ -3530,6 +3536,7 @@ class APSW(unittest.TestCase):
 
         db2=apsw.Connection("testdb2", vfs=vfs.vfsname)
         db2.cursor().execute(query)
+        db2.close()
         
         # check the two databases are the same (modulo the XOR)
         orig=open("testdb", "rb").read()
@@ -3542,11 +3549,9 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, apsw.exceptionfor, "three")
         self.assertRaises(ValueError, apsw.exceptionfor, 8764324)
         self.assertRaises(OverflowError, apsw.exceptionfor, l("0xffffffffffffffff10"))
-        
 
         # test raw file object
         self.db.close()
-        db2.close()
         f=ObfuscatedVFSFile("", "testdb", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
         del f # check closes
         f=ObfuscatedVFSFile("", "testdb", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
