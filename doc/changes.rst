@@ -2,6 +2,17 @@ Change History
 **************
 .. currentmodule:: apsw
 
+next
+====
+
+Added :meth:`format_sql_value` for generating a SQL syntax string from
+a value.  This is implemented in C and is significantly faster than
+doing the same formatting in Python.
+
+Using the above function and other tweaks the :ref:`shell` dumper is
+now three to four times faster.  Thanks to Nikolaus Rath for pointing
+out the problem and providing test data.
+
 3.6.23.1-r1
 ===========
 

@@ -103,7 +103,7 @@ class Shell(object):
         self.header=False
         self.nullvalue=""
         self.output=self.output_list
-        self._output_table="table"
+        self._output_table=self._fmt_sql_identifier("table")
         self.widths=[]
         # do we truncate output in list mode?  (explain doesn't, regular does)
         self.truncate=True
@@ -460,25 +460,6 @@ OPTIONS include:
             return "[%s]" % (v,)
         return '"%s"' % (v,)
 
-    def _fmt_sql_value(self, v):
-        "Return as a SQL literal"
-        if v is None:
-            return "NULL"
-        elif isinstance(v, self._basestring):
-            return "'"+v.replace("'", "''")+"'"
-        elif isinstance(v, self._binary_type):
-            res=["X'"]
-            if sys.version_info<(3,0):
-                trans=lambda x: ord(x)
-            else:
-                trans=lambda x: x
-            for byte in v:
-                res.append("%02X" % (trans(byte),))
-            res.append("'")
-            return "".join(res)
-        else:
-            return "%s" % (v,)
-
     def _fmt_text_col(self, v):
         "Regular text formatting"
         if v is None:
@@ -615,7 +596,7 @@ OPTIONS include:
         """
         if header:
             return
-        out="INSERT INTO "+self._fmt_sql_identifier(self._output_table)+" VALUES("+",".join([self._fmt_sql_value(l) for l in line])+");\n"
+        out="INSERT INTO "+self._output_table+" VALUES("+",".join([apsw.format_sql_value(l) for l in line])+");\n"
         self.write(self.stdout, out)
 
     def output_json(self, header, line):
@@ -1075,13 +1056,13 @@ Enter SQL statements terminated with a ";"
                         # could thwart us so we have to manipulate
                         # sqlite_master directly
                         if sql[0].lower().split()[:3]==["create", "virtual", "table"]:
-                            self.write(self.stdout, "DELETE FROM sqlite_master WHERE name="+self._fmt_sql_value(table)+" AND type='table';\n")
+                            self.write(self.stdout, "DELETE FROM sqlite_master WHERE name="+apsw.format_sql_value(table)+" AND type='table';\n")
                             self.write(self.stdout, "INSERT INTO sqlite_master(type,name,tbl_name,rootpage,sql) VALUES('table',%s,%s,0,%s);\n"
-                                       % (self._fmt_sql_value(table), self._fmt_sql_value(table), self._fmt_sql_value(sql[0])))
+                                       % (apsw.format_sql_value(table), apsw.format_sql_value(table), apsw.format_sql_value(sql[0])))
                         else:
                             self.write(self.stdout, "DROP TABLE IF EXISTS "+self._fmt_sql_identifier(table)+";\n")
                             self.write(self.stdout, sql[0]+";\n")
-                            self._output_table=table
+                            self._output_table=self._fmt_sql_identifier(table)
                             self.process_sql("select * from "+self._fmt_sql_identifier(table), internal=True)
                         # Now any indices or triggers
                         first=True
@@ -1099,7 +1080,7 @@ Enter SQL statements terminated with a ";"
                 first=True
                 for name,sql in self.db.cursor().execute("SELECT name,sql FROM sqlite_master "
                                                          "WHERE sql NOT NULL AND type='view' "
-                                                         "AND name IN ( "+",".join([self._fmt_sql_value(i) for i in tables])+
+                                                         "AND name IN ( "+",".join([apsw.format_sql_value(i) for i in tables])+
                                                          ") ORDER BY _ROWID_"):
                     if first:
                         comment("Views")
@@ -1121,8 +1102,8 @@ Enter SQL statements terminated with a ";"
                                 comment("For primary key autoincrements the next id "
                                         "to use is stored in sqlite_sequence")
                                 first=False
-                            self.write(self.stdout, 'DELETE FROM main.sqlite_sequence WHERE name=%s;\n' % (self._fmt_sql_value(t),))
-                            self.write(self.stdout, 'INSERT INTO main.sqlite_sequence VALUES (%s, %s);\n' % (self._fmt_sql_value(t), v[0][0]))
+                            self.write(self.stdout, 'DELETE FROM main.sqlite_sequence WHERE name=%s;\n' % (apsw.format_sql_value(t),))
+                            self.write(self.stdout, 'INSERT INTO main.sqlite_sequence VALUES (%s, %s);\n' % (apsw.format_sql_value(t), v[0][0]))
                     if not first:
                         blank()
             finally:
@@ -1538,6 +1519,7 @@ Enter SQL statements terminated with a ";"
                         self._output_table=cmd[1]
                     else:
                         self._output_table="table"
+                    self._output_table=self._fmt_sql_identifier(self._output_table)
                 return
         if not self._output_modes:
             self._cache_output_modes()

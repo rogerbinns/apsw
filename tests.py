@@ -688,6 +688,44 @@ class APSW(unittest.TestCase):
         finally:
             sys.setdefaultencoding(enc)
 
+    def testFormatSQLValue(self):
+        "Verify text formatting of values"
+        vals=(
+            (3, "3"),
+            (3.1, "3.1"),
+            (-3, "-3"),
+            (-3.1, "-3.1"),
+            (9223372036854775807, "9223372036854775807"),
+            (-9223372036854775808, "-9223372036854775808"),
+            (None, "NULL"),
+            ("ABC", "'ABC'"),
+            (u(r"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET} "), "'"+u(r"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET} ")+"'"),
+            ("", "''"),
+            ("'", "''''"),
+            ("'a", "'''a'"),
+            ("a'", "'a'''"),
+            ("''", "''''''"),
+            ("'"*20000, "'"+"'"*40000+"'"),
+            ("\0", "CAST(X'00' AS CHAR)"),
+            ("AB\0C", "CAST(X'41420043' AS CHAR)"),
+            ("A'B'\0C", "CAST(X'412742270043' AS CHAR)"),
+            (b(r"AB\0C"), "X'41420043'"),
+            )
+        for vin, vout in vals:
+            if not py3:
+                if isinstance(vin, str):
+                    vin=unicode(vin)
+            out=apsw.format_sql_value(vin)
+            if not py3:
+                self.assertEqual(out, unicode(vout))
+            else:
+                self.assertEqual(out, vout)
+        # Errors
+        if not py3:
+            self.assertRaises(TypeError, apsw.format_sql_value, "plain string")
+        self.assertRaises(TypeError, apsw.format_sql_value, apsw)
+        self.assertRaises(TypeError, apsw.format_sql_value)
+
     def testAuthorizer(self):
         "Verify the authorizer works"
         retval=apsw.SQLITE_DENY

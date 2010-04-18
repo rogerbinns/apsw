@@ -1152,6 +1152,164 @@ get_compile_options(void)
 }
 
 
+/* This function deals with strings with embedded nulls.  We output
+   them like this:
+
+      CAST(X'41420043' AS CHAR)
+
+   Note that this is only correct when the database is using UTF8 but
+   we have no idea what the current encoding is.
+ */
+static PyObject*
+_format_string_with_null(PyObject *value)
+{
+  PyObject *utf8o;
+  PyObject *unires;
+  Py_UNICODE *res;
+  Py_ssize_t togo;
+  const unsigned char *utf8;
+  
+  utf8o=getutf8string(value);
+  if(!utf8o) return NULL;
+  unires=PyUnicode_FromUnicode(NULL, 17+2*PyBytes_GET_SIZE(utf8o));
+  if(!unires)
+    {
+      Py_DECREF(utf8o);
+      return NULL;
+    }
+  res=PyUnicode_AS_UNICODE(unires);
+  *res++='C';  *res++='A';  *res++='S';  *res++='T';
+  *res++='(';  *res++='X';  *res++='\'';
+  togo=PyBytes_GET_SIZE(utf8o);
+  utf8=(const unsigned char*)PyBytes_AS_STRING(utf8o);
+  for(;togo;utf8++,togo--)
+    {
+      *res++="0123456789ABCDEF"[(*utf8)>>4];
+      *res++="0123456789ABCDEF"[(*utf8)&0x0f];
+    }
+  *res++='\'';
+  *res++=' ';
+  *res++='A';
+  *res++='S';
+  *res++=' ';
+  *res++='C';
+  *res++='H';
+  *res++='A';
+  *res++='R';
+  *res++=')';
+
+  Py_DECREF(utf8o);
+  return unires;
+}
+
+/** .. method:: format_sql_value(value) -> string
+
+  Returns a Python string (unicode) representing the supplied value in
+  SQL syntax.  Python 2 note: You must supply unicode strings not
+  plain strings.
+
+*/
+static PyObject*
+formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
+{
+  /* NULL/None */
+  if(value==Py_None)
+    {
+      static PyObject *nullstr;
+      if(!nullstr) nullstr=PyObject_Unicode(MAKESTR("NULL"));
+      Py_INCREF(nullstr);
+      return nullstr;
+    }
+  /* Integer/Long/Float */
+  if(PyIntLong_Check(value)  /* ::TODO:: verify L is not appended in py 2.3 and similar vintage */
+     || PyFloat_Check(value))
+    return PyObject_Unicode(value);
+#if PY_MAJOR_VERSION<3
+  /* We don't support plain strings only unicode */
+  if(PyString_Check(value))
+    {
+      PyErr_Format(PyExc_TypeError, "Old plain strings not supported - use unicode");
+      return NULL;
+    }
+#endif
+  /* Unicode */
+  if(PyUnicode_Check(value))
+    {
+      /* We optimize for the default case of there being no nuls or single quotes */
+      PyObject *unires;
+      Py_UNICODE *res;
+      Py_ssize_t left;
+      unires=PyUnicode_FromUnicode(NULL, PyUnicode_GET_SIZE(value)+2);
+      if(!unires) return NULL;
+      res=PyUnicode_AS_UNICODE(unires);
+      *res++='\'';
+      memcpy(res, PyUnicode_AS_UNICODE(value), PyUnicode_GET_DATA_SIZE(value));
+      res+=PyUnicode_GET_SIZE(value);
+      *res++='\'';
+      /* Now look for nuls and single quotes */
+      res=PyUnicode_AS_UNICODE(unires)+1;
+      left=PyUnicode_GET_SIZE(value);
+      for(;left;left--,res++)
+	{
+	  if(*res==0)
+	    {
+	      Py_DECREF(unires);
+	      return _format_string_with_null(value);
+	    }
+	  if(*res!='\'')
+	    continue;
+	  if(PyUnicode_Resize(&unires, PyUnicode_GET_SIZE(unires)+1)==-1)
+	    {
+	      Py_DECREF(unires);
+	      return NULL;
+	    }
+	  res=PyUnicode_AS_UNICODE(unires)+(PyUnicode_GET_SIZE(unires)-left-2);
+	  memmove(res+1, res, sizeof(Py_UNICODE)*(left+1));
+	  assert(*res=='\'');
+	  res++;
+	}
+      return unires;
+    }
+  /* Blob */
+  if(
+#if PY_MAJOR_VERSION<3
+     PyBuffer_Check(value)
+#else
+     PyBytes_Check(value)
+#endif
+     )
+    {
+      const unsigned char *buffer;
+      Py_ssize_t buflen;
+      int asrb;
+      PyObject *unires;
+      Py_UNICODE *res;
+#define _HEXDIGITS 
+
+      asrb=PyObject_AsReadBuffer(value, (const void**)&buffer, &buflen);
+      if(asrb!=0)
+	return NULL;
+      /* 3 is X, ', '  */
+      unires=PyUnicode_FromUnicode(NULL, buflen*2+3); 
+      if(!unires) 
+	return NULL;
+      res=PyUnicode_AS_UNICODE(unires);
+      *res++='X';
+      *res++='\'';
+      /* About the billionth time I have written a hex conversion routine */
+      for(;buflen;buflen--)
+	{
+	  *res++="0123456789ABCDEF"[(*buffer)>>4];
+	  *res++="0123456789ABCDEF"[(*buffer++)&0x0f];
+	}
+      *res++='\'';
+      return unires;
+    }
+
+  PyErr_Format(PyExc_TypeError, "Unsupported type");
+  return NULL;
+}
+
 /** .. automethod:: main()
 
   Sphinx automethod is too stupid, so this text is replaced by
@@ -1208,6 +1366,8 @@ static PyMethodDef module_methods[] = {
    "Initialize SQLite library"},
   {"shutdown", (PyCFunction)sqliteshutdown, METH_NOARGS,
    "Shutdown SQLite library"},
+  {"format_sql_value", (PyCFunction)formatsqlvalue, METH_O,
+   "Formats a SQL value as a string"},
 #ifdef EXPERIMENTAL
   {"config", (PyCFunction)config, METH_VARARGS,
    "Calls sqlite3_config"},
