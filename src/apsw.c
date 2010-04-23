@@ -1152,56 +1152,6 @@ get_compile_options(void)
 }
 
 
-/* This function deals with strings with embedded nulls.  We output
-   them like this:
-
-      CAST(X'41420043' AS CHAR)
-
-   Note that this is only correct when the database is using UTF8 but
-   we have no idea what the current encoding is.
- */
-static PyObject*
-_format_string_with_null(PyObject *value)
-{
-  PyObject *utf8o;
-  PyObject *unires;
-  Py_UNICODE *res;
-  Py_ssize_t togo;
-  const unsigned char *utf8;
-  
-  utf8o=getutf8string(value);
-  if(!utf8o) return NULL;
-  unires=PyUnicode_FromUnicode(NULL, 17+2*PyBytes_GET_SIZE(utf8o));
-  if(!unires)
-    {
-      Py_DECREF(utf8o);
-      return NULL;
-    }
-  res=PyUnicode_AS_UNICODE(unires);
-  *res++='C';  *res++='A';  *res++='S';  *res++='T';
-  *res++='(';  *res++='X';  *res++='\'';
-  togo=PyBytes_GET_SIZE(utf8o);
-  utf8=(const unsigned char*)PyBytes_AS_STRING(utf8o);
-  for(;togo;utf8++,togo--)
-    {
-      *res++="0123456789ABCDEF"[(*utf8)>>4];
-      *res++="0123456789ABCDEF"[(*utf8)&0x0f];
-    }
-  *res++='\'';
-  *res++=' ';
-  *res++='A';
-  *res++='S';
-  *res++=' ';
-  *res++='C';
-  *res++='H';
-  *res++='A';
-  *res++='R';
-  *res++=')';
-
-  Py_DECREF(utf8o);
-  return unires;
-}
-
 /** .. method:: format_sql_value(value) -> string
 
   Returns a Python string (unicode) representing the supplied value in
@@ -1251,22 +1201,28 @@ formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
       left=PyUnicode_GET_SIZE(value);
       for(;left;left--,res++)
 	{
-	  if(*res==0)
+	  if(*res=='\'' || *res==0)
 	    {
-	      Py_DECREF(unires);
-	      return _format_string_with_null(value);
+	      /* we add one char for ' and 10 for null */
+	      const int moveamount=*res=='\''?1:10;
+	      if(PyUnicode_Resize(&unires, PyUnicode_GET_SIZE(unires)+moveamount)==-1)
+		{
+		  Py_DECREF(unires);
+		  return NULL;
+		}
+	      res=PyUnicode_AS_UNICODE(unires)+(PyUnicode_GET_SIZE(unires)-left-moveamount-1);
+	      memmove(res+moveamount, res, sizeof(Py_UNICODE)*(left+1));
+	      if(*res==0)
+		{
+		  *res++='\'';
+		  *res++='|'; *res++='|'; 
+		  *res++='X'; *res++='\''; *res++='0'; *res++='0'; *res++='\''; 
+		  *res++='|'; *res++='|'; 
+		  *res='\'';
+		}
+	      else
+		res++;
 	    }
-	  if(*res!='\'')
-	    continue;
-	  if(PyUnicode_Resize(&unires, PyUnicode_GET_SIZE(unires)+1)==-1)
-	    {
-	      Py_DECREF(unires);
-	      return NULL;
-	    }
-	  res=PyUnicode_AS_UNICODE(unires)+(PyUnicode_GET_SIZE(unires)-left-2);
-	  memmove(res+1, res, sizeof(Py_UNICODE)*(left+1));
-	  assert(*res=='\'');
-	  res++;
 	}
       return unires;
     }

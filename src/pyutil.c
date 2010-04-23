@@ -86,6 +86,7 @@ typedef int Py_ssize_t;
 #define PyIntLong_Check           PyLong_Check
 #define PyIntLong_AsLong          PyLong_AsLong
 #define PyInt_FromLong            PyLong_FromLong
+#define PyObject_Unicode          PyObject_Str
 #endif
 
 /* we clear weakref lists when close is called on a blob/cursor as
