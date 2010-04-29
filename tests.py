@@ -2992,6 +2992,35 @@ class APSW(unittest.TestCase):
         finally:
             blobro.close()
 
+    def testIssue98(self):
+        "An error in context manager commmit should do a rollback"
+        self.db.cursor().execute("create table foo(x); insert into foo values(3); insert into foo values(4)")
+        # deliberately don't read from cursor on connection 1 which will prevent a commit
+        x=self.db.cursor().execute("select * from foo")
+        db2=apsw.Connection("testdb").__enter__()
+        db2.cursor().execute("insert into foo values(5)") # transaction is buffered in memory by SQLite
+        try:
+            db2.__exit__(None, None, None)
+        except apsw.BusyError:
+            pass
+        # Ensure transaction was rolled back
+        x.fetchall()
+        for row in db2.cursor().execute("select * from foo where x=5"):
+            self.fail("Transaction was not rolled back")
+        db2.close()
+        # Verify that error in tracer results in rollback
+        self.db.__enter__()
+        def h(*args): 1/0
+        self.db.cursor().execute("insert into foo values(6)")
+        self.db.setexectrace(h)
+        try:
+            self.db.__exit__(None, None, None)
+        except ZeroDivisionError:
+            self.db.setexectrace(None)
+            pass
+        for row in self.db.cursor().execute("select * from foo where x=6"):
+            self.fail("Transaction was not rolled back")
+
     def testTicket2158(self):
         "Check we are not affected by SQLite ticket #2158"
         # http://www.sqlite.org/cvstrac/tktview?tn=2158

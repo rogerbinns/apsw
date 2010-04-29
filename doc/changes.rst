@@ -13,6 +13,13 @@ Using the above function and other tweaks the :ref:`shell` dumper is
 now three to four times faster.  Thanks to Nikolaus Rath for pointing
 out the problem and providing test data.
 
+When using the context manager (with statement) of a
+:class:`Connection` and the exit commit had an error then the
+transaction is rolled back.  This could occur if SQLite had buffered
+the transaction entirely in memory and a non-eager transaction lock
+had been obtained.  Thanks to Geoff Ness for finding the problem.
+(`Issue 98 <http://code.google.com/p/apsw/issues/detail?id=98>`__).
+
 3.6.23.1-r1
 ===========
 

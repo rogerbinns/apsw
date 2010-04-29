@@ -2921,10 +2921,10 @@ Connection_enter(Connection *self)
 static PyObject *
 Connection_exit(Connection *self, PyObject *args)
 {
-  PyObject *etype, *evalue, *etb;
+  PyObject *etype, *evalue, *etb, *result=Py_None;
   long sp;
   char *sql;
-  int res=SQLITE_OK, res2=SQLITE_OK, res3=SQLITE_OK, res4=SQLITE_OK;
+  int res=SQLITE_OK, res2=SQLITE_OK, res3=SQLITE_OK;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
@@ -2943,36 +2943,45 @@ Connection_exit(Connection *self, PyObject *args)
   if(!PyArg_ParseTuple(args, "OOO", &etype, &evalue, &etb))
     return NULL;
 
-  /* if we are rolling back then we also have to do a release
-     otherwise a started transaction is still in effect */
-  if(etype!=Py_None || evalue!=Py_None || etb!=Py_None)
+  /* try the commit first because it may fail in which case we'll need
+     to roll it back - see issue 98 */
+  if(etype==Py_None && evalue==Py_None && etb==Py_None)
     {
-      sql=sqlite3_mprintf("ROLLBACK TO SAVEPOINT \"_apsw-%ld\"", sp);
+      sql=sqlite3_mprintf("RELEASE SAVEPOINT \"_apsw-%ld\"", sp);
       if(!sql) return PyErr_NoMemory();
       if(self->exectrace && self->exectrace!=Py_None)
-        {
-          PyObject *result=PyObject_CallFunction(self->exectrace, "OsO", self, sql, Py_None);
-          if(!result) res3=SQLITE_ERROR;
-          Py_XDECREF(result);
-        }
-      PYSQLITE_CON_CALL(res=sqlite3_exec(self->db, sql, 0, 0, 0));
-      res2=res;
+	{
+	  PyObject *result=PyObject_CallFunction(self->exectrace, "OsO", self, sql, Py_None);
+	  Py_XDECREF(result); 
+	  if(!result) res3=SQLITE_ERROR;
+	}
+      if(res3==SQLITE_OK)
+	{
+	  PYSQLITE_CON_CALL(res=sqlite3_exec(self->db, sql, 0, 0, 0));
+	  SET_EXC(res, self->db);
+	}
       sqlite3_free(sql);
-      SET_EXC(res, self->db);
+      /* Did everything go ok? */
+      if(res3==SQLITE_OK && res==SQLITE_OK)
+	Py_RETURN_FALSE;
     }
-  
-  sql=sqlite3_mprintf("RELEASE SAVEPOINT \"_apsw-%ld\"", sp);
+	  
+  /* There was an error - either the tracing callback failed or the
+     commit failed */
+  sql=sqlite3_mprintf("ROLLBACK TO SAVEPOINT \"_apsw-%ld\"", sp);
   if(!sql) return PyErr_NoMemory();
   if(self->exectrace && self->exectrace!=Py_None)
     {
       PyObject *result=PyObject_CallFunction(self->exectrace, "OsO", self, sql, Py_None);
-      if(!result) res4=SQLITE_ERROR;
-      Py_XDECREF(result); 
+      if(!result) res2=SQLITE_ERROR;
+      Py_XDECREF(result);
     }
+  /* We do the rollback call even if the tracer had an error */
   PYSQLITE_CON_CALL(res=sqlite3_exec(self->db, sql, 0, 0, 0));
   sqlite3_free(sql);
   SET_EXC(res, self->db);
-  if(res || res2 || res3 || res4) 
+
+  if(res || res2 || res3)
     {
       assert(PyErr_Occurred());
       return NULL;
