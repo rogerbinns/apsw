@@ -5043,7 +5043,10 @@ class APSW(unittest.TestCase):
         ### Tell worker to quit
         self.db.close()
         apsw.async_control(apsw.SQLITEASYNC_HALT, apsw.SQLITEASYNC_HALT_IDLE)
-        time.sleep(1)
+        # Give a few seconds of grace time
+        for i in range(5):
+            if d['workerfinished']: break
+            time.sleep(1)
         self.assertEqual(d['workerfinished'], True)
 
         # catch any exceptions in worker thread
