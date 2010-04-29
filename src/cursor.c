@@ -1134,7 +1134,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
   It is very unlikely you will need to call this method.  It exists
   because older versions of SQLite required all Connection/Cursor
   activity to be confined to the same thread.  That is no longer the
-  case.  Cursors are automatically garbage collected and when their
+  case.  Cursors are automatically garbage collected and when there
   are none left will allow the connection to be garbage collected if
   it has no other references.
 
