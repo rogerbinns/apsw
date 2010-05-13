@@ -3147,7 +3147,7 @@ class APSW(unittest.TestCase):
            # mutexes then that is ok.
 
            # In the case of sqlite3_result_*|declare_vtab, the mutex
-           # is already held by enclosing sqlite3_step and the methods
+           # is already held by enclosing sqlite3_step and the
            # methods will only be called from that same thread so it
            # isn't a problem.
                         'skipcalls': re.compile("^sqlite3_(blob_bytes|column_count|bind_parameter_count|data_count|vfs_.+|changes|total_changes|get_autocommit|last_insert_rowid|complete|interrupt|limit|free|threadsafe|value_.+|libversion|enable_shared_cache|initialize|shutdown|config|memory_.+|soft_heap_limit|randomness|release_memory|status|result_.+|user_data|mprintf|aggregate_context|declare_vtab|backup_remaining|backup_pagecount)$"),
