@@ -7,6 +7,7 @@ import time
 desiredversion=sys.argv[1]
 debver=sys.argv[2]
 maintainer=sys.argv[3]
+series=sys.argv[4]
 
 if os.path.exists("debian/changelog"):
     os.remove("debian/changelog")
@@ -37,7 +38,7 @@ while len(lines[-1])==0:
     lines=lines[:-1]
 
 out=open("debian/changelog", "wt")
-print >> out, "python-apsw (%s-%s) unstable; urgency=low" % (desiredversion, debver)
+print >> out, "python-apsw (%s-%s) %s; urgency=low" % (desiredversion, debver, series)
 print >> out
 for l in lines:
     print >> out, "  "+l

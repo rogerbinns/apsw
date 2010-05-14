@@ -8,7 +8,19 @@ VERDIR=apsw-$(VERSION)
 # These control Debian packaging
 DEBSUFFIX=1ppa1
 DEBMAINTAINER="Roger Binns <rogerb@rogerbinns.com>"
+DEBSERIES=lucid karmic jaunty
 PPAUPLOAD=ppa:ubuntu-rogerbinns/apsw
+
+# Some useful info
+#
+# To use a different SQLite version: make SQLITEVERSION=1.2.3 blah blah
+#
+# build_ext      - builds extension in current directory fetching sqlite
+# doc            - makes the doc
+# source         - makes a source zip in dist directory after running code through test suite
+# dpkg-bin       - produces binary debian packages 
+# dpkg           - produces debian source package for each DEBSERIES
+# ppa            - calls dpkg and then uploads to PPAUPLOAD
 
 GENDOCS = \
 	doc/blob.rst \
@@ -19,7 +31,7 @@ GENDOCS = \
 	doc/apsw.rst \
 	doc/backup.rst
 
-.PHONY : all docs doc header linkcheck publish showsymbols compile-win source source_nocheck upload tags clean ppa dpkg
+.PHONY : all docs doc header linkcheck publish showsymbols compile-win source source_nocheck upload tags clean ppa dpkg dpkg-bin
 
 all: header docs
 
@@ -144,13 +156,25 @@ debian/changelog: doc/changes.rst
 	touch debian/changelog
 
 dpkg: clean doc debian/copyright debian/changelog
-	rm -rf debian-build
-	tools/mkdebianchangelog.py $(VERSION) $(DEBSUFFIX) $(DEBMAINTAINER)
 	python setup.py fetch --all --version=$(SQLITEVERSION) sdist --formats bztar --add-doc
+	rm -rf debian-build
 	mkdir -p debian-build
-	cp dist/$(VERDIR).tar.bz2 debian-build/python-apsw_$(VERSION).orig.tar.bz2
-	cd debian-build ; tar xvfj *.tar.bz2 ; cd $(VERDIR) ; rsync -av ../../debian .
-	cd debian-build/$(VERDIR) ; debuild -S && sudo pbuilder build ../*.dsc
+	cp dist/$(VERDIR).tar.bz2 debian-build/python-apsw_$(VERSION).orig.tar.bz2 
+	set -ex ; \
+	for series in $(DEBSERIES) ; do \
+	   tools/mkdebianchangelog.py $(VERSION) $(DEBSUFFIX)~$${series}1 $(DEBMAINTAINER) $$series ; \
+	   cd debian-build ; rm -rf $(VERDIR); tar xfj  python-apsw_$(VERSION).orig.tar.bz2 ; \
+	   cd $(VERDIR) ; rsync -av ../../debian . ; \
+	   debuild -S ; \
+	   cd ../.. ; \
+	done
+
+dpkg-bin: 
+	@if [ `echo $(DEBSERIES) | wc -w` -gt 1 ] ; then echo "Only use one series, eg:  make DEBSERIES=unstable dpkg-bin" ; echo "You had `echo $(DEBSERIES) | wc -w` - $(DEBSERIES)" ; exit 1 ; fi
+	$(MAKE) dpkg
+	cd debian-build ; sudo pbuilder build *.dsc
+
+# $ && sudo pbuilder build ../*.dsc
 
 ppa: dpkg
-	cd debian-build ; dput $(PPAUPLOAD) *_source.changes
+	cd debian-build ; for f in *_source.changes ; do dput $(PPAUPLOAD) $$f ; done
