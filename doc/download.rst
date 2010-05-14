@@ -58,13 +58,22 @@ Some Linux distributions also have packages.
 | Debian            | Install `python-apsw <http://packages.debian.org/python-apsw>`__                 |
 +-------------------+----------------------------------------------------------------------------------+
 | Ubuntu            | Install `python-apsw <http://packages.ubuntu.com/search?keywords=python-apsw>`__ |
+|                   | I maintain a PPA that is up to date at                                           |
+|                   |     https://launchpad.net/~ubuntu-rogerbinns/+archive/apsw  which has SQLite     |
+|                   | embedded statically inside (ie system SQLite is ignored) and has all the         |
+|                   | extensions enabled: FTS3, RTree, ICU, asyncvfs                                   |
 +-------------------+----------------------------------------------------------------------------------+
 | Gentoo            | Install `dev-python/apsw <http://www.gentoo-portage.com/dev-python/apsw>`_       |
 +-------------------+----------------------------------------------------------------------------------+
 | Arch Linux        | Install `python-apsw <http://aur.archlinux.org/packages.php?ID=5537>`__          |
 +-------------------+----------------------------------------------------------------------------------+
 
-Note that these may trail the SQLite and APSW releases by a year, or more.
+Note that these (except my Ubuntu PPA) may trail the SQLite and APSW
+releases by a year, or more.  It is also possible to build RPMs and
+DEB packages from the source, although this involves setting up
+package management tools and various dependencies on your build
+machine.
+
 
 .. _verifydownload:
 
