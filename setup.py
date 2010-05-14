@@ -634,8 +634,22 @@ class apsw_build_ext(beparent):
 sparent=sdist.sdist
 class apsw_sdist(sparent):
 
+    user_options=sparent.user_options+[
+        ("add-doc", None, "Includes built documentation from doc/build/html into source"),
+        ("include-debian", None, "Includes the top level debian directory to enable building debian packages")
+        ]
+
+    boolean_options=sparent.boolean_options+["add-doc", "include-debian"]
+
     def initialize_options(self):
         sparent.initialize_options(self)
+        self.add_doc=False
+        # Were we made from a source archive?  If so include the help again
+        if os.path.isfile("doc/index.html") and os.path.isfile("doc/_sources/pysqlite.txt"):
+            self.add_doc=True
+        self.include_debian=False
+        self.use_defaults=False # they are useless
+        
         # Make sure the manifest is regenerated
         self.force_manifest=True
 
@@ -674,6 +688,51 @@ class apsw_sdist(sparent):
 
             mout.close()
 
+    def run(self):
+        v=sparent.run(self)
+        if self.add_doc:
+            for archive in self.get_archive_files():
+                add_doc(archive, self.distribution.get_fullname())
+        return v
+
+def help_walker(arcdir):
+    # Provides a list of (archive name, disk name) for all the help files
+    if os.path.isfile("doc/index.html") and os.path.isfile("doc/_sources/pysqlite.txt"):
+        topdir="doc/"
+    else:
+        topdir="doc/build/html/"
+    for dirpath, _, filenames in os.walk(topdir):
+        prefix=dirpath[len(topdir):]
+        for f in filenames:
+            yield os.path.join(arcdir, "doc", prefix, f), os.path.join(dirpath, f)
+
+def add_doc(archive, topdir):
+    print "Add help files to",archive
+    if archive.endswith(".tar") or ".tar." in archive:
+        if archive.endswith(".Z"):
+            raise Exception("tarfile module doesn't support old school compress so we can't add doc "+archive)
+        fmt=""
+        if archive.endswith(".gz") or archive.endswith(".tgz"):
+            fmt=":gz"
+        elif archive.endswith(".bz2") or archive.endswith(".tbz2"):
+            fmt=":bz2"
+        oldarchive=tarfile.open(archive)
+        newarchive=tarfile.open(archive+"-", mode="w"+fmt)
+        for mem in oldarchive.getmembers():
+            newarchive.addfile(mem, oldarchive.extractfile(mem))
+        oldarchive.close()
+        for arcname, fname in help_walker(topdir):
+            newarchive.add(fname, arcname)
+        newarchive.close()
+        os.rename(archive+"-", archive)
+    elif archive.endswith(".zip"):
+        ofile=zipfile.ZipFile(archive, "a", zipfile.ZIP_DEFLATED)
+        for arcname, fname in help_walker(topdir):
+            ofile.write(fname, arcname)
+        ofile.close()
+    else:
+        raise Exception("Don't know what to do with "+archive)
+        
 def create_c_file(src, dest):
     # Transforms Python src into C dest as a sequence of strings.
     # Because of the pathetic microsoft compiler we have to break it
@@ -702,7 +761,6 @@ def create_c_file(src, dest):
         out[-1]=out[-1][:-1]
     out[1]='"%s",' % ("%s" * percents,)
     open(dest, "wt").write("\n".join(out))
-
 
 # We depend on every .[ch] file in src
 depends=[f for f in glob.glob("src/*.[ch]") if f!="src/apsw.c"]

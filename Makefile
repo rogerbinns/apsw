@@ -14,7 +14,7 @@ GENDOCS = \
 	doc/apsw.rst \
 	doc/backup.rst
 
-.PHONY : all docs doc header linkcheck publish showsymbols compile-win source source_nocheck upload tags clean
+.PHONY : all docs doc header linkcheck publish showsymbols compile-win source source_nocheck upload tags clean ppa
 
 all: header docs
 
@@ -90,12 +90,8 @@ compile-win:
 	c:/python26/python setup.py $(WINBUILD)
 	c:/python31/python setup.py $(WINMSBUILD)
 
-# I can't figure out a way to include the docs into the source zip
-# but with the path in the zip being different than the path in the
-# filesystem using sdist so manually hack it.
 source_nocheck: docs
-	python setup.py sdist --formats zip --no-defaults
-	set -e ; cd doc/build ; rm -rf $(VERDIR)/doc ; mkdir -p $(VERDIR) ; ln -s ../html $(VERDIR)/doc ; zip -9rDq ../../dist/$(VERDIR).zip $(VERDIR) ; rm -rf $(VERDIR)
+	python setup.py sdist --formats zip --add-doc
 
 # Make the source and then check it builds and tests correctly.  This will catch missing files etc
 source: source_nocheck
@@ -104,7 +100,7 @@ source: source_nocheck
 	cd work ; unzip -q ../dist/$(VERDIR).zip
 # Make certain various files do/do not exist
 	for f in doc/vfs.html doc/_sources/pysqlite.txt tools/apswtrace.py ; do test -f work/$(VERDIR)/$$f ; done
-	for f in sqlite3.c sqlite3/sqlite3.c ; do test ! -f work/$(VERDIR)/$$f ; done
+	for f in sqlite3.c sqlite3/sqlite3.c debian/control ; do test ! -f work/$(VERDIR)/$$f ; done
 # Test code works
 	cd work/$(VERDIR) ; python setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --enable-all-extensions build_test_extension test
 
@@ -134,3 +130,13 @@ upload:
 tags:
 	rm -f TAGS
 	ctags-exuberant -e --recurse --exclude=build --exclude=work .
+
+debian/copyright: LICENSE
+	cp LICENSE debian/copyright
+
+# :TODO: fix this
+debian/changelog: doc/changes.rst
+	touch debian/changelog
+
+ppa: debian/copyright debian/changelog
+
