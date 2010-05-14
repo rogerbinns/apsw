@@ -5,6 +5,11 @@ APSWSUFFIX=-r1
 VERSION=$(SQLITEVERSION)$(APSWSUFFIX)
 VERDIR=apsw-$(VERSION)
 
+# These control Debian packaging
+DEBSUFFIX=1ppa1
+DEBMAINTAINER="Roger Binns <rogerb@rogerbinns.com>"
+PPAUPLOAD=ppa:ubuntu-rogerbinns/apsw
+
 GENDOCS = \
 	doc/blob.rst \
 	doc/vfs.rst \
@@ -14,7 +19,7 @@ GENDOCS = \
 	doc/apsw.rst \
 	doc/backup.rst
 
-.PHONY : all docs doc header linkcheck publish showsymbols compile-win source source_nocheck upload tags clean ppa
+.PHONY : all docs doc header linkcheck publish showsymbols compile-win source source_nocheck upload tags clean ppa dpkg
 
 all: header docs
 
@@ -138,5 +143,14 @@ debian/copyright: LICENSE
 debian/changelog: doc/changes.rst
 	touch debian/changelog
 
-ppa: debian/copyright debian/changelog
+dpkg: clean doc debian/copyright debian/changelog
+	rm -rf debian-build
+	tools/mkdebianchangelog.py $(VERSION) $(DEBSUFFIX) $(DEBMAINTAINER)
+	python setup.py fetch --all --version=$(SQLITEVERSION) sdist --formats bztar --add-doc
+	mkdir -p debian-build
+	cp dist/$(VERDIR).tar.bz2 debian-build/python-apsw_$(VERSION).orig.tar.bz2
+	cd debian-build ; tar xvfj *.tar.bz2 ; cd $(VERDIR) ; rsync -av ../../debian .
+	cd debian-build/$(VERDIR) ; debuild -S && sudo pbuilder build ../*.dsc
 
+ppa: dpkg
+	cd debian-build ; dput $(PPAUPLOAD) *_source.changes

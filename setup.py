@@ -636,10 +636,9 @@ class apsw_sdist(sparent):
 
     user_options=sparent.user_options+[
         ("add-doc", None, "Includes built documentation from doc/build/html into source"),
-        ("include-debian", None, "Includes the top level debian directory to enable building debian packages")
         ]
 
-    boolean_options=sparent.boolean_options+["add-doc", "include-debian"]
+    boolean_options=sparent.boolean_options+["add-doc"]
 
     def initialize_options(self):
         sparent.initialize_options(self)
@@ -647,7 +646,6 @@ class apsw_sdist(sparent):
         # Were we made from a source archive?  If so include the help again
         if os.path.isfile("doc/index.html") and os.path.isfile("doc/_sources/pysqlite.txt"):
             self.add_doc=True
-        self.include_debian=False
         self.use_defaults=False # they are useless
         
         # Make sure the manifest is regenerated
@@ -691,6 +689,8 @@ class apsw_sdist(sparent):
     def run(self):
         v=sparent.run(self)
         if self.add_doc:
+            if len(list(help_walker('')))==0:
+                raise Exception("The help is not built")
             for archive in self.get_archive_files():
                 add_doc(archive, self.distribution.get_fullname())
         return v

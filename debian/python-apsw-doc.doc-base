@@ -1,0 +1,9 @@
+Document: python-apsw-doc
+Title: APSW (Another Python SQLite Wrapper) Manual
+Author: Roger Binns
+Abstract: Manual for APSW (Another Python SQLite Wrapper)
+Section: Apps/Programming
+
+Format: HTML
+Index: /usr/share/doc/python-apsw/html/index.html
+Files: /usr/share/doc/python-apsw/html/index.html

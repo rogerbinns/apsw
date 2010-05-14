@@ -1,4 +1,7 @@
 syntax: glob
+debian-build
+debian/copyright
+debian/changelog
 src/shell.c
 *.orig
 testdb-async

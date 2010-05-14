@@ -1,0 +1,51 @@
+Source: python-apsw
+Section: python
+Priority: optional
+Maintainer: Roger Binns <rogerb@rogerbinns.com>
+Build-Depends: debhelper (>= 7.0.0~), python-all-dev (>= 2.3.5-11), python-all-dbg, python-central (>= 0.5.6), libicu-dev
+XS-Python-Version: all
+Standards-Version: 3.8.3
+
+Package: python-apsw
+Architecture: any
+Depends: ${shlibs:Depends}, ${python:Depends}, ${misc:Depends}
+Suggests: python-apsw-doc
+Provides: ${python:Provides}
+Conflicts: python2.3-apsw, python2.4-apsw
+Replaces: python2.3-apsw, python2.4-apsw
+XB-Python-Version: ${python:Versions}
+Description: another Python SQLite 3 wrapper
+ APSW (Another Python SQLite Wrapper) is an SQLite 3 wrapper that
+ provides the thinnest layer over SQLite 3 possible. Everything you
+ can do from the C API to SQLite 3, you can do from Python. Although
+ APSW's API looks vaguely similar to Python's DB-API, it is not
+ compliant with that API and instead works the way SQLite 3 does.
+
+Package: python-apsw-dbg
+Section: debug
+Priority: extra
+Architecture: any
+Depends: python-apsw (= ${binary:Version}), python-dbg, ${shlibs:Depends}, ${misc:Depends}
+XB-Python-Version: ${python:Versions}
+Description: another Python SQLite 3 wrapper (debug extension)
+ APSW (Another Python SQLite Wrapper) is an SQLite 3 wrapper that
+ provides the thinnest layer over SQLite 3 possible. Everything you
+ can do from the C API to SQLite 3, you can do from Python. Although
+ APSW's API looks vaguely similar to Python's DB-API, it is not
+ compliant with that API and instead works the way SQLite 3 does.
+ .
+ This package contains the extension built for the Python debug interpreter.
+
+Package: python-apsw-doc
+Section: doc
+Architecture: all
+Depends: python-apsw, ${misc:Depends}
+Replaces: python-apsw (<< 3.6.22-r1-2)
+Description: documentation for python-apsw
+ APSW (Another Python SQLite Wrapper) is an SQLite 3 wrapper that
+ provides the thinnest layer over SQLite 3 possible. Everything you
+ can do from the C API to SQLite 3, you can do from Python. Although
+ APSW's API looks vaguely similar to Python's DB-API, it is not
+ compliant with that API and instead works the way SQLite 3 does.
+ .
+ This package contains the documentation.
