@@ -16,6 +16,7 @@ PPAUPLOAD=ppa:ubuntu-rogerbinns/apsw
 # To use a different SQLite version: make SQLITEVERSION=1.2.3 blah blah
 #
 # build_ext      - builds extension in current directory fetching sqlite
+# test           - builds extension in place then runs test suite
 # doc            - makes the doc
 # source         - makes a source zip in dist directory after running code through test suite
 # dpkg-bin       - produces binary debian packages 
@@ -61,6 +62,9 @@ $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
 
 build_ext:
 	python setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --force --enable-all-extensions
+
+test: build_ext
+	python tests.py
 
 linkcheck:
 	make VERSION=$(VERSION) -C doc linkcheck 
