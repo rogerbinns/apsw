@@ -122,6 +122,8 @@ class Shell(object):
         # we don't become interactive until the command line args are
         # successfully parsed and acted upon
         self.interactive=None
+        # current colouring object
+        self.command_colour() # set to default
         self._input_stack=[]
         self.input_line_number=0
         self.push_input()
@@ -139,6 +141,8 @@ class Shell(object):
 
         if self.interactive is None:
             self.interactive=getattr(self.stdin, "isatty", False) and self.stdin.isatty() and getattr(self.stdout, "isatty", False) and self.stdout.isatty()
+            if self.interactive:
+                self.colour=self._colours[self.colour_scheme]
 
     def _ensure_db(self):
         "The database isn't opened until first use.  This function ensures it is now open."
@@ -506,7 +510,10 @@ OPTIONS include:
 
             if self.header:
                 # output the headers
-                self.output_column(False, line)
+                c=self.colour
+                cols=[c.header+(self._actualwidths[i] % (self._fmt_text_col(line[i]),))+c.header_ for i in range(len(line))]
+                # sqlite shell uses two spaces between columns
+                self.write(self.stdout, "  ".join(cols)+"\n")
                 self.output_column(False, ["-"*abs(widths[i]) for i in range(len(widths))])
 
             return
@@ -559,9 +566,14 @@ OPTIONS include:
             writer=csv.writer(s, **kwargs)
             self._csv=(s, writer)
             if self.header:
-                self.output_csv(False, line)
+                self.output_csv(None, line)
             return
-        line=[fixdata(self._fmt_text_col(l)) for l in line]
+
+        if header is None:
+            c=self.colour
+            line=[c.header+fixdata(self._fmt_text_col(l))+c.header_ for l in line]
+        else:
+            line=[fixdata(self._fmt_text_col(l)) for l in line]
         self._csv[1].writerow(line)
         t=self._csv[0].getvalue()
         if sys.version_info<(3,0):
@@ -630,31 +642,41 @@ OPTIONS include:
 
     def output_list(self, header, line):
         "All items on one line with separator"
-        if header and not self.header:
-            return
         fmt=self._fmt_text_col
+        if header:
+            if not self.header:
+                return
+            c=self.colour
+            fmt=lambda x: c.header+x+c.header_
         self.write(self.stdout, self.separator.join([fmt(x) for x in line])+"\n")
-
 
     def output_python(self, header, line):
         "Tuples in Python source form for each row"
-        if header and not self.header:
-            return
-        self.write(self.stdout, '('+", ".join([self._fmt_python(l) for l in line])+"),\n")
+        fmt=self._fmt_python
+        if header:
+            if not self.header:
+                return
+            c=self.colour
+            fmt=lambda x: c.header+x+c.header_
+        self.write(self.stdout, '('+", ".join([fmt(l) for l in line])+"),\n")
 
     def output_tcl(self, header, line):
         "Outputs TCL/C style strings using current separator"
         # In theory you could paste the output into your source ...
-        if header and not self.header:
-            return
-        self.write(self.stdout, self.separator.join([self._fmt_c_string(l) for l in line])+"\n")
+        fmt=self._fmt_c_string
+        if header:
+            if not self.header:
+                return
+            c=self.colour
+            fmt=lambda x: c.header+x+c.header_
+        self.write(self.stdout, self.separator.join([fmt(l) for l in line])+"\n")
 
     ###
     ### Various routines
     ###
         
     def cmdloop(self, intro=None):
-        """Runs the main command loop.
+        """Runs the main interactive command loop.
 
         :param intro: Initial text banner to display instead of the
            default.  Make sure you newline terminate it.
@@ -669,7 +691,8 @@ Enter SQL statements terminated with a ";"
         if self.interactive and intro:
             if sys.version_info<(3,0):
                 intro=unicode(intro)
-            self.write(self.stdout, intro)
+            c=self.colour
+            self.write(self.stdout, c.intro+intro+c.intro_)
 
         using_readline=False
         try:
@@ -719,6 +742,9 @@ Enter SQL statements terminated with a ";"
             eval._handle_exception_saw_this=True
             raise
 
+        self._out_colour()
+        self.write(self.stderr, self.colour.error)
+
         if isinstance(eval, KeyboardInterrupt):
             self.handle_interrupt()
             text="Interrupted"
@@ -756,6 +782,8 @@ Enter SQL statements terminated with a ";"
                         v="<Unable to convert to string>"
                     self.write(self.stderr, "%10s = %s\n" % (k,v))
             self.write(self.stderr, "\n%s: %s\n" % (eclass, repr(eval)))
+
+        self.write(self.stderr, self.colour.error_)
             
         eval._handle_exception_saw_this=True
         if self.bail:
@@ -899,6 +927,26 @@ Enter SQL statements terminated with a ";"
         """
         self.bail=self._boolean_command("bail", cmd)
 
+    def command_colour(self, cmd=[]):
+        """colour ?scheme?: Selects a colour scheme 
+
+        Residents of both countries that have not adopted the metric
+        system may also spell this command without a 'u'.  If using a
+        colour terminal in interactive mode then output is
+        automatically coloured to make it more readable.  Use 'off' to
+        turn off colour, and no name or 'default' for the default.
+
+        Available colour schemes:
+        """
+        if len(cmd)>1:
+            raise self.Error("Too many colour schemes")
+        c=cmd and cmd[0] or "default"
+        if c not in self._colours:
+            raise self.Error("No such colour scheme: "+c)
+        self.colour_scheme=c
+
+    command_color=command_colour
+    
     def command_databases(self, cmd):
         """databases: Lists names and files of attached databases
 
@@ -1259,7 +1307,7 @@ Enter SQL statements terminated with a ";"
                 d=getattr(self, c).__doc__
                 assert d, c+" command must have documentation"
                 c=c[len("command_"):]
-                if c=="headers": continue
+                if c in ("headers", "color"): continue
                 while d[0]=="\n":
                     d=d[1:]
                 parts=d.split("\n", 1)
@@ -1274,6 +1322,10 @@ Enter SQL statements terminated with a ";"
                         self._cache_output_modes()
                     firstline[1]=firstline[1]+" "+" ".join(self._output_modes)
                     multi=multi+"\n\n"+"\n\n".join(self._output_modes_detail)
+                if c=="colour":
+                    colours=self._colours.keys()
+                    colours.sort()
+                    multi+="\n"+"\n * ".join(colours)
                 if len(multi.strip())==0: # All whitespace
                     multi=None
                 else:
@@ -1586,6 +1638,7 @@ Enter SQL statements terminated with a ";"
             if self.stdout!=self._original_stdout:
                 old=self.stdout
             self.stdout=self._original_stdout
+            self._out_colour()
             if old is not None: # done here in case close raises exception
                 old.close()
             return
@@ -1597,6 +1650,7 @@ Enter SQL statements terminated with a ";"
         self.stdout=newf
         if old is not None:
             old.close()
+        self._out_colour()
 
     def command_prompt(self, cmd):
         """prompt MAIN ?CONTINUE?: Changes the prompts for first line and continuation lines
@@ -1993,7 +2047,10 @@ Enter SQL statements terminated with a ";"
         self.stderr.flush()
         try:
             if self.interactive and self.stdin is sys.stdin:
-                line=self._raw_input(prompt)+"\n" # raw_input excludes newline
+                self.colour=self._colours[self.colour_scheme]
+                c=self.colour
+                line=self._raw_input(c.prompt+prompt+c.prompt_)+"\n" # raw_input excludes newline
+                self._out_colour()
             else:
                 if self.interactive:
                     self.write(self.stdout, prompt)
@@ -2375,6 +2432,47 @@ Enter SQL statements terminated with a ";"
                     else:
                         self.write(self.stderr, "+ %s: %d\n" % (k, val))
 
+    ### Colour support
+
+    def _out_colour(self):
+        # Sets up color for output.  Input being interactive doesn't
+        # matter.  This method needs to be called on all changes to
+        # output.
+        if getattr(self.stdout, "isatty", False) and self.stdout.isatty:
+            self.color=self._colours[self.colour_scheme]
+        else:
+            self.color=self._colours["off"]
+
+    # This class returns an empty string for all undefined attributes
+    # so that it doesn't matter if a colour scheme leaves something
+    # out.
+    class _colourscheme:
+        def __init__(self, **kwargs):
+            for k,v in kwargs.items():
+                setattr(self, k, v)
+        def __nonzero__(self): return True
+        def __str__(self): return "_colourscheme("+str(self.__dict__)+")"
+        def __getattr__(self, k):
+            return ""
+
+    # The colour definitions - the convention is the name to turn
+    # something on and the name with an underscore suffix to turn it
+    # off
+    d=_colourscheme(**dict([(v, "\x1b["+str(n)+"m") for n,v in {0: "reset", 1: "bold", 4: "underline", 22: "bold_", 24: "underline_",
+     7: "inverse", 27: "inverse_",
+     30: "fg_black", 31: "fg_red", 32: "fg_green", 33: "fg_yellow", 34: "fg_blue", 35: "fg_magenta", 36: "fg_cyan", 37: "fg_white", 39: "fg_",
+     40: "bg_black", 41: "bg_red", 42: "bg_green", 43: "bg_yellow", 44: "bg_blue", 45: "bg_magenta", 46: "bg_cyan", 47: "bg_white", 49: "bg_"}.items()]))
+
+    _colours={"off": _colourscheme()}
+    _colours["default"]=_colourscheme(prompt=d.bold, prompt_=d.bold_,
+                                      error=d.fg_red+d.bold, error_=d.bold_+d.fg_,
+                                      intro=d.fg_blue+d.bold, intro_=d.bold_+d.fg_,
+                                      header=d.inverse, header_=d.inverse_)
+    _dummy_color=_colourscheme()
+    
+    # unpollute namespace
+    del d
+    del _colourscheme
 
 def main():
     # Docstring must start on second line so dedenting works correctly

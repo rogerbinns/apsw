@@ -28,6 +28,7 @@ In addition to executing SQL, these are the commands available:
   
   .backup ?DB? FILE           Backup DB (default "main") to FILE
   .bail ON|OFF                Stop after hitting an error (default OFF)
+  .colour ?scheme?            Selects a colour scheme
   .databases                  Lists names and files of attached databases
   .dump ?TABLE? [TABLE...]    Dumps all or specified tables in SQL text format
   .echo ON|OFF                If ON then each SQL statement or command is printed
