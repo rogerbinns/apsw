@@ -33,8 +33,8 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
   functionality changed in SQLite, APSW tracks them.
 
 * APSW gives all functionality of SQLite including :ref:`virtual
-  tables`, :ref:`VFS`, :ref:`BLOB I/O <blobio>` and :ref:`backups
-  <backup>`.
+  tables <virtualtables>`, :ref:`VFS`, :ref:`BLOB I/O <blobio>` and
+  :ref:`backups <backup>`.
 
 * You can use the same :class:`Connection` across threads with APSW
   without needing any additional level of locking.  pysqlite requires

@@ -725,7 +725,7 @@ The test code has been converted into using the unittest module. Run
 :command:`python tests.py -v` to get the tests run. There should be no
 errors.
 
-Updated code to work correctly with new :ctype:`Py_ssize_t` introduced
+Updated code to work correctly with new :c:type:`Py_ssize_t` introduced
 in Python 2.5. See :ref:`64 bit hosts, Python 2.5+ <x64bitpy25>` for
 more details on how Python and SQLite handle 64 bit sized items.
 
@@ -806,7 +806,7 @@ constants for the authorizer function.  (These constants were
 introduced in SQLite 3.1.3).
 
 Changed various C++-isms into standard C (eg // comments and the
-placing of some :cmacro:`CHECK_THREAD` macro calls).
+placing of some :c:macro:`CHECK_THREAD` macro calls).
 
 Added module level function :meth:`~apsw.apswversion` which returns
 the version of APSW.
@@ -817,14 +817,14 @@ which are not currently documented on the SQLite website, which are
 not wrapped by APSW.  Please contact me if you believe they will
 remain in SQLite and you would like them wrapped:
 
-* :cfunc:`sqlite3_sleep` An alternative function which sleeps for a
+* :c:func:`sqlite3_sleep` An alternative function which sleeps for a
   specified number of milliseconds can be provided. By default SQLite
   just uses the standard operating system call.
-* :cfunc:`sqlite3_expired` This function is internal to statement
+* :c:func:`sqlite3_expired` This function is internal to statement
   execution. It would apply to the implementation of
   :meth:`Cursor.executemany` and could in theory provide a marginal
   improvement in performance.
-* A global variable :cdata:`sqlite3_temp_directory` can be used before
+* A global variable :c:data:`sqlite3_temp_directory` can be used before
   any databases are opened to set where temporary files are created. By
   default SQLite just uses the standard operating system mechanisms.
 
