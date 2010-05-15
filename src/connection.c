@@ -2921,7 +2921,7 @@ Connection_enter(Connection *self)
 static PyObject *
 Connection_exit(Connection *self, PyObject *args)
 {
-  PyObject *etype, *evalue, *etb, *result=Py_None;
+  PyObject *etype, *evalue, *etb;
   long sp;
   char *sql;
   int res=SQLITE_OK, res2=SQLITE_OK, res3=SQLITE_OK;
