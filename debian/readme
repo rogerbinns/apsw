@@ -1,0 +1,17 @@
+The files in this directory are used to build a Debian package and are
+derived from the Debian rules developed by Joel Rosdahl.
+
+Differences:
+
+ - We remain compatible with older releases packaging tools (eg
+   debhelper, various control fields)
+
+ - SQLite is included statically into the extension (ignoring
+   system SQLite)
+
+ - All extensions are enabled in SQLite (RTree, FTS3, ICU) and
+   the asyncvfs is added
+
+ - The documentation includes a separate copy of the JQuery 
+   Javascript library.  (The official Debian/Ubuntu packages
+   omit that and link to a central shared copy of jquery.js)
