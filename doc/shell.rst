@@ -123,6 +123,9 @@ is one at http://ipython.scipy.org/moin/PyReadline/Intro which works.
 However if this :class:`Shell` offers no completions it will start
 matching filenames even if they make no sense in the context.
 
+For Windows users you won't get colour output unless you install
+`colorama <http://pypi.python.org/pypi/colorama>`__
+
 Example
 =======
 

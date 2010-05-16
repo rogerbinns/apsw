@@ -11,6 +11,17 @@ import time
 import codecs
 import base64
 
+if sys.platform=="win32":
+    _win_colour=False
+    try:
+        import colorama
+        colorama.init()
+        del colorama
+        _win_colour=True
+    except: # there are several failure reasons, ignore them all
+        pass
+
+
 class Shell(object):
     """Implements a SQLite shell
 
@@ -952,8 +963,6 @@ Enter SQL statements terminated with a ";"
         colour terminal in interactive mode then output is
         automatically coloured to make it more readable.  Use 'off' to
         turn off colour, and no name or 'default' for the default.
-
-        Available colour schemes:
         """
         if len(cmd)>1:
             raise self.Error("Too many colour schemes")
@@ -1943,7 +1952,7 @@ Enter SQL statements terminated with a ";"
                 buf=ctypes.create_string_buffer(22)
                 if ctypes.windll.kernel32.GetConsoleScreenBufferInfo(h, buf):
                     _,_,_,_,_,left,top,right,bottom,_,_=struct.unpack("hhhhHhhhhhh", buf.raw)
-                    return right-left+1
+                    return right-left
                 raise Exception()
             else:
                 # posix
@@ -2068,7 +2077,7 @@ Enter SQL statements terminated with a ";"
             if self.interactive:
                 if self.stdin is sys.stdin:
                     c=self.colour.prompt, self.colour.prompt_
-                    if self._using_readline:
+                    if self._using_readline and sys.platform!="win32":
                         # these are needed so that readline knows they are non-printing characters
                         c="\x01"+c[0]+"\x02", "\x01"+c[1]+"\x02",
                     line=self._raw_input(c[0]+prompt+c[1])+"\n" # raw_input excludes newline
@@ -2502,7 +2511,10 @@ Enter SQL statements terminated with a ";"
                                       vstring=d.fg_yellow, vstring_=d.fg_,
                                       vblob=d.fg_blue, vblob_=d.fg_,
                                       vnumber=d.fg_magenta, vnumber_=d.fg_)
-    
+    if sys.platform=="win32":
+        if not _win_colour:
+            for k in _colours:
+                _colours[k]=_colours["off"]
     # unpollute namespace
     del d
     del _colourscheme
