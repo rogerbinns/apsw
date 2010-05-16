@@ -13,6 +13,12 @@ Using the above function and other tweaks the :ref:`shell` dumper is
 now three to four times faster.  Thanks to Nikolaus Rath for pointing
 out the problem and providing test data.
 
+The shell now does colour highlighting making it easy to visually
+distinguish prompts, errors, headers and value types when outputting
+to a terminal.  See the :option:`--no-colour` argument and **.colour**
+command.  Those of you in the two countries that have not adopted the
+metric system may also omit the 'u'.
+
 When using the context manager (with statement) of a
 :class:`Connection` and the exit commit had an error, then the
 transaction is rolled back.  This could occur if SQLite had buffered
