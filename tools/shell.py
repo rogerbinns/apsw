@@ -609,7 +609,7 @@ OPTIONS include:
         if header:
             if not self.header:
                 return
-            fmt=lambda x: self.colour.header+x+self.colour.header_
+            fmt=lambda x: self.colour.header+self._fmt_html_col(x)+self.colour.header_
         else:
             fmt=lambda x: self.colour.colour_value(x, self._fmt_html_col(x))
         line=[fmt(l) for l in line]
@@ -681,7 +681,7 @@ OPTIONS include:
             if not self.header:
                 return
             c=self.colour
-            fmt=lambda x: c.header+x+c.header_
+            fmt=lambda x: c.header+self._fmt_python(x)+c.header_
         else:
             fmt=lambda x: self.colour.colour_value(x, self._fmt_python(x))
         self.write(self.stdout, '('+", ".join([fmt(l) for l in line])+"),\n")
@@ -693,7 +693,7 @@ OPTIONS include:
             if not self.header:
                 return
             c=self.colour
-            fmt=lambda x: c.header+x+c.header_
+            fmt=lambda x: c.header+self._fmt_c_string(x)+c.header_
         else:
             fmt=lambda x: self.colour.colour_value(x, self._fmt_c_string(x))
         self.write(self.stdout, self.separator.join([fmt(l) for l in line])+"\n")
@@ -2084,6 +2084,8 @@ Enter SQL statements terminated with a ";"
                 else:
                     self.write(self.stdout, prompt)
                     line=self.stdin.readline()  # includes newline unless last line of file doesn't have one
+            else:
+                line=self.stdin.readline()  # includes newline unless last line of file doesn't have one
             self.input_line_number+=1
             if sys.version_info<(3,0):
                 if type(line)!=unicode:
