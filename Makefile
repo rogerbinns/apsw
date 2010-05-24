@@ -73,9 +73,9 @@ test: build_ext
 # l6, l7 and l8 and see if any are growing
 valgrind: /space/pydebug/bin/python
 	python setup.py fetch --version=$(SQLITEVERSION) --all && \
-	  env PATH=/space/pydebug/bin:$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=6 tools/valgrind.sh 2>&1 | tee l6 && \
-	  env PATH=/space/pydebug/bin:$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=7 tools/valgrind.sh 2>&1 | tee l7 && \
-	  env PATH=/space/pydebug/bin:$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=8 tools/valgrind.sh 2>&1 | tee l8 
+	  env PATH=/space/pydebug/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=6 tools/valgrind.sh 2>&1 | tee l6 && \
+	  env PATH=/space/pydebug/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=7 tools/valgrind.sh 2>&1 | tee l7 && \
+	  env PATH=/space/pydebug/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=8 tools/valgrind.sh 2>&1 | tee l8 
 
 linkcheck:
 	make VERSION=$(VERSION) -C doc linkcheck 
