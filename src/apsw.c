@@ -1205,7 +1205,12 @@ formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
 	    {
 	      /* we add one char for ' and 10 for null */
 	      const int moveamount=*res=='\''?1:10;
-	      if(PyUnicode_Resize(&unires, PyUnicode_GET_SIZE(unires)+moveamount)==-1)
+	      int retval;
+	      APSW_FAULT_INJECT(FormatSQLValueResizeFails,
+				retval=PyUnicode_Resize(&unires, PyUnicode_GET_SIZE(unires)+moveamount),
+				retval=PyUnicode_Resize(&unires, -17)
+				);
+	      if(retval==-1)
 		{
 		  Py_DECREF(unires);
 		  return NULL;
@@ -1243,10 +1248,15 @@ formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
 #define _HEXDIGITS 
 
       asrb=PyObject_AsReadBuffer(value, (const void**)&buffer, &buflen);
+      APSW_FAULT_INJECT(FormatSQLValueAsReadBufferFails,
+			,
+			(PyErr_NoMemory(), asrb=-1));
       if(asrb!=0)
 	return NULL;
       /* 3 is X, ', '  */
-      unires=PyUnicode_FromUnicode(NULL, buflen*2+3); 
+      APSW_FAULT_INJECT(FormatSQLValuePyUnicodeFromUnicodeFails,
+			unires=PyUnicode_FromUnicode(NULL, buflen*2+3),
+			unires=PyErr_NoMemory());
       if(!unires) 
 	return NULL;
       res=PyUnicode_AS_UNICODE(unires);

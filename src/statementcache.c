@@ -569,19 +569,17 @@ statementcache_finalize(StatementCache *sc, APSWStatement *stmt, int reprepare_o
 }
     
 
-/* returns SQLITE_OK on success.  ppstmt will be next
-   statement on success else null if no more or error.
-   reference will be consumed on ppstmt passed in and 
-   new reference on one returned
-*/
+/* returns SQLITE_OK on success.  ppstmt will be next statement on
+   success else null on error.  reference will be consumed on ppstmt
+   passed in and new reference on one returned */
 static int
 statementcache_next(StatementCache *sc, APSWStatement **ppstmt, int usepreparev2)
 {
   PyObject *next=(*ppstmt)->next;
   int res;
 
-  if(next)
-    Py_INCREF(next);
+  assert(next);
+  Py_INCREF(next);
 
   res=statementcache_finalize(sc, *ppstmt, 0); /* INUSE_CALL not needed here */
 
@@ -592,13 +590,9 @@ statementcache_next(StatementCache *sc, APSWStatement **ppstmt, int usepreparev2
     
   if(res!=SQLITE_OK) goto error;
 
-  if(next)
-    {
-      /* statementcache_prepare already sets exception */
-      *ppstmt=statementcache_prepare(sc, next, usepreparev2);  /* INUSE_CALL not needed here */
-      res=(*ppstmt)?SQLITE_OK:SQLITE_ERROR;
-    }
-  else *ppstmt=NULL;
+  /* statementcache_prepare already sets exception */
+  *ppstmt=statementcache_prepare(sc, next, usepreparev2);  /* INUSE_CALL not needed here */
+  res=(*ppstmt)?SQLITE_OK:SQLITE_ERROR;
 
  error:
   APSWBuffer_XDECREF_unlikely(next);

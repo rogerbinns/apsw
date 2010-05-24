@@ -3107,6 +3107,12 @@ class APSW(unittest.TestCase):
         cur2.execute("create table bar(x,y)")
         for _ in cur.execute("select * from foo"): pass
         db2.close()
+        # Get some coverage - overflow apswbuffer recycle.  100 is
+        # statementcache size, 256 is apswbufferrecycle bin size, and
+        # 17 is to overflow
+        l=[self.db.cursor().execute(u("select 3"+" "*i)) for i in range(100+256+17)]
+        while l:
+            l.pop().fetchall()
 
     def testStatementCacheZeroSize(self):
         self.db=apsw.Connection("testdb", statementcachesize=-1)
@@ -4260,7 +4266,7 @@ class APSW(unittest.TestCase):
         TestVFS.xOpen=TestVFS.xOpen99
         testdb()
 
-        if hasattr(self.db, "enableloadextension") and os.path.exists(LOADEXTENSIONFILENAME):
+        if hasattr(apsw.Connection(":memory:"), "enableloadextension") and os.path.exists(LOADEXTENSIONFILENAME):
             ## xDlOpen
             self.assertRaises(TypeError, vfs.xDlOpen, 3)
             if py3:
@@ -7395,6 +7401,30 @@ shell.write(shell.stdout, "hello world\\n")
         if hasattr(apsw, "async_control"):
             apsw.faultdict["AsyncControlFails"]=True
             self.assertRaises(apsw.NoMemError, apsw.async_control, apsw.SQLITEASYNC_GET_HALT)
+
+        ## FormatSQLValueResizeFails
+        apsw.faultdict["FormatSQLValueResizeFails"]=True
+        try:
+            apsw.format_sql_value(u("fsdkljfl'fdsfds"))
+            1/0
+        except SystemError:
+            pass
+
+        ## FormatSQLValueAsReadBufferFails
+        apsw.faultdict["FormatSQLValueAsReadBufferFails"]=True
+        try:
+            apsw.format_sql_value(b("abcd"))
+            1/0
+        except MemoryError:
+            pass
+
+        ## FormatSQLValuePyUnicodeFromUnicodeFails
+        apsw.faultdict["FormatSQLValuePyUnicodeFromUnicodeFails"]=True
+        try:
+            apsw.format_sql_value(b("abcd"))
+            1/0
+        except MemoryError:
+            pass
 
     # This test is run last by deliberate name choice.  If it did
     # uncover any bugs there isn't much that can be done to turn the
