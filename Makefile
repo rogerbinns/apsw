@@ -32,7 +32,7 @@ GENDOCS = \
 	doc/apsw.rst \
 	doc/backup.rst
 
-.PHONY : all docs doc header linkcheck publish showsymbols compile-win source source_nocheck upload tags clean ppa dpkg dpkg-bin
+.PHONY : all docs doc header linkcheck publish showsymbols compile-win source source_nocheck upload tags clean ppa dpkg dpkg-bin coverage valgrind
 
 all: header docs
 
@@ -63,8 +63,19 @@ $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
 build_ext:
 	python setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --force --enable-all-extensions
 
+coverage:
+	python setup.py fetch --version=$(SQLITEVERSION) --all && env APSW_PY_COVERAGE=t tools/coverage.sh
+
 test: build_ext
 	python tests.py
+
+# Needs a debug python.  Look at the final numbers at the bottom of
+# l6, l7 and l8 and see if any are growing
+valgrind: /space/pydebug/bin/python
+	python setup.py fetch --version=$(SQLITEVERSION) --all && \
+	  env PATH=/space/pydebug/bin:$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=6 tools/valgrind.sh 2>&1 | tee l6 && \
+	  env PATH=/space/pydebug/bin:$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=7 tools/valgrind.sh 2>&1 | tee l7 && \
+	  env PATH=/space/pydebug/bin:$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=8 tools/valgrind.sh 2>&1 | tee l8 
 
 linkcheck:
 	make VERSION=$(VERSION) -C doc linkcheck 
