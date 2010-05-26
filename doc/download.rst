@@ -58,7 +58,8 @@ Some Linux distributions also have packages.
 | Debian            | Install `python-apsw <http://packages.debian.org/python-apsw>`__                 |
 +-------------------+----------------------------------------------------------------------------------+
 | Ubuntu            | Install `python-apsw <http://packages.ubuntu.com/search?keywords=python-apsw>`__ |
-|                   | I maintain a PPA that is up to date at                                           |
++-------------------+----------------------------------------------------------------------------------+
+| Ubuntu PPA        | I maintain a PPA that is up to date at                                           |
 |                   | https://launchpad.net/~ubuntu-rogerbinns/+archive/apsw  which has SQLite         |
 |                   | embedded statically inside (ie system SQLite is ignored) and has all the         |
 |                   | extensions enabled: FTS3, RTree, ICU, asyncvfs                                   |
