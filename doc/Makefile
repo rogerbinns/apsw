@@ -78,3 +78,7 @@ linkcheck:
 pdf:
 	mkdir -p build/pdf build/doctrees
 	$(SPHINXBUILD) -b pdf $(ALLSPHINXOPTS) build/pdf
+
+epub:
+	mkdir -p build/epub build/doctrees
+	$(SPHINXBUILD) -b epub $(ALLSPHINXOPTS) build/epub

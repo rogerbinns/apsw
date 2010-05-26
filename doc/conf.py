@@ -44,7 +44,7 @@ master_doc = 'index'
 
 # General substitutions.
 project = u'APSW'
-copyright = u'2004-2009, Roger Binns <rogerb@rogerbinns.com>'
+copyright = u'2004-2010, Roger Binns <rogerb@rogerbinns.com>'
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
@@ -82,17 +82,12 @@ add_module_names = False
 # output. They are ignored by default.
 #show_authors = False
 
-# The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
-
 
 # Options for HTML output
 # -----------------------
 
-# The style sheet to use for HTML and HTML Help pages. A file of that name
-# must exist either in Sphinx' static/ path, or in one of the custom paths
-# given in html_static_path.
-html_style = 'default.css'
+html_theme = 'default'
+html_theme_options = {'stickysidebar': True}
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -153,7 +148,6 @@ html_last_updated_fmt = '%b %d, %Y'
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'apsw'
 
-html_theme_options = {'stickysidebar': True}
 
 
 # Options for LaTeX output
@@ -206,3 +200,5 @@ def skip_Shell_members(app, what, name, obj, skip, options):
 
 def setup(app):
     app.connect('autodoc-skip-member', skip_Shell_members)
+
+nitpicky = True
