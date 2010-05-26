@@ -165,9 +165,11 @@ apswvtabCreateOrConnect(sqlite3 *db,
 
   {
     PyObject *utf8schema=getutf8string(schema);
+    const char *cp_utf8schema;
     if(!utf8schema) 
       goto pyexception;
-    _PYSQLITE_CALL_E(db, res=sqlite3_declare_vtab(db, PyBytes_AsString(utf8schema)));
+    cp_utf8schema=PyBytes_AsString(utf8schema);
+    _PYSQLITE_CALL_E(db, res=sqlite3_declare_vtab(db, cp_utf8schema));
     Py_DECREF(utf8schema);
     if(res!=SQLITE_OK)
       {

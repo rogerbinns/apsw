@@ -26,6 +26,12 @@ the transaction entirely in memory and a non-eager transaction lock
 had been obtained.  Thanks to Geoff Ness for finding the problem.
 (`Issue 98 <http://code.google.com/p/apsw/issues/detail?id=98>`__).
 
+Fixed bug when an error is returned creating an instance of a virtual
+table (eg an invalid column name).  You would get the previous error
+message of it none a crash.  Thanks to Jose Gomes for finding the
+problem.  (`Issue 103
+<http://code.google.com/p/apsw/issues/detail?id=98>`__).
+
 There is now PPA for Ubuntu users that is kept up to date with APSW at
 https://launchpad.net/~ubuntu-rogerbinns/+archive/apsw which has
 SQLite embedded statically inside (ie system SQLite is ignored) and
