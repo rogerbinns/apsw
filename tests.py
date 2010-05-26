@@ -3021,6 +3021,19 @@ class APSW(unittest.TestCase):
         for row in self.db.cursor().execute("select * from foo where x=6"):
             self.fail("Transaction was not rolled back")
 
+    def testIssue103(self):
+        "Error handling when sqlite3_declare_vtab fails"
+        class Source:
+            def Create(self, *args):
+                return "create table x(delete)", None
+
+        self.db.createmodule("issue103", Source())
+        try:
+            self.db.cursor().execute("create virtual table foo using issue103()")
+            1/0 # should not be reached
+        except apsw.SQLError:
+            assert "near \"delete\": syntax error" in sys.exc_info()[1][0]
+
     def testTicket2158(self):
         "Check we are not affected by SQLite ticket #2158"
         # http://www.sqlite.org/cvstrac/tktview?tn=2158

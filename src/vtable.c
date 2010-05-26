@@ -114,9 +114,9 @@ apswvtabCreateOrConnect(sqlite3 *db,
 {
   PyGILState_STATE gilstate;
   vtableinfo *vti;
-  PyObject *args=NULL, *res=NULL, *schema=NULL, *vtable=NULL;
+  PyObject *args=NULL, *pyres=NULL, *schema=NULL, *vtable=NULL;
   apsw_vtable *avi=NULL;
-  int sqliteres=SQLITE_OK;
+  int res=SQLITE_OK;
   int i;
   
   gilstate=PyGILState_Ensure();
@@ -139,19 +139,19 @@ apswvtabCreateOrConnect(sqlite3 *db,
       PyTuple_SET_ITEM(args, 1+i, str);
     }
 
-  res=Call_PythonMethod(vti->datasource, create_or_connect_strings[stringindex].methodname, 1, args);
-  if(!res)
+  pyres=Call_PythonMethod(vti->datasource, create_or_connect_strings[stringindex].methodname, 1, args);
+  if(!pyres)
     goto pyexception;
 
-  /* res should be a tuple of two values - a string of sql describing
+  /* pyres should be a tuple of two values - a string of sql describing
      the table and an object implementing it */
-  if(!PySequence_Check(res) || PySequence_Size(res)!=2)
+  if(!PySequence_Check(pyres) || PySequence_Size(pyres)!=2)
     {
       PyErr_Format(PyExc_TypeError, "Expected two values - a string with the table schema and a vtable object implementing it");
       goto pyexception;
     }
   
-  vtable=PySequence_GetItem(res, 1);
+  vtable=PySequence_GetItem(pyres, 1);
   if(!vtable)
     goto pyexception;
 
@@ -160,24 +160,24 @@ apswvtabCreateOrConnect(sqlite3 *db,
   assert((void*)avi==(void*)&(avi->used_by_sqlite)); /* detect if wierd padding happens */
   memset(avi, 0, sizeof(apsw_vtable));
 
-  schema=PySequence_GetItem(res, 0);
+  schema=PySequence_GetItem(pyres, 0);
   if(!schema) goto pyexception;
 
   {
     PyObject *utf8schema=getutf8string(schema);
     if(!utf8schema) 
       goto pyexception;
-    sqliteres=sqlite3_declare_vtab(db, PyBytes_AsString(utf8schema));
+    _PYSQLITE_CALL_E(db, res=sqlite3_declare_vtab(db, PyBytes_AsString(utf8schema)));
     Py_DECREF(utf8schema);
-    if(sqliteres!=SQLITE_OK)
+    if(res!=SQLITE_OK)
       {
-	SET_EXC(sqliteres, db);
+	SET_EXC(res, db);
 	AddTraceBackHere(__FILE__, __LINE__,  create_or_connect_strings[stringindex].declarevtabtracebackname, "{s: O}", "schema", schema);
 	goto finally;
       }
   }
   
-  assert(sqliteres==SQLITE_OK);
+  assert(res==SQLITE_OK);
   *pVTab=(sqlite3_vtab*)avi;
   avi->vtable=vtable;
   Py_INCREF(avi->vtable);
@@ -185,20 +185,20 @@ apswvtabCreateOrConnect(sqlite3 *db,
   goto finally;
 
  pyexception: /* we had an exception in python code */
-  sqliteres=MakeSqliteMsgFromPyException(errmsg);
+  res=MakeSqliteMsgFromPyException(errmsg);
   AddTraceBackHere(__FILE__, __LINE__, create_or_connect_strings[stringindex].pyexceptionname, 
 		   "{s: s, s: s, s: s, s: O}", "modulename", argv[0], "database", argv[1], "tablename", argv[2], "schema", schema?schema:Py_None);
 
  finally: /* cleanup */
   Py_XDECREF(args);  
-  Py_XDECREF(res);
+  Py_XDECREF(pyres);
   Py_XDECREF(schema);
   Py_XDECREF(vtable);
   if(avi)
     PyMem_Free(avi);
 
   PyGILState_Release(gilstate);
-  return sqliteres;
+  return res;
 }
 
 /** .. method:: Connect(connection, modulename, databasename, tablename, *args)  -> [ sql string, table object ]
