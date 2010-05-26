@@ -707,7 +707,7 @@ def help_walker(arcdir):
             yield os.path.join(arcdir, "doc", prefix, f), os.path.join(dirpath, f)
 
 def add_doc(archive, topdir):
-    print "Add help files to",archive
+    write("Add help files to",archive)
     if archive.endswith(".tar") or ".tar." in archive:
         if archive.endswith(".Z"):
             raise Exception("tarfile module doesn't support old school compress so we can't add doc "+archive)

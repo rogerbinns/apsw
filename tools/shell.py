@@ -589,7 +589,7 @@ OPTIONS include:
             c=self.colour
             line=[c.header+fixdata(self._fmt_text_col(l))+c.header_ for l in line]
         else:
-            fmt=lambda x: self.colour.colour_value(x, self._fmt_text_col(l))
+            fmt=lambda x: self.colour.colour_value(x, self._fmt_text_col(x))
             line=[fmt(l) for l in line]
         self._csv[1].writerow(line)
         t=self._csv[0].getvalue()
@@ -1350,7 +1350,7 @@ Enter SQL statements terminated with a ";"
                     firstline[1]=firstline[1]+" "+" ".join(self._output_modes)
                     multi=multi+"\n\n"+"\n\n".join(self._output_modes_detail)
                 if c=="colour":
-                    colours=self._colours.keys()
+                    colours=list(self._colours.keys())
                     colours.sort()
                     firstline[1]=firstline[1]+" from "+", ".join(colours)
                 if len(multi.strip())==0: # All whitespace
