@@ -2505,10 +2505,12 @@ Enter SQL statements terminated with a ";"
      40: "bg_black", 41: "bg_red", 42: "bg_green", 43: "bg_yellow", 44: "bg_blue", 45: "bg_magenta", 46: "bg_cyan", 47: "bg_white", 49: "bg_"}.items()]))
 
     _colours={"off": _colourscheme(colour_value=lambda x,y: y)}
+    
     _colours["default"]=_colourscheme(prompt=d.bold, prompt_=d.bold_,
                                       error=d.fg_red+d.bold, error_=d.bold_+d.fg_,
                                       intro=d.fg_blue+d.bold, intro_=d.bold_+d.fg_,
-                                      header=d.underline, header_=d.underline_,
+                                      header=sys.platform=="win32" and d.underline or d.inverse,
+                                      header_=sys.platform=="win32" and d.underline_ or d.inverse_,
                                       vnull=d.fg_red, vnull_=d.fg_,
                                       vstring=d.fg_yellow, vstring_=d.fg_,
                                       vblob=d.fg_blue, vblob_=d.fg_,
