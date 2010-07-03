@@ -51,15 +51,10 @@ class Shell(object):
     sqlite shell.  Its control-C handling is also friendlier.  Some
     examples of issues not present in this implementation:
 
-    * http://www.sqlite.org/src/info/eb620916be
-    * http://www.sqlite.org/src/info/f12a9eeedc
-    * http://www.sqlite.org/src/info/72adc99de9
-    * http://www.sqlite.org/src/info/f5cb008a65
     * http://www.sqlite.org/src/info/c25aab7e7e
-    * http://www.sqlite.org/src/info/6da68f691b
-    * http://www.sqlite.org/src/info/2cb66577f6
     * http://www.sqlite.org/src/info/7b61b6c6ce
     * http://www.sqlite.org/src/info/ee19e690ec
+    * http://www.sqlite.org/src/info/2466653295
 
     Errors and diagnostics are only ever sent to error output
     (self.stderr) and never to the regular output (self.stdout).  This
