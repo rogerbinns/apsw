@@ -431,6 +431,10 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
       goto pyexception;
     }
 
+  self->stmtcache=statementcache_init(self->db, statementcachesize);
+  if(!self->stmtcache)
+    goto pyexception;
+
   while( (hook=PyIter_Next(iterator)) )
     {
       hookresult=PyEval_CallObject(hook, hookargs);
@@ -443,9 +447,7 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
   if(!PyErr_Occurred())
     {
       res=0;
-      self->stmtcache=statementcache_init(self->db, statementcachesize);
-      if(self->stmtcache)
-        goto finally;
+      goto finally;
     }
 
  pyexception:
