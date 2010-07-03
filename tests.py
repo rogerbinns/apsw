@@ -283,7 +283,7 @@ class APSW(unittest.TestCase):
         for name in ("testdb", "testdb2", "testfile", "testfile2", "testdb2x", "testdb-async",
                      "test-shell-1", "test-shell-1.py",
                      "test-shell-in", "test-shell-out", "test-shell-err"):
-            for i in "-journal", "":
+            for i in "-wal", "-journal", "":
                 if os.path.exists(name+i):
                     deletefile(name+i)
 
@@ -1749,7 +1749,7 @@ class APSW(unittest.TestCase):
             present=True
         except apsw.Error:
             pass
-        if os.getenv("APSW_TEST_"+name.upper()):
+        if "APSW_TEST_"+name.upper() in os.environ:
             self.assertEqual(present, True)
         return present
 
@@ -6466,7 +6466,7 @@ shell.write(shell.stdout, "hello world\\n")
     def testCouchDB(self, servereval=True):
         "Check APSW/CouchDB virtual table"
         import couchdb
-        couch=os.getenv("APSW_COUCHDB")
+        couch=os.environ["APSW_COUCHDB"]
         server=couchdb.Server(couch)
         # this is to allow multiple tests to run concurrently against
         # the same couchdb server
@@ -6783,7 +6783,7 @@ shell.write(shell.stdout, "hello world\\n")
                 pass
 
         ## ConnectionCloseFail
-        if not os.getenv("APSW_NO_MEMLEAK"):
+        if "APSW_NO_MEMLEAK" not in os.environ:
             apsw.faultdict["ConnectionCloseFail"]=True
             try:
                 db=apsw.Connection(":memory:")
@@ -6794,7 +6794,7 @@ shell.write(shell.stdout, "hello world\\n")
                 pass
 
         ## ConnectionCloseFail in destructor
-        if not os.getenv("APSW_NO_MEMLEAK"):
+        if "APSW_NO_MEMLEAK" not in os.environ:
             # test
             apsw.faultdict["ConnectionCloseFail"]=True
             def f():
@@ -7636,7 +7636,7 @@ def setup(write=write):
             pass
 
     # we also remove forkchecker if doing multiple iterations
-    if not forkcheck or os.getenv("APSW_TEST_ITERATIONS"):
+    if not forkcheck or "APSW_TEST_ITERATIONS" in os.environ:
         del APSW.testzzForkChecker
 
     # These tests are of experimental features
@@ -7663,11 +7663,11 @@ def setup(write=write):
         sys.stdout.flush()
 
     # Couchdb?
-    if not os.getenv("APSW_COUCHDB"):
+    if "APSW_COUCHDB" not in os.environ:
         del APSW.testCouchDB
 
     # coverage testing of the shell
-    if os.getenv("APSW_PY_COVERAGE"):
+    if "APSW_PY_COVERAGE" in os.environ:
         APSW._originaltestShell=APSW.testShell
         APSW.testShell=APSW._testShellWithCoverage
         if hasattr(APSW, "testCouchDB"):
@@ -7680,15 +7680,37 @@ def setup(write=write):
 if __name__=='__main__':
     setup()
     
-    if os.getenv("APSW_NO_MEMLEAK"):
+    if "APSW_NO_MEMLEAK" in os.environ:
         # Delete tests that have to deliberately leak memory
         # del APSW.testWriteUnraiseable  (used to but no more)
         pass
 
-    v=os.getenv("APSW_TEST_ITERATIONS")
+    def runtests():
+        def set_wal_mode(c):
+            # Note that WAL won't be on for memory databases.  This
+            # execution returns the active mode
+            c.cursor().execute("PRAGMA journal_mode=WAL").fetchall()
+
+        b4=apsw.connection_hooks[:]
+        try:
+            if "APSW_TEST_WALMODE" not in os.environ:
+                # Non-WAL test first
+                try:
+                    unittest.main()
+                except SystemExit:
+                    if sys.exc_info()[1].code!=0:
+                        raise
+
+            apsw.connection_hooks.append(set_wal_mode)
+            sys.stderr.write("WAL: ")
+            unittest.main()
+        finally:
+            apsw.connection_hooks=b4
+
+    v=os.environ.get("APSW_TEST_ITERATIONS", None)
     if v is None:
         try:
-            unittest.main()
+            runtests()
         except SystemExit:
             exitcode=sys.exc_info()[1].code
     else:
@@ -7700,7 +7722,8 @@ if __name__=='__main__':
         for i in range(v):
             write("Iteration "+str(i+1)+" of "+str(v)+"\n")
             try:
-                unittest.main()
+
+                runtests()
             except SystemExit:
                 exitcode=sys.exc_info()[1].code
 
