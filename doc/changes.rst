@@ -2,8 +2,13 @@ Change History
 **************
 .. currentmodule:: apsw
 
-next
-====
+3.7.0
+=====
+
+SQLite now supports `Write Ahead Logging
+<http://www.sqlite.org/draft/wal.html>`__.  XXXX Add a section
+somewhere about this, api calls, pragma, and using connection_hooks to
+turn it on XXX
 
 Added :meth:`format_sql_value` for generating a SQL syntax string from
 a value.  This is implemented in C and is significantly faster than
@@ -36,6 +41,15 @@ There is now PPA for Ubuntu users that is kept up to date with APSW at
 https://launchpad.net/~ubuntu-rogerbinns/+archive/apsw which has
 SQLite embedded statically inside (ie system SQLite is ignored) and
 has all the extensions enabled: FTS3, RTree, ICU, asyncvfs
+
+If you open VFS files directly then the filename is always run through
+xFullPathname first.  SQLite guarantees this behaviour but the
+existing VFS code was not doing that for direct opens.  Opens from
+SQLite were doing it.
+
+Fixed error where :attr:`apsw.connection_hooks` were being run before
+the ref:`statement cache <statementcache>` was initialised which would
+result in a crash if any hooks executed SQL code.
 
 3.6.23.1-r1
 ===========
