@@ -221,6 +221,10 @@ typedef struct
 {
   PyObject_HEAD
   struct sqlite3_file *base;
+  char *filename;  /* obtained from fullpathname - has to be around for lifetime of base */
+  /* If you add any new members then also initialize them in
+     apswvfspy_xOpen() as that function does not call init because it
+     has values already */
 } APSWVFSFile;
 
 static PyTypeObject APSWVFSFileType;
@@ -594,9 +598,10 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args)
   if(PyErr_Occurred()) goto finally;
 
   apswfile=PyObject_New(APSWVFSFile, &APSWVFSFileType);
+  
   if(!apswfile) goto finally;
-
   apswfile->base=file;
+  apswfile->filename=0;
   file=NULL;
   result=(PyObject*)(void*)apswfile;
                                                                        
@@ -1307,9 +1312,9 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
         }
       baseversion=self->basevfs->iVersion;
       APSW_FAULT_INJECT(APSWVFSBadVersion, , baseversion=-789426);
-      if(baseversion!=1)
+      if(baseversion<1 || baseversion>2)
         {
-          PyErr_Format(PyExc_ValueError, "Base vfs implements version %d of vfs spec, but apsw only supports version 1", baseversion);
+          PyErr_Format(PyExc_ValueError, "Base vfs implements version %d of vfs spec, but apsw only supports versions 1 and 2", baseversion);
           goto error;
         }
       if(base) PyMem_Free(base);
@@ -1318,7 +1323,9 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
   self->containingvfs=(sqlite3_vfs *)PyMem_Malloc(sizeof(sqlite3_vfs));
   if(!self->containingvfs) return -1;
   memset(self->containingvfs, 0, sizeof(sqlite3_vfs)); 
-  self->containingvfs->iVersion=1;
+  /* We only claim to support version 1 as the two methods added in
+     version 2 are pointless */
+  self->containingvfs->iVersion=1; 
   self->containingvfs->szOsFile=sizeof(APSWSQLite3File);
   if(self->basevfs && !maxpathname)
     self->containingvfs->mxPathname=self->basevfs->mxPathname;
@@ -1483,6 +1490,9 @@ APSWVFSFile_dealloc(APSWVFSFile *self)
       PyObject *x=apswvfsfilepy_xClose(self);
       Py_XDECREF(x);
     }
+  if(self->filename)
+    PyMem_Free(self->filename);
+
   if(PyErr_Occurred())
     {
       AddTraceBackHere(__FILE__, __LINE__, "APSWVFS File destructor", NULL);
@@ -1500,7 +1510,10 @@ APSWVFSFile_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSE
   APSWVFSFile *self;
   self= (APSWVFSFile*)type->tp_alloc(type, 0);
   if(self)
-    self->base=NULL;
+    {
+      self->base=NULL;
+      self->filename=NULL;
+    }
 
   return (PyObject*)self;
 }
@@ -1589,7 +1602,25 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
     }
   file=PyMem_Malloc(vfstouse->szOsFile);
   if(!file) goto finally;
-  xopenresult=vfstouse->xOpen(vfstouse, (utf8name==Py_None)?NULL:PyBytes_AS_STRING(utf8name), file, (int)flagsin, &flagsout);
+
+  if(utf8name!=Py_None)
+    {
+      /* The filename has to be passed through xFullPathname.  That
+	 may or may not already have happened, but we do it a second
+	 time to be sure. */
+      int fpres;
+      self->filename=PyMem_Malloc(vfstouse->mxPathname+1);
+      if(!self->filename)
+	goto finally;
+      fpres=vfstouse->xFullPathname(vfstouse, PyBytes_AS_STRING(utf8name), vfstouse->mxPathname, self->filename);
+      if(fpres!=SQLITE_OK)
+	{
+	  SET_EXC(fpres, NULL);
+	  goto finally;
+	}
+    }
+
+  xopenresult=vfstouse->xOpen(vfstouse, self->filename,  file, (int)flagsin, &flagsout);
   SET_EXC(xopenresult, NULL);
   if(PyErr_Occurred())
     {
