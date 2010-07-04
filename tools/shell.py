@@ -2240,7 +2240,7 @@ Enter SQL statements terminated with a ";"
               "full_column_names=": _pragmas_bool,
               "fullfsync=": _pragmas_bool,
               "incremental_vacuum(": None,
-              "journal_mode=": ("DELETE", "TRUNCATE", "PERSIST", "MEMORY", "OFF"),
+              "journal_mode=": ("DELETE", "TRUNCATE", "PERSIST", "MEMORY", "OFF", "WAL"),
               "journal_size_limit=": None,
               "legacy_file_format=": _pragmas_bool,
               "locking_mode=": ("NORMAL", "EXCLUSIVE"),
@@ -2266,7 +2266,9 @@ Enter SQL statements terminated with a ";"
               "integrity_check": None,
               "quick_check": None,
               "writable_schema": _pragmas_bool,
-              "foreign_keys": _pragmas_bool
+              "foreign_keys": _pragmas_bool,
+              "wal_autocheckpoint=": None,
+              "wal_checkpoint": None
               }
 
     def _get_prev_tokens(self, line, end):
