@@ -2789,16 +2789,20 @@ class APSW(unittest.TestCase):
         "Verify setting of result codes on error/exception"
         fname="gunk-errcode-test"
         open(fname, "wb").write(b("A")*8192)
-        db=apsw.Connection(fname)
-        cur=db.cursor()
+        db=None
         try:
-            cur.execute("select * from sqlite_master")
+            # The exception could be thrown on either of these lines
+            # depending on several factors
+            db=apsw.Connection(fname)
+            db.cursor().execute("select * from sqlite_master")
+            1/0 # should not be reachable
         except:
             klass,e,tb=sys.exc_info()
             self.assertTrue(isinstance(e, apsw.NotADBError))
             self.assertEqual(e.result, apsw.SQLITE_NOTADB);
             self.assertEqual(e.extendedresult&0xff, apsw.SQLITE_NOTADB)
-        db.close(True)
+        if db is not None:
+            db.close(True)
 
         try:
             deletefile(fname)
@@ -2857,7 +2861,7 @@ class APSW(unittest.TestCase):
         self.assert_(len(v)>1)
 
     def testIssue4(self):
-        # http://code.google.com/p/apsw/issues/detail?id=4
+        "Issue 4: Error messages and SQLite ticket 3063"
         connection = apsw.Connection(":memory:")
         cursor = connection.cursor()
 
@@ -2875,7 +2879,7 @@ class APSW(unittest.TestCase):
             assert "A_TABLE.ID" in str(e)
 
     def testIssue15(self):
-        # http://code.google.com/p/apsw/issues/detail?id=15
+        "Issue 15: Release GIL during calls to prepare"
         self.db.cursor().execute("create table foo(x)")
         self.db.cursor().execute("begin exclusive")
         db2=apsw.Connection("testdb")
@@ -2887,7 +2891,7 @@ class APSW(unittest.TestCase):
         t.go()
 
     def testIssue19(self):
-        # http://code.google.com/p/apsw/issues/detail?id=15
+        "Issue 19: Incomplete cursor execution"
         c=self.db.cursor()
         c.execute("create table numbers(x)")
         for i in range(10):
@@ -2901,7 +2905,7 @@ class APSW(unittest.TestCase):
         next(c)
 
     def testIssue24(self):
-        # http://code.google.com/p/apsw/issues/detail?id=24
+        "Issue 24: Ints and Longs"
         c=self.db.cursor()
         for row in c.execute("select 3"): pass
         self.assertEqual(int, type(row[0]))
@@ -2915,7 +2919,7 @@ class APSW(unittest.TestCase):
         self.assertEqual(long, type(row[0]))
 
     def testIssue31(self):
-        # http://code.google.com/p/apsw/issues/detail?id=31
+        "Issue 31: GIL & SQLite mutexes with heavy threading, threadsafe errors from SQLite"
         randomnumbers=[random.randint(0,10000) for _ in range(10000)]
 
         cursor=self.db.cursor()
@@ -2967,7 +2971,7 @@ class APSW(unittest.TestCase):
             t.go()
 
     def testIssue50(self):
-        "Check Blob.read return value on eof"
+        "Issue 50: Check Blob.read return value on eof"
         # first get what the system returns on eof
         if iswindows:
             f=open("nul", "rb")
@@ -2993,11 +2997,15 @@ class APSW(unittest.TestCase):
             blobro.close()
 
     def testIssue98(self):
-        "An error in context manager commmit should do a rollback"
+        "Issue 98: An error in context manager commit should do a rollback"
         self.db.cursor().execute("create table foo(x); insert into foo values(3); insert into foo values(4)")
+        # We need the reader to block a writer, which requires non-WAL mode
+        self.db.cursor().execute("pragma journal_mode=delete")
+        db2=apsw.Connection("testdb")
+        db2.cursor().execute("pragma journal_mode=delete")
         # deliberately don't read from cursor on connection 1 which will prevent a commit
         x=self.db.cursor().execute("select * from foo")
-        db2=apsw.Connection("testdb").__enter__()
+        db2.__enter__()
         db2.cursor().execute("insert into foo values(5)") # transaction is buffered in memory by SQLite
         try:
             db2.__exit__(None, None, None)
@@ -3022,7 +3030,7 @@ class APSW(unittest.TestCase):
             self.fail("Transaction was not rolled back")
 
     def testIssue103(self):
-        "Error handling when sqlite3_declare_vtab fails"
+        "Issue 103: Error handling when sqlite3_declare_vtab fails"
         class Source:
             def Create(self, *args):
                 return "create table x(delete)", None
@@ -3128,6 +3136,7 @@ class APSW(unittest.TestCase):
             l.pop().fetchall()
 
     def testStatementCacheZeroSize(self):
+        "Rerun statement cache tests with a zero sized/disabled cache"
         self.db=apsw.Connection("testdb", statementcachesize=-1)
         self.testStatementCache(-1)
 
@@ -3436,6 +3445,7 @@ class APSW(unittest.TestCase):
         self.assertNotEqual(apsw.randomness(77), apsw.randomness(77))
 
     def testSqlite3Pointer(self):
+        "Verify getting underlying sqlite3 pointer"
         self.assertRaises(TypeError, self.db.sqlite3pointer, 7)
         self.assertTrue(type(self.db.sqlite3pointer()) in (int,long))
         self.assertEqual(self.db.sqlite3pointer(), self.db.sqlite3pointer())
@@ -3624,13 +3634,25 @@ class APSW(unittest.TestCase):
         db2=apsw.Connection("testdb2", vfs=vfs.vfsname)
         db2.cursor().execute(query)
         db2.close()
-        
+        waswal=self.db.cursor().execute("pragma journal_mode").fetchall()[0][0]=="wal"
+        if waswal:
+            self.db.cursor().execute("pragma journal_mode=delete").fetchall()
+        self.db.close() # flush
+
         # check the two databases are the same (modulo the XOR)
         orig=open("testdb", "rb").read()
         obfu=open("testdb2", "rb").read()
         self.assertEqual(len(orig), len(obfu))
         self.assertNotEqual(orig, obfu)
-        self.assertEqual(orig, encryptme(obfu))
+        # wal isn't exactly the same
+        if waswal:
+            def compare(one, two):
+                self.assertEqual(one[:27], two[:27])
+                self.assertEqual(one[96:], two[96:])
+        else:
+            compare=self.assertEqual
+
+        compare(orig, encryptme(obfu))
 
         # helper routines
         self.assertRaises(TypeError, apsw.exceptionfor, "three")
@@ -3638,12 +3660,11 @@ class APSW(unittest.TestCase):
         self.assertRaises(OverflowError, apsw.exceptionfor, l("0xffffffffffffffff10"))
 
         # test raw file object
-        self.db.close()
         f=ObfuscatedVFSFile("", "testdb", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
         del f # check closes
         f=ObfuscatedVFSFile("", "testdb", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
         data=f.xRead(len(obfu), 0) # will encrypt it
-        self.assertEqual(obfu, data)
+        compare(obfu, data)
         f.xClose()
         f.xClose()
         f2=apsw.VFSFile("", "testdb", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
