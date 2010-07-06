@@ -119,7 +119,8 @@ compile-win:
 	c:/python23/python setup.py $(WINBUILD)
 	c:/python24/python setup.py $(WINBUILD)
 	c:/python25/python setup.py $(WINBUILD)
-	c:/python26/python setup.py $(WINBUILD)
+	c:/python26/python setup.py $(WINMSBUILD)
+	c:/python27/python setup.py $(WINMSBUILD)
 	c:/python31/python setup.py $(WINMSBUILD)
 
 source_nocheck: docs
@@ -145,6 +146,7 @@ upload:
 	test -f dist/$(VERDIR).win32-py2.4.exe
 	test -f dist/$(VERDIR).win32-py2.5.exe
 	test -f dist/$(VERDIR).win32-py2.6.exe
+	test -f dist/$(VERDIR).win32-py2.7.exe
 	test -f dist/$(VERDIR).win32-py3.1.exe
 	test -f dist/$(VERDIR).chm
 	-rm -f dist/$(VERDIR)-sigs.zip dist/*.asc
@@ -152,6 +154,7 @@ upload:
 	cd dist ; zip -m $(VERDIR)-sigs.zip *.asc
 	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) GPG signatures for all files" -l "Type-Signatures,OpSys-All" dist/$(VERDIR)-sigs.zip
 	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 3.1 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py3.1.exe
+	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 2.7 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.7.exe
 	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 2.6 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.6.exe
 	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 2.5 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.5.exe
 	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 2.4 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.4.exe
