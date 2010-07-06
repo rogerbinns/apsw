@@ -212,7 +212,7 @@ static PyTypeObject APSWVFSType;
 
 typedef struct /* inherits */
 {
-  const struct sqlite3_io_methods *pMethods;  /* structure sqlite needs */
+  struct sqlite3_io_methods *pMethods;  /* structure sqlite needs */
   PyObject *file;                             
 } APSWSQLite3File;
 
@@ -480,6 +480,7 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
   PyObject *flags=NULL;
   PyObject *pyresult=NULL;
   APSWSQLite3File *apswfile=(APSWSQLite3File*)(void*)file;
+  PyObject *base_file_obj=NULL;
 
   VFSPREAMBLE;
 
@@ -508,7 +509,32 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
     *pOutFlags=(int)PyIntLong_AsLong(PyList_GET_ITEM(flags, 1));
   if(PyErr_Occurred()) goto finally;
 
-  apswfile->pMethods=&apsw_io_methods;
+  /* If we are inheriting from another file object, and that file
+     object supports version 2 io_methods (Shm* family of functions)
+     then we need to allocate an io_methods dupe of our own and fill
+     in their shm methods. */
+  base_file_obj=PyObject_HasAttrString(pyresult, "base_file")?PyObject_GetAttrString(pyresult, "base_file"):NULL;
+  if(base_file_obj && PyLong_Check(base_file_obj))
+    {
+      sqlite3_file *fptr=(sqlite3_file*)PyLong_AsVoidPtr(base_file_obj);
+      if(!fptr || !fptr->pMethods || fptr->pMethods->iVersion==1 || !fptr->pMethods->xShmOpen)
+	goto version1;
+      apswfile->pMethods=PyMem_Malloc(sizeof(apsw_io_methods));
+      if(!apswfile->pMethods) goto finally;
+      memcpy(apswfile->pMethods, &apsw_io_methods, sizeof(apsw_io_methods));
+      apswfile->pMethods->iVersion=2;
+      apswfile->pMethods->xShmOpen=fptr->pMethods->xShmOpen;
+      apswfile->pMethods->xShmLock=fptr->pMethods->xShmLock;
+      apswfile->pMethods->xShmMap=fptr->pMethods->xShmMap;
+      apswfile->pMethods->xShmBarrier=fptr->pMethods->xShmBarrier;
+      apswfile->pMethods->xShmClose=fptr->pMethods->xShmClose;
+    }
+  else
+    {
+    version1:
+      apswfile->pMethods=&apsw_io_methods;
+    }
+
   apswfile->file=pyresult;
   pyresult=NULL;
   result=SQLITE_OK;
@@ -517,6 +543,7 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
   assert(PyErr_Occurred()?result!=SQLITE_OK:1);
   Py_XDECREF(pyresult);
   Py_XDECREF(flags);
+  Py_XDECREF(base_file_obj);
 
   VFSPOSTAMBLE;
 
@@ -598,13 +625,14 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args)
   if(PyErr_Occurred()) goto finally;
 
   apswfile=PyObject_New(APSWVFSFile, &APSWVFSFileType);
-  
   if(!apswfile) goto finally;
   apswfile->base=file;
   apswfile->filename=0;
   file=NULL;
+  if(PyObject_SetAttrString(apswfile, "base_file", PyLong_FromVoidPtr(file))==-1)
+    goto finally;
   result=(PyObject*)(void*)apswfile;
-                                                                       
+
  finally:
   if(file) PyMem_Free(file);
   Py_XDECREF(utf8name);
@@ -2349,6 +2377,8 @@ apswvfsfile_xClose(sqlite3_file *file)
 
   Py_XDECREF(apswfile->file);
   apswfile->file=NULL;
+  if(file->pMethods!=&apsw_io_methods)
+    PyMem_Free(file->pMethods);
   Py_XDECREF(pyresult);
   FILEPOSTAMBLE;
   return result;
@@ -2400,7 +2430,15 @@ static struct sqlite3_io_methods apsw_io_methods=
     apswvfsfile_xCheckReservedLock,    /* checkreservedlock */
     apswvfsfile_xFileControl,          /* filecontrol */
     apswvfsfile_xSectorSize,           /* sectorsize */
-    apswvfsfile_xDeviceCharacteristics /* device characteristics */
+    apswvfsfile_xDeviceCharacteristics,/* device characteristics */
+    /* the following are from version 2 of io_methods and are done by
+       making a copy of this data structure and filling them in when
+       inheriting from an appropriate vfs */
+    0,                                 /* shmopen */
+    0,                                 /* shmlock */
+    0,                                 /* shmmap */
+    0,                                 /* shmbarrier */
+    0                                  /* shmclose */
   };
 
 
