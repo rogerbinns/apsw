@@ -7610,6 +7610,7 @@ def testdb(filename="testdb2", vfsname="apswtest", closedb=True):
         f.close()
 
         hotdb=apsw.Connection(filename+"x", vfs=vfsname)
+        hotdb.cursor().execute("pragma journal_mode=delete") # disable wal mode
         hotdb.cursor().execute("select sql from sqlite_master")
         hotdb.close()
 

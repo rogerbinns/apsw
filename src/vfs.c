@@ -212,7 +212,7 @@ static PyTypeObject APSWVFSType;
 
 typedef struct /* inherits */
 {
-  struct sqlite3_io_methods *pMethods;  /* structure sqlite needs */
+  const struct sqlite3_io_methods *pMethods;  /* structure sqlite needs */
   PyObject *file;                             
 } APSWSQLite3File;
 
@@ -229,7 +229,8 @@ typedef struct
 
 static PyTypeObject APSWVFSFileType;
 
-static struct sqlite3_io_methods apsw_io_methods;
+static const struct sqlite3_io_methods apsw_io_methods_v1;
+static const struct sqlite3_io_methods apsw_io_methods_v2;
 
 
 /** .. class:: VFS
@@ -480,7 +481,6 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
   PyObject *flags=NULL;
   PyObject *pyresult=NULL;
   APSWSQLite3File *apswfile=(APSWSQLite3File*)(void*)file;
-  PyObject *base_file_obj=NULL;
 
   VFSPREAMBLE;
 
@@ -513,26 +513,17 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
      object supports version 2 io_methods (Shm* family of functions)
      then we need to allocate an io_methods dupe of our own and fill
      in their shm methods. */
-  base_file_obj=PyObject_HasAttrString(pyresult, "base_file")?PyObject_GetAttrString(pyresult, "base_file"):NULL;
-  if(base_file_obj && PyLong_Check(base_file_obj))
+  if(Py_TYPE(pyresult)==&APSWVFSFileType)
     {
-      sqlite3_file *fptr=(sqlite3_file*)PyLong_AsVoidPtr(base_file_obj);
-      if(!fptr || !fptr->pMethods || fptr->pMethods->iVersion==1 || !fptr->pMethods->xShmOpen)
+      APSWVFSFile *f=(APSWVFSFile*)pyresult;
+      if(!f->base || !f->base->pMethods  || !f->base->pMethods==1 || !f->base->pMethods->xShmOpen)
 	goto version1;
-      apswfile->pMethods=PyMem_Malloc(sizeof(apsw_io_methods));
-      if(!apswfile->pMethods) goto finally;
-      memcpy(apswfile->pMethods, &apsw_io_methods, sizeof(apsw_io_methods));
-      apswfile->pMethods->iVersion=2;
-      apswfile->pMethods->xShmOpen=fptr->pMethods->xShmOpen;
-      apswfile->pMethods->xShmLock=fptr->pMethods->xShmLock;
-      apswfile->pMethods->xShmMap=fptr->pMethods->xShmMap;
-      apswfile->pMethods->xShmBarrier=fptr->pMethods->xShmBarrier;
-      apswfile->pMethods->xShmClose=fptr->pMethods->xShmClose;
+      apswfile->pMethods=&apsw_io_methods_v2;
     }
   else
     {
     version1:
-      apswfile->pMethods=&apsw_io_methods;
+      apswfile->pMethods=&apsw_io_methods_v1;
     }
 
   apswfile->file=pyresult;
@@ -543,7 +534,6 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
   assert(PyErr_Occurred()?result!=SQLITE_OK:1);
   Py_XDECREF(pyresult);
   Py_XDECREF(flags);
-  Py_XDECREF(base_file_obj);
 
   VFSPOSTAMBLE;
 
@@ -629,8 +619,6 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args)
   apswfile->base=file;
   apswfile->filename=0;
   file=NULL;
-  if(PyObject_SetAttrString(apswfile, "base_file", PyLong_FromVoidPtr(file))==-1)
-    goto finally;
   result=(PyObject*)(void*)apswfile;
 
  finally:
@@ -2377,8 +2365,6 @@ apswvfsfile_xClose(sqlite3_file *file)
 
   Py_XDECREF(apswfile->file);
   apswfile->file=NULL;
-  if(file->pMethods!=&apsw_io_methods)
-    PyMem_Free(file->pMethods);
   Py_XDECREF(pyresult);
   FILEPOSTAMBLE;
   return result;
@@ -2416,7 +2402,47 @@ apswvfsfilepy_xClose(APSWVFSFile *self)
   return NULL;
 }
 
-static struct sqlite3_io_methods apsw_io_methods=
+#define APSWPROXYBASE						\
+  APSWSQLite3File *apswfile=(APSWSQLite3File*)(void*)file;	\
+  APSWVFSFile *f=(APSWVFSFile*) (apswfile->file);               \
+  assert(Py_TYPE(f)==&APSWVFSFileType)
+
+static int 
+apswproxyxShmOpen(sqlite3_file *file)
+{
+  APSWPROXYBASE;
+  return f->base->pMethods->xShmOpen(f->base);
+}
+
+static int
+apswproxyxShmLock(sqlite3_file *file, int offset, int n, int flags)
+{
+  APSWPROXYBASE;
+  return f->base->pMethods->xShmLock(f->base, offset, n, flags);
+}
+
+static int
+apswproxyxShmMap(sqlite3_file *file, int iPage, int pgsz, int isWrite, void volatile **pp)
+{
+  APSWPROXYBASE;
+  return f->base->pMethods->xShmMap(f->base, iPage, pgsz, isWrite, pp);
+}
+
+static void
+apswproxyxShmBarrier(sqlite3_file *file)
+{
+  APSWPROXYBASE;
+  f->base->pMethods->xShmBarrier(f->base);
+}
+
+static int
+apswproxyxShmClose(sqlite3_file *file, int deleteFlag)
+{
+  APSWPROXYBASE;
+  return f->base->pMethods->xShmClose(f->base, deleteFlag);
+}
+
+static const struct sqlite3_io_methods apsw_io_methods_v1=
   {
     1,                                 /* version */
     apswvfsfile_xClose,                /* close */
@@ -2431,15 +2457,36 @@ static struct sqlite3_io_methods apsw_io_methods=
     apswvfsfile_xFileControl,          /* filecontrol */
     apswvfsfile_xSectorSize,           /* sectorsize */
     apswvfsfile_xDeviceCharacteristics,/* device characteristics */
-    /* the following are from version 2 of io_methods and are done by
-       making a copy of this data structure and filling them in when
-       inheriting from an appropriate vfs */
     0,                                 /* shmopen */
     0,                                 /* shmlock */
     0,                                 /* shmmap */
     0,                                 /* shmbarrier */
     0                                  /* shmclose */
   };
+
+static const struct sqlite3_io_methods apsw_io_methods_v2=
+  {
+    2,                                 /* version */
+    apswvfsfile_xClose,                /* close */
+    apswvfsfile_xRead,                 /* read */
+    apswvfsfile_xWrite,                /* write */
+    apswvfsfile_xTruncate,             /* truncate */
+    apswvfsfile_xSync,                 /* sync */
+    apswvfsfile_xFileSize,             /* filesize */
+    apswvfsfile_xLock,                 /* lock */
+    apswvfsfile_xUnlock,               /* unlock */
+    apswvfsfile_xCheckReservedLock,    /* checkreservedlock */
+    apswvfsfile_xFileControl,          /* filecontrol */
+    apswvfsfile_xSectorSize,           /* sectorsize */
+    apswvfsfile_xDeviceCharacteristics,/* device characteristics */
+    apswproxyxShmOpen,                 /* shmopen */
+    apswproxyxShmLock,                 /* shmlock */
+    apswproxyxShmMap,                  /* shmmap */
+    apswproxyxShmBarrier,              /* shmbarrier */
+    apswproxyxShmClose                 /* shmclose */
+  };
+
+
 
 
 static PyMethodDef APSWVFSFile_methods[]={
