@@ -499,8 +499,9 @@ class apsw_build_ext(beparent):
         # Fixup debug setting
         if self.debug:
             # distutils forces NDEBUG even with --debug so overcome that
-            ext.define_macros.append( ('APSW_NO_NDEBUG', '1') ) # double negatives are bad
-            ext.define_macros.append( ('SQLITE_DEBUG', '1') ) # also does NDEBUG mangling
+            ext.define_macros.append( ('APSW_NO_NDEBUG', '1') )    # double negatives are bad
+            ext.define_macros.append( ('APSW_TESTFIXTURES', '1') ) # extra test harness code
+            ext.define_macros.append( ('SQLITE_DEBUG', '1') )      # also does NDEBUG mangling
         else:
             ext.define_macros.append( ('NDEBUG', '1') )
 
