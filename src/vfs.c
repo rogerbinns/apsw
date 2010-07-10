@@ -569,6 +569,7 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args)
   PyObject *result=NULL, *flags;
   PyObject *pyname=NULL, *utf8name=NULL;
   APSWVFSFile *apswfile=NULL;
+  char *filename=NULL;
 
   CHECKVFSPY;
   VFSNOTIMPLEMENTED(xOpen);
@@ -603,7 +604,24 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args)
   file=PyMem_Malloc(self->basevfs->szOsFile);
   if(!file) goto finally;
 
-  res=self->basevfs->xOpen(self->basevfs, (utf8name==Py_None)?NULL:PyBytes_AS_STRING(utf8name), file, flagsin, &flagsout);
+  if(utf8name!=Py_None)
+    {
+      /* The filename has to be passed through xFullPathname.  That
+	 may or may not already have happened, but we do it a second
+	 time to be sure. */
+      int fpres;
+      filename=PyMem_Malloc(self->basevfs->mxPathname+1);
+      if(!filename)
+	goto finally;
+      fpres=self->basevfs->xFullPathname(self->basevfs, PyBytes_AS_STRING(utf8name), self->basevfs->mxPathname, filename);
+      if(fpres!=SQLITE_OK)
+	{
+	  SET_EXC(fpres, NULL);
+	  goto finally;
+	}
+    }
+
+  res=self->basevfs->xOpen(self->basevfs, filename, file, flagsin, &flagsout);
   if(PyErr_Occurred()) goto finally;
   if(res!=SQLITE_OK)
     {
@@ -617,12 +635,14 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args)
   apswfile=PyObject_New(APSWVFSFile, &APSWVFSFileType);
   if(!apswfile) goto finally;
   apswfile->base=file;
-  apswfile->filename=0;
+  apswfile->filename=filename;
+  filename=NULL;
   file=NULL;
   result=(PyObject*)(void*)apswfile;
 
  finally:
   if(file) PyMem_Free(file);
+  if(filename) PyMem_Free(filename);
   Py_XDECREF(utf8name);
   return result;
 }

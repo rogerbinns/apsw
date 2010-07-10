@@ -4379,19 +4379,19 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, vfs.xSleep, "three")
         self.assertRaises(TypeError, vfs.xSleep, 3, 3)
         TestVFS.xSleep=TestVFS.xSleep1
-        self.assertRaisesUnraisable(TypeError, testdb)
+        self.assertRaisesUnraisable(TypeError, testdb, mode="delete")
         TestVFS.xSleep=TestVFS.xSleep2
-        self.assertRaisesUnraisable(ZeroDivisionError, testdb)
+        self.assertRaisesUnraisable(ZeroDivisionError, testdb, mode="delete")
         TestVFS.xSleep=TestVFS.xSleep3
-        self.assertRaisesUnraisable(TypeError, testdb)
+        self.assertRaisesUnraisable(TypeError, testdb, mode="delete")
         TestVFS.xSleep=TestVFS.xSleep4
-        self.assertRaisesUnraisable(TypeError, testdb)
+        self.assertRaisesUnraisable(TypeError, testdb, mode="delete")
         TestVFS.xSleep=TestVFS.xSleep5
-        self.assertRaisesUnraisable(OverflowError, testdb)
+        self.assertRaisesUnraisable(OverflowError, testdb, mode="delete")
         TestVFS.xSleep=TestVFS.xSleep6
-        self.assertRaisesUnraisable(OverflowError, testdb)
+        self.assertRaisesUnraisable(OverflowError, testdb, mode="delete")
         TestVFS.xSleep=TestVFS.xSleep99
-        testdb()
+        testdb(mode="delete")
         testtimeout=False
 
         ## xCurrentTime
@@ -7326,25 +7326,36 @@ shell.write(shell.stdout, "hello world\\n")
         self.assertTrue("foo" not in apsw.vfsnames())
 
         ## xReadReadBufferFail
-        apsw.Connection("testdb", vfs="faultvfs").cursor().execute("create table dummy1(x,y)")
-        apsw.faultdict["xReadReadBufferFail"]=True
-        def foo():
-            apsw.Connection("testdb", vfs="faultvfs").cursor().execute("select * from dummy1")
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, foo)
+        try:
+            # This will fail if we are using auto-WAL so we don't run
+            # the rest of the test in WAL mode.
+            apsw.Connection("testdb", vfs="faultvfs").cursor().execute("create table dummy1(x,y)")
+            openok=True
+        except apsw.CantOpenError:
+            openok=False
 
-        ## xUnlockFails
-        apsw.faultdict["xUnlockFails"]=True
-        # Used to wrap in self.assertRaises(apsw.IOError, ...) but SQLite no longer passes on the error.
-        # See http://www.sqlite.org/cvstrac/tktview?tn=3946
-        self.assertRaisesUnraisable(apsw.IOError, apsw.Connection("testdb", vfs="faultvfs").cursor().execute, "select * from dummy1")
+        # The following tests cause failures when making the
+        # connection because a connection hook turns on wal mode which
+        # causes database reads which then cause failures
+        if openok:
+            apsw.faultdict["xReadReadBufferFail"]=True
+            def foo():
+                apsw.Connection("testdb", vfs="faultvfs").cursor().execute("select * from dummy1")
+            self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, foo)
 
-        ## xSyncFails
-        apsw.faultdict["xSyncFails"]=True
-        self.assertRaises(apsw.IOError, self.assertRaisesUnraisable, apsw.IOError, apsw.Connection("testdb", vfs="faultvfs").cursor().execute, "insert into dummy1 values(3,4)")
+            ## xUnlockFails
+            apsw.faultdict["xUnlockFails"]=True
+            # Used to wrap in self.assertRaises(apsw.IOError, ...) but SQLite no longer passes on the error.
+            # See http://www.sqlite.org/cvstrac/tktview?tn=3946
+            self.assertRaisesUnraisable(apsw.IOError, apsw.Connection("testdb", vfs="faultvfs").cursor().execute, "select * from dummy1")
 
-        ## xFileSizeFails
-        apsw.faultdict["xFileSizeFails"]=True
-        self.assertRaises(apsw.IOError, self.assertRaisesUnraisable, apsw.IOError, apsw.Connection("testdb", vfs="faultvfs").cursor().execute, "select * from dummy1")
+            ## xSyncFails
+            apsw.faultdict["xSyncFails"]=True
+            self.assertRaises(apsw.IOError, self.assertRaisesUnraisable, apsw.IOError, apsw.Connection("testdb", vfs="faultvfs").cursor().execute, "insert into dummy1 values(3,4)")
+
+            ## xFileSizeFails
+            apsw.faultdict["xFileSizeFails"]=True
+            self.assertRaises(apsw.IOError, self.assertRaisesUnraisable, apsw.IOError, apsw.Connection("testdb", vfs="faultvfs").cursor().execute, "select * from dummy1")
 
         ## xCheckReservedLockFails
         apsw.faultdict["xCheckReservedLockFails"]=True
@@ -7537,17 +7548,21 @@ shell.write(shell.stdout, "hello world\\n")
 
 
 testtimeout=False # timeout testing adds several seconds to each run
-def testdb(filename="testdb2", vfsname="apswtest", closedb=True):
+def testdb(filename="testdb2", vfsname="apswtest", closedb=True, mode=None):
     "This method causes all parts of a vfs to be executed"
     gc.collect() # free any existing db handles
     for suf in "", "-journal", "x", "x-journal":
         deletefile(filename)
 
     db=apsw.Connection(filename, vfs=vfsname)
+    if mode:
+        db.cursor().execute("pragma journal_mode="+mode)
     db.cursor().execute("create table foo(x,y); insert into foo values(1,2); insert into foo values(date('now'), date('now'))")
     if testtimeout:
         # busy
         db2=apsw.Connection(filename, vfs=vfsname)
+        if mode:
+            db2.cursor().execute("pragma journal_mode="+mode)
         db.setbusytimeout(1100)
         db2.cursor().execute("begin exclusive")
         try:
@@ -7610,7 +7625,8 @@ def testdb(filename="testdb2", vfsname="apswtest", closedb=True):
         f.close()
 
         hotdb=apsw.Connection(filename+"x", vfs=vfsname)
-        hotdb.cursor().execute("pragma journal_mode=delete") # disable wal mode
+        if mode:
+            hotdb.cursor().execute("pragma journal_mode="+mode)
         hotdb.cursor().execute("select sql from sqlite_master")
         hotdb.close()
 
