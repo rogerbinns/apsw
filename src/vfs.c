@@ -610,10 +610,14 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args)
 	 may or may not already have happened, but we do it a second
 	 time to be sure. */
       int fpres;
-      filename=PyMem_Malloc(self->basevfs->mxPathname+1);
+      APSW_FAULT_INJECT(vfspyopen_fullpathnamemallocfailed,
+			filename=PyMem_Malloc(self->basevfs->mxPathname+1),
+			filename=(char*)PyErr_NoMemory());
       if(!filename)
 	goto finally;
-      fpres=self->basevfs->xFullPathname(self->basevfs, PyBytes_AS_STRING(utf8name), self->basevfs->mxPathname, filename);
+      APSW_FAULT_INJECT(vfspyopen_fullpathnamefailed,
+			fpres=self->basevfs->xFullPathname(self->basevfs, PyBytes_AS_STRING(utf8name), self->basevfs->mxPathname, filename),
+			fpres=SQLITE_NOMEM);
       if(fpres!=SQLITE_OK)
 	{
 	  SET_EXC(fpres, NULL);
@@ -1645,10 +1649,14 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
 	 may or may not already have happened, but we do it a second
 	 time to be sure. */
       int fpres;
-      self->filename=PyMem_Malloc(vfstouse->mxPathname+1);
+      APSW_FAULT_INJECT(vfsfileopen_fullpathnamemallocfailed,
+			self->filename=PyMem_Malloc(vfstouse->mxPathname+1),
+			self->filename=(char*)PyErr_NoMemory());
       if(!self->filename)
 	goto finally;
-      fpres=vfstouse->xFullPathname(vfstouse, PyBytes_AS_STRING(utf8name), vfstouse->mxPathname, self->filename);
+      APSW_FAULT_INJECT(vfsfileopen_fullpathnamefailed,
+			fpres=vfstouse->xFullPathname(vfstouse, PyBytes_AS_STRING(utf8name), vfstouse->mxPathname, self->filename),
+			fpres=SQLITE_NOMEM);
       if(fpres!=SQLITE_OK)
 	{
 	  SET_EXC(fpres, NULL);
@@ -2316,7 +2324,7 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
 
    Receives `file control
    <http://sqlite.org/c3ref/file_control.html>`_ request typically
-   issues by :meth:`Connection.filecontrol`.  See
+   issued by :meth:`Connection.filecontrol`.  See
    :meth:`Connection.filecontrol` for an example of how to pass a
    Python object to this routine.
 

@@ -7378,6 +7378,23 @@ shell.write(shell.stdout, "hello world\\n")
             gc.collect()
         self.assertRaisesUnraisable(apsw.IOError, foo)
 
+        ## vfspyopen_fullpathnamemallocfailed
+        del FaultVFS.xOpen # remove overriding fault xOpen method so we get default implementation
+        apsw.faultdict["vfspyopen_fullpathnamemallocfailed"]=True
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, MemoryError, apsw.Connection, "testdb", vfs="faultvfs")
+
+        ## vfspyopen_fullpathnamefailed
+        apsw.faultdict["vfspyopen_fullpathnamefailed"]=True
+        self.assertRaises(apsw.NoMemError, self.assertRaisesUnraisable, apsw.NoMemError, apsw.Connection, "testdb", vfs="faultvfs")
+
+        ## vfsfileopen_fullpathnamemallocfailed
+        apsw.faultdict["vfsfileopen_fullpathnamemallocfailed"]=True
+        self.assertRaises(MemoryError, apsw.VFSFile, "", "testdb", [0,0])
+        
+        ## vfsfileopen_fullpathnamefailed
+        apsw.faultdict["vfsfileopen_fullpathnamefailed"]=True
+        self.assertRaises(apsw.NoMemError, apsw.VFSFile, "", "testdb", [0,0])
+        
         ## vfsnamesfails
         apsw.faultdict["vfsnamesfails"]=True
         self.assertRaises(MemoryError, apsw.vfsnames)
