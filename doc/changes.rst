@@ -22,7 +22,9 @@ The shell now does colour highlighting making it easy to visually
 distinguish prompts, errors, headers and value types when outputting
 to a terminal.  See the :option:`--no-colour` argument and **.colour**
 command.  Those of you in the two countries that have not adopted the
-metric system may also omit the 'u'.
+metric system may also omit the 'u'.  For Windows users you won't get
+colour output unless you install `colorama
+<http://pypi.python.org/pypi/colorama>`__
 
 When using the context manager (with statement) of a
 :class:`Connection` and the exit commit had an error, then the
@@ -32,15 +34,16 @@ had been obtained.  Thanks to Geoff Ness for finding the problem.
 (`Issue 98 <http://code.google.com/p/apsw/issues/detail?id=98>`__).
 
 Fixed bug when an error is returned creating an instance of a virtual
-table (eg an invalid column name).  You would get the previous error
-message of it none a crash.  Thanks to Jose Gomes for finding the
-problem.  (`Issue 103
-<http://code.google.com/p/apsw/issues/detail?id=98>`__).
+table (eg an invalid column name).  Before the fix you would get the
+previous error message or a crash.  Thanks to Jose Gomes for finding
+the problem.  (`Issue 103
+<http://code.google.com/p/apsw/issues/detail?id=103>`__).
 
-There is now PPA for Ubuntu users that is kept up to date with APSW at
-https://launchpad.net/~ubuntu-rogerbinns/+archive/apsw which has
-SQLite embedded statically inside (ie system SQLite is ignored) and
-has all the extensions enabled: FTS3, RTree, ICU, asyncvfs
+There is now PPA for Ubuntu users that is kept up to date with APSW
+and SQLite at https://launchpad.net/~ubuntu-rogerbinns/+archive/apsw
+which has SQLite embedded statically inside (ie system SQLite is
+ignored) and has all the extensions enabled: FTS3, RTree, ICU,
+asyncvfs
 
 If you open VFS files directly then the filename is always run through
 xFullPathname first.  SQLite guarantees this behaviour but the
