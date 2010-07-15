@@ -440,7 +440,7 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
       hookresult=PyEval_CallObject(hook, hookargs);
       if(!hookresult) 
         goto pyexception;
-      Py_DECREF(hook);
+      Py_DECREF(hook);  hook=NULL;
       Py_DECREF(hookresult);
     }
 
@@ -465,7 +465,6 @@ finally:
   Py_XDECREF(iterator);
   Py_XDECREF(hooks);
   Py_XDECREF(hook);
-  Py_XDECREF(hookresult);
   assert(PyErr_Occurred() || res==0);
   return res;
 }
