@@ -516,7 +516,7 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
   if(Py_TYPE(pyresult)==&APSWVFSFileType)
     {
       APSWVFSFile *f=(APSWVFSFile*)pyresult;
-      if(!f->base || !f->base->pMethods  || !f->base->pMethods==1 || !f->base->pMethods->xShmOpen)
+      if(!f->base || !f->base->pMethods  || !f->base->pMethods==1 || !f->base->pMethods->xShmMap)
 	goto version1;
       apswfile->pMethods=&apsw_io_methods_v2;
     }
@@ -2435,13 +2435,6 @@ apswvfsfilepy_xClose(APSWVFSFile *self)
   APSWVFSFile *f=(APSWVFSFile*) (apswfile->file);               \
   assert(Py_TYPE(f)==&APSWVFSFileType)
 
-static int 
-apswproxyxShmOpen(sqlite3_file *file)
-{
-  APSWPROXYBASE;
-  return f->base->pMethods->xShmOpen(f->base);
-}
-
 static int
 apswproxyxShmLock(sqlite3_file *file, int offset, int n, int flags)
 {
@@ -2464,10 +2457,10 @@ apswproxyxShmBarrier(sqlite3_file *file)
 }
 
 static int
-apswproxyxShmClose(sqlite3_file *file, int deleteFlag)
+apswproxyxShmUnmap(sqlite3_file *file, int deleteFlag)
 {
   APSWPROXYBASE;
-  return f->base->pMethods->xShmClose(f->base, deleteFlag);
+  return f->base->pMethods->xShmUnmap(f->base, deleteFlag);
 }
 
 static const struct sqlite3_io_methods apsw_io_methods_v1=
@@ -2485,11 +2478,10 @@ static const struct sqlite3_io_methods apsw_io_methods_v1=
     apswvfsfile_xFileControl,          /* filecontrol */
     apswvfsfile_xSectorSize,           /* sectorsize */
     apswvfsfile_xDeviceCharacteristics,/* device characteristics */
-    0,                                 /* shmopen */
-    0,                                 /* shmlock */
     0,                                 /* shmmap */
+    0,                                 /* shmlock */
     0,                                 /* shmbarrier */
-    0                                  /* shmclose */
+    0                                  /* shmunmap */
   };
 
 static const struct sqlite3_io_methods apsw_io_methods_v2=
@@ -2507,11 +2499,10 @@ static const struct sqlite3_io_methods apsw_io_methods_v2=
     apswvfsfile_xFileControl,          /* filecontrol */
     apswvfsfile_xSectorSize,           /* sectorsize */
     apswvfsfile_xDeviceCharacteristics,/* device characteristics */
-    apswproxyxShmOpen,                 /* shmopen */
-    apswproxyxShmLock,                 /* shmlock */
     apswproxyxShmMap,                  /* shmmap */
+    apswproxyxShmLock,                 /* shmlock */
     apswproxyxShmBarrier,              /* shmbarrier */
-    apswproxyxShmClose                 /* shmclose */
+    apswproxyxShmUnmap                 /* shmunmap */
   };
 
 
