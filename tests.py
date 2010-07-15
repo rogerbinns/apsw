@@ -287,9 +287,11 @@ class APSW(unittest.TestCase):
                 if os.path.exists(name+i):
                     deletefile(name+i)
 
+    saved_connection_hooks=[]
+
     def setUp(self):
         # clean out database and journals from last runs
-        self.saved_connection_hooks=apsw.connection_hooks
+        self.saved_connection_hooks.append(apsw.connection_hooks)
         gc.collect()
         self.deltempfiles()
         self.db=apsw.Connection("testdb")
@@ -298,7 +300,7 @@ class APSW(unittest.TestCase):
         if self.db is not None:
             self.db.close(True)
         del self.db
-        apsw.connection_hooks=self.saved_connection_hooks # back to original value
+        apsw.connection_hooks=self.saved_connection_hooks.pop() # back to original value
         gc.collect()
         self.deltempfiles()
 
@@ -2851,6 +2853,9 @@ class APSW(unittest.TestCase):
         apsw.connection_hooks=[delit for _ in range(9000)]
         db=apsw.Connection(":memory:")
         db.close()
+        apsw.connection_hooks=[lambda x: x]
+        db=apsw.Connection(":memory:")
+        db.close()
 
     def testCompileOptions(self):
         "Verify getting compile options"
@@ -3594,9 +3599,18 @@ class APSW(unittest.TestCase):
             klass,value=sys.exc_info()[:2]
             self.assertTrue(klass is apsw.AbortError)
 
+    def testVFSWithWAL(self):
+        "Verify VFS using WAL where possible"
+        apsw.connection_hooks.append(lambda c: c.cursor().execute("pragma journal_mode=WAL"))
+        try:
+            self.testVFS()
+        finally:
+            apsw.connection_hooks.pop()
+
     def testVFS(self):
         "Verify VFS functionality"
         global testtimeout
+
         # Check basic functionality and inheritance - make an obfuscated provider
 
         # obfusvfs code
@@ -7332,6 +7346,8 @@ shell.write(shell.stdout, "hello world\\n")
             apsw.Connection("testdb", vfs="faultvfs").cursor().execute("create table dummy1(x,y)")
             openok=True
         except apsw.CantOpenError:
+            if len(apsw.connection_hooks)==0:
+                raise
             openok=False
 
         # The following tests cause failures when making the
@@ -7748,16 +7764,10 @@ if __name__=='__main__':
 
         b4=apsw.connection_hooks[:]
         try:
-            if "APSW_TEST_WALMODE" not in os.environ:
-                # Non-WAL test first
-                try:
-                    unittest.main()
-                except SystemExit:
-                    if sys.exc_info()[1].code!=0:
-                        raise
+            if "APSW_TEST_WALMODE" in os.environ:
+                apsw.connection_hooks.append(set_wal_mode)
+                sys.stderr.write("WAL: ")
 
-            apsw.connection_hooks.append(set_wal_mode)
-            sys.stderr.write("WAL: ")
             unittest.main()
         finally:
             apsw.connection_hooks=b4
