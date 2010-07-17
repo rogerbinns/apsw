@@ -263,7 +263,8 @@ class APSW(unittest.TestCase):
         'setrowtrace': 1,
         '__enter__': 0,
         '__exit__': 3,
-        'backup': 3
+        'backup': 3,
+        'wal_autocheckpoint': 1
         }
 
     cursor_nargs={
@@ -337,7 +338,7 @@ class APSW(unittest.TestCase):
         apsw.BindingsError
         apsw.ExecTraceAbort
         apsw.SQLITE_FCNTL_SIZE_HINT
-        apsw.mapping_fle_control["SQLITE_FCNTL_SIZE_HINT"]==apsw.SQLITE_FCNTL_SIZE_HINT
+        apsw.mapping_file_control["SQLITE_FCNTL_SIZE_HINT"]==apsw.SQLITE_FCNTL_SIZE_HINT
 
     def testConnection(self):
         "Test connection opening"
@@ -731,6 +732,16 @@ class APSW(unittest.TestCase):
             self.assertRaises(TypeError, apsw.format_sql_value, "plain string")
         self.assertRaises(TypeError, apsw.format_sql_value, apsw)
         self.assertRaises(TypeError, apsw.format_sql_value)
+
+    def testWAL(self):
+        "Test WAL functions"
+        # note that it is harmless calling wal functions on a db not in wal mode
+        self.assertRaises(TypeError, self.db.wal_autocheckpoint)
+        self.assertRaises(TypeError, self.db.wal_autocheckpoint, "a strinbg")
+        self.db.wal_autocheckpoint(8912)
+        self.assertRaises(TypeError, self.db.wal_checkpoint, -1)
+        self.db.wal_checkpoint()
+        self.db.wal_checkpoint("main")
 
     def testAuthorizer(self):
         "Verify the authorizer works"
@@ -7503,6 +7514,22 @@ shell.write(shell.stdout, "hello world\\n")
             apsw.format_sql_value(b("abcd"))
             1/0
         except MemoryError:
+            pass
+
+        ## WalAutocheckpointFails
+        apsw.faultdict["WalAutocheckpointFails"]=True
+        try:
+            apsw.Connection(":memory:").wal_autocheckpoint(77)
+            1/0
+        except apsw.IOError:
+            pass
+
+        ## WalCheckpointFails
+        apsw.faultdict["WalCheckpointFails"]=True
+        try:
+            apsw.Connection(":memory:").wal_checkpoint()
+            1/0
+        except apsw.IOError:
             pass
 
     # This test is run last by deliberate name choice.  If it did

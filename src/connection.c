@@ -2627,6 +2627,64 @@ Connection_sqlite3pointer(Connection *self)
   return PyLong_FromVoidPtr(self->db);
 }
 
+/** .. method:: wal_autocheckpoint(n)
+
+    Sets how often the :ref:`wal` checkpointing is run.
+
+    :param n: A number representing the checkpointing interval or
+      zero/negative to disable auto checkpointing.
+
+   -* sqlite3_wal_autocheckpoint
+*/
+static PyObject *
+Connection_wal_autocheckpoint(Connection *self, PyObject *arg)
+{
+  long v;
+  int res;
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  if(!PyIntLong_Check(arg))
+    return PyErr_Format(PyExc_TypeError, "Parameter must be a number");
+  v=PyIntLong_AsLong(arg);
+
+  APSW_FAULT_INJECT(WalAutocheckpointFails,
+		    PYSQLITE_CON_CALL(res=sqlite3_wal_autocheckpoint(self->db, (int)v)),
+		    res=SQLITE_IOERR);
+   /* done */
+  if (res==SQLITE_OK)
+    Py_RETURN_NONE;
+  return NULL;
+}
+
+/** .. method:: wal_checkpoint(dbname=None)
+
+    Does an immediate checkpoint on all attached databases, or just **dbname** if specified.
+
+  -* sqlite_wal_checkpoint
+*/
+static PyObject *
+Connection_wal_checkpoint(Connection *self, PyObject *args)
+{
+  int res;
+  char *dbname=NULL;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  if(!PyArg_ParseTuple(args, "|es:wal_checkpoint(dbname=None)", STRENCODING, &dbname))
+    return NULL;
+
+  APSW_FAULT_INJECT(WalCheckpointFails,
+		    PYSQLITE_CON_CALL(res=sqlite3_wal_checkpoint(self->db, dbname)),
+		    res=SQLITE_IOERR);
+   /* done */
+  if (res==SQLITE_OK)
+    Py_RETURN_NONE;
+  return NULL;
+}
+
+
 #ifdef EXPERIMENTAL
 
 static struct sqlite3_module apsw_vtable_module;
@@ -3092,6 +3150,10 @@ static PyMethodDef Connection_methods[] = {
    "Context manager entry"},
   {"__exit__", (PyCFunction)Connection_exit, METH_VARARGS,
    "Context manager exit"},
+  {"wal_autocheckpoint", (PyCFunction)Connection_wal_autocheckpoint, METH_O,
+   "Set wal checkpoint threshold"},
+  {"wal_checkpoint", (PyCFunction)Connection_wal_checkpoint, METH_VARARGS,
+   "Do immediate WAL checkpoint"},
   {0, 0, 0, 0}  /* Sentinel */
 };
 

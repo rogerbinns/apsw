@@ -188,7 +188,18 @@ default.  In addition to turning it on manually for each database, you
 can also turn it on for all opened databases by using
 :attr:`connection_hooks`::
 
-  apsw.connection_hooks.append(lambda db: db.cursor().execute("pragma journal_mode=wal"))
+  def setwal(db):
+      db.cursor().execute("pragma journal_mode=wal")
+      # auto checkpoint interval (use zero to disable)
+      db.wal_autocheckpoint(1000)
+
+  apsw.connection_hooks.append(setwal)
+
+Note that if wal mode can't be set (eg the database is in memory or
+temporary) then the attempt to set wal mode will be ignored.  The
+pragma will return the mode in effect.  It is also harmless to call
+functions like :meth:`Connection.wal_autocheckpoint` on connections
+that are not in wal mode.
 
 If you write your own VFS, then inheriting from an existing VFS that
 supports WAL will make your VFS support the extra WAL methods too.
