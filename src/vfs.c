@@ -558,6 +558,8 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
       describes how you actually did open the file.  For example if you
       opened it read only then :const:`SQLITE_OPEN_READONLY` should be
       set.
+
+
 */
 static PyObject *
 apswvfspy_xOpen(APSWVFS *self, PyObject *args)
@@ -1566,6 +1568,12 @@ APSWVFSFile_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSE
     :param flags: A two list ``[inflags, outflags]`` as detailed in :meth:`VFS.xOpen`.
 
     :raises ValueError: If the named VFS is not registered.
+
+    .. note::
+ 
+      If the VFS that you inherit from supports :ref:`write ahead
+      logging <wal>` then your :class:`VFSFile` will also support the
+      xShm methods necessary to implement wal.
 
     .. seealso::
 

@@ -141,6 +141,15 @@ acquired.  You can set a :meth:`timeout <Connection.setbusytimeout>`
 which will keep retrying or a :meth:`callback
 <Connection.setbusyhandler>` where you decide what to do.
 
+Database schema
+===============
+
+When starting a new database, it can be quite difficult to decide what
+tables and fields to have and how to link them.  The technique used to
+design SQL schemas is called `normalization
+<http://en.wikipedia.org/wiki/Database_normalization>`_.  The page
+also shows common pitfalls if you don't normalize your schema.
+
 .. _sharedcache:
 
 Shared Cache Mode
@@ -167,12 +176,21 @@ The shared cache mode is targetted at embedded systems where every
 byte of memory and I/O matters.  For example an MP3 player may only
 have kilobytes of memory available for SQLite.
 
-Database schema
-===============
+.. _wal:
 
-When starting a new database, it can be quite difficult to decide what
-tables and fields to have and how to link them.  The technique used to
-design SQL schemas is called `normalization
-<http://en.wikipedia.org/wiki/Database_normalization>`_.  The page
-also shows common pitfalls if you don't normalize your schema.
+Write Ahead Logging
+===================
 
+SQLite 3.7 introduces `write ahead logging
+<http://www.sqlite.org/wal.html>`__ which has several benefits, but
+also some drawbacks as the page documents.  WAL mode is off by
+default.  In addition to turning it on manually for each database, you
+can also turn it on for all opened databases by using
+:attr:`connection_hooks`::
+
+  apsw.connection_hooks.append(lambda db: db.cursor().execute("pragma journal_mode=wal"))
+
+If you write your own VFS, then inheriting from an existing VFS that
+supports WAL will make your VFS support the extra WAL methods too.
+(Your VFS will point directly to the base methods - there is no
+indirect call via Python.)

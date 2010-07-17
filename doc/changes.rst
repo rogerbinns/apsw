@@ -2,15 +2,13 @@ Change History
 **************
 .. currentmodule:: apsw
 
-3.7.0
-=====
+3.7.0-r1
+========
 
 Added several new constants.
 
-SQLite now supports `Write Ahead Logging
-<http://www.sqlite.org/wal.html>`__.  XXXX Add a section
-somewhere about this, api calls, pragma, and using connection_hooks to
-turn it on XXX
+`Write Ahead Logging <http://www.sqlite.org/wal.html>`__ is
+:ref:`supported <wal>`.
 
 Added :meth:`format_sql_value` for generating a SQL syntax string from
 a value.  This is implemented in C and is significantly faster than
@@ -53,7 +51,7 @@ existing VFS code was not doing that for direct opens.  Opens from
 SQLite were doing it.
 
 Fixed error where :attr:`apsw.connection_hooks` were being run before
-the ref:`statement cache <statementcache>` was initialised which would
+the :ref:`statement cache <statementcache>` was initialised which would
 result in a crash if any hooks executed SQL code.
 
 3.6.23.1-r1
