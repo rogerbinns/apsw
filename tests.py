@@ -336,6 +336,8 @@ class APSW(unittest.TestCase):
         apsw.ThreadingViolationError
         apsw.BindingsError
         apsw.ExecTraceAbort
+        apsw.SQLITE_FCNTL_SIZE_HINT
+        apsw.mapping_fle_control["SQLITE_FCNTL_SIZE_HINT"]==apsw.SQLITE_FCNTL_SIZE_HINT
 
     def testConnection(self):
         "Test connection opening"

@@ -5,6 +5,8 @@ Change History
 3.7.0
 =====
 
+Added several new constants.
+
 SQLite now supports `Write Ahead Logging
 <http://www.sqlite.org/wal.html>`__.  XXXX Add a section
 somewhere about this, api calls, pragma, and using connection_hooks to
