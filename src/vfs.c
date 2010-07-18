@@ -1592,7 +1592,7 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
 
   PyObject *itemzero=NULL, *itemone=NULL, *zero=NULL, *pyflagsout=NULL;
   sqlite3_vfs *vfstouse=NULL;
-  sqlite3_file *file;
+  sqlite3_file *file=NULL;
 
   if(!PyArg_ParseTupleAndKeywords(args, kwds, "esOO:init(vfs, name, flags)", kwlist, STRENCODING, &vfs, &pyname, &flags))
     return -1;
@@ -1678,7 +1678,6 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
     {
       /* just in case the result was ok, but there was a python level exception ... */
       if(xopenresult==SQLITE_OK) file->pMethods->xClose(file);
-      PyMem_Free(file);
       goto finally;
     }
   
@@ -1687,7 +1686,6 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
   if(-1==PySequence_SetItem(flags, 1, pyflagsout))
     {
       file->pMethods->xClose(file);
-      PyMem_Free(file);
       goto finally;
     }
   
@@ -1706,6 +1704,8 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
   Py_XDECREF(itemone);
   Py_XDECREF(zero);
   Py_XDECREF(utf8name);
+  if(res!=0 && file)
+    PyMem_Free(file);
   if(vfs) PyMem_Free(vfs);
   return res;
 }
