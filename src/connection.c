@@ -2757,7 +2757,7 @@ Connection_wal_autocheckpoint(Connection *self, PyObject *arg)
 
     Does an immediate checkpoint on all attached databases, or just **dbname** if specified.
 
-  -* sqlite_wal_checkpoint
+  -* sqlite3_wal_checkpoint
 */
 static PyObject *
 Connection_wal_checkpoint(Connection *self, PyObject *args)
