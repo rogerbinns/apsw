@@ -3091,7 +3091,7 @@ class APSW(unittest.TestCase):
             self.db.cursor().execute("create virtual table foo using issue103()")
             1/0 # should not be reached
         except apsw.SQLError:
-            assert "near \"delete\": syntax error" in sys.exc_info()[1][0]
+            assert "near \"delete\": syntax error" in str(sys.exc_info()[1])
 
     def testTicket2158(self):
         "Check we are not affected by SQLite ticket #2158"
