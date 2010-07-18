@@ -58,6 +58,7 @@ struct Connection {
   PyObject *profile;
   PyObject *updatehook;
   PyObject *commithook;           
+  PyObject *walhook;
   PyObject *progresshandler;      
   PyObject *authorizer;
   PyObject *collationneeded;
@@ -139,6 +140,7 @@ Connection_internal_cleanup(Connection *self)
   Py_CLEAR(self->profile);
   Py_CLEAR(self->updatehook);
   Py_CLEAR(self->commithook);
+  Py_CLEAR(self->walhook);
   Py_CLEAR(self->progresshandler);
   Py_CLEAR(self->authorizer);
   Py_CLEAR(self->collationneeded);
@@ -328,6 +330,7 @@ Connection_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED
       self->profile=0;
       self->updatehook=0;
       self->commithook=0;
+      self->walhook=0;
       self->progresshandler=0;
       self->authorizer=0;
       self->collationneeded=0;
@@ -1175,6 +1178,96 @@ Connection_setcommithook(Connection *self, PyObject *callable)
 
   Py_XDECREF(self->commithook);
   self->commithook=callable;
+
+  Py_RETURN_NONE;
+}
+
+static int
+walhookcb(void *context, APSW_ARGUNUSED sqlite3 *db, const char *dbname, int npages)
+{
+  PyGILState_STATE gilstate;
+  PyObject *retval=NULL;
+  int code=SQLITE_ERROR;
+  Connection *self=(Connection *)context;
+
+  assert(self);
+  assert(self->walhook);
+  assert(self->walhook!=Py_None);
+  assert(self->db==db);
+
+  gilstate=PyGILState_Ensure();
+
+  retval=PyEval_CallFunction(self->walhook, "(OO&i)", self, convertutf8string, dbname, npages);
+  if(!retval)
+    {
+      assert(PyErr_Occurred());
+      AddTraceBackHere(__FILE__, __LINE__, "walhookcallback", "{s: O, s: s, s: i}",
+		       "Connection", self,
+		       "dbname", dbname,
+		       "npages", npages);
+      goto finally;
+    }
+  if(!PyIntLong_Check(retval))
+    {
+      PyErr_Format(PyExc_TypeError, "wal hook must return a number");
+      AddTraceBackHere(__FILE__, __LINE__, "walhookcallback", "{s: O, s: s, s: i, s: O}",
+		       "Connection", self,
+		       "dbname", dbname,
+		       "npages", npages,
+		       "retval", retval);
+      goto finally;
+    }
+  code=(int)PyIntLong_AsLong(retval);
+
+  finally:
+  Py_XDECREF(retval);
+  PyGILState_Release(gilstate);
+  return code;
+}
+
+/** .. method:: setwalhook(callable)
+
+ *callable* will be called just after data is committed in :ref:`wal`
+ mode.  It should return :const:`SQLITE_OK` or an error code.  The
+ callback is called with 3 parameters:
+
+   * The Connection
+   * The database name (eg "main" or the name of an attached database)
+   * The number of pages in the wal log
+
+ You can pass in None in order to clear an existing hook.
+
+ -* sqlite3_wal_hook
+
+*/
+
+static PyObject *
+Connection_setwalhook(Connection *self, PyObject *callable)
+{
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  if(callable==Py_None)
+    {
+      PYSQLITE_VOID_CALL(sqlite3_wal_hook(self->db, NULL, NULL));
+      callable=NULL;
+      goto finally;
+    }
+  
+  if(!PyCallable_Check(callable))
+  {
+      PyErr_Format(PyExc_TypeError, "wal hook must be callable");
+      return NULL;
+    }
+
+  PYSQLITE_VOID_CALL(sqlite3_wal_hook(self->db, walhookcb, self));
+
+  Py_INCREF(callable);
+
+ finally:
+
+  Py_XDECREF(self->walhook);
+  self->walhook=callable;
 
   Py_RETURN_NONE;
 }
@@ -2651,7 +2744,10 @@ Connection_wal_autocheckpoint(Connection *self, PyObject *arg)
   APSW_FAULT_INJECT(WalAutocheckpointFails,
 		    PYSQLITE_CON_CALL(res=sqlite3_wal_autocheckpoint(self->db, (int)v)),
 		    res=SQLITE_IOERR);
-   /* done */
+  
+  SET_EXC(res, self->db);
+
+  /* done */
   if (res==SQLITE_OK)
     Py_RETURN_NONE;
   return NULL;
@@ -2678,7 +2774,10 @@ Connection_wal_checkpoint(Connection *self, PyObject *args)
   APSW_FAULT_INJECT(WalCheckpointFails,
 		    PYSQLITE_CON_CALL(res=sqlite3_wal_checkpoint(self->db, dbname)),
 		    res=SQLITE_IOERR);
-   /* done */
+
+  SET_EXC(res, self->db);
+  PyMem_Free(dbname);
+  /* done */
   if (res==SQLITE_OK)
     Py_RETURN_NONE;
   return NULL;
@@ -3116,6 +3215,8 @@ static PyMethodDef Connection_methods[] = {
    "Sets a callback invoked periodically during long running calls"},
   {"setcommithook", (PyCFunction)Connection_setcommithook, METH_O,
    "Sets a callback invoked on each commit"},
+  {"setwalhook", (PyCFunction)Connection_setwalhook, METH_O,
+   "Sets the WAL hook"},
   {"limit", (PyCFunction)Connection_limit, METH_VARARGS,
    "Gets and sets limits"},
 #ifdef EXPERIMENTAL

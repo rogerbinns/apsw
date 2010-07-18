@@ -264,7 +264,8 @@ class APSW(unittest.TestCase):
         '__enter__': 0,
         '__exit__': 3,
         'backup': 3,
-        'wal_autocheckpoint': 1
+        'wal_autocheckpoint': 1,
+        'setwalhook': 1
         }
 
     cursor_nargs={
@@ -384,6 +385,7 @@ class APSW(unittest.TestCase):
             db.setcommithook(lambda x=1: 0)
             db.setrollbackhook(lambda x=2: 1)
             db.setupdatehook(lambda x=3: 2)
+            db.setwalhook(lambda *args: 0)
             db.collationneeded(lambda x: 4)
             def rt1(c,r):
                 db.setrowtrace(rt2)
@@ -742,6 +744,37 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, self.db.wal_checkpoint, -1)
         self.db.wal_checkpoint()
         self.db.wal_checkpoint("main")
+        self.assertRaises(TypeError, self.db.setwalhook)
+        self.assertRaises(TypeError, self.db.setwalhook, 12)
+        self.db.setwalhook(None)
+        # check we can set wal mode
+        self.assertEqual("wal", self.db.cursor().execute("pragma journal_mode=wal").fetchall()[0][0])
+        # errors in wal callback
+        def zerodiv(*args): 1/0
+        self.db.setwalhook(zerodiv)
+        self.assertRaises(ZeroDivisionError, self.db.cursor().execute, "create table one(x)")
+        # the error happens after the wal commit so the table should exist
+        self.assertTableExists("one")
+
+        def badreturn(*args): return "three"
+        self.db.setwalhook(badreturn)
+        self.assertRaises(TypeError, self.db.cursor().execute, "create table two(x)")
+        self.assertTableExists("two")
+       
+        expectdbname=""
+        def walhook(conn, dbname, pages):
+            self.assert_(conn is self.db)
+            self.assert_(pages>0)
+            self.assertEqual(dbname, expectdbname)
+            return apsw.SQLITE_OK
+
+        expectdbname="main"
+        self.db.setwalhook(walhook)
+        self.db.cursor().execute("create table three(x)")
+        self.db.cursor().execute("attach testdb2 as fred")
+        self.assertEqual("wal", self.db.cursor().execute("pragma fred.journal_mode=wal").fetchall()[0][0])
+        expectdbname="fred"
+        self.db.cursor().execute("create table fred.three(x)")
 
     def testAuthorizer(self):
         "Verify the authorizer works"
