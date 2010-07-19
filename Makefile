@@ -97,7 +97,7 @@ header:
 # the funky test stuff is to exit successfully when grep has rc==1 since that means no lines found.
 showsymbols:
 	rm -f apsw.so
-	python setup.py build_ext --inplace --force --enable-all-extensions
+	python setup.py fetch --all --version=$(SQLITEVERSION) build_ext --inplace --force --enable-all-extensions
 	test -f apsw.so
 	set +e; nm --extern-only --defined-only apsw.so | egrep -v ' (__bss_start|_edata|_end|_fini|_init|initapsw)$$' ; test $$? -eq 1 || false
 

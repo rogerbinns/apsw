@@ -314,10 +314,10 @@ class fetch(Command):
         proto=re.compile(r"^(\w+\s+sqlite3async_(initialize|shutdown|control|run)\()")
         o=open(n, "wt")
         try:
-            for line in fixupcode(code):
+            for line in fixupcode(code).split("\n"):
                 line=afs.sub(r"static \1", line)
                 line=proto.sub(r"SQLITE3ASYNC_API \1", line)
-                o.write(line)
+                o.write(line+"\n")
             o.close()
         except:
             o.close()
