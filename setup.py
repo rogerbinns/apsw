@@ -101,13 +101,16 @@ def fixupcode(code):
     if sys.version_info<(2,5):
         if type(code)!=str:
             code=code.read()
-        return [l+"\n" for l in code.split("\n")]
+
     if sys.version_info>=(3,0):
         if type(code)!=bytes:
             code=code.read()
         if type(code)==bytes:
             code=code.decode("iso8859-1")
+
+    if type(code)==str:
         return [l+"\n" for l in code.split("\n")]
+    
     return code
 
 fetch_parts=[]
@@ -314,10 +317,10 @@ class fetch(Command):
         proto=re.compile(r"^(\w+\s+sqlite3async_(initialize|shutdown|control|run)\()")
         o=open(n, "wt")
         try:
-            for line in fixupcode(code).split("\n"):
+            for line in fixupcode(code):
                 line=afs.sub(r"static \1", line)
                 line=proto.sub(r"SQLITE3ASYNC_API \1", line)
-                o.write(line+"\n")
+                o.write(line)
             o.close()
         except:
             o.close()
