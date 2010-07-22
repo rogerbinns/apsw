@@ -3402,7 +3402,7 @@ class APSW(unittest.TestCase):
 
         for filename in glob.glob("src/*.c"):
             # check not using C++ style comments
-            code=open(filename, "rtU").read().replace("http://", "http:__")
+            code=open(filename, "rU").read().replace("http://", "http:__")
             if "//" in code:
                 self.fail("// style comment in "+filename)
 
@@ -3413,7 +3413,7 @@ class APSW(unittest.TestCase):
             name2=None
             lines=[]
             infunc=0
-            for line in open(filename, "rtU"):
+            for line in open(filename, "rU"):
                 if line.startswith("}") and infunc:
                     if infunc==1:
                         self.sourceCheckMutexCall(filename, name1, lines)
@@ -4304,8 +4304,11 @@ class APSW(unittest.TestCase):
         TestVFS.xAccess=TestVFS.xAccess4
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xAccess=TestVFS.xAccess99
-        self.assertEqual(False, vfs.xAccess(u("<bad<filename:"), apsw.SQLITE_ACCESS_READWRITE))
-        self.assertEqual(True, vfs.xAccess(u("."), apsw.SQLITE_ACCESS_EXISTS))
+        if iswindows:
+            self.assertRaises(apsw.IOError, vfs.xAccess, u("<bad<filename:"), apsw.SQLITE_ACCESS_READWRITE)
+        else:    
+            self.assertEqual(False, vfs.xAccess(u("<bad<filename:"), apsw.SQLITE_ACCESS_READWRITE))
+            self.assertEqual(True, vfs.xAccess(u("."), apsw.SQLITE_ACCESS_EXISTS))
         # unix vfs doesn't ever return error so we have to indirect through one of ours
         errvfs=ErrorVFS()
         errvfs.xAccess=errvfs.errorme
@@ -4567,14 +4570,14 @@ class APSW(unittest.TestCase):
         if sys.version_info>=(2,4): # py2.3 has bug
             self.assertRaises(TypeError, t.xWrite, "three", "four")
         self.assertRaises(OverflowError, t.xWrite, "three", l("0xffffffffeeeeeeee0"))
-        self.assertRaises([apsw.IOError, apsw.FullError][iswindows], t.xWrite, b("foo"), -7)
+        self.assertRaises(apsw.IOError, t.xWrite, b("foo"), -7)
         self.assertRaises(TypeError, t.xWrite, u("foo"), 0)
         TestFile.xWrite=TestFile.xWrite1
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.xWrite=TestFile.xWrite2
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
         TestFile.xWrite=TestFile.xWrite3
-        self.assertRaises([apsw.IOError, apsw.FullError][iswindows], self.assertRaisesUnraisable, [apsw.IOError, apsw.FullError][iswindows], testdb)
+        self.assertRaises(apsw.IOError, self.assertRaisesUnraisable, apsw.IOError, testdb)
         TestFile.xWrite=TestFile.xWrite99
         testdb()
 
