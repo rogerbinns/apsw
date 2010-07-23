@@ -19,7 +19,7 @@ PPAUPLOAD=ppa:ubuntu-rogerbinns/apsw
 # test           - builds extension in place then runs test suite
 # doc            - makes the doc
 # source         - makes a source zip in dist directory after running code through test suite
-# dpkg-bin       - produces binary debian packages 
+# dpkg-bin       - produces binary debian packages for each DEBSERIES
 # dpkg           - produces debian source package for each DEBSERIES
 # ppa            - calls dpkg and then uploads to PPAUPLOAD
 
@@ -187,12 +187,17 @@ dpkg: clean doc debian/copyright debian/changelog
 	   cd ../.. ; \
 	done
 
-dpkg-bin: 
-	@if [ `echo $(DEBSERIES) | wc -w` -gt 1 ] ; then echo "Only use one series, eg:  make DEBSERIES=unstable dpkg-bin" ; echo "You had `echo $(DEBSERIES) | wc -w` - $(DEBSERIES)" ; exit 1 ; fi
-	$(MAKE) dpkg
-	cd debian-build ; sudo pbuilder build *.dsc
 
-# $ && sudo pbuilder build ../*.dsc
+# This idiotic tool won't understand giving --distribution to --build
+# and just do the right thing (ie getting that distro etc) so we have
+# to keep remaking them
+dpkg-bin: dpkg
+	cd debian-build ; \
+	for series in $(DEBSERIES) ; do \
+	  sudo pbuilder create --distribution $${series} ; \
+	  sudo pbuilder build --distribution $${series} *~$${series}1.dsc ; \
+	done
+# Look in /var/cache/pbuilder/result/ to find the output .deb files
 
 ppa: dpkg
 	cd debian-build ; for f in *_source.changes ; do dput $(PPAUPLOAD) $$f ; done
