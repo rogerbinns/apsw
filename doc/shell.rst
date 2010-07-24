@@ -130,8 +130,8 @@ Example
 =======
 
 All examples of using the SQLite shell should work as is, plus you get
-extra features and functionality like command line completion and
-better dumps.
+extra features and functionality like colour, command line completion
+and better dumps.
 
 You can also use the shell programmatically (or even interactively and
 programmatically at the same time).  See the :ref:`example
@@ -186,6 +186,11 @@ help command.  Output modes work in a similar way.  For example there
 is an output_html method and again doc strings are used by the help
 function and you add more by just implementing an appropriately named
 method.
+
+Note that in addition to extending the shell, you can also use the
+**.read** command supplying a filename with a **.py** extension.  You
+can then `monkey patch <http://en.wikipedia.org/wiki/Monkey_patch>`__
+the shell as needed.
 
 .. autoclass:: apsw.Shell
      :members:
