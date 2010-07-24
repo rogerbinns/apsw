@@ -192,6 +192,7 @@ dpkg: clean doc debian/copyright debian/changelog
 # and just do the right thing (ie getting that distro etc) so we have
 # to keep remaking them
 dpkg-bin: dpkg
+	set -ex ; \
 	cd debian-build ; \
 	for series in $(DEBSERIES) ; do \
 	  sudo pbuilder create --distribution $${series} ; \
