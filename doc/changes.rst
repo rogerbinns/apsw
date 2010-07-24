@@ -8,7 +8,8 @@ Change History
 Added several new constants.
 
 `Write Ahead Logging <http://www.sqlite.org/wal.html>`__ is
-:ref:`supported <wal>`.
+:ref:`supported <wal>`.  You can make all databases use WAL mode if
+available by using :re:`connection hooks <wal>`.
 
 Added :meth:`format_sql_value` for generating a SQL syntax string from
 a value.  This is implemented in C and is significantly faster than
@@ -39,11 +40,11 @@ previous error message or a crash.  Thanks to Jose Gomes for finding
 the problem.  (`Issue 103
 <http://code.google.com/p/apsw/issues/detail?id=103>`__).
 
-There is now PPA for Ubuntu users that is kept up to date with APSW
+There is now a PPA for Ubuntu users that is kept up to date with APSW
 and SQLite at https://launchpad.net/~ubuntu-rogerbinns/+archive/apsw
-which has SQLite embedded statically inside (ie system SQLite is
-ignored) and has all the extensions enabled: FTS3, RTree, ICU,
-asyncvfs
+which has the latest SQLite embedded statically inside (ie system
+SQLite is ignored) and has all the extensions enabled: FTS3, RTree,
+ICU, asyncvfs
 
 If you open VFS files directly then the filename is always run through
 xFullPathname first.  SQLite guarantees this behaviour but the
