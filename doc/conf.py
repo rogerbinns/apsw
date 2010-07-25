@@ -201,7 +201,7 @@ def skip_Shell_members(app, what, name, obj, skip, options):
 def setup(app):
     app.connect('autodoc-skip-member', skip_Shell_members)
 
-nitpicky = True
+#nitpicky = True
 
 
 pygments_style = 'emacs'

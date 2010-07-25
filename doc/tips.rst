@@ -190,8 +190,8 @@ can also turn it on for all opened databases by using
 
   def setwal(db):
       db.cursor().execute("pragma journal_mode=wal")
-      # auto checkpoint interval (use zero to disable)
-      db.wal_autocheckpoint(1000)
+      # custom auto checkpoint interval (use zero to disable)
+      db.wal_autocheckpoint(10)
 
   apsw.connection_hooks.append(setwal)
 

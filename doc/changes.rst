@@ -8,8 +8,8 @@ Change History
 Added several new constants.
 
 `Write Ahead Logging <http://www.sqlite.org/wal.html>`__ is
-:ref:`supported <wal>`.  You can make all databases use WAL mode if
-available by using :re:`connection hooks <wal>`.
+:ref:`supported <wal>`.  You can make all databases automatically use
+WAL mode if available by using :ref:`connection hooks <wal>`.
 
 Added :meth:`format_sql_value` for generating a SQL syntax string from
 a value.  This is implemented in C and is significantly faster than
