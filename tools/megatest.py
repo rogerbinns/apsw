@@ -36,7 +36,7 @@ def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever):
     couchenv=""
     if couchp(pyver):
         couchenv="\"APSW_COUCHDB="+couchdb+'"'
-    run("cd %s ; env %s LD_LIBRARY_PATH=%s %s setup.py fetch --version=%s --all build_test_extension build_ext --inplace --force --enable-all-extensions test -v >%s 2>&1" % (workdir, couchenv, pylib, pybin, sqlitever, os.path.abspath(os.path.join(logdir, "buildruntests.txt"))))
+    run("set -e ; cd %s ; ( env %s LD_LIBRARY_PATH=%s %s setup.py fetch --version=%s --all build_test_extension build_ext --inplace --force --enable-all-extensions test -v ; env LD_LIBRARY_PATH=%s %s tools/apswtrace.py tests.py ) >%s 2>&1" % (workdir, couchenv, pylib, pybin, sqlitever, pylib, pybin, os.path.abspath(os.path.join(logdir, "buildruntests.txt"))))
 
 def runtest(workdir, pyver, ucs, sqlitever, logdir):
     pybin, pylib=buildpython(workdir, pyver, ucs, os.path.abspath(os.path.join(logdir, "pybuild.txt")))
@@ -123,7 +123,7 @@ def buildpython(workdir, pyver, ucs, logfilename):
     else:
         tarx="z"
     if pyver=="2.3.0": pyver="2.3"    
-    run("cd %s ; mkdir pyinst ; ( echo \"Getting %s\"; wget -q %s -O - | tar xf%s -  ) > %s 2>&1" % (workdir, url, url, tarx, logfilename))
+    run("set -e ; cd %s ; mkdir pyinst ; ( echo \"Getting %s\"; wget -q %s -O - | tar xf%s -  ) > %s 2>&1" % (workdir, url, url, tarx, logfilename))
     # See https://bugs.launchpad.net/ubuntu/+source/gcc-defaults/+bug/286334
     if pyver.startswith("2.3"):
         # https://bugs.launchpad.net/bugs/286334
@@ -134,14 +134,14 @@ def buildpython(workdir, pyver, ucs, logfilename):
         full="full" # 3.1 rc 1 doesn't need 'fullinstall'
     else:
         full=""
-    run("cd %s ; cd *ython-%s ; ./configure %s --disable-ipv6 --enable-unicode=ucs%d --prefix=%s/pyinst  >> %s 2>&1; make >>%s 2>&1; make  %sinstall >>%s 2>&1 ; make clean >/dev/null" % (workdir, pyver, opt, ucs, workdir, logfilename, logfilename, full, logfilename))
+    run("set -e ; cd %s ; cd *ython-%s ; ./configure %s --disable-ipv6 --enable-unicode=ucs%d --prefix=%s/pyinst  >> %s 2>&1; make >>%s 2>&1; make  %sinstall >>%s 2>&1 ; make clean >/dev/null" % (workdir, pyver, opt, ucs, workdir, logfilename, logfilename, full, logfilename))
     suf=""
     if pyver>="3.1":
         suf="3"
     pybin=os.path.join(workdir, "pyinst", "bin", "python"+suf)
     # couchdb
     if couchp(pyver):
-        run("(cd %s ; wget -q -O - '%s' | tar xfz - ; cd setuptools* ; %s setup.py install ; `dirname \"%s\"`/easy_install CouchDB ) >>%s 2>&1" % 
+        run("(set -e ; cd %s ; wget -q -O - '%s' | tar xfz - ; cd setuptools* ; %s setup.py install ; `dirname \"%s\"`/easy_install CouchDB ) >>%s 2>&1" % 
             (workdir, 'http://pypi.python.org/packages/source/s/setuptools/setuptools-0.6c11.tar.gz#md5=7df2a529a074f613b509fb44feefe74e',
              pybin, pybin, logfilename))
     return pybin, os.path.join(workdir, "pyinst", "lib")
@@ -188,6 +188,8 @@ if __name__=='__main__':
         nprocs=1
 
     concurrency=nprocs*2
+    if concurrency>8:
+        concurrency=8
 
     parser=optparse.OptionParser()
     parser.add_option("--pyvers", dest="pyvers", help="Which Python versions to test against [%default]", default=",".join(PYVERS))
