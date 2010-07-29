@@ -3047,12 +3047,14 @@ class APSW(unittest.TestCase):
         finally:
             blobro.close()
 
-    def testIssue98(self):
+    def testIssue98(self, runfrom106=None):
         "Issue 98: An error in context manager commit should do a rollback"
         self.db.cursor().execute("create table foo(x); insert into foo values(3); insert into foo values(4)")
         # We need the reader to block a writer, which requires non-WAL mode
         self.db.cursor().execute("pragma journal_mode=delete")
         db2=apsw.Connection("testdb")
+        if runfrom106:
+            db2.setexectrace(runfrom106)
         db2.cursor().execute("pragma journal_mode=delete")
         # deliberately don't read from cursor on connection 1 which will prevent a commit
         x=self.db.cursor().execute("select * from foo")
@@ -3067,6 +3069,7 @@ class APSW(unittest.TestCase):
         for row in db2.cursor().execute("select * from foo where x=5"):
             self.fail("Transaction was not rolled back")
         db2.close()
+        if runfrom106: return
         # Verify that error in tracer results in rollback
         self.db.__enter__()
         def h(*args): 1/0
@@ -3092,6 +3095,20 @@ class APSW(unittest.TestCase):
             1/0 # should not be reached
         except apsw.SQLError:
             assert "near \"delete\": syntax error" in str(sys.exc_info()[1])
+
+    def testIssue106(self):
+        "Issue 106: Profiling and tracing"
+        traces=[]
+        def tracer(cur, sql, bindings):
+            sql=sql.lower().split()[0]
+            if sql in ("savepoint", "release", "rollback"):
+                traces.append(sql)
+            return True
+        self.testIssue98(tracer)
+        self.assert_(len(traces)>=3)
+        self.assert_("savepoint" in traces)
+        self.assert_("release" in traces)
+        self.assert_("rollback" in traces)
 
     def testTicket2158(self):
         "Check we are not affected by SQLite ticket #2158"

@@ -3089,9 +3089,19 @@ static int connection_trace_and_exec(Connection *self, int release, int sp, int 
 
   if(self->exectrace && self->exectrace!=Py_None)
     {
-      PyObject *result=PyObject_CallFunction(self->exectrace, "OsO", self, sql, Py_None);
+      PyObject *result;
+      PyObject *etype=NULL, *eval=NULL, *etb=NULL;
+
+      if(PyErr_Occurred())
+	PyErr_Fetch(&etype, &eval, &etb);
+
+      result=PyObject_CallFunction(self->exectrace, "OsO", self, sql, Py_None);
       Py_XDECREF(result); 
-      if (!continue_on_trace_error)
+
+      if(etype || eval || etb)
+	PyErr_Restore(etype, eval, etb);
+
+      if (!result && !continue_on_trace_error)
 	{
 	  sqlite3_free(sql);
 	  return 0;
