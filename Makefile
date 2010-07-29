@@ -82,12 +82,7 @@ linkcheck:
 
 publish: docs
 	if [ -d ../apsw-publish ] ; then rm -f ../apsw-publish/* ../apsw-publish/_static/* ../apsw-publish/_sources/* ; \
-	rsync -av doc/build/html/ ../apsw-publish/ ;  cd ../apsw-publish ; set -x ; \
-	svn -q propset svn:mime-type text/html `find . -name \*.html` ; \
-	svn -q propset svn:mime-type text/javascript `find . -name \*.js` ; \
-	svn -q propset svn:mime-type "text/plain; charset=UTF-8" `find . -name \*.txt` ; \
-	svn -q propset svn:mime-type image/png `find . -name \*.png` ; \
-	svn -q propset svn:mime-type text/css `find . -name \*.css` ; \
+	rsync -a doc/build/html/ ../apsw-publish/ ;  cd ../apsw-publish ; hg status ; \
 	fi
 
 header:
