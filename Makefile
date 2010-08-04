@@ -1,5 +1,5 @@
 
-SQLITEVERSION=3.7.0
+SQLITEVERSION=3.7.0.1
 APSWSUFFIX=-r1
 
 VERSION=$(SQLITEVERSION)$(APSWSUFFIX)
@@ -195,8 +195,8 @@ dpkg-bin: dpkg
 	set -ex ; \
 	cd debian-build ; \
 	for series in $(DEBSERIES) ; do \
-	  sudo pbuilder create --distribution $${series} ; \
-	  sudo pbuilder build --distribution $${series} *~$${series}1.dsc ; \
+	  sudo pbuilder create --http-proxy "$(http_proxy)" --distribution $${series} ; \
+	  sudo pbuilder build --http-proxy "$(http_proxy)" --distribution $${series} *~$${series}1.dsc ; \
 	done
 # Look in /var/cache/pbuilder/result/ to find the output .deb files
 
