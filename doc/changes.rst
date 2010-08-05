@@ -2,6 +2,13 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.7.0.1-r1
+==========
+
+There are no APSW changes in this release.  SQLite has `potential
+database corruption and performance regression fixes
+<http://www.sqlite.org/releaselog/3_7_0_1.html>`__.
+
 3.7.0-r1
 ========
 
