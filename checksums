@@ -11,6 +11,9 @@
 # more peace of mind because the SQLite releases are not signed in any
 # way.
 
+http://www.sqlite.org/sqlite-amalgamation-3_7_0_1.zip    1191171 958a0f05adb176c8cfc3393413e728f179b52f4a fabb20c50d37629b31fc3e8b799e7b5d
+http://www.sqlite.org/sqlite-amalgamation-3.7.0.1.tar.gz 1486971 c04f18527dec58188f8de43ff83a6cd03b73b0e9 24b589eb1522b4d9a179a621d0729dfa
+http://www.sqlite.org/sqlite-3.7.0.1.tar.gz 3266205 7591d19da31609c24f626fb933007ba4489e92e7 d25d7551ba6bb310362cb0e7d4906f25
 http://www.sqlite.org/sqlite-amalgamation-3_7_0.zip    1190929 926bce69b4b8eb494e928c25e1964221ee1df092 ddba6d863674f24b6ac35b506ab690ca
 http://www.sqlite.org/sqlite-amalgamation-3.7.0.tar.gz 1486712 5ed43977c5682908ae05eb27841e4191635a4a96 61b85f108760f91b79afc7833e6e6cb4
 http://www.sqlite.org/sqlite-3.7.0.tar.gz 3263369 7ad917b1732d53526db876cada21704baa0a9e6e 78e94ee3b0d501c4b8ceb5964a32eba3
