@@ -2051,7 +2051,19 @@ Enter SQL statements terminated with a ";"
             # ensure text is unicode to catch codeset issues here
             if type(text)!=unicode:
                 text=unicode(text)
-            dest.write(text)
+            try:
+                dest.write(text)
+            except UnicodeEncodeError:
+                ev=sys.exc_info()[1]
+                # See issue108 and try to work around it
+                if ev.args[0]=="ascii" and dest.encoding and ev.args[0]!=dest.encoding and hasattr(dest, "fileno") and \
+                   isinstance(dest.fileno(), int) and dest.fileno()>=0:
+                    args=[dest.encoding,]
+                    if dest.errors:
+                        args.append(dest.errors)
+                    dest.write(text.encode(*args))
+                else:
+                    raise
 
         _raw_input=raw_input
     else:
