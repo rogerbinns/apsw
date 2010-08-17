@@ -2,6 +2,11 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.7.1-r1
+========
+
+Fixed Unicode output with some file objects from the shell (`Issue 108 <http://code.google.com/p/apsw/issues/detail?id=108>`__).
+
 3.7.0.1-r1
 ==========
 
