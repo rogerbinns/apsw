@@ -170,6 +170,17 @@ affect existing open files and console.  When other programs offer you
 a choice for encoding the best value to pick is UTF8 as it allows full
 representation of Unicode.
 
+In addition to specifying the encoding, you can also specify the error
+handling when a character needs to be output but is not present in the
+encoding.  The default is 'strict' which results in an error.
+'replace' will replace the character with '?' or something similar
+while 'xmlcharrefreplace' uses xml entities.  To specify the error
+handling add a colon and error after the encoding - eg::
+
+   .encoding iso-8859-1:replace
+
+The same method is used when setting PYTHONIOENCODING.
+
 This `Joel on Software article
 <http://www.joelonsoftware.com/articles/Unicode.html>`__ contains an
 excellent overview of character sets, code pages and Unicode.

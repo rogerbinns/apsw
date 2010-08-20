@@ -5379,7 +5379,10 @@ class APSW(unittest.TestCase):
             # We need the eval because shell processes backslashes in
             # string.  After deliberating that is the right thing to
             # do
-            self.assertEqual(val, getattr(s,v))
+            if v=="encoding":
+                self.assertEqual((val,None), getattr(s,v))
+            else:
+                self.assertEqual(val, getattr(s,v))
             isempty(fh[1])
             isempty(fh[2])
             self.assertRaises(shellclass.Error, shellclass, args=["-"+v, val, "--"+v], **kwargs)
@@ -6158,6 +6161,29 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[2])
         self.assertTrue(us in get(fh[1]))
+
+        ### encoding specifying error handling - see issue 108
+        reset()
+        cmd(".encoding utf8:replace")
+        s.cmdloop()
+        isempty(fh[1])
+        isempty(fh[2])
+        # non-existent error
+        reset()
+        cmd(".encoding cp437:blahblah")
+        s.cmdloop()
+        isempty(fh[1])
+        isnotempty(fh[2])
+        self.assertTrue("blahblah" in get(fh[2]))
+        # check replace works
+        reset()
+        us=u(r"\N{BLACK STAR}8\N{WHITE STAR}")
+        codecs.open("test-shell-1", "w", "utf8").write("insert into enctest values('%s');" % (us,) )
+        cmd(".encoding utf8\n.read test-shell-1\n.encoding cp437:replace\n.output test-shell-1\nselect * from enctest;\n.encoding utf8\n.output stdout")
+        s.cmdloop()
+        isempty(fh[2])
+        isempty(fh[1])
+        self.assertTrue("?8?"  in codecs.open("test-shell-1", "r", "cp437").read())
 
         ###
         ### Command - exceptions

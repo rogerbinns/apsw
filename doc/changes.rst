@@ -5,7 +5,14 @@ Change History
 3.7.1-r1
 ========
 
-Fixed Unicode output with some file objects from the shell (`Issue 108 <http://code.google.com/p/apsw/issues/detail?id=108>`__).
+Fixed Unicode output with some file objects from the shell (`Issue 108
+<http://code.google.com/p/apsw/issues/detail?id=108>`__).
+
+With the shell, you can specify handling of characters not present in
+the output encoding (eg replace to use '?' or similar, ignore,
+xmlcharrefreplace etc).  For example::
+
+    .encoding cp437:replace
 
 3.7.0.1-r1
 ==========

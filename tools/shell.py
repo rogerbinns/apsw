@@ -117,7 +117,7 @@ class Shell(object):
         self._output_stack=[]
 
         # other stuff
-        self.encoding=encoding
+        self.set_encoding(encoding)
         if stdin is None: stdin=sys.stdin
         if stdout is None: stdout=sys.stdout
         if stderr is None: stderr=sys.stderr
@@ -1225,6 +1225,31 @@ Enter SQL statements terminated with a ";"
         """
         self.echo=self._boolean_command("echo", cmd)
 
+    def set_encoding(self, enc):
+        """Saves *enc* as the default encoding, after verifying that
+        it is valid.  You can also include :error to specify error
+        handling - eg 'cp437:replace'
+
+        Raises an exception on invalid encoding or error
+        """
+        enc=enc.rsplit(":", 1)
+        if len(enc)>1:
+            enc, errors=enc
+        else:
+            enc=enc[0]
+            errors=None
+        try:
+            codecs.lookup(enc)
+        except LookupError:
+            raise self.Error("No known encoding '%s'" % (enc,))
+        try:
+            if errors is not None:
+                codecs.lookup_error(errors)
+        except LookupError:
+            raise self.Error("No known codec error handler '%s'" % (errors,))
+        self.encoding=enc, errors
+
+
     def command_encoding(self, cmd):
         """encoding ENCODING: Set the encoding used for new files opened via .output and imports
 
@@ -1248,12 +1273,7 @@ Enter SQL statements terminated with a ";"
         """
         if len(cmd)!=1:
             raise self.Error("Encoding takes one argument")
-
-        try:
-            codecs.lookup(cmd[0])
-        except LookupError:
-            raise self.Error("No known encoding '%s'" % (cmd[0],))
-        self.encoding=cmd[0]
+        self.set_encoding(cmd[0])
 
     def command_exceptions(self, cmd):
         """exceptions ON|OFF: If ON then detailed tracebacks are shown on exceptions (default OFF)
@@ -1474,16 +1494,16 @@ Enter SQL statements terminated with a ";"
                 ### csv module is not good at unicode so we have to
                 ### indirect unless utf8 is in use
                 ###
-                if self.encoding.lower()=="utf8": # no need for tempfile
+                if self.encoding[0].lower()=="utf8": # no need for tempfile
                     thefile=open(cmd[0], "rb")
                 else:
                     import tempfile
                     thefile=tempfile.TemporaryFile(prefix="apsw_import")
-                    thefile.write(codecs.open(cmd[0], "r", self.encoding).read().encode("utf8"))
+                    thefile.write(codecs.open(cmd[0], "r", self.encoding[0]).read().encode("utf8"))
                     # move back to begining
                     thefile.seek(0,0)
             else:
-                thefile=codecs.open(cmd[0], "r", self.encoding)
+                thefile=codecs.open(cmd[0], "r", self.encoding[0])
 
             # see output_csv for the thinking behind these
             if sys.version_info<(3,0):
@@ -1665,7 +1685,7 @@ Enter SQL statements terminated with a ";"
                     old.close()
                 return
 
-            newf=codecs.open(fname, "w", self.encoding)
+            newf=codecs.open(fname, "w", self.encoding[0], self.encoding[1])
             old=None
             if self.stdout!=self._original_stdout:
                 old=self.stdout
@@ -1715,7 +1735,7 @@ Enter SQL statements terminated with a ";"
                 # compile step is needed to associate name with code
                 exec(compile(open(cmd[0]).read(), cmd[0], 'exec'), g, g)
         else:
-            f=codecs.open(cmd[0], "rU", self.encoding)
+            f=codecs.open(cmd[0], "rU", self.encoding[0])
             try:
                 try:
                     self.push_input()
@@ -2096,8 +2116,8 @@ Enter SQL statements terminated with a ";"
             self.input_line_number+=1
             if sys.version_info<(3,0):
                 if type(line)!=unicode:
-                    enc=getattr(self.stdin, "encoding", self.encoding)
-                    if not enc: enc=self.encoding
+                    enc=getattr(self.stdin, "encoding", self.encoding[0])
+                    if not enc: enc=self.encoding[0]
                     line=line.decode(enc)
         except EOFError:
             return None
