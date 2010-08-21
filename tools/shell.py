@@ -1232,7 +1232,7 @@ Enter SQL statements terminated with a ";"
 
         Raises an exception on invalid encoding or error
         """
-        enc=enc.rsplit(":", 1)
+        enc=enc.split(":", 1)
         if len(enc)>1:
             enc, errors=enc
         else:
