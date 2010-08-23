@@ -36,7 +36,7 @@ def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever):
     couchenv=""
     if couchp(pyver):
         couchenv="\"APSW_COUCHDB="+couchdb+'"'
-    run("set -e ; cd %s ; ( env %s LD_LIBRARY_PATH=%s %s setup.py fetch --version=%s --all build_test_extension build_ext --inplace --force --enable-all-extensions test -v ; env LD_LIBRARY_PATH=%s %s tools/apswtrace.py tests.py ) >%s 2>&1" % (workdir, couchenv, pylib, pybin, sqlitever, pylib, pybin, os.path.abspath(os.path.join(logdir, "buildruntests.txt"))))
+    run("set -e ; cd %s ; ( env %s LD_LIBRARY_PATH=%s %s setup.py fetch --version=%s --all build_test_extension build_ext --inplace --force --enable-all-extensions test -v ) >%s 2>&1" % (workdir, couchenv, pylib, pybin, sqlitever, os.path.abspath(os.path.join(logdir, "buildruntests.txt"))))
 
 def runtest(workdir, pyver, ucs, sqlitever, logdir):
     pybin, pylib=buildpython(workdir, pyver, ucs, os.path.abspath(os.path.join(logdir, "pybuild.txt")))
