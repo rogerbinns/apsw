@@ -2620,11 +2620,12 @@ Connection_createcollation(Connection *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
-/** .. method:: filecontrol(op, pointer)
+/** .. method:: filecontrol(dbname, op, pointer)
 
   Calls the :meth:`~VFSFile.xFileControl` method on the :ref:`VFS`
   implementing :class:`file access <VFSFile>` for the database.
 
+  :param dbname: The name of the database to affect (eg "main", "temp", attached name)
   :param op: A `numeric code
     <http://sqlite.org/c3ref/c_fcntl_lockstate.html>`_ with values less
     than 100 reserved for SQLite internal use.
@@ -2641,6 +2642,7 @@ Connection_createcollation(Connection *self, PyObject *args)
     objwrap=ctypes.py_object(obj)        # objwrap must live before and after the call else
                                          # it gets garbage collected
     connection.filecontrol(
+             "main",                     # which db
              123,                        # our op code
              ctypes.addressof(objwrap))  # get pointer
 
@@ -2661,7 +2663,7 @@ Connection_createcollation(Connection *self, PyObject *args)
   before the filecontrol call is made::
 
      chunksize=ctypes.c_int(32768)
-     connection.filecontrol(apsw.SQLITE_FCNTL_CHUNK_SIZE, ctypes.addressof(chunksize))
+     connection.filecontrol("main", apsw.SQLITE_FCNTL_CHUNK_SIZE, ctypes.addressof(chunksize))
 
   -* sqlite3_file_control
 */
