@@ -2656,6 +2656,13 @@ Connection_createcollation(Connection *self, PyObject *args)
             # pass to parent/superclass
             super(MyFile, self).xFileControl(op, pointer)
 
+  This is how you set the chunk size by which the database grows.  Do
+  not combine it into one line as the c_int would be garbage collected
+  before the filecontrol call is made::
+
+     chunksize=ctypes.c_int(32768)
+     connection.filecontrol(apsw.SQLITE_FCNTL_CHUNK_SIZE, ctypes.addressof(chunksize))
+
   -* sqlite3_file_control
 */
 

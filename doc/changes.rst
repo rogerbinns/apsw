@@ -5,6 +5,10 @@ Change History
 3.7.1-r1
 ========
 
+Updated various constants including `SQLITE_FCNTL_CHUNK_SIZE
+<http://sqlite.org/c3ref/c_fcntl_chunk_size.html>`__ used with
+:meth:`Connection.filecontrol`.
+
 Fixed Unicode output with some file objects from the shell (`Issue 108
 <http://code.google.com/p/apsw/issues/detail?id=108>`__).
 

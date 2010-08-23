@@ -18,40 +18,40 @@ way to build or all the :ref:`options available <building>`.
 
 .. downloads-begin
 
-* `apsw-3.7.0.1-r1.zip
-  <http://apsw.googlecode.com/files/apsw-3.7.0.1-r1.zip>`_
+* `apsw-3.7.1-r1.zip
+  <http://apsw.googlecode.com/files/apsw-3.7.1-r1.zip>`_
   (Source, includes this HTML Help)
 
-* `apsw-3.7.0.1-r1.chm
-  <http://apsw.googlecode.com/files/apsw-3.7.0.1-r1.chm>`_
+* `apsw-3.7.1-r1.chm
+  <http://apsw.googlecode.com/files/apsw-3.7.1-r1.chm>`_
   (Compiled HTML Help) `Seeing blank content? <http://weblog.helpware.net/?p=36>`_ & `MSKB 902225 <http://support.microsoft.com/kb/902225/>`_
 
-* `apsw-3.7.0.1-r1.win32-py2.3.exe
-  <http://apsw.googlecode.com/files/apsw-3.7.0.1-r1.win32-py2.3.exe>`_
+* `apsw-3.7.1-r1.win32-py2.3.exe
+  <http://apsw.googlecode.com/files/apsw-3.7.1-r1.win32-py2.3.exe>`_
   (Windows Python 2.3)
 
-* `apsw-3.7.0.1-r1.win32-py2.4.exe
-  <http://apsw.googlecode.com/files/apsw-3.7.0.1-r1.win32-py2.4.exe>`_
+* `apsw-3.7.1-r1.win32-py2.4.exe
+  <http://apsw.googlecode.com/files/apsw-3.7.1-r1.win32-py2.4.exe>`_
   (Windows Python 2.4)
 
-* `apsw-3.7.0.1-r1.win32-py2.5.exe
-  <http://apsw.googlecode.com/files/apsw-3.7.0.1-r1.win32-py2.5.exe>`_
+* `apsw-3.7.1-r1.win32-py2.5.exe
+  <http://apsw.googlecode.com/files/apsw-3.7.1-r1.win32-py2.5.exe>`_
   (Windows Python 2.5)
 
-* `apsw-3.7.0.1-r1.win32-py2.6.exe
-  <http://apsw.googlecode.com/files/apsw-3.7.0.1-r1.win32-py2.6.exe>`_
+* `apsw-3.7.1-r1.win32-py2.6.exe
+  <http://apsw.googlecode.com/files/apsw-3.7.1-r1.win32-py2.6.exe>`_
   (Windows Python 2.6)
 
-* `apsw-3.7.0.1-r1.win32-py2.7.exe
-  <http://apsw.googlecode.com/files/apsw-3.7.0.1-r1.win32-py2.7.exe>`_
+* `apsw-3.7.1-r1.win32-py2.7.exe
+  <http://apsw.googlecode.com/files/apsw-3.7.1-r1.win32-py2.7.exe>`_
   (Windows Python 2.7)
 
-* `apsw-3.7.0.1-r1.win32-py3.1.exe
-  <http://apsw.googlecode.com/files/apsw-3.7.0.1-r1.win32-py3.1.exe>`_
+* `apsw-3.7.1-r1.win32-py3.1.exe
+  <http://apsw.googlecode.com/files/apsw-3.7.1-r1.win32-py3.1.exe>`_
   (Windows Python 3.1)
 
-* `apsw-3.7.0.1-r1-sigs.zip 
-  <http://apsw.googlecode.com/files/apsw-3.7.0.1-r1-sigs.zip>`_
+* `apsw-3.7.1-r1-sigs.zip 
+  <http://apsw.googlecode.com/files/apsw-3.7.1-r1-sigs.zip>`_
   GPG signatures for all files
 
 .. downloads-end
@@ -96,7 +96,7 @@ Verify
   To verify a file just use --verify specifying the corresponding
   ``.asc`` filename.  This example verifies the source::
 
-      $ gpg --verify apsw-3.7.0.1-r1.zip.asc
+      $ gpg --verify apsw-3.7.1-r1.zip.asc
       gpg: Signature made ... date ... using DSA key ID 0DFBD904
       gpg: Good signature from "Roger Binns <rogerb@rogerbinns.com>"
 
