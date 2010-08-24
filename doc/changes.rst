@@ -2,6 +2,12 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.7.2-r1
+========
+
+No changes to APSW.  Upgrading to this version of SQLite is
+`recommended <http://www.sqlite.org/releaselog/3_7_2.html>`__.
+
 3.7.1-r1
 ========
 

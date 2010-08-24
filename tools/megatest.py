@@ -160,7 +160,7 @@ PYVERS=(
     )
 
 SQLITEVERS=(
-    '3.7.1',
+    '3.7.2',
    )
 
 def couchp(pyver):
