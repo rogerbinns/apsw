@@ -264,11 +264,9 @@ APSWBlob_dealloc(APSWBlob *self)
 
 /* If the blob is closed, we return the same error as normal python files */
 #define CHECK_BLOB_CLOSED \
-  if(!self->pBlob) \
-    { \
-      PyErr_Format(PyExc_ValueError, "I/O operation on closed blob"); \
-      return NULL; \
-    }
+  do { if(!self->pBlob)							\
+    return PyErr_Format(PyExc_ValueError, "I/O operation on closed blob"); \
+  } while(0)
 
 /** .. method:: length() -> int
 
@@ -415,10 +413,7 @@ APSWBlob_readinto(APSWBlob *self, PyObject *args)
   bloblen=sqlite3_blob_bytes(self->pBlob);
 
   if(offset<0 || offset>bloblen)
-    {
-      PyErr_Format(PyExc_ValueError, "offset is less than zero or beyond end of buffer");
-      return NULL;
-    }
+    return PyErr_Format(PyExc_ValueError, "offset is less than zero or beyond end of buffer");
 
   if(PyTuple_GET_SIZE(args)<3)
     lengthwanted=bufsize-offset;
@@ -470,8 +465,7 @@ APSWBlob_seek(APSWBlob *self, PyObject *args)
   switch(whence)
     {
     default:
-      PyErr_Format(PyExc_ValueError, "whence parameter should be 0, 1 or 2");
-      return NULL;
+      return PyErr_Format(PyExc_ValueError, "whence parameter should be 0, 1 or 2");
     case 0: /* relative to begining of file */
       if(offset<0 || offset>sqlite3_blob_bytes(self->pBlob))
         goto out_of_range;
@@ -490,8 +484,7 @@ APSWBlob_seek(APSWBlob *self, PyObject *args)
     }
   Py_RETURN_NONE;
  out_of_range:
-  PyErr_Format(PyExc_ValueError, "The resulting offset would be less than zero or past the end of the blob");
-  return NULL;
+  return PyErr_Format(PyExc_ValueError, "The resulting offset would be less than zero or past the end of the blob");
 }
 
 /** .. method:: tell() -> int
@@ -542,21 +535,13 @@ APSWBlob_write(APSWBlob *self, PyObject *obj)
         return NULL;
     }
   else
-    {
-      PyErr_Format(PyExc_TypeError, "Parameter should be bytes/string or buffer");
-      return NULL;
-    }
+    return PyErr_Format(PyExc_TypeError, "Parameter should be bytes/string or buffer");
 
   if( ((int)(size+self->curoffset))<self->curoffset)
-    {
-      PyErr_Format(PyExc_ValueError, "Data is too large (integer wrap)");
-      return NULL;
-    }
+    return PyErr_Format(PyExc_ValueError, "Data is too large (integer wrap)");
+
   if( ((int)(size+self->curoffset))>sqlite3_blob_bytes(self->pBlob))
-    {
-      PyErr_Format(PyExc_ValueError, "Data would go beyond end of blob");
-      return NULL;
-    }
+    return PyErr_Format(PyExc_ValueError, "Data would go beyond end of blob");
 
   PYSQLITE_BLOB_CALL(res=sqlite3_blob_write(self->pBlob, buffer, size, self->curoffset));
 

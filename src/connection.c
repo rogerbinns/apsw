@@ -933,10 +933,7 @@ Connection_setupdatehook(Connection *self, PyObject *callable)
     }
 
   if(!PyCallable_Check(callable))
-    {
-      PyErr_Format(PyExc_TypeError, "update hook must be callable");
-      return NULL;
-    }
+    return PyErr_Format(PyExc_TypeError, "update hook must be callable");
 
   PYSQLITE_VOID_CALL(sqlite3_update_hook(self->db, updatecb, self));
 
@@ -1003,10 +1000,7 @@ Connection_setrollbackhook(Connection *self, PyObject *callable)
     }
 
   if(!PyCallable_Check(callable))
-    {
-      PyErr_Format(PyExc_TypeError, "rollback hook must be callable");
-      return NULL;
-    }
+    return PyErr_Format(PyExc_TypeError, "rollback hook must be callable");
 
   PYSQLITE_VOID_CALL(sqlite3_rollback_hook(self->db, rollbackhookcb, self));
 
@@ -1075,10 +1069,7 @@ Connection_setprofile(Connection *self, PyObject *callable)
     }
 
   if(!PyCallable_Check(callable))
-    {
-      PyErr_Format(PyExc_TypeError, "profile function must be callable");
-      return NULL;
-    }
+    return PyErr_Format(PyExc_TypeError, "profile function must be callable");
 
   PYSQLITE_VOID_CALL(sqlite3_profile(self->db, profilecb, self));
 
@@ -1165,10 +1156,7 @@ Connection_setcommithook(Connection *self, PyObject *callable)
     }
 
   if(!PyCallable_Check(callable))
-    {
-      PyErr_Format(PyExc_TypeError, "commit hook must be callable");
-      return NULL;
-    }
+    return PyErr_Format(PyExc_TypeError, "commit hook must be callable");
 
   PYSQLITE_VOID_CALL(sqlite3_commit_hook(self->db, commithookcb, self));
 
@@ -1255,10 +1243,7 @@ Connection_setwalhook(Connection *self, PyObject *callable)
     }
   
   if(!PyCallable_Check(callable))
-  {
-      PyErr_Format(PyExc_TypeError, "wal hook must be callable");
-      return NULL;
-    }
+    return PyErr_Format(PyExc_TypeError, "wal hook must be callable");
 
   PYSQLITE_VOID_CALL(sqlite3_wal_hook(self->db, walhookcb, self));
 
@@ -1344,10 +1329,7 @@ Connection_setprogresshandler(Connection *self, PyObject *args)
     }
 
   if(!PyCallable_Check(callable))
-    {
-      PyErr_Format(PyExc_TypeError, "progress handler must be callable");
-      return NULL;
-    }
+    return PyErr_Format(PyExc_TypeError, "progress handler must be callable");
 
   PYSQLITE_VOID_CALL(sqlite3_progress_handler(self->db, nsteps, progresshandlercb, self));
   Py_INCREF(callable);
@@ -1465,10 +1447,7 @@ Connection_setauthorizer(Connection *self, PyObject *callable)
     }
 
   if(!PyCallable_Check(callable))
-    {
-      PyErr_Format(PyExc_TypeError, "authorizer must be callable");
-      return NULL;
-    }
+    return PyErr_Format(PyExc_TypeError, "authorizer must be callable");
 
   APSW_FAULT_INJECT(SetAuthorizerFail,
                     PYSQLITE_CON_CALL(res=sqlite3_set_authorizer(self->db, authorizercb, self)),
@@ -1556,10 +1535,7 @@ Connection_collationneeded(Connection *self, PyObject *callable)
     }
 
   if(!PyCallable_Check(callable))
-    {
-      PyErr_Format(PyExc_TypeError, "collationneeded callback must be callable");
-      return NULL;
-    }
+    return PyErr_Format(PyExc_TypeError, "collationneeded callback must be callable");
 
   APSW_FAULT_INJECT(CollationNeededFail,
                     PYSQLITE_CON_CALL(res=sqlite3_collation_needed(self->db, self, collationneeded_cb)), 
@@ -1659,10 +1635,7 @@ Connection_setbusyhandler(Connection *self, PyObject *callable)
     }
 
   if(!PyCallable_Check(callable))
-    {
-      PyErr_Format(PyExc_TypeError, "busyhandler must be callable");
-      return NULL;
-    }
+    return PyErr_Format(PyExc_TypeError, "busyhandler must be callable");
 
   APSW_FAULT_INJECT(SetBusyHandlerFail,
                     PYSQLITE_CON_CALL(res=sqlite3_busy_handler(self->db, busyhandlercb, self)),

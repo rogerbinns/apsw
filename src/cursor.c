@@ -365,10 +365,7 @@ APSWCursor_getdescription(APSWCursor *self)
   CHECK_CURSOR_CLOSED(NULL);
 
   if(!self->statement)
-    {
-      PyErr_Format(ExcComplete, "Can't get description for statements that have completed execution");
-      return NULL;
-    }
+    return PyErr_Format(ExcComplete, "Can't get description for statements that have completed execution");
   
   ncols=sqlite3_column_count(self->statement->vdbestatement);
   result=PyTuple_New(ncols);
@@ -942,10 +939,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
   assert(PyTuple_Check(args));
 
   if(PyTuple_GET_SIZE(args)<1 || PyTuple_GET_SIZE(args)>2)
-    {
-      PyErr_Format(PyExc_TypeError, "Incorrect number of arguments.  execute(statements [,bindings])");
-      return NULL;
-    }
+    return PyErr_Format(PyExc_TypeError, "Incorrect number of arguments.  execute(statements [,bindings])");
 
   query=PyTuple_GET_ITEM(args, 0);
   if (PyTuple_GET_SIZE(args)==2)
@@ -1058,10 +1052,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
 
   self->emiter=PyObject_GetIter(theiterable);
   if (!self->emiter)
-    {
-      PyErr_Format(PyExc_TypeError, "2nd parameter must be iterable");
-      return NULL;
-    }
+    return PyErr_Format(PyExc_TypeError, "2nd parameter must be iterable");
 
   next=PyIter_Next(self->emiter);
   if(!next && PyErr_Occurred())

@@ -310,10 +310,8 @@ config(APSW_ARGUNUSED PyObject *self, PyObject *args)
   long opt;
 
   if(PyTuple_GET_SIZE(args)<1 || !PyIntLong_Check(PyTuple_GET_ITEM(args, 0)))
-    {
-      PyErr_Format(PyExc_TypeError, "There should be at least one argument with the first being a number");
-      return NULL;
-    }
+    return PyErr_Format(PyExc_TypeError, "There should be at least one argument with the first being a number");
+
   opt=PyIntLong_AsLong(PyTuple_GET_ITEM(args,0));
   if(PyErr_Occurred())
     return NULL;
@@ -352,8 +350,7 @@ config(APSW_ARGUNUSED PyObject *self, PyObject *args)
 	  }
 	else if(!PyCallable_Check(logger))
 	  {
-	    PyErr_Format(PyExc_TypeError, "Logger should be None or a callable");
-	    return NULL;
+	    return PyErr_Format(PyExc_TypeError, "Logger should be None or a callable");
 	  }
 	else
 	  {
@@ -369,8 +366,7 @@ config(APSW_ARGUNUSED PyObject *self, PyObject *args)
       }
 
     default:
-      PyErr_Format(PyExc_TypeError, "Unknown config type %d", (int)opt);
-      return NULL;
+      return PyErr_Format(PyExc_TypeError, "Unknown config type %d", (int)opt);
     }
 
   SET_EXC(res, NULL);
@@ -458,10 +454,7 @@ randomness(APSW_ARGUNUSED PyObject *self, PyObject *args)
   if(!PyArg_ParseTuple(args, "i", &amount))
     return NULL;
   if(amount<0)
-    {
-      PyErr_Format(PyExc_ValueError, "Can't have negative number of bytes");
-      return NULL;
-    }
+    return PyErr_Format(PyExc_ValueError, "Can't have negative number of bytes");
   bytes=PyBytes_FromStringAndSize(NULL, amount);
   if(!bytes) return bytes;
   sqlite3_randomness(amount, PyBytes_AS_STRING(bytes));
@@ -571,10 +564,7 @@ getapswexceptionfor(APSW_ARGUNUSED PyObject *self, PyObject *pycode)
   PyObject *result=NULL;
 
   if(!PyIntLong_Check(pycode))
-    {
-      PyErr_Format(PyExc_TypeError, "Argument should be an integer");
-      return NULL;
-    }
+      return PyErr_Format(PyExc_TypeError, "Argument should be an integer");
   code=PyIntLong_AsLong(pycode);
   if(PyErr_Occurred()) return NULL;
 
@@ -586,10 +576,7 @@ getapswexceptionfor(APSW_ARGUNUSED PyObject *self, PyObject *pycode)
         break;
       }
   if(!result)
-    {
-      PyErr_Format(PyExc_ValueError, "%d is not a known error code", code);
-      return result;
-    }
+    return PyErr_Format(PyExc_ValueError, "%d is not a known error code", code);
 
   PyObject_SetAttrString(result, "extendedresult", PyInt_FromLong(code));
   PyObject_SetAttrString(result, "result", PyInt_FromLong(code&0xff));
@@ -792,15 +779,10 @@ apsw_async_control(APSW_ARGUNUSED PyObject *self, PyObject *args)
   int op, inparam, outparam,res;
 
   if(!PyTuple_Check(args) || PyTuple_GET_SIZE(args)<1)
-    {
-      PyErr_Format(PyExc_TypeError, "Args should be a tuple of at least one item");
-      return NULL;
-    }
+    return PyErr_Format(PyExc_TypeError, "Args should be a tuple of at least one item");
+
   if(!PyIntLong_Check(PyTuple_GET_ITEM(args, 0)))
-    {
-      PyErr_Format(PyExc_TypeError, "Arg 0 must be a number");
-      return NULL;
-    }
+    return PyErr_Format(PyExc_TypeError, "Arg 0 must be a number");
 
   switch(PyIntLong_AsLong(PyTuple_GET_ITEM(args, 0)))
     {
@@ -832,8 +814,7 @@ apsw_async_control(APSW_ARGUNUSED PyObject *self, PyObject *args)
       return PyInt_FromLong(outparam);
 
     default:
-      PyErr_Format(PyExc_ValueError, "Unknown operation argument");
-      return NULL;
+      return PyErr_Format(PyExc_ValueError, "Unknown operation argument");
     }
 }
 
@@ -1177,10 +1158,7 @@ formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
 #if PY_MAJOR_VERSION<3
   /* We don't support plain strings only unicode */
   if(PyString_Check(value))
-    {
-      PyErr_Format(PyExc_TypeError, "Old plain strings not supported - use unicode");
-      return NULL;
-    }
+    return PyErr_Format(PyExc_TypeError, "Old plain strings not supported - use unicode");
 #endif
   /* Unicode */
   if(PyUnicode_Check(value))
@@ -1272,8 +1250,7 @@ formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
       return unires;
     }
 
-  PyErr_Format(PyExc_TypeError, "Unsupported type");
-  return NULL;
+  return PyErr_Format(PyExc_TypeError, "Unsupported type");
 }
 
 /** .. automethod:: main()

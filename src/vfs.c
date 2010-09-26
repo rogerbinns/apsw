@@ -154,11 +154,11 @@ across.
 /* what error code do we do for not implemented? */
 #define VFSNOTIMPLEMENTED(x)              \
   if(!self->basevfs || !self->basevfs->x) \
-  { PyErr_Format(ExcVFSNotImplemented, "VFSNotImplementedError: Method " #x " is not implemented"); return NULL; }
+  { return PyErr_Format(ExcVFSNotImplemented, "VFSNotImplementedError: Method " #x " is not implemented"); }
 
 #define VFSFILENOTIMPLEMENTED(x)              \
   if(!self->base || !self->base->pMethods->x) \
-  { PyErr_Format(ExcVFSNotImplemented, "VFSNotImplementedError: File method " #x " is not implemented"); return NULL; }
+  { return PyErr_Format(ExcVFSNotImplemented, "VFSNotImplementedError: File method " #x " is not implemented"); }
 
 /* various checks */
 #define CHECKVFS \
@@ -171,7 +171,7 @@ across.
    assert(apswfile->file); 
 
 #define CHECKVFSFILEPY \
-  if(!self->base) { PyErr_Format(ExcVFSFileClosed, "VFSFileClosed: Attempting operation on closed file"); return NULL; }
+  if(!self->base) { return PyErr_Format(ExcVFSFileClosed, "VFSFileClosed: Attempting operation on closed file"); }
 
 #define VFSPREAMBLE                         \
   PyObject *etype, *eval, *etb;             \
@@ -988,10 +988,7 @@ apswvfspy_xRandomness(APSWVFS *self, PyObject *args)
     return NULL;
 
   if(nbyte<0)
-    {
-      PyErr_Format(PyExc_ValueError, "You can't have negative amounts of randomness!");
-      return NULL;
-    }
+    return PyErr_Format(PyExc_ValueError, "You can't have negative amounts of randomness!");
 
   APSW_FAULT_INJECT(xRandomnessAllocFail,
                     res=PyBytes_FromStringAndSize(NULL, nbyte),
@@ -1887,9 +1884,8 @@ apswvfsfilepy_xWrite(APSWVFSFile *self, PyObject *args)
   asrb=PyObject_AsReadBuffer(buffy, &buffer, &size);
   if(asrb!=0 || PyUnicode_Check(buffy))
     {
-      PyErr_Format(PyExc_TypeError, "Object passed to xWrite doesn't do read buffer");
       AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xWrite", "{s: L, s: O}", "offset", offset, "buffer", buffy);
-      return NULL;
+      return PyErr_Format(PyExc_TypeError, "Object passed to xWrite doesn't do read buffer");
     }
 
   res=self->base->pMethods->xWrite(self->base, buffer, size, offset);
