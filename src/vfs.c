@@ -1884,8 +1884,9 @@ apswvfsfilepy_xWrite(APSWVFSFile *self, PyObject *args)
   asrb=PyObject_AsReadBuffer(buffy, &buffer, &size);
   if(asrb!=0 || PyUnicode_Check(buffy))
     {
+      PyErr_Format(PyExc_TypeError, "Object passed to xWrite doesn't do read buffer");
       AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xWrite", "{s: L, s: O}", "offset", offset, "buffer", buffy);
-      return PyErr_Format(PyExc_TypeError, "Object passed to xWrite doesn't do read buffer");
+      return NULL;
     }
 
   res=self->base->pMethods->xWrite(self->base, buffer, size, offset);
