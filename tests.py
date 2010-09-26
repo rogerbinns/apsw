@@ -3626,7 +3626,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(ValueError, blobro.tell)
         self.assertRaises(ValueError, blobro.write, "abc")
         # readinto tests
-        rowidri=self.db.cursor().execute("insert into foo values('abcdefg'); select last_insert_rowid()").fetchall()[0][0]
+        rowidri=self.db.cursor().execute("insert into foo values(x'112233445566778899aabbccddeeff'); select last_insert_rowid()").fetchall()[0][0]
         blobro=self.db.blobopen("main", "foo", "x", rowidri, False)
         self.assertRaises(TypeError, blobro.readinto)
         self.assertRaises(TypeError, blobro.readinto, 3)
@@ -3659,15 +3659,34 @@ class APSW(unittest.TestCase):
             blobro.seek(0)
             blobro.readinto(buf, 1, 1)
             self.assertEqual(_fixup(buf[0]), BYTES(r"\x00"))
-            self.assertEqual(_fixup(buf[1]), BYTES("a"))
+            self.assertEqual(_fixup(buf[1]), BYTES(r"\x11"))
             self.assertEqual(_fixup(buf[2]), BYTES(r"\x00"))
             self.assertEqual(_fixup(buf[3]), BYTES(r"\x00"))
             self.assertEqual(len(buf), 4)
+            blobro.seek(3)
+            blobro.readinto(buf)
+            def check_unchanged():
+                self.assertEqual(_fixup(buf[0]), BYTES(r"\x44"))
+                self.assertEqual(_fixup(buf[1]), BYTES(r"\x55"))
+                self.assertEqual(_fixup(buf[2]), BYTES(r"\x66"))
+                self.assertEqual(_fixup(buf[3]), BYTES(r"\x77"))
+                self.assertEqual(len(buf), 4)
+            check_unchanged()
+            blobro.seek(14)
+            # too much requested
+            self.assertRaises(ValueError, blobro.readinto, buf, 1)
+            check_unchanged()
+            # bounds errors 
             self.assertRaises(ValueError, blobro.readinto, buf, 1, -1)
             self.assertRaises(ValueError, blobro.readinto, buf, 1, 7)
             self.assertRaises(ValueError, blobro.readinto, buf, -1, 2)
             self.assertRaises(ValueError, blobro.readinto, buf, 10000, 2)
             self.assertRaises(OverflowError, blobro.readinto, buf, 1, l("45236748972389749283"))
+            check_unchanged()
+        # get a read error
+        blobro.seek(0)
+        self.db.cursor().execute("update foo set x=x'112233445566' where rowid=?", (rowidri,))
+        self.assertRaises(apsw.AbortError, blobro.readinto, buf)
         # should fail with buffer being a string
         self.assertRaises(TypeError, blobro.readinto, "abcd", 1, 1)
         self.assertRaises(TypeError, blobro.readinto, u("abcd"), 1, 1)
