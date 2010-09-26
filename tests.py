@@ -278,6 +278,7 @@ class APSW(unittest.TestCase):
     blob_nargs={
         'write': 1,
         'read': 1,
+        'readinto': 1,
         'seek': 2
         }
 
@@ -3613,15 +3614,65 @@ class APSW(unittest.TestCase):
         self.assertRaises(ValueError, blobro.seek, 100000, 0)
         self.assertRaises(ValueError, blobro.seek, -100000, 1)
         self.assertRaises(ValueError, blobro.seek, -100000, 2)
+        # close testing
         blobro.seek(0,0)
         self.assertRaises(apsw.ReadOnlyError, blobro.write, b("kermit was here"))
         # you get the error on the close too, and blob is always closed - sqlite ticket #2815
         self.assertRaises(apsw.ReadOnlyError, blobro.close)
         # check can't work on closed blob
         self.assertRaises(ValueError, blobro.read)
+        self.assertRaises(ValueError, blobro.readinto, BYTES("ab"))
         self.assertRaises(ValueError, blobro.seek, 0, 0)
         self.assertRaises(ValueError, blobro.tell)
         self.assertRaises(ValueError, blobro.write, "abc")
+        # readinto tests
+        rowidri=self.db.cursor().execute("insert into foo values('abcdefg'); select last_insert_rowid()").fetchall()[0][0]
+        blobro=self.db.blobopen("main", "foo", "x", rowidri, False)
+        self.assertRaises(TypeError, blobro.readinto)
+        self.assertRaises(TypeError, blobro.readinto, 3)
+        buffers=[]
+        import array
+        if sys.version_info<(3,):
+            buffers.append(array.array("c", "\0\0\0\0"))
+        else:
+            buffers.append(array.array("b", b(r"\0\0\0\0")))
+           
+        if sys.version_info>=(2,6):
+            if sys.version_info<(3,):
+                buffers.append(bytearray("\0\0\0\0"))
+            else:
+                buffers.append(bytearray(b(r"\0\0\0\0")))
+        # bytearray returns ints rather than chars so a fixup
+        def _fixup(c):
+            if type(c)==int:
+                if py3:
+                    return bytes([c])
+                else:
+                    return chr(c)
+            return c
+            
+        for buf in buffers:
+            self.assertRaises(TypeError, blobro.readinto)
+            self.assertRaises(TypeError, blobro.readinto, buf, buf)
+            self.assertRaises(TypeError, blobro.readinto, buf, 1, buf)
+            self.assertRaises(TypeError, blobro.readinto, buf, 1, 1, buf)
+            blobro.seek(0)
+            blobro.readinto(buf, 1, 1)
+            self.assertEqual(_fixup(buf[0]), BYTES(r"\x00"))
+            self.assertEqual(_fixup(buf[1]), BYTES("a"))
+            self.assertEqual(_fixup(buf[2]), BYTES(r"\x00"))
+            self.assertEqual(_fixup(buf[3]), BYTES(r"\x00"))
+            self.assertEqual(len(buf), 4)
+            self.assertRaises(ValueError, blobro.readinto, buf, 1, -1)
+            self.assertRaises(ValueError, blobro.readinto, buf, 1, 7)
+            self.assertRaises(ValueError, blobro.readinto, buf, -1, 2)
+            self.assertRaises(ValueError, blobro.readinto, buf, 10000, 2)
+            self.assertRaises(OverflowError, blobro.readinto, buf, 1, l("45236748972389749283"))
+        # should fail with buffer being a string
+        self.assertRaises(TypeError, blobro.readinto, "abcd", 1, 1)
+        self.assertRaises(TypeError, blobro.readinto, u("abcd"), 1, 1)
+        if not py3:
+            self.assertRaises(TypeError, blobro.readinto, buffer("abcd"), 1, 1)
         # write tests
         blobrw=self.db.blobopen("main", "foo", "x", rowid, True)
         self.assertEqual(blobrw.length(), 98765)

@@ -2,6 +2,14 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.7.3-r1
+========
+
+You can read blobs into pre-existing buffers using
+:meth:`blob.readinto`.  (This is more efficient than allocating new
+buffers as :meth:`blob.read` does and then copying.)  (`Issue 109
+<http://code.google.com/p/apsw/issues/detail?id=109>`__).
+
 3.7.2-r1
 ========
 

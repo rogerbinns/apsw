@@ -349,6 +349,103 @@ APSWBlob_read(APSWBlob *self, PyObject *args)
   return buffy;
 }
 
+/** .. method:: readinto(buffer[, offset=0, length=remaining-buffer]) -> None
+
+  Reads from the blob into a buffer you have supplied.  This method is
+  useful if you already have a buffer like object that data is being
+  assembled in, and avoids allocating results in :meth:`blob.read` and
+  then copying into buffer.
+
+  :param buffer: A writable buffer like object.  In Python 2.6 onwards
+                 there is a bytearray type that is very useful.
+                 :class:`array.array` also works.
+
+  :param offset: The position to start writing into the buffer
+                 defaulting to the beginning.
+
+  :param length: How much of the blob to read.  The default is the
+                 remaining space left in the buffer.  Note that if
+                 there is more space available than blob left then you
+                 will get a :exc:`ValueError` exception.
+
+  -* sqlite3_blob_read
+*/
+
+static PyObject*
+APSWBlob_readinto(APSWBlob *self, PyObject *args)
+{
+  int length;
+  int res;
+  Py_ssize_t offset, lengthwanted;
+  PyObject *wbuf=NULL;
+
+  int aswb;
+  void *buffer;
+  Py_ssize_t bufsize;
+
+  int bloblen;
+
+  CHECK_USE(NULL);
+  CHECK_BLOB_CLOSED;
+
+  /* To get Py_ssize_t we need "n" format but that only exists in
+     Python 2.5 plus */
+
+  if(!PyArg_ParseTuple(args, "O|"
+#if PY_VERSION_HEX < 0x02050000
+		       "i"
+#else
+		       "n"
+#endif
+		       "i:readinto(wbuf, offset=1, length=wbufremaining)",
+		       &wbuf, &offset, &length))
+    return NULL;
+
+  aswb=PyObject_AsWriteBuffer(wbuf, &buffer, &bufsize);
+  if(aswb)
+    return NULL;
+
+  /* Although a lot of these checks could be combined into a single
+     one, they are kept separate so that we can verify they have each
+     been exercised with code coverage checks */
+
+  if(PyTuple_GET_SIZE(args)<2)
+    offset=0;
+
+  bloblen=sqlite3_blob_bytes(self->pBlob);
+
+  if(offset<0 || offset>bloblen)
+    {
+      PyErr_Format(PyExc_ValueError, "offset is less than zero or beyond end of buffer");
+      return NULL;
+    }
+
+  if(PyTuple_GET_SIZE(args)<3)
+    lengthwanted=bufsize-offset;
+  else
+    lengthwanted=length;
+
+  if(lengthwanted<0)
+    return PyErr_Format(PyExc_ValueError, "Length wanted is negative");
+
+  if(offset+lengthwanted>bufsize)
+    return PyErr_Format(PyExc_ValueError, "Data would go beyond end of buffer");
+
+  if(lengthwanted>bloblen-self->curoffset)
+    return PyErr_Format(PyExc_ValueError, "More data requested than blob length");
+
+  PYSQLITE_BLOB_CALL(res=sqlite3_blob_read(self->pBlob, (char*)buffer+offset, lengthwanted, self->curoffset));
+
+  if(res!=SQLITE_OK)
+    {
+      SET_EXC(res, self->connection->db);
+      return NULL;
+    }
+  self->curoffset+=lengthwanted;
+
+  Py_RETURN_NONE;
+}
+
 /** .. method:: seek(offset[, whence=0]) -> None
 
   Changes current position to *offset* biased by *whence*.
@@ -567,6 +664,8 @@ static PyMethodDef APSWBlob_methods[]={
    "Returns length in bytes of the blob"},
   {"read", (PyCFunction)APSWBlob_read, METH_VARARGS,
    "Reads data from the blob"},
+  {"readinto", (PyCFunction)APSWBlob_readinto, METH_VARARGS,
+   "Reads data from the blob into a provided buffer"},
   {"seek", (PyCFunction)APSWBlob_seek, METH_VARARGS,
    "Seeks to a position in the blob"},
   {"tell", (PyCFunction)APSWBlob_tell, METH_NOARGS,
