@@ -358,7 +358,7 @@ class APSW(unittest.TestCase):
 
         # bad vfs
         self.assertRaises(TypeError, apsw.Connection, "foo", vfs=3, flags=-1)
-        self.assertRaises(apsw.SQLError, apsw.Connection, "foo", vfs="jhjkds", flags=-1)
+        self.assertRaises(apsw.SQLError, apsw.Connection, "foo", vfs="jhjkds")
 
     def testConnectionFileControl(self):
         "Verify sqlite3_file_control"
