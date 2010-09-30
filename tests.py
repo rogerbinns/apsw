@@ -6630,6 +6630,30 @@ shell.write(shell.stdout, "hello world\\n")
             isempty(fh[1])
             isempty(fh[2])
             self.assertEqual(r, getw())
+
+        ###
+        ### Unicode output with all output modes
+        ###
+        colname=u(r"\N{BLACK STAR}8\N{WHITE STAR}")
+        val=u('xxx\\u1234\\uabcdyyy this\" is nasty\u0001stuff!')
+        noheadermodes=('insert',)
+        # possible ways val can be represented (eg csv doubles up double quotes)
+        outputs=(val, val.replace('"', '""'), val.replace('"', '&quot;'), val.replace('"', '\\"'))
+        for mode in [x[len("output_"):] for x in dir(shellclass) if x.startswith("output_")]:
+            reset()
+            cmd(".separator |\n.width 999\n.encoding utf8\n.header on\n.mode %s\nselect '%s' as '%s';" % (mode, val, colname))
+            s.cmdloop()
+            isempty(fh[2])
+            # modes too complicated to construct the correct string
+            if mode in ('python', 'tcl'):
+                continue
+            # all others
+            if mode not in noheadermodes:
+                self.assertTrue(colname in get(fh[1]))
+            cnt=0
+            for o in outputs:
+                cnt+=o in get(fh[1])
+            self.assertTrue(cnt)
             
     # This one uses the coverage module
     def _testShellWithCoverage(self):
