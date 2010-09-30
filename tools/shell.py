@@ -584,12 +584,12 @@ OPTIONS include:
             c=self.colour
             line=[c.header+fixdata(self._fmt_text_col(l))+c.header_ for l in line]
         else:
-            fmt=lambda x: self.colour.colour_value(x, self._fmt_text_col(x))
+            fmt=lambda x: self.colour.colour_value(x, fixdata(self._fmt_text_col(x)))
             line=[fmt(l) for l in line]
         self._csv[1].writerow(line)
         t=self._csv[0].getvalue()
         if sys.version_info<(3,0):
-            t=t.encode("utf8")
+            t=t.decode("utf8")
         # csv lib always does DOS eol
         assert(t.endswith("\r\n"))
         t=t[:-2]

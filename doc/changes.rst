@@ -10,6 +10,8 @@ You can read blobs into pre-existing buffers using
 buffers as :meth:`blob.read` does and then copying.)  (`Issue 109
 <http://code.google.com/p/apsw/issues/detail?id=109>`__).
 
+Fixed bug with unicode output in CSV mode in the shell.
+
 3.7.2-r1
 ========
 
