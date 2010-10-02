@@ -726,7 +726,14 @@ Enter SQL statements terminated with a ";"
                 using_readline=True
                 try:
                     readline.read_history_file(os.path.expanduser(self.history_file))
-                except IOError:
+                except:
+                    # We only expect IOError here but if the history
+                    # file does not exist and this code has been
+                    # compiled into the module it is possible to get
+                    # an IOError that doesn't match the IOError from
+                    # Python parse time resulting in an IOError
+                    # exception being raised.  Consequently we just
+                    # catch all exceptions.
                     pass
         except ImportError:
             pass
