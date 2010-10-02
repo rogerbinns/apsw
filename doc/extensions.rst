@@ -53,12 +53,12 @@ FTS3
 ====
 
 This is the third version of the `full text search
-<http://www.sqlite.org/fts3.html` extension.  It
+<http://www.sqlite.org/fts3.html>`__ extension.  It
 makes it easy to find words in multi-word text fields.  You must
 enable the extension via :ref:`setup.py build flags
 <setup_build_flags>` before it will work.  There are no additional
 APIs and the `documented SQL
-<http://www.sqlite.org/fts3.html>` works as is.
+<http://www.sqlite.org/fts3.html>`__ works as is.
 
 .. _ext-icu:
 
@@ -78,10 +78,10 @@ RTree
 =====
 
 The RTree extension provides a `spatial table
-<http://en.wikipedia.org/wiki/R-tree>`_ - see the `README
-<http://www.sqlite.org/src/finfo?name=ext/rtree/README>`__.
+<http://en.wikipedia.org/wiki/R-tree>`_ - see the `documentation
+<http://www.sqlite.org/rtree.html>`__.
 You must enable the extension via :ref:`setup.py build flags
 <setup_build_flags>` before it will work.  There are no additional
 APIs and the `documented SQL
-<http://www.sqlite.org/src/finfo?name=ext/rtree/README>`__
+<http://www.sqlite.org/rtree.html>`__
 works as is.
