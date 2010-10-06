@@ -412,7 +412,7 @@ APSWBlob_readinto(APSWBlob *self, PyObject *args)
 
   bloblen=sqlite3_blob_bytes(self->pBlob);
 
-  if(offset<0 || offset>bloblen)
+  if(offset<0 || offset>bufsize)
     return PyErr_Format(PyExc_ValueError, "offset is less than zero or beyond end of buffer");
 
   if(PyTuple_GET_SIZE(args)<3)
