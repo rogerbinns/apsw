@@ -671,8 +671,8 @@ pysqlite (100). You can however specify more or less as needed.
 =========
 
 As of this release, APSW is now co-hosted with pysqlite meaning there
-is one site to go to for your Python SQLite bindings. Start at
-http://initd.org/tracker/pysqlite/wiki/
+is one site to go to for your Python SQLite bindings. (Both projects
+subsequently moved to Google Code.)
 
 You can use this with SQLite 3.3.13 onwards. There were no API changes
 in SQLite 3.3.10 to 3.3.13 although some internal bugs were fixed and
