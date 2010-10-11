@@ -26,7 +26,7 @@ processes.
 /* details of a registered function passed as user data to sqlite3_create_function */
 typedef struct FunctionCBInfo {
   PyObject_HEAD
-  char *name;                     /* ascii function name */
+  char *name;                     /* utf8 function name */
   PyObject *scalarfunc;           /* the function to call for stepping */
   PyObject *aggregatefactory;     /* factory for aggregate functions */
 } FunctionCBInfo;
@@ -50,7 +50,6 @@ struct Connection {
 
   PyObject *dependents;           /* tracking cursors & blobs belonging to this connection */
   PyObject *dependent_remove;     /* dependents.remove for weak ref processing */
-  PyObject *functions;            /* list of registered functions */
 
   /* registered hooks/handlers (NULL or callable) */
   PyObject *busyhandler;     
@@ -134,7 +133,6 @@ FunctionCBInfo_dealloc(FunctionCBInfo *self)
 static void
 Connection_internal_cleanup(Connection *self)
 {
-  Py_CLEAR(self->functions);
   Py_CLEAR(self->busyhandler);
   Py_CLEAR(self->rollbackhook);
   Py_CLEAR(self->profile);
@@ -324,7 +322,6 @@ Connection_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED
       self->dependents=PyList_New(0);
       self->dependent_remove=PyObject_GetAttrString(self->dependents, "remove");
       self->stmtcache=0;
-      self->functions=PyList_New(0);
       self->busyhandler=0;
       self->rollbackhook=0;
       self->profile=0;
@@ -2218,6 +2215,16 @@ cbdispatch_final(sqlite3_context *context)
   PyGILState_Release(gilstate);
 }
 
+/* Used for the create function v2 xDestroy callbacks.  Note this is
+   called even when supplying NULL for the function implementation (ie
+   deleting it), so XDECREF has to be used.
+ */
+static void
+apsw_free_func(void *funcinfo)
+{
+  Py_XDECREF((PyObject*)funcinfo);
+}
+
 /** .. method:: createscalarfunction(name, callable[, numargs=-1])
 
   Registers a scalar function.  Scalar functions operate on one set of paramaters once.  
@@ -2243,7 +2250,7 @@ cbdispatch_final(sqlite3_context *context)
      * :ref:`Example <scalar-example>`
      * :meth:`~Connection.createaggregatefunction`
 
-  -* sqlite3_create_function
+  -* sqlite3_create_function_v2
 */
 
 static PyObject *
@@ -2252,7 +2259,6 @@ Connection_createscalarfunction(Connection *self, PyObject *args)
   int numargs=-1;
   PyObject *callable;
   char *name=0;
-  char *chk;
   FunctionCBInfo *cbinfo;
   int res;
  
@@ -2264,23 +2270,6 @@ Connection_createscalarfunction(Connection *self, PyObject *args)
 
   assert(name);
   assert(callable);
-
-  /* there isn't a C api to get a (potentially unicode) string and
-     make it uppercase so we hack around  */
-
-  /* validate the name */
-  for(chk=name;*chk && !((*chk)&0x80);chk++);
-  if(*chk)
-    {
-      PyMem_Free(name);
-      PyErr_SetString(PyExc_TypeError, "function name must be ascii characters only");
-      return NULL;
-    }
-
-  /* convert name to upper case */
-  for(chk=name;*chk;chk++)
-    if(*chk>='a' && *chk<='z')
-      *chk-='a'-'A';
 
   if(callable!=Py_None && !PyCallable_Check(callable))
     {
@@ -2303,31 +2292,28 @@ Connection_createscalarfunction(Connection *self, PyObject *args)
     }
 
   PYSQLITE_CON_CALL(
-                res=sqlite3_create_function(self->db,
-                                            name,
-                                            numargs,
-                                            SQLITE_UTF8,
-                                            cbinfo,
-                                            cbinfo?cbdispatch_func:NULL,
-                                            NULL,
-                                            NULL)
+                res=sqlite3_create_function_v2(self->db,
+					       name,
+					       numargs,
+					       SQLITE_UTF8,
+					       cbinfo,
+					       cbinfo?cbdispatch_func:NULL,
+					       NULL,
+					       NULL,
+					       apsw_free_func)
                 );
-  if(callable==Py_None)
-    PyMem_Free(name);
-
   if(res)
     {
+      /* Note: On error sqlite3_create_function_v2 calls the
+	 destructor (apsw_free_func)! */
       SET_EXC(res, self->db);
       goto finally;
     }
 
-  if(cbinfo)
-    PyList_Append(self->functions, (PyObject*)cbinfo);
-  
+  if(callable==Py_None)
+    PyMem_Free(name);
+
  finally:
-  /* cbinfo will be copied into list on success else we need to dump
-     it anyway */
-  Py_XDECREF(cbinfo);
   if(PyErr_Occurred())
     return NULL;
   Py_RETURN_NONE;
@@ -2370,7 +2356,7 @@ Connection_createscalarfunction(Connection *self, PyObject *args)
      * :ref:`Example <aggregate-example>`
      * :meth:`~Connection.createscalarfunction`
 
-  -* sqlite3_create_function
+  -* sqlite3_create_function_v2
 */
 
 static PyObject *
@@ -2379,7 +2365,6 @@ Connection_createaggregatefunction(Connection *self, PyObject *args)
   int numargs=-1;
   PyObject *callable;
   char *name=0;
-  char *chk;
   FunctionCBInfo *cbinfo;
   int res;
 
@@ -2391,22 +2376,6 @@ Connection_createaggregatefunction(Connection *self, PyObject *args)
 
   assert(name);
   assert(callable);
-
-  /* there isn't a C api to get a (potentially unicode) string and make it uppercase so we hack around  */
-
-  /* validate the name */
-  for(chk=name;*chk && !((*chk)&0x80);chk++);
-  if(*chk)
-    {
-      PyMem_Free(name);
-      PyErr_SetString(PyExc_TypeError, "function name must be ascii characters only");
-      return NULL;
-    }
-
-  /* convert name to upper case */
-  for(chk=name;*chk;chk++)
-    if(*chk>='a' && *chk<='z')
-      *chk-='a'-'A';
 
   if(callable!=Py_None && !PyCallable_Check(callable))
     {
@@ -2428,32 +2397,29 @@ Connection_createaggregatefunction(Connection *self, PyObject *args)
     }
 
   PYSQLITE_CON_CALL(
-                res=sqlite3_create_function(self->db,
-                                            name,
-                                            numargs,
-                                            SQLITE_UTF8,  /* it isn't very clear what this parameter does */
-                                            cbinfo,
-                                            NULL,
-                                            cbinfo?cbdispatch_step:NULL,
-                                            cbinfo?cbdispatch_final:NULL)
+                res=sqlite3_create_function_v2(self->db,
+					       name,
+					       numargs,
+					       SQLITE_UTF8,
+					       cbinfo,
+					       NULL,
+					       cbinfo?cbdispatch_step:NULL,
+					       cbinfo?cbdispatch_final:NULL,
+					       apsw_free_func)
                 );
-
-  if(callable==Py_None)
-    PyMem_Free(name);
 
   if(res)
     {
+      /* Note: On error sqlite3_create_function_v2 calls the
+	 destructor (apsw_free_func)! */
       SET_EXC(res, self->db);
       goto finally;
     }
 
-  if(callable!=Py_None)
-    /* put cbinfo into the list */
-    PyList_Append(self->functions, (PyObject*)cbinfo);
-    
+  if(callable==Py_None)
+    PyMem_Free(name);
 
  finally:
-  Py_XDECREF(cbinfo);
   if(PyErr_Occurred())
     return NULL;
   Py_RETURN_NONE;

@@ -12,6 +12,11 @@ buffers as :meth:`blob.read` does and then copying.)  (`Issue 109
 
 Fixed bug with unicode output in CSV mode in the shell.
 
+`sqlite_create_function_v2
+<http://sqlite.org/c3ref/create_function.html>`__ now means that some
+housekeeping APSW did can be pushed back onto SQLite and the
+consequent deletion of some code
+
 3.7.2-r1
 ========
 

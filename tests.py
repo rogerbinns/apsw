@@ -1031,7 +1031,16 @@ class APSW(unittest.TestCase):
         except (apsw.SQLError, apsw.MisuseError):
             # http://www.sqlite.org/cvstrac/tktview?tn=3875
             pass
-        self.assertRaises(TypeError, self.db.createscalarfunction, u(r"twelve\N{BLACK STAR}"), ilove7) # must be ascii
+        # some unicode fun
+        self.db.createscalarfunction, u(r"twelve\N{BLACK STAR}"), ilove7
+        try:
+            # SQLite happily registers the function, but you can't
+            # call it
+            self.assertEqual(c.execute("select "+u(r"twelve\N{BLACK STAR}")+"(3)").fetchall(),
+                             [[7]])
+        except apsw.SQLError:
+            pass
+
         self.db.createscalarfunction("seven", ilove7)
         c.execute("create table foo(x,y,z)")
         for i in range(10):
