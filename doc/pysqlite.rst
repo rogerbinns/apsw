@@ -137,7 +137,7 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
       File "t.py", line 8, in ?
         cur.execute("select badfunc(3)")
       File "apsw.c", line 3660, in resetcursor
-      File "apsw.c", line 1871, in user-defined-scalar-BADFUNC
+      File "apsw.c", line 1871, in user-defined-scalar-badfunc
       File "t.py", line 3, in badfunc
         return 1/0
 

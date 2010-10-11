@@ -297,7 +297,7 @@ traceback::
 |     File "t.py", line 11, in <module>                     |     File "t.py", line 11, in <module>                    |
 |       cursor.execute("select foo(1) from bar")            |       cursor.execute("select foo(1) from bar")           |
 |     File "t.py", line 4, in myfunc                        |     File "apsw.c", line 3412, in resetcursor             |
-|       1/0                                                 |     File "apsw.c", line 1597, in user-defined-scalar-FOO |
+|       1/0                                                 |     File "apsw.c", line 1597, in user-defined-scalar-foo |
 |   ZeroDivisionError: integer division or modulo by zero   |     File "t.py", line 4, in myfunc                       |
 |                                                           |       1/0                                                |
 |                                                           |   ZeroDivisionError: integer division or modulo by zero  |
@@ -307,8 +307,7 @@ In the original traceback you can't even see that code in apsw was
 involved. The augmented traceback shows that there were indeed two
 function calls within apsw and gives you line numbers should you need
 to examine the code. Also note how you are told that the call was in
-`user-defined-scalar-FOO` (all user defined function names are
-uppercased).
+`user-defined-scalar-foo` (ie you can tell which function was called.)
 
 *But wait, there is more!!!* In order to further aid troubleshooting,
 the augmented stack traces make additional information available. Each
