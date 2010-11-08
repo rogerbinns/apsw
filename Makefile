@@ -96,14 +96,19 @@ showsymbols:
 	test -f apsw.so
 	set +e; nm --extern-only --defined-only apsw.so | egrep -v ' (__bss_start|_edata|_end|_fini|_init|initapsw)$$' ; test $$? -eq 1 || false
 
-WINBUILD=fetch --version=$(SQLITEVERSION) --all build --enable-all-extensions --compile=mingw32 install build_test_extension test bdist_wininst
-WINMSBUILD=fetch --version=$(SQLITEVERSION) --all build --enable-all-extensions install build_test_extension test bdist_wininst
+# Getting Visual Studio 2008 Express to work for 64 compilations is a
+# pain, so use this builtin hidden command
+WIN64HACK=win64hackvars
+WINBPREFIX=fetch --version=$(SQLITEVERSION) --all build --enable-all-extensions
+WINBSUFFIX=install build_test_extension test
+WINBINST=bdist_wininst
+WINBMSI=bdist_msi
 
 # You need to use the MinGW version of make.  See
 # http://bugs.python.org/issue3308 if 2.6+ or 3.0+ fail to run with
 # missing symbols/dll issues.  For Python 3.1 they went out of their
 # way to prevent mingw from working.  You have to install msvc.
-# Google for "visual c++ express edition" and hope the right version
+# Google for "visual c++ express edition 2008" and hope the right version
 # is still available.
 
 compile-win:
@@ -111,12 +116,16 @@ compile-win:
 	cmd /c del /s /q dist
 	cmd /c del /s /q build
 	-cmd /c md dist
-	c:/python23/python setup.py $(WINBUILD)
-	c:/python24/python setup.py $(WINBUILD)
-	c:/python25/python setup.py $(WINBUILD)
-	c:/python26/python setup.py $(WINMSBUILD)
-	c:/python27/python setup.py $(WINMSBUILD)
-	c:/python31/python setup.py $(WINMSBUILD)
+	c:/python23/python setup.py $(WINBPREFIX) --compile=mingw32 $(WINBSUFFIX) $(WINBINST)
+	c:/python24/python setup.py $(WINBPREFIX) --compile=mingw32 $(WINBSUFFIX) $(WINBINST)
+	c:/python25/python setup.py $(WINBPREFIX) --compile=mingw32 $(WINBSUFFIX) $(WINBINST)
+	c:/python26/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python26/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBMSI)
+	c:/python26-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python27/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python27-64/python setup.py  $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python31/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python31-64/python setup.py  $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 
 source_nocheck: docs
 	python setup.py sdist --formats zip --add-doc

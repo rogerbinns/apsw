@@ -87,6 +87,17 @@ class build_test_extension(Command):
     def finalize_options(self):
         pass
     def run(self):
+        # On 64 bit windows we have to use MSVC
+        if sys.platform=='win32': # yes even on 64 bit
+            try:
+                import platform
+                if platform.architecture()[0]=='64bit':
+                    res=os.system("cl /Gd src/testextension.c /I sqlite3 /I . /DDLL /LD /link /export:sqlite3_extension_init /export:alternate_sqlite3_extension_init /out:testextension.sqlext")
+                    if res!=0:
+                        raise RuntimeError("Building test extension failed")
+                    return
+            except ImportError:
+                pass
         shared="shared"
         if sys.platform.startswith("darwin"):
             shared="bundle"
@@ -94,6 +105,28 @@ class build_test_extension(Command):
         if res!=0:
             raise RuntimeError("Building test extension failed")
 
+# Another hack.  Visual Studio 2008 Express SP1 ships with 64
+# compilers, headers and the Windows SDK but claims it doesn't and
+# distutils can't find it.  The separate Windows SDK can't find this
+# and gets very confused not to mention being one of the buggiest cmd
+# scripts I have ever seen.  This hack just sets some environment
+# variables directly since all the "proper" ways are very broken.
+class win64hackvars(Command):
+    description="Set env vars for Visual Studio 2008 Express 64 bit"
+
+    user_options=[]
+    def initialize_options(self): pass
+    def finalize_options(self): pass
+    def run(self):
+        sdkdir=r"C:\Program Files\Microsoft SDKs\Windows\v6.0A"
+        vsdir=r"C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC"
+        assert os.path.isdir(sdkdir), "Expected sdk dir "+sdkdir
+        assert os.path.isdir(vsdir), "Expected visual studion dir "+vsdir
+        os.environ["PATH"]=r"%s\bin\amd64;%s\bin" % (vsdir, sdkdir)
+        os.environ["INCLUDE"]=r"%s\include;%s\include" % (vsdir, sdkdir)
+        os.environ["LIB"]=r"%s\lib\amd64;%s\lib\x64" % (vsdir, sdkdir)
+        os.environ["DISTUTILS_USE_SDK"]="1"
+        os.environ["MSSdk"]=sdkdir
 
 # deal with various python version compatibility issues with how
 # to treat returned web data as lines of text
@@ -777,6 +810,29 @@ depends.append("tools/shell.py")
 # work out version number
 version=open("src/apswversion.h", "rU").read().split()[2].strip('"')
 
+# msi can't use normal version numbers because distutils is retarded,
+# so mangle ours to suit it
+if "bdist_msi" in sys.argv:
+    if version.endswith("-r1"):
+        version=version[:-len("-r1")]
+    else:
+        assert False, "MSI version needs help"
+    version=[int(v) for v in re.split(r"[^\d]+", version)]
+    # easy pad to 3 items long
+    while len(version)<3:
+        version.append(0)
+    # 4 is our normal length (eg 3.7.3-r1) but sometimes it is more eg
+    # 3.7.16.1-r1 so combine last elements if longer than 4
+    while len(version)>4:
+        version[-2]=10*version[-2]+version-1
+        del version[-1]
+    # combine first two elements
+    if len(version)>3:
+        version[0]=100*version[0]+version[1]
+        del version[1]
+        
+    version=".".join([str(v) for v in version])
+
 setup(name="apsw",
       version=version,
       description="Another Python SQLite Wrapper",
@@ -817,6 +873,7 @@ complete SQLite API into Python.""",
                 'fetch': fetch,
                 'build_ext': apsw_build_ext,
                 'build': apsw_build,
-                'sdist': apsw_sdist}
+                'sdist': apsw_sdist,
+                'win64hackvars': win64hackvars}
       )
 

@@ -22,7 +22,7 @@ doc/backup.rst
 doc/apsw.rst
 doc/vtable.rst
 *.pyc
-testextension.sqlext
+testextension.*
 testdbx-journal
 testdbx
 *~
