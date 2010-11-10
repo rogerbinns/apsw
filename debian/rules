@@ -56,6 +56,9 @@ binary-indep:
 	cp -a doc debian/python-apsw-doc/usr/share/doc/python-apsw/html
 	ln -s python-apsw debian/python-apsw-doc/usr/share/doc/python-apsw-doc
 
+	mkdir -p debian/python-apsw-doc/usr/share/doc-base
+	cp debian/python-apsw-doc.doc-base debian/python-apsw-doc/usr/share/doc-base/python-apsw-doc
+
 	dh_compress -i -Xjson -Xtxt -Xjs -Xinv
 	dh_fixperms -i
 	dh_installdeb -i
