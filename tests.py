@@ -1653,7 +1653,7 @@ class APSW(unittest.TestCase):
 
     def testProfile(self):
         "Verify profiling"
-        # we do the test by looking for the maximum of 100,000 random
+        # we do the test by looking for the maximum of PROFILESTEPS random
         # numbers with an index present and without.  The former
         # should be way quicker.
         c=self.db.cursor()
@@ -7887,7 +7887,7 @@ else:
     LOADEXTENSIONFILENAME="testextension.sqlext"
 
 MEMLEAKITERATIONS=1000
-PROFILESTEPS=100000
+PROFILESTEPS=250000
 
 
 def setup(write=write):
