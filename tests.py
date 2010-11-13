@@ -3255,7 +3255,7 @@ class APSW(unittest.TestCase):
            # is already held by enclosing sqlite3_step and the
            # methods will only be called from that same thread so it
            # isn't a problem.
-                        'skipcalls': re.compile("^sqlite3_(blob_bytes|column_count|bind_parameter_count|data_count|vfs_.+|changes|total_changes|get_autocommit|last_insert_rowid|complete|interrupt|limit|free|threadsafe|value_.+|libversion|enable_shared_cache|initialize|shutdown|config|memory_.+|soft_heap_limit|randomness|release_memory|status|result_.+|user_data|mprintf|aggregate_context|declare_vtab|backup_remaining|backup_pagecount)$"),
+                        'skipcalls': re.compile("^sqlite3_(blob_bytes|column_count|bind_parameter_count|data_count|vfs_.+|changes|total_changes|get_autocommit|last_insert_rowid|complete|interrupt|limit|free|threadsafe|value_.+|libversion|enable_shared_cache|initialize|shutdown|config|memory_.+|soft_heap_limit(64)?|randomness|release_memory|status|result_.+|user_data|mprintf|aggregate_context|declare_vtab|backup_remaining|backup_pagecount)$"),
                         # also ignore this file
                         'skipfiles': re.compile(r"[/\\]apsw.c$"),
                         # error message
@@ -3505,12 +3505,12 @@ class APSW(unittest.TestCase):
         apsw.memoryhighwater(True)
         self.assertEqual(apsw.memoryhighwater(), apsw.memoryused())
         self.assertRaises(TypeError, apsw.softheaplimit, 1, 2)
-        self.assertRaises(OverflowError, apsw.softheaplimit, l("0xffffffffee"))
         apsw.softheaplimit(0)
         self.assertRaises(TypeError, apsw.releasememory, 1, 2)
-        self.assertRaises(OverflowError, apsw.releasememory, l("0xffffffffee"))
         res=apsw.releasememory(0x7fffffff)
         self.assertTrue(type(res) in (int, long))
+        apsw.softheaplimit(l("0x1234567890abc"))
+        self.assertEqual(l("0x1234567890abc"), apsw.softheaplimit(l("0x1234567890abe")))
 
     def testRandomness(self):
         "Verify randomness routine"

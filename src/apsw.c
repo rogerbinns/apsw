@@ -417,23 +417,24 @@ memoryhighwater(APSW_ARGUNUSED PyObject *self, PyObject *args)
 }
 
 
-/** .. method:: softheaplimit(bytes)
+/** .. method:: softheaplimit(bytes) -> oldlimit
 
-  Requests SQLite try to keep memory usage below *bytes* bytes.
+  Requests SQLite try to keep memory usage below *bytes* bytes and
+  returns the previous setting.
 
-  -* sqlite3_soft_heap_limit
+  -* sqlite3_soft_heap_limit64
 */
 static PyObject*
 softheaplimit(APSW_ARGUNUSED PyObject *self, PyObject *args)
 {
-  int limit;
+  long long limit, oldlimit;
 
-  if(!PyArg_ParseTuple(args, "i", &limit))
+  if(!PyArg_ParseTuple(args, "L", &limit))
     return NULL;
 
-  sqlite3_soft_heap_limit(limit);
+  oldlimit=sqlite3_soft_heap_limit64(limit);
 
-  Py_RETURN_NONE;
+  return PyLong_FromLongLong(oldlimit);
 }
 
 /** .. method:: randomness(bytes)  -> data

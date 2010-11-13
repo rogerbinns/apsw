@@ -2,6 +2,14 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.7.4-r1
+========
+
+:meth:`apsw.softheaplimit` now uses `sqlite3_soft_heap_limit64
+<http://www.sqlite.org/c3ref/soft_heap_limit64.html>`__ so you can
+provide values larger than 2GB.  It is now also able to return the
+previous value instead of None.
+
 3.7.3-r1
 ========
 
