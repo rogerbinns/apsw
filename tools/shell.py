@@ -2436,7 +2436,11 @@ Enter SQL statements terminated with a ";"
         .timer command shows the difference between before and after
         results of what this returns by calling :meth:`display_timing`"""
         if sys.platform=="win32":
-            import ctypes, time
+            import ctypes, time, platform
+            ctypes.windll.kernel32.GetProcessTimes.argtypes=[
+                platform.architecture()[0]=='64bit' and ctypes.c_int64 or ctypes.c_int32,
+                ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p]
+
             # All 4 out params have to be present.  FILETIME is really
             # just a 64 bit quantity in 100 nanosecond granularity
             dummy=ctypes.c_ulonglong()
@@ -2450,8 +2454,8 @@ Enter SQL statements terminated with a ";"
                 ctypes.byref(utime))
             if rc:
                 return {'Wall clock': time.time(),
-                        'User time': float(utime)/10000000,
-                        'System time': float(stime)/10000000}
+                        'User time': float(utime.value)/10000000,
+                        'System time': float(stime.value)/10000000}
             return {}
         else:
             import resource, time

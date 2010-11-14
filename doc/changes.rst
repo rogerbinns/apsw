@@ -5,10 +5,15 @@ Change History
 3.7.4-r1
 ========
 
+Binary downloads for Windows 64 bit Python versions 2.6 and above
+including Python 3 are now available.
+
 :meth:`apsw.softheaplimit` now uses `sqlite3_soft_heap_limit64
 <http://www.sqlite.org/c3ref/soft_heap_limit64.html>`__ so you can
 provide values larger than 2GB.  It is now also able to return the
 previous value instead of None.
+
+Improve getting shell timer information for 64 bit Windows.
 
 3.7.3-r1
 ========
