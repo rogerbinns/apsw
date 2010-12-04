@@ -169,11 +169,11 @@ need to give the flag once and giving a comma seperated list.  For example:
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | build/build_ext flag                   | Result                                                                               |
 +========================================+======================================================================================+
-| | :option:`--enable-all-extensions`    | Enables the FTS3, RTree and ICU extensions (if *icu-config* is on your path).        |
+| | :option:`--enable-all-extensions`    | Enables the FTS3/4, RTree and ICU extensions (if *icu-config* is on your path).      |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--enable=fts3`              | Enables the :ref:`full text search extension <ext-fts3>`.                            |
-|                                        | This flag only helps when using the amalgamation. If not using the                   | 
-|                                        | amalgamation then you need to seperately ensure fts3 is enabled in the SQLite        |
+| | :option:`--enable=fts4`              | This flag only helps when using the amalgamation. If not using the                   | 
+|                                        | amalgamation then you need to seperately ensure fts3/4 is enabled in the SQLite      |
 |                                        | install. You are likely to want the `parenthesis option                              |
 |                                        | <http://www.sqlite.org/compile.html#enable_fts3_parenthesis>`__ on unless you have   |
 |                                        | legacy code (`--enable-all-extensions` turns it on).                                 |

@@ -49,8 +49,8 @@ telling it when the writer code should exit.  This is a simple example::
 
 .. _ext-fts3:
 
-FTS3
-====
+FTS3/4
+======
 
 This is the third version of the `full text search
 <http://www.sqlite.org/fts3.html>`__ extension.  It
@@ -59,6 +59,10 @@ enable the extension via :ref:`setup.py build flags
 <setup_build_flags>` before it will work.  There are no additional
 APIs and the `documented SQL
 <http://www.sqlite.org/fts3.html>`__ works as is.
+
+Note that FTS4 is some augmentations to FTS3 and are enabled whenever
+FTS3 is enabled as described in the `documentation
+<http://www.sqlite.org/fts3.html#fts4>`__
 
 .. _ext-icu:
 

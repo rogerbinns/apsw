@@ -26,7 +26,7 @@ Some suggested uses:
    <http://en.wikipedia.org/wiki/Join_%28SQL%29>`__ between data in
    SQLite and CouchDB.
 
- * Using the SQLite :ref:`FTS3 full text search extension <ext-fts3>`
+ * Using the SQLite :ref:`FTS full text search extension <ext-fts3>`
    for data in CouchDB.
 
  * Using the SQLite :ref:`RTree extension <ext-rtree>` to do spatial
@@ -103,8 +103,8 @@ file in this example against the :ref:`SQLite shell <shell>`::
 
 Use ``.help import`` for more hints on importing data.
 
-Using FTS3
-----------
+Using FTS
+---------
 
 In this example we have CouchDB documents that are recipes.  The
 CouchDB _id field is the recipe name::

@@ -516,7 +516,7 @@ class apsw_build_ext(beparent):
         v=beparent.finalize_options(self)
 
         if self.enable_all_extensions:
-            exts=["fts3", "fts3_parenthesis", "rtree"]
+            exts=["fts4", "fts3", "fts3_parenthesis", "rtree"]
             if find_in_path("icu-config"):
                 exts.append("icu")
             if not self.enable:
@@ -598,7 +598,7 @@ class apsw_build_ext(beparent):
                 # hopefully future proof test
                 if "_" not in e.lower() and \
                        "memsys" not in e.lower() and \
-                       e.lower() not in ("fts3", "rtree", "icu", "iotrace", "stat2"):
+                       e.lower() not in ("fts4", "fts3", "rtree", "icu", "iotrace", "stat2"):
                     write("Unknown enable "+e, sys.stderr)
                     raise ValueError("Bad enable "+e)
 
