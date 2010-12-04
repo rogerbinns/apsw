@@ -8,7 +8,7 @@ Source and binaries
 
 You can download this release as binaries for Windows.  Just run the
 executable corresponding with the Python version you are using.  The
-Windows binaries all include the :ref:`FTS3 <ext-fts3>` and
+Windows binaries all include the :ref:`FTS <ext-fts3>` and
 :ref:`RTree <ext-rtree>` extensions.  (`FTS3_PARENTHESIS
 <http://www.sqlite.org/compile.html#enable_fts3_parenthesis>`_ is on.)
 
@@ -26,29 +26,29 @@ way to build or all the :ref:`options available <building>`.
   <http://apsw.googlecode.com/files/apsw-3.7.3-r1.chm>`_
   (Compiled HTML Help) `Seeing blank content? <http://weblog.helpware.net/?p=36>`_ & `MSKB 902225 <http://support.microsoft.com/kb/902225/>`_
 
-* `apsw-3.7.3-r1.win32-py2.3.exe
-  <http://apsw.googlecode.com/files/apsw-3.7.3-r1.win32-py2.3.exe>`_
-  (Windows Python 2.3)
+* Windows Python 2.3 `32bit
+  <http://apsw.googlecode.com/files/apsw-3.7.3-r1.win32-py2.3.exe>`__
 
-* `apsw-3.7.3-r1.win32-py2.4.exe
-  <http://apsw.googlecode.com/files/apsw-3.7.3-r1.win32-py2.4.exe>`_
-  (Windows Python 2.4)
+* Windows Python 2.4 `32bit
+  <http://apsw.googlecode.com/files/apsw-3.7.3-r1.win32-py2.4.exe>`__
 
-* `apsw-3.7.3-r1.win32-py2.5.exe
-  <http://apsw.googlecode.com/files/apsw-3.7.3-r1.win32-py2.5.exe>`_
-  (Windows Python 2.5)
+* Windows Python 2.5 `32bit
+  <http://apsw.googlecode.com/files/apsw-3.7.3-r1.win32-py2.5.exe>`__
 
-* `apsw-3.7.3-r1.win32-py2.6.exe
-  <http://apsw.googlecode.com/files/apsw-3.7.3-r1.win32-py2.6.exe>`_
-  (Windows Python 2.6)
+* Windows Python 2.6 `32bit
+  <http://apsw.googlecode.com/files/apsw-3.7.3-r1.win32-py2.6.exe>`__
+  `64bit 
+  <http://apsw.googlecode.com/files/apsw-3.7.3-r1.win-amd64-py2.6.exe>`__
 
-* `apsw-3.7.3-r1.win32-py2.7.exe
-  <http://apsw.googlecode.com/files/apsw-3.7.3-r1.win32-py2.7.exe>`_
-  (Windows Python 2.7)
+* Windows Python 2.7 `32bit
+  <http://apsw.googlecode.com/files/apsw-3.7.3-r1.win32-py2.7.exe>`__
+  `64bit 
+  <http://apsw.googlecode.com/files/apsw-3.7.3-r1.win-amd64-py2.7.exe>`__
 
-* `apsw-3.7.3-r1.win32-py3.1.exe
-  <http://apsw.googlecode.com/files/apsw-3.7.3-r1.win32-py3.1.exe>`_
-  (Windows Python 3.1)
+* Windows Python 3.1 `32bit
+  <http://apsw.googlecode.com/files/apsw-3.7.3-r1.win32-py3.1.exe>`__
+  `64bit 
+  <http://apsw.googlecode.com/files/apsw-3.7.3-r1.win-amd64-py3.1.exe>`__
 
 * `apsw-3.7.3-r1-sigs.zip 
   <http://apsw.googlecode.com/files/apsw-3.7.3-r1-sigs.zip>`_
@@ -66,7 +66,7 @@ Some Linux distributions also have packages.
 | Ubuntu PPA        | I maintain a PPA that is up to date at                                           |
 |                   | https://launchpad.net/~ubuntu-rogerbinns/+archive/apsw  which has SQLite         |
 |                   | embedded statically inside (ie system SQLite is ignored) and has all the         |
-|                   | extensions enabled: FTS3, RTree, ICU, asyncvfs                                   |
+|                   | extensions enabled: FTS3/4, RTree, ICU, asyncvfs                                 |
 +-------------------+----------------------------------------------------------------------------------+
 | Gentoo            | Install `dev-python/apsw <http://www.gentoo-portage.com/dev-python/apsw>`_       |
 +-------------------+----------------------------------------------------------------------------------+
