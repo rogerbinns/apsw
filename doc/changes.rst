@@ -15,6 +15,13 @@ previous value instead of None.
 
 Improve getting shell timer information for 64 bit Windows.
 
+:meth:`blob.reopen` is implemented.
+
+FTS4 is enabled and in the binary builds.  Note that it is an
+augmentation of FTS3 rather than totally separate code and described
+in the `SQLite documentation
+<http://www.sqlite.org/fts3.html#fts4>`__.
+
 3.7.3-r1
 ========
 

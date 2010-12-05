@@ -279,6 +279,7 @@ class APSW(unittest.TestCase):
         'write': 1,
         'read': 1,
         'readinto': 1,
+        'reopen': 1,
         'seek': 2
         }
 
@@ -3724,6 +3725,21 @@ class APSW(unittest.TestCase):
         blobro=self.db.blobopen("main", "foo", "x", rowid, False)
         self.assertRaises(apsw.ReadOnlyError, blobro.write, b("abcd"))
         blobro.close(True)
+        self.db.cursor().execute("insert into foo(_rowid_, x) values(99, 1)")
+        blobro=self.db.blobopen("main", "foo", "x", rowid, False)
+        self.assertRaises(TypeError, blobro.reopen)
+        self.assertRaises(TypeError, blobro.reopen, "banana")
+        self.assertRaises(OverflowError, blobro.reopen, l("45236748972389749283"))
+        first=blobro.read(2)
+        # check position is reset
+        blobro.reopen(rowid)
+        self.assertEqual(blobro.tell(), 0)
+        self.assertEqual(first, blobro.read(2))
+        # invalid reopen
+        self.assertRaises(apsw.SQLError, blobro.reopen, l("0x1ffffffff"))
+        self.assertRaises(apsw.AbortError, blobro.read, 2)
+        blobro.close()
+        
 
     def testBlobReadError(self):
         "Ensure blob read errors are handled well"

@@ -644,6 +644,49 @@ APSWBlob_exit(APSWBlob *self, APSW_ARGUNUSED PyObject *args)
   Py_RETURN_FALSE;
 }
 
+/** .. method:: reopen(rowid) 
+
+  Change this blob object to point to a different row.  It can be
+  faster than closing an existing blob an opening a new one.
+
+  -* sqlite3_blob_reopen
+*/
+
+static PyObject *
+APSWBlob_reopen(APSWBlob *self, PyObject *arg)
+{
+  int res;
+  long long rowid;
+
+  CHECK_USE(NULL);
+  CHECK_BLOB_CLOSED;
+
+#if PY_MAJOR_VERSION<3
+  if(PyInt_Check(arg))
+    rowid=PyInt_AS_LONG(arg);
+  else
+#endif
+    if (PyLong_Check(arg))
+      {
+	rowid=PyLong_AsLongLong(arg);
+	if(PyErr_Occurred())
+	  return NULL;
+      }
+    else
+      return PyErr_Format(PyExc_TypeError, "blob reopen argument must be a number");
+  
+  /* no matter what happens we always reset current offset */
+  self->curoffset=0;
+
+  PYSQLITE_BLOB_CALL(res=sqlite3_blob_reopen(self->pBlob, rowid));
+  if(res!=SQLITE_OK)
+    {
+      SET_EXC(res, self->connection->db);
+      return NULL;
+    }
+  Py_RETURN_NONE;
+}
+
 static PyMethodDef APSWBlob_methods[]={
   {"length", (PyCFunction)APSWBlob_length, METH_NOARGS,
    "Returns length in bytes of the blob"},
@@ -657,6 +700,8 @@ static PyMethodDef APSWBlob_methods[]={
    "Returns current blob offset"},
   {"write", (PyCFunction)APSWBlob_write, METH_O,
    "Writes data to blob"},
+  {"reopen", (PyCFunction)APSWBlob_reopen, METH_O,
+   "Changes the blob to point to a different row"},
   {"close", (PyCFunction)APSWBlob_close, METH_VARARGS,
    "Closes blob"},
   {"__enter__", (PyCFunction)APSWBlob_enter, METH_NOARGS,
