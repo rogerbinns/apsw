@@ -317,16 +317,16 @@ alongside the tests. Reported issues also have test cases to ensure
 the issue doesn't happen or doesn't happen again.::
   
   $ python setup.py test
-                  Python /usr/bin/python (2, 6, 2, 'final', 0)
+                 Python /usr/bin/python (2, 6, 6, 'final', 0)
   Testing with APSW file /space/apsw/apsw.so
-            APSW version 3.6.16-r1
-      SQLite lib version 3.6.16
-  SQLite headers version 3006016
+            APSW version 3.7.4-r1
+      SQLite lib version 3.7.4
+  SQLite headers version 3007004
       Using amalgamation True
-  ................................................................
+  ............................................................................
   ----------------------------------------------------------------------
-  Ran 64 tests in 92.076s
-
+  Ran 76 tests in 404.557s
+  
   OK
 
 The tests also ensure that as much APSW code as possible is executed
@@ -339,7 +339,7 @@ such as memory allocation failures, SQLite returning undocumented
 error codes etc. That brings coverage up to 99.6% of the code.
 
 A memory checker `Valgrind <http://valgrind.org>`_ is used while
-running the test suite. The test suite is run 150 times to makes any
+running the test suite. The test suite is run 150 times to make any
 memory leaks or similar issues stand out. A checking version of Python
 is also used.  See `valgrind.sh
 <http://code.google.com/p/apsw/source/browse/tools/valgrind.sh>`_
