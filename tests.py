@@ -3737,7 +3737,6 @@ class APSW(unittest.TestCase):
         self.assertEqual(first, blobro.read(2))
         # invalid reopen
         self.assertRaises(apsw.SQLError, blobro.reopen, l("0x1ffffffff"))
-        self.assertRaises(apsw.AbortError, blobro.read, 2)
         blobro.close()
         
 
