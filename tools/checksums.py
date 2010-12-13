@@ -6,26 +6,7 @@ import urllib2
 import hashlib
 
 sqlitevers=(
-    '3.7.3',
-    '3.7.2',
-    '3.7.1',
-    '3.7.0.1',
-    '3.7.0',
-    '3.6.23.1',
-    '3.6.23',
-    '3.6.22',
-    '3.6.21',
-    '3.6.20',
-    '3.6.19',
-    '3.6.18',
-    '3.6.17',
-    '3.6.16',
-    '3.6.15',
-    '3.6.14.2',
-    '3.6.14.1',
-    '3.6.14',
-    '3.6.13',
-    '3.6.12'
+    '3070400',
     )
 
 # Checks the checksums file
@@ -60,7 +41,7 @@ def check(url, data):
 
 for v in sqlitevers:
     # Windows amalgamation
-    AURL="http://www.sqlite.org/sqlite-amalgamation-%s.zip" % (v.replace(".", "_"),)
+    AURL="http://www.sqlite.org/sqlite-amalgamation-%s.zip" % (v,)
     try:
         data=urllib2.urlopen(AURL).read()
     except:
@@ -68,7 +49,7 @@ for v in sqlitevers:
         raise
     check(AURL, data)
     # All other platforms amalgamation
-    AURL="http://www.sqlite.org/sqlite-amalgamation-%s.tar.gz" % (v,)
+    AURL="http://www.sqlite.org/sqlite-autoconf-%s.tar.gz" % (v,)
     try:
         data=urllib2.urlopen(AURL).read()
     except:
@@ -76,7 +57,7 @@ for v in sqlitevers:
         raise
     check(AURL, data)
     # asyncvfs
-    AURL="http://www.sqlite.org/sqlite-%s.tar.gz" % (v,)
+    AURL="http://www.sqlite.org/sqlite-src-%s.zip" % (v,)
     try:
         data=urllib2.urlopen(AURL).read()
     except:

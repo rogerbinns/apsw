@@ -217,7 +217,7 @@ then it will automatically fetch the current version of the SQLite
 amalgamation. (The current version is determined by parsing the
 `SQLite download page <http://www.sqlite.org/download.html>`_). You
 can manually specify the version, for example
-:option:`fetch --sqlite --version=3.6.1`.
+:option:`fetch --sqlite --version=3.7.4`.
 
 These methods are tried in order:
 

@@ -181,9 +181,11 @@ class fetch(Command):
         if self.version is None:
             write("  Getting download page to work out current SQLite version")
             page=self.download("http://www.sqlite.org/download.html", text=True, checksum=False)
-            match=re.search('"sqlite-amalgamation-3([0-9_]+).zip"', page)
+            match=re.search('"sqlite-amalgamation-3([0-9][0-9])([0-9][0-9])([0-9][0-9]).zip"', page)
             if match:
-                self.version="3."+match.group(1)[1:].replace("_", ".")
+                self.version="3.%d.%d.%d" % tuple([int(match.group(n)) for n in range(1,4)])
+                if self.version.endswith(".0"):
+                    self.version=self.version[:-len(".0")]
             else:
                 write("Unable to determine current SQLite version.  Use --version=VERSION", sys.stderr)
                 write("to set version - eg setup.py fetch --version=3.6.18", sys.stderr)
@@ -192,34 +194,37 @@ class fetch(Command):
         # now get each selected component
         downloaded=0
 
+        if self.version!="fossil":
+            v=[int(x) for x in self.version.split(".")]
+            if len(v)<4:
+                v.append(0)
+            self.webversion="%d%02d%02d%02d" % tuple(v)
+
         ## The amalgamation
         if self.sqlite:
             if self.version=="fossil":
                 write("  Getting current trunk from fossil")
             else:
                 write("  Getting the SQLite amalgamation")
-            simple=sys.platform in ('win32', 'win64')
 
-            if simple:
-                ver=self.version.replace(".", "_")
-                AURL="http://www.sqlite.org/sqlite-amalgamation-%s.zip" % (ver,)
-            else:
-                AURL="http://www.sqlite.org/sqlite-amalgamation-%s.tar.gz" % (self.version,)
-
-            checksum=True
             if self.version=="fossil":
-                simple=False
                 AURL="http://www.sqlite.org/src/zip/sqlite3.zip?uuid=trunk"
                 checksum=False
+            else:
+                if sys.platform=="win32":
+                    AURL="http://www.sqlite.org/sqlite-amalgamation-%s.zip" % (self.webversion,)
+                else:
+                    AURL="http://www.sqlite.org/sqlite-autoconf-%s.tar.gz" % (self.webversion,)
+                checksum=True
 
             data=self.download(AURL, checksum=checksum)
 
-            if simple:
+            if AURL.endswith(".zip"):
                 zip=zipfile.ZipFile(data, "r")
                 for name in "sqlite3.c", "sqlite3.h", "sqlite3ext.h":
                     write("Extracting", name)
                     # If you get an exception here then the archive doesn't contain the files it should
-                    open(name, "wb").write(zip.read(name))
+                    open(name, "wb").write(zip.read("sqlite-amalgamation-%s/%s" % (self.webversion, name)))
                 zip.close()
             else:
                 # we need to run configure to get various -DHAVE_foo flags on non-windows platforms
@@ -308,18 +313,12 @@ class fetch(Command):
             if self.version=="fossil":
                 AURL="http://www.sqlite.org/src/zip/sqlite3.zip?uuid=trunk"
             else:
-                AURL="http://www.sqlite.org/sqlite-%s.tar.gz" % (self.version,)
+                AURL="http://www.sqlite.org/sqlite-src-%s.zip" % (self.webversion,)
             data=self.download(AURL, checksum=not self.version=="fossil")
 
-            if self.version=="fossil":
-                archive=zipfile.ZipFile(data, "r")
-                members=archive.namelist()
-                extractfile=archive.read
-            else:
-                import zlib
-                archive=tarfile.open("nonexistentname to keep old python happy", 'r', data)
-                members=[a.name for a in archive.getmembers()]
-                extractfile=archive.extractfile
+            archive=zipfile.ZipFile(data, "r")
+            members=archive.namelist()
+            extractfile=archive.read
                 
             lookfor=("sqlite3async.c", "sqlite3async.h")
             found=[0]*len(lookfor)
