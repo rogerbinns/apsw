@@ -148,7 +148,7 @@ def buildpython(workdir, pyver, ucs, logfilename):
     
 # Default versions we support
 PYVERS=(
-    '3.2b1',
+    '3.2rc3',
     '3.1.3',
     '2.7.1',
     '2.6.6',
