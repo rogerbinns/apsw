@@ -498,6 +498,7 @@ try:
     print "string exceeding limit was inserted"
 except apsw.TooBigError:
     print "Caught toobig exception"
+connection.limit(apsw.SQLITE_LIMIT_LENGTH, 0x7fffffff) 
     
 #@@ENDCAPTURE
 

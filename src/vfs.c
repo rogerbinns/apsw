@@ -2316,16 +2316,29 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
 
   pyresult=Call_PythonMethodV(apswfile->file, "xFileControl", 1, "(iN)", op, PyLong_FromVoidPtr(pArg));
   if(!pyresult)
-    result=MakeSqliteMsgFromPyException(NULL);
+    {
+      result=MakeSqliteMsgFromPyException(NULL);
+      /* not a real error */
+      if(result==SQLITE_NOTFOUND)
+	PyErr_Clear();
+    }
   else
-    result=SQLITE_OK;
+    {
+      if(pyresult!=Py_True && pyresult!=Py_False)
+	{
+	  PyErr_Format(PyExc_TypeError, "xFileControl must return True or False");
+	  result=SQLITE_ERROR;
+	}
+      else
+	result=(pyresult==Py_True)?SQLITE_OK:SQLITE_NOTFOUND;
+    }
 
   Py_XDECREF(pyresult);
   FILEPOSTAMBLE;
   return result;
 }
 
-/** .. method:: xFileControl(op, ptr)
+/** .. method:: xFileControl(op, ptr) -> bool
 
    Receives `file control
    <http://sqlite.org/c3ref/file_control.html>`_ request typically
@@ -2336,6 +2349,8 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
    :param op: A numeric code.  Codes below 100 are reserved for SQLite
      internal use.
    :param ptr: An integer corresponding to a pointer at the C level.
+
+   :returns: A boolean indicating if the op was understood
 
    As of SQLite 3.6.10, this method is called by SQLite if you have
    inherited from an underlying VFSFile.  Consequently ensure you pass
@@ -2348,7 +2363,9 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
                     obj=ctypes.py_object.from_address(ptr).value
                 else:
                     # this ensures superclass implementation is called
-                    super(MyFile, self).xFileControl(op, ptr)
+                    return super(MyFile, self).xFileControl(op, ptr)
+		# we understood the op
+	        return True
 */
 static PyObject *
 apswvfsfilepy_xFileControl(APSWVFSFile *self, PyObject *args)
@@ -2374,7 +2391,9 @@ apswvfsfilepy_xFileControl(APSWVFSFile *self, PyObject *args)
   res=self->base->pMethods->xFileControl(self->base, op, ptr);
 
   if(res==SQLITE_OK)
-    Py_RETURN_NONE;
+    Py_RETURN_TRUE;
+  if(res==SQLITE_NOTFOUND)
+    Py_RETURN_FALSE;
  finally:
   SET_EXC(res, NULL);
   return NULL;

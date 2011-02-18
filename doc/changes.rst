@@ -2,6 +2,19 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.7.5-r1
+========
+
+Backwards incompatible change in SQLite 3.7.5 for handling of
+:meth:`~VFSFile.xFileControl`.  If you implement this method in a VFS
+then you must return True or False to indicate if the operation was
+understood.  :meth:`Connection.filecontrol` now returns that value.
+(Previously you could not tell the difference between an op being
+understood and an error resulting, or the op not being understood at
+all.)
+
+Windows Python 3.2 binaries now available.
+
 3.7.4-r1
 ========
 

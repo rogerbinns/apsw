@@ -2559,7 +2559,7 @@ Connection_createcollation(Connection *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
-/** .. method:: filecontrol(dbname, op, pointer)
+/** .. method:: filecontrol(dbname, op, pointer) -> bool
 
   Calls the :meth:`~VFSFile.xFileControl` method on the :ref:`VFS`
   implementing :class:`file access <VFSFile>` for the database.
@@ -2570,9 +2570,10 @@ Connection_createcollation(Connection *self, PyObject *args)
     than 100 reserved for SQLite internal use.
   :param pointer: A number which is treated as a ``void pointer`` at the C level.
 
-  The method does not return anything.  If you want data returned back
-  then the *pointer* needs to point to something mutable.  Here is an
-  example using `ctypes
+  :returns: True or False indicating if the VFS understood the op.
+
+  If you want data returned back then the *pointer* needs to point to
+  something mutable.  Here is an example using `ctypes
   <http://www.python.org/doc/2.5.2/lib/module-ctypes.html>`_ of
   passing a Python dictionary to :meth:`~VFSFile.xFileControl` which
   can then modify the dictionary to set return values::
@@ -2593,9 +2594,10 @@ Connection_createcollation(Connection *self, PyObject *args)
             # play with obj - you can use id() to verify it is the same
             print obj["foo"]
             obj["result"]="it worked"
+	    return True
         else:
             # pass to parent/superclass
-            super(MyFile, self).xFileControl(op, pointer)
+            return super(MyFile, self).xFileControl(op, pointer)
 
   This is how you set the chunk size by which the database grows.  Do
   not combine it into one line as the c_int would be garbage collected
@@ -2612,7 +2614,7 @@ Connection_filecontrol(Connection *self, PyObject *args)
 {
   PyObject *pyptr;
   void *ptr=NULL;
-  int res, op;
+  int res=SQLITE_ERROR, op;
   char *dbname=NULL;
 
   CHECK_USE(NULL);
@@ -2634,7 +2636,8 @@ Connection_filecontrol(Connection *self, PyObject *args)
 
   PYSQLITE_CON_CALL(res=sqlite3_file_control(self->db, dbname, op, ptr));
 
-  SET_EXC(res, self->db);
+  if(res!=SQLITE_OK && res!=SQLITE_NOTFOUND)
+    SET_EXC(res, self->db);
 
  finally:
   if(dbname) PyMem_Free(dbname);
@@ -2642,7 +2645,9 @@ Connection_filecontrol(Connection *self, PyObject *args)
   if(PyErr_Occurred())
     return NULL;
 
-  Py_RETURN_NONE;
+  if(res==SQLITE_NOTFOUND)
+    Py_RETURN_FALSE;
+  Py_RETURN_TRUE;
 }
 
 /** .. method:: sqlite3pointer() -> int

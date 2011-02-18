@@ -367,7 +367,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, self.db.filecontrol, 1, 2)
         self.assertRaises(TypeError, self.db.filecontrol, "main", 1001, "foo")
         self.assertRaises(OverflowError, self.db.filecontrol, "main", 1001, l("45236748972389749283"))
-        self.assertRaises(apsw.SQLError, self.db.filecontrol, "main", 1001, 25)
+        self.assertEqual(self.db.filecontrol("main", 1001, 25), False)
 
     def testMemoryLeaks(self):
         "MemoryLeaks: Run with a memory profiler such as valgrind and debug Python"
@@ -4367,6 +4367,9 @@ class APSW(unittest.TestCase):
             def xFileControl2(self, op, ptr):
                 1/0
 
+            def xFileControl3(self, op, ptr):
+                return "banana"
+
             def xFileControl99(self, op, ptr):
                 if op==1027:
                     assert(ptr==1027)
@@ -4375,6 +4378,7 @@ class APSW(unittest.TestCase):
                         assert(True is ctypes.py_object.from_address(ptr).value)
                 else:
                     return super(TestFile, self).xFileControl(op, ptr)
+                return True
 
         # check initialization
         self.assertRaises(TypeError, apsw.VFS, "3", 3)
@@ -4802,13 +4806,15 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, t.xFileControl, "three", "four")
         self.assertRaises(OverflowError, t.xFileControl, 10, l("0xffffffffeeeeeeee0"))
         self.assertRaises(TypeError, t.xFileControl, 10, "three")
-        self.assertRaises(apsw.SQLError, t.xFileControl, 2000, 3000)
+        self.assertEqual(t.xFileControl(2000, 3000), False)
         fc1=testdb("testdb", closedb=False).filecontrol
         fc2=testdb("testdb2", closedb=False).filecontrol
         TestFile.xFileControl=TestFile.xFileControl1
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, fc1, "main", 1027, 1027)
         TestFile.xFileControl=TestFile.xFileControl2
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, fc2, "main", 1027, 1027)
+        TestFile.xFileControl=TestFile.xFileControl3
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, fc2, "main", 1027, 1027)
         TestFile.xFileControl=TestFile.xFileControl99
         del fc1
         del fc2
