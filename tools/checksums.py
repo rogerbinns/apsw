@@ -7,6 +7,7 @@ import hashlib
 
 sqlitevers=(
     '3070400',
+    '3070500',
     )
 
 # Checks the checksums file

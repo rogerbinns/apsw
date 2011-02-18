@@ -1,7 +1,7 @@
 # This file contains checksums/hashes of SQLite so that we can verify
 # downloads using fetch command to setup.py have not been
 # tampered with.  See
-# http://apsw.googlecode.com/svn/publish/build.html#additional-setup-py-flags
+# http://apidoc.apsw.googlecode.com/hg/build.html#additional-setup-py-flags
 # for information on setup.py flags.
 
 # Format is URL length SHA1 MD5 all on one line.  Yes SHA1 and MD5 are
@@ -10,6 +10,10 @@
 # hashes.  This extra checking mechanism is to give you a little bit
 # more peace of mind because the SQLite releases are not signed in any
 # way.
+
+http://www.sqlite.org/sqlite-amalgamation-3070500.zip    1244400 13e2139903aeb8077ea1229716299cbbc0a5a784 cfaa9c26945eed935c87c26dad60853b
+http://www.sqlite.org/sqlite-autoconf-3070500.tar.gz 1551070 4e1338497b8da50b84307191bb3418e9ec5715d7 a9604a82613ade2e7f4c303f233e477f
+http://www.sqlite.org/sqlite-src-3070500.zip    3987471 9706110d635c347e16ddb8cea1b4923385fecfac d61d784997d42cd0d92bac7994094c56
 
 http://www.sqlite.org/sqlite-amalgamation-3070400.zip    1238976 358bfabb4ec9cf6a86d0809a7d38a55f13cb61b8 cedee06d5982af8297f4cdb77b52a659
 http://www.sqlite.org/sqlite-autoconf-3070400.tar.gz 1545086 43848641320cb60fb7f445bc295b9870cdc127be 8f0c690bfb33c3cbbc2471c3d9ba0158
