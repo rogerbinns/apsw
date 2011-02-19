@@ -2316,12 +2316,7 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
 
   pyresult=Call_PythonMethodV(apswfile->file, "xFileControl", 1, "(iN)", op, PyLong_FromVoidPtr(pArg));
   if(!pyresult)
-    {
       result=MakeSqliteMsgFromPyException(NULL);
-      /* not a real error */
-      if(result==SQLITE_NOTFOUND)
-	PyErr_Clear();
-    }
   else
     {
       if(pyresult!=Py_True && pyresult!=Py_False)
