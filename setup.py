@@ -223,8 +223,10 @@ class fetch(Command):
                 zip=zipfile.ZipFile(data, "r")
                 for name in "sqlite3.c", "sqlite3.h", "sqlite3ext.h":
                     write("Extracting", name)
-                    # If you get an exception here then the archive doesn't contain the files it should
-                    open(name, "wb").write(zip.read("sqlite-amalgamation-%s/%s" % (self.webversion, name)))
+                    f=[n for n in zip.namelist() if n.endswith(name)]
+                    if len(f)!=1:
+                        raise Exception("Can't find %s in zip.  Candidates are %s" % (name, f))
+                    open(name, "wb").write(zip.read(f[0]))
                 zip.close()
             else:
                 # we need to run configure to get various -DHAVE_foo flags on non-windows platforms
