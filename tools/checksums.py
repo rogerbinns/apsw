@@ -8,6 +8,8 @@ import hashlib
 sqlitevers=(
     '3070400',
     '3070500',
+    '3070600',
+    '3070601',
     )
 
 # Checks the checksums file

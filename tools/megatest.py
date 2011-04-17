@@ -148,7 +148,7 @@ def buildpython(workdir, pyver, ucs, logfilename):
     
 # Default versions we support
 PYVERS=(
-    '3.2rc3',
+    '3.2',
     '3.1.3',
     '2.7.1',
     '2.6.6',
@@ -160,7 +160,8 @@ PYVERS=(
     )
 
 SQLITEVERS=(
-    '3.7.5',
+    '3.7.6',
+    '3.7.6.1'
    )
 
 def couchp(pyver):

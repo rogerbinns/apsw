@@ -11,6 +11,17 @@
 # more peace of mind because the SQLite releases are not signed in any
 # way.
 
+http://www.sqlite.org/sqlite-amalgamation-3070601.zip    1273690 e4888b7a4e9c0c99b8ba6d9083d095ead8e4fa2f bdfc96a69c1b592cc35e52fecef0335f
+http://www.sqlite.org/sqlite-autoconf-3070601.tar.gz 1720170 8e3d1f93576374238875197b1fb472332e339ea7 a9b7327d6762652fe19caf68fb50849d
+http://www.sqlite.org/sqlite-src-3070601.zip    4469325 b1646e4b82fea6c8fd1ca0d12afe319056a6d216 5d0e07112e609681187e04319f611fee
+
+http://www.sqlite.org/sqlite-amalgamation-3070600.zip    1273593 4dd4dc4b10b280a46d77b1b06fb531223bb39811 3b485f167c80e6cead300c926745a5c4
+http://www.sqlite.org/sqlite-autoconf-3070600.tar.gz 1721938 6b17cf7610437706fec6e21f29933c1ffd3a13e0 8e1764574dbddb6be675c79bcfcc304d
+http://www.sqlite.org/sqlite-src-3070600.zip    4469235 238247cab076b4df4876970a3e8d1c5b23150062 cbc150157ef90e3423236740ca6c917b
+
+# The checksum for 3.7.5 zip has changed (sqlite devs really should
+# stop doing this!)  APSW doesn't support that old version anymore
+# anyway
 http://www.sqlite.org/sqlite-amalgamation-3070500.zip    1244400 13e2139903aeb8077ea1229716299cbbc0a5a784 cfaa9c26945eed935c87c26dad60853b
 http://www.sqlite.org/sqlite-autoconf-3070500.tar.gz 1551070 4e1338497b8da50b84307191bb3418e9ec5715d7 a9604a82613ade2e7f4c303f233e477f
 http://www.sqlite.org/sqlite-src-3070500.zip    3987471 9706110d635c347e16ddb8cea1b4923385fecfac d61d784997d42cd0d92bac7994094c56
