@@ -1673,7 +1673,10 @@ Enter SQL statements terminated with a ";"
         self.stdout.flush()
         self.stderr.flush()
         if hasattr(self.stdin, "flush"):
-            self.stdin.flush()
+            try:
+                self.stdin.flush()
+            except IOError: # see issue 117
+                pass
 
         # we will also close stdout but only do so once we have a
         # replacement so that stdout is always valid
