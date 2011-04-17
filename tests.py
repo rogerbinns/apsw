@@ -3348,7 +3348,7 @@ class APSW(unittest.TestCase):
                 "req":
                      {
                         "check": "CHECKVFSPY",
-                        "notimpl": "VFSNOTIMPLEMENTED(%(base)s)"
+                        "notimpl": "VFSNOTIMPLEMENTED(%(base)s,"
                      },
                 "order": ("check", "notimpl"),
                },
@@ -3374,7 +3374,7 @@ class APSW(unittest.TestCase):
                 "req":
                      {
                         "check": "CHECKVFSFILEPY",
-                        "notimpl": "VFSFILENOTIMPLEMENTED(%(base)s)"
+                        "notimpl": "VFSFILENOTIMPLEMENTED(%(base)s,"
                      },
                 "order": ("check", "notimpl"),
                },
