@@ -3116,6 +3116,49 @@ Connection_exit(Connection *self, PyObject *args)
   Py_RETURN_FALSE;
 }
 
+/** .. method:: config(op[, *args])
+
+    :param op: A `configuration operation
+      <http://sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__
+    :param args: Zero or more arguments as appropriate for *op*
+
+    -* sqlite3_db_config
+*/
+static PyObject *
+Connection_config(Connection *self, PyObject *args)
+{
+  long opt;
+  int res;
+
+  if(PyTuple_GET_SIZE(args)<1 || !PyIntLong_Check(PyTuple_GET_ITEM(args, 0)))
+    return PyErr_Format(PyExc_TypeError, "There should be at least one argument with the first being a number");
+
+  opt=PyIntLong_AsLong(PyTuple_GET_ITEM(args,0));
+  if(PyErr_Occurred())
+    return NULL;
+
+  switch(opt)
+    {
+    case SQLITE_DBCONFIG_ENABLE_FKEY:
+    case SQLITE_DBCONFIG_ENABLE_TRIGGER:
+      {
+	int opdup, val, current;
+	if(!PyArg_ParseTuple(args, "ii", &opdup, &val))
+	  return NULL;
+
+	res=sqlite3_db_config(opdup, val, &current);
+	if(res!=SQLITE_OK)
+	  {
+	    SET_EXC(res, self->db);
+	    return NULL;
+	  }
+	return PyInt_FromLong(current);
+      }
+    default:
+      return PyErr_Format(PyExc_TypeError, "Unknown config type %d", (int)opt);
+    }
+}
+
 /** .. attribute:: filename
 
   The filename used to open the database.
@@ -3218,6 +3261,8 @@ static PyMethodDef Connection_methods[] = {
    "Set wal checkpoint threshold"},
   {"wal_checkpoint", (PyCFunction)Connection_wal_checkpoint, METH_VARARGS,
    "Do immediate WAL checkpoint"},
+  {"config", (PyCFunction)Connection_config, METH_VARARGS,
+   "Configure this connection"},
   {0, 0, 0, 0}  /* Sentinel */
 };
 

@@ -1701,6 +1701,8 @@ modules etc. For example::
 
       DICT("mapping_db_config"),
       ADDINT(SQLITE_DBCONFIG_LOOKASIDE),
+      ADDINT(SQLITE_DBCONFIG_ENABLE_FKEY),
+      ADDINT(SQLITE_DBCONFIG_ENABLE_TRIGGER),
       END,
 
       DICT("mapping_status"),
