@@ -96,6 +96,7 @@ exc_descriptors[]=
     /* Generic Errors */
     {SQLITE_ERROR,    "SQL", NULL},    
     {SQLITE_MISMATCH, "Mismatch", NULL},
+    {SQLITE_NOTFOUND, "NotFound", NULL},
 
     /* Internal Errors */
     {SQLITE_INTERNAL, "Internal", NULL},  /* NOT USED */

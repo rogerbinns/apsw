@@ -135,6 +135,12 @@ General Errors
   :const:`SQLITE_MISMATCH`. Data type mismatch.  For example a rowid
   or integer primary key must be an integer.
 
+.. exception:: NotFoundError
+
+  :const:`SQLITE_NOTFOUND`. Returned when various internal items were
+  not found such as requests for non-existent system calls or file
+  controls.
+
 Internal Errors
 ^^^^^^^^^^^^^^^
 
