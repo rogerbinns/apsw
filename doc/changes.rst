@@ -5,13 +5,20 @@ Change History
 3.7.6.2-r1
 ==========
 
-Fixed `issue 117 <http://code.google.com/p/apsw/issues/detail?id=117>`
-where the shell could report an I/O error on changing output target
-for some operating systems.  Thanks to Edzard Pasma for finding and
-diagnosing this.
+Fixed `issue 117
+<http://code.google.com/p/apsw/issues/detail?id=117>`__ where the
+shell could report an I/O error on changing output target for some
+operating systems.  Thanks to Edzard Pasma for finding and diagnosing
+this.
 
 Added support for VFS version 3 which allows redirecting system calls
 used by some VFS implementations (eg for testing or sandboxing).
+
+:exc:`NotFoundError` exception added.
+
+Added :meth:`Connection.config`.
+
+XXX wal checkpoint v2
 
 3.7.5-r1
 ========
