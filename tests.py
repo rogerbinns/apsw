@@ -373,6 +373,19 @@ class APSW(unittest.TestCase):
         self.assertRaises(OverflowError, self.db.filecontrol, "main", 1001, l("45236748972389749283"))
         self.assertEqual(self.db.filecontrol("main", 1001, 25), False)
 
+    def testConnectionConfig(self):
+        "Test Connection.config function"
+        self.assertRaises(TypeError, self.db.config)
+        self.assertRaises(TypeError, self.db.config, "three")
+        x=long(0x7fffffff)
+        self.assertRaises(OverflowError, self.db.config, x*x*x*x*x)
+        self.assertRaises(ValueError, self.db.config, 82397)
+        self.assertRaises(TypeError, self.db.config, apsw.SQLITE_DBCONFIG_ENABLE_FKEY, "banana")
+        for i in apsw.SQLITE_DBCONFIG_ENABLE_FKEY, apsw.SQLITE_DBCONFIG_ENABLE_TRIGGER:
+            self.assertEqual(1, self.db.config(i, 1))
+            self.assertEqual(1, self.db.config(i, -1))
+            self.assertEqual(0, self.db.config(i, 0))
+
     def testMemoryLeaks(self):
         "MemoryLeaks: Run with a memory profiler such as valgrind and debug Python"
         # make and toss away a bunch of db objects, cursors, functions etc - if you use memory profiling then
@@ -750,6 +763,9 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, self.db.wal_checkpoint, -1)
         self.db.wal_checkpoint()
         self.db.wal_checkpoint("main")
+        v=self.db.wal_checkpoint(mode=apsw.SQLITE_CHECKPOINT_PASSIVE)
+        self.assert_(isinstance(v, tuple) and len(v)==2 and isinstance(v[0], int) and isinstance(v[1], int))
+        self.assertRaises(apsw.MisuseError, self.db.wal_checkpoint, mode=876786)
         self.assertRaises(TypeError, self.db.setwalhook)
         self.assertRaises(TypeError, self.db.setwalhook, 12)
         self.db.setwalhook(None)
@@ -7193,6 +7209,15 @@ shell.write(shell.stdout, "hello world\\n")
             db.cursor().execute("select 3")
             1/0
         except MemoryError:
+            pass
+
+        ## DBConfigFails
+        apsw.faultdict["DBConfigFails"]=True
+        try:
+            db=apsw.Connection(":memory:")
+            db.config(apsw.SQLITE_DBCONFIG_ENABLE_TRIGGER, -1)
+            1/0
+        except apsw.NoMemError:
             pass
 
         ## RollbackHookExistingError

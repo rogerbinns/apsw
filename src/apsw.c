@@ -1764,6 +1764,12 @@ modules etc. For example::
       ADDINT(SQLITE_SYNC_DATAONLY),
       END,
 
+      DICT("mapping_wal_checkpoint"),
+      ADDINT(SQLITE_CHECKPOINT_PASSIVE),
+      ADDINT(SQLITE_CHECKPOINT_FULL),
+      ADDINT(SQLITE_CHECKPOINT_RESTART),
+      END,
+
       DICT("mapping_file_control"),
       ADDINT(SQLITE_FCNTL_LOCKSTATE),
       ADDINT(SQLITE_GET_LOCKPROXYFILE),

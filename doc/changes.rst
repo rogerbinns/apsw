@@ -18,7 +18,10 @@ used by some VFS implementations (eg for testing or sandboxing).
 
 Added :meth:`Connection.config`.
 
-XXX wal checkpoint v2
+Updated `Connection.wal_checkpoint` to use `sqlite3_wal_checkpoint_v2
+<http://sqlite.org/c3ref/wal_checkpoint_v2.html>`__ which provides
+more fine grained control over checkpointing and returns useful
+information.
 
 3.7.5-r1
 ========

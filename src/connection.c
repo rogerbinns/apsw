@@ -2706,33 +2706,46 @@ Connection_wal_autocheckpoint(Connection *self, PyObject *arg)
   return NULL;
 }
 
-/** .. method:: wal_checkpoint(dbname=None)
+/** .. method:: wal_checkpoint(dbname=None, mode=apsw.SQLITE_CHECKPOINT_PASSIVE) -> ( int, int )
 
-    Does an immediate checkpoint on all attached databases, or just **dbname** if specified.
+    Does a WAL checkpoint.  Has no effect if the database(s) are not in WAL mode.
 
-  -* sqlite3_wal_checkpoint
+    :param dbname:  The name of the database or all databases if None
+
+    :param mode: One of the `checkpoint modes <http://sqlite.org/c3ref/wal_checkpoint_v2.html>`__.
+
+    :return: A tuple of the size of the WAL log in frames and the
+       number of frames checkpointed as described in the
+       `documentation
+       <http://sqlite.org/c3ref/wal_checkpoint_v2.html>`__.
+
+  -* sqlite3_wal_checkpoint_v2
 */
 static PyObject *
-Connection_wal_checkpoint(Connection *self, PyObject *args)
+Connection_wal_checkpoint(Connection *self, PyObject *args, PyObject *kwargs)
 {
+  static char *kwlist[]={"dbname", "mode", NULL};
   int res;
   char *dbname=NULL;
+  int mode=SQLITE_CHECKPOINT_PASSIVE;
+  int nLog=0, nCkpt=0;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if(!PyArg_ParseTuple(args, "|es:wal_checkpoint(dbname=None)", STRENCODING, &dbname))
+  if(!PyArg_ParseTupleAndKeywords(args, kwargs, "|esi:wal_checkpoint(dbname=None)", 
+				  kwlist, STRENCODING, &dbname, &mode))
     return NULL;
 
   APSW_FAULT_INJECT(WalCheckpointFails,
-		    PYSQLITE_CON_CALL(res=sqlite3_wal_checkpoint(self->db, dbname)),
+		    PYSQLITE_CON_CALL(res=sqlite3_wal_checkpoint_v2(self->db, dbname, mode, &nLog, &nCkpt)),
 		    res=SQLITE_IOERR);
 
   SET_EXC(res, self->db);
   PyMem_Free(dbname);
   /* done */
   if (res==SQLITE_OK)
-    Py_RETURN_NONE;
+    return Py_BuildValue("ii", nLog, nCkpt);
   return NULL;
 }
 
@@ -3130,6 +3143,9 @@ Connection_config(Connection *self, PyObject *args)
   long opt;
   int res;
 
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
   if(PyTuple_GET_SIZE(args)<1 || !PyIntLong_Check(PyTuple_GET_ITEM(args, 0)))
     return PyErr_Format(PyExc_TypeError, "There should be at least one argument with the first being a number");
 
@@ -3146,7 +3162,9 @@ Connection_config(Connection *self, PyObject *args)
 	if(!PyArg_ParseTuple(args, "ii", &opdup, &val))
 	  return NULL;
 
-	res=sqlite3_db_config(opdup, val, &current);
+	APSW_FAULT_INJECT(DBConfigFails,
+			  PYSQLITE_CON_CALL(res=sqlite3_db_config(self->db, opdup, val, &current)),
+			  res=SQLITE_NOMEM);
 	if(res!=SQLITE_OK)
 	  {
 	    SET_EXC(res, self->db);
@@ -3155,7 +3173,7 @@ Connection_config(Connection *self, PyObject *args)
 	return PyInt_FromLong(current);
       }
     default:
-      return PyErr_Format(PyExc_TypeError, "Unknown config type %d", (int)opt);
+      return PyErr_Format(PyExc_ValueError, "Unknown config operation %d", (int)opt);
     }
 }
 
@@ -3259,7 +3277,7 @@ static PyMethodDef Connection_methods[] = {
    "Context manager exit"},
   {"wal_autocheckpoint", (PyCFunction)Connection_wal_autocheckpoint, METH_O,
    "Set wal checkpoint threshold"},
-  {"wal_checkpoint", (PyCFunction)Connection_wal_checkpoint, METH_VARARGS,
+  {"wal_checkpoint", (PyCFunction)Connection_wal_checkpoint, METH_VARARGS|METH_KEYWORDS,
    "Do immediate WAL checkpoint"},
   {"config", (PyCFunction)Connection_config, METH_VARARGS,
    "Configure this connection"},
