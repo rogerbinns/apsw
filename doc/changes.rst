@@ -11,14 +11,15 @@ shell could report an I/O error on changing output target for some
 operating systems.  Thanks to Edzard Pasma for finding and diagnosing
 this.
 
-Added support for VFS version 3 which allows redirecting system calls
-used by some VFS implementations (eg for testing or sandboxing).
+Added support for VFS version 3 which allows redirecting :meth:`system
+calls <VFS.xSetSystemCall>` used by some VFS implementations (eg for
+testing or sandboxing).
 
 :exc:`NotFoundError` exception added.
 
 Added :meth:`Connection.config`.
 
-Updated `Connection.wal_checkpoint` to use `sqlite3_wal_checkpoint_v2
+Updated :meth:`Connection.wal_checkpoint` to use `sqlite3_wal_checkpoint_v2
 <http://sqlite.org/c3ref/wal_checkpoint_v2.html>`__ which provides
 more fine grained control over checkpointing and returns useful
 information.
