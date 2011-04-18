@@ -1216,7 +1216,7 @@ apswvfspy_xGetLastError(APSWVFS *self)
 static int
 apswvfs_xSetSystemCall(sqlite3_vfs *vfs, const char *zName, sqlite3_syscall_ptr call)
 {
-  int res=SQLITE_ERROR;
+  int res=SQLITE_OK;
   PyObject *pyresult=NULL;
 
   VFSPREAMBLE;
@@ -1237,7 +1237,7 @@ apswvfs_xSetSystemCall(sqlite3_vfs *vfs, const char *zName, sqlite3_syscall_ptr 
   return res;
 }
 
-/** .. method:: xSetSystemCall(name, pointer)
+/** .. method:: xSetSystemCall(name, pointer) -> bool
     
     Change a system call used by the VFS.  This is useful for testing
     and some other scenarios such as sandboxing.  
@@ -1245,13 +1245,15 @@ apswvfs_xSetSystemCall(sqlite3_vfs *vfs, const char *zName, sqlite3_syscall_ptr 
     :param name: The string name of the system call
 
     :param pointer: A pointer provided as an int/long.  There is no
-    reference counting or other memory tracking of the pointer.  If
-    you provide one you need to ensure it is around for the lifetime
-    of this and any other related VFS.
+      reference counting or other memory tracking of the pointer.  If
+      you provide one you need to ensure it is around for the lifetime
+      of this and any other related VFS.
 
     Raise an exception to return an error.  If the system call does
     not exist then raise :exc:`NotFoundError`.
 
+    :returns: True if the system call was set.  False if the system
+      call is not known.
 */
 static PyObject *
 apswvfspy_xSetSystemCall(APSWVFS *self, PyObject *args)
@@ -1264,7 +1266,7 @@ apswvfspy_xSetSystemCall(APSWVFS *self, PyObject *args)
   CHECKVFSPY;
   VFSNOTIMPLEMENTED(xSetSystemCall, 3);
   
-  if(!PyArg_ParseTuple(args, "esO", STRENCODING, &name, &pyptr))
+  if(!PyArg_ParseTuple(args, "zO", &name, &pyptr))
     return NULL;
 
   if(PyIntLong_Check(pyptr))
@@ -1276,18 +1278,21 @@ apswvfspy_xSetSystemCall(APSWVFS *self, PyObject *args)
     goto finally;
 
   res=self->basevfs->xSetSystemCall(self->basevfs, name, ptr);
-  SET_EXC(res, NULL);
+  if(res!=SQLITE_OK && res!=SQLITE_NOTFOUND)
+    SET_EXC(res, NULL);
 
  finally:
-  PyMem_Free((void*)name);
-
   if(PyErr_Occurred())
     {
-      AddTraceBackHere(__FILE__, __LINE__, "vfspy.xSetSystemCall", "{s: O}", "args", args);
+      AddTraceBackHere(__FILE__, __LINE__, "vfspy.xSetSystemCall", "{s: O, s: i}", "args", args, "res", res);
       return NULL;
     }
 
-  Py_RETURN_NONE;
+  assert(res==SQLITE_OK || res==SQLITE_NOTFOUND);
+
+  if(res==SQLITE_OK)
+    Py_RETURN_TRUE;
+  Py_RETURN_FALSE;
 }
 
 static sqlite3_syscall_ptr
@@ -1297,7 +1302,7 @@ apswvfs_xGetSystemCall(sqlite3_vfs *vfs, const char *zName)
   PyObject *pyresult=NULL;
 
   VFSPREAMBLE;
-  pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xSetSystemCall", 1, "(N)",
+  pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xGetSystemCall", 1, "(N)",
 			     convertutf8string(zName));
   if(!pyresult)
     goto finally;
@@ -1351,7 +1356,8 @@ apswvfs_xNextSystemCall(sqlite3_vfs *vfs, const char *zName)
   VFSPREAMBLE;
   pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xNextSystemCall", 1, "(N)",
 			      zName?convertutf8string(zName):(Py_INCREF(Py_None),Py_None));
-  if(pyresult!=Py_None)
+
+  if(pyresult && pyresult!=Py_None)
     {
       if(PyUnicode_CheckExact(pyresult)
 #if PY_MAJOR_VERSION<3
@@ -1589,7 +1595,7 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
   self->containingvfs=(sqlite3_vfs *)PyMem_Malloc(sizeof(sqlite3_vfs));
   if(!self->containingvfs) return -1;
   memset(self->containingvfs, 0, sizeof(sqlite3_vfs)); 
-  self->containingvfs->iVersion=1; 
+  self->containingvfs->iVersion=3; 
   self->containingvfs->szOsFile=sizeof(APSWSQLite3File);
   if(self->basevfs && !maxpathname)
     self->containingvfs->mxPathname=self->basevfs->mxPathname;
@@ -1660,7 +1666,7 @@ static PyMethodDef APSWVFS_methods[]={
   {"xGetLastError", (PyCFunction)apswvfspy_xGetLastError, METH_NOARGS, "xGetLastError"},
   {"xSetSystemCall", (PyCFunction)apswvfspy_xSetSystemCall, METH_VARARGS, "xSetSystemCall"},
   {"xGetSystemCall", (PyCFunction)apswvfspy_xGetSystemCall, METH_VARARGS, "xGetSystemCall"},
-  {"xNextSystemCall", (PyCFunction)apswvfspy_xNextSystemCall, METH_VARARGS, "xNextSystemCall"},
+  {"xNextSystemCall", (PyCFunction)apswvfspy_xNextSystemCall, METH_O, "xNextSystemCall"},
   {"unregister", (PyCFunction)apswvfspy_unregister, METH_NOARGS, "Unregisters the vfs"},
   {"excepthook", (PyCFunction)apswvfs_excepthook, METH_VARARGS, "Exception hook"},
   /* Sentinel */

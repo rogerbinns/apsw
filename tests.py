@@ -4190,7 +4190,47 @@ class APSW(unittest.TestCase):
             def xGetLastError99(self):
                 return super(TestVFS,self).xGetLastError()
 
+            def xNextSystemCall1(self, bad, args):
+                1/0
 
+            def xNextSystemCall2(self, name):
+                return 3
+
+            def xNextSystemCall3(self, name):
+                return "foo\xf3"
+
+            def xNextSystemCall4(self, name):
+                1/0
+
+            def xNextSystemCall99(self, name):
+                return super(TestVFS,self).xNextSystemCall(name)
+
+            def xGetSystemCall1(self, bad, args):
+                1/0
+
+            def xGetSystemCall2(self, name):
+                1/0
+
+            def xGetSystemCall3(self, name):
+                return "fred"
+
+            def xGetSystemCall4(self, name):
+                return 3.7
+
+            def xGetSystemCall99(self, name):
+                return super(TestVFS,self).xGetSystemCall(name)
+
+            def xSetSystemCall1(self, bad, args, args3):
+                1/0
+
+            def xSetSystemCall2(self, name, ptr):
+                1/0
+
+            def xSetSystemCall3(self, name, ptr):
+                raise apsw.NotFoundError()
+
+            def xSetSystemCall99(self, name, ptr):
+                return super(TestVFS,self).xSetSystemCall(name, ptr)
 
         class TestFile(apsw.VFSFile):
             def init1(self, name, flags):
@@ -4632,6 +4672,83 @@ class APSW(unittest.TestCase):
             if not py3:
                 res=xgle("apswtest2", 128)
                 self.assertEqual(res[1], 1)
+            del vfs2
+            del VFS2
+            gc.collect()
+
+        ## System call stuff
+        if "unix" in apsw.vfsnames():
+            class VFS2(apsw.VFS):
+                def __init__(self):
+                    apsw.VFS.__init__(self, "apswtest2", "apswtest")
+            vfs2=VFS2()
+            
+            ## xNextSystemCall
+            self.assertRaises(TypeError, vfs.xNextSystemCall, 0)
+            items=[None]
+            while True:
+                n=vfs.xNextSystemCall(items[-1])
+                if n is None:
+                    break
+                items.append(n)
+            items=items[1:]
+            self.assertNotEqual(0, len(items))
+            self.assert_("open" in items)
+
+            self.assertRaises(UnicodeDecodeError, vfs.xNextSystemCall, "foo\xf3")
+
+            TestVFS.xNextSystemCall=TestVFS.xNextSystemCall1
+            self.assertRaisesUnraisable(TypeError, vfs2.xNextSystemCall, "open")
+            TestVFS.xNextSystemCall=TestVFS.xNextSystemCall2
+            self.assertRaisesUnraisable(TypeError, vfs2.xNextSystemCall, "open")
+            TestVFS.xNextSystemCall=TestVFS.xNextSystemCall3
+            self.assertRaisesUnraisable(UnicodeDecodeError, vfs2.xNextSystemCall, "open")
+            TestVFS.xNextSystemCall=TestVFS.xNextSystemCall4
+            self.assertEqual(None, self.assertRaisesUnraisable(ZeroDivisionError, vfs2.xNextSystemCall, "open"))
+            TestVFS.xNextSystemCall=TestVFS.xNextSystemCall99
+            vfs2.xNextSystemCall("open")
+
+            ## xGetSystemCall
+            self.assertRaises(TypeError, vfs.xGetSystemCall)
+            self.assertRaises(TypeError, vfs.xGetSystemCall, 3)
+            self.assertEqual(None, vfs.xGetSystemCall("a name that won't exist"))
+            self.assert_(isinstance(vfs.xGetSystemCall("open"), (int,long)))
+
+            TestVFS.xGetSystemCall=TestVFS.xGetSystemCall1
+            self.assertRaisesUnraisable(TypeError, vfs2.xGetSystemCall, "open")
+            TestVFS.xGetSystemCall=TestVFS.xGetSystemCall2
+            self.assertRaisesUnraisable(ZeroDivisionError, vfs2.xGetSystemCall, "open")
+            TestVFS.xGetSystemCall=TestVFS.xGetSystemCall3
+            self.assertRaisesUnraisable(TypeError, vfs2.xGetSystemCall, "open")
+            TestVFS.xGetSystemCall=TestVFS.xGetSystemCall4
+            self.assertRaisesUnraisable(TypeError, vfs2.xGetSystemCall, "open")
+            TestVFS.xGetSystemCall=TestVFS.xGetSystemCall99
+            self.assert_(vfs2.xGetSystemCall("open")>0)
+            
+            ## xSetSystemCall
+            fallback=apsw.VFS("fallback",  base="") # undo any damage we do
+            try:
+                self.assertRaises(TypeError,  vfs.xSetSystemCall)
+                self.assertRaises(TypeError,  vfs.xSetSystemCall, 3, 4)
+                self.assertRaises(TypeError,  vfs.xSetSystemCall, "a\0b", 4)
+                self.assertRaises(TypeError,  vfs.xSetSystemCall, "none", 3.7)
+                realopen=vfs.xGetSystemCall("open")
+                self.assertEqual(False, vfs.xSetSystemCall("doesn't exist", 0))
+                self.assertEqual(True, vfs.xSetSystemCall("open", realopen+1))
+                self.assertEqual(realopen+1, vfs.xGetSystemCall("open"))
+                self.assertEqual(True, vfs.xSetSystemCall("open", realopen))
+                TestVFS.xSetSystemCall=TestVFS.xSetSystemCall1
+                self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, vfs2.xSetSystemCall, "open", realopen)
+                TestVFS.xSetSystemCall=TestVFS.xSetSystemCall2
+                self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, vfs2.xSetSystemCall, "open", realopen)
+                TestVFS.xSetSystemCall=TestVFS.xSetSystemCall3
+                self.assertEqual(False, vfs2.xSetSystemCall("doesn't exist", 0))
+                TestVFS.xSetSystemCall=TestVFS.xSetSystemCall99
+                self.assertEqual(True, vfs2.xSetSystemCall("open", realopen))
+            finally:
+                # undocumented - this resets all calls to their defaults
+                fallback.xSetSystemCall(None, 0)
+                fallback.unregister()
 
         ##
         ## VFS file testing
