@@ -763,9 +763,10 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, self.db.wal_checkpoint, -1)
         self.db.wal_checkpoint()
         self.db.wal_checkpoint("main")
-        v=self.db.wal_checkpoint(mode=apsw.SQLITE_CHECKPOINT_PASSIVE)
-        self.assert_(isinstance(v, tuple) and len(v)==2 and isinstance(v[0], int) and isinstance(v[1], int))
-        self.assertRaises(apsw.MisuseError, self.db.wal_checkpoint, mode=876786)
+        if sys.version_info>(2,4): # 2.3 barfs internally
+            v=self.db.wal_checkpoint(mode=apsw.SQLITE_CHECKPOINT_PASSIVE)
+            self.assert_(isinstance(v, tuple) and len(v)==2 and isinstance(v[0], int) and isinstance(v[1], int))
+            self.assertRaises(apsw.MisuseError, self.db.wal_checkpoint, mode=876786)
         self.assertRaises(TypeError, self.db.setwalhook)
         self.assertRaises(TypeError, self.db.setwalhook, 12)
         self.db.setwalhook(None)
@@ -4693,7 +4694,7 @@ class APSW(unittest.TestCase):
             gc.collect()
 
         ## System call stuff
-        if "unix" in apsw.vfsnames():
+        if "unix" in apsw.vfsnames() and "APSW_NO_MEMLEAK" not in os.environ:
             class VFS2(apsw.VFS):
                 def __init__(self):
                     apsw.VFS.__init__(self, "apswtest2", "apswtest")
@@ -4711,14 +4712,16 @@ class APSW(unittest.TestCase):
             self.assertNotEqual(0, len(items))
             self.assert_("open" in items)
 
-            self.assertRaises(UnicodeDecodeError, vfs.xNextSystemCall, "foo\xf3")
+            if not py3:
+                self.assertRaises(UnicodeDecodeError, vfs.xNextSystemCall, "foo\xf3")
 
             TestVFS.xNextSystemCall=TestVFS.xNextSystemCall1
             self.assertRaisesUnraisable(TypeError, vfs2.xNextSystemCall, "open")
             TestVFS.xNextSystemCall=TestVFS.xNextSystemCall2
             self.assertRaisesUnraisable(TypeError, vfs2.xNextSystemCall, "open")
-            TestVFS.xNextSystemCall=TestVFS.xNextSystemCall3
-            self.assertRaisesUnraisable(UnicodeDecodeError, vfs2.xNextSystemCall, "open")
+            if not py3:
+                TestVFS.xNextSystemCall=TestVFS.xNextSystemCall3
+                self.assertRaisesUnraisable(UnicodeDecodeError, vfs2.xNextSystemCall, "open")
             TestVFS.xNextSystemCall=TestVFS.xNextSystemCall4
             self.assertEqual(None, self.assertRaisesUnraisable(ZeroDivisionError, vfs2.xNextSystemCall, "open"))
             TestVFS.xNextSystemCall=TestVFS.xNextSystemCall99
