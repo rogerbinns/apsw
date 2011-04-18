@@ -57,6 +57,10 @@ def threadrun(queue):
             print "\nFAILED", d
         
 def main(PYVERS, UCSTEST, SQLITEVERS, concurrency):
+    try:
+        del os.environ["APSWTESTPREFIX"]
+    except KeyError:
+        pass
     print "Test starting"
     os.system("rm -rf apsw.so megatestresults 2>/dev/null ; mkdir megatestresults")
     print "  ... removing old work directory"
