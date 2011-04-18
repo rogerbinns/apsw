@@ -8,6 +8,7 @@
 
 import apsw
 import sys
+import os
 
 write=sys.stdout.write
 
@@ -30,10 +31,13 @@ iswindows=sys.platform in ('win32', 'win64')
 
 py3=sys.version_info>=(3,0)
 
+# prefix for test files (eg if you want it on tmpfs)
+TESTFILEPREFIX=os.environ.get("APSWTESTPREFIX", "")
+
+
 # unittest stuff from here on
 
 import unittest
-import os
 import math
 import random
 import time
@@ -208,7 +212,7 @@ bgdelthread.start()
 def deletefile(name):
     l=list("abcdefghijklmn")
     random.shuffle(l)
-    newname="n-"+"".join(l)
+    newname=name+"-n-"+"".join(l)
     count=0
     while os.path.exists(name):
         count+=1
@@ -288,8 +292,8 @@ class APSW(unittest.TestCase):
                      "test-shell-1", "test-shell-1.py",
                      "test-shell-in", "test-shell-out", "test-shell-err"):
             for i in "-wal", "-journal", "":
-                if os.path.exists(name+i):
-                    deletefile(name+i)
+                if os.path.exists(TESTFILEPREFIX+name+i):
+                    deletefile(TESTFILEPREFIX+name+i)
 
     saved_connection_hooks=[]
 
@@ -298,7 +302,7 @@ class APSW(unittest.TestCase):
         self.saved_connection_hooks.append(apsw.connection_hooks)
         gc.collect()
         self.deltempfiles()
-        self.db=apsw.Connection("testdb")
+        self.db=apsw.Connection(TESTFILEPREFIX+"testdb")
 
     def tearDown(self):
         if self.db is not None:
@@ -379,7 +383,7 @@ class APSW(unittest.TestCase):
                [b(r"78696ghgjhgjhkgjkhgjhg\xfe\xdf")] ]
         c.executemany("insert into foo values(?)", vals)
         for i in range(MEMLEAKITERATIONS):
-            db=apsw.Connection("testdb")
+            db=apsw.Connection(TESTFILEPREFIX+"testdb")
             db.createaggregatefunction("aggfunc", lambda x: x)
             db.createscalarfunction("scalarfunc", lambda x: x)
             db.setbusyhandler(lambda x: False)
@@ -773,7 +777,7 @@ class APSW(unittest.TestCase):
         expectdbname="main"
         self.db.setwalhook(walhook)
         self.db.cursor().execute("create table three(x)")
-        self.db.cursor().execute("attach testdb2 as fred")
+        self.db.cursor().execute("attach '%stestdb2' as fred" % (TESTFILEPREFIX,) )
         self.assertEqual("wal", self.db.cursor().execute("pragma fred.journal_mode=wal").fetchall()[0][0])
         expectdbname="fred"
         self.db.cursor().execute("create table fred.three(x)")
@@ -1403,7 +1407,7 @@ class APSW(unittest.TestCase):
         c.executemany("insert into foo values(?)", randomintegers(400))
         c.execute("commit")
         # verify it is blocked
-        db2=apsw.Connection("testdb")
+        db2=apsw.Connection(TESTFILEPREFIX+"testdb")
         c2=db2.cursor()
         c2.execute("begin exclusive")
         try:
@@ -1418,8 +1422,8 @@ class APSW(unittest.TestCase):
         del c
         self.db.close()
         del self.db
-        self.db=apsw.Connection("testdb")
-        db2=apsw.Connection("testdb")
+        self.db=apsw.Connection(TESTFILEPREFIX+"testdb")
+        db2=apsw.Connection(TESTFILEPREFIX+"testdb")
         c=self.db.cursor()
         c2=db2.cursor()
 
@@ -1452,8 +1456,8 @@ class APSW(unittest.TestCase):
         self.db.close()
         del db2
         del self.db
-        self.db=apsw.Connection("testdb")
-        db2=apsw.Connection("testdb")
+        self.db=apsw.Connection(TESTFILEPREFIX+"testdb")
+        db2=apsw.Connection(TESTFILEPREFIX+"testdb")
         c=self.db.cursor()
         c2=db2.cursor()
 
@@ -1494,8 +1498,8 @@ class APSW(unittest.TestCase):
         self.db.close()
         del db2
         del self.db
-        self.db=apsw.Connection("testdb")
-        db2=apsw.Connection("testdb")
+        self.db=apsw.Connection(TESTFILEPREFIX+"testdb")
+        db2=apsw.Connection(TESTFILEPREFIX+"testdb")
         c=self.db.cursor()
         c2=db2.cursor()
 
@@ -1511,7 +1515,7 @@ class APSW(unittest.TestCase):
 
         def bh(*args):
             return BadIsTrue()
-        db2=apsw.Connection("testdb")
+        db2=apsw.Connection(TESTFILEPREFIX+"testdb")
         c=self.db.cursor()
         c2=db2.cursor()
         c2.execute("begin exclusive")
@@ -1525,7 +1529,7 @@ class APSW(unittest.TestCase):
         "Another busy handling test"
 
         # Based on an issue in 3.3.10 and before
-        con2=apsw.Connection("testdb")
+        con2=apsw.Connection(TESTFILEPREFIX+"testdb")
         cur=self.db.cursor()
         cur2=con2.cursor()
         cur.execute("create table test(x,y)")
@@ -2004,7 +2008,7 @@ class APSW(unittest.TestCase):
         # See http://www.sqlite.org/cvstrac/tktview?tn=3144
         try:
             apsw.enablesharedcache(True)
-            db=apsw.Connection("testdb2")
+            db=apsw.Connection(TESTFILEPREFIX+"testdb2")
             db.createmodule("y", lambda x: 2)
         finally:
             apsw.enablesharedcache(False)
@@ -2574,7 +2578,7 @@ class APSW(unittest.TestCase):
         cur.execute(sql)
 
         # disconnect - sqlite ignores any errors
-        db=apsw.Connection("testdb")
+        db=apsw.Connection(TESTFILEPREFIX+"testdb")
         db.createmodule("testmod2", Source())
         cur2=db.cursor()
         for _ in cur2.execute("select * from foo"): pass
@@ -2582,7 +2586,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, db.close) # nb close succeeds!
         self.assertRaises(apsw.CursorClosedError, cur2.execute, "select * from foo")
         del db
-        db=apsw.Connection("testdb")
+        db=apsw.Connection(TESTFILEPREFIX+"testdb")
         db.createmodule("testmod2", Source())
         cur2=db.cursor()
         for _ in cur2.execute("select * from foo"): pass
@@ -2590,7 +2594,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(ZeroDivisionError, db.close) # nb close succeeds!
         self.assertRaises(apsw.CursorClosedError, cur2.execute, "select * from foo")
         del db
-        db=apsw.Connection("testdb")
+        db=apsw.Connection(TESTFILEPREFIX+"testdb")
         db.createmodule("testmod2", Source())
         cur2=db.cursor()
         for _ in cur2.execute("select * from foo"): pass
@@ -2846,7 +2850,7 @@ class APSW(unittest.TestCase):
 
     def testErrorCodes(self):
         "Verify setting of result codes on error/exception"
-        fname="gunk-errcode-test"
+        fname=TESTFILEPREFIX+"gunk-errcode-test"
         open(fname, "wb").write(b("A")*8192)
         db=None
         try:
@@ -2944,7 +2948,7 @@ class APSW(unittest.TestCase):
         "Issue 15: Release GIL during calls to prepare"
         self.db.cursor().execute("create table foo(x)")
         self.db.cursor().execute("begin exclusive")
-        db2=apsw.Connection("testdb")
+        db2=apsw.Connection(TESTFILEPREFIX+"testdb")
         db2.setbusytimeout(30000)
         t=ThreadRunner(db2.cursor().execute, "select * from foo")
         t.start()
@@ -3063,7 +3067,7 @@ class APSW(unittest.TestCase):
         self.db.cursor().execute("create table foo(x); insert into foo values(3); insert into foo values(4)")
         # We need the reader to block a writer, which requires non-WAL mode
         self.db.cursor().execute("pragma journal_mode=delete")
-        db2=apsw.Connection("testdb")
+        db2=apsw.Connection(TESTFILEPREFIX+"testdb")
         if runfrom106:
             db2.setexectrace(runfrom106)
         db2.cursor().execute("pragma journal_mode=delete")
@@ -3159,14 +3163,14 @@ class APSW(unittest.TestCase):
         # excepthook with error to check PyErr_Display is called
         xx=sys.excepthook
         yy=sys.stderr
-        sys.stderr=open("errout.txt", "wt")
+        sys.stderr=open(TESTFILEPREFIX+"errout.txt", "wt")
         def ehook(blah):
             1/0
         sys.excepthook=ehook
         unraise()
         sys.stderr.close()
-        v=open("errout.txt", "rt").read()
-        deletefile("errout.txt")
+        v=open(TESTFILEPREFIX+"errout.txt", "rt").read()
+        deletefile(TESTFILEPREFIX+"errout.txt")
         self.assertTrue(len(v))
         sys.excepthook=xx
         sys.stderr=yy
@@ -3202,7 +3206,7 @@ class APSW(unittest.TestCase):
                 pass
         del l
         gc.collect()
-        db2=apsw.Connection("testdb", statementcachesize=scsize)
+        db2=apsw.Connection(TESTFILEPREFIX+"testdb", statementcachesize=scsize)
         cur2=db2.cursor()
         cur2.execute("create table bar(x,y)")
         for _ in cur.execute("select * from foo"): pass
@@ -3216,7 +3220,7 @@ class APSW(unittest.TestCase):
 
     def testStatementCacheZeroSize(self):
         "Rerun statement cache tests with a zero sized/disabled cache"
-        self.db=apsw.Connection("testdb", statementcachesize=-1)
+        self.db=apsw.Connection(TESTFILEPREFIX+"testdb", statementcachesize=-1)
         self.testStatementCache(-1)
 
     def testWikipedia(self):
@@ -3226,9 +3230,9 @@ class APSW(unittest.TestCase):
         self.db.close()
 
         for encoding in "UTF-16", "UTF-16le", "UTF-16be", "UTF-8":
-            if os.path.exists("testdb"):
-                deletefile("testdb")
-            db=apsw.Connection("testdb")
+            if os.path.exists(TESTFILEPREFIX+"testdb"):
+                deletefile(TESTFILEPREFIX+"testdb")
+            db=apsw.Connection(TESTFILEPREFIX+"testdb")
             c=db.cursor()
             c.execute("pragma encoding=\"%s\"" % (encoding,))
             for row in c.execute("pragma encoding"):
@@ -3802,7 +3806,7 @@ class APSW(unittest.TestCase):
         query="create table foo(x,y); insert into foo values(1,2); insert into foo values(3,4)"
         self.db.cursor().execute(query)
 
-        db2=apsw.Connection("testdb2", vfs=vfs.vfsname)
+        db2=apsw.Connection(TESTFILEPREFIX+"testdb2", vfs=vfs.vfsname)
         db2.cursor().execute(query)
         db2.close()
         waswal=self.db.cursor().execute("pragma journal_mode").fetchall()[0][0]=="wal"
@@ -3811,8 +3815,8 @@ class APSW(unittest.TestCase):
         self.db.close() # flush
 
         # check the two databases are the same (modulo the XOR)
-        orig=open("testdb", "rb").read()
-        obfu=open("testdb2", "rb").read()
+        orig=open(TESTFILEPREFIX+"testdb", "rb").read()
+        obfu=open(TESTFILEPREFIX+"testdb2", "rb").read()
         self.assertEqual(len(orig), len(obfu))
         self.assertNotEqual(orig, obfu)
         # wal isn't exactly the same
@@ -3831,16 +3835,16 @@ class APSW(unittest.TestCase):
         self.assertRaises(OverflowError, apsw.exceptionfor, l("0xffffffffffffffff10"))
 
         # test raw file object
-        f=ObfuscatedVFSFile("", "testdb", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
+        f=ObfuscatedVFSFile("", TESTFILEPREFIX+"testdb", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
         del f # check closes
-        f=ObfuscatedVFSFile("", "testdb", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
+        f=ObfuscatedVFSFile("", TESTFILEPREFIX+"testdb", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
         data=f.xRead(len(obfu), 0) # will encrypt it
         compare(obfu, data)
         f.xClose()
         f.xClose()
-        f2=apsw.VFSFile("", "testdb", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
+        f2=apsw.VFSFile("", TESTFILEPREFIX+"testdb", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
         del f2
-        f2=apsw.VFSFile("", "testdb2", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
+        f2=apsw.VFSFile("", TESTFILEPREFIX+"testdb2", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
         data=f2.xRead(len(obfu), 0)
         self.assertEqual(obfu, data)
         f2.xClose()
@@ -3868,7 +3872,7 @@ class APSW(unittest.TestCase):
             gc.collect()
             apsw.test_reset_rng()
             vfs=RandomVFS()
-            db=apsw.Connection("testdb")
+            db=apsw.Connection(TESTFILEPREFIX+"testdb")
             next(db.cursor().execute("select randomblob(10)"))
 
         class RandomVFSUpper(apsw.VFS):
@@ -4663,7 +4667,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.CantOpenError, TestFile, ".", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
 
         ## xRead
-        t=TestFile("testfile", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
+        t=TestFile(TESTFILEPREFIX+"testfile", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
         self.assertRaises(TypeError, t.xRead, "three", "four")
         self.assertRaises(OverflowError, t.xRead, l("0xffffffffeeeeeeee0"), 1)
         self.assertRaises(OverflowError, t.xRead, 1, l("0xffffffffeeeeeeee0"))
@@ -4807,8 +4811,8 @@ class APSW(unittest.TestCase):
         self.assertRaises(OverflowError, t.xFileControl, 10, l("0xffffffffeeeeeeee0"))
         self.assertRaises(TypeError, t.xFileControl, 10, "three")
         self.assertEqual(t.xFileControl(2000, 3000), False)
-        fc1=testdb("testdb", closedb=False).filecontrol
-        fc2=testdb("testdb2", closedb=False).filecontrol
+        fc1=testdb(TESTFILEPREFIX+"testdb", closedb=False).filecontrol
+        fc2=testdb(TESTFILEPREFIX+"testdb2", closedb=False).filecontrol
         TestFile.xFileControl=TestFile.xFileControl1
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, fc1, "main", 1027, 1027)
         TestFile.xFileControl=TestFile.xFileControl2
@@ -4839,7 +4843,7 @@ class APSW(unittest.TestCase):
         del t
         gc.collect()
 
-        t=apsw.VFSFile("", "testfile2", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
+        t=apsw.VFSFile("", TESTFILEPREFIX+"testfile2", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
         t.xClose()
         # check all functions detect closed file
         for n in dir(t):
@@ -5216,7 +5220,7 @@ class APSW(unittest.TestCase):
 
         # create the database and write to it, but without starting the worker thread
         # so the disk file should remain zero length
-        fn="testdb-async"
+        fn=TESTFILEPREFIX+"testdb-async"
         self.db=apsw.Connection(fn, vfs=v2)
         # Due to macos bugs SQLite writes the first byte of the file sometimes
         # so length with be zero on other platforms and zero or one on macos.
@@ -5336,7 +5340,7 @@ class APSW(unittest.TestCase):
         # badly over non-ascii stuff and there was no way to make all
         # the python versions simultaneously happy
         import codecs
-        fh=[codecs.open("test-shell-"+t, "w+b", encoding="utf8") for t in ("in", "out", "err")]
+        fh=[codecs.open(TESTFILEPREFIX+"test-shell-"+t, "w+b", encoding="utf8") for t in ("in", "out", "err")]
         kwargs={"stdin": fh[0], "stdout": fh[1], "stderr": fh[2]}
         def reset():
             for i in fh:
@@ -5365,8 +5369,8 @@ class APSW(unittest.TestCase):
         shellclass(stdin=fh[0], stdout=fh[1], stderr=fh[2])
 
         # Lets give it some harmless sql arguments and do a sanity check
-        s=shellclass(args=["testdb", "create table x(x)", "insert into x values(1)"], **kwargs)
-        self.assertEqual(s.db.filename, "testdb")
+        s=shellclass(args=[TESTFILEPREFIX+"testdb", "create table x(x)", "insert into x values(1)"], **kwargs)
+        self.assertEqual(s.db.filename, TESTFILEPREFIX+"testdb")
         # do a dump and check our table is there with its values
         s.command_dump([])
         self.assertTrue("x(x)" in get(fh[1]))
@@ -5377,9 +5381,9 @@ class APSW(unittest.TestCase):
 
         # input description
         reset()
-        open("test-shell-1", "wt").write("syntax error")
+        open(TESTFILEPREFIX+"test-shell-1", "wt").write("syntax error")
         try:
-            shellclass(args=["testdb", ".read test-shell-1"], **kwargs)
+            shellclass(args=[TESTFILEPREFIX+"testdb", ".read %stest-shell-1" % (TESTFILEPREFIX,) ], **kwargs)
         except shellclass.Error:
             self.assertTrue("test-shell-1" in get(fh[2]))
             isempty(fh[1])
@@ -5413,16 +5417,16 @@ class APSW(unittest.TestCase):
         ### --init
         ###
         reset()
-        open("test-shell-1", "wt").write("syntax error")
+        open(TESTFILEPREFIX+"test-shell-1", "wt").write("syntax error")
         try:
-            shellclass(args=["-init", "test-shell-1"], **kwargs)
+            shellclass(args=["-init", TESTFILEPREFIX+"test-shell-1"], **kwargs)
         except shellclass.Error:
             # we want to make sure it read the file
             isempty(fh[1])
             self.assertTrue("syntax error" in get(fh[2]))
         reset()
-        open("test-shell-1", "wt").write("select 3;")
-        shellclass(args=["-init", "test-shell-1"], **kwargs)
+        open(TESTFILEPREFIX+"test-shell-1", "wt").write("select 3;")
+        shellclass(args=["-init", TESTFILEPREFIX+"test-shell-1"], **kwargs)
         # we want to make sure it read the file
         isempty(fh[2])
         self.assertTrue("3" in get(fh[1]))
@@ -5441,7 +5445,7 @@ class APSW(unittest.TestCase):
         # did they actually turn on?
         isempty(fh[1])
         isempty(fh[2])
-        s.process_args(["testdb", ".mode column", "select 3"])
+        s.process_args([TESTFILEPREFIX+"testdb", ".mode column", "select 3"])
         isempty(fh[2])
         self.assertTrue("3" in get(fh[1]))
         self.assertTrue("----" in get(fh[1]))
@@ -5942,7 +5946,7 @@ class APSW(unittest.TestCase):
         n=randomtable(s.db.cursor())
         contents=s.db.cursor().execute("select * from "+n).fetchall()
         reset()
-        cmd(".backup testdb2")
+        cmd(".backup %stestdb2" % (TESTFILEPREFIX,) )
         gc.collect()
         s.cmdloop()
         isempty(fh[1])
@@ -5952,9 +5956,9 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[1])
         isempty(fh[2])
-        self.assertTrue(os.path.isfile("testdb2"))
+        self.assertTrue(os.path.isfile("%stestdb2" % (TESTFILEPREFIX,)))
         reset()
-        cmd(".restore testdb2")
+        cmd(".restore %stestdb2" % (TESTFILEPREFIX,))
         gc.collect()
         s.cmdloop()
         isempty(fh[1])
@@ -5971,14 +5975,14 @@ class APSW(unittest.TestCase):
         contents=s.db.cursor().execute("select * from memdb."+n).fetchall()
         reset()
         gc.collect()
-        cmd(".backup memdb testdb2")
+        cmd(".backup memdb %stestdb2" % (TESTFILEPREFIX,))
         s.cmdloop()
         isempty(fh[1])
         isempty(fh[2])
         s.db.cursor().execute("detach memdb; attach ':memory:' as memdb2")
         reset()
         gc.collect()
-        cmd(".restore memdb2 testdb2")
+        cmd(".restore memdb2 %stestdb2" % (TESTFILEPREFIX,))
         s.cmdloop()
         isempty(fh[1])
         isempty(fh[2])
@@ -6024,7 +6028,7 @@ class APSW(unittest.TestCase):
         for i in "main", "name", "file":
             self.assertTrue(i in get(fh[1]))
         reset()
-        cmd("attach 'testdb' as quack;\n.databases")
+        cmd("attach '%stestdb' as quack;\n.databases" % (TESTFILEPREFIX,))
         s.cmdloop()
         isempty(fh[2])
         for i in "main", "name", "file", "testdb", "quack":
@@ -6235,26 +6239,26 @@ class APSW(unittest.TestCase):
         # use iso8859-1 to make sure data is read correctly - it
         # differs from utf8
         us=u(r"unitestdata \xaa\x89 34")
-        codecs.open("test-shell-1", "w", "iso8859-1").write("insert into enctest values('%s');\n" % (us,))
+        codecs.open(TESTFILEPREFIX+"test-shell-1", "w", "iso8859-1").write("insert into enctest values('%s');\n" % (us,))
         gc.collect()
         reset()
-        cmd(".encoding iso8859-1\ncreate table enctest(x);\n.echo on\n.read test-shell-1\n.echo off")
+        cmd(".encoding iso8859-1\ncreate table enctest(x);\n.echo on\n.read %stest-shell-1\n.echo off" % (TESTFILEPREFIX,) )
         s.cmdloop()
         self.assertEqual(s.db.cursor().execute("select * from enctest").fetchall()[0][0],
                          us)
         self.assertTrue(us in get(fh[2]))
         reset()
-        codecs.open("test-shell-1", "w", "iso8859-1").write(us+"\n")
-        cmd("drop table enctest;create table enctest(x);\n.import test-shell-1 enctest")
+        codecs.open(TESTFILEPREFIX+"test-shell-1", "w", "iso8859-1").write(us+"\n")
+        cmd("drop table enctest;create table enctest(x);\n.import %stest-shell-1 enctest" % (TESTFILEPREFIX,))
         s.cmdloop()
         isempty(fh[2])
         isempty(fh[1])
         self.assertEqual(s.db.cursor().execute("select * from enctest").fetchall()[0][0],
                          us)
         reset()
-        cmd(".output test-shell-1\n.mode list\nselect * from enctest;")
+        cmd(".output %stest-shell-1\n.mode list\nselect * from enctest;" % (TESTFILEPREFIX,))
         s.cmdloop()
-        self.assertEqual(open("test-shell-1", "rb").read().strip(), # skip eol
+        self.assertEqual(open(TESTFILEPREFIX+"test-shell-1", "rb").read().strip(), # skip eol
                          us.encode("iso8859-1"))
         reset()
         cmd(".output stdout\nselect '%s';\n" % (us,))
@@ -6278,12 +6282,12 @@ class APSW(unittest.TestCase):
         # check replace works
         reset()
         us=u(r"\N{BLACK STAR}8\N{WHITE STAR}")
-        codecs.open("test-shell-1", "w", "utf8").write("insert into enctest values('%s');" % (us,) )
-        cmd(".encoding utf8\n.read test-shell-1\n.encoding cp437:replace\n.output test-shell-1\nselect * from enctest;\n.encoding utf8\n.output stdout")
+        codecs.open(TESTFILEPREFIX+"test-shell-1", "w", "utf8").write("insert into enctest values('%s');" % (us,) )
+        cmd(".encoding utf8\n.read %stest-shell-1\n.encoding cp437:replace\n.output %stest-shell-1\nselect * from enctest;\n.encoding utf8\n.output stdout" % (TESTFILEPREFIX, TESTFILEPREFIX))
         s.cmdloop()
         isempty(fh[2])
         isempty(fh[1])
-        self.assertTrue("?8?"  in codecs.open("test-shell-1", "r", "cp437").read())
+        self.assertTrue("?8?"  in codecs.open(TESTFILEPREFIX+"test-shell-1", "r", "cp437").read())
 
         ###
         ### Command - exceptions
@@ -6357,20 +6361,20 @@ class APSW(unittest.TestCase):
         cmd(".encoding utf16\ncreate table imptest(x real, y char);\n"
             "insert into imptest values(3.1, 'xabc');\n"
             "insert into imptest values(3.2, 'xabfff\"ffffc');\n"
-            ".output test-shell-1\n.mode csv\nselect * from imptest;\n"
-            ".output stdout")
+            ".output %stest-shell-1\n.mode csv\nselect * from imptest;\n"
+            ".output stdout" % (TESTFILEPREFIX,) )
         s.cmdloop()
         isempty(fh[1])
         isempty(fh[2])
         # make sure encoding took
         if sys.version_info>=(3,0):
-            self.assertTrue(b("xab") not in open("test-shell-1", "rb").read())
+            self.assertTrue(b("xab") not in open(TESTFILEPREFIX+"test-shell-1", "rb").read())
         else:
-            self.assertTrue("xab" not in open("test-shell-1", "rb").read())
+            self.assertTrue("xab" not in open(TESTFILEPREFIX+"test-shell-1", "rb").read())
         data=s.db.cursor().execute("select * from imptest; delete from imptest").fetchall()
         self.assertEqual(2, len(data))
         reset()
-        cmd(".import test-shell-1 imptest")
+        cmd(".import %stest-shell-1 imptest" % (TESTFILEPREFIX,))
         s.cmdloop()
         isempty(fh[1])
         isempty(fh[2])
@@ -6387,12 +6391,12 @@ class APSW(unittest.TestCase):
             isnotempty(fh[2])
         # wrong number of columns
         reset()
-        cmd("create table imptest(x,y);\n.mode tabs\n.output test-shell-1\nselect 3,4;select 5,6;select 7,8,9;")
+        cmd("create table imptest(x,y);\n.mode tabs\n.output %stest-shell-1\nselect 3,4;select 5,6;select 7,8,9;" % (TESTFILEPREFIX,))
         s.cmdloop()
         isempty(fh[1])
         isempty(fh[2])
         reset()
-        cmd(".output stdout\n.import test-shell-1 imptest")
+        cmd(".output stdout\n.import %stest-shell-1 imptest" % (TESTFILEPREFIX,))
         s.cmdloop()
         isempty(fh[1])
         isnotempty(fh[2])
@@ -6501,7 +6505,7 @@ class APSW(unittest.TestCase):
         ### Command read
         ###
         # pretty much thoroughly tested above
-        open("test-shell-1.py", "wt").write("""
+        open(TESTFILEPREFIX+"test-shell-1.py", "wt").write("""
 assert apsw
 assert shell
 shell.write(shell.stdout, "hello world\\n")
@@ -6514,7 +6518,7 @@ shell.write(shell.stdout, "hello world\\n")
             isnotempty(fh[2])
 
         reset()
-        cmd(".read test-shell-1.py")
+        cmd(".read %stest-shell-1.py" % (TESTFILEPREFIX,))
         s.cmdloop()
         isempty(fh[2])
         self.assertTrue("hello world" in get(fh[1]))
@@ -6571,10 +6575,10 @@ shell.write(shell.stdout, "hello world\\n")
             
         # output
         reset()
-        cmd(".output test-shell-1\n.show")
+        cmd(".output %stest-shell-1\n.show" % (TESTFILEPREFIX,))
         s.cmdloop()
         isempty(fh[1])
-        self.assertTrue("output: test-shell-1" in get(fh[2]))
+        self.assertTrue("output: "+TESTFILEPREFIX+"test-shell-1" in get(fh[2]))
         reset()
         cmd(".output stdout\n.show")
         s.cmdloop()
@@ -7496,7 +7500,7 @@ shell.write(shell.stdout, "hello world\\n")
 
         ## xFullPathnameConversion
         apsw.faultdict["xFullPathnameConversion"]=True
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, MemoryError,  apsw.Connection, "testdb", vfs="faultvfs")
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, MemoryError,  apsw.Connection, TESTFILEPREFIX+"testdb", vfs="faultvfs")
 
         ## xDlError
         db=apsw.Connection(":memory:", vfs="faultvfs")
@@ -7559,7 +7563,7 @@ shell.write(shell.stdout, "hello world\\n")
         try:
             # This will fail if we are using auto-WAL so we don't run
             # the rest of the test in WAL mode.
-            apsw.Connection("testdb", vfs="faultvfs").cursor().execute("create table dummy1(x,y)")
+            apsw.Connection(TESTFILEPREFIX+"testdb", vfs="faultvfs").cursor().execute("create table dummy1(x,y)")
             openok=True
         except apsw.CantOpenError:
             if len(apsw.connection_hooks)==0:
@@ -7572,22 +7576,22 @@ shell.write(shell.stdout, "hello world\\n")
         if openok:
             apsw.faultdict["xReadReadBufferFail"]=True
             def foo():
-                apsw.Connection("testdb", vfs="faultvfs").cursor().execute("select * from dummy1")
+                apsw.Connection(TESTFILEPREFIX+"testdb", vfs="faultvfs").cursor().execute("select * from dummy1")
             self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, foo)
 
             ## xUnlockFails
             apsw.faultdict["xUnlockFails"]=True
             # Used to wrap in self.assertRaises(apsw.IOError, ...) but SQLite no longer passes on the error.
             # See http://www.sqlite.org/cvstrac/tktview?tn=3946
-            self.assertRaisesUnraisable(apsw.IOError, apsw.Connection("testdb", vfs="faultvfs").cursor().execute, "select * from dummy1")
+            self.assertRaisesUnraisable(apsw.IOError, apsw.Connection(TESTFILEPREFIX+"testdb", vfs="faultvfs").cursor().execute, "select * from dummy1")
 
             ## xSyncFails
             apsw.faultdict["xSyncFails"]=True
-            self.assertRaises(apsw.IOError, self.assertRaisesUnraisable, apsw.IOError, apsw.Connection("testdb", vfs="faultvfs").cursor().execute, "insert into dummy1 values(3,4)")
+            self.assertRaises(apsw.IOError, self.assertRaisesUnraisable, apsw.IOError, apsw.Connection(TESTFILEPREFIX+"testdb", vfs="faultvfs").cursor().execute, "insert into dummy1 values(3,4)")
 
             ## xFileSizeFails
             apsw.faultdict["xFileSizeFails"]=True
-            self.assertRaises(apsw.IOError, self.assertRaisesUnraisable, apsw.IOError, apsw.Connection("testdb", vfs="faultvfs").cursor().execute, "select * from dummy1")
+            self.assertRaises(apsw.IOError, self.assertRaisesUnraisable, apsw.IOError, apsw.Connection(TESTFILEPREFIX+"testdb", vfs="faultvfs").cursor().execute, "select * from dummy1")
 
         ## xCheckReservedLockFails
         apsw.faultdict["xCheckReservedLockFails"]=True
@@ -7598,13 +7602,13 @@ shell.write(shell.stdout, "hello world\\n")
         testdb(vfsname="faultvfs")
 
         ## xCloseFails
-        t=apsw.VFSFile("", "testfile", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
+        t=apsw.VFSFile("", TESTFILEPREFIX+"testfile", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
         apsw.faultdict["xCloseFails"]=True
         self.assertRaises(apsw.IOError, t.xClose)
         del t
         # now catch it in the destructor
         def foo():
-            t=apsw.VFSFile("", "testfile", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
+            t=apsw.VFSFile("", TESTFILEPREFIX+"testfile", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
             apsw.faultdict["xCloseFails"]=True
             del t
             gc.collect()
@@ -7613,19 +7617,19 @@ shell.write(shell.stdout, "hello world\\n")
         ## vfspyopen_fullpathnamemallocfailed
         del FaultVFS.xOpen # remove overriding fault xOpen method so we get default implementation
         apsw.faultdict["vfspyopen_fullpathnamemallocfailed"]=True
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, MemoryError, apsw.Connection, "testdb", vfs="faultvfs")
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, MemoryError, apsw.Connection, TESTFILEPREFIX+"testdb", vfs="faultvfs")
 
         ## vfspyopen_fullpathnamefailed
         apsw.faultdict["vfspyopen_fullpathnamefailed"]=True
-        self.assertRaises(apsw.NoMemError, self.assertRaisesUnraisable, apsw.NoMemError, apsw.Connection, "testdb", vfs="faultvfs")
+        self.assertRaises(apsw.NoMemError, self.assertRaisesUnraisable, apsw.NoMemError, apsw.Connection, TESTFILEPREFIX+"testdb", vfs="faultvfs")
 
         ## vfsfileopen_fullpathnamemallocfailed
         apsw.faultdict["vfsfileopen_fullpathnamemallocfailed"]=True
-        self.assertRaises(MemoryError, apsw.VFSFile, "", "testdb", [0,0])
+        self.assertRaises(MemoryError, apsw.VFSFile, "", TESTFILEPREFIX+"testdb", [0,0])
         
         ## vfsfileopen_fullpathnamefailed
         apsw.faultdict["vfsfileopen_fullpathnamefailed"]=True
-        self.assertRaises(apsw.NoMemError, apsw.VFSFile, "", "testdb", [0,0])
+        self.assertRaises(apsw.NoMemError, apsw.VFSFile, "", TESTFILEPREFIX+"testdb", [0,0])
         
         ## vfsnamesfails
         apsw.faultdict["vfsnamesfails"]=True
@@ -7813,11 +7817,11 @@ shell.write(shell.stdout, "hello world\\n")
 
 
 testtimeout=False # timeout testing adds several seconds to each run
-def testdb(filename="testdb2", vfsname="apswtest", closedb=True, mode=None):
+def testdb(filename=TESTFILEPREFIX+"testdb2", vfsname="apswtest", closedb=True, mode=None):
     "This method causes all parts of a vfs to be executed"
     gc.collect() # free any existing db handles
     for suf in "", "-journal", "x", "x-journal":
-        deletefile(filename)
+        deletefile(filename+suf)
 
     db=apsw.Connection(filename, vfs=vfsname)
     if mode:
