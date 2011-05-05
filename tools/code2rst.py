@@ -88,7 +88,7 @@ def do_mappings():
                         sys.exit(1)
             # check to see if apsw is missing any
             for v in pages[pg]['vars']:
-                if v not in mappings[map]:
+                if v not in mappings[map] and v not in ('SQLITE_IOERR_SEEK', 'SQLITE_IOERR_SHMMAP'):
                     print "Mapping",map,"is missing",v
                     sys.exit(1)
         vals=m[:]
