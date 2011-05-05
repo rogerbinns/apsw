@@ -8,7 +8,9 @@
    makes a big difference with diminishing returns based on how many
    the user program goes through without freeing and the interpretter
    gc intervals. */
+#ifndef AB_NRECYCLE
 #define AB_NRECYCLE 256
+#endif
 
 typedef struct APSWBuffer {
   PyObject_HEAD
@@ -179,6 +181,7 @@ APSWBuffer_FromObject(PyObject *base, Py_ssize_t offset, Py_ssize_t length)
      already calculated a hash then use that rather than recalculating
      it ourselves. */
   res->hash= -1;
+#ifndef PYPY_VERSION
   assert(PyBytes_CheckExact(base));
   if(offset==0 && length==PyBytes_GET_SIZE(base))
     {
@@ -186,7 +189,7 @@ APSWBuffer_FromObject(PyObject *base, Py_ssize_t offset, Py_ssize_t length)
       if(res->hash<-2 || res->hash>-1)
         res->hash+=1;
     }
-
+#endif
 
 #ifndef NDEBUG
   /* check our conniving performance hack actually worked */

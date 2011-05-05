@@ -113,7 +113,10 @@ static int APSW_Should_Fault(const char *);
 static PyObject *apswmodule;
 
 /* Everything except the module itself is in seperate files */
-
+#ifdef PYPY_VERSION
+#include "pypycompat.c"
+#endif
+ 
 /* Augment tracebacks */
 #include "traceback.c"
 
@@ -1429,6 +1432,8 @@ PyInit_apsw(void)
 #endif
 
     if (m == NULL)  goto fail;
+    
+    Py_INCREF(m);
 
     if(init_exceptions(m)) goto fail;
 
@@ -1866,6 +1871,7 @@ modules etc. For example::
 static void
 add_shell(PyObject *apswmodule)
 {
+#ifndef PYPY_VERSION
   PyObject *res=NULL, *maindict=NULL, *apswdict, *msvciscrap=NULL;
 
   maindict=PyModule_GetDict(PyImport_AddModule("__main__"));
@@ -1888,6 +1894,7 @@ add_shell(PyObject *apswmodule)
   assert(res);
   Py_XDECREF(res);
   Py_XDECREF(msvciscrap);
+#endif
 }
 
 #ifdef APSW_TESTFIXTURES
