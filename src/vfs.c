@@ -1261,7 +1261,7 @@ apswvfspy_xSetSystemCall(APSWVFS *self, PyObject *args)
   const char *name=0;
   PyObject *pyptr;
   void *ptr=NULL;
-  int res;
+  int res=-7; /* initialization to stop compiler whining */
 
   CHECKVFSPY;
   VFSNOTIMPLEMENTED(xSetSystemCall, 3);
