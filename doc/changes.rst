@@ -2,6 +2,14 @@ Change History
 **************
 .. currentmodule:: apsw
 
+next
+====
+
+When invoking the shell by calling :func:`apsw.main` it will not
+become interactive if you supply SQL arguments.  This is to have the
+same behaviour as the SQLite shell.  (`issue 115
+<http://code.google.com/p/apsw/issues/detail?id=115>`__)
+
 3.7.6.2-r1
 ==========
 

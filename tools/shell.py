@@ -2574,10 +2574,13 @@ def main():
 
     """
     try:
-        Shell(args=sys.argv[1:]).cmdloop()
+        s=Shell()
+        _,_,cmds=s.process_args(sys.argv[1:])
+        if len(cmds)==0:
+            s.cmdloop()
     except:
         v=sys.exc_info()[1]
-        if hasattr(v, "_handle_exception_saw_this") and v._handle_exception_saw_this:
+        if getattr(v, "_handle_exception_saw_this", False):
             pass
         else:
             # Where did this exception come from?
