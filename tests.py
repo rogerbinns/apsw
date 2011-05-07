@@ -6482,6 +6482,57 @@ class APSW(unittest.TestCase):
         ###
         # pass
 
+
+        ###
+        ### Command find
+        ###
+        reset()
+        cmd(".find one two three")
+        s.cmdloop()
+        isempty(fh[1])
+        isnotempty(fh[2])
+        reset()
+        cmd("create table findtest([x\" x],y); insert into findtest values(3, 'xx3'); insert into findtest values(34, 'abcd');")
+        s.cmdloop()
+        isempty(fh[1])
+        isempty(fh[2])
+        reset()
+        cmd(".find 3")
+        s.cmdloop()
+        isempty(fh[2])
+        for text,present in (
+            ("findtest", True),
+            ("xx3", True),
+            ("34", False)
+            ):
+            if present:
+                self.assertTrue(text in get(fh[1]))
+            else:
+                self.assertTrue(text not in get(fh[1]))
+        reset()
+        cmd(".find does-not-exist")
+        s.cmdloop()
+        isempty(fh[1])
+        isempty(fh[2])
+        reset()
+        cmd(".find ab_d")
+        s.cmdloop()
+        isempty(fh[2])
+        for text,present in (
+            ("findtest", True),
+            ("xx3", False),
+            ("34", True)
+            ):
+            if present:
+                self.assertTrue(text in get(fh[1]))
+            else:
+                self.assertTrue(text not in get(fh[1]))
+        reset()
+        cmd(".find 3 table-not-exist")
+        s.cmdloop()
+        isempty(fh[1])
+        isempty(fh[2])
+
         ###
         ### Command help
         ###

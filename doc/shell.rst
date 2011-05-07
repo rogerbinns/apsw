@@ -39,6 +39,7 @@ In addition to executing SQL, these are the commands available:
                               exceptions (default OFF)
   .exit                       Exit this program
   .explain ON|OFF             Set output mode suitable for explain (default OFF)
+  .find what ?TABLE?          Searches all columns of all tables for a value
   .header(s) ON|OFF           Display the column names in output (default OFF)
   .help ?COMMAND?             Shows list of commands and their usage.  If COMMAND
                               is specified then shows detail about that COMMAND.

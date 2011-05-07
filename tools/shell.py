@@ -693,6 +693,10 @@ OPTIONS include:
             fmt=lambda x: self.colour.colour_value(x, self._fmt_c_string(x))
         self.write(self.stdout, self.separator.join([fmt(l) for l in line])+"\n")
 
+    def _output_summary(self, summary):
+        # internal routine to output a summary line or two
+        self.write(self.stdout, self.colour.summary+summary+self.colour.summary_)
+
     ###
     ### Various routines
     ###
@@ -819,7 +823,7 @@ Enter SQL statements terminated with a ";"
         if self.bail:
             raise
 
-    def process_sql(self, sql, bindings=None, internal=False):
+    def process_sql(self, sql, bindings=None, internal=False, summary=None):
         """Processes SQL text consisting of one or more statements
 
         :param sql: SQL to execute
@@ -827,7 +831,7 @@ Enter SQL statements terminated with a ";"
         :param bindings: bindings for the *sql*
         
         :param internal: If True then this is an internal execution
-          (eg the .tables or .database command).  When exectuting
+          (eg the .tables or .database command).  When executing
           internal sql timings are not shown nor is the SQL echoed.
         """
         cur=self.db.cursor()
@@ -855,11 +859,16 @@ Enter SQL statements terminated with a ";"
         try:
             for row in cur.execute(sql, bindings):
                 if state['newsql']:
+                    # summary line?
+                    if summary:
+                        self._output_summary(summary[0])
                     # output a header always
                     cols=[h for h,d in cur.getdescription()]
                     self.output(True, cols)
                     state['newsql']=False
                 self.output(False, row)
+            if not state['newsql'] and summary:
+                self._output_summary(summary[1])
         except:
             # If echo is on and the sql to execute is a syntax error
             # then the exec tracer won't have seen it so it won't be
@@ -1327,6 +1336,54 @@ Enter SQL statements terminated with a ";"
             self.output=self.output_column
         else:
             self.pop_output()
+
+    def command_find(self, cmd):
+        """find what ?TABLE?: Searches all columns of all tables for a value
+
+        The find command helps you locate data across your database
+        for example to find a string or any references to an id.
+
+        You can specify a like pattern to limit the search to a subset
+        of tables (eg specifying 'CUSTOMER%' for all tables beginning
+        with CUSTOMER).
+
+        The what value will be treated as a string and/or integer if
+        possible.  If what contains % or _ then it is also treated as
+        a like pattern.
+
+        This command will take a long time to execute needing to read
+        all of the relevant tables.
+        """
+        if len(cmd)<1 or len(cmd)>2:
+            raise self.Error("At least one argument required and at most two accepted")
+        tablefilter="%"
+        if len(cmd)==2:
+            tablefilter=cmd[1]
+        querytemplate=[]
+        queryparams=[]
+        def qp(): # binding for current queryparams
+            return "?"+str(len(queryparams))
+        s=cmd[0]
+        if '%' in s or '_' in s:
+            queryparams.append(s)
+            querytemplate.append("%s LIKE "+qp())
+        queryparams.append(s)
+        querytemplate.append("%s = "+qp())
+        try:
+            i=int(s)
+            queryparams.append(i)
+            querytemplate.append("%s = "+qp())
+        except ValueError:
+            pass
+        querytemplate=" OR ".join(querytemplate)
+        for (table,) in self.db.cursor().execute("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE ?1", (tablefilter,)):
+            t=self._fmt_sql_identifier(table)
+            query="SELECT * from %s WHERE " % (t,)
+            colq=[]
+            for _,column,_,_,_,_ in self.db.cursor().execute("pragma table_info(%s)" % (t,)):
+                colq.append(querytemplate % ((self._fmt_sql_identifier(column),)*len(queryparams)))
+            query=query+" OR ".join(colq)
+            self.process_sql(query, queryparams, internal=True, summary=("Table "+table+"\n", "\n"))
 
     def command_header(self, cmd):
         """header(s) ON|OFF: Display the column names in output (default OFF)
@@ -2552,6 +2609,7 @@ Enter SQL statements terminated with a ";"
     _colours["default"]=_colourscheme(prompt=d.bold, prompt_=d.bold_,
                                       error=d.fg_red+d.bold, error_=d.bold_+d.fg_,
                                       intro=d.fg_blue+d.bold, intro_=d.bold_+d.fg_,
+                                      summary=d.fg_blue+d.bold, summary_=d.bold_+d.fg_,
                                       header=sys.platform=="win32" and d.inverse or d.underline,
                                       header_=sys.platform=="win32" and d.inverse_ or d.underline_,
                                       vnull=d.fg_red, vnull_=d.fg_,
