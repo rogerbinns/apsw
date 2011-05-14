@@ -3158,6 +3158,17 @@ class APSW(unittest.TestCase):
         self.db.createcollation("dummy", None)
         self.assertRaises(apsw.SQLError, cur.execute, "select * from foo order by x collate dummy")
 
+    def testPysqliteRecursiveIssue(self):
+        "Check an issue that affected pysqlite"
+        # http://code.google.com/p/pysqlite/source/detail?r=260ee266d6686e0f87b0547c36b68a911e6c6cdb
+        cur=self.db.cursor()
+        cur.execute("create table a(x); create table b(y);")
+        def foo():
+            yield (1,)
+            cur.execute("insert into a values(?)", (1,))
+            yield (2,)
+        cur.executemany("insert into b values(?)", foo())
+
     def testWriteUnraiseable(self):
         "Verify writeunraiseable replacement function"
         def unraise():
