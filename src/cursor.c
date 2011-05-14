@@ -210,7 +210,8 @@ resetcursor(APSWCursor *self, int force)
   
   if(!force && self->status!=C_DONE && self->emiter)
     {
-      PyObject *next=PyIter_Next(self->emiter);
+      PyObject *next;
+      INUSE_CALL(next=PyIter_Next(self->emiter));
       if(next)
         {
           Py_DECREF(next);
@@ -778,7 +779,7 @@ APSWCursor_step(APSWCursor *self)
             }
 
           /* we are in executemany mode */
-          next=PyIter_Next(self->emiter);
+          INUSE_CALL(next=PyIter_Next(self->emiter));
           if(PyErr_Occurred())
             {
               assert(!next);
@@ -1054,7 +1055,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
   if (!self->emiter)
     return PyErr_Format(PyExc_TypeError, "2nd parameter must be iterable");
 
-  next=PyIter_Next(self->emiter);
+  INUSE_CALL(next=PyIter_Next(self->emiter));
   if(!next && PyErr_Occurred())
     return NULL;
   if(!next)

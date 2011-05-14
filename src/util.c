@@ -313,7 +313,7 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
   { if(self->inuse)                                                                                 \
       {    /* raise exception if we aren't already in one */                                                                         \
            if (!PyErr_Occurred())                                                                                                    \
-             PyErr_Format(ExcThreadingViolation, "You are trying to use the same object concurrently in two threads which is not allowed."); \
+             PyErr_Format(ExcThreadingViolation, "You are trying to use the same object concurrently in two threads or re-entrantly within the same thread which is not allowed."); \
            return e;                                                                                                                 \
       }                                                                                                                              \
   } while(0)

@@ -39,6 +39,10 @@ The following exceptions happen when APSW detects various problems.
   time, or tried to close the same connection in two threads at the
   same time.
 
+  You can also get this exception by using a cursor as an argument to
+  itself (eg as the input data for :meth:`Cursor.executemany`).
+  Cursors can only be used for one thing at a time.
+
 .. exception:: ForkingViolationError
 
   See :meth:`apsw.fork_checker`.

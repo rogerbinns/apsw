@@ -3167,7 +3167,7 @@ class APSW(unittest.TestCase):
             yield (1,)
             cur.execute("insert into a values(?)", (1,))
             yield (2,)
-        cur.executemany("insert into b values(?)", foo())
+        self.assertRaises(apsw.ThreadingViolationError, cur.executemany, "insert into b values(?)", foo())
 
     def testWriteUnraiseable(self):
         "Verify writeunraiseable replacement function"

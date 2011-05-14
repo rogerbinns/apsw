@@ -13,6 +13,8 @@ arguments.  This is to have the same behaviour as the SQLite shell.
 The shell has a *.find* command making it easy to search for values
 across all columns of some or all tables.
 
+Detect attempted use of a cursor as input data for itself.
+
 3.7.6.2-r1
 ==========
 
