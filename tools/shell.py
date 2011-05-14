@@ -1275,6 +1275,12 @@ Enter SQL statements terminated with a ";"
         encoding is utf8 and that is generally the best value to use
         when other programs give you a choice.
 
+        You can also specify an error handler.  For example
+        'cp437:replace' will use code page 437 and any Unicode
+        codepoints not present in cp437 will be replaced (typically
+        with something like a question mark).  Other error handlers
+        include 'ignore', 'strict' (default) and 'xmlcharrefreplace'.
+
         For the default input/output/error streams on startup the
         shell defers to Python's detection of encoding.  For example
         on Windows it asks what code page is in use and on Unix it
@@ -1888,7 +1894,7 @@ Enter SQL statements terminated with a ";"
             raise self.Error("separator takes exactly one parameter")
         self.separator=self.fixup_backslashes(cmd[0])
 
-    _shows=("echo", "explain", "headers", "mode", "nullvalue", "output", "separator", "width", "exceptions")
+    _shows=("echo", "explain", "headers", "mode", "nullvalue", "output", "separator", "width", "exceptions", "encoding")
 
     def command_show(self, cmd):
         """show: Show the current values for various settings."""
@@ -1934,6 +1940,10 @@ Enter SQL statements terminated with a ";"
                     v=getattr(self.stdout, "name", "<unknown stdout>")
             elif i=="width":
                 v=" ".join(["%d"%(i,) for i in self.widths])
+            elif i=="encoding":
+                v=self.encoding[0]
+                if self.encoding[1]:
+                    v+=" (Errors "+self.encoding[1]+")"
             else:
                 assert False, "Bug: unknown show handling"
             outs.append( (k,v) )
