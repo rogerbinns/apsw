@@ -470,7 +470,9 @@ OPTIONS include:
         nonalnum=re.sub("[A-Za-z_0-9]+", "", v)
         if len(nonalnum)==0:
             if v.upper() not in self._sqlite_reserved:
-                return v
+                # Ok providing it doesn't start with a digit
+                if v[0] not in "0123456789":
+                    return v
         # double quote it unless there are any double quotes in it
         if '"' in nonalnum:
             return "[%s]" % (v,)
