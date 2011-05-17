@@ -13,6 +13,9 @@ arguments.  This is to have the same behaviour as the SQLite shell.
 The shell has a *.find* command making it easy to search for values
 across all columns of some or all tables.
 
+The shell has a *.autoimport* command making it easy to import a data
+file automatically deducing separators, column names and data types.
+
 Detect attempted use of a cursor as input data for itself.
 
 3.7.6.2-r1

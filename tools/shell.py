@@ -1561,29 +1561,6 @@ Enter SQL statements terminated with a ";"
             cur=self.db.cursor()
             sql="insert into %s values(%s)" % (self._fmt_sql_identifier(cmd[1]), ",".join("?"*ncols))
 
-            if sys.version_info<(3,0):
-                ###
-                ### csv module is not good at unicode so we have to
-                ### indirect unless utf8 is in use
-                ###
-                if self.encoding[0].lower()=="utf8": # no need for tempfile
-                    thefile=open(cmd[0], "rb")
-                else:
-                    import tempfile
-                    thefile=tempfile.TemporaryFile(prefix="apsw_import")
-                    thefile.write(codecs.open(cmd[0], "r", self.encoding[0]).read().encode("utf8"))
-                    # move back to begining
-                    thefile.seek(0,0)
-            else:
-                thefile=codecs.open(cmd[0], "r", self.encoding[0])
-
-            # see output_csv for the thinking behind these
-            if sys.version_info<(3,0):
-                fixapi=lambda x: x.encode("utf8")
-                fixdata=lambda x: x.decode("utf8")
-            else:
-                fixapi=lambda x: x
-                fixdata=lambda x: x
             kwargs={}
             if self.separator==",":
                 kwargs["dialect"]="excel"
@@ -1591,21 +1568,19 @@ Enter SQL statements terminated with a ";"
                 kwargs["dialect"]="excel-tab"
             else:
                 kwargs["quoting"]=csv.QUOTE_NONE
-                kwargs["delimiter"]=fixapi(self.separator)
+                kwargs["delimiter"]=self.separator
                 kwargs["doublequote"]=False
                 kwargs["quotechar"]="\x00"
             row=1
-            for line in csv.reader(thefile, **kwargs):
+            for line in self._csvin_wrapper(cmd[0], kwargs):
                 if len(line)!=ncols:
                     raise self.Error("row %d has %d columns but should have %d" % (row, len(line), ncols))
                 try:
-                    line=[fixdata(l) for l in line]
                     cur.execute(sql, line)
                 except:
                     self.write(self.stderr, "Error inserting row %d" % (row,))
                     raise
                 row+=1
-            thefile.close()
             self.db.cursor().execute("COMMIT")
 
         except:
@@ -1613,6 +1588,258 @@ Enter SQL statements terminated with a ";"
                 self.db.cursor().execute(final)
             raise
         
+    def _csvin_wrapper(self, filename, dialect):
+        # Returns a csv reader that works around python bugs and uses
+        # dialect dict to configure reader
+        
+        # Very easy for python 3
+        if sys.version_info>=(3,0):
+            thefile=codecs.open(filename, "r", self.encoding[0])
+            for line in csv.reader(thefile, **dialect):
+                yield line
+            thefile.close()
+            return
+
+        ###
+        ### csv module is not good at unicode so we have to
+        ### indirect unless utf8 is in use
+        ###
+        if self.encoding[0].lower()=="utf8": # no need for tempfile
+            thefile=open(filename, "rb")
+        else:
+            import tempfile
+            thefile=tempfile.TemporaryFile(prefix="apsw_import")
+            thefile.write(codecs.open(filename, "r", self.encoding[0]).read().encode("utf8"))
+            # move back to beginning
+            thefile.seek(0,0)
+
+        # Ensure all values are utf8 not unicode
+        for k,v in dialect.items():
+            if isinstance(v, unicode):
+                dialect[k]=v.encode("utf8")
+        for line in csv.reader(thefile, **dialect):
+            # back to unicode again
+            yield [x.decode("utf8") for x in line]
+        thefile.close()
+
+    def command_autoimport(self, cmd):
+        """autoimport FILENAME ?TABLE?: Imports filename creating a table and automatically working out separators and data types (alternative to .import command)
+
+        The import command requires that you precisely pre-setup the
+        table and schema, and set the data separators (eg commas or
+        tabs).  In many cases this information can be automatically
+        deduced from the file contents which is what this command
+        does.  There must be at least two columns and two rows.
+
+        If the table is not specified then the basename of the file
+        will be used.
+
+        Additionally the type of the contents of each column is also
+        deduced - for example if it is a number or date.  Empty values
+        are turned into nulls.  Dates are normalized into YYYY-MM-DD
+        format and DateTime are normalized into ISO8601 format to
+        allow easy sorting and searching.  4 digit years must be used
+        to detect dates.  US (swapped day and month) versus rest of
+        the world is also detected providing there is at least one
+        value that resolves the ambiguity.
+
+        Care is taken to ensure that columns looking like numbers are
+        only treated as numbers if they do not have unnecessary
+        leading zeroes or plus signs.  This is to avoid treating phone
+        numbers and similar number like strings as integers.
+
+        This command can take quite some time on large files as they
+        are effectively imported twice.  The first time is to
+        determine the format and the types for each column while the
+        second pass actually imports the data.
+        """
+        if len(cmd)<1 or len(cmd)>2:
+            raise self.Error("Expected one or two parameters")
+        if not os.path.exists(cmd[0]):
+            raise self.Error("File \"%s\" does not exist" % (cmd[0],))
+        if len(cmd)==2:
+            tablename=cmd[1]
+        else:
+            tablename=None
+        try:
+            final=None
+            c=self.db.cursor()
+            c.execute("BEGIN IMMEDIATE")
+            final="ROLLBACK"
+
+            if not tablename:
+                tablename=os.path.splitext(os.path.basename(cmd[0]))[0]
+
+            if c.execute("pragma table_info(%s)" % (self._fmt_sql_identifier(tablename),)).fetchall():
+                raise self.Error("Table \"%s\" already exists" % (tablename,))
+
+            # The types we support deducing
+            def DateUS(v): # US formatted date with wrong ordering of day and month
+                return DateWorld(v, switchdm=True)
+            def DateWorld(v, switchdm=False): # Sensibly formatted date as used anywhere else in the world
+                y,m,d=self._getdate(v)
+                if switchdm: m,d=d,m
+                if m<1 or m>12 or d<1 or d>31:
+                    raise ValueError
+                return "%d-%02d-%02d" % (y,m,d)
+            def DateTimeUS(v): # US date and time
+                return DateTimeWorld(v, switchdm=True)
+            def DateTimeWorld(v, switchdm=False): # Sensible date and time
+                y,m,d,h,M,s,ms=self._getdatetime(v)
+                if switchdm: m,d=d,m
+                if m<1 or m>12 or d<1 or d>31 or h<0 or h>23 or M<0 or M>59 or s<0 or s>65 or ms<0 or ms>999:
+                    raise ValueError
+                return "%d-%02d-%02dT%02d:%02d:%02d.%03d" % (y,m,d,h,M,s,ms)
+            def Number(v): # we really don't want phone numbers etc to match
+                if v=="0": return 0
+                if v[0]=="+": # idd prefix
+                    raise ValueError
+                if re.match("^[0-9]+$", v): 
+                    if v[0]=="0": raise ValueError # also a phone number
+                    return int(v)
+                if v[0]=="0" and not v.startswith("0."): # deceptive not a number
+                    raise ValueError
+                return float(v)
+
+            # Work out the file format
+            formats=[
+                {"dialect": "excel"},
+                {"dialect": "excel-tab"},
+                {"quoting": csv.QUOTE_NONE,
+                 "delimiter": "|",
+                 "doublequote": False,
+                 "quotechar": "\x00"},
+                ]
+            if self.separator not in ("\t", ",", "|"):
+                formats.append(
+                    {"quoting": csv.QUOTE_NONE,
+                     "delimiter": self.separator,
+                     "doublequote": False,
+                     "quotechar": "\x00"})
+                
+            possibles=[]
+            errors=[]
+            encodingissue=False
+            for format in formats:
+                ncols=-1
+                lines=0
+                try:
+                    for line in self._csvin_wrapper(cmd[0], format):
+                        if lines==0:
+                            lines=1
+                            ncols=len(line)
+                            # data type guess setup
+                            datas=[]
+                            for i in range(ncols):
+                                datas.append([DateUS, DateWorld, DateTimeUS, DateTimeWorld, Number])
+                            allblanks=[True]*ncols
+                            continue
+                        if len(line)!=ncols:
+                            raise ValueError("Expected %d columns - got %d" % (ncols, len(line)))
+                        lines+=1
+                        for i in range(ncols):
+                            if not line[i]: 
+                                continue
+                            allblanks[i]=False
+                            if not datas[i]:
+                                continue
+                            # remove datas that give ValueError
+                            d=[]
+                            for dd in datas[i]:
+                                try: 
+                                    dd(line[i])
+                                    d.append(dd)
+                                except ValueError: 
+                                    pass
+                            datas[i]=d
+                    if ncols>1 and lines>1:
+                        # if a particular column was allblank then clear datas for it
+                        for i in range(ncols):
+                            if allblanks[i]:
+                                datas[i]=[]
+                        possibles.append((format, ncols, lines, datas))
+                except UnicodeDecodeError:
+                    encodingissue=True
+                except:
+                    s=str(sys.exc_info()[1])
+                    if s not in errors:
+                        errors.append(s)
+
+            if len(possibles)==0:
+                if encodingissue:
+                    raise self.Error("The file is probably not in the current encoding \"%s\" and didn't match a known file format" % (self.encoding[0],))
+                v="File doesn't appear to match a known type."
+                if len(errors):
+                    v+="  Errors reported:\n"+"\n".join(["  "+e for e in errors])
+                raise self.Error(v)
+            if len(possibles)>1:
+                raise self.Error("File matches more than one type!")
+            format, ncols, lines, datas=possibles[0]
+            fmt=format.get("dialect", None)
+            if fmt is None:
+                fmt="(delimited by \"%s\")" % (format["delimiter"],)
+            self.write(self.stdout, "Detected Format %s  Columns %d  Rows %d\n" % (fmt, ncols, lines))
+            # Header row
+            reader=self._csvin_wrapper(cmd[0], format)
+            for header in reader:
+                break
+            # Check schema
+            identity=lambda x:x
+            for i in range(ncols):
+                if len(datas[i])>1:
+                    raise self.Error("Column #%d \"%s\" has ambiguous data format - %s" % (i+1, header[i], ", ".join([d.__name__ for d in datas[i]])))
+                if datas[i]:
+                    datas[i]=datas[i][0]
+                else:
+                    datas[i]=identity
+            # Make the table
+            sql="CREATE TABLE %s(%s)" % (self._fmt_sql_identifier(tablename), ", ".join([self._fmt_sql_identifier(h) for h in header]))
+            c.execute(sql)
+            # prep work for each row
+            sql="INSERT INTO %s VALUES(%s)" % (self._fmt_sql_identifier(tablename), ",".join(["?"]*ncols))
+            for line in reader:
+                vals=[]
+                for i in range(ncols):
+                    l=line[i]
+                    if not l:
+                        vals.append(None)
+                    else:
+                        vals.append(datas[i](l))
+                c.execute(sql, vals)
+            
+            c.execute("COMMIT")
+            self.write(self.stdout, "Auto-import into table \"%s\" complete\n" % (tablename,))
+        except:
+            if final:
+                self.db.cursor().execute(final)
+            raise
+
+    def _getdate(self, v):
+        # Returns a tuple of 3 items y,m,d from string v
+        m=re.match(r"^([0-9]+)[^0-9]([0-9]+)[^0-9]([0-9]+)$", v)
+        if not m:
+            raise ValueError
+        y,m,d=int(m.group(1)), int(m.group(2)), int(m.group(3))
+        if d>1000: # swap order
+            y,m,d=d,m,y
+        if y<1000 or y>9999:
+            raise ValueError
+        return y,m,d
+
+    def _getdatetime(self, v):
+        # must be at least HH:MM
+        m=re.match(r"^([0-9]+)[^0-9]([0-9]+)[^0-9]([0-9]+)[^0-9]+([0-9]+)[^0-9]([0-9]+)([^0-9]([0-9]+)(\.([0-9]{3}))?)?$", v)
+        if not m:
+            raise ValueError
+        items=list(m.group(1,2,3,4,5,7,9))
+        for i in range(len(items)):
+            if items[i] is None:
+                items[i]=0
+        items=[int(i) for i in items]
+        if items[2]>1000:
+            items=[items[2], items[1], items[0]]+items[3:]
+        return items
+
     def command_indices(self, cmd):
         """indices TABLE: Lists all indices on table TABLE
 
