@@ -319,6 +319,27 @@ class APSW(unittest.TestCase):
         # you get SQLError if the table doesn't exist!
         self.assertRaises(apsw.SQLError, self.db.cursor().execute, "select count(*) from ["+tablename+"]")
 
+    def assertTablesEqual(self, dbl, left, dbr, right):
+        # Ensure tables have the same contents.  Rowids can be
+        # different and select gives unordered results so this is
+        # quite challenging
+        l=dbl.cursor()
+        r=dbr.cursor()
+        # check same number of rows
+        lcount=l.execute("select count(*) from ["+left+"]").fetchall()[0][0]
+        rcount=r.execute("select count(*) from ["+right+"]").fetchall()[0][0]
+        self.assertEqual(lcount, rcount)
+        # check same number and names and order for columns
+        lnames=[row[1] for row in l.execute("pragma table_info(["+left+"])")]
+        rnames=[row[1] for row in r.execute("pragma table_info(["+left+"])")]
+        self.assertEqual(lnames, rnames)
+        # read in contents, sort and compare
+        lcontents=l.execute("select * from ["+left+"]").fetchall()
+        rcontents=r.execute("select * from ["+right+"]").fetchall()
+        lcontents.sort()
+        rcontents.sort()
+        self.assertEqual(lcontents, rcontents)
+
     def assertRaisesUnraisable(self, exc, func, *args, **kwargs):
         orig=sys.excepthook
         try:
@@ -6619,6 +6640,35 @@ class APSW(unittest.TestCase):
         reset()
         # check it was done in a transaction and aborted
         self.assertEqual(0, s.db.cursor().execute("select count(*) from imptest").fetchall()[0][0])
+
+        ###
+        ### Command - autoimport
+        ###
+
+        # errors
+        for i in ".autoimport", ".autoimport 1 2 3", ".autoimport nosuchfile", ".autoimport %stest-shell-1 sqlite_master" % (TESTFILEPREFIX,):
+            reset()
+            cmd(i)
+            s.cmdloop()
+            isempty(fh[1])
+            isnotempty(fh[2])
+
+        # check correct detection with each type of separator
+        c=s.db.cursor()
+        c.execute("""create table aitest("x y", ["], "3d");
+          insert into aitest values('a,b', '21/1/20', '00');
+          insert into aitest values('  ', '1/1/20', '10');
+          insert into aitest values('a"b', '1/1/01', '00');
+        """)
+        fname=TESTFILEPREFIX+"test-shell-1"
+        for sep in "\t", "|", ",", "X":
+            reset()
+            cmd(".mode csv\n.headers on\n.output %stest-shell-1\n.separator \"%s\"\nselect * from aitest;\n.output stdout\n.separator X\ndrop table if exists \"test-shell-1\";\n.autoimport %stest-shell-1" %
+                (TESTFILEPREFIX, sep, TESTFILEPREFIX))
+            s.cmdloop()
+            isnotempty(fh[1])
+            isempty(fh[2])
+            self.assertTablesEqual(s.db, "aitest", s.db, "test-shell-1")
 
         ###
         ### Command - indices
