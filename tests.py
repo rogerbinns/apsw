@@ -6661,11 +6661,21 @@ class APSW(unittest.TestCase):
                 ('a"b', '1/1/01', '00'),
                 ('+40', '01123', '2010 100 15'),
                 ('2010//10//13', '2010/10/13  12', 2),
+                ('2010/13/13 12:13', '13/13/2010 12:93', '13/2010/13'),
                 ("+3", " 3", 3),
+                ("03.03", "03.03.20", "03"),
+                (
+                  (None, 2, 5.5),
+                  (None, 4, 99),
+                  ),
                 ):
 
             c.execute("""drop table if exists aitest ; create table aitest("x y", ["], "3d")""")
-            c.execute("insert into aitest values(?,?,?)", row)
+            if isinstance(row[0], tuple):
+                f=c.executemany
+            else:
+                f=c.execute
+            f("insert into aitest values(?,?,?)", row)
             fname=TESTFILEPREFIX+"test-shell-1"
             for sep in "\t", "|", ",", "X":
                 reset()
@@ -6682,17 +6692,55 @@ class APSW(unittest.TestCase):
         s.cmdloop()
 
         # Check date detection
-        expect="1999-10-13"
-        for test in ((1999, 10, 13), (13, 10, 1999), (10, 13, 1999)):
+        for expect, fmt, sequences in (
+            ("1999-10-13", "%d-%d:%d", 
+             (
+                    (1999, 10, 13), 
+                    (13, 10, 1999), 
+                    (10, 13, 1999),
+             )
+            ),
+            ("1999-10-13T12:14:17", "%d/%d/%d/%d/%d/%d", 
+             (
+                    (1999, 10, 13, 12, 14, 17),
+                    (13, 10, 1999, 12, 14, 17),
+                    (10, 13, 1999, 12, 14, 17),
+             )
+            ),
+            ("1999-10-13T12:14:00", "%dX%dX%dX%dX%d", 
+             (
+                    (1999, 10, 13, 12, 14),
+                    (13, 10, 1999, 12, 14),
+                    (10, 13, 1999, 12, 14),
+             )
+            )
+            ):
+            for seq in sequences:
+                f=open(TESTFILEPREFIX+"test-shell-1", "wt")
+                f.write(("a,b\nrow,"+fmt+"\n") % seq)
+                f.close()
+                reset()
+                cmd("drop table [test-shell-1];\n.autoimport %stest-shell-1" % (TESTFILEPREFIX,))
+                s.cmdloop()
+                isempty(fh[2])
+                imp=c.execute("select b from [test-shell-1] where a='row'").fetchall()[0][0]
+                self.assertEqual(imp, expect)
+
+        # Check diagnostics when unable to import
+        for err, content in (
+            ("current encoding", b(r"\x81\x82\x83\tfoo\n\x84\x97\xff\tbar")),
+            ("known type", "abcdef\nhiojklmnop\n"),
+            ("more than one", 'ab,c\tdef\nqr,dd\t\n'),
+            ("ambiguous data format", "a,b\n1/1/2001,3\n2001/4/4,4\n"),
+            ):
             f=open(TESTFILEPREFIX+"test-shell-1", "wt")
-            f.write("a,b\nrow,%d-%d:%d\n" % test)
+            f.write(content)
             f.close()
             reset()
             cmd("drop table [test-shell-1];\n.autoimport %stest-shell-1" % (TESTFILEPREFIX,))
             s.cmdloop()
-            isempty(fh[2])
-            imp=c.execute("select b from [test-shell-1] where a='row'").fetchall()[0][0]
-            self.assertEqual(imp, expect)
+            errmsg=get(fh[2])
+            self.assert_(err in errmsg)
 
         ###
         ### Command - indices
