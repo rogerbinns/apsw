@@ -1685,14 +1685,14 @@ Enter SQL statements terminated with a ";"
             def DateTimeUS(v): # US date and time
                 return DateTimeWorld(v, switchdm=True)
             def DateTimeWorld(v, switchdm=False): # Sensible date and time
-                y,m,d,h,M,s,ms=self._getdatetime(v)
+                y,m,d,h,M,s=self._getdatetime(v)
                 if switchdm: m,d=d,m
-                if m<1 or m>12 or d<1 or d>31 or h<0 or h>23 or M<0 or M>59 or s<0 or s>65 or ms<0 or ms>999:
+                if m<1 or m>12 or d<1 or d>31 or h<0 or h>23 or M<0 or M>59 or s<0 or s>65:
                     raise ValueError
-                return "%d-%02d-%02dT%02d:%02d:%02d.%03d" % (y,m,d,h,M,s,ms)
+                return "%d-%02d-%02dT%02d:%02d:%02d" % (y,m,d,h,M,s)
             def Number(v): # we really don't want phone numbers etc to match
                 # Python's float & int constructors allow whitespace which we don't
-                if len(v.split())>1: 
+                if re.search(r"\s", v):
                     raise ValueError
                 if v=="0": return 0
                 if v[0]=="+": # idd prefix
@@ -1831,16 +1831,18 @@ Enter SQL statements terminated with a ";"
 
     def _getdatetime(self, v):
         # must be at least HH:MM
-        m=re.match(r"^([0-9]+)[^0-9]([0-9]+)[^0-9]([0-9]+)[^0-9]+([0-9]+)[^0-9]([0-9]+)([^0-9]([0-9]+)(\.([0-9]{3}))?)?$", v)
+        m=re.match(r"^([0-9]+)[^0-9]([0-9]+)[^0-9]([0-9]+)[^0-9]+([0-9]+)[^0-9]([0-9]+)([^0-9]([0-9]+))?$", v)
         if not m:
             raise ValueError
-        items=list(m.group(1,2,3,4,5,7,9))
+        items=list(m.group(1,2,3,4,5,7))
         for i in range(len(items)):
             if items[i] is None:
                 items[i]=0
         items=[int(i) for i in items]
         if items[2]>1000:
             items=[items[2], items[1], items[0]]+items[3:]
+        if items[0]<1000 or items[0]>9999:
+            raise ValueError
         return items
 
     def command_indices(self, cmd):
