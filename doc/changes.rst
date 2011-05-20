@@ -2,8 +2,8 @@ Change History
 **************
 .. currentmodule:: apsw
 
-next
-====
+3.7.6.3-r1
+==========
 
 When invoking the shell by calling :func:`apsw.main` it will not
 become interactive if you supply SQL commands as command line

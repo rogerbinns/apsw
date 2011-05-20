@@ -111,8 +111,6 @@ def getpyurl(pyver):
     if pyver>'2.3.0':
         # Upper or lower case 'p' in download filename is somewhat random
         p='P'
-        if pyver in ("3.1rc2",):
-            p='p'
         return "http://python.org/ftp/python/%s/%sython-%s.tar.bz2" % (dirver,p,pyver)
     if pyver=='2.3.0':
         pyver='2.3'
@@ -166,7 +164,8 @@ PYVERS=(
 SQLITEVERS=(
     '3.7.6',
     '3.7.6.1',
-    '3.7.6.2'
+    '3.7.6.2',
+    '3.7.6.3'
    )
 
 def couchp(pyver):

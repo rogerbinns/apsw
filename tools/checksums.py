@@ -6,11 +6,10 @@ import urllib2
 import hashlib
 
 sqlitevers=(
-    '3070400',
-    '3070500',
     '3070600',
     '3070601',
     '3070602',
+    '3070603',
     )
 
 # Checks the checksums file
