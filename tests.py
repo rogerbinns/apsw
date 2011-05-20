@@ -6653,22 +6653,46 @@ class APSW(unittest.TestCase):
             isempty(fh[1])
             isnotempty(fh[2])
 
-        # check correct detection with each type of separator
+        # check correct detection with each type of separator and that types are not mangled
         c=s.db.cursor()
-        c.execute("""create table aitest("x y", ["], "3d");
-          insert into aitest values('a,b', '21/1/20', '00');
-          insert into aitest values('  ', '1/1/20', '10');
-          insert into aitest values('a"b', '1/1/01', '00');
-        """)
-        fname=TESTFILEPREFIX+"test-shell-1"
-        for sep in "\t", "|", ",", "X":
+        for row in (
+                ('a,b', '21/1/20', '00'),
+                ('  ', '1/1/20', 10),
+                ('a"b', '1/1/01', '00'),
+                ('+40', '01123', '2010 100 15'),
+                ('2010//10//13', '2010/10/13  12', 2),
+                ("+3", " 3", 3),
+                ):
+
+            c.execute("""drop table if exists aitest ; create table aitest("x y", ["], "3d")""")
+            c.execute("insert into aitest values(?,?,?)", row)
+            fname=TESTFILEPREFIX+"test-shell-1"
+            for sep in "\t", "|", ",", "X":
+                reset()
+                cmd(".mode csv\n.headers on\n.output %stest-shell-1\n.separator \"%s\"\nselect * from aitest;\n.output stdout\n.separator X\ndrop table if exists \"test-shell-1\";\n.autoimport %stest-shell-1" %
+                    (TESTFILEPREFIX, sep, TESTFILEPREFIX))
+                s.cmdloop()
+                isnotempty(fh[1])
+                isempty(fh[2])
+                self.assertTablesEqual(s.db, "aitest", s.db, "test-shell-1")
+
+        # Change encoding back to sensible
+        reset()
+        cmd(".encoding utf8")
+        s.cmdloop()
+
+        # Check date detection
+        expect="1999-10-13"
+        for test in ((1999, 10, 13), (13, 10, 1999), (10, 13, 1999)):
+            f=open(TESTFILEPREFIX+"test-shell-1", "wt")
+            f.write("a,b\nrow,%d-%d:%d\n" % test)
+            f.close()
             reset()
-            cmd(".mode csv\n.headers on\n.output %stest-shell-1\n.separator \"%s\"\nselect * from aitest;\n.output stdout\n.separator X\ndrop table if exists \"test-shell-1\";\n.autoimport %stest-shell-1" %
-                (TESTFILEPREFIX, sep, TESTFILEPREFIX))
+            cmd("drop table [test-shell-1];\n.autoimport %stest-shell-1" % (TESTFILEPREFIX,))
             s.cmdloop()
-            isnotempty(fh[1])
             isempty(fh[2])
-            self.assertTablesEqual(s.db, "aitest", s.db, "test-shell-1")
+            imp=c.execute("select b from [test-shell-1] where a='row'").fetchall()[0][0]
+            self.assertEqual(imp, expect)
 
         ###
         ### Command - indices

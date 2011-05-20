@@ -1691,6 +1691,9 @@ Enter SQL statements terminated with a ";"
                     raise ValueError
                 return "%d-%02d-%02dT%02d:%02d:%02d.%03d" % (y,m,d,h,M,s,ms)
             def Number(v): # we really don't want phone numbers etc to match
+                # Python's float & int constructors allow whitespace which we don't
+                if len(v.split())>1: 
+                    raise ValueError
                 if v=="0": return 0
                 if v[0]=="+": # idd prefix
                     raise ValueError
