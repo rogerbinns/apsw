@@ -1595,7 +1595,7 @@ Enter SQL statements terminated with a ";"
         # Very easy for python 3
         if sys.version_info>=(3,0):
             thefile=codecs.open(filename, "r", self.encoding[0])
-            for line in csv.reader(thefile, **dialect):
+            for line in csv.reader(thefile, **dialect.copy()):
                 yield line
             thefile.close()
             return
@@ -1723,11 +1723,14 @@ Enter SQL statements terminated with a ";"
             possibles=[]
             errors=[]
             encodingissue=False
+            # format is copy() on every use.  This appears bizarre and
+            # unnecessary.  However Python 2.3 and 2.4 somehow manage
+            # to empty it if not copied.
             for format in formats:
                 ncols=-1
                 lines=0
                 try:
-                    for line in self._csvin_wrapper(cmd[0], format):
+                    for line in self._csvin_wrapper(cmd[0], format.copy()):
                         if lines==0:
                             lines=1
                             ncols=len(line)
@@ -1760,7 +1763,7 @@ Enter SQL statements terminated with a ";"
                         for i in range(ncols):
                             if allblanks[i]:
                                 datas[i]=[]
-                        possibles.append((format, ncols, lines, datas))
+                        possibles.append((format.copy(), ncols, lines, datas))
                 except UnicodeDecodeError:
                     encodingissue=True
                 except:
