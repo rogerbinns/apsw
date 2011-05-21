@@ -26,46 +26,50 @@ In addition to executing SQL, these are the commands available:
 .. code-block:: text
 
   
-  .backup ?DB? FILE           Backup DB (default "main") to FILE
-  .bail ON|OFF                Stop after hitting an error (default OFF)
-  .colour SCHEME              Selects a colour scheme from default, off
-  .databases                  Lists names and files of attached databases
-  .dump ?TABLE? [TABLE...]    Dumps all or specified tables in SQL text format
-  .echo ON|OFF                If ON then each SQL statement or command is printed
-                              before execution (default OFF)
-  .encoding ENCODING          Set the encoding used for new files opened via
-                              .output and imports
-  .exceptions ON|OFF          If ON then detailed tracebacks are shown on
-                              exceptions (default OFF)
-  .exit                       Exit this program
-  .explain ON|OFF             Set output mode suitable for explain (default OFF)
-  .find what ?TABLE?          Searches all columns of all tables for a value
-  .header(s) ON|OFF           Display the column names in output (default OFF)
-  .help ?COMMAND?             Shows list of commands and their usage.  If COMMAND
-                              is specified then shows detail about that COMMAND.
-                              ('.help all' will show detailed help about all
-                              commands.)
-  .import FILE TABLE          Imports separated data from FILE into TABLE
-  .indices TABLE              Lists all indices on table TABLE
-  .load FILE ?ENTRY?          Loads a SQLite extension library
-  .mode MODE ?TABLE?          Sets output mode to one of column csv html insert
-                              json line list python tabs tcl
-  .nullvalue STRING           Print STRING in place of null values
-  .output FILENAME            Send output to FILENAME (or stdout)
-  .prompt MAIN ?CONTINUE?     Changes the prompts for first line and continuation
-                              lines
-  .quit                       Exit this program
-  .read FILENAME              Processes SQL and commands in FILENAME (or Python if
-                              FILENAME ends with .py)
-  .restore ?DB? FILE          Restore database from FILE into DB (default "main")
-  .schema ?TABLE? [TABLE...]  Shows SQL for table
-  .separator STRING           Change separator for output mode and .import
-  .show                       Show the current values for various settings.
-  .tables ?PATTERN?           Lists names of tables matching LIKE pattern
-  .timeout MS                 Try opening locked tables for MS milliseconds
-  .timer ON|OFF               Control printing of time and resource usage after
-                              each query
-  .width NUM NUM ...          Set the column widths for "column" mode
+  .autoimport FILENAME ?TABLE?  Imports filename creating a table and
+                                automatically working out separators and data
+                                types (alternative to .import command)
+  .backup ?DB? FILE             Backup DB (default "main") to FILE
+  .bail ON|OFF                  Stop after hitting an error (default OFF)
+  .colour SCHEME                Selects a colour scheme from default, off
+  .databases                    Lists names and files of attached databases
+  .dump ?TABLE? [TABLE...]      Dumps all or specified tables in SQL text format
+  .echo ON|OFF                  If ON then each SQL statement or command is
+                                printed before execution (default OFF)
+  .encoding ENCODING            Set the encoding used for new files opened via
+                                .output and imports
+  .exceptions ON|OFF            If ON then detailed tracebacks are shown on
+                                exceptions (default OFF)
+  .exit                         Exit this program
+  .explain ON|OFF               Set output mode suitable for explain (default OFF)
+  .find what ?TABLE?            Searches all columns of all tables for a value
+  .header(s) ON|OFF             Display the column names in output (default OFF)
+  .help ?COMMAND?               Shows list of commands and their usage.  If
+                                COMMAND is specified then shows detail about that
+                                COMMAND.  ('.help all' will show detailed help
+                                about all commands.)
+  .import FILE TABLE            Imports separated data from FILE into TABLE
+  .indices TABLE                Lists all indices on table TABLE
+  .load FILE ?ENTRY?            Loads a SQLite extension library
+  .mode MODE ?TABLE?            Sets output mode to one of column csv html insert
+                                json line list python tabs tcl
+  .nullvalue STRING             Print STRING in place of null values
+  .output FILENAME              Send output to FILENAME (or stdout)
+  .prompt MAIN ?CONTINUE?       Changes the prompts for first line and
+                                continuation lines
+  .quit                         Exit this program
+  .read FILENAME                Processes SQL and commands in FILENAME (or Python
+                                if FILENAME ends with .py)
+  .restore ?DB? FILE            Restore database from FILE into DB (default
+                                "main")
+  .schema ?TABLE? [TABLE...]    Shows SQL for table
+  .separator STRING             Change separator for output mode and .import
+  .show                         Show the current values for various settings.
+  .tables ?PATTERN?             Lists names of tables matching LIKE pattern
+  .timeout MS                   Try opening locked tables for MS milliseconds
+  .timer ON|OFF                 Control printing of time and resource usage after
+                                each query
+  .width NUM NUM ...            Set the column widths for "column" mode
   
   
 

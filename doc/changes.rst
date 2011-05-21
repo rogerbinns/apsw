@@ -7,8 +7,8 @@ Change History
 
 When invoking the shell by calling :func:`apsw.main` it will not
 become interactive if you supply SQL commands as command line
-arguments.  This is to have the same behaviour as the SQLite shell.
-(`issue 115 <http://code.google.com/p/apsw/issues/detail?id=115>`__)
+arguments.  This is to have the same behaviour as the SQLite shell
+(`issue 115 <http://code.google.com/p/apsw/issues/detail?id=115>`__).
 
 The shell has a *.find* command making it easy to search for values
 across all columns of some or all tables.
