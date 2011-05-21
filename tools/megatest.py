@@ -23,6 +23,13 @@ import Queue
 import optparse
 import traceback
 
+# disable testfileprefix
+os.putenv("APSWTESTPREFIX", "")
+try:
+    del os.environ["APSWTESTPREFIX"]
+except KeyError:
+    pass
+
 def run(cmd):
     status=os.system(cmd)
     if os.WIFEXITED(status):
