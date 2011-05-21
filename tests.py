@@ -6733,6 +6733,9 @@ class APSW(unittest.TestCase):
             ("more than one", 'ab,c\tdef\nqr,dd\t\n'),
             ("ambiguous data format", "a,b\n1/1/2001,3\n2001/4/4,4\n"),
             ):
+            if py3:
+                if isinstance(content, bytes):
+                    continue
             f=open(TESTFILEPREFIX+"test-shell-1", "wt")
             f.write(content)
             f.close()
