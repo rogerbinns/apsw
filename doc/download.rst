@@ -131,3 +131,21 @@ Source code control
 
 The source is controlled by Mercurial documented at
 http://code.google.com/p/apsw/source/checkout
+
+easy_install/pip/pypi
+=====================
+
+APSW is **not** available at the Python Package Index (pypi) and hence
+cannot be installed using easy_install, pip or similar tools.  The
+reason for this is that the tools do not provide a way of providing
+options to the setup.py included with APSW and hence there is no way
+for APSW to know if you want SQLite downloaded, a consistent version
+of SQLite or the latest, to use a system SQLite instead, error if an a
+system version is not available etc.  I could pick a sensible default
+but everyone else using pypi would be disadvantaged or worse get
+undesired behaviour (eg different versions of SQLite depending on when
+a machine did an install).  Additionally the world of Python packaging
+is going through another series of changes (distutils2 aka packaging)
+so some solution may come out of that.
+
+I'm happy to work with anyone who has a solution to this problem.
