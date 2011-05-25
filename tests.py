@@ -3015,12 +3015,21 @@ class APSW(unittest.TestCase):
         self.assertEqual(int, type(row[0]))
         for row in c.execute("select -2147483647-1"): pass
         self.assertEqual(int, type(row[0]))
-        for row in c.execute("select -2147483647-2"): pass
-        self.assertEqual(long, type(row[0]))
         for row in c.execute("select 2147483647"): pass
         self.assertEqual(int, type(row[0]))
-        for row in c.execute("select 2147483647+1"): pass
-        self.assertEqual(long, type(row[0]))
+        # Depending on the platform, sizeof(long), 64 bitness etc we
+        # may remain as python type int or type long. Check we are
+        # getting the right numbers no matter what.  This duplicates
+        # testTypes but you can never be too careful.
+        for v in "2147483646", "2147483647", "2147483648", "2147483649", \
+                "21474836460", "21474836470", "21474836480", "21474836490", \
+                "147483646", "147483647", "147483648", "147483649":
+            for neg in ("-", ""):
+                val=c.execute("select "+neg+v).fetchall()[0][0]
+                val=repr(val)
+                if val.endswith("L"):
+                    val=val[:-1]
+                self.assertEqual(val, neg+v)
 
     def testIssue31(self):
         "Issue 31: GIL & SQLite mutexes with heavy threading, threadsafe errors from SQLite"

@@ -2,6 +2,15 @@ Change History
 **************
 .. currentmodule:: apsw
 
+next
+====
+
+64 bit platforms
+(`LP64 - most non-Windows
+<http://en.wikipedia.org/wiki/64-bit#Specific_C-language_data_models>`__)
+and Python 2: The Python int type is returned for 64 bit integers
+instead of long.
+
 3.7.6.3-r1
 ==========
 

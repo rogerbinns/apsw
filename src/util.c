@@ -220,7 +220,7 @@ convert_value_to_pyobject(sqlite3_value *value)
       {
         sqlite3_int64 val=sqlite3_value_int64(value);
 #if PY_MAJOR_VERSION<3
-        if (val>=APSW_INT32_MIN && val<=APSW_INT32_MAX)
+        if (val>=LONG_MIN && val<=LONG_MAX)
           return PyInt_FromLong((long)val);
 #endif
         return PyLong_FromLongLong(val);
@@ -265,7 +265,7 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
         sqlite3_int64 val;
         _PYSQLITE_CALL_V(val=sqlite3_column_int64(stmt, col));
 #if PY_MAJOR_VERSION<3
-        if (val>=APSW_INT32_MIN && val<=APSW_INT32_MAX)
+        if (val>=LONG_MIN && val<=LONG_MAX)
           return PyInt_FromLong((long)val);
 #endif
         return PyLong_FromLongLong(val);
