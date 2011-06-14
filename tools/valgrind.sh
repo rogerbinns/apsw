@@ -6,7 +6,7 @@
 # You should build a debug Python, with this being an example using /space/pydebug as
 # the root.
 #
-# ver=2.6
+# ver=2.7.2
 # mkdir /space/pydebug
 # cd /space/pydebug
 # wget -O -  http://www.python.org/ftp/python/$ver/Python-$ver.tar.bz2 | tar xfj -
