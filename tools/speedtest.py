@@ -399,7 +399,7 @@ def doit():
         return pysqlite_statements(con, withoutbindings)
 
     # Do the work
-    write("\nRunning tests (results in seconds, lower is better)\n")
+    write("\nRunning tests - elapsed, CPU (results in seconds, lower is better)\n")
 
     for i in range(options.iterations):
         write("%d/%d\n" % (i+1, options.iterations))
@@ -418,13 +418,15 @@ def doit():
                     write("\t"+func.__name__+(" "*(40-len(func.__name__))))
                     sys.stdout.flush()
                     con=locals().get(driver+"_setup")(options.database)
-                    gc.collect()
+                    gc.collect(2)
+                    b4cpu=time.clock()
                     b4=time.time()
                     func(con)
                     con.close() # see note above as to why we include this in the timing
-                    gc.collect()
+                    gc.collect(2)
                     after=time.time()
-                    write(str(after-b4)+"\n")
+                    aftercpu=time.clock()
+                    write("%0.3f %0.3f\n" % (after-b4, aftercpu-b4cpu))
 
     # Cleanup if using valgrind
     if options.apsw:
