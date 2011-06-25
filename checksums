@@ -11,6 +11,10 @@
 # more peace of mind because the SQLite releases are not signed in any
 # way.
 
+http://www.sqlite.org/sqlite-amalgamation-3070700.zip    1302399 b346215cb6477ec5cd980122798e2ddd16fe77ea e65b9401d1263f002486ccb6ca9f89c9
+http://www.sqlite.org/sqlite-autoconf-3070700.tar.gz 1748848 f9b16cb62dac99119c5651bccecfe97761f66c20 a98df57053adf4c132b6b7ab59e9f333
+http://www.sqlite.org/sqlite-src-3070700.zip    4562266 6a9622b9fd248b9e923459b1df93cb413afaed6a 9796d946ff7c86b173540a3ae28233dd
+
 http://www.sqlite.org/sqlite-amalgamation-3070603.zip    1273808 baa0a5ec5802718e0cecde4de3f11363746ffb86 47c8d762b7755654a20ad3286eaea3e6
 http://www.sqlite.org/sqlite-autoconf-3070603.tar.gz 1720314 a19e4496e2854e737d55465b77c87e775a362775 7eb41eea5ffa5cbe359a48629084c425
 http://www.sqlite.org/sqlite-src-3070603.zip    4470530 33038ecf10b7519d95db797f21c927f5e630784f f8e22ec0931c91f029d539fe3f5ef0f9
