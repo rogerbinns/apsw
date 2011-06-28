@@ -11,6 +11,7 @@ sqlitevers=(
     '3070602',
     '3070603',
     '3070700',
+    '3070701',
     )
 
 # Checks the checksums file
