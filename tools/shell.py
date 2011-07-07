@@ -154,7 +154,7 @@ class Shell(object):
         if not self._db:
             if not self.dbfilename:
                 self.dbfilename=":memory:"
-            self._db=apsw.Connection(self.dbfilename)
+            self._db=apsw.Connection(self.dbfilename, flags=apsw.SQLITE_OPEN_URI | apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE)
         return self._db
 
     def _set_db(self, newv):
