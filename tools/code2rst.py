@@ -31,8 +31,8 @@ funclist={}
 def do_funclist():
     baseurl=squrl+"c3ref/funclist.html"
     page=urllib2.urlopen(baseurl).read()
-    funcs=re.findall(r"""<a href="([^'"]+?/c3ref/[^<]+?\.html)['"]>(sqlite3_.+?)<""", page)
-    for relurl,func in funcs:
+    funcs=re.findall(r"""<a href="([^'"]+?/c3ref/[^<]+?\.html(#[^'"]+)?)['"]>(sqlite3_.+?)<""", page)
+    for relurl, fragment, func in funcs:
         funclist[func]=urlparse.urljoin(baseurl, relurl)
         # ::TODO:: consider grabbing the page and extracting first <h2> to get
         # description of sqlite3 api
@@ -42,8 +42,8 @@ def do_mappings():
     pages={}
     baseurl=squrl+"c3ref/constlist.html"
     page=urllib2.urlopen(baseurl).read()
-    vars=re.findall(r'<a href="([^"]+?/c3ref/[^<]+?\.html)["]>(SQLITE_.+?)<', page)
-    for relurl, var in vars:
+    vars=re.findall(r'''<a href="([^"]+?/c3ref/[^<]+?\.html)(#[^'"]+)?['"]>(SQLITE_.+?)<''', page)
+    for relurl, fragment, var in vars:
         # we skip some
         if var in ("SQLITE_DONE", "SQLITE_ROW"):
             continue
@@ -76,7 +76,10 @@ def do_mappings():
                     continue
                 # check that all values in mapping go to the same page
                 if pg is None:
-                    pg=consts[val]
+                    try:
+                        pg=consts[val]
+                    except:
+                        import pdb ; pdb.set_trace()
                     op.append("   `%s <%s>`__" % (pages[pg]['title'], pg))
                     op.append("")
                 else:
