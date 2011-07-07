@@ -144,6 +144,9 @@ def buildpython(workdir, pyver, ucs, logfilename):
     else:
         full=""
     # zlib on natty issue: http://lipyrary.blogspot.com/2011/05/how-to-compile-python-on-ubuntu-1104.html
+    # LDFLAGS works for Python 2.5 onwards.  Edit setup on 2.3 and 2.4
+    if pyver.startswith("2.3") or pyver.startswith("2.4"):
+        patch_natty_build(os.path.join(workdir, "Python-"+pyver, "setup.py"))    
     run("set -e ; LDFLAGS=\"-L/usr/lib/$(dpkg-architecture -qDEB_HOST_MULTIARCH)\"; export LDFLAGS ; cd %s ; cd ?ython-%s ; ./configure %s --disable-ipv6 --enable-unicode=ucs%d --prefix=%s/pyinst  >> %s 2>&1; make >>%s 2>&1; make  %sinstall >>%s 2>&1 ; make clean >/dev/null" % (workdir, pyver, opt, ucs, workdir, logfilename, logfilename, full, logfilename))
     suf=""
     if pyver>="3.1":
@@ -155,6 +158,17 @@ def buildpython(workdir, pyver, ucs, logfilename):
             (workdir, 'http://pypi.python.org/packages/source/s/setuptools/setuptools-0.6c11.tar.gz#md5=7df2a529a074f613b509fb44feefe74e',
              pybin, pybin, logfilename))
     return pybin, os.path.join(workdir, "pyinst", "lib")
+
+def patch_natty_build(setup):
+    assert os.path.isfile(setup)
+    out=[]
+    for line in open(setup, "rtU"):
+        if line.strip().startswith("lib_dirs = self.compiler.library_dirs + ["):
+            t=" '/usr/lib/"+os.popen("dpkg-architecture -qDEB_HOST_MULTIARCH", "r").read().strip()+"', "
+            i=line.index("[")
+            line=line[:i+1]+t+line[i+1:]
+        out.append(line)
+    open(setup, "wt").write("".join(out))
     
 # Default versions we support
 PYVERS=(
