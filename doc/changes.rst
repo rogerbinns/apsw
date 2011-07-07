@@ -2,14 +2,29 @@ Change History
 **************
 .. currentmodule:: apsw
 
-next
-====
+3.7.7.1-r1
+==========
+
+Added `SQLITE_CONFIG_URI
+<http://www.sqlite.org/c3ref/c_config_getmalloc.html#sqliteconfiguri>`__
+and support for it in :meth:`config`, and the open flag
+`SQLITE_OPEN_URI
+<http://www.sqlite.org/c3ref/c_open_autoproxy.html>`__.  This makes it
+easy to use `URI filenames <http://www.sqlite.org/uri.html>`__.
+
+The :ref:`shell` now uses `URI filenames
+<http://www.sqlite.org/uri.html>`__ by default.
+
+New `extended error constants
+<http://www.sqlite.org/c3ref/c_busy_recovery.html>`__:
+SQLITE_CORRUPT_VTAB, SQLITE_IOERR_SEEK, SQLITE_IOERR_SHMMAP,
+SQLITE_READONLY_CANTLOCK and SQLITE_READONLY_RECOVERY.
 
 64 bit platforms
 (`LP64 - most non-Windows
 <http://en.wikipedia.org/wiki/64-bit#Specific_C-language_data_models>`__)
 and Python 2: The Python int type is returned for 64 bit integers
-instead of long.
+instead of Python long type.
 
 3.7.6.3-r1
 ==========
