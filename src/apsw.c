@@ -262,7 +262,8 @@ sqliteshutdown(void)
   Many operations don't make sense from a Python program.  Only the
   following configuration operations are supported: SQLITE_CONFIG_LOG,
   SQLITE_CONFIG_SINGLETHREAD, SQLITE_CONFIG_MULTITHREAD,
-  SQLITE_CONFIG_SERIALIZED and SQLITE_CONFIG_MEMSTATUS.
+  SQLITE_CONFIG_SERIALIZED, SQLITE_CONFIG_URI and
+  SQLITE_CONFIG_MEMSTATUS.
 
   See :func:`log` for an example of using SQLITE_CONFIG_LOG.
 
@@ -324,6 +325,7 @@ config(APSW_ARGUNUSED PyObject *self, PyObject *args)
     case SQLITE_CONFIG_SINGLETHREAD:
     case SQLITE_CONFIG_MULTITHREAD:
     case SQLITE_CONFIG_SERIALIZED:
+    case SQLITE_CONFIG_URI:
       if(!PyArg_ParseTuple(args, "i", &optdup))
         return NULL;
       assert(opt==optdup);
@@ -1615,6 +1617,11 @@ modules etc. For example::
       ADDINT(SQLITE_IOERR_SHMOPEN),
       ADDINT(SQLITE_IOERR_SHMSIZE),
       ADDINT(SQLITE_IOERR_SHMLOCK),
+      ADDINT(SQLITE_CORRUPT_VTAB),
+      ADDINT(SQLITE_IOERR_SEEK),
+      ADDINT(SQLITE_IOERR_SHMMAP),
+      ADDINT(SQLITE_READONLY_CANTLOCK),
+      ADDINT(SQLITE_READONLY_RECOVERY),
       END,
 
       /* error codes */
@@ -1668,6 +1675,7 @@ modules etc. For example::
       ADDINT(SQLITE_OPEN_SHAREDCACHE),
       ADDINT(SQLITE_OPEN_AUTOPROXY),
       ADDINT(SQLITE_OPEN_WAL),
+      ADDINT(SQLITE_OPEN_URI),
       END,
 
       /* limits */
@@ -1702,6 +1710,7 @@ modules etc. For example::
       ADDINT(SQLITE_CONFIG_LOG),
       ADDINT(SQLITE_CONFIG_GETPCACHE),
       ADDINT(SQLITE_CONFIG_PCACHE),
+      ADDINT(SQLITE_CONFIG_URI),
       END,
 
       DICT("mapping_db_config"),
