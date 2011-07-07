@@ -143,7 +143,8 @@ def buildpython(workdir, pyver, ucs, logfilename):
         full="full" # 3.1 rc 1 doesn't need 'fullinstall'
     else:
         full=""
-    run("set -e ; cd %s ; cd *ython-%s ; ./configure %s --disable-ipv6 --enable-unicode=ucs%d --prefix=%s/pyinst  >> %s 2>&1; make >>%s 2>&1; make  %sinstall >>%s 2>&1 ; make clean >/dev/null" % (workdir, pyver, opt, ucs, workdir, logfilename, logfilename, full, logfilename))
+    # zlib on natty issue: http://lipyrary.blogspot.com/2011/05/how-to-compile-python-on-ubuntu-1104.html
+    run("set -e ; LDFLAGS=\"-L/usr/lib/$(dpkg-architecture -qDEB_HOST_MULTIARCH)\"; export LDFLAGS ; cd %s ; cd ?ython-%s ; ./configure %s --disable-ipv6 --enable-unicode=ucs%d --prefix=%s/pyinst  >> %s 2>&1; make >>%s 2>&1; make  %sinstall >>%s 2>&1 ; make clean >/dev/null" % (workdir, pyver, opt, ucs, workdir, logfilename, logfilename, full, logfilename))
     suf=""
     if pyver>="3.1":
         suf="3"
@@ -169,10 +170,8 @@ PYVERS=(
     )
 
 SQLITEVERS=(
-    '3.7.6',
-    '3.7.6.1',
-    '3.7.6.2',
-    '3.7.6.3'
+    '3.7.7',
+    '3.7.7.1',
    )
 
 def couchp(pyver):
