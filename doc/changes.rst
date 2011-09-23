@@ -2,6 +2,10 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.7.8-r1
+========
+
+
 3.7.7.1-r1
 ==========
 
