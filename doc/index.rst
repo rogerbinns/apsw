@@ -3,7 +3,7 @@ APSW documentation
 
 .. centered:: APSW |version| 6 July 2011.
 
-Use with SQLite 3.7.7.1 or later, Python 2.3 or later including Python
+Use with SQLite 3.7.8 or later, Python 2.3 or later including Python
 3.
 
 APSW provides an SQLite 3 wrapper that provides the thinnest layer

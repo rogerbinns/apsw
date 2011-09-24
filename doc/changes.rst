@@ -8,6 +8,12 @@ Change History
 Updated documentation and tests due to an undocumented change in VFS
 xDelete semantics.
 
+Added SQLITE3_FCNTL_PERSIST_WAL and SQLITE3_FCNTL_WIN32_AV_RETRY `file
+controls <http://www.sqlite.org/c3ref/c_fcntl_chunk_size.html>`__.
+
+Wrapped sqlite3_sourceid (`issue 120
+<http://code.google.com/p/apsw/issues/detail?id=120>`__).
+
 
 3.7.7.1-r1
 ==========

@@ -21,7 +21,7 @@ def print_version_info(write=write):
     write("SQLite headers version "+str(apsw.SQLITE_VERSION_NUMBER)+"\n")
     write("    Using amalgamation "+str(apsw.using_amalgamation)+"\n")
 
-    if [int(x) for x in apsw.sqlitelibversion().split(".")]<[3,6,18]:
+    if [int(x) for x in apsw.sqlitelibversion().split(".")]<[3,7,8]:
         write("You are using an earlier version of SQLite than recommended\n")
 
     sys.stdout.flush()
@@ -367,6 +367,7 @@ class APSW(unittest.TestCase):
         apsw.ExecTraceAbort
         apsw.SQLITE_FCNTL_SIZE_HINT
         apsw.mapping_file_control["SQLITE_FCNTL_SIZE_HINT"]==apsw.SQLITE_FCNTL_SIZE_HINT
+        self.assert_(len(apsw.sqlite3_sourceid())>10)
 
     def testConnection(self):
         "Test connection opening"
@@ -1789,12 +1790,10 @@ class APSW(unittest.TestCase):
               u(r"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET}\0more\0than you\0can handle"),
               u(r"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET}\0\0\0\0\0sequences\0\0\0of them"))
 
-        # See http://www.sqlite.org/cvstrac/tktview?tn=3056
-        if True: # [int(x) for x in apsw.sqlitelibversion().split(".")]<[3,5,8]:
-            vals=vals+(
-              "a simple string\0",
-              u(r"a \u1234 unicode \ufe54 string \u0089\0"),
-              )
+        vals=vals+(
+            "a simple string\0",
+            u(r"a \u1234 unicode \ufe54 string \u0089\0"),
+            )
 
         for i,v in enumerate(vals):
             c.execute("insert into foo values(?,?)", (i, v))
@@ -3318,7 +3317,7 @@ class APSW(unittest.TestCase):
            # is already held by enclosing sqlite3_step and the
            # methods will only be called from that same thread so it
            # isn't a problem.
-                        'skipcalls': re.compile("^sqlite3_(blob_bytes|column_count|bind_parameter_count|data_count|vfs_.+|changes|total_changes|get_autocommit|last_insert_rowid|complete|interrupt|limit|free|threadsafe|value_.+|libversion|enable_shared_cache|initialize|shutdown|config|memory_.+|soft_heap_limit(64)?|randomness|release_memory|status|result_.+|user_data|mprintf|aggregate_context|declare_vtab|backup_remaining|backup_pagecount)$"),
+                        'skipcalls': re.compile("^sqlite3_(blob_bytes|column_count|bind_parameter_count|data_count|vfs_.+|changes|total_changes|get_autocommit|last_insert_rowid|complete|interrupt|limit|free|threadsafe|value_.+|libversion|enable_shared_cache|initialize|shutdown|config|memory_.+|soft_heap_limit(64)?|randomness|release_memory|status|result_.+|user_data|mprintf|aggregate_context|declare_vtab|backup_remaining|backup_pagecount|sourceid)$"),
                         # also ignore this file
                         'skipfiles': re.compile(r"[/\\]apsw.c$"),
                         # error message

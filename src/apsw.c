@@ -57,8 +57,8 @@ API Reference
 #include "sqlite3.h"
 #endif
 
-#if SQLITE_VERSION_NUMBER < 3007007
-#error Your SQLite version is too old.  It must be at least 3.7.7
+#if SQLITE_VERSION_NUMBER < 3007008
+#error Your SQLite version is too old.  It must be at least 3.7.8
 #endif
 
 /* system headers */
@@ -170,6 +170,21 @@ getsqliteversion(void)
 {
   return MAKESTR(sqlite3_libversion());
 }
+
+/** .. method:: sqlite3_sourceid() -> string
+
+    Returns the exact checkin information for the SQLite 3 source
+    being used.
+
+    -* sqlite3_sourceid
+*/
+
+static PyObject *
+get_sqlite3_sourceid(void)
+{
+  return MAKESTR(sqlite3_sourceid());
+}
+
 
 /** .. method:: apswversion() -> string
 
@@ -1303,6 +1318,8 @@ apsw_log(APSW_ARGUNUSED PyObject *self, PyObject *args)
 
 
 static PyMethodDef module_methods[] = {
+  {"sqlite3_sourceid", (PyCFunction)get_sqlite3_sourceid, METH_NOARGS,
+   "Return the source identification of the SQLite library"},
   {"sqlitelibversion", (PyCFunction)getsqliteversion, METH_NOARGS,
    "Return the version of the SQLite library"},
   {"apswversion", (PyCFunction)getapswversion, METH_NOARGS,
@@ -1793,6 +1810,8 @@ modules etc. For example::
       ADDINT(SQLITE_FCNTL_CHUNK_SIZE),
       ADDINT(SQLITE_FCNTL_FILE_POINTER),
       ADDINT(SQLITE_FCNTL_SYNC_OMITTED),
+      ADDINT(SQLITE_FCNTL_PERSIST_WAL),
+      ADDINT(SQLITE_FCNTL_WIN32_AV_RETRY),
       END
 
 #ifdef APSW_USE_SQLITE_ASYNCVFS_H
