@@ -172,11 +172,11 @@ def patch_natty_build(setup):
     
 # Default versions we support
 PYVERS=(
-    '3.2',
+    '3.2.2',
     '3.1.4',
     '2.7.2',
-    '2.6.6',
-    '2.5.5',
+    '2.6.7',
+    '2.5.6',
     '2.4.6',
     '2.3.7',
     'system',
@@ -186,6 +186,7 @@ PYVERS=(
 SQLITEVERS=(
     '3.7.7',
     '3.7.7.1',
+    '3.7.8',
    )
 
 def couchp(pyver):
