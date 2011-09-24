@@ -292,7 +292,13 @@ apswvfs_xDelete(sqlite3_vfs *vfs, const char *zName, int syncDir)
 
 /** .. method:: xDelete(filename, syncdir)
 
-    Delete the named file.
+    Delete the named file.  
+
+    .. note::
+
+       SQLite 3.7.8 changed semantics if the file does not exist.  In
+       prior SQLite versions an error should be raised.  For SQLite
+       3.7.8 onwards you should not raise an error.
 
     :param filename: File to delete
 

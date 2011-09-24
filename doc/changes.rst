@@ -5,6 +5,9 @@ Change History
 3.7.8-r1
 ========
 
+Updated documentation and tests due to an undocumented change in VFS
+xDelete semantics.
+
 
 3.7.7.1-r1
 ==========

@@ -4031,7 +4031,7 @@ class APSW(unittest.TestCase):
                 super(TestVFS, self).__init__(name, base)
 
             def xDelete1(self, name, syncdir):
-                super(TestVFS,self).xDelete("<thisfile<does<not\\exist/", 1)
+                super(TestVFS, self).xDelete(".", False)
 
             def xDelete2(self, bad, number, of, args):
                 1/0
@@ -4518,7 +4518,8 @@ class APSW(unittest.TestCase):
         ## xDelete
         self.assertRaises(TypeError, vfs.xDelete, "bogus", "arguments")
         TestVFS.xDelete=TestVFS.xDelete1
-        self.assertRaises([apsw.CantOpenError, apsw.IOError][iswindows], self.assertRaisesUnraisable, [apsw.CantOpenError, apsw.IOError][iswindows], testdb)
+        err=[apsw.IOError, apsw.IOError][iswindows]
+        self.assertRaises(err, self.assertRaisesUnraisable, err, testdb)
         TestVFS.xDelete=TestVFS.xDelete2
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xDelete=TestVFS.xDelete3
