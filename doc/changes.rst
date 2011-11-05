@@ -2,6 +2,12 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.7.9-r1
+========
+
+Added SQLITE_DBSTATUS_CACHE_HIT, SQLITE_DBSTATUS_CACHE_MISS and
+SQLITE_FCNTL_OVERWRITE constants.
+
 3.7.8-r1
 ========
 
