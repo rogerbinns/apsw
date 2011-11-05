@@ -42,3 +42,4 @@ MANIFEST.in.tmp
 megatestresults/
 work/
 coverage/
+testdb
