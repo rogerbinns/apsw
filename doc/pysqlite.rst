@@ -97,7 +97,7 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
   to debug problems. That also prevents you from raising exceptions in
   your callbacks to be handled in your code that called
   SQLite. pysqlite does let you turn on `printing of tracebacks
-  <http://pysqlite.googlecode.com/svn/doc/sqlite3.html#sqlite3.enable_callback_tracebacks>`_,
+  <http://readthedocs.org/docs/pysqlite/en/latest/sqlite3.html#sqlite3.enable_callback_tracebacks>`_,
   but
   that is a poor substitute. apsw does the right thing as demonstrated
   by this example.
@@ -150,7 +150,7 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
   data adaptors which aren't the same thing as a :ref:`row tracer
   <rowtracer>` (for example you can't skip rows or add a new column to
   each row returned).  pysqlite does have a `row factory
-  <http://pysqlite.googlecode.com/svn/doc/sqlite3.html#accessing-columns-by-name-instead-of-by-index>`_
+  <http://readthedocs.org/docs/pysqlite/en/latest/sqlite3.html#accessing-columns-by-name-instead-of-by-index>`_
   but you can easily emulate that with the row tracer and
   :meth:`Cursor.getdescription`.
 
@@ -179,7 +179,7 @@ What pysqlite does better
 =========================
 
 * pysqlite has an `adaptor system
-  <http://pysqlite.googlecode.com/svn/doc/sqlite3.html#using-adapters-to-store-additional-python-types-in-sqlite-databases>`_
+  <http://readthedocs.org/docs/pysqlite/en/latest/sqlite3.html#using-adapters-to-store-additional-python-types-in-sqlite-databases>`_
   that lets you pretend SQLite stores and returns more types than it
   really supports.  Note that the database won't be useful in a
   non-pysqlite context (eg PHP code looking at the same database isn't
@@ -189,7 +189,7 @@ What pysqlite does better
 
 * pysqlite lets you work with a database that contains invalid Unicode data by
   setting a `text factory
-  <http://pysqlite.googlecode.com/svn/doc/sqlite3.html#sqlite3.Connection.text_factory>`_
+  <http://readthedocs.org/docs/pysqlite/en/latest/sqlite3.html#sqlite3.Connection.text_factory>`_
   that deals with the text data.  
 
   APSW does not let you put non-Unicode data into the database in the first place and it will
