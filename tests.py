@@ -816,7 +816,7 @@ class APSW(unittest.TestCase):
         expectdbname="main"
         self.db.setwalhook(walhook)
         self.db.cursor().execute("create table three(x)")
-        self.db.cursor().execute("attach '%stestdb2' as fred" % (TESTFILEPREFIX,) )
+        self.db.cursor().execute("attach '%stestdb2?psow=0' as fred" % ("file:"+TESTFILEPREFIX,) )
         self.assertEqual("wal", self.db.cursor().execute("pragma fred.journal_mode=wal").fetchall()[0][0])
         expectdbname="fred"
         self.db.cursor().execute("create table fred.three(x)")
@@ -3881,7 +3881,7 @@ class APSW(unittest.TestCase):
         query="create table foo(x,y); insert into foo values(1,2); insert into foo values(3,4)"
         self.db.cursor().execute(query)
 
-        db2=apsw.Connection(TESTFILEPREFIX+"testdb2", vfs=vfs.vfsname)
+        db2=apsw.Connection("file:"+TESTFILEPREFIX+"testdb2?psow=0", vfs=vfs.vfsname)
         db2.cursor().execute(query)
         db2.close()
         waswal=self.db.cursor().execute("pragma journal_mode").fetchall()[0][0]=="wal"
@@ -8182,7 +8182,7 @@ def testdb(filename=TESTFILEPREFIX+"testdb2", vfsname="apswtest", closedb=True, 
     for suf in "", "-journal", "x", "x-journal":
         deletefile(filename+suf)
 
-    db=apsw.Connection(filename, vfs=vfsname)
+    db=apsw.Connection("file:"+filename+"?psow=0", vfs=vfsname)
     if mode:
         db.cursor().execute("pragma journal_mode="+mode)
     db.cursor().execute("create table foo(x,y); insert into foo values(1,2); insert into foo values(date('now'), date('now'))")

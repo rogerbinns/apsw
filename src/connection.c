@@ -377,12 +377,12 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
   PyObject *hooks=NULL, *hook=NULL, *iterator=NULL, *hookargs=NULL, *hookresult=NULL;
   char *filename=NULL;
   int res=0;
-  int flags=SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
+  int flags=SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_URI;
   char *vfs=0;
   int statementcachesize=100;
   sqlite3_vfs *vfsused=0;
 
-  if(!PyArg_ParseTupleAndKeywords(args, kwds, "es|izi:Connection(filename, flags=SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE, vfs=None, statementcachesize=100)", kwlist, STRENCODING, &filename, &flags, &vfs, &statementcachesize))
+  if(!PyArg_ParseTupleAndKeywords(args, kwds, "es|izi:Connection(filename, flags=SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE|SQLITE_OPEN_URI, vfs=None, statementcachesize=100)", kwlist, STRENCODING, &filename, &flags, &vfs, &statementcachesize))
     return -1;
   
   if(statementcachesize<0)

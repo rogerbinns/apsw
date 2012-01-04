@@ -2341,7 +2341,7 @@ apswvfsfilepy_xSync(APSWVFSFile *self, PyObject *args)
 static int
 apswvfsfile_xSectorSize(sqlite3_file *file)
 {
-  int result=512;
+  int result=4096;
   PyObject *pyresult=NULL;
   FILEPREAMBLE;
 
@@ -2360,7 +2360,7 @@ apswvfsfile_xSectorSize(sqlite3_file *file)
   if(PyErr_Occurred())
     {
       AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xSectorSize", NULL);
-      result=512; /* could be -1 as stated above */
+      result=4096; /* could be -1 as stated above */
     }
 
   Py_XDECREF(pyresult);
@@ -2372,13 +2372,13 @@ apswvfsfile_xSectorSize(sqlite3_file *file)
 
     Return the native underlying sector size. SQLite uses the value
     returned in determining the default database page size. If you do
-    not implement the function or have an error then 512 (the SQLite
+    not implement the function or have an error then 4096 (the SQLite
     default) is returned.
 */
 static PyObject *
 apswvfsfilepy_xSectorSize(APSWVFSFile *self)
 {
-  int res=512;
+  int res=4096;
 
   CHECKVFSFILEPY;
   VFSFILENOTIMPLEMENTED(xSectorSize, 1);

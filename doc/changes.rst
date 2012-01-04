@@ -2,6 +2,19 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.7.10-r1
+=========
+
+`SQLITE_OPEN_URI
+<http://www.sqlite.org/c3ref/c_open_autoproxy.html>`__ is on by
+default for all connections.  This makes setting `PSOW
+<http://www.sqlite.org/psow.html>`__ easier.  (You still need to
+include the `file:` scheme for URI processing to happen.)
+
+The default sector size returned in VFS routines is 4,096 to match
+SQLite's new default.
+
+
 3.7.9-r1
 ========
 
