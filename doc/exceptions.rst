@@ -132,7 +132,7 @@ General Errors
   :const:`SQLITE_ERROR`.  This error is documented as a bad SQL query
   or missing database, but is also returned for a lot of other
   situations.  It is the default error code unless there is a more
-  specific one.  (See :cvstrac:`3456`.)
+  specific one.
 
 .. exception:: MismatchError
 
@@ -221,8 +221,9 @@ Abort/Busy Etc
   :const:`SQLITE_CONSTRAINT`. Abort due to `constraint
   <http://www.sqlite.org/lang_createtable.html>`_ violation.  This
   would happen if the schema required a column to be within a specific
-  range.  If you have multiple constraints, you :cvstrac:`can't tell
-  <1648>` which one was the cause.
+  range.  If you have multiple constraints, you `can't tell
+  <http://www.sqlite.org/src/tktview/23b212820161c6599cbf414aa99bf8a5bfa5e7a3>`__
+  which one was the cause.
 
 Memory/Disk
 ^^^^^^^^^^^

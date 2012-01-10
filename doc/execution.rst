@@ -90,7 +90,7 @@ will work correctly with those items in Python 2.5 and above that use
 strings, blobs, number of columns etc even when compiled for 64
 bit. Consequently you will get a TooBig exception from APSW which
 checks if strings/buffers longer than 1GB or 2GB (depends on internal
-storage) are used. See :cvstrac:`2125` and :cvstrac:`3246 <3246>` for
+storage) are used. See :cvstrac:`2125` and :cvstrac:`3246` for
 more details.
 
 .. _statementcache:

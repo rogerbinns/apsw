@@ -14,6 +14,8 @@ include the `file:` scheme for URI processing to happen.)
 The default sector size returned in VFS routines is 4,096 to match
 SQLite's new default.
 
+Several links to SQLite tickets and documentation were updated (`issue
+122 <http://code.google.com/p/apsw/issues/detail?id=122>`__).
 
 3.7.9-r1
 ========
@@ -643,11 +645,6 @@ Documentation is now done using `Sphinx <http://sphinx.pocoo.org>`_
 which was adopted by Python 2.6 and 3.  This has allowed for richer
 documentation and more output formats such as PDF and `Windows CHM
 <http://en.wikipedia.org/wiki/Microsoft_Compiled_HTML_Help>`_ format.
-You can now find the documentation online at
-http://apsw.googlecode.com/svn/publish/index.html or in the
-:file:`doc/` subdirectory of the source or in CHM format at the
-`download page <http://code.google.com/p/apsw/downloads/list>`_ for
-offline use.
 
 The binary distribution for Windows includes the `full text search
 <http://www.sqlite.org/fts3.html>`__ (FTS) and `Rtree

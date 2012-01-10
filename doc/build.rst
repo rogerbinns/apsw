@@ -84,7 +84,7 @@ re-fetching.
 | | :option:`--all`                      | Gets all components listed below.                                                    |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--sqlite`                   | Automatically downloads the `SQLite amalgamation                                     |
-|                                        | <http://www.sqlite.org/cvstrac/wiki?p=TheAmalgamation>`__. The amalgamation is the   |
+|                                        | <http://www.sqlite.org/amalgamation.html>`__. The amalgamation is the                |
 |                                        | preferred way to use SQLite as you have total control over what components are       |
 |                                        | included or excluded (see below) and have no dependencies on any existing            |
 |                                        | libraries on your developer or deployment machines. The amalgamation includes the    |
@@ -221,7 +221,7 @@ can manually specify the version, for example
 
 These methods are tried in order:
 
-  `Amalgamation <http://www.sqlite.org/cvstrac/wiki?p=TheAmalgamation>`_
+  `Amalgamation <http://www.sqlite.org/amalgamation.html>`__
 
       The file :file:`sqlite3.c` and then :file:`sqlite3/sqlite3.c` is
       looked for. The SQLite code is then statically compiled into the

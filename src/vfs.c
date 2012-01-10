@@ -59,8 +59,7 @@ ways. Some routines have no way to return an error (eg `xDlOpen
 <http://www.sqlite.org/c3ref/vfs.html>`_ just returns zero/NULL on
 being unable to load a library, `xSleep
 <http://www.sqlite.org/c3ref/vfs.html>`_ has no error return
-parameter), others have any error values ignored (eg
-:cvstrac:`xCurrentTime <3394>`), others are unified (eg almost any
+parameter), others are unified (eg almost any
 error in xWrite will be returned to the user as disk full
 error). Sometimes errors are ignored as they are harmless such as when
 a journal can't be deleted after a commit (the journal is marked as
@@ -884,11 +883,9 @@ apswvfs_xDlError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
     zero/NULL). If you do not supply this routine then SQLite provides
     a generic message. To implement this method, catch exceptions in
     :meth:`~VFS.xDlOpen` or :meth:`~VFS.xDlSym`, turn them into
-    strings, save them, and return them in this routine. Note that the
-    message may be truncated to 255 characters - see
-    :cvstrac:`3305`. If you have an error in this routine or return
-    None then SQLite's generic message will be used.  
-*/
+    strings, save them, and return them in this routine.  If you have
+    an error in this routine or return None then SQLite's generic
+    message will be used.x  */
 static PyObject *
 apswvfspy_xDlError(APSWVFS *self)
 {
@@ -1073,12 +1070,10 @@ apswvfspy_xSleep(APSWVFS *self, PyObject *args)
   return PyLong_FromLong(self->basevfs->xSleep(self->basevfs, microseconds));
 }
 
-/* See :cvstrac:`3394` for SQLite implementation issues */
 static int
 apswvfs_xCurrentTime(sqlite3_vfs *vfs, double *julian)
 {
   PyObject *pyresult=NULL;
-  /* note returns zero or one.  Details in sqlite ticket 3394*/
   int result=0; 
   VFSPREAMBLE;
 
@@ -1104,8 +1099,7 @@ apswvfs_xCurrentTime(sqlite3_vfs *vfs, double *julian)
   <http://en.wikipedia.org/wiki/Julian_day>`_ as a floating point
   number where the integer portion is the day and the fractional part
   is the time. Do not adjust for timezone (ie use `UTC
-  <http://en.wikipedia.org/wiki/Universal_Time>`_). Although SQLite
-  allows for an error return, that is :cvstrac:`ignored <3394>`.
+  <http://en.wikipedia.org/wiki/Universal_Time>`_).
 */
 static PyObject *
 apswvfspy_xCurrentTime(APSWVFS *self)
@@ -1122,7 +1116,6 @@ apswvfspy_xCurrentTime(APSWVFS *self)
 
   if(res!=0)
     {
-      /* routines are documented to return zero or one - see ticket 3394 info above */
       SET_EXC(SQLITE_ERROR, NULL);   /* general sqlite error code */
       AddTraceBackHere(__FILE__, __LINE__, "vfspy.xCurrentTime", NULL);
       return NULL;
@@ -1545,18 +1538,18 @@ APSWVFS_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED Py
 /** .. method:: __init__(name[, base=None, makedefault=False, maxpathname=1024])
 
     :param name: The name to register this vfs under.  If the name
-                 already exists then this vfs will replace the prior one of the
-                 same name.  Use :meth:`apsw.vfsnames` to get a list of
-                 registered vfs names.
-    :param base: If you would like to inherit behaviour from an
-                 already registered vfs then give their name.  To inherit from the
-                 default vfs, use a zero length string ``""`` as the name.
-    :param makedefault: If true then this vfs will be registered as
-      the default, and will be used by any opens that don't specify a
-      vfs.
-    :param maxpathname: The maximum length of database name in bytes
-      when represented in UTF-8.  If a pathname is passed in longer than
-      this value then SQLite will not :cvstrac:`be able to open it <3373>`.
+        already exists then this vfs will replace the prior one of the
+        same name.  Use :meth:`apsw.vfsnames` to get a list of
+        registered vfs names.  :param base: If you would like to
+        inherit behaviour from an already registered vfs then give
+        their name.  To inherit from the default vfs, use a zero
+        length string ``""`` as the name.  :param makedefault: If true
+        then this vfs will be registered as the default, and will be
+        used by any opens that don't specify a vfs.  :param
+        maxpathname: The maximum length of database name in bytes when
+        represented in UTF-8.  If a pathname is passed in longer than
+        this value then SQLite will not `be able to open it
+        <http://www.sqlite.org/src/tktview/c060923a5422590b3734eb92eae0c94934895b68>`__.
 
     :raises ValueError: If *base* is not :const:`None` and the named vfs is not
       currently registered.

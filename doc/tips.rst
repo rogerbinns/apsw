@@ -163,8 +163,10 @@ It is not recommended that you use this mode.
 A big issue is that :ref:`busy handling <busyhandling>` is not done
 the same way.  The timeouts and handlers are ignored and instead
 :const:`SQLITE_LOCKED_SHAREDCACHE` extended error is returned.
-Consequently you will have to do your own busy handling.
-(:cvstrac:`2010`, `APSW ticket 59
+Consequently you will have to do your own busy handling.  (`SQLite
+ticket
+<http://www.sqlite.org/src/tktview/ebde3f66fc64e21e61ef2854ed1a36dfff884a2f>`__,
+`APSW ticket 59
 <http://code.google.com/p/apsw/issues/detail?id=59>`__)
 
 The amount of memory and I/O saved is trivial compared to Python's

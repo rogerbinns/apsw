@@ -14,12 +14,11 @@
 Virtual Tables
 **************
 
-`Virtual Tables <http://www.sqlite.org/cvstrac/wiki?p=VirtualTables>`_
-are an experimental feature introduced in SQLite 3.3.7. They let a
-developer provide an underlying table implementations, while still
-presenting a normal SQL interface to the user. The person writing SQL
-doesn't need to know or care that some of the tables come from
-elsewhere.
+`Virtual Tables <http://www.sqlite.org/vtab.html>`__ are a feature
+introduced in SQLite 3.3.7. They let a developer provide an underlying
+table implementations, while still presenting a normal SQL interface
+to the user. The person writing SQL doesn't need to know or care that
+some of the tables come from elsewhere.
 
 Some examples of how you might use this:
 
@@ -35,14 +34,13 @@ Some examples of how you might use this:
 * Information that isn't relationally correct (eg if you have data that has ended up with duplicate "unique" keys
   with code that dynamically corrects it)
 
-* There are other examples on the `SQLite page <http://www.sqlite.org/cvstrac/wiki?p=VirtualTables>`_
+* There are other examples on the `SQLite page <http://www.sqlite.org/vtab.html>`__
 
 You need to have 3 types of object. A :class:`module <VTModule>`, a
 :class:`virtual table <VTTable>` and a :class:`cursor
 <VTCursor>`. These are documented below. You can also read the `SQLite
-C method documentation
-<http://www.sqlite.org/cvstrac/wiki?p=VirtualTableMethods>`_.  At the
-C level, they are just one set of methods. At the Python/APSW level,
+C method documentation <http://www.sqlite.org/vtab.html>`__.  At the C
+level, they are just one set of methods. At the Python/APSW level,
 they are split over the 3 types of object. The leading **x** is
 omitted in Python. You can return SQLite error codes (eg
 :const:`SQLITE_READONLY`) by raising the appropriate exceptions (eg
@@ -408,9 +406,7 @@ apswvtabDisconnect(sqlite3_vtab *pVTab)
 
 /** .. method:: BestIndex(constraints, orderbys)  
 
-  This is a complex method and even has its `own page
-  <http://www.sqlite.org/cvstrac/wiki?p=VirtualTableBestIndexMethod>`_
-  in the SQLite documentation. To get going initially, just return
+  This is a complex method. To get going initially, just return
   :const:`None` and you will be fine. Implementing this method reduces
   the number of rows scanned in your table to satisfy queries, but
   only if you have an index or index like mechanism available.
@@ -419,7 +415,7 @@ apswvtabDisconnect(sqlite3_vtab *pVTab)
 
     The implementation of this method differs slightly from the
     `SQLite documentation
-    <http://www.sqlite.org/cvstrac/wiki?p=VirtualTableBestIndexMethod>`_
+    <http://www.sqlite.org/vtab.html>`__
     for the C API. You are not passed "unusable" constraints. The
     argv/constraintarg positions are not off by one. In the C api, you
     have to return position 1 to get something passed to
@@ -829,35 +825,23 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
 
 /** .. method:: Begin()
 
-  This function is used as part of transactions. At the time of
-  writing it is undocumented in `SQLite
-  <http://www.sqlite.org/cvstrac/wiki?p=VirtualTableMethods>`_.  You
-  do not have to provide the method.
-*/
+  This function is used as part of transactions.  You do not have to
+  provide the method.  */
 
 /** .. method:: Sync()
 
-  This function is used as part of transactions. At the time of
-  writing it is undocumented in `SQLite
-  <http://www.sqlite.org/cvstrac/wiki?p=VirtualTableMethods>`_.  You
-  do not have to provide the method.
-*/
+  This function is used as part of transactions.  You do not have to
+  provide the method.  */
 
 /** .. method:: Commit()
 
-  This function is used as part of transactions. At the time of
-  writing it is undocumented in `SQLite
-  <http://www.sqlite.org/cvstrac/wiki?p=VirtualTableMethods>`_.  You
-  do not have to provide the method.
-*/
+  This function is used as part of transactions.  You do not have to
+  provide the method.  */
 
 /** .. method:: Rollback()
 
-  This function is used as part of transactions. At the time of
-  writing it is undocumented in `SQLite
-  <http://www.sqlite.org/cvstrac/wiki?p=VirtualTableMethods>`_.  You
-  do not have to provide the method.
-*/
+  This function is used as part of transactions.  You do not have to
+  provide the method.  */
 
 
 static struct {

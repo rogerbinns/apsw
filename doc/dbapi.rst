@@ -98,7 +98,7 @@ Type objects
 
 None of the date or time methods are available since SQLite 3 does not
 have a native date or time type.  There are `functions
-<http://www.sqlite.org/cvstrac/wiki?p=DateAndTimeFunctions>`_ for
+<http://www.sqlite.org/lang_datefunc.html>`_ for
 manipulating dates and time which are represented as strings or
 `Julian days <http://en.wikipedia.org/wiki/Julian_day>`_ (floating
 point number).
