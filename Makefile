@@ -32,7 +32,7 @@ GENDOCS = \
 	doc/apsw.rst \
 	doc/backup.rst
 
-.PHONY : all docs doc header linkcheck publish showsymbols compile-win source source_nocheck upload tags clean ppa dpkg dpkg-bin coverage valgrind
+.PHONY : all docs doc header linkcheck publish showsymbols compile-win source source_nocheck upload tags clean ppa dpkg dpkg-bin coverage valgrind valgrind1
 
 all: header docs
 
@@ -73,9 +73,15 @@ test: build_ext
 # l6, l7 and l8 and see if any are growing
 valgrind: /space/pydebug/bin/python
 	python setup.py fetch --version=$(SQLITEVERSION) --all && \
-	  env PATH=/space/pydebug/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=6 tools/valgrind.sh 2>&1 | tee l6 && \
-	  env PATH=/space/pydebug/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=7 tools/valgrind.sh 2>&1 | tee l7 && \
-	  env PATH=/space/pydebug/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=8 tools/valgrind.sh 2>&1 | tee l8 
+	  env TESTFILEPREFIX=/tmp/ PATH=/space/pydebug/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=6 tools/valgrind.sh 2>&1 | tee l6 && \
+	  env TESTFILEPREFIX=/tmp/ PATH=/space/pydebug/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=7 tools/valgrind.sh 2>&1 | tee l7 && \
+	  env TESTFILEPREFIX=/tmp/ PATH=/space/pydebug/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=8 tools/valgrind.sh 2>&1 | tee l8 
+
+# Same as above but does just one run
+valgrind1: /space/pydebug/bin/python
+	python setup.py fetch --version=$(SQLITEVERSION) --all && \
+	  env TESTFILEPREFIX=/tmp/ PATH=/space/pydebug/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=1 tools/valgrind.sh 
+
 
 linkcheck:
 	make VERSION=$(VERSION) -C doc linkcheck 

@@ -1431,6 +1431,7 @@ PyInit_apsw(void)
         || PyType_Ready(&APSWBlobType) <0
         || PyType_Ready(&APSWVFSType) <0
         || PyType_Ready(&APSWVFSFileType) <0
+	|| PyType_Ready(&APSWURIFilenameType) <0
         || PyType_Ready(&APSWStatementType) <0
         || PyType_Ready(&APSWBufferType) <0
         || PyType_Ready(&FunctionCBInfoType) <0
@@ -1468,6 +1469,9 @@ PyInit_apsw(void)
     PyModule_AddObject(m, "VFS", (PyObject*)&APSWVFSType);
     Py_INCREF(&APSWVFSFileType);
     PyModule_AddObject(m, "VFSFile", (PyObject*)&APSWVFSFileType);
+    Py_INCREF(&APSWURIFilenameType);
+    PyModule_AddObject(m, "URIFilename", (PyObject*)&APSWURIFilenameType);
+    
     
     /** .. attribute:: connection_hooks
 

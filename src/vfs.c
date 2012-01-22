@@ -231,6 +231,12 @@ static PyTypeObject APSWVFSFileType;
 static const struct sqlite3_io_methods apsw_io_methods_v1;
 static const struct sqlite3_io_methods apsw_io_methods_v2;
 
+typedef struct
+{
+  PyObject_HEAD
+  const char *filename;
+} APSWURIFilename;
+
 
 /** .. class:: VFS
 
@@ -2832,3 +2838,114 @@ static PyTypeObject APSWVFSFileType =
     APSW_PYTYPE_VERSION
   };
 
+
+static PyObject*
+apswurifilename_filename(APSWURIFilename *self)
+{
+  return convertutf8string(self->filename);
+}
+
+static PyObject*
+apswurifilename_uri_parameter(APSWURIFilename *self, PyObject *param)
+{
+  const char *res;
+  PyObject *asutf8=getutf8string(param);
+  if(!asutf8)
+    return NULL;
+  res=sqlite3_uri_parameter(self->filename, PyBytes_AS_STRING(asutf8));
+  Py_DECREF(asutf8);
+  return convertutf8string(res);
+}
+
+static PyObject*
+apswurifilename_uri_int(APSWURIFilename *self, PyObject *args)
+{
+  char *param=NULL;
+  long long res=0;
+
+  if(!PyArg_ParseTuple(args, "esL", STRENCODING, &param, &res))
+    return NULL;
+  
+  res=sqlite3_uri_int64(self->filename, param, res);
+  PyMem_Free(param);
+
+  return PyLong_FromLongLong(res);
+}
+
+static PyObject*
+apswurifilename_uri_boolean(APSWURIFilename *self, PyObject *args)
+{
+  char *param=NULL;
+  int res=0;
+
+  if(!PyArg_ParseTuple(args, "esi", STRENCODING, &param, &res))
+    return NULL;
+  
+  res=sqlite3_uri_boolean(self->filename, param, res);
+  PyMem_Free(param);
+
+  if(res)
+    Py_RETURN_TRUE;
+  Py_RETURN_FALSE;
+}
+
+
+static PyMethodDef APSWURIFilenameMethods[]={
+  {"filename", (PyCFunction) apswurifilename_filename, METH_NOARGS, "Get filename"},
+  {"uri_parameter", (PyCFunction) apswurifilename_uri_parameter, METH_O, "Get URI value"},
+  {"uri_int", (PyCFunction) apswurifilename_uri_int, METH_VARARGS, "Get URI integer value"},
+  {"uri_boolean", (PyCFunction) apswurifilename_uri_boolean, METH_VARARGS, "Get URI boolean value"},
+  /* Sentinel */
+  {0, 0, 0, 0}
+};
+
+static PyTypeObject APSWURIFilenameType=
+  {
+    APSW_PYTYPE_INIT
+    "apsw.VFSFile",            /*tp_name*/
+    sizeof(APSWURIFilename),   /*tp_basicsize*/
+    0,                         /*tp_itemsize*/
+    0,                         /*tp_dealloc*/ 
+    0,                         /*tp_print*/
+    0,                         /*tp_getattr*/
+    0,                         /*tp_setattr*/
+    0,                         /*tp_compare*/
+    0,                         /*tp_repr*/
+    0,                         /*tp_as_number*/
+    0,                         /*tp_as_sequence*/
+    0,                         /*tp_as_mapping*/
+    0,                         /*tp_hash */
+    0,                         /*tp_call*/
+    0,                         /*tp_str*/
+    0,                         /*tp_getattro*/
+    0,                         /*tp_setattro*/
+    0,                         /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG, /*tp_flags*/
+    "Filename and URI",        /* tp_doc */
+    0,		               /* tp_traverse */
+    0,		               /* tp_clear */
+    0,		               /* tp_richcompare */
+    0,		               /* tp_weaklistoffset */
+    0,		               /* tp_iter */
+    0,		               /* tp_iternext */
+    APSWURIFilenameMethods,    /* tp_methods */
+    0,                         /* tp_members */
+    0,                         /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    0,                         /* tp_init */
+    0,                         /* tp_alloc */
+    0,                         /* tp_new */
+    0,                         /* tp_free */
+    0,                         /* tp_is_gc */
+    0,                         /* tp_bases */
+    0,                         /* tp_mro */
+    0,                         /* tp_cache */
+    0,                         /* tp_subclasses */
+    0,                         /* tp_weaklist */
+    0                          /* tp_del */
+    APSW_PYTYPE_VERSION
+  };
