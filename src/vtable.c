@@ -826,23 +826,26 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
 /** .. method:: Begin()
 
   This function is used as part of transactions.  You do not have to
-  provide the method.  */
+  provide the method.  
+*/
 
 /** .. method:: Sync()
 
   This function is used as part of transactions.  You do not have to
-  provide the method.  */
+  provide the method.  
+*/
 
 /** .. method:: Commit()
 
   This function is used as part of transactions.  You do not have to
-  provide the method.  */
+  provide the method.  
+*/
 
 /** .. method:: Rollback()
 
   This function is used as part of transactions.  You do not have to
-  provide the method.  */
-
+  provide the method.  
+*/
 
 static struct {
   const char *methodname;
