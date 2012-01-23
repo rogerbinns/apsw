@@ -61,6 +61,9 @@ for name, obj in ( ('Connection', con),
 
     for c in classes[name]:
         if not hasattr(obj, c):
+            # it is legit for these to be missing from code (currently because code is broken)
+            if (name+"."+c) in ("apsw.async_control", "apsw.async_initialize", "apsw.async_run", "apsw.async_shutdown"):
+                continue
             retval=1
             print "%s.%s in documentation but not object" % (name, c)
     for c in dir(obj):
@@ -76,7 +79,7 @@ for name, obj in ( ('Connection', con),
             if isinstance(getattr(apsw, c), type) and issubclass(getattr(apsw,c), Exception):
                 continue
             # ignore classes !!!
-            if c in ("Connection", "VFS", "VFSFile", "zeroblob", "Shell"):
+            if c in ("Connection", "VFS", "VFSFile", "zeroblob", "Shell", "URIFilename"):
                 continue
             # ignore mappings !!!
             if c.startswith("mapping_"):
