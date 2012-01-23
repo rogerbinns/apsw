@@ -2,6 +2,8 @@
 SQLITEVERSION=3.7.10
 APSWSUFFIX=-r1
 
+RELEASEDATE="24 January 2012"
+
 VERSION=$(SQLITEVERSION)$(APSWSUFFIX)
 VERDIR=apsw-$(VERSION)
 
@@ -47,7 +49,7 @@ doc: docs
 docs: build_ext $(GENDOCS) doc/example.rst doc/.static
 	env PYTHONPATH=. http_proxy= python tools/docmissing.py
 	env PYTHONPATH=. http_proxy= python tools/docupdate.py $(VERSION)
-	make PYTHONPATH="`pwd`" VERSION=$(VERSION) -C doc clean html htmlhelp 
+	make PYTHONPATH="`pwd`" VERSION=$(VERSION) RELEASEDATE=$(RELEASEDATE) -C doc clean html htmlhelp 
 
 doc/example.rst: example-code.py tools/example2rst.py src/apswversion.h
 	rm -f dbfile
@@ -84,7 +86,7 @@ valgrind1: /space/pydebug/bin/python
 
 
 linkcheck:
-	make VERSION=$(VERSION) -C doc linkcheck 
+	make RELEASEDATE=$(RELEASEDATE) VERSION=$(VERSION) -C doc linkcheck 
 
 publish: docs
 	if [ -d ../apsw-publish ] ; then rm -f ../apsw-publish/* ../apsw-publish/_static/* ../apsw-publish/_sources/* ; \

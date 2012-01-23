@@ -53,7 +53,8 @@ copyright = u'2004-2011, Roger Binns <rogerb@rogerbinns.com>'
 version = os.getenv("VERSION")
 # The full version, including alpha/beta/rc tags.
 release = version
-assert version
+today = os.getenv("RELEASEDATE")
+assert version and today
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:

@@ -571,7 +571,7 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
 
     :param name: File to open.  Note that *name* may be :const:`None` in which
         case you should open a temporary file with a name of your
-        choosing.
+        choosing.  May be an instance of :class:`URIFilename`.
 
     :param flags: A list of two integers ``[inputflags,
       outputflags]``.  Each integer is one or more of the `open flags
