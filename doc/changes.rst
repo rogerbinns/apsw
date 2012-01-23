@@ -376,9 +376,9 @@ commands and output modes, or just run it like this::
 Added the `SQLITE_LIMIT_TRIGGER_DEPTH
 <http://www.sqlite.org/c3ref/c_limit_attached.html>`__,
 `SQLITE_OPEN_PRIVATECACHE
-<http://www.sqlite.org/c3ref/c_open_create.html>`__ and
+<http://www.sqlite.org/c3ref/c_open_autoproxy.html>`__ and
 `SQLITE_OPEN_SHAREDCACHE
-<http://www.sqlite.org/c3ref/c_open_create.html>`__ constants.
+<http://www.sqlite.org/c3ref/c_open_autoproxy.html>`__ constants.
 
 The :file:`setup.py` file now has the various options available made
 applicable to appropriate commands only.  Read the :ref:`updated

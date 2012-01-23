@@ -575,7 +575,7 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
 
     :param flags: A list of two integers ``[inputflags,
       outputflags]``.  Each integer is one or more of the `open flags
-      <http://www.sqlite.org/c3ref/c_open_create.html>`_ binary orred
+      <http://www.sqlite.org/c3ref/c_open_autoproxy.html>`_ binary orred
       together.  The ``inputflags`` tells you what SQLite wants.  For
       example :const:`SQLITE_OPEN_DELETEONCLOSE` means the file should
       be automatically deleted when closed.  The ``outputflags``
