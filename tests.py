@@ -239,6 +239,8 @@ def deletefile(name):
         # Give bg thread a chance to run
         time.sleep(0.1)
 
+openflags=apsw.SQLITE_OPEN_READWRITE|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_URI
+
 # main test class/code
 class APSW(unittest.TestCase):
 
@@ -302,7 +304,7 @@ class APSW(unittest.TestCase):
         self.saved_connection_hooks.append(apsw.connection_hooks)
         gc.collect()
         self.deltempfiles()
-        self.db=apsw.Connection(TESTFILEPREFIX+"testdb")
+        self.db=apsw.Connection(TESTFILEPREFIX+"testdb", flags=openflags)
 
     def tearDown(self):
         if self.db is not None:
@@ -8183,7 +8185,7 @@ def testdb(filename=TESTFILEPREFIX+"testdb2", vfsname="apswtest", closedb=True, 
     for suf in "", "-journal", "x", "x-journal":
         deletefile(filename+suf)
 
-    db=apsw.Connection("file:"+filename+"?psow=0", vfs=vfsname)
+    db=apsw.Connection("file:"+filename+"?psow=0", vfs=vfsname, flags=openflags)
     if mode:
         db.cursor().execute("pragma journal_mode="+mode)
     db.cursor().execute("create table foo(x,y); insert into foo values(1,2); insert into foo values(date('now'), date('now'))")
