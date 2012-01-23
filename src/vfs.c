@@ -221,12 +221,14 @@ typedef struct
   PyObject_HEAD
   struct sqlite3_file *base;
   char *filename;  /* obtained from fullpathname - has to be around for lifetime of base */
+  int filenamefree;  /* filename should be freed on close */
   /* If you add any new members then also initialize them in
      apswvfspy_xOpen() as that function does not call init because it
      has values already */
 } APSWVFSFile;
 
 static PyTypeObject APSWVFSFileType;
+static PyTypeObject APSWURIFilenameType;
 
 static const struct sqlite3_io_methods apsw_io_methods_v1;
 static const struct sqlite3_io_methods apsw_io_methods_v2;
@@ -234,7 +236,7 @@ static const struct sqlite3_io_methods apsw_io_methods_v2;
 typedef struct
 {
   PyObject_HEAD
-  const char *filename;
+  char *filename;
 } APSWURIFilename;
 
 
@@ -492,6 +494,8 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
   PyObject *flags=NULL;
   PyObject *pyresult=NULL;
   APSWSQLite3File *apswfile=(APSWSQLite3File*)(void*)file;
+  /* how we pass the name */
+  PyObject *nameobject;
 
   VFSPREAMBLE;
 
@@ -502,7 +506,16 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
   PyList_SET_ITEM(flags, 1, PyInt_FromLong(pOutFlags?*pOutFlags:0));
   if(PyErr_Occurred()) goto finally;
 
-  pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xOpen", 1, "(NO)", convertutf8string(zName), flags);
+  if(inflags & (SQLITE_OPEN_URI|SQLITE_OPEN_MAIN_DB)) 
+    {
+      nameobject=PyObject_New(PyObject, &APSWURIFilenameType);
+      if(nameobject)
+	((APSWURIFilename*)nameobject)->filename=(char*)zName;
+    }
+  else
+    nameobject=convertutf8string(zName);
+
+  pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xOpen", 1, "(NO)", nameobject, flags);
   if(!pyresult)
     {
       result=MakeSqliteMsgFromPyException(NULL);
@@ -592,13 +605,27 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args)
 
   if(pyname==Py_None)
     {
-      utf8name=Py_None;
-      Py_INCREF(Py_None);
+      filename=NULL;
+    }
+  else if(pyname->ob_type==&APSWURIFilenameType)
+    {
+      filename=((APSWURIFilename*)pyname)->filename;
     }
   else
-    utf8name=getutf8string(pyname);
-  if(!utf8name) 
-    goto finally;
+    {
+      utf8name=getutf8string(pyname);
+      if(!utf8name)
+	goto finally;
+      size_t len=strlen(PyBytes_AS_STRING(utf8name));
+      APSW_FAULT_INJECT(vfspyopen_fullpathnamemallocfailed,
+			filename=PyMem_Malloc(len+3),
+			filename=(char*)PyErr_NoMemory());
+      strcpy(filename, PyBytes_AS_STRING(utf8name));
+      /* ensure extra null padding for URI params */
+      filename[len]=filename[len+1]=filename[len+2]=0;
+      if(!filename) 
+	goto finally;
+    }
 
 
   if(!PyList_Check(flags) || PyList_GET_SIZE(flags)!=2 || !PyIntLong_Check(PyList_GET_ITEM(flags, 0)) || !PyIntLong_Check(PyList_GET_ITEM(flags, 1)))
@@ -617,27 +644,6 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args)
   file=PyMem_Malloc(self->basevfs->szOsFile);
   if(!file) goto finally;
 
-  if(utf8name!=Py_None)
-    {
-      /* The filename has to be passed through xFullPathname.  That
-	 may or may not already have happened, but we do it a second
-	 time to be sure. */
-      int fpres;
-      APSW_FAULT_INJECT(vfspyopen_fullpathnamemallocfailed,
-			filename=PyMem_Malloc(self->basevfs->mxPathname+1),
-			filename=(char*)PyErr_NoMemory());
-      if(!filename)
-	goto finally;
-      APSW_FAULT_INJECT(vfspyopen_fullpathnamefailed,
-			fpres=self->basevfs->xFullPathname(self->basevfs, PyBytes_AS_STRING(utf8name), self->basevfs->mxPathname, filename),
-			fpres=SQLITE_NOMEM);
-      if(fpres!=SQLITE_OK)
-	{
-	  SET_EXC(fpres, NULL);
-	  goto finally;
-	}
-    }
-
   res=self->basevfs->xOpen(self->basevfs, filename, file, flagsin, &flagsout);
   if(PyErr_Occurred()) goto finally;
   if(res!=SQLITE_OK)
@@ -653,13 +659,14 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args)
   if(!apswfile) goto finally;
   apswfile->base=file;
   apswfile->filename=filename;
+  apswfile->filenamefree=!!utf8name;
   filename=NULL;
   file=NULL;
   result=(PyObject*)(void*)apswfile;
 
  finally:
   if(file) PyMem_Free(file);
-  if(filename) PyMem_Free(filename);
+  if(utf8name && filename) PyMem_Free(filename);
   Py_XDECREF(utf8name);
   return result;
 }
@@ -891,7 +898,8 @@ apswvfs_xDlError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
     :meth:`~VFS.xDlOpen` or :meth:`~VFS.xDlSym`, turn them into
     strings, save them, and return them in this routine.  If you have
     an error in this routine or return None then SQLite's generic
-    message will be used.x  */
+    message will be used.
+*/
 static PyObject *
 apswvfspy_xDlError(APSWVFS *self)
 {
@@ -1771,7 +1779,7 @@ APSWVFSFile_dealloc(APSWVFSFile *self)
       PyObject *x=apswvfsfilepy_xClose(self);
       Py_XDECREF(x);
     }
-  if(self->filename)
+  if(self->filenamefree)
     PyMem_Free(self->filename);
 
   if(PyErr_Occurred())
@@ -1803,7 +1811,7 @@ APSWVFSFile_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSE
 
     :param vfs: The vfs you want to inherit behaviour from.  You can
        use an empty string ``""`` to inherit from the default vfs.
-    :param name: The name of the file being opened.
+    :param name: The name of the file being opened.  May be an instance of :class:`URIFilename`.
     :param flags: A two list ``[inflags, outflags]`` as detailed in :meth:`VFS.xOpen`.
 
     :raises ValueError: If the named VFS is not registered.
@@ -1836,15 +1844,31 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
   if(!PyArg_ParseTupleAndKeywords(args, kwds, "esOO:init(vfs, name, flags)", kwlist, STRENCODING, &vfs, &pyname, &flags))
     return -1;
 
+  self->filenamefree=0;
   if(pyname==Py_None)
     {
-      utf8name=Py_None;
-      Py_INCREF(utf8name);
+      self->filename=NULL;
+    }
+  else if(pyname->ob_type==&APSWURIFilenameType)
+    {
+      self->filename=((APSWURIFilename*)pyname)->filename;
     }
   else
-    utf8name=getutf8string(pyname);
-
-  if(!utf8name) goto finally;
+    {
+      utf8name=getutf8string(pyname);
+      if(!utf8name)
+	goto finally;
+      size_t len=strlen(PyBytes_AS_STRING(utf8name));
+      APSW_FAULT_INJECT(vfspyopen_fullpathnamemallocfailed,
+			self->filename=PyMem_Malloc(len+3),
+			self->filename=(char*)PyErr_NoMemory());
+      strcpy(self->filename, PyBytes_AS_STRING(utf8name));
+      /* ensure extra null padding for URI params */
+      self->filename[len]=self->filename[len+1]=self->filename[len+2]=0;
+      self->filenamefree=1;
+      if(!self->filename) 
+	goto finally;
+    }
 
   /* type checking */
   if(strlen(vfs)==0)
@@ -1889,27 +1913,6 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
     }
   file=PyMem_Malloc(vfstouse->szOsFile);
   if(!file) goto finally;
-
-  if(utf8name!=Py_None)
-    {
-      /* The filename has to be passed through xFullPathname.  That
-	 may or may not already have happened, but we do it a second
-	 time to be sure. */
-      int fpres;
-      APSW_FAULT_INJECT(vfsfileopen_fullpathnamemallocfailed,
-			self->filename=PyMem_Malloc(vfstouse->mxPathname+1),
-			self->filename=(char*)PyErr_NoMemory());
-      if(!self->filename)
-	goto finally;
-      APSW_FAULT_INJECT(vfsfileopen_fullpathnamefailed,
-			fpres=vfstouse->xFullPathname(vfstouse, PyBytes_AS_STRING(utf8name), vfstouse->mxPathname, self->filename),
-			fpres=SQLITE_NOMEM);
-      if(fpres!=SQLITE_OK)
-	{
-	  SET_EXC(fpres, NULL);
-	  goto finally;
-	}
-    }
 
   xopenresult=vfstouse->xOpen(vfstouse, self->filename,  file, (int)flagsin, &flagsout);
   SET_EXC(xopenresult, NULL);
@@ -2838,13 +2841,34 @@ static PyTypeObject APSWVFSFileType =
     APSW_PYTYPE_VERSION
   };
 
+/** .. class:: URIFilename
 
+    SQLite uses a convoluted method of storing `uri parameters
+    <http://www.sqlite.org/uri.html>`__ after the filename binding the
+    C filename representation and parameters together.  This class
+    encapsulates that binding and will be used in :meth:`VFS.xOpen`
+    implementations if the URI flag or main database flags are
+    specified.
+
+*/
+
+
+/** .. method:: filename() -> str
+    
+    Returns the filename.
+*/
 static PyObject*
 apswurifilename_filename(APSWURIFilename *self)
 {
   return convertutf8string(self->filename);
 }
 
+/** .. method:: uri_parameter(name) -> str
+
+    Returns the value of parameter `name` or None.
+
+    -* sqlite3_uri_parameter
+*/
 static PyObject*
 apswurifilename_uri_parameter(APSWURIFilename *self, PyObject *param)
 {
@@ -2857,6 +2881,13 @@ apswurifilename_uri_parameter(APSWURIFilename *self, PyObject *param)
   return convertutf8string(res);
 }
 
+/** .. method:: uri_int(name, default) -> int
+
+    Returns the integer value for parameter `name` or `default` if not
+    present.
+    
+    -* sqlite3_uri_int64
+*/
 static PyObject*
 apswurifilename_uri_int(APSWURIFilename *self, PyObject *args)
 {
@@ -2872,6 +2903,13 @@ apswurifilename_uri_int(APSWURIFilename *self, PyObject *args)
   return PyLong_FromLongLong(res);
 }
 
+/** .. method:: uri_boolean(name, default) -> bool
+    
+    Returns the boolean value for parameter `name` or `default` if not
+    present.
+
+    -* sqlite3_uri_boolean
+ */
 static PyObject*
 apswurifilename_uri_boolean(APSWURIFilename *self, PyObject *args)
 {
@@ -2902,7 +2940,7 @@ static PyMethodDef APSWURIFilenameMethods[]={
 static PyTypeObject APSWURIFilenameType=
   {
     APSW_PYTYPE_INIT
-    "apsw.VFSFile",            /*tp_name*/
+    "apsw.URIFilename",        /*tp_name*/
     sizeof(APSWURIFilename),   /*tp_basicsize*/
     0,                         /*tp_itemsize*/
     0,                         /*tp_dealloc*/ 

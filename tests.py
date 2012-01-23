@@ -3882,7 +3882,7 @@ class APSW(unittest.TestCase):
         query="create table foo(x,y); insert into foo values(1,2); insert into foo values(3,4)"
         self.db.cursor().execute(query)
 
-        db2=apsw.Connection("file:"+TESTFILEPREFIX+"testdb2?psow=0", vfs=vfs.vfsname)
+        db2=apsw.Connection(TESTFILEPREFIX+"testdb2", vfs=vfs.vfsname)
         db2.cursor().execute(query)
         db2.close()
         waswal=self.db.cursor().execute("pragma journal_mode").fetchall()[0][0]=="wal"
@@ -3911,16 +3911,16 @@ class APSW(unittest.TestCase):
         self.assertRaises(OverflowError, apsw.exceptionfor, l("0xffffffffffffffff10"))
 
         # test raw file object
-        f=ObfuscatedVFSFile("", TESTFILEPREFIX+"testdb", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
+        f=ObfuscatedVFSFile("", os.path.abspath(TESTFILEPREFIX+"testdb"), [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
         del f # check closes
-        f=ObfuscatedVFSFile("", TESTFILEPREFIX+"testdb", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
+        f=ObfuscatedVFSFile("", os.path.abspath(TESTFILEPREFIX+"testdb"), [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
         data=f.xRead(len(obfu), 0) # will encrypt it
         compare(obfu, data)
         f.xClose()
         f.xClose()
-        f2=apsw.VFSFile("", TESTFILEPREFIX+"testdb", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
+        f2=apsw.VFSFile("", os.path.abspath(TESTFILEPREFIX+"testdb"), [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
         del f2
-        f2=apsw.VFSFile("", TESTFILEPREFIX+"testdb2", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
+        f2=apsw.VFSFile("", os.path.abspath(TESTFILEPREFIX+"testdb2"), [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_READONLY, 0])
         data=f2.xRead(len(obfu), 0)
         self.assertEqual(obfu, data)
         f2.xClose()
@@ -4104,7 +4104,7 @@ class APSW(unittest.TestCase):
                 return None
 
             def xOpen99(self, name, flags):
-                assert(name is None or type(name)==type(u("")))
+                assert(isinstance(name, apsw.URIFilename) or name is None or type(name)==type(u("")))
                 assert(type(flags)==type([]))
                 assert(len(flags)==2)
                 assert(type(flags[0]) in (int,long))
