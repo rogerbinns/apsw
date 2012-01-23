@@ -5,17 +5,33 @@ Change History
 3.7.10-r1
 =========
 
-`SQLITE_OPEN_URI
-<http://www.sqlite.org/c3ref/c_open_autoproxy.html>`__ is on by
-default for all connections.  This makes setting `PSOW
-<http://www.sqlite.org/psow.html>`__ easier.  (You still need to
-include the `file:` scheme for URI processing to happen.)
-
 The default sector size returned in VFS routines is 4,096 to match
 SQLite's new default.
 
 Several links to SQLite tickets and documentation were updated (`issue
 122 <http://code.google.com/p/apsw/issues/detail?id=122>`__).
+
+The async vfs is disabled due to a bug in its code that leads to
+random memory reads when dealing with filenames.
+
+Added SQLITE_CONFIG_GETPCACHE2, SQLITE_CONFIG_GETPCACHE2,
+SQLITE_FCNTL_POWERSAFE_OVERWRITE, SQLITE_FCNTL_VFSNAME and
+SQLITE_IOCAP_POWERSAFE_OVERWRITE constants.
+
+Added a :class:`URIFilename` class to encapsulate how SQLite provides
+URI parameters to VFS routines.
+
+Compatibility break: Depending on flags your VFS xOpen method may get
+a :class:`URIFilename` or a string for the filename.
+
+Compatibility break: The :doc:`vfs` code used to always run strings
+you provided through :meth:`VFS.xFullPathname`.  This isn't possible
+with URI pathnames so that code has been removed.  If you construct
+filenames for :meth:`VFS.xOpen` (ie bypassing SQLite database open)
+then you must call :meth:`VFS.xFullPathname` yourself first to ensure
+relative pathnames are turned into absolute pathnames.  The SQLite API
+guarantees that filenames passed to :meth:`VFS.xOpen` are exactly what
+was returned from :meth:`VFS.xFullPathname`.
 
 3.7.9-r1
 ========
