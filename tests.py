@@ -3820,24 +3820,6 @@ class APSW(unittest.TestCase):
             klass,value=sys.exc_info()[:2]
             self.assertTrue(klass is apsw.AbortError)
 
-    def testModuleUnloading(self):
-        "Verify module unloading"
-        global apsw
-        n=apsw.vfsnames
-        e4=apsw.exceptionfor
-        c=apsw.Connection
-        res=[]
-        res.append(n())
-        del sys.modules['apsw']
-        del apsw
-        res.append(n())
-        er=e4(2)
-        xx=c("")
-        import apsw
-        self.assertEqual(res[0], res[1])
-        self.assertEqual(er.result, apsw.exceptionfor(2).result)
-        
-
     def testVFSWithWAL(self):
         "Verify VFS using WAL where possible"
         apsw.connection_hooks.append(lambda c: c.cursor().execute("pragma journal_mode=WAL"))
