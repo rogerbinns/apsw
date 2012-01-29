@@ -8,17 +8,20 @@
 # Imports
 import string, sys, cStringIO, os, re
 
+def indentof(l):
+    return l[:len(l)-len(l.lstrip())]
+
 def docapture(filename):
     code=[]
     code.append(outputredirector)
     counter=0
     for line in open(filename, "rU"):
         line=line[:-1] # strip off newline
-        if line.startswith("#@@CAPTURE"):
-            code.append("opto('.tmpop-%s-%d')" % (filename, counter))
+        if line.lstrip().startswith("#@@CAPTURE"):
+            code.append(indentof(line)+"opto('.tmpop-%s-%d')" % (filename, counter))
             counter+=1
-        elif line.startswith("#@@ENDCAPTURE"):
-            code.append("opnormal()")
+        elif line.lstrip().startswith("#@@ENDCAPTURE"):
+            code.append(indentof(line)+"opnormal()")
         else:
             code.append(line)
     code="\n".join(code)
