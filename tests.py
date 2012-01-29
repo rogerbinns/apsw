@@ -6432,7 +6432,7 @@ insert into xxblah values(3);
         self.assertEqual(s.db.cursor().execute("select * from xxbar").fetchall(), [(3,)])
         # check index
         reset()
-        cmd("drop index xxfoo")
+        cmd("drop index xxfoo;")
         s.cmdloop()
         isempty(fh[1])
         isempty(fh[2])
