@@ -3173,7 +3173,7 @@ class APSW(unittest.TestCase):
         self.assert_("savepoint" in traces)
         self.assert_("release" in traces)
         self.assert_("rollback" in traces)
-
+ 
     def testTicket2158(self):
         "Check we are not affected by SQLite ticket #2158"
         # http://www.sqlite.org/cvstrac/tktview?tn=2158
@@ -3819,6 +3819,40 @@ class APSW(unittest.TestCase):
         except:
             klass,value=sys.exc_info()[:2]
             self.assertTrue(klass is apsw.AbortError)
+
+    def testURIFilenames(self):
+        assertRaises=self.assertRaises
+        assertEqual=self.assertEqual
+        class TVFS(apsw.VFS):
+            def __init__(self):
+                apsw.VFS.__init__(self, "uritest", "")
+                
+            def xOpen(self, name, flags):
+                assert isinstance(name, apsw.URIFilename)
+                # The various errors
+                assertRaises(TypeError, name.uri_parameter)
+                assertRaises(TypeError, name.uri_parameter, 2)
+                assertRaises(TypeError, name.uri_int)
+                assertRaises(TypeError, name.uri_int, 7)                                
+                assertRaises(TypeError, name.uri_int, 7, 7)
+                assertRaises(TypeError, name.uri_int, 7, 7, 7)
+                assertRaises(TypeError, name.uri_int, "seven", "seven")
+                assertRaises(TypeError, name.uri_boolean, "seven")
+                assertRaises(TypeError, name.uri_boolean, "seven", "seven")
+                assertRaises(TypeError, name.uri_boolean, "seven", None)
+                # Check values
+                assert name.filename().endswith("testdb2")
+                assertEqual(name.uri_parameter("notexist"), None)
+                assertEqual(name.uri_parameter("foo"), "1&2=3")
+                assertEqual(name.uri_int("foo", -7), -7)
+                assertEqual(name.uri_int("bar", -7), 43242342)
+                # http://www.sqlite.org/src/info/5f41597f7c
+                # assertEqual(name.uri_boolean("foo", False), False)
+                assertEqual(name.uri_boolean("bam", False), True)
+                1/0
+
+        testvfs=TVFS()
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, apsw.Connection, "file:testdb2?foo=1%262%3D3&bar=43242342&bam=true", flags=apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_URI, vfs="uritest")
 
     def testVFSWithWAL(self):
         "Verify VFS using WAL where possible"

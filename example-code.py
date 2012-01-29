@@ -432,6 +432,14 @@ class ObfuscatedVFS(apsw.VFS):
     # We want to return our own file implmentation, but also
     # want it to inherit
     def xOpen(self, name, flags):
+        # We can look at uri parameters
+        if isinstance(name, apsw.URIFilename):
+            #@@CAPTURE
+            print "fast is", name.uri_parameter("fast")
+            print "level is", name.uri_int("level", 3)
+            print "warp is", name.uri_boolean("warp", False)
+            print "notpresent is", name.uri_parameter("notpresent")
+            #@@ENDCAPTURE
         return ObfuscatedVFSFile(self.basevfs, name, flags)
 
 # The file implementation where we override xRead and xWrite to call our
@@ -453,8 +461,10 @@ obfuvfs=ObfuscatedVFS()
 print apsw.vfsnames()
 #@@ENDCAPTURE
 
-# Make an obfuscated db
-obfudb=apsw.Connection("myobfudb", vfs=obfuvfs.vfsname)
+# Make an obfuscated db, passing in some URI parameters
+obfudb=apsw.Connection("file:myobfudb?fast=speed&level=7&warp=on", 
+                       flags=apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_URI,
+                       vfs=obfuvfs.vfsname)
 # Check it works
 obfudb.cursor().execute("create table foo(x,y); insert into foo values(1,2)")
 

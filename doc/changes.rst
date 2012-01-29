@@ -8,8 +8,8 @@ Change History
 The default sector size returned in VFS routines is 4,096 to match
 SQLite's new default.
 
-Several links to SQLite tickets and documentation were updated (`issue
-122 <http://code.google.com/p/apsw/issues/detail?id=122>`__).
+Several links to SQLite tickets and documentation were updated
+(:issue:`122`).
 
 The async vfs is disabled due to a bug in its code that leads to
 random memory reads when dealing with filenames.
@@ -23,19 +23,21 @@ view declarations (`discussed here
 <http://www.sqlite.org/src/info/c04a8b8a4f>`__)
 
 Added a :class:`URIFilename` class to encapsulate how SQLite provides
-URI parameters to VFS routines.
+URI parameters to VFS routines (:issue:`124`).
 
 Compatibility break: Depending on flags your VFS xOpen method may get
-a :class:`URIFilename` or a string for the filename.
+a :class:`URIFilename` or a string for the filename.  You can still
+pass either to the :class:`VFSFile`.
 
 Compatibility break: The :doc:`vfs` code used to always run strings
 you provided through :meth:`VFS.xFullPathname`.  This isn't possible
 with URI pathnames so that code has been removed.  If you construct
-filenames for :meth:`VFS.xOpen` (ie bypassing SQLite database open)
-then you must call :meth:`VFS.xFullPathname` yourself first to ensure
-relative pathnames are turned into absolute pathnames.  The SQLite API
-guarantees that filenames passed to :meth:`VFS.xOpen` are exactly what
-was returned from :meth:`VFS.xFullPathname`.
+filenames for :meth:`VFS.xOpen` directly (ie bypassing the SQLite
+database open call) then you must call :meth:`VFS.xFullPathname`
+yourself first to ensure relative pathnames are turned into absolute
+pathnames.  The SQLite API guarantees that filenames passed to
+:meth:`VFS.xOpen` are exactly what was returned from
+:meth:`VFS.xFullPathname`.
 
 3.7.9-r1
 ========
@@ -52,9 +54,7 @@ xDelete semantics.
 Added SQLITE3_FCNTL_PERSIST_WAL and SQLITE3_FCNTL_WIN32_AV_RETRY `file
 controls <http://www.sqlite.org/c3ref/c_fcntl_chunk_size.html>`__.
 
-Wrapped sqlite3_sourceid (`issue 120
-<http://code.google.com/p/apsw/issues/detail?id=120>`__).
-
+Wrapped sqlite3_sourceid (:issue:`120`)
 
 3.7.7.1-r1
 ==========
@@ -86,7 +86,7 @@ instead of Python long type.
 When invoking the shell by calling :func:`apsw.main` it will not
 become interactive if you supply SQL commands as command line
 arguments.  This is to have the same behaviour as the SQLite shell
-(`issue 115 <http://code.google.com/p/apsw/issues/detail?id=115>`__).
+(:issue:`115`).
 
 The shell has a *.find* command making it easy to search for values
 across all columns of some or all tables.
@@ -99,8 +99,7 @@ Detect attempted use of a cursor as input data for itself.
 3.7.6.2-r1
 ==========
 
-Fixed `issue 117
-<http://code.google.com/p/apsw/issues/detail?id=117>`__ where the
+Fixed :issue:`117` where the
 shell could report an I/O error on changing output target for some
 operating systems.  Thanks to Edzard Pasma for finding and diagnosing
 this.
@@ -156,8 +155,7 @@ in the `SQLite documentation
 
 You can read blobs into pre-existing buffers using
 :meth:`blob.readinto`.  (This is more efficient than allocating new
-buffers as :meth:`blob.read` does and then copying.)  (`Issue 109
-<http://code.google.com/p/apsw/issues/detail?id=109>`__).
+buffers as :meth:`blob.read` does and then copying.)  (:issue:`109`).
 
 Fixed bug with unicode output in CSV mode in the shell.
 
@@ -179,8 +177,7 @@ Updated various constants including `SQLITE_FCNTL_CHUNK_SIZE
 <http://sqlite.org/c3ref/c_fcntl_chunk_size.html>`__ used with
 :meth:`Connection.filecontrol`.
 
-Fixed Unicode output with some file objects from the shell (`Issue 108
-<http://code.google.com/p/apsw/issues/detail?id=108>`__).
+Fixed Unicode output with some file objects from the shell (:issue:`108`).
 
 With the shell, you can specify handling of characters not present in
 the output encoding (eg replace to use '?' or similar, ignore,

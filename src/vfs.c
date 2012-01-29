@@ -2846,10 +2846,15 @@ static PyTypeObject APSWVFSFileType =
     SQLite uses a convoluted method of storing `uri parameters
     <http://www.sqlite.org/uri.html>`__ after the filename binding the
     C filename representation and parameters together.  This class
-    encapsulates that binding and will be used in :meth:`VFS.xOpen`
-    implementations if the URI flag or main database flags are
-    specified.
+    encapsulates that binding.  The :ref:`example <example-vfs>` shows
+    usage of this class.  
 
+    Your :meth:`VFS.xOpen` method will generally be passed one of
+    these instead of a string as the filename if the URI flag was used
+    or the main database flag is set.
+
+    You can safely pass it on to the :class:`VFSFile` constructor
+    which knows how to get the name back out.
 */
 
 
