@@ -6371,6 +6371,37 @@ class APSW(unittest.TestCase):
         v3=get(fh[1])
         v3=re.sub("-- Date:.*", "", v3)
         self.assertEqual(v, v3)
+        # trailing comments
+        reset()
+        cmd("""create table xxblah(b -- ff
+) -- xx
+; create index xxfoo on xxblah(b -- ff
+) -- xx
+; create view xxbar as select * from xxblah -- ff
+;
+insert into xxblah values(3);
+.dump
+""")
+        s.cmdloop()
+        isempty(fh[2])
+        dump=get(fh[1])
+        reset()
+        cmd("drop table xxblah; drop view xxbar;")
+        s.cmdloop()
+        isempty(fh[2])
+        isempty(fh[1])
+        reset()
+        cmd(dump)
+        s.cmdloop()
+        isempty(fh[2])
+        isempty(fh[1])
+        self.assertEqual(s.db.cursor().execute("select * from xxbar").fetchall(), [(3,)])
+        # check index
+        reset()
+        cmd("drop index xxfoo")
+        s.cmdloop()
+        isempty(fh[1])
+        isempty(fh[2])
 
         ###
         ### Command - echo

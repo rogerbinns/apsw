@@ -18,6 +18,10 @@ Added SQLITE_CONFIG_GETPCACHE2, SQLITE_CONFIG_GETPCACHE2,
 SQLITE_FCNTL_POWERSAFE_OVERWRITE, SQLITE_FCNTL_VFSNAME and
 SQLITE_IOCAP_POWERSAFE_OVERWRITE constants.
 
+Fix shell dumping when SQLite doesn't strip trailing comments from
+view declarations (`discussed here
+<http://www.sqlite.org/src/info/c04a8b8a4f>`__)
+
 Added a :class:`URIFilename` class to encapsulate how SQLite provides
 URI parameters to VFS routines.
 

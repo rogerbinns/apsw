@@ -1130,6 +1130,16 @@ Enter SQL statements terminated with a ";"
             self.write(self.stdout, "BEGIN TRANSACTION;\n")
             blank()
 
+            def sqldef(s):
+                # return formatted sql watching out for embedded
+                # comments at the end forcing trailing ; onto next
+                # line http://www.sqlite.org/src/info/c04a8b8a4f
+                if "--" in s.split("\n")[-1]:
+                    nl="\n"
+                else:
+                    nl=""
+                return s+nl+";\n"
+
             # do the table dumping loops
             oldtable=self._output_table
             try:
@@ -1149,7 +1159,7 @@ Enter SQL statements terminated with a ";"
                                        % (apsw.format_sql_value(table), apsw.format_sql_value(table), apsw.format_sql_value(sql[0])))
                         else:
                             self.write(self.stdout, "DROP TABLE IF EXISTS "+self._fmt_sql_identifier(table)+";\n")
-                            self.write(self.stdout, sql[0]+";\n")
+                            self.write(self.stdout, sqldef(sql[0]))
                             self._output_table=self._fmt_sql_identifier(table)
                             self.process_sql("select * from "+self._fmt_sql_identifier(table), internal=True)
                         # Now any indices or triggers
@@ -1161,7 +1171,7 @@ Enter SQL statements terminated with a ";"
                             if first:
                                 comment("Triggers and indices on  "+table)
                                 first=False
-                            self.write(self.stdout, sql+";\n")
+                            self.write(self.stdout, sqldef(sql))
                         blank()
                 # Views done last.  They have to be done in the same order as they are in sqlite_master
                 # as they could refer to each other
@@ -1174,7 +1184,7 @@ Enter SQL statements terminated with a ";"
                         comment("Views")
                         first=False
                     self.write(self.stdout, "DROP VIEW IF EXISTS %s;\n" % (self._fmt_sql_identifier(name),))
-                    self.write(self.stdout, sql+";\n")
+                    self.write(self.stdout, sqldef(sql))
                 if not first:
                     blank()
                     
