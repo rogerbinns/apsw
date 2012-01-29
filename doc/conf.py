@@ -29,7 +29,9 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.extlinks'] #, 'sphinx.ext.inters
 extlinks={
     'cvstrac': ('http://www.sqlite.org/cvstrac/tktview?tn=%s',
                 'SQLite ticket #'),
-    'sqliteapi': ('http://www.sqlite.org/c3ref/%s.html', 'XXYouShouldNotSeeThisXX')
+    'sqliteapi': ('http://www.sqlite.org/c3ref/%s.html', 'XXYouShouldNotSeeThisXX'),
+    'issue': ('http://code.google.com/p/apsw/issues/detail?id=%s',
+              'APSW issue ')
     }
     
 
