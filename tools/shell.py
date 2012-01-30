@@ -2884,7 +2884,7 @@ Enter SQL statements terminated with a ";"
         del n
         del x
         del v
-    except NameError:
+    except:
         pass
 
 def main():
