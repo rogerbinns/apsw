@@ -2880,9 +2880,12 @@ Enter SQL statements terminated with a ";"
     # unpollute namespace
     del d
     del _colourscheme
-    del n
-    del x
-    del v
+    try:
+        del n
+        del x
+        del v
+    except NameError:
+        pass
 
 def main():
     # Docstring must start on second line so dedenting works correctly
