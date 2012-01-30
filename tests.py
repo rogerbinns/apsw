@@ -3836,7 +3836,8 @@ class APSW(unittest.TestCase):
                 assertRaises(TypeError, name.uri_int, 7)                                
                 assertRaises(TypeError, name.uri_int, 7, 7)
                 assertRaises(TypeError, name.uri_int, 7, 7, 7)
-                assertRaises(TypeError, name.uri_int, "seven", "seven")
+                if sys.version_info>(2,4): # 2.3 does systemerror instead of typeerror
+                    assertRaises(TypeError, name.uri_int, "seven", "seven")
                 assertRaises(TypeError, name.uri_boolean, "seven")
                 assertRaises(TypeError, name.uri_boolean, "seven", "seven")
                 assertRaises(TypeError, name.uri_boolean, "seven", None)
