@@ -290,7 +290,7 @@ class APSW(unittest.TestCase):
         }
 
     def deltempfiles(self):
-        for name in ("testdb", "testdb2", "testfile", "testfile2", "testdb2x", "testdb-async",
+        for name in ("testdb", "testdb2", "testdb3", "testfile", "testfile2", "testdb2x", "testdb-async",
                      "test-shell-1", "test-shell-1.py",
                      "test-shell-in", "test-shell-out", "test-shell-err"):
             for i in "-wal", "-journal", "":
@@ -3849,10 +3849,11 @@ class APSW(unittest.TestCase):
                 # http://www.sqlite.org/src/info/5f41597f7c
                 # assertEqual(name.uri_boolean("foo", False), False)
                 assertEqual(name.uri_boolean("bam", False), True)
+                assertEqual(name.uri_boolean("baz", True), False)
                 1/0
 
         testvfs=TVFS()
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, apsw.Connection, "file:testdb2?foo=1%262%3D3&bar=43242342&bam=true", flags=apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_URI, vfs="uritest")
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, apsw.Connection, "file:testdb2?foo=1%262%3D3&bar=43242342&bam=true&baz=fal%73%65", flags=apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_URI, vfs="uritest")
 
     def testVFSWithWAL(self):
         "Verify VFS using WAL where possible"
@@ -8026,20 +8027,11 @@ shell.write(shell.stdout, "hello world\\n")
         ## vfspyopen_fullpathnamemallocfailed
         del FaultVFS.xOpen # remove overriding fault xOpen method so we get default implementation
         apsw.faultdict["vfspyopen_fullpathnamemallocfailed"]=True
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, MemoryError, apsw.Connection, TESTFILEPREFIX+"testdb", vfs="faultvfs")
+        self.assertRaises(MemoryError, vfs.xOpen, "doesn't matter", apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE)
+        # and again in file open
+        apsw.faultdict["vfspyopen_fullpathnamemallocfailed"]=True
+        self.assertRaises(MemoryError, apsw.VFSFile, "", "/doesn't matter", [apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
 
-        ## vfspyopen_fullpathnamefailed
-        apsw.faultdict["vfspyopen_fullpathnamefailed"]=True
-        self.assertRaises(apsw.NoMemError, self.assertRaisesUnraisable, apsw.NoMemError, apsw.Connection, TESTFILEPREFIX+"testdb", vfs="faultvfs")
-
-        ## vfsfileopen_fullpathnamemallocfailed
-        apsw.faultdict["vfsfileopen_fullpathnamemallocfailed"]=True
-        self.assertRaises(MemoryError, apsw.VFSFile, "", TESTFILEPREFIX+"testdb", [0,0])
-        
-        ## vfsfileopen_fullpathnamefailed
-        apsw.faultdict["vfsfileopen_fullpathnamefailed"]=True
-        self.assertRaises(apsw.NoMemError, apsw.VFSFile, "", TESTFILEPREFIX+"testdb", [0,0])
-        
         ## vfsnamesfails
         apsw.faultdict["vfsnamesfails"]=True
         self.assertRaises(MemoryError, apsw.vfsnames)
@@ -8226,7 +8218,7 @@ shell.write(shell.stdout, "hello world\\n")
 
 
 testtimeout=False # timeout testing adds several seconds to each run
-def testdb(filename=TESTFILEPREFIX+"testdb2", vfsname="apswtest", closedb=True, mode=None):
+def testdb(filename=TESTFILEPREFIX+"testdb2", vfsname="apswtest", closedb=True, mode=None, attachdb=None):
     "This method causes all parts of a vfs to be executed"
     gc.collect() # free any existing db handles
     for suf in "", "-journal", "x", "x-journal":
@@ -8275,6 +8267,9 @@ def testdb(filename=TESTFILEPREFIX+"testdb2", vfsname="apswtest", closedb=True, 
     except apsw.ConstraintError:
         pass
     c.execute("rollback")
+
+    if attachdb:
+        c.execute("attach '%s' as second" % (attachdb,))
 
     if hasattr(APSW, "testLoadExtension"):
         # can we use loadextension?

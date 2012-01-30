@@ -620,11 +620,11 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args)
       APSW_FAULT_INJECT(vfspyopen_fullpathnamemallocfailed,
 			filename=PyMem_Malloc(len+3),
 			filename=(char*)PyErr_NoMemory());
+      if(!filename) 
+	goto finally;
       strcpy(filename, PyBytes_AS_STRING(utf8name));
       /* ensure extra null padding for URI params */
       filename[len]=filename[len+1]=filename[len+2]=0;
-      if(!filename) 
-	goto finally;
     }
 
 
@@ -1862,12 +1862,12 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
       APSW_FAULT_INJECT(vfspyopen_fullpathnamemallocfailed,
 			self->filename=PyMem_Malloc(len+3),
 			self->filename=(char*)PyErr_NoMemory());
+      if(!self->filename) 
+	goto finally;
       strcpy(self->filename, PyBytes_AS_STRING(utf8name));
       /* ensure extra null padding for URI params */
       self->filename[len]=self->filename[len+1]=self->filename[len+2]=0;
       self->filenamefree=1;
-      if(!self->filename) 
-	goto finally;
     }
 
   /* type checking */
