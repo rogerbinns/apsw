@@ -613,10 +613,11 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args)
     }
   else
     {
+      size_t len;
       utf8name=getutf8string(pyname);
       if(!utf8name)
 	goto finally;
-      size_t len=strlen(PyBytes_AS_STRING(utf8name));
+      len=strlen(PyBytes_AS_STRING(utf8name));
       APSW_FAULT_INJECT(vfspyopen_fullpathnamemallocfailed,
 			filename=PyMem_Malloc(len+3),
 			filename=(char*)PyErr_NoMemory());
@@ -1855,10 +1856,11 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
     }
   else
     {
+      size_t len;
       utf8name=getutf8string(pyname);
       if(!utf8name)
 	goto finally;
-      size_t len=strlen(PyBytes_AS_STRING(utf8name));
+      len=strlen(PyBytes_AS_STRING(utf8name));
       APSW_FAULT_INJECT(vfspyopen_fullpathnamemallocfailed,
 			self->filename=PyMem_Malloc(len+3),
 			self->filename=(char*)PyErr_NoMemory());
