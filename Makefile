@@ -41,6 +41,7 @@ all: header docs
 clean: 
 	make PYTHONPATH="`pwd`" VERSION=$(VERSION) -C doc clean
 	rm -rf dist build work/* megatestresults
+	mkdir dist
 	for i in '*.pyc' '*.pyo' '*~' '*.o' '*.so' '*.dll' '*.pyd' '*.gcov' '*.gcda' '*.gcno' '*.orig' '*.tmp' 'testdb*' 'testextension.sqlext' ; do \
 		find . -type f -name "$$i" -print0 | xargs -0t --no-run-if-empty rm -f ; done
 
