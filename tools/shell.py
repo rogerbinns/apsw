@@ -1717,19 +1717,17 @@ Enter SQL statements terminated with a ";"
             # Work out the file format
             formats=[
                 {"dialect": "excel"},
-                {"dialect": "excel-tab"},
-                {"quoting": csv.QUOTE_NONE,
-                 "delimiter": "|",
-                 "doublequote": False,
-                 "quotechar": "\x00"},
-                ]
-            if self.separator not in ("\t", ",", "|"):
+                {"dialect": "excel-tab"}]
+            seps=["|", ";", ":"]
+            if self.separator not in seps:
+                seps.append(self.separator)
+            for sep in seps:
                 formats.append(
                     {"quoting": csv.QUOTE_NONE,
-                     "delimiter": self.separator,
+                     "delimiter": sep,
                      "doublequote": False,
-                     "quotechar": "\x00"})
-                
+                     "quotechar": "\x00"}
+                    )
             possibles=[]
             errors=[]
             encodingissue=False
