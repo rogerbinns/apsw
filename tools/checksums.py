@@ -15,6 +15,7 @@ sqlitevers=(
     '3070800',
     '3070900',
     '3071000',
+    '3071100',
     )
 
 # Checks the checksums file
@@ -72,4 +73,4 @@ for v in sqlitevers:
         print AURL
         raise
     check(AURL, data)
-    
+

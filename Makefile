@@ -1,5 +1,5 @@
 
-SQLITEVERSION=3.7.10
+SQLITEVERSION=3.7.11
 APSWSUFFIX=-r1
 
 RELEASEDATE="29 January 2012"
@@ -38,7 +38,7 @@ GENDOCS = \
 
 all: header docs
 
-clean: 
+clean:
 	make PYTHONPATH="`pwd`" VERSION=$(VERSION) -C doc clean
 	rm -rf dist build work/* megatestresults
 	mkdir dist
@@ -50,7 +50,7 @@ doc: docs
 docs: build_ext $(GENDOCS) doc/example.rst doc/.static
 	env PYTHONPATH=. http_proxy= python tools/docmissing.py
 	env PYTHONPATH=. http_proxy= python tools/docupdate.py $(VERSION)
-	make PYTHONPATH="`pwd`" VERSION=$(VERSION) RELEASEDATE=$(RELEASEDATE) -C doc clean html htmlhelp 
+	make PYTHONPATH="`pwd`" VERSION=$(VERSION) RELEASEDATE=$(RELEASEDATE) -C doc clean html htmlhelp
 
 doc/example.rst: example-code.py tools/example2rst.py src/apswversion.h
 	rm -f dbfile
@@ -78,16 +78,16 @@ valgrind: /space/pydebug/bin/python
 	python setup.py fetch --version=$(SQLITEVERSION) --all && \
 	  env TESTFILEPREFIX=/tmp/ PATH=/space/pydebug/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=6 tools/valgrind.sh 2>&1 | tee l6 && \
 	  env TESTFILEPREFIX=/tmp/ PATH=/space/pydebug/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=7 tools/valgrind.sh 2>&1 | tee l7 && \
-	  env TESTFILEPREFIX=/tmp/ PATH=/space/pydebug/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=8 tools/valgrind.sh 2>&1 | tee l8 
+	  env TESTFILEPREFIX=/tmp/ PATH=/space/pydebug/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=8 tools/valgrind.sh 2>&1 | tee l8
 
 # Same as above but does just one run
 valgrind1: /space/pydebug/bin/python
 	python setup.py fetch --version=$(SQLITEVERSION) --all && \
-	  env TESTFILEPREFIX=/tmp/ PATH=/space/pydebug/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=1 tools/valgrind.sh 
+	  env TESTFILEPREFIX=/tmp/ PATH=/space/pydebug/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=1 tools/valgrind.sh
 
 
 linkcheck:
-	make RELEASEDATE=$(RELEASEDATE) VERSION=$(VERSION) -C doc linkcheck 
+	make RELEASEDATE=$(RELEASEDATE) VERSION=$(VERSION) -C doc linkcheck
 
 publish: docs
 	if [ -d ../apsw-publish ] ; then rm -f ../apsw-publish/* ../apsw-publish/_static/* ../apsw-publish/_sources/* ; \
@@ -201,7 +201,7 @@ dpkg: clean doc debian/copyright debian/changelog
 	python setup.py fetch --all --version=$(SQLITEVERSION) sdist --formats bztar --add-doc
 	rm -rf debian-build
 	mkdir -p debian-build
-	cp dist/$(VERDIR).tar.bz2 debian-build/python-apsw_$(VERSION).orig.tar.bz2 
+	cp dist/$(VERDIR).tar.bz2 debian-build/python-apsw_$(VERSION).orig.tar.bz2
 	set -ex ; \
 	for series in $(DEBSERIES) ; do \
 	   tools/mkdebianchangelog.py $(VERSION) $(DEBSUFFIX)~$${series}1 $(DEBMAINTAINER) $$series ; \
