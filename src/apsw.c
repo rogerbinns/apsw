@@ -58,8 +58,8 @@ API Reference
 #include "sqlite3.h"
 #endif
 
-#if SQLITE_VERSION_NUMBER < 3007010
-#error Your SQLite version is too old.  It must be at least 3.7.10
+#if SQLITE_VERSION_NUMBER < 3007011
+#error Your SQLite version is too old.  It must be at least 3.7.11
 #endif
 
 /* async extension is busted */

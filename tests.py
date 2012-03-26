@@ -5607,7 +5607,7 @@ class APSW(unittest.TestCase):
 
         # Lets give it some harmless sql arguments and do a sanity check
         s=shellclass(args=[TESTFILEPREFIX+"testdb", "create table x(x)", "insert into x values(1)"], **kwargs)
-        self.assertEqual(s.db.filename, TESTFILEPREFIX+"testdb")
+        self.assert_(s.db.filename.endswith("testdb"))
         # do a dump and check our table is there with its values
         s.command_dump([])
         self.assertTrue("x(x)" in get(fh[1]))
