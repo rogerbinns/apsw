@@ -2,6 +2,11 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.7.12-r1
+=========
+
+Re-enabled the asyncvfs.
+
 3.7.11-r1
 =========
 

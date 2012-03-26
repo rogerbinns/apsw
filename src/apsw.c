@@ -62,11 +62,6 @@ API Reference
 #error Your SQLite version is too old.  It must be at least 3.7.11
 #endif
 
-/* async extension is busted */
-#undef APSW_USE_SQLITE_ASYNCVFS_H
-#undef APSW_USE_SQLITE_ASYNCVFS_C
-
-
 /* system headers */
 #include <assert.h>
 #include <stdarg.h>
