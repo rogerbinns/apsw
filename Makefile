@@ -10,7 +10,7 @@ VERDIR=apsw-$(VERSION)
 # These control Debian packaging
 DEBSUFFIX=1ppa1
 DEBMAINTAINER="Roger Binns <rogerb@rogerbinns.com>"
-DEBSERIES=oneiric natty maverick lucid
+DEBSERIES=precise oneiric natty lucid
 PPAUPLOAD=ppa:ubuntu-rogerbinns/apsw
 
 # Some useful info
