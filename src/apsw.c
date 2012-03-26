@@ -10,7 +10,7 @@
   See the accompanying LICENSE file.
 */
 
-/** 
+/**
 
 .. module:: apsw
    :synopsis: Python access to SQLite database library
@@ -44,6 +44,7 @@ API Reference
 #define SQLITE_API static
 #define SQLITE_EXTERN static
 #include APSW_USE_SQLITE_AMALGAMATION
+#undef small
 
 /* Fight with SQLite over ndebug */
 #ifdef APSW_NO_NDEBUG
@@ -121,7 +122,7 @@ static PyObject *apswmodule;
 #ifdef PYPY_VERSION
 #include "pypycompat.c"
 #endif
- 
+
 /* Augment tracebacks */
 #include "traceback.c"
 
@@ -208,7 +209,7 @@ getapswversion(void)
   then SQLite can `share the cache between them
   <http://www.sqlite.org/sharedcache.html>`_.  It is :ref:`not
   recommended <sharedcache>` that you use this.
-  
+
   -* sqlite3_enable_shared_cache
 */
 static PyObject *
@@ -264,7 +265,7 @@ static PyObject *
 sqliteshutdown(void)
 {
   int res;
-  
+
   APSW_FAULT_INJECT(ShutdownFail, res=sqlite3_shutdown(), res=SQLITE_NOMEM);
   SET_EXC(res, NULL);
 
@@ -293,7 +294,7 @@ sqliteshutdown(void)
 #ifdef EXPERIMENTAL
 static PyObject *logger_cb=NULL;
 
-static void 
+static void
 apsw_logger(void *arg, int errcode, const char *message)
 {
   PyGILState_STATE gilstate;
@@ -312,7 +313,7 @@ apsw_logger(void *arg, int errcode, const char *message)
   if(!res)
     {
       AddTraceBackHere(__FILE__, __LINE__, "Call_Logger",
-		       "{s: O, s: i, s: s}", 
+		       "{s: O, s: i, s: s}",
 		       "logger", arg,
 		       "errcode", errcode,
 		       "message", message);
@@ -351,7 +352,7 @@ config(APSW_ARGUNUSED PyObject *self, PyObject *args)
       assert(opt==optdup);
       res=sqlite3_config( (int)opt );
       break;
-      
+
     case SQLITE_CONFIG_MEMSTATUS:
       {
         int boolval;
@@ -361,7 +362,7 @@ config(APSW_ARGUNUSED PyObject *self, PyObject *args)
         res=sqlite3_config( (int)opt, boolval);
         break;
       }
-      
+
     case SQLITE_CONFIG_LOG:
       {
 	PyObject *logger;
@@ -513,7 +514,7 @@ releasememory(APSW_ARGUNUSED PyObject *self, PyObject *args)
   :param op: A `status parameter <http://sqlite.org/c3ref/c_status_malloc_size.html>`_
   :param reset: If *True* then the highwater is set to the current value
   :returns: A tuple of current value and highwater value
-  
+
   .. seealso::
 
     * :ref:`Status example <example-status>`
@@ -554,7 +555,7 @@ vfsnames(APSW_ARGUNUSED PyObject *self)
 
   while(vfs)
     {
-      APSW_FAULT_INJECT(vfsnamesfails, 
+      APSW_FAULT_INJECT(vfsnamesfails,
                         str=convertutf8string(vfs->zName),
                         str=PyErr_NoMemory());
       if(!str) goto error;
@@ -864,7 +865,7 @@ apsw_async_run(APSW_ARGUNUSED PyObject *self)
 
 #ifdef APSW_FORK_CHECKER
 
-/* 
+/*
    We want to verify that SQLite objects are not used across forks.
    One way is to modify all calls to SQLite to do the checking but
    this is a pain as well as a performance hit.  Instead we use the
@@ -873,7 +874,7 @@ apsw_async_run(APSW_ARGUNUSED PyObject *self)
 
    Our diverted functions check the process id on calls and set the
    process id on allocating a mutex.  We have to avoid the checks for
-   the static mutexes.  
+   the static mutexes.
 
    This code also doesn't bother with some things like checking malloc
    results.  It is intended to only be used to verify correctness with
@@ -882,7 +883,7 @@ apsw_async_run(APSW_ARGUNUSED PyObject *self)
    good thing - you will really be sure there is a problem!
  */
 
-typedef struct 
+typedef struct
 {
   pid_t pid;
   sqlite3_mutex *underlying_mutex;
@@ -927,7 +928,7 @@ apsw_xMutexAlloc(int which)
       {
 	apsw_mutex *am;
 	sqlite3_mutex *m=apsw_orig_mutex_methods.xMutexAlloc(which);
-	
+
 	if(!m) return m;
 
 	am=malloc(sizeof(apsw_mutex));
@@ -1095,10 +1096,10 @@ apsw_fork_checker(APSW_ARGUNUSED PyObject *self)
   /* then do a shutdown as we can't get or change mutex while sqlite is running */
   rc=sqlite3_shutdown();
   if(rc) goto fail;
-  
+
   rc=sqlite3_config(SQLITE_CONFIG_GETMUTEX, &apsw_orig_mutex_methods);
   if(rc) goto fail;
-  
+
   rc=sqlite3_config(SQLITE_CONFIG_MUTEX, &apsw_mutex_methods);
   if(rc) goto fail;
 
@@ -1108,7 +1109,7 @@ apsw_fork_checker(APSW_ARGUNUSED PyObject *self)
 
  ok:
   Py_RETURN_NONE;
-  
+
  fail:
   assert(rc!=SQLITE_OK);
   SET_EXC(rc, NULL);
@@ -1224,9 +1225,9 @@ formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
 	      if(*res==0)
 		{
 		  *res++='\'';
-		  *res++='|'; *res++='|'; 
-		  *res++='X'; *res++='\''; *res++='0'; *res++='0'; *res++='\''; 
-		  *res++='|'; *res++='|'; 
+		  *res++='|'; *res++='|';
+		  *res++='X'; *res++='\''; *res++='0'; *res++='0'; *res++='\'';
+		  *res++='|'; *res++='|';
 		  *res='\'';
 		}
 	      else
@@ -1249,7 +1250,7 @@ formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
       int asrb;
       PyObject *unires;
       Py_UNICODE *res;
-#define _HEXDIGITS 
+#define _HEXDIGITS
 
       asrb=PyObject_AsReadBuffer(value, (const void**)&buffer, &buflen);
       APSW_FAULT_INJECT(FormatSQLValueAsReadBufferFails,
@@ -1261,7 +1262,7 @@ formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
       APSW_FAULT_INJECT(FormatSQLValuePyUnicodeFromUnicodeFails,
 			unires=PyUnicode_FromUnicode(NULL, buflen*2+3),
 			unires=PyErr_NoMemory());
-      if(!unires) 
+      if(!unires)
 	return NULL;
       res=PyUnicode_AS_UNICODE(unires);
       *res++='X';
@@ -1395,7 +1396,7 @@ static void add_shell(PyObject *module);
 #if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef apswmoduledef={
   PyModuleDef_HEAD_INIT,
-  "apsw", 
+  "apsw",
   NULL,
   -1,
   module_methods,
@@ -1409,7 +1410,7 @@ static struct PyModuleDef apswmoduledef={
 
 PyMODINIT_FUNC
 #if PY_MAJOR_VERSION < 3
-initapsw(void) 
+initapsw(void)
 #else
 PyInit_apsw(void)
 #endif
@@ -1457,16 +1458,16 @@ PyInit_apsw(void)
 #endif
 
     if (m == NULL)  goto fail;
-    
+
     Py_INCREF(m);
 
     if(init_exceptions(m)) goto fail;
 
     Py_INCREF(&ConnectionType);
     PyModule_AddObject(m, "Connection", (PyObject *)&ConnectionType);
-    
+
     /* we don't add cursor, blob or backup to the module since users shouldn't be able to instantiate them directly */
-    
+
     Py_INCREF(&ZeroBlobBindType);
     PyModule_AddObject(m, "zeroblob", (PyObject *)&ZeroBlobBindType);
 
@@ -1476,8 +1477,8 @@ PyInit_apsw(void)
     PyModule_AddObject(m, "VFSFile", (PyObject*)&APSWVFSFileType);
     Py_INCREF(&APSWURIFilenameType);
     PyModule_AddObject(m, "URIFilename", (PyObject*)&APSWURIFilenameType);
-    
-    
+
+
     /** .. attribute:: connection_hooks
 
        The purpose of the hooks is to allow the easy registration of
@@ -1508,7 +1509,7 @@ PyInit_apsw(void)
 
     */
     PyModule_AddIntConstant(m, "SQLITE_VERSION_NUMBER", SQLITE_VERSION_NUMBER);
-    
+
 
     /** .. attribute:: using_amalgamation
 
@@ -1517,7 +1518,7 @@ PyInit_apsw(void)
     use (statically compiled into APSW).  Using the amalgamation means
     that SQLite shared libraries are not used and will not affect your
     code.
-    
+
     */
 
 #ifdef APSW_USE_SQLITE_AMALGAMATION
@@ -1528,7 +1529,7 @@ PyInit_apsw(void)
     PyModule_AddObject(m, "using_amalgamation", Py_False);
 #endif
 
-    /** 
+    /**
 
 .. _sqliteconstants:
 
@@ -1571,7 +1572,7 @@ modules etc. For example::
       ADDINT(SQLITE_IGNORE),
       ADDINT(SQLITE_OK),
       END,
-      
+
       DICT("mapping_authorizer_function"),
       ADDINT(SQLITE_CREATE_INDEX),
       ADDINT(SQLITE_CREATE_TABLE),
@@ -1648,6 +1649,7 @@ modules etc. For example::
       ADDINT(SQLITE_IOERR_SHMMAP),
       ADDINT(SQLITE_READONLY_CANTLOCK),
       ADDINT(SQLITE_READONLY_RECOVERY),
+      ADDINT(SQLITE_ABORT_ROLLBACK),
       END,
 
       /* error codes */
@@ -1829,6 +1831,7 @@ modules etc. For example::
       ADDINT(SQLITE_FCNTL_OVERWRITE),
       ADDINT(SQLITE_FCNTL_POWERSAFE_OVERWRITE),
       ADDINT(SQLITE_FCNTL_VFSNAME),
+      ADDINT(SQLITE_FCNTL_PRAGMA),
       END
 
 #ifdef APSW_USE_SQLITE_ASYNCVFS_H
@@ -1849,8 +1852,8 @@ modules etc. For example::
       END
 #endif
       };
- 
- 
+
+
  for(i=0;i<sizeof(integers)/sizeof(integers[0]); i++)
    {
      const char *name=integers[i].name;
@@ -1906,7 +1909,7 @@ modules etc. For example::
 
  fail:
     Py_XDECREF(m);
-    return 
+    return
 #if PY_MAJOR_VERSION >= 3
           NULL
 #endif
@@ -1956,9 +1959,9 @@ APSW_Should_Fault(const char *name)
     PyObject_SetAttrString(apswmodule, "faultdict", PyDict_New());
 
   value=MAKESTR(name);
-  
+
   faultdict=PyObject_GetAttrString(apswmodule, "faultdict");
-  
+
   truthval=PyDict_GetItem(faultdict, value);
   if(!truthval)
     goto finally;

@@ -2,6 +2,18 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.7.11-r1
+=========
+
+Added SQLITE_ABORT_ROLLBACK and SQLITE_FCNTL_PRAGMA constants.
+
+Added :meth:`Connection.readonly`.
+
+Changed :attr:`Connection.filename` which used to return the string
+used to open the database and now returns the absolute pathname.
+
+Added :meth:`Connection.db_filename`.
+
 3.7.10-r1
 =========
 
@@ -720,7 +732,7 @@ for numbers fitting in signed 32 bit. This only affects Python 2 as
 Python 3 uses long exclusively. Thanks to Joe Pham for reporting this
 as `issue 24 <http://code.google.com/p/apsw/issues/detail?id=24>`_.
 
-Added :meth:`Connection.getsqlite3pointer` method to help with 
+Added :meth:`Connection.getsqlite3pointer` method to help with
 `issue 26 <http://code.google.com/p/apsw/issues/detail?id=26>`_.
 
 3.5.9-r2
@@ -833,7 +845,7 @@ Thanks to Ed Pasma for highlighting these issues:
   as other errors. The special handling previously let you restart on
   receiving busy, but also hung onto statements which could result in
   other statements getting busy errors.
-  
+
 3.3.10-r1
 =========
 
@@ -852,7 +864,7 @@ SQLite added `sqlite3_prepare_v2
 <http://sqlite.org/c3ref/prepare.html>`_ API. The net effect of this
 API update is that you will not get SQLITE_SCHEMA any more. SQLite
 will handle it internally.
-  
+
 
 3.3.8-r1
 ========
@@ -878,7 +890,7 @@ exception and the traceback to sys.stderr.
 
   .. Note:: The line number reported in the traceback is often off by
             1. This is because the destructors run "between" lines of
-            code and so the following line is reported as the current 
+            code and so the following line is reported as the current
             location.
 
 Authorizer codes :const:`SQLITE_CREATE_VTABLE`,

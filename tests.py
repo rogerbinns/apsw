@@ -271,7 +271,9 @@ class APSW(unittest.TestCase):
         '__exit__': 3,
         'backup': 3,
         'wal_autocheckpoint': 1,
-        'setwalhook': 1
+        'setwalhook': 1,
+        'readonly': 1,
+        'db_filename': 1
         }
 
     cursor_nargs={
@@ -808,7 +810,7 @@ class APSW(unittest.TestCase):
         self.db.setwalhook(badreturn)
         self.assertRaises(TypeError, self.db.cursor().execute, "create table two(x)")
         self.assertTableExists("two")
-       
+
         expectdbname=""
         def walhook(conn, dbname, pages):
             self.assert_(conn is self.db)
@@ -1064,7 +1066,7 @@ class APSW(unittest.TestCase):
         for row in c.execute("select 3"): pass
         self.assertEqual( traced, [False, False])
         self.assertEqual( self.db.getrowtrace(), contrace)
-        
+
 
     def testScalarFunctions(self):
         "Verify scalar functions"
@@ -1164,7 +1166,7 @@ class APSW(unittest.TestCase):
             self.db.createaggregatefunction("twelve", longest.factory, 923) # max args is 127
         except (apsw.SQLError, apsw.MisuseError):
             # used to be SQLerror then changed http://www.sqlite.org/cvstrac/tktview?tn=3875
-            pass 
+            pass
         self.assertRaises(TypeError, self.db.createaggregatefunction, u(r"twelve\N{BLACK STAR}"), 12) # must be ascii
         self.db.createaggregatefunction("twelve", None)
         self.db.createaggregatefunction("longest", longest.factory)
@@ -1874,7 +1876,7 @@ class APSW(unittest.TestCase):
             'broccoli pie': 'broccoli cheese onions flour',
             'pumpkin pie': 'pumpkin sugar flour butter'
             }
-            
+
         c.execute("create virtual table test using fts3(name, ingredients)")
         c.executemany("insert into test values(?,?)", data.items())
 
@@ -1888,7 +1890,7 @@ class APSW(unittest.TestCase):
         check('onions cheese', ['broccoli pie'])
         check('eggs OR oil', ['cake', 'mayo'])
         check('"pumpkin onions"', ['pumpkin stew'])
-        
+
     def testRTreeExtension(self):
         "Check RTree extension if present"
         if not self.checkOptionalExtension("rtree", "create virtual table foo using rtree(one, two, three, four, five)"):
@@ -3045,7 +3047,7 @@ class APSW(unittest.TestCase):
         cursor.execute("end")
 
         self.db.createscalarfunction("timesten", lambda x: x*10)
-        
+
         def dostuff(n):
             # spend n seconds doing stuff to the database
             c=self.db.cursor()
@@ -3072,7 +3074,7 @@ class APSW(unittest.TestCase):
                     try:
                         self.db.cursor().execute("bogus syntax error")
                     except apsw.SQLError:
-                        assert("bogus" in str(sys.exc_info()[1]))                
+                        assert("bogus" in str(sys.exc_info()[1]))
                 else:
                     sql="select timesten(x) from foo where x=? order by x"
                     self.db.cursor().execute(sql, (i,))
@@ -3173,7 +3175,7 @@ class APSW(unittest.TestCase):
         self.assert_("savepoint" in traces)
         self.assert_("release" in traces)
         self.assert_("rollback" in traces)
- 
+
     def testTicket2158(self):
         "Check we are not affected by SQLite ticket #2158"
         # http://www.sqlite.org/cvstrac/tktview?tn=2158
@@ -3320,7 +3322,7 @@ class APSW(unittest.TestCase):
            # is already held by enclosing sqlite3_step and the
            # methods will only be called from that same thread so it
            # isn't a problem.
-                        'skipcalls': re.compile("^sqlite3_(blob_bytes|column_count|bind_parameter_count|data_count|vfs_.+|changes|total_changes|get_autocommit|last_insert_rowid|complete|interrupt|limit|free|threadsafe|value_.+|libversion|enable_shared_cache|initialize|shutdown|config|memory_.+|soft_heap_limit(64)?|randomness|release_memory|status|result_.+|user_data|mprintf|aggregate_context|declare_vtab|backup_remaining|backup_pagecount|sourceid|uri_.+)$"),
+                        'skipcalls': re.compile("^sqlite3_(blob_bytes|column_count|bind_parameter_count|data_count|vfs_.+|changes|total_changes|get_autocommit|last_insert_rowid|complete|interrupt|limit|free|threadsafe|value_.+|libversion|enable_shared_cache|initialize|shutdown|config|memory_.+|soft_heap_limit(64)?|randomness|db_readonly|db_filename|release_memory|status|result_.+|user_data|mprintf|aggregate_context|declare_vtab|backup_remaining|backup_pagecount|sourceid|uri_.+)$"),
                         # also ignore this file
                         'skipfiles': re.compile(r"[/\\]apsw.c$"),
                         # error message
@@ -3367,7 +3369,7 @@ class APSW(unittest.TestCase):
 
             "Connection":
                 {
-                  "skip": ("internal_cleanup", "dealloc", "init", "close", "interrupt", "close_internal", "remove_dependent"),
+                  "skip": ("internal_cleanup", "dealloc", "init", "close", "interrupt", "close_internal", "remove_dependent", "readonly", "getmainfilename", "db_filename"),
                   "req":
                       {
                          "use": "CHECK_USE",
@@ -3710,7 +3712,7 @@ class APSW(unittest.TestCase):
             buffers.append(array.array("c", "\0\0\0\0"))
         else:
             buffers.append(array.array("b", b(r"\0\0\0\0")))
-           
+
         if sys.version_info>=(2,6):
             if sys.version_info<(3,):
                 buffers.append(bytearray("\0\0\0\0"))
@@ -3724,7 +3726,7 @@ class APSW(unittest.TestCase):
                 else:
                     return chr(c)
             return c
-            
+
         for buf in buffers:
             self.assertRaises(TypeError, blobro.readinto)
             self.assertRaises(TypeError, blobro.readinto, buf, buf)
@@ -3750,7 +3752,7 @@ class APSW(unittest.TestCase):
             # too much requested
             self.assertRaises(ValueError, blobro.readinto, buf, 1)
             check_unchanged()
-            # bounds errors 
+            # bounds errors
             self.assertRaises(ValueError, blobro.readinto, buf, 1, -1)
             self.assertRaises(ValueError, blobro.readinto, buf, 1, 7)
             self.assertRaises(ValueError, blobro.readinto, buf, -1, 2)
@@ -3802,7 +3804,7 @@ class APSW(unittest.TestCase):
         # invalid reopen
         self.assertRaises(apsw.SQLError, blobro.reopen, l("0x1ffffffff"))
         blobro.close()
-        
+
 
     def testBlobReadError(self):
         "Ensure blob read errors are handled well"
@@ -3826,14 +3828,14 @@ class APSW(unittest.TestCase):
         class TVFS(apsw.VFS):
             def __init__(self):
                 apsw.VFS.__init__(self, "uritest", "")
-                
+
             def xOpen(self, name, flags):
                 assert isinstance(name, apsw.URIFilename)
                 # The various errors
                 assertRaises(TypeError, name.uri_parameter)
                 assertRaises(TypeError, name.uri_parameter, 2)
                 assertRaises(TypeError, name.uri_int)
-                assertRaises(TypeError, name.uri_int, 7)                                
+                assertRaises(TypeError, name.uri_int, 7)
                 assertRaises(TypeError, name.uri_int, 7, 7)
                 assertRaises(TypeError, name.uri_int, 7, 7, 7)
                 if sys.version_info>(2,4): # 2.3 does systemerror instead of typeerror
@@ -4467,7 +4469,7 @@ class APSW(unittest.TestCase):
 
             def xDeviceCharacteristics99(self):
                 return super(TestFile, self).xDeviceCharacteristics()
-                
+
             def xFileSize1(self, bad, number, of, args):
                 1/0
 
@@ -4562,7 +4564,7 @@ class APSW(unittest.TestCase):
         TestVFS.xAccess=TestVFS.xAccess99
         if iswindows:
             self.assertRaises(apsw.IOError, vfs.xAccess, u("<bad<filename:"), apsw.SQLITE_ACCESS_READWRITE)
-        else:    
+        else:
             self.assertEqual(False, vfs.xAccess(u("<bad<filename:"), apsw.SQLITE_ACCESS_READWRITE))
             self.assertEqual(True, vfs.xAccess(u("."), apsw.SQLITE_ACCESS_EXISTS))
         # unix vfs doesn't ever return error so we have to indirect through one of ours
@@ -4779,7 +4781,7 @@ class APSW(unittest.TestCase):
                 def __init__(self):
                     apsw.VFS.__init__(self, "apswtest2", "apswtest")
             vfs2=VFS2()
-            
+
             ## xNextSystemCall
             self.assertRaises(TypeError, vfs.xNextSystemCall, 0)
             items=[None]
@@ -4823,7 +4825,7 @@ class APSW(unittest.TestCase):
             self.assertRaisesUnraisable(TypeError, vfs2.xGetSystemCall, "open")
             TestVFS.xGetSystemCall=TestVFS.xGetSystemCall99
             self.assert_(vfs2.xGetSystemCall("open")>0)
-            
+
             ## xSetSystemCall
             fallback=apsw.VFS("fallback",  base="") # undo any damage we do
             try:
@@ -4927,7 +4929,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
         TestFile.xUnlock=TestFile.xUnlock99
         testdb()
-        
+
         ## xLock
         self.assertRaises(TypeError, t.xLock, "three")
         self.assertRaises(OverflowError, t.xLock, l("0xffffffffeeeeeeee0"))
@@ -4954,7 +4956,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
         TestFile.xTruncate=TestFile.xTruncate99
         testdb()
-        
+
         ## xSync
         if sys.version_info>=(2,4): # work around py2.3 bug
             self.assertRaises(TypeError, t.xSync, "three")
@@ -5050,7 +5052,7 @@ class APSW(unittest.TestCase):
         vfs2=VFSx()
         testdb(vfsname="filecontrol", closedb=False).filecontrol("main", 1027, 1027)
         del vfs2
-            
+
 
         ## xClose
         t.xClose()
@@ -5222,7 +5224,7 @@ class APSW(unittest.TestCase):
                 b.read(1)
           """, blob=blob)
         # blob gives ValueError if you do operations on closed blob
-        self.assertRaises(ValueError, blob.read) 
+        self.assertRaises(ValueError, blob.read)
 
         self.db.cursor().execute("insert into blobby values(x'aabbccddee')")
         rowid=self.db.last_insert_rowid()
@@ -5315,7 +5317,7 @@ class APSW(unittest.TestCase):
         # standard usage
         db2=apsw.Connection(":memory:")
         self.fillWithRandomStuff(db2)
-        
+
         b=self.db.backup("main", db2, "main")
         self.assertRaises(TypeError, b.step, '3')
         try:
@@ -5336,7 +5338,7 @@ class APSW(unittest.TestCase):
                 b.step(1)
         finally:
             b.finish()
-        
+
         self.assertDbIdentical(self.db, db2)
         del b
         del db2
@@ -5371,7 +5373,7 @@ class APSW(unittest.TestCase):
             # if step gets busy then so does finish, but step has to be called at least once
             self.assertRaises(apsw.BusyError, b.step)
             return b
-        
+
         b=lockerr()
         b.close(True)
         del b
@@ -5389,7 +5391,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.BusyError, b.close, False)
         b.close()  # should also be ok
         del b
-        
+
         def f():
             b=lockerr()
             del b
@@ -5401,7 +5403,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, b.__exit__, 3)
         self.assertRaises(apsw.BusyError, b.__exit__, None, None, None)
         b.__exit__(None, None, None)
-        
+
 
     def testAsyncVFS(self):
         "Tests the asynchronous VFS"
@@ -5535,6 +5537,25 @@ class APSW(unittest.TestCase):
             apsw.shutdown()
             apsw.config(apsw.SQLITE_CONFIG_LOG, None)
 
+
+    def testReadonly(self):
+        "Check Connection.readonly()"
+        self.assertEqual(self.db.readonly("main"), False)
+        c=apsw.Connection(TESTFILEPREFIX+"testdb", flags=apsw.SQLITE_OPEN_READONLY)
+        self.assertEqual(c.readonly("main"), True)
+        self.assertRaises(apsw.SQLError, self.db.readonly, "sdfsd")
+        class foo:
+            def __str__(self): 1/0
+        self.assertRaises(TypeError, self.db.readonly, foo())
+
+    def testFilename(self):
+        "Check connections and filenames"
+        self.assert_(self.db.filename.endswith("testdb"))
+        self.assert_(os.sep in self.db.filename)
+        self.assertEqual(self.db.filename, self.db.db_filename("main"))
+        self.db.cursor().execute("attach '%s' as foo" % (TESTFILEPREFIX+"testdb2",))
+        self.assertEqual(self.db.filename+"2", self.db.db_filename("foo"))
+
     def testShell(self, shellclass=None):
         "Check Shell functionality"
 
@@ -5548,7 +5569,7 @@ class APSW(unittest.TestCase):
         # free to waste your own time trying to fix this.
         if iswindows and not py3:
             return
-        
+
         if shellclass is None:
             shellclass=apsw.Shell
 
@@ -5579,7 +5600,7 @@ class APSW(unittest.TestCase):
         def get(x):
             x.seek(0)
             return x.read()
-            
+
 
         # Make one
         shellclass(stdin=fh[0], stdout=fh[1], stderr=fh[2])
@@ -5611,7 +5632,7 @@ class APSW(unittest.TestCase):
         except shellclass.Error:
             isempty(fh[1])
             self.assertTrue("specify a filename" in get(fh[2]))
-            
+
         reset()
         s=shellclass(**kwargs)
         try:
@@ -5863,7 +5884,7 @@ class APSW(unittest.TestCase):
         self.assertTrue("3|4\n" in get(fh[1]))
         self.assertTrue('"one"|\t\n' in get(fh[1]))
         # testnasty() - csv module is pretty much broken
-        
+
         ###
         ### Output formats - html
         ###
@@ -5885,7 +5906,7 @@ class APSW(unittest.TestCase):
         self.assertTrue("<tr>" in get(fh[1]).lower())
         self.assertTrue("</tr>" in get(fh[1]).lower())
         testnasty()
-        
+
         ###
         ### Output formats - insert
         ###
@@ -5902,7 +5923,7 @@ class APSW(unittest.TestCase):
         s.cmdloop()
         isempty(fh[2])
         self.assertTrue(all in get(fh[1]).lower())
-        # header, separator and nullvalue should make no difference 
+        # header, separator and nullvalue should make no difference
         save=get(fh[1])
         reset()
         cmd(".header ON\n.separator %\n.nullvalue +\nselect "+all+";\n")
@@ -5965,7 +5986,7 @@ class APSW(unittest.TestCase):
                                  "blob": "AxE="
                                  })
         testnasty()
-        
+
         ###
         ### Output formats - line
         ###
@@ -5994,7 +6015,7 @@ class APSW(unittest.TestCase):
         isempty(fh[2])
         self.assertEqual(get(fh[1]), " %s = 3\n%s1 = 3\n\n" % (ln,ln))
         testnasty()
-        
+
         ###
         ### Output formats - list
         ###
@@ -6010,7 +6031,7 @@ class APSW(unittest.TestCase):
         isempty(fh[2])
         self.assertTrue(get(fh[1]).startswith("a&b&c&d&e\n"))
         testnasty()
-        
+
         ###
         ### Output formats - python
         ###
@@ -6029,7 +6050,7 @@ class APSW(unittest.TestCase):
         self.assertEqual(len(v), 2) # headers and row
         self.assertEqual(v, ( ("a", "b", "c", "d", "e"), (3, None, 0.0, 'a', b(r"\xaa\x44\xbb")), ))
         testnasty()
-        
+
         ###
         ### Output formats - TCL
         ###
@@ -6207,7 +6228,7 @@ class APSW(unittest.TestCase):
         contents.sort()
         newcontents.sort()
         self.assertEqual(contents, newcontents)
-        
+
         ###
         ### Commands - bail
         ###
@@ -6754,21 +6775,21 @@ insert into xxblah values(3);
 
         # Check date detection
         for expect, fmt, sequences in (
-            ("1999-10-13", "%d-%d:%d", 
+            ("1999-10-13", "%d-%d:%d",
              (
-                    (1999, 10, 13), 
-                    (13, 10, 1999), 
+                    (1999, 10, 13),
+                    (13, 10, 1999),
                     (10, 13, 1999),
              )
             ),
-            ("1999-10-13T12:14:17", "%d/%d/%d/%d/%d/%d", 
+            ("1999-10-13T12:14:17", "%d/%d/%d/%d/%d/%d",
              (
                     (1999, 10, 13, 12, 14, 17),
                     (13, 10, 1999, 12, 14, 17),
                     (10, 13, 1999, 12, 14, 17),
              )
             ),
-            ("1999-10-13T12:14:00", "%dX%dX%dX%dX%d", 
+            ("1999-10-13T12:14:00", "%dX%dX%dX%dX%d",
              (
                     (1999, 10, 13, 12, 14),
                     (13, 10, 1999, 12, 14),
@@ -6944,7 +6965,7 @@ shell.write(shell.stdout, "hello world\\n")
             self.assertTrue(i in get(fh[1]))
 
         # separator done earlier
-        
+
         ###
         ### Command - show
         ###
@@ -6973,8 +6994,8 @@ shell.write(shell.stdout, "hello world\\n")
             s.cmdloop()
             isempty(fh[1])
             # check size has not changed much
-            self.assertTrue(abs(len(get(fh[2]))-len(baseline))<14) 
-            
+            self.assertTrue(abs(len(get(fh[2]))-len(baseline))<14)
+
         # output
         reset()
         cmd(".output %stest-shell-1\n.show" % (TESTFILEPREFIX,))
@@ -7090,7 +7111,7 @@ shell.write(shell.stdout, "hello world\\n")
             for o in outputs:
                 cnt+=o in get(fh[1])
             self.assertTrue(cnt)
-            
+
     # This one uses the coverage module
     def _testShellWithCoverage(self):
         "Check Shell functionality (with coverage)"
@@ -7100,7 +7121,7 @@ shell.write(shell.stdout, "hello world\\n")
             import coverage
         except ImportError:
             coverage=None
-            
+
         import imp
         # I had problems with the compiled bytecode being around
         for suff in "c","o":
@@ -7109,7 +7130,7 @@ shell.write(shell.stdout, "hello world\\n")
             except:
                 pass
 
-        if coverage: coverage.start()                         
+        if coverage: coverage.start()
         covshell=imp.load_source("shell_coverage", "tools/shell.py")
         try:
             self._originaltestShell(shellclass=covshell.Shell)
@@ -7214,8 +7235,8 @@ shell.write(shell.stdout, "hello world\\n")
                   # CPython, JSON, Erlang and Javascript all get the
                   # exact same bit representation for a number.  That
                   # happens to be the case for these values.
-                  1.1,  
-                  10.2, 
+                  1.1,
+                  10.2,
                   1.3,
                   1.45897589347E97,
                   True,  # derived from integer
@@ -7254,7 +7275,7 @@ shell.write(shell.stdout, "hello world\\n")
                 ]
             # and make it a bit more interesting by including itself
             vals.append(vals[:])
-            
+
             for v in vals:
                 c.execute("delete from test")
                 pv=pickle.dumps(v, -1)
@@ -7352,7 +7373,7 @@ shell.write(shell.stdout, "hello world\\n")
             now=dict(cdb["1"])
             del now["_rev"]
             self.assertEqual({"_id": "1", "val": 100}, now)
-            
+
             ### table rename
             self.assertRaises(NotImplementedError, c.execute, "ALTER TABLE test RENAME TO foo")
             # check test was not renamed
@@ -7369,7 +7390,7 @@ shell.write(shell.stdout, "hello world\\n")
                 self.assertRaises(ValueError, c.execute, "select couchdb_config('write-batch', ?)", (n,))
             for n in -1, 2, 3:
                 self.assertRaises(ValueError, c.execute, "select couchdb_config('deep-update', ?)", (n,))
-            
+
             ### does setting batch size work?
             rbatch,wbatch=c.execute("select couchdb_config('read-batch'), couchdb_config('write-batch')").fetchall()[0]
             all=[(i,) for i in range(129)]
@@ -7389,7 +7410,7 @@ shell.write(shell.stdout, "hello world\\n")
             for dbname in server:
                 if dbname.startswith(apswtest):
                     server.delete(dbname)
-        
+
 
     def _testCouchDBWithCoverage(self):
         import coverage
@@ -7400,7 +7421,7 @@ shell.write(shell.stdout, "hello world\\n")
             coverage.stop()
             coverage.annotate(morfs=["tools/apswcouchdb.py"])
             os.rename("tools/apswcouchdb.py,cover", "apswcouchdb.py.gcov")
-            
+
     # Note that faults fire only once, so there is no need to reset
     # them.  The testing for objects bigger than 2GB is done in
     # testLargeObjects
@@ -7714,7 +7735,7 @@ shell.write(shell.stdout, "hello world\\n")
 
             def FindFunction(self, *args):
                 return lambda *args: 1
-            
+
         class Cursor:
             def __init__(self, table):
                 self.table=table
@@ -8059,7 +8080,7 @@ shell.write(shell.stdout, "hello world\\n")
             1/0
         except apsw.NoMemError:
             pass
-        
+
         ## OverloadFails
         apsw.faultdict["OverloadFails"]=True
         try:
@@ -8309,7 +8330,7 @@ def testdb(filename=TESTFILEPREFIX+"testdb2", vfsname="apswtest", closedb=True, 
     else:
         return db
 
-        
+
 if not iswindows:
     # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used
     LOADEXTENSIONFILENAME="./testextension.sqlext"
@@ -8387,11 +8408,11 @@ def setup(write=write):
             APSW.testCouchDB=APSW._testCouchDBWithCoverage
 
     del memdb
-    
+
 
 if __name__=='__main__':
     setup()
-    
+
     if "APSW_NO_MEMLEAK" in os.environ:
         # Delete tests that have to deliberately leak memory
         # del APSW.testWriteUnraiseable  (used to but no more)
@@ -8463,7 +8484,7 @@ if __name__=='__main__':
 
     if py3: # doesn't handle modules being deleted vert well
         exit(exitcode)
-        
+
     # In py3 gc and sys can end up being None even though we take care not to delete them
     for k in list(sys.modules.keys()):
         if k not in ('gc', 'sys', '__main__'):
