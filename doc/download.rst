@@ -18,45 +18,45 @@ way to build or all the :ref:`options available <building>`.
 
 .. downloads-begin
 
-* `apsw-3.7.11-r1.zip
-  <http://apsw.googlecode.com/files/apsw-3.7.11-r1.zip>`_
+* `apsw-3.7.12-r1.zip
+  <http://apsw.googlecode.com/files/apsw-3.7.12-r1.zip>`_
   (Source, includes this HTML Help)
 
-* `apsw-3.7.11-r1.chm
-  <http://apsw.googlecode.com/files/apsw-3.7.11-r1.chm>`_
+* `apsw-3.7.12-r1.chm
+  <http://apsw.googlecode.com/files/apsw-3.7.12-r1.chm>`_
   (Compiled HTML Help) `Seeing blank content? <http://weblog.helpware.net/?p=36>`_ & `MSKB 902225 <http://support.microsoft.com/kb/902225/>`_
 
 * Windows Python 2.3 `32bit
-  <http://apsw.googlecode.com/files/apsw-3.7.11-r1.win32-py2.3.exe>`__
+  <http://apsw.googlecode.com/files/apsw-3.7.12-r1.win32-py2.3.exe>`__
 
 * Windows Python 2.4 `32bit
-  <http://apsw.googlecode.com/files/apsw-3.7.11-r1.win32-py2.4.exe>`__
+  <http://apsw.googlecode.com/files/apsw-3.7.12-r1.win32-py2.4.exe>`__
 
 * Windows Python 2.5 `32bit
-  <http://apsw.googlecode.com/files/apsw-3.7.11-r1.win32-py2.5.exe>`__
+  <http://apsw.googlecode.com/files/apsw-3.7.12-r1.win32-py2.5.exe>`__
 
 * Windows Python 2.6 `32bit
-  <http://apsw.googlecode.com/files/apsw-3.7.11-r1.win32-py2.6.exe>`__
+  <http://apsw.googlecode.com/files/apsw-3.7.12-r1.win32-py2.6.exe>`__
   `64bit 
-  <http://apsw.googlecode.com/files/apsw-3.7.11-r1.win-amd64-py2.6.exe>`__
+  <http://apsw.googlecode.com/files/apsw-3.7.12-r1.win-amd64-py2.6.exe>`__
 
 * Windows Python 2.7 `32bit
-  <http://apsw.googlecode.com/files/apsw-3.7.11-r1.win32-py2.7.exe>`__
+  <http://apsw.googlecode.com/files/apsw-3.7.12-r1.win32-py2.7.exe>`__
   `64bit 
-  <http://apsw.googlecode.com/files/apsw-3.7.11-r1.win-amd64-py2.7.exe>`__
+  <http://apsw.googlecode.com/files/apsw-3.7.12-r1.win-amd64-py2.7.exe>`__
 
 * Windows Python 3.1 `32bit
-  <http://apsw.googlecode.com/files/apsw-3.7.11-r1.win32-py3.1.exe>`__
+  <http://apsw.googlecode.com/files/apsw-3.7.12-r1.win32-py3.1.exe>`__
   `64bit 
-  <http://apsw.googlecode.com/files/apsw-3.7.11-r1.win-amd64-py3.1.exe>`__
+  <http://apsw.googlecode.com/files/apsw-3.7.12-r1.win-amd64-py3.1.exe>`__
 
 * Windows Python 3.2 `32bit
-  <http://apsw.googlecode.com/files/apsw-3.7.11-r1.win32-py3.2.exe>`__
+  <http://apsw.googlecode.com/files/apsw-3.7.12-r1.win32-py3.2.exe>`__
   `64bit 
-  <http://apsw.googlecode.com/files/apsw-3.7.11-r1.win-amd64-py3.2.exe>`__
+  <http://apsw.googlecode.com/files/apsw-3.7.12-r1.win-amd64-py3.2.exe>`__
 
-* `apsw-3.7.11-r1-sigs.zip 
-  <http://apsw.googlecode.com/files/apsw-3.7.11-r1-sigs.zip>`_
+* `apsw-3.7.12-r1-sigs.zip 
+  <http://apsw.googlecode.com/files/apsw-3.7.12-r1-sigs.zip>`_
   GPG signatures for all files
 
 .. downloads-end
@@ -101,7 +101,7 @@ Verify
   To verify a file just use --verify specifying the corresponding
   ``.asc`` filename.  This example verifies the source::
 
-      $ gpg --verify apsw-3.7.11-r1.zip.asc
+      $ gpg --verify apsw-3.7.12-r1.zip.asc
       gpg: Signature made ... date ... using DSA key ID 0DFBD904
       gpg: Good signature from "Roger Binns <rogerb@rogerbinns.com>"
 

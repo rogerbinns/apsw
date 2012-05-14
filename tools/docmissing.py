@@ -28,13 +28,13 @@ for filename in glob.glob("doc/*.rst"):
                 if klass not in classes:
                     classes[klass]=[]
                 classes[klass].append(funcname)
-                    
+
 
 # ok, so we know what was documented.  Now lets see what exists
 
 con=apsw.Connection(":memory:")
 cur=con.cursor()
-cur.execute("create table x(y); insert into x values(x'abcdef1012')")
+cur.execute("create table x(y); insert into x values(x'abcdef1012');select * from x")
 blob=con.blobopen("main", "x", "y", con.last_insert_rowid(), 0)
 vfs=apsw.VFS("aname", "")
 vfsfile=apsw.VFSFile("", ":memory:", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE, 0])
@@ -46,7 +46,7 @@ assert len(classes['VTTable'])==13
 del classes['VTTable']
 assert len(classes['VTCursor'])==6
 del classes['VTCursor']
-          
+
 for name, obj in ( ('Connection', con),
                    ('Cursor', cur),
                    ('blob', blob),

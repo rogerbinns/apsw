@@ -410,7 +410,7 @@ static PyObject* APSWCursor_getdescription(APSWCursor *self)
   return APSWCursor_internal_getdescription(self, "(O&O&)");
 }
 
-/** .. attribute: description
+/** .. attribute:: description
 
     Based on the `DB-API cursor property
     <http://www.python.org/dev/peps/pep-0249/>`__, this returns the

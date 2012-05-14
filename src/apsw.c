@@ -1645,6 +1645,7 @@ modules etc. For example::
       ADDINT(SQLITE_READONLY_CANTLOCK),
       ADDINT(SQLITE_READONLY_RECOVERY),
       ADDINT(SQLITE_ABORT_ROLLBACK),
+      ADDINT(SQLITE_CANTOPEN_ISDIR),
       END,
 
       /* error codes */
@@ -1768,6 +1769,7 @@ modules etc. For example::
       ADDINT(SQLITE_DBSTATUS_LOOKASIDE_MISS_SIZE),
       ADDINT(SQLITE_DBSTATUS_CACHE_HIT),
       ADDINT(SQLITE_DBSTATUS_CACHE_MISS),
+      ADDINT(SQLITE_DBSTATUS_CACHE_WRITE),
       END,
 
       DICT("mapping_locking_level"),
