@@ -4,7 +4,7 @@
  See the accompanying LICENSE file.
 */
 
-/** 
+/**
 
 .. _cursors:
 
@@ -24,7 +24,7 @@ A cursor executes SQL::
 
 You can also read data back.  The row is returned as a tuple of the
 column values::
- 
+
   for row in cursor.execute("select * from example"):
      print row
 
@@ -57,7 +57,7 @@ exactly the same time on the same cursor in two different threads - eg
 trying to call :meth:`~Cursor.execute` in both at the same time, or
 :meth:`~Cursor.execute` in one and :meth:`Cursor.next` in another.
 (If you do attempt this, it will be detected and
-:exc:`ThreadingViolationError` will be raised.)  
+:exc:`ThreadingViolationError` will be raised.)
 
 Behind the scenes a :class:`Cursor` maps to a `SQLite statement
 <http://www.sqlite.org/c3ref/stmt.html>`_.  APSW maintains a
@@ -207,7 +207,7 @@ resetcursor(APSWCursor *self, int force)
     }
 
   Py_XDECREF(nextquery);
-  
+
   if(!force && self->status!=C_DONE && self->emiter)
     {
       PyObject *next;
@@ -219,7 +219,7 @@ resetcursor(APSWCursor *self, int force)
           assert(PyErr_Occurred());
         }
     }
-     
+
   Py_CLEAR(self->emiter);
   Py_CLEAR(self->emoriginalquery);
 
@@ -304,6 +304,57 @@ APSWCursor_init(APSWCursor *self, Connection *connection)
   self->weakreflist=NULL;
 }
 
+
+static PyObject *
+APSWCursor_internal_getdescription(APSWCursor *self, const char *fmt)
+{
+  int ncols,i;
+  PyObject *result=NULL;
+  PyObject *column=NULL;
+
+  CHECK_USE(NULL);
+  CHECK_CURSOR_CLOSED(NULL);
+
+  if(!self->statement)
+    return PyErr_Format(ExcComplete, "Can't get description for statements that have completed execution");
+
+  ncols=sqlite3_column_count(self->statement->vdbestatement);
+  result=PyTuple_New(ncols);
+  if(!result) goto error;
+
+  for(i=0;i<ncols;i++)
+    {
+      const char *colname;
+      const char *coldesc;
+
+      PYSQLITE_VOID_CALL( (colname=sqlite3_column_name(self->statement->vdbestatement, i), coldesc=sqlite3_column_decltype(self->statement->vdbestatement, i)) );
+      APSW_FAULT_INJECT(GetDescriptionFail,
+      column=Py_BuildValue(fmt,
+			 convertutf8string, colname,
+			 convertutf8string, coldesc,
+			 Py_None,
+			 Py_None,
+			 Py_None,
+			 Py_None,
+			   Py_None),
+      column=PyErr_NoMemory()
+      );
+
+      if(!column) goto error;
+
+      PyTuple_SET_ITEM(result, i, column);
+      /* owned by result now */
+      column=0;
+    }
+
+  return result;
+
+ error:
+  Py_XDECREF(result);
+  Py_XDECREF(column);
+  return NULL;
+}
+
 /** .. method:: getdescription() -> list
 
    Returns a list describing each column in the result row.  The
@@ -339,9 +390,9 @@ APSWCursor_init(APSWCursor *self, Connection *connection)
       for row in cursor.execute("select * from books"):
          print cursor.getdescription()
          print row
- 
+
    Output::
- 
+
      # row 0 - description
      (('title', 'string'), ('isbn', 'number'), ('wibbly', 'wobbly zebra'))
      # row 0 - values
@@ -354,50 +405,22 @@ APSWCursor_init(APSWCursor *self, Connection *connection)
    -* sqlite3_column_name sqlite3_column_decltype
 
 */
-
-static PyObject *
-APSWCursor_getdescription(APSWCursor *self)
+static PyObject* APSWCursor_getdescription(APSWCursor *self)
 {
-  int ncols,i;
-  PyObject *result=NULL;
-  PyObject *pair=NULL;
+  return APSWCursor_internal_getdescription(self, "(O&O&)");
+}
 
-  CHECK_USE(NULL);
-  CHECK_CURSOR_CLOSED(NULL);
+/** .. attribute: description
 
-  if(!self->statement)
-    return PyErr_Format(ExcComplete, "Can't get description for statements that have completed execution");
-  
-  ncols=sqlite3_column_count(self->statement->vdbestatement);
-  result=PyTuple_New(ncols);
-  if(!result) goto error;
+    Based on the `DB-API cursor property
+    <http://www.python.org/dev/peps/pep-0249/>`__, this returns the
+    same as :meth:`getdescription` but with 5 Nones appended.  See
+    also :issue:`131`.
+*/
 
-  for(i=0;i<ncols;i++)
-    {
-      const char *colname;
-      const char *coldesc;
-
-      PYSQLITE_VOID_CALL( (colname=sqlite3_column_name(self->statement->vdbestatement, i), coldesc=sqlite3_column_decltype(self->statement->vdbestatement, i)) );
-      APSW_FAULT_INJECT(GetDescriptionFail,
-      pair=Py_BuildValue("(O&O&)", 
-			 convertutf8string, colname,
-			 convertutf8string, coldesc),
-      pair=PyErr_NoMemory()
-      );                  
-			 
-      if(!pair) goto error;
-
-      PyTuple_SET_ITEM(result, i, pair);
-      /* owned by result now */
-      pair=0;
-    }
-  
-  return result;
-
- error:
-  Py_XDECREF(result);
-  Py_XDECREF(pair);
-  return NULL;
+static PyObject *APSWCursor_getdescription_dbapi(APSWCursor *self)
+{
+  return APSWCursor_internal_getdescription(self, "(O&O&OOOOO)");
 }
 
 /* internal function - returns SQLite error code (ie SQLITE_OK if all is well) */
@@ -454,7 +477,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
               PYSQLITE_CUR_CALL(res=USE16(sqlite3_bind_text)(self->statement->vdbestatement, arg, strdata, strbytes, SQLITE_TRANSIENT));
           }
       UNIDATAEND(obj);
-      if(!badptr) 
+      if(!badptr)
         {
           assert(PyErr_Occurred());
           return -1;
@@ -493,7 +516,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
               }
           UNIDATAEND(str2);
           Py_DECREF(str2);
-          if(!badptr) 
+          if(!badptr)
             {
               assert(PyErr_Occurred());
               return -1;
@@ -511,7 +534,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
       const void *buffer;
       Py_ssize_t buflen;
       int asrb;
-      
+
       APSW_FAULT_INJECT(DoBindingAsReadBufferFails,asrb=PyObject_AsReadBuffer(obj, &buffer, &buflen), (PyErr_NoMemory(), asrb=-1));
       if(asrb!=0)
         return -1;
@@ -527,7 +550,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
     {
       PYSQLITE_CUR_CALL(res=sqlite3_bind_zeroblob(self->statement->vdbestatement, arg, ((ZeroBlobBind*)obj)->blobsize));
     }
-  else 
+  else
     {
       PyErr_Format(PyExc_TypeError, "Bad binding argument type supplied - argument #%d: type %s", (int)(arg+self->bindingsoffset), Py_TYPE(obj)->tp_name);
       return -1;
@@ -618,7 +641,7 @@ APSWCursor_dobindings(APSWCursor *self)
                    nargs, (self->bindings)?sz:0, (int)(self->bindingsoffset));
       return -1;
     }
-  
+
   res=SQLITE_OK;
 
   /* nb sqlite starts bind args at one not zero */
@@ -684,7 +707,7 @@ APSWCursor_doexectrace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
 
   retval=PyObject_CallFunction(exectrace, "ONN", self, sqlcmd, bindings);
 
-  if(!retval) 
+  if(!retval)
     {
       assert(PyErr_Occurred());
       return -1;
@@ -785,7 +808,7 @@ APSWCursor_step(APSWCursor *self)
               assert(!next);
               return NULL;
             }
-          
+
           if(!next)
             {
               res=resetcursor(self, 0);
@@ -868,7 +891,7 @@ APSWCursor_step(APSWCursor *self)
 
     Executes the statements using the supplied bindings.  Execution
     returns when the first row is available or all statements have
-    completed.  
+    completed.
 
     :param statements: One or more SQL statements such as ``select *
       from books`` or ``begin; insert into books ...; select
@@ -881,7 +904,7 @@ APSWCursor_step(APSWCursor *self)
 
       cursor.execute("insert into books values(?,?)", ("title", "number"))
 
-    .. note:: 
+    .. note::
 
       A common gotcha is wanting to insert a single string but not
       putting it in a tuple::
@@ -898,7 +921,7 @@ APSWCursor_step(APSWCursor *self)
     binding.  It is ok to be missing entries from the dictionary -
     None/null will be used.  For example::
 
-       cursor.execute("insert into books values(:title, :isbn, :rating)", 
+       cursor.execute("insert into books values(:title, :isbn, :rating)",
             {"title": "book title", "isbn": 908908908})
 
     The return is the cursor object itself which is also an iterator.  This allows you to write::
@@ -916,7 +939,7 @@ APSWCursor_step(APSWCursor *self)
 
        * :ref:`executionmodel`
        * :ref:`Example <example-cursor>`
- 
+
 */
 static PyObject *
 APSWCursor_execute(APSWCursor *self, PyObject *args)
@@ -935,7 +958,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
       assert(PyErr_Occurred());
       return NULL;
     }
-  
+
   assert(!self->bindings);
   assert(PyTuple_Check(args));
 
@@ -964,8 +987,8 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
   INUSE_CALL(self->statement=statementcache_prepare(self->connection->stmtcache, query, !!self->bindings));
   if (!self->statement)
     {
-      AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_execute.sqlite3_prepare", "{s: O, s: O}", 
-		       "Connection", self->connection, 
+      AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_execute.sqlite3_prepare", "{s: O, s: O}",
+		       "Connection", self->connection,
 		       "statement", query);
       return NULL;
     }
@@ -985,14 +1008,14 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
       if(APSWCursor_doexectrace(self, savedbindingsoffset))
         {
           assert(PyErr_Occurred());
-          return NULL;  
+          return NULL;
         }
     }
 
   self->status=C_BEGIN;
 
   retval=APSWCursor_step(self);
-  if (!retval) 
+  if (!retval)
     {
       assert(PyErr_Occurred());
       return NULL;
@@ -1042,7 +1065,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
       assert(PyErr_Occurred());
       return NULL;
     }
-  
+
   assert(!self->bindings);
   assert(!self->emiter);
   assert(!self->emoriginalquery);
@@ -1081,8 +1104,8 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
   INUSE_CALL(self->statement=statementcache_prepare(self->connection->stmtcache, query, 1));
   if (!self->statement)
     {
-      AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_executemany.sqlite3_prepare", "{s: O, s: O}", 
-		       "Connection", self->connection, 
+      AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_executemany.sqlite3_prepare", "{s: O, s: O}",
+		       "Connection", self->connection,
 		       "statement", query);
       return NULL;
     }
@@ -1105,14 +1128,14 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
       if(APSWCursor_doexectrace(self, savedbindingsoffset))
         {
           assert(PyErr_Occurred());
-          return NULL;  
+          return NULL;
         }
     }
 
   self->status=C_BEGIN;
 
   retval=APSWCursor_step(self);
-  if (!retval) 
+  if (!retval)
     {
       assert(PyErr_Occurred());
       return NULL;
@@ -1195,7 +1218,7 @@ APSWCursor_next(APSWCursor *self)
   assert(self->status==C_ROW);
 
   self->status=C_BEGIN;
-  
+
   /* return the row of data */
   numcols=sqlite3_data_count(self->statement->vdbestatement);
   retval=PyTuple_New(numcols);
@@ -1211,7 +1234,7 @@ APSWCursor_next(APSWCursor *self)
     {
       PyObject *r2=APSWCursor_dorowtrace(self, retval);
       Py_DECREF(retval);
-      if(!r2) 
+      if(!r2)
 	return NULL;
       if (r2==Py_None)
         {
@@ -1408,6 +1431,11 @@ static PyMethodDef APSWCursor_methods[] = {
 };
 
 
+static PyGetSetDef APSWCursor_getset[] = {
+  {"description", (getter)APSWCursor_getdescription_dbapi, NULL,  "Subset of DB-API description attribute", NULL},
+  {NULL, NULL, NULL, NULL, NULL}
+};
+
 static PyTypeObject APSWCursorType = {
     APSW_PYTYPE_INIT
     "apsw.Cursor",             /*tp_name*/
@@ -1442,7 +1470,7 @@ static PyTypeObject APSWCursorType = {
     (iternextfunc)APSWCursor_next, /* tp_iternext */
     APSWCursor_methods,            /* tp_methods */
     0,                         /* tp_members */
-    0,                         /* tp_getset */
+    APSWCursor_getset,         /* tp_getset */
     0,                         /* tp_base */
     0,                         /* tp_dict */
     0,                         /* tp_descr_get */

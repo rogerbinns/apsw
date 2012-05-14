@@ -7,6 +7,9 @@ Change History
 
 Re-enabled the asyncvfs.
 
+Added :attr:`Cursor.description` to make DB API interoperability a
+little easier (:issue:`131`),
+
 3.7.11-r1
 =========
 

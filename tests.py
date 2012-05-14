@@ -625,6 +625,9 @@ class APSW(unittest.TestCase):
         c.execute("insert into foo([x a space]) values(1)")
         for row in c.execute("select * from foo"):
             self.assertEqual(cols, c.getdescription())
+            self.assertEqual(cols, tuple([d[:2] for d in c.description]))
+            self.assertEqual((None,None,None,None,None), c.description[0][2:])
+            self.assertEqual(len(c.description[0]), 7)
         # execution is complete ...
         self.assertRaises(apsw.ExecutionCompleteError, c.getdescription)
         self.assertRaises(StopIteration, lambda xx=0: next(c))
@@ -4885,7 +4888,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.CantOpenError, TestFile, ".", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
 
         ## xRead
-        t=TestFile(TESTFILEPREFIX+"testfile", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
+        t=TestFile(os.path.abspath(TESTFILEPREFIX+"testfile"), [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
         self.assertRaises(TypeError, t.xRead, "three", "four")
         self.assertRaises(OverflowError, t.xRead, l("0xffffffffeeeeeeee0"), 1)
         self.assertRaises(OverflowError, t.xRead, 1, l("0xffffffffeeeeeeee0"))
@@ -5061,7 +5064,7 @@ class APSW(unittest.TestCase):
         del t
         gc.collect()
 
-        t=apsw.VFSFile("", TESTFILEPREFIX+"testfile2", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
+        t=apsw.VFSFile("", os.path.abspath(TESTFILEPREFIX+"testfile2"), [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
         t.xClose()
         # check all functions detect closed file
         for n in dir(t):
@@ -8034,13 +8037,13 @@ shell.write(shell.stdout, "hello world\\n")
         testdb(vfsname="faultvfs")
 
         ## xCloseFails
-        t=apsw.VFSFile("", TESTFILEPREFIX+"testfile", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
+        t=apsw.VFSFile("", os.path.abspath(TESTFILEPREFIX+"testfile"), [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
         apsw.faultdict["xCloseFails"]=True
         self.assertRaises(apsw.IOError, t.xClose)
         del t
         # now catch it in the destructor
         def foo():
-            t=apsw.VFSFile("", TESTFILEPREFIX+"testfile", [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
+            t=apsw.VFSFile("", os.path.abspath(TESTFILEPREFIX+"testfile"), [apsw.SQLITE_OPEN_MAIN_DB|apsw.SQLITE_OPEN_CREATE|apsw.SQLITE_OPEN_READWRITE,0])
             apsw.faultdict["xCloseFails"]=True
             del t
             gc.collect()
