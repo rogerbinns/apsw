@@ -8,7 +8,7 @@ Change History
 Re-enabled the asyncvfs.
 
 Added :attr:`Cursor.description` to make DB API interoperability a
-little easier (:issue:`131`),
+little easier (:issue:`131`).
 
 Added SQLITE_DBSTATUS_CACHE_WRITE and SQLITE_CANTOPEN_ISDIR constants.
 
