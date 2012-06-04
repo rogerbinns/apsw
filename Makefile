@@ -1,8 +1,8 @@
 
-SQLITEVERSION=3.7.12
+SQLITEVERSION=3.7.12.1
 APSWSUFFIX=-r1
 
-RELEASEDATE="15 May 2012"
+RELEASEDATE="3 June 2012"
 
 VERSION=$(SQLITEVERSION)$(APSWSUFFIX)
 VERDIR=apsw-$(VERSION)
@@ -10,7 +10,7 @@ VERDIR=apsw-$(VERSION)
 # These control Debian packaging
 DEBSUFFIX=1ppa1
 DEBMAINTAINER="Roger Binns <rogerb@rogerbinns.com>"
-DEBSERIES=precise oneiric natty lucid
+DEBSERIES=quantal precise oneiric natty lucid
 PPAUPLOAD=ppa:ubuntu-rogerbinns/apsw
 
 # Some useful info

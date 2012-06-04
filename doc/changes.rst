@@ -2,6 +2,11 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.7.12.1-r1
+===========
+
+No changes to APSW.  Binary rebuilds due to SQLite bugfixes.
+
 3.7.12-r1
 =========
 

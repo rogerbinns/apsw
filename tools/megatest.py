@@ -62,7 +62,7 @@ def threadrun(queue):
             # uncomment to debug problems with this script
             #traceback.print_exc()
             print "\nFAILED", d
-        
+
 def main(PYVERS, UCSTEST, SQLITEVERS, concurrency):
     try:
         del os.environ["APSWTESTPREFIX"]
@@ -131,7 +131,7 @@ def buildpython(workdir, pyver, ucs, logfilename):
         tarx="j"
     else:
         tarx="z"
-    if pyver=="2.3.0": pyver="2.3"    
+    if pyver=="2.3.0": pyver="2.3"
     run("set -e ; cd %s ; mkdir pyinst ; ( echo \"Getting %s\"; wget -q %s -O - | tar xf%s -  ) > %s 2>&1" % (workdir, url, url, tarx, logfilename))
     # See https://bugs.launchpad.net/ubuntu/+source/gcc-defaults/+bug/286334
     if pyver.startswith("2.3"):
@@ -146,7 +146,7 @@ def buildpython(workdir, pyver, ucs, logfilename):
     # zlib on natty issue: http://lipyrary.blogspot.com/2011/05/how-to-compile-python-on-ubuntu-1104.html
     # LDFLAGS works for Python 2.5 onwards.  Edit setup on 2.3 and 2.4
     if pyver.startswith("2.3") or pyver.startswith("2.4"):
-        patch_natty_build(os.path.join(workdir, "Python-"+pyver, "setup.py"))    
+        patch_natty_build(os.path.join(workdir, "Python-"+pyver, "setup.py"))
     run("set -e ; LDFLAGS=\"-L/usr/lib/$(dpkg-architecture -qDEB_HOST_MULTIARCH)\"; export LDFLAGS ; cd %s ; cd ?ython-%s ; ./configure %s --disable-ipv6 --enable-unicode=ucs%d --prefix=%s/pyinst  >> %s 2>&1; make >>%s 2>&1; make  %sinstall >>%s 2>&1 ; make clean >/dev/null" % (workdir, pyver, opt, ucs, workdir, logfilename, logfilename, full, logfilename))
     suf=""
     if pyver>="3.1":
@@ -154,7 +154,7 @@ def buildpython(workdir, pyver, ucs, logfilename):
     pybin=os.path.join(workdir, "pyinst", "bin", "python"+suf)
     # couchdb
     if couchp(pyver):
-        run("(set -e ; cd %s ; wget -q -O - '%s' | tar xfz - ; cd setuptools* ; %s setup.py install ; `dirname \"%s\"`/easy_install CouchDB ) >>%s 2>&1" % 
+        run("(set -e ; cd %s ; wget -q -O - '%s' | tar xfz - ; cd setuptools* ; %s setup.py install ; `dirname \"%s\"`/easy_install CouchDB ) >>%s 2>&1" %
             (workdir, 'http://pypi.python.org/packages/source/s/setuptools/setuptools-0.6c11.tar.gz#md5=7df2a529a074f613b509fb44feefe74e',
              pybin, pybin, logfilename))
     return pybin, os.path.join(workdir, "pyinst", "lib")
@@ -169,7 +169,7 @@ def patch_natty_build(setup):
             line=line[:i+1]+t+line[i+1:]
         out.append(line)
     open(setup, "wt").write("".join(out))
-    
+
 # Default versions we support
 PYVERS=(
     '3.2.2',
@@ -185,6 +185,7 @@ PYVERS=(
 
 SQLITEVERS=(
     '3.7.12',
+    '3.7.12.1',
    )
 
 def couchp(pyver):
