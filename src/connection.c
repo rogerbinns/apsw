@@ -2780,17 +2780,18 @@ Connection_createmodule(Connection *self, PyObject *args)
   vti->connection=self;
   vti->datasource=datasource;
 
-  /* ::TODO:: - can we call this with NULL to unregister a module? */
+  /* SQLite is really finnicky.  Note that it calls the destructor on
+     failure  */
   APSW_FAULT_INJECT(CreateModuleFail,
-                    PYSQLITE_CON_CALL(res=sqlite3_create_module_v2(self->db, name, &apsw_vtable_module, vti, apswvtabFree)),
+                    PYSQLITE_CON_CALL((res=sqlite3_create_module_v2(self->db, name, &apsw_vtable_module, vti, apswvtabFree), vti=NULL)),
                     res=SQLITE_IOERR);
   PyMem_Free(name);
   SET_EXC(res, self->db);
 
   if(res!=SQLITE_OK)
     {
-      Py_DECREF(datasource);
-      PyMem_Free(vti);
+      if(vti)
+	apswvtabFree(vti);
       return NULL;
     }
 

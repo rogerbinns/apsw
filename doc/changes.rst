@@ -2,6 +2,12 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.7.13
+======
+
+Do not free a structure on failure to register a virtual table module
+as SQLite does that anyway.
+
 3.7.12.1-r1
 ===========
 

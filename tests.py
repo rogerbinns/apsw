@@ -2047,7 +2047,8 @@ class APSW(unittest.TestCase):
         for i in range(20):
             self.db.createmodule("x"*i, lambda x: i)
         for ii in range(20):
-            self.db.createmodule("x"*ii, lambda x: ii)
+            # SQLite 3.7.13 change - can't register same names
+            self.assertRaises(apsw.MisuseError, self.db.createmodule, "x"*ii, lambda x: ii)
 
         # If shared cache is enabled then vtable creation is supposed to fail
         # See http://www.sqlite.org/cvstrac/tktview?tn=3144
@@ -8416,11 +8417,6 @@ def setup(write=write):
 if __name__=='__main__':
     setup()
 
-    if "APSW_NO_MEMLEAK" in os.environ:
-        # Delete tests that have to deliberately leak memory
-        # del APSW.testWriteUnraiseable  (used to but no more)
-        pass
-
     def runtests():
         def set_wal_mode(c):
             # Note that WAL won't be on for memory databases.  This
@@ -8433,7 +8429,12 @@ if __name__=='__main__':
                 apsw.connection_hooks.append(set_wal_mode)
                 sys.stderr.write("WAL: ")
 
-            unittest.main()
+            if os.getenv("PYTRACE"):
+                import trace
+                t=trace.Trace(count=0, trace=1, ignoredirs=[sys.prefix, sys.exec_prefix])
+                t.runfunc(unittest.main)
+            else:
+                unittest.main()
         finally:
             apsw.connection_hooks=b4
 
@@ -8485,7 +8486,7 @@ if __name__=='__main__':
     del re
     gc.collect()
 
-    if py3: # doesn't handle modules being deleted vert well
+    if py3: # doesn't handle modules being deleted very well
         exit(exitcode)
 
     # In py3 gc and sys can end up being None even though we take care not to delete them
