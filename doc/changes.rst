@@ -8,6 +8,8 @@ Change History
 Do not free a structure on failure to register a virtual table module
 as SQLite does that anyway.
 
+Added SQLITE_OPEN_MEMORY constant.
+
 3.7.12.1-r1
 ===========
 
