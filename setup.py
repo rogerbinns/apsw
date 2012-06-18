@@ -64,7 +64,7 @@ class run_tests(Command):
 
     def finalize_options(self):
         pass
-    
+
     def run(self):
         import unittest
         import tests
@@ -143,7 +143,7 @@ def fixupcode(code):
 
     if type(code)==str:
         return [l+"\n" for l in code.split("\n")]
-    
+
     return code
 
 fetch_parts=[]
@@ -226,7 +226,14 @@ class fetch(Command):
                     f=[n for n in zip.namelist() if n.endswith(name)]
                     if len(f)!=1:
                         raise Exception("Can't find %s in zip.  Candidates are %s" % (name, f))
-                    open(name, "wb").write(zip.read(f[0]))
+                    # Work around SQLite 3.7.13 bug where a symbol was
+                    # declared SQLITE_API and extern
+                    data=zip.read(f[0])
+                    if name=="sqlite3.c":
+                        data=data.decode("utf8")
+                        data=data.replace("SQLITE_API extern", "SQLITE_API")
+                        data=data.encode("utf8")
+                    open(name, "wb").write(data)
                 zip.close()
             else:
                 # we need to run configure to get various -DHAVE_foo flags on non-windows platforms
@@ -303,7 +310,7 @@ class fetch(Command):
    which isn't used when building python extensions.  It is specific to the
    machine and developer components on which it was run. */
    \n""")
-                               
+
                     for define in defs:
                         op.write('#define %s %s\n' % tuple(define))
                     op.close()
@@ -321,7 +328,7 @@ class fetch(Command):
             archive=zipfile.ZipFile(data, "r")
             members=archive.namelist()
             extractfile=archive.read
-                
+
             lookfor=("sqlite3async.c", "sqlite3async.h")
             found=[0]*len(lookfor)
             for member in members:
@@ -329,7 +336,7 @@ class fetch(Command):
                     if member.endswith("/ext/async/"+n):
                         self.fixupasyncvfs(n, extractfile(member))
                         found[i]+=1
-                        
+
             archive.close()
             if found!=[1]*len(lookfor):
                 for i,f in enumerate(lookfor):
@@ -457,7 +464,7 @@ class apsw_build(bparent):
                     ("enable-all-extensions", None, "Enable all SQLite extensions"),
                     ]
     boolean_options=bparent.boolean_options+["enable-all-extensions"]
-    
+
     def initialize_options(self):
         v=bparent.initialize_options(self)
         self.enable=None
@@ -505,14 +512,14 @@ class apsw_build_ext(beparent):
                     ]
     boolean_options=beparent.boolean_options+["enable-all-extensions"]
 
-    
+
     def initialize_options(self):
         v=beparent.initialize_options(self)
         self.enable=build_enable
         self.omit=build_omit
         self.enable_all_extensions=build_enable_all_extensions
         return v
-   
+
     def finalize_options(self):
         v=beparent.finalize_options(self)
 
@@ -664,7 +671,7 @@ class apsw_build_ext(beparent):
 
         # done ...
         return v
-   
+
     def run(self):
         v=beparent.run(self)
         return v
@@ -685,7 +692,7 @@ class apsw_sdist(sparent):
         if os.path.isfile("doc/index.html") and os.path.isfile("doc/_sources/pysqlite.txt"):
             self.add_doc=True
         self.use_defaults=False # they are useless
-        
+
         # Make sure the manifest is regenerated
         self.force_manifest=True
 
@@ -770,7 +777,7 @@ def add_doc(archive, topdir):
         ofile.close()
     else:
         raise Exception("Don't know what to do with "+archive)
-        
+
 def create_c_file(src, dest):
     # Transforms Python src into C dest as a sequence of strings.
     # Because of the pathetic microsoft compiler we have to break it
@@ -831,7 +838,7 @@ if "bdist_msi" in sys.argv:
     if len(version)>3:
         version[0]=100*version[0]+version[1]
         del version[1]
-        
+
     version=".".join([str(v) for v in version])
 
 setup(name="apsw",
