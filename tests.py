@@ -3611,6 +3611,18 @@ class APSW(unittest.TestCase):
             self.assertEqual(type(res), tuple)
             self.assertTrue(res[0]<=res[1])
 
+    def testDBStatus(self):
+        "Verify db status function"
+        self.assertRaises(TypeError, self.db.status, "zebra")
+        self.assertRaises(apsw.SQLError, self.db.status, 2323)
+        for i in apsw.mapping_db_status:
+            if type(i)!=type(""): continue
+            res=self.db.status(getattr(apsw, i))
+            self.assertEqual(len(res), 2)
+            self.assertEqual(type(res), tuple)
+            if i!="SQLITE_DBSTATUS_CACHE_USED":
+                self.assertTrue(res[0]<=res[1])
+
     def testZeroBlob(self):
         "Verify handling of zero blobs"
         self.assertRaises(TypeError, apsw.zeroblob)

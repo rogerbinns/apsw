@@ -3174,6 +3174,43 @@ Connection_config(Connection *self, PyObject *args)
     }
 }
 
+/** .. method:: status(op, reset=False) -> (int, int)
+
+  Returns current and highwater measurements for the database.
+
+  :param op: A `status parameter <http://sqlite.org/c3ref/c_dbstatus_options.html>`_
+  :param reset: If *True* then the highwater is set to the current value
+  :returns: A tuple of current value and highwater value
+
+  .. seealso::
+
+    The :func:`status` example which works in exactly the same way.
+
+    * :ref:`Status example <example-status>`
+
+  -* sqlite3_db_status
+
+*/
+static PyObject *
+Connection_status(Connection *self, PyObject *args)
+{
+  int res, op, current=0, highwater=0, reset=0;
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  if(!PyArg_ParseTuple(args, "i|i:status(op, reset=False)", &op, &reset))
+    return NULL;
+
+  PYSQLITE_CON_CALL(res=sqlite3_db_status(self->db, op, &current, &highwater, reset));
+  SET_EXC(res, NULL);
+
+  if(res!=SQLITE_OK)
+    return NULL;
+
+  return Py_BuildValue("(ii)", current, highwater);
+}
+
+
 /** .. method:: readonly(name) -> bool
 
   True or False if the named (attached) database was opened readonly or file
@@ -3216,7 +3253,7 @@ Connection_readonly(Connection *self, PyObject *name)
 static PyObject*
 Connection_db_filename(Connection *self, PyObject *name)
 {
-  char *res;
+  const char *res;
   PyObject *utf8name=NULL;
   CHECK_CLOSED(self, NULL);
 
@@ -3352,6 +3389,8 @@ static PyMethodDef Connection_methods[] = {
    "Do immediate WAL checkpoint"},
   {"config", (PyCFunction)Connection_config, METH_VARARGS,
    "Configure this connection"},
+  {"status", (PyCFunction)Connection_status, METH_VARARGS,
+   "Information about this connection"},
   {"readonly", (PyCFunction)Connection_readonly, METH_O,
    "Check if database is readonly"},
   {"db_filename", (PyCFunction)Connection_db_filename, METH_O,
