@@ -2,6 +2,17 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.7.14-r1
+=========
+
+Added support for :meth:`Connection.status` (calls `sqlite3_db_status
+<http://www.sqlite.org/c3ref/db_status.html>`__).
+
+The legacy Windows `Compiled Help Format
+<http://en.wikipedia.org/wiki/Microsoft_Compiled_HTML_Help>`__
+documentation is no longer produced - the help compiler setup program
+can't cope with modern machines.
+
 3.7.13-r1
 =========
 

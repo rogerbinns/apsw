@@ -1,8 +1,8 @@
 
-SQLITEVERSION=3.7.13
+SQLITEVERSION=3.7.14
 APSWSUFFIX=-r1
 
-RELEASEDATE="17 June 2012"
+RELEASEDATE="4 September 2012"
 
 VERSION=$(SQLITEVERSION)$(APSWSUFFIX)
 VERDIR=apsw-$(VERSION)
@@ -50,7 +50,7 @@ doc: docs
 docs: build_ext $(GENDOCS) doc/example.rst doc/.static
 	env PYTHONPATH=. http_proxy= python tools/docmissing.py
 	env PYTHONPATH=. http_proxy= python tools/docupdate.py $(VERSION)
-	make PYTHONPATH="`pwd`" VERSION=$(VERSION) RELEASEDATE=$(RELEASEDATE) -C doc clean html htmlhelp
+	make PYTHONPATH="`pwd`" VERSION=$(VERSION) RELEASEDATE=$(RELEASEDATE) -C doc clean html
 
 doc/example.rst: example-code.py tools/example2rst.py src/apswversion.h
 	rm -f dbfile
@@ -167,7 +167,6 @@ upload:
 	test -f dist/$(VERDIR).win-amd64-py3.1.exe
 	test -f dist/$(VERDIR).win32-py3.2.exe
 	test -f dist/$(VERDIR).win-amd64-py3.2.exe
-	test -f dist/$(VERDIR).chm
 	-rm -f dist/$(VERDIR)-sigs.zip dist/*.asc
 	for f in dist/* ; do gpg --use-agent --armor --detach-sig "$$f" ; done
 	cd dist ; zip -m $(VERDIR)-sigs.zip *.asc
@@ -183,7 +182,6 @@ upload:
 	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 2.5 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.5.exe
 	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 2.4 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.4.exe
 	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 2.3 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.3.exe
-	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) (Documentation only - Compiled Help Format)" -l "Type-Docs" dist/$(VERDIR).chm
 	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) (Source, includes HTML documentation)" -l "Type-Source,OpSys-All" dist/$(VERDIR).zip
 
 tags:

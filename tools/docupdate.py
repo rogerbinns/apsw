@@ -26,9 +26,6 @@ for line in open("doc/download.rst", "rtU"):
         op.append("  <%s/apsw-%s.zip>`_" % (url, version))
         op.append("  (Source, includes this HTML Help)")
         op.append("")
-        op.append("* `apsw-%s.chm" % (version,))
-        op.append("  <%s/apsw-%s.chm>`_" % (url, version))
-        op.append("  (Compiled HTML Help) `Seeing blank content? <http://weblog.helpware.net/?p=36>`_ & `MSKB 902225 <http://support.microsoft.com/kb/902225/>`_")
         op.append("")
         not64=("2.3", "2.4", "2.5")
         for pyver in ("2.3", "2.4", "2.5", "2.6", "2.7", "3.1", "3.2"):
@@ -37,12 +34,12 @@ for line in open("doc/download.rst", "rtU"):
             if pyver not in not64:
                 op.append("  `64bit ")
                 op.append("  <%s/apsw-%s.win-amd64-py%s.exe>`__" % (url, version, pyver))
-            op.append("")               
+            op.append("")
         op.append("* `apsw-%s-sigs.zip " % (version,))
         op.append("  <%s/apsw-%s-sigs.zip>`_" % (url, version))
         op.append("  GPG signatures for all files")
         op.append("")
-                  
+
         continue
     if line==".. downloads-end":
         incomment=False
