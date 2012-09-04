@@ -19,7 +19,9 @@ and add your own commands.
 Commands
 ========
 
-In addition to executing SQL, these are the commands available:
+In addition to executing SQL, these are the commands available with
+their short help description.  Use `.help *command*` eg (`.help
+autoimport`) to get more detailed information.
 
 .. help-begin:
 

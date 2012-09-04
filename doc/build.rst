@@ -172,21 +172,21 @@ need to give the flag once and giving a comma seperated list.  For example:
 | | :option:`--enable-all-extensions`    | Enables the FTS3/4, RTree and ICU extensions (if *icu-config* is on your path).      |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--enable=fts3`              | Enables the :ref:`full text search extension <ext-fts3>`.                            |
-| | :option:`--enable=fts4`              | This flag only helps when using the amalgamation. If not using the                   | 
+| | :option:`--enable=fts4`              | This flag only helps when using the amalgamation. If not using the                   |
 |                                        | amalgamation then you need to seperately ensure fts3/4 is enabled in the SQLite      |
 |                                        | install. You are likely to want the `parenthesis option                              |
 |                                        | <http://www.sqlite.org/compile.html#enable_fts3_parenthesis>`__ on unless you have   |
 |                                        | legacy code (`--enable-all-extensions` turns it on).                                 |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--enable=rtree`             | Enables the :ref:`spatial table extension <ext-rtree>`.                              |
-|                                        | This flag only helps when using the amalgamation. If not using the                   | 
+|                                        | This flag only helps when using the amalgamation. If not using the                   |
 |                                        | amalgamation then you need to seperately ensure rtree is enabled in the SQLite       |
 |                                        | install.                                                                             |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--enable=icu`               | Enables the :ref:`International Components for Unicode extension <ext-icu>`.         |
 |                                        | Note that you must have the ICU libraries on your machine which setup will           |
 |                                        | automatically try to find using :file:`icu-config`.                                  |
-|                                        | This flag only helps when using the amalgamation. If not using the                   | 
+|                                        | This flag only helps when using the amalgamation. If not using the                   |
 |                                        | amalgamation then you need to seperately ensure ICU is enabled in the SQLite         |
 |                                        | install.                                                                             |
 +----------------------------------------+--------------------------------------------------------------------------------------+
@@ -227,7 +227,8 @@ These methods are tried in order:
       looked for. The SQLite code is then statically compiled into the
       APSW extension and is invisible to the rest of the
       process. There are no runtime library dependencies on SQLite as
-      a result.
+      a result.  When you use :option:`fetch` this is where it places
+      the downloaded amalgamation.
 
   Local build
 
@@ -272,7 +273,7 @@ APSW source to.
 
   Mac/Linux etc::
 
-    $ python setup.py fetch --all build --enable-all-extensions install test 
+    $ python setup.py fetch --all build --enable-all-extensions install test
 
 .. note::
 
@@ -315,7 +316,7 @@ APSW includes a :file:`tests.py` file which uses the standard Python
 testing modules to verify correct operation. New code is developed
 alongside the tests. Reported issues also have test cases to ensure
 the issue doesn't happen or doesn't happen again.::
-  
+
   $ python setup.py test
                  Python /usr/bin/python (2, 6, 6, 'final', 0)
   Testing with APSW file /space/apsw/apsw.so
@@ -326,7 +327,7 @@ the issue doesn't happen or doesn't happen again.::
   ............................................................................
   ----------------------------------------------------------------------
   Ran 76 tests in 404.557s
-  
+
   OK
 
 The tests also ensure that as much APSW code as possible is executed
