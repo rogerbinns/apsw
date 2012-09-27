@@ -2,6 +2,17 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.7.14-r2
+=========
+
+Fixed an issue with the GIL in the destructor for functions.  The bug
+would be encountered if you create a function with the same name as an
+existing function and are using an upcoming version of Python (eg
+2.7.4).  Thanks to Arfrever Frehtes Taifersar Arahesis for finding it
+(:issue:`134`).
+
+Added shell .print command to match upcoming SQLite shell changes.
+
 3.7.14-r1
 =========
 
