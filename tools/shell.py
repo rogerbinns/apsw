@@ -98,7 +98,7 @@ class Shell(object):
         self.dbfilename=None
         if db:
             self.db=db, db.filename
-        else:    
+        else:
             self.db=None, None
         self.prompt=    "sqlite> "
         self.moreprompt="    ..> "
@@ -175,7 +175,7 @@ class Shell(object):
 
         :param args: A list of string options.  Do not include the
            program as args[0]
-        
+
         :returns: A tuple of (databasefilename, initfiles,
            sqlncommands).  This is provided for informational purposes
            only - they have already been acted upon.  An example use
@@ -217,7 +217,7 @@ class Shell(object):
                 args=args[1:]
                 continue
 
-            # remove initial single or double dash         
+            # remove initial single or double dash
             args[0]=args[0][1:]
             if args[0].startswith("-"):
                 args[0]=args[0][1:]
@@ -265,18 +265,18 @@ class Shell(object):
                 self._out_colour()
                 args=args[1:]
                 continue
-            
+
             # only remaining known args are output modes
             if getattr(self, "output_"+args[0], None):
                 self.command_mode(args[:1])
                 args=args[1:]
                 continue
-                
+
             newargs=self.process_unknown_args(args)
             if newargs is None:
                 raise self.Error("Unrecognized argument '"+args[0]+"'")
             args=newargs
-            
+
         for f in inits:
             self.command_read([f])
 
@@ -432,8 +432,8 @@ OPTIONS include:
             return '"'+o+'"'
         else:
             # number of some kind
-            return '%s' % (v,)       
-        
+            return '%s' % (v,)
+
 
     def _fmt_python(self, v):
         "Format as python literal"
@@ -489,13 +489,13 @@ OPTIONS include:
             return "<Binary data>"
         else:
             return "%s" % (v,)
-        
+
     ###
     ### The various output routines.  They are always called with the
     ### header irrespective of the setting allowing for some per query
     ### setup. (see output_column for example).  The doc strings are
     ### used to generate help.
-    ###            
+    ###
 
     def output_column(self, header, line):
         """
@@ -514,7 +514,7 @@ OPTIONS include:
                 # if width is not present or 0 then autosize
                 text=self._fmt_text_col(line[n])
                 return max(len(text), 10)
-                
+
             widths=[gw(i) for i in range(len(line))]
 
             if self.truncate:
@@ -544,7 +544,7 @@ OPTIONS include:
         quoting.  The Python csv library used for this only supports
         single character separators.
         """
-        
+
         # we use self._csv for the work, setup when header is
         # supplied. _csv is a tuple of a StringIO and the csv.writer
         # instance.
@@ -554,7 +554,7 @@ OPTIONS include:
             fixdata=lambda x: x.encode("utf8")
         else:
             fixdata=lambda x: x
-            
+
         if header:
             if sys.version_info<(3,0):
                 import StringIO as io
@@ -575,7 +575,7 @@ OPTIONS include:
                 # gets upset that it can't be quoted.  Which bit of no
                 # quoting was ambiguous?
                 kwargs["quotechar"]="\x00"
-                
+
             writer=csv.writer(s, **kwargs)
             self._csv=(s, writer)
             if self.header:
@@ -702,7 +702,7 @@ OPTIONS include:
     ###
     ### Various routines
     ###
-        
+
     def cmdloop(self, intro=None):
         """Runs the main interactive command loop.
 
@@ -786,7 +786,7 @@ Enter SQL statements terminated with a ";"
             text="Interrupted"
         else:
             text=str(eval)
-            
+
         if not text.endswith("\n"):
             text=text+"\n"
 
@@ -797,7 +797,7 @@ Enter SQL statements terminated with a ";"
                 else:
                     pref=" "*i+"From "
                 self.write(self.stderr, pref+self._input_descriptions[i]+"\n")
-            
+
         self.write(self.stderr, text)
         if self.exceptions:
             stack=[]
@@ -820,7 +820,7 @@ Enter SQL statements terminated with a ";"
             self.write(self.stderr, "\n%s: %s\n" % (eclass, repr(eval)))
 
         self.write(self.stderr, self.colour.error_)
-            
+
         eval._handle_exception_saw_this=True
         if self.bail:
             raise
@@ -831,10 +831,16 @@ Enter SQL statements terminated with a ";"
         :param sql: SQL to execute
 
         :param bindings: bindings for the *sql*
-        
+
         :param internal: If True then this is an internal execution
           (eg the .tables or .database command).  When executing
           internal sql timings are not shown nor is the SQL echoed.
+
+        :param summary: If not None then should be a tuple of two
+          items.  If the ``sql`` returns any data then the first item
+          is printed before the first row, and the second item is
+          printed after the last row.  An example usage is the .find
+          command which shows table names.
         """
         cur=self.db.cursor()
         # we need to know when each new statement is executed
@@ -886,16 +892,16 @@ Enter SQL statements terminated with a ";"
                 while tb:
                     last=tb.tb_frame
                     tb=tb.tb_next
-                    
+
                 if last and last.f_code.co_name=="sqlite3_prepare" \
                    and last.f_code.co_filename.endswith("statementcache.c") \
                    and "sql" in last.f_locals:
                     self.write(self.stderr, last.f_locals["sql"]+"\n")
             raise
-                
+
         if not internal and self.timer:
             self.display_timing(state['timing'], self.get_resource_usage())
-            
+
     def process_command(self, cmd):
         """Processes a dot command.  It is split into parts using the
         `shlex.split
@@ -969,7 +975,7 @@ Enter SQL statements terminated with a ";"
         self.bail=self._boolean_command("bail", cmd)
 
     def command_colour(self, cmd=[]):
-        """colour SCHEME: Selects a colour scheme 
+        """colour SCHEME: Selects a colour scheme
 
         Residents of both countries that have not adopted the metric
         system may also spell this command without a 'u'.  If using a
@@ -986,7 +992,7 @@ Enter SQL statements terminated with a ";"
         self._out_colour()
 
     command_color=command_colour
-    
+
     def command_databases(self, cmd):
         """databases: Lists names and files of attached databases
 
@@ -1187,7 +1193,7 @@ Enter SQL statements terminated with a ";"
                     self.write(self.stdout, sqldef(sql))
                 if not first:
                     blank()
-                    
+
                 # sqlite sequence
                 # does it exist
                 if len(self.db.cursor().execute("select * from sqlite_master where name='sqlite_sequence'").fetchall()):
@@ -1243,7 +1249,7 @@ Enter SQL statements terminated with a ";"
 
         finally:
             self.process_sql("END", internal=True)
-        
+
 
     def command_echo(self, cmd):
         """echo ON|OFF: If ON then each SQL statement or command is printed before execution (default OFF)
@@ -1412,7 +1418,7 @@ Enter SQL statements terminated with a ";"
     command_headers=command_header
 
     _help_info=None
-    
+
     def command_help(self, cmd):
         """help ?COMMAND?: Shows list of commands and their usage.  If COMMAND is specified then shows detail about that COMMAND.  ('.help all' will show detailed help about all commands.)
         """
@@ -1540,11 +1546,11 @@ Enter SQL statements terminated with a ";"
         values into that and then use casting.
 
           CREATE TEMPORARY TABLE import(a,b,c);
-          
+
           .import filename import
 
           CREATE TABLE final AS SELECT cast(a as BLOB), cast(b as INTEGER), cast(c as CHAR) from import;
-                
+
           DROP TABLE import;
 
         You can also get more sophisticated using the SQL CASE
@@ -1597,11 +1603,11 @@ Enter SQL statements terminated with a ";"
             if final:
                 self.db.cursor().execute(final)
             raise
-        
+
     def _csvin_wrapper(self, filename, dialect):
         # Returns a csv reader that works around python bugs and uses
         # dialect dict to configure reader
-        
+
         # Very easy for python 3
         if sys.version_info>=(3,0):
             thefile=codecs.open(filename, "r", self.encoding[0])
@@ -1707,7 +1713,7 @@ Enter SQL statements terminated with a ";"
                 if v=="0": return 0
                 if v[0]=="+": # idd prefix
                     raise ValueError
-                if re.match("^[0-9]+$", v): 
+                if re.match("^[0-9]+$", v):
                     if v[0]=="0": raise ValueError # also a phone number
                     return int(v)
                 if v[0]=="0" and not v.startswith("0."): # deceptive not a number
@@ -1752,7 +1758,7 @@ Enter SQL statements terminated with a ";"
                             raise ValueError("Expected %d columns - got %d" % (ncols, len(line)))
                         lines+=1
                         for i in range(ncols):
-                            if not line[i]: 
+                            if not line[i]:
                                 continue
                             allblanks[i]=False
                             if not datas[i]:
@@ -1760,10 +1766,10 @@ Enter SQL statements terminated with a ";"
                             # remove datas that give ValueError
                             d=[]
                             for dd in datas[i]:
-                                try: 
+                                try:
                                     dd(line[i])
                                     d.append(dd)
-                                except ValueError: 
+                                except ValueError:
                                     pass
                             datas[i]=d
                     if ncols>1 and lines>1:
@@ -1820,7 +1826,7 @@ Enter SQL statements terminated with a ";"
                     else:
                         vals.append(datas[i](l))
                 c.execute(sql, vals)
-            
+
             c.execute("COMMIT")
             self.write(self.stdout, "Auto-import into table \"%s\" complete\n" % (tablename,))
         except:
@@ -1899,9 +1905,9 @@ Enter SQL statements terminated with a ";"
             raise self.Error("Extension loading is not supported")
 
         self.db.loadextension(*cmd)
-    
+
     _output_modes=None
-    
+
     def command_mode(self, cmd):
         """mode MODE ?TABLE?: Sets output mode to one of"""
         if len(cmd) in (1,2):
@@ -1988,7 +1994,7 @@ Enter SQL statements terminated with a ";"
 
         # we will also close stdout but only do so once we have a
         # replacement so that stdout is always valid
-            
+
         if len(cmd)!=1:
             raise self.Error("You must specify a filename")
 
@@ -2012,6 +2018,15 @@ Enter SQL statements terminated with a ";"
                 old.close()
         finally:
             self._out_colour()
+
+    def command_print(self, cmd):
+        """print STRING: print the literal STRING
+
+        If more than one argument is supplied then they are printed
+        space separated.  You can use backslash escapes such as \\n
+        and \\t.
+        """
+        self.write(self.stdout, " ".join([self.fixup_backslashes(i) for i in cmd])+"\n")
 
     def command_prompt(self, cmd):
         """prompt MAIN ?CONTINUE?: Changes the prompts for first line and continuation lines
@@ -2077,7 +2092,7 @@ Enter SQL statements terminated with a ";"
 
     def command_restore(self, cmd):
         """restore ?DB? FILE: Restore database from FILE into DB (default "main")
-        
+
         Copies the contents of FILE to the current database (default "main").
         The backup is done at the page level - SQLite copies the pages as
         is.  There is no round trip through SQL code.
@@ -2201,7 +2216,7 @@ Enter SQL statements terminated with a ";"
 
         for k,v in outs:
             self.write(self.stderr, "%*.*s: %s\n" % (l,l, k, v))
-            
+
     def command_tables(self, cmd):
         """tables ?PATTERN?: Lists names of tables matching LIKE pattern
 
@@ -2337,7 +2352,7 @@ Enter SQL statements terminated with a ";"
             o=self._output_stack.pop()
         for k,v in o.items():
             setattr(self,k,v)
-            
+
     def _append_input_description(self):
         """When displaying an error in :meth:`handle_exception` we
         want to give context such as when the commands being executed
@@ -2353,7 +2368,7 @@ Enter SQL statements terminated with a ";"
 
     def fixup_backslashes(self, s):
         """Implements the various backlash sequences in s such as
-        turning \\\\t into a tab.
+        turning backslash t into a tab.
 
         This function is needed because shlex does not do it for us.
         """
@@ -2370,22 +2385,16 @@ Enter SQL statements terminated with a ";"
             if i>=len(s):
                 raise self.Error("Backslash with nothing following")
             c=s[i]
+            res.append({
+                "\\": "\\",
+                "r": "\r",
+                "n": "\n",
+                "t": "\t"
+                }.get(c, None))
             i+=1 # advance again
-            if c=="\\":
-                res.append(c)
-                continue
-            if c=="n":
-                res.append("\n")
-                continue
-            if c=="t":
-                res.append("\t")
-                continue
-            if c=="r":
-                res.append("\r")
-                continue
-            raise self.Error("Unknown backslash sequence \\"+c)
+            if res[-1] is None:
+                raise self.Error("Unknown backslash sequence \\"+c)
         return "".join(res)
-                
 
     if sys.version_info<(3,0):
         def write(self, dest, text):
@@ -2477,14 +2486,14 @@ Enter SQL statements terminated with a ";"
         except KeyboardInterrupt:
             self.handle_interrupt()
             return ""
-        
+
     def handle_interrupt(self):
         """Deal with keyboard interrupt (typically Control-C).  It
         will :meth:`~Connection.interrupt` the database and print"^C" if interactive."""
         self.db.interrupt()
         if not self.bail and self.interactive:
             self.write(self.stderr, "^C\n")
-            return 
+            return
         raise
 
     def process_complete_line(self, command):
@@ -2517,7 +2526,7 @@ Enter SQL statements terminated with a ";"
         d=self._input_stack.pop()
         for k,v in d.items():
             setattr(self, k, v)
-        
+
     def complete(self, token, state):
         """Return a possible completion for readline
 
@@ -2628,11 +2637,11 @@ Enter SQL statements terminated with a ";"
     def _get_prev_tokens(self, line, end):
         "Returns the tokens prior to pos end in the line"
         return re.findall(r'"?\w+"?', line[:end])
-        
-        
+
+
     def complete_sql(self, line, token, beg, end):
         """Provide some completions for SQL
-        
+
         :param line: The current complete input line
         :param token: The word readline is looking for matches
         :param beg: Integer offset of token in line
@@ -2731,7 +2740,7 @@ Enter SQL statements terminated with a ";"
 
     def complete_command(self, line, token, beg, end):
         """Provide some completions for dot commands
-        
+
         :param line: The current complete input line
         :param token: The word readline is looking for matches
         :param beg: Integer offset of token in line
@@ -2860,7 +2869,7 @@ Enter SQL statements terminated with a ";"
      40: "bg_black", 41: "bg_red", 42: "bg_green", 43: "bg_yellow", 44: "bg_blue", 45: "bg_magenta", 46: "bg_cyan", 47: "bg_white", 49: "bg_"}.items()]))
 
     _colours={"off": _colourscheme(colour_value=lambda x,y: y)}
-    
+
     _colours["default"]=_colourscheme(prompt=d.bold, prompt_=d.bold_,
                                       error=d.fg_red+d.bold, error_=d.bold_+d.fg_,
                                       intro=d.fg_blue+d.bold, intro_=d.bold_+d.fg_,
