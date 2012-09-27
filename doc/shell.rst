@@ -57,6 +57,7 @@ autoimport`) to get more detailed information.
                                 json line list python tabs tcl
   .nullvalue STRING             Print STRING in place of null values
   .output FILENAME              Send output to FILENAME (or stdout)
+  .print STRING                 print the literal STRING
   .prompt MAIN ?CONTINUE?       Changes the prompts for first line and
                                 continuation lines
   .quit                         Exit this program
