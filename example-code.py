@@ -48,7 +48,7 @@ for x,y,z in cursor.execute("select x,y,z from foo"):
     print cursor.getdescription()  # shows column names and declared types
     print x,y,z
 
-###        
+###
 ### iterator - multiple statements
 ###
 
@@ -105,7 +105,7 @@ cursor.setrowtrace(None)
 cursor.setexectrace(None)
 
 ###
-### executemany 
+### executemany
 ###
 
 # (This will work correctly with multiple statements, as well as statements that
@@ -170,7 +170,7 @@ for row in cursor.execute("select longest(x,y) from foo"):
 # so here we define a collation that does
 
 cursor.execute("create table s(str)")
-cursor.executemany("insert into s values(?)", 
+cursor.executemany("insert into s values(?)",
                   ( ["file1"], ["file7"], ["file17"], ["file20"], ["file3"] ) )
 
 #@@CAPTURE
@@ -180,7 +180,7 @@ for row in cursor.execute("select * from s order by str"):
 
 def strnumcollate(s1, s2):
     # return -1 if s1<s2, +1 if s1>s2 else 0
-    
+
     # split values into two parts - the head and the numeric tail
     values=[s1, s2]
     for vn,v in enumerate(values):
@@ -203,7 +203,7 @@ connection.createcollation("strnum", strnumcollate)
 
 #@@CAPTURE
 for row in cursor.execute("select * from s order by str collate strnum"):
-    print row    
+    print row
 #@@ENDCAPTURE
 
 ###
@@ -218,7 +218,7 @@ def authorizer(operation, paramone, paramtwo, databasename, triggerorview):
     print paramone, paramtwo, databasename, triggerorview
     if operation==apsw.SQLITE_CREATE_TABLE and paramone.startswith("private"):
         return apsw.SQLITE_DENY  # not allowed to create tables whose names start with private
-    
+
     return apsw.SQLITE_OK  # always allow
 
 connection.setauthorizer(authorizer)
@@ -447,10 +447,10 @@ class ObfuscatedVFS(apsw.VFS):
 class ObfuscatedVFSFile(apsw.VFSFile):
     def __init__(self, inheritfromvfsname, filename, flags):
         apsw.VFSFile.__init__(self, inheritfromvfsname, filename, flags)
-        
+
     def xRead(self, amount, offset):
         return encryptme(super(ObfuscatedVFSFile, self).xRead(amount, offset))
-    
+
     def xWrite(self, data, offset):
         super(ObfuscatedVFSFile, self).xWrite(encryptme(data), offset)
 
@@ -462,7 +462,7 @@ print apsw.vfsnames()
 #@@ENDCAPTURE
 
 # Make an obfuscated db, passing in some URI parameters
-obfudb=apsw.Connection("file:myobfudb?fast=speed&level=7&warp=on", 
+obfudb=apsw.Connection("file:myobfudb?fast=speed&level=7&warp=on",
                        flags=apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_URI,
                        vfs=obfuvfs.vfsname)
 # Check it works
@@ -490,7 +490,7 @@ os.remove("myobfudb")
 #@@CAPTURE
 # Print some limits
 for limit in ("LENGTH", "COLUMN", "ATTACHED"):
-    name="SQLITE_LIMIT_"+limit 
+    name="SQLITE_LIMIT_"+limit
     maxname="SQLITE_MAX_"+limit  # compile time
     orig=connection.limit(getattr(apsw, name))
     print name, orig
@@ -508,8 +508,8 @@ try:
     print "string exceeding limit was inserted"
 except apsw.TooBigError:
     print "Caught toobig exception"
-connection.limit(apsw.SQLITE_LIMIT_LENGTH, 0x7fffffff) 
-    
+connection.limit(apsw.SQLITE_LIMIT_LENGTH, 0x7fffffff)
+
 #@@ENDCAPTURE
 
 ###
@@ -541,8 +541,9 @@ output=io.StringIO()
 shell=apsw.Shell(stdout=output, db=connection)
 # How to execute a dot command
 shell.process_command(".mode csv")
+shell.process_command(".headers on")
 # How to execute SQL
-shell.process_sql("create table csvtest(x,y); insert into csvtest values(3,4); insert into csvtest values('ab', NULL)")
+shell.process_sql("create table csvtest(col1,col2); insert into csvtest values(3,4); insert into csvtest values('a b', NULL)")
 # Let the shell figure out SQL vs dot command
 shell.process_complete_line("select * from csvtest")
 
