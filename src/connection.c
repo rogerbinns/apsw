@@ -2218,7 +2218,12 @@ cbdispatch_final(sqlite3_context *context)
 static void
 apsw_free_func(void *funcinfo)
 {
+  PyGILState_STATE gilstate;
+  gilstate=PyGILState_Ensure();
+
   Py_XDECREF((PyObject*)funcinfo);
+
+  PyGILState_Release(gilstate);
 }
 
 /** .. method:: createscalarfunction(name, callable[, numargs=-1])
