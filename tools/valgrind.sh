@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 # Run valgrind on testsuite
 #
 # See the accompanying LICENSE file.
@@ -12,7 +12,7 @@
 # wget -O -  http://www.python.org/ftp/python/$ver/Python-$ver.tar.bz2 | tar xfj -
 # cd Python-$ver
 # # As an optimization Python keeps lists of various objects around for quick recycling
-# # instead of freeing and then mallocing.  Unfortunately that obfuscates which code 
+# # instead of freeing and then mallocing.  Unfortunately that obfuscates which code
 # # was actually responsible for their existence.  Consequently we set all these to zero
 # # so that normal malloc/frees happen and valgrind can do its magic.  Before Python 2.6
 # # they all had different arbitrary names and in many cases could not be overridden.
@@ -27,7 +27,7 @@
 # s="_MAXFREELIST=0"
 # ./configure --enable-unicode=ucs4 --with-pydebug --without-pymalloc --prefix=/space/pydebug \
 # CPPFLAGS="-DPyDict$s -DPyFloat$s -DPyTuple$s -DPyUnicode$s -DPySet$s -DPyCFunction$s -DPyList$s -DPyFrame$s -DPyMethod$s"
-# 
+#
 # make install
 #
 # Then put /space/pydebug/bin/ first on your path.  The CPPFLAGS setting is to make sure no tuples are saved on freelists
@@ -47,7 +47,7 @@ else
 fi
 
 if [ -z "$CALLGRIND" ]
-then 
+then
    options="--track-fds=yes --num-callers=50 $showleaks --freelist-vol=500000000"
    cflags="-DAPSW_TESTFIXTURES -DAPSW_NO_NDEBUG"
    opt="-Os"
@@ -62,7 +62,7 @@ fi
 
 DEFS=""
 if [ -f sqlite3async.c ]
-then 
+then
     DEFS="$DEFS -DAPSW_USE_SQLITE_ASYNCVFS_C=\"sqlite3async.c\" -DAPSW_USE_SQLITE_ASYNCVFS_H=\"sqlite3async.h\""
 fi
 
@@ -71,7 +71,7 @@ then
     DEFS="$DEFS -DAPSW_USE_SQLITE_CONFIG=\"sqlite3/sqlite3config.h\""
 fi
 # find python
-PYTHON=python # use whatever is in the path
+PYTHON=${PYTHON:-python} # use whatever is in the path
 INCLUDEDIR=`$PYTHON -c "import distutils.sysconfig, sys; sys.stdout.write(distutils.sysconfig.get_python_inc())"`
 set -x
 rm -f apsw.o apsw.so
