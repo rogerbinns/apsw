@@ -26,7 +26,7 @@
 # # PyMethod_MAXFREELIST
 # s="_MAXFREELIST=0"
 # ./configure --enable-unicode=ucs4 --with-pydebug --without-pymalloc --prefix=/space/pydebug \
-# CPPFLAGS="-DPyDict$s -DPyTuple$s -DPyUnicode$s -DPySet$s -DPyCFunction$s -DPyList$s -DPyFrame$s -DPyMethod$s"
+# CPPFLAGS="-DPyDict$s -DPyFloat$s -DPyTuple$s -DPyUnicode$s -DPySet$s -DPyCFunction$s -DPyList$s -DPyFrame$s -DPyMethod$s"
 # 
 # make install
 #
