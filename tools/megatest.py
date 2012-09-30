@@ -81,7 +81,7 @@ def main(PYVERS, UCSTEST, SQLITEVERS, concurrency):
 
     for pyver in PYVERS:
         for ucs in UCSTEST:
-            if pyver=="system":
+            if pyver=="system" or pyver>="3.3":
                 if ucs!=2: continue
                 ucs=0
             for sqlitever in SQLITEVERS:
@@ -172,6 +172,7 @@ def patch_natty_build(setup):
 
 # Default versions we support
 PYVERS=(
+    '3.3.0',
     '3.2.2',
     '3.1.4',
     '2.7.2',
@@ -180,7 +181,6 @@ PYVERS=(
     '2.4.6',
     '2.3.7',
     'system',
-    # '2.2.3',  - apsw not supported on 2.2 as it needs GILstate
     )
 
 SQLITEVERS=(

@@ -7,10 +7,12 @@ RELEASEDATE="26 September 2012"
 VERSION=$(SQLITEVERSION)$(APSWSUFFIX)
 VERDIR=apsw-$(VERSION)
 
+PYTHON=python
+
 # These control Debian packaging
 DEBSUFFIX=1ppa1
 DEBMAINTAINER="Roger Binns <rogerb@rogerbinns.com>"
-DEBSERIES=quantal precise oneiric natty lucid
+DEBSERIES=quantal precise oneiric lucid
 PPAUPLOAD=ppa:ubuntu-rogerbinns/apsw
 
 # Some useful info
@@ -48,41 +50,41 @@ clean:
 doc: docs
 
 docs: build_ext $(GENDOCS) doc/example.rst doc/.static
-	env PYTHONPATH=. http_proxy= python tools/docmissing.py
-	env PYTHONPATH=. http_proxy= python tools/docupdate.py $(VERSION)
+	env PYTHONPATH=. http_proxy= $(PYTHON) tools/docmissing.py
+	env PYTHONPATH=. http_proxy= $(PYTHON) tools/docupdate.py $(VERSION)
 	make PYTHONPATH="`pwd`" VERSION=$(VERSION) RELEASEDATE=$(RELEASEDATE) -C doc clean html
 
 doc/example.rst: example-code.py tools/example2rst.py src/apswversion.h
 	rm -f dbfile
-	env PYTHONPATH=. python tools/example2rst.py
+	env PYTHONPATH=. $(PYTHON) tools/example2rst.py
 
 doc/.static:
 	mkdir -p doc/.static
 
 # This is probably gnu make specific but only developers use this makefile
 $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
-	env PYTHONPATH=. http_proxy= python tools/code2rst.py $(SQLITEVERSION) $< $@
+	env PYTHONPATH=. http_proxy= $(PYTHON) tools/code2rst.py $(SQLITEVERSION) $< $@
 
 build_ext:
-	python setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --force --enable-all-extensions
+	$(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --force --enable-all-extensions
 
 coverage:
-	python setup.py fetch --version=$(SQLITEVERSION) --all && env APSW_PY_COVERAGE=t tools/coverage.sh
+	$(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all && env APSW_PY_COVERAGE=t tools/coverage.sh
 
 test: build_ext
-	python tests.py
+	$(PYTHON) tests.py
 
 # Needs a debug python.  Look at the final numbers at the bottom of
 # l6, l7 and l8 and see if any are growing
 valgrind: /space/pydebug/bin/python
-	python setup.py fetch --version=$(SQLITEVERSION) --all && \
+	$(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all && \
 	  env APSWTESTPREFIX=/tmp/ PATH=/space/pydebug/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=6 tools/valgrind.sh 2>&1 | tee l6 && \
 	  env APSWTESTPREFIX=/tmp/ PATH=/space/pydebug/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=7 tools/valgrind.sh 2>&1 | tee l7 && \
 	  env APSWTESTPREFIX=/tmp/ PATH=/space/pydebug/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=8 tools/valgrind.sh 2>&1 | tee l8
 
 # Same as above but does just one run
 valgrind1: /space/pydebug/bin/python
-	python setup.py fetch --version=$(SQLITEVERSION) --all && \
+	$(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all && \
 	  env APSWTESTPREFIX=/tmp/ PATH=/space/pydebug/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=1 tools/valgrind.sh
 
 
@@ -101,7 +103,7 @@ header:
 # the funky test stuff is to exit successfully when grep has rc==1 since that means no lines found.
 showsymbols:
 	rm -f apsw.so
-	python setup.py fetch --all --version=$(SQLITEVERSION) build_ext --inplace --force --enable-all-extensions
+	$(PYTHON) setup.py fetch --all --version=$(SQLITEVERSION) build_ext --inplace --force --enable-all-extensions
 	test -f apsw.so
 	set +e; nm --extern-only --defined-only apsw.so | egrep -v ' (__bss_start|_edata|_end|_fini|_init|initapsw)$$' ; test $$? -eq 1 || false
 
@@ -136,9 +138,10 @@ compile-win:
 	c:/python31-64/python setup.py  $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	c:/python32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	c:/python32-64/python setup.py  $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python33/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 
 source_nocheck: docs
-	python setup.py sdist --formats zip --add-doc
+	$(PYTHON) setup.py sdist --formats zip --add-doc
 
 # Make the source and then check it builds and tests correctly.  This will catch missing files etc
 source: source_nocheck
@@ -149,7 +152,7 @@ source: source_nocheck
 	for f in doc/vfs.html doc/_sources/pysqlite.txt tools/apswtrace.py ; do test -f work/$(VERDIR)/$$f ; done
 	for f in sqlite3.c sqlite3/sqlite3.c debian/control ; do test ! -f work/$(VERDIR)/$$f ; done
 # Test code works
-	cd work/$(VERDIR) ; python setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --enable-all-extensions build_test_extension test
+	cd work/$(VERDIR) ; $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --enable-all-extensions build_test_extension test
 
 upload:
 	@if [ -z "$(GC_USER)" ] ; then echo "Specify googlecode user by setting GC_USER environment variable" ; exit 1 ; fi
@@ -167,10 +170,12 @@ upload:
 	test -f dist/$(VERDIR).win-amd64-py3.1.exe
 	test -f dist/$(VERDIR).win32-py3.2.exe
 	test -f dist/$(VERDIR).win-amd64-py3.2.exe
+	test -f dist/$(VERDIR).win32-py3.3.exe
 	-rm -f dist/$(VERDIR)-sigs.zip dist/*.asc
 	for f in dist/* ; do gpg --use-agent --armor --detach-sig "$$f" ; done
 	cd dist ; zip -m $(VERDIR)-sigs.zip *.asc
 	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) GPG signatures for all files" -l "Type-Signatures,OpSys-All" dist/$(VERDIR)-sigs.zip
+	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 3.2 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py3.3.exe
 	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 3.2 (Binary 64 bit)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win-amd64-py3.2.exe
 	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 3.2 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py3.2.exe
 	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 3.1 (Binary 64 bit)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win-amd64-py3.1.exe

@@ -52,6 +52,9 @@ way to build or all the :ref:`options available <building>`.
   `64bit 
   <http://apsw.googlecode.com/files/apsw-3.7.14-r2.win-amd64-py3.2.exe>`__
 
+* Windows Python 3.3 `32bit
+  <http://apsw.googlecode.com/files/apsw-3.7.14-r2.win32-py3.3.exe>`__
+
 * `apsw-3.7.14-r2-sigs.zip 
   <http://apsw.googlecode.com/files/apsw-3.7.14-r2-sigs.zip>`_
   GPG signatures for all files

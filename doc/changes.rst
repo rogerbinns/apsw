@@ -2,6 +2,15 @@ Change History
 **************
 .. currentmodule:: apsw
 
+next
+====
+
+Updated setup and test suite so that all files are explicitly closed
+instead of relying on garbage collection.
+
+Added Windows binaries for Python 3.3.  (Only 32 bit as Python doesn't
+provide a free way of making 64 bit binaries.)
+
 3.7.14-r2
 =========
 
