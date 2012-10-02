@@ -45,6 +45,10 @@ py3=sys.version_info>=(3,0)
 
 # ensure files are closed
 def read_whole_file(name, mode):
+    if sys.version_info<(2,4):
+        if "r" in mode and "U" in mode:
+            # python 2.3 returns file not found if "U" present!
+            mode="".join([m for m in mode if m!="U"])
     f=open(name, mode)
     try:
         return f.read()

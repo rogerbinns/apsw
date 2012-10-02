@@ -36,6 +36,10 @@ py3=sys.version_info>=(3,0)
 TESTFILEPREFIX=os.environ.get("APSWTESTPREFIX", "")
 
 def read_whole_file(name, mode, encoding=None):
+    if sys.version_info<(2,4):
+        if "r" in mode and "U" in mode:
+            # python 2.3 returns file not found if "U" present!
+            mode="".join([m for m in mode if m!="U"])
     if encoding:
         f=codecs.open(name, mode, encoding)
     else:
@@ -4927,7 +4931,8 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, t.xRead, "three", "four")
         self.assertRaises(OverflowError, t.xRead, l("0xffffffffeeeeeeee0"), 1)
         self.assertRaises(OverflowError, t.xRead, 1, l("0xffffffffeeeeeeee0"))
-        self.assertRaises(apsw.IOError, t.xRead, 27, -17)
+        if not iswindows:
+            self.assertRaises(apsw.IOError, t.xRead, 27, -17)
         TestFile.xRead=TestFile.xRead1
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.xRead=TestFile.xRead2
@@ -4945,7 +4950,8 @@ class APSW(unittest.TestCase):
         if sys.version_info>=(2,4): # py2.3 has bug
             self.assertRaises(TypeError, t.xWrite, "three", "four")
         self.assertRaises(OverflowError, t.xWrite, "three", l("0xffffffffeeeeeeee0"))
-        self.assertRaises(apsw.IOError, t.xWrite, b("foo"), -7)
+        if not iswindows:
+            self.assertRaises(apsw.IOError, t.xWrite, b("foo"), -7)
         self.assertRaises(TypeError, t.xWrite, u("foo"), 0)
         TestFile.xWrite=TestFile.xWrite1
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
@@ -5596,7 +5602,6 @@ class APSW(unittest.TestCase):
 
     def testShell(self, shellclass=None):
         "Check Shell functionality"
-        return
         # The windows stdio library is hopelessly broken when used
         # with codecs.  Sadly Python before version 3 tried to use it
         # and you get a dismal mess - complaints about BOMs lacking on
@@ -6725,9 +6730,9 @@ insert into xxblah values(3);
         isempty(fh[2])
         # make sure encoding took
         if sys.version_info>=(3,0):
-            self.assertTrue(b("xab") not in open(TESTFILEPREFIX+"test-shell-1", "rb").read())
+            self.assertTrue(b("xab") not in read_whole_file(TESTFILEPREFIX+"test-shell-1", "rb"))
         else:
-            self.assertTrue("xab" not in open(TESTFILEPREFIX+"test-shell-1", "rb").read())
+            self.assertTrue("xab" not in read_whole_file(TESTFILEPREFIX+"test-shell-1", "rb"))
         data=s.db.cursor().execute("select * from imptest; delete from imptest").fetchall()
         self.assertEqual(2, len(data))
         reset()
@@ -6836,9 +6841,7 @@ insert into xxblah values(3);
             )
             ):
             for seq in sequences:
-                f=open(TESTFILEPREFIX+"test-shell-1", "wt")
-                f.write(("a,b\nrow,"+fmt+"\n") % seq)
-                f.close()
+                write_whole_file(TESTFILEPREFIX+"test-shell-1", "wt", ("a,b\nrow,"+(fmt%seq)+"\n"))
                 reset()
                 cmd("drop table [test-shell-1];\n.autoimport %stest-shell-1" % (TESTFILEPREFIX,))
                 s.cmdloop()
@@ -6856,9 +6859,7 @@ insert into xxblah values(3);
             if py3:
                 if isinstance(content, bytes):
                     continue
-            f=open(TESTFILEPREFIX+"test-shell-1", "wt")
-            f.write(content)
-            f.close()
+            write_whole_file(TESTFILEPREFIX+"test-shell-1", "wt", content)
             reset()
             cmd("drop table [test-shell-1];\n.autoimport %stest-shell-1" % (TESTFILEPREFIX,))
             s.cmdloop()
@@ -6966,7 +6967,7 @@ insert into xxblah values(3);
         ### Command read
         ###
         # pretty much thoroughly tested above
-        open(TESTFILEPREFIX+"test-shell-1.py", "wt").write("""
+        write_whole_file(TESTFILEPREFIX+"test-shell-1.py", "wt", """
 assert apsw
 assert shell
 shell.write(shell.stdout, "hello world\\n")
