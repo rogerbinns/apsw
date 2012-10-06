@@ -1191,6 +1191,7 @@ formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
       Py_ssize_t left;
       unires=PyUnicode_FromUnicode(NULL, PyUnicode_GET_SIZE(value)+2);
       if(!unires) return NULL;
+      APSW_UNICODE_READY(unires, return NULL);
       res=PyUnicode_AS_UNICODE(unires);
       *res++='\'';
       memcpy(res, PyUnicode_AS_UNICODE(value), PyUnicode_GET_DATA_SIZE(value));
@@ -1259,6 +1260,7 @@ formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
 			unires=PyErr_NoMemory());
       if(!unires)
 	return NULL;
+      APSW_UNICODE_READY(unires, return NULL);
       res=PyUnicode_AS_UNICODE(unires);
       *res++='X';
       *res++='\'';

@@ -69,6 +69,16 @@ typedef int Py_ssize_t;
 #define APSW_PYTYPE_VERSION
 #endif
 
+/* PyUnicode_READY needs to be called - Python 3.3 regression bug -
+   http://bugs.python.org/issue16145 */
+
+#if PY_VERSION_HEX < 0x03030000
+#define APSW_UNICODE_READY(x,y) do {} while(0)
+#else
+#define APSW_UNICODE_READY(x,y) do { if (!PyUnicode_READY(x)) {y;} } while(0)
+#endif
+
+
 
 #if PY_MAJOR_VERSION < 3
 #define PyBytes_Check             PyString_Check
@@ -117,7 +127,7 @@ Call_PythonMethod(PyObject *obj, const char *methodname, int mandatory, PyObject
   PyObject *res=NULL;
 
   /* we may be called when there is already an error.  eg if you return an error in
-     a cursor method, then SQLite calls vtabClose which calls us.  We don't want to 
+     a cursor method, then SQLite calls vtabClose which calls us.  We don't want to
      clear pre-existing errors, but we do want to clear ones when the function doesn't
      exist but is optional */
   PyObject *etype=NULL, *evalue=NULL, *etraceback=NULL;
@@ -148,7 +158,7 @@ Call_PythonMethod(PyObject *obj, const char *methodname, int mandatory, PyObject
 
   res=PyEval_CallObject(method, args);
   if(!pyerralreadyoccurred && PyErr_Occurred())
-    AddTraceBackHere(__FILE__, __LINE__, "Call_PythonMethod", "{s: s, s: i, s: O, s: O}", 
+    AddTraceBackHere(__FILE__, __LINE__, "Call_PythonMethod", "{s: s, s: i, s: O, s: O}",
                      "methodname", methodname,
                      "mandatory", mandatory,
                      "args", args,
@@ -219,7 +229,7 @@ convertutf8stringsize(const char *str, Py_ssize_t size)
   assert(str);
   assert(size>=0);
 
-  /* Performance optimization:  If str is all ascii then we 
+  /* Performance optimization:  If str is all ascii then we
      can just make a unicode object and fill in the chars. PyUnicode_DecodeUTF8 is rather long
   */
   if(size<16384)
@@ -238,6 +248,7 @@ convertutf8stringsize(const char *str, Py_ssize_t size)
           Py_UNICODE *out;
           PyObject *res=PyUnicode_FromUnicode(NULL, size);
           if(!res) return res;
+          APSW_UNICODE_READY(res, return NULL);
           out=PyUnicode_AS_UNICODE(res);
 
           i=size;
@@ -251,7 +262,7 @@ convertutf8stringsize(const char *str, Py_ssize_t size)
           return res;
         }
     }
-  
+
   return PyUnicode_DecodeUTF8(str, size, NULL);
 }
 
@@ -289,11 +300,11 @@ getutf8string(PyObject *string)
          doing a conversion to unicode and then a conversion to utf8.
 
          We only do this optimisation for strings that aren't
-         ridiculously long. 
+         ridiculously long.
       */
       if(PyString_GET_SIZE(string)<16384)
         {
-          int isallascii=1; 
+          int isallascii=1;
           int i=PyString_GET_SIZE(string);
           const char *p=PyString_AS_STRING(string);
           while(isallascii && i)
@@ -314,7 +325,7 @@ getutf8string(PyObject *string)
   if(!inunicode)
       inunicode=PyUnicode_FromObject(string);
 
-  if(!inunicode) 
+  if(!inunicode)
     return NULL;
 
   assert(!PyErr_Occurred());
