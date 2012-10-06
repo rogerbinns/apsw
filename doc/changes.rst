@@ -2,14 +2,21 @@ Change History
 **************
 .. currentmodule:: apsw
 
-next
-====
+3.7.14.1-r1
+===========
 
 Updated setup and test suite so that all files are explicitly closed
 instead of relying on garbage collection.
 
 Added Windows binaries for Python 3.3.  (Only 32 bit as Python doesn't
 provide a free way of making 64 bit binaries.)
+
+Updated setup.py to work with changed SQLite download page formatting
+when detecting latest version.
+
+Worked around a ` Python 3.3.0 regression bug
+<http://bugs.python.org/issue16145>`__.  This would most likely be
+experienced using csv output from the :doc:`shell`.
 
 3.7.14-r2
 =========
