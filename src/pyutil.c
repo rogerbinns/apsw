@@ -70,13 +70,10 @@ typedef int Py_ssize_t;
 #endif
 
 /* PyUnicode_READY needs to be called - Python 3.3 regression bug -
-   http://bugs.python.org/issue16145 */
+   http://bugs.python.org/issue16145  - gave up because other things
+   crashed */
 
-#if PY_VERSION_HEX < 0x03030000
 #define APSW_UNICODE_READY(x,y) do {} while(0)
-#else
-#define APSW_UNICODE_READY(x,y) do { if (!PyUnicode_READY(x)) {y;} } while(0)
-#endif
 
 
 

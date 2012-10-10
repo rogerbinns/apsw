@@ -5616,6 +5616,10 @@ class APSW(unittest.TestCase):
         if shellclass is None:
             shellclass=apsw.Shell
 
+        # Python 3.3.0 crashes in csv module - fixed in 3.3.1
+        if sys.version_info>=(3,3,0) and sys.version_info<(3,3,1):
+            return
+
         # I originally tried to use stringio for this but it barfs
         # badly over non-ascii stuff and there was no way to make all
         # the python versions simultaneously happy
