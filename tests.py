@@ -321,7 +321,7 @@ class APSW(unittest.TestCase):
         }
 
     def deltempfiles(self):
-        for name in ("testdb", "testdb2", "testdb3", "testfile", "testfile2", "testdb2x", "testdb-async",
+        for name in ("testdb", "testdb2", "testdb3", "testfile", "testfile2", "testdb2x",
                      "test-shell-1", "test-shell-1.py",
                      "test-shell-in", "test-shell-out", "test-shell-err"):
             for i in "-wal", "-journal", "":
@@ -5451,99 +5451,6 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.BusyError, b.__exit__, None, None, None)
         b.__exit__(None, None, None)
 
-
-    def testAsyncVFS(self):
-        "Tests the asynchronous VFS"
-        self.assertRaises(TypeError, apsw.async_initialize)
-        self.assertRaises(TypeError, apsw.async_initialize, 3, 4)
-        self.assertRaises(TypeError, apsw.async_initialize, None, 3)
-        self.assertRaises(apsw.SQLError, apsw.async_initialize, "nonexistent vfs", 3)
-
-        # check it works registered as default
-        names=apsw.vfsnames()
-        v=apsw.async_initialize("", True)
-        names2=apsw.vfsnames()
-        self.assertEqual(len(names2), len(names)+1)
-        self.assertNotEqual(names[0], names2[0])
-        self.assertEqual(v, names2[0])
-        self.assertTrue(v not in names)
-
-        self.assertRaises(TypeError, apsw.async_shutdown, 3)
-        apsw.async_shutdown()
-        # make sure it is gone
-        self.assertEqual(names, apsw.vfsnames())
-
-        # check it works not registered as default
-        names=apsw.vfsnames()
-        v2=apsw.async_initialize("", 0)
-        names2=apsw.vfsnames()
-        self.assertEqual(len(names2), len(names)+1)
-        self.assertEqual(names[0], names2[0])
-        self.assertTrue(v2 in names2)
-        self.assertTrue(v2 not in names)
-        self.assertEqual(v, v2)
-
-        # create the database and write to it, but without starting the worker thread
-        # so the disk file should remain zero length
-        fn=TESTFILEPREFIX+"testdb-async"
-        self.db=apsw.Connection(fn, vfs=v2)
-        # Due to macos bugs SQLite writes the first byte of the file sometimes
-        # so length with be zero on other platforms and zero or one on macos.
-        self.assertTrue(os.stat(fn).st_size<=1)
-        cur=self.db.cursor()
-        cur.execute("create table foo(x,y);insert into foo values(1,2)")
-        self.assertTrue(os.stat(fn).st_size<=1)
-        # Do a worker thread
-        d={
-            'workerstarted': False,
-            'workerfinished': False
-            }
-        def worker():
-            d['workerstarted']=True
-            self.assertRaises(TypeError, apsw.async_run, 3)
-            apsw.async_run()
-            d['workerfinished']=True
-        t=ThreadRunner(worker)
-        t.start()
-        time.sleep(1)
-        self.assertEqual(d['workerstarted'], True)
-        self.assertEqual(d['workerfinished'], False)
-
-        ### check async_control
-        # non-existent opcode
-        self.assertRaises(ValueError, apsw.async_control, 89547)
-        # insufficient args
-        self.assertRaises(TypeError, apsw.async_control)
-        # bad arg
-        self.assertRaises(TypeError, apsw.async_control, "three")
-        # misuse
-        self.assertRaises(apsw.MisuseError, apsw.async_control, apsw.SQLITEASYNC_DELAY, -3)
-        # too many params
-        self.assertRaises(TypeError, apsw.async_control, apsw.SQLITEASYNC_HALT, 1, 2, 3)
-        # too few params
-        self.assertRaises(TypeError, apsw.async_control, apsw.SQLITEASYNC_DELAY)
-        # try setting and getting
-        origdelay=apsw.async_control(apsw.SQLITEASYNC_GET_DELAY)
-        apsw.async_control(apsw.SQLITEASYNC_DELAY, origdelay+1)
-        newdelay=apsw.async_control(apsw.SQLITEASYNC_GET_DELAY)
-        self.assertEqual(origdelay+1, newdelay)
-
-        ### Tell worker to quit
-        self.db.close()
-        apsw.async_control(apsw.SQLITEASYNC_HALT, apsw.SQLITEASYNC_HALT_IDLE)
-        # Give a few seconds of grace time
-        for i in range(5):
-            if d['workerfinished']: break
-            time.sleep(1)
-        self.assertEqual(d['workerfinished'], True)
-
-        # catch any exceptions in worker thread
-        t.go()
-
-        # clean up so the test can be run multiple times
-        apsw.async_control(apsw.SQLITEASYNC_HALT, apsw.SQLITEASYNC_HALT_NEVER)
-        apsw.async_shutdown()
-
     def testLog(self):
         "Verifies logging functions"
         self.assertRaises(TypeError, apsw.log)
@@ -8163,11 +8070,6 @@ shell.write(shell.stdout, "hello world\\n")
         except MemoryError:
             pass
 
-        ## AsyncControlFails
-        if hasattr(apsw, "async_control"):
-            apsw.faultdict["AsyncControlFails"]=True
-            self.assertRaises(apsw.NoMemError, apsw.async_control, apsw.SQLITEASYNC_GET_HALT)
-
         ## FormatSQLValueResizeFails
         apsw.faultdict["FormatSQLValueResizeFails"]=True
         try:
@@ -8400,9 +8302,6 @@ def setup(write=write):
     memdb=apsw.Connection(":memory:")
     if not getattr(memdb, "enableloadextension", None):
         del APSW.testLoadExtension
-
-    if not hasattr(apsw, "async_initialize"):
-        del APSW.testAsyncVFS
 
     forkcheck=False
     if hasattr(apsw, "fork_checker") and hasattr(os, "fork"):

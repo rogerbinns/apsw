@@ -173,16 +173,14 @@ class fetch(Command):
         ("version=", None, "Which version of SQLite/components to get (default current)"),
         ("missing-checksum-ok", None, "Continue on a missing checksum (default abort)"),
         ("sqlite", None, "Download SQLite amalgamation"),
-        ("asyncvfs", None, "Download the asynchronous vfs"),
         ("all", None, "Download all downloadable components"),
         ]
-    fetch_options=['sqlite', 'asyncvfs']
+    fetch_options=['sqlite']
     boolean_options=fetch_options+['all', 'missing-checksum-ok']
 
     def initialize_options(self):
         self.version=None
         self.sqlite=False
-        self.asyncvfs=False
         self.all=False
         self.missing_checksum_ok=False
 
@@ -336,56 +334,11 @@ class fetch(Command):
                 os.chdir("..")
             downloaded+=1
 
-        if self.asyncvfs:
-            write("  Getting the async vfs extension")
-            if self.version=="fossil":
-                AURL="http://www.sqlite.org/src/zip/sqlite3.zip?uuid=trunk"
-            else:
-                AURL="http://www.sqlite.org/sqlite-src-%s.zip" % (self.webversion,)
-            data=self.download(AURL, checksum=not self.version=="fossil")
-
-            archive=zipfile.ZipFile(data, "r")
-            members=archive.namelist()
-            extractfile=archive.read
-
-            lookfor=("sqlite3async.c", "sqlite3async.h")
-            found=[0]*len(lookfor)
-            for member in members:
-                for i,n in enumerate(lookfor):
-                    if member.endswith("/ext/async/"+n):
-                        self.fixupasyncvfs(n, extractfile(member))
-                        found[i]+=1
-
-            archive.close()
-            if found!=[1]*len(lookfor):
-                for i,f in enumerate(lookfor):
-                    if found[i]!=1:
-                        write("Found %d of %s - should have been exactly one" % (found[i], f), sys.stderr)
-                raise ValueError("Unable to correctly get asyncvfs parts")
-            downloaded+=1
-
         if not downloaded:
             write("You didn't specify any components to fetch.  Use")
             write("   setup.py fetch --help")
             write("for a list and details")
             raise ValueError("No components downloaded")
-
-    def fixupasyncvfs(self, fname, code):
-        n=os.path.join(os.path.dirname(__file__), fname)
-        # see http://www.sqlite.org/src/info/084941461f
-        afs=re.compile(r"^(int asyncFileSize\()")
-        proto=re.compile(r"^(\w+\s+sqlite3async_(initialize|shutdown|control|run)\()")
-        o=open(n, "wt")
-        try:
-            for line in fixupcode(code):
-                line=afs.sub(r"static \1", line)
-                line=proto.sub(r"SQLITE3ASYNC_API \1", line)
-                o.write(line)
-            o.close()
-        except:
-            o.close()
-            os.remove(n)
-            raise
 
     # A function for verifying downloads
     def verifyurl(self, url, data):
@@ -506,12 +459,6 @@ def findamalgamation():
     for path in amalgamation:
         if os.path.exists(path):
             return path
-    return None
-
-def findasyncvfs():
-    path=os.path.join(os.path.dirname(os.path.abspath(__file__)), "sqlite3async.c")
-    if os.path.exists(path):
-        return path
     return None
 
 def find_in_path(name):
@@ -670,18 +617,6 @@ class apsw_build_ext(beparent):
                 write("ICU: Unable to determine includes/libraries for ICU using icu-config")
                 write("ICU: You will need to manually edit setup.py or setup.cfg to set them")
 
-        # asyncvfs
-        path=findasyncvfs()
-        if path:
-            if sys.platform=="win32":
-                # double quotes get consumed by windows arg processing
-                ext.define_macros.append( ('APSW_USE_SQLITE_ASYNCVFS_C', '\\"'+path+'\\"') )
-                ext.define_macros.append( ('APSW_USE_SQLITE_ASYNCVFS_H', '\\"'+path[:-1]+'h\\"') )
-            else:
-                ext.define_macros.append( ('APSW_USE_SQLITE_ASYNCVFS_C', '"'+path+'"') )
-                ext.define_macros.append( ('APSW_USE_SQLITE_ASYNCVFS_H', '"'+path[:-1]+'h"') )
-            write("AsyncVFS: "+path)
-
         # shell
         if not os.path.exists("src/shell.c") or \
                os.path.getmtime("src/shell.c")<os.path.getmtime("tools/shell.py") or \
@@ -741,12 +676,6 @@ class apsw_sdist(sparent):
                 mout.write("include "+amalrelpath.replace("sqlite3.c", "sqlite3ext.h")+"\n")
                 if os.path.exists("sqlite3/sqlite3config.h"):
                     mout.write("include sqlite3/sqlite3config.h\n")
-
-            if "asyncvfs" in fetch_parts:
-                asyncpath=findasyncvfs()
-                asyncpath=asyncpath[len(os.path.dirname(os.path.abspath(__file__)))+1:]
-                mout.write("include "+asyncpath+"\n")
-                mout.write("include "+asyncpath[:-1]+"h\n")
 
             mout.close()
 
@@ -828,7 +757,7 @@ def create_c_file(src, dest):
 
 # We depend on every .[ch] file in src
 depends=[f for f in glob.glob("src/*.[ch]") if f!="src/apsw.c"]
-for f in (findamalgamation(), findasyncvfs()):
+for f in (findamalgamation(), ):
     if f:
         depends.append(f)
 # we produce a .c file from this
@@ -870,8 +799,8 @@ a minimal layer over SQLite attempting just to translate the
 complete SQLite API into Python.""",
       author="Roger Binns",
       author_email="rogerb@rogerbinns.com",
-      url="http://code.google.com/p/apsw/",
-      download_url="http://code.google.com/p/apsw/downloads/list",
+      url="https://code.google.com/p/apsw/",
+      download_url="https://code.google.com/p/apsw/downloads/list",
       classifiers=[
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",

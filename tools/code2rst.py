@@ -67,39 +67,35 @@ def do_mappings():
         # which page does this correspond to?
         m=mappings[map]
         pg=None
-        if map.startswith("mapping_asyncvfs_"):
-            op.append("   `asyncvfs <http://www.sqlite.org/src/dir?name=ext/async>`__ (if compiled in)")
-            op.append("")
-        else:
-            for val in m:
-                if val=="SQLITE_OK": # present in multiple mappings
-                    continue
-                # check that all values in mapping go to the same page
-                if pg is None:
-                    try:
-                        pg=consts[val]
-                    except:
-                        import pdb ; pdb.set_trace()
-                    op.append("   `%s <%s>`__" % (pages[pg]['title'], pg))
-                    op.append("")
-                else:
-                    if consts[val]!=pg:
-                        print "These don't all map to the same page"
-                        print map
-                        for val in m:
-                            print "  ",consts[val],"\t",val
-                        sys.exit(1)
-            # check to see if apsw is missing any
-            for v in pages[pg]['vars']:
-                if v not in mappings[map]:
-                    print "Mapping",map,"is missing",v
+        for val in m:
+            if val=="SQLITE_OK": # present in multiple mappings
+                continue
+            # check that all values in mapping go to the same page
+            if pg is None:
+                try:
+                    pg=consts[val]
+                except:
+                    import pdb ; pdb.set_trace()
+                op.append("   `%s <%s>`__" % (pages[pg]['title'], pg))
+                op.append("")
+            else:
+                if consts[val]!=pg:
+                    print "These don't all map to the same page"
+                    print map
+                    for val in m:
+                        print "  ",consts[val],"\t",val
                     sys.exit(1)
+        # check to see if apsw is missing any
+        for v in pages[pg]['vars']:
+            if v not in mappings[map]:
+                print "Mapping",map,"is missing",v
+                sys.exit(1)
         vals=m[:]
         vals.sort()
         op.append("    %s" % (", ".join([":const:`"+v+"`" for v in vals]),))
         op.append("")
-        
-    
+
+
 
 # we have our own markup to describe what sqlite3 calls we make using
 # -* and then a space seperated list.  Maybe this could just be
@@ -124,10 +120,10 @@ def do_calls(line):
     else:
         for c in calls:
             saop.append("  * "+c)
-                        
+
     saop.append("")
     return indexop, saop
-             
+
 
 def do_methods():
     # special handling for __init__ - add into class body
@@ -158,7 +154,7 @@ def do_methods():
         op.append("")
         op.extend(fixup(op, saop))
         op.append("")
-    
+
     keys=methods.keys()
     keys.sort()
 
@@ -238,7 +234,7 @@ for line in open(sys.argv[2], "rtU"):
                 mappings[curmapping]=[]
             else:
                 mappings[curmapping].append(g[1])
-            
+
     if not incomment and line.lstrip().startswith("/**"):
         # a comment intended for us
         line=line.lstrip(" \t/*")

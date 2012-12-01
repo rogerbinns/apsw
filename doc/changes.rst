@@ -2,6 +2,18 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.7.15-r1
+=========
+
+Work around changed semantics for error handling when the VFS xDelete
+method is asked to delete a file that does not exist.
+
+Completely removed all `AsyncVFS
+<http://www.sqlite.org/asyncvfs.html>`__ related code.  This extension
+is no longer maintained nor supported by the SQLite team.  `WAL
+<http://www.sqlite.org/wal.html>`__ is a good way of getting similar
+functionality.
+
 3.7.14.1-r1
 ===========
 

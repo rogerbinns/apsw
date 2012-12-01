@@ -4,7 +4,7 @@
   See the accompanying LICENSE file.
 */
 
-/** 
+/**
 
 .. _vfs:
 
@@ -167,7 +167,7 @@ across.
    assert(self->containingvfs->pAppData==self)
 
 #define CHECKVFSFILE \
-   assert(apswfile->file); 
+   assert(apswfile->file);
 
 #define CHECKVFSFILEPY \
   if(!self->base) { return PyErr_Format(ExcVFSFileClosed, "VFSFileClosed: Attempting operation on closed file"); }
@@ -199,7 +199,7 @@ across.
   PyErr_Restore(etype, eval, etb);          \
   PyGILState_Release(gilstate);
 
-typedef struct 
+typedef struct
 {
   PyObject_HEAD
   sqlite3_vfs *basevfs;         /* who we inherit from (might be null) */
@@ -212,7 +212,7 @@ static PyTypeObject APSWVFSType;
 typedef struct /* inherits */
 {
   const struct sqlite3_io_methods *pMethods;  /* structure sqlite needs */
-  PyObject *file;                             
+  PyObject *file;
 } APSWSQLite3File;
 
 /* this is only used if there is inheritance */
@@ -256,8 +256,8 @@ typedef struct
     fails then ``PyErr_Display``.  The three arguments correspond to
     what ``sys.exc_info()`` would return.
 
-    :param etype: The exception type 
-    :param evalue: The exception  value 
+    :param etype: The exception type
+    :param evalue: The exception  value
     :param etraceback: The exception traceback.  Note this
       includes all frames all the way up to the thread being started.
 */
@@ -270,7 +270,7 @@ apswvfs_excepthook(APSW_ARGUNUSED PyObject *donotuseself, PyObject *args)
   /* NOTE: do not use the self argument as this function is used for
      both apswvfs and apswvfsfile.  If you need to use self then make
      two versions of the function. */
-  PyObject *excepthook; 
+  PyObject *excepthook;
 
   excepthook=PySys_GetObject("excepthook"); /* NB borrowed reference */
   if(!excepthook) return NULL;
@@ -290,7 +290,10 @@ apswvfs_xDelete(sqlite3_vfs *vfs, const char *zName, int syncDir)
   if(!pyresult)
     {
       result=MakeSqliteMsgFromPyException(NULL);
-      AddTraceBackHere(__FILE__, __LINE__, "vfs.xDelete", "{s: s, s: i}", "zName", zName, "syncDir", syncDir);
+      if(result==SQLITE_IOERR_DELETE_NOENT)
+        PyErr_Clear();
+      else
+        AddTraceBackHere(__FILE__, __LINE__, "vfs.xDelete", "{s: s, s: i}", "zName", zName, "syncDir", syncDir);
     }
 
   VFSPOSTAMBLE;
@@ -299,13 +302,22 @@ apswvfs_xDelete(sqlite3_vfs *vfs, const char *zName, int syncDir)
 
 /** .. method:: xDelete(filename, syncdir)
 
-    Delete the named file.  
+    Delete the named file.
 
     .. note::
 
-       SQLite 3.7.8 changed semantics if the file does not exist.  In
-       prior SQLite versions an error should be raised.  For SQLite
-       3.7.8 onwards you should not raise an error.
+       SQLite has 3 different behaviours depending on version for how to handle missing files.
+
+
+       +----------------------------------------+-------------------------------------------------+
+       | SQLite < 3.7.8                         |Raise an :exc:`IOError` if the file does not     |
+       |                                        |exist.                                           |
+       +----------------------------------------+-------------------------------------------------+
+       | SQLite >= 3.7.8 and SQLite < 3.7.15    |Do not raise an exception                        |
+       +----------------------------------------+-------------------------------------------------+
+       | SQLite >= 3.7.15                       |Raise an :exc:`IOError` exception with           |
+       |                                        |extendedresult :const:`SQLITE_IOERR_DELETE_NOENT |
+       +----------------------------------------+-------------------------------------------------+
 
     :param filename: File to delete
 
@@ -483,7 +495,7 @@ apswvfspy_xFullPathname(APSWVFS *self, PyObject *name)
  finally:
   Py_XDECREF(utf8);
   if(resbuf) PyMem_Free(resbuf);
-  
+
   return result;
 }
 
@@ -506,7 +518,7 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
   PyList_SET_ITEM(flags, 1, PyInt_FromLong(pOutFlags?*pOutFlags:0));
   if(PyErr_Occurred()) goto finally;
 
-  if(inflags & (SQLITE_OPEN_URI|SQLITE_OPEN_MAIN_DB)) 
+  if(inflags & (SQLITE_OPEN_URI|SQLITE_OPEN_MAIN_DB))
     {
       nameobject=PyObject_New(PyObject, &APSWURIFilenameType);
       if(nameobject)
@@ -621,7 +633,7 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args)
       APSW_FAULT_INJECT(vfspyopen_fullpathnamemallocfailed,
 			filename=PyMem_Malloc(len+3),
 			filename=(char*)PyErr_NoMemory());
-      if(!filename) 
+      if(!filename)
 	goto finally;
       strcpy(filename, PyBytes_AS_STRING(utf8name));
       /* ensure extra null padding for URI params */
@@ -634,7 +646,7 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args)
       PyErr_Format(PyExc_TypeError, "Flags argument needs to be a list of two integers");
       goto finally;
     }
-  
+
   flagsout=PyIntLong_AsLong(PyList_GET_ITEM(flags, 1));
   flagsin=PyIntLong_AsLong(PyList_GET_ITEM(flags, 0));
   /* check for overflow */
@@ -735,7 +747,7 @@ static void
 {
   PyObject *pyresult=NULL;
   void *result=NULL;
-  
+
   VFSPREAMBLE;
 
   pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xDlSym", 1, "(NN)", PyLong_FromVoidPtr(handle), convertutf8string(zName));
@@ -1089,7 +1101,7 @@ static int
 apswvfs_xCurrentTime(sqlite3_vfs *vfs, double *julian)
 {
   PyObject *pyresult=NULL;
-  int result=0; 
+  int result=0;
   VFSPREAMBLE;
 
   pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xCurrentTime", 1, "()");
@@ -1180,7 +1192,7 @@ apswvfs_xGetLastError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
    This method is to return text describing the last error that
    happened in this thread. If not implemented SQLite's more generic
    message is used. However the method is :cvstrac:`never called
-   <3337>` by SQLite.  
+   <3337>` by SQLite.
 */
 static PyObject *
 apswvfspy_xGetLastError(APSWVFS *self)
@@ -1252,9 +1264,9 @@ apswvfs_xSetSystemCall(sqlite3_vfs *vfs, const char *zName, sqlite3_syscall_ptr 
 }
 
 /** .. method:: xSetSystemCall(name, pointer) -> bool
-    
+
     Change a system call used by the VFS.  This is useful for testing
-    and some other scenarios such as sandboxing.  
+    and some other scenarios such as sandboxing.
 
     :param name: The string name of the system call
 
@@ -1279,7 +1291,7 @@ apswvfspy_xSetSystemCall(APSWVFS *self, PyObject *args)
 
   CHECKVFSPY;
   VFSNOTIMPLEMENTED(xSetSystemCall, 3);
-  
+
   if(!PyArg_ParseTuple(args, "zO", &name, &pyptr))
     return NULL;
 
@@ -1513,7 +1525,7 @@ APSWVFS_dealloc(APSWVFS *self)
       /* not allowed to clobber existing exception */
       PyObject *etype=NULL, *evalue=NULL, *etraceback=NULL;
       PyErr_Fetch(&etype, &evalue, &etraceback);
-        
+
       xx=apswvfspy_unregister(self);
       Py_XDECREF(xx);
 
@@ -1530,7 +1542,7 @@ APSWVFS_dealloc(APSWVFS *self)
       self->containingvfs=NULL;
 
     }
-  
+
   self->basevfs=self->containingvfs=NULL;
 
   Py_TYPE(self)->tp_free((PyObject*)self);
@@ -1605,15 +1617,15 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
         }
       if(base) PyMem_Free(base);
     }
-  
+
   self->containingvfs=(sqlite3_vfs *)PyMem_Malloc(sizeof(sqlite3_vfs));
   if(!self->containingvfs) return -1;
-  memset(self->containingvfs, 0, sizeof(sqlite3_vfs)); 
-  self->containingvfs->iVersion=3; 
+  memset(self->containingvfs, 0, sizeof(sqlite3_vfs));
+  self->containingvfs->iVersion=3;
   self->containingvfs->szOsFile=sizeof(APSWSQLite3File);
   if(self->basevfs && !maxpathname)
     self->containingvfs->mxPathname=self->basevfs->mxPathname;
-  else 
+  else
     self->containingvfs->mxPathname=maxpathname?maxpathname:1024;
   self->containingvfs->zName=name;
   name=NULL;
@@ -1655,7 +1667,7 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
     }
 
   SET_EXC(res, NULL);
-    
+
  error:
   if(name) PyMem_Free(name);
   if(base) PyMem_Free(base);
@@ -1693,7 +1705,7 @@ static PyTypeObject APSWVFSType =
     "apsw.VFS",                /*tp_name*/
     sizeof(APSWVFS),           /*tp_basicsize*/
     0,                         /*tp_itemsize*/
-    (destructor)APSWVFS_dealloc, /*tp_dealloc*/ 
+    (destructor)APSWVFS_dealloc, /*tp_dealloc*/
     0,                         /*tp_print*/
     0,                         /*tp_getattr*/
     0,                         /*tp_setattr*/
@@ -1746,7 +1758,7 @@ static PyTypeObject APSWVFSType =
     inherit from an existing VFS implementation.
 
     .. note::
- 
+
        All file sizes and offsets are 64 bit quantities even on 32 bit
        operating systems.
 */
@@ -1758,8 +1770,8 @@ static PyTypeObject APSWVFSType =
     if that fails then ``PyErr_Display``.  The three arguments
     correspond to what ``sys.exc_info()`` would return.
 
-    :param etype: The exception type 
-    :param evalue: The exception  value 
+    :param etype: The exception type
+    :param evalue: The exception  value
     :param etraceback: The exception traceback.  Note this
       includes all frames all the way up to the thread being started.
 */
@@ -1818,7 +1830,7 @@ APSWVFSFile_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSE
     :raises ValueError: If the named VFS is not registered.
 
     .. note::
- 
+
       If the VFS that you inherit from supports :ref:`write ahead
       logging <wal>` then your :class:`VFSFile` will also support the
       xShm methods necessary to implement wal.
@@ -1864,7 +1876,7 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
       APSW_FAULT_INJECT(vfspyopen_fullpathnamemallocfailed,
 			self->filename=PyMem_Malloc(len+3),
 			self->filename=(char*)PyErr_NoMemory());
-      if(!self->filename) 
+      if(!self->filename)
 	goto finally;
       strcpy(self->filename, PyBytes_AS_STRING(utf8name));
       /* ensure extra null padding for URI params */
@@ -1897,7 +1909,7 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
   if(!zero) goto finally;
   if(-1==PySequence_SetItem(flags, 1, zero))
     goto finally;
-  
+
   flagsin=PyIntLong_AsLong(itemzero);
   if(flagsin!=(int)flagsin)
     {
@@ -1924,17 +1936,17 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
       if(xopenresult==SQLITE_OK) file->pMethods->xClose(file);
       goto finally;
     }
-  
+
   pyflagsout=PyInt_FromLong(flagsout);
-  
+
   if(-1==PySequence_SetItem(flags, 1, pyflagsout))
     {
       file->pMethods->xClose(file);
       goto finally;
     }
-  
+
   if(PyErr_Occurred()) goto finally;
-  
+
   self->base=(sqlite3_file*)(void*)file;
   res=0;
 
@@ -1962,7 +1974,7 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
   int asrb;
   Py_ssize_t size;
   const void *buffer;
-  
+
   FILEPREAMBLE;
 
   pybuf=Call_PythonMethodV(apswfile->file, "xRead", 1, "(iL)", amount, offset);
@@ -1978,7 +1990,7 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
       goto finally;
     }
   asrb=PyObject_AsReadBuffer(pybuf, &buffer, &size);
-  
+
   APSW_FAULT_INJECT(xReadReadBufferFail,,(PyErr_NoMemory(),asrb=-1));
 
   if(asrb!=0)
@@ -1998,7 +2010,7 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
       memcpy(bufout, buffer, amount);
       result=SQLITE_OK;
     }
-  
+
  finally:
   if(PyErr_Occurred())
     AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xRead", "{s: i, s: L, s: O}", "amount", amount, "offset", offset, "result", pybuf?pybuf:Py_None);
@@ -2039,7 +2051,7 @@ apswvfsfilepy_xRead(APSWVFSFile *self, PyObject *args)
       assert(PyErr_Occurred());
       return NULL;
     }
-  
+
   buffy=PyBytes_FromStringAndSize(NULL, amount);
   if(!buffy) return NULL;
 
@@ -2058,7 +2070,7 @@ apswvfsfilepy_xRead(APSWVFSFile *self, PyObject *args)
       _PyBytes_Resize(&buffy, amount);
       return buffy;
     }
-   
+
   Py_DECREF(buffy);
 
 
@@ -2084,7 +2096,7 @@ apswvfsfile_xWrite(sqlite3_file *file, const void *buffer, int amount, sqlite3_i
   if(!pybuf) goto finally;
 
   pyresult=Call_PythonMethodV(apswfile->file, "xWrite", 1, "(OL)", pybuf, offset);
-  
+
  finally:
   if(PyErr_Occurred())
     {
@@ -2103,7 +2115,7 @@ apswvfsfile_xWrite(sqlite3_file *file, const void *buffer, int amount, sqlite3_i
   requested, or return an error. If you have the file open for
   non-blocking I/O or if signals happen then it is possible for the
   underlying operating system to do a partial write. You will need to
-  write the remaining data. 
+  write the remaining data.
 
   :param offset: Where to start writing. This number may be 64 bit once the database is larger than 2GB.
   :param data: (Python 2) string, (Python 3) bytes
@@ -2127,7 +2139,7 @@ apswvfsfilepy_xWrite(APSWVFSFile *self, PyObject *args)
       assert(PyErr_Occurred());
       return NULL;
     }
-  
+
   asrb=PyObject_AsReadBuffer(buffy, &buffer, &size);
   if(asrb!=0 || PyUnicode_Check(buffy))
     {
@@ -2140,7 +2152,7 @@ apswvfsfilepy_xWrite(APSWVFSFile *self, PyObject *args)
 
   if(res==SQLITE_OK)
     Py_RETURN_NONE;
-    
+
   SET_EXC(res, NULL);
   return NULL;
 }
@@ -2181,14 +2193,14 @@ apswvfsfilepy_xUnlock(APSWVFSFile *self, PyObject *args)
 
   if(!PyArg_ParseTuple(args, "i", &flag))
     return NULL;
-  
+
   res=self->base->pMethods->xUnlock(self->base, flag);
-  
+
   APSW_FAULT_INJECT(xUnlockFails,,res=SQLITE_IOERR);
 
   if(res==SQLITE_OK)
     Py_RETURN_NONE;
-    
+
   SET_EXC(res, NULL);
   return NULL;
 }
@@ -2236,12 +2248,12 @@ apswvfsfilepy_xLock(APSWVFSFile *self, PyObject *args)
 
   if(!PyArg_ParseTuple(args, "i", &flag))
     return NULL;
-  
+
   res=self->base->pMethods->xLock(self->base, flag);
 
   if(res==SQLITE_OK)
     Py_RETURN_NONE;
-    
+
   SET_EXC(res, NULL);
   return NULL;
 }
@@ -2282,12 +2294,12 @@ apswvfsfilepy_xTruncate(APSWVFSFile *self, PyObject *args)
 
   if(!PyArg_ParseTuple(args, "L", &size))
     return NULL;
-  
+
   res=self->base->pMethods->xTruncate(self->base, size);
 
   if(res==SQLITE_OK)
     Py_RETURN_NONE;
-    
+
   SET_EXC(res, NULL);
   return NULL;
 }
@@ -2329,14 +2341,14 @@ apswvfsfilepy_xSync(APSWVFSFile *self, PyObject *args)
 
   if(!PyArg_ParseTuple(args, "i", &flags))
     return NULL;
-  
+
   res=self->base->pMethods->xSync(self->base, flags);
 
   APSW_FAULT_INJECT(xSyncFails, ,res=SQLITE_IOERR);
 
   if(res==SQLITE_OK)
     Py_RETURN_NONE;
-    
+
   SET_EXC(res, NULL);
   return NULL;
 }
@@ -2449,7 +2461,7 @@ apswvfsfile_xFileSize(sqlite3_file *file, sqlite3_int64 *pSize)
   int result=SQLITE_OK;
   PyObject *pyresult=NULL;
   FILEPREAMBLE;
-  
+
   pyresult=Call_PythonMethodV(apswfile->file, "xFileSize", 1, "()");
   if(!pyresult)
     result=MakeSqliteMsgFromPyException(NULL);
@@ -2629,7 +2641,7 @@ apswvfsfilepy_xFileControl(APSWVFSFile *self, PyObject *args)
 
   if(PyErr_Occurred())
     goto finally;
-  
+
   res=self->base->pMethods->xFileControl(self->base, op, ptr);
 
   if(res==SQLITE_OK)
@@ -2679,7 +2691,7 @@ apswvfsfilepy_xClose(APSWVFSFile *self)
     Py_RETURN_NONE;
 
   res=self->base->pMethods->xClose(self->base);
-  
+
   APSW_FAULT_INJECT(xCloseFails,, res=SQLITE_IOERR);
 
   /* we set pMethods to NULL after xClose callback so xClose can call other operations
@@ -2691,7 +2703,7 @@ apswvfsfilepy_xClose(APSWVFSFile *self)
 
   if(res==SQLITE_OK)
     Py_RETURN_NONE;
-    
+
   SET_EXC(res, NULL);
   return NULL;
 }
@@ -2798,7 +2810,7 @@ static PyTypeObject APSWVFSFileType =
     "apsw.VFSFile",            /*tp_name*/
     sizeof(APSWVFSFile),       /*tp_basicsize*/
     0,                         /*tp_itemsize*/
-    (destructor)APSWVFSFile_dealloc, /*tp_dealloc*/ 
+    (destructor)APSWVFSFile_dealloc, /*tp_dealloc*/
     0,                         /*tp_print*/
     0,                         /*tp_getattr*/
     0,                         /*tp_setattr*/
@@ -2849,7 +2861,7 @@ static PyTypeObject APSWVFSFileType =
     <http://www.sqlite.org/uri.html>`__ after the filename binding the
     C filename representation and parameters together.  This class
     encapsulates that binding.  The :ref:`example <example-vfs>` shows
-    usage of this class.  
+    usage of this class.
 
     Your :meth:`VFS.xOpen` method will generally be passed one of
     these instead of a string as the filename if the URI flag was used
@@ -2861,7 +2873,7 @@ static PyTypeObject APSWVFSFileType =
 
 
 /** .. method:: filename() -> str
-    
+
     Returns the filename.
 */
 static PyObject*
@@ -2892,7 +2904,7 @@ apswurifilename_uri_parameter(APSWURIFilename *self, PyObject *param)
 
     Returns the integer value for parameter `name` or `default` if not
     present.
-    
+
     -* sqlite3_uri_int64
 */
 static PyObject*
@@ -2903,7 +2915,7 @@ apswurifilename_uri_int(APSWURIFilename *self, PyObject *args)
 
   if(!PyArg_ParseTuple(args, "esL", STRENCODING, &param, &res))
     return NULL;
-  
+
   res=sqlite3_uri_int64(self->filename, param, res);
   PyMem_Free(param);
 
@@ -2911,7 +2923,7 @@ apswurifilename_uri_int(APSWURIFilename *self, PyObject *args)
 }
 
 /** .. method:: uri_boolean(name, default) -> bool
-    
+
     Returns the boolean value for parameter `name` or `default` if not
     present.
 
@@ -2925,7 +2937,7 @@ apswurifilename_uri_boolean(APSWURIFilename *self, PyObject *args)
 
   if(!PyArg_ParseTuple(args, "esi", STRENCODING, &param, &res))
     return NULL;
-  
+
   res=sqlite3_uri_boolean(self->filename, param, res);
   PyMem_Free(param);
 
@@ -2950,7 +2962,7 @@ static PyTypeObject APSWURIFilenameType=
     "apsw.URIFilename",        /*tp_name*/
     sizeof(APSWURIFilename),   /*tp_basicsize*/
     0,                         /*tp_itemsize*/
-    0,                         /*tp_dealloc*/ 
+    0,                         /*tp_dealloc*/
     0,                         /*tp_print*/
     0,                         /*tp_getattr*/
     0,                         /*tp_setattr*/

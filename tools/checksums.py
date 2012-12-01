@@ -70,12 +70,4 @@ for v in sqlitevers:
         print AURL
         raise
     check(AURL, data)
-    # asyncvfs
-    AURL="http://www.sqlite.org/sqlite-src-%s.zip" % (v,)
-    try:
-        data=urllib2.urlopen(AURL).read()
-    except:
-        print AURL
-        raise
-    check(AURL, data)
 
