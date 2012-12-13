@@ -58,8 +58,8 @@ API Reference
 #include "sqlite3.h"
 #endif
 
-#if SQLITE_VERSION_NUMBER < 3007013
-#error Your SQLite version is too old.  It must be at least 3.7.13
+#if SQLITE_VERSION_NUMBER < 3007015
+#error Your SQLite version is too old.  It must be at least 3.7.15
 #endif
 
 /* system headers */
@@ -349,6 +349,7 @@ config(APSW_ARGUNUSED PyObject *self, PyObject *args)
       break;
 
     case SQLITE_CONFIG_MEMSTATUS:
+    case SQLITE_CONFIG_COVERING_INDEX_SCAN:
       {
         int boolval;
         if(!PyArg_ParseTuple(args, "ii", &optdup, &boolval))
@@ -1480,6 +1481,8 @@ modules etc. For example::
       ADDINT(SQLITE_READONLY_RECOVERY),
       ADDINT(SQLITE_ABORT_ROLLBACK),
       ADDINT(SQLITE_CANTOPEN_ISDIR),
+      ADDINT(SQLITE_CANTOPEN_FULLPATH),
+      ADDINT(SQLITE_IOERR_DELETE_NOENT),
       END,
 
       /* error codes */
@@ -1572,6 +1575,8 @@ modules etc. For example::
       ADDINT(SQLITE_CONFIG_URI),
       ADDINT(SQLITE_CONFIG_PCACHE2),
       ADDINT(SQLITE_CONFIG_GETPCACHE2),
+      ADDINT(SQLITE_CONFIG_COVERING_INDEX_SCAN),
+      ADDINT(SQLITE_CONFIG_SQLLOG),
       END,
 
       DICT("mapping_db_config"),
@@ -1664,6 +1669,8 @@ modules etc. For example::
       ADDINT(SQLITE_FCNTL_POWERSAFE_OVERWRITE),
       ADDINT(SQLITE_FCNTL_VFSNAME),
       ADDINT(SQLITE_FCNTL_PRAGMA),
+      ADDINT(SQLITE_FCNTL_BUSYHANDLER),
+      ADDINT(SQLITE_FCNTL_TEMPFILENAME),
       END
 
       };

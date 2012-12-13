@@ -10,9 +10,17 @@ method is asked to delete a file that does not exist.
 
 Completely removed all `AsyncVFS
 <http://www.sqlite.org/asyncvfs.html>`__ related code.  This extension
-is no longer maintained nor supported by the SQLite team.  `WAL
-<http://www.sqlite.org/wal.html>`__ is a good way of getting similar
-functionality.
+is `no longer maintained nor supported
+<http://www.sqlite.org/src/info/3d548db7eb>`__ by the SQLite team.
+`WAL <http://www.sqlite.org/wal.html>`__ is a good way of getting
+similar functionality.
+
+Added :func:`config` support for **SQLITE_CONFIG_COVERING_INDEX_SCAN**
+
+Added several new constants: SQLITE_CONFIG_COVERING_INDEX_SCAN,
+SQLITE_CONFIG_SQLLOG, SQLITE_FCNTL_BUSYHANDLER,
+SQLITE_FCNTL_TEMPFILENAME, SQLITE_CANTOPEN_FULLPATH,
+SQLITE_IOERR_DELETE_NOENT
 
 3.7.14.1-r1
 ===========
