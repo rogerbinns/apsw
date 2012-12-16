@@ -15,7 +15,7 @@ is `no longer maintained nor supported
 `WAL <http://www.sqlite.org/wal.html>`__ is a good way of getting
 similar functionality.
 
-Added :func:`config` support for **SQLITE_CONFIG_COVERING_INDEX_SCAN**
+Added :func:`config` support for SQLITE_CONFIG_COVERING_INDEX_SCAN.
 
 Added several new constants: SQLITE_CONFIG_COVERING_INDEX_SCAN,
 SQLITE_CONFIG_SQLLOG, SQLITE_FCNTL_BUSYHANDLER,

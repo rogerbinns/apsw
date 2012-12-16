@@ -275,11 +275,11 @@ sqliteshutdown(void)
   :param op: A `configuration operation <http://sqlite.org/c3ref/c_config_chunkalloc.html>`_
   :param args: Zero or more arguments as appropriate for *op*
 
-  Many operations don't make sense from a Python program.  Only the
+  Many operations don't make sense from a Python program.  The
   following configuration operations are supported: SQLITE_CONFIG_LOG,
   SQLITE_CONFIG_SINGLETHREAD, SQLITE_CONFIG_MULTITHREAD,
-  SQLITE_CONFIG_SERIALIZED, SQLITE_CONFIG_URI and
-  SQLITE_CONFIG_MEMSTATUS.
+  SQLITE_CONFIG_SERIALIZED, SQLITE_CONFIG_URI, SQLITE_CONFIG_MEMSTATUS
+  and SQLITE_CONFIG_COVERING_INDEX_SCAN.
 
   See :func:`log` for an example of using SQLITE_CONFIG_LOG.
 
