@@ -9,6 +9,7 @@ import glob
 import re
 import time
 import zipfile, tarfile
+import socket
 
 from distutils.core import setup, Extension, Command
 from distutils.command import build_ext, build, sdist
@@ -407,8 +408,8 @@ class fetch(Command):
                 except:
                     # Degrade to http if https is not supported
                     e=sys.exc_info()[1]
-                    if e.reason=="unknown url type: https":
-                        write("        [Python doesn't support https - using http instead]")
+                    if "eof occurred in violation of protocol" in str(e).lower() or e.reason=="unknown url type: https":
+                        write("        [Python has https issues - using http instead]")
                         page=urlopen(url.replace("https://", "http://")).read()
                     else:
                         raise

@@ -5,8 +5,12 @@ Change History
 3.7.15.1-r1
 ===========
 
-Use https for SQLite web site references (downloads and documentation
-links)
+Use https (SSL) for SQLite web site references (downloads and
+documentation links).  On some platforms/versions/SSL libraries,
+Python's SSL module `doesn't work
+<https://www.google.com/webhp?q=python%20ssl%20EOF%20occurred%20in%20violation%20of%20protocol>`__
+with the SQLite website so a fallback to http is used - the downloads
+still have their checksum verified.
 
 3.7.15-r1
 =========
