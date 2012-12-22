@@ -68,7 +68,7 @@ json:
 	@echo
 	@echo "Build finished; now you can process the JSON files."
 
-# See http://code.google.com/p/htmlhelp/wiki/HHW4Wine for how to get
+# See https://code.google.com/p/htmlhelp/wiki/HHW4Wine for how to get
 # the Microsoft help compiler on Linux.  It also always has a non-zero
 # exit code.
 

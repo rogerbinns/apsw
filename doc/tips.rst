@@ -11,7 +11,7 @@ SQLite is different
 
 While SQLite provides a SQL database like many others out there, it is
 also unique in many ways.  Read about the unique features at the
-`SQLite website <http://www.sqlite.org/different.html>`__.
+`SQLite website <https://sqlite.org/different.html>`__.
 
 Cursors
 =======
@@ -134,7 +134,7 @@ connections (within the same process or in a different process).  The
 general goal is to have the locks be as lax as possible (allowing
 concurrency) and when using more restrictive locks to keep them for as
 short a time as possible.  See the `SQLite documentation
-<http://www.sqlite.org/lockingv3.html>`__ for more details.
+<https://sqlite.org/lockingv3.html>`__ for more details.
 
 By default you will get a :exc:`BusyError` if a lock cannot be
 acquired.  You can set a :meth:`timeout <Connection.setbusytimeout>`
@@ -156,7 +156,7 @@ Shared Cache Mode
 =================
 
 SQLite supports a `shared cache mode
-<http://www.sqlite.org/sharedcache.html>`__ where multiple connections
+<https://sqlite.org/sharedcache.html>`__ where multiple connections
 to the same database can share a cache instead of having their own.
 It is not recommended that you use this mode.
 
@@ -165,9 +165,9 @@ the same way.  The timeouts and handlers are ignored and instead
 :const:`SQLITE_LOCKED_SHAREDCACHE` extended error is returned.
 Consequently you will have to do your own busy handling.  (`SQLite
 ticket
-<http://www.sqlite.org/src/tktview/ebde3f66fc64e21e61ef2854ed1a36dfff884a2f>`__,
+<https://sqlite.org/src/tktview/ebde3f66fc64e21e61ef2854ed1a36dfff884a2f>`__,
 `APSW ticket 59
-<http://code.google.com/p/apsw/issues/detail?id=59>`__)
+<https://code.google.com/p/apsw/issues/detail?id=59>`__)
 
 The amount of memory and I/O saved is trivial compared to Python's
 overal memory and I/O consumption.  You may also need to tune the
@@ -184,7 +184,7 @@ Write Ahead Logging
 ===================
 
 SQLite 3.7 introduces `write ahead logging
-<http://www.sqlite.org/wal.html>`__ which has several benefits, but
+<https://sqlite.org/wal.html>`__ which has several benefits, but
 also some drawbacks as the page documents.  WAL mode is off by
 default.  In addition to turning it on manually for each database, you
 can also turn it on for all opened databases by using

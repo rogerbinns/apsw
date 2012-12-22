@@ -1,4 +1,4 @@
-/* 
+/*
    Virtual table code
 
    See the accompanying LICENSE file.
@@ -7,14 +7,14 @@
 
 #ifdef EXPERIMENTAL
 
-/** 
+/**
 
 .. _virtualtables:
 
 Virtual Tables
 **************
 
-`Virtual Tables <http://www.sqlite.org/vtab.html>`__ are a feature
+`Virtual Tables <https://sqlite.org/vtab.html>`__ are a feature
 introduced in SQLite 3.3.7. They let a developer provide an underlying
 table implementations, while still presenting a normal SQL interface
 to the user. The person writing SQL doesn't need to know or care that
@@ -24,7 +24,7 @@ Some examples of how you might use this:
 
 * Translating to/from information stored in other formats (eg a csv/ini format file)
 
-* Accessing the data remotely (eg you could make a table that backends into `Amazon's API <http://www.josephson.org/projects/pyamazon>`_)
+* Accessing the data remotely (eg you could make a table that backends into Amazon's API)
 
 * Dynamic information (eg currently running processes, files and directories, objects in your program)
 
@@ -34,12 +34,12 @@ Some examples of how you might use this:
 * Information that isn't relationally correct (eg if you have data that has ended up with duplicate "unique" keys
   with code that dynamically corrects it)
 
-* There are other examples on the `SQLite page <http://www.sqlite.org/vtab.html>`__
+* There are other examples on the `SQLite page <https://sqlite.org/vtab.html>`__
 
 You need to have 3 types of object. A :class:`module <VTModule>`, a
 :class:`virtual table <VTTable>` and a :class:`cursor
 <VTCursor>`. These are documented below. You can also read the `SQLite
-C method documentation <http://www.sqlite.org/vtab.html>`__.  At the C
+C method documentation <https://sqlite.org/vtab.html>`__.  At the C
 level, they are just one set of methods. At the Python/APSW level,
 they are split over the 3 types of object. The leading **x** is
 omitted in Python. You can return SQLite error codes (eg
@@ -52,7 +52,7 @@ function to do the mapping.
 /** .. class:: VTModule
 
 .. note::
-  
+
   There is no actual *VTModule* class - it is just shown this way
   for documentation convenience.  Your module instance should implement
   all the methods documented here.
@@ -74,7 +74,7 @@ The create step is to tell SQLite about the existence of the table.
 Any number of tables referring to the same module can be made this
 way.  Note the (optional) arguments which are passed to the module.
 */
-  
+
 
 typedef struct {
   sqlite3_vtab used_by_sqlite; /* I don't touch this */
@@ -100,10 +100,10 @@ static struct {
     }
   };
 
-static int 
-apswvtabCreateOrConnect(sqlite3 *db, 
-		    void *pAux, 
-		    int argc, 
+static int
+apswvtabCreateOrConnect(sqlite3 *db,
+		    void *pAux,
+		    int argc,
 		    const char *const *argv,
 		    sqlite3_vtab **pVTab,
 		    char **errmsg,
@@ -116,7 +116,7 @@ apswvtabCreateOrConnect(sqlite3 *db,
   apsw_vtable *avi=NULL;
   int res=SQLITE_OK;
   int i;
-  
+
   gilstate=PyGILState_Ensure();
 
   vti=(vtableinfo*) pAux;
@@ -132,7 +132,7 @@ apswvtabCreateOrConnect(sqlite3 *db,
       PyObject *str;
 
       APSW_FAULT_INJECT(VtabCreateBadString,str=convertutf8string(argv[i]), str=PyErr_NoMemory());
-      if(!str) 
+      if(!str)
 	goto pyexception;
       PyTuple_SET_ITEM(args, 1+i, str);
     }
@@ -148,7 +148,7 @@ apswvtabCreateOrConnect(sqlite3 *db,
       PyErr_Format(PyExc_TypeError, "Expected two values - a string with the table schema and a vtable object implementing it");
       goto pyexception;
     }
-  
+
   vtable=PySequence_GetItem(pyres, 1);
   if(!vtable)
     goto pyexception;
@@ -164,7 +164,7 @@ apswvtabCreateOrConnect(sqlite3 *db,
   {
     PyObject *utf8schema=getutf8string(schema);
     const char *cp_utf8schema;
-    if(!utf8schema) 
+    if(!utf8schema)
       goto pyexception;
     cp_utf8schema=PyBytes_AsString(utf8schema);
     _PYSQLITE_CALL_E(db, res=sqlite3_declare_vtab(db, cp_utf8schema));
@@ -176,7 +176,7 @@ apswvtabCreateOrConnect(sqlite3 *db,
 	goto finally;
       }
   }
-  
+
   assert(res==SQLITE_OK);
   *pVTab=(sqlite3_vtab*)avi;
   avi->vtable=vtable;
@@ -186,11 +186,11 @@ apswvtabCreateOrConnect(sqlite3 *db,
 
  pyexception: /* we had an exception in python code */
   res=MakeSqliteMsgFromPyException(errmsg);
-  AddTraceBackHere(__FILE__, __LINE__, create_or_connect_strings[stringindex].pyexceptionname, 
+  AddTraceBackHere(__FILE__, __LINE__, create_or_connect_strings[stringindex].pyexceptionname,
 		   "{s: s, s: s, s: s, s: O}", "modulename", argv[0], "database", argv[1], "tablename", argv[2], "schema", schema?schema:Py_None);
 
  finally: /* cleanup */
-  Py_XDECREF(args);  
+  Py_XDECREF(args);
   Py_XDECREF(pyres);
   Py_XDECREF(schema);
   Py_XDECREF(vtable);
@@ -206,7 +206,7 @@ apswvtabCreateOrConnect(sqlite3 *db,
     The parameters and return are identical to
     :meth:`~VTModule.Create`.  This method is called
     when there are additional references to the table.  :meth:`~VTModule.Create` will be called the first time and
-    :meth:`~VTModule.Connect` after that. 
+    :meth:`~VTModule.Connect` after that.
 
     The advise is to create caches, generated data and other
     heavyweight processing on :meth:`~VTModule.Create` calls and then
@@ -225,10 +225,10 @@ apswvtabCreateOrConnect(sqlite3 *db,
 
 */
 
-static int 
-apswvtabCreate(sqlite3 *db, 
-	   void *pAux, 
-	   int argc, 
+static int
+apswvtabCreate(sqlite3 *db,
+	   void *pAux,
+	   int argc,
 	   const char *const *argv,
 	   sqlite3_vtab **pVTab,
 	   char **errmsg)
@@ -243,22 +243,22 @@ apswvtabCreate(sqlite3 *db,
 
    :param connection: An instance of :class:`Connection`
    :param modulename: The string name under which the module was :meth:`registered <Connection.createmodule>`
-   :param databasename: The name of the database.  This will be ``main`` for directly opened files and the name specified in 
-           `ATTACH <http://www.sqlite.org/lang_attach.html>`_ statements.
+   :param databasename: The name of the database.  This will be ``main`` for directly opened files and the name specified in
+           `ATTACH <https://sqlite.org/lang_attach.html>`_ statements.
    :param tablename: Name of the table the user wants to create.
-   :param args: Any arguments that were specified in the `create virtual table <http://www.sqlite.org/lang_createvtab.html>`_ statement.
+   :param args: Any arguments that were specified in the `create virtual table <https://sqlite.org/lang_createvtab.html>`_ statement.
 
-   :returns: A list of two items.  The first is a SQL `create table <http://www.sqlite.org/lang_createtable.html>`_ statement.  The
+   :returns: A list of two items.  The first is a SQL `create table <https://sqlite.org/lang_createtable.html>`_ statement.  The
         columns are parsed so that SQLite knows what columns and declared types exist for the table.  The second item
         is an object that implements the :class:`table <VTTable>` methods.
 
    The corresponding call is :meth:`VTTable.Destroy`.
 */
 
-static int 
-apswvtabConnect(sqlite3 *db, 
-	   void *pAux, 
-	   int argc, 
+static int
+apswvtabConnect(sqlite3 *db,
+	   void *pAux,
+	   int argc,
 	   const char *const *argv,
 	   sqlite3_vtab **pVTab,
 	   char **errmsg)
@@ -269,7 +269,7 @@ apswvtabConnect(sqlite3 *db,
 /** .. class:: VTTable
 
   .. note::
-   
+
     There is no actual *VTTable* class - it is just shown this way for
     documentation convenience.  Your table instance should implement
     the methods documented here.
@@ -283,12 +283,12 @@ apswvtabConnect(sqlite3 *db,
 
   A virtual table is structured as a series of rows, each of which has
   the same columns.  The value in a column must be one of the `5
-  supported types <http://www.sqlite.org/datatype3.html>`_, but the
+  supported types <https://sqlite.org/datatype3.html>`_, but the
   type can be different between rows for the same column.  The virtual
   table routines identify the columns by number, starting at zero.
 
   Each row has a **unique** 64 bit integer `rowid
-  <http://www.sqlite.org/autoinc.html>`_ with the :class:`Cursor
+  <https://sqlite.org/autoinc.html>`_ with the :class:`Cursor
   <VTCursor>` routines operating on this number, as well as some of
   the :class:`Table <VTTable>` routines such as :meth:`UpdateChangeRow
   <VTTable.UpdateChangeRow>`.
@@ -328,7 +328,7 @@ static struct
 /* See SQLite ticket 2099 */
 static int
 apswvtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
-{ 
+{
   PyObject *vtable, *res=NULL;
   PyGILState_STATE gilstate;
   int sqliteres=SQLITE_OK;
@@ -344,7 +344,7 @@ apswvtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
       /* see SQLite ticket 2127 */
       if(pVtab->zErrMsg)
 	sqlite3_free(pVtab->zErrMsg);
-      
+
       Py_DECREF(vtable);
       Py_XDECREF( ((apsw_vtable*)pVtab)->functions );
       PyMem_Free(pVtab);
@@ -358,9 +358,9 @@ apswvtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
       /* see SQLite ticket 2127 */
       if(pVtab->zErrMsg)
 	sqlite3_free(pVtab->zErrMsg);
-      
+
       Py_DECREF(vtable);
-      PyMem_Free(pVtab);    
+      PyMem_Free(pVtab);
 #endif
     }
 
@@ -381,7 +381,7 @@ apswvtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
   the table is no longer used.  Note that you must always release
   resources even if you intend to return an error, as it will not be
   called again on error.  SQLite may also :cvstrac:`leak memory
-  <2099>` if you return an error.  
+  <2099>` if you return an error.
 */
 
 static int
@@ -404,7 +404,7 @@ apswvtabDisconnect(sqlite3_vtab *pVTab)
 }
 
 
-/** .. method:: BestIndex(constraints, orderbys)  
+/** .. method:: BestIndex(constraints, orderbys)
 
   This is a complex method. To get going initially, just return
   :const:`None` and you will be fine. Implementing this method reduces
@@ -415,7 +415,7 @@ apswvtabDisconnect(sqlite3_vtab *pVTab)
 
     The implementation of this method differs slightly from the
     `SQLite documentation
-    <http://www.sqlite.org/vtab.html>`__
+    <https://sqlite.org/vtab.html>`__
     for the C API. You are not passed "unusable" constraints. The
     argv/constraintarg positions are not off by one. In the C api, you
     have to return position 1 to get something passed to
@@ -427,15 +427,15 @@ apswvtabDisconnect(sqlite3_vtab *pVTab)
   determine if a row meets certain constraints that doesn't involve
   visiting every row. An example constraint is ``price > 74.99``. In a
   traditional SQL database, queries with constraints can be speeded up
-  `with indices <http://www.sqlite.org/lang_createindex.html>`_. If
+  `with indices <https://sqlite.org/lang_createindex.html>`_. If
   you return None, then SQLite will visit every row in your table and
   evaluate the constraint itself. Your index choice returned from
   BestIndex will also be passed to the :meth:`~VTCursor.Filter` method on your cursor
   object. Note that SQLite may call this method multiple times trying
-  to find the most efficient way of answering a complex query. 
+  to find the most efficient way of answering a complex query.
 
   **constraints**
-  
+
   You will be passed the contraints as a sequence of tuples containing two
   items. The first item is the column number and the second item is
   the operation.
@@ -462,7 +462,7 @@ apswvtabDisconnect(sqlite3_vtab *pVTab)
 
   Each list item returned corresponding to a constraint is one of:
 
-     None 
+     None
        This means you have no index for that constraint. SQLite
        will have to iterate over every row for it.
 
@@ -554,9 +554,9 @@ apswvtabDisconnect(sqlite3_vtab *pVTab)
   ::
 
     BestIndex(constraints, orderbys)
-     
-    constraints= ( (2, apsw.SQLITE_INDEX_CONSTRAINT_GT), 
-                   (5, apsw.SQLITE_INDEX_CONSTRAINT_LE), 
+
+    constraints= ( (2, apsw.SQLITE_INDEX_CONSTRAINT_GT),
+                   (5, apsw.SQLITE_INDEX_CONSTRAINT_LE),
                    (0, apsw.SQLITE_INDEX_CONSTRAINT_EQ)  )
 
     orderbys= ( (2, True), (5, False) )
@@ -576,8 +576,8 @@ apswvtabDisconnect(sqlite3_vtab *pVTab)
 
     27,              # index number you returned
     "idx_pr_cust",   # index name you returned
-    "Acme Widgets",  # constraintarg[0] - customer  
-    74.99            # constraintarg[1] - price 
+    "Acme Widgets",  # constraintarg[0] - customer
+    74.99            # constraintarg[1] - price
 
 */
 
@@ -595,7 +595,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
   gilstate=PyGILState_Ensure();
 
   vtable=((apsw_vtable*)pVtab)->vtable;
-  
+
   /* count how many usable constraints there are */
   for(i=0;i<indexinfo->nConstraint;i++)
     if (indexinfo->aConstraint[i].usable)
@@ -603,13 +603,13 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
 
   constraints=PyTuple_New(nconstraints);
   if(!constraints) goto pyexception;
-  
+
   /* fill them in */
   for(i=0, j=0;i<indexinfo->nConstraint;i++)
     {
       PyObject *constraint=NULL;
       if(!indexinfo->aConstraint[i].usable) continue;
-      
+
       constraint=Py_BuildValue("(iB)", indexinfo->aConstraint[i].iColumn, indexinfo->aConstraint[i].op);
       if(!constraint) goto pyexception;
 
@@ -659,7 +659,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
       if(!PySequence_Check(indices) || PySequence_Size(indices)!=nconstraints)
 	{
 	  PyErr_Format(PyExc_TypeError, "Bad constraints (item 0 in BestIndex return).  It should be a sequence the same length as the constraints passed in (%d) items", nconstraints);
-	  AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex.result_indices", "{s: O, s: O, s: O}", 
+	  AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex.result_indices", "{s: O, s: O, s: O}",
 			   "self", vtable, "result", res, "indices", indices);
 	  goto pyexception;
 	}
@@ -689,7 +689,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
 	  if(!PySequence_Check(constraint) || PySequence_Size(constraint)!=2)
 	    {
 	      PyErr_Format(PyExc_TypeError, "Bad constraint (#%d) - it should be one of None, an integer or a tuple of an integer and a boolean", j);
-	      AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex.result_constraint", "{s: O, s: O, s: O, s: O}", 
+	      AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex.result_constraint", "{s: O, s: O, s: O, s: O}",
 			       "self", vtable, "result", res, "indices", indices, "constraint", constraint);
 	      Py_DECREF(constraint);
 	      goto pyexception;
@@ -700,12 +700,12 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
 	  if(!PyIntLong_Check(argvindex))
 	    {
 	      PyErr_Format(PyExc_TypeError, "argvindex for constraint #%d should be an integer", j);
-	      AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex.result_constraint_argvindex", "{s: O, s: O, s: O, s: O, s: O}", 
+	      AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex.result_constraint_argvindex", "{s: O, s: O, s: O, s: O, s: O}",
 			       "self", vtable, "result", res, "indices", indices, "constraint", constraint, "argvindex", argvindex);
 	      goto constraintfail;
 	    }
 	  omitv=PyObject_IsTrue(omit);
-	  if(omitv==-1) 
+	  if(omitv==-1)
             goto constraintfail;
           indexinfo->aConstraintUsage[i].argvIndex=PyIntLong_AsLong(argvindex)+1;
 	  indexinfo->aConstraintUsage[i].omit=omitv;
@@ -826,25 +826,25 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
 /** .. method:: Begin()
 
   This function is used as part of transactions.  You do not have to
-  provide the method.  
+  provide the method.
 */
 
 /** .. method:: Sync()
 
   This function is used as part of transactions.  You do not have to
-  provide the method.  
+  provide the method.
 */
 
 /** .. method:: Commit()
 
   This function is used as part of transactions.  You do not have to
-  provide the method.  
+  provide the method.
 */
 
 /** .. method:: Rollback()
 
   This function is used as part of transactions.  You do not have to
-  provide the method.  
+  provide the method.
 */
 
 static struct {
@@ -895,27 +895,27 @@ apswvtabTransactionMethod(sqlite3_vtab *pVtab, int stringindex)
   return sqliteres;
 }
 
-static int 
-apswvtabBegin(sqlite3_vtab *pVtab) 
-{ 
+static int
+apswvtabBegin(sqlite3_vtab *pVtab)
+{
   return apswvtabTransactionMethod(pVtab, 0);
 }
 
-static int 
-apswvtabSync(sqlite3_vtab *pVtab) 
-{ 
+static int
+apswvtabSync(sqlite3_vtab *pVtab)
+{
   return apswvtabTransactionMethod(pVtab, 1);
 }
 
-static int 
-apswvtabCommit(sqlite3_vtab *pVtab) 
-{ 
+static int
+apswvtabCommit(sqlite3_vtab *pVtab)
+{
   return apswvtabTransactionMethod(pVtab, 2);
 }
 
-static int 
-apswvtabRollback(sqlite3_vtab *pVtab) 
-{ 
+static int
+apswvtabRollback(sqlite3_vtab *pVtab)
+{
   return apswvtabTransactionMethod(pVtab, 3);
 }
 
@@ -932,7 +932,7 @@ typedef struct {
 
 static int
 apswvtabOpen(sqlite3_vtab *pVtab, sqlite3_vtab_cursor **ppCursor)
-{ 
+{
   PyObject *vtable=NULL, *res=NULL;
   PyGILState_STATE gilstate;
   apsw_vtable_cursor *avc=NULL;
@@ -996,12 +996,12 @@ apswvtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int6
 {
   PyObject *vtable, *args=NULL, *res=NULL;
   PyGILState_STATE gilstate;
-  int sqliteres=SQLITE_OK; 
+  int sqliteres=SQLITE_OK;
   int i;
   const char *methodname="unknown";
-  
+
   assert(argc); /* should always be >0 */
-  
+
   gilstate=PyGILState_Ensure();
 
   vtable=((apsw_vtable*)pVtab)->vtable;
@@ -1071,11 +1071,11 @@ apswvtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int6
     }
 
   res=Call_PythonMethod(vtable, methodname, 1, args);
-  if(!res) 
+  if(!res)
     goto pyexception;
 
   /* if row deleted then we don't care about return */
-  if(argc==1) 
+  if(argc==1)
     goto finally;
 
   if(sqlite3_value_type(argv[0])==SQLITE_NULL && sqlite3_value_type(argv[1])==SQLITE_NULL)
@@ -1086,13 +1086,13 @@ apswvtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int6
 
       *pRowid=PyLong_AsLongLong(rowid);
       Py_DECREF(rowid);
-      if(PyErr_Occurred()) 
+      if(PyErr_Occurred())
 	{
 	  AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xUpdateInsertRow.ReturnedValue", "{s: O}", "result", rowid);
 	  goto pyexception;
 	}
     }
-  
+
   goto finally;
 
  pyexception: /* we had an exception in python code */
@@ -1109,14 +1109,14 @@ apswvtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int6
 }
 
 
-/** .. method:: FindFunction(name, nargs) 
+/** .. method:: FindFunction(name, nargs)
 
   Called to find if the virtual table has its own implementation of a
   particular scalar function. You should return the function if you
   have it, else return None. You do not have to provide this method.
 
   This method is called while SQLite is `preparing
-  <http://www.sqlite.org/c3ref/prepare.html>`_ a query.  If a query is
+  <https://sqlite.org/c3ref/prepare.html>`_ a query.  If a query is
   in the :ref:`statement cache <statementcache>` then *FindFunction*
   won't be called again.  If you want to return different
   implementations for the same function over time then you will need
@@ -1134,15 +1134,15 @@ apswvtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int6
 /*
   We have to save everything returned for the lifetime of the table as
   we don't know when it is no longer used due to `SQLite ticket 2095
-  <http://www.sqlite.org/cvstrac/tktview?tn=2095>`_.
+  <https://sqlite.org/cvstrac/tktview?tn=2095>`_.
 
   This taps into the existing scalar function code in connection.c
 */
-static int 
+static int
 apswvtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
 		 void (**pxFunc)(sqlite3_context*, int, sqlite3_value**),
 		 void **ppArg)
-{ 
+{
   PyGILState_STATE gilstate;
   int sqliteres=0;
   PyObject *vtable, *res=NULL;
@@ -1215,7 +1215,7 @@ apswvtabRename(sqlite3_vtab *pVtab, const char *zNew)
       sqliteres=MakeSqliteMsgFromPyException(NULL);
       AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xRename", "{s: O, s: s}", "self", vtable, "newname", zNew);
     }
-  
+
  finally:
   Py_XDECREF(res);
   PyGILState_Release(gilstate);
@@ -1226,7 +1226,7 @@ apswvtabRename(sqlite3_vtab *pVtab, const char *zNew)
 
 
  .. note::
-   
+
     There is no actual *VTCursor* class - it is just shown this
     way for documentation convenience.  Your cursor instance should
     implement all the methods documented here.
@@ -1254,7 +1254,7 @@ apswvtabRename(sqlite3_vtab *pVtab, const char *zNew)
 static int
 apswvtabFilter(sqlite3_vtab_cursor *pCursor, int idxNum, const char *idxStr,
                   int argc, sqlite3_value **sqliteargv)
-{ 
+{
   PyObject *cursor, *argv=NULL, *res=NULL;
   PyGILState_STATE gilstate;
   int sqliteres=SQLITE_OK;
@@ -1305,7 +1305,7 @@ apswvtabFilter(sqlite3_vtab_cursor *pCursor, int idxNum, const char *idxStr,
 
 static int
 apswvtabEof(sqlite3_vtab_cursor *pCursor)
-{ 
+{
   PyObject *cursor, *res=NULL;
   PyGILState_STATE gilstate;
   int sqliteres=0; /* nb a true/false value not error code */
@@ -1350,10 +1350,10 @@ static void set_context_result(sqlite3_context *context, PyObject *obj);
 
 static int
 apswvtabColumn(sqlite3_vtab_cursor *pCursor, sqlite3_context *result, int ncolumn)
-{ 
+{
   PyObject *cursor, *res=NULL;
   PyGILState_STATE gilstate;
-  int sqliteres=SQLITE_OK; 
+  int sqliteres=SQLITE_OK;
 
   gilstate=PyGILState_Ensure();
 
@@ -1364,7 +1364,7 @@ apswvtabColumn(sqlite3_vtab_cursor *pCursor, sqlite3_context *result, int ncolum
 
   set_context_result(result, res);
   if(!PyErr_Occurred()) goto finally;
-  
+
  pyexception: /* we had an exception in python code */
   assert(PyErr_Occurred());
   sqliteres=MakeSqliteMsgFromPyException(&(pCursor->pVtab->zErrMsg)); /* SQLite flaw: errMsg should be on the cursor not the table! */
@@ -1375,7 +1375,7 @@ apswvtabColumn(sqlite3_vtab_cursor *pCursor, sqlite3_context *result, int ncolum
 
   PyGILState_Release(gilstate);
   return sqliteres;
-} 
+}
 
 /** .. method:: Next()
 
@@ -1390,7 +1390,7 @@ apswvtabColumn(sqlite3_vtab_cursor *pCursor, sqlite3_context *result, int ncolum
 */
 static int
 apswvtabNext(sqlite3_vtab_cursor *pCursor)
-{ 
+{
   PyObject *cursor, *res=NULL;
   PyGILState_STATE gilstate;
   int sqliteres=SQLITE_OK;
@@ -1411,7 +1411,7 @@ apswvtabNext(sqlite3_vtab_cursor *pCursor)
   Py_XDECREF(res);
 
   PyGILState_Release(gilstate);
-  return sqliteres; 
+  return sqliteres;
 }
 
 
@@ -1447,7 +1447,7 @@ apswvtabClose(sqlite3_vtab_cursor *pCursor)
   Py_XDECREF(res);
 
   PyGILState_Release(gilstate);
-  return sqliteres; 
+  return sqliteres;
 }
 
 /** .. method:: Rowid() -> 64 bit integer
@@ -1456,10 +1456,10 @@ apswvtabClose(sqlite3_vtab_cursor *pCursor)
 */
 static int
 apswvtabRowid(sqlite3_vtab_cursor *pCursor, sqlite3_int64 *pRowid)
-{ 
+{
   PyObject *cursor, *res=NULL, *pyrowid=NULL;
   PyGILState_STATE gilstate;
-  int sqliteres=SQLITE_OK; 
+  int sqliteres=SQLITE_OK;
 
   gilstate=PyGILState_Ensure();
 
@@ -1467,15 +1467,15 @@ apswvtabRowid(sqlite3_vtab_cursor *pCursor, sqlite3_int64 *pRowid)
 
   res=Call_PythonMethod(cursor, "Rowid", 1, NULL);
   if(!res) goto pyexception;
-  
+
   /* extract result */
   pyrowid=PyNumber_Long(res);
-  if(!pyrowid) 
+  if(!pyrowid)
     goto pyexception;
   *pRowid=PyLong_AsLongLong(pyrowid);
   if(!PyErr_Occurred()) /* could be bigger than 64 bits */
     goto finally;
-  
+
  pyexception: /* we had an exception in python code */
   assert(PyErr_Occurred());
   sqliteres=MakeSqliteMsgFromPyException(&(pCursor->pVtab->zErrMsg)); /* SQLite flaw: errMsg should be on the cursor not the table! */
@@ -1496,24 +1496,24 @@ static struct sqlite3_module apsw_vtable_module=
   {
     1,                    /* version */
     apswvtabCreate,           /* methods */
-    apswvtabConnect,          
-    apswvtabBestIndex,        
+    apswvtabConnect,
+    apswvtabBestIndex,
     apswvtabDisconnect,
     apswvtabDestroy,
     apswvtabOpen,
-    apswvtabClose, 
-    apswvtabFilter, 
-    apswvtabNext, 
-    apswvtabEof, 
+    apswvtabClose,
+    apswvtabFilter,
+    apswvtabNext,
+    apswvtabEof,
     apswvtabColumn,
-    apswvtabRowid, 
-    apswvtabUpdate, 
-    apswvtabBegin, 
-    apswvtabSync, 
-    apswvtabCommit, 
+    apswvtabRowid,
+    apswvtabUpdate,
+    apswvtabBegin,
+    apswvtabSync,
+    apswvtabCommit,
     apswvtabRollback,
     apswvtabFindFunction,
-    apswvtabRename 
+    apswvtabRename
   };
 
 /**
@@ -1535,7 +1535,7 @@ example if you have an error in the Filter method of a cursor, SQLite
 then closes the cursor. If you also return an error in the Close
 method then the first error may mask the second or vice versa.
 
-.. note:: 
+.. note::
 
    SQLite may ignore responses from your methods if they don't make
    sense. For example in BestIndex, if you set multiple arguments to

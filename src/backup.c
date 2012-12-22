@@ -8,7 +8,7 @@
 
 #ifdef EXPERIMENTAL
 
-/** 
+/**
 
 .. _backup:
 
@@ -88,7 +88,7 @@ APSWBackup_init(APSWBackup *self, Connection *dest, Connection *source, sqlite3_
   assert(dest->inuse==0);
   dest->inuse=1;
   assert(source->inuse==1);  /* set by caller */
- 
+
   self->dest=dest;
   self->source=source;
   self->backup=backup;
@@ -133,7 +133,7 @@ APSWBackup_close_internal(APSWBackup *self, int force)
           }
         }
     }
- 
+
   self->backup=0;
 
   assert(self->dest->inuse);
@@ -170,7 +170,7 @@ APSWBackup_dealloc(APSWBackup *self)
      or negative then all remaining pages are copied. The default page
      size is 1024 bytes (1kb) which can be changed before database
      creation using a `pragma
-     <http://www.sqlite.org/pragma.html#modify>`_.
+     <https://sqlite.org/pragma.html#modify>`_.
 
   This method may throw a :exc:`BusyError` or :exc:`LockedError` if
   unable to lock the source database.  You can catch those and try
@@ -229,7 +229,7 @@ APSWBackup_finish(APSWBackup *self)
 {
   int setexc;
   CHECK_USE(NULL);
-  
+
   /* We handle CHECK_BACKUP_CLOSED internally */
   if(!self->backup)
     Py_RETURN_NONE;
@@ -322,7 +322,7 @@ APSWBackup_enter(APSWBackup *self)
 
 /** .. method:: __exit__() -> False
 
-  Implements context manager in conjunction with :meth:`~backup.__enter__` ensuring 
+  Implements context manager in conjunction with :meth:`~backup.__enter__` ensuring
   that the copy is :meth:`finished <backup.finish>`.
 */
 static PyObject *
@@ -388,13 +388,13 @@ static PyMethodDef backup_methods[] = {
   {0,0,0,0}
 };
 
-static PyTypeObject APSWBackupType = 
+static PyTypeObject APSWBackupType =
   {
     APSW_PYTYPE_INIT
     "apsw.backup",             /*tp_name*/
     sizeof(APSWBackup),        /*tp_basicsize*/
     0,                         /*tp_itemsize*/
-    (destructor)APSWBackup_dealloc, /*tp_dealloc*/ 
+    (destructor)APSWBackup_dealloc, /*tp_dealloc*/
     0,                         /*tp_print*/
     0,                         /*tp_getattr*/
     0,                         /*tp_setattr*/

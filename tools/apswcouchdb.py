@@ -65,7 +65,7 @@ class Source:
        if(i.charAt(0)!='_')
            emit(null, i);
         }"""
-    
+
     def Create(self, db, modulename, dbname, tablename, *args):
         "Called when a table is created"
         # args[0] must be url of couchdb authentication information.
@@ -76,7 +76,7 @@ class Source:
         # them off.
 
         args=[self._unquote(a) for a in args]
-        
+
         server=couchdb.Server(args[0])
         cdb=server[args[1]]
 
@@ -86,8 +86,8 @@ class Source:
         # in because it produces better exceptions if supplied with
         # invalid data and the code below can be deleted once the
         # bug is fixed.
-        # http://code.google.com/p/couchdb-python/issues/detail?id=85
-        # http://code.google.com/p/httplib2/issues/detail?id=67
+        # https://code.google.com/p/couchdb-python/issues/detail?id=85
+        # https://code.google.com/p/httplib2/issues/detail?id=67
         a=args[0]
         if not a.endswith("/"):
             a=a+"/"
@@ -225,7 +225,7 @@ class Table:
 
         if len(self.pending_updates)>=self.s.wbatch:
             self.flushpending()
-            
+
         return self.getrowforid(_id)
 
     def UpdateDeleteRow(self, rowid):
@@ -265,7 +265,7 @@ class Table:
         self.pending_updates[_id]=d
         if len(self.pending_updates)>=self.s.wbatch:
             self.flushpending()
-        
+
     def getrowforid(self, _id):
         return self.adb.cursor().execute("insert or ignore into "+self.maptable+"(_id) values(?);"
                                         "select _rowid_ from "+self.maptable+" where _id=?",
@@ -274,7 +274,7 @@ class Table:
     def flushpending(self):
         if not len(self.pending_updates):
             return
-        
+
         p=self.pending_updates.values()
         self.pending_updates={}
         fails=[]
@@ -328,7 +328,7 @@ class Cursor:
             return "null"
         # integer
         return str(v)
-    
+
     def __init__(self, table):
         self.t=table
 
@@ -358,7 +358,7 @@ class Cursor:
                 else:
                     q.append("(doc['%s']%s%s)" % (self._quote(self.t.cols[col]), self.opmap[constraint], self._jsquoute(arg)))
             q=" && ".join(q)
-            
+
         self.query=Query(self.t.cdb, self.t.cols, q, self.t.s.rbatch)
 
     def Eof(self):
@@ -409,14 +409,14 @@ function areObjectsEqual(left,right) {
          return false;
   for(var i in right)
        if(!areObjectsEqual(left[i], right[i]))
-         return false;         
+         return false;
   return true;
 }
 
 function(doc) {
   /*<QUERY>*/
      emit(null, null);
-}'''     
+}'''
     def __init__(self, cdb, cols, query=None, batch=3):
         self.cdb=cdb
         if query:
@@ -460,6 +460,6 @@ if 'shell' in locals() and hasattr(shell, "db") and isinstance(shell.db, apsw.Co
     register(shell.db)
 
 apsw.connection_hooks.append(register)
-    
+
 del thesource
 del register

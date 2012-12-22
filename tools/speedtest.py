@@ -3,7 +3,7 @@
 # See the accompanying LICENSE file.
 #
 # Do speed tests.  The tests try to correspond to
-# http://www.sqlite.org/cvstrac/fileview?f=sqlite/tool/mkspeedsql.tcl
+# https://sqlite.org/cvstrac/fileview?f=sqlite/tool/mkspeedsql.tcl
 # This file needs to run under both Python 2 and Python 3 hence a few
 # funky things.  Command line options etc were added later hence the
 # somewhat wierd structuring.
@@ -127,7 +127,7 @@ def doit():
         if options.size:
             text=text*int(random.randint(0, options.size)/len(text))
         return text
-    
+
     def getlines(scale=50, bindings=False):
         random.seed(0)
 
@@ -139,7 +139,7 @@ def doit():
       PRAGMA cache_size=8192;
       PRAGMA locking_mode=EXCLUSIVE;
       PRAGMA journal_mode = OFF;
-      PRAGMA temp_store = MEMORY; 
+      PRAGMA temp_store = MEMORY;
       CREATE TABLE t1(a INTEGER, b INTEGER, c TEXT);
       CREATE TABLE t2(a INTEGER, b INTEGER, c TEXT);
       CREATE INDEX i2a ON t2(a);
@@ -459,7 +459,7 @@ parser.add_option("--unicode", dest="unicode", type="int", default=0,
                   help="Percentage of text that is unicode characters [Default %default]")
 parser.add_option("--data-size", dest="size", type="int", default=0,  metavar="SIZE",
                   help="Maximum size in characters of data items - keep this number small unless you are on 64 bits and have lots of memory with a small scale - you can easily consume multiple gigabytes [Default same as original TCL speedtest]")
-                 
+
 
 tests_detail="""\
 bigstmt:

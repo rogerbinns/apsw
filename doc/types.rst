@@ -6,10 +6,10 @@ Types
 .. currentmodule:: apsw
 
 Read about `SQLite 3 types
-<http://www.sqlite.org/datatype3.html>`_. ASPW always maintains the
+<https://sqlite.org/datatype3.html>`_. ASPW always maintains the
 correct type for values, and never converts them to something
 else. Note however that SQLite may convert types based on column
-affinity as `described <http://www.sqlite.org/datatype3.html>`_. ASPW
+affinity as `described <https://sqlite.org/datatype3.html>`_. ASPW
 requires that all values supplied are one of the corresponding
 Python/SQLite types (or a subclass).
 
@@ -21,14 +21,14 @@ Mapping
 * Python int or long is INTEGER in SQLite. The value represented must
   fit within a 64 bit signed quantity (long long at the C level) or an
   overflow exception is generated.
-    
+
 * Python's float type is used for REAL in SQLite. (At the C level they
   are both 8 byte quantities and there is no loss of precision).
-    
+
 * In Python 2, Python's string or unicode is used for TEXT supplied to
   SQLite and all text returned from SQLite is unicode.  For Python 3
   only unicode is used.
-    
+
 * For Python 2 the buffer class is used for BLOB in SQLite. In Python
   3 the bytes type is used, although you can still supply buffers.
 
@@ -74,7 +74,7 @@ specific thing `ICU
 <http://en.wikipedia.org/wiki/International_Components_for_Unicode>`_.
 A default SQLite compilation only deals with the 26 letter Roman
 alphabet.  If you enable ICU with SQLite then you get `good stuff
-<http://www.sqlite.org/src/finfo?name=ext/icu/README.txt>`_.
+<https://sqlite.org/src/finfo?name=ext/icu/README.txt>`_.
 See the :ref:`building` section on how to enable ICU for SQLite with
 APSW.  Note that Python does not currently include ICU support and
 hence sorting, upper/lower casing etc are limited and do not take

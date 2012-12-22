@@ -22,6 +22,7 @@ sqlitevers=(
     '3071400',
     '3071401',
     '3071500',
+    '3071501',
     )
 
 # Checks the checksums file
@@ -56,7 +57,7 @@ def check(url, data):
 
 for v in sqlitevers:
     # Windows amalgamation
-    AURL="http://www.sqlite.org/sqlite-amalgamation-%s.zip" % (v,)
+    AURL="https://sqlite.org/sqlite-amalgamation-%s.zip" % (v,)
     try:
         data=urllib2.urlopen(AURL).read()
     except:
@@ -64,7 +65,7 @@ for v in sqlitevers:
         raise
     check(AURL, data)
     # All other platforms amalgamation
-    AURL="http://www.sqlite.org/sqlite-autoconf-%s.tar.gz" % (v,)
+    AURL="https://sqlite.org/sqlite-autoconf-%s.tar.gz" % (v,)
     try:
         data=urllib2.urlopen(AURL).read()
     except:

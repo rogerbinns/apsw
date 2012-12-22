@@ -7,16 +7,16 @@ Use with SQLite 3.7.15 or later, CPython 2.3 or later including CPython
 3.
 
 APSW provides an SQLite 3 wrapper that provides the thinnest layer
-over the `SQLite <http://www.sqlite.org>`_ database library
+over the `SQLite <https://sqlite.org>`_ database library
 possible. Everything you can do from the `SQLite C API
-<http://www.sqlite.org/c3ref/intro.html>`_, you can do from
+<https://sqlite.org/c3ref/intro.html>`_, you can do from
 Python. Although APSW looks vaguely similar to the :pep:`249` (DBAPI),
 it is :ref:`not compliant <dbapinotes>` with that API because instead
-it works the way SQLite 3 does. (`pysqlite <http://code.google.com/p/pysqlite/>`_
+it works the way SQLite 3 does. (`pysqlite <https://code.google.com/p/pysqlite/>`_
 is DBAPI compliant - see the :ref:`differences between apsw and
 pysqlite 2 <pysqlitediffs>`).
 
-APSW is hosted at http://code.google.com/p/apsw/
+APSW is hosted at https://code.google.com/p/apsw/
 
 Contents:
 

@@ -42,7 +42,7 @@ Connection Objects
 There are no commit or rollback methods. You should use
 :meth:`Cursor.execute` with `BEGIN` and `COMMIT` or `ROLLBACK` as
 appropriate. The `SQLite documentation
-<http://www.sqlite.org/lockingv3.html>`_ has more details.  In
+<https://sqlite.org/lockingv3.html>`_ has more details.  In
 particular note that SQLite does not support nested transactions.  You
 can only start one transaction and will get an error if you try to
 start another one.
@@ -98,7 +98,7 @@ Type objects
 
 None of the date or time methods are available since SQLite 3 does not
 have a native date or time type.  There are `functions
-<http://www.sqlite.org/lang_datefunc.html>`_ for
+<https://sqlite.org/lang_datefunc.html>`_ for
 manipulating dates and time which are represented as strings or
 `Julian days <http://en.wikipedia.org/wiki/Julian_day>`_ (floating
 point number).
@@ -126,7 +126,7 @@ way of getting information back.
 To get the last inserted row id, call
 :meth:`Connection.last_insert_rowid`. That stores the id from the last
 insert on any Cursor associated with the the Connection. You can also
-add `select last_insert_rowid() <http://www.sqlite.org/lang_corefunc.html>`_ to the end of your execute
+add `select last_insert_rowid() <https://sqlite.org/lang_corefunc.html>`_ to the end of your execute
 statements::
 
   for row in cursor.execute("BEGIN; INSERT ... ; INSERT ... ; SELECT last_insert_rowid(); COMMIT"):

@@ -31,18 +31,18 @@ Some suggested uses:
 
  * Using the SQLite :ref:`RTree extension <ext-rtree>` to do spatial
    queries.
-   
+
 Getting it
 ==========
 
 You can find the code in the :ref:`source distribution
 <source_and_binaries>` named :file:`apswcouchdb.py`, or you can get a
 copy directly from `source control
-<http://code.google.com/p/apsw/source/browse/tools/apswcouchdb.py>`__
+<https://code.google.com/p/apsw/source/browse/tools/apswcouchdb.py>`__
 (choose "View Raw File").
 
 You will need to have the `Python couchdb module
-<http://code.google.com/p/couchdb-python/>`__ installed as well as its
+<https://code.google.com/p/couchdb-python/>`__ installed as well as its
 prerequisites.
 
 Usage
@@ -75,15 +75,15 @@ Importing CSV data
 We want to import some CSV data to a CouchDB database.  The first step
 is to import it into a temporary SQLite table.  It could be imported
 directly to CouchDB but then we wouldn't have the ability to specify
-`column affinity <http://www.sqlite.org/datatype3.html>`__ and all
+`column affinity <https://sqlite.org/datatype3.html>`__ and all
 data would end up as strings in CouchDB.  I am using a real estate CSV
 file in this example against the :ref:`SQLite shell <shell>`::
 
      -- Specify affinities in temporary table so numbers from
      -- the CSV end up as numbers and not strings
-     create temporary table refixup(street char, city char, 
-         zip char, state char, beds int, baths int, sqft real, 
-         type char, sale_date char, price int, latitude real, 
+     create temporary table refixup(street char, city char,
+         zip char, state char, beds int, baths int, sqft real,
+         type char, sale_date char, price int, latitude real,
          longitude real);
 
      -- Do the actual import
@@ -91,8 +91,8 @@ file in this example against the :ref:`SQLite shell <shell>`::
      .import realestatetransactions.csv refixup
 
      -- Create the CouchDB virtual table with the same column names
-     create virtual table realestate using couchdb('http://localhost:5984', 
-         realestate, street, city, zip, state, beds, baths, 
+     create virtual table realestate using couchdb('http://localhost:5984',
+         realestate, street, city, zip, state, beds, baths,
          sqft, type, sale_date, price, latitude, longitude);
 
      -- Copy the data from the temporary table to CouchDB
@@ -112,12 +112,12 @@ CouchDB _id field is the recipe name::
      -- Virtual table
      create virtual table recipes using couchdb('http://localhost:5984',
         _id, ingredients);
- 
+
      -- FTS table
      create virtual table recipesearch using fts3(name, ingredients);
 
      -- Copy the data from CouchDB to FTS3
-     insert into recipesearch(name, ingredients) 
+     insert into recipesearch(name, ingredients)
         select _id,ingredients from recipes;
 
      -- Which ones have these ingredients
@@ -142,13 +142,13 @@ Document Ids and Rowids
 
   CouchDB uses the document id (key _id) as the unique identifier.
   SQLite uses a 64 bit integer rowid.  In order to map the two a
-  `temporary table <http://www.sqlite.org/lang_createtable.html>`__ is
+  `temporary table <https://sqlite.org/lang_createtable.html>`__ is
   used behind the scenes. The revision (_rev) is also stored. SQLite
   stores temporary tables separately and discards them when the
   corresponding database is closed.
 
   By default the temporary tables are stored in a file.  You can use a
-  `pragma <http://www.sqlite.org/pragma.html#pragma_temp_store>`__ to
+  `pragma <https://sqlite.org/pragma.html#pragma_temp_store>`__ to
   change that.  For example ``pragma temp_store=memory`` will use
   memory instead.  My 200,000 document test database resulted in a
   temporary mapping table of 50MB if I accessed all rows/documents.
@@ -157,7 +157,7 @@ Scalability
 
   It is intended that you can use the virtual table with large
   databases.  For example development and profiling were done with a
-  200,000 document database using over 2GB of storage. 
+  200,000 document database using over 2GB of storage.
 
   This means that behind the scenes the CouchDB `bulk API
   <http://wiki.apache.org/couchdb/HTTP_Bulk_Document_API>`__ is used.
@@ -198,7 +198,7 @@ Updates
 None/null/undefined
 
   In SQL null means a value is not present.  No two nulls are equal to
-  each other plus `other quirks <http://www.sqlite.org/nulls.html>`__.
+  each other plus `other quirks <https://sqlite.org/nulls.html>`__.
   In Python None is a value more like a non-type specific zero
   although it is a singleton.  Javascript has both undefined with a
   SQL null like meaning and null with Python None like meaning.  JSON
@@ -285,7 +285,7 @@ Expressions
   precomputed/presorted views of the data and used when evaluating
   queries like ``select * from items where price > 74.99 and
   quantity<=10 and customer='Acme Widgets'`` in order to avoid
-  visiting every row in the table. 
+  visiting every row in the table.
 
   If you have constraints like the above then this module uses a
   CouchDB `temporary view
@@ -336,10 +336,10 @@ Configuration summary
   |                 |         | the original is retreived from the server |
   |                 |         | (one at a time) so that the keys not      |
   |                 |         | specified as SQL level columns aren't lost|
-  +-----------------+---------+-------------------------------------------+ 
+  +-----------------+---------+-------------------------------------------+
   | server-eval     | 1 (True)| SQL column expressions are evaluated in   |
   |                 |         | the server (by claiming there is an index)|
   |                 |         | rather than downloading all documents     |
   |                 |         | and having SQLite do the evaluation.      |
-  +-----------------+---------+-------------------------------------------+ 
+  +-----------------+---------+-------------------------------------------+
 

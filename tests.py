@@ -1110,7 +1110,7 @@ class APSW(unittest.TestCase):
         try:
             self.db.createscalarfunction("twelve", ilove7, 900) # too many args
         except (apsw.SQLError, apsw.MisuseError):
-            # http://www.sqlite.org/cvstrac/tktview?tn=3875
+            # https://sqlite.org/cvstrac/tktview?tn=3875
             pass
         # some unicode fun
         self.db.createscalarfunction, u(r"twelve\N{BLACK STAR}"), ilove7
@@ -1197,7 +1197,7 @@ class APSW(unittest.TestCase):
         try:
             self.db.createaggregatefunction("twelve", longest.factory, 923) # max args is 127
         except (apsw.SQLError, apsw.MisuseError):
-            # used to be SQLerror then changed http://www.sqlite.org/cvstrac/tktview?tn=3875
+            # used to be SQLerror then changed https://sqlite.org/cvstrac/tktview?tn=3875
             pass
         self.assertRaises(TypeError, self.db.createaggregatefunction, u(r"twelve\N{BLACK STAR}"), 12) # must be ascii
         self.db.createaggregatefunction("twelve", None)
@@ -1877,7 +1877,7 @@ class APSW(unittest.TestCase):
     # compiled in or not so the assumption is that they aren't.
     # However setup.py is being run then it sets environment variables
     # saying the extensions *must* be present if they were enabled.
-    # See http://code.google.com/p/apsw/issues/detail?id=55 for what
+    # See https://code.google.com/p/apsw/issues/detail?id=55 for what
     # led to this.
     def checkOptionalExtension(self, name, testquery):
         try:
@@ -1902,7 +1902,7 @@ class APSW(unittest.TestCase):
             'glue': 'Egg',
             'salmon': 'Fish',
             'burger': 'Mechanically recovered meat',
-            # From http://www.sqlite.org/cvstrac/wiki?p=FtsUsage
+            # From https://sqlite.org/cvstrac/wiki?p=FtsUsage
             'broccoli stew': 'broccoli peppers cheese tomatoes',
             'pumpkin stew': 'pumpkin onions garlic celery',
             'broccoli pie': 'broccoli cheese onions flour',
@@ -2080,7 +2080,7 @@ class APSW(unittest.TestCase):
             self.assertRaises(apsw.MisuseError, self.db.createmodule, "x"*ii, lambda x: ii)
 
         # If shared cache is enabled then vtable creation is supposed to fail
-        # See http://www.sqlite.org/cvstrac/tktview?tn=3144
+        # See https://sqlite.org/cvstrac/tktview?tn=3144
         try:
             apsw.enablesharedcache(True)
             db=apsw.Connection(TESTFILEPREFIX+"testdb2")
@@ -2622,7 +2622,7 @@ class APSW(unittest.TestCase):
         # findfunction
         # mess with overload function first
         self.assertRaises(TypeError, self.db.overloadfunction, 1, 1)
-        # http://www.sqlite.org/cvstrac/tktview?tn=3507
+        # https://sqlite.org/cvstrac/tktview?tn=3507
         # self.db.overloadfunction("a"*1024, 1)
         self.db.overloadfunction("xyz", 2)
         self.assertRaises(apsw.SQLError, cur.execute, "select xyz(item,description) from foo")
@@ -2957,7 +2957,7 @@ class APSW(unittest.TestCase):
         self.db.limit(apsw.SQLITE_LIMIT_LENGTH, 1023)
         self.assertRaises(apsw.TooBigError, c.execute, "insert into foo values(?)", ("y"*1024,))
         self.assertEqual(1023, self.db.limit(apsw.SQLITE_LIMIT_LENGTH, 0))
-        # bug in sqlite - see http://www.sqlite.org/cvstrac/tktview?tn=3085
+        # bug in sqlite - see https://sqlite.org/cvstrac/tktview?tn=3085
         if False:
             c.execute("insert into foo values(?)", ("x"*1024,))
             self.assertEqual(apsw.SQLITE_MAX_LENGTH, self.db.limit(apsw.SQLITE_LIMIT_LENGTH))
@@ -3211,7 +3211,7 @@ class APSW(unittest.TestCase):
 
     def testTicket2158(self):
         "Check we are not affected by SQLite ticket #2158"
-        # http://www.sqlite.org/cvstrac/tktview?tn=2158
+        # https://sqlite.org/cvstrac/tktview?tn=2158
         def dummy(x,y):
             if x<y: return -1
             if x>y: return 1
@@ -3227,7 +3227,7 @@ class APSW(unittest.TestCase):
 
     def testPysqliteRecursiveIssue(self):
         "Check an issue that affected pysqlite"
-        # http://code.google.com/p/pysqlite/source/detail?r=260ee266d6686e0f87b0547c36b68a911e6c6cdb
+        # https://code.google.com/p/pysqlite/source/detail?r=260ee266d6686e0f87b0547c36b68a911e6c6cdb
         cur=self.db.cursor()
         cur.execute("create table a(x); create table b(y);")
         def foo():
@@ -3529,7 +3529,7 @@ class APSW(unittest.TestCase):
 
         for filename in glob.glob("src/*.c"):
             # check not using C++ style comments
-            code=read_whole_file(filename, "rU").replace("http://", "http:__")
+            code=read_whole_file(filename, "rU").replace("http://", "http:__").replace("https://", "https:__")
             if "//" in code:
                 self.fail("// style comment in "+filename)
 
@@ -3894,7 +3894,7 @@ class APSW(unittest.TestCase):
                 assertEqual(name.uri_parameter("foo"), "1&2=3")
                 assertEqual(name.uri_int("foo", -7), -7)
                 assertEqual(name.uri_int("bar", -7), 43242342)
-                # http://www.sqlite.org/src/info/5f41597f7c
+                # https://sqlite.org/src/info/5f41597f7c
                 # assertEqual(name.uri_boolean("foo", False), False)
                 assertEqual(name.uri_boolean("bam", False), True)
                 assertEqual(name.uri_boolean("baz", True), False)
@@ -4995,7 +4995,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(OverflowError, t.xTruncate, l("0xffffffffeeeeeeee0"))
         if not iswindows:
             # windows is happy to truncate to -77 bytes
-            # see http://www.sqlite.org/cvstrac/tktview?tn=3415
+            # see https://sqlite.org/cvstrac/tktview?tn=3415
             self.assertRaises(apsw.IOError, t.xTruncate, -77)
         TestFile.xTruncate=TestFile.xTruncate1
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
@@ -7967,7 +7967,7 @@ shell.write(shell.stdout, "hello world\\n")
             ## xUnlockFails
             apsw.faultdict["xUnlockFails"]=True
             # Used to wrap in self.assertRaises(apsw.IOError, ...) but SQLite no longer passes on the error.
-            # See http://www.sqlite.org/cvstrac/tktview?tn=3946
+            # See https://sqlite.org/cvstrac/tktview?tn=3946
             self.assertRaisesUnraisable(apsw.IOError, apsw.Connection(TESTFILEPREFIX+"testdb", vfs="faultvfs").cursor().execute, "select * from dummy1")
 
             ## xSyncFails

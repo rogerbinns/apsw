@@ -12,20 +12,20 @@ Exceptions
 .. attribute:: Error.result
 
          For exceptions corresponding to `SQLite error codes
-         <http://sqlite.org/c3ref/c_abort.html>`_ codes this attribute
+         <https://sqlite.org/c3ref/c_abort.html>`_ codes this attribute
          is the numeric error code.
 
 .. attribute:: Error.extendedresult
 
          APSW runs with `extended result codes
-         <http://sqlite.org/c3ref/c_ioerr_blocked.html>`_ turned on.
+         <https://sqlite.org/c3ref/c_ioerr_blocked.html>`_ turned on.
          This attribute includes the detailed code.
 
 As an example, if SQLite issued a read request and the system returned
 less data than expected then :attr:`~Error.result` would have the value
 :const:`SQLITE_IOERR` while :attr:`~Error.extendedresult` would have
 the value :const:`SQLITE_IOERR_SHORT_READ`.
-   
+
 
 APSW specific exceptions
 ========================
@@ -46,14 +46,14 @@ The following exceptions happen when APSW detects various problems.
 .. exception:: ForkingViolationError
 
   See :meth:`apsw.fork_checker`.
-        
+
 .. exception:: IncompleteExecutionError
 
   You have tried to start a new SQL execute call before executing all
   the previous ones. See the :ref:`execution model <executionmodel>`
   for more details.
-        
-.. exception:: ConnectionNotClosedError 
+
+.. exception:: ConnectionNotClosedError
 
   This exception is no longer generated.  It was required in earlier
   releases due to constraints in threading usage with SQLite.
@@ -106,7 +106,7 @@ The following exceptions happen when APSW detects various problems.
 .. exception:: ExtensionLoadingError
 
   An error happened loading an `extension
-  <http://www.sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_.
+  <https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_.
 
 .. exception:: VFSNotImplementedError
 
@@ -121,7 +121,7 @@ SQLite Exceptions
 =================
 
 The following lists which Exception classes correspond to which `SQLite
-error codes <http://sqlite.org/c3ref/c_abort.html>`_.
+error codes <https://sqlite.org/c3ref/c_abort.html>`_.
 
 
 General Errors
@@ -162,7 +162,7 @@ Internal Errors
 
 .. exception:: RangeError
 
-  :const:`SQLITE_RANGE`.  (Cannot be generated using APSW).  2nd parameter to `sqlite3_bind <http://www.sqlite.org/c3ref/bind_blob.html>`_ out of range
+  :const:`SQLITE_RANGE`.  (Cannot be generated using APSW).  2nd parameter to `sqlite3_bind <https://sqlite.org/c3ref/bind_blob.html>`_ out of range
 
 Permissions Etc
 ^^^^^^^^^^^^^^^
@@ -204,7 +204,7 @@ Abort/Busy Etc
 .. exception:: InterruptError
 
   :const:`SQLITE_INTERRUPT`.  Operation terminated by
-  `sqlite3_interrupt <http://www.sqlite.org/c3ref/interrupt.html>`_ -
+  `sqlite3_interrupt <https://sqlite.org/c3ref/interrupt.html>`_ -
   use :meth:`Connection.interrupt`.
 
 .. exception:: SchemaChangeError
@@ -219,10 +219,10 @@ Abort/Busy Etc
 .. exception:: ConstraintError
 
   :const:`SQLITE_CONSTRAINT`. Abort due to `constraint
-  <http://www.sqlite.org/lang_createtable.html>`_ violation.  This
+  <https://sqlite.org/lang_createtable.html>`_ violation.  This
   would happen if the schema required a column to be within a specific
   range.  If you have multiple constraints, you `can't tell
-  <http://www.sqlite.org/src/tktview/23b212820161c6599cbf414aa99bf8a5bfa5e7a3>`__
+  <https://sqlite.org/src/tktview/23b212820161c6599cbf414aa99bf8a5bfa5e7a3>`__
   which one was the cause.
 
 Memory/Disk
@@ -263,7 +263,7 @@ Memory/Disk
 
 .. exception:: FormatError
 
-  :const:`SQLITE_FORMAT`. (No longer used) `Auxiliary database <http://www.sqlite.org/lang_attach.html>`_ format error.
+  :const:`SQLITE_FORMAT`. (No longer used) `Auxiliary database <https://sqlite.org/lang_attach.html>`_ format error.
 
 .. exception:: NotADBError
 
@@ -332,7 +332,7 @@ information. You can print out the variables using `ASPN recipe 52215 <http://as
 
     tb = sys.exc_info()[2]
     stack = []
-    
+
     while tb:
         stack.append(tb.tb_frame)
         tb = tb.tb_next

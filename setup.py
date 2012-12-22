@@ -197,7 +197,7 @@ class fetch(Command):
         # work out the version
         if self.version is None:
             write("  Getting download page to work out current SQLite version")
-            page=self.download("http://www.sqlite.org/download.html", text=True, checksum=False)
+            page=self.download("https://sqlite.org/download.html", text=True, checksum=False)
             match=re.search('sqlite-amalgamation-3([0-9][0-9])([0-9][0-9])([0-9][0-9]).zip"', page)
             if match:
                 self.version="3.%d.%d.%d" % tuple([int(match.group(n)) for n in range(1,4)])
@@ -225,13 +225,13 @@ class fetch(Command):
                 write("  Getting the SQLite amalgamation")
 
             if self.version=="fossil":
-                AURL="http://www.sqlite.org/src/zip/sqlite3.zip?uuid=trunk"
+                AURL="https://sqlite.org/src/zip/sqlite3.zip?uuid=trunk"
                 checksum=False
             else:
                 if sys.platform=="win32":
-                    AURL="http://www.sqlite.org/sqlite-amalgamation-%s.zip" % (self.webversion,)
+                    AURL="https://sqlite.org/sqlite-amalgamation-%s.zip" % (self.webversion,)
                 else:
-                    AURL="http://www.sqlite.org/sqlite-autoconf-%s.tar.gz" % (self.webversion,)
+                    AURL="https://sqlite.org/sqlite-autoconf-%s.tar.gz" % (self.webversion,)
                 checksum=True
 
             data=self.download(AURL, checksum=checksum)
@@ -402,7 +402,16 @@ class fetch(Command):
             try:
                 if count:
                     write("        Try #",str(count+1))
-                page=urlopen(url).read()
+                try:
+                    page=urlopen(url).read()
+                except:
+                    # Degrade to http if https is not supported
+                    e=sys.exc_info()[1]
+                    if e.reason=="unknown url type: https":
+                        write("        [Python doesn't support https - using http instead]")
+                        page=urlopen(url.replace("https://", "http://")).read()
+                    else:
+                        raise
                 break
             except:
                 write("       Error ", str(sys.exc_info()[1]))
@@ -567,7 +576,7 @@ class apsw_build_ext(beparent):
                 # See issue #55 where I had left off the 3 in fts3.  This code
                 # tries to catch misspelling the name of an extension.
                 # However the SQLITE_ENABLE prefix is also used by other
-                # options - see http://www.sqlite.org/compile.html but almost
+                # options - see https://sqlite.org/compile.html but almost
                 # all of those have _ in them, so our abbreviated and
                 # hopefully future proof test
                 if "_" not in e.lower() and \

@@ -124,7 +124,7 @@ FunctionCBInfo_dealloc(FunctionCBInfo *self)
 
 
   This object wraps a `sqlite3 pointer
-  <http://www.sqlite.org/c3ref/sqlite3.html>`_.
+  <https://sqlite.org/c3ref/sqlite3.html>`_.
 */
 
 /* CONNECTION CODE */
@@ -347,8 +347,8 @@ Connection_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED
   Opens the named database.  You can use ``:memory:`` to get a private temporary
   in-memory database that is not shared with any other connections.
 
-  :param flags: One or more of the `open flags <http://www.sqlite.org/c3ref/c_open_autoproxy.html>`_ orred together
-  :param vfs: The name of the `vfs <http://www.sqlite.org/c3ref/vfs.html>`_ to use.  If :const:`None` then the default
+  :param flags: One or more of the `open flags <https://sqlite.org/c3ref/c_open_autoproxy.html>`_ orred together
+  :param vfs: The name of the `vfs <https://sqlite.org/c3ref/vfs.html>`_ to use.  If :const:`None` then the default
      vfs will be used.
 
   :param statementcachesize: Use zero to disable the statement cache,
@@ -471,7 +471,7 @@ finally:
 
    :param database: Name of the database.  This will be ``main`` for
      the main connection and the name you specified for `attached
-     <http://www.sqlite.org/lang_attach.html>`_ databases.
+     <https://sqlite.org/lang_attach.html>`_ databases.
    :param table: The name of the table
    :param column: The name of the column
    :param rowid: The id that uniquely identifies the row.
@@ -482,7 +482,7 @@ finally:
    .. seealso::
 
      * :ref:`Blob I/O example <example-blobio>`
-     * `SQLite row ids <http://www.sqlite.org/autoinc.html>`_
+     * `SQLite row ids <https://sqlite.org/autoinc.html>`_
 
    -* sqlite3_blob_open
 */
@@ -537,7 +537,7 @@ Connection_blobopen(Connection *self, PyObject *args)
 
    :param databasename: Name of the database.  This will be ``main`` for
      the main connection and the name you specified for `attached
-     <http://www.sqlite.org/lang_attach.html>`_ databases.
+     <https://sqlite.org/lang_attach.html>`_ databases.
    :param sourceconnection: The :class:`Connection` to copy a database from.
    :param sourcedatabasename: Name of the database in the source (eg ``main``).
 
@@ -832,7 +832,7 @@ Connection_interrupt(Connection *self)
   returned.  If called with two then the limit is set to *newval*.
 
 
-  :param id: One of the `runtime limit ids <http://www.sqlite.org/c3ref/c_limit_attached.html>`_
+  :param id: One of the `runtime limit ids <https://sqlite.org/c3ref/c_limit_attached.html>`_
   :param newval: The new limit.  This is a 32 bit signed integer even on 64 bit platforms.
 
   :returns: The limit in place on entry to the call.
@@ -898,7 +898,7 @@ updatecb(void *context, int updatetype, char const *databasename, char const *ta
       :const:`SQLITE_INSERT`, :const:`SQLITE_DELETE` or :const:`SQLITE_UPDATE`
     database name (string)
       This is ``main`` for the database or the name specified in
-      `ATTACH <http://sqlite.org/lang_attach.html>`_
+      `ATTACH <https://sqlite.org/lang_attach.html>`_
     table name (string)
       The table on which the update happened
     rowid (64 bit integer)
@@ -1388,7 +1388,7 @@ authorizercb(void *context, int operation, const char *paramone, const char *par
 
 /** .. method:: setauthorizer(callable)
 
-  While `preparing <http://www.sqlite.org/c3ref/prepare.html>`_
+  While `preparing <https://sqlite.org/c3ref/prepare.html>`_
   statements, SQLite will call any defined authorizer to see if a
   particular action is ok to be part of the statement.
 
@@ -1398,9 +1398,9 @@ authorizercb(void *context, int operation, const char *paramone, const char *par
 
   The authorizer callback has 5 parameters:
 
-    * An `operation code <http://www.sqlite.org/c3ref/c_alter_table.html>`_
-    * A string (or None) dependent on the operation `(listed as 3rd) <http://www.sqlite.org/c3ref/c_alter_table.html>`_
-    * A string (or None) dependent on the operation `(listed as 4th) <http://www.sqlite.org/c3ref/c_alter_table.html>`_
+    * An `operation code <https://sqlite.org/c3ref/c_alter_table.html>`_
+    * A string (or None) dependent on the operation `(listed as 3rd) <https://sqlite.org/c3ref/c_alter_table.html>`_
+    * A string (or None) dependent on the operation `(listed as 4th) <https://sqlite.org/c3ref/c_alter_table.html>`_
     * A string name of the database (or None)
     * Name of the innermost trigger or view doing the access (or None)
 
@@ -1653,7 +1653,7 @@ Connection_setbusyhandler(Connection *self, PyObject *callable)
 /** .. method:: enableloadextension(enable)
 
   Enables/disables `extension loading
-  <http://www.sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_
+  <https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_
   which is disabled by default.
 
   :param enable: If True then extension loading is enabled, else it is disabled.
@@ -1692,7 +1692,7 @@ Connection_enableloadextension(Connection *self, PyObject *enabled)
 
 /** .. method:: loadextension(filename[, entrypoint])
 
-  Loads *filename* as an `extension <http://www.sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_
+  Loads *filename* as an `extension <https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_
 
   :param filename: The file to load.  This must be Unicode or Unicode compatible
 
@@ -2494,7 +2494,7 @@ collation_destroy(void *context)
   You can control how SQLite sorts (termed `collation
   <http://en.wikipedia.org/wiki/Collation>`_) when giving the
   ``COLLATE`` term to a `SELECT
-  <http://www.sqlite.org/lang_select.html>`_.  For example your
+  <https://sqlite.org/lang_select.html>`_.  For example your
   collation could take into account locale or do numeric sorting.
 
   The *callback* will be called with two items.  It should return -1
@@ -2567,7 +2567,7 @@ Connection_createcollation(Connection *self, PyObject *args)
 
   :param dbname: The name of the database to affect (eg "main", "temp", attached name)
   :param op: A `numeric code
-    <http://sqlite.org/c3ref/c_fcntl_lockstate.html>`_ with values less
+    <https://sqlite.org/c3ref/c_fcntl_lockstate.html>`_ with values less
     than 100 reserved for SQLite internal use.
   :param pointer: A number which is treated as a ``void pointer`` at the C level.
 
@@ -2654,7 +2654,7 @@ Connection_filecontrol(Connection *self, PyObject *args)
 /** .. method:: sqlite3pointer() -> int
 
   Returns the underlying `sqlite3 *
-  <http://sqlite.org/c3ref/sqlite3.html>`_ for the connection. This
+  <https://sqlite.org/c3ref/sqlite3.html>`_ for the connection. This
   method is useful if there are other C level libraries in the same
   process and you want them to use the APSW connection handle. The
   value is returned as a number using :meth:`PyLong_FromVoidPtr` under the
@@ -2713,12 +2713,12 @@ Connection_wal_autocheckpoint(Connection *self, PyObject *arg)
 
     :param dbname:  The name of the database or all databases if None
 
-    :param mode: One of the `checkpoint modes <http://sqlite.org/c3ref/wal_checkpoint_v2.html>`__.
+    :param mode: One of the `checkpoint modes <https://sqlite.org/c3ref/wal_checkpoint_v2.html>`__.
 
     :return: A tuple of the size of the WAL log in frames and the
        number of frames checkpointed as described in the
        `documentation
-       <http://sqlite.org/c3ref/wal_checkpoint_v2.html>`__.
+       <https://sqlite.org/c3ref/wal_checkpoint_v2.html>`__.
 
   -* sqlite3_wal_checkpoint_v2
 */
@@ -2982,7 +2982,7 @@ Connection_getrowtrace(Connection *self)
                 db.cursor().execute("...")
 
   Behind the scenes the `savepoint
-  <http://www.sqlite.org/lang_savepoint.html>`_ functionality introduced in
+  <https://sqlite.org/lang_savepoint.html>`_ functionality introduced in
   SQLite 3.6.8 is used.
 */
 static PyObject *
@@ -3134,7 +3134,7 @@ Connection_exit(Connection *self, PyObject *args)
 /** .. method:: config(op[, *args])
 
     :param op: A `configuration operation
-      <http://sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__
+      <https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__
     :param args: Zero or more arguments as appropriate for *op*
 
     -* sqlite3_db_config
@@ -3183,7 +3183,7 @@ Connection_config(Connection *self, PyObject *args)
 
   Returns current and highwater measurements for the database.
 
-  :param op: A `status parameter <http://sqlite.org/c3ref/c_dbstatus_options.html>`_
+  :param op: A `status parameter <https://sqlite.org/c3ref/c_dbstatus_options.html>`_
   :param reset: If *True* then the highwater is set to the current value
   :returns: A tuple of current value and highwater value
 

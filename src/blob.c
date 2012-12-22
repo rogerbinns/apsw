@@ -5,26 +5,26 @@
 */
 
 
-/** 
+/**
 .. _blobio:
 
 Blob Input/Output
 *****************
 
 A `blob <http://en.wikipedia.org/wiki/Binary_large_object>`_ is a
-SQLite `datatype <http://www.sqlite.org/datatype3.html>`_ representing
+SQLite `datatype <https://sqlite.org/datatype3.html>`_ representing
 a sequence of bytes.  It can be zero or more bytes in size.
 
 SQLite blobs have an absolute maximum size of 2GB and a `default
-maximum size <http://www.sqlite.org/c3ref/c_limit_attached.html>`_ of
+maximum size <https://sqlite.org/c3ref/c_limit_attached.html>`_ of
 1GB.
 
 An alternate approach to using blobs is to store the data in files and
 store the filename in the database.  Doing so loses the `ACID
-<http://www.sqlite.org/transactional.html>`_ properties of SQLite.
+<https://sqlite.org/transactional.html>`_ properties of SQLite.
 
 */
-   
+
 
 /* ZEROBLOB CODE */
 
@@ -77,7 +77,7 @@ ZeroBlobBind_init(ZeroBlobBind *self, PyObject *args, PyObject *kwargs)
       PyErr_Format(PyExc_TypeError, "Zeroblob constructor does not take keyword arguments");
       return -1;
     }
-  
+
   if(!PyArg_ParseTuple(args, "i", &n))
     return -1;
 
@@ -92,7 +92,7 @@ ZeroBlobBind_init(ZeroBlobBind *self, PyObject *args, PyObject *kwargs)
 }
 
 /** .. method:: length() -> int
- 
+
   Size of zero blob in bytes.
 */
 static PyObject *
@@ -112,7 +112,7 @@ static PyTypeObject ZeroBlobBindType = {
     "apsw.zeroblob",           /*tp_name*/
     sizeof(ZeroBlobBind),      /*tp_basicsize*/
     0,                         /*tp_itemsize*/
-    0,                         /*tp_dealloc*/ 
+    0,                         /*tp_dealloc*/
     0,                         /*tp_print*/
     0,                         /*tp_getattr*/
     0,                         /*tp_setattr*/
@@ -180,14 +180,14 @@ static PyTypeObject APSWBlobType;
   This object is created by :meth:`Connection.blobopen` and provides
   access to a blob in the database.  It behaves like a Python file.
   At the C level it wraps a `sqlite3_blob
-  <http://sqlite.org/c3ref/blob.html>`_.
+  <https://sqlite.org/c3ref/blob.html>`_.
 
   .. note::
 
     You cannot change the size of a blob using this object. You should
     create it with the correct size in advance either by using
     :class:`zeroblob` or the `zeroblob()
-    <http://www.sqlite.org/lang_corefunc.html>`_ function.
+    <https://sqlite.org/lang_corefunc.html>`_ function.
 
   See the :ref:`example <example-blobio>`.
 */
@@ -210,7 +210,7 @@ APSWBlob_close_internal(APSWBlob *self, int force)
   PyObject *err_type, *err_value, *err_traceback;
 
   if(force==2)
-    PyErr_Fetch(&err_type, &err_value, &err_traceback);    
+    PyErr_Fetch(&err_type, &err_value, &err_traceback);
 
   /* note that sqlite3_blob_close always works even if an error is
      returned - see sqlite ticket #2815 */
@@ -231,8 +231,8 @@ APSWBlob_close_internal(APSWBlob *self, int force)
               break;
             case 2:
               SET_EXC(res, self->connection->db);
-              apsw_write_unraiseable(NULL);            
-            }         
+              apsw_write_unraiseable(NULL);
+            }
         }
       self->pBlob=0;
     }
@@ -242,7 +242,7 @@ APSWBlob_close_internal(APSWBlob *self, int force)
      we'd still be in list */
   if(self->connection)
     Connection_remove_dependent(self->connection, (PyObject*)self);
-  
+
   Py_CLEAR(self->connection);
 
   if(force==2)
@@ -270,7 +270,7 @@ APSWBlob_dealloc(APSWBlob *self)
 
 /** .. method:: length() -> int
 
-  Returns the size of the blob in bytes. 
+  Returns the size of the blob in bytes.
 
   -* sqlite3_blob_bytes
 */
@@ -305,7 +305,7 @@ APSWBlob_read(APSWBlob *self, PyObject *args)
 
   CHECK_USE(NULL);
   CHECK_BLOB_CLOSED;
-   
+
   /* The python file read routine treats negative numbers as read till
      end of file, which I think is rather silly.  (Try reading -3
      bytes from /dev/zero on a 64 bit machine with lots of swap to see
@@ -458,10 +458,10 @@ APSWBlob_seek(APSWBlob *self, PyObject *args)
   int offset, whence=0;
   CHECK_USE(NULL);
   CHECK_BLOB_CLOSED;
-  
+
   if(!PyArg_ParseTuple(args, "i|i:seek(offset,whence=0)", &offset, &whence))
     return NULL;
-  
+
   switch(whence)
     {
     default:
@@ -597,7 +597,7 @@ APSWBlob_close(APSWBlob *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
-/** .. method:: __enter__() -> context 
+/** .. method:: __enter__() -> context
 
   You can use a blob as a `context manager
   <http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
@@ -644,7 +644,7 @@ APSWBlob_exit(APSWBlob *self, APSW_ARGUNUSED PyObject *args)
   Py_RETURN_FALSE;
 }
 
-/** .. method:: reopen(rowid) 
+/** .. method:: reopen(rowid)
 
   Change this blob object to point to a different row.  It can be
   faster than closing an existing blob an opening a new one.
@@ -674,7 +674,7 @@ APSWBlob_reopen(APSWBlob *self, PyObject *arg)
       }
     else
       return PyErr_Format(PyExc_TypeError, "blob reopen argument must be a number");
-  
+
   /* no matter what happens we always reset current offset */
   self->curoffset=0;
 
@@ -716,7 +716,7 @@ static PyTypeObject APSWBlobType = {
     "apsw.blob",               /*tp_name*/
     sizeof(APSWBlob),          /*tp_basicsize*/
     0,                         /*tp_itemsize*/
-    (destructor)APSWBlob_dealloc, /*tp_dealloc*/ 
+    (destructor)APSWBlob_dealloc, /*tp_dealloc*/
     0,                         /*tp_print*/
     0,                         /*tp_getattr*/
     0,                         /*tp_setattr*/

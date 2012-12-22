@@ -47,9 +47,9 @@ Multi-threading and re-entrancy
 ASPW lets you use SQLite in multi-threaded programs and will let other
 threads execute while SQLite is working.  (Technically the `GIL
 <http://www.python.org/doc/2.3.4/api/threads.html>`_ is released when
-`sqlite3_prepare_v2 <http://sqlite.org/c3ref/prepare.html>`_,
-`sqlite3_step <http://sqlite.org/c3ref/step.html>`_ or
-`sqlite3_open_v2 <http://sqlite.org/c3ref/open.html>`_ are running, as
+`sqlite3_prepare_v2 <https://sqlite.org/c3ref/prepare.html>`_,
+`sqlite3_step <https://sqlite.org/c3ref/step.html>`_ or
+`sqlite3_open_v2 <https://sqlite.org/c3ref/open.html>`_ are running, as
 well as all other functions that could take more than a trivial amount
 of time or use the SQLite mutex. The GIL is re-acquired while user
 defined functions, collations and the various hooks/handlers run.)
@@ -68,7 +68,7 @@ return SQLITE_BUSY which will be raised as BusyError. You can call
 for or :meth:`Connection.setbusyhandler` to install your own busy
 handler. Note that SQLite won't call the busy handler or timeout if it
 believes a deadlock has arisen. SQLite's locking and concurrency is
-described `here <http://www.sqlite.org/lockingv3.html>`_.
+described `here <https://sqlite.org/lockingv3.html>`_.
 
 A cursor object can only be executing one query at a time. You cannot
 issue a new query from inside a trace function or from a user defined
@@ -99,9 +99,9 @@ Statement Cache
 ===============
 
 Each :class:`Connection` maintains a cache mapping SQL queries to a
-`prepared statement <http://www.sqlite.org/c3ref/stmt.html>`_ to avoid
+`prepared statement <https://sqlite.org/c3ref/stmt.html>`_ to avoid
 the overhead of `repreparing
-<http://www.sqlite.org/c3ref/prepare.html>`_ queries that are executed
+<https://sqlite.org/c3ref/prepare.html>`_ queries that are executed
 multiple times.  This is a classic tradeoff using more memory to
 reduce CPU consumption.
 
@@ -152,7 +152,7 @@ Execution Tracer
 The execution tracer is called after an SQL statement has been
 prepared. (ie syntax errors will have caused an exception during
 preparation so you won't see them with a tracer). It is called with
-three arguments. 
+three arguments.
 
   cursor
     The cursor executing the statement
@@ -207,7 +207,7 @@ APSW Trace
 APSW includes a tracing script as part of the :ref:`source
 distribution <source_and_binaries>` named :file:`apswtrace.py`, or you
 can get a copy directly from `source control
-<http://code.google.com/p/apsw/source/browse/tools/apswtrace.py>`__
+<https://code.google.com/p/apsw/source/browse/tools/apswtrace.py>`__
 (choose "View Raw File").  This script lets you easily trace SQL
 execution as well as providing a summary report without modifying your
 code.  If it is installed anywhere on your :envvar:`PYTHONPATH` then
@@ -287,7 +287,7 @@ Each row starts with the following fields:
     The unique `thread identifier
     <http://docs.python.org/library/thread.html#thread.get_ident>`_
 
-  
+
 The remainder of the line has one of the following forms:
 
   OPEN: "dbname" vfs open_flags
@@ -322,7 +322,7 @@ that have no results or where you read all the result rows.
 Processing time also includes waiting time on busy connections.
 
   .. code-block:: text
-  
+
     APSW TRACE SUMMARY REPORT
 
     Program run time                    83.073 seconds
@@ -337,7 +337,7 @@ Processing time also includes waiting time on busy connections.
 This shows how many times each query was run.
 
   .. code-block:: text
-  
+
     MOST POPULAR QUERIES
 
      121451 insert into foo values(?)
@@ -363,7 +363,7 @@ illustrates how time spent busy waiting is included.
   .. code-block:: text
 
     LONGEST RUNNING - AGGREGATE
-   
+
         413   94.305 select timesten(x) from foo where x=? order by x
      120637   12.941 select * from foo
          12    4.115 begin immediate
@@ -380,7 +380,7 @@ illustrates how time spent busy waiting is included.
          80    0.150 insert into foo values(1,2)
          71    0.127 insert into foo values(date('now'), date('now'))
 
-This shows the longest running queries with time in seconds. 
+This shows the longest running queries with time in seconds.
 
   .. code-block:: text
 

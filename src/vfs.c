@@ -12,7 +12,7 @@ Virtual File System (VFS)
 *************************
 
 SQLite 3.6 has new `VFS functionality
-<http://sqlite.org/c3ref/vfs.html>`_ which defines the interface
+<https://sqlite.org/c3ref/vfs.html>`_ which defines the interface
 between the SQLite core and the underlying operating system. The
 majority of the functionality deals with files. APSW exposes this
 functionality letting you provide your own routines. You can also
@@ -56,9 +56,9 @@ error code then :const:`SQLITE_ERROR` which corresponds to
 
 The SQLite code that deals with VFS errors behaves in varying
 ways. Some routines have no way to return an error (eg `xDlOpen
-<http://www.sqlite.org/c3ref/vfs.html>`_ just returns zero/NULL on
+<https://sqlite.org/c3ref/vfs.html>`_ just returns zero/NULL on
 being unable to load a library, `xSleep
-<http://www.sqlite.org/c3ref/vfs.html>`_ has no error return
+<https://sqlite.org/c3ref/vfs.html>`_ has no error return
 parameter), others are unified (eg almost any
 error in xWrite will be returned to the user as disk full
 error). Sometimes errors are ignored as they are harmless such as when
@@ -136,9 +136,9 @@ across.
 
    Methods:
 
-   apswvfs_         sqlite3_vfs* functions http://sqlite.org/c3ref/vfs.html
+   apswvfs_         sqlite3_vfs* functions https://sqlite.org/c3ref/vfs.html
    apswvfspy_       Python implementations of those same functions
-   apswvfsfile_     io methods http://sqlite.org/c3ref/io_methods.html
+   apswvfsfile_     io methods https://sqlite.org/c3ref/io_methods.html
    apswvfsfilepy_   Python implementations of those same functions
 
    Structures:
@@ -243,7 +243,7 @@ typedef struct
 /** .. class:: VFS
 
     Provides operating system access.  You can get an overview in the
-    `SQLite documentation <http://sqlite.org/c3ref/vfs.html>`_.  To
+    `SQLite documentation <https://sqlite.org/c3ref/vfs.html>`_.  To
     create a VFS your Python class must inherit from :class:`VFS`.
 
 */
@@ -316,7 +316,7 @@ apswvfs_xDelete(sqlite3_vfs *vfs, const char *zName, int syncDir)
        | SQLite >= 3.7.8 and SQLite < 3.7.15    |Do not raise an exception                        |
        +----------------------------------------+-------------------------------------------------+
        | SQLite >= 3.7.15                       |Raise an :exc:`IOError` exception with           |
-       |                                        |extendedresult :const:`SQLITE_IOERR_DELETE_NOENT |
+       |                                        |extendedresult :const:`SQLITE_IOERR_DELETE_NOENT`|
        +----------------------------------------+-------------------------------------------------+
 
     :param filename: File to delete
@@ -383,7 +383,7 @@ apswvfs_xAccess(sqlite3_vfs *vfs, const char *zName, int flags, int *pResOut)
     accordingly.
 
     :param pathname: File or directory to check
-    :param flags: One of the `access flags <http://sqlite.org/c3ref/c_access_exists.html>`_
+    :param flags: One of the `access flags <https://sqlite.org/c3ref/c_access_exists.html>`_
 */
 static PyObject *
 apswvfspy_xAccess(APSWVFS *self, PyObject *args)
@@ -587,7 +587,7 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
 
     :param flags: A list of two integers ``[inputflags,
       outputflags]``.  Each integer is one or more of the `open flags
-      <http://www.sqlite.org/c3ref/c_open_autoproxy.html>`_ binary orred
+      <https://sqlite.org/c3ref/c_open_autoproxy.html>`_ binary orred
       together.  The ``inputflags`` tells you what SQLite wants.  For
       example :const:`SQLITE_OPEN_DELETEONCLOSE` means the file should
       be automatically deleted when closed.  The ``outputflags``
@@ -1576,7 +1576,7 @@ APSWVFS_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED Py
         maxpathname: The maximum length of database name in bytes when
         represented in UTF-8.  If a pathname is passed in longer than
         this value then SQLite will not `be able to open it
-        <http://www.sqlite.org/src/tktview/c060923a5422590b3734eb92eae0c94934895b68>`__.
+        <https://sqlite.org/src/tktview/c060923a5422590b3734eb92eae0c94934895b68>`__.
 
     :raises ValueError: If *base* is not :const:`None` and the named vfs is not
       currently registered.
@@ -2002,7 +2002,7 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
   if(size<amount)
     {
       result=SQLITE_IOERR_SHORT_READ;
-      memset(bufout, 0, amount); /* see http://www.sqlite.org/cvstrac/chngview?cn=5867 */
+      memset(bufout, 0, amount); /* see https://sqlite.org/cvstrac/chngview?cn=5867 */
       memcpy(bufout, buffer, size);
     }
   else
@@ -2064,7 +2064,7 @@ apswvfsfilepy_xRead(APSWVFSFile *self, PyObject *args)
     {
       /* We don't know how short the read was, so look for first
          non-trailing null byte.  See
-         http://www.sqlite.org/cvstrac/chngview?cn=5867 */
+         https://sqlite.org/cvstrac/chngview?cn=5867 */
       while(amount && PyBytes_AS_STRING(buffy)[amount-1]==0)
         amount--;
       _PyBytes_Resize(&buffy, amount);
@@ -2180,7 +2180,7 @@ apswvfsfile_xUnlock(sqlite3_file *file, int flag)
 /** .. method:: xUnlock(level)
 
     Decrease the lock to the level specified which is one of the
-    `SQLITE_LOCK <http://sqlite.org/c3ref/c_lock_exclusive.html>`_
+    `SQLITE_LOCK <https://sqlite.org/c3ref/c_lock_exclusive.html>`_
     family of constants.
 */
 static PyObject *
@@ -2234,7 +2234,7 @@ apswvfsfile_xLock(sqlite3_file *file, int flag)
 /** .. method:: xLock(level)
 
   Increase the lock to the level specified which is one of the
-  `SQLITE_LOCK <http://sqlite.org/c3ref/c_lock_exclusive.html>`_
+  `SQLITE_LOCK <https://sqlite.org/c3ref/c_lock_exclusive.html>`_
   family of constants. If you can't increase the lock level because
   someone else has locked it, then raise :exc:`BusyError`.
 */
@@ -2328,7 +2328,7 @@ apswvfsfile_xSync(sqlite3_file *file, int flags)
 
   Ensure data is on the disk platters (ie could survive a power
   failure immediately after the call returns) with the `sync flags
-  <http://sqlite.org/c3ref/c_sync_dataonly.html>`_ detailing what
+  <https://sqlite.org/c3ref/c_sync_dataonly.html>`_ detailing what
   needs to be synced.  You can sync more than what is requested.
 */
 static PyObject *
@@ -2437,7 +2437,7 @@ apswvfsfile_xDeviceCharacteristics(sqlite3_file *file)
 /** .. method:: xDeviceCharacteristics() -> int
 
   Return `I/O capabilities
-  <http://sqlite.org/c3ref/c_iocap_atomic.html>`_ (bitwise or of
+  <https://sqlite.org/c3ref/c_iocap_atomic.html>`_ (bitwise or of
   appropriate values). If you do not implement the function or have an
   error then 0 (the SQLite default) is returned.
 */
@@ -2538,7 +2538,7 @@ apswvfsfile_xCheckReservedLock(sqlite3_file *file, int *pResOut)
 
   Returns True if any database connection (in this or another process)
   has a lock other than `SQLITE_LOCK_NONE or SQLITE_LOCK_SHARED
-  <http://sqlite.org/c3ref/c_lock_exclusive.html>`_.
+  <https://sqlite.org/c3ref/c_lock_exclusive.html>`_.
 */
 static PyObject *
 apswvfsfilepy_xCheckReservedLock(APSWVFSFile *self)
@@ -2595,7 +2595,7 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
 /** .. method:: xFileControl(op, ptr) -> bool
 
    Receives `file control
-   <http://sqlite.org/c3ref/file_control.html>`_ request typically
+   <https://sqlite.org/c3ref/file_control.html>`_ request typically
    issued by :meth:`Connection.filecontrol`.  See
    :meth:`Connection.filecontrol` for an example of how to pass a
    Python object to this routine.
@@ -2858,7 +2858,7 @@ static PyTypeObject APSWVFSFileType =
 /** .. class:: URIFilename
 
     SQLite uses a convoluted method of storing `uri parameters
-    <http://www.sqlite.org/uri.html>`__ after the filename binding the
+    <https://sqlite.org/uri.html>`__ after the filename binding the
     C filename representation and parameters together.  This class
     encapsulates that binding.  The :ref:`example <example-vfs>` shows
     usage of this class.

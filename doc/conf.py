@@ -27,13 +27,13 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.extlinks'] #, 'sphinx.ext.inters
 
 
 extlinks={
-    'cvstrac': ('http://www.sqlite.org/cvstrac/tktview?tn=%s',
+    'cvstrac': ('https://sqlite.org/cvstrac/tktview?tn=%s',
                 'SQLite ticket #'),
-    'sqliteapi': ('http://www.sqlite.org/c3ref/%s.html', 'XXYouShouldNotSeeThisXX'),
-    'issue': ('http://code.google.com/p/apsw/issues/detail?id=%s',
+    'sqliteapi': ('https://sqlite.org/c3ref/%s.html', 'XXYouShouldNotSeeThisXX'),
+    'issue': ('https://code.google.com/p/apsw/issues/detail?id=%s',
               'APSW issue ')
     }
-    
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

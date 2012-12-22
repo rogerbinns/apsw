@@ -2,6 +2,12 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.7.15.1-r1
+===========
+
+Use https for SQLite web site references (downloads and documentation
+links)
+
 3.7.15-r1
 =========
 
@@ -9,10 +15,10 @@ Work around changed semantics for error handling when the VFS xDelete
 method is asked to delete a file that does not exist.
 
 Completely removed all `AsyncVFS
-<http://www.sqlite.org/asyncvfs.html>`__ related code.  This extension
+<https://sqlite.org/asyncvfs.html>`__ related code.  This extension
 is `no longer maintained nor supported
-<http://www.sqlite.org/src/info/3d548db7eb>`__ by the SQLite team.
-`WAL <http://www.sqlite.org/wal.html>`__ is a good way of getting
+<https://sqlite.org/src/info/3d548db7eb>`__ by the SQLite team.
+`WAL <https://sqlite.org/wal.html>`__ is a good way of getting
 similar functionality.
 
 Added :func:`config` support for SQLITE_CONFIG_COVERING_INDEX_SCAN.
@@ -21,6 +27,8 @@ Added several new constants: SQLITE_CONFIG_COVERING_INDEX_SCAN,
 SQLITE_CONFIG_SQLLOG, SQLITE_FCNTL_BUSYHANDLER,
 SQLITE_FCNTL_TEMPFILENAME, SQLITE_CANTOPEN_FULLPATH,
 SQLITE_IOERR_DELETE_NOENT
+
+Added shell .print command
 
 3.7.14.1-r1
 ===========
@@ -54,7 +62,7 @@ Added shell .print command to match upcoming SQLite shell changes.
 =========
 
 Added support for :meth:`Connection.status` (calls `sqlite3_db_status
-<http://www.sqlite.org/c3ref/db_status.html>`__).
+<https://sqlite.org/c3ref/db_status.html>`__).
 
 The legacy Windows `Compiled Help Format
 <http://en.wikipedia.org/wiki/Microsoft_Compiled_HTML_Help>`__
@@ -114,7 +122,7 @@ SQLITE_IOCAP_POWERSAFE_OVERWRITE constants.
 
 Fix shell dumping when SQLite doesn't strip trailing comments from
 view declarations (`discussed here
-<http://www.sqlite.org/src/info/c04a8b8a4f>`__)
+<https://sqlite.org/src/info/c04a8b8a4f>`__)
 
 Added a :class:`URIFilename` class to encapsulate how SQLite provides
 URI parameters to VFS routines (:issue:`124`).
@@ -146,7 +154,7 @@ Updated documentation and tests due to an undocumented change in VFS
 xDelete semantics.
 
 Added SQLITE3_FCNTL_PERSIST_WAL and SQLITE3_FCNTL_WIN32_AV_RETRY `file
-controls <http://www.sqlite.org/c3ref/c_fcntl_chunk_size.html>`__.
+controls <https://sqlite.org/c3ref/c_fcntl_chunk_size.html>`__.
 
 Wrapped sqlite3_sourceid (:issue:`120`)
 
@@ -154,17 +162,17 @@ Wrapped sqlite3_sourceid (:issue:`120`)
 ==========
 
 Added `SQLITE_CONFIG_URI
-<http://www.sqlite.org/c3ref/c_config_getmalloc.html#sqliteconfiguri>`__
+<https://sqlite.org/c3ref/c_config_getmalloc.html#sqliteconfiguri>`__
 and support for it in :meth:`config`, and the open flag
 `SQLITE_OPEN_URI
-<http://www.sqlite.org/c3ref/c_open_autoproxy.html>`__.  This makes it
-easy to use `URI filenames <http://www.sqlite.org/uri.html>`__.
+<https://sqlite.org/c3ref/c_open_autoproxy.html>`__.  This makes it
+easy to use `URI filenames <https://sqlite.org/uri.html>`__.
 
 The :ref:`shell` now uses `URI filenames
-<http://www.sqlite.org/uri.html>`__ by default.
+<https://sqlite.org/uri.html>`__ by default.
 
 New `extended error constants
-<http://www.sqlite.org/c3ref/c_busy_recovery.html>`__:
+<https://sqlite.org/c3ref/c_busy_recovery.html>`__:
 SQLITE_CORRUPT_VTAB, SQLITE_IOERR_SEEK, SQLITE_IOERR_SHMMAP,
 SQLITE_READONLY_CANTLOCK and SQLITE_READONLY_RECOVERY.
 
@@ -207,7 +215,7 @@ testing or sandboxing).
 Added :meth:`Connection.config`.
 
 Updated :meth:`Connection.wal_checkpoint` to use `sqlite3_wal_checkpoint_v2
-<http://sqlite.org/c3ref/wal_checkpoint_v2.html>`__ which provides
+<https://sqlite.org/c3ref/wal_checkpoint_v2.html>`__ which provides
 more fine grained control over checkpointing and returns useful
 information.
 
@@ -231,7 +239,7 @@ Binary downloads for Windows 64 bit Python versions 2.6 and above
 including Python 3 are now available.
 
 :meth:`apsw.softheaplimit` now uses `sqlite3_soft_heap_limit64
-<http://www.sqlite.org/c3ref/soft_heap_limit64.html>`__ so you can
+<https://sqlite.org/c3ref/soft_heap_limit64.html>`__ so you can
 provide values larger than 2GB.  It is now also able to return the
 previous value instead of None.
 
@@ -242,7 +250,7 @@ Improve getting shell timer information for 64 bit Windows.
 FTS4 is enabled and in the binary builds.  Note that it is an
 augmentation of FTS3 rather than totally separate code and described
 in the `SQLite documentation
-<http://www.sqlite.org/fts3.html#fts4>`__.
+<https://sqlite.org/fts3.html#fts4>`__.
 
 3.7.3-r1
 ========
@@ -254,7 +262,7 @@ buffers as :meth:`blob.read` does and then copying.)  (:issue:`109`).
 Fixed bug with unicode output in CSV mode in the shell.
 
 `sqlite_create_function_v2
-<http://sqlite.org/c3ref/create_function.html>`__ now means that some
+<https://sqlite.org/c3ref/create_function.html>`__ now means that some
 housekeeping APSW did can be pushed back onto SQLite and the
 consequent deletion of some code
 
@@ -262,13 +270,13 @@ consequent deletion of some code
 ========
 
 No changes to APSW.  Upgrading to this version of SQLite is
-`recommended <http://www.sqlite.org/releaselog/3_7_2.html>`__.
+`recommended <https://sqlite.org/releaselog/3_7_2.html>`__.
 
 3.7.1-r1
 ========
 
 Updated various constants including `SQLITE_FCNTL_CHUNK_SIZE
-<http://sqlite.org/c3ref/c_fcntl_chunk_size.html>`__ used with
+<https://sqlite.org/c3ref/c_fcntl_chunk_size.html>`__ used with
 :meth:`Connection.filecontrol`.
 
 Fixed Unicode output with some file objects from the shell (:issue:`108`).
@@ -289,7 +297,7 @@ Fixed issue when using a tracer and a context manager fails to commit.
 
 Added several new constants.
 
-`Write Ahead Logging <http://www.sqlite.org/wal.html>`__ is
+`Write Ahead Logging <https://sqlite.org/wal.html>`__ is
 :ref:`supported <wal>`.  You can make all databases automatically use
 WAL mode if available by using :ref:`connection hooks <wal>`.
 
@@ -314,13 +322,13 @@ When using the context manager (with statement) of a
 transaction is rolled back.  This could occur if SQLite had buffered
 the transaction entirely in memory and a non-eager transaction lock
 had been obtained.  Thanks to Geoff Ness for finding the problem.
-(`Issue 98 <http://code.google.com/p/apsw/issues/detail?id=98>`__).
+(`Issue 98 <https://code.google.com/p/apsw/issues/detail?id=98>`__).
 
 Fixed bug when an error is returned creating an instance of a virtual
 table (eg an invalid column name).  Before the fix you would get the
 previous error message or a crash.  Thanks to Jose Gomes for finding
 the problem.  (`Issue 103
-<http://code.google.com/p/apsw/issues/detail?id=103>`__).
+<https://code.google.com/p/apsw/issues/detail?id=103>`__).
 
 There is now a PPA for Ubuntu users that is kept up to date with APSW
 and SQLite at https://launchpad.net/~ubuntu-rogerbinns/+archive/apsw
@@ -371,12 +379,12 @@ source that was made from 'sdist'.  This was necessary for some Python
 virtual package environments.  Note that the recursive result does not
 include the HTML help as distutils has no way of including content in
 a reparented location.  (`Issue 89
-<http://code.google.com/p/apsw/issues/detail?id=89>`__).
+<https://code.google.com/p/apsw/issues/detail?id=89>`__).
 
 Various settings are output as pragma statements when making a dump
 such as page size, encoding, auto_vacuum etc.  The pragmas are
 commented out.  (`Issue 90
-<http://code.google.com/p/apsw/issues/detail?id=90>`__).
+<https://code.google.com/p/apsw/issues/detail?id=90>`__).
 
 3.6.21-r1
 =========
@@ -399,10 +407,10 @@ Support for Python 3.0 has been dropped as it has been `end of lifed
 onwards.
 
 Changes to how some statements are `prepared
-<http://www.sqlite.org/c3ref/prepare.html>`__ to allow the new RANGE
+<https://sqlite.org/c3ref/prepare.html>`__ to allow the new RANGE
 and LIKE optimisations with bound variables introduced in SQLite
 3.6.20 to be used.  See `issue 85
-<http://code.google.com/p/apsw/issues/detail?id=85>`__ for the long
+<https://code.google.com/p/apsw/issues/detail?id=85>`__ for the long
 and gory details.
 
 You can now access `CouchDB <http://couchdb.apache.org>`__ using a
@@ -416,27 +424,27 @@ the same time.  Other example uses are in the :ref:`documentation
 * .dump command now outputs views in the order they were created
   rather than alphabetical as views could reference each
   other. (`Issue 82
-  <http://code.google.com/p/apsw/issues/detail?id=82>`__)
+  <https://code.google.com/p/apsw/issues/detail?id=82>`__)
 
 * .dump command now outputs the `user_version
-  <http://sqlite.org/pragma.html#version>`__ as a comment.  It is
+  <https://sqlite.org/pragma.html#version>`__ as a comment.  It is
   used by some programs (such as Firefox) to keep track of the schema
   version.
 
 * Can now output in `JSON <http://json.org>`__.
 
 * Fixed `Issue 83
-  <http://code.google.com/p/apsw/issues/detail?id=83>`__ - exception
+  <https://code.google.com/p/apsw/issues/detail?id=83>`__ - exception
   if history file didn't exist
 
 * You can right justify output in column mode by specifying negative
   widths. (`Issue 84
-  <http://code.google.com/p/apsw/issues/detail?id=84>`__)
+  <https://code.google.com/p/apsw/issues/detail?id=84>`__)
 
 * You no longer get a traceback doing completions if there is a
   virtual table in the database but the module is not loaded.
   (`Issue 86
-  <http://code.google.com/p/apsw/issues/detail?id=86>`__)
+  <https://code.google.com/p/apsw/issues/detail?id=86>`__)
 
 * You can now get detailed tracebacks including local variables using
   the ".exception ON" command.  This is useful when developing
@@ -449,7 +457,7 @@ the same time.  Other example uses are in the :ref:`documentation
 =========
 
 **Backwards incompatible change** Fixed `issue 72
-<http://code.google.com/p/apsw/issues/detail?id=72>`__ where APSW
+<https://code.google.com/p/apsw/issues/detail?id=72>`__ where APSW
 wasn't zero basing virtual table :meth:`~VTTable.BestIndex`
 constraints returned as documented.  If you have working BestIndex
 code then you need to update it for this release.  Thanks to Lefteris
@@ -462,18 +470,18 @@ even had an example showing it to be part of the module and not a
 specific connection!)
 
 There is now an :class:`interactive shell <Shell>` very similar to
-that `provided by SQLite <http://www.sqlite.org/sqlite.html>`__.  You
+that `provided by SQLite <https://sqlite.org/sqlite.html>`__.  You
 can embed it in your own program, inherit from it to provide more
 commands and output modes, or just run it like this::
 
   $ python -c "import apsw ; apsw.main()"
 
 Added the `SQLITE_LIMIT_TRIGGER_DEPTH
-<http://www.sqlite.org/c3ref/c_limit_attached.html>`__,
+<https://sqlite.org/c3ref/c_limit_attached.html>`__,
 `SQLITE_OPEN_PRIVATECACHE
-<http://www.sqlite.org/c3ref/c_open_autoproxy.html>`__ and
+<https://sqlite.org/c3ref/c_open_autoproxy.html>`__ and
 `SQLITE_OPEN_SHAREDCACHE
-<http://www.sqlite.org/c3ref/c_open_autoproxy.html>`__ constants.
+<https://sqlite.org/c3ref/c_open_autoproxy.html>`__ constants.
 
 The :file:`setup.py` file now has the various options available made
 applicable to appropriate commands only.  Read the :ref:`updated
@@ -481,7 +489,7 @@ documentation <setup_py_flags>`.
 
 You can now specify :option:`build --enable=stat2` to :file:`setup.py`
 to enable `advanced statistics gathering
-<http://www.sqlite.org/compile.html#enable_stat2>`__ for query
+<https://sqlite.org/compile.html#enable_stat2>`__ for query
 planning.
 
 :file:`setup.py` can automatically fetch the :ref:`ext-asyncvfs`
@@ -501,7 +509,7 @@ more likely to match your machine.  You can use
 :option:`--omit=load_extension` or :option:`--enable=load_extension`
 to the build/build_ext commands to explicitly disable/enable extension
 loading.  (`Issue 67
-<http://code.google.com/p/apsw/issues/detail?id=67>`__).
+<https://code.google.com/p/apsw/issues/detail?id=67>`__).
 
 :ref:`setup.py <building>` will now abort on a download that has no
 checksum.  See :ref:`more information <fetch_checksums>` on checksums.
@@ -511,7 +519,7 @@ currently under development before a release.  Use
 :option:`--version=fossil`.
 
 Updated which code uses `experimental SQLite APIs
-<http://sqlite.org/c3ref/experimental.html>`__ based on changes in
+<https://sqlite.org/c3ref/experimental.html>`__ based on changes in
 SQLite.  The test suite will also work correctly with experimental on
 or off.  (It is on by default.)
 
@@ -534,7 +542,7 @@ executing a little faster.
 
 APSW has migrated from Subversion to `Mercurial
 <http://mercurial.selenic.com/wiki/>`_ for source code control.
-Hosting remains at `Google Code <http://code.google.com/p/apsw/>`_
+Hosting remains at `Google Code <https://code.google.com/p/apsw/>`_
 
 Updated a test due to VFS xUnlock errors now being ignored sometimes
 by SQLite (:cvstrac:`3946`).
@@ -551,7 +559,7 @@ The test suite will now check the functionality of the FTS3, RTree and
 ICU extensions if they were included.  (The Windows binary distribution
 includes FTS3 and RTree by default.)
 
-Fixed `issue 55 <http://code.google.com/p/apsw/issues/detail?id=55>`_
+Fixed `issue 55 <https://code.google.com/p/apsw/issues/detail?id=55>`_
 where FTS3 was unintentionally omitted from the Windows binary
 distribution.
 
@@ -567,7 +575,7 @@ Trivial tweaks to keep MSVC happy.
 3.6.15-r1
 =========
 
-Fixed `issue 50 <http://code.google.com/p/apsw/issues/detail?id=50>`_
+Fixed `issue 50 <https://code.google.com/p/apsw/issues/detail?id=50>`_
 where :meth:`blob.read` was returning :const:`None` on end of file
 instead of the documented (and correct) empty string/bytes.
 
@@ -589,7 +597,7 @@ new ones used by SQLite in the amalgamation.
 
 Added :attr:`apsw.using_amalgamation` so you can tell if APSW was
 compiled using the `SQLite amalgamation
-<http://www.sqlite.org/cvstrac/wiki?p=TheAmalgamation>`__.  Using the
+<https://sqlite.org/cvstrac/wiki?p=TheAmalgamation>`__.  Using the
 amalgamation means that SQLite shared libraries are not used and will
 not affect your code.
 
@@ -601,7 +609,7 @@ SQLite.)
 3.6.13-r1
 =========
 
-Added SQLITE_LOCKED_SHAREDCACHE `extended error code <http://sqlite.org/c3ref/c_ioerr_access.html>`_.
+Added SQLITE_LOCKED_SHAREDCACHE `extended error code <https://sqlite.org/c3ref/c_ioerr_access.html>`_.
 
 Updated tests as the VFS delete error handling code in SQLite now
 returns the same high level error code between Windows and
@@ -614,7 +622,7 @@ viewable again under Windows HTML Help Viewer.
 =========
 
 You can now use the `hot backup functionality
-<http://www.sqlite.org/backup.html>`_ introduced in SQLite 3.6.11.
+<https://sqlite.org/backup.html>`_ introduced in SQLite 3.6.11.
 
 Updated a VFS test to reflect changes in SQLite underlying error
 handling.  (Previously SQLite almost always returned :exc:`FullError`
@@ -637,7 +645,7 @@ is rolled back, otherwise it is committed.  See :meth:`Connection.__enter__`
 for an example.
 
 Behind the scenes the `savepoint
-<http://www.sqlite.org/lang_savepoint.html>`_ functionality introduced
+<https://sqlite.org/lang_savepoint.html>`_ functionality introduced
 in SQLite 3.6.8 is used.  Consequently :class:`Connection` *with*
 blocks can be nested.  If you use Connection level :ref:`execution
 tracers <executiontracer>` then they will be called with the savepoint
@@ -683,7 +691,7 @@ Various changes in data structures and containers to reduce code size.
 Changed the code to handle SQLite errors to only use Python
 functionality and no operating system functionality (thread local
 storage).  This also addresses `issue 36
-<http://code.google.com/p/apsw/issues/detail?id=36>`_ where Vista was
+<https://code.google.com/p/apsw/issues/detail?id=36>`_ where Vista was
 not binary compatible with XP.  Thanks to Rudolf Gaertner for
 assistance in detecting and diagnosing this issue.
 
@@ -718,10 +726,10 @@ exceptions and error text depending on whether a query was already in
 the :ref:`statement cache <statementcache>` or if you were
 multi-threading.  As an example, if you have a query that used an
 unknown collation then SQLite's `prepare
-<http://www.sqlite.org/c3ref/prepare.html>`_ returns
+<https://sqlite.org/c3ref/prepare.html>`_ returns
 :const:`SQLITE_ERROR` with error text about the bad collation.  If a
 query had already been prepared, the collation removed and then `run
-<http://www.sqlite.org/c3ref/step.html>`_ the new SQLite routines are
+<https://sqlite.org/c3ref/step.html>`_ the new SQLite routines are
 returning :const:`SQLITE_SCHEMA` and generic ``schema changed`` error
 text.  Changing user defined functions could also cause a previously
 correct query to become invalid.
@@ -733,7 +741,7 @@ The distribution now includes a :ref:`speedtest` script.  You can use
 this to see how APSW performs relative to pysqlite, or to track
 performance differences between SQLite versions.  The underlying
 queries are derived from `SQLite's speed test
-<http://www.sqlite.org/src/finfo?name=tool/mkspeedsql.tcl>`_
+<https://sqlite.org/src/finfo?name=tool/mkspeedsql.tcl>`_
 
 The statement cache was completely rewritten.  It uses less memory and
 scales significantly better.
@@ -743,14 +751,14 @@ SQLite database mutex when using the same :class:`Connection` across
 multiple threads.  Fixed by releasing the GIL in more places and added
 test that inspects the source to verify GIL/mutex handling.  Thanks to
 amicitas reporting this as `issue 31
-<http://code.google.com/p/apsw/issues/detail?id=31>`_.
+<https://code.google.com/p/apsw/issues/detail?id=31>`_.
 
 SQLite's API has been extended in 3.6.5 so that errors can be
 retrieved in a thread safe manner.  APSW now uses this API.
 
 As a consequence of the prior two changes it is now possible and safe
 to use the same :class:`Connection` across as many threads as you want
-`concurrently <http://sqlite.org/threadsafe.html>`_.
+`concurrently <https://sqlite.org/threadsafe.html>`_.
 
 Documentation is now done using `Sphinx <http://sphinx.pocoo.org>`_
 which was adopted by Python 2.6 and 3.  This has allowed for richer
@@ -758,8 +766,8 @@ documentation and more output formats such as PDF and `Windows CHM
 <http://en.wikipedia.org/wiki/Microsoft_Compiled_HTML_Help>`_ format.
 
 The binary distribution for Windows includes the `full text search
-<http://www.sqlite.org/fts3.html>`__ (FTS) and `Rtree
-<http://www.sqlite.org/src/finfo?name=ext/rtree/README>`_ extensions.
+<https://sqlite.org/fts3.html>`__ (FTS) and `Rtree
+<https://sqlite.org/src/finfo?name=ext/rtree/README>`_ extensions.
 See also :ref:`setup_py_flags`.
 
 The source structure and files were reorganized to make it clearer
@@ -784,7 +792,7 @@ options to :file:`setup.py` are also available to control
 enabling/omitting certains features and functionality. See
 :ref:`building <Building>` for further details.
 
-APSW checks that SQLite was compiled to be `threadsafe <http://sqlite.org/c3ref/threadsafe.html>`_
+APSW checks that SQLite was compiled to be `threadsafe <https://sqlite.org/c3ref/threadsafe.html>`_
 
 Added new constants:
 
@@ -794,35 +802,35 @@ Added new constants:
 
 Wrapped several new SQLite apis:
 
-* `sqlite3_config <http://sqlite.org/c3ref/config.html>`_
-* `sqlite3_initialize/sqlite3_shutdown <http://sqlite.org/c3ref/initialize.html>`_
-* `sqlite3_memory_used/sqlite3_memory_highwater <http://sqlite.org/c3ref/memory_highwater.html>`_
-* `sqlite3_status <http://sqlite.org/c3ref/status.html>`_
-* `sqlite3_soft_heap_limit <http://sqlite.org/c3ref/soft_heap_limit.html>`_
-* `sqlite3_release_memory <http://sqlite.org/c3ref/release_memory.html>`_
-* `sqlite3_randomness <http://sqlite.org/c3ref/randomness.html>`_
+* `sqlite3_config <https://sqlite.org/c3ref/config.html>`_
+* `sqlite3_initialize/sqlite3_shutdown <https://sqlite.org/c3ref/initialize.html>`_
+* `sqlite3_memory_used/sqlite3_memory_highwater <https://sqlite.org/c3ref/memory_highwater.html>`_
+* `sqlite3_status <https://sqlite.org/c3ref/status.html>`_
+* `sqlite3_soft_heap_limit <https://sqlite.org/c3ref/soft_heap_limit.html>`_
+* `sqlite3_release_memory <https://sqlite.org/c3ref/release_memory.html>`_
+* `sqlite3_randomness <https://sqlite.org/c3ref/randomness.html>`_
 
 
 The following experimental apis are not wrapped as there is nothing
 useful you can do with them (yet):
 
-* `sqlite3_db_config <http://www.sqlite.org/c3ref/db_config.html>`_
-* `sqlite3_db_status <http://www.sqlite.org/c3ref/db_status.html>`_
+* `sqlite3_db_config <https://sqlite.org/c3ref/db_config.html>`_
+* `sqlite3_db_status <https://sqlite.org/c3ref/db_status.html>`_
 
 Restored prior behaviour regarding Python ints and longs returning int
 for numbers fitting in signed 32 bit. This only affects Python 2 as
 Python 3 uses long exclusively. Thanks to Joe Pham for reporting this
-as `issue 24 <http://code.google.com/p/apsw/issues/detail?id=24>`_.
+as `issue 24 <https://code.google.com/p/apsw/issues/detail?id=24>`_.
 
 Added :meth:`Connection.getsqlite3pointer` method to help with
-`issue 26 <http://code.google.com/p/apsw/issues/detail?id=26>`_.
+`issue 26 <https://code.google.com/p/apsw/issues/detail?id=26>`_.
 
 3.5.9-r2
 ========
 
 APSW now works with Python 3 (you need 3.0b1 or later).
 
-(`Issue 17 <http://code.google.com/p/apsw/issues/detail?id=17>`_)
+(`Issue 17 <https://code.google.com/p/apsw/issues/detail?id=17>`_)
 Removed the :const:`SQLITE_MAX_*` constants since they could be
 unreliable (eg APSW can't tell what a shared library was compiled
 with). A workaround is documented in :func:`Connection.limit`.
@@ -830,12 +838,12 @@ with). A workaround is documented in :func:`Connection.limit`.
 3.5.9-r1
 ========
 
-APSW is now hosted at http://code.google.com/p/apsw
+APSW is now hosted at https://code.google.com/p/apsw
 
 You can use this with SQLite 3.5.9 onwards.
 
 SQLite now provides the source all `amalgamated
-<http://www.sqlite.org/cvstrac/wiki?p=TheAmalgamation>`_ into one file
+<https://sqlite.org/cvstrac/wiki?p=TheAmalgamation>`_ into one file
 which improves performance and makes compilation and linking of SQLite
 far easier. The build instructions are updated.
 
@@ -853,7 +861,7 @@ which weren't checked. Using a 64 bit Python 2.5+ (as I do) it would
 have been possible to destroy memory and crash the
 program. Consequently APSW has length checks to ensure it doesn't
 happen.  SQLite now has further `limits checking
-<http://www.sqlite.org/limits.html>`_ which cover other things as well
+<https://sqlite.org/limits.html>`_ which cover other things as well
 such as maximum number of virtual machine opcodes, maximum number of
 variables etc. These are very useful if you are taking in SQL
 statements from elsewhere. Call :func:`Connection.limit`
@@ -872,20 +880,20 @@ but not if you let the destructor do the closing.
 
 SQLite now has incremental :ref:`blob I/O <blobio>`
 
-`Issue 4 <http://code.google.com/p/apsw/issues/detail?id=4>`_ which
+`Issue 4 <https://code.google.com/p/apsw/issues/detail?id=4>`_ which
 could lead to generic error messages was fixed in SQLite 3.5.9.
 
-Fixed `issue 1 <http://code.google.com/p/apsw/issues/detail?id=1>`_
+Fixed `issue 1 <https://code.google.com/p/apsw/issues/detail?id=1>`_
 error in example code for virtual tables which caused filename errors
 on Windows.
 
-Fixed `issue 15 <http://code.google.com/p/apsw/issues/detail?id=15>`_
+Fixed `issue 15 <https://code.google.com/p/apsw/issues/detail?id=15>`_
 releasing the GIL around calls to sqlite3_prepare.
 
-Fixed `issue 7 <http://code.google.com/p/apsw/issues/detail?id=7>`_
+Fixed `issue 7 <https://code.google.com/p/apsw/issues/detail?id=7>`_
 ensuring that extension module filenames are converted to utf8.
 
-Use the `sqlite3_open_v2 <http://sqlite.org/c3ref/open.html>`_
+Use the `sqlite3_open_v2 <https://sqlite.org/c3ref/open.html>`_
 interface which allows specifying which vfs to use. This release does
 not allow you to write your own vfs as the SQLite vfs interface is
 being changed for SQLite 3.6.
@@ -920,7 +928,7 @@ Thanks to Ed Pasma for highlighting these issues:
 * Empty statements or those consisting entirely of whitespace do not
   cause misuse errors (internally SQLite started returned NULL pointers
   for those statements, and `sqlite3_step
-  <http://sqlite.org/c3ref/step.html>`_ didn't like being passed the
+  <https://sqlite.org/c3ref/step.html>`_ didn't like being passed the
   NULL pointer).
 
 * Changed special handling of :const:`SQLITE_BUSY` error to be the same
@@ -934,7 +942,7 @@ Thanks to Ed Pasma for highlighting these issues:
 You can use this with SQLite 3.3.10 onwards.
 
 Added a statement cache that works in conjunction with the
-`sqlite3_prepare_v2 <http://sqlite.org/c3ref/prepare.html>`_ API. A
+`sqlite3_prepare_v2 <https://sqlite.org/c3ref/prepare.html>`_ API. A
 few issues were exposed in SQLite and hence you must use SQLite 3.3.10
 or later.
 
@@ -943,7 +951,7 @@ or later.
 You can use this with SQLite 3.3.9 onwards.
 
 SQLite added `sqlite3_prepare_v2
-<http://sqlite.org/c3ref/prepare.html>`_ API. The net effect of this
+<https://sqlite.org/c3ref/prepare.html>`_ API. The net effect of this
 API update is that you will not get SQLITE_SCHEMA any more. SQLite
 will handle it internally.
 
@@ -979,7 +987,7 @@ Authorizer codes :const:`SQLITE_CREATE_VTABLE`,
 :const:`SQLITE_DROP_VTABLE` and :const:`SQLITE_FUNCTION` added.
 
 SQLite `extended result codes
-<http://www.sqlite.org/cvstrac/wiki?p=ExtendedResultCodes>`_ are
+<https://sqlite.org/cvstrac/wiki?p=ExtendedResultCodes>`_ are
 available - see :ref:`exceptions` for more detail.
 
 :data:`Connection.hooks` added so you can easily register functions,
@@ -996,7 +1004,7 @@ Never released as 3.3.8 came along.
 You can use this release against SQLite 3.3.7. There were no changes
 in the SQLite 3.3.6 API from 3.3.5. In SQLite 3.3.7 an API was added
 that allowed removing a chunk of duplicate code. Also added were
-`Virtual Tables <http://www.sqlite.org/cvstrac/wiki?p=VirtualTables>`_
+`Virtual Tables <https://sqlite.org/cvstrac/wiki?p=VirtualTables>`_
 and loading of external modules (shared libraries).
 
 APSW had the following changes:
@@ -1026,7 +1034,7 @@ default for SQLite. I don't believe these are generally useful except
 in some corner cases and so they aren't wrapped. However please shout
 if you do need them.  Note that :func:`Cursor.getdescription` will
 already give you generally useful information. (Also see the `pragmas
-<http://sqlite.org/pragma.html>`_)
+<https://sqlite.org/pragma.html>`_)
 
 The test code has been converted into using the unittest module. Run
 :command:`python tests.py -v` to get the tests run. There should be no
@@ -1040,11 +1048,11 @@ The following functions were added to SQLite and are wrapped. They are
 all functions defined on the :class:`Connection` object or :mod:`apsw`
 module:
 
-* `sqlite3_update_hook <http://sqlite.org/c3ref/update_hook.html>`_
-* `sqlite3_rollback_hook <http://sqlite.org/c3ref/commit_hook.html>`_
-* `sqlite3_enable_shared_cache <http://sqlite.org/c3ref/enable_shared_cache.html>`_
-* `sqlite3_get_autocommit <http://sqlite.org/c3ref/get_autocommit.html>`_
-* `sqlite3_profile <http://sqlite.org/c3ref/profile.html>`_ This
+* `sqlite3_update_hook <https://sqlite.org/c3ref/update_hook.html>`_
+* `sqlite3_rollback_hook <https://sqlite.org/c3ref/commit_hook.html>`_
+* `sqlite3_enable_shared_cache <https://sqlite.org/c3ref/enable_shared_cache.html>`_
+* `sqlite3_get_autocommit <https://sqlite.org/c3ref/get_autocommit.html>`_
+* `sqlite3_profile <https://sqlite.org/c3ref/profile.html>`_ This
   callback is run at the end of each statement execution telling you how
   long it took.
 

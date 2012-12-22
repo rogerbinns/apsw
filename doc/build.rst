@@ -22,8 +22,7 @@ needed components for you.
 +-------------------------------------------------------------+-------------------------------------------------------------------------+
 | | python setup.py build :option:`--compile=mingw32` install | On Windows this will use the                                            |
 |                                                             | `free <http://www.gnu.org/philosophy/free-sw.html>`_                    |
-|                                                             | `MinGW compiler <http://mingw.org>`_ `instead of                        |
-|                                                             | <http://boodebr.org/main/python/build-windows-extensions>`_ the         |
+|                                                             | `MinGW compiler <http://mingw.org>`_ instead of the                     |
 |                                                             | Microsoft compilers.                                                    |
 +-------------------------------------------------------------+-------------------------------------------------------------------------+
 | | python setup.py build_ext --force --inplace test          | Compiles the extension but doesn't install it. The resulting file       |
@@ -65,7 +64,7 @@ re-fetching.
 | fetch flag                             |  Result                                                                              |
 +========================================+======================================================================================+
 | | :option:`--version=VERSION`          | By default the `SQLite download page                                                 |
-|                                        | <http://sqlite.org/download.html>`__ is                                              |
+|                                        | <https://sqlite.org/download.html>`__ is                                             |
 |                                        | consulted to find the current SQLite version                                         |
 |                                        | which you can override using this flag.                                              |
 |                                        |                                                                                      |
@@ -73,7 +72,7 @@ re-fetching.
 |                                        |                                                                                      |
 |                                        |    You can also specify `fossil` as the version                                      |
 |                                        |    and the current development version from `SQLite's source tracking system         |
-|                                        |    <http://www.sqlite.org/src/timeline>`__ will be used.  (The system is named       |
+|                                        |    <https://sqlite.org/src/timeline>`__ will be used.  (The system is named          |
 |                                        |    `Fossil <http://www.fossil-scm.org>`__.) Note that checksums can't be checked     |
 |                                        |    for fossil. You will also need TCL and make installed for the amalgamation to     |
 |                                        |    build as well as several other common Unix tools.  (ie this is very unlikely to   |
@@ -84,7 +83,7 @@ re-fetching.
 | | :option:`--all`                      | Gets all components listed below.                                                    |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--sqlite`                   | Automatically downloads the `SQLite amalgamation                                     |
-|                                        | <http://www.sqlite.org/amalgamation.html>`__. The amalgamation is the                |
+|                                        | <https://sqlite.org/amalgamation.html>`__. The amalgamation is the                   |
 |                                        | preferred way to use SQLite as you have total control over what components are       |
 |                                        | included or excluded (see below) and have no dependencies on any existing            |
 |                                        | libraries on your developer or deployment machines. The amalgamation includes the    |
@@ -105,7 +104,7 @@ re-fetching.
   were not modified between the SQLite servers and your computer.
 
   Consequently APSW ships with a :file:`checksums` `file
-  <http://code.google.com/p/apsw/source/browse/checksums>`__ that
+  <https://code.google.com/p/apsw/source/browse/checksums>`__ that
   includes checksums for the various SQLite downloads.  If the
   download does not match the checksum then it is rejected and an
   error occurs.
@@ -175,7 +174,7 @@ need to give the flag once and giving a comma seperated list.  For example:
 | | :option:`--enable=fts4`              | This flag only helps when using the amalgamation. If not using the                   |
 |                                        | amalgamation then you need to seperately ensure fts3/4 is enabled in the SQLite      |
 |                                        | install. You are likely to want the `parenthesis option                              |
-|                                        | <http://www.sqlite.org/compile.html#enable_fts3_parenthesis>`__ on unless you have   |
+|                                        | <https://sqlite.org/compile.html#enable_fts3_parenthesis>`__ on unless you have      |
 |                                        | legacy code (`--enable-all-extensions` turns it on).                                 |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--enable=rtree`             | Enables the :ref:`spatial table extension <ext-rtree>`.                              |
@@ -197,7 +196,7 @@ need to give the flag once and giving a comma seperated list.  For example:
 |                                        | will still be in SQLite, APSW just won't call it). In almost all cases you will need |
 |                                        | to regenerate the SQLite source because the omits also alter the generated SQL       |
 |                                        | parser. See `the relevant SQLite documentation                                       |
-|                                        | <http://www.sqlite.org/compile.html#omitfeatures>`_.                                 |
+|                                        | <https://sqlite.org/compile.html#omitfeatures>`_.                                    |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 
 .. note::
@@ -215,13 +214,13 @@ SQLite 3 is needed during the build process. If you specify
 :option:`fetch --sqlite` to the :file:`setup.py` command line
 then it will automatically fetch the current version of the SQLite
 amalgamation. (The current version is determined by parsing the
-`SQLite download page <http://www.sqlite.org/download.html>`_). You
+`SQLite download page <https://sqlite.org/download.html>`_). You
 can manually specify the version, for example
 :option:`fetch --sqlite --version=3.7.4`.
 
 These methods are tried in order:
 
-  `Amalgamation <http://www.sqlite.org/amalgamation.html>`__
+  `Amalgamation <https://sqlite.org/amalgamation.html>`__
 
       The file :file:`sqlite3.c` and then :file:`sqlite3/sqlite3.c` is
       looked for. The SQLite code is then statically compiled into the
@@ -278,7 +277,7 @@ APSW source to.
 .. note::
 
   There will be some warnings during the compilation step about
-  sqlite3.c, `but they are harmless <http://sqlite.org/faq.html#q17>`_
+  sqlite3.c, `but they are harmless <https://sqlite.org/faq.html#q17>`_
 
 
 The extension just turns into a single file apsw.so (Linux/Mac) or
@@ -309,7 +308,7 @@ Testing
 =======
 
 SQLite itself is `extensively tested
-<http://www.sqlite.org/testing.html>`__. It has considerably more code
+<https://sqlite.org/testing.html>`__. It has considerably more code
 dedicated to testing than makes up the actual database functionality.
 
 APSW includes a :file:`tests.py` file which uses the standard Python
@@ -334,7 +333,7 @@ The tests also ensure that as much APSW code as possible is executed
 including alternate paths through the code.  95.5% of the APSW code is
 executed by the tests. If you checkout the APSW source then there is
 an script `coverage.sh
-<http://code.google.com/p/apsw/source/browse/tools/coverage.sh>`_
+<https://code.google.com/p/apsw/source/browse/tools/coverage.sh>`_
 that enables extra code that deliberately induces extra conditions
 such as memory allocation failures, SQLite returning undocumented
 error codes etc. That brings coverage up to 99.6% of the code.
@@ -343,14 +342,14 @@ A memory checker `Valgrind <http://valgrind.org>`_ is used while
 running the test suite. The test suite is run 150 times to make any
 memory leaks or similar issues stand out. A checking version of Python
 is also used.  See `valgrind.sh
-<http://code.google.com/p/apsw/source/browse/tools/valgrind.sh>`_
+<https://code.google.com/p/apsw/source/browse/tools/valgrind.sh>`_
 in the source.
 
 To ensure compatibility with the various Python versions, a script
 downloads and compiles all supported Python versions in both 2 byte
 and 4 byte Unicode character configurations against the APSW and
 SQLite supported versions running the tests. See `megatest.py
-<http://code.google.com/p/apsw/source/browse/tools/megatest.py>`_
+<https://code.google.com/p/apsw/source/browse/tools/megatest.py>`_
 in the source.
 
 In short both SQLite and APSW have a lot of testing!

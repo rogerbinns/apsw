@@ -39,7 +39,7 @@ class Shell(object):
     :param db: A existing :class:`Connection` you wish to use
 
     The commands and behaviour are modelled after the `interactive
-    shell <http://www.sqlite.org/sqlite.html>`__ that is part of
+    shell <https://sqlite.org/sqlite.html>`__ that is part of
     SQLite.
 
     You can inherit from this class to embed in your own code and user
@@ -51,10 +51,10 @@ class Shell(object):
     sqlite shell.  Its control-C handling is also friendlier.  Some
     examples of issues not present in this implementation:
 
-    * http://www.sqlite.org/src/info/c25aab7e7e
-    * http://www.sqlite.org/src/info/7b61b6c6ce
-    * http://www.sqlite.org/src/info/ee19e690ec
-    * http://www.sqlite.org/src/info/2466653295
+    * https://sqlite.org/src/info/c25aab7e7e
+    * https://sqlite.org/src/info/7b61b6c6ce
+    * https://sqlite.org/src/info/ee19e690ec
+    * https://sqlite.org/src/info/2466653295
 
     Errors and diagnostics are only ever sent to error output
     (self.stderr) and never to the regular output (self.stdout).  This
@@ -1139,7 +1139,7 @@ Enter SQL statements terminated with a ";"
             def sqldef(s):
                 # return formatted sql watching out for embedded
                 # comments at the end forcing trailing ; onto next
-                # line http://www.sqlite.org/src/info/c04a8b8a4f
+                # line https://sqlite.org/src/info/c04a8b8a4f
                 if "--" in s.split("\n")[-1]:
                     nl="\n"
                 else:
@@ -1244,7 +1244,7 @@ Enter SQL statements terminated with a ";"
                 blank()
                 comment("We need to force SQLite to reread the schema because otherwise it doesn't know that "
                         "the virtual tables we inserted directly into sqlite_master exist.  See "
-                        "last comments of http://www.sqlite.org/cvstrac/tktview?tn=3425")
+                        "last comments of https://sqlite.org/cvstrac/tktview?tn=3425")
                 self.write(self.stdout, "BEGIN;\nCREATE TABLE no_such_table(x,y,z);\nROLLBACK;\n")
 
         finally:
@@ -1540,7 +1540,7 @@ Enter SQL statements terminated with a ";"
         will result in the values being stored as floating point if
         they can be safely converted.  See this page for more details:
 
-          http://www.sqlite.org/datatype3.html
+          https://sqlite.org/datatype3.html
 
         Another alternative is to create a tempory table, insert the
         values into that and then use casting.
@@ -1886,7 +1886,7 @@ Enter SQL statements terminated with a ";"
 
         Extensions are an easy way to add new functions and
         functionality.  For a useful extension look at the bottom of
-        http://www.sqlite.org/contrib
+        https://sqlite.org/contrib
 
         By default sqlite3_extension_init is called in the library but
         you can specify an alternate entry point.
@@ -2563,7 +2563,7 @@ Enter SQL statements terminated with a ";"
             return None
         return self.completions[state]
 
-    # Taken from http://www.sqlite.org/lang_keywords.html
+    # Taken from https://sqlite.org/lang_keywords.html
     _sqlite_keywords="""ABORTADD AFTER ALL ALTER ANALYZE AND AS ASC ATTACH AUTOINCREMENT
            BEFORE BEGIN BETWEEN BY CASCADE CASE CAST CHECK COLLATE COLUMN COMMIT
            CONFLICT CONSTRAINT CREATE CROSS CURRENT_DATE CURRENT_TIME
@@ -2671,7 +2671,7 @@ Enter SQL statements terminated with a ";"
                                     if item not in other:
                                         other.append(item)
                         except apsw.SQLError:
-                            # See http://code.google.com/p/apsw/issues/detail?id=86
+                            # See https://code.google.com/p/apsw/issues/detail?id=86
                             pass
 
             self._completion_cache=[self._sqlite_keywords, self._sqlite_functions, self._sqlite_special_names, collations, databases, other]

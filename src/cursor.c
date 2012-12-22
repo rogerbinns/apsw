@@ -60,7 +60,7 @@ trying to call :meth:`~Cursor.execute` in both at the same time, or
 :exc:`ThreadingViolationError` will be raised.)
 
 Behind the scenes a :class:`Cursor` maps to a `SQLite statement
-<http://www.sqlite.org/c3ref/stmt.html>`_.  APSW maintains a
+<https://sqlite.org/c3ref/stmt.html>`_.  APSW maintains a
 :ref:`cache <statementcache>` so that the mapping is very fast, and the
 SQLite objects are reused when possible.
 
@@ -108,8 +108,8 @@ separated statements.  For example::
 
 .. seealso::
 
-  * `SQLite transactions <http://www.sqlite.org/lang_transaction.html>`_
-  * `Atomic commit <http://www.sqlite.org/atomiccommit.html>`_
+  * `SQLite transactions <https://sqlite.org/lang_transaction.html>`_
+  * `Atomic commit <https://sqlite.org/atomiccommit.html>`_
   * `Example of changing the database while running a query problem <http://www.mail-archive.com/sqlite-users@sqlite.org/msg42660.html>`_
   * :ref:`Benchmarking`
 
@@ -374,7 +374,7 @@ APSWCursor_internal_getdescription(APSWCursor *self, const char *fmt)
    declared_column_type)``.  The type is what was declared in the
    ``CREATE TABLE`` statement - the value returned in the row will be
    whatever type you put in for that row and column.  (This is known
-   as `manifest typing <http://www.sqlite.org/different.html#typing>`_
+   as `manifest typing <https://sqlite.org/different.html#typing>`_
    which is also the way that Python works.  The variable ``a`` could
    contain an integer, and then you could put a string in it.  Other
    static languages such as C or other SQL databases only let you put

@@ -6,7 +6,7 @@ Benchmarking
 Before you do any benchmarking with APSW or other ways of accessing
 SQLite, you must understand how and when SQLite does transactions. See
 `transaction control
-<http://sqlite.org/lockingv3.html#transaction_control>`_.  **APSW does
+<https://sqlite.org/lockingv3.html#transaction_control>`_.  **APSW does
 not alter SQLite's behaviour with transactions.**
 
 Some access layers try to interpret your SQL and manage transactions
@@ -34,7 +34,7 @@ compare SQLite performance across different versions of SQLite,
 different host systems (hard drives and controllers matter) as well as
 between pysqlite and APSW.  The underlying queries are based on
 `SQLite's speed test
-<http://www.sqlite.org/src/finfo?name=tool/mkspeedsql.tcl>`_.
+<https://sqlite.org/src/finfo?name=tool/mkspeedsql.tcl>`_.
 
 .. speedtest-begin
 

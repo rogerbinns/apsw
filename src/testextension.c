@@ -1,5 +1,5 @@
-/* This code is to test extension loading and is taken from 
-   http://www.sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions */
+/* This code is to test extension loading and is taken from
+   https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions */
 
 
     #include <sqlite3ext.h>

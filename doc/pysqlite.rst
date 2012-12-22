@@ -6,7 +6,7 @@ pysqlite differences
 .. currentmodule:: apsw
 
 pysqlite and APSW approached the problem of providing access to SQLite
-from Python from fundamentally different directions.  
+from Python from fundamentally different directions.
 
 APSW only wraps version 3 of SQLite and provides access in whatever
 way is normal for SQLite.  It makes no effort to hide how SQLite is
@@ -16,7 +16,7 @@ pysqlite tries to provide a DBAPI compliant wrapper for SQLite and in
 doing so needs to make it have the same behaviour as other databases.
 Consequently it does hide some of SQLite's nuances.
 
-.. note:: 
+.. note::
 
    I suggest using APSW when you want to directly use SQLite and its
    functionality or are using your own code to deal with database
@@ -43,7 +43,7 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
   used in the same thread.  You can disable its checking, but unless you
   are very careful with your own mutexes you will have a crash or a
   deadlock.
- 
+
 * APSW is a single file for the extension, :file:`apsw.pyd` on Windows and
   :file:`apsw.so` on Unix/Mac. There are no other files needed and the :ref:`build
   instructions <building>` show you how to include SQLite statically
@@ -57,7 +57,7 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
 
 * When using a :class:`Connection` as a :meth:`context manager
   <Connection.__enter__>` APSW uses SQLite's ability to have `nested
-  transactions <http://www.sqlite.org/lang_savepoint.html>`__.
+  transactions <https://sqlite.org/lang_savepoint.html>`__.
   pysqlite only deals with one transaction at a time and cannot nest
   them.  (Savepoints were introduced in SQLite 3.6.8 - another
   illustration of the benefits of keeping up to date with SQLite.)
@@ -71,21 +71,21 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
   restrictions on the type of commands used. For example this will
   work fine in APSW but is not allowed in pysqlite::
 
-    import apsw 
-    con=apsw.Connection(":memory:") 
-    cur=con.cursor() 
-    for row in cur.execute("create table foo(x,y,z);insert into foo values (?,?,?);" 
-                           "insert into foo values(?,?,?);select * from foo;drop table foo;" 
-                           "create table bar(x,y);insert into bar values(?,?);" 
-                           "insert into bar values(?,?);select * from bar;", 
-                           (1,2,3,4,5,6,7,8,9,10)): 
+    import apsw
+    con=apsw.Connection(":memory:")
+    cur=con.cursor()
+    for row in cur.execute("create table foo(x,y,z);insert into foo values (?,?,?);"
+                           "insert into foo values(?,?,?);select * from foo;drop table foo;"
+                           "create table bar(x,y);insert into bar values(?,?);"
+                           "insert into bar values(?,?);select * from bar;",
+                           (1,2,3,4,5,6,7,8,9,10)):
                                print row
-        
+
   And the output as you would expect::
 
-    (1, 2, 3) 
-    (4, 5, 6) 
-    (7, 8) 
+    (1, 2, 3)
+    (4, 5, 6)
+    (7, 8)
     (9, 10)
 
 * :meth:`Cursor.executemany` also works with statements that return
@@ -145,7 +145,7 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
   available than just what is printed out when exceptions happen like
   above. See :ref:`augmented stack traces <augmentedstacktraces>`
 
-* APSW has :ref:`execution and row tracers <tracing>`.  pysqlite has no 
+* APSW has :ref:`execution and row tracers <tracing>`.  pysqlite has no
   equivalent to :ref:`execution tracers <executiontracer>` and does have
   data adaptors which aren't the same thing as a :ref:`row tracer
   <rowtracer>` (for example you can't skip rows or add a new column to
@@ -190,7 +190,7 @@ What pysqlite does better
 * pysqlite lets you work with a database that contains invalid Unicode data by
   setting a `text factory
   <http://readthedocs.org/docs/pysqlite/en/latest/sqlite3.html#sqlite3.Connection.text_factory>`_
-  that deals with the text data.  
+  that deals with the text data.
 
   APSW does not let you put non-Unicode data into the database in the first place and it will
   be considered invalid by other tools reading the data (eg Java,

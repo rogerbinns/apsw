@@ -20,7 +20,7 @@ queue of requests.  To enable it you must have used :option:`fetch
 --asyncvfs` to :file:`setup.py` at some point.  It is enabled by the
 downloaded file :file:`sqlite3async.c` being present in the same
 directory as :file:`setup.py`.  See the `SQLite documentation
-<http://www.sqlite.org/asyncvfs.html>`__.
+<https://sqlite.org/asyncvfs.html>`__.
 
 To use you must first call :func:`apsw.async_initialize` which will
 register the VFS.  If you didn't make it the default VFS then you need
@@ -53,16 +53,16 @@ FTS3/4
 ======
 
 This is the third version of the `full text search
-<http://www.sqlite.org/fts3.html>`__ extension.  It
+<https://sqlite.org/fts3.html>`__ extension.  It
 makes it easy to find words in multi-word text fields.  You must
 enable the extension via :ref:`setup.py build flags
 <setup_build_flags>` before it will work.  There are no additional
 APIs and the `documented SQL
-<http://www.sqlite.org/fts3.html>`__ works as is.
+<https://sqlite.org/fts3.html>`__ works as is.
 
 Note that FTS4 is some augmentations to FTS3 and are enabled whenever
 FTS3 is enabled as described in the `documentation
-<http://www.sqlite.org/fts3.html#fts4>`__
+<https://sqlite.org/fts3.html#fts4>`__
 
 .. _ext-icu:
 
@@ -73,7 +73,7 @@ The ICU extension provides an `International Components for Unicode
 <http://en.wikipedia.org/wiki/International_Components_for_Unicode>`__
 interface, in particular enabling you do sorting and regular
 expressions in a locale aware way.  The `documentation
-<http://www.sqlite.org/src/finfo?name=ext/icu/README.txt>`__
+<https://sqlite.org/src/finfo?name=ext/icu/README.txt>`__
 shows how to use it.
 
 .. _ext-rtree:
@@ -83,9 +83,9 @@ RTree
 
 The RTree extension provides a `spatial table
 <http://en.wikipedia.org/wiki/R-tree>`_ - see the `documentation
-<http://www.sqlite.org/rtree.html>`__.
+<https://sqlite.org/rtree.html>`__.
 You must enable the extension via :ref:`setup.py build flags
 <setup_build_flags>` before it will work.  There are no additional
 APIs and the `documented SQL
-<http://www.sqlite.org/rtree.html>`__
+<https://sqlite.org/rtree.html>`__
 works as is.
