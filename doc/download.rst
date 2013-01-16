@@ -18,45 +18,45 @@ way to build or all the :ref:`options available <building>`.
 
 .. downloads-begin
 
-* `apsw-3.7.15.1-r1.zip
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.1-r1.zip>`_
+* `apsw-3.7.15.2-r1.zip
+  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.2-r1.zip>`_
   (Source, includes this HTML Help)
 
 
 * Windows Python 2.3 `32bit
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.1-r1.win32-py2.3.exe>`__
+  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.2-r1.win32-py2.3.exe>`__
 
 * Windows Python 2.4 `32bit
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.1-r1.win32-py2.4.exe>`__
+  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.2-r1.win32-py2.4.exe>`__
 
 * Windows Python 2.5 `32bit
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.1-r1.win32-py2.5.exe>`__
+  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.2-r1.win32-py2.5.exe>`__
 
 * Windows Python 2.6 `32bit
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.1-r1.win32-py2.6.exe>`__
+  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.2-r1.win32-py2.6.exe>`__
   `64bit 
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.1-r1.win-amd64-py2.6.exe>`__
+  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.2-r1.win-amd64-py2.6.exe>`__
 
 * Windows Python 2.7 `32bit
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.1-r1.win32-py2.7.exe>`__
+  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.2-r1.win32-py2.7.exe>`__
   `64bit 
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.1-r1.win-amd64-py2.7.exe>`__
+  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.2-r1.win-amd64-py2.7.exe>`__
 
 * Windows Python 3.1 `32bit
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.1-r1.win32-py3.1.exe>`__
+  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.2-r1.win32-py3.1.exe>`__
   `64bit 
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.1-r1.win-amd64-py3.1.exe>`__
+  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.2-r1.win-amd64-py3.1.exe>`__
 
 * Windows Python 3.2 `32bit
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.1-r1.win32-py3.2.exe>`__
+  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.2-r1.win32-py3.2.exe>`__
   `64bit 
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.1-r1.win-amd64-py3.2.exe>`__
+  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.2-r1.win-amd64-py3.2.exe>`__
 
 * Windows Python 3.3 `32bit
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.1-r1.win32-py3.3.exe>`__
+  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.2-r1.win32-py3.3.exe>`__
 
-* `apsw-3.7.15.1-r1-sigs.zip 
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.1-r1-sigs.zip>`_
+* `apsw-3.7.15.2-r1-sigs.zip 
+  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.15.2-r1-sigs.zip>`_
   GPG signatures for all files
 
 .. downloads-end
@@ -71,7 +71,7 @@ Some Linux distributions also have packages.
 | Ubuntu PPA        | I maintain a PPA that is up to date at                                           |
 |                   | https://launchpad.net/~ubuntu-rogerbinns/+archive/apsw  which has SQLite         |
 |                   | embedded statically inside (ie system SQLite is ignored) and has all the         |
-|                   | extensions enabled: FTS3/4, RTree, ICU, asyncvfs                                 |
+|                   | extensions enabled: FTS3/4, RTree, ICU                                           |
 +-------------------+----------------------------------------------------------------------------------+
 | Gentoo            | Install `dev-python/apsw <http://packages.gentoo.org/package/dev-python/apsw>`_  |
 +-------------------+----------------------------------------------------------------------------------+
@@ -101,7 +101,7 @@ Verify
   To verify a file just use --verify specifying the corresponding
   ``.asc`` filename.  This example verifies the source::
 
-      $ gpg --verify apsw-3.7.15.1-r1.zip.asc
+      $ gpg --verify apsw-3.7.15.2-r1.zip.asc
       gpg: Signature made ... date ... using DSA key ID 0DFBD904
       gpg: Good signature from "Roger Binns <rogerb@rogerbinns.com>"
 

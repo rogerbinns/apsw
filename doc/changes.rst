@@ -2,6 +2,11 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.7.15.2-r1
+===========
+
+No APSW changes - binary rebuild to pickup new SQLite version
+
 3.7.15.1-r1
 ===========
 
@@ -31,8 +36,6 @@ Added several new constants: SQLITE_CONFIG_COVERING_INDEX_SCAN,
 SQLITE_CONFIG_SQLLOG, SQLITE_FCNTL_BUSYHANDLER,
 SQLITE_FCNTL_TEMPFILENAME, SQLITE_CANTOPEN_FULLPATH,
 SQLITE_IOERR_DELETE_NOENT
-
-Added shell .print command
 
 3.7.14.1-r1
 ===========
