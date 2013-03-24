@@ -63,6 +63,18 @@ def write_whole_file(name, mode, data):
     finally:
         f.close()
 
+# They keep messing with where files are in URI
+def fixup_download_url(url):
+    ver=re.search("3[0-9]{6}", url)
+    if ver:
+        ver=int(ver.group(0))
+        if ver>=3071600:
+            if "/2013/" not in url:
+                url=url.split("/")
+                url.insert(3, "2013")
+                return "/".join(url)
+    return url
+
 # Run test suite
 class run_tests(Command):
 
@@ -234,6 +246,8 @@ class fetch(Command):
                 else:
                     AURL="https://sqlite.org/sqlite-autoconf-%s.tar.gz" % (self.webversion,)
                 checksum=True
+
+            AURL=fixup_download_url(AURL)
 
             data=self.download(AURL, checksum=checksum)
 

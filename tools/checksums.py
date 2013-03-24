@@ -4,6 +4,7 @@
 #
 import urllib2
 import hashlib
+import re
 
 sqlitevers=(
     '3070600',
@@ -24,6 +25,7 @@ sqlitevers=(
     '3071500',
     '3071501',
     '3071502',
+    '3071600'
     )
 
 # Checks the checksums file
@@ -55,10 +57,22 @@ def check(url, data):
             print "  ",
         print d[0], d[1], d[2]
 
+# They keep messing with where files are in URI - this code is also in setup.py
+def fixup_download_url(url):
+    ver=re.search("3[0-9]{6}", url)
+    if ver:
+        ver=int(ver.group(0))
+        if ver>=3071600:
+            if "/2013/" not in url:
+                url=url.split("/")
+                url.insert(3, "2013")
+                return "/".join(url)
+    return url
 
 for v in sqlitevers:
     # Windows amalgamation
     AURL="https://sqlite.org/sqlite-amalgamation-%s.zip" % (v,)
+    AURL=fixup_download_url(AURL)
     try:
         data=urllib2.urlopen(AURL).read()
     except:
@@ -67,6 +81,7 @@ for v in sqlitevers:
     check(AURL, data)
     # All other platforms amalgamation
     AURL="https://sqlite.org/sqlite-autoconf-%s.tar.gz" % (v,)
+    AURL=fixup_download_url(AURL)
     try:
         data=urllib2.urlopen(AURL).read()
     except:
