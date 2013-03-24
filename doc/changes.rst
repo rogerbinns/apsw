@@ -7,6 +7,9 @@ Change History
 
 Adjust to different SQLite download URLs
 
+Added SQLITE_CONSTRAINT_* and SQLITE_READONLY_ROLLBACK `extended error
+codes <https://www.sqlite.org/c3ref/c_abort_rollback.html>`__
+
 Removed CouchDB virtual table
 
 3.7.15.2-r1
@@ -410,8 +413,8 @@ for instructions.
 The pragmas generated for a shell dump are emitted outside the
 transaction as they have no effect inside the transaction.
 
-Removed some unintentional logging code left in :ref:`CouchDB virtual
-table <couchdb>` code.
+Removed some unintentional logging code left in CouchDB virtual
+table code.
 
 3.6.20-r1
 =========
@@ -430,8 +433,7 @@ and gory details.
 You can now access `CouchDB <http://couchdb.apache.org>`__ using a
 virtual table.  This lets you easily bidirectionally transfer data
 between SQLite and CouchDB as well as work on data in both sources at
-the same time.  Other example uses are in the :ref:`documentation
-<couchdb>`.
+the same time.  Other example uses are in the documentation.
 
 :ref:`Shell <shell>` changes:
 
