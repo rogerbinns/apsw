@@ -2,6 +2,13 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.7.16-r1
+=========
+
+Adjust to different SQLite download URLs
+
+Removed CouchDB virtual table
+
 3.7.15.2-r1
 ===========
 
