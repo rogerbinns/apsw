@@ -2,6 +2,12 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.7.16.1-r1
+===========
+
+Updated tables of functions and pragmas in the :doc:`shell` to match
+current SQLite version.
+
 3.7.16-r1
 =========
 

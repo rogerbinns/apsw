@@ -2585,11 +2585,14 @@ Enter SQL statements terminated with a ";"
     _sqlite_special_names="""_ROWID_ OID ROWID SQLITE_MASTER
            SQLITE_SEQUENCE""".split()
 
-    _sqlite_functions="""abs( changes() coalesce( glob( ifnull( hex( last_insert_rowid()
-           length( load_extension( lower( ltrim( max( min( nullif( quote( random() randomblob(
-           replace( round( rtrim( soundex( sqlite_source_id() sqlite_version() substr(
-           total_changes() trim( typeof( upper( zeroblob( date( time( datetime( julianday(
-           strftime(""".split()
+    _sqlite_functions="""abs( changes() char( coalesce( glob( ifnull(
+           hex( instr( last_insert_rowid() length( like(
+           load_extension( lower( ltrim( max( min( nullif( quote(
+           random() randomblob( replace( round( rtrim( soundex(
+           sqlite_compileoption_get( sqlite_compileoption_used(
+           sqlite_source_id() sqlite_version() substr( total_changes()
+           trim( typeof( unicode( upper( zeroblob( date( time( datetime(
+           julianday( strftime(  avg( count( group_concat( sum( total(""".split()
 
     _pragmas_bool=("yes", "true", "on", "no", "false", "off")
     _pragmas={"auto_vacuum=": ("NONE", "FULL", "INCREMENTAL"),
@@ -2604,6 +2607,8 @@ Enter SQL statements terminated with a ";"
               "encoding=": None,
               # ('"UTF-8"', '"UTF-16"', '"UTF-16le"', '"UTF16-16be"'),
               # too hard to get " to be part of token just in this special case
+              "foreign_key_check": None,
+              "foreign_key_list(": None,
               "foreign_keys": _pragmas_bool,
               "freelist_count": None,
               "fullfsync=": _pragmas_bool,
@@ -2625,6 +2630,7 @@ Enter SQL statements terminated with a ";"
               "reverse_unordered_selects=": _pragmas_bool,
               "schema_version": None,
               "secure_delete=": _pragmas_bool,
+              "shrink_memory": None,
               "synchronous=": ("OFF", "NORMAL", "FULL"),
               "table_info(": None,
               "temp_store=": ("DEFAULT", "FILE", "MEMORY"),
