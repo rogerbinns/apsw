@@ -40,10 +40,7 @@ def run(cmd):
     raise Exception("Failed with signal "+`os.WTERMSIG(status)`+": "+cmd)
 
 def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever):
-    couchenv=""
-    if couchp(pyver):
-        couchenv="\"APSW_COUCHDB="+couchdb+'"'
-    run("set -e ; cd %s ; ( env %s LD_LIBRARY_PATH=%s %s setup.py fetch --version=%s --all build_test_extension build_ext --inplace --force --enable-all-extensions test -v ) >%s 2>&1" % (workdir, couchenv, pylib, pybin, sqlitever, os.path.abspath(os.path.join(logdir, "buildruntests.txt"))))
+    run("set -e ; cd %s ; ( env LD_LIBRARY_PATH=%s %s setup.py fetch --version=%s --all build_test_extension build_ext --inplace --force --enable-all-extensions test -v ) >%s 2>&1" % (workdir, pylib, pybin, sqlitever, os.path.abspath(os.path.join(logdir, "buildruntests.txt"))))
 
 def runtest(workdir, pyver, ucs, sqlitever, logdir):
     pybin, pylib=buildpython(workdir, pyver, ucs, os.path.abspath(os.path.join(logdir, "pybuild.txt")))
@@ -152,11 +149,6 @@ def buildpython(workdir, pyver, ucs, logfilename):
     if pyver>="3.1":
         suf="3"
     pybin=os.path.join(workdir, "pyinst", "bin", "python"+suf)
-    # couchdb
-    if couchp(pyver):
-        run("(set -e ; cd %s ; wget -q -O - '%s' | tar xfz - ; cd setuptools* ; %s setup.py install ; `dirname \"%s\"`/easy_install CouchDB ) >>%s 2>&1" %
-            (workdir, 'http://pypi.python.org/packages/source/s/setuptools/setuptools-0.6c11.tar.gz#md5=7df2a529a074f613b509fb44feefe74e',
-             pybin, pybin, logfilename))
     return pybin, os.path.join(workdir, "pyinst", "lib")
 
 def patch_natty_build(setup):
@@ -188,17 +180,6 @@ SQLITEVERS=(
     '3.7.16.1',
    )
 
-def couchp(pyver):
-    # should we try to support couchdb?
-    if couchdb and pyver=="system":
-        try:
-            import couchdb as ignored
-            import httplib2
-            return True
-        except ImportError:
-            return False
-    return pyver<"3" and pyver>="2.4" and couchdb
-
 if __name__=='__main__':
     nprocs=0
     try:
@@ -223,7 +204,6 @@ if __name__=='__main__':
     parser.add_option("--fossil", dest="fossil", help="Also test current SQLite FOSSIL version [%default]", default=False, action="store_true")
     parser.add_option("--ucs", dest="ucs", help="Unicode character widths to test in bytes [%default]", default="2,4")
     parser.add_option("--tasks", dest="concurrency", help="Number of simultaneous builds/tests to run [%default]", default=concurrency)
-    parser.add_option("--couchdb", dest="couchdb", help="URL to couchdb server", default=None)
 
     options,args=parser.parse_args()
 
@@ -237,5 +217,4 @@ if __name__=='__main__':
     ucstest=[int(x) for x in options.ucs.split(",")]
     concurrency=int(options.concurrency)
     sqlitevers=[x for x in sqlitevers if x]
-    couchdb=options.couchdb
     main(pyvers, ucstest, sqlitevers, concurrency)
