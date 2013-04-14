@@ -2,6 +2,12 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.7.16.2-r1
+===========
+
+No changes - just a binary rebuild.  Windows users are recommended to
+upgrade their SQLite version.
+
 3.7.16.1-r1
 ===========
 
