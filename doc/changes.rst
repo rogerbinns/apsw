@@ -2,6 +2,12 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.7.17-r1
+=========
+
+Removed tests that checked directly calling VFS read/write with
+negative offsets or amounts returns errors.
+
 3.7.16.2-r1
 ===========
 

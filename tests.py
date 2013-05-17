@@ -4442,10 +4442,6 @@ class APSW(unittest.TestCase):
             def xWrite2(self, buffy, offset):
                 1/0
 
-            def xWrite3(self, buffy, offset):
-                super(TestFile,self).xWrite(buffy, -offset)
-                return buffy*2
-
             def xWrite99(self, buffy, offset):
                 return super(TestFile, self).xWrite(buffy, offset)
 
@@ -4934,8 +4930,6 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, t.xRead, "three", "four")
         self.assertRaises(OverflowError, t.xRead, l("0xffffffffeeeeeeee0"), 1)
         self.assertRaises(OverflowError, t.xRead, 1, l("0xffffffffeeeeeeee0"))
-        if not iswindows:
-            self.assertRaises(apsw.IOError, t.xRead, 27, -17)
         TestFile.xRead=TestFile.xRead1
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.xRead=TestFile.xRead2
@@ -4953,15 +4947,11 @@ class APSW(unittest.TestCase):
         if sys.version_info>=(2,4): # py2.3 has bug
             self.assertRaises(TypeError, t.xWrite, "three", "four")
         self.assertRaises(OverflowError, t.xWrite, "three", l("0xffffffffeeeeeeee0"))
-        if not iswindows:
-            self.assertRaises(apsw.IOError, t.xWrite, b("foo"), -7)
         self.assertRaises(TypeError, t.xWrite, u("foo"), 0)
         TestFile.xWrite=TestFile.xWrite1
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.xWrite=TestFile.xWrite2
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
-        TestFile.xWrite=TestFile.xWrite3
-        self.assertRaises(apsw.IOError, self.assertRaisesUnraisable, apsw.IOError, testdb)
         TestFile.xWrite=TestFile.xWrite99
         testdb()
 
