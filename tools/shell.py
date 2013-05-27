@@ -2595,7 +2595,8 @@ Enter SQL statements terminated with a ";"
            julianday( strftime(  avg( count( group_concat( sum( total(""".split()
 
     _pragmas_bool=("yes", "true", "on", "no", "false", "off")
-    _pragmas={"auto_vacuum=": ("NONE", "FULL", "INCREMENTAL"),
+    _pragmas={"application_id": None,
+              "auto_vacuum=": ("NONE", "FULL", "INCREMENTAL"),
               "automatic_index=": _pragmas_bool,
               "cache_size=": None,
               "case_sensitive_like=": _pragmas_bool,

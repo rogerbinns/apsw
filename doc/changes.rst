@@ -6,7 +6,11 @@ Change History
 =========
 
 Removed tests that checked directly calling VFS read/write with
-negative offsets or amounts returns errors.
+negative offsets or amounts returns errors.  This version of SQLite no
+longer returns errors in those circumstances and typically crashes
+instead.
+
+Various new constants.
 
 3.7.16.2-r1
 ===========
