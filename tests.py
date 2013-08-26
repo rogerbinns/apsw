@@ -75,6 +75,7 @@ import threading
 import glob
 import pickle
 import shutil
+import getpass
 
 if py3:
     import queue as Queue
@@ -3208,6 +3209,36 @@ class APSW(unittest.TestCase):
         self.assertTrue("savepoint" in traces)
         self.assertTrue("release" in traces)
         self.assertTrue("rollback" in traces)
+
+    def testIssue142(self):
+        "Issue 142: bytes from system during dump"
+        orig_strftime=time.strftime
+        orig_getuser=getpass.getuser
+        try:
+            time.strftime=lambda arg: BYTES(r"gjkTIMEJUNKhgjhg\xfe\xdf")
+            getpass.getuser=lambda : BYTES(r"\x81\x82\x83gjkhgUSERJUNKjhg\xfe\xdf")
+            import codecs
+            fh=[codecs.open(TESTFILEPREFIX+"test-shell-"+t, "w+b", encoding="utf8") for t in ("in", "out", "err")]
+            kwargs={"stdin": fh[0], "stdout": fh[1], "stderr": fh[2]}
+
+            rows=(["correct"], ["horse"], ["battery"], ["staple"])
+            self.db.cursor().execute("create table foo(x)")
+            self.db.cursor().executemany("insert into foo values(?)", rows)
+            shell=apsw.Shell(db=self.db, **kwargs)
+            shell.command_dump([])
+
+            fh[1].seek(0)
+            out=fh[1].read()
+
+            for row in rows:
+                self.assertTrue(row[0] in out)
+
+            self.assertTrue("TIMEJUNK" in out)
+            self.assertTrue("USERJUNK" in out)
+
+        finally:
+            time.strftim=orig_strftime
+            getpass.getuser=orig_getuser
 
     def testTicket2158(self):
         "Check we are not affected by SQLite ticket #2158"

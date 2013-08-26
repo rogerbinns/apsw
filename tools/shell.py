@@ -1040,6 +1040,25 @@ Enter SQL statements terminated with a ";"
         # under our feet
         self.process_sql("BEGIN IMMEDIATE", internal=True)
 
+        # Used in comment() - see issue 142
+        outputstrtype=str
+        if sys.version_info<(3,0):
+            outputstrtype=unicode
+
+        # Python 2.3 can end up with nonsense like "en_us" so we fall
+        # back to ascii in that case
+        outputstrencoding=self.stdout.encoding
+        try:
+            codecs.lookup(outputstrencoding)
+        except:
+            outputstrencoding="ascii"
+
+        def unicodify(s):
+            if not isinstance(s, outputstrtype):
+                # See issue 142 - it may not be in an expected encoding
+                return s.decode(outputstrencoding, "replace")
+            return s
+
         try:
             # first pass -see if virtual tables or foreign keys are in
             # use.  If they are we emit pragmas to deal with them, but
@@ -1086,18 +1105,19 @@ Enter SQL statements terminated with a ";"
                 self.write(self.stdout, "\n")
 
             def comment(s):
+                s=unicodify(s)
                 self.write(self.stdout, textwrap.fill(s, 78, initial_indent="-- ", subsequent_indent="-- ")+"\n")
 
             pats=", ".join([(x,"(All)")[x=="%"] for x in cmd])
             comment("SQLite dump (by APSW %s)" % (apsw.apswversion(),))
             comment("SQLite version " + apsw.sqlitelibversion())
-            comment("Date: " +time.strftime("%c"))
+            comment("Date: " +unicodify(time.strftime("%c")))
             comment("Tables like: "+pats)
             comment("Database: "+self.db.filename)
             try:
                 import getpass
                 import socket
-                comment("User: %s @ %s" % (getpass.getuser(), socket.gethostname()))
+                comment("User: %s @ %s" % (unicodify(getpass.getuser()), unicodify(socket.gethostname())))
             except ImportError:
                 pass
             blank()

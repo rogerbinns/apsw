@@ -8,6 +8,10 @@ Change History
 Windows binaries for Python 3.3 64 bit are now available after
 managing to get several pieces of Microsoft software to cooperate.
 
+Fixed shell dump issue when system routines (eg timestamp, username,
+hostname) couldn't automatically be promoted to unicode.  They are
+used in comments in the output.  (:issue:`142`)
+
 3.7.17-r1
 =========
 
