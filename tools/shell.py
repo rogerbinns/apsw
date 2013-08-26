@@ -1047,7 +1047,7 @@ Enter SQL statements terminated with a ";"
 
         # Python 2.3 can end up with nonsense like "en_us" so we fall
         # back to ascii in that case
-        outputstrencoding=self.stdout.encoding
+        outputstrencoding=getattr(self.stdout, "encoding", "ascii")
         try:
             codecs.lookup(outputstrencoding)
         except:
