@@ -137,23 +137,26 @@ class build_test_extension(Command):
         if res!=0:
             raise RuntimeError("Building test extension failed")
 
-# Another hack.  Visual Studio 2008 Express SP1 ships with 64
+# Another hack.  Visual Studio 2008 & 2010 ship with 64
 # compilers, headers and the Windows SDK but claims it doesn't and
 # distutils can't find it.  The separate Windows SDK can't find this
 # and gets very confused not to mention being one of the buggiest cmd
 # scripts I have ever seen.  This hack just sets some environment
 # variables directly since all the "proper" ways are very broken.
 class win64hackvars(Command):
-    description="Set env vars for Visual Studio 2008 Express 64 bit"
+    description="Set env vars for Visual Studio 2008/2010 Express 64 bit"
 
     user_options=[]
     def initialize_options(self): pass
     def finalize_options(self): pass
     def run(self):
+        vcver=9
+        if sys.version_info>=(3,3):
+            vcver=10
         sdkdir=r"C:\Program Files\Microsoft SDKs\Windows\v6.0A"
-        vsdir=r"C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC"
+        vsdir=r"C:\Program Files (x86)\Microsoft Visual Studio %d.0\VC" % vcver
         assert os.path.isdir(sdkdir), "Expected sdk dir "+sdkdir
-        assert os.path.isdir(vsdir), "Expected visual studion dir "+vsdir
+        assert os.path.isdir(vsdir), "Expected visual studio dir "+vsdir
         os.environ["PATH"]=r"%s\bin\amd64;%s\bin" % (vsdir, sdkdir)
         os.environ["INCLUDE"]=r"%s\include;%s\include" % (vsdir, sdkdir)
         os.environ["LIB"]=r"%s\lib\amd64;%s\lib\x64" % (vsdir, sdkdir)
@@ -856,4 +859,3 @@ complete SQLite API into Python.""",
                 'sdist': apsw_sdist,
                 'win64hackvars': win64hackvars}
       )
-

@@ -34,28 +34,30 @@ way to build or all the :ref:`options available <building>`.
 
 * Windows Python 2.6 `32bit
   <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.17-r1.win32-py2.6.exe>`__
-  `64bit 
+  `64bit
   <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.17-r1.win-amd64-py2.6.exe>`__
 
 * Windows Python 2.7 `32bit
   <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.17-r1.win32-py2.7.exe>`__
-  `64bit 
+  `64bit
   <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.17-r1.win-amd64-py2.7.exe>`__
 
 * Windows Python 3.1 `32bit
   <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.17-r1.win32-py3.1.exe>`__
-  `64bit 
+  `64bit
   <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.17-r1.win-amd64-py3.1.exe>`__
 
 * Windows Python 3.2 `32bit
   <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.17-r1.win32-py3.2.exe>`__
-  `64bit 
+  `64bit
   <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.17-r1.win-amd64-py3.2.exe>`__
 
 * Windows Python 3.3 `32bit
   <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.17-r1.win32-py3.3.exe>`__
+  `64bit
+  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.17-r1.win-amd64-py3.3.exe>`__
 
-* `apsw-3.7.17-r1-sigs.zip 
+* `apsw-3.7.17-r1-sigs.zip
   <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.7.17-r1-sigs.zip>`_
   GPG signatures for all files
 

@@ -2,6 +2,12 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.8.0-r1
+========
+
+Windows binaries for Python 3.3 64 bit are now available after
+managing to get several pieces of Microsoft software to cooperate.
+
 3.7.17-r1
 =========
 
@@ -1202,4 +1208,3 @@ Finished this documentation.
 ========
 
 Initial release
-
