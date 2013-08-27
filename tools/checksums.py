@@ -7,6 +7,7 @@ import hashlib
 import re
 
 sqlitevers=(
+    '3080000',
     '3071700',
     '3071602',
     '3071601',
@@ -91,4 +92,3 @@ for v in sqlitevers:
         print AURL
         raise
     check(AURL, data)
-

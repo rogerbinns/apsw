@@ -58,8 +58,8 @@ API Reference
 #include "sqlite3.h"
 #endif
 
-#if SQLITE_VERSION_NUMBER < 3007016
-#error Your SQLite version is too old.  It must be at least 3.7.16
+#if SQLITE_VERSION_NUMBER < 3008000
+#error Your SQLite version is too old.  It must be at least 3.8.0
 #endif
 
 /* system headers */
@@ -1496,6 +1496,9 @@ modules etc. For example::
       ADDINT(SQLITE_IOERR_MMAP),
       ADDINT(SQLITE_NOTICE_RECOVER_ROLLBACK),
       ADDINT(SQLITE_NOTICE_RECOVER_WAL),
+      ADDINT(SQLITE_BUSY_SNAPSHOT),
+      ADDINT(SQLITE_IOERR_GETTEMPPATH),
+      ADDINT(SQLITE_WARNING_AUTOINDEX),
       END,
 
       /* error codes */
@@ -1626,6 +1629,7 @@ modules etc. For example::
       ADDINT(SQLITE_DBSTATUS_CACHE_HIT),
       ADDINT(SQLITE_DBSTATUS_CACHE_MISS),
       ADDINT(SQLITE_DBSTATUS_CACHE_WRITE),
+      ADDINT(SQLITE_DBSTATUS_DEFERRED_FKS),
       END,
 
       DICT("mapping_locking_level"),

@@ -12,6 +12,9 @@ Fixed shell dump issue when system routines (eg timestamp, username,
 hostname) couldn't automatically be promoted to unicode.  They are
 used in comments in the output.  (:issue:`142`)
 
+Added SQLITE_DBSTATUS_DEFERRED_FKS, SQLITE_IOERR_GETTEMPPATH,
+SQLITE_WARNING_AUTOINDEX and SQLITE_BUSY_SNAPSHOT constants.
+
 3.7.17-r1
 =========
 
