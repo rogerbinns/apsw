@@ -2,6 +2,12 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.8.0-r2
+========
+
+No APSW changes - updated checksums because SQLite changed the
+released archive to address an autoconf issue on some platforms
+
 3.8.0-r1
 ========
 
