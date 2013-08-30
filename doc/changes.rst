@@ -2,6 +2,11 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.8.0.1-r1
+==========
+
+No APSW changes.  Rebuild due to updated SQLite version.
+
 3.8.0-r2
 ========
 
