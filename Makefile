@@ -12,7 +12,7 @@ PYTHON=python
 # These control Debian packaging
 DEBSUFFIX=1ppa1
 DEBMAINTAINER="Roger Binns <rogerb@rogerbinns.com>"
-DEBSERIES=raring quantal precise oneiric lucid
+DEBSERIES=raring quantal precise lucid
 PPAUPLOAD=ppa:ubuntu-rogerbinns/apsw
 
 # Some useful info

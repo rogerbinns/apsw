@@ -54,8 +54,6 @@ way to build or all the :ref:`options available <building>`.
 
 * Windows Python 3.3 `32bit
   <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.0.1-r1.win32-py3.3.exe>`__
-  `64bit 
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.0.1-r1.win-amd64-py3.3.exe>`__
 
 * `apsw-3.8.0.1-r1-sigs.zip 
   <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.0.1-r1-sigs.zip>`_
