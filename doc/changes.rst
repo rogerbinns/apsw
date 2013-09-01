@@ -7,6 +7,10 @@ Change History
 
 No APSW changes.  Rebuild due to updated SQLite version.
 
+Windows binaries for Python 3.3 64 bit are no longer available as a
+Visual Studio update obliterated the ability to compile them, and I
+have no patience left to fight Microsoft's tools.
+
 3.8.0-r2
 ========
 
