@@ -2,6 +2,14 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.8.0.2-r1
+==========
+
+No APSW code changes.  Rebuild due to updated SQLite version.
+
+Updated documentation tips to show how to :ref:`get detailed
+diagnostics <diagnostics_tips>`.
+
 3.8.0.1-r1
 ==========
 

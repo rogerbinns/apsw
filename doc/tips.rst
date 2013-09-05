@@ -60,6 +60,43 @@ Then proceed to give the `Joel Unicode article
 <http://www.joelonsoftware.com/articles/Unicode.html>`_ to all people
 involved.
 
+.. _diagnostics_tips:
+
+Diagnostics
+===========
+
+Both SQLite and APSW provide detailed diagnostic information.  Errors
+will be signalled via an :doc:`exception <exceptions>`.
+
+APSW ensures you have :ref:`detailed information
+<augmentedstacktraces>` both in the stack trace as well as what data
+APSW/SQLite was operating on.
+
+SQLite has a `warning/error logging facility
+<http://www.sqlite.org/errlog.html>`__.  To set your own logger use::
+
+    def handler(errcode, message):
+        errstr=apsw.mapping_result_codes[errcode & 255]
+        extended=errcode & ~ 255
+        print "SQLITE_LOG: %s (%d) %s %s" % (message, errcode, errstr, apsw.mapping_extended_result_codes.get(extended, ""))
+
+    apsw.config(apsw.SQLITE_CONFIG_LOG, handler)
+
+.. note::
+
+   The handler **must** be set before any other calls to SQLite.
+   Once SQLite is initialised you cannot change the logger - a
+   :exc:`MisuseError` will happen (this restriction is in SQLite not
+   APSW).
+
+This is an example of what gets printed when I use ``/dev/null`` as
+the database name in the :class:`Connection` and then tried to create
+a table.::
+
+    SQLITE_LOG: cannot open file at line 28729 of [7dd4968f23] (14) SQLITE_CANTOPEN
+    SQLITE_LOG: os_unix.c:28729: (2) open(/dev/null-journal) - No such file or directory (14) SQLITE_CANTOPEN
+    SQLITE_LOG: statement aborts at 38: [create table foo(x,y);] unable to open database file (14) SQLITE_CANTOPEN
+
 Parsing SQL
 ===========
 

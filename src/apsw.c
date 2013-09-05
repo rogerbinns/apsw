@@ -281,7 +281,8 @@ sqliteshutdown(void)
   SQLITE_CONFIG_SERIALIZED, SQLITE_CONFIG_URI, SQLITE_CONFIG_MEMSTATUS
   and SQLITE_CONFIG_COVERING_INDEX_SCAN.
 
-  See :func:`log` for an example of using SQLITE_CONFIG_LOG.
+  See :ref:`tips <diagnostics_tips>` for an example of how to receive
+  log messages (SQLITE_CONFIG_LOG)
 
   -* sqlite3_config
 */
@@ -1126,7 +1127,6 @@ formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
   my code with the actual docstring from tools.py:main().
 */
 
-#ifdef EXPERIMENTAL
 /** .. method:: log(level, message)
 
     Calls the SQLite logging interface.  Note that you must format the
@@ -1134,18 +1134,8 @@ formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
 
         apsw.log(apsw.SQLITE_NOMEM, "Need %d bytes of memory" % (1234,))
 
-    To set your own logger use::
-
-        def handler(errcode, message):
-           print errcode, message
-        apsw.config(apsw.SQLITE_CONFIG_LOG, handler)
-
-    *handler* will be called with two arguments.  The first will be a
-    numeric error code and the second will be a message string.  Note
-    that the handler has to be set before any other calls to SQLite.
-    Once SQLite is initialised you cannot change the logger - a
-    :exc:`MisuseError` will happen (this restriction is in SQLite not
-    APSW).
+    See :ref:`tips <diagnostics_tips>` for an example of how to
+    receive log messages.
 
     -* sqlite3_log
  */
@@ -1160,8 +1150,6 @@ apsw_log(APSW_ARGUNUSED PyObject *self, PyObject *args)
   PyMem_Free(message);
   Py_RETURN_NONE;
 }
-#endif
-
 
 static PyMethodDef module_methods[] = {
   {"sqlite3_sourceid", (PyCFunction)get_sqlite3_sourceid, METH_NOARGS,
@@ -1218,7 +1206,6 @@ static PyMethodDef module_methods[] = {
 #endif
   {0, 0, 0, 0}  /* Sentinel */
 };
-
 
 static void add_shell(PyObject *module);
 
