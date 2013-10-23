@@ -2,6 +2,11 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.8.1-r1
+========
+
+Added SQLITE_CANTOPEN_CONVPATH SQLITE_IOERR_CONVPATH
+
 3.8.0.2-r1
 ==========
 
