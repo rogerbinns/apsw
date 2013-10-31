@@ -34,58 +34,54 @@ way to build or all the :ref:`options available <building>`.
 
 * Windows Python 2.6 `32bit
   <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.1-r1.win32-py2.6.exe>`__
-  `64bit 
+  `64bit
   <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.1-r1.win-amd64-py2.6.exe>`__
 
 * Windows Python 2.7 `32bit
   <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.1-r1.win32-py2.7.exe>`__
-  `64bit 
+  `64bit
   <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.1-r1.win-amd64-py2.7.exe>`__
 
 * Windows Python 3.1 `32bit
   <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.1-r1.win32-py3.1.exe>`__
-  `64bit 
+  `64bit
   <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.1-r1.win-amd64-py3.1.exe>`__
 
 * Windows Python 3.2 `32bit
   <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.1-r1.win32-py3.2.exe>`__
-  `64bit 
+  `64bit
   <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.1-r1.win-amd64-py3.2.exe>`__
 
 * Windows Python 3.3 `32bit
   <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.1-r1.win32-py3.3.exe>`__
 
-* `apsw-3.8.1-r1-sigs.zip 
+* `apsw-3.8.1-r1-sigs.zip
   <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.1-r1-sigs.zip>`_
   GPG signatures for all files
 
 .. downloads-end
 
-Some Linux distributions also have packages.
+Some Linux distributions also have packages which may trail the SQLite
+and APSW releases by a year, or more.  It is also possible to build
+RPMs and DEB packages from the source, although this involves setting
+up package management tools and various dependencies on your build
+machine.
 
 +-------------------+----------------------------------------------------------------------------------+
 | Debian            | Install `python-apsw <http://packages.debian.org/python-apsw>`__                 |
 +-------------------+----------------------------------------------------------------------------------+
+| Fedora            | Install `python-apsw <https://apps.fedoraproject.org/packages/s/apsw>`__         |
++-------------------+----------------------------------------------------------------------------------+
 | Ubuntu            | Install `python-apsw <http://packages.ubuntu.com/search?keywords=python-apsw>`__ |
 +-------------------+----------------------------------------------------------------------------------+
-| Ubuntu PPA        | I maintain a PPA that is up to date at                                           |
-|                   | https://launchpad.net/~ubuntu-rogerbinns/+archive/apsw which has SQLite          |
-|                   | embedded statically inside (ie system SQLite is ignored) and has all the         |
-|                   | extensions enabled: FTS3/4, RTree, ICU.  Note that builds are not available for  |
-|                   | Ubuntu 12.10 because `Canonical/Ubuntu add a broken flag to the PPA              |
+| Ubuntu PPA        | PPA building has been broken for over two years because                          |
+|                   | `Canonical/Ubuntu add a broken flag to the PPA                                   |
 |                   | <https://bugs.launchpad.net/ubuntu/+source/python2.7/+bug/1065302>`__.           |
 +-------------------+----------------------------------------------------------------------------------+
 | Gentoo            | Install `dev-python/apsw <http://packages.gentoo.org/package/dev-python/apsw>`_  |
 +-------------------+----------------------------------------------------------------------------------+
-| Arch Linux        | Install `python-apsw <http://aur.archlinux.org/packages.php?ID=5537>`__          |
+| Arch Linux        | Install `python-apsw <https://www.archlinux.org/packages/?q=apsw>`__             |
 +-------------------+----------------------------------------------------------------------------------+
-
-Note that these (except my Ubuntu PPA) may trail the SQLite and APSW
-releases by a year, or more.  It is also possible to build RPMs and
-DEB packages from the source, although this involves setting up
-package management tools and various dependencies on your build
-machine.
-
 
 .. _verifydownload:
 

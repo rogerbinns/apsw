@@ -5,7 +5,12 @@ Change History
 3.8.1-r1
 ========
 
-Added SQLITE_CANTOPEN_CONVPATH SQLITE_IOERR_CONVPATH
+Added SQLITE_CANTOPEN_CONVPATH and SQLITE_IOERR_CONVPATH extended
+error codes.
+
+Updated pysqlite urls to point to github.
+
+Various minor build/download documentation updates.
 
 3.8.0.2-r1
 ==========
