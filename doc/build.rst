@@ -25,9 +25,11 @@ needed components for you.
 |                                                             | `MinGW compiler <http://mingw.org>`_ instead of the                     |
 |                                                             | Microsoft compilers.                                                    |
 +-------------------------------------------------------------+-------------------------------------------------------------------------+
-| | python setup.py build_ext --force --inplace test          | Compiles the extension but doesn't install it. The resulting file       |
-|                                                             | will be in the current directory named apsw.so (Unix/Mac) or            |
-|                                                             | apsw.pyd (Windows). The test suite is then run.                         |
+| | python setup.py build_ext :option:`--force`               | Compiles the extension but doesn't install it. The resulting file       |
+|   :option:`--inplace` test                                  | will be in the current directory named apsw.so (Unix/Mac) or            |
+|                                                             | apsw.pyd (Windows). The test suite is then run. (Note on recent versions|
+|                                                             | of CPython the extension filenames may be more complicated due to       |
+|                                                             | :pep:`3149`.)                                                           |
 +-------------------------------------------------------------+-------------------------------------------------------------------------+
 | | python setup.py build :option:`--debug` install           | Compiles APSW with debug information.  This also turns on `assertions   |
 |                                                             | <http://en.wikipedia.org/wiki/Assert.h>`_                               |
@@ -163,7 +165,7 @@ the build and/or build_ext commands of :file:`setup.py`.
 Note that the options do not accumulate.  If you want to specify multiple enables or omits then you
 need to give the flag once and giving a comma seperated list.  For example:
 
-  | python setup.py build --enable=fts3,fts3_parenthesis,rtree,icu
+  | python setup.py build :option:`--enable=fts3,fts3_parenthesis,rtree,icu`
 
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | build/build_ext flag                   | Result                                                                               |
@@ -281,8 +283,9 @@ APSW source to.
 
 
 The extension just turns into a single file apsw.so (Linux/Mac) or
-apsw.pyd (Windows). You don't need to install it and can drop it into
-any directory that is more convenient for you and that your code can
+apsw.pyd (Windows). (More complicated name on Pythons implementing
+:pep:`3149`). You don't need to install it and can drop it into any
+directory that is more convenient for you and that your code can
 reach. To just do the build and not install, leave out *install* from
 the lines above. (Use *build_ext --inplace* to have the extension put
 in the main directory.)

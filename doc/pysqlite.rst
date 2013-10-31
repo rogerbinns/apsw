@@ -44,12 +44,12 @@ APSW has the following enhancements/differences over pysqlite 2 (wrapping SQLite
   are very careful with your own mutexes you will have a crash or a
   deadlock.
 
-* APSW is a single file for the extension, :file:`apsw.pyd` on Windows and
-  :file:`apsw.so` on Unix/Mac. There are no other files needed and the :ref:`build
-  instructions <building>` show you how to include SQLite statically
-  in this file. You can put this file anywhere your Python session can
-  reach. pysqlite is one binary file and several .py files, all of
-  which need to be available.
+* APSW is a single file for the extension, :file:`apsw.pyd` on Windows
+  and :file:`apsw.so` on Unix/Mac (Note :pep:`3149`). There are no
+  other files needed and the :ref:`build instructions <building>` show
+  you how to include SQLite statically in this file. You can put this
+  file anywhere your Python session can reach. pysqlite is one binary
+  file and several .py files, all of which need to be available.
 
 * **Nothing** happens behind your back. By default pysqlite tries to
   manage transactions by parsing your SQL for you, but you can turn it
