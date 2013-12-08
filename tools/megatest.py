@@ -30,6 +30,8 @@ try:
 except KeyError:
     pass
 
+os.environ["http_proxy"]="http://192.168.1.25:8080"
+
 def run(cmd):
     status=os.system(cmd)
     if os.WIFEXITED(status):
