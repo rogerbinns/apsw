@@ -13,7 +13,7 @@ fi
 # Measure code coverage
 GCOVOPTS="-b -c"
 GCOVOPTS=""
-rm -f *.gcda *.gcov *.gcno apsw.so
+rm -f *.gcda *.gcov *.gcno sqlite3/*.gcov apsw.so
 # find python
 PYTHON=python # use whatever is in the path
 INCLUDEDIR=`$PYTHON -c "import distutils.sysconfig,sys; sys.stdout.write(distutils.sysconfig.get_python_inc())"`
@@ -31,6 +31,8 @@ gcc -fPIC -shared -Isqlite3 -I. -o testextension.sqlext -Isqlite3 src/testextens
 set +e
 $PYTHON $args
 res=$?
-gcov $GCOVOPTS src/apsw.c > /dev/null
+gcov $GCOVOPTS apsw.gcno > /dev/null
+mv sqlite3.c.gcov sqlite3/
+mv *.gcov src/
 python tools/coverageanalyser.py
 exit $res

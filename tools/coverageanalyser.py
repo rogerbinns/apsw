@@ -24,7 +24,7 @@ def output(filename, percent, total):
 linesexecuted=0
 linestotal=0
 
-names=glob.glob("*.c.gcov")
+names=glob.glob("src/*.c.gcov")
 names.sort()
 
 for f in names:
@@ -42,9 +42,8 @@ for f in names:
             fileexec+=1
         linestotal+=1
         filetotal+=1
-    n="src/"+os.path.splitext(f)[0]
+    n=os.path.splitext(f)[0]
     output(n, fileexec*100.0/filetotal, filetotal)
 
 out("\n")
-output("Total", linesexecuted*100.0/linestotal, linestotal)
-        
+output("Total", linesexecuted*100.0/(linestotal if linestotal else 1), linestotal)
