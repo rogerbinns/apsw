@@ -2,6 +2,12 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.8.2-r1
+========
+
+Added SQLITE_CONFIG_WIN32_HEAPSIZE, SQLITE_CONSTRAINT_ROWID and
+SQLITE_FCNTL_TRACE constants.
+
 3.8.1-r1
 ========
 
