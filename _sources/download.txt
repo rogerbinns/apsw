@@ -19,44 +19,43 @@ way to build or all the :ref:`options available <building>`.
 .. downloads-begin
 
 * `apsw-3.8.2-r1.zip
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.2-r1.zip>`_
+  <https://github.com/rogerbinns/apsw/releases/download/v3.8.2-r1/apsw-3.8.2-r1.zip>`__
   (Source, includes this HTML Help)
 
-
 * Windows Python 2.3 `32bit
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.2-r1.win32-py2.3.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/v3.8.2-r1/apsw-3.8.2-r1.win32-py2.3.exe>`__
 
 * Windows Python 2.4 `32bit
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.2-r1.win32-py2.4.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/v3.8.2-r1/apsw-3.8.2-r1.win32-py2.4.exe>`__
 
 * Windows Python 2.5 `32bit
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.2-r1.win32-py2.5.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/v3.8.2-r1/apsw-3.8.2-r1.win32-py2.5.exe>`__
 
 * Windows Python 2.6 `32bit
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.2-r1.win32-py2.6.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/v3.8.2-r1/apsw-3.8.2-r1.win32-py2.6.exe>`__
   `64bit 
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.2-r1.win-amd64-py2.6.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/v3.8.2-r1/apsw-3.8.2-r1.win-amd64-py2.6.exe>`__
 
 * Windows Python 2.7 `32bit
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.2-r1.win32-py2.7.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/v3.8.2-r1/apsw-3.8.2-r1.win32-py2.7.exe>`__
   `64bit 
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.2-r1.win-amd64-py2.7.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/v3.8.2-r1/apsw-3.8.2-r1.win-amd64-py2.7.exe>`__
 
 * Windows Python 3.1 `32bit
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.2-r1.win32-py3.1.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/v3.8.2-r1/apsw-3.8.2-r1.win32-py3.1.exe>`__
   `64bit 
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.2-r1.win-amd64-py3.1.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/v3.8.2-r1/apsw-3.8.2-r1.win-amd64-py3.1.exe>`__
 
 * Windows Python 3.2 `32bit
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.2-r1.win32-py3.2.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/v3.8.2-r1/apsw-3.8.2-r1.win32-py3.2.exe>`__
   `64bit 
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.2-r1.win-amd64-py3.2.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/v3.8.2-r1/apsw-3.8.2-r1.win-amd64-py3.2.exe>`__
 
 * Windows Python 3.3 `32bit
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.2-r1.win32-py3.3.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/v3.8.2-r1/apsw-3.8.2-r1.win32-py3.3.exe>`__
 
 * `apsw-3.8.2-r1-sigs.zip 
-  <https://code.google.com/p/apsw/downloads/detail?name=apsw-3.8.2-r1-sigs.zip>`_
+  <https://github.com/rogerbinns/apsw/releases/download/v3.8.2-r1/apsw-3.8.2-r1-sigs.zip>`__
   GPG signatures for all files
 
 .. downloads-end
@@ -88,9 +87,9 @@ machine.
 Verifying your download
 =======================
 
-Downloads are now digitally signed so you can verify they have not
-been tampered with.  Download and extract the zip file of signatures
-listed above.  These instructions are for `GNU Privacy Guard
+Downloads are digitally signed so you can verify they have not been
+tampered with.  Download and extract the zip file of signatures listed
+above.  These instructions are for `GNU Privacy Guard
 <http://www.gnupg.org/>`__.  (GPG is installed as standard on most
 Unix/Linux platforms and can be downloaded for Windows.)
 
@@ -127,8 +126,8 @@ Getting the signing key
 Source code control
 ===================
 
-The source is controlled by Mercurial documented at
-https://code.google.com/p/apsw/source/checkout
+The source is controlled by Git - start at
+https://github.com/rogerbinns/apsw
 
 easy_install/pip/pypi
 =====================

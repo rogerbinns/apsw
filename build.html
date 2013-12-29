@@ -213,8 +213,8 @@ created <tt class="file docutils literal"><span class="pre">sqlite3/</span></tt>
 <p>The SQLite downloads are not <a class="reference external" href="http://en.wikipedia.org/wiki/Digital_signature">digitally signed</a> which means you
 have no way of verifying they were produced by the SQLite team or
 were not modified between the SQLite servers and your computer.</p>
-<p>Consequently APSW ships with a <tt class="file docutils literal"><span class="pre">checksums</span></tt> <a class="reference external" href="https://code.google.com/p/apsw/source/browse/checksums">file</a> that
-includes checksums for the various SQLite downloads.  If the
+<p>Consequently APSW ships with a <a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/checksums">checksums file</a>
+that includes checksums for the various SQLite downloads.  If the
 download does not match the checksum then it is rejected and an
 error occurs.</p>
 <p>The SQLite download page is not checksummed, so in theory a bad guy
@@ -450,20 +450,19 @@ OK</pre>
 </div>
 <p>The tests also ensure that as much APSW code as possible is executed
 including alternate paths through the code.  95.5% of the APSW code is
-executed by the tests. If you checkout the APSW source then there is
-an script <a class="reference external" href="https://code.google.com/p/apsw/source/browse/tools/coverage.sh">coverage.sh</a>
-that enables extra code that deliberately induces extra conditions
-such as memory allocation failures, SQLite returning undocumented
-error codes etc. That brings coverage up to 99.6% of the code.</p>
+executed by the tests. If you checkout the APSW source then there is a
+script <a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/coverage.sh">coverage.sh</a> that enables extra code that deliberately
+induces extra conditions such as memory allocation failures, SQLite
+returning undocumented error codes etc. That brings coverage up to
+99.6% of the code.</p>
 <p>A memory checker <a class="reference external" href="http://valgrind.org">Valgrind</a> is used while
 running the test suite. The test suite is run 150 times to make any
 memory leaks or similar issues stand out. A checking version of Python
-is also used.  See <a class="reference external" href="https://code.google.com/p/apsw/source/browse/tools/valgrind.sh">valgrind.sh</a>
-in the source.</p>
+is also used.  See <a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/valgrind.sh">valgrind.sh</a> in the source.</p>
 <p>To ensure compatibility with the various Python versions, a script
 downloads and compiles all supported Python versions in both 2 byte
 and 4 byte Unicode character configurations against the APSW and
-SQLite supported versions running the tests. See <a class="reference external" href="https://code.google.com/p/apsw/source/browse/tools/megatest.py">megatest.py</a>
+SQLite supported versions running the tests. See <a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/megatest.py">megatest.py</a>
 in the source.</p>
 <p>In short both SQLite and APSW have a lot of testing!</p>
 </div>

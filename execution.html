@@ -233,11 +233,10 @@ priority.</p>
 <span id="apswtrace"></span><h2>APSW Trace<a class="headerlink" href="#apsw-trace" title="Permalink to this headline">¶</a></h2>
 <p>APSW includes a tracing script as part of the <a class="reference internal" href="download.html#source-and-binaries"><em>source
 distribution</em></a> named <tt class="file docutils literal"><span class="pre">apswtrace.py</span></tt>, or you
-can get a copy directly from <a class="reference external" href="https://code.google.com/p/apsw/source/browse/tools/apswtrace.py">source control</a>
-(choose &#8220;View Raw File&#8221;).  This script lets you easily trace SQL
-execution as well as providing a summary report without modifying your
-code.  If it is installed anywhere on your <span class="target" id="index-0"></span><tt class="xref std std-envvar docutils literal"><span class="pre">PYTHONPATH</span></tt> then
-you can invoke it with <tt class="docutils literal"><span class="pre">-m</span></tt>:</p>
+can get a copy directly from <a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/tools/apswtrace.py">source control</a> (choose &#8220;Raw File&#8221;).  This script lets you
+easily trace SQL execution as well as providing a summary report
+without modifying your code.  If it is installed anywhere on your
+<span class="target" id="index-0"></span><tt class="xref std std-envvar docutils literal"><span class="pre">PYTHONPATH</span></tt> then you can invoke it with <tt class="docutils literal"><span class="pre">-m</span></tt>:</p>
 <div class="highlight-python"><pre>$ python -m apswtrace [apswtrace options] yourscript.py [your options]</pre>
 </div>
 <p>You can also invoke it directly:</p>
