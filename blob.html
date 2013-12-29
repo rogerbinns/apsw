@@ -1,0 +1,379 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Blob Input/Output &mdash; APSW 3.8.2-r1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '3.8.2-r1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="copyright.html" />
+    <link rel="top" title="APSW 3.8.2-r1 documentation" href="index.html" />
+    <link rel="next" title="Backup" href="backup.html" />
+    <link rel="prev" title="Cursors (executing SQL)" href="cursor.html" />
+ 
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-26815066-1']);
+  _gaq.push(['_trackPageview']);
+</script>
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="backup.html" title="Backup"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cursor.html" title="Cursors (executing SQL)"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">APSW 3.8.2-r1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="blob-input-output">
+<span id="blobio"></span><h1>Blob Input/Output<a class="headerlink" href="#blob-input-output" title="Permalink to this headline">¶</a></h1>
+<p>A <a class="reference external" href="http://en.wikipedia.org/wiki/Binary_large_object">blob</a> is a
+SQLite <a class="reference external" href="https://sqlite.org/datatype3.html">datatype</a> representing
+a sequence of bytes.  It can be zero or more bytes in size.</p>
+<p>SQLite blobs have an absolute maximum size of 2GB and a <a class="reference external" href="https://sqlite.org/c3ref/c_limit_attached.html">default
+maximum size</a> of
+1GB.</p>
+<p>An alternate approach to using blobs is to store the data in files and
+store the filename in the database.  Doing so loses the <a class="reference external" href="https://sqlite.org/transactional.html">ACID</a> properties of SQLite.</p>
+<div class="section" id="zeroblob-class">
+<h2>zeroblob class<a class="headerlink" href="#zeroblob-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="apsw.zeroblob">
+<em class="property">class </em><tt class="descname">zeroblob</tt><big>(</big><em>size</em><big>)</big><a class="headerlink" href="#apsw.zeroblob" title="Permalink to this definition">¶</a></dt>
+<dd><p>If you want to insert a blob into a row, you previously needed to
+supply the entire blob in one go.  To read just one byte also
+required retrieving the blob in its entireity. For example to insert
+a 100MB file you would have done:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">largedata</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="s">&quot;largefile&quot;</span><span class="p">,</span> <span class="s">&quot;rb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into foo values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">buffer</span><span class="p">(</span><span class="n">largedata</span><span class="p">),))</span>
+</pre></div>
+</div>
+<p>SQLite 3.5 allowed for incremental Blob I/O so you can read and
+write blobs in small amounts.  You cannot change the size of a blob
+so you need to reserve space which you do through zeroblob which
+creates a blob of the specified size but full of zero bytes.  For
+example you would reserve space for your 100MB one of these two
+ways:</p>
+<div class="highlight-python"><pre>cur.execute("insert into foo values(zeroblob(100000000))")
+cur.execute("insert into foo values(?),
+             (apsw.zeroblob(100000000),))</pre>
+</div>
+<p>This class is used for the second way.  Once a blob exists in the
+database, you then use the <a class="reference internal" href="#apsw.blob" title="apsw.blob"><tt class="xref py py-class docutils literal"><span class="pre">blob</span></tt></a> class to read and write its
+contents.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.zeroblob.length">
+<tt class="descclassname">zeroblob.</tt><tt class="descname">length</tt><big>(</big><big>)</big> &rarr; int<a class="headerlink" href="#apsw.zeroblob.length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Size of zero blob in bytes.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="blob-class">
+<h2>blob class<a class="headerlink" href="#blob-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="apsw.blob">
+<em class="property">class </em><tt class="descname">blob</tt><a class="headerlink" href="#apsw.blob" title="Permalink to this definition">¶</a></dt>
+<dd><p>This object is created by <a class="reference internal" href="connection.html#apsw.Connection.blobopen" title="apsw.Connection.blobopen"><tt class="xref py py-meth docutils literal"><span class="pre">Connection.blobopen()</span></tt></a> and provides
+access to a blob in the database.  It behaves like a Python file.
+At the C level it wraps a <a class="reference external" href="https://sqlite.org/c3ref/blob.html">sqlite3_blob</a>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You cannot change the size of a blob using this object. You should
+create it with the correct size in advance either by using
+<a class="reference internal" href="#apsw.zeroblob" title="apsw.zeroblob"><tt class="xref py py-class docutils literal"><span class="pre">zeroblob</span></tt></a> or the <a class="reference external" href="https://sqlite.org/lang_corefunc.html">zeroblob()</a> function.</p>
+</div>
+<p>See the <a class="reference internal" href="example.html#example-blobio"><em>example</em></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.blob.__enter__">
+<tt class="descclassname">blob.</tt><tt class="descname">__enter__</tt><big>(</big><big>)</big> &rarr; context<a class="headerlink" href="#apsw.blob.__enter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>You can use a blob as a <a class="reference external" href="http://docs.python.org/reference/datamodel.html#with-statement-context-managers">context manager</a>
+as defined in <span class="target" id="index-0"></span><a class="pep reference external" href="http://www.python.org/dev/peps/pep-0343"><strong>PEP 0343</strong></a>.  When you use <em>with</em> statement,
+the blob is always <tt class="xref py py-meth docutils literal"><span class="pre">closed</span></tt> on exit from the block, even if an
+exception occurred in the block.</p>
+<p>For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">with</span> <span class="n">connection</span><span class="o">.</span><span class="n">blobopen</span><span class="p">()</span> <span class="k">as</span> <span class="n">blob</span><span class="p">:</span>
+    <span class="n">blob</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;...&quot;</span><span class="p">)</span>
+    <span class="n">res</span><span class="o">=</span><span class="n">blob</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.blob.__exit__">
+<tt class="descclassname">blob.</tt><tt class="descname">__exit__</tt><big>(</big><big>)</big> &rarr; False<a class="headerlink" href="#apsw.blob.__exit__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements context manager in conjunction with
+<a class="reference internal" href="#apsw.blob.__enter__" title="apsw.blob.__enter__"><tt class="xref py py-meth docutils literal"><span class="pre">__enter__()</span></tt></a>.  Any exception that happened in the
+<em>with</em> block is raised after closing the blob.</p>
+</dd></dl>
+
+<span class="target" id="index-1"></span><dl class="method">
+<dt id="apsw.blob.close">
+<tt class="descclassname">blob.</tt><tt class="descname">close</tt><big>(</big><span class="optional">[</span><em>force=False</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#apsw.blob.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes the blob.  Note that even if an error occurs the blob is
+still closed.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In some cases errors that technically occurred in the
+<a class="reference internal" href="#apsw.blob.read" title="apsw.blob.read"><tt class="xref py py-meth docutils literal"><span class="pre">read()</span></tt></a> and <a class="reference internal" href="#apsw.blob.write" title="apsw.blob.write"><tt class="xref py py-meth docutils literal"><span class="pre">write()</span></tt></a> routines may not be
+reported until close is called.  Similarly errors that occurred
+in those methods (eg calling <a class="reference internal" href="#apsw.blob.write" title="apsw.blob.write"><tt class="xref py py-meth docutils literal"><span class="pre">write()</span></tt></a> on a read-only
+blob) may also be re-reported in <a class="reference internal" href="#apsw.blob.close" title="apsw.blob.close"><tt class="xref py py-meth docutils literal"><span class="pre">close()</span></tt></a>.  (This
+behaviour is what the underlying SQLite APIs do - it is not APSW
+doing it.)</p>
+</div>
+<p>It is okay to call <a class="reference internal" href="#apsw.blob.close" title="apsw.blob.close"><tt class="xref py py-meth docutils literal"><span class="pre">close()</span></tt></a> multiple times.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>force</strong> &#8211; Ignores any errors during close.</td>
+</tr>
+</tbody>
+</table>
+<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/blob_close.html">sqlite3_blob_close</a></p>
+</dd></dl>
+
+<span class="target" id="index-2"></span><dl class="method">
+<dt id="apsw.blob.length">
+<tt class="descclassname">blob.</tt><tt class="descname">length</tt><big>(</big><big>)</big> &rarr; int<a class="headerlink" href="#apsw.blob.length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the size of the blob in bytes.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/blob_bytes.html">sqlite3_blob_bytes</a></p>
+</dd></dl>
+
+<span class="target" id="index-3"></span><dl class="method">
+<dt id="apsw.blob.read">
+<tt class="descclassname">blob.</tt><tt class="descname">read</tt><big>(</big><span class="optional">[</span><em>nbytes</em><span class="optional">]</span><big>)</big> &rarr; bytes<a class="headerlink" href="#apsw.blob.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads amount of data requested, or till end of file, whichever is
+earlier. Attempting to read beyond the end of the blob returns the
+empty string/bytes, in the same manner as end of file on normal file
+objects.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">(Python 2) string  (Python 3) bytes</td>
+</tr>
+</tbody>
+</table>
+<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/blob_read.html">sqlite3_blob_read</a></p>
+</dd></dl>
+
+<span class="target" id="index-4"></span><dl class="method">
+<dt id="apsw.blob.readinto">
+<tt class="descclassname">blob.</tt><tt class="descname">readinto</tt><big>(</big><em>buffer</em><span class="optional">[</span>, <em>offset=0</em>, <em>length=remaining-buffer</em><span class="optional">]</span><big>)</big> &rarr; None<a class="headerlink" href="#apsw.blob.readinto" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads from the blob into a buffer you have supplied.  This method is
+useful if you already have a buffer like object that data is being
+assembled in, and avoids allocating results in <a class="reference internal" href="#apsw.blob.read" title="apsw.blob.read"><tt class="xref py py-meth docutils literal"><span class="pre">blob.read()</span></tt></a> and
+then copying into buffer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>buffer</strong> &#8211; A writable buffer like object.  In Python 2.6 onwards
+there is a bytearray type that is very useful.
+<tt class="xref py py-class docutils literal"><span class="pre">array.array</span></tt> also works.</li>
+<li><strong>offset</strong> &#8211; The position to start writing into the buffer
+defaulting to the beginning.</li>
+<li><strong>length</strong> &#8211; How much of the blob to read.  The default is the
+remaining space left in the buffer.  Note that if
+there is more space available than blob left then you
+will get a <tt class="xref py py-exc docutils literal"><span class="pre">ValueError</span></tt> exception.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/blob_read.html">sqlite3_blob_read</a></p>
+</dd></dl>
+
+<span class="target" id="index-5"></span><dl class="method">
+<dt id="apsw.blob.reopen">
+<tt class="descclassname">blob.</tt><tt class="descname">reopen</tt><big>(</big><em>rowid</em><big>)</big><a class="headerlink" href="#apsw.blob.reopen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change this blob object to point to a different row.  It can be
+faster than closing an existing blob an opening a new one.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/blob_reopen.html">sqlite3_blob_reopen</a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.blob.seek">
+<tt class="descclassname">blob.</tt><tt class="descname">seek</tt><big>(</big><em>offset</em><span class="optional">[</span>, <em>whence=0</em><span class="optional">]</span><big>)</big> &rarr; None<a class="headerlink" href="#apsw.blob.seek" title="Permalink to this definition">¶</a></dt>
+<dd><p>Changes current position to <em>offset</em> biased by <em>whence</em>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>offset</strong> &#8211; New position to seek to.  Can be positive or negative number.</li>
+<li><strong>whence</strong> &#8211; Use 0 if <em>offset</em> is relative to the begining of the blob,
+1 if <em>offset</em> is relative to the current position,
+and 2 if <em>offset</em> is relative to the end of the blob.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Raises ValueError:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last">If the resulting offset is before the begining (less than zero) or beyond the end of the blob.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.blob.tell">
+<tt class="descclassname">blob.</tt><tt class="descname">tell</tt><big>(</big><big>)</big> &rarr; int<a class="headerlink" href="#apsw.blob.tell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current offset.</p>
+</dd></dl>
+
+<span class="target" id="index-6"></span><dl class="method">
+<dt id="apsw.blob.write">
+<tt class="descclassname">blob.</tt><tt class="descname">write</tt><big>(</big><em>data</em><big>)</big> &rarr; None<a class="headerlink" href="#apsw.blob.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes the data to the blob.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>data</strong> &#8211; (Python 2) buffer or string. (Python 3) buffer or bytes.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><strong>TypeError</strong> &#8211; Wrong data type</li>
+<li><strong>ValueError</strong> &#8211; If the data would go beyond the end of the blob.
+You cannot increase the size of a blob by writing beyond the end.
+You need to use <a class="reference internal" href="#apsw.zeroblob" title="apsw.zeroblob"><tt class="xref py py-class docutils literal"><span class="pre">zeroblob</span></tt></a> to set the desired size first when
+inserting the blob.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/blob_write.html">sqlite3_blob_write</a></p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Blob Input/Output</a><ul>
+<li><a class="reference internal" href="#zeroblob-class">zeroblob class</a></li>
+<li><a class="reference internal" href="#blob-class">blob class</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cursor.html"
+                        title="previous chapter">Cursors (executing SQL)</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="backup.html"
+                        title="next chapter">Backup</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/blob.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="backup.html" title="Backup"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cursor.html" title="Cursors (executing SQL)"
+             >previous</a> |</li>
+        <li><a href="index.html">APSW 3.8.2-r1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; <a href="copyright.html">Copyright</a> 2004-2013, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Dec 28, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+<div class="footer">This page uses <a href="http://analytics.google.com/">
+Google Analytics</a> to collect statistics. You can disable it by blocking
+the JavaScript coming from www.google-analytics.com.
+<script type="text/javascript">
+  (function() {
+    var ga = document.createElement('script');
+    ga.src = ('https:' == document.location.protocol ?
+              'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    ga.setAttribute('async', 'true');
+    document.documentElement.firstChild.appendChild(ga);
+  })();
+</script>
+</div>
+
+  </body>
+</html>

@@ -1,0 +1,552 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Cursors (executing SQL) &mdash; APSW 3.8.2-r1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '3.8.2-r1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="copyright.html" />
+    <link rel="top" title="APSW 3.8.2-r1 documentation" href="index.html" />
+    <link rel="next" title="Blob Input/Output" href="blob.html" />
+    <link rel="prev" title="Connections to a database" href="connection.html" />
+ 
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-26815066-1']);
+  _gaq.push(['_trackPageview']);
+</script>
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="blob.html" title="Blob Input/Output"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="connection.html" title="Connections to a database"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">APSW 3.8.2-r1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="cursors-executing-sql">
+<span id="cursors"></span><h1>Cursors (executing SQL)<a class="headerlink" href="#cursors-executing-sql" title="Permalink to this headline">¶</a></h1>
+<p>A cursor encapsulates a SQL query and returning results.  To make a
+new cursor you should call <a class="reference internal" href="connection.html#apsw.Connection.cursor" title="apsw.Connection.cursor"><tt class="xref py py-meth docutils literal"><span class="pre">cursor()</span></tt></a> on your
+database:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">db</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s">&quot;databasefilename&quot;</span><span class="p">)</span>
+<span class="n">cursor</span><span class="o">=</span><span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>A cursor executes SQL:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;create table example(title, isbn)&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can also read data back.  The row is returned as a tuple of the
+column values:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select * from example&quot;</span><span class="p">):</span>
+   <span class="k">print</span> <span class="n">row</span>
+</pre></div>
+</div>
+<p>There are two ways of supplying data to a query.  The <strong>really bad</strong> way is to compose a string:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">sql</span><span class="o">=</span><span class="s">&quot;insert into example values(&#39;</span><span class="si">%s</span><span class="s">&#39;, </span><span class="si">%d</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&quot;string&quot;</span><span class="p">,</span> <span class="mi">8390823904</span><span class="p">)</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If there were any single quotes in string then you would have invalid
+syntax.  Additionally this is how <a class="reference external" href="http://en.wikipedia.org/wiki/SQL_injection">SQL injection attacks</a> happen. Instead you should use bindings:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">sql</span><span class="o">=</span><span class="s">&quot;insert into example values(?, ?)&quot;</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="p">(</span><span class="s">&quot;string&quot;</span><span class="p">,</span> <span class="mi">8390823904</span><span class="p">))</span>
+
+<span class="c"># You can also use dictionaries</span>
+<span class="n">sql</span><span class="o">=</span><span class="s">&quot;insert into example values(:title, :isbn)&quot;</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;title&quot;</span><span class="p">:</span> <span class="s">&quot;string&quot;</span><span class="p">,</span> <span class="s">&quot;isbn&quot;</span><span class="p">:</span> <span class="mi">8390823904</span><span class="p">})</span>
+
+<span class="c"># You can use local variables as the dictionary</span>
+<span class="n">title</span><span class="o">=</span><span class="s">&quot;...&quot;</span>
+<span class="n">isbn</span><span class="o">=</span><span class="s">&quot;....&quot;</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="nb">locals</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Cursors are cheap.  Use as many as you need.  It is safe to use them
+across threads, such as calling <a class="reference internal" href="#apsw.Cursor.execute" title="apsw.Cursor.execute"><tt class="xref py py-meth docutils literal"><span class="pre">execute()</span></tt></a> in one thread,
+passing the cursor to another thread that then calls
+<a class="reference internal" href="#apsw.Cursor.next" title="apsw.Cursor.next"><tt class="xref py py-meth docutils literal"><span class="pre">Cursor.next()</span></tt></a>.  The only thing you can&#8217;t do is call methods at
+exactly the same time on the same cursor in two different threads - eg
+trying to call <a class="reference internal" href="#apsw.Cursor.execute" title="apsw.Cursor.execute"><tt class="xref py py-meth docutils literal"><span class="pre">execute()</span></tt></a> in both at the same time, or
+<a class="reference internal" href="#apsw.Cursor.execute" title="apsw.Cursor.execute"><tt class="xref py py-meth docutils literal"><span class="pre">execute()</span></tt></a> in one and <a class="reference internal" href="#apsw.Cursor.next" title="apsw.Cursor.next"><tt class="xref py py-meth docutils literal"><span class="pre">Cursor.next()</span></tt></a> in another.
+(If you do attempt this, it will be detected and
+<a class="reference internal" href="exceptions.html#apsw.ThreadingViolationError" title="apsw.ThreadingViolationError"><tt class="xref py py-exc docutils literal"><span class="pre">ThreadingViolationError</span></tt></a> will be raised.)</p>
+<p>Behind the scenes a <a class="reference internal" href="#apsw.Cursor" title="apsw.Cursor"><tt class="xref py py-class docutils literal"><span class="pre">Cursor</span></tt></a> maps to a <a class="reference external" href="https://sqlite.org/c3ref/stmt.html">SQLite statement</a>.  APSW maintains a
+<a class="reference internal" href="execution.html#statementcache"><em>cache</em></a> so that the mapping is very fast, and the
+SQLite objects are reused when possible.</p>
+<p>A unique feature of APSW is that your query can be multiple semi-colon
+separated statements.  For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select ... ; insert into ... ; update ... ; select ...&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>SQLite fetches data as it is needed.  If table <em>example</em> had 10
+million rows it would only get the next row as requested (the for
+loop effectively calls <a class="reference internal" href="#apsw.Cursor.next" title="apsw.Cursor.next"><tt class="xref py py-meth docutils literal"><span class="pre">next()</span></tt></a> to get each row).  This
+code would not work as expected:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select * from example&quot;</span><span class="p">):</span>
+   <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert .....&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The nested <a class="reference internal" href="#apsw.Cursor.execute" title="apsw.Cursor.execute"><tt class="xref py py-meth docutils literal"><span class="pre">execute()</span></tt></a> would start a new query
+abandoning any remaining results from the <tt class="docutils literal"><span class="pre">SELECT</span></tt> cursor.  There are two
+ways to work around this.  Use a different cursor:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor1</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select * from example&quot;</span><span class="p">):</span>
+   <span class="n">cursor2</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert ...&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can also get all the rows immediately by filling in a list:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">rows</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select * from example&quot;</span><span class="p">)</span> <span class="p">)</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+   <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert ...&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="last">This last approach is recommended since you don&#8217;t have to worry
+about the database changing while doing the <tt class="docutils literal"><span class="pre">select</span></tt>.  You should
+also understand transactions and where to put the transaction
+boundaries.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Cursors on the same <a class="reference internal" href="connection.html#connections"><em>Connection</em></a> are not isolated
+from each other.  Anything done on one cursor is immediately visible
+to all other Cursors on the same connection.  This still applies if
+you start transactions.  Connections are isolated from each other
+with cursors on other connections not seeing changes until they are
+committed.</p>
+</div>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference external" href="https://sqlite.org/lang_transaction.html">SQLite transactions</a></li>
+<li><a class="reference external" href="https://sqlite.org/atomiccommit.html">Atomic commit</a></li>
+<li><a class="reference external" href="http://www.mail-archive.com/sqlite-users&#64;sqlite.org/msg42660.html">Example of changing the database while running a query problem</a></li>
+<li><a class="reference internal" href="benchmarking.html#benchmarking"><em>Benchmarking</em></a></li>
+</ul>
+</div>
+<div class="section" id="cursor-class">
+<h2>Cursor class<a class="headerlink" href="#cursor-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="apsw.Cursor">
+<em class="property">class </em><tt class="descname">Cursor</tt><a class="headerlink" href="#apsw.Cursor" title="Permalink to this definition">¶</a></dt>
+<dd><p>You obtain cursors by calling <a class="reference internal" href="connection.html#apsw.Connection.cursor" title="apsw.Connection.cursor"><tt class="xref py py-meth docutils literal"><span class="pre">Connection.cursor()</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.Cursor.close">
+<tt class="descclassname">Cursor.</tt><tt class="descname">close</tt><big>(</big><em>force=False</em><big>)</big><a class="headerlink" href="#apsw.Cursor.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>It is very unlikely you will need to call this method.  It exists
+because older versions of SQLite required all Connection/Cursor
+activity to be confined to the same thread.  That is no longer the
+case.  Cursors are automatically garbage collected and when there
+are none left will allow the connection to be garbage collected if
+it has no other references.</p>
+<p>A cursor is open if there are remaining statements to execute (if
+your query included multiple statements), or if you called
+<a class="reference internal" href="#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><tt class="xref py py-meth docutils literal"><span class="pre">executemany()</span></tt></a> and not all of the <em>sequenceofbindings</em>
+have been used yet.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>force</strong> &#8211; If False then you will get exceptions if there is
+remaining work to do be in the Cursor such as more statements to
+execute, more data from the executemany binding sequence etc. If
+force is True then all remaining work and state information will be
+silently discarded.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="apsw.Cursor.description">
+<tt class="descclassname">Cursor.</tt><tt class="descname">description</tt><a class="headerlink" href="#apsw.Cursor.description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Based on the <a class="reference external" href="http://www.python.org/dev/peps/pep-0249/">DB-API cursor property</a>, this returns the
+same as <a class="reference internal" href="#apsw.Cursor.getdescription" title="apsw.Cursor.getdescription"><tt class="xref py py-meth docutils literal"><span class="pre">getdescription()</span></tt></a> but with 5 Nones appended.  See
+also <a class="reference external" href="https://code.google.com/p/apsw/issues/detail?id=131">APSW issue 131</a>.</p>
+</dd></dl>
+
+<span class="target" id="index-0"></span><dl class="method">
+<dt id="apsw.Cursor.execute">
+<tt class="descclassname">Cursor.</tt><tt class="descname">execute</tt><big>(</big><em>statements</em><span class="optional">[</span>, <em>bindings</em><span class="optional">]</span><big>)</big> &rarr; iterator<a class="headerlink" href="#apsw.Cursor.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes the statements using the supplied bindings.  Execution
+returns when the first row is available or all statements have
+completed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>statements</strong> &#8211; One or more SQL statements such as <tt class="docutils literal"><span class="pre">select</span> <span class="pre">*</span>
+<span class="pre">from</span> <span class="pre">books</span></tt> or <tt class="docutils literal"><span class="pre">begin;</span> <span class="pre">insert</span> <span class="pre">into</span> <span class="pre">books</span> <span class="pre">...;</span> <span class="pre">select</span>
+<span class="pre">last_insert_rowid();</span> <span class="pre">end</span></tt>.</li>
+<li><strong>bindings</strong> &#8211; If supplied should either be a sequence or a dictionary.  Each item must be one of the <a class="reference internal" href="types.html#types"><em>supported types</em></a></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>If you use numbered bindings in the query then supply a sequence.
+Any sequence will work including lists and iterators.  For
+example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into books values(?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&quot;title&quot;</span><span class="p">,</span> <span class="s">&quot;number&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>A common gotcha is wanting to insert a single string but not
+putting it in a tuple:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into books values(?)&quot;</span><span class="p">,</span> <span class="s">&quot;a title&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The string is a sequence of 8 characters and so it will look
+like you are supplying 8 bindings when only one is needed.  Use
+a one item tuple with a trailing comma like this:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into books values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&quot;a title&quot;</span><span class="p">,)</span> <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>If you used names in the statement then supply a dictionary as the
+binding.  It is ok to be missing entries from the dictionary -
+None/null will be used.  For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into books values(:title, :isbn, :rating)&quot;</span><span class="p">,</span>
+     <span class="p">{</span><span class="s">&quot;title&quot;</span><span class="p">:</span> <span class="s">&quot;book title&quot;</span><span class="p">,</span> <span class="s">&quot;isbn&quot;</span><span class="p">:</span> <span class="mi">908908908</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>The return is the cursor object itself which is also an iterator.  This allows you to write:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select * from books&quot;</span><span class="p">):</span>
+   <span class="k">print</span> <span class="n">row</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><strong>TypeError</strong> &#8211; The bindings supplied were neither a dict nor a sequence</li>
+<li><strong>BindingsError</strong> &#8211; You supplied too many or too few bindings for the statements</li>
+<li><strong>IncompleteExecutionError</strong> &#8211; There are remaining unexecuted queries from your last execute</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference internal" href="execution.html#executionmodel"><em>Execution model</em></a></li>
+<li><a class="reference internal" href="example.html#example-cursor"><em>Example</em></a></li>
+</ul>
+</div>
+<dl class="docutils">
+<dt>Calls:</dt>
+<dd><ul class="first last simple">
+<li><a class="reference external" href="https://sqlite.org/c3ref/prepare.html">sqlite3_prepare_v2</a></li>
+<li><a class="reference external" href="https://sqlite.org/c3ref/step.html">sqlite3_step</a></li>
+<li><a class="reference external" href="https://sqlite.org/c3ref/bind_blob.html">sqlite3_bind_int64</a></li>
+<li><a class="reference external" href="https://sqlite.org/c3ref/bind_blob.html">sqlite3_bind_null</a></li>
+<li><a class="reference external" href="https://sqlite.org/c3ref/bind_blob.html">sqlite3_bind_text</a></li>
+<li><a class="reference external" href="https://sqlite.org/c3ref/bind_blob.html">sqlite3_bind_double</a></li>
+<li><a class="reference external" href="https://sqlite.org/c3ref/bind_blob.html">sqlite3_bind_blob</a></li>
+<li><a class="reference external" href="https://sqlite.org/c3ref/bind_blob.html">sqlite3_bind_zeroblob</a></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.Cursor.executemany">
+<tt class="descclassname">Cursor.</tt><tt class="descname">executemany</tt><big>(</big><em>statements</em>, <em>sequenceofbindings</em><big>)</big> &rarr; iterator<a class="headerlink" href="#apsw.Cursor.executemany" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method is for when you want to execute the same statements over
+a sequence of bindings.  Conceptually it does this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">binding</span> <span class="ow">in</span> <span class="n">sequenceofbindings</span><span class="p">:</span>
+    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">statements</span><span class="p">,</span> <span class="n">binding</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">rows</span><span class="o">=</span><span class="p">(</span>  <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">23</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">92</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span> <span class="p">)</span>
+
+<span class="n">cursor</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s">&quot;insert into nums values(?,?)&quot;</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The return is the cursor itself which acts as an iterator.  Your
+statements can return data.  See <a class="reference internal" href="#apsw.Cursor.execute" title="apsw.Cursor.execute"><tt class="xref py py-meth docutils literal"><span class="pre">execute()</span></tt></a> for more
+information.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.Cursor.fetchall">
+<tt class="descclassname">Cursor.</tt><tt class="descname">fetchall</tt><big>(</big><big>)</big> &rarr; list<a class="headerlink" href="#apsw.Cursor.fetchall" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all remaining result rows as a list.  This method is defined
+in DBAPI.  It is a longer way of doing <tt class="docutils literal"><span class="pre">list(cursor)</span></tt>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.Cursor.getconnection">
+<tt class="descclassname">Cursor.</tt><tt class="descname">getconnection</tt><big>(</big><big>)</big> &rarr; Connection<a class="headerlink" href="#apsw.Cursor.getconnection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> this cursor belongs to.  An example usage is to get another cursor:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">cursor</span><span class="p">):</span>
+  <span class="c"># I don&#39;t want to alter existing cursor, so make a new one</span>
+  <span class="n">mycursor</span><span class="o">=</span><span class="n">cursor</span><span class="o">.</span><span class="n">getconnection</span><span class="p">()</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+  <span class="n">mycursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;....&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<span class="target" id="index-1"></span><dl class="method">
+<dt id="apsw.Cursor.getdescription">
+<tt class="descclassname">Cursor.</tt><tt class="descname">getdescription</tt><big>(</big><big>)</big> &rarr; list<a class="headerlink" href="#apsw.Cursor.getdescription" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list describing each column in the result row.  The
+return is identical for every row of the results.  You can only
+call this method once you have started executing a statement and
+before you have finished:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># This will error</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">getdescription</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select .....&quot;</span><span class="p">):</span>
+   <span class="c"># this works</span>
+   <span class="k">print</span> <span class="n">cursor</span><span class="o">.</span><span class="n">getdescription</span><span class="p">()</span>
+   <span class="k">print</span> <span class="n">row</span>
+</pre></div>
+</div>
+<p>The information about each column is a tuple of <tt class="docutils literal"><span class="pre">(column_name,</span>
+<span class="pre">declared_column_type)</span></tt>.  The type is what was declared in the
+<tt class="docutils literal"><span class="pre">CREATE</span> <span class="pre">TABLE</span></tt> statement - the value returned in the row will be
+whatever type you put in for that row and column.  (This is known
+as <a class="reference external" href="https://sqlite.org/different.html#typing">manifest typing</a>
+which is also the way that Python works.  The variable <tt class="docutils literal"><span class="pre">a</span></tt> could
+contain an integer, and then you could put a string in it.  Other
+static languages such as C or other SQL databases only let you put
+one type in - eg <tt class="docutils literal"><span class="pre">a</span></tt> could only contain an integer or a string,
+but never both.)</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;create table books(title string, isbn number, wibbly wobbly zebra)&quot;</span><span class="p">)</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into books values(?,?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">97</span><span class="p">,</span> <span class="s">&quot;fjfjfj&quot;</span><span class="p">,</span> <span class="mf">3.7</span><span class="p">))</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into books values(?,?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&quot;fjfjfj&quot;</span><span class="p">,</span> <span class="mf">3.7</span><span class="p">,</span> <span class="mi">97</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select * from books&quot;</span><span class="p">):</span>
+   <span class="k">print</span> <span class="n">cursor</span><span class="o">.</span><span class="n">getdescription</span><span class="p">()</span>
+   <span class="k">print</span> <span class="n">row</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># row 0 - description</span>
+<span class="p">((</span><span class="s">&#39;title&#39;</span><span class="p">,</span> <span class="s">&#39;string&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;isbn&#39;</span><span class="p">,</span> <span class="s">&#39;number&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;wibbly&#39;</span><span class="p">,</span> <span class="s">&#39;wobbly zebra&#39;</span><span class="p">))</span>
+<span class="c"># row 0 - values</span>
+<span class="p">(</span><span class="mi">97</span><span class="p">,</span> <span class="s">&#39;fjfjfj&#39;</span><span class="p">,</span> <span class="mf">3.7</span><span class="p">)</span>
+<span class="c"># row 1 - description</span>
+<span class="p">((</span><span class="s">&#39;title&#39;</span><span class="p">,</span> <span class="s">&#39;string&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;isbn&#39;</span><span class="p">,</span> <span class="s">&#39;number&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;wibbly&#39;</span><span class="p">,</span> <span class="s">&#39;wobbly zebra&#39;</span><span class="p">))</span>
+<span class="c"># row 1 - values</span>
+<span class="p">(</span><span class="s">&#39;fjfjfj&#39;</span><span class="p">,</span> <span class="mf">3.7</span><span class="p">,</span> <span class="mi">97</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>Calls:</dt>
+<dd><ul class="first last simple">
+<li><a class="reference external" href="https://sqlite.org/c3ref/column_name.html">sqlite3_column_name</a></li>
+<li><a class="reference external" href="https://sqlite.org/c3ref/column_decltype.html">sqlite3_column_decltype</a></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.Cursor.getexectrace">
+<tt class="descclassname">Cursor.</tt><tt class="descname">getexectrace</tt><big>(</big><big>)</big> &rarr; callable or None<a class="headerlink" href="#apsw.Cursor.getexectrace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the currently installed (via <a class="reference internal" href="#apsw.Cursor.setexectrace" title="apsw.Cursor.setexectrace"><tt class="xref py py-meth docutils literal"><span class="pre">setexectrace()</span></tt></a>)
+execution tracer.</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference internal" href="execution.html#tracing"><em>Tracing</em></a></li>
+</ul>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.Cursor.getrowtrace">
+<tt class="descclassname">Cursor.</tt><tt class="descname">getrowtrace</tt><big>(</big><big>)</big> &rarr; callable or None<a class="headerlink" href="#apsw.Cursor.getrowtrace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the currently installed (via <a class="reference internal" href="#apsw.Cursor.setrowtrace" title="apsw.Cursor.setrowtrace"><tt class="xref py py-meth docutils literal"><span class="pre">setrowtrace()</span></tt></a>)
+row tracer.</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference internal" href="execution.html#tracing"><em>Tracing</em></a></li>
+</ul>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.Cursor.next">
+<tt class="descclassname">Cursor.</tt><tt class="descname">next</tt><big>(</big><big>)</big> &rarr; row<a class="headerlink" href="#apsw.Cursor.next" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the next row of data or raises StopIteration if there are no
+more rows.  Python calls this method behind the scenes when using
+the cursor as an iterator.  It is unlikely you will want to manually
+call it.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.Cursor.setexectrace">
+<tt class="descclassname">Cursor.</tt><tt class="descname">setexectrace</tt><big>(</big><em>callable</em><big>)</big><a class="headerlink" href="#apsw.Cursor.setexectrace" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>callable</em> is called with the cursor, statement and bindings for
+each <a class="reference internal" href="#apsw.Cursor.execute" title="apsw.Cursor.execute"><tt class="xref py py-meth docutils literal"><span class="pre">execute()</span></tt></a> or <a class="reference internal" href="#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><tt class="xref py py-meth docutils literal"><span class="pre">executemany()</span></tt></a> on this
+cursor.</p>
+<p>If <em>callable</em> is <tt class="xref py py-const docutils literal"><span class="pre">None</span></tt> then any existing execution tracer is
+removed.</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference internal" href="execution.html#tracing"><em>Tracing</em></a></li>
+<li><a class="reference internal" href="execution.html#executiontracer"><em>Execution Tracer</em></a></li>
+<li><a class="reference internal" href="connection.html#apsw.Connection.setexectrace" title="apsw.Connection.setexectrace"><tt class="xref py py-meth docutils literal"><span class="pre">Connection.setexectrace()</span></tt></a></li>
+</ul>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.Cursor.setrowtrace">
+<tt class="descclassname">Cursor.</tt><tt class="descname">setrowtrace</tt><big>(</big><em>callable</em><big>)</big><a class="headerlink" href="#apsw.Cursor.setrowtrace" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>callable</em> is called with cursor and row being returned.  You can
+change the data that is returned or cause the row to be skipped
+altogether.</p>
+<p>If <em>callable</em> is <tt class="xref py py-const docutils literal"><span class="pre">None</span></tt> then any existing row tracer is
+removed.</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference internal" href="execution.html#tracing"><em>Tracing</em></a></li>
+<li><a class="reference internal" href="execution.html#rowtracer"><em>Row Tracer</em></a></li>
+<li><a class="reference internal" href="connection.html#apsw.Connection.setexectrace" title="apsw.Connection.setexectrace"><tt class="xref py py-meth docutils literal"><span class="pre">Connection.setexectrace()</span></tt></a></li>
+</ul>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Cursors (executing SQL)</a><ul>
+<li><a class="reference internal" href="#cursor-class">Cursor class</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="connection.html"
+                        title="previous chapter">Connections to a database</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="blob.html"
+                        title="next chapter">Blob Input/Output</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/cursor.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="blob.html" title="Blob Input/Output"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="connection.html" title="Connections to a database"
+             >previous</a> |</li>
+        <li><a href="index.html">APSW 3.8.2-r1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; <a href="copyright.html">Copyright</a> 2004-2013, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Dec 28, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+<div class="footer">This page uses <a href="http://analytics.google.com/">
+Google Analytics</a> to collect statistics. You can disable it by blocking
+the JavaScript coming from www.google-analytics.com.
+<script type="text/javascript">
+  (function() {
+    var ga = document.createElement('script');
+    ga.src = ('https:' == document.location.protocol ?
+              'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    ga.setAttribute('async', 'true');
+    document.documentElement.firstChild.appendChild(ga);
+  })();
+</script>
+</div>
+
+  </body>
+</html>

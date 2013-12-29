@@ -1,0 +1,718 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Virtual Tables &mdash; APSW 3.8.2-r1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '3.8.2-r1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="copyright.html" />
+    <link rel="top" title="APSW 3.8.2-r1 documentation" href="index.html" />
+    <link rel="next" title="Virtual File System (VFS)" href="vfs.html" />
+    <link rel="prev" title="Backup" href="backup.html" />
+ 
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-26815066-1']);
+  _gaq.push(['_trackPageview']);
+</script>
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="vfs.html" title="Virtual File System (VFS)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="backup.html" title="Backup"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">APSW 3.8.2-r1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="virtual-tables">
+<span id="virtualtables"></span><h1>Virtual Tables<a class="headerlink" href="#virtual-tables" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://sqlite.org/vtab.html">Virtual Tables</a> are a feature
+introduced in SQLite 3.3.7. They let a developer provide an underlying
+table implementations, while still presenting a normal SQL interface
+to the user. The person writing SQL doesn&#8217;t need to know or care that
+some of the tables come from elsewhere.</p>
+<p>Some examples of how you might use this:</p>
+<ul class="simple">
+<li>Translating to/from information stored in other formats (eg a csv/ini format file)</li>
+<li>Accessing the data remotely (eg you could make a table that backends into Amazon&#8217;s API)</li>
+<li>Dynamic information (eg currently running processes, files and directories, objects in your program)</li>
+<li>Information that needs reformatting (eg if you have complex rules about how to convert strings to/from Unicode
+in the dataset)</li>
+<li>Information that isn&#8217;t relationally correct (eg if you have data that has ended up with duplicate &#8220;unique&#8221; keys
+with code that dynamically corrects it)</li>
+<li>There are other examples on the <a class="reference external" href="https://sqlite.org/vtab.html">SQLite page</a></li>
+</ul>
+<p>You need to have 3 types of object. A <a class="reference internal" href="#apsw.VTModule" title="apsw.VTModule"><tt class="xref py py-class docutils literal"><span class="pre">module</span></tt></a>, a
+<a class="reference internal" href="#apsw.VTTable" title="apsw.VTTable"><tt class="xref py py-class docutils literal"><span class="pre">virtual</span> <span class="pre">table</span></tt></a> and a <a class="reference internal" href="#apsw.VTCursor" title="apsw.VTCursor"><tt class="xref py py-class docutils literal"><span class="pre">cursor</span></tt></a>. These are documented below. You can also read the <a class="reference external" href="https://sqlite.org/vtab.html">SQLite
+C method documentation</a>.  At the C
+level, they are just one set of methods. At the Python/APSW level,
+they are split over the 3 types of object. The leading <strong>x</strong> is
+omitted in Python. You can return SQLite error codes (eg
+<tt class="xref py py-const docutils literal"><span class="pre">SQLITE_READONLY</span></tt>) by raising the appropriate exceptions (eg
+<a class="reference internal" href="exceptions.html#apsw.ReadOnlyError" title="apsw.ReadOnlyError"><tt class="xref py py-exc docutils literal"><span class="pre">ReadOnlyError</span></tt></a>).  <a class="reference internal" href="apsw.html#apsw.exceptionfor" title="apsw.exceptionfor"><tt class="xref py py-meth docutils literal"><span class="pre">exceptionfor()</span></tt></a> is a useful helper
+function to do the mapping.</p>
+<div class="section" id="vtmodule-class">
+<h2>VTModule class<a class="headerlink" href="#vtmodule-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="apsw.VTModule">
+<em class="property">class </em><tt class="descname">VTModule</tt><a class="headerlink" href="#apsw.VTModule" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">There is no actual <em>VTModule</em> class - it is just shown this way
+for documentation convenience.  Your module instance should implement
+all the methods documented here.</p>
+</div>
+<p>A module instance is used to create the virtual tables.  Once you have
+a module object, you register it with a connection by calling
+<a class="reference internal" href="connection.html#apsw.Connection.createmodule" title="apsw.Connection.createmodule"><tt class="xref py py-meth docutils literal"><span class="pre">Connection.createmodule()</span></tt></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># make an instance</span>
+<span class="n">mymod</span><span class="o">=</span><span class="n">MyModuleClass</span><span class="p">()</span>
+
+<span class="c"># register the vtable on connection con</span>
+<span class="n">con</span><span class="o">.</span><span class="n">createmodule</span><span class="p">(</span><span class="s">&quot;modulename&quot;</span><span class="p">,</span> <span class="n">mymod</span><span class="p">)</span>
+
+<span class="c"># tell SQLite about the table</span>
+<span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;create VIRTUAL table tablename USING modulename(&#39;arg1&#39;, 2)&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The create step is to tell SQLite about the existence of the table.
+Any number of tables referring to the same module can be made this
+way.  Note the (optional) arguments which are passed to the module.</p>
+<dl class="method">
+<dt id="apsw.VTModule.Connect">
+<tt class="descclassname">VTModule.</tt><tt class="descname">Connect</tt><big>(</big><em>connection</em>, <em>modulename</em>, <em>databasename</em>, <em>tablename</em>, <em>*args</em><big>)</big> &rarr; [ sql string, table object ]<a class="headerlink" href="#apsw.VTModule.Connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>The parameters and return are identical to
+<a class="reference internal" href="#apsw.VTModule.Create" title="apsw.VTModule.Create"><tt class="xref py py-meth docutils literal"><span class="pre">Create()</span></tt></a>.  This method is called
+when there are additional references to the table.  <a class="reference internal" href="#apsw.VTModule.Create" title="apsw.VTModule.Create"><tt class="xref py py-meth docutils literal"><span class="pre">Create()</span></tt></a> will be called the first time and
+<a class="reference internal" href="#apsw.VTModule.Connect" title="apsw.VTModule.Connect"><tt class="xref py py-meth docutils literal"><span class="pre">Connect()</span></tt></a> after that.</p>
+<p>The advise is to create caches, generated data and other
+heavyweight processing on <a class="reference internal" href="#apsw.VTModule.Create" title="apsw.VTModule.Create"><tt class="xref py py-meth docutils literal"><span class="pre">Create()</span></tt></a> calls and then
+find and reuse that on the subsequent <a class="reference internal" href="#apsw.VTModule.Connect" title="apsw.VTModule.Connect"><tt class="xref py py-meth docutils literal"><span class="pre">Connect()</span></tt></a>
+calls.</p>
+<p>The corresponding call is <a class="reference internal" href="#apsw.VTTable.Disconnect" title="apsw.VTTable.Disconnect"><tt class="xref py py-meth docutils literal"><span class="pre">VTTable.Disconnect()</span></tt></a>.  If you have a simple virtual table implemtation, then just
+set <a class="reference internal" href="#apsw.VTModule.Connect" title="apsw.VTModule.Connect"><tt class="xref py py-meth docutils literal"><span class="pre">Connect()</span></tt></a> to be the same as <a class="reference internal" href="#apsw.VTModule.Create" title="apsw.VTModule.Create"><tt class="xref py py-meth docutils literal"><span class="pre">Create()</span></tt></a>:</p>
+<div class="highlight-python"><pre>class MyModule:
+
+     def Create(self, connection, modulename, databasename, tablename, *args):
+         # do lots of hard work
+
+     Connect=Create</pre>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.VTModule.Create">
+<tt class="descclassname">VTModule.</tt><tt class="descname">Create</tt><big>(</big><em>connection</em>, <em>modulename</em>, <em>databasename</em>, <em>tablename</em>, <em>*args</em><big>)</big> &rarr; [ sql string, table object ]<a class="headerlink" href="#apsw.VTModule.Create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when a table is first created on a <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><tt class="xref py py-class docutils literal"><span class="pre">connection</span></tt></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>connection</strong> &#8211; An instance of <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a></li>
+<li><strong>modulename</strong> &#8211; The string name under which the module was <a class="reference internal" href="connection.html#apsw.Connection.createmodule" title="apsw.Connection.createmodule"><tt class="xref py py-meth docutils literal"><span class="pre">registered</span></tt></a></li>
+<li><strong>databasename</strong> &#8211; The name of the database.  This will be <tt class="docutils literal"><span class="pre">main</span></tt> for directly opened files and the name specified in
+<a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a> statements.</li>
+<li><strong>tablename</strong> &#8211; Name of the table the user wants to create.</li>
+<li><strong>args</strong> &#8211; Any arguments that were specified in the <a class="reference external" href="https://sqlite.org/lang_createvtab.html">create virtual table</a> statement.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A list of two items.  The first is a SQL <a class="reference external" href="https://sqlite.org/lang_createtable.html">create table</a> statement.  The
+columns are parsed so that SQLite knows what columns and declared types exist for the table.  The second item
+is an object that implements the <a class="reference internal" href="#apsw.VTTable" title="apsw.VTTable"><tt class="xref py py-class docutils literal"><span class="pre">table</span></tt></a> methods.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The corresponding call is <a class="reference internal" href="#apsw.VTTable.Destroy" title="apsw.VTTable.Destroy"><tt class="xref py py-meth docutils literal"><span class="pre">VTTable.Destroy()</span></tt></a>.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="vttable-class">
+<h2>VTTable class<a class="headerlink" href="#vttable-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="apsw.VTTable">
+<em class="property">class </em><tt class="descname">VTTable</tt><a class="headerlink" href="#apsw.VTTable" title="Permalink to this definition">¶</a></dt>
+<dd><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">There is no actual <em>VTTable</em> class - it is just shown this way for
+documentation convenience.  Your table instance should implement
+the methods documented here.</p>
+</div>
+<p>The <a class="reference internal" href="#apsw.VTTable" title="apsw.VTTable"><tt class="xref py py-class docutils literal"><span class="pre">VTTable</span></tt></a> object contains knowledge of the indices, makes
+cursors and can perform transactions.</p>
+<p id="vtablestructure">A virtual table is structured as a series of rows, each of which has
+the same columns.  The value in a column must be one of the <a class="reference external" href="https://sqlite.org/datatype3.html">5
+supported types</a>, but the
+type can be different between rows for the same column.  The virtual
+table routines identify the columns by number, starting at zero.</p>
+<p>Each row has a <strong>unique</strong> 64 bit integer <a class="reference external" href="https://sqlite.org/autoinc.html">rowid</a> with the <a class="reference internal" href="#apsw.VTCursor" title="apsw.VTCursor"><tt class="xref py py-class docutils literal"><span class="pre">Cursor</span></tt></a> routines operating on this number, as well as some of
+the <a class="reference internal" href="#apsw.VTTable" title="apsw.VTTable"><tt class="xref py py-class docutils literal"><span class="pre">Table</span></tt></a> routines such as <a class="reference internal" href="#apsw.VTTable.UpdateChangeRow" title="apsw.VTTable.UpdateChangeRow"><tt class="xref py py-meth docutils literal"><span class="pre">UpdateChangeRow</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.VTTable.Begin">
+<tt class="descclassname">VTTable.</tt><tt class="descname">Begin</tt><big>(</big><big>)</big><a class="headerlink" href="#apsw.VTTable.Begin" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function is used as part of transactions.  You do not have to
+provide the method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.VTTable.BestIndex">
+<tt class="descclassname">VTTable.</tt><tt class="descname">BestIndex</tt><big>(</big><em>constraints</em>, <em>orderbys</em><big>)</big><a class="headerlink" href="#apsw.VTTable.BestIndex" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is a complex method. To get going initially, just return
+<tt class="xref py py-const docutils literal"><span class="pre">None</span></tt> and you will be fine. Implementing this method reduces
+the number of rows scanned in your table to satisfy queries, but
+only if you have an index or index like mechanism available.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The implementation of this method differs slightly from the
+<a class="reference external" href="https://sqlite.org/vtab.html">SQLite documentation</a>
+for the C API. You are not passed &#8220;unusable&#8221; constraints. The
+argv/constraintarg positions are not off by one. In the C api, you
+have to return position 1 to get something passed to
+<a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><tt class="xref py py-meth docutils literal"><span class="pre">VTCursor.Filter()</span></tt></a> in position 0. With the APSW
+implementation, you return position 0 to get Filter arg 0,
+position 1 to get Filter arg 1 etc.</p>
+</div>
+<p>The purpose of this method is to ask if you have the ability to
+determine if a row meets certain constraints that doesn&#8217;t involve
+visiting every row. An example constraint is <tt class="docutils literal"><span class="pre">price</span> <span class="pre">&gt;</span> <span class="pre">74.99</span></tt>. In a
+traditional SQL database, queries with constraints can be speeded up
+<a class="reference external" href="https://sqlite.org/lang_createindex.html">with indices</a>. If
+you return None, then SQLite will visit every row in your table and
+evaluate the constraint itself. Your index choice returned from
+BestIndex will also be passed to the <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><tt class="xref py py-meth docutils literal"><span class="pre">Filter()</span></tt></a> method on your cursor
+object. Note that SQLite may call this method multiple times trying
+to find the most efficient way of answering a complex query.</p>
+<p><strong>constraints</strong></p>
+<p>You will be passed the contraints as a sequence of tuples containing two
+items. The first item is the column number and the second item is
+the operation.</p>
+<blockquote>
+<div><p>Example query: <tt class="docutils literal"><span class="pre">select</span> <span class="pre">*</span> <span class="pre">from</span> <span class="pre">foo</span> <span class="pre">where</span> <span class="pre">price</span> <span class="pre">&gt;</span> <span class="pre">74.99</span> <span class="pre">and</span>
+<span class="pre">quantity&lt;=10</span> <span class="pre">and</span> <span class="pre">customer='Acme</span> <span class="pre">Widgets'</span></tt></p>
+<p>If customer is column 0, price column 2 and quantity column 5
+then the constraints will be:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_GT</span><span class="p">),</span>
+<span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_LE</span><span class="p">),</span>
+<span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_EQ</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that you do not get the value of the constraint (ie &#8220;Acme
+Widgets&#8221;, 74.99 and 10 in this example).</p>
+</div></blockquote>
+<p>If you do have any suitable indices then you return a sequence the
+same length as constraints with the members mapping to the
+constraints in order. Each can be one of None, an integer or a tuple
+of an integer and a boolean.  Conceptually SQLite is giving you a
+list of constraints and you are returning a list of the same length
+describing how you could satisfy each one.</p>
+<p>Each list item returned corresponding to a constraint is one of:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>None</dt>
+<dd>This means you have no index for that constraint. SQLite
+will have to iterate over every row for it.</dd>
+<dt>integer</dt>
+<dd>This is the argument number for the constraintargs being passed
+into the <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><tt class="xref py py-meth docutils literal"><span class="pre">Filter()</span></tt></a> function of your
+<a class="reference internal" href="#apsw.VTCursor" title="apsw.VTCursor"><tt class="xref py py-class docutils literal"><span class="pre">cursor</span></tt></a> (the values &#8220;Acme Widgets&#8221;, 74.99
+and 10 in the example).</dd>
+<dt>(integer, boolean)</dt>
+<dd>By default SQLite will check what you return. For example if
+you said that you had an index on price, SQLite will still
+check that each row you returned is greater than 74.99. If you
+set the boolean to False then SQLite won&#8217;t do that double
+checking.</dd>
+</dl>
+</div></blockquote>
+<p>Example query: <tt class="docutils literal"><span class="pre">select</span> <span class="pre">*</span> <span class="pre">from</span> <span class="pre">foo</span> <span class="pre">where</span> <span class="pre">price</span> <span class="pre">&gt;</span> <span class="pre">74.99</span> <span class="pre">and</span>
+<span class="pre">quantity&lt;=10</span> <span class="pre">and</span> <span class="pre">customer=='Acme</span> <span class="pre">Widgets'</span></tt>.  customer is column 0,
+price column 2 and quantity column 5.  You can index on customer
+equality and price.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="56%" />
+<col width="44%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Constraints (in)</th>
+<th class="head">Constraints used (out)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><div class="first last highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_GT</span><span class="p">),</span>
+<span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_LE</span><span class="p">),</span>
+<span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_EQ</span><span class="p">)</span>
+</pre></div>
+</div>
+</td>
+<td><div class="first last highlight-python"><div class="highlight"><pre><span class="mi">1</span><span class="p">,</span>
+<span class="bp">None</span><span class="p">,</span>
+<span class="mi">0</span>
+</pre></div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<p>When your <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><tt class="xref py py-class docutils literal"><span class="pre">Filter</span></tt></a> method in the cursor is called,
+constraintarg[0] will be &#8220;Acme Widgets&#8221; (customer constraint value)
+and constraintarg[1] will be 74.99 (price constraint value). You can
+also return an index number (integer) and index string to use
+(SQLite attaches no significance to these values - they are passed
+as is to your <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><tt class="xref py py-meth docutils literal"><span class="pre">VTCursor.Filter()</span></tt></a> method as a way for the
+BestIndex method to let the <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><tt class="xref py py-meth docutils literal"><span class="pre">Filter()</span></tt></a> method know
+which of your indices or similar mechanism to use.</p>
+<p><strong>orderbys</strong></p>
+<p>The second argument to BestIndex is a sequence of orderbys because
+the query requested the results in a certain order. If your data is
+already in that order then SQLite can give the results back as
+is. If not, then SQLite will have to sort the results first.</p>
+<blockquote>
+<div><p>Example query: <tt class="docutils literal"><span class="pre">select</span> <span class="pre">*</span> <span class="pre">from</span> <span class="pre">foo</span> <span class="pre">order</span> <span class="pre">by</span> <span class="pre">price</span> <span class="pre">desc,</span> <span class="pre">quantity</span> <span class="pre">asc</span></tt></p>
+<p>Price is column 2, quantity column 5 so orderbys will be:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>  <span class="c"># True means descending, False is ascending</span>
+<span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p><strong>Return</strong></p>
+<p>You should return up to 5 items. Items not present in the return have a default value.</p>
+<dl class="docutils">
+<dt>0: constraints used (default None)</dt>
+<dd>This must either be None or a sequence the same length as
+constraints passed in. Each item should be as specified above
+saying if that constraint is used, and if so which constraintarg
+to make the value be in your <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><tt class="xref py py-meth docutils literal"><span class="pre">VTCursor.Filter()</span></tt></a> function.</dd>
+<dt>1: index number (default zero)</dt>
+<dd>This value is passed as is to <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><tt class="xref py py-meth docutils literal"><span class="pre">VTCursor.Filter()</span></tt></a></dd>
+<dt>2: index string (default None)</dt>
+<dd>This value is passed as is to <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><tt class="xref py py-meth docutils literal"><span class="pre">VTCursor.Filter()</span></tt></a></dd>
+<dt>3: orderby consumed (default False)</dt>
+<dd>Return True if your output will be in exactly the same order as the orderbys passed in</dd>
+<dt>4: estimated cost (default a huge number)</dt>
+<dd>Approximately how many disk operations are needed to provide the
+results. SQLite uses the cost to optimise queries. For example if
+the query includes <em>A or B</em> and A has 2,000 operations and B has 100
+then it is best to evaluate B before A.</dd>
+</dl>
+<p><strong>A complete example</strong></p>
+<p>Query is <tt class="docutils literal"><span class="pre">select</span> <span class="pre">*</span> <span class="pre">from</span> <span class="pre">foo</span> <span class="pre">where</span> <span class="pre">price&gt;74.99</span> <span class="pre">and</span> <span class="pre">quantity&lt;=10</span> <span class="pre">and</span>
+<span class="pre">customer==&quot;Acme</span> <span class="pre">Widgets&quot;</span> <span class="pre">order</span> <span class="pre">by</span> <span class="pre">price</span> <span class="pre">desc,</span> <span class="pre">quantity</span> <span class="pre">asc</span></tt>.
+Customer is column 0, price column 2 and quantity column 5. You can
+index on customer equality and price.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">BestIndex</span><span class="p">(</span><span class="n">constraints</span><span class="p">,</span> <span class="n">orderbys</span><span class="p">)</span>
+
+<span class="n">constraints</span><span class="o">=</span> <span class="p">(</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_GT</span><span class="p">),</span>
+               <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_LE</span><span class="p">),</span>
+               <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_EQ</span><span class="p">)</span>  <span class="p">)</span>
+
+<span class="n">orderbys</span><span class="o">=</span> <span class="p">(</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span> <span class="p">)</span>
+
+<span class="c"># You return</span>
+
+<span class="p">(</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>   <span class="c"># constraints used</span>
+  <span class="mi">27</span><span class="p">,</span>             <span class="c"># index number</span>
+  <span class="s">&quot;idx_pr_cust&quot;</span><span class="p">,</span>  <span class="c"># index name</span>
+  <span class="bp">False</span><span class="p">,</span>          <span class="c"># results are not in orderbys order</span>
+  <span class="mi">1000</span>            <span class="c"># about 1000 disk operations to access index</span>
+<span class="p">)</span>
+
+<span class="c"># Your Cursor.Filter method will be called with:</span>
+
+<span class="mi">27</span><span class="p">,</span>              <span class="c"># index number you returned</span>
+<span class="s">&quot;idx_pr_cust&quot;</span><span class="p">,</span>   <span class="c"># index name you returned</span>
+<span class="s">&quot;Acme Widgets&quot;</span><span class="p">,</span>  <span class="c"># constraintarg[0] - customer</span>
+<span class="mf">74.99</span>            <span class="c"># constraintarg[1] - price</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.VTTable.Commit">
+<tt class="descclassname">VTTable.</tt><tt class="descname">Commit</tt><big>(</big><big>)</big><a class="headerlink" href="#apsw.VTTable.Commit" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function is used as part of transactions.  You do not have to
+provide the method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.VTTable.Destroy">
+<tt class="descclassname">VTTable.</tt><tt class="descname">Destroy</tt><big>(</big><big>)</big><a class="headerlink" href="#apsw.VTTable.Destroy" title="Permalink to this definition">¶</a></dt>
+<dd><p>The opposite of <a class="reference internal" href="#apsw.VTModule.Create" title="apsw.VTModule.Create"><tt class="xref py py-meth docutils literal"><span class="pre">VTModule.Create()</span></tt></a>.  This method is called when
+the table is no longer used.  Note that you must always release
+resources even if you intend to return an error, as it will not be
+called again on error.  SQLite may also <a class="reference external" href="https://sqlite.org/cvstrac/tktview?tn=2099">leak memory</a> if you return an error.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.VTTable.Disconnect">
+<tt class="descclassname">VTTable.</tt><tt class="descname">Disconnect</tt><big>(</big><big>)</big><a class="headerlink" href="#apsw.VTTable.Disconnect" title="Permalink to this definition">¶</a></dt>
+<dd><p>The opposite of <a class="reference internal" href="#apsw.VTModule.Connect" title="apsw.VTModule.Connect"><tt class="xref py py-meth docutils literal"><span class="pre">VTModule.Connect()</span></tt></a>.  This method is called when
+a reference to a virtual table is no longer used, but <a class="reference internal" href="#apsw.VTTable.Destroy" title="apsw.VTTable.Destroy"><tt class="xref py py-meth docutils literal"><span class="pre">VTTable.Destroy()</span></tt></a> will
+be called when the table is no longer used.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.VTTable.FindFunction">
+<tt class="descclassname">VTTable.</tt><tt class="descname">FindFunction</tt><big>(</big><em>name</em>, <em>nargs</em><big>)</big><a class="headerlink" href="#apsw.VTTable.FindFunction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called to find if the virtual table has its own implementation of a
+particular scalar function. You should return the function if you
+have it, else return None. You do not have to provide this method.</p>
+<p>This method is called while SQLite is <a class="reference external" href="https://sqlite.org/c3ref/prepare.html">preparing</a> a query.  If a query is
+in the <a class="reference internal" href="execution.html#statementcache"><em>statement cache</em></a> then <em>FindFunction</em>
+won&#8217;t be called again.  If you want to return different
+implementations for the same function over time then you will need
+to disable the <a class="reference internal" href="execution.html#statementcache"><em>statement cache</em></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> &#8211; The function name</li>
+<li><strong>nargs</strong> &#8211; How many arguments the function takes</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference internal" href="connection.html#apsw.Connection.overloadfunction" title="apsw.Connection.overloadfunction"><tt class="xref py py-meth docutils literal"><span class="pre">Connection.overloadfunction()</span></tt></a></li>
+</ul>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.VTTable.Open">
+<tt class="descclassname">VTTable.</tt><tt class="descname">Open</tt><big>(</big><big>)</big><a class="headerlink" href="#apsw.VTTable.Open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a <a class="reference internal" href="#apsw.VTCursor" title="apsw.VTCursor"><tt class="xref py py-class docutils literal"><span class="pre">cursor</span></tt></a> object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.VTTable.Rename">
+<tt class="descclassname">VTTable.</tt><tt class="descname">Rename</tt><big>(</big><em>newname</em><big>)</big><a class="headerlink" href="#apsw.VTTable.Rename" title="Permalink to this definition">¶</a></dt>
+<dd><p>Notification that the table will be given a new name. If you return
+without raising an exception, then SQLite renames the table (you
+don&#8217;t have to do anything). If you raise an exception then the
+renaming is prevented.  You do not have to provide this method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.VTTable.Rollback">
+<tt class="descclassname">VTTable.</tt><tt class="descname">Rollback</tt><big>(</big><big>)</big><a class="headerlink" href="#apsw.VTTable.Rollback" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function is used as part of transactions.  You do not have to
+provide the method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.VTTable.Sync">
+<tt class="descclassname">VTTable.</tt><tt class="descname">Sync</tt><big>(</big><big>)</big><a class="headerlink" href="#apsw.VTTable.Sync" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function is used as part of transactions.  You do not have to
+provide the method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.VTTable.UpdateChangeRow">
+<tt class="descclassname">VTTable.</tt><tt class="descname">UpdateChangeRow</tt><big>(</big><em>row</em>, <em>newrowid</em>, <em>fields</em><big>)</big><a class="headerlink" href="#apsw.VTTable.UpdateChangeRow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change an existing row.  You may also need to change the rowid - for example if the query was
+<tt class="docutils literal"><span class="pre">UPDATE</span> <span class="pre">table</span> <span class="pre">SET</span> <span class="pre">rowid=rowid+100</span> <span class="pre">WHERE</span> <span class="pre">...</span></tt></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>row</strong> &#8211; The existing 64 bit integer rowid</li>
+<li><strong>newrowid</strong> &#8211; If not the same as <em>row</em> then also change the rowid to this.</li>
+<li><strong>fields</strong> &#8211; A tuple of values the same length and order as columns in your table</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.VTTable.UpdateDeleteRow">
+<tt class="descclassname">VTTable.</tt><tt class="descname">UpdateDeleteRow</tt><big>(</big><em>rowid</em><big>)</big><a class="headerlink" href="#apsw.VTTable.UpdateDeleteRow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete the row with the specified <em>rowid</em>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rowid</strong> &#8211; 64 bit integer</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.VTTable.UpdateInsertRow">
+<tt class="descclassname">VTTable.</tt><tt class="descname">UpdateInsertRow</tt><big>(</big><em>rowid</em>, <em>fields</em><big>)</big> &rarr; newrowid<a class="headerlink" href="#apsw.VTTable.UpdateInsertRow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert a row with the specified <em>rowid</em>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>rowid</strong> &#8211; <tt class="xref py py-const docutils literal"><span class="pre">None</span></tt> if you should choose the rowid yourself, else a 64 bit integer</li>
+<li><strong>fields</strong> &#8211; A tuple of values the same length and order as columns in your table</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">If <em>rowid</em> was <tt class="xref py py-const docutils literal"><span class="pre">None</span></tt> then return the id you assigned
+to the row.  If <em>rowid</em> was not <tt class="xref py py-const docutils literal"><span class="pre">None</span></tt> then the return value
+is ignored.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="vtcursor-class">
+<h2>VTCursor class<a class="headerlink" href="#vtcursor-class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="apsw.VTCursor">
+<em class="property">class </em><tt class="descname">VTCursor</tt><a class="headerlink" href="#apsw.VTCursor" title="Permalink to this definition">¶</a></dt>
+<dd><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<blockquote>
+<div>There is no actual <em>VTCursor</em> class - it is just shown this
+way for documentation convenience.  Your cursor instance should
+implement all the methods documented here.</div></blockquote>
+<p>The <a class="reference internal" href="#apsw.VTCursor" title="apsw.VTCursor"><tt class="xref py py-class docutils literal"><span class="pre">VTCursor</span></tt></a> object is used for iterating over a table.
+There may be many cursors simultaneously so each one needs to keep
+track of where it is.</p>
+<div class="admonition-see-also last admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="#vtablestructure"><em>Virtual table structure</em></a></p>
+</div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.VTCursor.Close">
+<tt class="descclassname">VTCursor.</tt><tt class="descname">Close</tt><big>(</big><big>)</big><a class="headerlink" href="#apsw.VTCursor.Close" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the destructor for the cursor. Note that you must
+cleanup. The method will not be called again if you raise an
+exception.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.VTCursor.Column">
+<tt class="descclassname">VTCursor.</tt><tt class="descname">Column</tt><big>(</big><em>number</em><big>)</big><a class="headerlink" href="#apsw.VTCursor.Column" title="Permalink to this definition">¶</a></dt>
+<dd><p>Requests the value of the specified column <em>number</em> of the current
+row.  If <em>number</em> is -1 then return the rowid.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Must be one one of the <a class="reference internal" href="types.html#types"><em>5
+supported types</em></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.VTCursor.Eof">
+<tt class="descclassname">VTCursor.</tt><tt class="descname">Eof</tt><big>(</big><big>)</big> &rarr; bool<a class="headerlink" href="#apsw.VTCursor.Eof" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called to ask if we are at the end of the table. It is called after each call to Filter and Next.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">False if the cursor is at a valid row of data, else True</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This method can only return True or False to SQLite.  If you have
+an exception in the method or provide a non-boolean return then
+True (no more data) will be returned to SQLite.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.VTCursor.Filter">
+<tt class="descclassname">VTCursor.</tt><tt class="descname">Filter</tt><big>(</big><em>indexnum</em>, <em>indexname</em>, <em>constraintargs</em><big>)</big><a class="headerlink" href="#apsw.VTCursor.Filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method is always called first to initialize an iteration to the
+first row of the table. The arguments come from the
+<a class="reference internal" href="#apsw.VTTable.BestIndex" title="apsw.VTTable.BestIndex"><tt class="xref py py-meth docutils literal"><span class="pre">BestIndex()</span></tt></a> method in the <a class="reference internal" href="#apsw.VTTable" title="apsw.VTTable"><tt class="xref py py-class docutils literal"><span class="pre">table</span></tt></a>
+object with constraintargs being a tuple of the constraints you
+requested. If you always return None in BestIndex then indexnum will
+be zero, indexstring will be None and constraintargs will be empty).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.VTCursor.Next">
+<tt class="descclassname">VTCursor.</tt><tt class="descname">Next</tt><big>(</big><big>)</big><a class="headerlink" href="#apsw.VTCursor.Next" title="Permalink to this definition">¶</a></dt>
+<dd><p>Move the cursor to the next row.  Do not have an exception if there
+is no next row.  Instead return False when <a class="reference internal" href="#apsw.VTCursor.Eof" title="apsw.VTCursor.Eof"><tt class="xref py py-meth docutils literal"><span class="pre">Eof()</span></tt></a> is
+subsequently called.</p>
+<p>If you said you had indices in your <a class="reference internal" href="#apsw.VTTable.BestIndex" title="apsw.VTTable.BestIndex"><tt class="xref py py-meth docutils literal"><span class="pre">VTTable.BestIndex()</span></tt></a>
+return, and they were selected for use as provided in the parameters
+to <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><tt class="xref py py-meth docutils literal"><span class="pre">Filter()</span></tt></a> then you should move to the next
+appropriate indexed and constrained row.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="apsw.VTCursor.Rowid">
+<tt class="descclassname">VTCursor.</tt><tt class="descname">Rowid</tt><big>(</big><big>)</big> &rarr; 64 bit integer<a class="headerlink" href="#apsw.VTCursor.Rowid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the current rowid.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="troubleshooting-virtual-tables">
+<h2>Troubleshooting virtual tables<a class="headerlink" href="#troubleshooting-virtual-tables" title="Permalink to this headline">¶</a></h2>
+<p>Virtual Tables are a relatively recent addition to SQLite and haven&#8217;t
+been widely used yet. They do work well if all your routines work
+perfectly.</p>
+<p>A big help is using the local variables recipe as described in
+<a class="reference internal" href="exceptions.html#augmentedstacktraces"><em>augmented stack traces</em></a> which will give
+you more details in errors, and shows an example with the complex
+<a class="reference internal" href="#apsw.VTTable.BestIndex" title="apsw.VTTable.BestIndex"><tt class="xref py py-meth docutils literal"><span class="pre">BestIndex()</span></tt></a> function.</p>
+<p>You may also find errors compounding. For
+example if you have an error in the Filter method of a cursor, SQLite
+then closes the cursor. If you also return an error in the Close
+method then the first error may mask the second or vice versa.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">SQLite may ignore responses from your methods if they don&#8217;t make
+sense. For example in BestIndex, if you set multiple arguments to
+have the same constraintargs position then your Filter won&#8217;t
+receive any constraintargs at all.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Virtual Tables</a><ul>
+<li><a class="reference internal" href="#vtmodule-class">VTModule class</a></li>
+<li><a class="reference internal" href="#vttable-class">VTTable class</a></li>
+<li><a class="reference internal" href="#vtcursor-class">VTCursor class</a></li>
+<li><a class="reference internal" href="#troubleshooting-virtual-tables">Troubleshooting virtual tables</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="backup.html"
+                        title="previous chapter">Backup</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="vfs.html"
+                        title="next chapter">Virtual File System (VFS)</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/vtable.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="vfs.html" title="Virtual File System (VFS)"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="backup.html" title="Backup"
+             >previous</a> |</li>
+        <li><a href="index.html">APSW 3.8.2-r1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; <a href="copyright.html">Copyright</a> 2004-2013, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Dec 28, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+<div class="footer">This page uses <a href="http://analytics.google.com/">
+Google Analytics</a> to collect statistics. You can disable it by blocking
+the JavaScript coming from www.google-analytics.com.
+<script type="text/javascript">
+  (function() {
+    var ga = document.createElement('script');
+    ga.src = ('https:' == document.location.protocol ?
+              'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    ga.setAttribute('async', 'true');
+    document.documentElement.firstChild.appendChild(ga);
+  })();
+</script>
+</div>
+
+  </body>
+</html>

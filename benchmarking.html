@@ -1,0 +1,243 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Benchmarking &mdash; APSW 3.8.2-r1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '3.8.2-r1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="copyright.html" />
+    <link rel="top" title="APSW 3.8.2-r1 documentation" href="index.html" />
+    <link rel="next" title="Copyright and License" href="copyright.html" />
+    <link rel="prev" title="pysqlite differences" href="pysqlite.html" />
+ 
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-26815066-1']);
+  _gaq.push(['_trackPageview']);
+</script>
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="copyright.html" title="Copyright and License"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pysqlite.html" title="pysqlite differences"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">APSW 3.8.2-r1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="benchmarking">
+<span id="id1"></span><h1>Benchmarking<a class="headerlink" href="#benchmarking" title="Permalink to this headline">¶</a></h1>
+<p>Before you do any benchmarking with APSW or other ways of accessing
+SQLite, you must understand how and when SQLite does transactions. See
+<a class="reference external" href="https://sqlite.org/lockingv3.html#transaction_control">transaction control</a>.  <strong>APSW does
+not alter SQLite&#8217;s behaviour with transactions.</strong></p>
+<p>Some access layers try to interpret your SQL and manage transactions
+behind your back, which may or may not work well with SQLite also
+doing its own transactions. You should always manage your transactions
+yourself.  For example to insert 1,000 rows wrap it in a single
+transaction else you will have 1,000 transactions. The best clue that
+you have one transaction per statement is having a maximum of 60
+statements per second. You need two drive rotations to do a
+transaction - the data has to be committed to the main file and the
+journal - and 7200 RPM drives do 120 rotations a second. On the other
+hand if you don&#8217;t put in the transaction boundaries yourself and get
+more than 60 statements a second, then your access mechanism is
+silently starting transactions for you. This topic also comes up
+fairly frequently in the SQLite mailing list archives.</p>
+<div class="section" id="speedtest">
+<span id="id2"></span><h2>speedtest<a class="headerlink" href="#speedtest" title="Permalink to this headline">¶</a></h2>
+<p>APSW includes a speed testing script as part of the <a class="reference internal" href="download.html#source-and-binaries"><em>source
+distribution</em></a>.  You can use the script to
+compare SQLite performance across different versions of SQLite,
+different host systems (hard drives and controllers matter) as well as
+between pysqlite and APSW.  The underlying queries are based on
+<a class="reference external" href="https://sqlite.org/src/finfo?name=tool/mkspeedsql.tcl">SQLite&#8217;s speed test</a>.</p>
+<div class="highlight-text"><div class="highlight"><pre>$ python speedtest.py --help
+Usage: speedtest.py [options]
+
+Options:
+  -h, --help           show this help message and exit
+  --apsw               Include apsw in testing (False)
+  --pysqlite           Include pysqlite in testing (False)
+  --correctness        Do a correctness test
+  --scale=SCALE        How many statements to execute.  Each unit takes about
+                       2 seconds per test on memory only databases. [Default
+                       10]
+  --database=DATABASE  The database file to use [Default :memory:]
+  --tests=TESTS        What tests to run [Default
+                       bigstmt,statements,statements_nobindings]
+  --iterations=N       How many times to run the tests [Default 4]
+  --tests-detail       Print details of what the tests do.  (Does not run the
+                       tests)
+  --dump-sql=FILENAME  Name of file to dump SQL to.  This is useful for
+                       feeding into the SQLite command line shell.
+  --sc-size=N          Size of the statement cache. APSW will disable cache
+                       with value of zero.  Pysqlite ensures a minimum of 5
+                       [Default 100]
+  --unicode=UNICODE    Percentage of text that is unicode characters [Default
+                       0]
+  --data-size=SIZE     Maximum size in characters of data items - keep this
+                       number small unless you are on 64 bits and have lots of
+                       memory with a small scale - you can easily consume
+                       multiple gigabytes [Default same as original TCL
+                       speedtest]
+
+
+$ python speedtest.py --tests-detail
+bigstmt:
+
+  Supplies the SQL as a single string consisting of multiple
+  statements.  apsw handles this normally via cursor.execute while
+  pysqlite requires that cursor.executescript is called.  The string
+  will be several kilobytes and with a factor of 50 will be in the
+  megabyte range.  This is the kind of query you would run if you were
+  restoring a database from a dump.  (Note that pysqlite silently
+  ignores returned data which also makes it execute faster).
+
+statements:
+
+  Runs the SQL queries but uses bindings (? parameters). eg::
+
+    for i in range(3):
+       cursor.execute(&quot;insert into table foo values(?)&quot;, (i,))
+
+  This test has many hits of the statement cache.
+
+statements_nobindings:
+
+  Runs the SQL queries but doesn&#39;t use bindings. eg::
+
+    cursor.execute(&quot;insert into table foo values(0)&quot;)
+    cursor.execute(&quot;insert into table foo values(1)&quot;)
+    cursor.execute(&quot;insert into table foo values(2)&quot;)
+
+  This test has no statement cache hits and shows the overhead of
+       having a statement cache.
+
+  In theory all the tests above should run in almost identical time
+  as well as when using the SQLite command line shell.  This tool
+  shows you what happens in practise.
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Benchmarking</a><ul>
+<li><a class="reference internal" href="#speedtest">speedtest</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pysqlite.html"
+                        title="previous chapter">pysqlite differences</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="copyright.html"
+                        title="next chapter">Copyright and License</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/benchmarking.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="copyright.html" title="Copyright and License"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pysqlite.html" title="pysqlite differences"
+             >previous</a> |</li>
+        <li><a href="index.html">APSW 3.8.2-r1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; <a href="copyright.html">Copyright</a> 2004-2013, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Dec 28, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+<div class="footer">This page uses <a href="http://analytics.google.com/">
+Google Analytics</a> to collect statistics. You can disable it by blocking
+the JavaScript coming from www.google-analytics.com.
+<script type="text/javascript">
+  (function() {
+    var ga = document.createElement('script');
+    ga.src = ('https:' == document.location.protocol ?
+              'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    ga.setAttribute('async', 'true');
+    document.documentElement.firstChild.appendChild(ga);
+  })();
+</script>
+</div>
+
+  </body>
+</html>

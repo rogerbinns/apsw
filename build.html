@@ -1,0 +1,562 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Building &mdash; APSW 3.8.2-r1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '3.8.2-r1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="copyright.html" />
+    <link rel="top" title="APSW 3.8.2-r1 documentation" href="index.html" />
+    <link rel="next" title="Extensions" href="extensions.html" />
+    <link rel="prev" title="Download" href="download.html" />
+ 
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-26815066-1']);
+  _gaq.push(['_trackPageview']);
+</script>
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="extensions.html" title="Extensions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="download.html" title="Download"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">APSW 3.8.2-r1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="building">
+<span id="id1"></span><h1>Building<a class="headerlink" href="#building" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="setup-py">
+<h2>setup.py<a class="headerlink" href="#setup-py" title="Permalink to this headline">¶</a></h2>
+<p>Short story: You run <tt class="file docutils literal"><span class="pre">setup.py</span></tt> but you should ideally follow
+the <a class="reference internal" href="#recommended-build"><em>recommended way</em></a> which will also fetch
+needed components for you.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="46%" />
+<col width="54%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Command</th>
+<th class="head">Result</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><div class="first last line-block">
+<div class="line">python setup.py install test</div>
+</div>
+</td>
+<td>Compiles APSW with default Python compiler, installs it into Python
+site library directory and then runs the test suite.</td>
+</tr>
+<tr class="row-odd"><td><div class="first last line-block">
+<div class="line">python setup.py install <em class="xref std std-option">--user</em></div>
+</div>
+</td>
+<td>(Python 2.6+, 3). Compiles APSW with default Python
+compiler and installs it into a subdirectory of your home directory.
+See <span class="target" id="index-0"></span><a class="pep reference external" href="http://www.python.org/dev/peps/pep-0370"><strong>PEP 370</strong></a> for more details.</td>
+</tr>
+<tr class="row-even"><td><div class="first last line-block">
+<div class="line">python setup.py build <em class="xref std std-option">--compile=mingw32</em> install</div>
+</div>
+</td>
+<td>On Windows this will use the
+<a class="reference external" href="http://www.gnu.org/philosophy/free-sw.html">free</a>
+<a class="reference external" href="http://mingw.org">MinGW compiler</a> instead of the
+Microsoft compilers.</td>
+</tr>
+<tr class="row-odd"><td><div class="first last line-block">
+<div class="line">python setup.py build_ext <em class="xref std std-option">--force</em>
+<em class="xref std std-option">--inplace</em> test</div>
+</div>
+</td>
+<td>Compiles the extension but doesn&#8217;t install it. The resulting file
+will be in the current directory named apsw.so (Unix/Mac) or
+apsw.pyd (Windows). The test suite is then run. (Note on recent versions
+of CPython the extension filenames may be more complicated due to
+<span class="target" id="index-1"></span><a class="pep reference external" href="http://www.python.org/dev/peps/pep-3149"><strong>PEP 3149</strong></a>.)</td>
+</tr>
+<tr class="row-even"><td><div class="first last line-block">
+<div class="line">python setup.py build <em class="xref std std-option">--debug</em> install</div>
+</div>
+</td>
+<td>Compiles APSW with debug information.  This also turns on <a class="reference external" href="http://en.wikipedia.org/wiki/Assert.h">assertions</a>
+in APSW that double check the code assumptions.  If you are using the
+SQLite amalgamation then assertions are turned on in that too.  Note
+that this will considerably slow down APSW and SQLite.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="additional-setup-py-flags">
+<span id="setup-py-flags"></span><h2>Additional <tt class="file docutils literal"><span class="pre">setup.py</span></tt> flags<a class="headerlink" href="#additional-setup-py-flags" title="Permalink to this headline">¶</a></h2>
+<p>There are a number of APSW specific flags to commands you can specify.</p>
+<div class="section" id="fetch">
+<h3>fetch<a class="headerlink" href="#fetch" title="Permalink to this headline">¶</a></h3>
+<p><tt class="file docutils literal"><span class="pre">setup.py</span></tt> can automatically fetch SQLite and other optional
+components.  You can set the environment variable <tt class="xref py py-const docutils literal"><span class="pre">http_proxy</span></tt>
+to control proxy usage for the download. <strong>Note</strong> the files downloaded
+are modified from their originals to ensure various names do not
+clash, adjust them to the download platform and to graft them cleanly
+into the APSW module.  You should not commit them to source code
+control systems (download seperately if you need clean files).</p>
+<p>If any files are downloaded then the build step will automatically use
+them.  This still applies when you do later builds without
+re-fetching.</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">python setup.py fetch <em>options</em></div>
+</div>
+</div></blockquote>
+<table border="1" class="docutils">
+<colgroup>
+<col width="32%" />
+<col width="68%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">fetch flag</th>
+<th class="head">Result</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><div class="first last line-block">
+<div class="line"><em class="xref std std-option">--version=VERSION</em></div>
+</div>
+</td>
+<td><p class="first">By default the <a class="reference external" href="https://sqlite.org/download.html">SQLite download page</a> is
+consulted to find the current SQLite version
+which you can override using this flag.</p>
+<div class="last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You can also specify <cite>fossil</cite> as the version
+and the current development version from <a class="reference external" href="https://sqlite.org/src/timeline">SQLite&#8217;s source tracking system</a> will be used.  (The system is named
+<a class="reference external" href="http://www.fossil-scm.org">Fossil</a>.) Note that checksums can&#8217;t be checked
+for fossil. You will also need TCL and make installed for the amalgamation to
+build as well as several other common Unix tools.  (ie this is very unlikely to
+work on Windows.)</p>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="first last line-block">
+<div class="line"><em class="xref std std-option">--missing-checksum-ok</em></div>
+</div>
+</td>
+<td>Allows setup to continue if the <a class="reference internal" href="#fetch-checksums"><em>checksum</em></a> is missing.</td>
+</tr>
+<tr class="row-even"><td><div class="first last line-block">
+<div class="line"><em class="xref std std-option">--all</em></div>
+</div>
+</td>
+<td>Gets all components listed below.</td>
+</tr>
+<tr class="row-odd"><td><div class="first last line-block">
+<div class="line"><em class="xref std std-option">--sqlite</em></div>
+</div>
+</td>
+<td>Automatically downloads the <a class="reference external" href="https://sqlite.org/amalgamation.html">SQLite amalgamation</a>. The amalgamation is the
+preferred way to use SQLite as you have total control over what components are
+included or excluded (see below) and have no dependencies on any existing
+libraries on your developer or deployment machines. The amalgamation includes the
+fts3, rtree and icu extensions. On non-Windows platforms, any existing
+<tt class="file docutils literal"><span class="pre">sqlite3/</span></tt> directory will be erased and the downloaded code placed in a newly
+created <tt class="file docutils literal"><span class="pre">sqlite3/</span></tt> directory.</td>
+</tr>
+<tr class="row-even"><td><div class="first last line-block">
+<div class="line"><em class="xref std std-option">--asyncvfs</em></div>
+</div>
+</td>
+<td>Downloads the <a class="reference internal" href="extensions.html#ext-asyncvfs"><em>Asynchronous VFS</em></a></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note" id="fetch-checksums">
+<p class="first admonition-title">Note</p>
+<p>The SQLite downloads are not <a class="reference external" href="http://en.wikipedia.org/wiki/Digital_signature">digitally signed</a> which means you
+have no way of verifying they were produced by the SQLite team or
+were not modified between the SQLite servers and your computer.</p>
+<p>Consequently APSW ships with a <tt class="file docutils literal"><span class="pre">checksums</span></tt> <a class="reference external" href="https://code.google.com/p/apsw/source/browse/checksums">file</a> that
+includes checksums for the various SQLite downloads.  If the
+download does not match the checksum then it is rejected and an
+error occurs.</p>
+<p>The SQLite download page is not checksummed, so in theory a bad guy
+could modify it to point at a malicious download version instead.
+(setup only uses the page to determine the current version number -
+the SQLite download site URL is hard coded.)</p>
+<p class="last">If the URL is not listed in the checksums file then setup aborts.
+You can use <em class="xref std std-option">--missing-checksum-ok</em> to continue.  You are
+recommended instead to update the checksums file with the
+correct information.</p>
+</div>
+<div class="admonition note" id="fetch-configure">
+<p class="first admonition-title">Note</p>
+<p>(This note only applies to non-Windows platforms.)  By default the
+amalgamation will work on your platform.  It detects
+the operating system (and compiler if relevant) and uses the
+appropriate APIs.  However it then only uses the oldest known
+working APIs.  For example it will use the <em>sleep</em> system call.
+More recent APIs may exist but the amalgamation needs to be told
+they exist.  As an example <em>sleep</em> can only sleep in increments of
+one second while the <em>usleep</em> system call can sleep in increments of
+one microsecond. The default SQLite busy handler does small sleeps
+(eg 1/50th of a second) backing off as needed.  If <em>sleep</em> is used
+then those will all be a minimum of a second.  A second example is
+that the traditional APIs for getting time information are not
+re-entrant and cannot be used concurrently from multiple threads.
+Consequently SQLite has mutexes to ensure that concurrent calls do
+not happen.  However you can tell it you have more recent re-entrant
+versions of the calls and it won&#8217;t need to bother with the mutexes.</p>
+<p>After fetching the amalgamation, setup automatically determines what
+new APIs you have by running the <tt class="file docutils literal"><span class="pre">configure</span></tt> script that comes
+with SQLite and noting the output.  The information is placed in
+<tt class="file docutils literal"><span class="pre">sqlite3/sqlite3config.h</span></tt>.  The build stage will automatically
+take note of this as needed.</p>
+<p class="last">If you get the fossil version then the configure script does not
+work.  Instead the fetch will save and re-use any pre-existing
+<tt class="file docutils literal"><span class="pre">sqlite3/sqlite3config.h</span></tt>.</p>
+</div>
+</div>
+<div class="section" id="build-build-ext">
+<span id="setup-build-flags"></span><h3>build/build_ext<a class="headerlink" href="#build-build-ext" title="Permalink to this headline">¶</a></h3>
+<p>You can enable or omit certain functionality by specifying flags to
+the build and/or build_ext commands of <tt class="file docutils literal"><span class="pre">setup.py</span></tt>.</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">python setup.py build <em>options</em></div>
+</div>
+</div></blockquote>
+<p>Note that the options do not accumulate.  If you want to specify multiple enables or omits then you
+need to give the flag once and giving a comma seperated list.  For example:</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line">python setup.py build <em class="xref std std-option">--enable=fts3,fts3_parenthesis,rtree,icu</em></div>
+</div>
+</div></blockquote>
+<table border="1" class="docutils">
+<colgroup>
+<col width="32%" />
+<col width="68%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">build/build_ext flag</th>
+<th class="head">Result</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><div class="first last line-block">
+<div class="line"><em class="xref std std-option">--enable-all-extensions</em></div>
+</div>
+</td>
+<td>Enables the FTS3/4, RTree and ICU extensions (if <em>icu-config</em> is on your path).</td>
+</tr>
+<tr class="row-odd"><td><div class="first last line-block">
+<div class="line"><em class="xref std std-option">--enable=fts3</em></div>
+<div class="line"><em class="xref std std-option">--enable=fts4</em></div>
+</div>
+</td>
+<td>Enables the <a class="reference internal" href="extensions.html#ext-fts3"><em>full text search extension</em></a>.
+This flag only helps when using the amalgamation. If not using the
+amalgamation then you need to seperately ensure fts3/4 is enabled in the SQLite
+install. You are likely to want the <a class="reference external" href="https://sqlite.org/compile.html#enable_fts3_parenthesis">parenthesis option</a> on unless you have
+legacy code (<cite>&#8211;enable-all-extensions</cite> turns it on).</td>
+</tr>
+<tr class="row-even"><td><div class="first last line-block">
+<div class="line"><em class="xref std std-option">--enable=rtree</em></div>
+</div>
+</td>
+<td>Enables the <a class="reference internal" href="extensions.html#ext-rtree"><em>spatial table extension</em></a>.
+This flag only helps when using the amalgamation. If not using the
+amalgamation then you need to seperately ensure rtree is enabled in the SQLite
+install.</td>
+</tr>
+<tr class="row-odd"><td><div class="first last line-block">
+<div class="line"><em class="xref std std-option">--enable=icu</em></div>
+</div>
+</td>
+<td>Enables the <a class="reference internal" href="extensions.html#ext-icu"><em>International Components for Unicode extension</em></a>.
+Note that you must have the ICU libraries on your machine which setup will
+automatically try to find using <tt class="file docutils literal"><span class="pre">icu-config</span></tt>.
+This flag only helps when using the amalgamation. If not using the
+amalgamation then you need to seperately ensure ICU is enabled in the SQLite
+install.</td>
+</tr>
+<tr class="row-even"><td><div class="first last line-block">
+<div class="line"><em class="xref std std-option">--omit=ITEM</em></div>
+</div>
+</td>
+<td>Causes various functionality to be omitted. For example
+<em class="xref std std-option">--omit=load_extension</em> will omit code to do with loading extensions. If
+using the amalgamation then this will omit the functionality from APSW and
+SQLite, otherwise the functionality will only be omitted from APSW (ie the code
+will still be in SQLite, APSW just won&#8217;t call it). In almost all cases you will need
+to regenerate the SQLite source because the omits also alter the generated SQL
+parser. See <a class="reference external" href="https://sqlite.org/compile.html#omitfeatures">the relevant SQLite documentation</a>.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Extension loading is enabled by default when using the amalgamation
+and disabled when using existing libraries as this most closely
+matches current practise.  Use <em class="xref std std-option">--omit=load_extension</em> or
+<em class="xref std std-option">--enable=load_extension</em> to explicity disable/enable the
+extension loading code.</p>
+</div>
+</div>
+</div>
+<div class="section" id="finding-sqlite-3">
+<h2>Finding SQLite 3<a class="headerlink" href="#finding-sqlite-3" title="Permalink to this headline">¶</a></h2>
+<p>SQLite 3 is needed during the build process. If you specify
+<em class="xref std std-option">fetch --sqlite</em> to the <tt class="file docutils literal"><span class="pre">setup.py</span></tt> command line
+then it will automatically fetch the current version of the SQLite
+amalgamation. (The current version is determined by parsing the
+<a class="reference external" href="https://sqlite.org/download.html">SQLite download page</a>). You
+can manually specify the version, for example
+<em class="xref std std-option">fetch --sqlite --version=3.7.4</em>.</p>
+<p>These methods are tried in order:</p>
+<blockquote>
+<div><p><a class="reference external" href="https://sqlite.org/amalgamation.html">Amalgamation</a></p>
+<blockquote>
+<div>The file <tt class="file docutils literal"><span class="pre">sqlite3.c</span></tt> and then <tt class="file docutils literal"><span class="pre">sqlite3/sqlite3.c</span></tt> is
+looked for. The SQLite code is then statically compiled into the
+APSW extension and is invisible to the rest of the
+process. There are no runtime library dependencies on SQLite as
+a result.  When you use <em class="xref std std-option">fetch</em> this is where it places
+the downloaded amalgamation.</div></blockquote>
+<p>Local build</p>
+<blockquote>
+<div>The header <tt class="file docutils literal"><span class="pre">sqlite3/sqlite3.h</span></tt> and library <tt class="file docutils literal"><span class="pre">sqlite3/libsqlite3.</span><em><span class="pre">a,so,dll</span></em></tt> is looked for.</div></blockquote>
+<p>User directories</p>
+<blockquote>
+<div>If you are using Python 2.6+ or Python 3 and specified
+<em class="xref std std-option">--user</em> then your user directory is searched first. See
+<span class="target" id="index-2"></span><a class="pep reference external" href="http://www.python.org/dev/peps/pep-0370"><strong>PEP 370</strong></a> for more details.</div></blockquote>
+<p>System directories</p>
+<blockquote>
+<div>The default compiler include path (eg <tt class="file docutils literal"><span class="pre">/usr/include</span></tt>) and library path (eg <tt class="file docutils literal"><span class="pre">/usr/lib</span></tt>) are used.</div></blockquote>
+</div></blockquote>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you compiled SQLite with any OMIT flags (eg
+<tt class="xref py py-const docutils literal"><span class="pre">SQLITE_OMIT_LOAD_EXTENSION</span></tt>) then you must include them in
+the <tt class="file docutils literal"><span class="pre">setup.py</span></tt> command or file. For this example you could use
+<em class="xref std std-option">setup.py build --omit=load_extension</em> to add the same flags.</p>
+</div>
+</div>
+<div class="section" id="recommended">
+<span id="recommended-build"></span><h2>Recommended<a class="headerlink" href="#recommended" title="Permalink to this headline">¶</a></h2>
+<p>These instructions show how to build automatically downloading and
+using the amalgamation plus other <a class="reference internal" href="extensions.html#extensions"><em>Extensions</em></a>. Any existing SQLite on
+your system is ignored at build time and runtime. (Note that you can
+even use APSW in the same process as a different SQLite is used by
+other libraries - this happens a lot on Mac.) You should follow these
+instructions with your current directory being where you extracted the
+APSW source to.</p>
+<blockquote>
+<div><p>Windows:</p>
+<div class="highlight-python"><pre>  # Leave out --compile=mingw32 flag if using Microsoft compiler
+&gt; python setup.py fetch --all build --enable-all-extensions --compile=mingw32 install test</pre>
+</div>
+<p>Mac/Linux etc:</p>
+<div class="highlight-python"><pre>$ python setup.py fetch --all build --enable-all-extensions install test</pre>
+</div>
+</div></blockquote>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">There will be some warnings during the compilation step about
+sqlite3.c, <a class="reference external" href="https://sqlite.org/faq.html#q17">but they are harmless</a></p>
+</div>
+<p>The extension just turns into a single file apsw.so (Linux/Mac) or
+apsw.pyd (Windows). (More complicated name on Pythons implementing
+<span class="target" id="index-3"></span><a class="pep reference external" href="http://www.python.org/dev/peps/pep-3149"><strong>PEP 3149</strong></a>). You don&#8217;t need to install it and can drop it into any
+directory that is more convenient for you and that your code can
+reach. To just do the build and not install, leave out <em>install</em> from
+the lines above. (Use <em>build_ext &#8211;inplace</em> to have the extension put
+in the main directory.)</p>
+<p>The test suite will be run. It will print the APSW file used, APSW and
+SQLite versions and then run lots of tests all of which should pass.</p>
+</div>
+<div class="section" id="source-distribution-advanced">
+<h2>Source distribution (advanced)<a class="headerlink" href="#source-distribution-advanced" title="Permalink to this headline">¶</a></h2>
+<p>If you want to make a source distribution or a binary distribution
+that creates an intermediate source distribution such as <cite>bdist_rpm</cite>
+then you can have the SQLite amalgamation automatically included as
+part of it.  If you specify the fetch command as part of the same
+command line then everything fetched is included in the source
+distribution.  For example this will fetch all components, include
+them in the source distribution and build a rpm using those
+components:</p>
+<div class="highlight-python"><pre>$ python setup.py fetch --all bdist_rpm</pre>
+</div>
+</div>
+<div class="section" id="testing">
+<h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
+<p>SQLite itself is <a class="reference external" href="https://sqlite.org/testing.html">extensively tested</a>. It has considerably more code
+dedicated to testing than makes up the actual database functionality.</p>
+<p>APSW includes a <tt class="file docutils literal"><span class="pre">tests.py</span></tt> file which uses the standard Python
+testing modules to verify correct operation. New code is developed
+alongside the tests. Reported issues also have test cases to ensure
+the issue doesn&#8217;t happen or doesn&#8217;t happen again.:</p>
+<div class="highlight-python"><pre>$ python setup.py test
+               Python /usr/bin/python (2, 6, 6, 'final', 0)
+Testing with APSW file /space/apsw/apsw.so
+          APSW version 3.7.4-r1
+    SQLite lib version 3.7.4
+SQLite headers version 3007004
+    Using amalgamation True
+............................................................................
+----------------------------------------------------------------------
+Ran 76 tests in 404.557s
+
+OK</pre>
+</div>
+<p>The tests also ensure that as much APSW code as possible is executed
+including alternate paths through the code.  95.5% of the APSW code is
+executed by the tests. If you checkout the APSW source then there is
+an script <a class="reference external" href="https://code.google.com/p/apsw/source/browse/tools/coverage.sh">coverage.sh</a>
+that enables extra code that deliberately induces extra conditions
+such as memory allocation failures, SQLite returning undocumented
+error codes etc. That brings coverage up to 99.6% of the code.</p>
+<p>A memory checker <a class="reference external" href="http://valgrind.org">Valgrind</a> is used while
+running the test suite. The test suite is run 150 times to make any
+memory leaks or similar issues stand out. A checking version of Python
+is also used.  See <a class="reference external" href="https://code.google.com/p/apsw/source/browse/tools/valgrind.sh">valgrind.sh</a>
+in the source.</p>
+<p>To ensure compatibility with the various Python versions, a script
+downloads and compiles all supported Python versions in both 2 byte
+and 4 byte Unicode character configurations against the APSW and
+SQLite supported versions running the tests. See <a class="reference external" href="https://code.google.com/p/apsw/source/browse/tools/megatest.py">megatest.py</a>
+in the source.</p>
+<p>In short both SQLite and APSW have a lot of testing!</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Building</a><ul>
+<li><a class="reference internal" href="#setup-py">setup.py</a></li>
+<li><a class="reference internal" href="#additional-setup-py-flags">Additional <tt class="file docutils literal"><span class="pre">setup.py</span></tt> flags</a><ul>
+<li><a class="reference internal" href="#fetch">fetch</a></li>
+<li><a class="reference internal" href="#build-build-ext">build/build_ext</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#finding-sqlite-3">Finding SQLite 3</a></li>
+<li><a class="reference internal" href="#recommended">Recommended</a></li>
+<li><a class="reference internal" href="#source-distribution-advanced">Source distribution (advanced)</a></li>
+<li><a class="reference internal" href="#testing">Testing</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="download.html"
+                        title="previous chapter">Download</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="extensions.html"
+                        title="next chapter">Extensions</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/build.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="extensions.html" title="Extensions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="download.html" title="Download"
+             >previous</a> |</li>
+        <li><a href="index.html">APSW 3.8.2-r1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; <a href="copyright.html">Copyright</a> 2004-2013, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Dec 28, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+<div class="footer">This page uses <a href="http://analytics.google.com/">
+Google Analytics</a> to collect statistics. You can disable it by blocking
+the JavaScript coming from www.google-analytics.com.
+<script type="text/javascript">
+  (function() {
+    var ga = document.createElement('script');
+    ga.src = ('https:' == document.location.protocol ?
+              'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    ga.setAttribute('async', 'true');
+    document.documentElement.firstChild.appendChild(ga);
+  })();
+</script>
+</div>
+
+  </body>
+</html>

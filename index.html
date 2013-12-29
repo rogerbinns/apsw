@@ -1,0 +1,357 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>APSW documentation &mdash; APSW 3.8.2-r1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '3.8.2-r1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="copyright.html" />
+    <link rel="top" title="APSW 3.8.2-r1 documentation" href="#" />
+    <link rel="next" title="Tips" href="tips.html" />
+ 
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-26815066-1']);
+  _gaq.push(['_trackPageview']);
+</script>
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tips.html" title="Tips"
+             accesskey="N">next</a> |</li>
+        <li><a href="#">APSW 3.8.2-r1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="apsw-documentation">
+<h1>APSW documentation<a class="headerlink" href="#apsw-documentation" title="Permalink to this headline">¶</a></h1>
+<p class="centered">
+<strong>APSW 3.8.2-r1 released 8 December 2013</strong></p><p>Use with SQLite 3.8.1 or later, CPython 2.3 or later including CPython
+3.</p>
+<p>APSW provides an SQLite 3 wrapper that provides the thinnest layer
+over the <a class="reference external" href="https://sqlite.org">SQLite</a> database library
+possible. Everything you can do from the <a class="reference external" href="https://sqlite.org/c3ref/intro.html">SQLite C API</a>, you can do from
+Python. Although APSW looks vaguely similar to the <span class="target" id="index-0"></span><a class="pep reference external" href="http://www.python.org/dev/peps/pep-0249"><strong>PEP 249</strong></a> (DBAPI),
+it is <a class="reference internal" href="dbapi.html#dbapinotes"><em>not compliant</em></a> with that API because instead
+it works the way SQLite 3 does. (<a class="reference external" href="https://github.com/ghaering/pysqlite">pysqlite</a>
+is DBAPI compliant - see the <a class="reference internal" href="pysqlite.html#pysqlitediffs"><em>differences between apsw and
+pysqlite 2</em></a>).</p>
+<p>APSW is hosted at <a class="reference external" href="https://code.google.com/p/apsw/">https://code.google.com/p/apsw/</a></p>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tips.html#sqlite-is-different">SQLite is different</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips.html#cursors">Cursors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips.html#bindings">Bindings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips.html#unicode">Unicode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips.html#diagnostics">Diagnostics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips.html#parsing-sql">Parsing SQL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips.html#unexpected-behaviour">Unexpected behaviour</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips.html#customizing-cursors">Customizing cursors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips.html#busy-handling">Busy handling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips.html#database-schema">Database schema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips.html#shared-cache-mode">Shared Cache Mode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips.html#write-ahead-logging">Write Ahead Logging</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="download.html">Download</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="download.html#source-and-binaries">Source and binaries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="download.html#verifying-your-download">Verifying your download</a></li>
+<li class="toctree-l2"><a class="reference internal" href="download.html#source-code-control">Source code control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="download.html#easy-install-pip-pypi">easy_install/pip/pypi</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="build.html">Building</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="build.html#setup-py">setup.py</a></li>
+<li class="toctree-l2"><a class="reference internal" href="build.html#additional-setup-py-flags">Additional <tt class="file docutils literal"><span class="pre">setup.py</span></tt> flags</a></li>
+<li class="toctree-l2"><a class="reference internal" href="build.html#finding-sqlite-3">Finding SQLite 3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="build.html#recommended">Recommended</a></li>
+<li class="toctree-l2"><a class="reference internal" href="build.html#source-distribution-advanced">Source distribution (advanced)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="build.html#testing">Testing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="extensions.html#asynchronous-vfs">Asynchronous VFS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extensions.html#fts3-4">FTS3/4</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extensions.html#icu">ICU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extensions.html#rtree">RTree</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="apsw.html#api-reference">API Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apsw.html#sqlite-constants">SQLite constants</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="connection.html#connection-class">Connection class</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cursor.html#cursor-class">Cursor class</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="blob.html#zeroblob-class">zeroblob class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="blob.html#blob-class">blob class</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="backup.html#important-details">Important details</a></li>
+<li class="toctree-l2"><a class="reference internal" href="backup.html#backup-class">backup class</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="vtable.html#vtmodule-class">VTModule class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vtable.html#vttable-class">VTTable class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vtable.html#vtcursor-class">VTCursor class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vtable.html#troubleshooting-virtual-tables">Troubleshooting virtual tables</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="vfs.html#exceptions-and-errors">Exceptions and errors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vfs.html#vfs-class">VFS class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vfs.html#vfsfile-class">VFSFile class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vfs.html#urifilename-class">URIFilename class</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="shell.html#commands">Commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="shell.html#command-line-usage">Command Line Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="shell.html#notes">Notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="shell.html#example">Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="shell.html#unicode">Unicode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="shell.html#shell-class">Shell class</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="exceptions.html#apsw-specific-exceptions">APSW specific exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exceptions.html#sqlite-exceptions">SQLite Exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exceptions.html#augmented-stack-traces">Augmented stack traces</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">Types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="types.html#mapping">Mapping</a></li>
+<li class="toctree-l2"><a class="reference internal" href="types.html#unicode">Unicode</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="execution.html#execution-model">Execution model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="execution.html#multi-threading-and-re-entrancy">Multi-threading and re-entrancy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="execution.html#bit-hosts-python-2-5">64 bit hosts, Python 2.5+</a></li>
+<li class="toctree-l2"><a class="reference internal" href="execution.html#statement-cache">Statement Cache</a></li>
+<li class="toctree-l2"><a class="reference internal" href="execution.html#tracing">Tracing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="execution.html#apsw-trace">APSW Trace</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dbapi.html#module-interface">Module Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dbapi.html#connection-objects">Connection Objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dbapi.html#cursor-objects">Cursor Objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dbapi.html#type-objects">Type objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dbapi.html#optional-db-api-extensions">Optional DB API Extensions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pysqlite.html">pysqlite differences</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pysqlite.html#what-apsw-does-better">What APSW does better</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pysqlite.html#what-pysqlite-does-better">What pysqlite does better</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="benchmarking.html#speedtest">speedtest</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright and License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Change History</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#r1">3.8.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id1">3.8.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id2">3.8.0.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id3">3.8.0.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#r2">3.8.0-r2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id4">3.8.0-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id5">3.7.17-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id6">3.7.16.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id7">3.7.16.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id8">3.7.16-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id9">3.7.15.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id10">3.7.15.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id11">3.7.15-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id12">3.7.14.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id13">3.7.14-r2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id14">3.7.14-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id15">3.7.13-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id16">3.7.12.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id17">3.7.12-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id18">3.7.11-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id19">3.7.10-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id20">3.7.9-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id21">3.7.8-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id22">3.7.7.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id23">3.7.6.3-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id24">3.7.6.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id25">3.7.5-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id26">3.7.4-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id27">3.7.3-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id28">3.7.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id29">3.7.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id30">3.7.0.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id31">3.7.0-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id32">3.6.23.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id33">3.6.23-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id34">3.6.22-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id35">3.6.21-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id36">3.6.20-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id37">3.6.19-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id38">3.6.18-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id39">3.6.17-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id40">3.6.16-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id41">3.6.15-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id42">3.6.14.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id43">3.6.14.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id44">3.6.13-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id45">3.6.11-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id46">3.6.10-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id47">3.6.6.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id48">3.6.5-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id49">3.6.3-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id50">3.5.9-r2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id51">3.5.9-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id52">3.3.13-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id53">3.3.10-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id54">3.3.9-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id56">3.3.8-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id57">3.3.7-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id58">3.3.5-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id59">3.2.7-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id60">3.2.2-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id61">3.2.1-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id62">3.1.3-r1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#r3">3.0.8-r3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id63">3.0.8-r2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="changes.html#id64">3.0.8-r1</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">APSW documentation</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tips.html"
+                        title="next chapter">Tips</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tips.html" title="Tips"
+             >next</a> |</li>
+        <li><a href="#">APSW 3.8.2-r1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; <a href="copyright.html">Copyright</a> 2004-2013, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Dec 28, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+<div class="footer">This page uses <a href="http://analytics.google.com/">
+Google Analytics</a> to collect statistics. You can disable it by blocking
+the JavaScript coming from www.google-analytics.com.
+<script type="text/javascript">
+  (function() {
+    var ga = document.createElement('script');
+    ga.src = ('https:' == document.location.protocol ?
+              'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    ga.setAttribute('async', 'true');
+    document.documentElement.firstChild.appendChild(ga);
+  })();
+</script>
+</div>
+
+  </body>
+</html>
