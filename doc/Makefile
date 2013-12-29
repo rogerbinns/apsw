@@ -40,13 +40,11 @@ help:
 
 clean:
 	-rm -rf $(BUILDDIR)/*
-	-rm -f ../dist/apsw*.chm ../dist/apsw*.pdf ../dist/apswdoc-*.zip
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
-	cd build/html ; zip -9rq ../../../dist/apswdoc-$(VERSION).zip *
 
 dirhtml:
 	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
