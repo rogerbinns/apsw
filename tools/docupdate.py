@@ -10,7 +10,7 @@ import sys
 # get the download file names correct
 
 version=sys.argv[1]
-url="  <https://github.com/rogerbinns/apsw/releases/download/v"+version+"/%s>`__"
+url="  <https://github.com/rogerbinns/apsw/releases/download/"+version+"/%s>`__"
 
 download=open("doc/download.rst", "rtU").read()
 
