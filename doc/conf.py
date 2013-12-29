@@ -30,7 +30,7 @@ extlinks={
     'cvstrac': ('https://sqlite.org/cvstrac/tktview?tn=%s',
                 'SQLite ticket #'),
     'sqliteapi': ('https://sqlite.org/c3ref/%s.html', 'XXYouShouldNotSeeThisXX'),
-    'issue': ('https://code.google.com/p/apsw/issues/detail?id=%s',
+    'issue': ('https://github.com/rogerbinns/apsw/issues/%s',
               'APSW issue ')
     }
 

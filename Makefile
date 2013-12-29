@@ -93,7 +93,7 @@ linkcheck:
 
 publish: docs
 	if [ -d ../apsw-publish ] ; then rm -f ../apsw-publish/* ../apsw-publish/_static/* ../apsw-publish/_sources/* ; \
-	rsync -a doc/build/html/ ../apsw-publish/ ;  cd ../apsw-publish ; hg status ; \
+	rsync -a doc/build/html/ ../apsw-publish/ ;  cd ../apsw-publish ; git status ; \
 	fi
 
 header:
