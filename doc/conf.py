@@ -31,7 +31,9 @@ extlinks={
                 'SQLite ticket #'),
     'sqliteapi': ('https://sqlite.org/c3ref/%s.html', 'XXYouShouldNotSeeThisXX'),
     'issue': ('https://github.com/rogerbinns/apsw/issues/%s',
-              'APSW issue ')
+              'APSW issue '),
+    'source': ('https://github.com/rogerbinns/apsw/blob/master/%s',
+               ''),
     }
 
 

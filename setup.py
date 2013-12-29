@@ -826,8 +826,7 @@ a minimal layer over SQLite attempting just to translate the
 complete SQLite API into Python.""",
       author="Roger Binns",
       author_email="rogerb@rogerbinns.com",
-      url="https://code.google.com/p/apsw/",
-      download_url="https://code.google.com/p/apsw/downloads/list",
+      url="https://github.com/rogerbinns/apsw/",
       classifiers=[
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",

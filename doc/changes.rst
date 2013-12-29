@@ -2,6 +2,11 @@ Change History
 **************
 .. currentmodule:: apsw
 
+next
+====
+
+APSW is now hosted at Github - https://github.com/rogerbinns/apsw
+
 3.8.2-r1
 ========
 
@@ -413,13 +418,12 @@ When using the context manager (with statement) of a
 transaction is rolled back.  This could occur if SQLite had buffered
 the transaction entirely in memory and a non-eager transaction lock
 had been obtained.  Thanks to Geoff Ness for finding the problem.
-(`Issue 98 <https://code.google.com/p/apsw/issues/detail?id=98>`__).
+(:issue:`98`).
 
 Fixed bug when an error is returned creating an instance of a virtual
 table (eg an invalid column name).  Before the fix you would get the
 previous error message or a crash.  Thanks to Jose Gomes for finding
-the problem.  (`Issue 103
-<https://code.google.com/p/apsw/issues/detail?id=103>`__).
+the problem.  :issue:`103`
 
 There is now a PPA for Ubuntu users that is kept up to date with APSW
 and SQLite at https://launchpad.net/~ubuntu-rogerbinns/+archive/apsw
@@ -469,13 +473,11 @@ Made it possible to run distutils 'sdist' from an already produced
 source that was made from 'sdist'.  This was necessary for some Python
 virtual package environments.  Note that the recursive result does not
 include the HTML help as distutils has no way of including content in
-a reparented location.  (`Issue 89
-<https://code.google.com/p/apsw/issues/detail?id=89>`__).
+a reparented location.  :issue:`89`
 
 Various settings are output as pragma statements when making a dump
 such as page size, encoding, auto_vacuum etc.  The pragmas are
-commented out.  (`Issue 90
-<https://code.google.com/p/apsw/issues/detail?id=90>`__).
+commented out.  :issue:`90`
 
 3.6.21-r1
 =========
@@ -498,11 +500,9 @@ Support for Python 3.0 has been dropped as it has been `end of lifed
 onwards.
 
 Changes to how some statements are `prepared
-<https://sqlite.org/c3ref/prepare.html>`__ to allow the new RANGE
-and LIKE optimisations with bound variables introduced in SQLite
-3.6.20 to be used.  See `issue 85
-<https://code.google.com/p/apsw/issues/detail?id=85>`__ for the long
-and gory details.
+<https://sqlite.org/c3ref/prepare.html>`__ to allow the new RANGE and
+LIKE optimisations with bound variables introduced in SQLite 3.6.20 to
+be used.  See :issue:`85` for the long and gory details.
 
 You can now access `CouchDB <http://couchdb.apache.org>`__ using a
 virtual table.  This lets you easily bidirectionally transfer data
@@ -513,8 +513,7 @@ the same time.  Other example uses are in the documentation.
 
 * .dump command now outputs views in the order they were created
   rather than alphabetical as views could reference each
-  other. (`Issue 82
-  <https://code.google.com/p/apsw/issues/detail?id=82>`__)
+  other. :issue:`82`
 
 * .dump command now outputs the `user_version
   <https://sqlite.org/pragma.html#version>`__ as a comment.  It is
@@ -523,18 +522,14 @@ the same time.  Other example uses are in the documentation.
 
 * Can now output in `JSON <http://json.org>`__.
 
-* Fixed `Issue 83
-  <https://code.google.com/p/apsw/issues/detail?id=83>`__ - exception
-  if history file didn't exist
+* Fixed :issue:`83` - exception if history file didn't exist
 
 * You can right justify output in column mode by specifying negative
-  widths. (`Issue 84
-  <https://code.google.com/p/apsw/issues/detail?id=84>`__)
+  widths. :issue:`84`
 
 * You no longer get a traceback doing completions if there is a
   virtual table in the database but the module is not loaded.
-  (`Issue 86
-  <https://code.google.com/p/apsw/issues/detail?id=86>`__)
+  :issue:`86`
 
 * You can now get detailed tracebacks including local variables using
   the ".exception ON" command.  This is useful when developing
@@ -546,12 +541,11 @@ the same time.  Other example uses are in the documentation.
 3.6.19-r1
 =========
 
-**Backwards incompatible change** Fixed `issue 72
-<https://code.google.com/p/apsw/issues/detail?id=72>`__ where APSW
-wasn't zero basing virtual table :meth:`~VTTable.BestIndex`
-constraints returned as documented.  If you have working BestIndex
-code then you need to update it for this release.  Thanks to Lefteris
-for finding this issue.
+**Backwards incompatible change** Fixed :issue:`72` where APSW wasn't
+zero basing virtual table :meth:`~VTTable.BestIndex` constraints
+returned as documented.  If you have working BestIndex code then you
+need to update it for this release.  Thanks to Lefteris for finding
+this issue.
 
 **Backwards incompatible change** The :meth:`~apsw.complete` method
 has moved from :class:`Connection` to :mod:`apsw` where it should have
@@ -598,8 +592,7 @@ amalgamation and compiled out when using existing libraries.  This is
 more likely to match your machine.  You can use
 :option:`--omit=load_extension` or :option:`--enable=load_extension`
 to the build/build_ext commands to explicitly disable/enable extension
-loading.  (`Issue 67
-<https://code.google.com/p/apsw/issues/detail?id=67>`__).
+loading.  :issue:`67`
 
 :ref:`setup.py <building>` will now abort on a download that has no
 checksum.  See :ref:`more information <fetch_checksums>` on checksums.
@@ -649,9 +642,8 @@ The test suite will now check the functionality of the FTS3, RTree and
 ICU extensions if they were included.  (The Windows binary distribution
 includes FTS3 and RTree by default.)
 
-Fixed `issue 55 <https://code.google.com/p/apsw/issues/detail?id=55>`_
-where FTS3 was unintentionally omitted from the Windows binary
-distribution.
+Fixed :issue:`55` where FTS3 was unintentionally omitted from the
+Windows binary distribution.
 
 Various documentation updates.
 
@@ -665,9 +657,9 @@ Trivial tweaks to keep MSVC happy.
 3.6.15-r1
 =========
 
-Fixed `issue 50 <https://code.google.com/p/apsw/issues/detail?id=50>`_
-where :meth:`blob.read` was returning :const:`None` on end of file
-instead of the documented (and correct) empty string/bytes.
+Fixed :issue:`50` where :meth:`blob.read` was returning :const:`None`
+on end of file instead of the documented (and correct) empty
+string/bytes.
 
 Corrected spelling of option in :ref:`apswtrace <apswtrace>` and only
 output CURSORFROM if SQL tracing is on.
@@ -780,10 +772,9 @@ Various changes in data structures and containers to reduce code size.
 
 Changed the code to handle SQLite errors to only use Python
 functionality and no operating system functionality (thread local
-storage).  This also addresses `issue 36
-<https://code.google.com/p/apsw/issues/detail?id=36>`_ where Vista was
-not binary compatible with XP.  Thanks to Rudolf Gaertner for
-assistance in detecting and diagnosing this issue.
+storage).  This also addresses :issue:`36` where Vista was not binary
+compatible with XP.  Thanks to Rudolf Gaertner for assistance in
+detecting and diagnosing this issue.
 
 :class:`Connections <Connection>`, :class:`cursors <Cursor>` and
 :class:`blobs <blob>` can be used by `weak references
@@ -840,8 +831,7 @@ It was possible to get a deadlock between the Python GIL and the
 SQLite database mutex when using the same :class:`Connection` across
 multiple threads.  Fixed by releasing the GIL in more places and added
 test that inspects the source to verify GIL/mutex handling.  Thanks to
-amicitas reporting this as `issue 31
-<https://code.google.com/p/apsw/issues/detail?id=31>`_.
+amicitas reporting this as :issue:`31`
 
 SQLite's API has been extended in 3.6.5 so that errors can be
 retrieved in a thread safe manner.  APSW now uses this API.
@@ -910,17 +900,17 @@ useful you can do with them (yet):
 Restored prior behaviour regarding Python ints and longs returning int
 for numbers fitting in signed 32 bit. This only affects Python 2 as
 Python 3 uses long exclusively. Thanks to Joe Pham for reporting this
-as `issue 24 <https://code.google.com/p/apsw/issues/detail?id=24>`_.
+as :issue:`24`
 
 Added :meth:`Connection.getsqlite3pointer` method to help with
-`issue 26 <https://code.google.com/p/apsw/issues/detail?id=26>`_.
+:issue:`26`
 
 3.5.9-r2
 ========
 
 APSW now works with Python 3 (you need 3.0b1 or later).
 
-(`Issue 17 <https://code.google.com/p/apsw/issues/detail?id=17>`_)
+(:issue:`17`)
 Removed the :const:`SQLITE_MAX_*` constants since they could be
 unreliable (eg APSW can't tell what a shared library was compiled
 with). A workaround is documented in :func:`Connection.limit`.
@@ -970,18 +960,16 @@ but not if you let the destructor do the closing.
 
 SQLite now has incremental :ref:`blob I/O <blobio>`
 
-`Issue 4 <https://code.google.com/p/apsw/issues/detail?id=4>`_ which
-could lead to generic error messages was fixed in SQLite 3.5.9.
+:issue:`4` which could lead to generic error messages was fixed in
+SQLite 3.5.9.
 
-Fixed `issue 1 <https://code.google.com/p/apsw/issues/detail?id=1>`_
-error in example code for virtual tables which caused filename errors
-on Windows.
+Fixed :issue:`1` error in example code for virtual tables which caused
+filename errors on Windows.
 
-Fixed `issue 15 <https://code.google.com/p/apsw/issues/detail?id=15>`_
-releasing the GIL around calls to sqlite3_prepare.
+Fixed :issue:`15` releasing the GIL around calls to sqlite3_prepare.
 
-Fixed `issue 7 <https://code.google.com/p/apsw/issues/detail?id=7>`_
-ensuring that extension module filenames are converted to utf8.
+Fixed :issue:`7` ensuring that extension module filenames are
+converted to utf8.
 
 Use the `sqlite3_open_v2 <https://sqlite.org/c3ref/open.html>`_
 interface which allows specifying which vfs to use. This release does

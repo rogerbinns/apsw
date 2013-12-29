@@ -16,7 +16,7 @@ include src/util.c
 include src/vfs.c
 include src/vtable.c
 
-# See http://code.google.com/p/apsw/issues/detail?id=89
+# See https://github.com/rogerbinns/apsw/issues/89
 include MANIFEST.in
 
 # other files

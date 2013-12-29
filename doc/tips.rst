@@ -203,8 +203,7 @@ the same way.  The timeouts and handlers are ignored and instead
 Consequently you will have to do your own busy handling.  (`SQLite
 ticket
 <https://sqlite.org/src/tktview/ebde3f66fc64e21e61ef2854ed1a36dfff884a2f>`__,
-`APSW ticket 59
-<https://code.google.com/p/apsw/issues/detail?id=59>`__)
+:issue:`59`)
 
 The amount of memory and I/O saved is trivial compared to Python's
 overal memory and I/O consumption.  You may also need to tune the

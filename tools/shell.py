@@ -2698,7 +2698,7 @@ Enter SQL statements terminated with a ";"
                                     if item not in other:
                                         other.append(item)
                         except apsw.SQLError:
-                            # See https://code.google.com/p/apsw/issues/detail?id=86
+                            # See https://github.com/rogerbinns/apsw/issues/86
                             pass
 
             self._completion_cache=[self._sqlite_keywords, self._sqlite_functions, self._sqlite_special_names, collations, databases, other]

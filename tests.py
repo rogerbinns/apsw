@@ -1878,7 +1878,7 @@ class APSW(unittest.TestCase):
     # compiled in or not so the assumption is that they aren't.
     # However setup.py is being run then it sets environment variables
     # saying the extensions *must* be present if they were enabled.
-    # See https://code.google.com/p/apsw/issues/detail?id=55 for what
+    # See https://github.com/rogerbinns/apsw/issues/55 for what
     # led to this.
     def checkOptionalExtension(self, name, testquery):
         try:

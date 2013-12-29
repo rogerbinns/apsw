@@ -206,12 +206,11 @@ APSW Trace
 
 APSW includes a tracing script as part of the :ref:`source
 distribution <source_and_binaries>` named :file:`apswtrace.py`, or you
-can get a copy directly from `source control
-<https://code.google.com/p/apsw/source/browse/tools/apswtrace.py>`__
-(choose "View Raw File").  This script lets you easily trace SQL
-execution as well as providing a summary report without modifying your
-code.  If it is installed anywhere on your :envvar:`PYTHONPATH` then
-you can invoke it with ``-m``::
+can get a copy directly from :source:`source control
+<tools/apswtrace.py>` (choose "Raw File").  This script lets you
+easily trace SQL execution as well as providing a summary report
+without modifying your code.  If it is installed anywhere on your
+:envvar:`PYTHONPATH` then you can invoke it with ``-m``::
 
   $ python -m apswtrace [apswtrace options] yourscript.py [your options]
 
@@ -401,5 +400,3 @@ This shows the longest running queries with time in seconds.
       0.646 select timesten(x) from foo where x=? order by x
       0.631 select timesten(x) from foo where x=? order by x
       0.620 select timesten(x) from foo where x=? order by x
-
-

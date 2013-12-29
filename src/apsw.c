@@ -1561,7 +1561,7 @@ modules etc. For example::
       ADDINT(SQLITE_LIMIT_LIKE_PATTERN_LENGTH),
       ADDINT(SQLITE_LIMIT_VARIABLE_NUMBER),
       ADDINT(SQLITE_LIMIT_TRIGGER_DEPTH),
-      /* We don't include the MAX limits - see https://code.google.com/p/apsw/issues/detail?id=17 */
+      /* We don't include the MAX limits - see https://github.com/rogerbinns/apsw/issues/17 */
       END,
 
       DICT("mapping_config"),

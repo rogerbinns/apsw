@@ -16,7 +16,7 @@ it works the way SQLite 3 does. (`pysqlite <https://github.com/ghaering/pysqlite
 is DBAPI compliant - see the :ref:`differences between apsw and
 pysqlite 2 <pysqlitediffs>`).
 
-APSW is hosted at https://code.google.com/p/apsw/
+APSW is hosted at https://github.com/rogerbinns/apsw
 
 Contents:
 
