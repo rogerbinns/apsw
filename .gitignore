@@ -42,3 +42,4 @@ megatestresults/
 work/
 coverage/
 testdb
+/.coverage

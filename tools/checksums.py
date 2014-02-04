@@ -7,6 +7,7 @@ import hashlib
 import re
 
 sqlitevers=(
+    '3080300',
     '3080200',
     '3080100',
     '3080002',
@@ -71,9 +72,13 @@ def fixup_download_url(url):
     if ver:
         ver=int(ver.group(0))
         if ver>=3071600:
-            if "/2013/" not in url:
+            if ver>=3080300:
+                year="2014"
+            else:
+                year="2013"
+            if "/"+year+"/" not in url:
                 url=url.split("/")
-                url.insert(3, "2013")
+                url.insert(3, year)
                 return "/".join(url)
     return url
 

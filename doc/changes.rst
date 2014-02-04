@@ -2,10 +2,14 @@ Change History
 **************
 .. currentmodule:: apsw
 
-next
-====
+3.8.3-r1
+========
 
 APSW is now hosted at Github - https://github.com/rogerbinns/apsw
+
+Added SQLITE_RECURSIVE, SQLITE_READONLY_DBMOVED,
+SQLITE_FCNTL_COMMIT_PHASETWO, SQLITE_FCNTL_HAS_MOVED and
+SQLITE_FCNTL_SYNC constants.
 
 3.8.2-r1
 ========

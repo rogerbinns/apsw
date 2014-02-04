@@ -58,8 +58,8 @@ API Reference
 #include "sqlite3.h"
 #endif
 
-#if SQLITE_VERSION_NUMBER < 3008002
-#error Your SQLite version is too old.  It must be at least 3.8.2
+#if SQLITE_VERSION_NUMBER < 3008003
+#error Your SQLite version is too old.  It must be at least 3.8.3
 #endif
 
 /* system headers */
@@ -1424,6 +1424,7 @@ modules etc. For example::
       ADDINT(SQLITE_DROP_VTABLE),
       ADDINT(SQLITE_FUNCTION),
       ADDINT(SQLITE_SAVEPOINT),
+      ADDINT(SQLITE_RECURSIVE),
       END,
 
       /* vtable best index constraints */
@@ -1489,6 +1490,7 @@ modules etc. For example::
       ADDINT(SQLITE_CANTOPEN_CONVPATH),
       ADDINT(SQLITE_IOERR_CONVPATH),
       ADDINT(SQLITE_CONSTRAINT_ROWID),
+      ADDINT(SQLITE_READONLY_DBMOVED),
       END,
 
       /* error codes */
@@ -1684,6 +1686,9 @@ modules etc. For example::
       ADDINT(SQLITE_FCNTL_TEMPFILENAME),
       ADDINT(SQLITE_FCNTL_MMAP_SIZE),
       ADDINT(SQLITE_FCNTL_TRACE),
+      ADDINT(SQLITE_FCNTL_COMMIT_PHASETWO),
+      ADDINT(SQLITE_FCNTL_HAS_MOVED),
+      ADDINT(SQLITE_FCNTL_SYNC),
       END
 
       };

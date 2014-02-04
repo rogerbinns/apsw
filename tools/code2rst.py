@@ -86,10 +86,13 @@ def do_mappings():
                         print "  ",consts[val],"\t",val
                     sys.exit(1)
         # check to see if apsw is missing any
+        shouldexit=False
         for v in pages[pg]['vars']:
             if v not in mappings[map]:
                 print "Mapping",map,"is missing",v
-                sys.exit(1)
+                shouldexit=True
+        if shouldexit:
+            sys.exit(1)
         vals=m[:]
         vals.sort()
         op.append("    %s" % (", ".join([":const:`"+v+"`" for v in vals]),))
