@@ -36,7 +36,7 @@ GENDOCS = \
 	doc/apsw.rst \
 	doc/backup.rst
 
-.PHONY : all docs doc header linkcheck publish showsymbols compile-win source source_nocheck upload tags clean ppa dpkg dpkg-bin coverage valgrind valgrind1
+.PHONY : all docs doc header linkcheck publish showsymbols compile-win source source_nocheck release tags clean ppa dpkg dpkg-bin coverage valgrind valgrind1
 
 all: header docs
 
@@ -154,10 +154,7 @@ source: source_nocheck
 # Test code works
 	cd work/$(VERDIR) ; $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --enable-all-extensions build_test_extension test
 
-upload:
-	@if [ -z "$(GC_USER)" ] ; then echo "Specify googlecode user by setting GC_USER environment variable" ; exit 1 ; fi
-	@if [ -z "$(GC_PASSWORD)" ] ; then echo "Specify googlecode password by setting GC_PASSWORD environment variable" ; exit 1 ; fi
-	test -f tools/googlecode_upload.py
+release:
 	test -f dist/$(VERDIR).zip
 	test -f dist/$(VERDIR).win32-py2.3.exe
 	test -f dist/$(VERDIR).win32-py2.4.exe
@@ -174,20 +171,6 @@ upload:
 	-rm -f dist/$(VERDIR)-sigs.zip dist/*.asc
 	for f in dist/* ; do gpg --use-agent --armor --detach-sig "$$f" ; done
 	cd dist ; zip -m $(VERDIR)-sigs.zip *.asc
-	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) GPG signatures for all files" -l "Type-Signatures,OpSys-All" dist/$(VERDIR)-sigs.zip
-	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 3.3 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py3.3.exe
-	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 3.2 (Binary 64 bit)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win-amd64-py3.2.exe
-	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 3.2 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py3.2.exe
-	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 3.1 (Binary 64 bit)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win-amd64-py3.1.exe
-	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 3.1 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py3.1.exe
-	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 2.7 (Binary 64 bit)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win-amd64-py2.7.exe
-	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 2.7 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.7.exe
-	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 2.6 (Binary 64 bit)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win-amd64-py2.6.exe
-	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 2.6 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.6.exe
-	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 2.5 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.5.exe
-	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 2.4 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.4.exe
-	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) Windows Python 2.3 (Binary)" -l "Type-Installer,OpSys-Windows" dist/$(VERDIR).win32-py2.3.exe
-	python tools/googlecode_upload.py --user "$(GC_USER)" --password "$(GC_PASSWORD)" -p apsw -s "$(VERSION) (Source, includes HTML documentation)" -l "Type-Source,OpSys-All" dist/$(VERDIR).zip
 
 tags:
 	rm -f TAGS
