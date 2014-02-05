@@ -17,7 +17,9 @@ Changes
 
 `Full detailed list of changes <http://rogerbinns.github.io/apsw/changes.html>`__
 
-Releases since 3.8.2-r1 are in `releases <https://github.com/rogerbinns/apsw/releases>`__
+Releases since 3.8.2-r1 are in `releases
+<https://github.com/rogerbinns/apsw/releases>`__ (`downloads
+<http://rogerbinns.github.io/apsw/download.html>`__)
 
 Older releases are at the previous `Google Code hosting
 <https://code.google.com/p/apsw/downloads/list?can=1>`__
