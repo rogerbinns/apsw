@@ -2584,18 +2584,21 @@ Enter SQL statements terminated with a ";"
         return self.completions[state]
 
     # Taken from https://sqlite.org/lang_keywords.html
-    _sqlite_keywords="""ABORTADD AFTER ALL ALTER ANALYZE AND AS ASC ATTACH AUTOINCREMENT
-           BEFORE BEGIN BETWEEN BY CASCADE CASE CAST CHECK COLLATE COLUMN COMMIT
-           CONFLICT CONSTRAINT CREATE CROSS CURRENT_DATE CURRENT_TIME
-           CURRENT_TIMESTAMP DATABASE DEFAULT DEFERRABLE DEFERRED DELETE DESC
-           DETACH DISTINCT DROP EACH ELSE END ESCAPE EXCEPT EXCLUSIVE EXISTS
-           EXPLAIN FAIL FOR FOREIGN FROM FULL GLOB GROUP HAVING IF IGNORE
-           IMMEDIATE IN INDEX INDEXED INITIALLY INNER INSERT INSTEAD INTERSECT
-           INTO IS ISNULL JOIN KEY LEFT LIKE LIMIT MATCH NATURAL NOT NOTNULL NULL
-           OF OFFSET ON OR ORDER OUTER PLAN PRAGMA PRIMARY QUERY RAISE REFERENCES
-           REGEXP REINDEX RELEASE RENAME REPLACE RESTRICT RIGHT ROLLBACK ROW
-           SAVEPOINT SELECT SET TABLE TEMP TEMPORARY THEN TO TRANSACTION TRIGGER
-           UNION UNIQUE UPDATE USING VACUUM VALUES VIEW VIRTUAL WHEN WHERE""".split()
+    _sqlite_keywords="""ABORT ACTION ADD AFTER ALL ALTER ANALYZE AND AS ASC ATTACH
+    AUTOINCREMENT BEFORE BEGIN BETWEEN BY CASCADE CASE CAST CHECK
+    COLLATE COLUMN COMMIT CONFLICT CONSTRAINT CREATE CROSS
+    CURRENT_DATE CURRENT_TIME CURRENT_TIMESTAMP DATABASE DEFAULT
+    DEFERRABLE DEFERRED DELETE DESC DETACH DISTINCT DROP EACH ELSE END
+    ESCAPE EXCEPT EXCLUSIVE EXISTS EXPLAIN FAIL FOR FOREIGN FROM FULL
+    GLOB GROUP HAVING IF IGNORE IMMEDIATE IN INDEX INDEXED INITIALLY
+    INNER INSERT INSTEAD INTERSECT INTO IS ISNULL JOIN KEY LEFT LIKE
+    LIMIT MATCH NATURAL NO NOT NOTNULL NULL OF OFFSET ON OR ORDER
+    OUTER PLAN PRAGMA PRIMARY QUERY RAISE RECURSIVE REFERENCES REGEXP
+    REINDEX RELEASE RENAME REPLACE RESTRICT RIGHT ROLLBACK ROW
+    SAVEPOINT SELECT SET TABLE TEMP TEMPORARY THEN TO TRANSACTION
+    TRIGGER UNION UNIQUE UPDATE USING VACUUM VALUES VIEW VIRTUAL WHEN
+    WHERE WITH WITHOUT""".split()
+
     # reserved words need to be quoted.  Only a subset of the above are reserved
     # but what the heck
     _sqlite_reserved=_sqlite_keywords
@@ -2605,26 +2608,30 @@ Enter SQL statements terminated with a ";"
     _sqlite_special_names="""_ROWID_ OID ROWID SQLITE_MASTER
            SQLITE_SEQUENCE""".split()
 
-    _sqlite_functions="""abs( changes() char( coalesce( glob( ifnull(
-           hex( instr( last_insert_rowid() length( like(
-           load_extension( lower( ltrim( max( min( nullif( quote(
-           random() randomblob( replace( round( rtrim( soundex(
+    _sqlite_functions="""abs( changes() char( coalesce( glob( ifnull( hex( instr(
+           last_insert_rowid() length( like( likelihood(
+           load_extension( lower( ltrim( max( min( nullif( printf(
+           quote( random() randomblob( replace( round( rtrim( soundex(
            sqlite_compileoption_get( sqlite_compileoption_used(
            sqlite_source_id() sqlite_version() substr( total_changes()
-           trim( typeof( unicode( upper( zeroblob( date( time( datetime(
-           julianday( strftime(  avg( count( group_concat( sum( total(""".split()
+           trim( typeof( unlikely( unicode( upper( zeroblob( date(
+           time( datetime( julianday( strftime( avg( count(
+           group_concat( sum( total(""".split()
 
     _pragmas_bool=("yes", "true", "on", "no", "false", "off")
     _pragmas={"application_id": None,
               "auto_vacuum=": ("NONE", "FULL", "INCREMENTAL"),
               "automatic_index=": _pragmas_bool,
+              "busy_timeout=": None,
               "cache_size=": None,
               "case_sensitive_like=": _pragmas_bool,
+              "cache_spill=": _pragmas_bool,
               "checkpoint_fullfsync=": _pragmas_bool,
               "collation_list": None,
               "compile_options": None,
               "database_list": None,
               "default_cache_size=": None,
+              "defer_foreign_keys=": _pragmas_bool,
               "encoding=": None,
               # ('"UTF-8"', '"UTF-16"', '"UTF-16le"', '"UTF16-16be"'),
               # too hard to get " to be part of token just in this special case
@@ -2643,8 +2650,10 @@ Enter SQL statements terminated with a ";"
               "legacy_file_format=": _pragmas_bool,
               "locking_mode=": ("NORMAL", "EXCLUSIVE"),
               "max_page_count=": None,
+              "mmap_size=": None,
               "page_count;": None,
               "page_size=": None,
+              "query_only=": _pragmas_bool,
               "quick_check": None,
               "read_uncommitted=": _pragmas_bool,
               "recursive_triggers=": _pragmas_bool,
@@ -2652,10 +2661,10 @@ Enter SQL statements terminated with a ";"
               "schema_version": None,
               "secure_delete=": _pragmas_bool,
               "shrink_memory": None,
+              "soft_heap_limit=": None,
               "synchronous=": ("OFF", "NORMAL", "FULL"),
               "table_info(": None,
               "temp_store=": ("DEFAULT", "FILE", "MEMORY"),
-              "temp_store_directory=": None,
               "wal_autocheckpoint=": None,
               "wal_checkpoint": None,
               "writable_schema": _pragmas_bool,
