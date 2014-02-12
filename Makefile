@@ -1,19 +1,13 @@
 
-SQLITEVERSION=3.8.3
+SQLITEVERSION=3.8.3.1
 APSWSUFFIX=-r1
 
-RELEASEDATE="3 February 2014"
+RELEASEDATE="11 February 2014"
 
 VERSION=$(SQLITEVERSION)$(APSWSUFFIX)
 VERDIR=apsw-$(VERSION)
 
 PYTHON=python
-
-# These control Debian packaging
-DEBSUFFIX=1ppa1
-DEBMAINTAINER="Roger Binns <rogerb@rogerbinns.com>"
-DEBSERIES=raring quantal precise lucid
-PPAUPLOAD=ppa:ubuntu-rogerbinns/apsw
 
 # Some useful info
 #
@@ -23,9 +17,6 @@ PPAUPLOAD=ppa:ubuntu-rogerbinns/apsw
 # test           - builds extension in place then runs test suite
 # doc            - makes the doc
 # source         - makes a source zip in dist directory after running code through test suite
-# dpkg-bin       - produces binary debian packages for each DEBSERIES
-# dpkg           - produces debian source package for each DEBSERIES
-# ppa            - calls dpkg and then uploads to PPAUPLOAD
 
 GENDOCS = \
 	doc/blob.rst \
@@ -175,40 +166,3 @@ release:
 tags:
 	rm -f TAGS
 	ctags-exuberant -e --recurse --exclude=build --exclude=work .
-
-debian/copyright: LICENSE
-	cp LICENSE debian/copyright
-
-# :TODO: fix this
-debian/changelog: doc/changes.rst
-	touch debian/changelog
-
-dpkg: clean doc debian/copyright debian/changelog
-	python setup.py fetch --all --version=$(SQLITEVERSION) sdist --formats bztar --add-doc
-	rm -rf debian-build
-	mkdir -p debian-build
-	cp dist/$(VERDIR).tar.bz2 debian-build/python-apsw_$(VERSION).orig.tar.bz2
-	set -ex ; \
-	for series in $(DEBSERIES) ; do \
-	   tools/mkdebianchangelog.py $(VERSION) $(DEBSUFFIX)~$${series}1 $(DEBMAINTAINER) $$series ; \
-	   cd debian-build ; rm -rf $(VERDIR); tar xfj  python-apsw_$(VERSION).orig.tar.bz2 ; \
-	   cd $(VERDIR) ; rsync -av ../../debian . ; \
-	   debuild -S ; \
-	   cd ../.. ; \
-	done
-
-
-# This idiotic tool won't understand giving --distribution to --build
-# and just do the right thing (ie getting that distro etc) so we have
-# to keep remaking them
-dpkg-bin: dpkg
-	set -ex ; \
-	cd debian-build ; \
-	for series in $(DEBSERIES) ; do \
-	  sudo pbuilder create --http-proxy "$(http_proxy)" --distribution $${series} ; \
-	  sudo pbuilder build --http-proxy "$(http_proxy)" --distribution $${series} *~$${series}1.dsc ; \
-	done
-# Look in /var/cache/pbuilder/result/ to find the output .deb files
-
-ppa: dpkg
-	cd debian-build ; for f in *_source.changes ; do dput $(PPAUPLOAD) $$f ; done

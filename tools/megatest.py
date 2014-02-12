@@ -180,6 +180,7 @@ PYVERS=(
 
 SQLITEVERS=(
     '3.8.3',
+    '3.8.3.1',
    )
 
 if __name__=='__main__':
