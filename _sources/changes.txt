@@ -2,6 +2,11 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.8.3.1-r1
+==========
+
+Updated :doc:`shell` completions for keywords, functions and pragmas.
+
 3.8.3-r1
 ========
 
