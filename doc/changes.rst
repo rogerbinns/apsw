@@ -9,7 +9,8 @@ Windows 64 bit binary builds for Python 3.3+ are back - thanks to
 Mike C. Fletcher for `pointing the way
 <http://blog.vrplumber.com/b/2014/02/12/step-2-get-amd64-compatible-vs-2010/>`__
 
-
+Correct detection of current SQLite version from download page for
+:doc:`setup.py <build>` fetch command
 
 3.8.3.1-r1
 ==========

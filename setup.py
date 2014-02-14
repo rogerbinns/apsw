@@ -218,7 +218,7 @@ class fetch(Command):
         if self.version is None:
             write("  Getting download page to work out current SQLite version")
             page=self.download("https://sqlite.org/download.html", text=True, checksum=False)
-            match=re.search('sqlite-amalgamation-3([0-9][0-9])([0-9][0-9])([0-9][0-9]).zip"', page)
+            match=re.search(r'sqlite-amalgamation-3([0-9][0-9])([0-9][0-9])([0-9][0-9])\.zip', page)
             if match:
                 self.version="3.%d.%d.%d" % tuple([int(match.group(n)) for n in range(1,4)])
                 if self.version.endswith(".0"):
