@@ -118,7 +118,10 @@ def getpyurl(pyver):
     if pyver>'2.3.0':
         # Upper or lower case 'p' in download filename is somewhat random
         p='P'
-        return "http://python.org/ftp/python/%s/%sython-%s.tar.bz2" % (dirver,p,pyver)
+        ext="bz2"
+        if pyver>='3.4':
+            ext="xz"
+        return "http://python.org/ftp/python/%s/%sython-%s.tar.%s" % (dirver,p,pyver,ext)
     if pyver=='2.3.0':
         pyver='2.3'
         dirver='2.3'
@@ -129,6 +132,8 @@ def buildpython(workdir, pyver, ucs, logfilename):
     url=getpyurl(pyver)
     if url.endswith(".bz2"):
         tarx="j"
+    elif url.endswith(".xz"):
+        tarx="J"
     else:
         tarx="z"
     if pyver=="2.3.0": pyver="2.3"
@@ -167,7 +172,8 @@ def patch_natty_build(setup):
 
 # Default versions we support
 PYVERS=(
-    '3.3.2',
+    '3.4.0',
+    '3.3.4',
     '3.2.5',
     '3.1.5',
     '2.7.5',
