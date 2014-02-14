@@ -26,8 +26,8 @@ for line in open("doc/download.rst", "rtU"):
         op.append(url % ("apsw-%s.zip" % version))
         op.append("  (Source, includes this HTML Help)")
         op.append("")
-        not64=("2.3", "2.4", "2.5", "3.3")
-        for pyver in ("2.3", "2.4", "2.5", "2.6", "2.7", "3.1", "3.2", "3.3"):
+        not64=("2.3", "2.4", "2.5")
+        for pyver in ("2.3", "2.4", "2.5", "2.6", "2.7", "3.1", "3.2", "3.3", "3.4"):
             op.append("* Windows Python %s `32bit" % (pyver,))
             op.append(url % ("apsw-%s.win32-py%s.exe" % (version, pyver)))
             if pyver not in not64:

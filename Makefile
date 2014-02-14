@@ -130,6 +130,9 @@ compile-win:
 	c:/python32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	c:/python32-64/python setup.py  $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	c:/python33/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python33-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python34/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python34-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 
 source_nocheck: docs
 	$(PYTHON) setup.py sdist --formats zip --add-doc
@@ -159,6 +162,9 @@ release:
 	test -f dist/$(VERDIR).win32-py3.2.exe
 	test -f dist/$(VERDIR).win-amd64-py3.2.exe
 	test -f dist/$(VERDIR).win32-py3.3.exe
+	test -f dist/$(VERDIR).win-amd64-py3.3.exe
+	test -f dist/$(VERDIR).win32-py3.4.exe
+	test -f dist/$(VERDIR).win-amd64-py3.4.exe
 	-rm -f dist/$(VERDIR)-sigs.zip dist/*.asc
 	for f in dist/* ; do gpg --use-agent --armor --detach-sig "$$f" ; done
 	cd dist ; zip -m $(VERDIR)-sigs.zip *.asc
