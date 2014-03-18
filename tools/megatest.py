@@ -119,7 +119,7 @@ def getpyurl(pyver):
         # Upper or lower case 'p' in download filename is somewhat random
         p='P'
         ext="bz2"
-        if pyver>='3.4':
+        if pyver>='3.3':
             ext="xz"
         return "http://python.org/ftp/python/%s/%sython-%s.tar.%s" % (dirver,p,pyver,ext)
     if pyver=='2.3.0':
@@ -185,6 +185,8 @@ PYVERS=(
     )
 
 SQLITEVERS=(
+    '3.8.4',
+    '3.8.4.1',
     '3.8.3',
     '3.8.3.1',
    )

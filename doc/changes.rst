@@ -2,8 +2,8 @@ Change History
 **************
 .. currentmodule:: apsw
 
-next
-====
+3.8.4.1-r1
+==========
 
 Windows 64 bit binary builds for Python 3.3+ are back - thanks to
 Mike C. Fletcher for `pointing the way
