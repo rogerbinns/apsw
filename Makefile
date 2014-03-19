@@ -130,9 +130,9 @@ compile-win:
 	c:/python32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	c:/python32-64/python setup.py  $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	c:/python33/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python33-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python33-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	c:/python34/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python34-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python34-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 
 source_nocheck: docs
 	$(PYTHON) setup.py sdist --formats zip --add-doc
