@@ -12,6 +12,8 @@ Mike C. Fletcher for `pointing the way
 Correct detection of current SQLite version from download page for
 :doc:`setup.py <build>` fetch command
 
+Tested against Python 3.4 and binaries for Windows.
+
 3.8.3.1-r1
 ==========
 
