@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -8,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Connections to a database &mdash; APSW 3.8.4.1-r1 documentation</title>
+    <title>Connections to a database &mdash; APSW 3.8.4.2-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
-        VERSION:     '3.8.4.1-r1',
+        URL_ROOT:    './',
+        VERSION:     '3.8.4.2-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.8.4.1-r1 documentation" href="index.html" />
+    <link rel="top" title="APSW 3.8.4.2-r1 documentation" href="index.html" />
     <link rel="next" title="Cursors (executing SQL)" href="cursor.html" />
     <link rel="prev" title="APSW Module" href="apsw.html" />
  
@@ -53,7 +51,7 @@
         <li class="right" >
           <a href="apsw.html" title="APSW Module"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">APSW 3.8.4.1-r1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">APSW 3.8.4.2-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -93,7 +91,7 @@ execute frequently.</li>
 </tr>
 </tbody>
 </table>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="apsw.html#apsw.connection_hooks" title="apsw.connection_hooks"><tt class="xref py py-attr docutils literal"><span class="pre">apsw.connection_hooks</span></tt></a></li>
@@ -158,7 +156,7 @@ the main connection and the name you specified for <a class="reference external"
 </tr>
 </tbody>
 </table>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="backup.html#backup"><em>Backup</em></a></li>
@@ -191,7 +189,7 @@ the main connection and the name you specified for <a class="reference external"
 </tr>
 </tbody>
 </table>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="example.html#example-blobio"><em>Blob I/O example</em></a></li>
@@ -246,7 +244,7 @@ the collation name, but since there are thousands of locales in
 popular use it would not be useful to <a class="reference internal" href="#apsw.Connection.createcollation" title="apsw.Connection.createcollation"><tt class="xref py py-meth docutils literal"><span class="pre">prereigster</span></tt></a> them all.  Using
 <a class="reference internal" href="#apsw.Connection.collationneeded" title="apsw.Connection.collationneeded"><tt class="xref py py-meth docutils literal"><span class="pre">collationneeded()</span></tt></a> tells you when you need to
 register them.</p>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="#apsw.Connection.createcollation" title="apsw.Connection.createcollation"><tt class="xref py py-meth docutils literal"><span class="pre">createcollation()</span></tt></a></li>
@@ -314,7 +312,7 @@ ensure any resources are cleaned up.</dd>
 callables and <em>numargs</em>.  See
 <a class="reference internal" href="#apsw.Connection.createscalarfunction" title="apsw.Connection.createscalarfunction"><tt class="xref py py-meth docutils literal"><span class="pre">createscalarfunction()</span></tt></a> for an example.</p>
 </div>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="example.html#aggregate-example"><em>Example</em></a></li>
@@ -342,7 +340,7 @@ first is greater:</p>
         <span class="k">return</span> <span class="mi">1</span>
 </pre></div>
 </div>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="example.html#collation-example"><em>Example</em></a></li>
@@ -355,7 +353,7 @@ first is greater:</p>
 <dt id="apsw.Connection.createmodule">
 <tt class="descclassname">Connection.</tt><tt class="descname">createmodule</tt><big>(</big><em>name</em>, <em>datasource</em><big>)</big><a class="headerlink" href="#apsw.Connection.createmodule" title="Permalink to this definition">¶</a></dt>
 <dd><p>Registers a virtual table.  See <a class="reference internal" href="vtable.html#virtualtables"><em>Virtual Tables</em></a> for details.</p>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="example.html#example-vtable"><em>Example</em></a></li>
@@ -393,7 +391,7 @@ first is greater:</p>
 <p class="last">The one with the correct <em>numargs</em> will be called and only if that
 doesn&#8217;t exist then the one with negative <em>numargs</em> will be called.</p>
 </div>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="example.html#scalar-example"><em>Example</em></a></li>
@@ -438,7 +436,7 @@ which is disabled by default.</p>
 </tr>
 </tbody>
 </table>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="#apsw.Connection.loadextension" title="apsw.Connection.loadextension"><tt class="xref py py-meth docutils literal"><span class="pre">loadextension()</span></tt></a></li>
@@ -524,7 +522,7 @@ before the filecontrol call is made:</p>
 <tt class="descclassname">Connection.</tt><tt class="descname">getexectrace</tt><big>(</big><big>)</big> &rarr; callable or None<a class="headerlink" href="#apsw.Connection.getexectrace" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the currently installed (via <a class="reference internal" href="#apsw.Connection.setexectrace" title="apsw.Connection.setexectrace"><tt class="xref py py-meth docutils literal"><span class="pre">setexectrace()</span></tt></a>)
 execution tracer.</p>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="execution.html#tracing"><em>Tracing</em></a></li>
@@ -537,7 +535,7 @@ execution tracer.</p>
 <tt class="descclassname">Connection.</tt><tt class="descname">getrowtrace</tt><big>(</big><big>)</big> &rarr; callable or None<a class="headerlink" href="#apsw.Connection.getrowtrace" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the currently installed (via <a class="reference internal" href="#apsw.Connection.setrowtrace" title="apsw.Connection.setrowtrace"><tt class="xref py py-meth docutils literal"><span class="pre">setrowtrace()</span></tt></a>)
 row tracer.</p>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="execution.html#tracing"><em>Tracing</em></a></li>
@@ -583,7 +581,7 @@ returned.  If called with two then the limit is set to <em>newval</em>.</p>
 </tr>
 </tbody>
 </table>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="example.html#example-limit"><em>Example</em></a></li>
@@ -615,7 +613,7 @@ loaded.  The exception string includes more details.</p>
 </tr>
 </tbody>
 </table>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="#apsw.Connection.enableloadextension" title="apsw.Connection.enableloadextension"><tt class="xref py py-meth docutils literal"><span class="pre">enableloadextension()</span></tt></a></li>
@@ -689,7 +687,7 @@ set the <a class="reference internal" href="#apsw.Connection" title="apsw.Connec
 <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_DENY</span></tt> or <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_IGNORE</span></tt>.
 (<tt class="xref py py-const docutils literal"><span class="pre">SQLITE_DENY</span></tt> is returned if there is an error in your
 Python code).</p>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="example.html#authorizer-example"><em>Example</em></a></li>
@@ -711,7 +709,7 @@ True, then SQLite tries to open the table again and the cycle
 repeats.</p>
 <p>If you previously called <a class="reference internal" href="#apsw.Connection.setbusytimeout" title="apsw.Connection.setbusytimeout"><tt class="xref py py-meth docutils literal"><span class="pre">setbusytimeout()</span></tt></a> then
 calling this overrides that.</p>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="#apsw.Connection.setbusytimeout" title="apsw.Connection.setbusytimeout"><tt class="xref py py-meth docutils literal"><span class="pre">Connection.setbusytimeout()</span></tt></a></li>
@@ -738,7 +736,7 @@ still busy then <a class="reference internal" href="exceptions.html#apsw.BusyErr
 </table>
 <p>If you previously called <a class="reference internal" href="#apsw.Connection.setbusyhandler" title="apsw.Connection.setbusyhandler"><tt class="xref py py-meth docutils literal"><span class="pre">setbusyhandler()</span></tt></a> then
 calling this overrides that.</p>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="#apsw.Connection.setbusyhandler" title="apsw.Connection.setbusyhandler"><tt class="xref py py-meth docutils literal"><span class="pre">Connection.setbusyhandler()</span></tt></a></li>
@@ -755,7 +753,7 @@ calling this overrides that.</p>
 zero for the commit to go ahead and non-zero for it to be turned
 into a rollback. In the case of an exception in your callable, a
 non-zero (ie rollback) value is returned.</p>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="example.html#example-commithook"><em>Example</em></a></li>
@@ -774,7 +772,7 @@ tracer. Your execution tracer can also abort execution of a
 statement.</p>
 <p>If <em>callable</em> is <tt class="xref py py-const docutils literal"><span class="pre">None</span></tt> then any existing execution tracer is
 removed.</p>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="execution.html#tracing"><em>Tracing</em></a></li>
@@ -803,7 +801,7 @@ statement.</p>
 inststructions. The callable should return a non-zero value to abort
 or zero to continue. (If there is an error in your Python <em>callable</em>
 then non-zero will be returned).</p>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="example.html#example-progress-handler"><em>Example</em></a></li>
@@ -830,7 +828,7 @@ the Cursor installed its own tracer.  You can change the data that
 is returned or cause the row to be skipped altogether.</p>
 <p>If <em>callable</em> is <tt class="xref py py-const docutils literal"><span class="pre">None</span></tt> then any existing row tracer is
 removed.</p>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="execution.html#tracing"><em>Tracing</em></a></li>
@@ -862,7 +860,7 @@ apply them in a different connection.</p>
 <dd>The affected row</dd>
 </dl>
 </div></blockquote>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="example.html#example-updatehook"><em>Example</em></a></li>
@@ -921,7 +919,7 @@ libraries.</p>
 </tr>
 </tbody>
 </table>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <p>The <a class="reference internal" href="apsw.html#apsw.status" title="apsw.status"><tt class="xref py py-func docutils literal"><span class="pre">status()</span></tt></a> example which works in exactly the same way.</p>
 <ul class="last simple">
@@ -1039,14 +1037,14 @@ number of frames checkpointed as described in the
         <li class="right" >
           <a href="apsw.html" title="APSW Module"
              >previous</a> |</li>
-        <li><a href="index.html">APSW 3.8.4.1-r1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">APSW 3.8.4.2-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>
 
     <div class="footer">
         &copy; <a href="copyright.html">Copyright</a> 2004-2014, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 19, 2014.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Last updated on Mar 31, 2014.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

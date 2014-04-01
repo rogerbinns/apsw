@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -8,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Tips &mdash; APSW 3.8.4.1-r1 documentation</title>
+    <title>Tips &mdash; APSW 3.8.4.2-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
-        VERSION:     '3.8.4.1-r1',
+        URL_ROOT:    './',
+        VERSION:     '3.8.4.2-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.8.4.1-r1 documentation" href="index.html" />
+    <link rel="top" title="APSW 3.8.4.2-r1 documentation" href="index.html" />
     <link rel="next" title="Example" href="example.html" />
     <link rel="prev" title="APSW documentation" href="index.html" />
  
@@ -53,7 +51,7 @@
         <li class="right" >
           <a href="index.html" title="APSW documentation"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">APSW 3.8.4.1-r1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">APSW 3.8.4.2-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -105,7 +103,8 @@ provides valid UTF-8).  It is possible using other wrappers and tools
 to cause invalid UTF-8 to appear in the database which will then cause
 retrieval errors.  You can work around this by using the SQL <em>CAST</em>
 operator.  For example:</p>
-<div class="highlight-python"><pre>SELECT id, CAST(label AS blob) from table</pre>
+<div class="highlight-python"><div class="highlight"><pre>SELECT id, CAST(label AS blob) from table
+</pre></div>
 </div>
 <p>Then proceed to give the <a class="reference external" href="http://www.joelonsoftware.com/articles/Unicode.html">Joel Unicode article</a> to all people
 involved.</p>
@@ -135,9 +134,10 @@ APSW).</p>
 <p>This is an example of what gets printed when I use <tt class="docutils literal"><span class="pre">/dev/null</span></tt> as
 the database name in the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> and then tried to create
 a table.:</p>
-<div class="highlight-python"><pre>SQLITE_LOG: cannot open file at line 28729 of [7dd4968f23] (14) SQLITE_CANTOPEN
+<div class="highlight-python"><div class="highlight"><pre>SQLITE_LOG: cannot open file at line 28729 of [7dd4968f23] (14) SQLITE_CANTOPEN
 SQLITE_LOG: os_unix.c:28729: (2) open(/dev/null-journal) - No such file or directory (14) SQLITE_CANTOPEN
-SQLITE_LOG: statement aborts at 38: [create table foo(x,y);] unable to open database file (14) SQLITE_CANTOPEN</pre>
+SQLITE_LOG: statement aborts at 38: [create table foo(x,y);] unable to open database file (14) SQLITE_CANTOPEN
+</pre></div>
 </div>
 </div>
 <div class="section" id="parsing-sql">
@@ -169,7 +169,8 @@ strings use single quotes.  If you use double quotes then it will
 mostly appear to work, but they are intended to be used for
 identifiers such as column names.  For example if you have a column
 named <tt class="docutils literal"><span class="pre">a</span> <span class="pre">b</span></tt> (a space b) then you would need to use:</p>
-<div class="highlight-python"><pre>SELECT "a b" from table</pre>
+<div class="highlight-python"><div class="highlight"><pre>SELECT &quot;a b&quot; from table
+</pre></div>
 </div>
 <p>If you use double quotes and happen to use a string whose contents are
 the same as a table, alias, column etc then unexpected results will
@@ -324,14 +325,14 @@ indirect call via Python.)</p>
         <li class="right" >
           <a href="index.html" title="APSW documentation"
              >previous</a> |</li>
-        <li><a href="index.html">APSW 3.8.4.1-r1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">APSW 3.8.4.2-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>
 
     <div class="footer">
         &copy; <a href="copyright.html">Copyright</a> 2004-2014, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 19, 2014.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Last updated on Mar 31, 2014.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

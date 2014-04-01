@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -8,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Cursors (executing SQL) &mdash; APSW 3.8.4.1-r1 documentation</title>
+    <title>Cursors (executing SQL) &mdash; APSW 3.8.4.2-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
-        VERSION:     '3.8.4.1-r1',
+        URL_ROOT:    './',
+        VERSION:     '3.8.4.2-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.8.4.1-r1 documentation" href="index.html" />
+    <link rel="top" title="APSW 3.8.4.2-r1 documentation" href="index.html" />
     <link rel="next" title="Blob Input/Output" href="blob.html" />
     <link rel="prev" title="Connections to a database" href="connection.html" />
  
@@ -53,7 +51,7 @@
         <li class="right" >
           <a href="connection.html" title="Connections to a database"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">APSW 3.8.4.1-r1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">APSW 3.8.4.2-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -155,7 +153,7 @@ you start transactions.  Connections are isolated from each other
 with cursors on other connections not seeing changes until they are
 committed.</p>
 </div>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference external" href="https://sqlite.org/lang_transaction.html">SQLite transactions</a></li>
@@ -272,7 +270,7 @@ None/null will be used.  For example:</p>
 </tr>
 </tbody>
 </table>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="execution.html#executionmodel"><em>Execution model</em></a></li>
@@ -399,7 +397,7 @@ but never both.)</p>
 <tt class="descclassname">Cursor.</tt><tt class="descname">getexectrace</tt><big>(</big><big>)</big> &rarr; callable or None<a class="headerlink" href="#apsw.Cursor.getexectrace" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the currently installed (via <a class="reference internal" href="#apsw.Cursor.setexectrace" title="apsw.Cursor.setexectrace"><tt class="xref py py-meth docutils literal"><span class="pre">setexectrace()</span></tt></a>)
 execution tracer.</p>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="execution.html#tracing"><em>Tracing</em></a></li>
@@ -412,7 +410,7 @@ execution tracer.</p>
 <tt class="descclassname">Cursor.</tt><tt class="descname">getrowtrace</tt><big>(</big><big>)</big> &rarr; callable or None<a class="headerlink" href="#apsw.Cursor.getrowtrace" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the currently installed (via <a class="reference internal" href="#apsw.Cursor.setrowtrace" title="apsw.Cursor.setrowtrace"><tt class="xref py py-meth docutils literal"><span class="pre">setrowtrace()</span></tt></a>)
 row tracer.</p>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="execution.html#tracing"><em>Tracing</em></a></li>
@@ -437,7 +435,7 @@ each <a class="reference internal" href="#apsw.Cursor.execute" title="apsw.Curso
 cursor.</p>
 <p>If <em>callable</em> is <tt class="xref py py-const docutils literal"><span class="pre">None</span></tt> then any existing execution tracer is
 removed.</p>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="execution.html#tracing"><em>Tracing</em></a></li>
@@ -455,7 +453,7 @@ change the data that is returned or cause the row to be skipped
 altogether.</p>
 <p>If <em>callable</em> is <tt class="xref py py-const docutils literal"><span class="pre">None</span></tt> then any existing row tracer is
 removed.</p>
-<div class="admonition-see-also admonition seealso">
+<div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="execution.html#tracing"><em>Tracing</em></a></li>
@@ -525,14 +523,14 @@ removed.</p>
         <li class="right" >
           <a href="connection.html" title="Connections to a database"
              >previous</a> |</li>
-        <li><a href="index.html">APSW 3.8.4.1-r1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">APSW 3.8.4.2-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>
 
     <div class="footer">
         &copy; <a href="copyright.html">Copyright</a> 2004-2014, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 19, 2014.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Last updated on Mar 31, 2014.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

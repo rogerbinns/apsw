@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -8,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Exceptions &mdash; APSW 3.8.4.1-r1 documentation</title>
+    <title>Exceptions &mdash; APSW 3.8.4.2-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
-        VERSION:     '3.8.4.1-r1',
+        URL_ROOT:    './',
+        VERSION:     '3.8.4.2-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.8.4.1-r1 documentation" href="index.html" />
+    <link rel="top" title="APSW 3.8.4.2-r1 documentation" href="index.html" />
     <link rel="next" title="Types" href="types.html" />
     <link rel="prev" title="Shell" href="shell.html" />
  
@@ -53,7 +51,7 @@
         <li class="right" >
           <a href="shell.html" title="Shell"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">APSW 3.8.4.1-r1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">APSW 3.8.4.2-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -432,22 +430,24 @@ traceback:</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><div class="first last highlight-python"><pre>Traceback (most recent call last):
-  File "t.py", line 11, in &lt;module&gt;
-    cursor.execute("select foo(1) from bar")
-  File "t.py", line 4, in myfunc
+<tr class="row-even"><td><div class="first last highlight-python"><div class="highlight"><pre>Traceback (most recent call last):
+  File &quot;t.py&quot;, line 11, in &lt;module&gt;
+    cursor.execute(&quot;select foo(1) from bar&quot;)
+  File &quot;t.py&quot;, line 4, in myfunc
     1/0
-ZeroDivisionError: integer division or modulo by zero</pre>
+ZeroDivisionError: integer division or modulo by zero
+</pre></div>
 </div>
 </td>
-<td><div class="first last highlight-python"><pre>Traceback (most recent call last):
-  File "t.py", line 11, in &lt;module&gt;
-    cursor.execute("select foo(1) from bar")
-  File "apsw.c", line 3412, in resetcursor
-  File "apsw.c", line 1597, in user-defined-scalar-foo
-  File "t.py", line 4, in myfunc
+<td><div class="first last highlight-python"><div class="highlight"><pre>Traceback (most recent call last):
+  File &quot;t.py&quot;, line 11, in &lt;module&gt;
+    cursor.execute(&quot;select foo(1) from bar&quot;)
+  File &quot;apsw.c&quot;, line 3412, in resetcursor
+  File &quot;apsw.c&quot;, line 1597, in user-defined-scalar-foo
+  File &quot;t.py&quot;, line 4, in myfunc
     1/0
-ZeroDivisionError: integer division or modulo by zero</pre>
+ZeroDivisionError: integer division or modulo by zero
+</pre></div>
 </div>
 </td>
 </tr>
@@ -485,14 +485,15 @@ local variables using recipe 52215. I can see what was passed in to my
 method, what I returned and which item was erroneous. The original
 traceback is almost completely useless.</p>
 <p>Original traceback:</p>
-<div class="highlight-python"><pre>Traceback (most recent call last):
-  File "tests.py", line 1387, in testVtables
+<div class="highlight-python"><div class="highlight"><pre>Traceback (most recent call last):
+  File &quot;tests.py&quot;, line 1387, in testVtables
     cursor.execute(allconstraints)
-TypeError: Bad constraint (#2) - it should be one of None, an integer or a tuple of an integer and a boolean</pre>
+TypeError: Bad constraint (#2) - it should be one of None, an integer or a tuple of an integer and a boolean
+</pre></div>
 </div>
 <p>Augmented traceback with local variables:</p>
-<div class="highlight-python"><pre>Traceback (most recent call last):
-  File "tests.py", line 1387, in testVtables
+<div class="highlight-python"><div class="highlight"><pre>Traceback (most recent call last):
+  File &quot;tests.py&quot;, line 1387, in testVtables
     cursor.execute(allconstraints)
                 VTable =  __main__.VTable
                    cur =  &lt;apsw.Cursor object at 0x988f30&gt;
@@ -500,22 +501,23 @@ TypeError: Bad constraint (#2) - it should be one of None, an integer or a tuple
                   self =  testVtables (__main__.APSW)
         allconstraints =  select rowid,* from foo where rowid&gt;-1000 ....
 
-  File "apsw.c", line 4050, in Cursor_execute.sqlite3_prepare
+  File &quot;apsw.c&quot;, line 4050, in Cursor_execute.sqlite3_prepare
             Connection =  &lt;apsw.Connection object at 0x978800&gt;
              statement =  select rowid,* from foo where rowid&gt;-1000 ....
 
-  File "apsw.c", line 2681, in VirtualTable.xBestIndex
+  File &quot;apsw.c&quot;, line 2681, in VirtualTable.xBestIndex
                   self =  &lt;__main__.VTable instance at 0x98d8c0&gt;
                   args =  (((-1, 4), (0, 32), (1, 8), (2, 4), (3, 64)), ((2, False),))
-                result =  ([4, (3,), [2, False], [1], [0]], 997, u'\xea', False)
+                result =  ([4, (3,), [2, False], [1], [0]], 997, u&#39;\xea&#39;, False)
 
-  File "apsw.c", line 2559, in VirtualTable.xBestIndex.result_constraint
+  File &quot;apsw.c&quot;, line 2559, in VirtualTable.xBestIndex.result_constraint
                indices =  [4, (3,), [2, False], [1], [0]]
                   self =  &lt;__main__.VTable instance at 0x98d8c0&gt;
-                result =  ([4, (3,), [2, False], [1], [0]], 997, u'\xea', False)
+                result =  ([4, (3,), [2, False], [1], [0]], 997, u&#39;\xea&#39;, False)
             constraint =  (3,)
 
-TypeError: Bad constraint (#2) - it should be one of None, an integer or a tuple of an integer and a boolean</pre>
+TypeError: Bad constraint (#2) - it should be one of None, an integer or a tuple of an integer and a boolean
+</pre></div>
 </div>
 </div>
 </div>
@@ -586,14 +588,14 @@ TypeError: Bad constraint (#2) - it should be one of None, an integer or a tuple
         <li class="right" >
           <a href="shell.html" title="Shell"
              >previous</a> |</li>
-        <li><a href="index.html">APSW 3.8.4.1-r1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">APSW 3.8.4.2-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>
 
     <div class="footer">
         &copy; <a href="copyright.html">Copyright</a> 2004-2014, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 19, 2014.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Last updated on Mar 31, 2014.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

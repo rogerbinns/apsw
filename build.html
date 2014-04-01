@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -8,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Building &mdash; APSW 3.8.4.1-r1 documentation</title>
+    <title>Building &mdash; APSW 3.8.4.2-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
-        VERSION:     '3.8.4.1-r1',
+        URL_ROOT:    './',
+        VERSION:     '3.8.4.2-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.8.4.1-r1 documentation" href="index.html" />
+    <link rel="top" title="APSW 3.8.4.2-r1 documentation" href="index.html" />
     <link rel="next" title="Extensions" href="extensions.html" />
     <link rel="prev" title="Download" href="download.html" />
  
@@ -53,7 +51,7 @@
         <li class="right" >
           <a href="download.html" title="Download"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">APSW 3.8.4.1-r1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">APSW 3.8.4.2-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -392,11 +390,13 @@ instructions with your current directory being where you extracted the
 APSW source to.</p>
 <blockquote>
 <div><p>Windows:</p>
-<div class="highlight-python"><pre>  # Leave out --compile=mingw32 flag if using Microsoft compiler
-&gt; python setup.py fetch --all build --enable-all-extensions --compile=mingw32 install test</pre>
+<div class="highlight-python"><div class="highlight"><pre>  # Leave out --compile=mingw32 flag if using Microsoft compiler
+&gt; python setup.py fetch --all build --enable-all-extensions --compile=mingw32 install test
+</pre></div>
 </div>
 <p>Mac/Linux etc:</p>
-<div class="highlight-python"><pre>$ python setup.py fetch --all build --enable-all-extensions install test</pre>
+<div class="highlight-python"><div class="highlight"><pre>$ python setup.py fetch --all build --enable-all-extensions install test
+</pre></div>
 </div>
 </div></blockquote>
 <div class="admonition note">
@@ -424,7 +424,8 @@ command line then everything fetched is included in the source
 distribution.  For example this will fetch all components, include
 them in the source distribution and build a rpm using those
 components:</p>
-<div class="highlight-python"><pre>$ python setup.py fetch --all bdist_rpm</pre>
+<div class="highlight-python"><div class="highlight"><pre>$ python setup.py fetch --all bdist_rpm
+</pre></div>
 </div>
 </div>
 <div class="section" id="testing">
@@ -435,8 +436,8 @@ dedicated to testing than makes up the actual database functionality.</p>
 testing modules to verify correct operation. New code is developed
 alongside the tests. Reported issues also have test cases to ensure
 the issue doesn&#8217;t happen or doesn&#8217;t happen again.:</p>
-<div class="highlight-python"><pre>$ python setup.py test
-               Python /usr/bin/python (2, 6, 6, 'final', 0)
+<div class="highlight-python"><div class="highlight"><pre>$ python setup.py test
+               Python /usr/bin/python (2, 6, 6, &#39;final&#39;, 0)
 Testing with APSW file /space/apsw/apsw.so
           APSW version 3.7.4-r1
     SQLite lib version 3.7.4
@@ -446,7 +447,8 @@ SQLite headers version 3007004
 ----------------------------------------------------------------------
 Ran 76 tests in 404.557s
 
-OK</pre>
+OK
+</pre></div>
 </div>
 <p>The tests also ensure that as much APSW code as possible is executed
 including alternate paths through the code.  95.5% of the APSW code is
@@ -534,14 +536,14 @@ in the source.</p>
         <li class="right" >
           <a href="download.html" title="Download"
              >previous</a> |</li>
-        <li><a href="index.html">APSW 3.8.4.1-r1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">APSW 3.8.4.2-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>
 
     <div class="footer">
         &copy; <a href="copyright.html">Copyright</a> 2004-2014, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 19, 2014.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Last updated on Mar 31, 2014.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking
