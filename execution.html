@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Execution and tracing &mdash; APSW 3.8.4.2-r1 documentation</title>
+    <title>Execution and tracing &mdash; APSW 3.8.4.3-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.8.4.2-r1',
+        VERSION:     '3.8.4.3-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.8.4.2-r1 documentation" href="index.html" />
+    <link rel="top" title="APSW 3.8.4.3-r1 documentation" href="index.html" />
     <link rel="next" title="DBAPI notes" href="dbapi.html" />
     <link rel="prev" title="Types" href="types.html" />
  
@@ -51,7 +51,7 @@
         <li class="right" >
           <a href="types.html" title="Types"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">APSW 3.8.4.2-r1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">APSW 3.8.4.3-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -74,9 +74,9 @@ or the statement is complete.</p>
 <p>The <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><tt class="xref py py-meth docutils literal"><span class="pre">Cursor.execute()</span></tt></a> method automatically does the preparing and
 starts execution. If none of the statements return rows then execution
 will go to the end. If a row is returned then you need to call
-<a class="reference internal" href="cursor.html#apsw.Cursor.next" title="apsw.Cursor.next"><tt class="xref py py-meth docutils literal"><span class="pre">Cursor.next()</span></tt></a> to get the row values or use the cursor as an
+<tt class="xref py py-meth docutils literal"><span class="pre">Cursor.next()</span></tt> to get the row values or use the cursor as an
 iterator. Execution will resume as necessary to satisfy
-<a class="reference internal" href="cursor.html#apsw.Cursor.next" title="apsw.Cursor.next"><tt class="xref py py-meth docutils literal"><span class="pre">next()</span></tt></a> calls.</p>
+<tt class="xref py py-meth docutils literal"><span class="pre">next()</span></tt> calls.</p>
 <p>However this means that if you don&#8217;t read the rows returned then the
 rest of your statements won&#8217;t be executed.  APSW will detect
 unexecuted previous statements and generate an exception. For
@@ -106,7 +106,7 @@ defined functions, collations and the various hooks/handlers run.)</p>
 <p>Note that you cannot use the same cursor object in multiple threads
 concurrently to execute statements. APSW will detect this and throw an
 exception. It is safe to use the object serially (eg calling
-<a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><tt class="xref py py-meth docutils literal"><span class="pre">Cursor.execute()</span></tt></a> in one thread and <a class="reference internal" href="cursor.html#apsw.Cursor.next" title="apsw.Cursor.next"><tt class="xref py py-meth docutils literal"><span class="pre">Cursor.next()</span></tt></a> in
+<a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><tt class="xref py py-meth docutils literal"><span class="pre">Cursor.execute()</span></tt></a> in one thread and <tt class="xref py py-meth docutils literal"><span class="pre">Cursor.next()</span></tt> in
 another. You also can&#8217;t do things like try to
 <a class="reference internal" href="connection.html#apsw.Connection.close" title="apsw.Connection.close"><tt class="xref py py-meth docutils literal"><span class="pre">close()</span></tt></a> a Connection concurrently in two threads.</p>
 <p>If you have multiple threads and/or multiple programs accessing the
@@ -484,13 +484,13 @@ illustrates how time spent busy waiting is included.</p>
         <li class="right" >
           <a href="types.html" title="Types"
              >previous</a> |</li>
-        <li><a href="index.html">APSW 3.8.4.2-r1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">APSW 3.8.4.3-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>
 
     <div class="footer">
         &copy; <a href="copyright.html">Copyright</a> 2004-2014, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 31, 2014.
+      Last updated on Apr 08, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

@@ -234,6 +234,10 @@ Cursor class
   Returns all remaining result rows as a list.  This method is defined
   in DBAPI.  It is a longer way of doing ``list(cursor)``.
 
+.. method:: Cursor.fetchone() -> row or None
+
+  Returns the next row of data or None if there are no more rows.
+
 .. method:: Cursor.getconnection() -> Connection
 
   Returns the :class:`Connection` this cursor belongs to.  An example usage is to get another cursor::
@@ -313,13 +317,6 @@ Cursor class
   .. seealso::
 
     * :ref:`tracing`
-
-.. method:: Cursor.next() -> row
-
-  Returns the next row of data or raises StopIteration if there are no
-  more rows.  Python calls this method behind the scenes when using
-  the cursor as an iterator.  It is unlikely you will want to manually
-  call it.
 
 .. method:: Cursor.setexectrace(callable)
 

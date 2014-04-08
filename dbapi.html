@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>DBAPI notes &mdash; APSW 3.8.4.2-r1 documentation</title>
+    <title>DBAPI notes &mdash; APSW 3.8.4.3-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.8.4.2-r1',
+        VERSION:     '3.8.4.3-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.8.4.2-r1 documentation" href="index.html" />
+    <link rel="top" title="APSW 3.8.4.3-r1 documentation" href="index.html" />
     <link rel="next" title="pysqlite differences" href="pysqlite.html" />
     <link rel="prev" title="Execution and tracing" href="execution.html" />
  
@@ -51,7 +51,7 @@
         <li class="right" >
           <a href="execution.html" title="Execution and tracing"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">APSW 3.8.4.2-r1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">APSW 3.8.4.3-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -67,7 +67,7 @@
 <h2>Module Interface<a class="headerlink" href="#module-interface" title="Permalink to this headline">¶</a></h2>
 <p>There is no connect method. Use the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> constructor instead.</p>
 <p>The Connection object and any cursors can be used in any thread.  As
-an extreme example, you could call <a class="reference internal" href="cursor.html#apsw.Cursor.next" title="apsw.Cursor.next"><tt class="xref py py-meth docutils literal"><span class="pre">Cursor.next()</span></tt></a> in seperate
+an extreme example, you could call <tt class="xref py py-meth docutils literal"><span class="pre">Cursor.next()</span></tt> in seperate
 threads each thread getting the next row.  You cannot use the cursor
 concurrently in multiple threads for example calling
 <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><tt class="xref py py-meth docutils literal"><span class="pre">Cursor.execute()</span></tt></a> at the same time.  If you attempt to do so then
@@ -129,12 +129,12 @@ as an iterator to get the results (if any).</p>
 <p><a class="reference internal" href="cursor.html#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><tt class="xref py py-meth docutils literal"><span class="pre">executemany()</span></tt></a> returns the Cursor object and you can use
 it as an iterator to get the results (if any).</p>
 <p>fetchone is not available. Use the cursor as an iterator, or call
-<a class="reference internal" href="cursor.html#apsw.Cursor.next" title="apsw.Cursor.next"><tt class="xref py py-meth docutils literal"><span class="pre">next()</span></tt></a> to get the next row, or raises StopIteration when
+<tt class="xref py py-meth docutils literal"><span class="pre">next()</span></tt> to get the next row, or raises StopIteration when
 there are no more results.</p>
 <p>fetchmany is not available. Simply use the cursor as an iterator or
-call <a class="reference internal" href="cursor.html#apsw.Cursor.next" title="apsw.Cursor.next"><tt class="xref py py-meth docutils literal"><span class="pre">next()</span></tt></a> for however many results you want.</p>
+call <tt class="xref py py-meth docutils literal"><span class="pre">next()</span></tt> for however many results you want.</p>
 <p>fetchall is available, but not too useful. Simply use the cursor as an
-iterator, call <a class="reference internal" href="cursor.html#apsw.Cursor.next" title="apsw.Cursor.next"><tt class="xref py py-meth docutils literal"><span class="pre">next()</span></tt></a>, or use list which is less typing:</p>
+iterator, call <tt class="xref py py-meth docutils literal"><span class="pre">next()</span></tt>, or use list which is less typing:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="nb">all</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;....&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
@@ -237,13 +237,13 @@ statements:</p>
         <li class="right" >
           <a href="execution.html" title="Execution and tracing"
              >previous</a> |</li>
-        <li><a href="index.html">APSW 3.8.4.2-r1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">APSW 3.8.4.3-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>
 
     <div class="footer">
         &copy; <a href="copyright.html">Copyright</a> 2004-2014, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 31, 2014.
+      Last updated on Apr 08, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

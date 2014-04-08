@@ -2,6 +2,11 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.8.4.3-r1
+==========
+
+Added :meth:`Cursor.fetchone`
+
 3.8.4.2-r1
 ==========
 

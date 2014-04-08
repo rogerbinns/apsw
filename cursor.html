@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Cursors (executing SQL) &mdash; APSW 3.8.4.2-r1 documentation</title>
+    <title>Cursors (executing SQL) &mdash; APSW 3.8.4.3-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.8.4.2-r1',
+        VERSION:     '3.8.4.3-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.8.4.2-r1 documentation" href="index.html" />
+    <link rel="top" title="APSW 3.8.4.3-r1 documentation" href="index.html" />
     <link rel="next" title="Blob Input/Output" href="blob.html" />
     <link rel="prev" title="Connections to a database" href="connection.html" />
  
@@ -51,7 +51,7 @@
         <li class="right" >
           <a href="connection.html" title="Connections to a database"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">APSW 3.8.4.2-r1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">APSW 3.8.4.3-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -102,10 +102,10 @@ syntax.  Additionally this is how <a class="reference external" href="http://en.
 <p>Cursors are cheap.  Use as many as you need.  It is safe to use them
 across threads, such as calling <a class="reference internal" href="#apsw.Cursor.execute" title="apsw.Cursor.execute"><tt class="xref py py-meth docutils literal"><span class="pre">execute()</span></tt></a> in one thread,
 passing the cursor to another thread that then calls
-<a class="reference internal" href="#apsw.Cursor.next" title="apsw.Cursor.next"><tt class="xref py py-meth docutils literal"><span class="pre">Cursor.next()</span></tt></a>.  The only thing you can&#8217;t do is call methods at
+<tt class="xref py py-meth docutils literal"><span class="pre">Cursor.next()</span></tt>.  The only thing you can&#8217;t do is call methods at
 exactly the same time on the same cursor in two different threads - eg
 trying to call <a class="reference internal" href="#apsw.Cursor.execute" title="apsw.Cursor.execute"><tt class="xref py py-meth docutils literal"><span class="pre">execute()</span></tt></a> in both at the same time, or
-<a class="reference internal" href="#apsw.Cursor.execute" title="apsw.Cursor.execute"><tt class="xref py py-meth docutils literal"><span class="pre">execute()</span></tt></a> in one and <a class="reference internal" href="#apsw.Cursor.next" title="apsw.Cursor.next"><tt class="xref py py-meth docutils literal"><span class="pre">Cursor.next()</span></tt></a> in another.
+<a class="reference internal" href="#apsw.Cursor.execute" title="apsw.Cursor.execute"><tt class="xref py py-meth docutils literal"><span class="pre">execute()</span></tt></a> in one and <tt class="xref py py-meth docutils literal"><span class="pre">Cursor.next()</span></tt> in another.
 (If you do attempt this, it will be detected and
 <a class="reference internal" href="exceptions.html#apsw.ThreadingViolationError" title="apsw.ThreadingViolationError"><tt class="xref py py-exc docutils literal"><span class="pre">ThreadingViolationError</span></tt></a> will be raised.)</p>
 <p>Behind the scenes a <a class="reference internal" href="#apsw.Cursor" title="apsw.Cursor"><tt class="xref py py-class docutils literal"><span class="pre">Cursor</span></tt></a> maps to a <a class="reference external" href="https://sqlite.org/c3ref/stmt.html">SQLite statement</a>.  APSW maintains a
@@ -120,7 +120,7 @@ separated statements.  For example:</p>
 <p class="first admonition-title">Note</p>
 <p>SQLite fetches data as it is needed.  If table <em>example</em> had 10
 million rows it would only get the next row as requested (the for
-loop effectively calls <a class="reference internal" href="#apsw.Cursor.next" title="apsw.Cursor.next"><tt class="xref py py-meth docutils literal"><span class="pre">next()</span></tt></a> to get each row).  This
+loop effectively calls <tt class="xref py py-meth docutils literal"><span class="pre">next()</span></tt> to get each row).  This
 code would not work as expected:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select * from example&quot;</span><span class="p">):</span>
    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert .....&quot;</span><span class="p">)</span>
@@ -324,6 +324,12 @@ in DBAPI.  It is a longer way of doing <tt class="docutils literal"><span class=
 </dd></dl>
 
 <dl class="method">
+<dt id="apsw.Cursor.fetchone">
+<tt class="descclassname">Cursor.</tt><tt class="descname">fetchone</tt><big>(</big><big>)</big> &rarr; row or None<a class="headerlink" href="#apsw.Cursor.fetchone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the next row of data or None if there are no more rows.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="apsw.Cursor.getconnection">
 <tt class="descclassname">Cursor.</tt><tt class="descname">getconnection</tt><big>(</big><big>)</big> &rarr; Connection<a class="headerlink" href="#apsw.Cursor.getconnection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> this cursor belongs to.  An example usage is to get another cursor:</p>
@@ -416,15 +422,6 @@ row tracer.</p>
 <li><a class="reference internal" href="execution.html#tracing"><em>Tracing</em></a></li>
 </ul>
 </div>
-</dd></dl>
-
-<dl class="method">
-<dt id="apsw.Cursor.next">
-<tt class="descclassname">Cursor.</tt><tt class="descname">next</tt><big>(</big><big>)</big> &rarr; row<a class="headerlink" href="#apsw.Cursor.next" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the next row of data or raises StopIteration if there are no
-more rows.  Python calls this method behind the scenes when using
-the cursor as an iterator.  It is unlikely you will want to manually
-call it.</p>
 </dd></dl>
 
 <dl class="method">
@@ -523,13 +520,13 @@ removed.</p>
         <li class="right" >
           <a href="connection.html" title="Connections to a database"
              >previous</a> |</li>
-        <li><a href="index.html">APSW 3.8.4.2-r1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">APSW 3.8.4.3-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>
 
     <div class="footer">
         &copy; <a href="copyright.html">Copyright</a> 2004-2014, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 31, 2014.
+      Last updated on Apr 08, 2014.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
