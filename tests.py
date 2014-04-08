@@ -135,6 +135,21 @@ if not py3:
                 return args[0]
             raise
 
+# Make next switch between the iterator and fetchone alternately
+_realnext=next
+_nextcounter=1
+def next(cursor, *args):
+    global _nextcounter
+    _nextcounter+=1
+    if _nextcounter%2:
+        return _realnext(cursor, *args)
+    res=cursor.fetchone()
+    if res is None:
+        if args:
+            return args[0]
+        return None
+    return res
+
 # py3 has a useless sys.excepthook mainly to avoid allocating any
 # memory as the exception could have been running out of memory.  So
 # we use our own which is also valueable on py2 as it says it is an
@@ -660,8 +675,12 @@ class APSW(unittest.TestCase):
             self.assertEqual(len(c.description[0]), 7)
         # execution is complete ...
         self.assertRaises(apsw.ExecutionCompleteError, c.getdescription)
-        self.assertRaises(StopIteration, lambda xx=0: next(c))
-        self.assertRaises(StopIteration, lambda xx=0: next(c))
+        self.assertRaises(StopIteration, lambda xx=0: _realnext(c))
+        self.assertRaises(StopIteration, lambda xx=0: _realnext(c))
+        # fetchone is used throughout, check end behaviour
+        self.assertEqual(None, c.fetchone())
+        self.assertEqual(None, c.fetchone())
+        self.assertEqual(None, c.fetchone())
         # nulls for getdescription
         for row in c.execute("pragma user_version"):
             self.assertEqual(c.getdescription(), ( ('user_version', None), ))

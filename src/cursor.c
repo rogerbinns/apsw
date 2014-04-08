@@ -1186,14 +1186,6 @@ APSWCursor_close(APSWCursor *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
-/** .. method:: next() -> row
-
-  Returns the next row of data or raises StopIteration if there are no
-  more rows.  Python calls this method behind the scenes when using
-  the cursor as an iterator.  It is unlikely you will want to manually
-  call it.
-*/
-
 static PyObject *
 APSWCursor_next(APSWCursor *self)
 {
@@ -1406,6 +1398,29 @@ APSWCursor_fetchall(APSWCursor *self)
   return PySequence_List((PyObject*)self);
 }
 
+/** .. method:: fetchone() -> row or None
+
+  Returns the next row of data or None if there are no more rows.
+*/
+
+static PyObject *
+APSWCursor_fetchone(APSWCursor *self)
+{
+    PyObject *res;
+
+    CHECK_USE(NULL);
+    CHECK_CURSOR_CLOSED(NULL);
+
+    res=APSWCursor_next(self);
+
+    if(res==NULL && !PyErr_Occurred())
+        Py_RETURN_NONE;
+
+    return res;
+}
+
+
+
 static PyMethodDef APSWCursor_methods[] = {
   {"execute", (PyCFunction)APSWCursor_execute, METH_VARARGS,
    "Executes one or more statements" },
@@ -1427,6 +1442,9 @@ static PyMethodDef APSWCursor_methods[] = {
    "Closes the cursor" },
   {"fetchall", (PyCFunction)APSWCursor_fetchall, METH_NOARGS,
    "Fetches all result rows" },
+  {"fetchone", (PyCFunction)APSWCursor_fetchone, METH_NOARGS,
+   "Fetches next result row" },
+
   {0, 0, 0, 0}  /* Sentinel */
 };
 
