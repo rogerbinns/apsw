@@ -137,7 +137,7 @@ if not py3:
 
 # Make next switch between the iterator and fetchone alternately
 _realnext=next
-_nextcounter=1
+_nextcounter=0
 def next(cursor, *args):
     global _nextcounter
     _nextcounter+=1

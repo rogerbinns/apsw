@@ -85,8 +85,8 @@ for name, obj in ( ('Connection', con),
             if c.startswith("mapping_"):
                 continue
         if c not in classes[name]:
-            retval=1
-            print "%s.%s on object but not in documentation" % (name, c)
+            if "%s.%s" % (name, c)  not in ("Cursor.next",):
+                retval=1
+                print "%s.%s on object but not in documentation" % (name, c)
 
 sys.exit(retval)
-
