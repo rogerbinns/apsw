@@ -119,8 +119,19 @@ def getpyurl(pyver):
         # Upper or lower case 'p' in download filename is somewhat random
         p='P'
         ext="bz2"
+        # Python stopped making new releases as bz2 and instead it is
+        # xz in the middle of a release stream
+        switchvers=(
+            "2.7.7",
+            "2.6.9",
+        )
+        v2i=lambda x: [int(i) for i in x.split(".")]
         if pyver>='3.3':
             ext="xz"
+        for v in switchvers:
+            if v2i(dirver)[:2]==v2i(v)[:2] and v2i(dirver)>=v2i(v):
+                ext="xz"
+                break
         return "http://python.org/ftp/python/%s/%sython-%s.tar.%s" % (dirver,p,pyver,ext)
     if pyver=='2.3.0':
         pyver='2.3'
@@ -172,12 +183,12 @@ def patch_natty_build(setup):
 
 # Default versions we support
 PYVERS=(
-    '3.4.0',
-    '3.3.4',
+    '3.4.1',
+    '3.3.5',
     '3.2.5',
     '3.1.5',
-    '2.7.5',
-    '2.6.8',
+    '2.7.7',
+    '2.6.9',
     '2.5.6',
     '2.4.6',
     '2.3.7',
@@ -185,12 +196,7 @@ PYVERS=(
     )
 
 SQLITEVERS=(
-    '3.8.4',
-    '3.8.4.1',
-    '3.8.4.2',
-    '3.8.4.3',
-    '3.8.3',
-    '3.8.3.1',
+    '3.8.5',
    )
 
 if __name__=='__main__':
