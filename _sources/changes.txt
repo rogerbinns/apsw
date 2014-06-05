@@ -2,6 +2,12 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.8.5-r1
+========
+
+Added SQLITE_IOCAP_IMMUTABLE and SQLITE_FCNTL_WIN32_SET_HANDLE
+constants.
+
 3.8.4.3-r1
 ==========
 
