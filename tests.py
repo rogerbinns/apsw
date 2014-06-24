@@ -36,13 +36,6 @@ py3=sys.version_info>=(3,0)
 TESTFILEPREFIX=os.environ.get("APSWTESTPREFIX", "")
 
 def read_whole_file(name, mode, encoding=None):
-    if sys.version_info<(2,4):
-        if "r" in mode and "U" in mode:
-            # python 2.3 returns file not found if "U" present!
-            mode="".join([m for m in mode if m!="U"])
-    if iswindows: # whines about rtU
-        if "t" in mode and "U" in mode:
-            mode="".join([m for m in mode if m!="t"])
     if encoding:
         f=codecs.open(name, mode, encoding)
     else:
