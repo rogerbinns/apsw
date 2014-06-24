@@ -3579,7 +3579,7 @@ class APSW(unittest.TestCase):
 
         for filename in glob.glob("src/*.c"):
             # check not using C++ style comments
-            code=read_whole_file(filename, "rU").replace("http://", "http:__").replace("https://", "https:__")
+            code=read_whole_file(filename, "rt").replace("http://", "http:__").replace("https://", "https:__")
             if "//" in code:
                 self.fail("// style comment in "+filename)
 
@@ -3590,7 +3590,7 @@ class APSW(unittest.TestCase):
             name2=None
             lines=[]
             infunc=0
-            for line in read_whole_file(filename, "rtU").split("\n"):
+            for line in read_whole_file(filename, "rt").split("\n"):
                 if line.startswith("}") and infunc:
                     if infunc==1:
                         self.sourceCheckMutexCall(filename, name1, lines)
