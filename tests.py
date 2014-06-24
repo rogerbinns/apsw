@@ -3226,6 +3226,7 @@ class APSW(unittest.TestCase):
         "Issue 142: bytes from system during dump"
         orig_strftime=time.strftime
         orig_getuser=getpass.getuser
+        fh=[]
         try:
             time.strftime=lambda arg: BYTES(r"gjkTIMEJUNKhgjhg\xfe\xdf")
             getpass.getuser=lambda : BYTES(r"\x81\x82\x83gjkhgUSERJUNKjhg\xfe\xdf")
@@ -3249,6 +3250,8 @@ class APSW(unittest.TestCase):
             self.assertTrue("USERJUNK" in out)
 
         finally:
+            for f in fh:
+                f.close()
             time.strftim=orig_strftime
             getpass.getuser=orig_getuser
 
@@ -7097,6 +7100,10 @@ shell.write(shell.stdout, "hello world\\n")
             for o in outputs:
                 cnt+=o in get(fh[1])
             self.assertTrue(cnt)
+
+        # clean up files 
+        for f in fh:
+            f.close()
 
     # This one uses the coverage module
     def _testShellWithCoverage(self):
