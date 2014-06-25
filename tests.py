@@ -390,7 +390,20 @@ class APSW(unittest.TestCase):
                 called.append( (t,v,tb) )
             sys.excepthook=ehook
             try:
-                return func(*args, **kwargs)
+                try:
+                    return func(*args, **kwargs)
+                except:
+                    # This ensures frames have their local variables
+                    # cleared before we put the original excepthook
+                    # back.  Clearing the variables results in some
+                    # more SQLite operations which also can raise
+                    # unraisables.  traceback.clear_frames was
+                    # introduced in Python 3.4 and unittest was
+                    # updated to call it in assertRaises.  See issue
+                    # 164
+                    if hasattr(traceback, "clear_frames"):
+                        traceback.clear_frames(sys.exc_info()[2])
+                    raise
             finally:
                 if len(called)<1:
                     self.fail("Call %s(*%s, **%s) did not do any unraiseable" % (func, args, kwargs) )

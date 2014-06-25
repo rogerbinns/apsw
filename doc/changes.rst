@@ -2,6 +2,12 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.8.6-r1
+========
+
+Updated test suite for Python 3.4 unittest garbage collection changes
+(:issue:`164`)
+
 3.8.5-r1
 ========
 
