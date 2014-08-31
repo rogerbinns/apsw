@@ -8,6 +8,11 @@ Change History
 Updated test suite for Python 3.4 unittest garbage collection changes
 (:issue:`164`)
 
+Using the :ref:`recommended <recommended_build>` build option of
+**--enable-all-extensions** turns on `STAT4
+<https://sqlite.org/compile.html#enable_stat4>`__.  Windows binaries
+include this too.
+
 3.8.5-r1
 ========
 
