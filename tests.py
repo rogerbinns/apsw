@@ -5019,10 +5019,13 @@ class APSW(unittest.TestCase):
         self.assertRaises(OverflowError, t.xUnlock, l("0xffffffffeeeeeeee0"))
         # doesn't care about nonsensical levels - assert fails in debug build
         # t.xUnlock(-1)
-        TestFile.xUnlock=TestFile.xUnlock1
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
-        TestFile.xUnlock=TestFile.xUnlock2
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
+        # python 3.4 garbage collection changes mean these get called during cleanup which
+        # causes confusing messages in wal mode
+        if not (apsw.connection_hooks and list(sys.version_info)>=[3,4]):
+            TestFile.xUnlock=TestFile.xUnlock1
+            self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+            TestFile.xUnlock=TestFile.xUnlock2
+            self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
         TestFile.xUnlock=TestFile.xUnlock99
         testdb()
 
@@ -7114,7 +7117,7 @@ shell.write(shell.stdout, "hello world\\n")
                 cnt+=o in get(fh[1])
             self.assertTrue(cnt)
 
-        # clean up files 
+        # clean up files
         for f in fh:
             f.close()
 
