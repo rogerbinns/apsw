@@ -6,7 +6,7 @@ Change History
 ========
 
 Updated test suite for Python 3.4 unittest garbage collection changes
-(:issue:`164`)
+(:issue:`164` :issue:`169`)
 
 Using the :ref:`recommended <recommended_build>` build option of
 **--enable-all-extensions** turns on `STAT4
