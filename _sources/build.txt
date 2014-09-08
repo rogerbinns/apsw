@@ -169,7 +169,7 @@ need to give the flag once and giving a comma seperated list.  For example:
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | build/build_ext flag                   | Result                                                                               |
 +========================================+======================================================================================+
-| | :option:`--enable-all-extensions`    | Enables the FTS3/4, RTree and ICU extensions (if *icu-config* is on your path).      |
+| | :option:`--enable-all-extensions`    | Enables the STAT4, FTS3/4, RTree, and ICU extensions if *icu-config* is on your path |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--enable=fts3`              | Enables the :ref:`full text search extension <ext-fts3>`.                            |
 | | :option:`--enable=fts4`              | This flag only helps when using the amalgamation. If not using the                   |
