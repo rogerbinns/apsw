@@ -42,8 +42,15 @@ def do_mappings():
     pages={}
     baseurl=squrl+"c3ref/constlist.html"
     page=urllib2.urlopen(baseurl).read()
-    vars=re.findall(r'''<a href="([^"]+?/c3ref/[^<]+?\.html)(#[^'"]+)?['"]>(SQLITE_.+?)<''', page)
-    for relurl, fragment, var in vars:
+    vars=re.finditer(r'''<a href="(?P<relurl>[^"]+?(/c3ref)?/[^<]+?\.html)(?P<fragment>#[^'"]+)?['"]>(?P<var>SQLITE_.+?)<''', page)
+    for match in vars:
+        relurl=match.group("relurl")
+        fragment=match.group("fragment")
+        var=match.group("var")
+        print var, relurl, fragment
+        if fragment:
+            assert fragment.startswith("#")
+            fragment=fragment[1:]
         # we skip some
         if var in ("SQLITE_DONE", "SQLITE_ROW"):
             continue
@@ -76,6 +83,7 @@ def do_mappings():
                     pg=consts[val]
                 except:
                     import pdb ; pdb.set_trace()
+                    pass
                 op.append("   `%s <%s>`__" % (pages[pg]['title'], pg))
                 op.append("")
             else:
