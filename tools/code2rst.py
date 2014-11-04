@@ -37,9 +37,27 @@ def do_funclist():
         # ::TODO:: consider grabbing the page and extracting first <h2> to get
         # description of sqlite3 api
 
+def get_error_codes():
+    # returns codes separated into regular and extended error codes
+    page=urllib2.urlopen(squrl+"rescode.html").read()
+    codes=set()
+    extended=set()
+    for match in re.finditer(r'''>(?P<name>SQLITE_\w+)</a> \((?P<value>\d+)\)''', page):
+        name=match.group("name")
+        value=int(match.group("value"))
+        if value<128:
+            assert name not in extended
+            codes.add(name)
+        else:
+            assert name not in codes
+            extended.add(name)
+    return codes, extended
+
 def do_mappings():
+    errors, errors_extended = get_error_codes()
     consts={}
     pages={}
+    specials={"SQLITE_DONE", "SQLITE_ROW"}
     baseurl=squrl+"c3ref/constlist.html"
     page=urllib2.urlopen(baseurl).read()
     vars=re.finditer(r'''<a href="(?P<relurl>[^"]+?(/c3ref)?/[^<]+?\.html)(?P<fragment>#[^'"]+)?['"]>(?P<var>SQLITE_.+?)<''', page)
@@ -47,7 +65,6 @@ def do_mappings():
         relurl=match.group("relurl")
         fragment=match.group("fragment")
         var=match.group("var")
-        print var, relurl, fragment
         if fragment:
             assert fragment.startswith("#")
             fragment=fragment[1:]
@@ -87,7 +104,7 @@ def do_mappings():
                 op.append("   `%s <%s>`__" % (pages[pg]['title'], pg))
                 op.append("")
             else:
-                if consts[val]!=pg:
+                if val not in specials and consts[val]!=pg:
                     print "These don't all map to the same page"
                     print map
                     for val in m:
@@ -95,9 +112,17 @@ def do_mappings():
                     sys.exit(1)
         # check to see if apsw is missing any
         shouldexit=False
-        for v in pages[pg]['vars']:
+        lookfor=set(pages[pg]['vars'])
+        if pg.endswith("rescode.html"):
+            # not on main page as these aren't considered errors
+            lookfor.update(specials)
+            assert errors | errors_extended == lookfor
+            lookfor={"mapping_result_codes": errors,
+                     "mapping_extended_result_codes": errors_extended}[map]
+
+        for v in lookfor:
             if v not in mappings[map]:
-                print "Mapping",map,"is missing",v
+                print "Mapping", map, "is missing", v
                 shouldexit=True
         if shouldexit:
             sys.exit(1)
@@ -105,7 +130,6 @@ def do_mappings():
         vals.sort()
         op.append("    %s" % (", ".join([":const:`"+v+"`" for v in vals]),))
         op.append("")
-
 
 
 # we have our own markup to describe what sqlite3 calls we make using
