@@ -1524,6 +1524,9 @@ modules etc. For example::
       ADDINT(SQLITE_TOOBIG),
       ADDINT(SQLITE_NOTICE),
       ADDINT(SQLITE_WARNING),
+      /* you can't get these from apsw code but present for completeness */
+      ADDINT(SQLITE_DONE),
+      ADDINT(SQLITE_ROW),
       END,
 
       /* open flags */
@@ -1563,6 +1566,7 @@ modules etc. For example::
       ADDINT(SQLITE_LIMIT_LIKE_PATTERN_LENGTH),
       ADDINT(SQLITE_LIMIT_VARIABLE_NUMBER),
       ADDINT(SQLITE_LIMIT_TRIGGER_DEPTH),
+      ADDINT(SQLITE_LIMIT_WORKER_THREADS),
       /* We don't include the MAX limits - see https://github.com/rogerbinns/apsw/issues/17 */
       END,
 
