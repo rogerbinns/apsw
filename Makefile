@@ -27,9 +27,13 @@ GENDOCS = \
 	doc/apsw.rst \
 	doc/backup.rst
 
-.PHONY : all docs doc header linkcheck publish showsymbols compile-win source source_nocheck release tags clean ppa dpkg dpkg-bin coverage valgrind valgrind1
+.PHONY : all docs doc header linkcheck publish showsymbols compile-win source source_nocheck release tags clean ppa dpkg dpkg-bin coverage valgrind valgrind1 tagpush
 
 all: header docs
+
+tagpush:
+	git tag -a $(SQLITEVERSION)$(APSWSUFFIX)
+	git push --tags
 
 clean:
 	make PYTHONPATH="`pwd`" VERSION=$(VERSION) -C doc clean
