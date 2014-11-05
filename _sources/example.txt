@@ -26,9 +26,9 @@ so you can see what gets printed when you run the code.
 .. code-block:: text
 
    |       Using APSW file /space/apsw/apsw.so
-   |          APSW version 3.8.6-r1
-   |    SQLite lib version 3.8.6
-   | SQLite header version 3008006
+   |          APSW version 3.8.7.1-r1
+   |    SQLite lib version 3.8.7.1
+   | SQLite header version 3008007
 
 .. code-block:: python
 
@@ -398,7 +398,8 @@ so you can see what gets printed when you run the code.
 .. code-block:: text
 
    | in commit hook
-   | commits okay at this time
+   | no commits out of hours
+   | commit was not allowed
 
 .. _example-updatehook:
 
@@ -532,9 +533,9 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
+   | 6746897 apsw.cpython-34m.so /space/apsw
    | 6580742 apsw.cpython-35m.so /space/apsw
    | 5760824 apsw.o /space/apsw
-   | 4541706 apsw.so /space/apsw
 
 .. code-block:: python
 
@@ -546,7 +547,7 @@ so you can see what gets printed when you run the code.
 
    | 1388285092.49 setup.cfg /space/apsw
    | 1388285624.79 :memory: /space/apsw
-   | 1388302219.17 README.rst~ /space/apsw
+   | 1391408034.49 xx.py~ /space/apsw
 
 .. _example-vfs:
 
@@ -747,7 +748,7 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
-   | SQLite memory usage current 345056 max 349704
+   | SQLite memory usage current 339136 max 343784
 
 .. code-block:: python
 

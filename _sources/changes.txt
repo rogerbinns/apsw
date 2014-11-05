@@ -2,6 +2,11 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.8.7.1-r1
+==========
+
+Added SQLITE_LIMIT_WORKER_THREADS constant
+
 3.8.6-r1
 ========
 

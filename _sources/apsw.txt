@@ -377,7 +377,7 @@ modules etc. For example::
 
 .. data:: mapping_extended_result_codes
 
-   `Extended Result Codes <https://sqlite.org/c3ref/c_abort_rollback.html>`__
+   `Primary Result Codes versus Extended Result Codes <https://sqlite.org/rescode.html>`__
 
     :const:`SQLITE_ABORT_ROLLBACK`, :const:`SQLITE_BUSY_RECOVERY`, :const:`SQLITE_BUSY_SNAPSHOT`, :const:`SQLITE_CANTOPEN_CONVPATH`, :const:`SQLITE_CANTOPEN_FULLPATH`, :const:`SQLITE_CANTOPEN_ISDIR`, :const:`SQLITE_CANTOPEN_NOTEMPDIR`, :const:`SQLITE_CONSTRAINT_CHECK`, :const:`SQLITE_CONSTRAINT_COMMITHOOK`, :const:`SQLITE_CONSTRAINT_FOREIGNKEY`, :const:`SQLITE_CONSTRAINT_FUNCTION`, :const:`SQLITE_CONSTRAINT_NOTNULL`, :const:`SQLITE_CONSTRAINT_PRIMARYKEY`, :const:`SQLITE_CONSTRAINT_ROWID`, :const:`SQLITE_CONSTRAINT_TRIGGER`, :const:`SQLITE_CONSTRAINT_UNIQUE`, :const:`SQLITE_CONSTRAINT_VTAB`, :const:`SQLITE_CORRUPT_VTAB`, :const:`SQLITE_IOERR_ACCESS`, :const:`SQLITE_IOERR_BLOCKED`, :const:`SQLITE_IOERR_CHECKRESERVEDLOCK`, :const:`SQLITE_IOERR_CLOSE`, :const:`SQLITE_IOERR_CONVPATH`, :const:`SQLITE_IOERR_DELETE`, :const:`SQLITE_IOERR_DELETE_NOENT`, :const:`SQLITE_IOERR_DIR_CLOSE`, :const:`SQLITE_IOERR_DIR_FSYNC`, :const:`SQLITE_IOERR_FSTAT`, :const:`SQLITE_IOERR_FSYNC`, :const:`SQLITE_IOERR_GETTEMPPATH`, :const:`SQLITE_IOERR_LOCK`, :const:`SQLITE_IOERR_MMAP`, :const:`SQLITE_IOERR_NOMEM`, :const:`SQLITE_IOERR_RDLOCK`, :const:`SQLITE_IOERR_READ`, :const:`SQLITE_IOERR_SEEK`, :const:`SQLITE_IOERR_SHMLOCK`, :const:`SQLITE_IOERR_SHMMAP`, :const:`SQLITE_IOERR_SHMOPEN`, :const:`SQLITE_IOERR_SHMSIZE`, :const:`SQLITE_IOERR_SHORT_READ`, :const:`SQLITE_IOERR_TRUNCATE`, :const:`SQLITE_IOERR_UNLOCK`, :const:`SQLITE_IOERR_WRITE`, :const:`SQLITE_LOCKED_SHAREDCACHE`, :const:`SQLITE_NOTICE_RECOVER_ROLLBACK`, :const:`SQLITE_NOTICE_RECOVER_WAL`, :const:`SQLITE_READONLY_CANTLOCK`, :const:`SQLITE_READONLY_DBMOVED`, :const:`SQLITE_READONLY_RECOVERY`, :const:`SQLITE_READONLY_ROLLBACK`, :const:`SQLITE_WARNING_AUTOINDEX`
 
@@ -391,7 +391,7 @@ modules etc. For example::
 
    `Run-Time Limit Categories <https://sqlite.org/c3ref/c_limit_attached.html>`__
 
-    :const:`SQLITE_LIMIT_ATTACHED`, :const:`SQLITE_LIMIT_COLUMN`, :const:`SQLITE_LIMIT_COMPOUND_SELECT`, :const:`SQLITE_LIMIT_EXPR_DEPTH`, :const:`SQLITE_LIMIT_FUNCTION_ARG`, :const:`SQLITE_LIMIT_LENGTH`, :const:`SQLITE_LIMIT_LIKE_PATTERN_LENGTH`, :const:`SQLITE_LIMIT_SQL_LENGTH`, :const:`SQLITE_LIMIT_TRIGGER_DEPTH`, :const:`SQLITE_LIMIT_VARIABLE_NUMBER`, :const:`SQLITE_LIMIT_VDBE_OP`
+    :const:`SQLITE_LIMIT_ATTACHED`, :const:`SQLITE_LIMIT_COLUMN`, :const:`SQLITE_LIMIT_COMPOUND_SELECT`, :const:`SQLITE_LIMIT_EXPR_DEPTH`, :const:`SQLITE_LIMIT_FUNCTION_ARG`, :const:`SQLITE_LIMIT_LENGTH`, :const:`SQLITE_LIMIT_LIKE_PATTERN_LENGTH`, :const:`SQLITE_LIMIT_SQL_LENGTH`, :const:`SQLITE_LIMIT_TRIGGER_DEPTH`, :const:`SQLITE_LIMIT_VARIABLE_NUMBER`, :const:`SQLITE_LIMIT_VDBE_OP`, :const:`SQLITE_LIMIT_WORKER_THREADS`
 
 .. data:: mapping_locking_level
 
@@ -407,9 +407,9 @@ modules etc. For example::
 
 .. data:: mapping_result_codes
 
-   `Result Codes <https://sqlite.org/c3ref/c_abort.html>`__
+   `Primary Result Codes versus Extended Result Codes <https://sqlite.org/rescode.html>`__
 
-    :const:`SQLITE_ABORT`, :const:`SQLITE_AUTH`, :const:`SQLITE_BUSY`, :const:`SQLITE_CANTOPEN`, :const:`SQLITE_CONSTRAINT`, :const:`SQLITE_CORRUPT`, :const:`SQLITE_EMPTY`, :const:`SQLITE_ERROR`, :const:`SQLITE_FORMAT`, :const:`SQLITE_FULL`, :const:`SQLITE_INTERNAL`, :const:`SQLITE_INTERRUPT`, :const:`SQLITE_IOERR`, :const:`SQLITE_LOCKED`, :const:`SQLITE_MISMATCH`, :const:`SQLITE_MISUSE`, :const:`SQLITE_NOLFS`, :const:`SQLITE_NOMEM`, :const:`SQLITE_NOTADB`, :const:`SQLITE_NOTFOUND`, :const:`SQLITE_NOTICE`, :const:`SQLITE_OK`, :const:`SQLITE_PERM`, :const:`SQLITE_PROTOCOL`, :const:`SQLITE_RANGE`, :const:`SQLITE_READONLY`, :const:`SQLITE_SCHEMA`, :const:`SQLITE_TOOBIG`, :const:`SQLITE_WARNING`
+    :const:`SQLITE_ABORT`, :const:`SQLITE_AUTH`, :const:`SQLITE_BUSY`, :const:`SQLITE_CANTOPEN`, :const:`SQLITE_CONSTRAINT`, :const:`SQLITE_CORRUPT`, :const:`SQLITE_DONE`, :const:`SQLITE_EMPTY`, :const:`SQLITE_ERROR`, :const:`SQLITE_FORMAT`, :const:`SQLITE_FULL`, :const:`SQLITE_INTERNAL`, :const:`SQLITE_INTERRUPT`, :const:`SQLITE_IOERR`, :const:`SQLITE_LOCKED`, :const:`SQLITE_MISMATCH`, :const:`SQLITE_MISUSE`, :const:`SQLITE_NOLFS`, :const:`SQLITE_NOMEM`, :const:`SQLITE_NOTADB`, :const:`SQLITE_NOTFOUND`, :const:`SQLITE_NOTICE`, :const:`SQLITE_OK`, :const:`SQLITE_PERM`, :const:`SQLITE_PROTOCOL`, :const:`SQLITE_RANGE`, :const:`SQLITE_READONLY`, :const:`SQLITE_ROW`, :const:`SQLITE_SCHEMA`, :const:`SQLITE_TOOBIG`, :const:`SQLITE_WARNING`
 
 .. data:: mapping_status
 
