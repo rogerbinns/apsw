@@ -621,20 +621,24 @@ class apsw_build_ext(beparent):
         # icu
         if addicuinclib:
             foundicu=False
-            for part in shlex.split(os.popen("icu-config --cppflags", "r").read()):
+            kwargs={}
+            if sys.version_info>=(2, 6):
+                # if posix is true then quotes get stripped such as from -Dfoo="bar"
+                kwargs["posix"]=False
+            for part in shlex.split(os.popen("icu-config --cppflags", "r").read(), **kwargs):
                 if part.startswith("-I"):
                     ext.include_dirs.append(part[2:])
                     foundicu=True
                 elif part.startswith("-D"):
                     part=part[2:]
                     if '=' in part:
-                        part=part.split('=', 1)
+                        part=tuple(part.split('=', 1))
                     else:
                         part=(part, '1')
                     ext.define_macros.append(part)
                     foundicu=True
 
-            for part in shlex.split(os.popen("icu-config --ldflags", "r").read()):
+            for part in shlex.split(os.popen("icu-config --ldflags", "r").read(), **kwargs):
                 if part.startswith("-L"):
                     ext.library_dirs.append(part[2:])
                     foundicu=True
