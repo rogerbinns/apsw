@@ -30,6 +30,10 @@ try:
 except KeyError:
     pass
 
+# make sure all extensions are tested
+for e in "fts3", "rtree", "icu":
+    os.putenv("APSW_TEST_"+e.upper(), e)
+
 def run(cmd):
     status=os.system(cmd)
     if os.WIFEXITED(status):
