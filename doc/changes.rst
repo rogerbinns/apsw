@@ -2,8 +2,8 @@ Change History
 **************
 .. currentmodule:: apsw
 
-3.8.8-r1
-========
+3.8.7.2-r1
+==========
 
 Fixed parsing of icu-config flags
 
