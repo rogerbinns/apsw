@@ -26,8 +26,8 @@ so you can see what gets printed when you run the code.
 .. code-block:: text
 
    |       Using APSW file /space/apsw/apsw.so
-   |          APSW version 3.8.7.1-r1
-   |    SQLite lib version 3.8.7.1
+   |          APSW version 3.8.7.2-r1
+   |    SQLite lib version 3.8.7.2
    | SQLite header version 3008007
 
 .. code-block:: python
@@ -398,8 +398,7 @@ so you can see what gets printed when you run the code.
 .. code-block:: text
 
    | in commit hook
-   | no commits out of hours
-   | commit was not allowed
+   | commits okay at this time
 
 .. _example-updatehook:
 
@@ -748,7 +747,7 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
-   | SQLite memory usage current 339136 max 343784
+   | SQLite memory usage current 345544 max 350192
 
 .. code-block:: python
 
