@@ -26,8 +26,8 @@ so you can see what gets printed when you run the code.
 .. code-block:: text
 
    |       Using APSW file /space/apsw/apsw.so
-   |          APSW version 3.8.7.2-r1
-   |    SQLite lib version 3.8.7.2
+   |          APSW version 3.8.7.3-r1
+   |    SQLite lib version 3.8.7.3
    | SQLite header version 3008007
 
 .. code-block:: python
