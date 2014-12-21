@@ -678,9 +678,17 @@ class APSW(unittest.TestCase):
             self.assertEqual(cols, c.getdescription())
             self.assertEqual(cols, tuple([d[:2] for d in c.description]))
             self.assertEqual((None,None,None,None,None), c.description[0][2:])
-            self.assertEqual(len(c.description[0]), 7)
+            self.assertEqual(map(len, c.description), [7]*len(cols))
+        # check description caching isn't broken
+        cols2=cols[1:4]
+        for row in c.execute("select y,z,a from foo"):
+            self.assertEqual(cols2, c.getdescription())
+            self.assertEqual(cols2, tuple([d[:2] for d in c.description]))
+            self.assertEqual((None,None,None,None,None), c.description[0][2:])
+            self.assertEqual(map(len, c.description), [7]*len(cols2))
         # execution is complete ...
         self.assertRaises(apsw.ExecutionCompleteError, c.getdescription)
+        self.assertRaises(apsw.ExecutionCompleteError, lambda: c.description)
         self.assertRaises(StopIteration, lambda xx=0: _realnext(c))
         self.assertRaises(StopIteration, lambda xx=0: _realnext(c))
         # fetchone is used throughout, check end behaviour

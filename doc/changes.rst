@@ -2,6 +2,12 @@ Change History
 **************
 .. currentmodule:: apsw
 
+next
+====
+
+The column description is now cached during a query so getting it is
+quick if called for every row.
+
 3.8.7.3-r1
 ==========
 

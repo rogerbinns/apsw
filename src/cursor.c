@@ -147,6 +147,8 @@ struct APSWCursor {
 
   /* weak reference support */
   PyObject *weakreflist;
+
+  PyObject *description_cache[2];
 };
 
 typedef struct APSWCursor APSWCursor;
@@ -168,6 +170,9 @@ resetcursor(APSWCursor *self, int force)
   int res=SQLITE_OK;
   PyObject *nextquery=self->statement?self->statement->next:NULL;
   PyObject *etype, *eval, *etb;
+
+  Py_CLEAR(self->description_cache[0]);
+  Py_CLEAR(self->description_cache[1]);
 
   if(force)
     PyErr_Fetch(&etype, &eval, &etb);
@@ -275,6 +280,9 @@ APSWCursor_close_internal(APSWCursor *self, int force)
   /* we no longer need connection */
   Py_CLEAR(self->connection);
 
+  Py_CLEAR(self->description_cache[0]);
+  Py_CLEAR(self->description_cache[1]);
+
   return 0;
 }
 
@@ -302,21 +310,37 @@ APSWCursor_init(APSWCursor *self, Connection *connection)
   self->rowtrace=0;
   self->inuse=0;
   self->weakreflist=NULL;
+  self->description_cache[0]=0;
+  self->description_cache[1]=0;
 }
 
+static const char *description_formats[]={
+  "(O&O&)",
+  "(O&O&OOOOO)"
+};
 
 static PyObject *
-APSWCursor_internal_getdescription(APSWCursor *self, const char *fmt)
+APSWCursor_internal_getdescription(APSWCursor *self, int fmtnum)
 {
   int ncols,i;
   PyObject *result=NULL;
   PyObject *column=NULL;
 
+  assert(sizeof(description_formats)==sizeof(self->description_cache));
+
   CHECK_USE(NULL);
   CHECK_CURSOR_CLOSED(NULL);
 
-  if(!self->statement)
+  if(!self->statement) {
+    assert(self->description_cache[0]==0);
+    assert(self->description_cache[1]==0);
     return PyErr_Format(ExcComplete, "Can't get description for statements that have completed execution");
+  }
+
+  if(self->description_cache[fmtnum]) {
+    Py_INCREF(self->description_cache[fmtnum]);
+    return self->description_cache[fmtnum];
+  }
 
   ncols=sqlite3_column_count(self->statement->vdbestatement);
   result=PyTuple_New(ncols);
@@ -329,7 +353,7 @@ APSWCursor_internal_getdescription(APSWCursor *self, const char *fmt)
 
       PYSQLITE_VOID_CALL( (colname=sqlite3_column_name(self->statement->vdbestatement, i), coldesc=sqlite3_column_decltype(self->statement->vdbestatement, i)) );
       APSW_FAULT_INJECT(GetDescriptionFail,
-      column=Py_BuildValue(fmt,
+      column=Py_BuildValue(description_formats[fmtnum],
 			 convertutf8string, colname,
 			 convertutf8string, coldesc,
 			 Py_None,
@@ -347,6 +371,8 @@ APSWCursor_internal_getdescription(APSWCursor *self, const char *fmt)
       column=0;
     }
 
+  Py_INCREF(result);
+  self->description_cache[fmtnum]=result;
   return result;
 
  error:
@@ -355,9 +381,9 @@ APSWCursor_internal_getdescription(APSWCursor *self, const char *fmt)
   return NULL;
 }
 
-/** .. method:: getdescription() -> list
+/** .. method:: getdescription() -> tuple
 
-   Returns a list describing each column in the result row.  The
+   Returns a tuple describing each column in the result row.  The
    return is identical for every row of the results.  You can only
    call this method once you have started executing a statement and
    before you have finished::
@@ -407,7 +433,7 @@ APSWCursor_internal_getdescription(APSWCursor *self, const char *fmt)
 */
 static PyObject* APSWCursor_getdescription(APSWCursor *self)
 {
-  return APSWCursor_internal_getdescription(self, "(O&O&)");
+  return APSWCursor_internal_getdescription(self, 0);
 }
 
 /** .. attribute:: description
@@ -420,7 +446,7 @@ static PyObject* APSWCursor_getdescription(APSWCursor *self)
 
 static PyObject *APSWCursor_getdescription_dbapi(APSWCursor *self)
 {
-  return APSWCursor_internal_getdescription(self, "(O&O&OOOOO)");
+  return APSWCursor_internal_getdescription(self, 1);
 }
 
 /* internal function - returns SQLite error code (ie SQLITE_OK if all is well) */

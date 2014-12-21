@@ -69,6 +69,11 @@ coverage:
 test: build_ext
 	$(PYTHON) tests.py
 
+debugtest:
+	gcc -pthread -fno-strict-aliasing -g -fPIC -Wall -DAPSW_USE_SQLITE_CONFIG=\"sqlite3/sqlite3config.h\" -DEXPERIMENTAL -DSQLITE_DEBUG -DAPSW_USE_SQLITE_AMALGAMATION=\"sqlite3.c\" -DAPSW_NO_NDEBUG -DAPSW_TESTFIXTURES -I`$(PYTHON) -c "import distutils.sysconfig,sys; sys.stdout.write(distutils.sysconfig.get_python_inc())"` -I. -Isqlite3 -Isrc -c src/apsw.c
+	gcc -pthread -g -shared apsw.o -o apsw.so
+	$(PYTHON) tests.py $(APSWTESTS)
+
 # Needs a debug python.  Look at the final numbers at the bottom of
 # l6, l7 and l8 and see if any are growing
 valgrind: /space/pydebug/bin/python
