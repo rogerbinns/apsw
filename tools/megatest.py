@@ -124,6 +124,7 @@ def getpyurl(pyver):
         # Python stopped making new releases as bz2 and instead it is
         # xz in the middle of a release stream
         switchvers=(
+            "3.2.6",
             "2.7.7",
             "2.6.9",
         )
