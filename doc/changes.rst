@@ -7,6 +7,7 @@ next
 
 The column description is now cached during a query so getting it is
 quick if called for every row.
+Update year in various places to 2015.
 
 3.8.7.3-r1
 ==========
