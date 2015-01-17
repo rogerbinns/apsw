@@ -3658,6 +3658,8 @@ class APSW(unittest.TestCase):
             self.assertRaises(TypeError, apsw.config, 89748937)
             x=long(0x7fffffff)
             self.assertRaises(OverflowError, apsw.config, x*x*x*x)
+            self.assert_(apsw.config(apsw.SQLITE_CONFIG_PCACHE_HDRSZ)>=0);
+            apsw.config(apsw.SQLITE_CONFIG_PMASZ, -1)
         finally:
             # put back to normal
             apsw.config(apsw.SQLITE_CONFIG_SERIALIZED)

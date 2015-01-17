@@ -278,8 +278,9 @@ sqliteshutdown(void)
   Many operations don't make sense from a Python program.  The
   following configuration operations are supported: SQLITE_CONFIG_LOG,
   SQLITE_CONFIG_SINGLETHREAD, SQLITE_CONFIG_MULTITHREAD,
-  SQLITE_CONFIG_SERIALIZED, SQLITE_CONFIG_URI, SQLITE_CONFIG_MEMSTATUS
-  and SQLITE_CONFIG_COVERING_INDEX_SCAN.
+  SQLITE_CONFIG_SERIALIZED, SQLITE_CONFIG_URI, SQLITE_CONFIG_MEMSTATUS,
+  SQLITE_CONFIG_COVERING_INDEX_SCAN, SQLITE_CONFIG_PCACHE_HDRSZ, and
+  SQLITE_CONFIG_PMASZ.
 
   See :ref:`tips <diagnostics_tips>` for an example of how to receive
   log messages (SQLITE_CONFIG_LOG)
@@ -349,8 +350,23 @@ config(APSW_ARGUNUSED PyObject *self, PyObject *args)
       res=sqlite3_config( (int)opt );
       break;
 
+    case SQLITE_CONFIG_PCACHE_HDRSZ:
+      {
+        int outval=-1;
+        if(!PyArg_ParseTuple(args, "i", &optdup))
+          return NULL;
+        assert(opt==optdup);
+        res=sqlite3_config( (int)opt, &outval );
+        if(res) {
+          SET_EXC(res, NULL);
+          return NULL;
+        }
+        return PyInt_FromLong(outval);
+      }
+
     case SQLITE_CONFIG_MEMSTATUS:
     case SQLITE_CONFIG_COVERING_INDEX_SCAN:
+    case SQLITE_CONFIG_PMASZ:
       {
         int boolval;
         if(!PyArg_ParseTuple(args, "ii", &optdup, &boolval))
@@ -1593,6 +1609,8 @@ modules etc. For example::
       ADDINT(SQLITE_CONFIG_SQLLOG),
       ADDINT(SQLITE_CONFIG_MMAP_SIZE),
       ADDINT(SQLITE_CONFIG_WIN32_HEAPSIZE),
+      ADDINT(SQLITE_CONFIG_PCACHE_HDRSZ),
+      ADDINT(SQLITE_CONFIG_PMASZ),
       END,
 
       DICT("mapping_db_config"),
@@ -1670,6 +1688,7 @@ modules etc. For example::
       ADDINT(SQLITE_CHECKPOINT_PASSIVE),
       ADDINT(SQLITE_CHECKPOINT_FULL),
       ADDINT(SQLITE_CHECKPOINT_RESTART),
+      ADDINT(SQLITE_CHECKPOINT_TRUNCATE),
       END,
 
       DICT("mapping_file_control"),

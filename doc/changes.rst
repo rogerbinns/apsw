@@ -2,11 +2,17 @@ Change History
 **************
 .. currentmodule:: apsw
 
-next
-====
+3.8.8-r1
+========
 
-The column description is now cached during a query so getting it is
-quick if called for every row.
+The column description is now cached on first request during a query
+so getting it is quick if called for every row.
+
+Added SQLITE_CONFIG_PCACHE_HDRSZ and SQLITE_CONFIG_PMASZ constants, and
+support for them in :func:`config`.
+
+Added SQLITE_CHECKPOINT_TRUNCATE constant.
+
 Update year in various places to 2015.
 
 3.8.7.3-r1
