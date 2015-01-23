@@ -159,7 +159,14 @@ appropriate.  The cursor only has two important methods -
 If you want to change the rows returned then use a :ref:`row tracer
 <rowtracer>`.  For example you could call
 :meth:`Cursor.getdescription` and return a dictionary instead of a
-tuple.
+tuple::
+
+  def row_factory(cursor, row):
+      return {k[0]: row[i] for i, k in enumerate(cursor.getdescription())}
+
+  # You can also set this on just a cursor
+  connection.setrowtrace(row_factory)
+
 
 .. _busyhandling:
 
