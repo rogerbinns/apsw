@@ -2,8 +2,8 @@ Change History
 **************
 .. currentmodule:: apsw
 
-3.8.8-r1
-========
+3.8.8.1-r1
+==========
 
 The column description is now cached on first request during a query
 so getting it is quick if called for every row.

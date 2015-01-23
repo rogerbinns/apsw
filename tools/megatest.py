@@ -200,6 +200,7 @@ PYVERS=(
 
 SQLITEVERS=(
     '3.8.8',
+    '3.8.8.1',
 )
 
 if __name__=='__main__':
