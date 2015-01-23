@@ -67,8 +67,9 @@ API Reference
   Many operations don't make sense from a Python program.  The
   following configuration operations are supported: SQLITE_CONFIG_LOG,
   SQLITE_CONFIG_SINGLETHREAD, SQLITE_CONFIG_MULTITHREAD,
-  SQLITE_CONFIG_SERIALIZED, SQLITE_CONFIG_URI, SQLITE_CONFIG_MEMSTATUS
-  and SQLITE_CONFIG_COVERING_INDEX_SCAN.
+  SQLITE_CONFIG_SERIALIZED, SQLITE_CONFIG_URI, SQLITE_CONFIG_MEMSTATUS,
+  SQLITE_CONFIG_COVERING_INDEX_SCAN, SQLITE_CONFIG_PCACHE_HDRSZ, and
+  SQLITE_CONFIG_PMASZ.
 
   See :ref:`tips <diagnostics_tips>` for an example of how to receive
   log messages (SQLITE_CONFIG_LOG)
@@ -355,7 +356,7 @@ modules etc. For example::
 
    `Configuration Options <https://sqlite.org/c3ref/c_config_covering_index_scan.html>`__
 
-    :const:`SQLITE_CONFIG_COVERING_INDEX_SCAN`, :const:`SQLITE_CONFIG_GETMALLOC`, :const:`SQLITE_CONFIG_GETMUTEX`, :const:`SQLITE_CONFIG_GETPCACHE`, :const:`SQLITE_CONFIG_GETPCACHE2`, :const:`SQLITE_CONFIG_HEAP`, :const:`SQLITE_CONFIG_LOG`, :const:`SQLITE_CONFIG_LOOKASIDE`, :const:`SQLITE_CONFIG_MALLOC`, :const:`SQLITE_CONFIG_MEMSTATUS`, :const:`SQLITE_CONFIG_MMAP_SIZE`, :const:`SQLITE_CONFIG_MULTITHREAD`, :const:`SQLITE_CONFIG_MUTEX`, :const:`SQLITE_CONFIG_PAGECACHE`, :const:`SQLITE_CONFIG_PCACHE`, :const:`SQLITE_CONFIG_PCACHE2`, :const:`SQLITE_CONFIG_SCRATCH`, :const:`SQLITE_CONFIG_SERIALIZED`, :const:`SQLITE_CONFIG_SINGLETHREAD`, :const:`SQLITE_CONFIG_SQLLOG`, :const:`SQLITE_CONFIG_URI`, :const:`SQLITE_CONFIG_WIN32_HEAPSIZE`
+    :const:`SQLITE_CONFIG_COVERING_INDEX_SCAN`, :const:`SQLITE_CONFIG_GETMALLOC`, :const:`SQLITE_CONFIG_GETMUTEX`, :const:`SQLITE_CONFIG_GETPCACHE`, :const:`SQLITE_CONFIG_GETPCACHE2`, :const:`SQLITE_CONFIG_HEAP`, :const:`SQLITE_CONFIG_LOG`, :const:`SQLITE_CONFIG_LOOKASIDE`, :const:`SQLITE_CONFIG_MALLOC`, :const:`SQLITE_CONFIG_MEMSTATUS`, :const:`SQLITE_CONFIG_MMAP_SIZE`, :const:`SQLITE_CONFIG_MULTITHREAD`, :const:`SQLITE_CONFIG_MUTEX`, :const:`SQLITE_CONFIG_PAGECACHE`, :const:`SQLITE_CONFIG_PCACHE`, :const:`SQLITE_CONFIG_PCACHE2`, :const:`SQLITE_CONFIG_PCACHE_HDRSZ`, :const:`SQLITE_CONFIG_PMASZ`, :const:`SQLITE_CONFIG_SCRATCH`, :const:`SQLITE_CONFIG_SERIALIZED`, :const:`SQLITE_CONFIG_SINGLETHREAD`, :const:`SQLITE_CONFIG_SQLLOG`, :const:`SQLITE_CONFIG_URI`, :const:`SQLITE_CONFIG_WIN32_HEAPSIZE`
 
 .. data:: mapping_db_config
 
@@ -425,7 +426,7 @@ modules etc. For example::
 
 .. data:: mapping_wal_checkpoint
 
-   `Checkpoint operation parameters <https://sqlite.org/c3ref/c_checkpoint_full.html>`__
+   `Checkpoint Mode Values <https://sqlite.org/c3ref/c_checkpoint_full.html>`__
 
-    :const:`SQLITE_CHECKPOINT_FULL`, :const:`SQLITE_CHECKPOINT_PASSIVE`, :const:`SQLITE_CHECKPOINT_RESTART`
+    :const:`SQLITE_CHECKPOINT_FULL`, :const:`SQLITE_CHECKPOINT_PASSIVE`, :const:`SQLITE_CHECKPOINT_RESTART`, :const:`SQLITE_CHECKPOINT_TRUNCATE`
 

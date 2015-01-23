@@ -249,9 +249,9 @@ Cursor class
 
 .. index:: sqlite3_column_name, sqlite3_column_decltype
 
-.. method:: Cursor.getdescription() -> list
+.. method:: Cursor.getdescription() -> tuple
 
-   Returns a list describing each column in the result row.  The
+   Returns a tuple describing each column in the result row.  The
    return is identical for every row of the results.  You can only
    call this method once you have started executing a statement and
    before you have finished::

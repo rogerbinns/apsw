@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Cursors (executing SQL) &mdash; APSW 3.8.7.3-r1 documentation</title>
+    <title>Cursors (executing SQL) &mdash; APSW 3.8.8.1-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.8.7.3-r1',
+        VERSION:     '3.8.8.1-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.8.7.3-r1 documentation" href="index.html" />
+    <link rel="top" title="APSW 3.8.8.1-r1 documentation" href="index.html" />
     <link rel="next" title="Blob Input/Output" href="blob.html" />
     <link rel="prev" title="Connections to a database" href="connection.html" />
  
@@ -51,7 +51,7 @@
         <li class="right" >
           <a href="connection.html" title="Connections to a database"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">APSW 3.8.7.3-r1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">APSW 3.8.8.1-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -343,8 +343,8 @@ in DBAPI.  It is a longer way of doing <tt class="docutils literal"><span class=
 
 <span class="target" id="index-1"></span><dl class="method">
 <dt id="apsw.Cursor.getdescription">
-<tt class="descclassname">Cursor.</tt><tt class="descname">getdescription</tt><big>(</big><big>)</big> &rarr; list<a class="headerlink" href="#apsw.Cursor.getdescription" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a list describing each column in the result row.  The
+<tt class="descclassname">Cursor.</tt><tt class="descname">getdescription</tt><big>(</big><big>)</big> &rarr; tuple<a class="headerlink" href="#apsw.Cursor.getdescription" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a tuple describing each column in the result row.  The
 return is identical for every row of the results.  You can only
 call this method once you have started executing a statement and
 before you have finished:</p>
@@ -520,13 +520,13 @@ removed.</p>
         <li class="right" >
           <a href="connection.html" title="Connections to a database"
              >previous</a> |</li>
-        <li><a href="index.html">APSW 3.8.7.3-r1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">APSW 3.8.8.1-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>
 
     <div class="footer">
-        &copy; <a href="copyright.html">Copyright</a> 2004-2014, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Dec 08, 2014.
+        &copy; <a href="copyright.html">Copyright</a> 2004-2015, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Jan 22, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

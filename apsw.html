@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>APSW Module &mdash; APSW 3.8.7.3-r1 documentation</title>
+    <title>APSW Module &mdash; APSW 3.8.8.1-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.8.7.3-r1',
+        VERSION:     '3.8.8.1-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.8.7.3-r1 documentation" href="index.html" />
+    <link rel="top" title="APSW 3.8.8.1-r1 documentation" href="index.html" />
     <link rel="next" title="Connections to a database" href="connection.html" />
     <link rel="prev" title="Extensions" href="extensions.html" />
  
@@ -51,7 +51,7 @@
         <li class="right" >
           <a href="extensions.html" title="Extensions"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">APSW 3.8.7.3-r1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">APSW 3.8.8.1-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -130,8 +130,9 @@ needed to ask for another line:</p>
 <p>Many operations don&#8217;t make sense from a Python program.  The
 following configuration operations are supported: SQLITE_CONFIG_LOG,
 SQLITE_CONFIG_SINGLETHREAD, SQLITE_CONFIG_MULTITHREAD,
-SQLITE_CONFIG_SERIALIZED, SQLITE_CONFIG_URI, SQLITE_CONFIG_MEMSTATUS
-and SQLITE_CONFIG_COVERING_INDEX_SCAN.</p>
+SQLITE_CONFIG_SERIALIZED, SQLITE_CONFIG_URI, SQLITE_CONFIG_MEMSTATUS,
+SQLITE_CONFIG_COVERING_INDEX_SCAN, SQLITE_CONFIG_PCACHE_HDRSZ, and
+SQLITE_CONFIG_PMASZ.</p>
 <p>See <a class="reference internal" href="tips.html#diagnostics-tips"><em>tips</em></a> for an example of how to receive
 log messages (SQLITE_CONFIG_LOG)</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/config.html">sqlite3_config</a></p>
@@ -431,7 +432,7 @@ modules etc. For example:</p>
 <tt class="descname">mapping_config</tt><a class="headerlink" href="#apsw.mapping_config" title="Permalink to this definition">¶</a></dt>
 <dd><p><a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html">Configuration Options</a></p>
 <blockquote>
-<div><tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_COVERING_INDEX_SCAN</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_GETMALLOC</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_GETMUTEX</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_GETPCACHE</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_GETPCACHE2</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_HEAP</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_LOG</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_LOOKASIDE</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_MALLOC</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_MEMSTATUS</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_MMAP_SIZE</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_MULTITHREAD</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_MUTEX</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_PAGECACHE</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_PCACHE</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_PCACHE2</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_SCRATCH</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_SERIALIZED</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_SINGLETHREAD</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_SQLLOG</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_URI</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_WIN32_HEAPSIZE</span></tt></div></blockquote>
+<div><tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_COVERING_INDEX_SCAN</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_GETMALLOC</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_GETMUTEX</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_GETPCACHE</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_GETPCACHE2</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_HEAP</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_LOG</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_LOOKASIDE</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_MALLOC</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_MEMSTATUS</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_MMAP_SIZE</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_MULTITHREAD</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_MUTEX</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_PAGECACHE</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_PCACHE</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_PCACHE2</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_PCACHE_HDRSZ</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_PMASZ</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_SCRATCH</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_SERIALIZED</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_SINGLETHREAD</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_SQLLOG</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_URI</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CONFIG_WIN32_HEAPSIZE</span></tt></div></blockquote>
 </dd></dl>
 
 <dl class="data">
@@ -525,9 +526,9 @@ modules etc. For example:</p>
 <dl class="data">
 <dt id="apsw.mapping_wal_checkpoint">
 <tt class="descname">mapping_wal_checkpoint</tt><a class="headerlink" href="#apsw.mapping_wal_checkpoint" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference external" href="https://sqlite.org/c3ref/c_checkpoint_full.html">Checkpoint operation parameters</a></p>
+<dd><p><a class="reference external" href="https://sqlite.org/c3ref/c_checkpoint_full.html">Checkpoint Mode Values</a></p>
 <blockquote>
-<div><tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CHECKPOINT_FULL</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CHECKPOINT_PASSIVE</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CHECKPOINT_RESTART</span></tt></div></blockquote>
+<div><tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CHECKPOINT_FULL</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CHECKPOINT_PASSIVE</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CHECKPOINT_RESTART</span></tt>, <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CHECKPOINT_TRUNCATE</span></tt></div></blockquote>
 </dd></dl>
 
 </div>
@@ -591,13 +592,13 @@ modules etc. For example:</p>
         <li class="right" >
           <a href="extensions.html" title="Extensions"
              >previous</a> |</li>
-        <li><a href="index.html">APSW 3.8.7.3-r1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">APSW 3.8.8.1-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>
 
     <div class="footer">
-        &copy; <a href="copyright.html">Copyright</a> 2004-2014, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Dec 08, 2014.
+        &copy; <a href="copyright.html">Copyright</a> 2004-2015, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Jan 22, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
