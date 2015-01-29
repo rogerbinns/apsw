@@ -11,7 +11,10 @@ import time
 import zipfile, tarfile
 import socket
 
-from distutils.core import setup, Extension, Command
+try:
+    from setuptools import setup, Extension, Command
+except ImportError:
+    from distutils.core import setup, Extension, Command
 from distutils.command import build_ext, build, sdist
 
 ##
@@ -838,15 +841,19 @@ complete SQLite API into Python.""",
       author_email="rogerb@rogerbinns.com",
       url="https://github.com/rogerbinns/apsw/",
       classifiers=[
-    "Development Status :: 5 - Production/Stable",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved",
-    "Operating System :: OS Independent",
-    "Programming Language :: C",
-    "Programming Language :: Python :: 2",
-    "Programming Language :: Python :: 3",
-    "Topic :: Database :: Front-Ends",
-    ],
+          "Development Status :: 5 - Production/Stable",
+          "Intended Audience :: Developers",
+          "License :: OSI Approved",
+          "Operating System :: OS Independent",
+          "Programming Language :: C",
+          "Programming Language :: Python :: 2",
+          "Programming Language :: Python :: 3",
+          "Topic :: Database :: Front-Ends",
+      ],
+      entry_points = """\
+          [console_scripts]
+          apsw = apsw:main
+      """,
       keywords=["database", "sqlite"],
       license="OSI Approved ::",
 

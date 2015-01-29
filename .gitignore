@@ -33,6 +33,7 @@ testdbx
 sqlite3/
 build/
 dist/
+*.egg-info
 sqlite3.h
 sqlite3.c
 sqlite3ext.h
