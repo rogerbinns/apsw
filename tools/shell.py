@@ -2569,7 +2569,7 @@ Enter SQL statements terminated with a ";"
             end=readline.get_endidx()
             # Are we matching a command?
             try:
-                if self._completion_first and line.startswith("."):
+                if self._completion_first and line.startswith(".") and token.startswith('.'):
                     self.completions=self.complete_command(line, token, beg, end)
                 else:
                     self.completions=self.complete_sql(line, token, beg, end)
@@ -2686,38 +2686,38 @@ Enter SQL statements terminated with a ";"
         """
         if self._completion_cache is None:
             cur=self.db.cursor()
-            collations=[row[1] for row in cur.execute("pragma collation_list")]
-            databases=[row[1] for row in cur.execute("pragma database_list")]
-            other=[]
-            for db in databases:
+            self._collations=[row[1] for row in cur.execute("pragma collation_list")]
+            self._databases=[row[1] for row in cur.execute("pragma database_list")]
+            self._other=[]
+            for db in self._databases:
                 if db=="temp":
                     master="sqlite_temp_master"
                 else:
                     master="[%s].sqlite_master" % (db,)
                 for row in cur.execute("select * from "+master).fetchall():
                     for col in (1,2):
-                        if row[col] not in other and not row[col].startswith("sqlite_"):
-                            other.append(row[col])
+                        if row[col] not in self._other and not row[col].startswith("sqlite_"):
+                            self._other.append(row[col])
                     if row[0]=="table":
                         try:
                             for table in cur.execute("pragma [%s].table_info([%s])" % (db, row[1],)).fetchall():
-                                if table[1] not in other:
-                                    other.append(table[1])
+                                if table[1] not in self._other:
+                                    self._other.append(table[1])
                                 for item in table[2].split():
-                                    if item not in other:
-                                        other.append(item)
+                                    if item not in self._other:
+                                        self._other.append(item)
                         except apsw.SQLError:
                             # See https://github.com/rogerbinns/apsw/issues/86
                             pass
 
-            self._completion_cache=[self._sqlite_keywords, self._sqlite_functions, self._sqlite_special_names, collations, databases, other]
+            self._completion_cache=[self._sqlite_keywords, self._sqlite_functions, self._sqlite_special_names, self._collations, self._databases, self._other]
             for i in range(len(self._completion_cache)):
                 self._completion_cache[i].sort()
 
+        t=self._get_prev_tokens(line.lower(), end)
+
         # be somewhat sensible about pragmas
         if "pragma " in line.lower():
-            t=self._get_prev_tokens(line.lower(), end)
-
             # pragma foo = bar
             if len(t)>2 and t[-3]=="pragma":
                 # t[-2] should be a valid one
@@ -2752,7 +2752,15 @@ Enter SQL statements terminated with a ";"
         # be table names.  That is a SMOP like pragmas above
         res=[]
         ut=token.upper()
-        for corpus in self._completion_cache:
+        if t[0] in ('tables', 'schema') or t[-1].upper() in ('FROM',):
+            choices=[self._databases, self._other]
+        elif t[0] == 'mode':
+            if not self._output_modes:
+                self._cache_output_modes()
+            choices=[self._output_modes]
+        else:
+            choices=list(self._completion_cache)
+        for corpus in choices:
             for word in corpus:
                 if word.upper().startswith(ut):
                     # potential match - now match case
