@@ -162,11 +162,15 @@ def buildpython(workdir, pyver, ucs, logfilename):
         full="full" # 3.1 rc 1 doesn't need 'fullinstall'
     else:
         full=""
-    # zlib on natty issue: http://lipyrary.blogspot.com/2011/05/how-to-compile-python-on-ubuntu-1104.html
-    # LDFLAGS works for Python 2.5 onwards.  Edit setup on 2.3 and 2.4
-    if pyver.startswith("2.3") or pyver.startswith("2.4"):
-        patch_natty_build(os.path.join(workdir, "Python-"+pyver, "setup.py"))
-    run("set -e ; LDFLAGS=\"-L/usr/lib/$(dpkg-architecture -qDEB_HOST_MULTIARCH)\"; export LDFLAGS ; cd %s ; cd ?ython-%s ; ./configure %s --disable-ipv6 --enable-unicode=ucs%d --prefix=%s/pyinst  >> %s 2>&1; make >>%s 2>&1; make  %sinstall >>%s 2>&1 ; make clean >/dev/null" % (workdir, pyver, opt, ucs, workdir, logfilename, logfilename, full, logfilename))
+    if sys.platform.startswith("linux"):
+        # zlib on natty issue: http://lipyrary.blogspot.com/2011/05/how-to-compile-python-on-ubuntu-1104.html
+        # LDFLAGS works for Python 2.5 onwards.  Edit setup on 2.3 and 2.4
+        if pyver.startswith("2.3") or pyver.startswith("2.4"):
+            patch_natty_build(os.path.join(workdir, "Python-"+pyver, "setup.py"))
+        ldflags="LDFLAGS=\"-L/usr/lib/$(dpkg-architecture -qDEB_HOST_MULTIARCH)\"; export LDFLAGS;"
+    else:
+        ldflags=""
+    run("set -e ; %s cd %s ; cd ?ython-%s ; ./configure %s --disable-ipv6 --enable-unicode=ucs%d --prefix=%s/pyinst  >> %s 2>&1; make >>%s 2>&1; make  %sinstall >>%s 2>&1 ; make clean >/dev/null" % (ldflags, workdir, pyver, opt, ucs, workdir, logfilename, logfilename, full, logfilename))
     suf=""
     if pyver>="3.1":
         suf="3"
