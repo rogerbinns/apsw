@@ -2942,7 +2942,7 @@ def main():
         _,_,cmds=s.process_args(sys.argv[1:])
         if len(cmds)==0:
             s.cmdloop()
-    except:
+    except Exception:
         v=sys.exc_info()[1]
         if getattr(v, "_handle_exception_saw_this", False):
             pass
