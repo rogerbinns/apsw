@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Building &mdash; APSW 3.8.8.1-r1 documentation</title>
+    <title>Building &mdash; APSW 3.8.8.2-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.8.8.1-r1',
+        VERSION:     '3.8.8.2-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.8.8.1-r1 documentation" href="index.html" />
+    <link rel="top" title="APSW 3.8.8.2-r1 documentation" href="index.html" />
     <link rel="next" title="Extensions" href="extensions.html" />
     <link rel="prev" title="Download" href="download.html" />
  
@@ -51,7 +51,7 @@
         <li class="right" >
           <a href="download.html" title="Download"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">APSW 3.8.8.1-r1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">APSW 3.8.8.2-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -453,19 +453,19 @@ OK
 <p>The tests also ensure that as much APSW code as possible is executed
 including alternate paths through the code.  95.5% of the APSW code is
 executed by the tests. If you checkout the APSW source then there is a
-script <a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/coverage.sh">coverage.sh</a> that enables extra code that deliberately
-induces extra conditions such as memory allocation failures, SQLite
-returning undocumented error codes etc. That brings coverage up to
-99.6% of the code.</p>
+script <a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/tools/coverage.sh">tools/coverage.sh</a> that enables extra code that
+deliberately induces extra conditions such as memory allocation
+failures, SQLite returning undocumented error codes etc. That brings
+coverage up to 99.6% of the code.</p>
 <p>A memory checker <a class="reference external" href="http://valgrind.org">Valgrind</a> is used while
-running the test suite. The test suite is run 150 times to make any
-memory leaks or similar issues stand out. A checking version of Python
-is also used.  See <a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/valgrind.sh">valgrind.sh</a> in the source.</p>
+running the test suite. The test suite is run multiple times to make
+any memory leaks or similar issues stand out. A checking version of
+Python is also used.  See <a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/tools/valgrind.sh">tools/valgrind.sh</a> in the source.</p>
 <p>To ensure compatibility with the various Python versions, a script
 downloads and compiles all supported Python versions in both 2 byte
 and 4 byte Unicode character configurations against the APSW and
-SQLite supported versions running the tests. See <a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/megatest.py">megatest.py</a>
-in the source.</p>
+SQLite supported versions running the tests. See
+<a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/tools/megatest.py">tools/megatest.py</a> in the source.</p>
 <p>In short both SQLite and APSW have a lot of testing!</p>
 </div>
 </div>
@@ -536,13 +536,13 @@ in the source.</p>
         <li class="right" >
           <a href="download.html" title="Download"
              >previous</a> |</li>
-        <li><a href="index.html">APSW 3.8.8.1-r1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">APSW 3.8.8.2-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>
 
     <div class="footer">
         &copy; <a href="copyright.html">Copyright</a> 2004-2015, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jan 22, 2015.
+      Last updated on Feb 01, 2015.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
