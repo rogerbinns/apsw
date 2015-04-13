@@ -721,35 +721,9 @@ class APSW(unittest.TestCase):
         "Check type information is maintained"
         c=self.db.cursor()
         c.execute("create table foo(row,x)")
-        vals=("a simple string",  # "ascii" string
-              "0123456789"*200000, # a longer string
-              u(r"a \u1234 unicode \ufe54 string \u0089"),  # simple unicode string
-              u(r"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET} "), # funky unicode or an episode of b5
-              u(r"\N{MUSICAL SYMBOL G CLEF}"), # http://www.cmlenz.net/archives/2008/07/the-truth-about-unicode-in-python
-              97, # integer
-              2147483647,   # numbers on 31 bit boundary (32nd bit used for integer sign), and then
-              -2147483647,  # start using 32nd bit (must be represented by 64bit to avoid losing
-              long(2147483648),  # detail)
-              long(-2147483648),
-              long(2147483999),
-              long(-2147483999),
-              992147483999,
-              -992147483999,
-              9223372036854775807,
-              -9223372036854775808,
-              b("a set of bytes"),      # bag of bytes initialised from a string, but don't confuse it with a
-              b("".join(["\\x%02x" % (x,) for x in range(256)])), # string
-              b("".join(["\\x%02x" % (x,) for x in range(256)])*20000),  # non-trivial size
-              None,  # our good friend NULL/None
-              1.1,  # floating point can't be compared exactly - assertAlmostEqual is used to check
-              10.2, # see Appendix B in the Python Tutorial
-              1.3,
-              1.45897589347E97,
-              5.987987/8.7678678687676786,
-              math.pi,
-              True,  # derived from integer
-              False
-              )
+
+        vals=test_types_vals
+
         for i,v in enumerate(vals):
             c.execute("insert into foo values(?,?)", (i, v))
 
@@ -3697,6 +3671,80 @@ class APSW(unittest.TestCase):
         self.assertTrue(type(self.db.sqlite3pointer()) in (int,long))
         self.assertEqual(self.db.sqlite3pointer(), self.db.sqlite3pointer())
         self.assertNotEqual(self.db.sqlite3pointer(), apsw.Connection(":memory:").sqlite3pointer())
+
+    def testPickle(self, module=None):
+        "Verify data etc can be pickled"
+        if module==None:
+            import pickle
+            self.testPickle(pickle)
+            try:
+                import cPickle
+                self.testPickle(cPickle)
+            except ImportError:
+                pass
+            return
+
+        import pickle
+        PicklingError=pickle.PicklingError
+        try:
+            import cPickle
+            PicklingError=(PicklingError, cPickle.PicklingError)
+        except ImportError:
+            pass
+
+        # work out what protocol versions we can use
+        versions=[]
+        for num in range(-1, 20):
+            try:
+                module.dumps(3, num)
+                versions.append(num)
+            except ValueError:
+                pass
+
+        # some objects to try pickling
+        vals=test_types_vals
+        cursor=self.db.cursor()
+        cursor.execute("create table if not exists t(i,x)")
+        def canpickle(val):
+            if py3: return True
+            # Python <= 2.5 wide builds screws up unicode codepoints
+            # above 0xffff with pickle
+            if sys.version_info<(2,6) and isinstance(val, unicode):
+                for a in val:
+                    if ord(a)>0xffff:
+                        return False
+
+            return not isinstance(val, buffer)
+
+        cursor.execute("BEGIN")
+        cursor.executemany("insert into t values(?,?)", [(i,v) for i,v in enumerate(vals) if canpickle(v)])
+        cursor.execute("COMMIT")
+
+        for ver in versions:
+            for row in cursor.execute("select * from t"):
+                self.assertEqual(row, module.loads(module.dumps(row, ver)))
+                rownum, val=row
+                if type(vals[rownum]) is float:
+                    self.assertAlmostEqual(vals[rownum], val)
+                else:
+                    self.assertEqual(vals[rownum], val)
+            # can't pickle cursors
+            try:
+                module.dumps(cursor, ver)
+            except TypeError:
+                pass
+            except PicklingError:
+                pass
+            # some versions can pickle the db, but give a zeroed db back
+            db=None
+            try:
+                db=module.loads(module.dumps(self.db, ver))
+            except TypeError:
+                pass
+            if db is not None:
+                self.assertRaises(apsw.ConnectionClosedError, db.db_filename, "main")
+                self.assertRaises(apsw.ConnectionClosedError, db.cursor)
+                self.assertRaises(apsw.ConnectionClosedError, db.getautocommit)
 
     def testStatus(self):
         "Verify status function"
@@ -8130,6 +8178,38 @@ def setup(write=write):
         APSW.testShell=APSW._testShellWithCoverage
 
     del memdb
+
+# This can't be a member of APSW class above because Python 2.3
+# unittest gets confused and tries to execute it!
+test_types_vals=("a simple string",  # "ascii" string
+          "0123456789"*200000, # a longer string
+          u(r"a \u1234 unicode \ufe54 string \u0089"),  # simple unicode string
+          u(r"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET} "), # funky unicode or an episode of b5
+          u(r"\N{MUSICAL SYMBOL G CLEF}"), # http://www.cmlenz.net/archives/2008/07/the-truth-about-unicode-in-python
+          97, # integer
+          2147483647,   # numbers on 31 bit boundary (32nd bit used for integer sign), and then
+          -2147483647,  # start using 32nd bit (must be represented by 64bit to avoid losing
+          long(2147483648),  # detail)
+          long(-2147483648),
+          long(2147483999),
+          long(-2147483999),
+          992147483999,
+          -992147483999,
+          9223372036854775807,
+          -9223372036854775808,
+          b("a set of bytes"),      # bag of bytes initialised from a string, but don't confuse it with a
+          b("".join(["\\x%02x" % (x,) for x in range(256)])), # string
+          b("".join(["\\x%02x" % (x,) for x in range(256)])*20000),  # non-trivial size
+          None,  # our good friend NULL/None
+          1.1,  # floating point can't be compared exactly - assertAlmostEqual is used to check
+          10.2, # see Appendix B in the Python Tutorial
+          1.3,
+          1.45897589347E97,
+          5.987987/8.7678678687676786,
+          math.pi,
+          True,  # derived from integer
+          False
+          )
 
 
 if __name__=='__main__':
