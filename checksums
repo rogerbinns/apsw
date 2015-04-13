@@ -151,3 +151,7 @@ https://sqlite.org/2015/sqlite-autoconf-3080802.tar.gz 2021091 1db237523419af711
 
 https://sqlite.org/2015/sqlite-amalgamation-3080803.zip    1568475 fdac82a811fb62a6e326808f0010b2cd8e9055d2 97604645c615d81194541e1398687b61
 https://sqlite.org/2015/sqlite-autoconf-3080803.tar.gz 2021112 2fe3f6226a2a08a2e814b97cd53e36bb3c597112 51272e875879ee893e51070b07c33888
+
+https://sqlite.org/2015/sqlite-amalgamation-3080900.zip    1584545 f70e2841e4f26fe45849c2b9f5683bbe502d7523 02e9c3a6daa8b8587cf6bef828c2e33f
+https://sqlite.org/2015/sqlite-autoconf-3080900.tar.gz 2037200 db70dee268700b312cbaa5b3e5cf8454e1c8b7b9 6a18d4609852f4b63f812a1059df468f
+^Chttps://sqlite.org/2015/sqlite-amalgamation-3080803.zip
