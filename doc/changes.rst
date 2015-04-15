@@ -2,6 +2,13 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.8.9-r1
+========
+
+Updated documentation building tool to use new database of information
+from the SQLite site.  This is simpler and more reliable.  (Previously
+used site scraping.)
+
 3.8.8.2-r1
 ==========
 
