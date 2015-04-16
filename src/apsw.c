@@ -1382,8 +1382,8 @@ numeric value, or supply a numeric value and get the corresponding
 string. These can help improve diagnostics/logging, calling other
 modules etc. For example::
 
-      apsw.mapping_authorizer_function["SQLITE_READ"]=20
-      apsw.mapping_authorizer_function[20]="SQLITE_READ"
+      apsw.mapping_authorizer_function["SQLITE_READ"] == 20
+      apsw.mapping_authorizer_function[20] == "SQLITE_READ"
 
 
     */
