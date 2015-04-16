@@ -3250,6 +3250,44 @@ class APSW(unittest.TestCase):
             time.strftim=orig_strftime
             getpass.getuser=orig_getuser
 
+    def testIssue186(self):
+        "Issue 186: desription cache between statements"
+        cur=self.db.cursor()
+
+        for i, row in enumerate(cur.execute("select 1; select 1,2; select 1,2,3; select 1,2,3,4;")):
+            # this catches if the order of getting them makes a difference
+            if i%2:
+                self.assertEqual(len(cur.description), len(cur.getdescription()))
+            else:
+                self.assertEqual(len(cur.getdescription()), len(cur.description))
+            self.assertEqual(len(cur.description), i+1)
+
+        # check executemany too
+        for i, row in enumerate(cur.executemany("select ?; select ?,?; select ?,?,?; select ?,?,?,?;",
+                                                [(1, 1,2, 1,2,3, 1,2,3,4),
+                                                 (1, 1,2, 1,2,3, 1,2,3,4),
+                                                 ])):
+            i%=4
+            self.assertEqual(len(cur.getdescription()), i+1)
+
+        # and the tracers
+        def tracer(cursor, *args):
+            self.assertEqual(len(cursor.getdescription()), expect)
+            return True
+        expect=1
+        cur.setexectrace(tracer)
+        cur.setrowtrace(tracer)
+        for i, row in enumerate(cur.execute("select 1; select 1,2; select 1,2,3; select 1,2,3,4;")):
+            expect+=1
+        expect=1
+        for i, row in enumerate(cur.executemany("select ?; select ?,?; select ?,?,?; select ?,?,?,?;",
+                                                [(1, 1,2, 1,2,3, 1,2,3,4),
+                                                 (1, 1,2, 1,2,3, 1,2,3,4),
+                                                 ])):
+            expect+=1
+            if expect>4: expect=1
+
+
     def testTicket2158(self):
         "Check we are not affected by SQLite ticket #2158"
         # https://sqlite.org/cvstrac/tktview?tn=2158

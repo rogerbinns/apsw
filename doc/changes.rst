@@ -5,6 +5,9 @@ Change History
 3.8.9-r1
 ========
 
+Fixed column description caching which could be preserved between
+multiple statements in the same execution (:issue:`186`)
+
 Updated documentation building tool to use new database of information
 from the SQLite site.  This is simpler and more reliable.  (Previously
 used site scraping.)

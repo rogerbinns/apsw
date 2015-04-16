@@ -889,6 +889,9 @@ APSWCursor_step(APSWCursor *self)
 
       assert(!PyErr_Occurred());
 
+      Py_CLEAR(self->description_cache[0]);
+      Py_CLEAR(self->description_cache[1]);
+
       if(APSWCursor_dobindings(self))
         {
           assert(PyErr_Occurred());
