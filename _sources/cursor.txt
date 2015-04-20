@@ -199,14 +199,14 @@ Cursor class
        * :ref:`Example <example-cursor>`
 
     Calls:
-      * :sqliteapi:`sqlite3_prepare_v2 <prepare>`
-      * :sqliteapi:`sqlite3_step <step>`
-      * :sqliteapi:`sqlite3_bind_int64 <bind_blob>`
-      * :sqliteapi:`sqlite3_bind_null <bind_blob>`
-      * :sqliteapi:`sqlite3_bind_text <bind_blob>`
-      * :sqliteapi:`sqlite3_bind_double <bind_blob>`
-      * :sqliteapi:`sqlite3_bind_blob <bind_blob>`
-      * :sqliteapi:`sqlite3_bind_zeroblob <bind_blob>`
+      * `sqlite3_prepare_v2 <https://sqlite.org/c3ref/prepare.html>`__
+      * `sqlite3_step <https://sqlite.org/c3ref/step.html>`__
+      * `sqlite3_bind_int64 <https://sqlite.org/c3ref/bind_blob.html>`__
+      * `sqlite3_bind_null <https://sqlite.org/c3ref/bind_blob.html>`__
+      * `sqlite3_bind_text <https://sqlite.org/c3ref/bind_blob.html>`__
+      * `sqlite3_bind_double <https://sqlite.org/c3ref/bind_blob.html>`__
+      * `sqlite3_bind_blob <https://sqlite.org/c3ref/bind_blob.html>`__
+      * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__
 
 .. method:: Cursor.executemany(statements, sequenceofbindings)  -> iterator
 
@@ -297,8 +297,8 @@ Cursor class
      ('fjfjfj', 3.7, 97)
 
    Calls:
-     * :sqliteapi:`sqlite3_column_name <column_name>`
-     * :sqliteapi:`sqlite3_column_decltype <column_decltype>`
+     * `sqlite3_column_name <https://sqlite.org/c3ref/column_name.html>`__
+     * `sqlite3_column_decltype <https://sqlite.org/c3ref/column_decltype.html>`__
 
 .. method:: Cursor.getexectrace() -> callable or None
 

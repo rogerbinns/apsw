@@ -113,7 +113,7 @@ blob class
 
   :param force: Ignores any errors during close.
 
-  Calls: :sqliteapi:`sqlite3_blob_close <blob_close>`
+  Calls: `sqlite3_blob_close <https://sqlite.org/c3ref/blob_close.html>`__
 
 .. index:: sqlite3_blob_bytes
 
@@ -121,7 +121,7 @@ blob class
 
   Returns the size of the blob in bytes.
 
-  Calls: :sqliteapi:`sqlite3_blob_bytes <blob_bytes>`
+  Calls: `sqlite3_blob_bytes <https://sqlite.org/c3ref/blob_bytes.html>`__
 
 .. index:: sqlite3_blob_read
 
@@ -134,7 +134,7 @@ blob class
 
   :rtype: (Python 2) string  (Python 3) bytes
 
-  Calls: :sqliteapi:`sqlite3_blob_read <blob_read>`
+  Calls: `sqlite3_blob_read <https://sqlite.org/c3ref/blob_read.html>`__
 
 .. index:: sqlite3_blob_read
 
@@ -157,7 +157,7 @@ blob class
                  there is more space available than blob left then you
                  will get a :exc:`ValueError` exception.
 
-  Calls: :sqliteapi:`sqlite3_blob_read <blob_read>`
+  Calls: `sqlite3_blob_read <https://sqlite.org/c3ref/blob_read.html>`__
 
 .. index:: sqlite3_blob_reopen
 
@@ -166,7 +166,7 @@ blob class
   Change this blob object to point to a different row.  It can be
   faster than closing an existing blob an opening a new one.
 
-  Calls: :sqliteapi:`sqlite3_blob_reopen <blob_reopen>`
+  Calls: `sqlite3_blob_reopen <https://sqlite.org/c3ref/blob_reopen.html>`__
 
 .. method:: blob.seek(offset[, whence=0]) -> None
 
@@ -197,5 +197,5 @@ blob class
       You need to use :class:`zeroblob` to set the desired size first when
       inserting the blob.
 
-  Calls: :sqliteapi:`sqlite3_blob_write <blob_write>`
+  Calls: `sqlite3_blob_write <https://sqlite.org/c3ref/blob_write.html>`__
 

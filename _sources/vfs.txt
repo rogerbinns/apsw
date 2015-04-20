@@ -149,8 +149,8 @@ VFS class
       currently registered.
 
     Calls:
-      * :sqliteapi:`sqlite3_vfs_register <vfs_find>`
-      * :sqliteapi:`sqlite3_vfs_find <vfs_find>`
+      * `sqlite3_vfs_register <https://sqlite.org/c3ref/vfs_find.html>`__
+      * `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__
 
 .. method:: VFS.excepthook(etype, evalue, etraceback)
 
@@ -175,7 +175,7 @@ VFS class
    your VFS be the default and wish to immediately make it be
    unavailable. It is safe to call this routine multiple times.
 
-   Calls: :sqliteapi:`sqlite3_vfs_unregister <vfs_find>`
+   Calls: `sqlite3_vfs_unregister <https://sqlite.org/c3ref/vfs_find.html>`__
 
 .. method:: VFS.xAccess(pathname, flags) -> bool
 
@@ -537,7 +537,7 @@ URIFilename class
     Returns the boolean value for parameter `name` or `default` if not
     present.
 
-    Calls: :sqliteapi:`sqlite3_uri_boolean <uri_boolean>`
+    Calls: `sqlite3_uri_boolean <https://sqlite.org/c3ref/uri_boolean.html>`__
 
 .. index:: sqlite3_uri_int64
 
@@ -546,7 +546,7 @@ URIFilename class
     Returns the integer value for parameter `name` or `default` if not
     present.
 
-    Calls: :sqliteapi:`sqlite3_uri_int64 <uri_boolean>`
+    Calls: `sqlite3_uri_int64 <https://sqlite.org/c3ref/uri_boolean.html>`__
 
 .. index:: sqlite3_uri_parameter
 
@@ -554,5 +554,5 @@ URIFilename class
 
     Returns the value of parameter `name` or None.
 
-    Calls: :sqliteapi:`sqlite3_uri_parameter <uri_boolean>`
+    Calls: `sqlite3_uri_parameter <https://sqlite.org/c3ref/uri_boolean.html>`__
 

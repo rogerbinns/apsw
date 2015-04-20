@@ -43,7 +43,7 @@ Connection class
     * :ref:`statementcache`
     * :ref:`vfs`
 
-  Calls: :sqliteapi:`sqlite3_open_v2 <open>`
+  Calls: `sqlite3_open_v2 <https://sqlite.org/c3ref/open.html>`__
 
 .. method:: Connection.__enter__() -> context
 
@@ -94,7 +94,7 @@ Connection class
 
      * :ref:`Backup`
 
-   Calls: :sqliteapi:`sqlite3_backup_init <backup_finish.html#sqlite3backupf>`
+   Calls: `sqlite3_backup_init <https://sqlite.org/c3ref/backup_finish.html#sqlite3backupfinish>`__
 
 .. index:: sqlite3_blob_open
 
@@ -117,7 +117,7 @@ Connection class
      * :ref:`Blob I/O example <example-blobio>`
      * `SQLite row ids <https://sqlite.org/autoinc.html>`_
 
-   Calls: :sqliteapi:`sqlite3_blob_open <blob_open>`
+   Calls: `sqlite3_blob_open <https://sqlite.org/c3ref/blob_open.html>`__
 
 .. index:: sqlite3_changes
 
@@ -127,7 +127,7 @@ Connection class
   or deleted) by the most recently completed INSERT, UPDATE, or DELETE
   statement.
 
-  Calls: :sqliteapi:`sqlite3_changes <changes>`
+  Calls: `sqlite3_changes <https://sqlite.org/c3ref/changes.html>`__
 
 .. index:: sqlite3_close
 
@@ -154,7 +154,7 @@ Connection class
 
   If *force* is *True* then any exceptions are ignored.
 
-  Calls: :sqliteapi:`sqlite3_close <close>`
+  Calls: `sqlite3_close <https://sqlite.org/c3ref/close.html>`__
 
 .. index:: sqlite3_collation_needed
 
@@ -179,7 +179,7 @@ Connection class
 
     * :meth:`~Connection.createcollation`
 
-  Calls: :sqliteapi:`sqlite3_collation_needed <collation_needed>`
+  Calls: `sqlite3_collation_needed <https://sqlite.org/c3ref/collation_needed.html>`__
 
 .. index:: sqlite3_db_config
 
@@ -189,7 +189,7 @@ Connection class
       <https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__
     :param args: Zero or more arguments as appropriate for *op*
 
-    Calls: :sqliteapi:`sqlite3_db_config <db_config>`
+    Calls: `sqlite3_db_config <https://sqlite.org/c3ref/db_config.html>`__
 
 .. index:: sqlite3_create_function_v2
 
@@ -230,7 +230,7 @@ Connection class
      * :ref:`Example <aggregate-example>`
      * :meth:`~Connection.createscalarfunction`
 
-  Calls: :sqliteapi:`sqlite3_create_function_v2 <create_function>`
+  Calls: `sqlite3_create_function_v2 <https://sqlite.org/c3ref/create_function.html>`__
 
 .. index:: sqlite3_create_collation_v2
 
@@ -258,7 +258,7 @@ Connection class
 
     * :ref:`Example <collation-example>`
 
-  Calls: :sqliteapi:`sqlite3_create_collation_v2 <create_collation>`
+  Calls: `sqlite3_create_collation_v2 <https://sqlite.org/c3ref/create_collation.html>`__
 
 .. index:: sqlite3_create_module_v2
 
@@ -270,7 +270,7 @@ Connection class
 
        * :ref:`Example <example-vtable>`
 
-    Calls: :sqliteapi:`sqlite3_create_module_v2 <create_module>`
+    Calls: `sqlite3_create_module_v2 <https://sqlite.org/c3ref/create_module.html>`__
 
 .. index:: sqlite3_create_function_v2
 
@@ -299,7 +299,7 @@ Connection class
      * :ref:`Example <scalar-example>`
      * :meth:`~Connection.createaggregatefunction`
 
-  Calls: :sqliteapi:`sqlite3_create_function_v2 <create_function>`
+  Calls: `sqlite3_create_function_v2 <https://sqlite.org/c3ref/create_function.html>`__
 
 .. method:: Connection.cursor() -> Cursor
 
@@ -314,7 +314,7 @@ Connection class
   Returns the full filename of the named (attached) database.  The
   main database is named "main".
 
-  Calls: :sqliteapi:`sqlite3_db_filename <db_filename>`
+  Calls: `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__
 
 .. index:: sqlite3_enable_load_extension
 
@@ -330,7 +330,7 @@ Connection class
 
     * :meth:`~Connection.loadextension`
 
-  Calls: :sqliteapi:`sqlite3_enable_load_extension <enable_load_extension>`
+  Calls: `sqlite3_enable_load_extension <https://sqlite.org/c3ref/enable_load_extension.html>`__
 
 .. index:: sqlite3_file_control
 
@@ -381,7 +381,7 @@ Connection class
      chunksize=ctypes.c_int(32768)
      connection.filecontrol("main", apsw.SQLITE_FCNTL_CHUNK_SIZE, ctypes.addressof(chunksize))
 
-  Calls: :sqliteapi:`sqlite3_file_control <file_control>`
+  Calls: `sqlite3_file_control <https://sqlite.org/c3ref/file_control.html>`__
 
 .. index:: sqlite3_db_filename
 
@@ -389,7 +389,7 @@ Connection class
 
   The filename of the  database.
 
-  Calls: :sqliteapi:`sqlite3_db_filename <db_filename>`
+  Calls: `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__
 
 .. index:: sqlite3_get_autocommit
 
@@ -397,7 +397,7 @@ Connection class
 
   Returns if the Connection is in auto commit mode (ie not in a transaction).
 
-  Calls: :sqliteapi:`sqlite3_get_autocommit <get_autocommit>`
+  Calls: `sqlite3_get_autocommit <https://sqlite.org/c3ref/get_autocommit.html>`__
 
 .. method:: Connection.getexectrace() -> callable or None
 
@@ -427,7 +427,7 @@ Connection class
   stop button in your user interface.  :exc:`InterruptError`
   will be raised in the query that got interrupted.
 
-  Calls: :sqliteapi:`sqlite3_interrupt <interrupt>`
+  Calls: `sqlite3_interrupt <https://sqlite.org/c3ref/interrupt.html>`__
 
 .. index:: sqlite3_last_insert_rowid
 
@@ -435,7 +435,7 @@ Connection class
 
   Returns the integer key of the most recent insert in the database.
 
-  Calls: :sqliteapi:`sqlite3_last_insert_rowid <last_insert_rowid>`
+  Calls: `sqlite3_last_insert_rowid <https://sqlite.org/c3ref/last_insert_rowid.html>`__
 
 .. index:: sqlite3_limit
 
@@ -453,7 +453,7 @@ Connection class
 
     * :ref:`Example <example-limit>`
 
-  Calls: :sqliteapi:`sqlite3_limit <limit>`
+  Calls: `sqlite3_limit <https://sqlite.org/c3ref/limit.html>`__
 
 .. index:: sqlite3_load_extension
 
@@ -474,7 +474,7 @@ Connection class
 
     * :meth:`~Connection.enableloadextension`
 
-  Calls: :sqliteapi:`sqlite3_load_extension <load_extension>`
+  Calls: `sqlite3_load_extension <https://sqlite.org/c3ref/load_extension.html>`__
 
 .. attribute:: Connection.open_flags
 
@@ -496,7 +496,7 @@ Connection class
 
   Due to :cvstrac:`3507` underlying errors will not be returned.
 
-  Calls: :sqliteapi:`sqlite3_overload_function <overload_function>`
+  Calls: `sqlite3_overload_function <https://sqlite.org/c3ref/overload_function.html>`__
 
 .. index:: sqlite3_db_readonly
 
@@ -507,7 +507,7 @@ Connection class
 
   An exception is raised if the database doesn't exist.
 
-  Calls: :sqliteapi:`sqlite3_db_readonly <db_readonly>`
+  Calls: `sqlite3_db_readonly <https://sqlite.org/c3ref/db_readonly.html>`__
 
 .. index:: sqlite3_set_authorizer
 
@@ -539,7 +539,7 @@ Connection class
     * :ref:`Example <authorizer-example>`
     * :ref:`statementcache`
 
-  Calls: :sqliteapi:`sqlite3_set_authorizer <set_authorizer>`
+  Calls: `sqlite3_set_authorizer <https://sqlite.org/c3ref/set_authorizer.html>`__
 
 .. index:: sqlite3_busy_handler
 
@@ -561,7 +561,7 @@ Connection class
      * :meth:`Connection.setbusytimeout`
      * :ref:`Busy handling <busyhandling>`
 
-   Calls: :sqliteapi:`sqlite3_busy_handler <busy_handler>`
+   Calls: `sqlite3_busy_handler <https://sqlite.org/c3ref/busy_handler.html>`__
 
 .. index:: sqlite3_busy_timeout
 
@@ -582,7 +582,7 @@ Connection class
      * :meth:`Connection.setbusyhandler`
      * :ref:`Busy handling <busyhandling>`
 
-  Calls: :sqliteapi:`sqlite3_busy_timeout <busy_timeout>`
+  Calls: `sqlite3_busy_timeout <https://sqlite.org/c3ref/busy_timeout.html>`__
 
 .. index:: sqlite3_commit_hook
 
@@ -597,7 +597,7 @@ Connection class
 
     * :ref:`Example <example-commithook>`
 
-  Calls: :sqliteapi:`sqlite3_commit_hook <commit_hook>`
+  Calls: `sqlite3_commit_hook <https://sqlite.org/c3ref/commit_hook.html>`__
 
 .. method:: Connection.setexectrace(callable)
 
@@ -627,7 +627,7 @@ Connection class
   only read the first result, then you won't reach the end of the
   statement.
 
-  Calls: :sqliteapi:`sqlite3_profile <profile>`
+  Calls: `sqlite3_profile <https://sqlite.org/c3ref/profile.html>`__
 
 .. index:: sqlite3_progress_handler
 
@@ -642,7 +642,7 @@ Connection class
 
      * :ref:`Example <example-progress-handler>`
 
-  Calls: :sqliteapi:`sqlite3_progress_handler <progress_handler>`
+  Calls: `sqlite3_progress_handler <https://sqlite.org/c3ref/progress_handler.html>`__
 
 .. index:: sqlite3_rollback_hook
 
@@ -653,7 +653,7 @@ Connection class
 
   The *callable* is called with no parameters and the return value is ignored.
 
-  Calls: :sqliteapi:`sqlite3_rollback_hook <commit_hook>`
+  Calls: `sqlite3_rollback_hook <https://sqlite.org/c3ref/commit_hook.html>`__
 
 .. method:: Connection.setrowtrace(callable)
 
@@ -697,7 +697,7 @@ Connection class
 
       * :ref:`Example <example-updatehook>`
 
-  Calls: :sqliteapi:`sqlite3_update_hook <update_hook>`
+  Calls: `sqlite3_update_hook <https://sqlite.org/c3ref/update_hook.html>`__
 
 .. index:: sqlite3_wal_hook
 
@@ -713,7 +713,7 @@ Connection class
 
  You can pass in None in order to clear an existing hook.
 
- Calls: :sqliteapi:`sqlite3_wal_hook <wal_hook>`
+ Calls: `sqlite3_wal_hook <https://sqlite.org/c3ref/wal_hook.html>`__
 
 .. method:: Connection.sqlite3pointer() -> int
 
@@ -744,7 +744,7 @@ Connection class
 
     * :ref:`Status example <example-status>`
 
-  Calls: :sqliteapi:`sqlite3_db_status <db_status>`
+  Calls: `sqlite3_db_status <https://sqlite.org/c3ref/db_status.html>`__
 
 .. index:: sqlite3_total_changes
 
@@ -753,7 +753,7 @@ Connection class
   Returns the total number of database rows that have be modified,
   inserted, or deleted since the database connection was opened.
 
-  Calls: :sqliteapi:`sqlite3_total_changes <total_changes>`
+  Calls: `sqlite3_total_changes <https://sqlite.org/c3ref/total_changes.html>`__
 
 .. index:: sqlite3_wal_autocheckpoint
 
@@ -764,7 +764,7 @@ Connection class
     :param n: A number representing the checkpointing interval or
       zero/negative to disable auto checkpointing.
 
-    Calls: :sqliteapi:`sqlite3_wal_autocheckpoint <wal_autocheckpoint>`
+    Calls: `sqlite3_wal_autocheckpoint <https://sqlite.org/c3ref/wal_autocheckpoint.html>`__
 
 .. index:: sqlite3_wal_checkpoint_v2
 
@@ -781,5 +781,5 @@ Connection class
        `documentation
        <https://sqlite.org/c3ref/wal_checkpoint_v2.html>`__.
 
-    Calls: :sqliteapi:`sqlite3_wal_checkpoint_v2 <wal_checkpoint_v2>`
+    Calls: `sqlite3_wal_checkpoint_v2 <https://sqlite.org/c3ref/wal_checkpoint_v2.html>`__
 

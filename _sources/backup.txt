@@ -89,7 +89,7 @@ backup class
   effect.  The backup object will always be finished even if there is
   an exception.  It is safe to call this method multiple times.
 
-  Calls: :sqliteapi:`sqlite3_backup_finish <backup_finish.html#sqlite3backupf>`
+  Calls: `sqlite3_backup_finish <https://sqlite.org/c3ref/backup_finish.html#sqlite3backupfinish>`__
 
 .. index:: sqlite3_backup_pagecount
 
@@ -100,7 +100,7 @@ backup class
   object has been :meth:`finished <backup.finish>` then zero is
   returned.
 
-  Calls: :sqliteapi:`sqlite3_backup_pagecount <backup_finish.html#sqlite3backupf>`
+  Calls: `sqlite3_backup_pagecount <https://sqlite.org/c3ref/backup_finish.html#sqlite3backupfinish>`__
 
 .. index:: sqlite3_backup_remaining
 
@@ -111,7 +111,7 @@ backup class
   object has been :meth:`finished <backup.finish>` then zero is
   returned.
 
-  Calls: :sqliteapi:`sqlite3_backup_remaining <backup_finish.html#sqlite3backupf>`
+  Calls: `sqlite3_backup_remaining <https://sqlite.org/c3ref/backup_finish.html#sqlite3backupfinish>`__
 
 .. index:: sqlite3_backup_step
 
@@ -133,5 +133,5 @@ backup class
 
   :returns: True if this copied the last remaining outstanding pages, else false.  This is the same value as :attr:`~backup.done`
 
-  Calls: :sqliteapi:`sqlite3_backup_step <backup_finish.html#sqlite3backupf>`
+  Calls: `sqlite3_backup_step <https://sqlite.org/c3ref/backup_finish.html#sqlite3backupfinish>`__
 

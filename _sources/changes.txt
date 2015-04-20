@@ -2,6 +2,29 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.8.9-r1
+========
+
+Fixed column description caching which could be preserved between
+multiple statements in the same execution (:issue:`186`)
+
+Updated documentation building tool to use new database of information
+from the SQLite site.  This is simpler and more reliable.  (Previously
+used site scraping.)
+
+Added SQLITE_AUTH_USER, SQLITE_FCNTL_LAST_ERRNO,
+SQLITE_FCNTL_WAL_BLOCK, SQLITE_FCNTL_GET_LOCKPROXYFILE, and
+SQLITE_FCNTL_SET_LOCKPROXYFILE constants.
+
+Removed SQLITE_GET_LOCKPROXYFILE, SQLITE_SET_LOCKPROXYFILE,
+SQLITE_LAST_ERRNO file control constants.  These are deprecated - use
+the versions with FCNTL in their name (eg
+SQLITE_FCNTL_GET_LOCKPROXYFILE).
+
+Added :ref:`mappings <sqliteconstants>` for conflict resolution modes,
+virtual table configuration options and xShmLock VFS flags.
+
+
 3.8.8.2-r1
 ==========
 
