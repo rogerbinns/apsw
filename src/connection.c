@@ -2226,13 +2226,19 @@ apsw_free_func(void *funcinfo)
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: createscalarfunction(name, callable[, numargs=-1])
+/** .. method:: createscalarfunction(name, callable[, numargs=-1, deterministic=False])
 
   Registers a scalar function.  Scalar functions operate on one set of paramaters once.
 
   :param name: The string name of the function.  It should be less than 255 characters
   :param callable: The function that will be called
   :param numargs: How many arguments the function takes, with -1 meaning any number
+  :param deterministic: When True this means the function always
+           returns the same result for the same input arguments.
+           SQLite's query planner can perform additional optimisations
+           for deterministic functions.  For example a random()
+           function is not deterministic while one that returns the
+           length of a string is.
 
   .. note::
 
@@ -2255,10 +2261,13 @@ apsw_free_func(void *funcinfo)
 */
 
 static PyObject *
-Connection_createscalarfunction(Connection *self, PyObject *args)
+Connection_createscalarfunction(Connection *self, PyObject *args, PyObject *kwargs)
 {
+  static const char *kwlist[]={"name", "callable", "numargs", "deterministic", NULL};
   int numargs=-1;
-  PyObject *callable;
+  PyObject *callable=NULL;
+  PyObject *odeterministic=NULL;
+  int deterministic=0;
   char *name=0;
   FunctionCBInfo *cbinfo;
   int res;
@@ -2266,11 +2275,17 @@ Connection_createscalarfunction(Connection *self, PyObject *args)
   CHECK_USE(NULL);
   CHECK_CLOSED(self,NULL);
 
-  if(!PyArg_ParseTuple(args, "esO|i:createscalarfunction(name,callback, numargs=-1)", STRENCODING, &name, &callable, &numargs))
+  if(!PyArg_ParseTupleAndKeywords(args, kwargs, "esO|iO!:createscalarfunction(name,callback, numargs=-1, deterministic=False)",
+                                  kwlist, STRENCODING, &name, &callable, &numargs, &PyBool_Type, &odeterministic))
     return NULL;
 
   assert(name);
   assert(callable);
+  if(odeterministic) {
+    res=PyObject_IsTrue(odeterministic);
+    if (res<0) return NULL;
+    deterministic=res;
+  }
 
   if(callable!=Py_None && !PyCallable_Check(callable))
     {
@@ -2296,7 +2311,7 @@ Connection_createscalarfunction(Connection *self, PyObject *args)
                 res=sqlite3_create_function_v2(self->db,
 					       name,
 					       numargs,
-					       SQLITE_UTF8,
+					       SQLITE_UTF8|(deterministic?SQLITE_DETERMINISTIC:0),
 					       cbinfo,
 					       cbinfo?cbdispatch_func:NULL,
 					       NULL,
@@ -3322,7 +3337,7 @@ static PyMethodDef Connection_methods[] = {
    "Sets the sqlite busy timeout in milliseconds.  Use zero to disable the timeout"},
   {"interrupt", (PyCFunction)Connection_interrupt, METH_NOARGS,
    "Causes any pending database operations to abort at the earliest opportunity"},
-  {"createscalarfunction", (PyCFunction)Connection_createscalarfunction, METH_VARARGS,
+  {"createscalarfunction", (PyCFunction)Connection_createscalarfunction, METH_VARARGS|METH_KEYWORDS,
    "Creates a scalar function"},
   {"createaggregatefunction", (PyCFunction)Connection_createaggregatefunction, METH_VARARGS,
    "Creates an aggregate function"},
@@ -3454,4 +3469,3 @@ static PyTypeObject ConnectionType =
     0                          /* tp_del */
     APSW_PYTYPE_VERSION
 };
-

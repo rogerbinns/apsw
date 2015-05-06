@@ -2,6 +2,12 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.8.10-r1
+=========
+
+Added deterministic parameter to
+:func:`Connection.createscalarfunction` (:issue:`187`)
+
 3.8.9-r1
 ========
 

@@ -290,7 +290,7 @@ class APSW(unittest.TestCase):
     connection_nargs={ # number of args for function.  those not listed take zero
         'createaggregatefunction': 2,
         'createcollation': 2,
-        'createscalarfunction': 2,
+        'createscalarfunction': 3,
         'collationneeded': 1,
         'setauthorizer': 1,
         'setbusyhandler': 1,
@@ -1176,6 +1176,26 @@ class APSW(unittest.TestCase):
         gc.collect()
         for row in c.execute("select multi(), multi(1), multi(1,2), multi(1,2,3), multi(1,2,3,4), multi(1,2,3,4,5)"):
             self.assertEqual(row, (0, 1, 2, 3, 4, 5))
+
+        # deterministic flag
+
+        # check error handling
+        self.assertRaises(TypeError, self.db.createscalarfunction, "twelve", deterministic="324")
+        self.assertRaises(TypeError, self.db.createscalarfunction, "twelve", deterministic=324)
+
+        # check it has an effect
+        class Counter:  # on calling returns how many times this instance has been called
+            num_calls=0
+            def __call__(self):
+                self.num_calls+=1
+                return self.num_calls
+        self.db.createscalarfunction("deterministic", Counter(), deterministic=True)
+        self.db.createscalarfunction("nondeterministic", Counter(), deterministic=False)
+        self.db.createscalarfunction("unspecdeterministic", Counter())
+
+        self.assertEqual(c.execute("select deterministic()=deterministic()").fetchall()[0][0], 1)
+        self.assertEqual(c.execute("select nondeterministic()=nondeterministic()").fetchall()[0][0], 0)
+        self.assertEqual(c.execute("select unspecdeterministic()=unspecdeterministic()").fetchall()[0][0], 0)
 
 
     def testAggregateFunctions(self):
