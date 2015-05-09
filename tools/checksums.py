@@ -7,6 +7,8 @@ import hashlib
 import re
 
 sqlitevers=(
+    '3081001',
+    '3081000',
     '3080900',
     '3080803',
     '3080802',
