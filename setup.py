@@ -605,7 +605,8 @@ class apsw_build_ext(beparent):
                 # hopefully future proof test
                 if "_" not in e.lower() and \
                        "memsys" not in e.lower() and \
-                       e.lower() not in ("fts4", "fts3", "rtree", "icu", "iotrace", "stat2", "stat3", "stat4"):
+                       e.lower() not in ("fts4", "fts3", "rtree", "icu", "iotrace",
+                                         "stat2", "stat3", "stat4", "dbstat_vtab"):
                     write("Unknown enable "+e, sys.stderr)
                     raise ValueError("Bad enable "+e)
 
