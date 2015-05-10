@@ -3457,7 +3457,7 @@ class APSW(unittest.TestCase):
            # is already held by enclosing sqlite3_step and the
            # methods will only be called from that same thread so it
            # isn't a problem.
-                        'skipcalls': re.compile("^sqlite3_(blob_bytes|column_count|bind_parameter_count|data_count|vfs_.+|changes|total_changes|get_autocommit|last_insert_rowid|complete|interrupt|limit|free|threadsafe|value_.+|libversion|enable_shared_cache|initialize|shutdown|config|memory_.+|soft_heap_limit(64)?|randomness|db_readonly|db_filename|release_memory|status|result_.+|user_data|mprintf|aggregate_context|declare_vtab|backup_remaining|backup_pagecount|sourceid|uri_.+)$"),
+                        'skipcalls': re.compile("^sqlite3_(blob_bytes|column_count|bind_parameter_count|data_count|vfs_.+|changes|total_changes|get_autocommit|last_insert_rowid|complete|interrupt|limit|free|threadsafe|value_.+|libversion|enable_shared_cache|initialize|shutdown|config|memory_.+|soft_heap_limit(64)?|randomness|db_readonly|db_filename|release_memory|status64|result_.+|user_data|mprintf|aggregate_context|declare_vtab|backup_remaining|backup_pagecount|sourceid|uri_.+)$"),
                         # also ignore this file
                         'skipfiles': re.compile(r"[/\\]apsw.c$"),
                         # error message

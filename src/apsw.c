@@ -532,24 +532,25 @@ releasememory(APSW_ARGUNUSED PyObject *self, PyObject *args)
 
     * :ref:`Status example <example-status>`
 
-  -* sqlite3_status
+  -* sqlite3_status64
 
 */
 static PyObject *
 status(APSW_ARGUNUSED PyObject *self, PyObject *args)
 {
-  int res, op, current=0, highwater=0, reset=0;
+  int res, op, reset=0;
+  sqlite3_int64 current=0, highwater=0;
 
   if(!PyArg_ParseTuple(args, "i|i:status(op, reset=False)", &op, &reset))
     return NULL;
 
-  res=sqlite3_status(op, &current, &highwater, reset);
+  res=sqlite3_status64(op, &current, &highwater, reset);
   SET_EXC(res, NULL);
 
   if(res!=SQLITE_OK)
     return NULL;
 
-  return Py_BuildValue("(ii)", current, highwater);
+  return Py_BuildValue("(LL)", current, highwater);
 }
 
 /** .. method:: vfsnames() -> list(string)

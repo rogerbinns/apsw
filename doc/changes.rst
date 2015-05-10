@@ -2,11 +2,14 @@ Change History
 **************
 .. currentmodule:: apsw
 
-3.8.10-r1
-=========
+3.8.10.1-r1
+===========
 
 Added deterministic parameter to
 :func:`Connection.createscalarfunction` (:issue:`187`)
+
+Switched to new SQLite API returning 64 bit values for :func:`status`
+(:issue:`191`)
 
 3.8.9-r1
 ========
