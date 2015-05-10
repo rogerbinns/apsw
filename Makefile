@@ -32,7 +32,7 @@ GENDOCS = \
 all: header docs
 
 tagpush:
-	git tag -a $(SQLITEVERSION)$(APSWSUFFIX)
+	git tag -af $(SQLITEVERSION)$(APSWSUFFIX)
 	git push --tags
 
 clean:
