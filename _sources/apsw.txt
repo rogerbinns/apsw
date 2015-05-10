@@ -278,7 +278,7 @@ API Reference
 
   Calls: `sqlite3_libversion <https://sqlite.org/c3ref/libversion.html>`__
 
-.. index:: sqlite3_status
+.. index:: sqlite3_status64
 
 .. method:: status(op, reset=False) -> (int, int)
 
@@ -292,7 +292,7 @@ API Reference
 
     * :ref:`Status example <example-status>`
 
-  Calls: `sqlite3_status <https://sqlite.org/c3ref/status.html>`__
+  Calls: `sqlite3_status64 <https://sqlite.org/c3ref/status.html>`__
 
 .. attribute:: using_amalgamation
 

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Connections to a database &mdash; APSW 3.8.9-r1 documentation</title>
+    <title>Connections to a database &mdash; APSW 3.8.10.1-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.8.9-r1',
+        VERSION:     '3.8.10.1-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.8.9-r1 documentation" href="index.html" />
+    <link rel="top" title="APSW 3.8.10.1-r1 documentation" href="index.html" />
     <link rel="next" title="Cursors (executing SQL)" href="cursor.html" />
     <link rel="prev" title="APSW Module" href="apsw.html" />
  
@@ -51,7 +51,7 @@
         <li class="right" >
           <a href="apsw.html" title="APSW Module"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">APSW 3.8.9-r1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">APSW 3.8.10.1-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -364,7 +364,7 @@ first is greater:</p>
 
 <span class="target" id="index-11"></span><dl class="method">
 <dt id="apsw.Connection.createscalarfunction">
-<tt class="descclassname">Connection.</tt><tt class="descname">createscalarfunction</tt><big>(</big><em>name</em>, <em>callable</em><span class="optional">[</span>, <em>numargs=-1</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#apsw.Connection.createscalarfunction" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">Connection.</tt><tt class="descname">createscalarfunction</tt><big>(</big><em>name</em>, <em>callable</em><span class="optional">[</span>, <em>numargs=-1</em>, <em>deterministic=False</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#apsw.Connection.createscalarfunction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Registers a scalar function.  Scalar functions operate on one set of paramaters once.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -374,6 +374,12 @@ first is greater:</p>
 <li><strong>name</strong> &#8211; The string name of the function.  It should be less than 255 characters</li>
 <li><strong>callable</strong> &#8211; The function that will be called</li>
 <li><strong>numargs</strong> &#8211; How many arguments the function takes, with -1 meaning any number</li>
+<li><strong>deterministic</strong> &#8211; When True this means the function always
+returns the same result for the same input arguments.
+SQLite&#8217;s query planner can perform additional optimisations
+for deterministic functions.  For example a random()
+function is not deterministic while one that returns the
+length of a string is.</li>
 </ul>
 </td>
 </tr>
@@ -1037,14 +1043,14 @@ number of frames checkpointed as described in the
         <li class="right" >
           <a href="apsw.html" title="APSW Module"
              >previous</a> |</li>
-        <li><a href="index.html">APSW 3.8.9-r1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">APSW 3.8.10.1-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>
 
     <div class="footer">
         &copy; <a href="copyright.html">Copyright</a> 2004-2015, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Apr 19, 2015.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Last updated on May 09, 2015.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

@@ -274,13 +274,19 @@ Connection class
 
 .. index:: sqlite3_create_function_v2
 
-.. method:: Connection.createscalarfunction(name, callable[, numargs=-1])
+.. method:: Connection.createscalarfunction(name, callable[, numargs=-1, deterministic=False])
 
   Registers a scalar function.  Scalar functions operate on one set of paramaters once.
 
   :param name: The string name of the function.  It should be less than 255 characters
   :param callable: The function that will be called
   :param numargs: How many arguments the function takes, with -1 meaning any number
+  :param deterministic: When True this means the function always
+           returns the same result for the same input arguments.
+           SQLite's query planner can perform additional optimisations
+           for deterministic functions.  For example a random()
+           function is not deterministic while one that returns the
+           length of a string is.
 
   .. note::
 
