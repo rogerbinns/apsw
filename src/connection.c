@@ -2263,7 +2263,7 @@ apsw_free_func(void *funcinfo)
 static PyObject *
 Connection_createscalarfunction(Connection *self, PyObject *args, PyObject *kwargs)
 {
-  static const char *kwlist[]={"name", "callable", "numargs", "deterministic", NULL};
+  static char *kwlist[]={"name", "callable", "numargs", "deterministic", NULL};
   int numargs=-1;
   PyObject *callable=NULL;
   PyObject *odeterministic=NULL;
