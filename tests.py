@@ -84,6 +84,9 @@ except:
     ctypes=None
     _ctypes=None
 
+# yay
+is64bit=ctypes and ctypes.sizeof(ctypes.c_size_t)>=8
+
 # Unicode string/bytes prefix
 if py3:
     UPREFIX=""
@@ -2887,7 +2890,7 @@ class APSW(unittest.TestCase):
 
     def testLargeObjects(self):
         "Verify handling of large strings/blobs (>2GB) [Python 2.5+, 64 bit platform]"
-        if not ctypes or ctypes.sizeof(ctypes.c_size_t)<8:
+        if not is64bit:
             return
         # For binary/blobs I use an anonymous area slightly larger than 2GB chunk of memory, but don't touch any of it
         import mmap
