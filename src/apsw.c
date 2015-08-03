@@ -1717,6 +1717,8 @@ modules etc. For example::
       ADDINT(SQLITE_FCNTL_WAL_BLOCK),
       ADDINT(SQLITE_FCNTL_GET_LOCKPROXYFILE),
       ADDINT(SQLITE_FCNTL_SET_LOCKPROXYFILE),
+      ADDINT(SQLITE_FCNTL_RBU),
+      ADDINT(SQLITE_FCNTL_ZIPVFS),
       END,
 
       DICT("mapping_conflict_resolution_modes"),

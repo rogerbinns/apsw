@@ -2,6 +2,11 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.8.11.1-r1
+===========
+
+Added SQLITE_FCNTL_RBU and SQLITE_FCNTL_ZIPVFS constants.
+
 3.8.10.1-r1
 ===========
 
