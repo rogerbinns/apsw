@@ -233,7 +233,7 @@ class fetch(Command):
         # now get each selected component
         downloaded=0
 
-        if self.version!="fossil":
+        if not self.version.startswith("fossil"):
             v=[int(x) for x in self.version.split(".")]
             if len(v)<4:
                 v.append(0)
@@ -241,13 +241,28 @@ class fetch(Command):
 
         ## The amalgamation
         if self.sqlite:
-            if self.version=="fossil":
-                write("  Getting current trunk from fossil")
+            if self.version.startswith("fossil"):
+                write("  Getting code from fossil")
             else:
                 write("  Getting the SQLite amalgamation")
 
-            if self.version=="fossil":
-                AURL="https://sqlite.org/src/zip/sqlite3.zip?uuid=trunk"
+            if self.version.startswith("fossil"):
+                if self.version=="fossil":
+                    uuid="trunk"
+                else:
+                    showmsg=False
+                    if not self.version.startswith("fossil-"):
+                        showmsg=True
+                    else:
+                        uuid=self.version.split("-", 1)[1]
+                        if not uuid:
+                            showmsg=True
+                    if showmsg:
+                        write("Use fossil-HASH to identify a partifular commit", sys.stderr)
+                        write("eg  fossil-3a82c8e6", sys.stderr)
+                        sys.exit(18)
+
+                AURL="https://sqlite.org/src/zip/sqlite3.zip?uuid="+uuid
                 checksum=False
             else:
                 if sys.platform=="win32":
@@ -289,7 +304,7 @@ class fetch(Command):
                         for dir in dirnames:
                             os.rmdir(os.path.join(dirpath, dir))
                     os.rmdir('sqlite3')
-                if self.version=="fossil":
+                if self.version.startswith("fossil"):
                     zip=zipfile.ZipFile(data, "r")
                     for name in zip.namelist():
                         # extract
@@ -316,7 +331,7 @@ class fetch(Command):
                     dirname=configmember.name.split('/')[0]
                     os.rename(dirname, 'sqlite3')
                 os.chdir('sqlite3')
-                if self.version=="fossil":
+                if self.version.startswith("fossil"):
                     write("    Building amalgamation from fossil")
                     res=os.system("make TOP=. -f Makefile.linux-gcc sqlite3.c && cp src/sqlite3ext.h .")
                     defs=[]
