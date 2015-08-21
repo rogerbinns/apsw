@@ -334,6 +334,8 @@ APSWBlob_read(APSWBlob *self, PyObject *args)
 
   thebuffer= PyBytes_AS_STRING(buffy);
   PYSQLITE_BLOB_CALL(res=sqlite3_blob_read(self->pBlob, thebuffer, length, self->curoffset));
+  if(PyErr_Occurred())
+    return NULL;
 
   if(res!=SQLITE_OK)
     {
@@ -430,6 +432,8 @@ APSWBlob_readinto(APSWBlob *self, PyObject *args)
     return PyErr_Format(PyExc_ValueError, "More data requested than blob length");
 
   PYSQLITE_BLOB_CALL(res=sqlite3_blob_read(self->pBlob, (char*)buffer+offset, lengthwanted, self->curoffset));
+  if(PyErr_Occurred())
+    return NULL;
 
   if(res!=SQLITE_OK)
     {
@@ -544,6 +548,8 @@ APSWBlob_write(APSWBlob *self, PyObject *obj)
     return PyErr_Format(PyExc_ValueError, "Data would go beyond end of blob");
 
   PYSQLITE_BLOB_CALL(res=sqlite3_blob_write(self->pBlob, buffer, size, self->curoffset));
+  if(PyErr_Occurred())
+    return NULL;
 
   if(res!=SQLITE_OK)
     {
@@ -679,6 +685,9 @@ APSWBlob_reopen(APSWBlob *self, PyObject *arg)
   self->curoffset=0;
 
   PYSQLITE_BLOB_CALL(res=sqlite3_blob_reopen(self->pBlob, rowid));
+  if(PyErr_Occurred())
+    return NULL;
+
   if(res!=SQLITE_OK)
     {
       SET_EXC(res, self->connection->db);
@@ -760,4 +769,3 @@ static PyTypeObject APSWBlobType = {
     0                          /* tp_del */
     APSW_PYTYPE_VERSION
 };
-

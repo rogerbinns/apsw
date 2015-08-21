@@ -192,6 +192,8 @@ APSWBackup_step(APSWBackup *self, PyObject *args)
     return NULL;
 
   PYSQLITE_BACKUP_CALL(res=sqlite3_backup_step(self->backup, pages));
+  if(PyErr_Occurred())
+    return NULL;
 
   if(res==SQLITE_DONE)
     {
