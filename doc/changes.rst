@@ -14,9 +14,6 @@ Update tests due to a change in Python 3.5 (exception returned with
 invalid strings for system calls changed from TypeError to
 ValueError).
 
-Windows binaries for Python 3.5 provided.  These are built with the
-first release candidate as final hasn't been released.
-
 Adjusted some internal detection related to the :func:`fork checker
 <fork_checker>`
 
