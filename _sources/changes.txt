@@ -2,6 +2,22 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.8.11.1-r1
+===========
+
+Added SQLITE_FCNTL_RBU and SQLITE_FCNTL_ZIPVFS constants.
+
+setup's fetch command can now get arbitrary fossil versions.  For
+example specify ``fossil-e596a6b6``.
+
+Update tests due to a change in Python 3.5 (exception returned with
+invalid strings for system calls changed from TypeError to
+ValueError).
+
+Adjusted some internal detection related to the :func:`fork checker
+<fork_checker>`
+
+
 3.8.10.1-r1
 ===========
 

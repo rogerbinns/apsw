@@ -26,9 +26,9 @@ so you can see what gets printed when you run the code.
 .. code-block:: text
 
    |       Using APSW file /space/apsw/apsw.so
-   |          APSW version 3.8.10.1-r1
-   |    SQLite lib version 3.8.10.1
-   | SQLite header version 3008010
+   |          APSW version 3.8.11.1-r1
+   |    SQLite lib version 3.8.11.1
+   | SQLite header version 3008011
 
 .. code-block:: python
 
@@ -533,8 +533,8 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
-   | 4015840 apsw.cpython-34m.so /space/apsw
-   | 3974472 apsw.so /space/apsw
+   | 24882176 testdb /space/apsw
+   | 4045200 apsw.so /space/apsw
    | 915015 _yaml.so /home/rogerb/.local/lib/python2.7/site-packages
 
 .. code-block:: python
@@ -546,8 +546,8 @@ so you can see what gets printed when you run the code.
 .. code-block:: text
 
    | 1388285092.49 setup.cfg /space/apsw
-   | 1388285624.79 :memory: /space/apsw
-   | 1391408034.49 xx.py~ /space/apsw
+   | 1391490876.74 .gitignore /space/apsw
+   | 1391584463.54 README.rst /space/apsw
 
 .. _example-vfs:
 
@@ -748,7 +748,7 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
-   | SQLite memory usage current 341488 max 346264
+   | SQLite memory usage current 420072 max 494080
 
 .. code-block:: python
 
