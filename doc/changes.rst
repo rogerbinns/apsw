@@ -17,8 +17,8 @@ ValueError).
 Windows binaries for Python 3.5 provided.  These are built with the
 first release candidate as final hasn't been released.
 
-Adjusted some internal detection related to the :meth:`fork_checker
-<fork checker>`
+Adjusted some internal detection related to the :func:`fork checker
+<fork_checker>`
 
 
 3.8.10.1-r1
