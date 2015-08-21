@@ -2,7 +2,7 @@
 SQLITEVERSION=3.8.11.1
 APSWSUFFIX=-r1
 
-RELEASEDATE="9 May 2015"
+RELEASEDATE="20 August 2015"
 
 VERSION=$(SQLITEVERSION)$(APSWSUFFIX)
 VERDIR=apsw-$(VERSION)
@@ -142,6 +142,8 @@ compile-win:
 	c:/python33-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	c:/python34/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	c:/python34-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python35/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python35-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 
 source_nocheck: docs
 	$(PYTHON) setup.py sdist --formats zip --add-doc
