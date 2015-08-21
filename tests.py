@@ -5050,7 +5050,7 @@ class APSW(unittest.TestCase):
             try:
                 self.assertRaises(TypeError,  vfs.xSetSystemCall)
                 self.assertRaises(TypeError,  vfs.xSetSystemCall, 3, 4)
-                self.assertRaises(TypeError,  vfs.xSetSystemCall, "a\0b", 4)
+                self.assertRaises((TypeError, ValueError),  vfs.xSetSystemCall, "a\0b", 4)
                 self.assertRaises(TypeError,  vfs.xSetSystemCall, "none", 3.7)
                 realopen=vfs.xGetSystemCall("open")
                 self.assertEqual(False, vfs.xSetSystemCall("doesn't exist", 0))
