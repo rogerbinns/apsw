@@ -127,23 +127,23 @@ compile-win:
 	cmd /c del /s /q dist
 	cmd /c del /s /q build
 	-cmd /c md dist
-	c:/python23/python setup.py $(WINBPREFIX) --compile=mingw32 $(WINBSUFFIX) $(WINBINST)
-	c:/python24/python setup.py $(WINBPREFIX) --compile=mingw32 $(WINBSUFFIX) $(WINBINST)
-	c:/python25/python setup.py $(WINBPREFIX) --compile=mingw32 $(WINBSUFFIX) $(WINBINST)
-	c:/python26/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python26-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python27/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python27-64/python setup.py  $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python31/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python31-64/python setup.py  $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python32-64/python setup.py  $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python33/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python33-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python34/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python34-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	c:/python35/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	c:/python35-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python34/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python34-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python33/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python33-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python32-64/python setup.py  $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python31/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python31-64/python setup.py  $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python27/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python27-64/python setup.py  $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python26/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python26-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	c:/python25/python setup.py $(WINBPREFIX) --compile=mingw32 $(WINBSUFFIX) $(WINBINST)
+	c:/python24/python setup.py $(WINBPREFIX) --compile=mingw32 $(WINBSUFFIX) $(WINBINST)
+	c:/python23/python setup.py $(WINBPREFIX) --compile=mingw32 $(WINBSUFFIX) $(WINBINST)
 
 source_nocheck: docs
 	$(PYTHON) setup.py sdist --formats zip --add-doc
