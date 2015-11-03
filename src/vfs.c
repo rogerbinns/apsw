@@ -552,7 +552,7 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
   if(Py_TYPE(pyresult)==&APSWVFSFileType)
     {
       APSWVFSFile *f=(APSWVFSFile*)pyresult;
-      if(!f->base || !f->base->pMethods  || !f->base->pMethods==1 || !f->base->pMethods->xShmMap)
+      if(!f->base || !f->base->pMethods  || !f->base->pMethods->xShmMap)
 	goto version1;
       apswfile->pMethods=&apsw_io_methods_v2;
     }
