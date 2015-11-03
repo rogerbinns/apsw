@@ -58,8 +58,8 @@ API Reference
 #include "sqlite3.h"
 #endif
 
-#if SQLITE_VERSION_NUMBER < 3008011
-#error Your SQLite version is too old.  It must be at least 3.8.11
+#if SQLITE_VERSION_NUMBER < 3009000
+#error Your SQLite version is too old.  It must be at least 3.9
 #endif
 
 /* system headers */
@@ -1509,6 +1509,7 @@ modules etc. For example::
       ADDINT(SQLITE_CONSTRAINT_ROWID),
       ADDINT(SQLITE_READONLY_DBMOVED),
       ADDINT(SQLITE_AUTH_USER),
+      ADDINT(SQLITE_IOERR_VNODE),
       END,
 
       /* error codes */
