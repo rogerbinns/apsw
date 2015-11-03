@@ -128,7 +128,7 @@ compile-win:
 	cmd /c del /s /q build
 	-cmd /c md dist
 	c:/python35/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python35-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	"c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python35-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	c:/python34/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	c:/python34-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	c:/python33/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
