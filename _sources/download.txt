@@ -18,51 +18,56 @@ way to build or all the :ref:`options available <building>`.
 
 .. downloads-begin
 
-* `apsw-3.8.11.1-r1.zip
-  <https://github.com/rogerbinns/apsw/releases/download/3.8.11.1-r1/apsw-3.8.11.1-r1.zip>`__
+* `apsw-3.9.2-r1.zip
+  <https://github.com/rogerbinns/apsw/releases/download/3.9.2-r1/apsw-3.9.2-r1.zip>`__
   (Source, includes this HTML Help)
 
 * Windows Python 2.3 `32bit
-  <https://github.com/rogerbinns/apsw/releases/download/3.8.11.1-r1/apsw-3.8.11.1-r1.win32-py2.3.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/3.9.2-r1/apsw-3.9.2-r1.win32-py2.3.exe>`__
 
 * Windows Python 2.4 `32bit
-  <https://github.com/rogerbinns/apsw/releases/download/3.8.11.1-r1/apsw-3.8.11.1-r1.win32-py2.4.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/3.9.2-r1/apsw-3.9.2-r1.win32-py2.4.exe>`__
 
 * Windows Python 2.5 `32bit
-  <https://github.com/rogerbinns/apsw/releases/download/3.8.11.1-r1/apsw-3.8.11.1-r1.win32-py2.5.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/3.9.2-r1/apsw-3.9.2-r1.win32-py2.5.exe>`__
 
 * Windows Python 2.6 `32bit
-  <https://github.com/rogerbinns/apsw/releases/download/3.8.11.1-r1/apsw-3.8.11.1-r1.win32-py2.6.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/3.9.2-r1/apsw-3.9.2-r1.win32-py2.6.exe>`__
   `64bit 
-  <https://github.com/rogerbinns/apsw/releases/download/3.8.11.1-r1/apsw-3.8.11.1-r1.win-amd64-py2.6.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/3.9.2-r1/apsw-3.9.2-r1.win-amd64-py2.6.exe>`__
 
 * Windows Python 2.7 `32bit
-  <https://github.com/rogerbinns/apsw/releases/download/3.8.11.1-r1/apsw-3.8.11.1-r1.win32-py2.7.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/3.9.2-r1/apsw-3.9.2-r1.win32-py2.7.exe>`__
   `64bit 
-  <https://github.com/rogerbinns/apsw/releases/download/3.8.11.1-r1/apsw-3.8.11.1-r1.win-amd64-py2.7.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/3.9.2-r1/apsw-3.9.2-r1.win-amd64-py2.7.exe>`__
 
 * Windows Python 3.1 `32bit
-  <https://github.com/rogerbinns/apsw/releases/download/3.8.11.1-r1/apsw-3.8.11.1-r1.win32-py3.1.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/3.9.2-r1/apsw-3.9.2-r1.win32-py3.1.exe>`__
   `64bit 
-  <https://github.com/rogerbinns/apsw/releases/download/3.8.11.1-r1/apsw-3.8.11.1-r1.win-amd64-py3.1.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/3.9.2-r1/apsw-3.9.2-r1.win-amd64-py3.1.exe>`__
 
 * Windows Python 3.2 `32bit
-  <https://github.com/rogerbinns/apsw/releases/download/3.8.11.1-r1/apsw-3.8.11.1-r1.win32-py3.2.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/3.9.2-r1/apsw-3.9.2-r1.win32-py3.2.exe>`__
   `64bit 
-  <https://github.com/rogerbinns/apsw/releases/download/3.8.11.1-r1/apsw-3.8.11.1-r1.win-amd64-py3.2.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/3.9.2-r1/apsw-3.9.2-r1.win-amd64-py3.2.exe>`__
 
 * Windows Python 3.3 `32bit
-  <https://github.com/rogerbinns/apsw/releases/download/3.8.11.1-r1/apsw-3.8.11.1-r1.win32-py3.3.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/3.9.2-r1/apsw-3.9.2-r1.win32-py3.3.exe>`__
   `64bit 
-  <https://github.com/rogerbinns/apsw/releases/download/3.8.11.1-r1/apsw-3.8.11.1-r1.win-amd64-py3.3.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/3.9.2-r1/apsw-3.9.2-r1.win-amd64-py3.3.exe>`__
 
 * Windows Python 3.4 `32bit
-  <https://github.com/rogerbinns/apsw/releases/download/3.8.11.1-r1/apsw-3.8.11.1-r1.win32-py3.4.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/3.9.2-r1/apsw-3.9.2-r1.win32-py3.4.exe>`__
   `64bit 
-  <https://github.com/rogerbinns/apsw/releases/download/3.8.11.1-r1/apsw-3.8.11.1-r1.win-amd64-py3.4.exe>`__
+  <https://github.com/rogerbinns/apsw/releases/download/3.9.2-r1/apsw-3.9.2-r1.win-amd64-py3.4.exe>`__
 
-* `apsw-3.8.11.1-r1-sigs.zip 
-  <https://github.com/rogerbinns/apsw/releases/download/3.8.11.1-r1/apsw-3.8.11.1-r1-sigs.zip>`__
+* Windows Python 3.5 `32bit
+  <https://github.com/rogerbinns/apsw/releases/download/3.9.2-r1/apsw-3.9.2-r1.win32-py3.5.exe>`__
+  `64bit 
+  <https://github.com/rogerbinns/apsw/releases/download/3.9.2-r1/apsw-3.9.2-r1.win-amd64-py3.5.exe>`__
+
+* `apsw-3.9.2-r1-sigs.zip 
+  <https://github.com/rogerbinns/apsw/releases/download/3.9.2-r1/apsw-3.9.2-r1-sigs.zip>`__
   GPG signatures for all files
 
 .. downloads-end
@@ -105,7 +110,7 @@ Verify
   To verify a file just use --verify specifying the corresponding
   ``.asc`` filename.  This example verifies the source::
 
-      $ gpg --verify apsw-3.8.11.1-r1.zip.asc
+      $ gpg --verify apsw-3.9.2-r1.zip.asc
       gpg: Signature made ... date ... using DSA key ID 0DFBD904
       gpg: Good signature from "Roger Binns <rogerb@rogerbinns.com>"
 

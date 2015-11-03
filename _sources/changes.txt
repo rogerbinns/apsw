@@ -2,6 +2,13 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.9.2-r1
+========
+
+Added SQLITE_IOERR_VNODE constant.
+
+Windows builds for Python 3.5 are now provided.
+
 3.8.11.1-r1
 ===========
 
