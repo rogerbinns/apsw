@@ -16,7 +16,6 @@ for it to finish a lot sooner.
 """
 
 import os
-import re
 import sys
 import threading
 import Queue
@@ -61,7 +60,7 @@ def threadrun(queue):
             sys.stdout.flush()
         except:
             # uncomment to debug problems with this script
-            #traceback.print_exc()
+            # traceback.print_exc()
             print "\nFAILED", d
 
 def main(PYVERS, UCSTEST, SQLITEVERS, concurrency):
@@ -190,12 +189,12 @@ def patch_natty_build(setup):
 
 # Default versions we support
 PYVERS=(
-    '3.5.0',
+    '3.5.1',
     '3.4.2',
     '3.3.6',
     '3.2.6',
     '3.1.5',
-    '2.7.10',
+    '2.7.11',
     '2.6.9',
     '2.5.6',
     '2.4.6',
