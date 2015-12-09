@@ -1123,7 +1123,7 @@ Enter SQL statements terminated with a ";"
             blank()
 
             comment("The values of various per-database settings")
-            comment("PRAGMA page_size="+str(self.db.cursor().execute("pragma page_size").fetchall()[0][0])+";\n")
+            self.write(self.stdout, "PRAGMA page_size="+str(self.db.cursor().execute("pragma page_size").fetchall()[0][0])+";\n")
             comment("PRAGMA encoding='"+self.db.cursor().execute("pragma encoding").fetchall()[0][0]+"';\n")
             vac={0: "NONE", 1: "FULL", 2: "INCREMENTAL"}
             vacvalue=self.db.cursor().execute("pragma auto_vacuum").fetchall()[0][0]
@@ -1245,7 +1245,7 @@ Enter SQL statements terminated with a ";"
             uv=self.db.cursor().execute("pragma user_version").fetchall()[0][0]
             if uv:
                 comment("Your database may need this.  It is sometimes used to keep track of the schema version (eg Firefox does this).")
-                comment("pragma user_version=%d;" % (uv,))
+                self.write(self.stdout, "pragma user_version=%d;" % (uv,))
                 blank()
 
             # Save it all

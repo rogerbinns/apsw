@@ -2,6 +2,12 @@ Change History
 **************
 .. currentmodule:: apsw
 
+next
+====
+
+The shell dump command now outputs the page size and user version.  There were
+both output before as comments.
+
 3.9.2-r1
 ========
 
