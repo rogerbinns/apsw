@@ -8,6 +8,8 @@ next
 The shell dump command now outputs the page size and user version.  There were
 both output before as comments.
 
+Updated SQLite download logic for 2016 folder.
+
 3.9.2-r1
 ========
 
@@ -29,7 +31,6 @@ ValueError).
 
 Adjusted some internal detection related to the :func:`fork checker
 <fork_checker>`
-
 
 3.8.10.1-r1
 ===========

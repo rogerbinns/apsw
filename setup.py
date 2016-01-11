@@ -69,7 +69,9 @@ def fixup_download_url(url):
     if ver:
         ver=int(ver.group(0))
         if ver>=3071600:
-            if ver>=3080800:
+            if ver>=3100000:
+                year="2016"
+            elif ver>=3080800:
                 year="2015"
             elif ver>=3080300:
                 year="2014"
