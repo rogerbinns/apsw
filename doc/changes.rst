@@ -10,6 +10,9 @@ both output before as comments.
 
 Updated SQLite download logic for 2016 folder.
 
+Updated VFS test suite due to behaviour differences in this SQLite version (eg
+when various methods are called).
+
 3.9.2-r1
 ========
 

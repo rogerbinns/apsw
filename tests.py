@@ -386,6 +386,16 @@ class APSW(unittest.TestCase):
         self.assertEqual(lcontents, rcontents)
 
     def assertRaisesUnraisable(self, exc, func, *args, **kwargs):
+        return self.baseAssertRaisesUnraisable(True, exc, func, args, kwargs)
+
+    def assertMayRaiseUnraisable(self, exc, func, *args, **kwargs):
+        """Like assertRaisesUnraiseable but no exception may be raised.
+
+        If one is raised, it must have the expected type.
+        """
+        return self.baseAssertRaisesUnraisable(False, exc, func, args, kwargs)
+
+    def baseAssertRaisesUnraisable(self, must_raise, exc, func, args, kwargs):
         orig=sys.excepthook
         try:
             called=[]
@@ -408,11 +418,15 @@ class APSW(unittest.TestCase):
                         traceback.clear_frames(sys.exc_info()[2])
                     raise
             finally:
-                if len(called)<1:
+                if must_raise and len(called)<1:
                     self.fail("Call %s(*%s, **%s) did not do any unraiseable" % (func, args, kwargs) )
-                self.assertEqual(exc, called[0][0]) # check it was the correct type
+                if len(called):
+                    self.assertEqual(exc, called[0][0]) # check it was the correct type
         finally:
             sys.excepthook=orig
+
+
+
 
     def testSanity(self):
         "Check all parts compiled and are present"
@@ -4490,6 +4504,10 @@ class APSW(unittest.TestCase):
             def xCurrentTime5(self):
                 return math.exp(math.pi)*26000
 
+            def xCurrentTimeCorrect(self):
+                # actual correct implementation http://stackoverflow.com/questions/466321/convert-unix-timestamp-to-julian
+                return time.time()/86400.0 + 2440587.5
+
             def xCurrentTime99(self):
                 return super(TestVFS, self).xCurrentTime()
 
@@ -4741,6 +4759,8 @@ class APSW(unittest.TestCase):
                     return super(TestFile, self).xFileControl(op, ptr)
                 return True
 
+        TestVFS.xCurrentTime=TestVFS.xCurrentTimeCorrect
+
         # check initialization
         self.assertRaises(TypeError, apsw.VFS, "3", 3)
         self.assertRaises(ValueError, apsw.VFS, "never", "klgfkljdfsljgklfjdsglkdfs")
@@ -4808,7 +4828,8 @@ class APSW(unittest.TestCase):
         if not iswindows:
             # SQLite doesn't give an error even though the vfs is silently truncating
             # the full pathname.  See SQLite ticket 3373
-            self.assertRaises(apsw.CantOpenError, testdb) # we get cantopen on the truncated fullname
+            self.assertMayRaiseUnraisable(apsw.CantOpenError,
+                    self.assertRaises, apsw.CantOpenError, testdb)  # we get cantopen on the truncated fullname
         TestVFS.xFullPathname=TestVFS.xFullPathname5
         self.assertRaises(apsw.TooBigError, self.assertRaisesUnraisable, apsw.TooBigError, testdb)
         TestVFS.xFullPathname=TestVFS.xFullPathname6
@@ -4948,6 +4969,7 @@ class APSW(unittest.TestCase):
         testdb()
         TestVFS.xCurrentTime=TestVFS.xCurrentTime99
         testdb()
+        TestVFS.xCurrentTime=TestVFS.xCurrentTimeCorrect
 
         ## xGetLastError
         xgle=getattr(apsw, 'test_call_xGetLastError', None)
