@@ -32,7 +32,6 @@ if sys.argv[2]!="src/apsw.c":
 import apsw
 
 with tempfile.NamedTemporaryFile() as f:
-    print basesqurl+"toc.db"
     f.write(urllib2.urlopen(basesqurl+"toc.db").read())
     f.flush()
 
