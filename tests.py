@@ -4968,7 +4968,7 @@ class APSW(unittest.TestCase):
         TestVFS.xCurrentTime=TestVFS.xCurrentTime5
         testdb()
         TestVFS.xCurrentTime=TestVFS.xCurrentTime99
-        testdb()
+        self.assertMayRaiseUnraisable(apsw.VFSNotImplementedError, testdb)
         TestVFS.xCurrentTime=TestVFS.xCurrentTimeCorrect
 
         ## xGetLastError
