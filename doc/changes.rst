@@ -13,6 +13,10 @@ Updated SQLite download logic for 2016 folder.
 Updated VFS test suite due to behaviour differences in this SQLite version (eg
 when various methods are called, changes in default VFS implemented methods).
 
+Added SQLITE_INDEX_CONSTRAINT_LIKE, SQLITE_INDEX_CONSTRAINT_REGEXP,
+SQLITE_INDEX_CONSTRAINT_GLOB,SQLITE_IOERR_AUTH, SQLITE_FCNTL_JOURNAL_POINTER,
+and SQLITE_FCNTL_VFS_POINTER constants.
+
 3.9.2-r1
 ========
 

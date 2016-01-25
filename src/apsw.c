@@ -1452,6 +1452,9 @@ modules etc. For example::
       ADDINT(SQLITE_INDEX_CONSTRAINT_LT),
       ADDINT(SQLITE_INDEX_CONSTRAINT_GE),
       ADDINT(SQLITE_INDEX_CONSTRAINT_MATCH),
+      ADDINT(SQLITE_INDEX_CONSTRAINT_LIKE),
+      ADDINT(SQLITE_INDEX_CONSTRAINT_REGEXP),
+      ADDINT(SQLITE_INDEX_CONSTRAINT_GLOB),
       END,
 
       /* extendended result codes */
@@ -1510,6 +1513,7 @@ modules etc. For example::
       ADDINT(SQLITE_READONLY_DBMOVED),
       ADDINT(SQLITE_AUTH_USER),
       ADDINT(SQLITE_IOERR_VNODE),
+      ADDINT(SQLITE_IOERR_AUTH),
       END,
 
       /* error codes */
@@ -1720,6 +1724,8 @@ modules etc. For example::
       ADDINT(SQLITE_FCNTL_SET_LOCKPROXYFILE),
       ADDINT(SQLITE_FCNTL_RBU),
       ADDINT(SQLITE_FCNTL_ZIPVFS),
+      ADDINT(SQLITE_FCNTL_JOURNAL_POINTER),
+      ADDINT(SQLITE_FCNTL_VFS_POINTER),
       END,
 
       DICT("mapping_conflict_resolution_modes"),
