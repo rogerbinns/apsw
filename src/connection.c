@@ -591,7 +591,7 @@ Connection_backup(Connection *self, PyObject *args)
                        STRENCODING, &databasename, &source, STRENCODING, &sourcedatabasename))
     return NULL;
 
-  if(Py_TYPE(source)!=&ConnectionType)
+  if(!PyObject_IsInstance((PyObject*)source, (PyObject*)&ConnectionType))
     {
       PyErr_Format(PyExc_TypeError, "source connection needs to be a Connection instance");
       goto finally;

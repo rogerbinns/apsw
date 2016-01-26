@@ -3341,6 +3341,19 @@ class APSW(unittest.TestCase):
         self.db.createcollation("dummy", None)
         self.assertRaises(apsw.SQLError, cur.execute, "select * from foo order by x collate dummy")
 
+    def testIssue199(self):
+        "Backup API should accept Connection subclasses"
+        # https://github.com/rogerbinns/apsw/issues/199
+        class subclass(apsw.Connection):
+            pass
+
+        dbsub=subclass("")
+        dbsub.cursor().execute("create table a(b);insert into a values(3);")
+
+        with self.db.backup("main", dbsub, "main") as b:
+            while not b.done:
+                b.step(100)
+
     def testPysqliteRecursiveIssue(self):
         "Check an issue that affected pysqlite"
         # https://code.google.com/p/pysqlite/source/detail?r=260ee266d6686e0f87b0547c36b68a911e6c6cdb
