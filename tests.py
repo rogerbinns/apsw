@@ -1935,9 +1935,14 @@ class APSW(unittest.TestCase):
             self.assertEqual(present, True)
         return present
 
-    def testFTS3Extension(self):
-        "Check FTS3 extension (if present)"
-        if not self.checkOptionalExtension("fts3", "create virtual table foo using fts3()"):
+    def testFTSExtension(self):
+        "Check FTS extensions (if present)"
+        for v in 3, 4, 5:
+            self.checkFTSExtension(v)
+
+    def checkFTSExtension(self, v):
+        self.db.cursor().execute("drop table if exists foo; drop table if exists test")
+        if not self.checkOptionalExtension("fts"+str(v), "create virtual table foo using fts%d()" % v):
             return
         c=self.db.cursor()
         data={
@@ -1954,7 +1959,7 @@ class APSW(unittest.TestCase):
             'pumpkin pie': 'pumpkin sugar flour butter'
             }
 
-        c.execute("create virtual table test using fts3(name, ingredients)")
+        c.execute("create virtual table test using fts%d(name, ingredients)" % v)
         c.executemany("insert into test values(?,?)", data.items())
 
         def check(pattern, expectednames):
@@ -2011,6 +2016,15 @@ class APSW(unittest.TestCase):
 
         check("I", "tr_tr")
         check("I", "en_us", equal=True)
+
+    def testJSON1Extension(self):
+        if not self.checkOptionalExtension("json1", "select json('{}')"):
+            return
+        # some sanity checks that it is working
+        l=self.db.cursor().execute("select json_array_length('[1,2,3,4]')").fetchall()[0][0]
+        self.assertEqual(l, 4)
+        l=self.db.cursor().execute("""select json_extract('{"a":2,"c":[4,5,{"f":7}]}', '$.c[2].f')""").fetchall()[0][0]
+        self.assertEqual(l, 7)
 
     def testTracebacks(self):
         "Verify augmented tracebacks"

@@ -19,6 +19,11 @@ and SQLITE_FCNTL_VFS_POINTER constants.
 
 Allow :class:`Connection` subclasses for backup api (:issue:`199`).
 
+`FTS5 <https://www.sqlite.org/fts5.html>`__ and `JSON1
+<https://www.sqlite.org/json1.html>`__ extensions are now built by default for
+:doc:`build <--enable-all-extensions>`.  It is recommended you wait a few more
+releases for these extensions to mature.
+
 3.9.2-r1
 ========
 
