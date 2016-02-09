@@ -3364,9 +3364,12 @@ class APSW(unittest.TestCase):
         dbsub=subclass("")
         dbsub.cursor().execute("create table a(b);insert into a values(3);")
 
-        with self.db.backup("main", dbsub, "main") as b:
+        b=self.db.backup("main", dbsub, "main")
+        try:
             while not b.done:
                 b.step(100)
+        finally:
+            b.finish()
 
     def testPysqliteRecursiveIssue(self):
         "Check an issue that affected pysqlite"
