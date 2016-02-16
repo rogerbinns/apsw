@@ -134,11 +134,11 @@ def getpyurl(pyver):
             if v2i(dirver)[:2]==v2i(v)[:2] and v2i(dirver)>=v2i(v):
                 ext="xz"
                 break
-        return "http://python.org/ftp/python/%s/%sython-%s.tar.%s" % (dirver,p,pyver,ext)
+        return "https://www.python.org/ftp/python/%s/%sython-%s.tar.%s" % (dirver,p,pyver,ext)
     if pyver=='2.3.0':
         pyver='2.3'
         dirver='2.3'
-    return "http://python.org/ftp/python/%s/Python-%s.tgz" % (dirver,pyver)
+    return "https://www.python.org/ftp/python/%s/Python-%s.tgz" % (dirver,pyver)
 
 def buildpython(workdir, pyver, ucs, logfilename):
     if pyver=="system": return "/usr/bin/python", ""
