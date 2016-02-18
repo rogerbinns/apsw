@@ -2,26 +2,25 @@ Change History
 **************
 .. currentmodule:: apsw
 
-next
-====
+3.11.0-r1
+==========
 
 The shell dump command now outputs the page size and user version.  There were
 both output before as comments.
 
 Updated SQLite download logic for 2016 folder.
 
-Updated VFS test suite due to behaviour differences in this SQLite version (eg
-when various methods are called, changes in default VFS implemented methods).
+Updated VFS test suite due to changes in SQLite default VFS implemented methods.
 
 Added SQLITE_INDEX_CONSTRAINT_LIKE, SQLITE_INDEX_CONSTRAINT_REGEXP,
-SQLITE_INDEX_CONSTRAINT_GLOB,SQLITE_IOERR_AUTH, SQLITE_FCNTL_JOURNAL_POINTER,
+SQLITE_INDEX_CONSTRAINT_GLOB, SQLITE_IOERR_AUTH, SQLITE_FCNTL_JOURNAL_POINTER,
 and SQLITE_FCNTL_VFS_POINTER constants.
 
 Allow :class:`Connection` subclasses for backup api (:issue:`199`).
 
 `FTS5 <https://www.sqlite.org/fts5.html>`__ and `JSON1
 <https://www.sqlite.org/json1.html>`__ extensions are now built by default for
-:doc:`build <--enable-all-extensions>`.  It is recommended you wait a few more
+:doc:`--enable-all-extensions <build>`.  It is recommended you wait a few more
 releases for these extensions to mature.
 
 Added a mapping for `virtual table scan flags

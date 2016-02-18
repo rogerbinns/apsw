@@ -58,8 +58,8 @@ API Reference
 #include "sqlite3.h"
 #endif
 
-#if SQLITE_VERSION_NUMBER < 3009000
-#error Your SQLite version is too old.  It must be at least 3.9
+#if SQLITE_VERSION_NUMBER < 3011000
+#error Your SQLite version is too old.  It must be at least 3.11
 #endif
 
 /* system headers */
@@ -1457,7 +1457,7 @@ modules etc. For example::
       ADDINT(SQLITE_INDEX_CONSTRAINT_GLOB),
       END,
 
-      /* extendended result codes */
+      /* extended result codes */
       DICT("mapping_extended_result_codes"),
       ADDINT(SQLITE_IOERR_READ),
       ADDINT(SQLITE_IOERR_SHORT_READ),
@@ -1724,9 +1724,7 @@ modules etc. For example::
       ADDINT(SQLITE_FCNTL_SET_LOCKPROXYFILE),
       ADDINT(SQLITE_FCNTL_RBU),
       ADDINT(SQLITE_FCNTL_ZIPVFS),
-#ifdef SQLITE_FCNTL_JOURNAL_POINTER
       ADDINT(SQLITE_FCNTL_JOURNAL_POINTER),
-#endif
       ADDINT(SQLITE_FCNTL_VFS_POINTER),
       END,
 
