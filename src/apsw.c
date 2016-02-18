@@ -1747,6 +1747,10 @@ modules etc. For example::
       ADDINT(SQLITE_SHM_LOCK),
       ADDINT(SQLITE_SHM_SHARED),
       ADDINT(SQLITE_SHM_UNLOCK),
+      END,
+
+      DICT("mapping_virtual_table_scan_flags"),
+      ADDINT(SQLITE_INDEX_SCAN_UNIQUE),
       END
 
       };

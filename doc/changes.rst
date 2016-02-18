@@ -24,6 +24,9 @@ Allow :class:`Connection` subclasses for backup api (:issue:`199`).
 :doc:`build <--enable-all-extensions>`.  It is recommended you wait a few more
 releases for these extensions to mature.
 
+Added a mapping for `virtual table scan flags
+<https://sqlite.org/c3ref/c_index_scan_unique.html>`__
+
 3.9.2-r1
 ========
 
