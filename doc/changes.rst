@@ -26,6 +26,10 @@ releases for these extensions to mature.
 Added a mapping for `virtual table scan flags
 <https://sqlite.org/c3ref/c_index_scan_unique.html>`__
 
+Use `SQLITE_ENABLE_API_ARMOR
+<https://www.sqlite.org/compile.html#enable_api_armor>`__ for extra error
+checking.
+
 3.9.2-r1
 ========
 

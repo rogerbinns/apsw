@@ -43,6 +43,7 @@ API Reference
 /* See SQLite ticket 2554 */
 #define SQLITE_API static
 #define SQLITE_EXTERN static
+#define SQLITE_ENABLE_API_ARMOR  1
 #include APSW_USE_SQLITE_AMALGAMATION
 #undef small
 
