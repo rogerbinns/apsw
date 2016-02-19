@@ -6,10 +6,6 @@
 and Python to make sure everything is ok in the various combinations.
 It only runs on a UNIX like environment.
 
-You should make sure that wget is using a proxy so you don't hit the
-upstream sites repeatedly and have ccache so that compiles are
-quicker.
-
 All the work is done in parallel rather than serially.  This allows
 for it to finish a lot sooner.
 
@@ -230,15 +226,11 @@ if __name__=='__main__':
     parser.add_option("--fossil", dest="fossil", help="Also test current SQLite FOSSIL version [%default]", default=False, action="store_true")
     parser.add_option("--ucs", dest="ucs", help="Unicode character widths to test in bytes [%default]", default="2,4")
     parser.add_option("--tasks", dest="concurrency", help="Number of simultaneous builds/tests to run [%default]", default=concurrency)
-    parser.add_option("--no-proxy", dest="proxy", default="http://192.168.1.25:8080", action="store_false", help="Do not add %default as a proxy")
 
     options,args=parser.parse_args()
 
     if args:
         parser.error("Unexpected options "+str(options))
-
-    if options.proxy:
-        os.environ["http_proxy"]=options.proxy
 
     pyvers=options.pyvers.split(",")
     sqlitevers=options.sqlitevers.split(",")
