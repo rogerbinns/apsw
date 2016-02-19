@@ -89,11 +89,9 @@ re-fetching.
 |                                        | preferred way to use SQLite as you have total control over what components are       |
 |                                        | included or excluded (see below) and have no dependencies on any existing            |
 |                                        | libraries on your developer or deployment machines. The amalgamation includes the    |
-|                                        | fts3, rtree and icu extensions. On non-Windows platforms, any existing               |
+|                                        | fts3/4/5, rtree, json1 and icu extensions. On non-Windows platforms, any existing    |
 |                                        | :file:`sqlite3/` directory will be erased and the downloaded code placed in a newly  |
 |                                        | created :file:`sqlite3/` directory.                                                  |
-+----------------------------------------+--------------------------------------------------------------------------------------+
-| | :option:`--asyncvfs`                 | Downloads the :ref:`Asynchronous VFS <ext-asyncvfs>`                                 |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 
 .. _fetch_checksums:
