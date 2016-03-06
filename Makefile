@@ -37,7 +37,7 @@ tagpush:
 
 clean:
 	make PYTHONPATH="`pwd`" VERSION=$(VERSION) -C doc clean
-	rm -rf dist build work/* megatestresults
+	rm -rf dist build work/* megatestresults apsw.egg-info
 	mkdir dist
 	for i in '*.pyc' '*.pyo' '*~' '*.o' '*.so' '*.dll' '*.pyd' '*.gcov' '*.gcda' '*.gcno' '*.orig' '*.tmp' 'testdb*' 'testextension.sqlext' ; do \
 		find . -type f -name "$$i" -print0 | xargs -0t --no-run-if-empty rm -f ; done
@@ -126,6 +126,7 @@ compile-win:
 	-del /q apsw.pyd
 	cmd /c del /s /q dist
 	cmd /c del /s /q build
+	cmd /c del /s /q apsw.egg-info
 	-cmd /c md dist
 	c:/python35/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	"c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python35-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)

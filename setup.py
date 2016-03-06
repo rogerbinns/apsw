@@ -11,7 +11,11 @@ import time
 import zipfile, tarfile
 import socket
 
-from distutils.core import setup, Extension, Command
+try:
+    from setuptools import setup, Extension, Command
+except ImportError:
+    from distutils.core import setup, Extension, Command
+
 from distutils.command import build_ext, build, sdist
 
 ##

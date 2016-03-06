@@ -2,6 +2,13 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.11.1-r1
+=========
+
+setup.py attempts to use setuptools if present, before falling back to
+distutils. This allows setuptools only commands such as bdist_wheel to work.
+(:issue:`207`)
+
 3.11.0-r1
 ==========
 
