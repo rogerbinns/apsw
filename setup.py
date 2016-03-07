@@ -8,11 +8,14 @@ import shlex
 import glob
 import re
 import time
-import zipfile, tarfile
-import socket
+import zipfile
+import tarfile
 
 try:
-    from setuptools import setup, Extension, Command
+    if not os.environ.get("APSW_FORCE_DISTUTILS"):
+        from setuptools import setup, Extension, Command
+    else:
+        raise ImportError()
 except ImportError:
     from distutils.core import setup, Extension, Command
 

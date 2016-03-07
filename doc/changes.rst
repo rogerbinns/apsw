@@ -6,8 +6,10 @@ Change History
 =========
 
 setup.py attempts to use setuptools if present, before falling back to
-distutils. This allows setuptools only commands such as bdist_wheel to work.
-(:issue:`207`)
+distutils. This allows setuptools only commands such as bdist_wheel to work. You
+can force use of distutils by setting the environment variable
+APSW_FORCE_DISTUTILS to any value. Note that setuptools may also affect the
+output file names. (:issue:`207`)
 
 3.11.0-r1
 ==========

@@ -39,7 +39,7 @@ def run(cmd):
     raise Exception("Failed with signal "+`os.WTERMSIG(status)`+": "+cmd)
 
 def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever):
-    run("set -e ; cd %s ; ( env LD_LIBRARY_PATH=%s %s setup.py fetch --version=%s --all build_test_extension build_ext --inplace --force --enable-all-extensions test -v ) >%s 2>&1" % (workdir, pylib, pybin, sqlitever, os.path.abspath(os.path.join(logdir, "buildruntests.txt"))))
+    run("set -e ; cd %s ; ( env LD_LIBRARY_PATH=%s APSW_FORCE_DISTUTILS=t %s setup.py fetch --version=%s --all build_test_extension build_ext --inplace --force --enable-all-extensions test -v ) >%s 2>&1" % (workdir, pylib, pybin, sqlitever, os.path.abspath(os.path.join(logdir, "buildruntests.txt"))))
 
 def runtest(workdir, pyver, ucs, sqlitever, logdir):
     pybin, pylib=buildpython(workdir, pyver, ucs, os.path.abspath(os.path.join(logdir, "pybuild.txt")))

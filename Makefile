@@ -61,13 +61,13 @@ $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
 	env PYTHONPATH=. http_proxy= $(PYTHON) tools/code2rst.py $(SQLITEVERSION) $< $@
 
 build_ext:
-	$(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --force --enable-all-extensions
+	env APSW_FORCE_DISTUTILS=t $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --force --enable-all-extensions
 
 coverage:
-	$(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all && env APSW_PY_COVERAGE=t tools/coverage.sh
+	env APSW_FORCE_DISTUTILS=t $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all && env APSW_PY_COVERAGE=t tools/coverage.sh
 
 test: build_ext
-	$(PYTHON) tests.py
+	env APSW_FORCE_DISTUTILS=t $(PYTHON) tests.py
 
 debugtest:
 	gcc -pthread -fno-strict-aliasing -g -fPIC -Wall -DAPSW_USE_SQLITE_CONFIG=\"sqlite3/sqlite3config.h\" -DEXPERIMENTAL -DSQLITE_DEBUG -DAPSW_USE_SQLITE_AMALGAMATION=\"sqlite3.c\" -DAPSW_NO_NDEBUG -DAPSW_TESTFIXTURES -I`$(PYTHON) -c "import distutils.sysconfig,sys; sys.stdout.write(distutils.sysconfig.get_python_inc())"` -I. -Isqlite3 -Isrc -c src/apsw.c
@@ -128,26 +128,26 @@ compile-win:
 	cmd /c del /s /q build
 	cmd /c del /s /q apsw.egg-info
 	-cmd /c md dist
-	c:/python35/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	"c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python35-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python34/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python34-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python33/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python33-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python32-64/python setup.py  $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python31/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python31-64/python setup.py  $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python27/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python27-64/python setup.py  $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python26/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python26-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	c:/python25/python setup.py $(WINBPREFIX) --compile=mingw32 $(WINBSUFFIX) $(WINBINST)
-	c:/python24/python setup.py $(WINBPREFIX) --compile=mingw32 $(WINBSUFFIX) $(WINBINST)
-	c:/python23/python setup.py $(WINBPREFIX) --compile=mingw32 $(WINBSUFFIX) $(WINBINST)
+	set APSW_FORCE_DISTUTILS=t & c:/python35/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	set APSW_FORCE_DISTUTILS=t & "c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python35-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	set APSW_FORCE_DISTUTILS=t & c:/python34/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	set APSW_FORCE_DISTUTILS=t & c:/python34-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	set APSW_FORCE_DISTUTILS=t & c:/python33/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	set APSW_FORCE_DISTUTILS=t & c:/python33-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	set APSW_FORCE_DISTUTILS=t & c:/python32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	set APSW_FORCE_DISTUTILS=t & c:/python32-64/python setup.py  $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	set APSW_FORCE_DISTUTILS=t & c:/python31/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	set APSW_FORCE_DISTUTILS=t & c:/python31-64/python setup.py  $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	set APSW_FORCE_DISTUTILS=t & c:/python27/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	set APSW_FORCE_DISTUTILS=t & c:/python27-64/python setup.py  $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	set APSW_FORCE_DISTUTILS=t & c:/python26/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	set APSW_FORCE_DISTUTILS=t & c:/python26-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	set APSW_FORCE_DISTUTILS=t & c:/python25/python setup.py $(WINBPREFIX) --compile=mingw32 $(WINBSUFFIX) $(WINBINST)
+	set APSW_FORCE_DISTUTILS=t & c:/python24/python setup.py $(WINBPREFIX) --compile=mingw32 $(WINBSUFFIX) $(WINBINST)
+	set APSW_FORCE_DISTUTILS=t & c:/python23/python setup.py $(WINBPREFIX) --compile=mingw32 $(WINBSUFFIX) $(WINBINST)
 
 source_nocheck: docs
-	$(PYTHON) setup.py sdist --formats zip --add-doc
+	env APSW_FORCE_DISTUTILS=t $(PYTHON) setup.py sdist --formats zip --add-doc
 
 # Make the source and then check it builds and tests correctly.  This will catch missing files etc
 source: source_nocheck
