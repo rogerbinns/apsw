@@ -69,12 +69,12 @@ typedef int Py_ssize_t;
 #define APSW_PYTYPE_VERSION
 #endif
 
-/* PyUnicode_READY needs to be called - Python 3.3 regression bug -
-   http://bugs.python.org/issue16145  - gave up because other things
-   crashed */
 
-#define APSW_UNICODE_READY(x,y) do {} while(0)
-
+#if PY_VERSION_HEX < 0x03030000
+#define APSW_Unicode_Return(r)  do { return (r); } while(0)
+#else
+#define APSW_Unicode_Return(r) do { int i__=(r)?(PyUnicode_READY(r)):-1; if(i__!=0) Py_CLEAR(r); return (r);} while(0)
+#endif
 
 
 #if PY_MAJOR_VERSION < 3
@@ -245,7 +245,6 @@ convertutf8stringsize(const char *str, Py_ssize_t size)
           Py_UNICODE *out;
           PyObject *res=PyUnicode_FromUnicode(NULL, size);
           if(!res) return res;
-          APSW_UNICODE_READY(res, return NULL);
           out=PyUnicode_AS_UNICODE(res);
 
           i=size;
@@ -256,11 +255,14 @@ convertutf8stringsize(const char *str, Py_ssize_t size)
               out++;
               str++;
             }
-          return res;
+          APSW_Unicode_Return(res);
         }
     }
 
-  return PyUnicode_DecodeUTF8(str, size, NULL);
+    {
+        PyObject *r=PyUnicode_DecodeUTF8(str, size, NULL);
+        APSW_Unicode_Return(r);
+    }
 }
 
 /* Convert a NULL terminated UTF-8 string into a Python object.  None
@@ -331,4 +333,3 @@ getutf8string(PyObject *string)
   Py_DECREF(inunicode);
   return utf8string;
 }
-

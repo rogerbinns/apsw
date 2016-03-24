@@ -2,6 +2,12 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.12.0-r1
+=========
+
+Call `PyUnicode_READY <https://www.python.org/dev/peps/pep-0393/#new-api>`__ for
+Python 3.3 onwards.  Fixes :issue:`208`, :issue:`132`, :issue:`168`.
+
 3.11.1-r1
 =========
 
