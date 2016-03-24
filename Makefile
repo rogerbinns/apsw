@@ -45,8 +45,8 @@ clean:
 doc: docs
 
 docs: build_ext $(GENDOCS) doc/example.rst doc/.static
-	env PYTHONPATH=. http_proxy= $(PYTHON) tools/docmissing.py
-	env PYTHONPATH=. http_proxy= $(PYTHON) tools/docupdate.py $(VERSION)
+	env PYTHONPATH=. $(PYTHON) tools/docmissing.py
+	env PYTHONPATH=. $(PYTHON) tools/docupdate.py $(VERSION)
 	make PYTHONPATH="`pwd`" VERSION=$(VERSION) RELEASEDATE=$(RELEASEDATE) -C doc clean html
 
 doc/example.rst: example-code.py tools/example2rst.py src/apswversion.h
@@ -58,7 +58,7 @@ doc/.static:
 
 # This is probably gnu make specific but only developers use this makefile
 $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
-	env PYTHONPATH=. http_proxy= $(PYTHON) tools/code2rst.py $(SQLITEVERSION) $< $@
+	env PYTHONPATH=. $(PYTHON) tools/code2rst.py $(SQLITEVERSION) $< $@
 
 build_ext:
 	env APSW_FORCE_DISTUTILS=t $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --force --enable-all-extensions
