@@ -3,7 +3,7 @@ debian/copyright
 debian/changelog
 src/shell.c
 *.orig
-testdb-async
+testdb2
 apsw.pyd
 sqlite3genfkey.c
 TAGS
