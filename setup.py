@@ -455,7 +455,7 @@ class fetch(Command):
                 except:
                     # Degrade to http if https is not supported
                     e=sys.exc_info()[1]
-                    if "eof occurred in violation of protocol" in str(e).lower() or e.reason=="unknown url type: https":
+                    if "eof occurred in violation of protocol" in str(e).lower() or getattr(e, "reason")=="unknown url type: https":
                         write("        [Python has https issues - using http instead]")
                         page=urlopen(url.replace("https://", "http://")).read()
                     else:
