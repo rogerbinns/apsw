@@ -25,7 +25,7 @@ then
     CFLAGS="$CFLAGS -DAPSW_USE_SQLITE_CONFIG=\"sqlite3/sqlite3config.h\""
 fi
 set -x
-gcc -pthread -fno-strict-aliasing -ftest-coverage -fprofile-arcs -g -fPIC -Wall $CFLAGS -DEXPERIMENTAL -DSQLITE_ENABLE_API_ARMOR -DSQLITE_DEBUG -DAPSW_USE_SQLITE_AMALGAMATION=\"sqlite3.c\" -DAPSW_NO_NDEBUG -DAPSW_TESTFIXTURES -I$INCLUDEDIR -I. -Isqlite3 -Isrc -c src/apsw.c
+gcc -pthread -fno-strict-aliasing -ftest-coverage -fprofile-arcs -g -fPIC -Wall $CFLAGS -DEXPERIMENTAL -DSQLITE_ENABLE_API_ARMOR -DSQLITE_DEBUG -DAPSW_USE_SQLITE_AMALGAMATION=\"sqlite3/sqlite3.c\" -DAPSW_NO_NDEBUG -DAPSW_TESTFIXTURES -I$INCLUDEDIR -I. -Isrc -c src/apsw.c
 gcc -pthread -ftest-coverage -fprofile-arcs -g -shared apsw.o -o apsw.so
 gcc -fPIC -shared -Isqlite3 -I. -o testextension.sqlext -Isqlite3 src/testextension.c
 set +e
