@@ -676,39 +676,6 @@ apsw_test_reset_rng(APSW_ARGUNUSED PyObject *self)
 #endif
 
 #ifdef APSW_TESTFIXTURES
-/* xGetLastError isn't actually called anywhere by SQLite so add a
-   manual way of doing so
-   https://sqlite.org/cvstrac/tktview?tn=3337 */
-
-static PyObject *
-apsw_call_xGetLastError(APSW_ARGUNUSED PyObject *self, PyObject *args)
-{
-  char *vfsname;
-  int bufsize;
-  PyObject *resultbuffer=NULL;
-  sqlite3_vfs *vfs;
-  int res=-1;
-
-  if(!PyArg_ParseTuple(args, "esi", STRENCODING, &vfsname, &bufsize))
-    return NULL;
-
-  vfs=sqlite3_vfs_find(vfsname);
-  if(!vfs) goto finally;
-
-  resultbuffer=PyBytes_FromStringAndSize(NULL, bufsize);
-  if(!resultbuffer) goto finally;
-
-  memset(PyBytes_AS_STRING(resultbuffer), 0, PyBytes_GET_SIZE(resultbuffer));
-
-  res=vfs->xGetLastError(vfs, bufsize, PyBytes_AS_STRING(resultbuffer));
-
- finally:
-  if(vfsname)
-    PyMem_Free(vfsname);
-
-  return resultbuffer?Py_BuildValue("Ni", resultbuffer, res):NULL;
-}
-
 static PyObject *
 apsw_fini(APSW_ARGUNUSED PyObject *self)
 {
@@ -1211,8 +1178,6 @@ static PyMethodDef module_methods[] = {
    "Resets random number generator so we can test vfs xRandomness"},
 #endif
 #ifdef APSW_TESTFIXTURES
-  {"test_call_xGetLastError", (PyCFunction)apsw_call_xGetLastError, METH_VARARGS,
-   "Calls xGetLastError routine"},
   {"_fini", (PyCFunction)apsw_fini, METH_NOARGS,
    "Frees all caches and recycle lists"},
 #endif

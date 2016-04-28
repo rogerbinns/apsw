@@ -2,11 +2,18 @@ Change History
 **************
 .. currentmodule:: apsw
 
-3.12.0-r1
+3.12.2-r1
 =========
 
 Call `PyUnicode_READY <https://www.python.org/dev/peps/pep-0393/#new-api>`__ for
 Python 3.3 onwards.  Fixes :issue:`208`, :issue:`132`, :issue:`168`.
+
+SQLite 3.12 completely changed the semantics of :meth:`VFS.xGetLastError` in an
+incompatible way.  This required a rewrite of the relevant C, Python and test
+code.  If you implement or use this method then you have to rewrite your code
+too.  Also note that running the test suite from an earlier version of APSW
+against this or future SQLite versions will result in consuming all memory, swap
+or address space (an underlying integer changed meaning).
 
 3.11.1-r1
 =========
@@ -20,7 +27,7 @@ output file names. (:issue:`207`)
 3.11.0-r1
 ==========
 
-The shell dump command now outputs the page size and user version.  There were
+The shell dump command now outputs the page size and user version.  They were
 both output before as comments.
 
 Updated SQLite download logic for 2016 folder.

@@ -4548,16 +4548,36 @@ class APSW(unittest.TestCase):
                 1/0
 
             def xGetLastError3(self):
-                return super(TestVFS,self).xGetLastError("three")
+                return super(TestVFS, self).xGetLastError("three")
 
             def xGetLastError4(self):
                 return 3
 
             def xGetLastError5(self):
-                return "a"*1500
+                return -17, "a"*1500
+
+            def xGetLastError6(self):
+                return -0x7fffffff-200, None
+
+            def xGetLastError7(self):
+                class te(tuple):
+                    def __getitem__(self, n):
+                        if n==0:
+                            return 23
+                        1/0
+                return te((1,2))
+
+            def xGetLastError8(self):
+                return 0, None
+
+            def xGetLastError9(self):
+                return 0, "Some sort of message"
+
+            def xGetLastError10(self):
+                return "banana", "Some sort of message"
 
             def xGetLastError99(self):
-                return super(TestVFS,self).xGetLastError()
+                return super(TestVFS, self).xGetLastError()
 
             def xNextSystemCall1(self, bad, args):
                 1/0
@@ -5002,49 +5022,16 @@ class APSW(unittest.TestCase):
         TestVFS.xCurrentTime=TestVFS.xCurrentTimeCorrect
 
         ## xGetLastError
-        xgle=getattr(apsw, 'test_call_xGetLastError', None)
-        if xgle:
-            # check it
-            self.assertRaises(TypeError, xgle, 3, "seven")
-            # cause an error
-            self.assertRaises(apsw.CantOpenError, vfs.xOpen, u("."), [apsw.SQLITE_OPEN_READWRITE|apsw.SQLITE_OPEN_MAIN_DB,0])
-            # check it works
-            res=xgle("apswtest", 512)
-            self.assertEqual(type(res), type(()))
-            self.assertEqual(len(res), 2)
-            self.assertRaises(TypeError, vfs.xGetLastError, "three")
-            TestVFS.xGetLastError=TestVFS.xGetLastError1
-            res=self.assertRaisesUnraisable(TypeError, xgle, "apswtest", 512)
-            self.assertEqual(res[1], 0)
-            TestVFS.xGetLastError=TestVFS.xGetLastError2
-            res=self.assertRaisesUnraisable(ZeroDivisionError, xgle, "apswtest", 512)
-            self.assertEqual(res[1], 0)
-            TestVFS.xGetLastError=TestVFS.xGetLastError3
-            res=self.assertRaisesUnraisable(TypeError, xgle, "apswtest", 512)
-            self.assertEqual(res[1], 0)
-            TestVFS.xGetLastError=TestVFS.xGetLastError4
-            res=self.assertRaisesUnraisable(TypeError, xgle, "apswtest", 512)
-            self.assertEqual(res[1], 0)
-            TestVFS.xGetLastError=TestVFS.xGetLastError5
-            res=xgle("apswtest", 512)
-            self.assertEqual(res[1], 1)
-            self.assertEqual(res[0], b("a")*512)
-            res=xgle("apswtest", 1024)
-            self.assertEqual(res[1], 1)
-            self.assertEqual(res[0], b("a")*1024)
-            res=xgle("apswtest", 1500)
-            self.assertEqual(res[1], 0)
-            self.assertEqual(res[0], b("a")*1500)
-            class VFS2(apsw.VFS):
-                def __init__(self):
-                    apsw.VFS.__init__(self, "apswtest2", "apswtest")
-            vfs2=VFS2()
-            if not py3:
-                res=xgle("apswtest2", 128)
-                self.assertEqual(res[1], 1)
-            del vfs2
-            del VFS2
-            gc.collect()
+        # We can't directly test because the methods are called as side effects
+        # of other errors.  However coverage shows we are exercising the code.
+        def provoke_error():
+            self.assertRaises(apsw.CantOpenError, self.assertRaisesUnraisable, apsw.CantOpenError, testdb, attachdb='.')
+        for n in range(1, 11):
+            TestVFS.xGetLastError=getattr(TestVFS, "xGetLastError"+str(n))
+            provoke_error()
+
+        TestVFS.xGetLastError=TestVFS.xGetLastError99
+        provoke_error()
 
         ## System call stuff
         if "unix" in apsw.vfsnames() and "APSW_NO_MEMLEAK" not in os.environ:
@@ -7817,7 +7804,7 @@ shell.write(shell.stdout, "hello world\\n")
                 super(FaultVFS, self).__init__(name, inherit, makedefault=makedefault)
 
             def xGetLastErrorLong(self):
-                return "a"*1024
+                return "a"*1024, None
 
             def xOpen(self, name, flags):
                 return FaultVFSFile(name, flags)
@@ -7862,14 +7849,6 @@ shell.write(shell.stdout, "hello world\\n")
         ## xCurrentTimeFail
         apsw.faultdict["xCurrentTimeFail"]=True
         self.assertRaisesUnraisable(apsw.SQLError, apsw.Connection(":memory:", vfs="faultvfs").cursor().execute, "select date('now')")
-
-        ## xGetLastErrorAllocFail
-        if hasattr(apsw, 'test_call_xGetLastError'):
-            apsw.faultdict["xGetLastErrorAllocFail"]=True
-            vfs2=FaultVFS("faultvfs2", "faultvfs")
-            vfs.xGetLastError=vfs.xGetLastErrorLong
-            self.assertRaisesUnraisable(MemoryError, apsw.test_call_xGetLastError, "faultvfs2", 128)
-            vfs.xGetLastError=super(FaultVFS, vfs).xGetLastError
 
         ## APSWVFSDeallocFail
         apsw.faultdict["APSWVFSDeallocFail"]=True
@@ -8132,10 +8111,10 @@ shell.write(shell.stdout, "hello world\\n")
 
 
 
-testtimeout=False # timeout testing adds several seconds to each run
+testtimeout=False  # timeout testing adds several seconds to each run
 def testdb(filename=TESTFILEPREFIX+"testdb2", vfsname="apswtest", closedb=True, mode=None, attachdb=None):
     "This method causes all parts of a vfs to be executed"
-    gc.collect() # free any existing db handles
+    gc.collect()  # free any existing db handles
     for suf in "", "-journal", "x", "x-journal":
         deletefile(filename+suf)
 

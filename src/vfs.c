@@ -1154,87 +1154,130 @@ apswvfspy_xCurrentTime(APSWVFS *self)
 static int
 apswvfs_xGetLastError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
 {
-  PyObject *pyresult=NULL, *utf8=NULL;
-  int buffertoosmall=0;
+  PyObject *pyresult=NULL, *utf8=NULL, *item0=NULL, *item1=NULL;
+  int intres=-1;
+  long longres;
 
   VFSPREAMBLE;
 
+  /* Ensure null termination */
+  if (nByte>0 && zErrMsg) *zErrMsg=0;
+
   pyresult=Call_PythonMethodV((PyObject*)(vfs->pAppData), "xGetLastError", 0, "()");
 
-  if(pyresult && pyresult!=Py_None)
+  if(!pyresult || !PySequence_Check(pyresult) || 2!=PySequence_Length(pyresult))
     {
-      utf8=getutf8string(pyresult);
-      if(utf8)
-        {
-          /* Get size includes trailing null */
-          size_t len=PyBytes_GET_SIZE(utf8);
-          if(len>(size_t)nByte)
-            {
-              len=(size_t)nByte;
-              buffertoosmall=1;
-            }
-          memcpy(zErrMsg, PyBytes_AS_STRING(utf8), len);
-        }
-
+        if(!PyErr_Occurred())
+            PyErr_Format(PyExc_TypeError, "xGetLastError must return two item sequence (int, None or str)");
+        goto end;
     }
 
+  item0=PySequence_GetItem(pyresult, 0);
+  if(item0)
+    item1=PySequence_GetItem(pyresult, 1);
+
+  if(!item0 || !item1)
+    {
+      assert(PyErr_Occurred());
+      goto end;
+    }
+
+  if(!PyIntLong_Check(item0))
+    {
+        PyErr_Format(PyExc_TypeError, "First last error item must be a number");
+        goto end;
+    }
+
+  longres=PyIntLong_AsLong(item0);
+  if(PyErr_Occurred()) goto end;
+  intres=(int)longres;
+  if(intres!=longres)
+    {
+      PyErr_Format(PyExc_ValueError, "xGetLastError return first item must fit in int");
+      goto end;
+    }
+
+  if(item1==Py_None)
+    goto end;
+
+  utf8=getutf8string(item1);
+  if(utf8)
+    {
+      /* Get size includes trailing null */
+      size_t len=PyBytes_GET_SIZE(utf8);
+      if(zErrMsg && len>0)
+        {
+          if(len>(size_t)nByte)
+          len=(size_t)nByte;
+          memcpy(zErrMsg, PyBytes_AS_STRING(utf8), len);
+          zErrMsg[len-1]=0;
+        }
+    }
+
+  end:
   if(PyErr_Occurred())
     AddTraceBackHere(__FILE__, __LINE__, "vfs.xGetLastError", NULL);
 
   Py_XDECREF(pyresult);
   Py_XDECREF(utf8);
+  Py_XDECREF(item0);
+  Py_XDECREF(item1);
   VFSPOSTAMBLE;
-  return buffertoosmall;
+  return intres;
 }
 
-/** .. method:: xGetLastError() -> string
+/** .. method:: xGetLastError() -> (int, string or None)
 
-   This method is to return text describing the last error that
-   happened in this thread. If not implemented SQLite's more generic
-   message is used. However the method is :cvstrac:`never called
-   <3337>` by SQLite.
+   This method is to return an integer error code and (optional) text describing
+   the last error that happened in this thread.
+
+   .. note:: SQLite 3.12 changed the semantics in an incompatible way from
+        earlier versions.  You will need to rewrite earlier implementations.
 */
 static PyObject *
 apswvfspy_xGetLastError(APSWVFS *self)
 {
-  PyObject *res=NULL;
-  int toobig=1;
-  Py_ssize_t size=256; /* start small */
+  PyObject *res=NULL, *text=NULL;
+  int errval;
+  size_t msglen;
+  const Py_ssize_t size=1024;
 
   CHECKVFSPY;
   VFSNOTIMPLEMENTED(xGetLastError, 1);
 
-  res=PyBytes_FromStringAndSize(NULL, size);
+  text=PyBytes_FromStringAndSize(NULL, size);
+  if(!text) goto error;
+
+  /* SQLite before 3.12 said the buffer may be left unterminated.  3.12 says
+     nothing useful, so as a defensive measure we ensure the buffer is zero
+     filled */
+  memset(PyBytes_AS_STRING(text), 0, size);
+
+  errval=self->basevfs->xGetLastError(self->basevfs, size, PyBytes_AS_STRING(text));
+  msglen=strnlen(PyBytes_AS_STRING(text), size);
+  if(msglen>0)
+    _PyBytes_Resize(&text, msglen);
+  else
+    {
+        Py_CLEAR(text);
+        text=Py_None;
+        Py_INCREF(text);
+    }
+
+  res=PyTuple_New(2);
   if(!res) goto error;
-  while(toobig)
-    {
-      int resizeresult;
 
-      memset(PyBytes_AS_STRING(res), 0, PyBytes_GET_SIZE(res));
-      toobig=self->basevfs->xGetLastError(self->basevfs, PyBytes_GET_SIZE(res), PyBytes_AS_STRING(res));
-      if(!toobig)
-        break;
-      size*=2; /* double size and try again */
-      APSW_FAULT_INJECT(xGetLastErrorAllocFail,
-                        resizeresult=_PyBytes_Resize(&res, size),
-                        resizeresult=(PyErr_NoMemory(), -1));
-      if(resizeresult!=0)
-        goto error;
-    }
+  PyTuple_SET_ITEM(res, 0, PyInt_FromLong(errval));
+  PyTuple_SET_ITEM(res, 1, text);
+  if(PyErr_Occurred())
+    goto error;
 
-  /* did they make a message? */
-  if(strlen(PyBytes_AS_STRING(res))==0)
-    {
-      Py_XDECREF(res);
-      Py_RETURN_NONE;
-    }
-
-  _PyBytes_Resize(&res, strlen(PyBytes_AS_STRING(res)));
   return res;
 
  error:
   assert(PyErr_Occurred());
   AddTraceBackHere(__FILE__, __LINE__, "vfspy.xGetLastError", "{s: O, s: i}", "self", self, "size", (int)size);
+  Py_XDECREF(text);
   Py_XDECREF(res);
   return NULL;
 }
