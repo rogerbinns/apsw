@@ -1254,7 +1254,7 @@ apswvfspy_xGetLastError(APSWVFS *self)
   memset(PyBytes_AS_STRING(text), 0, size);
 
   errval=self->basevfs->xGetLastError(self->basevfs, size, PyBytes_AS_STRING(text));
-  msglen=strnlen(PyBytes_AS_STRING(text), size);
+  msglen=apsw_strnlen(PyBytes_AS_STRING(text), size);
   if(msglen>0)
     _PyBytes_Resize(&text, msglen);
   else
