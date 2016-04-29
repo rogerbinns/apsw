@@ -269,12 +269,13 @@ VFS class
 
   Return the absolute pathname for name.  You can use ``os.path.abspath`` to do this.
 
-.. method:: VFS.xGetLastError() -> string
+.. method:: VFS.xGetLastError() -> (int, string or None)
 
-   This method is to return text describing the last error that
-   happened in this thread. If not implemented SQLite's more generic
-   message is used. However the method is :cvstrac:`never called
-   <3337>` by SQLite.
+   This method is to return an integer error code and (optional) text describing
+   the last error that happened in this thread.
+
+   .. note:: SQLite 3.12 changed the semantics in an incompatible way from
+        earlier versions.  You will need to rewrite earlier implementations.
 
 .. method:: VFS.xGetSystemCall(name) -> int
 

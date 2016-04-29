@@ -6,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Example &mdash; APSW 3.11.1-r1 documentation</title>
+    <title>Example &mdash; APSW 3.12.2-r1 documentation</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.11.1-r1',
+        VERSION:     '3.12.2-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.11.1-r1 documentation" href="index.html" />
+    <link rel="top" title="APSW 3.12.2-r1 documentation" href="index.html" />
     <link rel="next" title="Download" href="download.html" />
     <link rel="prev" title="Tips" href="tips.html" />
  
@@ -35,8 +35,8 @@
 </script>
 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -51,14 +51,14 @@
         <li class="right" >
           <a href="tips.html" title="Tips"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">APSW 3.11.1-r1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.12.2-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="example">
 <h1>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h1>
@@ -79,9 +79,9 @@ so you can see what gets printed when you run the code.</p>
 </pre></div>
 </div>
 <div class="highlight-text"><div class="highlight"><pre>|       Using APSW file /space/apsw/apsw.so
-|          APSW version 3.11.1-r1
-|    SQLite lib version 3.11.1
-| SQLite header version 3011001
+|          APSW version 3.12.2-r1
+|    SQLite lib version 3.12.2
+| SQLite header version 3012002
 </pre></div>
 </div>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">###</span>
@@ -412,8 +412,7 @@ so you can see what gets printed when you run the code.</p>
 </pre></div>
 </div>
 <div class="highlight-text"><div class="highlight"><pre>| in commit hook
-| no commits out of hours
-| commit was not allowed
+| commits okay at this time
 </pre></div>
 </div>
 <div class="highlight-python" id="example-updatehook"><div class="highlight"><pre><span class="c">###</span>
@@ -536,9 +535,9 @@ so you can see what gets printed when you run the code.</p>
     <span class="k">print</span> <span class="n">size</span><span class="p">,</span><span class="nb">file</span><span class="p">,</span><span class="n">directory</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>| 5846480 apsw.so /space/apsw
-| 397928 _bsddb.x86_64-linux-gnu_d.so /usr/lib/python2.7/lib-dynload
-| 336872 apt_pkg.x86_64-linux-gnu.so /usr/lib/python2.7/dist-packages
+<div class="highlight-text"><div class="highlight"><pre>| 6296176 apsw.o /space/apsw
+| 5994624 apsw.cpython-34m.so /space/apsw
+| 5956640 apsw.so /space/apsw
 </pre></div>
 </div>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># Which 3 files are the oldest?</span>
@@ -619,14 +618,14 @@ so you can see what gets printed when you run the code.</p>
 <span class="k">print</span> <span class="sb">`open(&quot;myobfudb&quot;, &quot;rb&quot;).read()[:20]`</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>| &#39;\xf6\xf4\xe9\xcc\xd1\xc0\x85\xc3\xca\xd7\xc8\xc4\xd1\x85\x96\xa5\xa1\xa5\xa4\xa4&#39;
+<div class="highlight-text"><div class="highlight"><pre>| &#39;\xf6\xf4\xe9\xcc\xd1\xc0\x85\xc3\xca\xd7\xc8\xc4\xd1\x85\x96\xa5\xb5\xa5\xa4\xa4&#39;
 </pre></div>
 </div>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># And unobfuscating it</span>
 <span class="k">print</span> <span class="sb">`encryptme(open(&quot;myobfudb&quot;, &quot;rb&quot;).read()[:20])`</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>| &#39;SQLite format 3\x00\x04\x00\x01\x01&#39;
+<div class="highlight-text"><div class="highlight"><pre>| &#39;SQLite format 3\x00\x10\x00\x01\x01&#39;
 </pre></div>
 </div>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># Tidy up</span>
@@ -723,7 +722,7 @@ so you can see what gets printed when you run the code.</p>
 <span class="k">print</span> <span class="s">&quot;SQLite memory usage current </span><span class="si">%d</span><span class="s"> max </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">apsw</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_STATUS_MEMORY_USED</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>| SQLite memory usage current 425536 max 499496
+<div class="highlight-text"><div class="highlight"><pre>| SQLite memory usage current 760648 max 1127048
 </pre></div>
 </div>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">###</span>
@@ -744,7 +743,7 @@ so you can see what gets printed when you run the code.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="tips.html"
@@ -752,12 +751,14 @@ so you can see what gets printed when you run the code.</p>
   <h4>Next topic</h4>
   <p class="topless"><a href="download.html"
                         title="next chapter">Download</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/example.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/example.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -774,7 +775,7 @@ so you can see what gets printed when you run the code.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -789,14 +790,14 @@ so you can see what gets printed when you run the code.</p>
         <li class="right" >
           <a href="tips.html" title="Tips"
              >previous</a> |</li>
-        <li><a href="index.html">APSW 3.11.1-r1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.12.2-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>
 
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; <a href="copyright.html">Copyright</a> 2004-2016, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 07, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Last updated on Apr 28, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

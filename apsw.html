@@ -6,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>APSW Module &mdash; APSW 3.11.1-r1 documentation</title>
+    <title>APSW Module &mdash; APSW 3.12.2-r1 documentation</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.11.1-r1',
+        VERSION:     '3.12.2-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.11.1-r1 documentation" href="index.html" />
+    <link rel="top" title="APSW 3.12.2-r1 documentation" href="index.html" />
     <link rel="next" title="Connections to a database" href="connection.html" />
     <link rel="prev" title="Extensions" href="extensions.html" />
  
@@ -35,8 +35,8 @@
 </script>
 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -51,42 +51,42 @@
         <li class="right" >
           <a href="extensions.html" title="Extensions"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">APSW 3.11.1-r1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.12.2-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <span class="target" id="module-apsw"></span><div class="section" id="apsw-module">
 <h1>APSW Module<a class="headerlink" href="#apsw-module" title="Permalink to this headline">¶</a></h1>
 <p>The module is the main interface to SQLite.  Methods and data on the
 module have process wide effects.  You can instantiate the
-<a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> and <a class="reference internal" href="blob.html#apsw.zeroblob" title="apsw.zeroblob"><tt class="xref py py-class docutils literal"><span class="pre">zeroblob</span></tt></a> objects using
-<a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><tt class="xref py py-meth docutils literal"><span class="pre">Connection()</span></tt></a> and <a class="reference internal" href="blob.html#apsw.zeroblob" title="apsw.zeroblob"><tt class="xref py py-meth docutils literal"><span class="pre">zeroblob()</span></tt></a> respectively.</p>
+<a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> and <a class="reference internal" href="blob.html#apsw.zeroblob" title="apsw.zeroblob"><code class="xref py py-class docutils literal"><span class="pre">zeroblob</span></code></a> objects using
+<a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-meth docutils literal"><span class="pre">Connection()</span></code></a> and <a class="reference internal" href="blob.html#apsw.zeroblob" title="apsw.zeroblob"><code class="xref py py-meth docutils literal"><span class="pre">zeroblob()</span></code></a> respectively.</p>
 <div class="section" id="api-reference">
 <h2>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h2>
 <dl class="data">
 <dt id="apsw.SQLITE_VERSION_NUMBER">
-<tt class="descname">SQLITE_VERSION_NUMBER</tt><a class="headerlink" href="#apsw.SQLITE_VERSION_NUMBER" title="Permalink to this definition">¶</a></dt>
+<code class="descname">SQLITE_VERSION_NUMBER</code><a class="headerlink" href="#apsw.SQLITE_VERSION_NUMBER" title="Permalink to this definition">¶</a></dt>
 <dd><p>The integer version number of SQLite that APSW was compiled
 against.  For example SQLite 3.6.4 will have the value <em>3006004</em>.
 This number may be different than the actual library in use if the
 library is shared and has been updated.  Call
-<a class="reference internal" href="#apsw.sqlitelibversion" title="apsw.sqlitelibversion"><tt class="xref py py-meth docutils literal"><span class="pre">sqlitelibversion()</span></tt></a> to get the actual library version.</p>
+<a class="reference internal" href="#apsw.sqlitelibversion" title="apsw.sqlitelibversion"><code class="xref py py-meth docutils literal"><span class="pre">sqlitelibversion()</span></code></a> to get the actual library version.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="apsw.apswversion">
-<tt class="descname">apswversion</tt><big>(</big><big>)</big> &rarr; string<a class="headerlink" href="#apsw.apswversion" title="Permalink to this definition">¶</a></dt>
+<code class="descname">apswversion</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; string<a class="headerlink" href="#apsw.apswversion" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the APSW version.</p>
 </dd></dl>
 
 <span class="target" id="index-0"></span><dl class="attribute">
 <dt id="apsw.compile_options">
-<tt class="descname">compile_options</tt><a class="headerlink" href="#apsw.compile_options" title="Permalink to this definition">¶</a></dt>
+<code class="descname">compile_options</code><a class="headerlink" href="#apsw.compile_options" title="Permalink to this definition">¶</a></dt>
 <dd><p>A tuple of the options used to compile SQLite.  For example it
 will be something like this:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="s">&#39;ENABLE_LOCKING_STYLE=0&#39;</span><span class="p">,</span> <span class="s">&#39;TEMP_STORE=1&#39;</span><span class="p">,</span> <span class="s">&#39;THREADSAFE=1&#39;</span><span class="p">)</span>
@@ -97,7 +97,7 @@ will be something like this:</p>
 
 <span class="target" id="index-1"></span><dl class="method">
 <dt id="apsw.complete">
-<tt class="descname">complete</tt><big>(</big><em>statement</em><big>)</big> &rarr; bool<a class="headerlink" href="#apsw.complete" title="Permalink to this definition">¶</a></dt>
+<code class="descname">complete</code><span class="sig-paren">(</span><em>statement</em><span class="sig-paren">)</span> &rarr; bool<a class="headerlink" href="#apsw.complete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns True if the input string comprises one or more complete SQL
 statements by looking for an unquoted trailing semi-colon.</p>
 <p>An example use would be if you were prompting the user for SQL
@@ -114,7 +114,7 @@ needed to ask for another line:</p>
 
 <span class="target" id="index-2"></span><dl class="method">
 <dt id="apsw.config">
-<tt class="descname">config</tt><big>(</big><em>op</em><span class="optional">[</span>, <em>*args</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#apsw.config" title="Permalink to this definition">¶</a></dt>
+<code class="descname">config</code><span class="sig-paren">(</span><em>op</em><span class="optional">[</span>, <em>*args</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.config" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -131,20 +131,20 @@ needed to ask for another line:</p>
 following configuration operations are supported: SQLITE_CONFIG_LOG,
 SQLITE_CONFIG_SINGLETHREAD, SQLITE_CONFIG_MULTITHREAD,
 SQLITE_CONFIG_SERIALIZED, SQLITE_CONFIG_URI, SQLITE_CONFIG_MEMSTATUS,
-SQLITE_CONFIG_COVERING_INDEX_SCAN, SQLITE_CONFIG_PCACHE_HDRSZ, and
-SQLITE_CONFIG_PMASZ.</p>
-<p>See <a class="reference internal" href="tips.html#diagnostics-tips"><em>tips</em></a> for an example of how to receive
+SQLITE_CONFIG_COVERING_INDEX_SCAN, SQLITE_CONFIG_PCACHE_HDRSZ,
+SQLITE_CONFIG_PMASZ, and SQLITE_CONFIG_STMTJRNL_SPILL.</p>
+<p>See <a class="reference internal" href="tips.html#diagnostics-tips"><span>tips</span></a> for an example of how to receive
 log messages (SQLITE_CONFIG_LOG)</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/config.html">sqlite3_config</a></p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="apsw.connection_hooks">
-<tt class="descname">connection_hooks</tt><a class="headerlink" href="#apsw.connection_hooks" title="Permalink to this definition">¶</a></dt>
+<code class="descname">connection_hooks</code><a class="headerlink" href="#apsw.connection_hooks" title="Permalink to this definition">¶</a></dt>
 <dd><p>The purpose of the hooks is to allow the easy registration of
-<a class="reference internal" href="connection.html#apsw.Connection.createscalarfunction" title="apsw.Connection.createscalarfunction"><tt class="xref py py-meth docutils literal"><span class="pre">functions</span></tt></a>,
-<a class="reference internal" href="vtable.html#virtualtables"><em>virtual tables</em></a> or similar items with
-each <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> as it is created. The default value is an empty
+<a class="reference internal" href="connection.html#apsw.Connection.createscalarfunction" title="apsw.Connection.createscalarfunction"><code class="xref py py-meth docutils literal"><span class="pre">functions</span></code></a>,
+<a class="reference internal" href="vtable.html#virtualtables"><span>virtual tables</span></a> or similar items with
+each <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> as it is created. The default value is an empty
 list. Whenever a Connection is created, each item in
 apsw.connection_hooks is invoked with a single parameter being
 the new Connection object. If the hook raises an exception then
@@ -157,17 +157,17 @@ functions.</p>
 
 <span class="target" id="index-3"></span><dl class="method">
 <dt id="apsw.enablesharedcache">
-<tt class="descname">enablesharedcache</tt><big>(</big><em>bool</em><big>)</big><a class="headerlink" href="#apsw.enablesharedcache" title="Permalink to this definition">¶</a></dt>
-<dd><p>If you use the same <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> across threads or use
-multiple <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><tt class="xref py py-class docutils literal"><span class="pre">connections</span></tt></a> accessing the same file,
-then SQLite can <a class="reference external" href="https://sqlite.org/sharedcache.html">share the cache between them</a>.  It is <a class="reference internal" href="tips.html#sharedcache"><em>not
-recommended</em></a> that you use this.</p>
+<code class="descname">enablesharedcache</code><span class="sig-paren">(</span><em>bool</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.enablesharedcache" title="Permalink to this definition">¶</a></dt>
+<dd><p>If you use the same <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> across threads or use
+multiple <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">connections</span></code></a> accessing the same file,
+then SQLite can <a class="reference external" href="https://sqlite.org/sharedcache.html">share the cache between them</a>.  It is <a class="reference internal" href="tips.html#sharedcache"><span>not
+recommended</span></a> that you use this.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/enable_shared_cache.html">sqlite3_enable_shared_cache</a></p>
 </dd></dl>
 
 <dl class="method">
 <dt id="apsw.exceptionfor">
-<tt class="descname">exceptionfor</tt><big>(</big><em>int</em><big>)</big> &rarr; Exception<a class="headerlink" href="#apsw.exceptionfor" title="Permalink to this definition">¶</a></dt>
+<code class="descname">exceptionfor</code><span class="sig-paren">(</span><em>int</em><span class="sig-paren">)</span> &rarr; Exception<a class="headerlink" href="#apsw.exceptionfor" title="Permalink to this definition">¶</a></dt>
 <dd><p>If you would like to raise an exception that corresponds to a
 particular SQLite <a class="reference external" href="https://sqlite.org/c3ref/c_abort.html">error code</a> then call this function.
 It also understands <a class="reference external" href="https://sqlite.org/c3ref/c_ioerr_access.html">extended error codes</a>.</p>
@@ -179,7 +179,7 @@ It also understands <a class="reference external" href="https://sqlite.org/c3ref
 
 <dl class="method">
 <dt id="apsw.fork_checker">
-<tt class="descname">fork_checker</tt><big>(</big><big>)</big><a class="headerlink" href="#apsw.fork_checker" title="Permalink to this definition">¶</a></dt>
+<code class="descname">fork_checker</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.fork_checker" title="Permalink to this definition">¶</a></dt>
 <dd><p><strong>Note</strong> This method is not available on Windows as it does not
 support the fork system call.</p>
 <p>SQLite does not allow the use of database connections across <a class="reference external" href="http://en.wikipedia.org/wiki/Fork_(operating_system)">forked</a> processes
@@ -202,7 +202,7 @@ anything you may have missed is also deallocated.)</p>
 <p>Once you run this method, extra checking code is inserted into
 SQLite&#8217;s mutex operations (at a very small performance penalty) that
 verifies objects are not used across processes.  You will get a
-<a class="reference internal" href="exceptions.html#apsw.ForkingViolationError" title="apsw.ForkingViolationError"><tt class="xref py py-exc docutils literal"><span class="pre">ForkingViolationError</span></tt></a> if you do so.  Note that due to the way
+<a class="reference internal" href="exceptions.html#apsw.ForkingViolationError" title="apsw.ForkingViolationError"><code class="xref py py-exc docutils literal"><span class="pre">ForkingViolationError</span></code></a> if you do so.  Note that due to the way
 Python&#8217;s internals work, the exception will be delivered to
 <cite>sys.excepthook</cite> in addition to the normal exception mechanisms and
 may be reported by Python after the line where the issue actually
@@ -217,7 +217,7 @@ checking as part of your test suite.</p>
 
 <dl class="method">
 <dt id="apsw.format_sql_value">
-<tt class="descname">format_sql_value</tt><big>(</big><em>value</em><big>)</big> &rarr; string<a class="headerlink" href="#apsw.format_sql_value" title="Permalink to this definition">¶</a></dt>
+<code class="descname">format_sql_value</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span> &rarr; string<a class="headerlink" href="#apsw.format_sql_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a Python string (unicode) representing the supplied value in
 SQL syntax.  Python 2 note: You must supply unicode strings not
 plain strings.</p>
@@ -225,57 +225,57 @@ plain strings.</p>
 
 <span class="target" id="index-4"></span><dl class="method">
 <dt id="apsw.initialize">
-<tt class="descname">initialize</tt><big>(</big><big>)</big><a class="headerlink" href="#apsw.initialize" title="Permalink to this definition">¶</a></dt>
+<code class="descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>It is unlikely you will want to call this method as SQLite automatically initializes.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/initialize.html">sqlite3_initialize</a></p>
 </dd></dl>
 
 <span class="target" id="index-5"></span><dl class="method">
 <dt id="apsw.log">
-<tt class="descname">log</tt><big>(</big><em>level</em>, <em>message</em><big>)</big><a class="headerlink" href="#apsw.log" title="Permalink to this definition">¶</a></dt>
+<code class="descname">log</code><span class="sig-paren">(</span><em>level</em>, <em>message</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.log" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calls the SQLite logging interface.  Note that you must format the
 message before passing it to this method:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">apsw</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_NOMEM</span><span class="p">,</span> <span class="s">&quot;Need </span><span class="si">%d</span><span class="s"> bytes of memory&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="mi">1234</span><span class="p">,))</span>
 </pre></div>
 </div>
-<p>See <a class="reference internal" href="tips.html#diagnostics-tips"><em>tips</em></a> for an example of how to
+<p>See <a class="reference internal" href="tips.html#diagnostics-tips"><span>tips</span></a> for an example of how to
 receive log messages.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/log.html">sqlite3_log</a></p>
 </dd></dl>
 
 <dl class="method">
 <dt id="apsw.main">
-<tt class="descname">main</tt><big>(</big><big>)</big><a class="headerlink" href="#apsw.main" title="Permalink to this definition">¶</a></dt>
+<code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.main" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call this to run the interactive shell.  It automatically passes
 in sys.argv[1:] and exits Python when done.</p>
 </dd></dl>
 
 <span class="target" id="index-6"></span><dl class="method">
 <dt id="apsw.memoryhighwater">
-<tt class="descname">memoryhighwater</tt><big>(</big><em>reset=False</em><big>)</big> &rarr; int<a class="headerlink" href="#apsw.memoryhighwater" title="Permalink to this definition">¶</a></dt>
+<code class="descname">memoryhighwater</code><span class="sig-paren">(</span><em>reset=False</em><span class="sig-paren">)</span> &rarr; int<a class="headerlink" href="#apsw.memoryhighwater" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the maximum amount of memory SQLite has used.  If <em>reset</em> is
 True then the high water mark is reset to the current value.</p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#apsw.status" title="apsw.status"><tt class="xref py py-meth docutils literal"><span class="pre">status()</span></tt></a></p>
+<p class="last"><a class="reference internal" href="#apsw.status" title="apsw.status"><code class="xref py py-meth docutils literal"><span class="pre">status()</span></code></a></p>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/memory_highwater.html">sqlite3_memory_highwater</a></p>
 </dd></dl>
 
 <span class="target" id="index-7"></span><dl class="method">
 <dt id="apsw.memoryused">
-<tt class="descname">memoryused</tt><big>(</big><big>)</big> &rarr; int<a class="headerlink" href="#apsw.memoryused" title="Permalink to this definition">¶</a></dt>
+<code class="descname">memoryused</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; int<a class="headerlink" href="#apsw.memoryused" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the amount of memory SQLite is currently using.</p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#apsw.status" title="apsw.status"><tt class="xref py py-meth docutils literal"><span class="pre">status()</span></tt></a></p>
+<p class="last"><a class="reference internal" href="#apsw.status" title="apsw.status"><code class="xref py py-meth docutils literal"><span class="pre">status()</span></code></a></p>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/memory_highwater.html">sqlite3_memory_used</a></p>
 </dd></dl>
 
 <span class="target" id="index-8"></span><dl class="method">
 <dt id="apsw.randomness">
-<tt class="descname">randomness</tt><big>(</big><em>bytes</em><big>)</big> &rarr; data<a class="headerlink" href="#apsw.randomness" title="Permalink to this definition">¶</a></dt>
+<code class="descname">randomness</code><span class="sig-paren">(</span><em>bytes</em><span class="sig-paren">)</span> &rarr; data<a class="headerlink" href="#apsw.randomness" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets random data from SQLite&#8217;s random number generator.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -292,7 +292,7 @@ True then the high water mark is reset to the current value.</p>
 
 <span class="target" id="index-9"></span><dl class="method">
 <dt id="apsw.releasememory">
-<tt class="descname">releasememory</tt><big>(</big><em>bytes</em><big>)</big> &rarr; int<a class="headerlink" href="#apsw.releasememory" title="Permalink to this definition">¶</a></dt>
+<code class="descname">releasememory</code><span class="sig-paren">(</span><em>bytes</em><span class="sig-paren">)</span> &rarr; int<a class="headerlink" href="#apsw.releasememory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Requests SQLite try to free <em>bytes</em> bytes of memory.  Returns how
 many bytes were freed.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/release_memory.html">sqlite3_release_memory</a></p>
@@ -300,18 +300,18 @@ many bytes were freed.</p>
 
 <span class="target" id="index-10"></span><dl class="method">
 <dt id="apsw.shutdown">
-<tt class="descname">shutdown</tt><big>(</big><big>)</big><a class="headerlink" href="#apsw.shutdown" title="Permalink to this definition">¶</a></dt>
+<code class="descname">shutdown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.shutdown" title="Permalink to this definition">¶</a></dt>
 <dd><p>It is unlikely you will want to call this method and there is no
 need to do so.  It is a <strong>really</strong> bad idea to call it unless you
-are absolutely sure all <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><tt class="xref py py-class docutils literal"><span class="pre">connections</span></tt></a>,
-<a class="reference internal" href="blob.html#apsw.blob" title="apsw.blob"><tt class="xref py py-class docutils literal"><span class="pre">blobs</span></tt></a>, <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><tt class="xref py py-class docutils literal"><span class="pre">cursors</span></tt></a>, <a class="reference internal" href="vfs.html#apsw.VFS" title="apsw.VFS"><tt class="xref py py-class docutils literal"><span class="pre">vfs</span></tt></a>
+are absolutely sure all <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">connections</span></code></a>,
+<a class="reference internal" href="blob.html#apsw.blob" title="apsw.blob"><code class="xref py py-class docutils literal"><span class="pre">blobs</span></code></a>, <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal"><span class="pre">cursors</span></code></a>, <a class="reference internal" href="vfs.html#apsw.VFS" title="apsw.VFS"><code class="xref py py-class docutils literal"><span class="pre">vfs</span></code></a>
 etc have been closed, deleted and garbage collected.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/initialize.html">sqlite3_shutdown</a></p>
 </dd></dl>
 
 <span class="target" id="index-11"></span><dl class="method">
 <dt id="apsw.softheaplimit">
-<tt class="descname">softheaplimit</tt><big>(</big><em>bytes</em><big>)</big> &rarr; oldlimit<a class="headerlink" href="#apsw.softheaplimit" title="Permalink to this definition">¶</a></dt>
+<code class="descname">softheaplimit</code><span class="sig-paren">(</span><em>bytes</em><span class="sig-paren">)</span> &rarr; oldlimit<a class="headerlink" href="#apsw.softheaplimit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Requests SQLite try to keep memory usage below <em>bytes</em> bytes and
 returns the previous setting.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/soft_heap_limit64.html">sqlite3_soft_heap_limit64</a></p>
@@ -319,7 +319,7 @@ returns the previous setting.</p>
 
 <span class="target" id="index-12"></span><dl class="method">
 <dt id="apsw.sqlite3_sourceid">
-<tt class="descname">sqlite3_sourceid</tt><big>(</big><big>)</big> &rarr; string<a class="headerlink" href="#apsw.sqlite3_sourceid" title="Permalink to this definition">¶</a></dt>
+<code class="descname">sqlite3_sourceid</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; string<a class="headerlink" href="#apsw.sqlite3_sourceid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the exact checkin information for the SQLite 3 source
 being used.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/libversion.html">sqlite3_sourceid</a></p>
@@ -327,7 +327,7 @@ being used.</p>
 
 <span class="target" id="index-13"></span><dl class="method">
 <dt id="apsw.sqlitelibversion">
-<tt class="descname">sqlitelibversion</tt><big>(</big><big>)</big> &rarr; string<a class="headerlink" href="#apsw.sqlitelibversion" title="Permalink to this definition">¶</a></dt>
+<code class="descname">sqlitelibversion</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; string<a class="headerlink" href="#apsw.sqlitelibversion" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the version of the SQLite library.  This value is queried at
 run time from the library so if you use shared libraries it will be
 the version in the shared library.</p>
@@ -336,7 +336,7 @@ the version in the shared library.</p>
 
 <span class="target" id="index-14"></span><dl class="method">
 <dt id="apsw.status">
-<tt class="descname">status</tt><big>(</big><em>op</em>, <em>reset=False) -&gt; (int</em>, <em>int</em><big>)</big><a class="headerlink" href="#apsw.status" title="Permalink to this definition">¶</a></dt>
+<code class="descname">status</code><span class="sig-paren">(</span><em>op</em>, <em>reset=False) -&gt; (int</em>, <em>int</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.status" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns current and highwater measurements.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -356,7 +356,7 @@ the version in the shared library.</p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><a class="reference internal" href="example.html#example-status"><em>Status example</em></a></li>
+<li><a class="reference internal" href="example.html#example-status"><span>Status example</span></a></li>
 </ul>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/status.html">sqlite3_status64</a></p>
@@ -364,7 +364,7 @@ the version in the shared library.</p>
 
 <dl class="attribute">
 <dt id="apsw.using_amalgamation">
-<tt class="descname">using_amalgamation</tt><a class="headerlink" href="#apsw.using_amalgamation" title="Permalink to this definition">¶</a></dt>
+<code class="descname">using_amalgamation</code><a class="headerlink" href="#apsw.using_amalgamation" title="Permalink to this definition">¶</a></dt>
 <dd><p>If True then <a class="reference external" href="https://sqlite.org/cvstrac/wiki?p=TheAmalgamation">SQLite amalgamation</a> is in
 use (statically compiled into APSW).  Using the amalgamation means
 that SQLite shared libraries are not used and will not affect your
@@ -373,8 +373,8 @@ code.</p>
 
 <dl class="method">
 <dt id="apsw.vfsnames">
-<tt class="descname">vfsnames</tt><big>(</big><em>) -&gt; list(string</em><big>)</big><a class="headerlink" href="#apsw.vfsnames" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a list of the currently installed <a class="reference internal" href="vfs.html#vfs"><em>vfs</em></a>.  The first
+<code class="descname">vfsnames</code><span class="sig-paren">(</span><em>) -&gt; list(string</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.vfsnames" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of the currently installed <a class="reference internal" href="vfs.html#vfs"><span>vfs</span></a>.  The first
 item in the list is the default vfs.</p>
 </dd></dl>
 
@@ -382,10 +382,10 @@ item in the list is the default vfs.</p>
 <div class="section" id="sqlite-constants">
 <span id="sqliteconstants"></span><h2>SQLite constants<a class="headerlink" href="#sqlite-constants" title="Permalink to this headline">¶</a></h2>
 <p>SQLite has <a class="reference external" href="https://sqlite.org/c3ref/constlist.html">many constants</a> used in various
-interfaces.  To use a constant such as <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_OK</span></tt>, just
-use <tt class="docutils literal"><span class="pre">apsw.SQLITE_OK</span></tt>.</p>
+interfaces.  To use a constant such as <code class="xref py py-const docutils literal"><span class="pre">SQLITE_OK</span></code>, just
+use <code class="docutils literal"><span class="pre">apsw.SQLITE_OK</span></code>.</p>
 <p>The same values can be used in different contexts. For example
-<tt class="xref py py-const docutils literal"><span class="pre">SQLITE_OK</span></tt> and <tt class="xref py py-const docutils literal"><span class="pre">SQLITE_CREATE_INDEX</span></tt> both have a value
+<code class="xref py py-const docutils literal"><span class="pre">SQLITE_OK</span></code> and <code class="xref py py-const docutils literal"><span class="pre">SQLITE_CREATE_INDEX</span></code> both have a value
 of zero. For each group of constants there is also a mapping (dict)
 available that you can supply a string to and get the corresponding
 numeric value, or supply a numeric value and get the corresponding
@@ -409,13 +409,13 @@ modules etc. For example:</p>
 <div><a class="reference external" href="https://sqlite.org/c3ref/c_index_constraint_eq.html">SQLITE_INDEX_CONSTRAINT_EQ</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_index_constraint_eq.html">SQLITE_INDEX_CONSTRAINT_GE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_index_constraint_eq.html">SQLITE_INDEX_CONSTRAINT_GLOB</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_index_constraint_eq.html">SQLITE_INDEX_CONSTRAINT_GT</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_index_constraint_eq.html">SQLITE_INDEX_CONSTRAINT_LE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_index_constraint_eq.html">SQLITE_INDEX_CONSTRAINT_LIKE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_index_constraint_eq.html">SQLITE_INDEX_CONSTRAINT_LT</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_index_constraint_eq.html">SQLITE_INDEX_CONSTRAINT_MATCH</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_index_constraint_eq.html">SQLITE_INDEX_CONSTRAINT_REGEXP</a></div></blockquote>
 <p>mapping_config <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html">Configuration Options</a></p>
 <blockquote>
-<div><a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigcoveringindexscan">SQLITE_CONFIG_COVERING_INDEX_SCAN</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfiggetmalloc">SQLITE_CONFIG_GETMALLOC</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfiggetmutex">SQLITE_CONFIG_GETMUTEX</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfiggetpcache">SQLITE_CONFIG_GETPCACHE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfiggetpcache2">SQLITE_CONFIG_GETPCACHE2</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigheap">SQLITE_CONFIG_HEAP</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfiglog">SQLITE_CONFIG_LOG</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfiglookaside">SQLITE_CONFIG_LOOKASIDE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigmalloc">SQLITE_CONFIG_MALLOC</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigmemstatus">SQLITE_CONFIG_MEMSTATUS</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigmmapsize">SQLITE_CONFIG_MMAP_SIZE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigmultithread">SQLITE_CONFIG_MULTITHREAD</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigmutex">SQLITE_CONFIG_MUTEX</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigpagecache">SQLITE_CONFIG_PAGECACHE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigpcache">SQLITE_CONFIG_PCACHE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigpcache2">SQLITE_CONFIG_PCACHE2</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigpcachehdrsz">SQLITE_CONFIG_PCACHE_HDRSZ</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigpmasz">SQLITE_CONFIG_PMASZ</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigscratch">SQLITE_CONFIG_SCRATCH</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigserialized">SQLITE_CONFIG_SERIALIZED</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigsinglethread">SQLITE_CONFIG_SINGLETHREAD</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigsqllog">SQLITE_CONFIG_SQLLOG</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfiguri">SQLITE_CONFIG_URI</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigwin32heapsize">SQLITE_CONFIG_WIN32_HEAPSIZE</a></div></blockquote>
+<div><a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigcoveringindexscan">SQLITE_CONFIG_COVERING_INDEX_SCAN</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfiggetmalloc">SQLITE_CONFIG_GETMALLOC</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfiggetmutex">SQLITE_CONFIG_GETMUTEX</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfiggetpcache">SQLITE_CONFIG_GETPCACHE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfiggetpcache2">SQLITE_CONFIG_GETPCACHE2</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigheap">SQLITE_CONFIG_HEAP</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfiglog">SQLITE_CONFIG_LOG</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfiglookaside">SQLITE_CONFIG_LOOKASIDE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigmalloc">SQLITE_CONFIG_MALLOC</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigmemstatus">SQLITE_CONFIG_MEMSTATUS</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigmmapsize">SQLITE_CONFIG_MMAP_SIZE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigmultithread">SQLITE_CONFIG_MULTITHREAD</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigmutex">SQLITE_CONFIG_MUTEX</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigpagecache">SQLITE_CONFIG_PAGECACHE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigpcache">SQLITE_CONFIG_PCACHE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigpcache2">SQLITE_CONFIG_PCACHE2</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigpcachehdrsz">SQLITE_CONFIG_PCACHE_HDRSZ</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigpmasz">SQLITE_CONFIG_PMASZ</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigscratch">SQLITE_CONFIG_SCRATCH</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigserialized">SQLITE_CONFIG_SERIALIZED</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigsinglethread">SQLITE_CONFIG_SINGLETHREAD</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigsqllog">SQLITE_CONFIG_SQLLOG</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigstmtjrnlspill">SQLITE_CONFIG_STMTJRNL_SPILL</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfiguri">SQLITE_CONFIG_URI</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_config_covering_index_scan.html#sqliteconfigwin32heapsize">SQLITE_CONFIG_WIN32_HEAPSIZE</a></div></blockquote>
 <p>mapping_conflict_resolution_modes <a class="reference external" href="https://sqlite.org/c3ref/c_fail.html">Conflict resolution modes</a></p>
 <blockquote>
 <div><a class="reference external" href="https://sqlite.org/rescode.html#abort">SQLITE_ABORT</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fail.html">SQLITE_FAIL</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_deny.html">SQLITE_IGNORE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fail.html">SQLITE_REPLACE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fail.html">SQLITE_ROLLBACK</a></div></blockquote>
 <p>mapping_db_config <a class="reference external" href="https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html">Database Connection Configuration Options</a></p>
 <blockquote>
-<div><a class="reference external" href="https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html">SQLITE_DBCONFIG_ENABLE_FKEY</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html">SQLITE_DBCONFIG_ENABLE_TRIGGER</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html">SQLITE_DBCONFIG_LOOKASIDE</a></div></blockquote>
+<div><a class="reference external" href="https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html">SQLITE_DBCONFIG_ENABLE_FKEY</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html">SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html">SQLITE_DBCONFIG_ENABLE_TRIGGER</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html">SQLITE_DBCONFIG_LOOKASIDE</a></div></blockquote>
 <p>mapping_db_status <a class="reference external" href="https://sqlite.org/c3ref/c_dbstatus_options.html">Status Parameters for database connections</a></p>
 <blockquote>
 <div><a class="reference external" href="https://sqlite.org/c3ref/c_dbstatus_options.html#sqlitedbstatuscachehit">SQLITE_DBSTATUS_CACHE_HIT</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_dbstatus_options.html#sqlitedbstatuscachemiss">SQLITE_DBSTATUS_CACHE_MISS</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_dbstatus_options.html#sqlitedbstatuscacheused">SQLITE_DBSTATUS_CACHE_USED</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_dbstatus_options.html#sqlitedbstatuscachewrite">SQLITE_DBSTATUS_CACHE_WRITE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_dbstatus_options.html#sqlitedbstatusdeferredfks">SQLITE_DBSTATUS_DEFERRED_FKS</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_dbstatus_options.html#sqlitedbstatuslookasidehit">SQLITE_DBSTATUS_LOOKASIDE_HIT</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_dbstatus_options.html#sqlitedbstatuslookasidemissfull">SQLITE_DBSTATUS_LOOKASIDE_MISS_FULL</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_dbstatus_options.html#sqlitedbstatuslookasidemisssize">SQLITE_DBSTATUS_LOOKASIDE_MISS_SIZE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_dbstatus_options.html#sqlitedbstatuslookasideused">SQLITE_DBSTATUS_LOOKASIDE_USED</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_dbstatus_options.html">SQLITE_DBSTATUS_MAX</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_dbstatus_options.html#sqlitedbstatusschemaused">SQLITE_DBSTATUS_SCHEMA_USED</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_dbstatus_options.html#sqlitedbstatusstmtused">SQLITE_DBSTATUS_STMT_USED</a></div></blockquote>
@@ -465,7 +465,7 @@ modules etc. For example:</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
@@ -482,12 +482,14 @@ modules etc. For example:</p>
   <h4>Next topic</h4>
   <p class="topless"><a href="connection.html"
                         title="next chapter">Connections to a database</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/apsw.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/apsw.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -504,7 +506,7 @@ modules etc. For example:</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -519,14 +521,14 @@ modules etc. For example:</p>
         <li class="right" >
           <a href="extensions.html" title="Extensions"
              >previous</a> |</li>
-        <li><a href="index.html">APSW 3.11.1-r1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.12.2-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>
 
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; <a href="copyright.html">Copyright</a> 2004-2016, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 07, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Last updated on Apr 28, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

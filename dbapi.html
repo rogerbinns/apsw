@@ -6,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>DBAPI notes &mdash; APSW 3.11.1-r1 documentation</title>
+    <title>DBAPI notes &mdash; APSW 3.12.2-r1 documentation</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.11.1-r1',
+        VERSION:     '3.12.2-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.11.1-r1 documentation" href="index.html" />
+    <link rel="top" title="APSW 3.12.2-r1 documentation" href="index.html" />
     <link rel="next" title="pysqlite differences" href="pysqlite.html" />
     <link rel="prev" title="Execution and tracing" href="execution.html" />
  
@@ -35,8 +35,8 @@
 </script>
 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -51,27 +51,27 @@
         <li class="right" >
           <a href="execution.html" title="Execution and tracing"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">APSW 3.11.1-r1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.12.2-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="dbapi-notes">
 <span id="dbapinotes"></span><h1>DBAPI notes<a class="headerlink" href="#dbapi-notes" title="Permalink to this headline">¶</a></h1>
-<p>DBAPI is defined in <span class="target" id="index-0"></span><a class="pep reference external" href="http://www.python.org/dev/peps/pep-0249"><strong>PEP 249</strong></a>. This section desribes how APSW complies or differs from it.</p>
+<p>DBAPI is defined in <span class="target" id="index-0"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-0249"><strong>PEP 249</strong></a>. This section desribes how APSW complies or differs from it.</p>
 <div class="section" id="module-interface">
 <h2>Module Interface<a class="headerlink" href="#module-interface" title="Permalink to this headline">¶</a></h2>
-<p>There is no connect method. Use the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> constructor instead.</p>
+<p>There is no connect method. Use the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> constructor instead.</p>
 <p>The Connection object and any cursors can be used in any thread.  As
-an extreme example, you could call <tt class="xref py py-meth docutils literal"><span class="pre">Cursor.next()</span></tt> in seperate
+an extreme example, you could call <code class="xref py py-meth docutils literal"><span class="pre">Cursor.next()</span></code> in seperate
 threads each thread getting the next row.  You cannot use the cursor
 concurrently in multiple threads for example calling
-<a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><tt class="xref py py-meth docutils literal"><span class="pre">Cursor.execute()</span></tt></a> at the same time.  If you attempt to do so then
-an <a class="reference internal" href="exceptions.html#apsw.ThreadingViolationError" title="apsw.ThreadingViolationError"><tt class="xref py py-exc docutils literal"><span class="pre">exception</span></tt></a> will be raised. The
+<a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.execute()</span></code></a> at the same time.  If you attempt to do so then
+an <a class="reference internal" href="exceptions.html#apsw.ThreadingViolationError" title="apsw.ThreadingViolationError"><code class="xref py py-exc docutils literal"><span class="pre">exception</span></code></a> will be raised. The
 Python Global Interpreter Lock (GIL) is released during all SQLite API
 calls allowing for maximum concurrency.</p>
 <p>Three different paramstyles are supported. Note that SQLite starts
@@ -83,27 +83,27 @@ parameter numbers from one not zero when using <em>qmark/numeric</em> style.</p>
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td>qmark</td>
-<td><tt class="docutils literal"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">name=?</span></tt></td>
+<td><code class="docutils literal"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">name=?</span></code></td>
 </tr>
 <tr class="row-even"><td>numeric</td>
-<td><tt class="docutils literal"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">name=?4</span></tt></td>
+<td><code class="docutils literal"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">name=?4</span></code></td>
 </tr>
 <tr class="row-odd"><td>named</td>
 <td><div class="first last line-block">
-<div class="line"><tt class="docutils literal"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">name=:name</span></tt>  or</div>
-<div class="line"><tt class="docutils literal"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">name=$name</span></tt></div>
+<div class="line"><code class="docutils literal"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">name=:name</span></code>  or</div>
+<div class="line"><code class="docutils literal"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">name=$name</span></code></div>
 </div>
 </td>
 </tr>
 </tbody>
 </table>
-<p>The DBAPI exceptions are not used.  The <a class="reference internal" href="exceptions.html#exceptions"><em>exceptions</em></a>
+<p>The DBAPI exceptions are not used.  The <a class="reference internal" href="exceptions.html#exceptions"><span>exceptions</span></a>
 used correspond to specific SQLite error codes.</p>
 </div>
 <div class="section" id="connection-objects">
 <h2>Connection Objects<a class="headerlink" href="#connection-objects" title="Permalink to this headline">¶</a></h2>
 <p>There are no commit or rollback methods. You should use
-<a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><tt class="xref py py-meth docutils literal"><span class="pre">Cursor.execute()</span></tt></a> with <cite>BEGIN</cite> and <cite>COMMIT</cite> or <cite>ROLLBACK</cite> as
+<a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.execute()</span></code></a> with <cite>BEGIN</cite> and <cite>COMMIT</cite> or <cite>ROLLBACK</cite> as
 appropriate. The <a class="reference external" href="https://sqlite.org/lockingv3.html">SQLite documentation</a> has more details.  In
 particular note that SQLite does not support nested transactions.  You
 can only start one transaction and will get an error if you try to
@@ -116,7 +116,7 @@ you aware of that.</p>
 </div>
 <div class="section" id="cursor-objects">
 <h2>Cursor Objects<a class="headerlink" href="#cursor-objects" title="Permalink to this headline">¶</a></h2>
-<p>Use <a class="reference internal" href="cursor.html#apsw.Cursor.getdescription" title="apsw.Cursor.getdescription"><tt class="xref py py-meth docutils literal"><span class="pre">Cursor.getdescription()</span></tt></a> instead of description. This
+<p>Use <a class="reference internal" href="cursor.html#apsw.Cursor.getdescription" title="apsw.Cursor.getdescription"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.getdescription()</span></code></a> instead of description. This
 information is only obtained on request.</p>
 <p id="rowcount">There is no rowcount.  Row counts don&#8217;t make sense in SQLite any way.
 SQLite returns results one row at a time, not calculating the next
@@ -124,17 +124,17 @@ result row until you ask for it.  Consequently getting a rowcount
 would have to calculate all the result rows and would not reduce the
 amount of effort needed.</p>
 <p>callproc is not implemented as SQLite doesn&#8217;t support stored procedures.</p>
-<p><a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><tt class="xref py py-meth docutils literal"><span class="pre">execute()</span></tt></a> returns the Cursor object and you can use it
+<p><a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal"><span class="pre">execute()</span></code></a> returns the Cursor object and you can use it
 as an iterator to get the results (if any).</p>
-<p><a class="reference internal" href="cursor.html#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><tt class="xref py py-meth docutils literal"><span class="pre">executemany()</span></tt></a> returns the Cursor object and you can use
+<p><a class="reference internal" href="cursor.html#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal"><span class="pre">executemany()</span></code></a> returns the Cursor object and you can use
 it as an iterator to get the results (if any).</p>
 <p>fetchone is not available. Use the cursor as an iterator, or call
-<tt class="xref py py-meth docutils literal"><span class="pre">next()</span></tt> to get the next row, or raises StopIteration when
+<code class="xref py py-meth docutils literal"><span class="pre">next()</span></code> to get the next row, or raises StopIteration when
 there are no more results.</p>
 <p>fetchmany is not available. Simply use the cursor as an iterator or
-call <tt class="xref py py-meth docutils literal"><span class="pre">next()</span></tt> for however many results you want.</p>
+call <code class="xref py py-meth docutils literal"><span class="pre">next()</span></code> for however many results you want.</p>
 <p>fetchall is available, but not too useful. Simply use the cursor as an
-iterator, call <tt class="xref py py-meth docutils literal"><span class="pre">next()</span></tt>, or use list which is less typing:</p>
+iterator, call <code class="xref py py-meth docutils literal"><span class="pre">next()</span></code>, or use list which is less typing:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="nb">all</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;....&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
@@ -156,15 +156,15 @@ bytes type in Python 3.</p>
 <h2>Optional DB API Extensions<a class="headerlink" href="#optional-db-api-extensions" title="Permalink to this headline">¶</a></h2>
 <p>rownumber is not available.</p>
 <p>Exception classes are not available as attributes of Connection but
-instead are on the <a class="reference internal" href="apsw.html#module-apsw" title="apsw: Python access to SQLite database library"><tt class="xref py py-mod docutils literal"><span class="pre">apsw</span></tt></a> module.  See <a class="reference internal" href="exceptions.html#exceptions"><em>Exceptions</em></a> for
+instead are on the <a class="reference internal" href="apsw.html#module-apsw" title="apsw: Python access to SQLite database library"><code class="xref py py-mod docutils literal"><span class="pre">apsw</span></code></a> module.  See <a class="reference internal" href="exceptions.html#exceptions"><span>Exceptions</span></a> for
 more details.</p>
-<p>Use <a class="reference internal" href="cursor.html#apsw.Cursor.getconnection" title="apsw.Cursor.getconnection"><tt class="xref py py-meth docutils literal"><span class="pre">Cursor.getconnection()</span></tt></a> to get the associated Connection
+<p>Use <a class="reference internal" href="cursor.html#apsw.Cursor.getconnection" title="apsw.Cursor.getconnection"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.getconnection()</span></code></a> to get the associated Connection
 object from a cursor.</p>
 <p>scroll and messages are not available.</p>
 <p>The Cursor object supports the iterator protocol and this is the only
 way of getting information back.</p>
 <p>To get the last inserted row id, call
-<a class="reference internal" href="connection.html#apsw.Connection.last_insert_rowid" title="apsw.Connection.last_insert_rowid"><tt class="xref py py-meth docutils literal"><span class="pre">Connection.last_insert_rowid()</span></tt></a>. That stores the id from the last
+<a class="reference internal" href="connection.html#apsw.Connection.last_insert_rowid" title="apsw.Connection.last_insert_rowid"><code class="xref py py-meth docutils literal"><span class="pre">Connection.last_insert_rowid()</span></code></a>. That stores the id from the last
 insert on any Cursor associated with the the Connection. You can also
 add <a class="reference external" href="https://sqlite.org/lang_corefunc.html">select last_insert_rowid()</a> to the end of your execute
 statements:</p>
@@ -180,7 +180,7 @@ statements:</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
@@ -200,12 +200,14 @@ statements:</p>
   <h4>Next topic</h4>
   <p class="topless"><a href="pysqlite.html"
                         title="next chapter">pysqlite differences</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/dbapi.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/dbapi.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -222,7 +224,7 @@ statements:</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -237,14 +239,14 @@ statements:</p>
         <li class="right" >
           <a href="execution.html" title="Execution and tracing"
              >previous</a> |</li>
-        <li><a href="index.html">APSW 3.11.1-r1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.12.2-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>
 
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; <a href="copyright.html">Copyright</a> 2004-2016, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 07, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Last updated on Apr 28, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

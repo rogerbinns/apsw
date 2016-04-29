@@ -6,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Shell &mdash; APSW 3.11.1-r1 documentation</title>
+    <title>Shell &mdash; APSW 3.12.2-r1 documentation</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.11.1-r1',
+        VERSION:     '3.12.2-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.11.1-r1 documentation" href="index.html" />
+    <link rel="top" title="APSW 3.12.2-r1 documentation" href="index.html" />
     <link rel="next" title="Exceptions" href="exceptions.html" />
     <link rel="prev" title="Virtual File System (VFS)" href="vfs.html" />
  
@@ -35,8 +35,8 @@
 </script>
 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -51,14 +51,14 @@
         <li class="right" >
           <a href="vfs.html" title="Virtual File System (VFS)"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">APSW 3.11.1-r1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.12.2-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="shell">
 <span id="id1"></span><h1>Shell<a class="headerlink" href="#shell" title="Permalink to this headline">¶</a></h1>
@@ -163,7 +163,7 @@ Control-Break then the program will be instantly aborted.)</p>
 <p>For Windows users you won&#8217;t have command line editing and completion
 unless you install a <a class="reference external" href="http://docs.python.org/library/readline.html">readline module</a>.  Fortunately there
 is one at <a class="reference external" href="http://ipython.scipy.org/moin/PyReadline/Intro">http://ipython.scipy.org/moin/PyReadline/Intro</a> which works.
-However if this <a class="reference internal" href="#apsw.Shell" title="apsw.Shell"><tt class="xref py py-class docutils literal"><span class="pre">Shell</span></tt></a> offers no completions it will start
+However if this <a class="reference internal" href="#apsw.Shell" title="apsw.Shell"><code class="xref py py-class docutils literal"><span class="pre">Shell</span></code></a> offers no completions it will start
 matching filenames even if they make no sense in the context.</p>
 <p>For Windows users you won&#8217;t get colour output unless you install
 <a class="reference external" href="http://pypi.python.org/pypi/colorama">colorama</a></p>
@@ -174,7 +174,7 @@ matching filenames even if they make no sense in the context.</p>
 extra features and functionality like colour, command line completion
 and better dumps.</p>
 <p>You can also use the shell programmatically (or even interactively and
-programmatically at the same time).  See the <a class="reference internal" href="example.html#example-shell"><em>example</em></a> for using the API.</p>
+programmatically at the same time).  See the <a class="reference internal" href="example.html#example-shell"><span>example</span></a> for using the API.</p>
 </div>
 <div class="section" id="unicode">
 <h2>Unicode<a class="headerlink" href="#unicode" title="Permalink to this headline">¶</a></h2>
@@ -231,7 +231,7 @@ can then <a class="reference external" href="http://en.wikipedia.org/wiki/Monkey
 the shell as needed.</p>
 <dl class="class">
 <dt id="apsw.Shell">
-<em class="property">class </em><tt class="descname">Shell</tt><big>(</big><em>stdin=None</em>, <em>stdout=None</em>, <em>stderr=None</em>, <em>encoding='utf8'</em>, <em>args=None</em>, <em>db=None</em><big>)</big><a class="headerlink" href="#apsw.Shell" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descname">Shell</code><span class="sig-paren">(</span><em>stdin=None</em>, <em>stdout=None</em>, <em>stderr=None</em>, <em>encoding='utf8'</em>, <em>args=None</em>, <em>db=None</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements a SQLite shell</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -247,9 +247,9 @@ then you need to provide them <a class="reference external" href="http://docs.py
 <li><strong>args</strong> &#8211; This should be program arguments only (ie if
 passing in sys.argv do not include sys.argv[0] which is the
 program name.  You can also pass in None and then call
-<a class="reference internal" href="#apsw.Shell.process_args" title="apsw.Shell.process_args"><tt class="xref py py-meth docutils literal"><span class="pre">process_args()</span></tt></a> if you want to catch any errors
+<a class="reference internal" href="#apsw.Shell.process_args" title="apsw.Shell.process_args"><code class="xref py py-meth docutils literal"><span class="pre">process_args()</span></code></a> if you want to catch any errors
 in handling the arguments yourself.</li>
-<li><strong>db</strong> &#8211; A existing <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a> you wish to use</li>
+<li><strong>db</strong> &#8211; A existing <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> you wish to use</li>
 </ul>
 </td>
 </tr>
@@ -291,7 +291,7 @@ threads.  ie it doesn&#8217;t care what thread calls methods as long as
 you don&#8217;t call more than one concurrently.</p>
 <dl class="exception">
 <dt id="apsw.Shell.Error">
-<em class="property">exception </em><tt class="descname">Error</tt><a class="headerlink" href="#apsw.Shell.Error" title="Permalink to this definition">¶</a></dt>
+<em class="property">exception </em><code class="descname">Error</code><a class="headerlink" href="#apsw.Shell.Error" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class raised on errors.  The expectation is that the error
 will be displayed by the shell as text so there are no
 specific subclasses as the distinctions between different
@@ -300,7 +300,7 @@ types of errors doesn&#8217;t matter.</p>
 
 <dl class="method">
 <dt id="apsw.Shell.cmdloop">
-<tt class="descclassname">Shell.</tt><tt class="descname">cmdloop</tt><big>(</big><em>intro=None</em><big>)</big><a class="headerlink" href="#apsw.Shell.cmdloop" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Shell.</code><code class="descname">cmdloop</code><span class="sig-paren">(</span><em>intro=None</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.cmdloop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Runs the main interactive command loop.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -315,21 +315,21 @@ default.  Make sure you newline terminate it.</td>
 
 <dl class="method">
 <dt id="apsw.Shell.complete">
-<tt class="descclassname">Shell.</tt><tt class="descname">complete</tt><big>(</big><em>token</em>, <em>state</em><big>)</big><a class="headerlink" href="#apsw.Shell.complete" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Shell.</code><code class="descname">complete</code><span class="sig-paren">(</span><em>token</em>, <em>state</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.complete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a possible completion for readline</p>
 <p>This function is called with state starting at zero to get the
 first completion, then one/two/three etc until you return None.  The best
 implementation is to generate the list when state==0, save it,
 and provide members on each increase.</p>
 <p>The default implementation extracts the current full input
-from readline and then calls <a class="reference internal" href="#apsw.Shell.complete_command" title="apsw.Shell.complete_command"><tt class="xref py py-meth docutils literal"><span class="pre">complete_command()</span></tt></a> or
-<a class="reference internal" href="#apsw.Shell.complete_sql" title="apsw.Shell.complete_sql"><tt class="xref py py-meth docutils literal"><span class="pre">complete_sql()</span></tt></a> as appropriate saving the results for
+from readline and then calls <a class="reference internal" href="#apsw.Shell.complete_command" title="apsw.Shell.complete_command"><code class="xref py py-meth docutils literal"><span class="pre">complete_command()</span></code></a> or
+<a class="reference internal" href="#apsw.Shell.complete_sql" title="apsw.Shell.complete_sql"><code class="xref py py-meth docutils literal"><span class="pre">complete_sql()</span></code></a> as appropriate saving the results for
 subsequent calls.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="apsw.Shell.complete_command">
-<tt class="descclassname">Shell.</tt><tt class="descname">complete_command</tt><big>(</big><em>line</em>, <em>token</em>, <em>beg</em>, <em>end</em><big>)</big><a class="headerlink" href="#apsw.Shell.complete_command" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Shell.</code><code class="descname">complete_command</code><span class="sig-paren">(</span><em>line</em>, <em>token</em>, <em>beg</em>, <em>end</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.complete_command" title="Permalink to this definition">¶</a></dt>
 <dd><p>Provide some completions for dot commands</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -352,7 +352,7 @@ subsequent calls.</p>
 
 <dl class="method">
 <dt id="apsw.Shell.complete_sql">
-<tt class="descclassname">Shell.</tt><tt class="descname">complete_sql</tt><big>(</big><em>line</em>, <em>token</em>, <em>beg</em>, <em>end</em><big>)</big><a class="headerlink" href="#apsw.Shell.complete_sql" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Shell.</code><code class="descname">complete_sql</code><span class="sig-paren">(</span><em>line</em>, <em>token</em>, <em>beg</em>, <em>end</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.complete_sql" title="Permalink to this definition">¶</a></dt>
 <dd><p>Provide some completions for SQL</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -375,21 +375,21 @@ subsequent calls.</p>
 
 <dl class="attribute">
 <dt id="apsw.Shell.db">
-<tt class="descclassname">Shell.</tt><tt class="descname">db</tt><a class="headerlink" href="#apsw.Shell.db" title="Permalink to this definition">¶</a></dt>
-<dd><p>The current <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><tt class="xref py py-class docutils literal"><span class="pre">Connection</span></tt></a></p>
+<code class="descclassname">Shell.</code><code class="descname">db</code><a class="headerlink" href="#apsw.Shell.db" title="Permalink to this definition">¶</a></dt>
+<dd><p>The current <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a></p>
 </dd></dl>
 
 <dl class="method">
 <dt id="apsw.Shell.display_timing">
-<tt class="descclassname">Shell.</tt><tt class="descname">display_timing</tt><big>(</big><em>b4</em>, <em>after</em><big>)</big><a class="headerlink" href="#apsw.Shell.display_timing" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Shell.</code><code class="descname">display_timing</code><span class="sig-paren">(</span><em>b4</em>, <em>after</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.display_timing" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes the difference between b4 and after to self.stderr.
 The data is dictionaries returned from
-<a class="reference internal" href="#apsw.Shell.get_resource_usage" title="apsw.Shell.get_resource_usage"><tt class="xref py py-meth docutils literal"><span class="pre">get_resource_usage()</span></tt></a>.</p>
+<a class="reference internal" href="#apsw.Shell.get_resource_usage" title="apsw.Shell.get_resource_usage"><code class="xref py py-meth docutils literal"><span class="pre">get_resource_usage()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="apsw.Shell.fixup_backslashes">
-<tt class="descclassname">Shell.</tt><tt class="descname">fixup_backslashes</tt><big>(</big><em>s</em><big>)</big><a class="headerlink" href="#apsw.Shell.fixup_backslashes" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Shell.</code><code class="descname">fixup_backslashes</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.fixup_backslashes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the various backlash sequences in s such as
 turning backslash t into a tab.</p>
 <p>This function is needed because shlex does not do it for us.</p>
@@ -397,25 +397,25 @@ turning backslash t into a tab.</p>
 
 <dl class="method">
 <dt id="apsw.Shell.get_resource_usage">
-<tt class="descclassname">Shell.</tt><tt class="descname">get_resource_usage</tt><big>(</big><big>)</big><a class="headerlink" href="#apsw.Shell.get_resource_usage" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Shell.</code><code class="descname">get_resource_usage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.get_resource_usage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a dict of various numbers (ints or floats).  The
 .timer command shows the difference between before and after
-results of what this returns by calling <a class="reference internal" href="#apsw.Shell.display_timing" title="apsw.Shell.display_timing"><tt class="xref py py-meth docutils literal"><span class="pre">display_timing()</span></tt></a></p>
+results of what this returns by calling <a class="reference internal" href="#apsw.Shell.display_timing" title="apsw.Shell.display_timing"><code class="xref py py-meth docutils literal"><span class="pre">display_timing()</span></code></a></p>
 </dd></dl>
 
 <dl class="method">
 <dt id="apsw.Shell.getcompleteline">
-<tt class="descclassname">Shell.</tt><tt class="descname">getcompleteline</tt><big>(</big><big>)</big><a class="headerlink" href="#apsw.Shell.getcompleteline" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Shell.</code><code class="descname">getcompleteline</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.getcompleteline" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a complete input.</p>
 <p>For dot commands it will be one line.  For SQL statements it
 will be as many as is necessary to have a
-<a class="reference internal" href="apsw.html#apsw.complete" title="apsw.complete"><tt class="xref py py-meth docutils literal"><span class="pre">complete()</span></tt></a> statement (ie semicolon terminated).
+<a class="reference internal" href="apsw.html#apsw.complete" title="apsw.complete"><code class="xref py py-meth docutils literal"><span class="pre">complete()</span></code></a> statement (ie semicolon terminated).
 Returns None on end of file.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="apsw.Shell.getline">
-<tt class="descclassname">Shell.</tt><tt class="descname">getline</tt><big>(</big><em>prompt=''</em><big>)</big><a class="headerlink" href="#apsw.Shell.getline" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Shell.</code><code class="descname">getline</code><span class="sig-paren">(</span><em>prompt=''</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.getline" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a single line of input (may be incomplete SQL) from self.stdin.</p>
 <p>If EOF is reached then return None.  Do not include trailing
 newline in return.</p>
@@ -423,21 +423,21 @@ newline in return.</p>
 
 <dl class="method">
 <dt id="apsw.Shell.handle_exception">
-<tt class="descclassname">Shell.</tt><tt class="descname">handle_exception</tt><big>(</big><big>)</big><a class="headerlink" href="#apsw.Shell.handle_exception" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Shell.</code><code class="descname">handle_exception</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.handle_exception" title="Permalink to this definition">¶</a></dt>
 <dd><p>Handles the current exception, printing a message to stderr as appropriate.
 It will reraise the exception if necessary (eg if bail is true)</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="apsw.Shell.handle_interrupt">
-<tt class="descclassname">Shell.</tt><tt class="descname">handle_interrupt</tt><big>(</big><big>)</big><a class="headerlink" href="#apsw.Shell.handle_interrupt" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Shell.</code><code class="descname">handle_interrupt</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.handle_interrupt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Deal with keyboard interrupt (typically Control-C).  It
-will <a class="reference internal" href="connection.html#apsw.Connection.interrupt" title="apsw.Connection.interrupt"><tt class="xref py py-meth docutils literal"><span class="pre">interrupt()</span></tt></a> the database and print&#8221;^C&#8221; if interactive.</p>
+will <a class="reference internal" href="connection.html#apsw.Connection.interrupt" title="apsw.Connection.interrupt"><code class="xref py py-meth docutils literal"><span class="pre">interrupt()</span></code></a> the database and print&#8221;^C&#8221; if interactive.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="apsw.Shell.pop_input">
-<tt class="descclassname">Shell.</tt><tt class="descname">pop_input</tt><big>(</big><big>)</big><a class="headerlink" href="#apsw.Shell.pop_input" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Shell.</code><code class="descname">pop_input</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.pop_input" title="Permalink to this definition">¶</a></dt>
 <dd><p>Restore most recently pushed input parameters (interactive,
 self.stdin, linenumber etc).  Use this if implementing a
 command like read.  Push the current input, read the file and
@@ -446,12 +446,12 @@ then pop the input to go back to before.</p>
 
 <dl class="method">
 <dt id="apsw.Shell.pop_output">
-<tt class="descclassname">Shell.</tt><tt class="descname">pop_output</tt><big>(</big><big>)</big><a class="headerlink" href="#apsw.Shell.pop_output" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Shell.</code><code class="descname">pop_output</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.pop_output" title="Permalink to this definition">¶</a></dt>
 <dd><p>Restores most recently pushed output.  There are many
 output parameters such as nullvalue, mode
 (list/tcl/html/insert etc), column widths, header etc.  If you
 temporarily need to change some settings then
-<a class="reference internal" href="#apsw.Shell.push_output" title="apsw.Shell.push_output"><tt class="xref py py-meth docutils literal"><span class="pre">push_output()</span></tt></a>, change the settings and then pop the old
+<a class="reference internal" href="#apsw.Shell.push_output" title="apsw.Shell.push_output"><code class="xref py py-meth docutils literal"><span class="pre">push_output()</span></code></a>, change the settings and then pop the old
 ones back.</p>
 <p>A simple example is implementing a command like .dump.  Push
 the current output, change the mode to insert so we get SQL
@@ -461,7 +461,7 @@ before.</p>
 
 <dl class="method">
 <dt id="apsw.Shell.process_args">
-<tt class="descclassname">Shell.</tt><tt class="descname">process_args</tt><big>(</big><em>args</em><big>)</big><a class="headerlink" href="#apsw.Shell.process_args" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Shell.</code><code class="descname">process_args</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.process_args" title="Permalink to this definition">¶</a></dt>
 <dd><p>Process command line options specified in args.  It is safe to
 call this multiple times.  We try to be compatible with SQLite shell
 argument parsing.</p>
@@ -486,12 +486,12 @@ isn&#8217;t joined with others looking for a trailing semi-colon).</p>
 <p>The SQLite shell uses single dash in front of options.  We
 allow both single and double dashes.  When an unrecognized
 argument is encountered then
-<a class="reference internal" href="#apsw.Shell.process_unknown_args" title="apsw.Shell.process_unknown_args"><tt class="xref py py-meth docutils literal"><span class="pre">process_unknown_args()</span></tt></a> is called.</p>
+<a class="reference internal" href="#apsw.Shell.process_unknown_args" title="apsw.Shell.process_unknown_args"><code class="xref py py-meth docutils literal"><span class="pre">process_unknown_args()</span></code></a> is called.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="apsw.Shell.process_command">
-<tt class="descclassname">Shell.</tt><tt class="descname">process_command</tt><big>(</big><em>cmd</em><big>)</big><a class="headerlink" href="#apsw.Shell.process_command" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Shell.</code><code class="descname">process_command</code><span class="sig-paren">(</span><em>cmd</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.process_command" title="Permalink to this definition">¶</a></dt>
 <dd><p>Processes a dot command.  It is split into parts using the
 <a class="reference external" href="http://docs.python.org/library/shlex.html#shlex.split">shlex.split</a>
 function which is roughly the same method used by Unix/POSIX
@@ -500,14 +500,14 @@ shells.</p>
 
 <dl class="method">
 <dt id="apsw.Shell.process_complete_line">
-<tt class="descclassname">Shell.</tt><tt class="descname">process_complete_line</tt><big>(</big><em>command</em><big>)</big><a class="headerlink" href="#apsw.Shell.process_complete_line" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Shell.</code><code class="descname">process_complete_line</code><span class="sig-paren">(</span><em>command</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.process_complete_line" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given some text will call the appropriate method to process
-it (eg <a class="reference internal" href="#apsw.Shell.process_sql" title="apsw.Shell.process_sql"><tt class="xref py py-meth docutils literal"><span class="pre">process_sql()</span></tt></a> or <a class="reference internal" href="#apsw.Shell.process_command" title="apsw.Shell.process_command"><tt class="xref py py-meth docutils literal"><span class="pre">process_command()</span></tt></a>)</p>
+it (eg <a class="reference internal" href="#apsw.Shell.process_sql" title="apsw.Shell.process_sql"><code class="xref py py-meth docutils literal"><span class="pre">process_sql()</span></code></a> or <a class="reference internal" href="#apsw.Shell.process_command" title="apsw.Shell.process_command"><code class="xref py py-meth docutils literal"><span class="pre">process_command()</span></code></a>)</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="apsw.Shell.process_sql">
-<tt class="descclassname">Shell.</tt><tt class="descname">process_sql</tt><big>(</big><em>sql</em>, <em>bindings=None</em>, <em>internal=False</em>, <em>summary=None</em><big>)</big><a class="headerlink" href="#apsw.Shell.process_sql" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Shell.</code><code class="descname">process_sql</code><span class="sig-paren">(</span><em>sql</em>, <em>bindings=None</em>, <em>internal=False</em>, <em>summary=None</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.process_sql" title="Permalink to this definition">¶</a></dt>
 <dd><p>Processes SQL text consisting of one or more statements</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -520,7 +520,7 @@ it (eg <a class="reference internal" href="#apsw.Shell.process_sql" title="apsw.
 (eg the .tables or .database command).  When executing
 internal sql timings are not shown nor is the SQL echoed.</li>
 <li><strong>summary</strong> &#8211; If not None then should be a tuple of two
-items.  If the <tt class="docutils literal"><span class="pre">sql</span></tt> returns any data then the first item
+items.  If the <code class="docutils literal"><span class="pre">sql</span></code> returns any data then the first item
 is printed before the first row, and the second item is
 printed after the last row.  An example usage is the .find
 command which shows table names.</li>
@@ -533,8 +533,8 @@ command which shows table names.</li>
 
 <dl class="method">
 <dt id="apsw.Shell.process_unknown_args">
-<tt class="descclassname">Shell.</tt><tt class="descname">process_unknown_args</tt><big>(</big><em>args</em><big>)</big><a class="headerlink" href="#apsw.Shell.process_unknown_args" title="Permalink to this definition">¶</a></dt>
-<dd><p>This is called when <a class="reference internal" href="#apsw.Shell.process_args" title="apsw.Shell.process_args"><tt class="xref py py-meth docutils literal"><span class="pre">process_args()</span></tt></a> encounters an
+<code class="descclassname">Shell.</code><code class="descname">process_unknown_args</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.process_unknown_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is called when <a class="reference internal" href="#apsw.Shell.process_args" title="apsw.Shell.process_args"><code class="xref py py-meth docutils literal"><span class="pre">process_args()</span></code></a> encounters an
 argument it doesn&#8217;t understand.  Override this method if you
 want to be able to understand additional command line arguments.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -555,21 +555,21 @@ yours.</td>
 
 <dl class="method">
 <dt id="apsw.Shell.push_input">
-<tt class="descclassname">Shell.</tt><tt class="descname">push_input</tt><big>(</big><big>)</big><a class="headerlink" href="#apsw.Shell.push_input" title="Permalink to this definition">¶</a></dt>
-<dd><p>Saves the current input paramaters to a stack.  See <a class="reference internal" href="#apsw.Shell.pop_input" title="apsw.Shell.pop_input"><tt class="xref py py-meth docutils literal"><span class="pre">pop_input()</span></tt></a>.</p>
+<code class="descclassname">Shell.</code><code class="descname">push_input</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.push_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves the current input paramaters to a stack.  See <a class="reference internal" href="#apsw.Shell.pop_input" title="apsw.Shell.pop_input"><code class="xref py py-meth docutils literal"><span class="pre">pop_input()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="apsw.Shell.push_output">
-<tt class="descclassname">Shell.</tt><tt class="descname">push_output</tt><big>(</big><big>)</big><a class="headerlink" href="#apsw.Shell.push_output" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Shell.</code><code class="descname">push_output</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.push_output" title="Permalink to this definition">¶</a></dt>
 <dd><p>Saves the current output settings onto a stack.  See
-<a class="reference internal" href="#apsw.Shell.pop_output" title="apsw.Shell.pop_output"><tt class="xref py py-meth docutils literal"><span class="pre">pop_output()</span></tt></a> for more details as to why you would use
+<a class="reference internal" href="#apsw.Shell.pop_output" title="apsw.Shell.pop_output"><code class="xref py py-meth docutils literal"><span class="pre">pop_output()</span></code></a> for more details as to why you would use
 this.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="apsw.Shell.set_encoding">
-<tt class="descclassname">Shell.</tt><tt class="descname">set_encoding</tt><big>(</big><em>enc</em><big>)</big><a class="headerlink" href="#apsw.Shell.set_encoding" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Shell.</code><code class="descname">set_encoding</code><span class="sig-paren">(</span><em>enc</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.set_encoding" title="Permalink to this definition">¶</a></dt>
 <dd><p>Saves <em>enc</em> as the default encoding, after verifying that
 it is valid.  You can also include :error to specify error
 handling - eg &#8216;cp437:replace&#8217;</p>
@@ -578,13 +578,13 @@ handling - eg &#8216;cp437:replace&#8217;</p>
 
 <dl class="method">
 <dt id="apsw.Shell.usage">
-<tt class="descclassname">Shell.</tt><tt class="descname">usage</tt><big>(</big><big>)</big><a class="headerlink" href="#apsw.Shell.usage" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Shell.</code><code class="descname">usage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.usage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the usage message.  Make sure it is newline terminated</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="apsw.Shell.write">
-<tt class="descclassname">Shell.</tt><tt class="descname">write</tt><big>(</big><em>dest</em>, <em>text</em><big>)</big><a class="headerlink" href="#apsw.Shell.write" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">Shell.</code><code class="descname">write</code><span class="sig-paren">(</span><em>dest</em>, <em>text</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.write" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes text to dest.  dest will typically be one of self.stdout or self.stderr.</p>
 </dd></dl>
 
@@ -597,7 +597,7 @@ handling - eg &#8216;cp437:replace&#8217;</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
@@ -618,12 +618,14 @@ handling - eg &#8216;cp437:replace&#8217;</p>
   <h4>Next topic</h4>
   <p class="topless"><a href="exceptions.html"
                         title="next chapter">Exceptions</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/shell.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/shell.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -640,7 +642,7 @@ handling - eg &#8216;cp437:replace&#8217;</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -655,14 +657,14 @@ handling - eg &#8216;cp437:replace&#8217;</p>
         <li class="right" >
           <a href="vfs.html" title="Virtual File System (VFS)"
              >previous</a> |</li>
-        <li><a href="index.html">APSW 3.11.1-r1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.12.2-r1 documentation</a> &raquo;</li> 
       </ul>
     </div>
 
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; <a href="copyright.html">Copyright</a> 2004-2016, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 07, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Last updated on Apr 28, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking
