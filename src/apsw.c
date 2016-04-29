@@ -59,8 +59,8 @@ API Reference
 #include "sqlite3.h"
 #endif
 
-#if SQLITE_VERSION_NUMBER < 3011000
-#error Your SQLite version is too old.  It must be at least 3.11
+#if SQLITE_VERSION_NUMBER < 3012000
+#error Your SQLite version is too old.  It must be at least 3.12
 #endif
 
 /* system headers */
@@ -280,8 +280,8 @@ sqliteshutdown(void)
   following configuration operations are supported: SQLITE_CONFIG_LOG,
   SQLITE_CONFIG_SINGLETHREAD, SQLITE_CONFIG_MULTITHREAD,
   SQLITE_CONFIG_SERIALIZED, SQLITE_CONFIG_URI, SQLITE_CONFIG_MEMSTATUS,
-  SQLITE_CONFIG_COVERING_INDEX_SCAN, SQLITE_CONFIG_PCACHE_HDRSZ, and
-  SQLITE_CONFIG_PMASZ.
+  SQLITE_CONFIG_COVERING_INDEX_SCAN, SQLITE_CONFIG_PCACHE_HDRSZ,
+  SQLITE_CONFIG_PMASZ, and SQLITE_CONFIG_STMTJRNL_SPILL.
 
   See :ref:`tips <diagnostics_tips>` for an example of how to receive
   log messages (SQLITE_CONFIG_LOG)
@@ -368,12 +368,13 @@ config(APSW_ARGUNUSED PyObject *self, PyObject *args)
     case SQLITE_CONFIG_MEMSTATUS:
     case SQLITE_CONFIG_COVERING_INDEX_SCAN:
     case SQLITE_CONFIG_PMASZ:
+    case SQLITE_CONFIG_STMTJRNL_SPILL:
       {
-        int boolval;
-        if(!PyArg_ParseTuple(args, "ii", &optdup, &boolval))
+        int intval;
+        if(!PyArg_ParseTuple(args, "ii", &optdup, &intval))
           return NULL;
         assert(opt==optdup);
-        res=sqlite3_config( (int)opt, boolval);
+        res=sqlite3_config( (int)opt, intval);
         break;
       }
 
@@ -1582,12 +1583,14 @@ modules etc. For example::
       ADDINT(SQLITE_CONFIG_WIN32_HEAPSIZE),
       ADDINT(SQLITE_CONFIG_PCACHE_HDRSZ),
       ADDINT(SQLITE_CONFIG_PMASZ),
+      ADDINT(SQLITE_CONFIG_STMTJRNL_SPILL),
       END,
 
       DICT("mapping_db_config"),
       ADDINT(SQLITE_DBCONFIG_LOOKASIDE),
       ADDINT(SQLITE_DBCONFIG_ENABLE_FKEY),
       ADDINT(SQLITE_DBCONFIG_ENABLE_TRIGGER),
+      ADDINT(SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER),
       END,
 
       DICT("mapping_status"),

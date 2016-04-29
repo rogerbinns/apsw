@@ -15,6 +15,11 @@ too.  Also note that running the test suite from an earlier version of APSW
 against this or future SQLite versions will result in consuming all memory, swap
 or address space (an underlying integer changed meaning).
 
+Added SQLITE_CONFIG_STMTJRNL_SPILL and SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER
+constants.
+
+Added support for SQLITE_CONFIG_STMTJRNL_SPILL in :meth:`apsw.config`.
+
 3.11.1-r1
 =========
 
