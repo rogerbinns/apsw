@@ -5156,7 +5156,7 @@ class APSW(unittest.TestCase):
         TestFile.xRead=TestFile.xRead4
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.xRead=TestFile.xRead5
-        self.assertRaises(apsw.IOError, self.assertMayRaiseUnraiseable, TypeError, testdb)
+        self.assertRaises(apsw.IOError, self.assertMayRaiseUnraisable, TypeError, testdb)
         TestFile.xRead=TestFile.xRead99
         testdb()
 
