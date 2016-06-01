@@ -59,8 +59,8 @@ API Reference
 #include "sqlite3.h"
 #endif
 
-#if SQLITE_VERSION_NUMBER < 3012000
-#error Your SQLite version is too old.  It must be at least 3.12
+#if SQLITE_VERSION_NUMBER < 3013000
+#error Your SQLite version is too old.  It must be at least 3.13
 #endif
 
 /* system headers */
@@ -1591,6 +1591,7 @@ modules etc. For example::
       ADDINT(SQLITE_DBCONFIG_ENABLE_FKEY),
       ADDINT(SQLITE_DBCONFIG_ENABLE_TRIGGER),
       ADDINT(SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER),
+      ADDINT(SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION),
       END,
 
       DICT("mapping_status"),

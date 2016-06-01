@@ -2,6 +2,11 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.13.0-r1
+=========
+
+Added SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION constant.
+
 3.12.2-r1
 =========
 
