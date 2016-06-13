@@ -144,17 +144,36 @@ https://github.com/rogerbinns/apsw
 easy_install/pip/pypi
 =====================
 
-APSW is **not** available at the Python Package Index (pypi) and hence
-cannot be installed using easy_install, pip or similar tools.  The
-reason for this is that the tools do not provide a way of providing
-options to the setup.py included with APSW and hence there is no way
-for APSW to know if you want SQLite downloaded, a consistent version
-of SQLite or the latest, to use a system SQLite instead, error if an a
-system version is not available etc.  I could pick a sensible default
-but everyone else using pypi would be disadvantaged or worse get
-undesired behaviour (eg different versions of SQLite depending on when
-a machine did an install).  Additionally the world of Python packaging
-is going through another series of changes (distutils2 aka packaging)
-so some solution may come out of that.
+APSW is **not** available at the Python Package Index (pypi) and hence cannot be
+installed from it.  (A random person has put an outdated poor quality upload
+under the APSW name.  It has nothing useful to do with this project.) The reason
+for this is that the tools do not provide a way of providing options to the
+setup.py included with APSW and hence there is no way for APSW to know if you
+want SQLite downloaded, a consistent version of SQLite or the latest, to use a
+system SQLite instead, error if an a system version is not available etc.  I
+could pick a sensible default but everyone else using pypi would be
+disadvantaged or worse get undesired behaviour (eg different versions of SQLite
+depending on when a machine did an install).  Additionally the world of Python
+packaging is going through another series of changes (distutils2 aka packaging)
+so some solution may come out of that. I'm happy to work with anyone who has a
+solution to this problem.
 
-I'm happy to work with anyone who has a solution to this problem.
+.. _really_want_pip:
+I really want to use pip
+------------------------
+
+The following pip command line downloads APSW from github, SQLite from the
+official site, and builds/installs with all extensions enabled.
+
+
+
+
+.. pip-begin
+
+Use this (all one command)::
+
+    pip install --user https://github.com/rogerbinns/apsw/releases/download/3.13.0-r1/apsw-3.13.0-r1.zip \
+    --global-option=fetch --global-option=--version --global-option=3.13.0 --global-option=--all \
+    --global-option=build --global-option=--enable-all-extensions
+
+.. pip-end
