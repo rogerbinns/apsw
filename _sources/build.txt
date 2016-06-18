@@ -171,7 +171,7 @@ need to give the flag once and giving a comma seperated list.  For example:
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--enable=fts3`              | Enables the :ref:`full text search extension <ext-fts3>`.                            |
 | | :option:`--enable=fts4`              | This flag only helps when using the amalgamation. If not using the                   |
-|                                        | amalgamation then you need to seperately ensure fts3/4 is enabled in the SQLite      |
+| | :option:`--enable=fts5`              | amalgamation then you need to seperately ensure fts3/4/5 is enabled in the SQLite    |
 |                                        | install. You are likely to want the `parenthesis option                              |
 |                                        | <https://sqlite.org/compile.html#enable_fts3_parenthesis>`__ on unless you have      |
 |                                        | legacy code (`--enable-all-extensions` turns it on).                                 |
