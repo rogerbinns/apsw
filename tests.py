@@ -3871,7 +3871,7 @@ class APSW(unittest.TestCase):
             res=self.db.status(getattr(apsw, i))
             self.assertEqual(len(res), 2)
             self.assertEqual(type(res), tuple)
-            if i!="SQLITE_DBSTATUS_CACHE_USED":
+            if i!="SQLITE_DBSTATUS_CACHE_USED" and i!="SQLITE_DBSTATUS_MAX":
                 self.assertTrue(res[0]<=res[1])
 
     def testZeroBlob(self):
