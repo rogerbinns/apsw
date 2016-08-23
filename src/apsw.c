@@ -1479,6 +1479,7 @@ modules etc. For example::
       ADDINT(SQLITE_AUTH_USER),
       ADDINT(SQLITE_IOERR_VNODE),
       ADDINT(SQLITE_IOERR_AUTH),
+      ADDINT(SQLITE_OK_LOAD_PERMANENTLY),
       END,
 
       /* error codes */
@@ -1620,6 +1621,7 @@ modules etc. For example::
       ADDINT(SQLITE_DBSTATUS_CACHE_MISS),
       ADDINT(SQLITE_DBSTATUS_CACHE_WRITE),
       ADDINT(SQLITE_DBSTATUS_DEFERRED_FKS),
+      ADDINT(SQLITE_DBSTATUS_CACHE_USED_SHARED),
       END,
 
       DICT("mapping_locking_level"),

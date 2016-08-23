@@ -2,6 +2,11 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.14.1-r1
+=========
+
+Added SQLITE_DBSTATUS_CACHE_USED_SHARED and SQLITE_OK_LOAD_PERMANENTLY constants.
+
 3.13.0-r1
 =========
 
