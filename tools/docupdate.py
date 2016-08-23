@@ -51,7 +51,7 @@ for line in open("doc/download.rst", "rtU"):
         op.append("")
         continue
     if line==".. pip-begin":
-        op.extend(pip_template.split("\n"))
+        op.extend(pip_template.split("\n")[1: ])
         incomment=True
         continue
     if line==".. downloads-end" or line==".. pip-end":
