@@ -59,8 +59,8 @@ API Reference
 #include "sqlite3.h"
 #endif
 
-#if SQLITE_VERSION_NUMBER < 3013000
-#error Your SQLite version is too old.  It must be at least 3.13
+#if SQLITE_VERSION_NUMBER < 3014000
+#error Your SQLite version is too old.  It must be at least 3.14
 #endif
 
 /* system headers */
