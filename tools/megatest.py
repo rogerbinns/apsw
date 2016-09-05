@@ -165,7 +165,7 @@ def buildpython(workdir, pyver, ucs, logfilename):
         ldflags="LDFLAGS=\"-L/usr/lib/$(dpkg-architecture -qDEB_HOST_MULTIARCH)\"; export LDFLAGS;"
     else:
         ldflags=""
-    run("set -e ; %s cd %s ; cd ?ython-%s ; ./configure %s --disable-ipv6 --enable-unicode=ucs%d --prefix=%s/pyinst  >> %s 2>&1; make >>%s 2>&1; make  %sinstall >>%s 2>&1 ; make clean >/dev/null" % (ldflags, workdir, pyver, opt, ucs, workdir, logfilename, logfilename, full, logfilename))
+    run("set -e ; %s cd %s ; cd ?ython-%s ; ./configure %s --enable-unicode=ucs%d --prefix=%s/pyinst  >> %s 2>&1; make >>%s 2>&1; make  %sinstall >>%s 2>&1 ; make clean >/dev/null" % (ldflags, workdir, pyver, opt, ucs, workdir, logfilename, logfilename, full, logfilename))
     suf=""
     if pyver>="3.1":
         suf="3"
