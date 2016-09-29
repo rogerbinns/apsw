@@ -1098,7 +1098,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
   assert(!self->bindings);
   assert(!self->emiter);
   assert(!self->emoriginalquery);
-  assert(self->status=C_DONE);
+  assert(self->status==C_DONE);
 
   if(!PyArg_ParseTuple(args, "OO:executemany(statements, sequenceofbindings)", &query, &theiterable))
     return NULL;
