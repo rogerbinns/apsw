@@ -2,6 +2,11 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.15.0-r1
+=========
+
+Added SQLITE_DBCONFIG_MAINDBNAME constant.
+
 3.14.1-r1
 =========
 
