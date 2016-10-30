@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Virtual Tables &mdash; APSW 3.14.1-r1 documentation</title>
+    <title>Virtual Tables &#8212; APSW 3.15.0-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.14.1-r1',
+        VERSION:     '3.15.0-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,8 +23,10 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.14.1-r1 documentation" href="index.html" />
+    <link rel="top" title="APSW 3.15.0-r1 documentation" href="index.html" />
     <link rel="next" title="Virtual File System (VFS)" href="vfs.html" />
     <link rel="prev" title="Backup" href="backup.html" />
  
@@ -51,7 +53,7 @@
         <li class="right" >
           <a href="backup.html" title="Backup"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.14.1-r1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.15.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -103,7 +105,7 @@ all the methods documented here.</p>
 <p>A module instance is used to create the virtual tables.  Once you have
 a module object, you register it with a connection by calling
 <a class="reference internal" href="connection.html#apsw.Connection.createmodule" title="apsw.Connection.createmodule"><code class="xref py py-meth docutils literal"><span class="pre">Connection.createmodule()</span></code></a>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># make an instance</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="c"># make an instance</span>
 <span class="n">mymod</span><span class="o">=</span><span class="n">MyModuleClass</span><span class="p">()</span>
 
 <span class="c"># register the vtable on connection con</span>
@@ -129,12 +131,12 @@ find and reuse that on the subsequent <a class="reference internal" href="#apsw.
 calls.</p>
 <p>The corresponding call is <a class="reference internal" href="#apsw.VTTable.Disconnect" title="apsw.VTTable.Disconnect"><code class="xref py py-meth docutils literal"><span class="pre">VTTable.Disconnect()</span></code></a>.  If you have a simple virtual table implemtation, then just
 set <a class="reference internal" href="#apsw.VTModule.Connect" title="apsw.VTModule.Connect"><code class="xref py py-meth docutils literal"><span class="pre">Connect()</span></code></a> to be the same as <a class="reference internal" href="#apsw.VTModule.Create" title="apsw.VTModule.Create"><code class="xref py py-meth docutils literal"><span class="pre">Create()</span></code></a>:</p>
-<div class="highlight-python"><div class="highlight"><pre>class MyModule:
+<div class="highlight-default"><div class="highlight"><pre><span class="k">class</span> <span class="nc">MyModule</span><span class="p">:</span>
 
-     def Create(self, connection, modulename, databasename, tablename, *args):
-         # do lots of hard work
+     <span class="k">def</span> <span class="nf">Create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">modulename</span><span class="p">,</span> <span class="n">databasename</span><span class="p">,</span> <span class="n">tablename</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+         <span class="c"># do lots of hard work</span>
 
-     Connect=Create
+     <span class="n">Connect</span><span class="o">=</span><span class="n">Create</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -234,7 +236,7 @@ the operation.</p>
 <span class="pre">quantity&lt;=10</span> <span class="pre">and</span> <span class="pre">customer='Acme</span> <span class="pre">Widgets'</span></code></p>
 <p>If customer is column 0, price column 2 and quantity column 5
 then the constraints will be:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_GT</span><span class="p">),</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_GT</span><span class="p">),</span>
 <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_LE</span><span class="p">),</span>
 <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_EQ</span><span class="p">)</span>
 </pre></div>
@@ -282,14 +284,14 @@ equality and price.</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><div class="first last highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_GT</span><span class="p">),</span>
+<tr class="row-even"><td><div class="first last highlight-default"><div class="highlight"><pre><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_GT</span><span class="p">),</span>
 <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_LE</span><span class="p">),</span>
 <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_EQ</span><span class="p">)</span>
 </pre></div>
 </div>
 </td>
-<td><div class="first last highlight-python"><div class="highlight"><pre><span class="mi">1</span><span class="p">,</span>
-<span class="bp">None</span><span class="p">,</span>
+<td><div class="first last highlight-default"><div class="highlight"><pre><span class="mi">1</span><span class="p">,</span>
+<span class="k">None</span><span class="p">,</span>
 <span class="mi">0</span>
 </pre></div>
 </div>
@@ -313,8 +315,8 @@ is. If not, then SQLite will have to sort the results first.</p>
 <blockquote>
 <div><p>Example query: <code class="docutils literal"><span class="pre">select</span> <span class="pre">*</span> <span class="pre">from</span> <span class="pre">foo</span> <span class="pre">order</span> <span class="pre">by</span> <span class="pre">price</span> <span class="pre">desc,</span> <span class="pre">quantity</span> <span class="pre">asc</span></code></p>
 <p>Price is column 2, quantity column 5 so orderbys will be:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span>  <span class="c"># True means descending, False is ascending</span>
-<span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="k">True</span><span class="p">),</span>  <span class="c"># True means descending, False is ascending</span>
+<span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="k">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -343,20 +345,20 @@ then it is best to evaluate B before A.</dd>
 <span class="pre">customer==&quot;Acme</span> <span class="pre">Widgets&quot;</span> <span class="pre">order</span> <span class="pre">by</span> <span class="pre">price</span> <span class="pre">desc,</span> <span class="pre">quantity</span> <span class="pre">asc</span></code>.
 Customer is column 0, price column 2 and quantity column 5. You can
 index on customer equality and price.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">BestIndex</span><span class="p">(</span><span class="n">constraints</span><span class="p">,</span> <span class="n">orderbys</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">BestIndex</span><span class="p">(</span><span class="n">constraints</span><span class="p">,</span> <span class="n">orderbys</span><span class="p">)</span>
 
 <span class="n">constraints</span><span class="o">=</span> <span class="p">(</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_GT</span><span class="p">),</span>
                <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_LE</span><span class="p">),</span>
                <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_EQ</span><span class="p">)</span>  <span class="p">)</span>
 
-<span class="n">orderbys</span><span class="o">=</span> <span class="p">(</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="bp">True</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span> <span class="p">)</span>
+<span class="n">orderbys</span><span class="o">=</span> <span class="p">(</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="k">True</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="k">False</span><span class="p">)</span> <span class="p">)</span>
 
 <span class="c"># You return</span>
 
-<span class="p">(</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>   <span class="c"># constraints used</span>
+<span class="p">(</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="k">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>   <span class="c"># constraints used</span>
   <span class="mi">27</span><span class="p">,</span>             <span class="c"># index number</span>
   <span class="s">&quot;idx_pr_cust&quot;</span><span class="p">,</span>  <span class="c"># index name</span>
-  <span class="bp">False</span><span class="p">,</span>          <span class="c"># results are not in orderbys order</span>
+  <span class="k">False</span><span class="p">,</span>          <span class="c"># results are not in orderbys order</span>
   <span class="mi">1000</span>            <span class="c"># about 1000 disk operations to access index</span>
 <span class="p">)</span>
 
@@ -401,10 +403,10 @@ be called when the table is no longer used.</p>
 particular scalar function. You should return the function if you
 have it, else return None. You do not have to provide this method.</p>
 <p>This method is called while SQLite is <a class="reference external" href="https://sqlite.org/c3ref/prepare.html">preparing</a> a query.  If a query is
-in the <a class="reference internal" href="execution.html#statementcache"><span>statement cache</span></a> then <em>FindFunction</em>
+in the <a class="reference internal" href="execution.html#statementcache"><span class="std std-ref">statement cache</span></a> then <em>FindFunction</em>
 won&#8217;t be called again.  If you want to return different
 implementations for the same function over time then you will need
-to disable the <a class="reference internal" href="execution.html#statementcache"><span>statement cache</span></a>.</p>
+to disable the <a class="reference internal" href="execution.html#statementcache"><span class="std std-ref">statement cache</span></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -528,7 +530,7 @@ There may be many cursors simultaneously so each one needs to keep
 track of where it is.</p>
 <div class="last admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#vtablestructure"><span>Virtual table structure</span></a></p>
+<p class="last"><a class="reference internal" href="#vtablestructure"><span class="std std-ref">Virtual table structure</span></a></p>
 </div>
 </div>
 </dd></dl>
@@ -550,7 +552,7 @@ row.  If <em>number</em> is -1 then return the rowid.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Must be one one of the <a class="reference internal" href="types.html#types"><span>5
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Must be one one of the <a class="reference internal" href="types.html#types"><span class="std std-ref">5
 supported types</span></a></td>
 </tr>
 </tbody>
@@ -613,7 +615,7 @@ appropriate indexed and constrained row.</p>
 been widely used yet. They do work well if all your routines work
 perfectly.</p>
 <p>A big help is using the local variables recipe as described in
-<a class="reference internal" href="exceptions.html#augmentedstacktraces"><span>augmented stack traces</span></a> which will give
+<a class="reference internal" href="exceptions.html#augmentedstacktraces"><span class="std std-ref">augmented stack traces</span></a> which will give
 you more details in errors, and shows an example with the complex
 <a class="reference internal" href="#apsw.VTTable.BestIndex" title="apsw.VTTable.BestIndex"><code class="xref py py-meth docutils literal"><span class="pre">BestIndex()</span></code></a> function.</p>
 <p>You may also find errors compounding. For
@@ -663,14 +665,11 @@ receive any constraintargs at all.</p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -692,14 +691,14 @@ receive any constraintargs at all.</p>
         <li class="right" >
           <a href="backup.html" title="Backup"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.14.1-r1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.15.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
-        &copy; <a href="copyright.html">Copyright</a> 2004-2016, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Sep 05, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+        &#169; <a href="copyright.html">Copyright</a> 2004-2016, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Oct 30, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

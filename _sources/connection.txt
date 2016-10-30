@@ -94,7 +94,7 @@ Connection class
 
      * :ref:`Backup`
 
-   Calls: `sqlite3_backup_init <https://sqlite.org/c3ref/backup_finish.html#sqlite3backupfinish>`__
+   Calls: `sqlite3_backup_init <https://sqlite.org/c3ref/backup_finish.html#sqlite3backupinit>`__
 
 .. index:: sqlite3_blob_open
 

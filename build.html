@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Building &mdash; APSW 3.14.1-r1 documentation</title>
+    <title>Building &#8212; APSW 3.15.0-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.14.1-r1',
+        VERSION:     '3.15.0-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,8 +23,10 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.14.1-r1 documentation" href="index.html" />
+    <link rel="top" title="APSW 3.15.0-r1 documentation" href="index.html" />
     <link rel="next" title="Extensions" href="extensions.html" />
     <link rel="prev" title="Download" href="download.html" />
  
@@ -51,7 +53,7 @@
         <li class="right" >
           <a href="download.html" title="Download"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.14.1-r1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.15.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -65,7 +67,7 @@
 <div class="section" id="setup-py">
 <h2>setup.py<a class="headerlink" href="#setup-py" title="Permalink to this headline">¶</a></h2>
 <p>Short story: You run <code class="file docutils literal"><span class="pre">setup.py</span></code> but you should ideally follow
-the <a class="reference internal" href="#recommended-build"><span>recommended way</span></a> which will also fetch
+the <a class="reference internal" href="#recommended-build"><span class="std std-ref">recommended way</span></a> which will also fetch
 needed components for you.</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -178,7 +180,7 @@ work on Windows.)</p>
 <div class="line"><code class="xref std std-option docutils literal"><span class="pre">--missing-checksum-ok</span></code></div>
 </div>
 </td>
-<td>Allows setup to continue if the <a class="reference internal" href="#fetch-checksums"><span>checksum</span></a> is missing.</td>
+<td>Allows setup to continue if the <a class="reference internal" href="#fetch-checksums"><span class="std std-ref">checksum</span></a> is missing.</td>
 </tr>
 <tr class="row-even"><td><div class="first last line-block">
 <div class="line"><code class="xref std std-option docutils literal"><span class="pre">--all</span></code></div>
@@ -285,7 +287,7 @@ need to give the flag once and giving a comma seperated list.  For example:</p>
 <div class="line"><code class="xref std std-option docutils literal"><span class="pre">--enable=fts5</span></code></div>
 </div>
 </td>
-<td>Enables the <a class="reference internal" href="extensions.html#ext-fts3"><span>full text search extension</span></a>.
+<td>Enables the <a class="reference internal" href="extensions.html#ext-fts3"><span class="std std-ref">full text search extension</span></a>.
 This flag only helps when using the amalgamation. If not using the
 amalgamation then you need to seperately ensure fts3/4/5 is enabled in the SQLite
 install. You are likely to want the <a class="reference external" href="https://sqlite.org/compile.html#enable_fts3_parenthesis">parenthesis option</a> on unless you have
@@ -295,7 +297,7 @@ legacy code (<cite>&#8211;enable-all-extensions</cite> turns it on).</td>
 <div class="line"><code class="xref std std-option docutils literal"><span class="pre">--enable=rtree</span></code></div>
 </div>
 </td>
-<td>Enables the <a class="reference internal" href="extensions.html#ext-rtree"><span>spatial table extension</span></a>.
+<td>Enables the <a class="reference internal" href="extensions.html#ext-rtree"><span class="std std-ref">spatial table extension</span></a>.
 This flag only helps when using the amalgamation. If not using the
 amalgamation then you need to seperately ensure rtree is enabled in the SQLite
 install.</td>
@@ -304,7 +306,7 @@ install.</td>
 <div class="line"><code class="xref std std-option docutils literal"><span class="pre">--enable=icu</span></code></div>
 </div>
 </td>
-<td>Enables the <a class="reference internal" href="extensions.html#ext-icu"><span>International Components for Unicode extension</span></a>.
+<td>Enables the <a class="reference internal" href="extensions.html#ext-icu"><span class="std std-ref">International Components for Unicode extension</span></a>.
 Note that you must have the ICU libraries on your machine which setup will
 automatically try to find using <code class="file docutils literal"><span class="pre">icu-config</span></code>.
 This flag only helps when using the amalgamation. If not using the
@@ -377,7 +379,7 @@ the <code class="file docutils literal"><span class="pre">setup.py</span></code>
 <div class="section" id="recommended">
 <span id="recommended-build"></span><h2>Recommended<a class="headerlink" href="#recommended" title="Permalink to this headline">¶</a></h2>
 <p>These instructions show how to build automatically downloading and
-using the amalgamation plus other <a class="reference internal" href="extensions.html#extensions"><span>Extensions</span></a>. Any existing SQLite on
+using the amalgamation plus other <a class="reference internal" href="extensions.html#extensions"><span class="std std-ref">Extensions</span></a>. Any existing SQLite on
 your system is ignored at build time and runtime. (Note that you can
 even use APSW in the same process as a different SQLite is used by
 other libraries - this happens a lot on Mac.) You should follow these
@@ -385,12 +387,12 @@ instructions with your current directory being where you extracted the
 APSW source to.</p>
 <blockquote>
 <div><p>Windows:</p>
-<div class="highlight-python"><div class="highlight"><pre>  # Leave out --compile=mingw32 flag if using Microsoft compiler
-&gt; python setup.py fetch --all build --enable-all-extensions --compile=mingw32 install test
+<div class="highlight-default"><div class="highlight"><pre>  <span class="c"># Leave out --compile=mingw32 flag if using Microsoft compiler</span>
+<span class="o">&gt;</span> <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">fetch</span> <span class="o">--</span><span class="nb">all</span> <span class="n">build</span> <span class="o">--</span><span class="n">enable</span><span class="o">-</span><span class="nb">all</span><span class="o">-</span><span class="n">extensions</span> <span class="o">--</span><span class="nb">compile</span><span class="o">=</span><span class="n">mingw32</span> <span class="n">install</span> <span class="n">test</span>
 </pre></div>
 </div>
 <p>Mac/Linux etc:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ python setup.py fetch --all build --enable-all-extensions install test
+<div class="highlight-default"><div class="highlight"><pre>$ python setup.py fetch --all build --enable-all-extensions install test
 </pre></div>
 </div>
 </div></blockquote>
@@ -419,7 +421,7 @@ command line then everything fetched is included in the source
 distribution.  For example this will fetch all components, include
 them in the source distribution and build a rpm using those
 components:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ python setup.py fetch --all bdist_rpm
+<div class="highlight-default"><div class="highlight"><pre>$ python setup.py fetch --all bdist_rpm
 </pre></div>
 </div>
 </div>
@@ -431,7 +433,7 @@ dedicated to testing than makes up the actual database functionality.</p>
 testing modules to verify correct operation. New code is developed
 alongside the tests. Reported issues also have test cases to ensure
 the issue doesn&#8217;t happen or doesn&#8217;t happen again.:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ python setup.py test
+<div class="highlight-default"><div class="highlight"><pre>$ python setup.py test
                Python /usr/bin/python (2, 6, 6, &#39;final&#39;, 0)
 Testing with APSW file /space/apsw/apsw.so
           APSW version 3.7.4-r1
@@ -504,14 +506,11 @@ SQLite supported versions running the tests. See
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -533,14 +532,14 @@ SQLite supported versions running the tests. See
         <li class="right" >
           <a href="download.html" title="Download"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.14.1-r1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.15.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
-        &copy; <a href="copyright.html">Copyright</a> 2004-2016, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Sep 05, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+        &#169; <a href="copyright.html">Copyright</a> 2004-2016, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Oct 30, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

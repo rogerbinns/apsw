@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Virtual File System (VFS) &mdash; APSW 3.14.1-r1 documentation</title>
+    <title>Virtual File System (VFS) &#8212; APSW 3.15.0-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.14.1-r1',
+        VERSION:     '3.15.0-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,8 +23,10 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.14.1-r1 documentation" href="index.html" />
+    <link rel="top" title="APSW 3.15.0-r1 documentation" href="index.html" />
     <link rel="next" title="Shell" href="shell.html" />
     <link rel="prev" title="Virtual Tables" href="vtable.html" />
  
@@ -51,7 +53,7 @@
         <li class="right" >
           <a href="vtable.html" title="Virtual Tables"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.14.1-r1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.15.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -83,7 +85,7 @@ that inherits from the default vfs.  Then override methods you want to
 change behaviour of.  If you want to just change how file operations
 are done then you have to override <a class="reference internal" href="#apsw.VFS.xOpen" title="apsw.VFS.xOpen"><code class="xref py py-meth docutils literal"><span class="pre">VFS.xOpen()</span></code></a> to return a file
 instance that has your overridden <a class="reference internal" href="#apsw.VFSFile" title="apsw.VFSFile"><code class="xref py py-class docutils literal"><span class="pre">VFSFile</span></code></a> methods.  The
-<a class="reference internal" href="example.html#example-vfs"><span>example</span></a> demonstrates obfuscating the database
+<a class="reference internal" href="example.html#example-vfs"><span class="std std-ref">example</span></a> demonstrates obfuscating the database
 file contents.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -125,7 +127,7 @@ the exception value. (If <code class="docutils literal"><span class="pre">sys.ex
 expected ones which APSW clears after noting them and returning the
 appropriate value back to SQLite. The exception hooking behaviour
 helps you find issues in your code or unexpected behaviour of the
-external environment. Remember that <a class="reference internal" href="exceptions.html#augmentedstacktraces"><span>augmented stack traces</span></a> are available which significantly increase
+external environment. Remember that <a class="reference internal" href="exceptions.html#augmentedstacktraces"><span class="std std-ref">augmented stack traces</span></a> are available which significantly increase
 detail about the exceptions.</p>
 <p>As an example, lets say you have a divide by zero error in your xWrite
 routine. The table below shows what happens with time going down and
@@ -343,7 +345,7 @@ call returns, on a reboot the file would still be deleted.</li>
 <dd><p>Close and unload the library corresponding to the handle you
 returned from <a class="reference internal" href="#apsw.VFS.xDlOpen" title="apsw.VFS.xDlOpen"><code class="xref py py-meth docutils literal"><span class="pre">xDlOpen()</span></code></a>.  You can use ctypes to do
 this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">xDlClose</span><span class="p">(</span><span class="n">handle</span><span class="p">):</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">xDlClose</span><span class="p">(</span><span class="n">handle</span><span class="p">):</span>
    <span class="c"># Note leading underscore in _ctypes</span>
    <span class="n">_ctypes</span><span class="o">.</span><span class="n">dlclose</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>       <span class="c"># Linux/Mac/Unix</span>
    <span class="n">_ctypes</span><span class="o">.</span><span class="n">FreeLibrary</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>   <span class="c"># Windows</span>
@@ -373,7 +375,7 @@ return 0 (NULL). The number is passed as is to
 <a class="reference internal" href="#apsw.VFS.xDlSym" title="apsw.VFS.xDlSym"><code class="xref py py-meth docutils literal"><span class="pre">xDlSym()</span></code></a>/<a class="reference internal" href="#apsw.VFS.xDlClose" title="apsw.VFS.xDlClose"><code class="xref py py-meth docutils literal"><span class="pre">xDlClose()</span></code></a> so it can represent
 anything that is convenient for you (eg an index into an
 array). You can use ctypes to load a library:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">xDlOpen</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">xDlOpen</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
    <span class="k">return</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">cdll</span><span class="o">.</span><span class="n">LoadLibrary</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">_handle</span>
 </pre></div>
 </div>
@@ -384,7 +386,7 @@ array). You can use ctypes to load a library:</p>
 <code class="descclassname">VFS.</code><code class="descname">xDlSym</code><span class="sig-paren">(</span><em>handle</em>, <em>symbol</em><span class="sig-paren">)</span> &rarr; address<a class="headerlink" href="#apsw.VFS.xDlSym" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the address of the named symbol which will be called by
 SQLite. On error you should return 0 (NULL). You can use ctypes:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">xDlSym</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">xDlSym</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
    <span class="k">return</span> <span class="n">_ctypes</span><span class="o">.</span><span class="n">dlsym</span> <span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>  <span class="c"># Linux/Unix/Mac etc (note leading underscore)</span>
    <span class="k">return</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">win32</span><span class="o">.</span><span class="n">kernel32</span><span class="o">.</span><span class="n">GetProcAddress</span> <span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>  <span class="c"># Windows</span>
 </pre></div>
@@ -579,7 +581,7 @@ use an empty string <code class="docutils literal"><span class="pre">&quot;&quot
 </table>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">If the VFS that you inherit from supports <a class="reference internal" href="tips.html#wal"><span>write ahead
+<p class="last">If the VFS that you inherit from supports <a class="reference internal" href="tips.html#wal"><span class="std std-ref">write ahead
 logging</span></a> then your <a class="reference internal" href="#apsw.VFSFile" title="apsw.VFSFile"><code class="xref py py-class docutils literal"><span class="pre">VFSFile</span></code></a> will also support the
 xShm methods necessary to implement wal.</p>
 </div>
@@ -661,7 +663,7 @@ internal use.</li>
 <p>As of SQLite 3.6.10, this method is called by SQLite if you have
 inherited from an underlying VFSFile.  Consequently ensure you pass
 any unrecognised codes through to your super class.  For example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">xFileControl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">ptr</span><span class="p">):</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">xFileControl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">ptr</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">op</span><span class="o">==</span><span class="mi">1027</span><span class="p">:</span>
         <span class="n">process_quick</span><span class="p">(</span><span class="n">ptr</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">op</span><span class="o">==</span><span class="mi">1028</span><span class="p">:</span>
@@ -670,7 +672,7 @@ any unrecognised codes through to your super class.  For example:</p>
         <span class="c"># this ensures superclass implementation is called</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">MyFile</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">xFileControl</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">ptr</span><span class="p">)</span>
     <span class="c"># we understood the op</span>
-    <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">return</span> <span class="k">True</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -780,7 +782,7 @@ write the remaining data.</p>
 <em class="property">class </em><code class="descname">URIFilename</code><a class="headerlink" href="#apsw.URIFilename" title="Permalink to this definition">¶</a></dt>
 <dd><p>SQLite uses a convoluted method of storing <a class="reference external" href="https://sqlite.org/uri.html">uri parameters</a> after the filename binding the
 C filename representation and parameters together.  This class
-encapsulates that binding.  The <a class="reference internal" href="example.html#example-vfs"><span>example</span></a> shows
+encapsulates that binding.  The <a class="reference internal" href="example.html#example-vfs"><span class="std std-ref">example</span></a> shows
 usage of this class.</p>
 <p>Your <a class="reference internal" href="#apsw.VFS.xOpen" title="apsw.VFS.xOpen"><code class="xref py py-meth docutils literal"><span class="pre">VFS.xOpen()</span></code></a> method will generally be passed one of
 these instead of a string as the filename if the URI flag was used
@@ -854,14 +856,11 @@ present.</p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -883,14 +882,14 @@ present.</p>
         <li class="right" >
           <a href="vtable.html" title="Virtual Tables"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.14.1-r1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.15.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
-        &copy; <a href="copyright.html">Copyright</a> 2004-2016, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Sep 05, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+        &#169; <a href="copyright.html">Copyright</a> 2004-2016, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Oct 30, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

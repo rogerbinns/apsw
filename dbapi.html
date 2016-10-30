@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>DBAPI notes &mdash; APSW 3.14.1-r1 documentation</title>
+    <title>DBAPI notes &#8212; APSW 3.15.0-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.14.1-r1',
+        VERSION:     '3.15.0-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,8 +23,10 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.14.1-r1 documentation" href="index.html" />
+    <link rel="top" title="APSW 3.15.0-r1 documentation" href="index.html" />
     <link rel="next" title="pysqlite differences" href="pysqlite.html" />
     <link rel="prev" title="Execution and tracing" href="execution.html" />
  
@@ -51,7 +53,7 @@
         <li class="right" >
           <a href="execution.html" title="Execution and tracing"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.14.1-r1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.15.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -97,7 +99,7 @@ parameter numbers from one not zero when using <em>qmark/numeric</em> style.</p>
 </tr>
 </tbody>
 </table>
-<p>The DBAPI exceptions are not used.  The <a class="reference internal" href="exceptions.html#exceptions"><span>exceptions</span></a>
+<p>The DBAPI exceptions are not used.  The <a class="reference internal" href="exceptions.html#exceptions"><span class="std std-ref">exceptions</span></a>
 used correspond to specific SQLite error codes.</p>
 </div>
 <div class="section" id="connection-objects">
@@ -135,7 +137,7 @@ there are no more results.</p>
 call <code class="xref py py-meth docutils literal"><span class="pre">next()</span></code> for however many results you want.</p>
 <p>fetchall is available, but not too useful. Simply use the cursor as an
 iterator, call <code class="xref py py-meth docutils literal"><span class="pre">next()</span></code>, or use list which is less typing:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="nb">all</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;....&quot;</span><span class="p">))</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="nb">all</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;....&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>nextset is not applicable or implemented.</p>
@@ -156,7 +158,7 @@ bytes type in Python 3.</p>
 <h2>Optional DB API Extensions<a class="headerlink" href="#optional-db-api-extensions" title="Permalink to this headline">¶</a></h2>
 <p>rownumber is not available.</p>
 <p>Exception classes are not available as attributes of Connection but
-instead are on the <a class="reference internal" href="apsw.html#module-apsw" title="apsw: Python access to SQLite database library"><code class="xref py py-mod docutils literal"><span class="pre">apsw</span></code></a> module.  See <a class="reference internal" href="exceptions.html#exceptions"><span>Exceptions</span></a> for
+instead are on the <a class="reference internal" href="apsw.html#module-apsw" title="apsw: Python access to SQLite database library"><code class="xref py py-mod docutils literal"><span class="pre">apsw</span></code></a> module.  See <a class="reference internal" href="exceptions.html#exceptions"><span class="std std-ref">Exceptions</span></a> for
 more details.</p>
 <p>Use <a class="reference internal" href="cursor.html#apsw.Cursor.getconnection" title="apsw.Cursor.getconnection"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.getconnection()</span></code></a> to get the associated Connection
 object from a cursor.</p>
@@ -168,7 +170,7 @@ way of getting information back.</p>
 insert on any Cursor associated with the the Connection. You can also
 add <a class="reference external" href="https://sqlite.org/lang_corefunc.html">select last_insert_rowid()</a> to the end of your execute
 statements:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;BEGIN; INSERT ... ; INSERT ... ; SELECT last_insert_rowid(); COMMIT&quot;</span><span class="p">):</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;BEGIN; INSERT ... ; INSERT ... ; SELECT last_insert_rowid(); COMMIT&quot;</span><span class="p">):</span>
    <span class="n">lastrowid</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -210,14 +212,11 @@ statements:</p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -239,14 +238,14 @@ statements:</p>
         <li class="right" >
           <a href="execution.html" title="Execution and tracing"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.14.1-r1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.15.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
-        &copy; <a href="copyright.html">Copyright</a> 2004-2016, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Sep 05, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+        &#169; <a href="copyright.html">Copyright</a> 2004-2016, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Oct 30, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

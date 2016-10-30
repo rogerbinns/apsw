@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Execution and tracing &mdash; APSW 3.14.1-r1 documentation</title>
+    <title>Execution and tracing &#8212; APSW 3.15.0-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.14.1-r1',
+        VERSION:     '3.15.0-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,8 +23,10 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.14.1-r1 documentation" href="index.html" />
+    <link rel="top" title="APSW 3.15.0-r1 documentation" href="index.html" />
     <link rel="next" title="DBAPI notes" href="dbapi.html" />
     <link rel="prev" title="Types" href="types.html" />
  
@@ -51,7 +53,7 @@
         <li class="right" >
           <a href="types.html" title="Types"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.14.1-r1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.15.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -81,7 +83,7 @@ iterator. Execution will resume as necessary to satisfy
 rest of your statements won&#8217;t be executed.  APSW will detect
 unexecuted previous statements and generate an exception. For
 example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select * from foo ; create table bar(x,y,z)&quot;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select * from foo ; create table bar(x,y,z)&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;create table bam(x,y,z)&quot;</span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
   File <span class="nb">&quot;&lt;stdin&gt;&quot;</span>, line <span class="m">1</span>, in <span class="n">?</span>
@@ -170,9 +172,9 @@ code.</p>
 <p>You cannot issue new execute statements against the cursor
 your tracer was called from. If you would like to make more queries
 in the tracer then do them from a new cursor object.  For example:</p>
-<div class="last highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">exectracer</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">bindings</span><span class="p">):</span>
+<div class="last highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">exectracer</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">bindings</span><span class="p">):</span>
   <span class="n">cursor</span><span class="o">.</span><span class="n">getconnection</span><span class="p">()</span><span class="o">.</span><span class="n">cursor</span><span class="p">(</span><span class="s">&quot;insert into log values(?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">sql</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">bindings</span><span class="p">)))</span>
-  <span class="k">return</span> <span class="bp">True</span>
+  <span class="k">return</span> <span class="k">True</span>
 </pre></div>
 </div>
 </div>
@@ -195,7 +197,7 @@ a tuple.</dd>
 </div></blockquote>
 <p>If the tracer return value evaluates to False/None then execution is
 aborted with an <a class="reference internal" href="exceptions.html#apsw.ExecTraceAbort" title="apsw.ExecTraceAbort"><code class="xref py py-exc docutils literal"><span class="pre">ExecTraceAbort</span></code></a> exception.  See the
-<a class="reference internal" href="example.html#example-exectrace"><span>example</span></a>.</p>
+<a class="reference internal" href="example.html#example-exectrace"><span class="std std-ref">example</span></a>.</p>
 <p>Execution tracers can be installed on a specific cursor by calling
 <a class="reference internal" href="cursor.html#apsw.Cursor.setexectrace" title="apsw.Cursor.setexectrace"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.setexectrace()</span></code></a> or for all cursors by calling
 <a class="reference internal" href="connection.html#apsw.Connection.setexectrace" title="apsw.Connection.setexectrace"><code class="xref py py-meth docutils literal"><span class="pre">Connection.setexectrace()</span></code></a>, with the cursor tracer taking
@@ -220,7 +222,7 @@ two arguments.</p>
 </div></blockquote>
 <p>Whatever you return from the tracer is what is actually returned to
 the caller of <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal"><span class="pre">execute()</span></code></a>. If you return None then the
-whole row is skipped. See the <a class="reference internal" href="example.html#example-rowtrace"><span>example</span></a>.</p>
+whole row is skipped. See the <a class="reference internal" href="example.html#example-rowtrace"><span class="std std-ref">example</span></a>.</p>
 <p>Row tracers can be installed on a specific cursor by calling
 <a class="reference internal" href="cursor.html#apsw.Cursor.setrowtrace" title="apsw.Cursor.setrowtrace"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.setrowtrace()</span></code></a> or for all cursors by calling
 <a class="reference internal" href="connection.html#apsw.Connection.setrowtrace" title="apsw.Connection.setrowtrace"><code class="xref py py-meth docutils literal"><span class="pre">Connection.setrowtrace()</span></code></a>, with the cursor tracer taking
@@ -229,17 +231,17 @@ priority.</p>
 </div>
 <div class="section" id="apsw-trace">
 <span id="apswtrace"></span><h2>APSW Trace<a class="headerlink" href="#apsw-trace" title="Permalink to this headline">¶</a></h2>
-<p>APSW includes a tracing script as part of the <a class="reference internal" href="download.html#source-and-binaries"><span>source
+<p>APSW includes a tracing script as part of the <a class="reference internal" href="download.html#source-and-binaries"><span class="std std-ref">source
 distribution</span></a> named <code class="file docutils literal"><span class="pre">apswtrace.py</span></code>, or you
 can get a copy directly from <a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/tools/apswtrace.py">source control</a> (choose &#8220;Raw File&#8221;).  This script lets you
 easily trace SQL execution as well as providing a summary report
 without modifying your code.  If it is installed anywhere on your
 <span class="target" id="index-0"></span><code class="xref std std-envvar docutils literal"><span class="pre">PYTHONPATH</span></code> then you can invoke it with <code class="docutils literal"><span class="pre">-m</span></code>:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ python -m apswtrace [apswtrace options] yourscript.py [your options]
+<div class="highlight-default"><div class="highlight"><pre>$ python -m apswtrace [apswtrace options] yourscript.py [your options]
 </pre></div>
 </div>
 <p>You can also invoke it directly:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ python /path/to/apswtrace.py [apswtrace options] yourscript.py [your options]
+<div class="highlight-default"><div class="highlight"><pre>$ python /path/to/apswtrace.py [apswtrace options] yourscript.py [your options]
 </pre></div>
 </div>
 <p>All output is UTF-8 encoded.  The following options are available:</p>
@@ -309,7 +311,7 @@ find out what happened on a specific cursor or connection.</dd>
 <dt>OPEN: &#8220;dbname&#8221; vfs open_flags</dt>
 <dd>A <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> has been opened.  The <em>dbname</em> is the
 filename exactly as given in the call to
-<a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a>. <em>vfs</em> is the name of the <a class="reference internal" href="vfs.html#vfs"><span>VFS</span></a>
+<a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a>. <em>vfs</em> is the name of the <a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">VFS</span></a>
 used to open the database. <em>open_flags</em> is the set of <code class="xref py py-data docutils literal"><span class="pre">flags</span></code> supplied with the leading <em>SQLITE_OPEN</em>
 prefix omitted.</dd>
 <dt>CURSORFROM: connectionid DB: &#8220;dbname&#8221;</dt>
@@ -457,14 +459,11 @@ illustrates how time spent busy waiting is included.</p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -486,14 +485,14 @@ illustrates how time spent busy waiting is included.</p>
         <li class="right" >
           <a href="types.html" title="Types"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.14.1-r1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.15.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
-        &copy; <a href="copyright.html">Copyright</a> 2004-2016, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Sep 05, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+        &#169; <a href="copyright.html">Copyright</a> 2004-2016, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Oct 30, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

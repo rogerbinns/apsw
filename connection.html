@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Connections to a database &mdash; APSW 3.14.1-r1 documentation</title>
+    <title>Connections to a database &#8212; APSW 3.15.0-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.14.1-r1',
+        VERSION:     '3.15.0-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,8 +23,10 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.14.1-r1 documentation" href="index.html" />
+    <link rel="top" title="APSW 3.15.0-r1 documentation" href="index.html" />
     <link rel="next" title="Cursors (executing SQL)" href="cursor.html" />
     <link rel="prev" title="APSW Module" href="apsw.html" />
  
@@ -51,7 +53,7 @@
         <li class="right" >
           <a href="apsw.html" title="APSW Module"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.14.1-r1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.15.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -95,8 +97,8 @@ execute frequently.</li>
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="apsw.html#apsw.connection_hooks" title="apsw.connection_hooks"><code class="xref py py-attr docutils literal"><span class="pre">apsw.connection_hooks</span></code></a></li>
-<li><a class="reference internal" href="execution.html#statementcache"><span>Statement Cache</span></a></li>
-<li><a class="reference internal" href="vfs.html#vfs"><span>Virtual File System (VFS)</span></a></li>
+<li><a class="reference internal" href="execution.html#statementcache"><span class="std std-ref">Statement Cache</span></a></li>
+<li><a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">Virtual File System (VFS)</span></a></li>
 </ul>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/open.html">sqlite3_open_v2</a></p>
@@ -109,7 +111,7 @@ execute frequently.</li>
 as defined in <span class="target" id="index-1"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-0343"><strong>PEP 0343</strong></a>.  When you use <em>with</em> a transaction is
 started.  If the block finishes with an exception then the
 transaction is rolled back, otherwise it is committed.  For example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
     <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;....&quot;</span><span class="p">)</span>
     <span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
         <span class="c"># nested is supported</span>
@@ -137,7 +139,7 @@ savepoint.</p>
 <span class="target" id="index-2"></span><dl class="method">
 <dt id="apsw.Connection.backup">
 <code class="descclassname">Connection.</code><code class="descname">backup</code><span class="sig-paren">(</span><em>databasename</em>, <em>sourceconnection</em>, <em>sourcedatabasename</em><span class="sig-paren">)</span> &rarr; backup<a class="headerlink" href="#apsw.Connection.backup" title="Permalink to this definition">¶</a></dt>
-<dd><p>Opens a <a class="reference internal" href="backup.html#backup"><span>backup object</span></a>.  All data will be copied from source
+<dd><p>Opens a <a class="reference internal" href="backup.html#backup"><span class="std std-ref">backup object</span></a>.  All data will be copied from source
 database to this database.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -159,16 +161,16 @@ the main connection and the name you specified for <a class="reference external"
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><a class="reference internal" href="backup.html#backup"><span>Backup</span></a></li>
+<li><a class="reference internal" href="backup.html#backup"><span class="std std-ref">Backup</span></a></li>
 </ul>
 </div>
-<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/backup_finish.html#sqlite3backupfinish">sqlite3_backup_init</a></p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/backup_finish.html#sqlite3backupinit">sqlite3_backup_init</a></p>
 </dd></dl>
 
 <span class="target" id="index-3"></span><dl class="method">
 <dt id="apsw.Connection.blobopen">
 <code class="descclassname">Connection.</code><code class="descname">blobopen</code><span class="sig-paren">(</span><em>database</em>, <em>table</em>, <em>column</em>, <em>rowid</em>, <em>writeable</em><span class="sig-paren">)</span> &rarr; blob<a class="headerlink" href="#apsw.Connection.blobopen" title="Permalink to this definition">¶</a></dt>
-<dd><p>Opens a blob for <a class="reference internal" href="blob.html#blobio"><span>incremental I/O</span></a>.</p>
+<dd><p>Opens a blob for <a class="reference internal" href="blob.html#blobio"><span class="std std-ref">incremental I/O</span></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -192,7 +194,7 @@ the main connection and the name you specified for <a class="reference external"
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><a class="reference internal" href="example.html#example-blobio"><span>Blob I/O example</span></a></li>
+<li><a class="reference internal" href="example.html#example-blobio"><span class="std std-ref">Blob I/O example</span></a></li>
 <li><a class="reference external" href="https://sqlite.org/autoinc.html">SQLite row ids</a></li>
 </ul>
 </div>
@@ -315,7 +317,7 @@ callables and <em>numargs</em>.  See
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><a class="reference internal" href="example.html#aggregate-example"><span>Example</span></a></li>
+<li><a class="reference internal" href="example.html#aggregate-example"><span class="std std-ref">Example</span></a></li>
 <li><a class="reference internal" href="#apsw.Connection.createscalarfunction" title="apsw.Connection.createscalarfunction"><code class="xref py py-meth docutils literal"><span class="pre">createscalarfunction()</span></code></a></li>
 </ul>
 </div>
@@ -331,7 +333,7 @@ collation could take into account locale or do numeric sorting.</p>
 <p>The <em>callback</em> will be called with two items.  It should return -1
 if the first is less then the second, 0 if they are equal, and 1 if
 first is greater:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">mycollation</span><span class="p">(</span><span class="n">one</span><span class="p">,</span> <span class="n">two</span><span class="p">):</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">mycollation</span><span class="p">(</span><span class="n">one</span><span class="p">,</span> <span class="n">two</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">one</span> <span class="o">&lt;</span> <span class="n">two</span><span class="p">:</span>
         <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
     <span class="k">if</span> <span class="n">one</span> <span class="o">==</span> <span class="n">two</span><span class="p">:</span>
@@ -343,7 +345,7 @@ first is greater:</p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><a class="reference internal" href="example.html#collation-example"><span>Example</span></a></li>
+<li><a class="reference internal" href="example.html#collation-example"><span class="std std-ref">Example</span></a></li>
 </ul>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/create_collation.html">sqlite3_create_collation_v2</a></p>
@@ -352,11 +354,11 @@ first is greater:</p>
 <span class="target" id="index-10"></span><dl class="method">
 <dt id="apsw.Connection.createmodule">
 <code class="descclassname">Connection.</code><code class="descname">createmodule</code><span class="sig-paren">(</span><em>name</em>, <em>datasource</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.createmodule" title="Permalink to this definition">¶</a></dt>
-<dd><p>Registers a virtual table.  See <a class="reference internal" href="vtable.html#virtualtables"><span>Virtual Tables</span></a> for details.</p>
+<dd><p>Registers a virtual table.  See <a class="reference internal" href="vtable.html#virtualtables"><span class="std std-ref">Virtual Tables</span></a> for details.</p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><a class="reference internal" href="example.html#example-vtable"><span>Example</span></a></li>
+<li><a class="reference internal" href="example.html#example-vtable"><span class="std std-ref">Example</span></a></li>
 </ul>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/create_module.html">sqlite3_create_module_v2</a></p>
@@ -389,7 +391,7 @@ length of a string is.</li>
 <p class="first admonition-title">Note</p>
 <p>You can register the same named function but with different
 <em>callable</em> and <em>numargs</em>.  For example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">connection</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s">&quot;toip&quot;</span><span class="p">,</span> <span class="n">ipv4convert</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">connection</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s">&quot;toip&quot;</span><span class="p">,</span> <span class="n">ipv4convert</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s">&quot;toip&quot;</span><span class="p">,</span> <span class="n">ipv6convert</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s">&quot;toip&quot;</span><span class="p">,</span> <span class="n">strconvert</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
@@ -400,7 +402,7 @@ doesn&#8217;t exist then the one with negative <em>numargs</em> will be called.<
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><a class="reference internal" href="example.html#scalar-example"><span>Example</span></a></li>
+<li><a class="reference internal" href="example.html#scalar-example"><span class="std std-ref">Example</span></a></li>
 <li><a class="reference internal" href="#apsw.Connection.createaggregatefunction" title="apsw.Connection.createaggregatefunction"><code class="xref py py-meth docutils literal"><span class="pre">createaggregatefunction()</span></code></a></li>
 </ul>
 </div>
@@ -454,7 +456,7 @@ which is disabled by default.</p>
 <span class="target" id="index-14"></span><dl class="method">
 <dt id="apsw.Connection.filecontrol">
 <code class="descclassname">Connection.</code><code class="descname">filecontrol</code><span class="sig-paren">(</span><em>dbname</em>, <em>op</em>, <em>pointer</em><span class="sig-paren">)</span> &rarr; bool<a class="headerlink" href="#apsw.Connection.filecontrol" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calls the <a class="reference internal" href="vfs.html#apsw.VFSFile.xFileControl" title="apsw.VFSFile.xFileControl"><code class="xref py py-meth docutils literal"><span class="pre">xFileControl()</span></code></a> method on the <a class="reference internal" href="vfs.html#vfs"><span>Virtual File System (VFS)</span></a>
+<dd><p>Calls the <a class="reference internal" href="vfs.html#apsw.VFSFile.xFileControl" title="apsw.VFSFile.xFileControl"><code class="xref py py-meth docutils literal"><span class="pre">xFileControl()</span></code></a> method on the <a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">Virtual File System (VFS)</span></a>
 implementing <a class="reference internal" href="vfs.html#apsw.VFSFile" title="apsw.VFSFile"><code class="xref py py-class docutils literal"><span class="pre">file</span> <span class="pre">access</span></code></a> for the database.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -477,7 +479,7 @@ than 100 reserved for SQLite internal use.</li>
 something mutable.  Here is an example using <a class="reference external" href="http://www.python.org/doc/2.5.2/lib/module-ctypes.html">ctypes</a> of
 passing a Python dictionary to <a class="reference internal" href="vfs.html#apsw.VFSFile.xFileControl" title="apsw.VFSFile.xFileControl"><code class="xref py py-meth docutils literal"><span class="pre">xFileControl()</span></code></a> which
 can then modify the dictionary to set return values:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">obj</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;foo&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>                 <span class="c"># object we want to pass</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">obj</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;foo&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>                 <span class="c"># object we want to pass</span>
 <span class="n">objwrap</span><span class="o">=</span><span class="n">ctypes</span><span class="o">.</span><span class="n">py_object</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>        <span class="c"># objwrap must live before and after the call else</span>
                                      <span class="c"># it gets garbage collected</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">filecontrol</span><span class="p">(</span>
@@ -487,13 +489,13 @@ can then modify the dictionary to set return values:</p>
 </pre></div>
 </div>
 <p>The <a class="reference internal" href="vfs.html#apsw.VFSFile.xFileControl" title="apsw.VFSFile.xFileControl"><code class="xref py py-meth docutils literal"><span class="pre">xFileControl()</span></code></a> method then looks like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">xFileControl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">pointer</span><span class="p">):</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">xFileControl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">pointer</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">op</span><span class="o">==</span><span class="mi">123</span><span class="p">:</span>                      <span class="c"># our op code</span>
         <span class="n">obj</span><span class="o">=</span><span class="n">ctypes</span><span class="o">.</span><span class="n">py_object</span><span class="o">.</span><span class="n">from_address</span><span class="p">(</span><span class="n">pointer</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
         <span class="c"># play with obj - you can use id() to verify it is the same</span>
-        <span class="k">print</span> <span class="n">obj</span><span class="p">[</span><span class="s">&quot;foo&quot;</span><span class="p">]</span>
+        <span class="nb">print</span> <span class="n">obj</span><span class="p">[</span><span class="s">&quot;foo&quot;</span><span class="p">]</span>
         <span class="n">obj</span><span class="p">[</span><span class="s">&quot;result&quot;</span><span class="p">]</span><span class="o">=</span><span class="s">&quot;it worked&quot;</span>
-        <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="k">True</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c"># pass to parent/superclass</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">MyFile</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">xFileControl</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">pointer</span><span class="p">)</span>
@@ -502,7 +504,7 @@ can then modify the dictionary to set return values:</p>
 <p>This is how you set the chunk size by which the database grows.  Do
 not combine it into one line as the c_int would be garbage collected
 before the filecontrol call is made:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">chunksize</span><span class="o">=</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="mi">32768</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span class="n">chunksize</span><span class="o">=</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="mi">32768</span><span class="p">)</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">filecontrol</span><span class="p">(</span><span class="s">&quot;main&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_FCNTL_CHUNK_SIZE</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">addressof</span><span class="p">(</span><span class="n">chunksize</span><span class="p">))</span>
 </pre></div>
 </div>
@@ -531,7 +533,7 @@ execution tracer.</p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><a class="reference internal" href="execution.html#tracing"><span>Tracing</span></a></li>
+<li><a class="reference internal" href="execution.html#tracing"><span class="std std-ref">Tracing</span></a></li>
 </ul>
 </div>
 </dd></dl>
@@ -544,7 +546,7 @@ row tracer.</p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><a class="reference internal" href="execution.html#tracing"><span>Tracing</span></a></li>
+<li><a class="reference internal" href="execution.html#tracing"><span class="std std-ref">Tracing</span></a></li>
 </ul>
 </div>
 </dd></dl>
@@ -590,7 +592,7 @@ returned.  If called with two then the limit is set to <em>newval</em>.</p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><a class="reference internal" href="example.html#example-limit"><span>Example</span></a></li>
+<li><a class="reference internal" href="example.html#example-limit"><span class="std std-ref">Example</span></a></li>
 </ul>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/limit.html">sqlite3_limit</a></p>
@@ -695,8 +697,8 @@ Python code).</p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><a class="reference internal" href="example.html#authorizer-example"><span>Example</span></a></li>
-<li><a class="reference internal" href="execution.html#statementcache"><span>Statement Cache</span></a></li>
+<li><a class="reference internal" href="example.html#authorizer-example"><span class="std std-ref">Example</span></a></li>
+<li><a class="reference internal" href="execution.html#statementcache"><span class="std std-ref">Statement Cache</span></a></li>
 </ul>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/set_authorizer.html">sqlite3_set_authorizer</a></p>
@@ -718,7 +720,7 @@ calling this overrides that.</p>
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="#apsw.Connection.setbusytimeout" title="apsw.Connection.setbusytimeout"><code class="xref py py-meth docutils literal"><span class="pre">Connection.setbusytimeout()</span></code></a></li>
-<li><a class="reference internal" href="tips.html#busyhandling"><span>Busy handling</span></a></li>
+<li><a class="reference internal" href="tips.html#busyhandling"><span class="std std-ref">Busy handling</span></a></li>
 </ul>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/busy_handler.html">sqlite3_busy_handler</a></p>
@@ -745,7 +747,7 @@ calling this overrides that.</p>
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
 <li><a class="reference internal" href="#apsw.Connection.setbusyhandler" title="apsw.Connection.setbusyhandler"><code class="xref py py-meth docutils literal"><span class="pre">Connection.setbusyhandler()</span></code></a></li>
-<li><a class="reference internal" href="tips.html#busyhandling"><span>Busy handling</span></a></li>
+<li><a class="reference internal" href="tips.html#busyhandling"><span class="std std-ref">Busy handling</span></a></li>
 </ul>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/busy_timeout.html">sqlite3_busy_timeout</a></p>
@@ -761,7 +763,7 @@ non-zero (ie rollback) value is returned.</p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><a class="reference internal" href="example.html#example-commithook"><span>Example</span></a></li>
+<li><a class="reference internal" href="example.html#example-commithook"><span class="std std-ref">Example</span></a></li>
 </ul>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/commit_hook.html">sqlite3_commit_hook</a></p>
@@ -780,8 +782,8 @@ removed.</p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><a class="reference internal" href="execution.html#tracing"><span>Tracing</span></a></li>
-<li><a class="reference internal" href="execution.html#rowtracer"><span>Row Tracer</span></a></li>
+<li><a class="reference internal" href="execution.html#tracing"><span class="std std-ref">Tracing</span></a></li>
+<li><a class="reference internal" href="execution.html#rowtracer"><span class="std std-ref">Row Tracer</span></a></li>
 <li><a class="reference internal" href="cursor.html#apsw.Cursor.setexectrace" title="apsw.Cursor.setexectrace"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.setexectrace()</span></code></a></li>
 </ul>
 </div>
@@ -809,7 +811,7 @@ then non-zero will be returned).</p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><a class="reference internal" href="example.html#example-progress-handler"><span>Example</span></a></li>
+<li><a class="reference internal" href="example.html#example-progress-handler"><span class="std std-ref">Example</span></a></li>
 </ul>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/progress_handler.html">sqlite3_progress_handler</a></p>
@@ -836,8 +838,8 @@ removed.</p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><a class="reference internal" href="execution.html#tracing"><span>Tracing</span></a></li>
-<li><a class="reference internal" href="execution.html#rowtracer"><span>Row Tracer</span></a></li>
+<li><a class="reference internal" href="execution.html#tracing"><span class="std std-ref">Tracing</span></a></li>
+<li><a class="reference internal" href="execution.html#rowtracer"><span class="std std-ref">Row Tracer</span></a></li>
 <li><a class="reference internal" href="cursor.html#apsw.Cursor.setexectrace" title="apsw.Cursor.setexectrace"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.setexectrace()</span></code></a></li>
 </ul>
 </div>
@@ -868,7 +870,7 @@ apply them in a different connection.</p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <ul class="last simple">
-<li><a class="reference internal" href="example.html#example-updatehook"><span>Example</span></a></li>
+<li><a class="reference internal" href="example.html#example-updatehook"><span class="std std-ref">Example</span></a></li>
 </ul>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/update_hook.html">sqlite3_update_hook</a></p>
@@ -877,7 +879,7 @@ apply them in a different connection.</p>
 <span class="target" id="index-31"></span><dl class="method">
 <dt id="apsw.Connection.setwalhook">
 <code class="descclassname">Connection.</code><code class="descname">setwalhook</code><span class="sig-paren">(</span><em>callable</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.setwalhook" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>callable</em> will be called just after data is committed in <a class="reference internal" href="tips.html#wal"><span>Write Ahead Logging</span></a>
+<dd><p><em>callable</em> will be called just after data is committed in <a class="reference internal" href="tips.html#wal"><span class="std std-ref">Write Ahead Logging</span></a>
 mode.  It should return <code class="xref py py-const docutils literal"><span class="pre">SQLITE_OK</span></code> or an error code.  The
 callback is called with 3 parameters:</p>
 <blockquote>
@@ -928,7 +930,7 @@ libraries.</p>
 <p class="first admonition-title">See also</p>
 <p>The <a class="reference internal" href="apsw.html#apsw.status" title="apsw.status"><code class="xref py py-func docutils literal"><span class="pre">status()</span></code></a> example which works in exactly the same way.</p>
 <ul class="last simple">
-<li><a class="reference internal" href="example.html#example-status"><span>Status example</span></a></li>
+<li><a class="reference internal" href="example.html#example-status"><span class="std std-ref">Status example</span></a></li>
 </ul>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/db_status.html">sqlite3_db_status</a></p>
@@ -945,7 +947,7 @@ inserted, or deleted since the database connection was opened.</p>
 <span class="target" id="index-34"></span><dl class="method">
 <dt id="apsw.Connection.wal_autocheckpoint">
 <code class="descclassname">Connection.</code><code class="descname">wal_autocheckpoint</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.wal_autocheckpoint" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets how often the <a class="reference internal" href="tips.html#wal"><span>Write Ahead Logging</span></a> checkpointing is run.</p>
+<dd><p>Sets how often the <a class="reference internal" href="tips.html#wal"><span class="std std-ref">Write Ahead Logging</span></a> checkpointing is run.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1015,14 +1017,11 @@ number of frames checkpointed as described in the
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -1044,14 +1043,14 @@ number of frames checkpointed as described in the
         <li class="right" >
           <a href="apsw.html" title="APSW Module"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.14.1-r1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.15.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
-        &copy; <a href="copyright.html">Copyright</a> 2004-2016, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Sep 05, 2016.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+        &#169; <a href="copyright.html">Copyright</a> 2004-2016, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Oct 30, 2016.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking
