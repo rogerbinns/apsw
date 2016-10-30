@@ -1802,7 +1802,7 @@ class APSW(unittest.TestCase):
         self.assertEqual("select max(x) from foo", profileinfo[0][0])
         self.assertEqual("select max(x) from foo", profileinfo[-1][0])
         # the query using the index should take way less time
-        self.assertTrue(profileinfo[0][1]<profileinfo[-1][1])
+        self.assertTrue(profileinfo[0][1]<=profileinfo[-1][1])
         def profile(*args):
             1/0
         self.db.setprofile(profile)
