@@ -1697,7 +1697,9 @@ modules etc. For example::
       ADDINT(SQLITE_FCNTL_ZIPVFS),
       ADDINT(SQLITE_FCNTL_JOURNAL_POINTER),
       ADDINT(SQLITE_FCNTL_VFS_POINTER),
+#ifdef SQLITE_FCNTL_WIN32_GET_HANDLE
       ADDINT(SQLITE_FCNTL_WIN32_GET_HANDLE),
+#endif
       END,
 
       DICT("mapping_conflict_resolution_modes"),
