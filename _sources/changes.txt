@@ -2,6 +2,11 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.15.1-r1
+=========
+
+Added SQLITE_FCNTL_WIN32_GET_HANDLE constant.
+
 3.15.0-r1
 =========
 
@@ -783,7 +788,7 @@ to enable `advanced statistics gathering
 <https://sqlite.org/compile.html#enable_stat2>`__ for query
 planning.
 
-:file:`setup.py` can automatically fetch the :ref:`ext-asyncvfs`
+:file:`setup.py` can automatically fetch the asyncvfs
 extension for you.  If the source is present when APSW is built then
 it will be automatically included and the :meth:`API
 <async_initialize>` provided.
