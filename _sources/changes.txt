@@ -2,6 +2,11 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.15.2-r1
+=========
+
+No APSW changes.
+
 3.15.1-r1
 =========
 
