@@ -5996,7 +5996,7 @@ class APSW(unittest.TestCase):
         self.assertEqual(len(v[0]), len(v[1]))
         # explain mode doesn't truncate
         reset()
-        cmd(".header on\ncreate table %s(x);create index %s_ on %s(x);\n.explain\nexplain select * from %s where x=7;\n" % (x,x,x,x))
+        cmd(".header on\ncreate table %s(x);create index %s_ on %s(x);\n.explain\nexplain query plan select * from %s where x=7;\n" % (x,x,x,x))
         s.cmdloop()
         isempty(fh[2])
         self.assertTrue(x in get(fh[1]))
