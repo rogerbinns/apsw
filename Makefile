@@ -1,8 +1,8 @@
 
-SQLITEVERSION=3.15.2
+SQLITEVERSION=3.16.1
 APSWSUFFIX=-r1
 
-RELEASEDATE="4 December 2016"
+RELEASEDATE="10 January 2016"
 
 VERSION=$(SQLITEVERSION)$(APSWSUFFIX)
 VERDIR=apsw-$(VERSION)
@@ -128,6 +128,8 @@ compile-win:
 	cmd /c del /s /q build
 	cmd /c del /s /q apsw.egg-info
 	-cmd /c md dist
+	set APSW_FORCE_DISTUTILS=t & c:/python36/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	set APSW_FORCE_DISTUTILS=t & "c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python36-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	set APSW_FORCE_DISTUTILS=t & c:/python35/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	set APSW_FORCE_DISTUTILS=t & "c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python35-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	set APSW_FORCE_DISTUTILS=t & c:/python34/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)

@@ -2,6 +2,13 @@ Change History
 **************
 .. currentmodule:: apsw
 
+next-r1
+=======
+
+Python 3.6 builds added.
+
+Added SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE and SQLITE_FCNTL_PDB constants.
+
 3.15.2-r1
 =========
 
