@@ -5994,19 +5994,6 @@ class APSW(unittest.TestCase):
         v=v.split("\n")
         self.assertNotEqual(v[0], v[1])
         self.assertEqual(len(v[0]), len(v[1]))
-        # explain mode doesn't truncate
-        reset()
-        cmd(".header on\ncreate table %s(x);create index %s_ on %s(x);\n.explain\nexplain select * from %s where x=7;\n" % (x,x,x,x))
-        s.cmdloop()
-        isempty(fh[2])
-        self.assertTrue(x in get(fh[1]))
-        # check null and blobs
-        reset()
-        nv="ThIsNuLlVaLuE"
-        cmd(".nullvalue %s\nselect null, x'aaee';\n" % (nv,))
-        s.cmdloop()
-        isempty(fh[2])
-        self.assertTrue(nv in get(fh[1]))
         # do not output blob as is
         self.assertTrue(u("\xaa") not in get(fh[1]))
         # undo explain
