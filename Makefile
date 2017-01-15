@@ -181,6 +181,8 @@ release:
 	test -f dist/$(VERDIR).win-amd64-py3.4.exe
 	test -f dist/$(VERDIR).win32-py3.5.exe
 	test -f dist/$(VERDIR).win-amd64-py3.5.exe
+	test -f dist/$(VERDIR).win32-py3.6.exe
+	test -f dist/$(VERDIR).win-amd64-py3.6.exe
 	-rm -f dist/$(VERDIR)-sigs.zip dist/*.asc
 	for f in dist/* ; do gpg --use-agent --armor --detach-sig "$$f" ; done
 	cd dist ; zip -m $(VERDIR)-sigs.zip *.asc
