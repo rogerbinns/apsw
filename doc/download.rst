@@ -39,45 +39,45 @@ way to build or all the :ref:`options available <building>`.
 
 * Windows Python 2.6 `32bit
   <https://github.com/rogerbinns/apsw/releases/download/3.16.2-r1/apsw-3.16.2-r1.win32-py2.6.exe>`__
-  `64bit 
+  `64bit
   <https://github.com/rogerbinns/apsw/releases/download/3.16.2-r1/apsw-3.16.2-r1.win-amd64-py2.6.exe>`__
 
 * Windows Python 2.7 `32bit
   <https://github.com/rogerbinns/apsw/releases/download/3.16.2-r1/apsw-3.16.2-r1.win32-py2.7.exe>`__
-  `64bit 
+  `64bit
   <https://github.com/rogerbinns/apsw/releases/download/3.16.2-r1/apsw-3.16.2-r1.win-amd64-py2.7.exe>`__
 
 * Windows Python 3.1 `32bit
   <https://github.com/rogerbinns/apsw/releases/download/3.16.2-r1/apsw-3.16.2-r1.win32-py3.1.exe>`__
-  `64bit 
+  `64bit
   <https://github.com/rogerbinns/apsw/releases/download/3.16.2-r1/apsw-3.16.2-r1.win-amd64-py3.1.exe>`__
 
 * Windows Python 3.2 `32bit
   <https://github.com/rogerbinns/apsw/releases/download/3.16.2-r1/apsw-3.16.2-r1.win32-py3.2.exe>`__
-  `64bit 
+  `64bit
   <https://github.com/rogerbinns/apsw/releases/download/3.16.2-r1/apsw-3.16.2-r1.win-amd64-py3.2.exe>`__
 
 * Windows Python 3.3 `32bit
   <https://github.com/rogerbinns/apsw/releases/download/3.16.2-r1/apsw-3.16.2-r1.win32-py3.3.exe>`__
-  `64bit 
+  `64bit
   <https://github.com/rogerbinns/apsw/releases/download/3.16.2-r1/apsw-3.16.2-r1.win-amd64-py3.3.exe>`__
 
 * Windows Python 3.4 `32bit
   <https://github.com/rogerbinns/apsw/releases/download/3.16.2-r1/apsw-3.16.2-r1.win32-py3.4.exe>`__
-  `64bit 
+  `64bit
   <https://github.com/rogerbinns/apsw/releases/download/3.16.2-r1/apsw-3.16.2-r1.win-amd64-py3.4.exe>`__
 
 * Windows Python 3.5 `32bit
   <https://github.com/rogerbinns/apsw/releases/download/3.16.2-r1/apsw-3.16.2-r1.win32-py3.5.exe>`__
-  `64bit 
+  `64bit
   <https://github.com/rogerbinns/apsw/releases/download/3.16.2-r1/apsw-3.16.2-r1.win-amd64-py3.5.exe>`__
 
 * Windows Python 3.6 `32bit
   <https://github.com/rogerbinns/apsw/releases/download/3.16.2-r1/apsw-3.16.2-r1.win32-py3.6.exe>`__
-  `64bit 
+  `64bit
   <https://github.com/rogerbinns/apsw/releases/download/3.16.2-r1/apsw-3.16.2-r1.win-amd64-py3.6.exe>`__
 
-* `apsw-3.16.2-r1-sigs.zip 
+* `apsw-3.16.2-r1-sigs.zip
   <https://github.com/rogerbinns/apsw/releases/download/3.16.2-r1/apsw-3.16.2-r1-sigs.zip>`__
   GPG signatures for all files
 
@@ -95,10 +95,6 @@ machine.
 | Fedora            | Install `python-apsw <https://apps.fedoraproject.org/packages/s/apsw>`__         |
 +-------------------+----------------------------------------------------------------------------------+
 | Ubuntu            | Install `python-apsw <http://packages.ubuntu.com/search?keywords=python-apsw>`__ |
-+-------------------+----------------------------------------------------------------------------------+
-| Ubuntu PPA        | PPA building has been broken for over two years because                          |
-|                   | `Canonical/Ubuntu add a broken flag to the PPA                                   |
-|                   | <https://bugs.launchpad.net/ubuntu/+source/python2.7/+bug/1065302>`__.           |
 +-------------------+----------------------------------------------------------------------------------+
 | Gentoo            | Install `dev-python/apsw <http://packages.gentoo.org/package/dev-python/apsw>`_  |
 +-------------------+----------------------------------------------------------------------------------+
