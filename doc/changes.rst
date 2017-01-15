@@ -2,8 +2,8 @@ Change History
 **************
 .. currentmodule:: apsw
 
-next-r1
-=======
+3.16.2-r1
+=========
 
 Python 3.6 builds added.
 
