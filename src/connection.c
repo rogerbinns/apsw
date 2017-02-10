@@ -892,7 +892,7 @@ updatecb(void *context, int updatetype, char const *databasename, char const *ta
   the query is still executing, but can record them for later use or
   apply them in a different connection.
 
-  The update hook is called with 4 paramaters:
+  The update hook is called with 4 parameters:
 
     type (int)
       :const:`SQLITE_INSERT`, :const:`SQLITE_DELETE` or :const:`SQLITE_UPDATE`
@@ -2228,7 +2228,7 @@ apsw_free_func(void *funcinfo)
 
 /** .. method:: createscalarfunction(name, callable[, numargs=-1, deterministic=False])
 
-  Registers a scalar function.  Scalar functions operate on one set of paramaters once.
+  Registers a scalar function.  Scalar functions operate on one set of parameters once.
 
   :param name: The string name of the function.  It should be less than 255 characters
   :param callable: The function that will be called

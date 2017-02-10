@@ -2530,7 +2530,7 @@ Enter SQL statements terminated with a ";"
             self.handle_interrupt()
 
     def push_input(self):
-        """Saves the current input paramaters to a stack.  See :meth:`pop_input`."""
+        """Saves the current input parameters to a stack.  See :meth:`pop_input`."""
         d={}
         for i in "interactive", "stdin", "input_line_number":
             d[i]=getattr(self, i)
