@@ -1074,7 +1074,7 @@ apswvfs_xSleep(sqlite3_vfs *vfs, int microseconds)
 
 /** .. method:: xSleep(microseconds) -> integer
 
-    Pause exection of the thread for at least the specified number of
+    Pause execution of the thread for at least the specified number of
     microseconds (millionths of a second).  This routine is typically called from the busy handler.
 
     :returns: How many microseconds you actually requested the

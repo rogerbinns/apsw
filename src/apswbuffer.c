@@ -6,7 +6,7 @@
 
 /* Set to zero to disable buffer object recycling.  Even a small amount
    makes a big difference with diminishing returns based on how many
-   the user program goes through without freeing and the interpretter
+   the user program goes through without freeing and the interpreter
    gc intervals. */
 #ifndef AB_NRECYCLE
 #define AB_NRECYCLE 256
@@ -214,7 +214,7 @@ APSWBuffer_dealloc(APSWBuffer *self)
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
-/* Our instances are not publically exposed and we are only compared
+/* Our instances are not publicly exposed and we are only compared
    for dictionary insertion/checking, so take some serious short cuts */
 static PyObject *
 APSWBuffer_richcompare(APSWBuffer *left, APSWBuffer *right, int op)

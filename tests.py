@@ -3,7 +3,7 @@
 # See the accompanying LICENSE file.
 
 # APSW test suite - runs under both Python 2 and Python 3 hence a lot
-# of wierd constructs to be simultaneously compatible with both.
+# of weird constructs to be simultaneously compatible with both.
 # (2to3 is not used).
 
 import apsw
@@ -148,7 +148,7 @@ def next(cursor, *args):
 
 # py3 has a useless sys.excepthook mainly to avoid allocating any
 # memory as the exception could have been running out of memory.  So
-# we use our own which is also valueable on py2 as it says it is an
+# we use our own which is also valuable on py2 as it says it is an
 # unraiseable exception (with testcode you sometimes can't tell if it
 # is unittest showing you an exception or the unraiseable).  It is
 # mainly VFS code that needs to raise these.
@@ -192,7 +192,7 @@ class BadIsTrue(int):
     def __bool__(self):
         1/0
 
-# helper class - runs code in a seperate thread
+# helper class - runs code in a separate thread
 class ThreadRunner(threading.Thread):
 
     def __init__(self, callable, *args, **kwargs):
@@ -3949,7 +3949,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, blobro.seek, 0, 1, 2)
         self.assertRaises(ValueError, blobro.seek, 0, -3)
         self.assertRaises(ValueError, blobro.seek, 0, 3)
-        # can't seek before begining or after end of file
+        # can't seek before beginning or after end of file
         self.assertRaises(ValueError, blobro.seek, -1, 0)
         self.assertRaises(ValueError, blobro.seek, 25, 1)
         self.assertRaises(ValueError, blobro.seek, 25, 2)
@@ -8070,7 +8070,7 @@ shell.write(shell.stdout, "hello world\\n")
             # ignore the unraiseable stuff sent to sys.excepthook
             def eh(*args): pass
             sys.excepthook=eh
-            # call with each seperate item to check
+            # call with each separate item to check
             try:
                 for i in range(len(args)):
                     a=[None]*len(args)

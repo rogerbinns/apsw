@@ -490,8 +490,8 @@ build_enable_all_extensions=False
 bparent=build.build
 class apsw_build(bparent):
     user_options=bparent.user_options+\
-                  [ ("enable=", None, "Enable SQLite options (comma seperated list)"),
-                    ("omit=", None, "Omit SQLite functionality (comma seperated list)"),
+                  [ ("enable=", None, "Enable SQLite options (comma separated list)"),
+                    ("omit=", None, "Omit SQLite functionality (comma separated list)"),
                     ("enable-all-extensions", None, "Enable all SQLite extensions"),
                     ]
     boolean_options=bparent.boolean_options+["enable-all-extensions"]
@@ -531,8 +531,8 @@ beparent=build_ext.build_ext
 class apsw_build_ext(beparent):
 
     user_options=beparent.user_options+\
-                  [ ("enable=", None, "Enable SQLite options (comma seperated list)"),
-                    ("omit=", None, "Omit SQLite functionality (comma seperated list)"),
+                  [ ("enable=", None, "Enable SQLite options (comma separated list)"),
+                    ("omit=", None, "Omit SQLite functionality (comma separated list)"),
                     ("enable-all-extensions", None, "Enable all SQLite extensions"),
                     ]
     boolean_options=beparent.boolean_options+["enable-all-extensions"]

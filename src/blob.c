@@ -32,7 +32,7 @@ store the filename in the database.  Doing so loses the `ACID
 
   If you want to insert a blob into a row, you previously needed to
   supply the entire blob in one go.  To read just one byte also
-  required retrieving the blob in its entireity. For example to insert
+  required retrieving the blob in its entirety. For example to insert
   a 100MB file you would have done::
 
      largedata=open("largefile", "rb").read()
@@ -450,10 +450,10 @@ APSWBlob_readinto(APSWBlob *self, PyObject *args)
   Changes current position to *offset* biased by *whence*.
 
   :param offset: New position to seek to.  Can be positive or negative number.
-  :param whence: Use 0 if *offset* is relative to the begining of the blob,
+  :param whence: Use 0 if *offset* is relative to the beginning of the blob,
                  1 if *offset* is relative to the current position,
                  and 2 if *offset* is relative to the end of the blob.
-  :raises ValueError: If the resulting offset is before the begining (less than zero) or beyond the end of the blob.
+  :raises ValueError: If the resulting offset is before the beginning (less than zero) or beyond the end of the blob.
 */
 
 static PyObject *
@@ -470,7 +470,7 @@ APSWBlob_seek(APSWBlob *self, PyObject *args)
     {
     default:
       return PyErr_Format(PyExc_ValueError, "whence parameter should be 0, 1 or 2");
-    case 0: /* relative to begining of file */
+    case 0: /* relative to beginning of file */
       if(offset<0 || offset>sqlite3_blob_bytes(self->pBlob))
         goto out_of_range;
       self->curoffset=offset;

@@ -213,11 +213,11 @@ ticket
 :issue:`59`)
 
 The amount of memory and I/O saved is trivial compared to Python's
-overal memory and I/O consumption.  You may also need to tune the
-shared cache's memory back up to what it would have been with seperate
+overall memory and I/O consumption.  You may also need to tune the
+shared cache's memory back up to what it would have been with separate
 connections to get the same performance.
 
-The shared cache mode is targetted at embedded systems where every
+The shared cache mode is targeted at embedded systems where every
 byte of memory and I/O matters.  For example an MP3 player may only
 have kilobytes of memory available for SQLite.
 
