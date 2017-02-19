@@ -11,63 +11,6 @@
 # more peace of mind because the SQLite releases are not signed in any
 # way.
 
-https://sqlite.org/2015/sqlite-amalgamation-3080800.zip    1568082 f16a0c38877e456e20967d198b1b33b658de0805 86afd36daa375c3a719cd1b699263d70
-https://sqlite.org/2015/sqlite-autoconf-3080800.tar.gz 2020708 abb7570b7e331ffede7f40f0037be6e0c03b73af 3a3caebf93308ddf5d120c393d9ecb82
-
-https://sqlite.org/2015/sqlite-amalgamation-3080801.zip    1568437 ea9540e278ed6bb563fe7e21ca77d1e352629f33 b1cbcbd710bdfd762dc169f1676053b5
-https://sqlite.org/2015/sqlite-autoconf-3080801.tar.gz 2021072 a140e3ada8a91a7bacf7a58cfd8f5f0e76796258 a6381941ffe8817ba19669ec0c0ede6f
-
-https://sqlite.org/2015/sqlite-amalgamation-3080802.zip    1568467 b920eb0f346b55048a92192ded28fe5a8a38b7ca 262ae171e8244ba5fb91455b8d239a84
-https://sqlite.org/2015/sqlite-autoconf-3080802.tar.gz 2021091 1db237523419af7110e1d92c6b766e965f9322e4 3425fa580a56880f56bcb887dd26cc06
-
-https://sqlite.org/2015/sqlite-amalgamation-3080803.zip    1568475 fdac82a811fb62a6e326808f0010b2cd8e9055d2 97604645c615d81194541e1398687b61
-https://sqlite.org/2015/sqlite-autoconf-3080803.tar.gz 2021112 2fe3f6226a2a08a2e814b97cd53e36bb3c597112 51272e875879ee893e51070b07c33888
-
-https://sqlite.org/2015/sqlite-amalgamation-3080900.zip    1584545 f70e2841e4f26fe45849c2b9f5683bbe502d7523 02e9c3a6daa8b8587cf6bef828c2e33f
-https://sqlite.org/2015/sqlite-autoconf-3080900.tar.gz 2037200 db70dee268700b312cbaa5b3e5cf8454e1c8b7b9 6a18d4609852f4b63f812a1059df468f
-
-https://sqlite.org/2015/sqlite-amalgamation-3081002.zip    1596554 9ad3b477de04cc480fc0f7f1829c322c525f642d cb79cf3d8bab37072209d30cf4d11350
-https://sqlite.org/2015/sqlite-autoconf-3081002.tar.gz 2049387 c2f2c17d3dc4c4e179d35cc04e4420636d48a152 a18bfc015cd49a1e7a961b7b77bc3b37
-https://sqlite.org/2015/sqlite-amalgamation-3081001.zip    1596541 6e371df68010b9521a8d5e0795ef8a4acb6c3ef8 913478c71e1b179f87772aba9474f683
-https://sqlite.org/2015/sqlite-autoconf-3081001.tar.gz 2049377 86bfed5752783fb24c051f3efac5972ce11023f0 8bd9d7df3f67bc771f53c6dda42face2
-https://sqlite.org/2015/sqlite-amalgamation-3081000.zip    1596326 a0b064f09ce78e6e38453a7057eb05c4dbf25657 9e944369c6c477b76790abc45ced3843
-https://sqlite.org/2015/sqlite-autoconf-3081000.tar.gz 2049170 7e92b4f78d4648fb2a97a4dc721490cc08653a0b 04d0311ef70818e8d914c1dc383eddff
-
-https://sqlite.org/2015/sqlite-amalgamation-3081100.zip    1648834 bdd01fa7167b697f30ab76f42f4200bf58b75d98 1867eaa496c9e3dcd77c117fd05a9c5d
-https://sqlite.org/2015/sqlite-autoconf-3081100.tar.gz 2101901 da1322d883548bdb0f6312941b20ed497e3754fa 77b451925121028befbddbf45ea2bc49
-
-https://sqlite.org/2015/sqlite-amalgamation-3081101.zip    1648868 0dbb29c71c4385d1000c091f14475106784daceb 94907e831502e2080b76e281cfa24dde
-https://sqlite.org/2015/sqlite-autoconf-3081101.tar.gz 2101885 d0e22d7e361b6f50830a3cdeafe35311443f8f9a 298c8d6af7ca314f68de92bc7a356cbe
-
-https://sqlite.org/2015/sqlite-amalgamation-3090200.zip    1830895 2837b7f910a217aadc6e5862fcb8f6a3e365622b 0b1787d449b10fa9d7c0edeb15aa6f9f
-https://sqlite.org/2015/sqlite-autoconf-3090200.tar.gz 2284431 dae1ae5297fece9671ae0c434a7ecd0cda09c76a bc4eb5b3fc5cfcb6e059794306cac1ca
-https://sqlite.org/2015/sqlite-amalgamation-3090100.zip    1830615 3113a7656a25b21d6368af75592b57a7c9edf747 09aaf9e68d0ae44c0a001adc46d0ac26
-https://sqlite.org/2015/sqlite-autoconf-3090100.tar.gz 2284128 6b7d22c24c9695118a2706c8e026fb3c31780a30 74931054399a2d7acf35637efe8d6f45
-https://sqlite.org/2015/sqlite-amalgamation-3090000.zip    1830511 ac803cd1283b01b398beb565ebee774c7ca85515 93fe1d55ac14a9288661a8203b36470b
-https://sqlite.org/2015/sqlite-autoconf-3090000.tar.gz 2283997 6578aa8df05fd7777fbbc4fbf1912d981623f73b cd0f883b2ddfc29e8e1bbbbd8e85f555
-
-https://sqlite.org/2016/sqlite-amalgamation-3100000.zip    1850041 7bff5d92480c1ed94436e54cc8c47066483339bd 54271a39fa005522bc5d29fd776ecea4
-https://sqlite.org/2016/sqlite-autoconf-3100000.tar.gz 2331542 7be6e6869d0d2d9fe3df71b5c65f065dd2325f58 274364e6ca5c1104d42912f11e61ed26
-https://sqlite.org/2016/sqlite-amalgamation-3100100.zip    1850403 04744faedd92e27ead20bb1420570fd722bee252 e855fe548428207df09d6d3154941af6
-https://sqlite.org/2016/sqlite-autoconf-3100100.tar.gz 2331931 fedd95d402628ed0e0e3444ce50bcbd1fe2e7294 f315a86cb3e8671fe473baa8d34746f6
-https://sqlite.org/2016/sqlite-amalgamation-3100200.zip    1850441 097e71e284d720fe22aad5199875f38f2ed2c43e fdc4c001b83cdcef64dc257498437fbf
-https://sqlite.org/2016/sqlite-autoconf-3100200.tar.gz 2332013 ea4156fc3f6a4a4a2752a5a3ac5c5b3fe7e1a24b adaa31593bb5605ec6d6f34f81b43008
-
-https://sqlite.org/2016/sqlite-amalgamation-3110000.zip    1869088 1b3a682df26fd1b128fdc7f81bba1e191b4fca0c ab80e70b65da455514a68441ce3e0a8c
-https://sqlite.org/2016/sqlite-autoconf-3110000.tar.gz 2359347 e2d300e4b24af5ecd67a1396488893fa44864e36 a6cdc3e0a6e5087d620037ae0c48720d
-
-https://sqlite.org/2016/sqlite-amalgamation-3110100.zip    1869307 868a00d2adcc8b3803c46d461d7d8d23b2bfccbc e6a308d492f03bdc662c54e9f92ce5bf
-https://sqlite.org/2016/sqlite-autoconf-3110100.tar.gz 2359545 c4b4dcd735a4daf5a2e2bb90f374484c8d4dad29 c66b4e9d5ca6cfd15471b5b03fc44537
-
-https://sqlite.org/2016/sqlite-amalgamation-3120100.zip    1882356 c9ed3d5dd7d2024f27aad9cf10be1de4ea990127 c9303896f5c77c790d5bc77f17ddd812
-https://sqlite.org/2016/sqlite-autoconf-3120100.tar.gz 2374576 fa1f3dbf6e2e8c6d14125b2eceda5b2e16a19f1f 9727cabe516a8f51fed3977340934846
-
-https://sqlite.org/2016/sqlite-amalgamation-3120000.zip    1881860 f71f7f372cff4e8289223963bcef95f702c5fbcf 1d9060e16de15849cbb092bb48c194c9
-https://sqlite.org/2016/sqlite-autoconf-3120000.tar.gz 2374101 e3269662b13ce5cd93b08bd33899bd1cbde3b072 56a80fdab2f398cb2e1ab2ab7c339c30
-
-https://sqlite.org/2016/sqlite-amalgamation-3120200.zip    1882429 22632bf0cfacedbeddde9f92695f71cab8d8c0a5 e3b10b952f075252169ac613068ccc97
-https://sqlite.org/2016/sqlite-autoconf-3120200.tar.gz 2374804 b43c2e7238e54c50b95fbbd85c48792f4f39af8c c552a133aca1ce1d647163d9e43bbcb1
-
 https://sqlite.org/2016/sqlite-amalgamation-3130000.zip    1966584 b46e199f06aa6f644989076da40227da68db7b6a 34dafb6b91558d5e803032bd9a33b664
 https://sqlite.org/2016/sqlite-autoconf-3130000.tar.gz 2459805 f6f76e310389e3f510b23826f805850449ae8653 4e83f39fa2ffb610ac5ecd36865da6a2
 
