@@ -12,10 +12,10 @@ and then to use them.
 
 .. _ext-fts3:
 
-FTS3/4
-======
+FTS3/4/5
+========
 
-This is the third version of the `full text search
+FTS3 is the third version of the `full text search
 <https://sqlite.org/fts3.html>`__ extension.  It
 makes it easy to find words in multi-word text fields.  You must
 enable the extension via :ref:`setup.py build flags
@@ -26,6 +26,10 @@ APIs and the `documented SQL
 Note that FTS4 is some augmentations to FTS3 and are enabled whenever
 FTS3 is enabled as described in the `documentation
 <https://sqlite.org/fts3.html#fts4>`__
+
+`FTS5 <https://www.sqlite.org/fts5.html>`__ addresses some issues in the earlier
+FTS versions by `breaking backwards <https://www.sqlite.org/fts5.html#appendix_a>`__
+compatibility.
 
 .. _ext-icu:
 
