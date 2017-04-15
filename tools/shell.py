@@ -2609,7 +2609,7 @@ Enter SQL statements terminated with a ";"
            SQLITE_SEQUENCE""".split()
 
     _sqlite_functions="""abs( changes() char( coalesce( glob( ifnull( hex( instr(
-           last_insert_rowid() length( like( likelihood(
+           last_insert_rowid() length( like( likelihood( likely(
            load_extension( lower( ltrim( max( min( nullif( printf(
            quote( random() randomblob( replace( round( rtrim( soundex(
            sqlite_compileoption_get( sqlite_compileoption_used(
