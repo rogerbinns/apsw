@@ -2,6 +2,12 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.18.0-r1
+=========
+
+Updated completions in shell (eg added pragmas).
+
+
 3.17.0-r1
 =========
 
