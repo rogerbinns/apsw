@@ -7,8 +7,8 @@ Extensions
 
 SQLite includes a number of extensions providing additional
 functionality.  All extensions are disabled by default and you need to
-take steps to have them available at compilation time, to enable them
-and then to use them.
+:ref:`take steps <setup_build_flags>` to have them available at compilation
+time, to enable them and then to use them.
 
 .. _ext-fts3:
 
@@ -42,6 +42,22 @@ interface, in particular enabling you do sorting and regular
 expressions in a locale aware way.  The `documentation
 <https://sqlite.org/src/finfo?name=ext/icu/README.txt>`__
 shows how to use it.
+
+.. _ext-json1:
+
+JSON1
+=====
+
+`Provides functions <https://www.sqlite.org/json1.html>`__ for managing `JSON
+<https://en.wikipedia.org/wiki/JSON>`__ data stored in SQLite.
+
+.. _ext-rbu:
+
+RBU
+===
+
+Provides `resumable bulk update <https://www.sqlite.org/rbu.html>`__ intended for
+use with large SQLite databases on low power devices at the edge of a network.
 
 .. _ext-rtree:
 

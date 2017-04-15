@@ -167,7 +167,8 @@ need to give the flag once and giving a comma seperated list.  For example:
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | build/build_ext flag                   | Result                                                                               |
 +========================================+======================================================================================+
-| | :option:`--enable-all-extensions`    | Enables the STAT4, FTS3/4, RTree, and ICU extensions if *icu-config* is on your path |
+| | :option:`--enable-all-extensions`    | Enables the STAT4, FTS3/4/5, RTree, JSON1, RBU, and ICU extensions if *icu-config*   |
+|                                        | is on your path                                                                      |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--enable=fts3`              | Enables the :ref:`full text search extension <ext-fts3>`.                            |
 | | :option:`--enable=fts4`              | This flag only helps when using the amalgamation. If not using the                   |
@@ -179,6 +180,16 @@ need to give the flag once and giving a comma seperated list.  For example:
 | | :option:`--enable=rtree`             | Enables the :ref:`spatial table extension <ext-rtree>`.                              |
 |                                        | This flag only helps when using the amalgamation. If not using the                   |
 |                                        | amalgamation then you need to seperately ensure rtree is enabled in the SQLite       |
+|                                        | install.                                                                             |
++----------------------------------------+--------------------------------------------------------------------------------------+
+| | :option:`--enable=json1`             | Enables the :ref:`JSON1 extension <ext-json1>`.                                      |
+|                                        | This flag only helps when using the amalgamation. If not using the                   |
+|                                        | amalgamation then you need to seperately ensure json1 is enabled in the SQLite       |
+|                                        | install.                                                                             |
++----------------------------------------+--------------------------------------------------------------------------------------+
+| | :option:`--enable=rbu`               | Enables the :ref:`reumable bulk update extension <ext-rbu>`.                         |
+|                                        | This flag only helps when using the amalgamation. If not using the                   |
+|                                        | amalgamation then you need to seperately ensure rbu is enabled in the SQLite         |
 |                                        | install.                                                                             |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--enable=icu`               | Enables the :ref:`International Components for Unicode extension <ext-icu>`.         |
