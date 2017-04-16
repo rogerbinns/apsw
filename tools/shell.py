@@ -2653,6 +2653,7 @@ Enter SQL statements terminated with a ";"
               "locking_mode=": ("NORMAL", "EXCLUSIVE"),
               "max_page_count=": None,
               "mmap_size=": None,
+              "optimize(": None,
               "page_count;": None,
               "page_size=": None,
               "query_only=": _pragmas_bool,
