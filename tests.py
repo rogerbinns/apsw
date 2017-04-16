@@ -314,7 +314,8 @@ class APSW(unittest.TestCase):
         'wal_autocheckpoint': 1,
         'setwalhook': 1,
         'readonly': 1,
-        'db_filename': 1
+        'db_filename': 1,
+        'set_last_insert_rowid': 1,
         }
 
     cursor_nargs={
@@ -1503,6 +1504,16 @@ class APSW(unittest.TestCase):
         v=2**40
         c.execute("insert into foo values(?)", (v,))
         self.assertEqual(v, self.db.last_insert_rowid())
+        # try setting it
+        self.assertRaises(TypeError, self.db.set_last_insert_rowid,)
+        self.assertRaises(TypeError, self.db.set_last_insert_rowid, "3")
+        self.assertRaises(TypeError, self.db.set_last_insert_rowid, "3", 3)
+        self.assertRaises(OverflowError, self.db.set_last_insert_rowid, 2**40*2**40)
+        for v in -20, 0, 20, 2**32-1, -2**32-1, 2**60, -2**60:
+            c.execute("insert into foo values(?)", (v-3,))
+            self.assertNotEqual(v, self.db.last_insert_rowid())
+            self.db.set_last_insert_rowid(v)
+            self.assertEqual(v, self.db.last_insert_rowid())
 
     def testComplete(self):
         "Completeness of SQL statement checking"

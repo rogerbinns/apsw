@@ -806,6 +806,32 @@ Connection_last_insert_rowid(Connection *self)
   return PyLong_FromLongLong(sqlite3_last_insert_rowid(self->db));
 }
 
+/** .. method:: set_last_insert_rowid(int)
+
+  Sets the value calls to :meth:`last_insert_rowid` will return.
+
+  -* sqlite3_set_last_insert_rowid
+*/
+static PyObject *
+Connection_set_last_insert_rowid(Connection *self, PyObject *o)
+{
+  sqlite3_int64 rowid;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self,NULL);
+
+  if (!PyIntLong_Check(o))
+    return PyErr_Format(PyExc_TypeError, "rowid should be 64bit number");
+
+  rowid=PyIntLong_AsLongLong(o);
+  if(PyErr_Occurred())
+    return NULL;
+
+  PYSQLITE_VOID_CALL(sqlite3_set_last_insert_rowid(self->db, rowid));
+
+  Py_RETURN_NONE;
+}
+
 
 /** .. method:: interrupt()
 
@@ -3353,6 +3379,8 @@ static PyMethodDef Connection_methods[] = {
    "Creates a collation function"},
   {"last_insert_rowid", (PyCFunction)Connection_last_insert_rowid, METH_NOARGS,
    "Returns rowid for last insert"},
+  {"set_last_insert_rowid", (PyCFunction)Connection_set_last_insert_rowid, METH_O,
+   "Sets rowid returned for for last insert_rowid"},
   {"collationneeded", (PyCFunction)Connection_collationneeded, METH_O,
    "Sets collation needed callback"},
   {"setauthorizer", (PyCFunction)Connection_setauthorizer, METH_O,

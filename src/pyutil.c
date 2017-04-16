@@ -88,11 +88,13 @@ typedef int Py_ssize_t;
 #define PyBytesObject             PyStringObject
 #define PyIntLong_Check(x)        (PyInt_Check((x)) || PyLong_Check((x)))
 #define PyIntLong_AsLong(x)       ( (PyInt_Check((x))) ? ( PyInt_AsLong((x)) ) : ( (PyLong_AsLong((x)))))
+#define PyIntLong_AsLongLong(x)   ( (PyInt_Check((x))) ? ( PyInt_AsLong((x)) ) : ( (PyLong_AsLongLong((x)))))
 #define PyBytes_FromFormat        PyString_FromFormat
 #else
 #define PyIntLong_Check           PyLong_Check
 #define PyIntLong_AsLong          PyLong_AsLong
 #define PyInt_FromLong            PyLong_FromLong
+#define PyIntLong_AsLongLong      PyLong_AsLongLong
 #define PyObject_Unicode          PyObject_Str
 #endif
 

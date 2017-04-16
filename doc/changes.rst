@@ -10,6 +10,8 @@ Updated completions in shell (eg added pragmas).
 `Resumable Bulk Update (RBU) <https://www.sqlite.org/rbu.html>`__
 extension is now built by default for :doc:`--enable-all-extensions <build>`.
 
+Added :meth:`Connection.set_last_insert_rowid`.
+
 3.17.0-r1
 =========
 
