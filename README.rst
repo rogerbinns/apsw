@@ -1,5 +1,9 @@
 APSW stands for Another Python SQLite Wrapper.
 
+.. image:: https://pypip.in/version/apsw/badge.svg?style=flat
+    :target: https://pypi.python.org/pypi/apsw/
+    :alt: Latest Version
+
 About
 =====
 
