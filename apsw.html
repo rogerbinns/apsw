@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>APSW Module &#8212; APSW 3.17.0-r1 documentation</title>
+    <title>APSW Module &#8212; APSW 3.18.0-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,10 +14,11 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.17.0-r1',
+        VERSION:     '3.18.0-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -26,7 +27,6 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.17.0-r1 documentation" href="index.html" />
     <link rel="next" title="Connections to a database" href="connection.html" />
     <link rel="prev" title="Extensions" href="extensions.html" />
  
@@ -53,7 +53,7 @@
         <li class="right" >
           <a href="extensions.html" title="Extensions"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.17.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.18.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -82,7 +82,7 @@ library is shared and has been updated.  Call
 
 <dl class="method">
 <dt id="apsw.apswversion">
-<code class="descname">apswversion</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; string<a class="headerlink" href="#apsw.apswversion" title="Permalink to this definition">¶</a></dt>
+<code class="descname">apswversion</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; string<a class="headerlink" href="#apsw.apswversion" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the APSW version.</p>
 </dd></dl>
 
@@ -99,7 +99,7 @@ will be something like this:</p>
 
 <span class="target" id="index-1"></span><dl class="method">
 <dt id="apsw.complete">
-<code class="descname">complete</code><span class="sig-paren">(</span><em>statement</em><span class="sig-paren">)</span> &rarr; bool<a class="headerlink" href="#apsw.complete" title="Permalink to this definition">¶</a></dt>
+<code class="descname">complete</code><span class="sig-paren">(</span><em>statement</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#apsw.complete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns True if the input string comprises one or more complete SQL
 statements by looking for an unquoted trailing semi-colon.</p>
 <p>An example use would be if you were prompting the user for SQL
@@ -169,7 +169,7 @@ recommended</span></a> that you use this.</p>
 
 <dl class="method">
 <dt id="apsw.exceptionfor">
-<code class="descname">exceptionfor</code><span class="sig-paren">(</span><em>int</em><span class="sig-paren">)</span> &rarr; Exception<a class="headerlink" href="#apsw.exceptionfor" title="Permalink to this definition">¶</a></dt>
+<code class="descname">exceptionfor</code><span class="sig-paren">(</span><em>int</em><span class="sig-paren">)</span> &#x2192; Exception<a class="headerlink" href="#apsw.exceptionfor" title="Permalink to this definition">¶</a></dt>
 <dd><p>If you would like to raise an exception that corresponds to a
 particular SQLite <a class="reference external" href="https://sqlite.org/c3ref/c_abort.html">error code</a> then call this function.
 It also understands <a class="reference external" href="https://sqlite.org/c3ref/c_ioerr_access.html">extended error codes</a>.</p>
@@ -219,7 +219,7 @@ checking as part of your test suite.</p>
 
 <dl class="method">
 <dt id="apsw.format_sql_value">
-<code class="descname">format_sql_value</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span> &rarr; string<a class="headerlink" href="#apsw.format_sql_value" title="Permalink to this definition">¶</a></dt>
+<code class="descname">format_sql_value</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span> &#x2192; string<a class="headerlink" href="#apsw.format_sql_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a Python string (unicode) representing the supplied value in
 SQL syntax.  Python 2 note: You must supply unicode strings not
 plain strings.</p>
@@ -254,7 +254,7 @@ in sys.argv[1:] and exits Python when done.</p>
 
 <span class="target" id="index-6"></span><dl class="method">
 <dt id="apsw.memoryhighwater">
-<code class="descname">memoryhighwater</code><span class="sig-paren">(</span><em>reset=False</em><span class="sig-paren">)</span> &rarr; int<a class="headerlink" href="#apsw.memoryhighwater" title="Permalink to this definition">¶</a></dt>
+<code class="descname">memoryhighwater</code><span class="sig-paren">(</span><em>reset=False</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#apsw.memoryhighwater" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the maximum amount of memory SQLite has used.  If <em>reset</em> is
 True then the high water mark is reset to the current value.</p>
 <div class="admonition seealso">
@@ -266,7 +266,7 @@ True then the high water mark is reset to the current value.</p>
 
 <span class="target" id="index-7"></span><dl class="method">
 <dt id="apsw.memoryused">
-<code class="descname">memoryused</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; int<a class="headerlink" href="#apsw.memoryused" title="Permalink to this definition">¶</a></dt>
+<code class="descname">memoryused</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#apsw.memoryused" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the amount of memory SQLite is currently using.</p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
@@ -277,7 +277,7 @@ True then the high water mark is reset to the current value.</p>
 
 <span class="target" id="index-8"></span><dl class="method">
 <dt id="apsw.randomness">
-<code class="descname">randomness</code><span class="sig-paren">(</span><em>bytes</em><span class="sig-paren">)</span> &rarr; data<a class="headerlink" href="#apsw.randomness" title="Permalink to this definition">¶</a></dt>
+<code class="descname">randomness</code><span class="sig-paren">(</span><em>bytes</em><span class="sig-paren">)</span> &#x2192; data<a class="headerlink" href="#apsw.randomness" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets random data from SQLite&#8217;s random number generator.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -294,7 +294,7 @@ True then the high water mark is reset to the current value.</p>
 
 <span class="target" id="index-9"></span><dl class="method">
 <dt id="apsw.releasememory">
-<code class="descname">releasememory</code><span class="sig-paren">(</span><em>bytes</em><span class="sig-paren">)</span> &rarr; int<a class="headerlink" href="#apsw.releasememory" title="Permalink to this definition">¶</a></dt>
+<code class="descname">releasememory</code><span class="sig-paren">(</span><em>bytes</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#apsw.releasememory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Requests SQLite try to free <em>bytes</em> bytes of memory.  Returns how
 many bytes were freed.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/release_memory.html">sqlite3_release_memory</a></p>
@@ -313,7 +313,7 @@ etc have been closed, deleted and garbage collected.</p>
 
 <span class="target" id="index-11"></span><dl class="method">
 <dt id="apsw.softheaplimit">
-<code class="descname">softheaplimit</code><span class="sig-paren">(</span><em>bytes</em><span class="sig-paren">)</span> &rarr; oldlimit<a class="headerlink" href="#apsw.softheaplimit" title="Permalink to this definition">¶</a></dt>
+<code class="descname">softheaplimit</code><span class="sig-paren">(</span><em>bytes</em><span class="sig-paren">)</span> &#x2192; oldlimit<a class="headerlink" href="#apsw.softheaplimit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Requests SQLite try to keep memory usage below <em>bytes</em> bytes and
 returns the previous setting.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/soft_heap_limit64.html">sqlite3_soft_heap_limit64</a></p>
@@ -321,7 +321,7 @@ returns the previous setting.</p>
 
 <span class="target" id="index-12"></span><dl class="method">
 <dt id="apsw.sqlite3_sourceid">
-<code class="descname">sqlite3_sourceid</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; string<a class="headerlink" href="#apsw.sqlite3_sourceid" title="Permalink to this definition">¶</a></dt>
+<code class="descname">sqlite3_sourceid</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; string<a class="headerlink" href="#apsw.sqlite3_sourceid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the exact checkin information for the SQLite 3 source
 being used.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/libversion.html">sqlite3_sourceid</a></p>
@@ -329,7 +329,7 @@ being used.</p>
 
 <span class="target" id="index-13"></span><dl class="method">
 <dt id="apsw.sqlitelibversion">
-<code class="descname">sqlitelibversion</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; string<a class="headerlink" href="#apsw.sqlitelibversion" title="Permalink to this definition">¶</a></dt>
+<code class="descname">sqlitelibversion</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; string<a class="headerlink" href="#apsw.sqlitelibversion" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the version of the SQLite library.  This value is queried at
 run time from the library so if you use shared libraries it will be
 the version in the shared library.</p>
@@ -487,7 +487,7 @@ modules etc. For example:</p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/apsw.txt"
+      <li><a href="_sources/apsw.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -520,14 +520,14 @@ modules etc. For example:</p>
         <li class="right" >
           <a href="extensions.html" title="Extensions"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.17.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.18.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
-        &#169; <a href="copyright.html">Copyright</a> 2004-2016, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Feb 19, 2017.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+        &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Apr 28, 2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

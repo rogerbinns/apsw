@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Virtual File System (VFS) &#8212; APSW 3.17.0-r1 documentation</title>
+    <title>Virtual File System (VFS) &#8212; APSW 3.18.0-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,10 +14,11 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.17.0-r1',
+        VERSION:     '3.18.0-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -26,7 +27,6 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.17.0-r1 documentation" href="index.html" />
     <link rel="next" title="Shell" href="shell.html" />
     <link rel="prev" title="Virtual Tables" href="vtable.html" />
  
@@ -53,7 +53,7 @@
         <li class="right" >
           <a href="vtable.html" title="Virtual Tables"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.17.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.18.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -146,33 +146,33 @@ across.</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><code class="docutils literal"><span class="pre">cursor.execute(&quot;update</span> <span class="pre">table</span> <span class="pre">set</span> <span class="pre">foo=3&quot;)</span></code></td>
-<td>&nbsp;</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
+<td>&#160;</td>
 </tr>
-<tr class="row-odd"><td>&nbsp;</td>
+<tr class="row-odd"><td>&#160;</td>
 <td>SQLite starts executing query</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
-<tr class="row-even"><td>&nbsp;</td>
-<td>&nbsp;</td>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
 <td>Your VFS routines are called</td>
 </tr>
-<tr class="row-odd"><td>&nbsp;</td>
-<td>&nbsp;</td>
+<tr class="row-odd"><td>&#160;</td>
+<td>&#160;</td>
 <td>Your xWrite divides by zero</td>
 </tr>
-<tr class="row-even"><td>&nbsp;</td>
-<td>&nbsp;</td>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
 <td><a class="reference internal" href="#apsw.VFSFile.excepthook" title="apsw.VFSFile.excepthook"><code class="xref py py-meth docutils literal"><span class="pre">VFSFile.excepthook()</span></code></a> is called with
 ZeroDivision exception</td>
 </tr>
-<tr class="row-odd"><td>&nbsp;</td>
+<tr class="row-odd"><td>&#160;</td>
 <td><code class="xref py py-const docutils literal"><span class="pre">SQLITE_ERROR</span></code> (closest
 matching SQLite error code) is
 returned to SQLite by APSW</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
-<tr class="row-even"><td>&nbsp;</td>
+<tr class="row-even"><td>&#160;</td>
 <td>SQLite error handling and
 recovery operates which calls
 more VFS routines.</td>
@@ -181,14 +181,14 @@ exceptions in these routines will result in
 <a class="reference internal" href="#apsw.VFSFile.excepthook" title="apsw.VFSFile.excepthook"><code class="xref py py-meth docutils literal"><span class="pre">VFSFile.excepthook()</span></code></a> being called with
 them.</td>
 </tr>
-<tr class="row-odd"><td>&nbsp;</td>
+<tr class="row-odd"><td>&#160;</td>
 <td>SQLite returns
 <code class="xref py py-const docutils literal"><span class="pre">SQLITE_FULL</span></code> to APSW</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
 </tr>
 <tr class="row-even"><td>APSW returns <a class="reference internal" href="exceptions.html#apsw.FullError" title="apsw.FullError"><code class="xref py py-class docutils literal"><span class="pre">apsw.FullError</span></code></a></td>
-<td>&nbsp;</td>
-<td>&nbsp;</td>
+<td>&#160;</td>
+<td>&#160;</td>
 </tr>
 </tbody>
 </table>
@@ -270,7 +270,7 @@ unavailable. It is safe to call this routine multiple times.</p>
 
 <dl class="method">
 <dt id="apsw.VFS.xAccess">
-<code class="descclassname">VFS.</code><code class="descname">xAccess</code><span class="sig-paren">(</span><em>pathname</em>, <em>flags</em><span class="sig-paren">)</span> &rarr; bool<a class="headerlink" href="#apsw.VFS.xAccess" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">VFS.</code><code class="descname">xAccess</code><span class="sig-paren">(</span><em>pathname</em>, <em>flags</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#apsw.VFS.xAccess" title="Permalink to this definition">¶</a></dt>
 <dd><p>SQLite wants to check access permissions.  Return True or False
 accordingly.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -289,7 +289,7 @@ accordingly.</p>
 
 <dl class="method">
 <dt id="apsw.VFS.xCurrentTime">
-<code class="descclassname">VFS.</code><code class="descname">xCurrentTime</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; float<a class="headerlink" href="#apsw.VFS.xCurrentTime" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">VFS.</code><code class="descname">xCurrentTime</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; float<a class="headerlink" href="#apsw.VFS.xCurrentTime" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the <a class="reference external" href="http://en.wikipedia.org/wiki/Julian_day">Julian Day Number</a> as a floating point
 number where the integer portion is the day and the fractional part
 is the time. Do not adjust for timezone (ie use <a class="reference external" href="http://en.wikipedia.org/wiki/Universal_Time">UTC</a>).</p>
@@ -355,7 +355,7 @@ this:</p>
 
 <dl class="method">
 <dt id="apsw.VFS.xDlError">
-<code class="descclassname">VFS.</code><code class="descname">xDlError</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; string<a class="headerlink" href="#apsw.VFS.xDlError" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">VFS.</code><code class="descname">xDlError</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; string<a class="headerlink" href="#apsw.VFS.xDlError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an error string describing the last error of
 <a class="reference internal" href="#apsw.VFS.xDlOpen" title="apsw.VFS.xDlOpen"><code class="xref py py-meth docutils literal"><span class="pre">xDlOpen()</span></code></a> or <a class="reference internal" href="#apsw.VFS.xDlSym" title="apsw.VFS.xDlSym"><code class="xref py py-meth docutils literal"><span class="pre">xDlSym()</span></code></a> (ie they returned
 zero/NULL). If you do not supply this routine then SQLite provides
@@ -368,7 +368,7 @@ message will be used.</p>
 
 <dl class="method">
 <dt id="apsw.VFS.xDlOpen">
-<code class="descclassname">VFS.</code><code class="descname">xDlOpen</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span> &rarr; number<a class="headerlink" href="#apsw.VFS.xDlOpen" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">VFS.</code><code class="descname">xDlOpen</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span> &#x2192; number<a class="headerlink" href="#apsw.VFS.xDlOpen" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the shared library. You should return a number which will be
 treated as a void pointer at the C level. On error you should
 return 0 (NULL). The number is passed as is to
@@ -383,7 +383,7 @@ array). You can use ctypes to load a library:</p>
 
 <dl class="method">
 <dt id="apsw.VFS.xDlSym">
-<code class="descclassname">VFS.</code><code class="descname">xDlSym</code><span class="sig-paren">(</span><em>handle</em>, <em>symbol</em><span class="sig-paren">)</span> &rarr; address<a class="headerlink" href="#apsw.VFS.xDlSym" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">VFS.</code><code class="descname">xDlSym</code><span class="sig-paren">(</span><em>handle</em>, <em>symbol</em><span class="sig-paren">)</span> &#x2192; address<a class="headerlink" href="#apsw.VFS.xDlSym" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the address of the named symbol which will be called by
 SQLite. On error you should return 0 (NULL). You can use ctypes:</p>
 <div class="highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">xDlSym</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
@@ -410,7 +410,7 @@ SQLite. On error you should return 0 (NULL). You can use ctypes:</p>
 
 <dl class="method">
 <dt id="apsw.VFS.xFullPathname">
-<code class="descclassname">VFS.</code><code class="descname">xFullPathname</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span> &rarr; string<a class="headerlink" href="#apsw.VFS.xFullPathname" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">VFS.</code><code class="descname">xFullPathname</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span> &#x2192; string<a class="headerlink" href="#apsw.VFS.xFullPathname" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the absolute pathname for name.  You can use <code class="docutils literal"><span class="pre">os.path.abspath</span></code> to do this.</p>
 </dd></dl>
 
@@ -428,14 +428,14 @@ earlier versions.  You will need to rewrite earlier implementations.</p>
 
 <dl class="method">
 <dt id="apsw.VFS.xGetSystemCall">
-<code class="descclassname">VFS.</code><code class="descname">xGetSystemCall</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span> &rarr; int<a class="headerlink" href="#apsw.VFS.xGetSystemCall" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">VFS.</code><code class="descname">xGetSystemCall</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#apsw.VFS.xGetSystemCall" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a pointer for the current method implementing the named
 system call.  Return None if the call does not exist.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="apsw.VFS.xNextSystemCall">
-<code class="descclassname">VFS.</code><code class="descname">xNextSystemCall</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span> &rarr; String or None<a class="headerlink" href="#apsw.VFS.xNextSystemCall" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">VFS.</code><code class="descname">xNextSystemCall</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span> &#x2192; String or None<a class="headerlink" href="#apsw.VFS.xNextSystemCall" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method is repeatedly called to iterate over all of the system
 calls in the vfs.  When called with None you should return the
 name of the first system call.  In subsequent calls return the
@@ -452,7 +452,7 @@ repeatedly doing it.</p>
 
 <dl class="method">
 <dt id="apsw.VFS.xOpen">
-<code class="descclassname">VFS.</code><code class="descname">xOpen</code><span class="sig-paren">(</span><em>name</em>, <em>flags</em><span class="sig-paren">)</span> &rarr; VFSFile or similar object<a class="headerlink" href="#apsw.VFS.xOpen" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">VFS.</code><code class="descname">xOpen</code><span class="sig-paren">(</span><em>name</em>, <em>flags</em><span class="sig-paren">)</span> &#x2192; VFSFile or similar object<a class="headerlink" href="#apsw.VFS.xOpen" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method should return a new file object based on name.  You
 can return a <a class="reference internal" href="#apsw.VFSFile" title="apsw.VFSFile"><code class="xref py py-class docutils literal"><span class="pre">VFSFile</span></code></a> from a completely different VFS.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -480,7 +480,7 @@ set.</li>
 
 <dl class="method">
 <dt id="apsw.VFS.xRandomness">
-<code class="descclassname">VFS.</code><code class="descname">xRandomness</code><span class="sig-paren">(</span><em>numbytes</em><span class="sig-paren">)</span> &rarr; bytes<a class="headerlink" href="#apsw.VFS.xRandomness" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">VFS.</code><code class="descname">xRandomness</code><span class="sig-paren">(</span><em>numbytes</em><span class="sig-paren">)</span> &#x2192; bytes<a class="headerlink" href="#apsw.VFS.xRandomness" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method is called once when SQLite needs to seed the random
 number generator. It is called on the default VFS only. It is not
 called again, even across <a class="reference internal" href="apsw.html#apsw.shutdown" title="apsw.shutdown"><code class="xref py py-meth docutils literal"><span class="pre">apsw.shutdown()</span></code></a> calls.  You can
@@ -498,7 +498,7 @@ you return more then the surplus is ignored.</p>
 
 <dl class="method">
 <dt id="apsw.VFS.xSetSystemCall">
-<code class="descclassname">VFS.</code><code class="descname">xSetSystemCall</code><span class="sig-paren">(</span><em>name</em>, <em>pointer</em><span class="sig-paren">)</span> &rarr; bool<a class="headerlink" href="#apsw.VFS.xSetSystemCall" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">VFS.</code><code class="descname">xSetSystemCall</code><span class="sig-paren">(</span><em>name</em>, <em>pointer</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#apsw.VFS.xSetSystemCall" title="Permalink to this definition">¶</a></dt>
 <dd><p>Change a system call used by the VFS.  This is useful for testing
 and some other scenarios such as sandboxing.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -531,7 +531,7 @@ call is not known.</td>
 
 <dl class="method">
 <dt id="apsw.VFS.xSleep">
-<code class="descclassname">VFS.</code><code class="descname">xSleep</code><span class="sig-paren">(</span><em>microseconds</em><span class="sig-paren">)</span> &rarr; integer<a class="headerlink" href="#apsw.VFS.xSleep" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">VFS.</code><code class="descname">xSleep</code><span class="sig-paren">(</span><em>microseconds</em><span class="sig-paren">)</span> &#x2192; integer<a class="headerlink" href="#apsw.VFS.xSleep" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pause exection of the thread for at least the specified number of
 microseconds (millionths of a second).  This routine is typically called from the busy handler.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -631,7 +631,7 @@ times.</p>
 
 <dl class="method">
 <dt id="apsw.VFSFile.xDeviceCharacteristics">
-<code class="descclassname">VFSFile.</code><code class="descname">xDeviceCharacteristics</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; int<a class="headerlink" href="#apsw.VFSFile.xDeviceCharacteristics" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">VFSFile.</code><code class="descname">xDeviceCharacteristics</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#apsw.VFSFile.xDeviceCharacteristics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <a class="reference external" href="https://sqlite.org/c3ref/c_iocap_atomic.html">I/O capabilities</a> (bitwise or of
 appropriate values). If you do not implement the function or have an
 error then 0 (the SQLite default) is returned.</p>
@@ -639,7 +639,7 @@ error then 0 (the SQLite default) is returned.</p>
 
 <dl class="method">
 <dt id="apsw.VFSFile.xFileControl">
-<code class="descclassname">VFSFile.</code><code class="descname">xFileControl</code><span class="sig-paren">(</span><em>op</em>, <em>ptr</em><span class="sig-paren">)</span> &rarr; bool<a class="headerlink" href="#apsw.VFSFile.xFileControl" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">VFSFile.</code><code class="descname">xFileControl</code><span class="sig-paren">(</span><em>op</em>, <em>ptr</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#apsw.VFSFile.xFileControl" title="Permalink to this definition">¶</a></dt>
 <dd><p>Receives <a class="reference external" href="https://sqlite.org/c3ref/file_control.html">file control</a> request typically
 issued by <a class="reference internal" href="connection.html#apsw.Connection.filecontrol" title="apsw.Connection.filecontrol"><code class="xref py py-meth docutils literal"><span class="pre">Connection.filecontrol()</span></code></a>.  See
 <a class="reference internal" href="connection.html#apsw.Connection.filecontrol" title="apsw.Connection.filecontrol"><code class="xref py py-meth docutils literal"><span class="pre">Connection.filecontrol()</span></code></a> for an example of how to pass a
@@ -679,7 +679,7 @@ any unrecognised codes through to your super class.  For example:</p>
 
 <dl class="method">
 <dt id="apsw.VFSFile.xFileSize">
-<code class="descclassname">VFSFile.</code><code class="descname">xFileSize</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; int<a class="headerlink" href="#apsw.VFSFile.xFileSize" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">VFSFile.</code><code class="descname">xFileSize</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#apsw.VFSFile.xFileSize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the size of the file in bytes.  Remember that file sizes are
 64 bit quantities even on 32 bit operating systems.</p>
 </dd></dl>
@@ -695,7 +695,7 @@ someone else has locked it, then raise <a class="reference internal" href="excep
 
 <dl class="method">
 <dt id="apsw.VFSFile.xRead">
-<code class="descclassname">VFSFile.</code><code class="descname">xRead</code><span class="sig-paren">(</span><em>amount</em>, <em>offset</em><span class="sig-paren">)</span> &rarr; bytes<a class="headerlink" href="#apsw.VFSFile.xRead" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">VFSFile.</code><code class="descname">xRead</code><span class="sig-paren">(</span><em>amount</em>, <em>offset</em><span class="sig-paren">)</span> &#x2192; bytes<a class="headerlink" href="#apsw.VFSFile.xRead" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read the specified <em>amount</em> of data starting at <em>offset</em>. You
 should make every effort to read all the data requested, or return
 an error. If you have the file open for non-blocking I/O or if
@@ -722,7 +722,7 @@ reads to be a fatal error.</p>
 
 <dl class="method">
 <dt id="apsw.VFSFile.xSectorSize">
-<code class="descclassname">VFSFile.</code><code class="descname">xSectorSize</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; int<a class="headerlink" href="#apsw.VFSFile.xSectorSize" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">VFSFile.</code><code class="descname">xSectorSize</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#apsw.VFSFile.xSectorSize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the native underlying sector size. SQLite uses the value
 returned in determining the default database page size. If you do
 not implement the function or have an error then 4096 (the SQLite
@@ -793,13 +793,13 @@ which knows how to get the name back out.</p>
 
 <dl class="method">
 <dt id="apsw.URIFilename.filename">
-<code class="descclassname">URIFilename.</code><code class="descname">filename</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; str<a class="headerlink" href="#apsw.URIFilename.filename" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">URIFilename.</code><code class="descname">filename</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; str<a class="headerlink" href="#apsw.URIFilename.filename" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the filename.</p>
 </dd></dl>
 
 <span class="target" id="index-2"></span><dl class="method">
 <dt id="apsw.URIFilename.uri_boolean">
-<code class="descclassname">URIFilename.</code><code class="descname">uri_boolean</code><span class="sig-paren">(</span><em>name</em>, <em>default</em><span class="sig-paren">)</span> &rarr; bool<a class="headerlink" href="#apsw.URIFilename.uri_boolean" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">URIFilename.</code><code class="descname">uri_boolean</code><span class="sig-paren">(</span><em>name</em>, <em>default</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#apsw.URIFilename.uri_boolean" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the boolean value for parameter <cite>name</cite> or <cite>default</cite> if not
 present.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/uri_boolean.html">sqlite3_uri_boolean</a></p>
@@ -807,7 +807,7 @@ present.</p>
 
 <span class="target" id="index-3"></span><dl class="method">
 <dt id="apsw.URIFilename.uri_int">
-<code class="descclassname">URIFilename.</code><code class="descname">uri_int</code><span class="sig-paren">(</span><em>name</em>, <em>default</em><span class="sig-paren">)</span> &rarr; int<a class="headerlink" href="#apsw.URIFilename.uri_int" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">URIFilename.</code><code class="descname">uri_int</code><span class="sig-paren">(</span><em>name</em>, <em>default</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#apsw.URIFilename.uri_int" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the integer value for parameter <cite>name</cite> or <cite>default</cite> if not
 present.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/uri_boolean.html">sqlite3_uri_int64</a></p>
@@ -815,7 +815,7 @@ present.</p>
 
 <span class="target" id="index-4"></span><dl class="method">
 <dt id="apsw.URIFilename.uri_parameter">
-<code class="descclassname">URIFilename.</code><code class="descname">uri_parameter</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span> &rarr; str<a class="headerlink" href="#apsw.URIFilename.uri_parameter" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">URIFilename.</code><code class="descname">uri_parameter</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span> &#x2192; str<a class="headerlink" href="#apsw.URIFilename.uri_parameter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the value of parameter <cite>name</cite> or None.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/uri_boolean.html">sqlite3_uri_parameter</a></p>
 </dd></dl>
@@ -849,7 +849,7 @@ present.</p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/vfs.txt"
+      <li><a href="_sources/vfs.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -882,14 +882,14 @@ present.</p>
         <li class="right" >
           <a href="vtable.html" title="Virtual Tables"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.17.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.18.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
-        &#169; <a href="copyright.html">Copyright</a> 2004-2016, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Feb 19, 2017.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+        &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Apr 28, 2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

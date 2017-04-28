@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Example &#8212; APSW 3.17.0-r1 documentation</title>
+    <title>Example &#8212; APSW 3.18.0-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,10 +14,11 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.17.0-r1',
+        VERSION:     '3.18.0-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -26,7 +27,6 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.17.0-r1 documentation" href="index.html" />
     <link rel="next" title="Download" href="download.html" />
     <link rel="prev" title="Tips" href="tips.html" />
  
@@ -53,7 +53,7 @@
         <li class="right" >
           <a href="tips.html" title="Tips"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.17.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.18.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -81,9 +81,9 @@ so you can see what gets printed when you run the code.</p>
 </pre></div>
 </div>
 <div class="highlight-text"><div class="highlight"><pre>|       Using APSW file /space/apsw/apsw.so
-|          APSW version 3.17.0-r1
-|    SQLite lib version 3.17.0
-| SQLite header version 3017000
+|          APSW version 3.18.0-r1
+|    SQLite lib version 3.18.0
+| SQLite header version 3018000
 </pre></div>
 </div>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">###</span>
@@ -414,7 +414,8 @@ so you can see what gets printed when you run the code.</p>
 </pre></div>
 </div>
 <div class="highlight-text"><div class="highlight"><pre>| in commit hook
-| commits okay at this time
+| no commits out of hours
+| commit was not allowed
 </pre></div>
 </div>
 <div class="highlight-python" id="example-updatehook"><div class="highlight"><pre><span class="c">###</span>
@@ -537,8 +538,8 @@ so you can see what gets printed when you run the code.</p>
     <span class="k">print</span> <span class="n">size</span><span class="p">,</span><span class="nb">file</span><span class="p">,</span><span class="n">directory</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>| 6081640 apsw.so /space/apsw
-| 470688 _mlt.x86_64-linux-gnu.so /usr/lib/python2.7/dist-packages
+<div class="highlight-text"><div class="highlight"><pre>| 6107128 apsw.so /space/apsw
+| 461120 _mlt.x86_64-linux-gnu.so /usr/lib/python2.7/dist-packages
 | 404584 _bsddb.x86_64-linux-gnu_d.so /usr/lib/python2.7/lib-dynload
 </pre></div>
 </div>
@@ -549,7 +550,7 @@ so you can see what gets printed when you run the code.</p>
 </div>
 <div class="highlight-text"><div class="highlight"><pre>| 1447460998.61 sitecustomize.py /usr/lib/python2.7
 | 1447461008.17 blinker-1.3.egg-info /usr/lib/python2.7/dist-packages
-| 1447461008.63 pycparser-2.14.egg-info /usr/lib/python2.7/dist-packages
+| 1447461010.81 characteristic.py /usr/lib/python2.7/dist-packages
 </pre></div>
 </div>
 <div class="highlight-python" id="example-vfs"><div class="highlight"><pre><span class="c">###</span>
@@ -724,7 +725,7 @@ so you can see what gets printed when you run the code.</p>
 <span class="k">print</span> <span class="s">&quot;SQLite memory usage current </span><span class="si">%d</span><span class="s"> max </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">apsw</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_STATUS_MEMORY_USED</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>| SQLite memory usage current 498352 max 509336
+<div class="highlight-text"><div class="highlight"><pre>| SQLite memory usage current 493664 max 509776
 </pre></div>
 </div>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">###</span>
@@ -756,7 +757,7 @@ so you can see what gets printed when you run the code.</p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/example.txt"
+      <li><a href="_sources/example.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -789,14 +790,14 @@ so you can see what gets printed when you run the code.</p>
         <li class="right" >
           <a href="tips.html" title="Tips"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.17.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.18.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
-        &#169; <a href="copyright.html">Copyright</a> 2004-2016, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Feb 19, 2017.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+        &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Apr 28, 2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

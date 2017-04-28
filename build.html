@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Building &#8212; APSW 3.17.0-r1 documentation</title>
+    <title>Building &#8212; APSW 3.18.0-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,10 +14,11 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.17.0-r1',
+        VERSION:     '3.18.0-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -26,7 +27,6 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.17.0-r1 documentation" href="index.html" />
     <link rel="next" title="Extensions" href="extensions.html" />
     <link rel="prev" title="Download" href="download.html" />
  
@@ -53,7 +53,7 @@
         <li class="right" >
           <a href="download.html" title="Download"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.17.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.18.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -279,7 +279,8 @@ need to give the flag once and giving a comma seperated list.  For example:</p>
 <div class="line"><code class="xref std std-option docutils literal"><span class="pre">--enable-all-extensions</span></code></div>
 </div>
 </td>
-<td>Enables the STAT4, FTS3/4, RTree, and ICU extensions if <em>icu-config</em> is on your path</td>
+<td>Enables the STAT4, FTS3/4/5, RTree, JSON1, RBU, and ICU extensions if <em>icu-config</em>
+is on your path</td>
 </tr>
 <tr class="row-odd"><td><div class="first last line-block">
 <div class="line"><code class="xref std std-option docutils literal"><span class="pre">--enable=fts3</span></code></div>
@@ -300,6 +301,24 @@ legacy code (<cite>&#8211;enable-all-extensions</cite> turns it on).</td>
 <td>Enables the <a class="reference internal" href="extensions.html#ext-rtree"><span class="std std-ref">spatial table extension</span></a>.
 This flag only helps when using the amalgamation. If not using the
 amalgamation then you need to seperately ensure rtree is enabled in the SQLite
+install.</td>
+</tr>
+<tr class="row-odd"><td><div class="first last line-block">
+<div class="line"><code class="xref std std-option docutils literal"><span class="pre">--enable=json1</span></code></div>
+</div>
+</td>
+<td>Enables the <a class="reference internal" href="extensions.html#ext-json1"><span class="std std-ref">JSON1 extension</span></a>.
+This flag only helps when using the amalgamation. If not using the
+amalgamation then you need to seperately ensure json1 is enabled in the SQLite
+install.</td>
+</tr>
+<tr class="row-even"><td><div class="first last line-block">
+<div class="line"><code class="xref std std-option docutils literal"><span class="pre">--enable=rbu</span></code></div>
+</div>
+</td>
+<td>Enables the <a class="reference internal" href="extensions.html#ext-rbu"><span class="std std-ref">reumable bulk update extension</span></a>.
+This flag only helps when using the amalgamation. If not using the
+amalgamation then you need to seperately ensure rbu is enabled in the SQLite
 install.</td>
 </tr>
 <tr class="row-odd"><td><div class="first last line-block">
@@ -499,7 +518,7 @@ SQLite supported versions running the tests. See
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/build.txt"
+      <li><a href="_sources/build.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -532,14 +551,14 @@ SQLite supported versions running the tests. See
         <li class="right" >
           <a href="download.html" title="Download"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.17.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.18.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
-        &#169; <a href="copyright.html">Copyright</a> 2004-2016, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Feb 19, 2017.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+        &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Apr 28, 2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

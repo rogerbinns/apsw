@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Backup &#8212; APSW 3.17.0-r1 documentation</title>
+    <title>Backup &#8212; APSW 3.18.0-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,10 +14,11 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.17.0-r1',
+        VERSION:     '3.18.0-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -26,7 +27,6 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="APSW 3.17.0-r1 documentation" href="index.html" />
     <link rel="next" title="Virtual Tables" href="vtable.html" />
     <link rel="prev" title="Blob Input/Output" href="blob.html" />
  
@@ -53,7 +53,7 @@
         <li class="right" >
           <a href="blob.html" title="Blob Input/Output"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.17.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.18.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -108,7 +108,7 @@ round trip via SQL.  All pages are copied including free ones.</p>
 
 <dl class="method">
 <dt id="apsw.backup.__enter__">
-<code class="descclassname">backup.</code><code class="descname">__enter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; self<a class="headerlink" href="#apsw.backup.__enter__" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">backup.</code><code class="descname">__enter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; self<a class="headerlink" href="#apsw.backup.__enter__" title="Permalink to this definition">¶</a></dt>
 <dd><p>You can use the backup object as a <a class="reference external" href="http://docs.python.org/reference/datamodel.html#with-statement-context-managers">context manager</a>
 as defined in <span class="target" id="index-0"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-0343"><strong>PEP 0343</strong></a>.  The <a class="reference internal" href="#apsw.backup.__exit__" title="apsw.backup.__exit__"><code class="xref py py-meth docutils literal"><span class="pre">__exit__()</span></code></a> method ensures that backup
 is <a class="reference internal" href="#apsw.backup.finish" title="apsw.backup.finish"><code class="xref py py-meth docutils literal"><span class="pre">finished</span></code></a>.</p>
@@ -116,7 +116,7 @@ is <a class="reference internal" href="#apsw.backup.finish" title="apsw.backup.f
 
 <dl class="method">
 <dt id="apsw.backup.__exit__">
-<code class="descclassname">backup.</code><code class="descname">__exit__</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; False<a class="headerlink" href="#apsw.backup.__exit__" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">backup.</code><code class="descname">__exit__</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; False<a class="headerlink" href="#apsw.backup.__exit__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements context manager in conjunction with <a class="reference internal" href="#apsw.backup.__enter__" title="apsw.backup.__enter__"><code class="xref py py-meth docutils literal"><span class="pre">__enter__()</span></code></a> ensuring
 that the copy is <a class="reference internal" href="#apsw.backup.finish" title="apsw.backup.finish"><code class="xref py py-meth docutils literal"><span class="pre">finished</span></code></a>.</p>
 </dd></dl>
@@ -178,7 +178,7 @@ returned.</p>
 
 <span class="target" id="index-4"></span><dl class="method">
 <dt id="apsw.backup.step">
-<code class="descclassname">backup.</code><code class="descname">step</code><span class="sig-paren">(</span><span class="optional">[</span><em>npages=All</em><span class="optional">]</span><span class="sig-paren">)</span> &rarr; bool<a class="headerlink" href="#apsw.backup.step" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">backup.</code><code class="descname">step</code><span class="sig-paren">(</span><span class="optional">[</span><em>npages=All</em><span class="optional">]</span><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#apsw.backup.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Copies <em>npages</em> pages from the source to destination database.  The source database is locked during the copy so
 using smaller values allows other access to the source database.  The destination database is always locked until the
 backup object is <a class="reference internal" href="#apsw.backup.finish" title="apsw.backup.finish"><code class="xref py py-meth docutils literal"><span class="pre">finished</span></code></a>.</p>
@@ -234,7 +234,7 @@ again.</p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/backup.txt"
+      <li><a href="_sources/backup.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -267,14 +267,14 @@ again.</p>
         <li class="right" >
           <a href="blob.html" title="Blob Input/Output"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.17.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.18.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
-        &#169; <a href="copyright.html">Copyright</a> 2004-2016, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Feb 19, 2017.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+        &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Apr 28, 2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking
