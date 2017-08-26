@@ -5954,6 +5954,33 @@ class APSW(unittest.TestCase):
         self.assertTrue("-init" in get(fh[2]))
 
         ###
+        ### .open
+        ####
+        reset()
+        s=shellclass(**kwargs)
+        self.assertTrue(s.db.filename=="")
+        for n in "testdb", "testdb2", "testdb3":
+            fn=TESTFILEPREFIX+n
+            reset()
+            cmd(".open "+fn)
+            s.cmdloop()
+            self.assertTrue(s.db.filename.endswith(fn))
+        reset()
+        fn=TESTFILEPREFIX+"testdb"
+        cmd(".open "+fn)
+        cmd("create table foo(x); insert into foo values(2);")
+        s.cmdloop()
+        for row in s.db.cursor().execute("select * from foo"):
+            break
+        else:
+            self.fail("Table doesn't have any rows")
+        reset()
+        cmd(".open --new "+fn)
+        s.cmdloop()
+        for row in s.db.cursor().execute("select * from sqlite_master"):
+            self.fail("--new didn't wipe file")
+
+        ###
         ### Some test data
         ###
         reset()

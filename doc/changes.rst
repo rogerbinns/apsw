@@ -7,6 +7,8 @@ Change History
 
 Added `SQLITE_DBCONFIG_ENABLE_QPSG <https://www.sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__ constant.
 
+Added shell .open command (:issue:`240`)
+
 3.19.3-r1
 =========
 

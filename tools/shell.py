@@ -1996,6 +1996,39 @@ Enter SQL statements terminated with a ";"
             raise self.Error("nullvalue takes exactly one parameter")
         self.nullvalue=self.fixup_backslashes(cmd[0])
 
+    def command_open(self, cmd):
+        """open ?OPTIONS? ?FILE?: Closes existing database and opens a different one
+
+        Options are: --new which deletes the file if it already exists
+
+        If FILE is omitted then a memory database is opened
+        """
+        new=False
+        dbname=None
+        c=cmd
+        while c:
+            p=c.pop(0)
+            if p.startswith("--"):
+                if p=="--new":
+                    new=True
+                    continue
+                raise self.Error("Unknown open param: "+p)
+            if dbname:
+                raise self.Error("Too many arguments: "+p)
+            dbname=p
+
+        if new and dbname:
+            # close it first in case re-opening existing.  windows doesn't
+            # allow deleting open files
+            self.db=(None, None)
+            for suffix in "", "-journal", "-wal", "-shm":
+                try:
+                    os.remove(dbname+suffix)
+                except OSError:
+                    pass
+
+        self.db=(None, dbname)
+
     def command_output(self, cmd):
         """output FILENAME: Send output to FILENAME (or stdout)
 
