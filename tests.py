@@ -477,7 +477,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(OverflowError, self.db.config, x*x*x*x*x)
         self.assertRaises(ValueError, self.db.config, 82397)
         self.assertRaises(TypeError, self.db.config, apsw.SQLITE_DBCONFIG_ENABLE_FKEY, "banana")
-        for i in apsw.SQLITE_DBCONFIG_ENABLE_FKEY, apsw.SQLITE_DBCONFIG_ENABLE_TRIGGER:
+        for i in apsw.SQLITE_DBCONFIG_ENABLE_FKEY, apsw.SQLITE_DBCONFIG_ENABLE_TRIGGER, apsw.SQLITE_DBCONFIG_ENABLE_QPSG:
             self.assertEqual(1, self.db.config(i, 1))
             self.assertEqual(1, self.db.config(i, -1))
             self.assertEqual(0, self.db.config(i, 0))

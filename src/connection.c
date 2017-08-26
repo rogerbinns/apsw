@@ -3200,6 +3200,8 @@ Connection_config(Connection *self, PyObject *args)
     {
     case SQLITE_DBCONFIG_ENABLE_FKEY:
     case SQLITE_DBCONFIG_ENABLE_TRIGGER:
+    case SQLITE_DBCONFIG_ENABLE_QPSG:
+    case SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE:
       {
 	int opdup, val, current;
 	if(!PyArg_ParseTuple(args, "ii", &opdup, &val))
