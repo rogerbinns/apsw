@@ -126,7 +126,8 @@ WINBMSI=bdist_msi
 # is still available.
 
 compile-win:
-	-del /q apsw.pyd
+	-del /q apsw*.pyd
+	-cmd /c del /s /q __pycache__
 	cmd /c del /s /q dist
 	cmd /c del /s /q build
 	cmd /c del /s /q apsw.egg-info
