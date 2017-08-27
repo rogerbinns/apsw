@@ -161,7 +161,7 @@ class Shell(object):
         "Sets the open database (or None) and filename"
         (db, dbfilename)=newv
         if self._db:
-            self._db.close()
+            self._db.close(True)
             self._db=None
         self._db=db
         self.dbfilename=dbfilename
@@ -2019,13 +2019,21 @@ Enter SQL statements terminated with a ";"
 
         if new and dbname:
             # close it first in case re-opening existing.  windows doesn't
-            # allow deleting open files
+            # allow deleting open files, tag alongs cause problems etc
+            # hence retry and sleeps
             self.db=(None, None)
             for suffix in "", "-journal", "-wal", "-shm":
-                try:
-                    os.remove(dbname+suffix)
-                except OSError:
-                    pass
+                fn=dbname+suffix
+                for retry in range(1, 5):
+                    try:
+                        os.remove(fn)
+                        break
+                    except OSError:
+                        if not os.path.isfile(fn):
+                            break
+                        # under windows tag alongs can delay being able to
+                        # delete after we have closed the file
+                        time.sleep(.05*retry)
 
         self.db=(None, dbname)
 
