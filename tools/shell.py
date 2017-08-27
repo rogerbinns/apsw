@@ -2033,7 +2033,10 @@ Enter SQL statements terminated with a ";"
                             break
                         # under windows tag alongs can delay being able to
                         # delete after we have closed the file
+                        import gc ; gc.collect(2)
                         time.sleep(.05*retry)
+                else:
+                    os.rename(fn, fn+"-DELETEME")
 
         self.db=(None, dbname)
 
