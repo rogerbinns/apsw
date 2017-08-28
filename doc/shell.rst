@@ -56,6 +56,7 @@ autoimport`) to get more detailed information.
   .mode MODE ?TABLE?            Sets output mode to one of column csv html insert
                                 json line list python tabs tcl
   .nullvalue STRING             Print STRING in place of null values
+  .open ?OPTIONS? ?FILE?        Closes existing database and opens a different one
   .output FILENAME              Send output to FILENAME (or stdout)
   .print STRING                 print the literal STRING
   .prompt MAIN ?CONTINUE?       Changes the prompts for first line and
