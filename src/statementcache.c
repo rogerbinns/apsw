@@ -1,5 +1,5 @@
 /*
-  A prepared statment cache for SQLite
+  A prepared statement cache for SQLite
 
   See the accompanying LICENSE file.
 */
@@ -24,7 +24,7 @@
 
 /* Set to zero to disable statement object recycling.  Even small amount makes a big difference
    with diminishing returns based on how many the user program goes through without freeing and
-   the interpretter gc intervals. */
+   the interpreter gc intervals. */
 #define SC_NRECYCLE 32
 
 /* The maximum length of something in bytes that we would consider putting in the statement cache */
@@ -36,7 +36,7 @@
 typedef struct APSWStatement {
   PyObject_HEAD
   sqlite3_stmt *vdbestatement;      /* the sqlite level vdbe code */
-  unsigned inuse;                   /* indicates an element is inuse when in cache preventing simulataneous use */
+  unsigned inuse;                   /* indicates an element is inuse when in cache preventing simultaneous use */
   unsigned incache;                 /* indicates APSWStatement resides in cache */
   PyObject *utf8;                   /* The text of the statement, also the key in the cache */
   PyObject *next;                   /* If not null, the utf8 text of the remaining statements in multi statement queries. */

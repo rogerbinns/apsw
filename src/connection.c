@@ -450,7 +450,7 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
   /* clean up db since it is useless - no need for user to call close */
   assert(PyErr_Occurred());
   res= -1;
-  sqlite3_close(self->db);  /* PYSQLITE_CALL not needed since noone else can have a reference to this connection */
+  sqlite3_close(self->db);  /* PYSQLITE_CALL not needed since no one else can have a reference to this connection */
   self->db=0;
   Connection_internal_cleanup(self);
   assert(PyErr_Occurred());
@@ -3081,7 +3081,7 @@ Connection_enter(Connection *self)
 
   Implements context manager in conjunction with
   :meth:`~Connection.__enter__`.  Any exception that happened in the
-  *with* block is raised after commiting or rolling back the
+  *with* block is raised after committing or rolling back the
   savepoint.
 */
 

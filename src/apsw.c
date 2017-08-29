@@ -114,7 +114,7 @@ static int APSW_Should_Fault(const char *);
 /* The module object */
 static PyObject *apswmodule;
 
-/* Everything except the module itself is in seperate files */
+/* Everything except the module itself is in separate files */
 #ifdef PYPY_VERSION
 #include "pypycompat.c"
 #endif

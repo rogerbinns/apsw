@@ -858,7 +858,7 @@ Enter SQL statements terminated with a ";"
                     self.write(self.stderr, "%s [%s]\n" % (sql, bindings))
                 else:
                     self.write(self.stderr, sql+"\n")
-            # save resource from begining of command (ie don't include echo time above)
+            # save resource from beginning of command (ie don't include echo time above)
             if not internal and self.timer:
                 state['timing']=self.get_resource_usage()
             return True
@@ -2608,7 +2608,7 @@ Enter SQL statements terminated with a ";"
             import readline
             # the whole line
             line=readline.get_line_buffer()
-            # begining and end(+1) of the token in line
+            # beginning and end(+1) of the token in line
             beg=readline.get_begidx()
             end=readline.get_endidx()
             # Are we matching a command?

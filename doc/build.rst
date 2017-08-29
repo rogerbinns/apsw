@@ -54,7 +54,7 @@ to control proxy usage for the download. **Note** the files downloaded
 are modified from their originals to ensure various names do not
 clash, adjust them to the download platform and to graft them cleanly
 into the APSW module.  You should not commit them to source code
-control systems (download seperately if you need clean files).
+control systems (download separately if you need clean files).
 
 If any files are downloaded then the build step will automatically use
 them.  This still applies when you do later builds without
@@ -172,14 +172,14 @@ need to give the flag once and giving a comma seperated list.  For example:
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--enable=fts3`              | Enables the :ref:`full text search extension <ext-fts3>`.                            |
 | | :option:`--enable=fts4`              | This flag only helps when using the amalgamation. If not using the                   |
-| | :option:`--enable=fts5`              | amalgamation then you need to seperately ensure fts3/4/5 is enabled in the SQLite    |
+| | :option:`--enable=fts5`              | amalgamation then you need to separately ensure fts3/4/5 is enabled in the SQLite    |
 |                                        | install. You are likely to want the `parenthesis option                              |
 |                                        | <https://sqlite.org/compile.html#enable_fts3_parenthesis>`__ on unless you have      |
 |                                        | legacy code (`--enable-all-extensions` turns it on).                                 |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--enable=rtree`             | Enables the :ref:`spatial table extension <ext-rtree>`.                              |
 |                                        | This flag only helps when using the amalgamation. If not using the                   |
-|                                        | amalgamation then you need to seperately ensure rtree is enabled in the SQLite       |
+|                                        | amalgamation then you need to separately ensure rtree is enabled in the SQLite       |
 |                                        | install.                                                                             |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--enable=json1`             | Enables the :ref:`JSON1 extension <ext-json1>`.                                      |
@@ -196,7 +196,7 @@ need to give the flag once and giving a comma seperated list.  For example:
 |                                        | Note that you must have the ICU libraries on your machine which setup will           |
 |                                        | automatically try to find using :file:`icu-config`.                                  |
 |                                        | This flag only helps when using the amalgamation. If not using the                   |
-|                                        | amalgamation then you need to seperately ensure ICU is enabled in the SQLite         |
+|                                        | amalgamation then you need to separately ensure ICU is enabled in the SQLite         |
 |                                        | install.                                                                             |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--omit=ITEM`                | Causes various functionality to be omitted. For example                              |

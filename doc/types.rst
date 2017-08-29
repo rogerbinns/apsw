@@ -69,7 +69,7 @@ because the exact same sequence of characters sort, upper case, lower
 case etc differently depending on where you are.  As an example Turkic
 languages have multiple letter i, German has ß which behaves like ss,
 various accents sort differently in different European countries.
-Fortunately there is a libary you can ask to do the right locale
+Fortunately there is a library you can ask to do the right locale
 specific thing `ICU
 <http://en.wikipedia.org/wiki/International_Components_for_Unicode>`_.
 A default SQLite compilation only deals with the 26 letter Roman
