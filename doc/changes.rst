@@ -2,6 +2,18 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.21.0-r1
+=========
+
+Added SQLITE_INDEX_CONSTRAINT_ISNULL, SQLITE_INDEX_CONSTRAINT_ISNOT,
+SQLITE_INDEX_CONSTRAINT_ISNOTNULL, SQLITE_INDEX_CONSTRAINT_IS and
+SQLITE_INDEX_CONSTRAINT_NE constants.
+
+Added SQLITE_CONFIG_SMALL_MALLOC constant.
+
+Added SQLITE_IOCAP_BATCH_ATOMIC constant.
+
+
 3.20.1-r1
 =========
 
