@@ -2,4 +2,4 @@
 
 # https://github.com/rogerbinns/apsw/pull/229
 
-git grep --color -Eniw '(seperately|desribes|seperate|seperated|begining|targetted|libary|interpretter|entireity|publically|noone|commiting|statment|simulataneous|exection|wierd|valueable)' | grep -v tools/spellcheck.sh
+git grep --color -Eniw '(partifular|seperately|desribes|seperate|seperated|begining|targetted|libary|interpretter|entireity|publically|noone|commiting|statment|simulataneous|exection|wierd|valueable)' | grep -v tools/spellcheck.sh

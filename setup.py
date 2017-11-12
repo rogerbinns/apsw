@@ -269,7 +269,7 @@ class fetch(Command):
                         if not uuid:
                             showmsg=True
                     if showmsg:
-                        write("Use fossil-HASH to identify a partifular commit", sys.stderr)
+                        write("Use fossil-HASH to identify a particular commit", sys.stderr)
                         write("eg  fossil-3a82c8e6", sys.stderr)
                         sys.exit(18)
 
