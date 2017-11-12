@@ -155,7 +155,7 @@ apswvtabCreateOrConnect(sqlite3 *db,
 
   avi=PyMem_Malloc(sizeof(apsw_vtable));
   if(!avi) goto pyexception;
-  assert((void*)avi==(void*)&(avi->used_by_sqlite)); /* detect if wierd padding happens */
+  assert((void*)avi==(void*)&(avi->used_by_sqlite)); /* detect if weird padding happens */
   memset(avi, 0, sizeof(apsw_vtable));
 
   schema=PySequence_GetItem(pyres, 0);
@@ -946,7 +946,7 @@ apswvtabOpen(sqlite3_vtab *pVtab, sqlite3_vtab_cursor **ppCursor)
   if(!res)
     goto pyexception;
   avc=PyMem_Malloc(sizeof(apsw_vtable_cursor));
-  assert((void*)avc==(void*)&(avc->used_by_sqlite)); /* detect if wierd padding happens */
+  assert((void*)avc==(void*)&(avc->used_by_sqlite)); /* detect if weird padding happens */
   memset(avc, 0, sizeof(apsw_vtable_cursor));
 
   avc->cursor=res;

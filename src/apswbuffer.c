@@ -6,7 +6,7 @@
 
 /* Set to zero to disable buffer object recycling.  Even a small amount
    makes a big difference with diminishing returns based on how many
-   the user program goes through without freeing and the interpretter
+   the user program goes through without freeing and the interpreter
    gc intervals. */
 #ifndef AB_NRECYCLE
 #define AB_NRECYCLE 256
@@ -31,7 +31,7 @@ static PyTypeObject APSWBufferType;
 static APSWBuffer* apswbuffer_recyclelist[AB_NRECYCLE];
 static unsigned apswbuffer_nrecycle=0;
 
-static void 
+static void
 _APSWBuffer_DECREF(PyObject *x)
 {
   APSWBuffer *y=(APSWBuffer*)x;
@@ -43,8 +43,8 @@ _APSWBuffer_DECREF(PyObject *x)
       apswbuffer_recyclelist[apswbuffer_nrecycle++]=y;
       if(y->base)
         assert(!APSWBuffer_Check(y->base));
-      Py_XDECREF(y->base); 
-      y->base=NULL;            
+      Py_XDECREF(y->base);
+      y->base=NULL;
     }
   else
     {
@@ -62,7 +62,7 @@ do {                                                              \
       else                                                        \
         { Py_DECREF(x);                        }                  \
     }                                                             \
- } while(0)                                          
+ } while(0)
 
 /* Profiling of the test suite and speedtest was used to which locations
    were likely to meet the criteria for recycling the buffer object and
@@ -129,7 +129,7 @@ APSWBuffer_hash(APSWBuffer *self)
     hash= -2;
 
   self->hash=hash;
-  
+
   return hash;
 }
 
@@ -164,7 +164,7 @@ APSWBuffer_FromObject(PyObject *base, Py_ssize_t offset, Py_ssize_t length)
       res->data=APSWBuffer_AS_STRING(base)+offset;
       res->length=length;
       res->hash= -1;
-      
+
       return (PyObject*)res;
     }
 
@@ -214,7 +214,7 @@ APSWBuffer_dealloc(APSWBuffer *self)
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
-/* Our instances are not publically exposed and we are only compared
+/* Our instances are not publicly exposed and we are only compared
    for dictionary insertion/checking, so take some serious short cuts */
 static PyObject *
 APSWBuffer_richcompare(APSWBuffer *left, APSWBuffer *right, int op)
@@ -222,7 +222,7 @@ APSWBuffer_richcompare(APSWBuffer *left, APSWBuffer *right, int op)
   assert(op==Py_EQ);
   assert(left->hash!=-1);
   assert(right->hash!=-1);
-  
+
   if(left->hash != right->hash || left->length != right->length)
     goto notequal;
 
@@ -245,7 +245,7 @@ static PyTypeObject APSWBufferType =
     "apsw.APSWBuffer",         /*tp_name*/
     sizeof(APSWBuffer),        /*tp_basicsize*/
     0,                         /*tp_itemsize*/
-    (destructor)APSWBuffer_dealloc, /*tp_dealloc*/ 
+    (destructor)APSWBuffer_dealloc, /*tp_dealloc*/
     0,                         /*tp_print*/
     0,                         /*tp_getattr*/
     0,                         /*tp_setattr*/

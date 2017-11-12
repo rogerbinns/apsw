@@ -1,5 +1,5 @@
 /*
-  A prepared statment cache for SQLite
+  A prepared statement cache for SQLite
 
   See the accompanying LICENSE file.
 */
@@ -15,7 +15,7 @@
    - The original text passed in (PyString/PyUnicode)
    - The utf8 of the original text (APSWBuffer)
    - The utf8 of the first statement (APSWBuffer)
-   
+
    Currently only the first two are implemented.
 
  */
@@ -24,7 +24,7 @@
 
 /* Set to zero to disable statement object recycling.  Even small amount makes a big difference
    with diminishing returns based on how many the user program goes through without freeing and
-   the interpretter gc intervals. */
+   the interpreter gc intervals. */
 #define SC_NRECYCLE 32
 
 /* The maximum length of something in bytes that we would consider putting in the statement cache */
@@ -36,7 +36,7 @@
 typedef struct APSWStatement {
   PyObject_HEAD
   sqlite3_stmt *vdbestatement;      /* the sqlite level vdbe code */
-  unsigned inuse;                   /* indicates an element is inuse when in cache preventing simulataneous use */
+  unsigned inuse;                   /* indicates an element is inuse when in cache preventing simultaneous use */
   unsigned incache;                 /* indicates APSWStatement resides in cache */
   PyObject *utf8;                   /* The text of the statement, also the key in the cache */
   PyObject *next;                   /* If not null, the utf8 text of the remaining statements in multi statement queries. */
@@ -69,7 +69,7 @@ typedef struct StatementCache {
 } StatementCache;
 
 #ifndef NDEBUG
-static void 
+static void
 statementcache_sanity_check(StatementCache *sc)
 {
   unsigned itemcountfwd, itemcountbackwd, i;
@@ -109,7 +109,7 @@ statementcache_sanity_check(StatementCache *sc)
   last=NULL;
   itemcountfwd=0;
   item=sc->mru;
-  
+
   while(item)
     {
       /* check item thinks it is in cache */
@@ -212,7 +212,7 @@ statementcache_reprepare(StatementCache *sc, APSWStatement *statement)
   res=SQLITE_OK;
   if(newvdbe)
     PYSQLITE_SC_CALL(sqlite3_finalize(newvdbe));
-  
+
   return res2;
 }
 
@@ -232,7 +232,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query, int usepreparev2)
       /* Check to see if query is already in cache.  The size checks are to
          avoid calculating hashes on long strings */
       if( sc->cache && sc->numentries && ((PyUnicode_CheckExact(query) && PyUnicode_GET_DATA_SIZE(query) < SC_MAXSIZE)
-#if PY_MAJOR_VERSION < 3 
+#if PY_MAJOR_VERSION < 3
           || (PyString_CheckExact(query) && PyString_GET_SIZE(query) < SC_MAXSIZE)
 #endif
                         ))
@@ -247,10 +247,10 @@ statementcache_prepare(StatementCache *sc, PyObject *query, int usepreparev2)
         }
 
       utf8=getutf8string(query);
-  
+
       if(!utf8)
         return NULL;
-  
+
       {
         /* Make a buffer of utf8 which then owns underlying bytes */
         PyObject *tmp=APSWBuffer_FromObject(utf8, 0, PyBytes_GET_SIZE(utf8));
@@ -280,7 +280,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query, int usepreparev2)
   assert(APSWBuffer_Check(utf8));
 
 #ifdef SC_STATS
-  if(val) 
+  if(val)
     {
       sc->st_cachehit++;
       if(val->inuse)
@@ -318,7 +318,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query, int usepreparev2)
           val->lru_prev=val->lru_next=0;
           statementcache_sanity_check(sc);
 
-          _PYSQLITE_CALL_V(sqlite3_clear_bindings(val->vdbestatement));          
+          _PYSQLITE_CALL_V(sqlite3_clear_bindings(val->vdbestatement));
           Py_INCREF( (PyObject*)val);
           assert(PyObject_RichCompareBool(utf8, val->utf8, Py_EQ)==1);
           APSWBuffer_XDECREF_unlikely(utf8);
@@ -359,7 +359,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query, int usepreparev2)
     }
 
   statementcache_sanity_check(sc);
-  
+
   val->utf8=utf8;
   val->next=NULL;
   val->vdbestatement=NULL;
@@ -400,7 +400,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query, int usepreparev2)
   return val;
 
  error:
-  if(val) 
+  if(val)
     {
       val->inuse=0;
 #if SC_NRECYCLE > 0
@@ -418,10 +418,10 @@ statementcache_prepare(StatementCache *sc, PyObject *query, int usepreparev2)
         Py_DECREF(val);
     }
   return NULL;
-}     
+}
 
 
-/* Consumes reference on stmt.  This routine must be reentrant. 
+/* Consumes reference on stmt.  This routine must be reentrant.
    If reprepare_on_schema then if SQLITE_SCHEMA is the error, we reprepare
    the statement and don't finalize.
 */
@@ -497,7 +497,7 @@ statementcache_finalize(StatementCache *sc, APSWStatement *stmt, int reprepare_o
           sc->lru=evictee->lru_prev;
           assert(sc->lru->lru_next==evictee);
           sc->lru->lru_next=NULL;
-          
+
         delevictee:
           assert(!evictee->inuse);
           assert(evictee->incache);
@@ -567,7 +567,7 @@ statementcache_finalize(StatementCache *sc, APSWStatement *stmt, int reprepare_o
     }
   return res;
 }
-    
+
 
 /* returns SQLITE_OK on success.  ppstmt will be next statement on
    success else null on error.  reference will be consumed on ppstmt
@@ -585,9 +585,9 @@ statementcache_next(StatementCache *sc, APSWStatement **ppstmt, int usepreparev2
 
   /* defensive coding.  res will never be an error as errors would
      have been returned from earlier step call */
-     
+
   assert(res==SQLITE_OK);
-    
+
   if(res!=SQLITE_OK) goto error;
 
   /* statementcache_prepare already sets exception */
@@ -686,7 +686,7 @@ static PyTypeObject APSWStatementType =
     "apsw.APSWStatement",      /*tp_name*/
     sizeof(APSWStatement),     /*tp_basicsize*/
     0,                         /*tp_itemsize*/
-    (destructor)APSWStatement_dealloc, /*tp_dealloc*/ 
+    (destructor)APSWStatement_dealloc, /*tp_dealloc*/
     0,                         /*tp_print*/
     0,                         /*tp_getattr*/
     0,                         /*tp_setattr*/

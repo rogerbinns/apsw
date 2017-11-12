@@ -110,7 +110,7 @@ def do_mappings():
 
 
 # we have our own markup to describe what sqlite3 calls we make using
-# -* and then a space seperated list.  Maybe this could just be
+# -* and then a space separated list.  Maybe this could just be
 # automatically derived from the source?
 def do_calls(line):
     line=line.strip().split()

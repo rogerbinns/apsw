@@ -6,7 +6,7 @@
 # https://sqlite.org/cvstrac/fileview?f=sqlite/tool/mkspeedsql.tcl
 # This file needs to run under both Python 2 and Python 3 hence a few
 # funky things.  Command line options etc were added later hence the
-# somewhat wierd structuring.
+# somewhat weird structuring.
 
 import sys
 import os
