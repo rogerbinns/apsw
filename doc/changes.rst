@@ -21,6 +21,8 @@ SQLITE_IOERR_BEGIN_ATOMIC
 * SQLITE_FCNTL_COMMIT_ATOMIC_WRITE,  SQLITE_FCNTL_ROLLBACK_ATOMIC_WRITE and
   SQLITE_FCNTL_BEGIN_ATOMIC_WRITE
 
+Many spelling fixes (thanks to Edward Betts for the review)
+
 3.20.1-r1
 =========
 
