@@ -45,10 +45,10 @@ clean:
 doc: docs
 
 docs: build_ext $(GENDOCS) doc/example.rst doc/.static
-	tools/spellcheck.sh
 	env PYTHONPATH=. $(PYTHON) tools/docmissing.py
 	env PYTHONPATH=. $(PYTHON) tools/docupdate.py $(VERSION)
 	make PYTHONPATH="`pwd`" VERSION=$(VERSION) RELEASEDATE=$(RELEASEDATE) -C doc clean html
+	-tools/spellcheck.sh
 
 doc/example.rst: example-code.py tools/example2rst.py src/apswversion.h
 	rm -f dbfile
@@ -68,7 +68,6 @@ coverage:
 	env APSW_FORCE_DISTUTILS=t $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all && env APSW_PY_COVERAGE=t tools/coverage.sh
 
 test: build_ext
-	tools/spellcheck.sh
 	env APSW_FORCE_DISTUTILS=t $(PYTHON) tests.py
 
 debugtest:
