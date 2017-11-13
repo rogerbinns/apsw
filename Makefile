@@ -92,9 +92,6 @@ valgrind1: /space/pydebug/bin/python
 linkcheck:
 	make RELEASEDATE=$(RELEASEDATE) VERSION=$(VERSION) -C doc linkcheck
 
-spellcheck:  # various common mistakes I make
-	egrep -rwi '(paramaters|paramater)' .
-
 publish: docs
 	if [ -d ../apsw-publish ] ; then rm -f ../apsw-publish/* ../apsw-publish/_static/* ../apsw-publish/_sources/* ; \
 	rsync -a doc/build/html/ ../apsw-publish/ ;  cd ../apsw-publish ; git status ; \
