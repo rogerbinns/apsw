@@ -72,7 +72,7 @@ Connection class
 
   Implements context manager in conjunction with
   :meth:`~Connection.__enter__`.  Any exception that happened in the
-  *with* block is raised after commiting or rolling back the
+  *with* block is raised after committing or rolling back the
   savepoint.
 
 .. index:: sqlite3_backup_init

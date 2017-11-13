@@ -28,7 +28,7 @@ zeroblob class
 
   If you want to insert a blob into a row, you previously needed to
   supply the entire blob in one go.  To read just one byte also
-  required retrieving the blob in its entireity. For example to insert
+  required retrieving the blob in its entirety. For example to insert
   a 100MB file you would have done::
 
      largedata=open("largefile", "rb").read()
@@ -173,10 +173,10 @@ blob class
   Changes current position to *offset* biased by *whence*.
 
   :param offset: New position to seek to.  Can be positive or negative number.
-  :param whence: Use 0 if *offset* is relative to the begining of the blob,
+  :param whence: Use 0 if *offset* is relative to the beginning of the blob,
                  1 if *offset* is relative to the current position,
                  and 2 if *offset* is relative to the end of the blob.
-  :raises ValueError: If the resulting offset is before the begining (less than zero) or beyond the end of the blob.
+  :raises ValueError: If the resulting offset is before the beginning (less than zero) or beyond the end of the blob.
 
 .. method:: blob.tell() -> int
 

@@ -10,7 +10,7 @@ Execution model
 ===============
 
 This section only matters if you give multiple SQL statements in one go to :exc:`Cursor.execute`.
-(Statements are seperated by semi-colons.)
+(Statements are separated by semi-colons.)
 
 SQLite does execution in two steps. First a statement is prepared,
 which verifies the syntax, tables and fields and converts the
@@ -298,7 +298,7 @@ The remainder of the line has one of the following forms:
     prefix omitted.
 
   CURSORFROM: connectionid DB: "dbname"
-    A cursor has been allocated.  The *id* at the begining of this row
+    A cursor has been allocated.  The *id* at the beginning of this row
     is of the new cursor.  *connectionid* is the id of the Connection
     it was created from.  The *dbname* is provided for convenience.
     This message is logged the first time a cursor issues a query.

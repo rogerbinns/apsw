@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Blob Input/Output &#8212; APSW 3.20.1-r1 documentation</title>
+    <title>Blob Input/Output &#8212; APSW 3.21.0-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.20.1-r1',
+        VERSION:     '3.21.0-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -53,7 +53,7 @@
         <li class="right" >
           <a href="cursor.html" title="Cursors (executing SQL)"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.20.1-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -79,7 +79,7 @@ store the filename in the database.  Doing so loses the <a class="reference exte
 <em class="property">class </em><code class="descname">zeroblob</code><span class="sig-paren">(</span><em>size</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.zeroblob" title="Permalink to this definition">¶</a></dt>
 <dd><p>If you want to insert a blob into a row, you previously needed to
 supply the entire blob in one go.  To read just one byte also
-required retrieving the blob in its entireity. For example to insert
+required retrieving the blob in its entirety. For example to insert
 a 100MB file you would have done:</p>
 <div class="highlight-default"><div class="highlight"><pre><span class="n">largedata</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="s">&quot;largefile&quot;</span><span class="p">,</span> <span class="s">&quot;rb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into foo values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">buffer</span><span class="p">(</span><span class="n">largedata</span><span class="p">),))</span>
@@ -247,13 +247,13 @@ faster than closing an existing blob an opening a new one.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>offset</strong> &#8211; New position to seek to.  Can be positive or negative number.</li>
-<li><strong>whence</strong> &#8211; Use 0 if <em>offset</em> is relative to the begining of the blob,
+<li><strong>whence</strong> &#8211; Use 0 if <em>offset</em> is relative to the beginning of the blob,
 1 if <em>offset</em> is relative to the current position,
 and 2 if <em>offset</em> is relative to the end of the blob.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><strong>ValueError</strong> &#8211; If the resulting offset is before the begining (less than zero) or beyond the end of the blob.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><strong>ValueError</strong> &#8211; If the resulting offset is before the beginning (less than zero) or beyond the end of the blob.</p>
 </td>
 </tr>
 </tbody>
@@ -351,14 +351,14 @@ inserting the blob.</li>
         <li class="right" >
           <a href="cursor.html" title="Cursors (executing SQL)"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.20.1-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Aug 27, 2017.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+      Last updated on Nov 12, 2017.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

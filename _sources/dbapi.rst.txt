@@ -5,7 +5,7 @@ DBAPI notes
 
 .. currentmodule:: apsw
 
-DBAPI is defined in :pep:`249`. This section desribes how APSW complies or differs from it.
+DBAPI is defined in :pep:`249`. This section describes how APSW complies or differs from it.
 
 Module Interface
 ================
@@ -13,7 +13,7 @@ Module Interface
 There is no connect method. Use the :class:`Connection` constructor instead.
 
 The Connection object and any cursors can be used in any thread.  As
-an extreme example, you could call :meth:`Cursor.next` in seperate
+an extreme example, you could call :meth:`Cursor.next` in separate
 threads each thread getting the next row.  You cannot use the cursor
 concurrently in multiple threads for example calling
 :meth:`Cursor.execute` at the same time.  If you attempt to do so then
@@ -133,5 +133,3 @@ statements::
      lastrowid=row[0]
 
 There is no errorhandler attribute.
-
-
