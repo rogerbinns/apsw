@@ -865,6 +865,7 @@ complete SQLite API into Python.""",
       author="Roger Binns",
       author_email="rogerb@rogerbinns.com",
       url="https://github.com/rogerbinns/apsw/",
+      zip_safe=False,
       classifiers=[
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
