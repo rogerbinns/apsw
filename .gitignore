@@ -44,3 +44,4 @@ coverage/
 testdb
 /.coverage
 apsw.egg-info
+/.ropeproject/
