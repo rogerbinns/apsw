@@ -1365,7 +1365,7 @@ modules etc. For example::
 #define ADDINT(n) {#n, n}
 
     static const
-    struct { const char *name; int value; } integers[]={
+    struct { const char *name; const int value; } integers[]={
       DICT("mapping_authorizer_return"),
       ADDINT(SQLITE_DENY),
       ADDINT(SQLITE_IGNORE),
@@ -1488,6 +1488,10 @@ modules etc. For example::
       ADDINT(SQLITE_IOERR_ROLLBACK_ATOMIC),
       ADDINT(SQLITE_IOERR_COMMIT_ATOMIC),
       ADDINT(SQLITE_IOERR_BEGIN_ATOMIC),
+      ADDINT(SQLITE_READONLY_CANTINIT),
+      ADDINT(SQLITE_ERROR_RETRY),
+      ADDINT(SQLITE_ERROR_MISSING_COLLSEQ),
+      ADDINT(SQLITE_READONLY_DIRECTORY),
       END,
 
       /* error codes */
@@ -1605,6 +1609,11 @@ modules etc. For example::
       ADDINT(SQLITE_DBCONFIG_MAINDBNAME),
       ADDINT(SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE),
       ADDINT(SQLITE_DBCONFIG_ENABLE_QPSG),
+      ADDINT(SQLITE_DBCONFIG_TRIGGER_EQP),
+#ifdef SQLITE_DBCONFIG_MAX
+      /* hopefully this constant will be removed */
+      ADDINT(SQLITE_DBCONFIG_MAX),
+#endif
       END,
 
       DICT("mapping_status"),

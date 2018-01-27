@@ -2,6 +2,15 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.22.0-r1
+=========
+
+Added constants:
+
+* SQLITE_DBCONFIG_TRIGGER_EQP, SQLITE_DBCONFIG_MAX
+
+* SQLITE_READONLY_CANTINIT, SQLITE_ERROR_RETRY, SQLITE_ERROR_MISSING_COLLSEQ, SQLITE_READONLY_DIRECTORY
+
 3.21.0-r1
 =========
 
