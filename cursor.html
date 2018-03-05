@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Cursors (executing SQL) &#8212; APSW 3.21.0-r1 documentation</title>
+    <title>Cursors (executing SQL) &#8212; APSW 3.22.0-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.21.0-r1',
+        VERSION:     '3.22.0-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -53,7 +53,7 @@
         <li class="right" >
           <a href="connection.html" title="Connections to a database"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -67,37 +67,37 @@
 <p>A cursor encapsulates a SQL query and returning results.  To make a
 new cursor you should call <a class="reference internal" href="connection.html#apsw.Connection.cursor" title="apsw.Connection.cursor"><code class="xref py py-meth docutils literal"><span class="pre">cursor()</span></code></a> on your
 database:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">db</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s">&quot;databasefilename&quot;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">db</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;databasefilename&quot;</span><span class="p">)</span>
 <span class="n">cursor</span><span class="o">=</span><span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>A cursor executes SQL:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;create table example(title, isbn)&quot;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table example(title, isbn)&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>You can also read data back.  The row is returned as a tuple of the
 column values:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select * from example&quot;</span><span class="p">):</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from example&quot;</span><span class="p">):</span>
    <span class="nb">print</span> <span class="n">row</span>
 </pre></div>
 </div>
 <p>There are two ways of supplying data to a query.  The <strong>really bad</strong> way is to compose a string:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">sql</span><span class="o">=</span><span class="s">&quot;insert into example values(&#39;%s&#39;, %d)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&quot;string&quot;</span><span class="p">,</span> <span class="mi">8390823904</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sql</span><span class="o">=</span><span class="s2">&quot;insert into example values(&#39;</span><span class="si">%s</span><span class="s2">&#39;, </span><span class="si">%d</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="mi">8390823904</span><span class="p">)</span>
 <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>If there were any single quotes in string then you would have invalid
 syntax.  Additionally this is how <a class="reference external" href="http://en.wikipedia.org/wiki/SQL_injection">SQL injection attacks</a> happen. Instead you should use bindings:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">sql</span><span class="o">=</span><span class="s">&quot;insert into example values(?, ?)&quot;</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="p">(</span><span class="s">&quot;string&quot;</span><span class="p">,</span> <span class="mi">8390823904</span><span class="p">))</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sql</span><span class="o">=</span><span class="s2">&quot;insert into example values(?, ?)&quot;</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="mi">8390823904</span><span class="p">))</span>
 
-<span class="c"># You can also use dictionaries</span>
-<span class="n">sql</span><span class="o">=</span><span class="s">&quot;insert into example values(:title, :isbn)&quot;</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;title&quot;</span><span class="p">:</span> <span class="s">&quot;string&quot;</span><span class="p">,</span> <span class="s">&quot;isbn&quot;</span><span class="p">:</span> <span class="mi">8390823904</span><span class="p">})</span>
+<span class="c1"># You can also use dictionaries</span>
+<span class="n">sql</span><span class="o">=</span><span class="s2">&quot;insert into example values(:title, :isbn)&quot;</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;isbn&quot;</span><span class="p">:</span> <span class="mi">8390823904</span><span class="p">})</span>
 
-<span class="c"># You can use local variables as the dictionary</span>
-<span class="n">title</span><span class="o">=</span><span class="s">&quot;...&quot;</span>
-<span class="n">isbn</span><span class="o">=</span><span class="s">&quot;....&quot;</span>
+<span class="c1"># You can use local variables as the dictionary</span>
+<span class="n">title</span><span class="o">=</span><span class="s2">&quot;...&quot;</span>
+<span class="n">isbn</span><span class="o">=</span><span class="s2">&quot;....&quot;</span>
 <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="nb">locals</span><span class="p">())</span>
 </pre></div>
 </div>
@@ -115,7 +115,7 @@ trying to call <a class="reference internal" href="#apsw.Cursor.execute" title="
 SQLite objects are reused when possible.</p>
 <p>A unique feature of APSW is that your query can be multiple semi-colon
 separated statements.  For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select ... ; insert into ... ; update ... ; select ...&quot;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select ... ; insert into ... ; update ... ; select ...&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -124,21 +124,21 @@ separated statements.  For example:</p>
 million rows it would only get the next row as requested (the for
 loop effectively calls <code class="xref py py-meth docutils literal"><span class="pre">next()</span></code> to get each row).  This
 code would not work as expected:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select * from example&quot;</span><span class="p">):</span>
-   <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert .....&quot;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from example&quot;</span><span class="p">):</span>
+   <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert .....&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The nested <a class="reference internal" href="#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal"><span class="pre">execute()</span></code></a> would start a new query
 abandoning any remaining results from the <code class="docutils literal"><span class="pre">SELECT</span></code> cursor.  There are two
 ways to work around this.  Use a different cursor:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor1</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select * from example&quot;</span><span class="p">):</span>
-   <span class="n">cursor2</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert ...&quot;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor1</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from example&quot;</span><span class="p">):</span>
+   <span class="n">cursor2</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert ...&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>You can also get all the rows immediately by filling in a list:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">rows</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select * from example&quot;</span><span class="p">)</span> <span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">rows</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from example&quot;</span><span class="p">)</span> <span class="p">)</span>
 <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
-   <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert ...&quot;</span><span class="p">)</span>
+   <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert ...&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="last">This last approach is recommended since you don&#8217;t have to worry
@@ -230,32 +230,32 @@ completed.</p>
 <p>If you use numbered bindings in the query then supply a sequence.
 Any sequence will work including lists and iterators.  For
 example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into books values(?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&quot;title&quot;</span><span class="p">,</span> <span class="s">&quot;number&quot;</span><span class="p">))</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into books values(?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;number&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p>A common gotcha is wanting to insert a single string but not
 putting it in a tuple:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into books values(?)&quot;</span><span class="p">,</span> <span class="s">&quot;a title&quot;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into books values(?)&quot;</span><span class="p">,</span> <span class="s2">&quot;a title&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The string is a sequence of 8 characters and so it will look
 like you are supplying 8 bindings when only one is needed.  Use
 a one item tuple with a trailing comma like this:</p>
-<div class="last highlight-default"><div class="highlight"><pre><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into books values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&quot;a title&quot;</span><span class="p">,)</span> <span class="p">)</span>
+<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into books values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a title&quot;</span><span class="p">,)</span> <span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <p>If you used names in the statement then supply a dictionary as the
 binding.  It is ok to be missing entries from the dictionary -
 None/null will be used.  For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into books values(:title, :isbn, :rating)&quot;</span><span class="p">,</span>
-     <span class="p">{</span><span class="s">&quot;title&quot;</span><span class="p">:</span> <span class="s">&quot;book title&quot;</span><span class="p">,</span> <span class="s">&quot;isbn&quot;</span><span class="p">:</span> <span class="mi">908908908</span><span class="p">})</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into books values(:title, :isbn, :rating)&quot;</span><span class="p">,</span>
+     <span class="p">{</span><span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;book title&quot;</span><span class="p">,</span> <span class="s2">&quot;isbn&quot;</span><span class="p">:</span> <span class="mi">908908908</span><span class="p">})</span>
 </pre></div>
 </div>
 <p>The return is the cursor object itself which is also an iterator.  This allows you to write:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select * from books&quot;</span><span class="p">):</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from books&quot;</span><span class="p">):</span>
    <span class="nb">print</span> <span class="n">row</span>
 </pre></div>
 </div>
@@ -300,17 +300,17 @@ None/null will be used.  For example:</p>
 <code class="descclassname">Cursor.</code><code class="descname">executemany</code><span class="sig-paren">(</span><em>statements</em>, <em>sequenceofbindings</em><span class="sig-paren">)</span> &#x2192; iterator<a class="headerlink" href="#apsw.Cursor.executemany" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method is for when you want to execute the same statements over
 a sequence of bindings.  Conceptually it does this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="k">for</span> <span class="n">binding</span> <span class="ow">in</span> <span class="n">sequenceofbindings</span><span class="p">:</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">binding</span> <span class="ow">in</span> <span class="n">sequenceofbindings</span><span class="p">:</span>
     <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">statements</span><span class="p">,</span> <span class="n">binding</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">rows</span><span class="o">=</span><span class="p">(</span>  <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">rows</span><span class="o">=</span><span class="p">(</span>  <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span>
         <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">23</span><span class="p">),</span>
         <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">92</span><span class="p">),</span>
         <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span> <span class="p">)</span>
 
-<span class="n">cursor</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s">&quot;insert into nums values(?,?)&quot;</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;insert into nums values(?,?)&quot;</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The return is the cursor itself which acts as an iterator.  Your
@@ -335,10 +335,10 @@ in DBAPI.  It is a longer way of doing <code class="docutils literal"><span clas
 <dt id="apsw.Cursor.getconnection">
 <code class="descclassname">Cursor.</code><code class="descname">getconnection</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Connection<a class="headerlink" href="#apsw.Cursor.getconnection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> this cursor belongs to.  An example usage is to get another cursor:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">cursor</span><span class="p">):</span>
-  <span class="c"># I don&#39;t want to alter existing cursor, so make a new one</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">cursor</span><span class="p">):</span>
+  <span class="c1"># I don&#39;t want to alter existing cursor, so make a new one</span>
   <span class="n">mycursor</span><span class="o">=</span><span class="n">cursor</span><span class="o">.</span><span class="n">getconnection</span><span class="p">()</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-  <span class="n">mycursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;....&quot;</span><span class="p">)</span>
+  <span class="n">mycursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;....&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -350,11 +350,11 @@ in DBAPI.  It is a longer way of doing <code class="docutils literal"><span clas
 return is identical for every row of the results.  You can only
 call this method once you have started executing a statement and
 before you have finished:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="c"># This will error</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># This will error</span>
 <span class="n">cursor</span><span class="o">.</span><span class="n">getdescription</span><span class="p">()</span>
 
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select .....&quot;</span><span class="p">):</span>
-   <span class="c"># this works</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select .....&quot;</span><span class="p">):</span>
+   <span class="c1"># this works</span>
    <span class="nb">print</span> <span class="n">cursor</span><span class="o">.</span><span class="n">getdescription</span><span class="p">()</span>
    <span class="nb">print</span> <span class="n">row</span>
 </pre></div>
@@ -370,24 +370,24 @@ static languages such as C or other SQL databases only let you put
 one type in - eg <code class="docutils literal"><span class="pre">a</span></code> could only contain an integer or a string,
 but never both.)</p>
 <p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;create table books(title string, isbn number, wibbly wobbly zebra)&quot;</span><span class="p">)</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into books values(?,?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">97</span><span class="p">,</span> <span class="s">&quot;fjfjfj&quot;</span><span class="p">,</span> <span class="mf">3.7</span><span class="p">))</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into books values(?,?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&quot;fjfjfj&quot;</span><span class="p">,</span> <span class="mf">3.7</span><span class="p">,</span> <span class="mi">97</span><span class="p">))</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table books(title string, isbn number, wibbly wobbly zebra)&quot;</span><span class="p">)</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into books values(?,?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">97</span><span class="p">,</span> <span class="s2">&quot;fjfjfj&quot;</span><span class="p">,</span> <span class="mf">3.7</span><span class="p">))</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into books values(?,?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;fjfjfj&quot;</span><span class="p">,</span> <span class="mf">3.7</span><span class="p">,</span> <span class="mi">97</span><span class="p">))</span>
 
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select * from books&quot;</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from books&quot;</span><span class="p">):</span>
    <span class="nb">print</span> <span class="n">cursor</span><span class="o">.</span><span class="n">getdescription</span><span class="p">()</span>
    <span class="nb">print</span> <span class="n">row</span>
 </pre></div>
 </div>
 <p>Output:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="c"># row 0 - description</span>
-<span class="p">((</span><span class="s">&#39;title&#39;</span><span class="p">,</span> <span class="s">&#39;string&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;isbn&#39;</span><span class="p">,</span> <span class="s">&#39;number&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;wibbly&#39;</span><span class="p">,</span> <span class="s">&#39;wobbly zebra&#39;</span><span class="p">))</span>
-<span class="c"># row 0 - values</span>
-<span class="p">(</span><span class="mi">97</span><span class="p">,</span> <span class="s">&#39;fjfjfj&#39;</span><span class="p">,</span> <span class="mf">3.7</span><span class="p">)</span>
-<span class="c"># row 1 - description</span>
-<span class="p">((</span><span class="s">&#39;title&#39;</span><span class="p">,</span> <span class="s">&#39;string&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;isbn&#39;</span><span class="p">,</span> <span class="s">&#39;number&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;wibbly&#39;</span><span class="p">,</span> <span class="s">&#39;wobbly zebra&#39;</span><span class="p">))</span>
-<span class="c"># row 1 - values</span>
-<span class="p">(</span><span class="s">&#39;fjfjfj&#39;</span><span class="p">,</span> <span class="mf">3.7</span><span class="p">,</span> <span class="mi">97</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># row 0 - description</span>
+<span class="p">((</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;string&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;isbn&#39;</span><span class="p">,</span> <span class="s1">&#39;number&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;wibbly&#39;</span><span class="p">,</span> <span class="s1">&#39;wobbly zebra&#39;</span><span class="p">))</span>
+<span class="c1"># row 0 - values</span>
+<span class="p">(</span><span class="mi">97</span><span class="p">,</span> <span class="s1">&#39;fjfjfj&#39;</span><span class="p">,</span> <span class="mf">3.7</span><span class="p">)</span>
+<span class="c1"># row 1 - description</span>
+<span class="p">((</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;string&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;isbn&#39;</span><span class="p">,</span> <span class="s1">&#39;number&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;wibbly&#39;</span><span class="p">,</span> <span class="s1">&#39;wobbly zebra&#39;</span><span class="p">))</span>
+<span class="c1"># row 1 - values</span>
+<span class="p">(</span><span class="s1">&#39;fjfjfj&#39;</span><span class="p">,</span> <span class="mf">3.7</span><span class="p">,</span> <span class="mi">97</span><span class="p">)</span>
 </pre></div>
 </div>
 <dl class="docutils">
@@ -521,13 +521,13 @@ removed.</p>
         <li class="right" >
           <a href="connection.html" title="Connections to a database"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Nov 12, 2017.
+      Last updated on Mar 04, 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

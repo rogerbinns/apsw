@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Virtual File System (VFS) &#8212; APSW 3.21.0-r1 documentation</title>
+    <title>Virtual File System (VFS) &#8212; APSW 3.22.0-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.21.0-r1',
+        VERSION:     '3.22.0-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -53,7 +53,7 @@
         <li class="right" >
           <a href="vtable.html" title="Virtual Tables"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -77,7 +77,7 @@ searches or mailing lists. The SQLite convention results in names like
 xAccess, xCurrentTime and xWrite.</p>
 <p>You specify which VFS to use as a parameter to the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a>
 constructor.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">db</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s">&quot;file&quot;</span><span class="p">,</span> <span class="n">vfs</span><span class="o">=</span><span class="s">&quot;myvfs&quot;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">db</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;file&quot;</span><span class="p">,</span> <span class="n">vfs</span><span class="o">=</span><span class="s2">&quot;myvfs&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The easiest way to get started is to make a <a class="reference internal" href="#apsw.VFS" title="apsw.VFS"><code class="xref py py-class docutils literal"><span class="pre">VFS</span></code></a> derived class
@@ -345,10 +345,10 @@ call returns, on a reboot the file would still be deleted.</li>
 <dd><p>Close and unload the library corresponding to the handle you
 returned from <a class="reference internal" href="#apsw.VFS.xDlOpen" title="apsw.VFS.xDlOpen"><code class="xref py py-meth docutils literal"><span class="pre">xDlOpen()</span></code></a>.  You can use ctypes to do
 this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">xDlClose</span><span class="p">(</span><span class="n">handle</span><span class="p">):</span>
-   <span class="c"># Note leading underscore in _ctypes</span>
-   <span class="n">_ctypes</span><span class="o">.</span><span class="n">dlclose</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>       <span class="c"># Linux/Mac/Unix</span>
-   <span class="n">_ctypes</span><span class="o">.</span><span class="n">FreeLibrary</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>   <span class="c"># Windows</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xDlClose</span><span class="p">(</span><span class="n">handle</span><span class="p">):</span>
+   <span class="c1"># Note leading underscore in _ctypes</span>
+   <span class="n">_ctypes</span><span class="o">.</span><span class="n">dlclose</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>       <span class="c1"># Linux/Mac/Unix</span>
+   <span class="n">_ctypes</span><span class="o">.</span><span class="n">FreeLibrary</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>   <span class="c1"># Windows</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -375,7 +375,7 @@ return 0 (NULL). The number is passed as is to
 <a class="reference internal" href="#apsw.VFS.xDlSym" title="apsw.VFS.xDlSym"><code class="xref py py-meth docutils literal"><span class="pre">xDlSym()</span></code></a>/<a class="reference internal" href="#apsw.VFS.xDlClose" title="apsw.VFS.xDlClose"><code class="xref py py-meth docutils literal"><span class="pre">xDlClose()</span></code></a> so it can represent
 anything that is convenient for you (eg an index into an
 array). You can use ctypes to load a library:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">xDlOpen</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xDlOpen</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
    <span class="k">return</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">cdll</span><span class="o">.</span><span class="n">LoadLibrary</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">_handle</span>
 </pre></div>
 </div>
@@ -386,9 +386,9 @@ array). You can use ctypes to load a library:</p>
 <code class="descclassname">VFS.</code><code class="descname">xDlSym</code><span class="sig-paren">(</span><em>handle</em>, <em>symbol</em><span class="sig-paren">)</span> &#x2192; address<a class="headerlink" href="#apsw.VFS.xDlSym" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the address of the named symbol which will be called by
 SQLite. On error you should return 0 (NULL). You can use ctypes:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">xDlSym</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-   <span class="k">return</span> <span class="n">_ctypes</span><span class="o">.</span><span class="n">dlsym</span> <span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>  <span class="c"># Linux/Unix/Mac etc (note leading underscore)</span>
-   <span class="k">return</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">win32</span><span class="o">.</span><span class="n">kernel32</span><span class="o">.</span><span class="n">GetProcAddress</span> <span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>  <span class="c"># Windows</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xDlSym</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+   <span class="k">return</span> <span class="n">_ctypes</span><span class="o">.</span><span class="n">dlsym</span> <span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>  <span class="c1"># Linux/Unix/Mac etc (note leading underscore)</span>
+   <span class="k">return</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">win32</span><span class="o">.</span><span class="n">kernel32</span><span class="o">.</span><span class="n">GetProcAddress</span> <span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>  <span class="c1"># Windows</span>
 </pre></div>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
@@ -663,16 +663,16 @@ internal use.</li>
 <p>As of SQLite 3.6.10, this method is called by SQLite if you have
 inherited from an underlying VFSFile.  Consequently ensure you pass
 any unrecognised codes through to your super class.  For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">xFileControl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">ptr</span><span class="p">):</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xFileControl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">ptr</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">op</span><span class="o">==</span><span class="mi">1027</span><span class="p">:</span>
         <span class="n">process_quick</span><span class="p">(</span><span class="n">ptr</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">op</span><span class="o">==</span><span class="mi">1028</span><span class="p">:</span>
         <span class="n">obj</span><span class="o">=</span><span class="n">ctypes</span><span class="o">.</span><span class="n">py_object</span><span class="o">.</span><span class="n">from_address</span><span class="p">(</span><span class="n">ptr</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="c"># this ensures superclass implementation is called</span>
+        <span class="c1"># this ensures superclass implementation is called</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">MyFile</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">xFileControl</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">ptr</span><span class="p">)</span>
-    <span class="c"># we understood the op</span>
-    <span class="k">return</span> <span class="k">True</span>
+    <span class="c1"># we understood the op</span>
+    <span class="k">return</span> <span class="kc">True</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -882,13 +882,13 @@ present.</p>
         <li class="right" >
           <a href="vtable.html" title="Virtual Tables"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Nov 12, 2017.
+      Last updated on Mar 04, 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

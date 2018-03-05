@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Execution and tracing &#8212; APSW 3.21.0-r1 documentation</title>
+    <title>Execution and tracing &#8212; APSW 3.22.0-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.21.0-r1',
+        VERSION:     '3.22.0-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -53,7 +53,7 @@
         <li class="right" >
           <a href="types.html" title="Types"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -83,8 +83,8 @@ iterator. Execution will resume as necessary to satisfy
 rest of your statements won&#8217;t be executed.  APSW will detect
 unexecuted previous statements and generate an exception. For
 example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select * from foo ; create table bar(x,y,z)&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;create table bam(x,y,z)&quot;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from foo ; create table bar(x,y,z)&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table bam(x,y,z)&quot;</span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
   File <span class="nb">&quot;&lt;stdin&gt;&quot;</span>, line <span class="m">1</span>, in <span class="n">?</span>
 <span class="gr">apsw.IncompleteExecutionError</span>: <span class="n">Error: there are still remaining sql statements to execute</span>
@@ -172,9 +172,9 @@ code.</p>
 <p>You cannot issue new execute statements against the cursor
 your tracer was called from. If you would like to make more queries
 in the tracer then do them from a new cursor object.  For example:</p>
-<div class="last highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">exectracer</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">bindings</span><span class="p">):</span>
-  <span class="n">cursor</span><span class="o">.</span><span class="n">getconnection</span><span class="p">()</span><span class="o">.</span><span class="n">cursor</span><span class="p">(</span><span class="s">&quot;insert into log values(?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">sql</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">bindings</span><span class="p">)))</span>
-  <span class="k">return</span> <span class="k">True</span>
+<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">exectracer</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">bindings</span><span class="p">):</span>
+  <span class="n">cursor</span><span class="o">.</span><span class="n">getconnection</span><span class="p">()</span><span class="o">.</span><span class="n">cursor</span><span class="p">(</span><span class="s2">&quot;insert into log values(?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">sql</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">bindings</span><span class="p">)))</span>
+  <span class="k">return</span> <span class="kc">True</span>
 </pre></div>
 </div>
 </div>
@@ -237,15 +237,15 @@ can get a copy directly from <a class="reference external" href="https://github.
 easily trace SQL execution as well as providing a summary report
 without modifying your code.  If it is installed anywhere on your
 <span class="target" id="index-0"></span><code class="xref std std-envvar docutils literal"><span class="pre">PYTHONPATH</span></code> then you can invoke it with <code class="docutils literal"><span class="pre">-m</span></code>:</p>
-<div class="highlight-default"><div class="highlight"><pre>$ python -m apswtrace [apswtrace options] yourscript.py [your options]
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ python -m apswtrace [apswtrace options] yourscript.py [your options]
 </pre></div>
 </div>
 <p>You can also invoke it directly:</p>
-<div class="highlight-default"><div class="highlight"><pre>$ python /path/to/apswtrace.py [apswtrace options] yourscript.py [your options]
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ python /path/to/apswtrace.py [apswtrace options] yourscript.py [your options]
 </pre></div>
 </div>
 <p>All output is UTF-8 encoded.  The following options are available:</p>
-<div class="highlight-text"><div class="highlight"><pre>$ python apswtrace.py --help
+<div class="highlight-text"><div class="highlight"><pre><span></span>$ python apswtrace.py --help
 Usage: apswtrace.py [options] pythonscript.py [pythonscriptoptions]
 
 This script runs a Python program that uses APSW and reports on SQL queries
@@ -275,7 +275,7 @@ Options:
 </div>
 <p>This is sample output with the following options: <code class="xref std std-option docutils literal"><span class="pre">--sql</span></code>,
 <code class="xref std std-option docutils literal"><span class="pre">--rows</span></code>, <code class="xref std std-option docutils literal"><span class="pre">--timestamps</span></code>, <code class="xref std std-option docutils literal"><span class="pre">--thread</span></code></p>
-<div class="highlight-text"><div class="highlight"><pre>1e0e5a0 0.152 7fccea8456e0 OPEN: &quot;:memory:&quot; unix READWRITE|CREATE
+<div class="highlight-text"><div class="highlight"><pre><span></span>1e0e5a0 0.152 7fccea8456e0 OPEN: &quot;:memory:&quot; unix READWRITE|CREATE
 1f72ac0 0.161 7fccea8456e0 OPEN: &quot;testdb&quot; unix READWRITE|CREATE
 1f6b8d0 0.162 7fccea8456e0 CURSORFROM: 1f72ac0 DB: &quot;testdb&quot;
 1f6b8d0 0.162 7fccea8456e0 SQL: create table foo(x,y,z)
@@ -336,7 +336,7 @@ program run time.  The processing time is only recorded for queries
 that have no results or where you read all the result rows.
 Processing time also includes waiting time on busy connections.</p>
 <blockquote>
-<div><div class="highlight-text"><div class="highlight"><pre>APSW TRACE SUMMARY REPORT
+<div><div class="highlight-text"><div class="highlight"><pre><span></span>APSW TRACE SUMMARY REPORT
 
 Program run time                    83.073 seconds
 Total connections                   1308
@@ -351,7 +351,7 @@ Time spent processing queries       120.530 seconds
 </div></blockquote>
 <p>This shows how many times each query was run.</p>
 <blockquote>
-<div><div class="highlight-text"><div class="highlight"><pre>MOST POPULAR QUERIES
+<div><div class="highlight-text"><div class="highlight"><pre><span></span>MOST POPULAR QUERIES
 
  121451 insert into foo values(?)
    1220 insert into abc values(1,2,?)
@@ -375,7 +375,7 @@ Time spent processing queries       120.530 seconds
 processing times in seconds.  The <code class="docutils literal"><span class="pre">begin</span> <span class="pre">immediate</span></code> query
 illustrates how time spent busy waiting is included.</p>
 <blockquote>
-<div><div class="highlight-text"><div class="highlight"><pre>LONGEST RUNNING - AGGREGATE
+<div><div class="highlight-text"><div class="highlight"><pre><span></span>LONGEST RUNNING - AGGREGATE
 
     413   94.305 select timesten(x) from foo where x=? order by x
  120637   12.941 select * from foo
@@ -397,7 +397,7 @@ illustrates how time spent busy waiting is included.</p>
 </div></blockquote>
 <p>This shows the longest running queries with time in seconds.</p>
 <blockquote>
-<div><div class="highlight-text"><div class="highlight"><pre>LONGEST RUNNING - INDIVIDUAL
+<div><div class="highlight-text"><div class="highlight"><pre><span></span>LONGEST RUNNING - INDIVIDUAL
 
   3.001 begin immediate
   1.377 create index foo_x on foo(x)
@@ -485,13 +485,13 @@ illustrates how time spent busy waiting is included.</p>
         <li class="right" >
           <a href="types.html" title="Types"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Nov 12, 2017.
+      Last updated on Mar 04, 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

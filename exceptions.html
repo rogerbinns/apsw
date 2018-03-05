@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Exceptions &#8212; APSW 3.21.0-r1 documentation</title>
+    <title>Exceptions &#8212; APSW 3.22.0-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.21.0-r1',
+        VERSION:     '3.22.0-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -53,7 +53,7 @@
         <li class="right" >
           <a href="shell.html" title="Shell"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -141,19 +141,19 @@ the <a class="reference internal" href="connection.html#apsw.Connection" title="
 <dt id="apsw.BindingsError">
 <em class="property">exception </em><code class="descname">BindingsError</code><a class="headerlink" href="#apsw.BindingsError" title="Permalink to this definition">¶</a></dt>
 <dd><p>There are several causes for this exception.  When using tuples, an incorrect number of bindings where supplied:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select ?,?,?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>     <span class="c"># too few bindings</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select ?,?,?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span> <span class="c"># too many bindings</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select ?,?,?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>     <span class="c1"># too few bindings</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select ?,?,?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span> <span class="c1"># too many bindings</span>
 </pre></div>
 </div>
 <p>You are using named bindings, but not all bindings are named.  You should either use entirely the
 named style or entirely numeric (unnamed) style:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select * from foo where x=:name and y=?&quot;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from foo where x=:name and y=?&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p>It is not considered an error to have missing keys in a dictionary. For example this is perfectly valid:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into foo values($a,:b,$c)&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo values($a,:b,$c)&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
 </pre></div>
 </div>
 <p class="last"><em>b</em> and <em>c</em> are not in the dict.  For missing keys, None/NULL
@@ -408,17 +408,17 @@ or virtual tables, triggers firing etc.</p>
 <p>This is an example showing the difference between the tracebacks you
 would have got with earlier versions of apsw and the augmented
 traceback:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">apsw</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">apsw</span>
 
 <span class="k">def</span> <span class="nf">myfunc</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
   <span class="mi">1</span><span class="o">/</span><span class="mi">0</span>
 
-<span class="n">con</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s">&quot;:memory:&quot;</span><span class="p">)</span>
-<span class="n">con</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s">&quot;foo&quot;</span><span class="p">,</span> <span class="n">myfunc</span><span class="p">)</span>
-<span class="n">con</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s">&quot;fam&quot;</span><span class="p">,</span> <span class="n">myfunc</span><span class="p">)</span>
+<span class="n">con</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
+<span class="n">con</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="n">myfunc</span><span class="p">)</span>
+<span class="n">con</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s2">&quot;fam&quot;</span><span class="p">,</span> <span class="n">myfunc</span><span class="p">)</span>
 <span class="n">cursor</span><span class="o">=</span><span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;create table bar(x,y,z);insert into bar values(1,2,3)&quot;</span><span class="p">)</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select foo(1) from bar&quot;</span><span class="p">)</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table bar(x,y,z);insert into bar values(1,2,3)&quot;</span><span class="p">)</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select foo(1) from bar&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <table border="1" class="docutils">
@@ -432,21 +432,21 @@ traceback:</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><div class="first last highlight-default"><div class="highlight"><pre><span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
-  <span class="n">File</span> <span class="s">&quot;t.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">11</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
-    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select foo(1) from bar&quot;</span><span class="p">)</span>
-  <span class="n">File</span> <span class="s">&quot;t.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">4</span><span class="p">,</span> <span class="ow">in</span> <span class="n">myfunc</span>
+<tr class="row-even"><td><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+  <span class="n">File</span> <span class="s2">&quot;t.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">11</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select foo(1) from bar&quot;</span><span class="p">)</span>
+  <span class="n">File</span> <span class="s2">&quot;t.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">4</span><span class="p">,</span> <span class="ow">in</span> <span class="n">myfunc</span>
     <span class="mi">1</span><span class="o">/</span><span class="mi">0</span>
 <span class="ne">ZeroDivisionError</span><span class="p">:</span> <span class="n">integer</span> <span class="n">division</span> <span class="ow">or</span> <span class="n">modulo</span> <span class="n">by</span> <span class="n">zero</span>
 </pre></div>
 </div>
 </td>
-<td><div class="first last highlight-default"><div class="highlight"><pre><span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
-  <span class="n">File</span> <span class="s">&quot;t.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">11</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
-    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select foo(1) from bar&quot;</span><span class="p">)</span>
-  <span class="n">File</span> <span class="s">&quot;apsw.c&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">3412</span><span class="p">,</span> <span class="ow">in</span> <span class="n">resetcursor</span>
-  <span class="n">File</span> <span class="s">&quot;apsw.c&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1597</span><span class="p">,</span> <span class="ow">in</span> <span class="n">user</span><span class="o">-</span><span class="n">defined</span><span class="o">-</span><span class="n">scalar</span><span class="o">-</span><span class="n">foo</span>
-  <span class="n">File</span> <span class="s">&quot;t.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">4</span><span class="p">,</span> <span class="ow">in</span> <span class="n">myfunc</span>
+<td><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+  <span class="n">File</span> <span class="s2">&quot;t.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">11</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select foo(1) from bar&quot;</span><span class="p">)</span>
+  <span class="n">File</span> <span class="s2">&quot;apsw.c&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">3412</span><span class="p">,</span> <span class="ow">in</span> <span class="n">resetcursor</span>
+  <span class="n">File</span> <span class="s2">&quot;apsw.c&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1597</span><span class="p">,</span> <span class="ow">in</span> <span class="n">user</span><span class="o">-</span><span class="n">defined</span><span class="o">-</span><span class="n">scalar</span><span class="o">-</span><span class="n">foo</span>
+  <span class="n">File</span> <span class="s2">&quot;t.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">4</span><span class="p">,</span> <span class="ow">in</span> <span class="n">myfunc</span>
     <span class="mi">1</span><span class="o">/</span><span class="mi">0</span>
 <span class="ne">ZeroDivisionError</span><span class="p">:</span> <span class="n">integer</span> <span class="n">division</span> <span class="ow">or</span> <span class="n">modulo</span> <span class="n">by</span> <span class="n">zero</span>
 </pre></div>
@@ -469,7 +469,7 @@ information. You can print out the variables using <a class="reference external"
 more complicated than need be, and also won&#8217;t work correctly with
 all tracebacks (it depends on <code class="xref py py-attr docutils literal"><span class="pre">f_prev</span></code> being set which isn&#8217;t always
 the case). Change the function to start like this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">tb</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">2</span><span class="p">]</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">tb</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">2</span><span class="p">]</span>
 <span class="n">stack</span> <span class="o">=</span> <span class="p">[]</span>
 
 <span class="k">while</span> <span class="n">tb</span><span class="p">:</span>
@@ -477,7 +477,7 @@ the case). Change the function to start like this:</p>
     <span class="n">tb</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">tb_next</span>
 
 <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
-<span class="nb">print</span> <span class="s">&quot;Locals by frame, innermost last&quot;</span>
+<span class="nb">print</span> <span class="s2">&quot;Locals by frame, innermost last&quot;</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -487,15 +487,15 @@ local variables using recipe 52215. I can see what was passed in to my
 method, what I returned and which item was erroneous. The original
 traceback is almost completely useless.</p>
 <p>Original traceback:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
-  <span class="n">File</span> <span class="s">&quot;tests.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1387</span><span class="p">,</span> <span class="ow">in</span> <span class="n">testVtables</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+  <span class="n">File</span> <span class="s2">&quot;tests.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1387</span><span class="p">,</span> <span class="ow">in</span> <span class="n">testVtables</span>
     <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">allconstraints</span><span class="p">)</span>
-<span class="ne">TypeError</span><span class="p">:</span> <span class="n">Bad</span> <span class="n">constraint</span> <span class="p">(</span><span class="c">#2) - it should be one of None, an integer or a tuple of an integer and a boolean</span>
+<span class="ne">TypeError</span><span class="p">:</span> <span class="n">Bad</span> <span class="n">constraint</span> <span class="p">(</span><span class="c1">#2) - it should be one of None, an integer or a tuple of an integer and a boolean</span>
 </pre></div>
 </div>
 <p>Augmented traceback with local variables:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
-  <span class="n">File</span> <span class="s">&quot;tests.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1387</span><span class="p">,</span> <span class="ow">in</span> <span class="n">testVtables</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+  <span class="n">File</span> <span class="s2">&quot;tests.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1387</span><span class="p">,</span> <span class="ow">in</span> <span class="n">testVtables</span>
     <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">allconstraints</span><span class="p">)</span>
                 <span class="n">VTable</span> <span class="o">=</span>  <span class="n">__main__</span><span class="o">.</span><span class="n">VTable</span>
                    <span class="n">cur</span> <span class="o">=</span>  <span class="o">&lt;</span><span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x988f30</span><span class="o">&gt;</span>
@@ -503,22 +503,22 @@ traceback is almost completely useless.</p>
                   <span class="bp">self</span> <span class="o">=</span>  <span class="n">testVtables</span> <span class="p">(</span><span class="n">__main__</span><span class="o">.</span><span class="n">APSW</span><span class="p">)</span>
         <span class="n">allconstraints</span> <span class="o">=</span>  <span class="n">select</span> <span class="n">rowid</span><span class="p">,</span><span class="o">*</span> <span class="kn">from</span> <span class="nn">foo</span> <span class="n">where</span> <span class="n">rowid</span><span class="o">&gt;-</span><span class="mi">1000</span> <span class="o">....</span>
 
-  <span class="n">File</span> <span class="s">&quot;apsw.c&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">4050</span><span class="p">,</span> <span class="ow">in</span> <span class="n">Cursor_execute</span><span class="o">.</span><span class="n">sqlite3_prepare</span>
+  <span class="n">File</span> <span class="s2">&quot;apsw.c&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">4050</span><span class="p">,</span> <span class="ow">in</span> <span class="n">Cursor_execute</span><span class="o">.</span><span class="n">sqlite3_prepare</span>
             <span class="n">Connection</span> <span class="o">=</span>  <span class="o">&lt;</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x978800</span><span class="o">&gt;</span>
              <span class="n">statement</span> <span class="o">=</span>  <span class="n">select</span> <span class="n">rowid</span><span class="p">,</span><span class="o">*</span> <span class="kn">from</span> <span class="nn">foo</span> <span class="n">where</span> <span class="n">rowid</span><span class="o">&gt;-</span><span class="mi">1000</span> <span class="o">....</span>
 
-  <span class="n">File</span> <span class="s">&quot;apsw.c&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">2681</span><span class="p">,</span> <span class="ow">in</span> <span class="n">VirtualTable</span><span class="o">.</span><span class="n">xBestIndex</span>
+  <span class="n">File</span> <span class="s2">&quot;apsw.c&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">2681</span><span class="p">,</span> <span class="ow">in</span> <span class="n">VirtualTable</span><span class="o">.</span><span class="n">xBestIndex</span>
                   <span class="bp">self</span> <span class="o">=</span>  <span class="o">&lt;</span><span class="n">__main__</span><span class="o">.</span><span class="n">VTable</span> <span class="n">instance</span> <span class="n">at</span> <span class="mh">0x98d8c0</span><span class="o">&gt;</span>
-                  <span class="n">args</span> <span class="o">=</span>  <span class="p">(((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">64</span><span class="p">)),</span> <span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="k">False</span><span class="p">),))</span>
-                <span class="n">result</span> <span class="o">=</span>  <span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,),</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="k">False</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="mi">997</span><span class="p">,</span> <span class="s">u&#39;</span><span class="se">\xea</span><span class="s">&#39;</span><span class="p">,</span> <span class="k">False</span><span class="p">)</span>
+                  <span class="n">args</span> <span class="o">=</span>  <span class="p">(((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">64</span><span class="p">)),</span> <span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="kc">False</span><span class="p">),))</span>
+                <span class="n">result</span> <span class="o">=</span>  <span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,),</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="mi">997</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;</span><span class="se">\xea</span><span class="s1">&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
-  <span class="n">File</span> <span class="s">&quot;apsw.c&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">2559</span><span class="p">,</span> <span class="ow">in</span> <span class="n">VirtualTable</span><span class="o">.</span><span class="n">xBestIndex</span><span class="o">.</span><span class="n">result_constraint</span>
-               <span class="n">indices</span> <span class="o">=</span>  <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,),</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="k">False</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+  <span class="n">File</span> <span class="s2">&quot;apsw.c&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">2559</span><span class="p">,</span> <span class="ow">in</span> <span class="n">VirtualTable</span><span class="o">.</span><span class="n">xBestIndex</span><span class="o">.</span><span class="n">result_constraint</span>
+               <span class="n">indices</span> <span class="o">=</span>  <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,),</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
                   <span class="bp">self</span> <span class="o">=</span>  <span class="o">&lt;</span><span class="n">__main__</span><span class="o">.</span><span class="n">VTable</span> <span class="n">instance</span> <span class="n">at</span> <span class="mh">0x98d8c0</span><span class="o">&gt;</span>
-                <span class="n">result</span> <span class="o">=</span>  <span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,),</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="k">False</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="mi">997</span><span class="p">,</span> <span class="s">u&#39;</span><span class="se">\xea</span><span class="s">&#39;</span><span class="p">,</span> <span class="k">False</span><span class="p">)</span>
+                <span class="n">result</span> <span class="o">=</span>  <span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,),</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="mi">997</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;</span><span class="se">\xea</span><span class="s1">&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
             <span class="n">constraint</span> <span class="o">=</span>  <span class="p">(</span><span class="mi">3</span><span class="p">,)</span>
 
-<span class="ne">TypeError</span><span class="p">:</span> <span class="n">Bad</span> <span class="n">constraint</span> <span class="p">(</span><span class="c">#2) - it should be one of None, an integer or a tuple of an integer and a boolean</span>
+<span class="ne">TypeError</span><span class="p">:</span> <span class="n">Bad</span> <span class="n">constraint</span> <span class="p">(</span><span class="c1">#2) - it should be one of None, an integer or a tuple of an integer and a boolean</span>
 </pre></div>
 </div>
 </div>
@@ -589,13 +589,13 @@ traceback is almost completely useless.</p>
         <li class="right" >
           <a href="shell.html" title="Shell"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Nov 12, 2017.
+      Last updated on Mar 04, 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

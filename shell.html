@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Shell &#8212; APSW 3.21.0-r1 documentation</title>
+    <title>Shell &#8212; APSW 3.22.0-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.21.0-r1',
+        VERSION:     '3.22.0-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -53,7 +53,7 @@
         <li class="right" >
           <a href="vfs.html" title="Virtual File System (VFS)"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -77,7 +77,7 @@ and add your own commands.</p>
 <p>In addition to executing SQL, these are the commands available with
 their short help description.  Use <cite>.help *command*</cite> eg (<cite>.help
 autoimport</cite>) to get more detailed information.</p>
-<div class="highlight-text"><div class="highlight"><pre>.autoimport FILENAME ?TABLE?  Imports filename creating a table and
+<div class="highlight-text"><div class="highlight"><pre><span></span>.autoimport FILENAME ?TABLE?  Imports filename creating a table and
                               automatically working out separators and data
                               types (alternative to .import command)
 .backup ?DB? FILE             Backup DB (default &quot;main&quot;) to FILE
@@ -130,11 +130,11 @@ autoimport</cite>) to get more detailed information.</p>
 <h2>Command Line Usage<a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
 <p>You can use the shell directly from the command line.  Invoke it like
 this:</p>
-<div class="highlight-default"><div class="highlight"><pre>$ python -c &quot;import apsw;apsw.main()&quot;  [options and arguments]
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ python -c &quot;import apsw;apsw.main()&quot;  [options and arguments]
 </pre></div>
 </div>
 <p>The following command line options are accepted:</p>
-<div class="highlight-text"><div class="highlight"><pre>Usage: program [OPTIONS] FILENAME [SQL|CMD] [SQL|CMD]...
+<div class="highlight-text"><div class="highlight"><pre><span></span>Usage: program [OPTIONS] FILENAME [SQL|CMD] [SQL|CMD]...
 FILENAME is the name of a SQLite database. A new database is
 created if the file does not exist.
 OPTIONS include:
@@ -210,7 +210,7 @@ encoding.  The default is &#8216;strict&#8217; which results in an error.
 &#8216;replace&#8217; will replace the character with &#8216;?&#8217; or something similar
 while &#8216;xmlcharrefreplace&#8217; uses xml entities.  To specify the error
 handling add a colon and error after the encoding - eg:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="o">.</span><span class="n">encoding</span> <span class="n">iso</span><span class="o">-</span><span class="mi">8859</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">replace</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">.</span><span class="n">encoding</span> <span class="n">iso</span><span class="o">-</span><span class="mi">8859</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">replace</span>
 </pre></div>
 </div>
 <p>The same method is used when setting PYTHONIOENCODING.</p>
@@ -657,13 +657,13 @@ handling - eg &#8216;cp437:replace&#8217;</p>
         <li class="right" >
           <a href="vfs.html" title="Virtual File System (VFS)"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Nov 12, 2017.
+      Last updated on Mar 04, 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Connections to a database &#8212; APSW 3.21.0-r1 documentation</title>
+    <title>Connections to a database &#8212; APSW 3.22.0-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.21.0-r1',
+        VERSION:     '3.22.0-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -53,7 +53,7 @@
         <li class="right" >
           <a href="apsw.html" title="APSW Module"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -111,16 +111,16 @@ execute frequently.</li>
 as defined in <span class="target" id="index-1"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-0343"><strong>PEP 0343</strong></a>.  When you use <em>with</em> a transaction is
 started.  If the block finishes with an exception then the
 transaction is rolled back, otherwise it is committed.  For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
-    <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;....&quot;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;....&quot;</span><span class="p">)</span>
     <span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
-        <span class="c"># nested is supported</span>
+        <span class="c1"># nested is supported</span>
         <span class="n">call_function</span><span class="p">(</span><span class="n">connection</span><span class="p">)</span>
-        <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;...&quot;</span><span class="p">)</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">connection</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
-            <span class="c"># You can also use &#39;as&#39;</span>
+            <span class="c1"># You can also use &#39;as&#39;</span>
             <span class="n">call_function2</span><span class="p">(</span><span class="n">db</span><span class="p">)</span>
-            <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;...&quot;</span><span class="p">)</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Behind the scenes the <a class="reference external" href="https://sqlite.org/lang_savepoint.html">savepoint</a> functionality introduced in
@@ -333,7 +333,7 @@ collation could take into account locale or do numeric sorting.</p>
 <p>The <em>callback</em> will be called with two items.  It should return -1
 if the first is less then the second, 0 if they are equal, and 1 if
 first is greater:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">mycollation</span><span class="p">(</span><span class="n">one</span><span class="p">,</span> <span class="n">two</span><span class="p">):</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">mycollation</span><span class="p">(</span><span class="n">one</span><span class="p">,</span> <span class="n">two</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">one</span> <span class="o">&lt;</span> <span class="n">two</span><span class="p">:</span>
         <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
     <span class="k">if</span> <span class="n">one</span> <span class="o">==</span> <span class="n">two</span><span class="p">:</span>
@@ -391,9 +391,9 @@ length of a string is.</li>
 <p class="first admonition-title">Note</p>
 <p>You can register the same named function but with different
 <em>callable</em> and <em>numargs</em>.  For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">connection</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s">&quot;toip&quot;</span><span class="p">,</span> <span class="n">ipv4convert</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s">&quot;toip&quot;</span><span class="p">,</span> <span class="n">ipv6convert</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s">&quot;toip&quot;</span><span class="p">,</span> <span class="n">strconvert</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">connection</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s2">&quot;toip&quot;</span><span class="p">,</span> <span class="n">ipv4convert</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s2">&quot;toip&quot;</span><span class="p">,</span> <span class="n">ipv6convert</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s2">&quot;toip&quot;</span><span class="p">,</span> <span class="n">strconvert</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="last">The one with the correct <em>numargs</em> will be called and only if that
@@ -479,33 +479,33 @@ than 100 reserved for SQLite internal use.</li>
 something mutable.  Here is an example using <a class="reference external" href="http://www.python.org/doc/2.5.2/lib/module-ctypes.html">ctypes</a> of
 passing a Python dictionary to <a class="reference internal" href="vfs.html#apsw.VFSFile.xFileControl" title="apsw.VFSFile.xFileControl"><code class="xref py py-meth docutils literal"><span class="pre">xFileControl()</span></code></a> which
 can then modify the dictionary to set return values:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">obj</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;foo&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>                 <span class="c"># object we want to pass</span>
-<span class="n">objwrap</span><span class="o">=</span><span class="n">ctypes</span><span class="o">.</span><span class="n">py_object</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>        <span class="c"># objwrap must live before and after the call else</span>
-                                     <span class="c"># it gets garbage collected</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">obj</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;foo&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>                 <span class="c1"># object we want to pass</span>
+<span class="n">objwrap</span><span class="o">=</span><span class="n">ctypes</span><span class="o">.</span><span class="n">py_object</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>        <span class="c1"># objwrap must live before and after the call else</span>
+                                     <span class="c1"># it gets garbage collected</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">filecontrol</span><span class="p">(</span>
-         <span class="s">&quot;main&quot;</span><span class="p">,</span>                     <span class="c"># which db</span>
-         <span class="mi">123</span><span class="p">,</span>                        <span class="c"># our op code</span>
-         <span class="n">ctypes</span><span class="o">.</span><span class="n">addressof</span><span class="p">(</span><span class="n">objwrap</span><span class="p">))</span>  <span class="c"># get pointer</span>
+         <span class="s2">&quot;main&quot;</span><span class="p">,</span>                     <span class="c1"># which db</span>
+         <span class="mi">123</span><span class="p">,</span>                        <span class="c1"># our op code</span>
+         <span class="n">ctypes</span><span class="o">.</span><span class="n">addressof</span><span class="p">(</span><span class="n">objwrap</span><span class="p">))</span>  <span class="c1"># get pointer</span>
 </pre></div>
 </div>
 <p>The <a class="reference internal" href="vfs.html#apsw.VFSFile.xFileControl" title="apsw.VFSFile.xFileControl"><code class="xref py py-meth docutils literal"><span class="pre">xFileControl()</span></code></a> method then looks like this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">xFileControl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">pointer</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">op</span><span class="o">==</span><span class="mi">123</span><span class="p">:</span>                      <span class="c"># our op code</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xFileControl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">pointer</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">op</span><span class="o">==</span><span class="mi">123</span><span class="p">:</span>                      <span class="c1"># our op code</span>
         <span class="n">obj</span><span class="o">=</span><span class="n">ctypes</span><span class="o">.</span><span class="n">py_object</span><span class="o">.</span><span class="n">from_address</span><span class="p">(</span><span class="n">pointer</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
-        <span class="c"># play with obj - you can use id() to verify it is the same</span>
-        <span class="nb">print</span> <span class="n">obj</span><span class="p">[</span><span class="s">&quot;foo&quot;</span><span class="p">]</span>
-        <span class="n">obj</span><span class="p">[</span><span class="s">&quot;result&quot;</span><span class="p">]</span><span class="o">=</span><span class="s">&quot;it worked&quot;</span>
-        <span class="k">return</span> <span class="k">True</span>
+        <span class="c1"># play with obj - you can use id() to verify it is the same</span>
+        <span class="nb">print</span> <span class="n">obj</span><span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">]</span>
+        <span class="n">obj</span><span class="p">[</span><span class="s2">&quot;result&quot;</span><span class="p">]</span><span class="o">=</span><span class="s2">&quot;it worked&quot;</span>
+        <span class="k">return</span> <span class="kc">True</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="c"># pass to parent/superclass</span>
+        <span class="c1"># pass to parent/superclass</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">MyFile</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">xFileControl</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">pointer</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>This is how you set the chunk size by which the database grows.  Do
 not combine it into one line as the c_int would be garbage collected
 before the filecontrol call is made:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">chunksize</span><span class="o">=</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="mi">32768</span><span class="p">)</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">filecontrol</span><span class="p">(</span><span class="s">&quot;main&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_FCNTL_CHUNK_SIZE</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">addressof</span><span class="p">(</span><span class="n">chunksize</span><span class="p">))</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">chunksize</span><span class="o">=</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="mi">32768</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">filecontrol</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_FCNTL_CHUNK_SIZE</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">addressof</span><span class="p">(</span><span class="n">chunksize</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/file_control.html">sqlite3_file_control</a></p>
@@ -1050,13 +1050,13 @@ number of frames checkpointed as described in the
         <li class="right" >
           <a href="apsw.html" title="APSW Module"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Nov 12, 2017.
+      Last updated on Mar 04, 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

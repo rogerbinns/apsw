@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Virtual Tables &#8212; APSW 3.21.0-r1 documentation</title>
+    <title>Virtual Tables &#8212; APSW 3.22.0-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.21.0-r1',
+        VERSION:     '3.22.0-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -53,7 +53,7 @@
         <li class="right" >
           <a href="backup.html" title="Backup"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -105,14 +105,14 @@ all the methods documented here.</p>
 <p>A module instance is used to create the virtual tables.  Once you have
 a module object, you register it with a connection by calling
 <a class="reference internal" href="connection.html#apsw.Connection.createmodule" title="apsw.Connection.createmodule"><code class="xref py py-meth docutils literal"><span class="pre">Connection.createmodule()</span></code></a>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="c"># make an instance</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># make an instance</span>
 <span class="n">mymod</span><span class="o">=</span><span class="n">MyModuleClass</span><span class="p">()</span>
 
-<span class="c"># register the vtable on connection con</span>
-<span class="n">con</span><span class="o">.</span><span class="n">createmodule</span><span class="p">(</span><span class="s">&quot;modulename&quot;</span><span class="p">,</span> <span class="n">mymod</span><span class="p">)</span>
+<span class="c1"># register the vtable on connection con</span>
+<span class="n">con</span><span class="o">.</span><span class="n">createmodule</span><span class="p">(</span><span class="s2">&quot;modulename&quot;</span><span class="p">,</span> <span class="n">mymod</span><span class="p">)</span>
 
-<span class="c"># tell SQLite about the table</span>
-<span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;create VIRTUAL table tablename USING modulename(&#39;arg1&#39;, 2)&quot;</span><span class="p">)</span>
+<span class="c1"># tell SQLite about the table</span>
+<span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create VIRTUAL table tablename USING modulename(&#39;arg1&#39;, 2)&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The create step is to tell SQLite about the existence of the table.
@@ -131,10 +131,10 @@ find and reuse that on the subsequent <a class="reference internal" href="#apsw.
 calls.</p>
 <p>The corresponding call is <a class="reference internal" href="#apsw.VTTable.Disconnect" title="apsw.VTTable.Disconnect"><code class="xref py py-meth docutils literal"><span class="pre">VTTable.Disconnect()</span></code></a>.  If you have a simple virtual table implemtation, then just
 set <a class="reference internal" href="#apsw.VTModule.Connect" title="apsw.VTModule.Connect"><code class="xref py py-meth docutils literal"><span class="pre">Connect()</span></code></a> to be the same as <a class="reference internal" href="#apsw.VTModule.Create" title="apsw.VTModule.Create"><code class="xref py py-meth docutils literal"><span class="pre">Create()</span></code></a>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="k">class</span> <span class="nc">MyModule</span><span class="p">:</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyModule</span><span class="p">:</span>
 
      <span class="k">def</span> <span class="nf">Create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">modulename</span><span class="p">,</span> <span class="n">databasename</span><span class="p">,</span> <span class="n">tablename</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
-         <span class="c"># do lots of hard work</span>
+         <span class="c1"># do lots of hard work</span>
 
      <span class="n">Connect</span><span class="o">=</span><span class="n">Create</span>
 </pre></div>
@@ -236,7 +236,7 @@ the operation.</p>
 <span class="pre">quantity&lt;=10</span> <span class="pre">and</span> <span class="pre">customer='Acme</span> <span class="pre">Widgets'</span></code></p>
 <p>If customer is column 0, price column 2 and quantity column 5
 then the constraints will be:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_GT</span><span class="p">),</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_GT</span><span class="p">),</span>
 <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_LE</span><span class="p">),</span>
 <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_EQ</span><span class="p">)</span>
 </pre></div>
@@ -284,14 +284,14 @@ equality and price.</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><div class="first last highlight-default"><div class="highlight"><pre><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_GT</span><span class="p">),</span>
+<tr class="row-even"><td><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_GT</span><span class="p">),</span>
 <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_LE</span><span class="p">),</span>
 <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_EQ</span><span class="p">)</span>
 </pre></div>
 </div>
 </td>
-<td><div class="first last highlight-default"><div class="highlight"><pre><span class="mi">1</span><span class="p">,</span>
-<span class="k">None</span><span class="p">,</span>
+<td><div class="first last highlight-default"><div class="highlight"><pre><span></span><span class="mi">1</span><span class="p">,</span>
+<span class="kc">None</span><span class="p">,</span>
 <span class="mi">0</span>
 </pre></div>
 </div>
@@ -315,8 +315,8 @@ is. If not, then SQLite will have to sort the results first.</p>
 <blockquote>
 <div><p>Example query: <code class="docutils literal"><span class="pre">select</span> <span class="pre">*</span> <span class="pre">from</span> <span class="pre">foo</span> <span class="pre">order</span> <span class="pre">by</span> <span class="pre">price</span> <span class="pre">desc,</span> <span class="pre">quantity</span> <span class="pre">asc</span></code></p>
 <p>Price is column 2, quantity column 5 so orderbys will be:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="k">True</span><span class="p">),</span>  <span class="c"># True means descending, False is ascending</span>
-<span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="k">False</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>  <span class="c1"># True means descending, False is ascending</span>
+<span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -345,29 +345,29 @@ then it is best to evaluate B before A.</dd>
 <span class="pre">customer==&quot;Acme</span> <span class="pre">Widgets&quot;</span> <span class="pre">order</span> <span class="pre">by</span> <span class="pre">price</span> <span class="pre">desc,</span> <span class="pre">quantity</span> <span class="pre">asc</span></code>.
 Customer is column 0, price column 2 and quantity column 5. You can
 index on customer equality and price.</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">BestIndex</span><span class="p">(</span><span class="n">constraints</span><span class="p">,</span> <span class="n">orderbys</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">BestIndex</span><span class="p">(</span><span class="n">constraints</span><span class="p">,</span> <span class="n">orderbys</span><span class="p">)</span>
 
 <span class="n">constraints</span><span class="o">=</span> <span class="p">(</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_GT</span><span class="p">),</span>
                <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_LE</span><span class="p">),</span>
                <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_EQ</span><span class="p">)</span>  <span class="p">)</span>
 
-<span class="n">orderbys</span><span class="o">=</span> <span class="p">(</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="k">True</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="k">False</span><span class="p">)</span> <span class="p">)</span>
+<span class="n">orderbys</span><span class="o">=</span> <span class="p">(</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="p">)</span>
 
-<span class="c"># You return</span>
+<span class="c1"># You return</span>
 
-<span class="p">(</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="k">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>   <span class="c"># constraints used</span>
-  <span class="mi">27</span><span class="p">,</span>             <span class="c"># index number</span>
-  <span class="s">&quot;idx_pr_cust&quot;</span><span class="p">,</span>  <span class="c"># index name</span>
-  <span class="k">False</span><span class="p">,</span>          <span class="c"># results are not in orderbys order</span>
-  <span class="mi">1000</span>            <span class="c"># about 1000 disk operations to access index</span>
+<span class="p">(</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>   <span class="c1"># constraints used</span>
+  <span class="mi">27</span><span class="p">,</span>             <span class="c1"># index number</span>
+  <span class="s2">&quot;idx_pr_cust&quot;</span><span class="p">,</span>  <span class="c1"># index name</span>
+  <span class="kc">False</span><span class="p">,</span>          <span class="c1"># results are not in orderbys order</span>
+  <span class="mi">1000</span>            <span class="c1"># about 1000 disk operations to access index</span>
 <span class="p">)</span>
 
-<span class="c"># Your Cursor.Filter method will be called with:</span>
+<span class="c1"># Your Cursor.Filter method will be called with:</span>
 
-<span class="mi">27</span><span class="p">,</span>              <span class="c"># index number you returned</span>
-<span class="s">&quot;idx_pr_cust&quot;</span><span class="p">,</span>   <span class="c"># index name you returned</span>
-<span class="s">&quot;Acme Widgets&quot;</span><span class="p">,</span>  <span class="c"># constraintarg[0] - customer</span>
-<span class="mf">74.99</span>            <span class="c"># constraintarg[1] - price</span>
+<span class="mi">27</span><span class="p">,</span>              <span class="c1"># index number you returned</span>
+<span class="s2">&quot;idx_pr_cust&quot;</span><span class="p">,</span>   <span class="c1"># index name you returned</span>
+<span class="s2">&quot;Acme Widgets&quot;</span><span class="p">,</span>  <span class="c1"># constraintarg[0] - customer</span>
+<span class="mf">74.99</span>            <span class="c1"># constraintarg[1] - price</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -691,13 +691,13 @@ receive any constraintargs at all.</p>
         <li class="right" >
           <a href="backup.html" title="Backup"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Nov 12, 2017.
+      Last updated on Mar 04, 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

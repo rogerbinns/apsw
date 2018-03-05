@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pysqlite differences &#8212; APSW 3.21.0-r1 documentation</title>
+    <title>pysqlite differences &#8212; APSW 3.22.0-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.21.0-r1',
+        VERSION:     '3.22.0-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -53,7 +53,7 @@
         <li class="right" >
           <a href="dbapi.html" title="DBAPI notes"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -122,19 +122,19 @@ many of its issues but you are still stuck with some.</p>
 multiple commands in the execute string in APSW. There are no
 restrictions on the type of commands used. For example this will
 work fine in APSW but is not allowed in pysqlite:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">apsw</span>
-<span class="n">con</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s">&quot;:memory:&quot;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">apsw</span>
+<span class="n">con</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
 <span class="n">cur</span><span class="o">=</span><span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;create table foo(x,y,z);insert into foo values (?,?,?);&quot;</span>
-                       <span class="s">&quot;insert into foo values(?,?,?);select * from foo;drop table foo;&quot;</span>
-                       <span class="s">&quot;create table bar(x,y);insert into bar values(?,?);&quot;</span>
-                       <span class="s">&quot;insert into bar values(?,?);select * from bar;&quot;</span><span class="p">,</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table foo(x,y,z);insert into foo values (?,?,?);&quot;</span>
+                       <span class="s2">&quot;insert into foo values(?,?,?);select * from foo;drop table foo;&quot;</span>
+                       <span class="s2">&quot;create table bar(x,y);insert into bar values(?,?);&quot;</span>
+                       <span class="s2">&quot;insert into bar values(?,?);select * from bar;&quot;</span><span class="p">,</span>
                        <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">)):</span>
                            <span class="nb">print</span> <span class="n">row</span>
 </pre></div>
 </div>
 <p>And the output as you would expect:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
 <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
 <span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
@@ -154,27 +154,27 @@ but
 that is a poor substitute. apsw does the right thing as demonstrated
 by this example.</p>
 <p>Source:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">badfunc</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">badfunc</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
     <span class="k">return</span> <span class="mi">1</span><span class="o">/</span><span class="mi">0</span>
 
-<span class="c"># pysqlite</span>
+<span class="c1"># pysqlite</span>
 <span class="kn">from</span> <span class="nn">pysqlite2</span> <span class="k">import</span> <span class="n">dbapi2</span> <span class="k">as</span> <span class="n">sqlite</span>
 
-<span class="n">con</span> <span class="o">=</span> <span class="n">sqlite</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">&quot;:memory:&quot;</span><span class="p">)</span>
-<span class="n">con</span><span class="o">.</span><span class="n">create_function</span><span class="p">(</span><span class="s">&quot;badfunc&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">badfunc</span><span class="p">)</span>
+<span class="n">con</span> <span class="o">=</span> <span class="n">sqlite</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
+<span class="n">con</span><span class="o">.</span><span class="n">create_function</span><span class="p">(</span><span class="s2">&quot;badfunc&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">badfunc</span><span class="p">)</span>
 <span class="n">cur</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-<span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select badfunc(3)&quot;</span><span class="p">)</span>
+<span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select badfunc(3)&quot;</span><span class="p">)</span>
 
-<span class="c"># apsw</span>
+<span class="c1"># apsw</span>
 <span class="kn">import</span> <span class="nn">apsw</span>
-<span class="n">con</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s">&quot;:memory:&quot;</span><span class="p">)</span>
-<span class="n">con</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s">&quot;badfunc&quot;</span><span class="p">,</span> <span class="n">badfunc</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">con</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
+<span class="n">con</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s2">&quot;badfunc&quot;</span><span class="p">,</span> <span class="n">badfunc</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="n">cur</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-<span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select badfunc(3)&quot;</span><span class="p">)</span>
+<span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select badfunc(3)&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Exceptions:</p>
-<div class="highlight-default"><div class="highlight"><pre># pysqlite
+<div class="highlight-default"><div class="highlight"><pre><span></span># pysqlite
 
 Traceback (most recent call last):
   File &quot;func.py&quot;, line 8, in ?
@@ -245,8 +245,8 @@ that deals with the text data.</p>
 be considered invalid by other tools reading the data (eg Java,
 PHP).  If you somehow do manage to get non-Unicode data as a SQLite
 string, you can cast it to a blob:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select CAST(column as BLOB) from table&quot;</span><span class="p">):</span>
-   <span class="c"># row[0] is buffer (py2) or bytes (py3) here</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select CAST(column as BLOB) from table&quot;</span><span class="p">):</span>
+   <span class="c1"># row[0] is buffer (py2) or bytes (py3) here</span>
    <span class="n">deal_with_binary_data</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -312,13 +312,13 @@ string, you can cast it to a blob:</p>
         <li class="right" >
           <a href="dbapi.html" title="DBAPI notes"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Nov 12, 2017.
+      Last updated on Mar 04, 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

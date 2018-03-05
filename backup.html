@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Backup &#8212; APSW 3.21.0-r1 documentation</title>
+    <title>Backup &#8212; APSW 3.22.0-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.21.0-r1',
+        VERSION:     '3.22.0-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -53,7 +53,7 @@
         <li class="right" >
           <a href="blob.html" title="Blob Input/Output"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -72,21 +72,21 @@ repeatedly dealing with errors as appropriate.  Finally
 releasing locks.</p>
 <p>Here is an example usage using the <strong>with</strong> statement to ensure
 <a class="reference internal" href="#apsw.backup.finish" title="apsw.backup.finish"><code class="xref py py-meth docutils literal"><span class="pre">finish()</span></code></a> is called:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="c"># copies source.main into db</span>
-<span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">backup</span><span class="p">(</span><span class="s">&quot;main&quot;</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="s">&quot;main&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">b</span><span class="p">:</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># copies source.main into db</span>
+<span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">backup</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">b</span><span class="p">:</span>
     <span class="k">while</span> <span class="ow">not</span> <span class="n">b</span><span class="o">.</span><span class="n">done</span><span class="p">:</span>
         <span class="n">b</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
-        <span class="nb">print</span> <span class="n">b</span><span class="o">.</span><span class="n">remaining</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">pagecount</span><span class="p">,</span> <span class="s">&quot;</span><span class="se">\r</span><span class="s">&quot;</span><span class="p">,</span>
+        <span class="nb">print</span> <span class="n">b</span><span class="o">.</span><span class="n">remaining</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">pagecount</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">,</span>
 </pre></div>
 </div>
 <p>If you are not using <strong>with</strong> then you&#8217;ll need to ensure
 <a class="reference internal" href="#apsw.backup.finish" title="apsw.backup.finish"><code class="xref py py-meth docutils literal"><span class="pre">finish()</span></code></a> is called:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="c"># copies source.main into db</span>
-<span class="n">b</span><span class="o">=</span><span class="n">db</span><span class="o">.</span><span class="n">backup</span><span class="p">(</span><span class="s">&quot;main&quot;</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="s">&quot;main&quot;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># copies source.main into db</span>
+<span class="n">b</span><span class="o">=</span><span class="n">db</span><span class="o">.</span><span class="n">backup</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="k">while</span> <span class="ow">not</span> <span class="n">b</span><span class="o">.</span><span class="n">done</span><span class="p">:</span>
         <span class="n">b</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
-        <span class="nb">print</span> <span class="n">b</span><span class="o">.</span><span class="n">remaining</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">pagecount</span><span class="p">,</span> <span class="s">&quot;</span><span class="se">\r</span><span class="s">&quot;</span><span class="p">,</span>
+        <span class="nb">print</span> <span class="n">b</span><span class="o">.</span><span class="n">remaining</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">pagecount</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">,</span>
 <span class="k">finally</span><span class="p">:</span>
     <span class="n">b</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span>
 </pre></div>
@@ -267,13 +267,13 @@ again.</p>
         <li class="right" >
           <a href="blob.html" title="Blob Input/Output"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Nov 12, 2017.
+      Last updated on Mar 04, 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

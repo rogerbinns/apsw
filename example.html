@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Example &#8212; APSW 3.21.0-r1 documentation</title>
+    <title>Example &#8212; APSW 3.22.0-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.21.0-r1',
+        VERSION:     '3.22.0-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -53,7 +53,7 @@
         <li class="right" >
           <a href="tips.html" title="Tips"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -67,158 +67,158 @@
 <p>This code demonstrates usage of the APSW api.  It gives you a good
 overview of all the things that can be done.  Also included is output
 so you can see what gets printed when you run the code.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">time</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">apsw</span>
 
-<span class="c">###</span>
-<span class="c">### Check we have the expected version of apsw and sqlite</span>
-<span class="c">###</span>
+<span class="c1">###</span>
+<span class="c1">### Check we have the expected version of apsw and sqlite</span>
+<span class="c1">###</span>
 
-<span class="k">print</span> <span class="s">&quot;      Using APSW file&quot;</span><span class="p">,</span><span class="n">apsw</span><span class="o">.</span><span class="n">__file__</span>                <span class="c"># from the extension module</span>
-<span class="k">print</span> <span class="s">&quot;         APSW version&quot;</span><span class="p">,</span><span class="n">apsw</span><span class="o">.</span><span class="n">apswversion</span><span class="p">()</span>           <span class="c"># from the extension module</span>
-<span class="k">print</span> <span class="s">&quot;   SQLite lib version&quot;</span><span class="p">,</span><span class="n">apsw</span><span class="o">.</span><span class="n">sqlitelibversion</span><span class="p">()</span>      <span class="c"># from the sqlite library code</span>
-<span class="k">print</span> <span class="s">&quot;SQLite header version&quot;</span><span class="p">,</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_VERSION_NUMBER</span>   <span class="c"># from the sqlite header file at compile time</span>
+<span class="k">print</span> <span class="s2">&quot;      Using APSW file&quot;</span><span class="p">,</span><span class="n">apsw</span><span class="o">.</span><span class="vm">__file__</span>                <span class="c1"># from the extension module</span>
+<span class="k">print</span> <span class="s2">&quot;         APSW version&quot;</span><span class="p">,</span><span class="n">apsw</span><span class="o">.</span><span class="n">apswversion</span><span class="p">()</span>           <span class="c1"># from the extension module</span>
+<span class="k">print</span> <span class="s2">&quot;   SQLite lib version&quot;</span><span class="p">,</span><span class="n">apsw</span><span class="o">.</span><span class="n">sqlitelibversion</span><span class="p">()</span>      <span class="c1"># from the sqlite library code</span>
+<span class="k">print</span> <span class="s2">&quot;SQLite header version&quot;</span><span class="p">,</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_VERSION_NUMBER</span>   <span class="c1"># from the sqlite header file at compile time</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>|       Using APSW file /space/apsw/apsw.so
-|          APSW version 3.21.0-r1
-|    SQLite lib version 3.21.0
-| SQLite header version 3021000
+<div class="highlight-text"><div class="highlight"><pre><span></span>|       Using APSW file /space/apsw/apsw.so
+|          APSW version 3.22.0-r1
+|    SQLite lib version 3.22.0
+| SQLite header version 3022000
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span class="c">###</span>
-<span class="c">### Opening/creating database</span>
-<span class="c">###</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1">###</span>
+<span class="c1">### Opening/creating database</span>
+<span class="c1">###</span>
 
-<span class="n">connection</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s">&quot;dbfile&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;dbfile&quot;</span><span class="p">)</span>
 <span class="n">cursor</span><span class="o">=</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-python" id="example-cursor"><div class="highlight"><pre><span class="c">###</span>
-<span class="c">### simple statement</span>
-<span class="c">###</span>
+<div class="highlight-python" id="example-cursor"><div class="highlight"><pre><span></span><span class="c1">###</span>
+<span class="c1">### simple statement</span>
+<span class="c1">###</span>
 
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;create table foo(x,y,z)&quot;</span><span class="p">)</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table foo(x,y,z)&quot;</span><span class="p">)</span>
 
-<span class="c">###</span>
-<span class="c">### using different types</span>
-<span class="c">###</span>
+<span class="c1">###</span>
+<span class="c1">### using different types</span>
+<span class="c1">###</span>
 
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into foo values(?,?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>  <span class="c"># integer, float/real, Null</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into foo(x) values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&quot;abc&quot;</span><span class="p">,</span> <span class="p">))</span>        <span class="c"># string (note trailing comma to ensure tuple!)</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into foo(x) values(?)&quot;</span><span class="p">,</span>                   <span class="c"># a blob (binary data)</span>
-                    <span class="p">(</span><span class="nb">buffer</span><span class="p">(</span><span class="s">&quot;abc</span><span class="se">\xff\xfe</span><span class="s">&quot;</span><span class="p">),</span> <span class="p">))</span>                   <span class="c"># Use b&quot;abc\xff\xfe&quot; for Python 3</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo values(?,?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="bp">None</span><span class="p">))</span>  <span class="c1"># integer, float/real, Null</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo(x) values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;abc&quot;</span><span class="p">,</span> <span class="p">))</span>        <span class="c1"># string (note trailing comma to ensure tuple!)</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo(x) values(?)&quot;</span><span class="p">,</span>                   <span class="c1"># a blob (binary data)</span>
+                    <span class="p">(</span><span class="nb">buffer</span><span class="p">(</span><span class="s2">&quot;abc</span><span class="se">\xff\xfe</span><span class="s2">&quot;</span><span class="p">),</span> <span class="p">))</span>                   <span class="c1"># Use b&quot;abc\xff\xfe&quot; for Python 3</span>
 
-<span class="c">###</span>
-<span class="c">### multiple statements</span>
-<span class="c">###</span>
+<span class="c1">###</span>
+<span class="c1">### multiple statements</span>
+<span class="c1">###</span>
 
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;delete from foo; insert into foo values(1,2,3); create table bar(a,b,c) ; insert into foo values(4, &#39;five&#39;, 6.0)&quot;</span><span class="p">)</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;delete from foo; insert into foo values(1,2,3); create table bar(a,b,c) ; insert into foo values(4, &#39;five&#39;, 6.0)&quot;</span><span class="p">)</span>
 
-<span class="c">###</span>
-<span class="c">### iterator</span>
-<span class="c">###</span>
+<span class="c1">###</span>
+<span class="c1">### iterator</span>
+<span class="c1">###</span>
 
-<span class="k">for</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select x,y,z from foo&quot;</span><span class="p">):</span>
-    <span class="k">print</span> <span class="n">cursor</span><span class="o">.</span><span class="n">getdescription</span><span class="p">()</span>  <span class="c"># shows column names and declared types</span>
+<span class="k">for</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select x,y,z from foo&quot;</span><span class="p">):</span>
+    <span class="k">print</span> <span class="n">cursor</span><span class="o">.</span><span class="n">getdescription</span><span class="p">()</span>  <span class="c1"># shows column names and declared types</span>
     <span class="k">print</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span>
 
-<span class="c">###</span>
-<span class="c">### iterator - multiple statements</span>
-<span class="c">###</span>
+<span class="c1">###</span>
+<span class="c1">### iterator - multiple statements</span>
+<span class="c1">###</span>
 
-<span class="k">for</span> <span class="n">m</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">o</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select x,y,z from foo ; select a,b,c from bar&quot;</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">m</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">o</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select x,y,z from foo ; select a,b,c from bar&quot;</span><span class="p">):</span>
     <span class="k">print</span> <span class="n">m</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">o</span>
 
-<span class="c">###</span>
-<span class="c">### bindings - sequence</span>
-<span class="c">###</span>
+<span class="c1">###</span>
+<span class="c1">### bindings - sequence</span>
+<span class="c1">###</span>
 
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into foo values(?,?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="s">&#39;eight&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">))</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into foo values(?,?,?1)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;one&#39;</span><span class="p">,</span> <span class="s">&#39;two&#39;</span><span class="p">))</span>  <span class="c"># nb sqlite does the numbers from 1</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo values(?,?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="s1">&#39;eight&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">))</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo values(?,?,?1)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;one&#39;</span><span class="p">,</span> <span class="s1">&#39;two&#39;</span><span class="p">))</span>  <span class="c1"># nb sqlite does the numbers from 1</span>
 
-<span class="c">###</span>
-<span class="c">### bindings - dictionary</span>
-<span class="c">###</span>
+<span class="c1">###</span>
+<span class="c1">### bindings - dictionary</span>
+<span class="c1">###</span>
 
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into foo values(:alpha, :beta, :gamma)&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;alpha&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;beta&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#39;gamma&#39;</span><span class="p">:</span> <span class="s">&#39;three&#39;</span><span class="p">})</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo values(:alpha, :beta, :gamma)&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;beta&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;gamma&#39;</span><span class="p">:</span> <span class="s1">&#39;three&#39;</span><span class="p">})</span>
 </pre></div>
 </div>
-<div class="highlight-python" id="example-exectrace"><div class="highlight"><pre><span class="c">###</span>
-<span class="c">### tracing execution</span>
-<span class="c">###</span>
+<div class="highlight-python" id="example-exectrace"><div class="highlight"><pre><span></span><span class="c1">###</span>
+<span class="c1">### tracing execution</span>
+<span class="c1">###</span>
 
 <span class="k">def</span> <span class="nf">mytrace</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">statement</span><span class="p">,</span> <span class="n">bindings</span><span class="p">):</span>
-    <span class="s">&quot;Called just before executing each statement&quot;</span>
-    <span class="k">print</span> <span class="s">&quot;SQL:&quot;</span><span class="p">,</span><span class="n">statement</span>
+    <span class="s2">&quot;Called just before executing each statement&quot;</span>
+    <span class="k">print</span> <span class="s2">&quot;SQL:&quot;</span><span class="p">,</span><span class="n">statement</span>
     <span class="k">if</span> <span class="n">bindings</span><span class="p">:</span>
-        <span class="k">print</span> <span class="s">&quot;Bindings:&quot;</span><span class="p">,</span><span class="n">bindings</span>
-    <span class="k">return</span> <span class="bp">True</span>  <span class="c"># if you return False then execution is aborted</span>
+        <span class="k">print</span> <span class="s2">&quot;Bindings:&quot;</span><span class="p">,</span><span class="n">bindings</span>
+    <span class="k">return</span> <span class="bp">True</span>  <span class="c1"># if you return False then execution is aborted</span>
 
 <span class="n">cursor</span><span class="o">.</span><span class="n">setexectrace</span><span class="p">(</span><span class="n">mytrace</span><span class="p">)</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;drop table bar ; create table bar(x,y,z); select * from foo where x=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,))</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;drop table bar ; create table bar(x,y,z); select * from foo where x=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,))</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>| SQL: drop table bar ;
+<div class="highlight-text"><div class="highlight"><pre><span></span>| SQL: drop table bar ;
 | SQL: create table bar(x,y,z);
 | SQL: select * from foo where x=?
 | Bindings: (3,)
 </pre></div>
 </div>
-<div class="highlight-python" id="example-rowtrace"><div class="highlight"><pre><span class="c">###</span>
-<span class="c">### tracing results</span>
-<span class="c">###</span>
+<div class="highlight-python" id="example-rowtrace"><div class="highlight"><pre><span></span><span class="c1">###</span>
+<span class="c1">### tracing results</span>
+<span class="c1">###</span>
 
 <span class="k">def</span> <span class="nf">rowtrace</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">row</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Called with each row of results before they are handed off.  You can return None to</span>
 <span class="sd">    cause the row to be skipped or a different set of values to return&quot;&quot;&quot;</span>
-    <span class="k">print</span> <span class="s">&quot;Row:&quot;</span><span class="p">,</span> <span class="n">row</span>
+    <span class="k">print</span> <span class="s2">&quot;Row:&quot;</span><span class="p">,</span> <span class="n">row</span>
     <span class="k">return</span> <span class="n">row</span>
 
 <span class="n">cursor</span><span class="o">.</span><span class="n">setrowtrace</span><span class="p">(</span><span class="n">rowtrace</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select x,y from foo where x&gt;3&quot;</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select x,y from foo where x&gt;3&quot;</span><span class="p">):</span>
      <span class="k">pass</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>| SQL: select x,y from foo where x&gt;3
+<div class="highlight-text"><div class="highlight"><pre><span></span>| SQL: select x,y from foo where x&gt;3
 | Row: (4, &#39;five&#39;)
 | Row: (7, &#39;eight&#39;)
 | Row: (&#39;one&#39;, &#39;two&#39;)
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># Clear tracers</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Clear tracers</span>
 <span class="n">cursor</span><span class="o">.</span><span class="n">setrowtrace</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
 <span class="n">cursor</span><span class="o">.</span><span class="n">setexectrace</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
 
-<span class="c">###</span>
-<span class="c">### executemany</span>
-<span class="c">###</span>
+<span class="c1">###</span>
+<span class="c1">### executemany</span>
+<span class="c1">###</span>
 
-<span class="c"># (This will work correctly with multiple statements, as well as statements that</span>
-<span class="c"># return data.  The second argument can be anything that is iterable.)</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s">&quot;insert into foo (x) values(?)&quot;</span><span class="p">,</span> <span class="p">(</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="p">)</span> <span class="p">)</span>
+<span class="c1"># (This will work correctly with multiple statements, as well as statements that</span>
+<span class="c1"># return data.  The second argument can be anything that is iterable.)</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;insert into foo (x) values(?)&quot;</span><span class="p">,</span> <span class="p">(</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="p">)</span> <span class="p">)</span>
 
-<span class="c"># You can also use it for statements that return data</span>
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s">&quot;select * from foo where x=?&quot;</span><span class="p">,</span> <span class="p">(</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="p">)</span> <span class="p">):</span>
+<span class="c1"># You can also use it for statements that return data</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;select * from foo where x=?&quot;</span><span class="p">,</span> <span class="p">(</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="p">)</span> <span class="p">):</span>
     <span class="k">print</span> <span class="n">row</span>
 </pre></div>
 </div>
-<div class="highlight-python" id="scalar-example"><div class="highlight"><pre><span class="c">###</span>
-<span class="c">### defining your own functions</span>
-<span class="c">###</span>
+<div class="highlight-python" id="scalar-example"><div class="highlight"><pre><span></span><span class="c1">###</span>
+<span class="c1">### defining your own functions</span>
+<span class="c1">###</span>
 
 <span class="k">def</span> <span class="nf">ilove7</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
-    <span class="s">&quot;a scalar function&quot;</span>
-    <span class="k">print</span> <span class="s">&quot;ilove7 got&quot;</span><span class="p">,</span><span class="n">args</span><span class="p">,</span><span class="s">&quot;but I love 7&quot;</span>
+    <span class="s2">&quot;a scalar function&quot;</span>
+    <span class="k">print</span> <span class="s2">&quot;ilove7 got&quot;</span><span class="p">,</span><span class="n">args</span><span class="p">,</span><span class="s2">&quot;but I love 7&quot;</span>
     <span class="k">return</span> <span class="mi">7</span>
 
-<span class="n">connection</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s">&quot;seven&quot;</span><span class="p">,</span> <span class="n">ilove7</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s2">&quot;seven&quot;</span><span class="p">,</span> <span class="n">ilove7</span><span class="p">)</span>
 
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select seven(x,y) from foo&quot;</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select seven(x,y) from foo&quot;</span><span class="p">):</span>
     <span class="k">print</span> <span class="n">row</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>| ilove7 got (1, 2) but I love 7
+<div class="highlight-text"><div class="highlight"><pre><span></span>| ilove7 got (1, 2) but I love 7
 | (7,)
 | ilove7 got (4, &#39;five&#39;) but I love 7
 | (7,)
@@ -236,15 +236,15 @@ so you can see what gets printed when you run the code.</p>
 | (7,)
 </pre></div>
 </div>
-<div class="highlight-python" id="aggregate-example"><div class="highlight"><pre><span class="c">###</span>
-<span class="c">### aggregate functions are more complex</span>
-<span class="c">###</span>
+<div class="highlight-python" id="aggregate-example"><div class="highlight"><pre><span></span><span class="c1">###</span>
+<span class="c1">### aggregate functions are more complex</span>
+<span class="c1">###</span>
 
-<span class="c"># Here we return the longest item when represented as a string.</span>
+<span class="c1"># Here we return the longest item when represented as a string.</span>
 
 <span class="k">class</span> <span class="nc">longest</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">longest</span><span class="o">=</span><span class="s">&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">longest</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
@@ -254,213 +254,214 @@ so you can see what gets printed when you run the code.</p>
     <span class="k">def</span> <span class="nf">final</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">longest</span>
 
-    <span class="c"># Under Python 2.3 remove the following line and add</span>
-    <span class="c"># factory=classmethod(factory) at the end</span>
+    <span class="c1"># Under Python 2.3 remove the following line and add</span>
+    <span class="c1"># factory=classmethod(factory) at the end</span>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">factory</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">cls</span><span class="p">(),</span> <span class="n">cls</span><span class="o">.</span><span class="n">step</span><span class="p">,</span> <span class="n">cls</span><span class="o">.</span><span class="n">final</span>
+    <span class="k">def</span> <span class="nf">factory</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(),</span> <span class="bp">cls</span><span class="o">.</span><span class="n">step</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">final</span>
 
-<span class="n">connection</span><span class="o">.</span><span class="n">createaggregatefunction</span><span class="p">(</span><span class="s">&quot;longest&quot;</span><span class="p">,</span> <span class="n">longest</span><span class="o">.</span><span class="n">factory</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select longest(x,y) from foo&quot;</span><span class="p">):</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">createaggregatefunction</span><span class="p">(</span><span class="s2">&quot;longest&quot;</span><span class="p">,</span> <span class="n">longest</span><span class="o">.</span><span class="n">factory</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select longest(x,y) from foo&quot;</span><span class="p">):</span>
     <span class="k">print</span> <span class="n">row</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>| (&#39;eight&#39;,)
+<div class="highlight-text"><div class="highlight"><pre><span></span>| (&#39;eight&#39;,)
 </pre></div>
 </div>
-<div class="highlight-python" id="collation-example"><div class="highlight"><pre><span class="c">###</span>
-<span class="c">### Defining collations.</span>
-<span class="c">###</span>
+<div class="highlight-python" id="collation-example"><div class="highlight"><pre><span></span><span class="c1">###</span>
+<span class="c1">### Defining collations.</span>
+<span class="c1">###</span>
 
-<span class="c"># The default sorting mechanisms don&#39;t understand numbers at the end of strings</span>
-<span class="c"># so here we define a collation that does</span>
+<span class="c1"># The default sorting mechanisms don&#39;t understand numbers at the end of strings</span>
+<span class="c1"># so here we define a collation that does</span>
 
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;create table s(str)&quot;</span><span class="p">)</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s">&quot;insert into s values(?)&quot;</span><span class="p">,</span>
-                  <span class="p">(</span> <span class="p">[</span><span class="s">&quot;file1&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s">&quot;file7&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s">&quot;file17&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s">&quot;file20&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s">&quot;file3&quot;</span><span class="p">]</span> <span class="p">)</span> <span class="p">)</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table s(str)&quot;</span><span class="p">)</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;insert into s values(?)&quot;</span><span class="p">,</span>
+                  <span class="p">(</span> <span class="p">[</span><span class="s2">&quot;file1&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;file7&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;file17&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;file20&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;file3&quot;</span><span class="p">]</span> <span class="p">)</span> <span class="p">)</span>
 
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select * from s order by str&quot;</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from s order by str&quot;</span><span class="p">):</span>
     <span class="k">print</span> <span class="n">row</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>| (&#39;file1&#39;,)
+<div class="highlight-text"><div class="highlight"><pre><span></span>| (&#39;file1&#39;,)
 | (&#39;file17&#39;,)
 | (&#39;file20&#39;,)
 | (&#39;file3&#39;,)
 | (&#39;file7&#39;,)
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">strnumcollate</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">):</span>
-    <span class="c"># return -1 if s1&lt;s2, +1 if s1&gt;s2 else 0</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">strnumcollate</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">):</span>
+    <span class="c1"># return -1 if s1&lt;s2, +1 if s1&gt;s2 else 0</span>
 
-    <span class="c"># split values into two parts - the head and the numeric tail</span>
+    <span class="c1"># split values into two parts - the head and the numeric tail</span>
     <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">]</span>
     <span class="k">for</span> <span class="n">vn</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="s">&quot;01234567890&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="s2">&quot;01234567890&quot;</span><span class="p">:</span>
                 <span class="k">break</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">v</span><span class="o">=</span><span class="p">(</span> <span class="n">v</span><span class="p">[:</span><span class="n">i</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">:])</span> <span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
             <span class="n">v</span><span class="o">=</span><span class="p">(</span> <span class="n">v</span><span class="p">[:</span><span class="n">i</span><span class="p">],</span> <span class="bp">None</span> <span class="p">)</span>
         <span class="n">values</span><span class="p">[</span><span class="n">vn</span><span class="p">]</span><span class="o">=</span><span class="n">v</span>
-    <span class="c"># compare</span>
+    <span class="c1"># compare</span>
     <span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">&lt;</span><span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
         <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
     <span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">&gt;</span><span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
         <span class="k">return</span> <span class="mi">1</span>
     <span class="k">return</span> <span class="mi">0</span>
 
-<span class="n">connection</span><span class="o">.</span><span class="n">createcollation</span><span class="p">(</span><span class="s">&quot;strnum&quot;</span><span class="p">,</span> <span class="n">strnumcollate</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">createcollation</span><span class="p">(</span><span class="s2">&quot;strnum&quot;</span><span class="p">,</span> <span class="n">strnumcollate</span><span class="p">)</span>
 
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select * from s order by str collate strnum&quot;</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from s order by str collate strnum&quot;</span><span class="p">):</span>
     <span class="k">print</span> <span class="n">row</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>| (&#39;file1&#39;,)
+<div class="highlight-text"><div class="highlight"><pre><span></span>| (&#39;file1&#39;,)
 | (&#39;file3&#39;,)
 | (&#39;file7&#39;,)
 | (&#39;file17&#39;,)
 | (&#39;file20&#39;,)
 </pre></div>
 </div>
-<div class="highlight-python" id="authorizer-example"><div class="highlight"><pre><span class="c">###</span>
-<span class="c">### Authorizer (eg if you want to control what user supplied SQL can do)</span>
-<span class="c">###</span>
+<div class="highlight-python" id="authorizer-example"><div class="highlight"><pre><span></span><span class="c1">###</span>
+<span class="c1">### Authorizer (eg if you want to control what user supplied SQL can do)</span>
+<span class="c1">###</span>
 
 <span class="k">def</span> <span class="nf">authorizer</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="n">paramone</span><span class="p">,</span> <span class="n">paramtwo</span><span class="p">,</span> <span class="n">databasename</span><span class="p">,</span> <span class="n">triggerorview</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Called when each operation is prepared.  We can return SQLITE_OK, SQLITE_DENY or</span>
 <span class="sd">    SQLITE_IGNORE&quot;&quot;&quot;</span>
-    <span class="c"># find the operation name</span>
+    <span class="c1"># find the operation name</span>
     <span class="k">print</span> <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_authorizer_function</span><span class="p">[</span><span class="n">operation</span><span class="p">],</span>
     <span class="k">print</span> <span class="n">paramone</span><span class="p">,</span> <span class="n">paramtwo</span><span class="p">,</span> <span class="n">databasename</span><span class="p">,</span> <span class="n">triggerorview</span>
-    <span class="k">if</span> <span class="n">operation</span><span class="o">==</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CREATE_TABLE</span> <span class="ow">and</span> <span class="n">paramone</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;private&quot;</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DENY</span>  <span class="c"># not allowed to create tables whose names start with private</span>
+    <span class="k">if</span> <span class="n">operation</span><span class="o">==</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CREATE_TABLE</span> <span class="ow">and</span> <span class="n">paramone</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;private&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DENY</span>  <span class="c1"># not allowed to create tables whose names start with private</span>
 
-    <span class="k">return</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OK</span>  <span class="c"># always allow</span>
+    <span class="k">return</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OK</span>  <span class="c1"># always allow</span>
 
 <span class="n">connection</span><span class="o">.</span><span class="n">setauthorizer</span><span class="p">(</span><span class="n">authorizer</span><span class="p">)</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into s values(&#39;foo&#39;)&quot;</span><span class="p">)</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select str from s limit 1&quot;</span><span class="p">)</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into s values(&#39;foo&#39;)&quot;</span><span class="p">)</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select str from s limit 1&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>| SQLITE_INSERT s None main None
+<div class="highlight-text"><div class="highlight"><pre><span></span>| SQLITE_INSERT s None main None
 | SQLITE_SELECT None None None None
 | SQLITE_READ s str main None
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># Cancel authorizer</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Cancel authorizer</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">setauthorizer</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python" id="example-progress-handler"><div class="highlight"><pre><span class="c">###</span>
-<span class="c">### progress handler (SQLite 3 experimental feature)</span>
-<span class="c">###</span>
+<div class="highlight-python" id="example-progress-handler"><div class="highlight"><pre><span></span><span class="c1">###</span>
+<span class="c1">### progress handler (SQLite 3 experimental feature)</span>
+<span class="c1">###</span>
 
-<span class="c"># something to give us large numbers of random numbers</span>
+<span class="c1"># something to give us large numbers of random numbers</span>
 <span class="kn">import</span> <span class="nn">random</span>
 <span class="k">def</span> <span class="nf">randomintegers</span><span class="p">(</span><span class="n">howmany</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">howmany</span><span class="p">):</span>
         <span class="k">yield</span> <span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">9999999999</span><span class="p">),)</span>
 
-<span class="c"># create a table with 100 random numbers</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;begin ; create table bigone(x)&quot;</span><span class="p">)</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s">&quot;insert into bigone values(?)&quot;</span><span class="p">,</span> <span class="n">randomintegers</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;commit&quot;</span><span class="p">)</span>
+<span class="c1"># create a table with 100 random numbers</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;begin ; create table bigone(x)&quot;</span><span class="p">)</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;insert into bigone values(?)&quot;</span><span class="p">,</span> <span class="n">randomintegers</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;commit&quot;</span><span class="p">)</span>
 
-<span class="c"># display an ascii spinner</span>
+<span class="c1"># display an ascii spinner</span>
 <span class="n">_phcount</span><span class="o">=</span><span class="mi">0</span>
-<span class="n">_phspinner</span><span class="o">=</span><span class="s">&quot;|/-</span><span class="se">\\</span><span class="s">&quot;</span>
+<span class="n">_phspinner</span><span class="o">=</span><span class="s2">&quot;|/-</span><span class="se">\\</span><span class="s2">&quot;</span>
 <span class="k">def</span> <span class="nf">progresshandler</span><span class="p">():</span>
     <span class="k">global</span> <span class="n">_phcount</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">_phspinner</span><span class="p">[</span><span class="n">_phcount</span><span class="o">%</span><span class="nb">len</span><span class="p">(</span><span class="n">_phspinner</span><span class="p">)]</span><span class="o">+</span><span class="nb">chr</span><span class="p">(</span><span class="mi">8</span><span class="p">))</span> <span class="c"># chr(8) is backspace</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">_phspinner</span><span class="p">[</span><span class="n">_phcount</span><span class="o">%</span><span class="nb">len</span><span class="p">(</span><span class="n">_phspinner</span><span class="p">)]</span><span class="o">+</span><span class="nb">chr</span><span class="p">(</span><span class="mi">8</span><span class="p">))</span> <span class="c1"># chr(8) is backspace</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
     <span class="n">_phcount</span><span class="o">+=</span><span class="mi">1</span>
-    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span> <span class="c"># deliberate delay so we can see the spinner (SQLite is too fast otherwise!)</span>
-    <span class="k">return</span> <span class="mi">0</span>  <span class="c"># returning non-zero aborts</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span> <span class="c1"># deliberate delay so we can see the spinner (SQLite is too fast otherwise!)</span>
+    <span class="k">return</span> <span class="mi">0</span>  <span class="c1"># returning non-zero aborts</span>
 
-<span class="c"># register progresshandler every 20 instructions</span>
+<span class="c1"># register progresshandler every 20 instructions</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">setprogresshandler</span><span class="p">(</span><span class="n">progresshandler</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
 
-<span class="c"># see it in action - sorting 100 numbers to find the biggest takes a while</span>
-<span class="k">print</span> <span class="s">&quot;spinny thing -&gt; &quot;</span><span class="p">,</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select max(x) from bigone&quot;</span><span class="p">):</span>
-    <span class="k">print</span> <span class="c"># newline</span>
-    <span class="k">print</span> <span class="n">i</span> <span class="c"># and the maximum number</span>
+<span class="c1"># see it in action - sorting 100 numbers to find the biggest takes a while</span>
+<span class="k">print</span> <span class="s2">&quot;spinny thing -&gt; &quot;</span><span class="p">,</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select max(x) from bigone&quot;</span><span class="p">):</span>
+    <span class="k">print</span> <span class="c1"># newline</span>
+    <span class="k">print</span> <span class="n">i</span> <span class="c1"># and the maximum number</span>
 
 <span class="n">connection</span><span class="o">.</span><span class="n">setprogresshandler</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python" id="example-commithook"><div class="highlight"><pre><span class="c">###</span>
-<span class="c">### commit hook (SQLite3 experimental feature)</span>
-<span class="c">###</span>
+<div class="highlight-python" id="example-commithook"><div class="highlight"><pre><span></span><span class="c1">###</span>
+<span class="c1">### commit hook (SQLite3 experimental feature)</span>
+<span class="c1">###</span>
 
 <span class="k">def</span> <span class="nf">mycommithook</span><span class="p">():</span>
-    <span class="k">print</span> <span class="s">&quot;in commit hook&quot;</span>
+    <span class="k">print</span> <span class="s2">&quot;in commit hook&quot;</span>
     <span class="n">hour</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">localtime</span><span class="p">()[</span><span class="mi">3</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">hour</span><span class="o">&lt;</span><span class="mi">8</span> <span class="ow">or</span> <span class="n">hour</span><span class="o">&gt;</span><span class="mi">17</span><span class="p">:</span>
-        <span class="k">print</span> <span class="s">&quot;no commits out of hours&quot;</span>
-        <span class="k">return</span> <span class="mi">1</span>  <span class="c"># abort commits outside of 8am through 6pm</span>
-    <span class="k">print</span> <span class="s">&quot;commits okay at this time&quot;</span>
-    <span class="k">return</span> <span class="mi">0</span>  <span class="c"># let commit go ahead</span>
+        <span class="k">print</span> <span class="s2">&quot;no commits out of hours&quot;</span>
+        <span class="k">return</span> <span class="mi">1</span>  <span class="c1"># abort commits outside of 8am through 6pm</span>
+    <span class="k">print</span> <span class="s2">&quot;commits okay at this time&quot;</span>
+    <span class="k">return</span> <span class="mi">0</span>  <span class="c1"># let commit go ahead</span>
 
 <span class="n">connection</span><span class="o">.</span><span class="n">setcommithook</span><span class="p">(</span><span class="n">mycommithook</span><span class="p">)</span>
 <span class="k">try</span><span class="p">:</span>
-    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;begin; create table example(x,y,z); insert into example values (3,4,5) ; commit&quot;</span><span class="p">)</span>
+    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;begin; create table example(x,y,z); insert into example values (3,4,5) ; commit&quot;</span><span class="p">)</span>
 <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ConstraintError</span><span class="p">:</span>
-    <span class="k">print</span> <span class="s">&quot;commit was not allowed&quot;</span>
+    <span class="k">print</span> <span class="s2">&quot;commit was not allowed&quot;</span>
 
 <span class="n">connection</span><span class="o">.</span><span class="n">setcommithook</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>| in commit hook
-| commits okay at this time
+<div class="highlight-text"><div class="highlight"><pre><span></span>| in commit hook
+| no commits out of hours
+| commit was not allowed
 </pre></div>
 </div>
-<div class="highlight-python" id="example-updatehook"><div class="highlight"><pre><span class="c">###</span>
-<span class="c">### update hook</span>
-<span class="c">###</span>
+<div class="highlight-python" id="example-updatehook"><div class="highlight"><pre><span></span><span class="c1">###</span>
+<span class="c1">### update hook</span>
+<span class="c1">###</span>
 
 <span class="k">def</span> <span class="nf">myupdatehook</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">databasename</span><span class="p">,</span> <span class="n">tablename</span><span class="p">,</span> <span class="n">rowid</span><span class="p">):</span>
-    <span class="k">print</span> <span class="s">&quot;Updated: </span><span class="si">%s</span><span class="s"> database </span><span class="si">%s</span><span class="s">, table </span><span class="si">%s</span><span class="s">, row </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+    <span class="k">print</span> <span class="s2">&quot;Updated: </span><span class="si">%s</span><span class="s2"> database </span><span class="si">%s</span><span class="s2">, table </span><span class="si">%s</span><span class="s2">, row </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
         <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_authorizer_function</span><span class="p">[</span><span class="nb">type</span><span class="p">],</span> <span class="n">databasename</span><span class="p">,</span> <span class="n">tablename</span><span class="p">,</span> <span class="n">rowid</span><span class="p">)</span>
 
 <span class="n">connection</span><span class="o">.</span><span class="n">setupdatehook</span><span class="p">(</span><span class="n">myupdatehook</span><span class="p">)</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into s values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&quot;file93&quot;</span><span class="p">,))</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;update s set str=? where str=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&quot;file94&quot;</span><span class="p">,</span> <span class="s">&quot;file93&quot;</span><span class="p">))</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;delete from s where str=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&quot;file94&quot;</span><span class="p">,))</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into s values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;file93&quot;</span><span class="p">,))</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;update s set str=? where str=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;file94&quot;</span><span class="p">,</span> <span class="s2">&quot;file93&quot;</span><span class="p">))</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;delete from s where str=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;file94&quot;</span><span class="p">,))</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">setupdatehook</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>| Updated: SQLITE_INSERT database main, table s, row 7
+<div class="highlight-text"><div class="highlight"><pre><span></span>| Updated: SQLITE_INSERT database main, table s, row 7
 | Updated: SQLITE_UPDATE database main, table s, row 7
 | Updated: SQLITE_DELETE database main, table s, row 7
 </pre></div>
 </div>
-<div class="highlight-python" id="example-blobio"><div class="highlight"><pre><span class="c">###</span>
-<span class="c">### Blob I/O</span>
-<span class="c">###</span>
+<div class="highlight-python" id="example-blobio"><div class="highlight"><pre><span></span><span class="c1">###</span>
+<span class="c1">### Blob I/O</span>
+<span class="c1">###</span>
 
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;create table blobby(x,y)&quot;</span><span class="p">)</span>
-<span class="c"># Add a blob we will fill in later</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into blobby values(1,zeroblob(10000))&quot;</span><span class="p">)</span>
-<span class="c"># Or as a binding</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into blobby values(2,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">zeroblob</span><span class="p">(</span><span class="mi">20000</span><span class="p">),))</span>
-<span class="c"># Open a blob for writing.  We need to know the rowid</span>
-<span class="n">rowid</span><span class="o">=</span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select ROWID from blobby where x=1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">next</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">blob</span><span class="o">=</span><span class="n">connection</span><span class="o">.</span><span class="n">blobopen</span><span class="p">(</span><span class="s">&quot;main&quot;</span><span class="p">,</span> <span class="s">&quot;blobby&quot;</span><span class="p">,</span> <span class="s">&quot;y&quot;</span><span class="p">,</span> <span class="n">rowid</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c"># 1 is for read/write</span>
-<span class="n">blob</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;hello world&quot;</span><span class="p">)</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table blobby(x,y)&quot;</span><span class="p">)</span>
+<span class="c1"># Add a blob we will fill in later</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into blobby values(1,zeroblob(10000))&quot;</span><span class="p">)</span>
+<span class="c1"># Or as a binding</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into blobby values(2,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">zeroblob</span><span class="p">(</span><span class="mi">20000</span><span class="p">),))</span>
+<span class="c1"># Open a blob for writing.  We need to know the rowid</span>
+<span class="n">rowid</span><span class="o">=</span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select ROWID from blobby where x=1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">next</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">blob</span><span class="o">=</span><span class="n">connection</span><span class="o">.</span><span class="n">blobopen</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="s2">&quot;blobby&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">rowid</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># 1 is for read/write</span>
+<span class="n">blob</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;hello world&quot;</span><span class="p">)</span>
 <span class="n">blob</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">2000</span><span class="p">)</span>
-<span class="n">blob</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;hello world, again&quot;</span><span class="p">)</span>
+<span class="n">blob</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;hello world, again&quot;</span><span class="p">)</span>
 <span class="n">blob</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-python" id="example-vtable"><div class="highlight"><pre><span class="c">###</span>
-<span class="c">### Virtual tables</span>
-<span class="c">###</span>
+<div class="highlight-python" id="example-vtable"><div class="highlight"><pre><span></span><span class="c1">###</span>
+<span class="c1">### Virtual tables</span>
+<span class="c1">###</span>
 
-<span class="c"># This virtual table stores information about files in a set of</span>
-<span class="c"># directories so you can execute SQL queries</span>
+<span class="c1"># This virtual table stores information about files in a set of</span>
+<span class="c1"># directories so you can execute SQL queries</span>
 
 <span class="k">def</span> <span class="nf">getfiledata</span><span class="p">(</span><span class="n">directories</span><span class="p">):</span>
     <span class="n">columns</span><span class="o">=</span><span class="bp">None</span>
@@ -473,21 +474,21 @@ so you can see what gets printed when you run the code.</p>
             <span class="n">counter</span><span class="o">+=</span><span class="mi">1</span>
             <span class="n">st</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span><span class="n">f</span><span class="p">))</span>
             <span class="k">if</span> <span class="n">columns</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-                <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&quot;rowid&quot;</span><span class="p">,</span> <span class="s">&quot;name&quot;</span><span class="p">,</span> <span class="s">&quot;directory&quot;</span><span class="p">]</span><span class="o">+</span><span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">st</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;st_&quot;</span><span class="p">)]</span>
+                <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rowid&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;directory&quot;</span><span class="p">]</span><span class="o">+</span><span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">st</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;st_&quot;</span><span class="p">)]</span>
             <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">[</span><span class="n">counter</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">directory</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">st</span><span class="p">,</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">[</span><span class="mi">3</span><span class="p">:]]</span> <span class="p">)</span>
     <span class="k">return</span> <span class="n">columns</span><span class="p">,</span> <span class="n">data</span>
 
-<span class="c"># This gets registered with the Connection</span>
+<span class="c1"># This gets registered with the Connection</span>
 <span class="k">class</span> <span class="nc">Source</span><span class="p">:</span>
     <span class="k">def</span> <span class="nf">Create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">modulename</span><span class="p">,</span> <span class="n">dbname</span><span class="p">,</span> <span class="n">tablename</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
-        <span class="n">columns</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">getfiledata</span><span class="p">([</span><span class="nb">eval</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\\</span><span class="s">&quot;</span><span class="p">,</span> <span class="s">&quot;</span><span class="se">\\\\</span><span class="s">&quot;</span><span class="p">))</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">])</span> <span class="c"># eval strips off layer of quotes</span>
-        <span class="n">schema</span><span class="o">=</span><span class="s">&quot;create table foo(&quot;</span><span class="o">+</span><span class="s">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="p">,)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">[</span><span class="mi">1</span><span class="p">:]])</span><span class="o">+</span><span class="s">&quot;)&quot;</span>
+        <span class="n">columns</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">getfiledata</span><span class="p">([</span><span class="nb">eval</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\\\\</span><span class="s2">&quot;</span><span class="p">))</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">])</span> <span class="c1"># eval strips off layer of quotes</span>
+        <span class="n">schema</span><span class="o">=</span><span class="s2">&quot;create table foo(&quot;</span><span class="o">+</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="p">,)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">[</span><span class="mi">1</span><span class="p">:]])</span><span class="o">+</span><span class="s2">&quot;)&quot;</span>
         <span class="k">return</span> <span class="n">schema</span><span class="p">,</span><span class="n">Table</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span><span class="n">data</span><span class="p">)</span>
     <span class="n">Connect</span><span class="o">=</span><span class="n">Create</span>
 
-<span class="c"># Represents a table</span>
+<span class="c1"># Represents a table</span>
 <span class="k">class</span> <span class="nc">Table</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="o">=</span><span class="n">columns</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">=</span><span class="n">data</span>
 
@@ -502,9 +503,9 @@ so you can see what gets printed when you run the code.</p>
 
     <span class="n">Destroy</span><span class="o">=</span><span class="n">Disconnect</span>
 
-<span class="c"># Represents a cursor</span>
+<span class="c1"># Represents a cursor</span>
 <span class="k">class</span> <span class="nc">Cursor</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">=</span><span class="n">table</span>
 
     <span class="k">def</span> <span class="nf">Filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
@@ -525,74 +526,74 @@ so you can see what gets printed when you run the code.</p>
     <span class="k">def</span> <span class="nf">Close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span>
 
-<span class="c"># Register the module as filesource</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">createmodule</span><span class="p">(</span><span class="s">&quot;filesource&quot;</span><span class="p">,</span> <span class="n">Source</span><span class="p">())</span>
+<span class="c1"># Register the module as filesource</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">createmodule</span><span class="p">(</span><span class="s2">&quot;filesource&quot;</span><span class="p">,</span> <span class="n">Source</span><span class="p">())</span>
 
-<span class="c"># Arguments to module - all directories in sys.path</span>
-<span class="n">sysdirs</span><span class="o">=</span><span class="s">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&quot;&#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="p">,)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">x</span><span class="p">)])</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;create virtual table sysfiles using filesource(&quot;</span><span class="o">+</span><span class="n">sysdirs</span><span class="o">+</span><span class="s">&quot;)&quot;</span><span class="p">)</span>
+<span class="c1"># Arguments to module - all directories in sys.path</span>
+<span class="n">sysdirs</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="p">,)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">x</span><span class="p">)])</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create virtual table sysfiles using filesource(&quot;</span><span class="o">+</span><span class="n">sysdirs</span><span class="o">+</span><span class="s2">&quot;)&quot;</span><span class="p">)</span>
 
-<span class="c"># Which 3 files are the biggest?</span>
-<span class="k">for</span> <span class="n">size</span><span class="p">,</span><span class="n">directory</span><span class="p">,</span><span class="nb">file</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select st_size,directory,name from sysfiles order by st_size desc limit 3&quot;</span><span class="p">):</span>
+<span class="c1"># Which 3 files are the biggest?</span>
+<span class="k">for</span> <span class="n">size</span><span class="p">,</span><span class="n">directory</span><span class="p">,</span><span class="nb">file</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select st_size,directory,name from sysfiles order by st_size desc limit 3&quot;</span><span class="p">):</span>
     <span class="k">print</span> <span class="n">size</span><span class="p">,</span><span class="nb">file</span><span class="p">,</span><span class="n">directory</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>| 6161488 apsw.so /space/apsw
+<div class="highlight-text"><div class="highlight"><pre><span></span>| 6191464 apsw.so /space/apsw
 | 456952 _mlt.x86_64-linux-gnu.so /usr/lib/python2.7/dist-packages
-| 394744 _bsddb.x86_64-linux-gnu_d.so /usr/lib/python2.7/lib-dynload
+| 447393 libxml2.pyc /usr/lib/python2.7/dist-packages
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># Which 3 files are the oldest?</span>
-<span class="k">for</span> <span class="n">ctime</span><span class="p">,</span><span class="n">directory</span><span class="p">,</span><span class="nb">file</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select st_ctime,directory,name from sysfiles order by st_ctime limit 3&quot;</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Which 3 files are the oldest?</span>
+<span class="k">for</span> <span class="n">ctime</span><span class="p">,</span><span class="n">directory</span><span class="p">,</span><span class="nb">file</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select st_ctime,directory,name from sysfiles order by st_ctime limit 3&quot;</span><span class="p">):</span>
     <span class="k">print</span> <span class="n">ctime</span><span class="p">,</span><span class="nb">file</span><span class="p">,</span><span class="n">directory</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>| 1447460998.61 sitecustomize.py /usr/lib/python2.7
+<div class="highlight-text"><div class="highlight"><pre><span></span>| 1447460998.61 sitecustomize.py /usr/lib/python2.7
 | 1447461008.17 blinker-1.3.egg-info /usr/lib/python2.7/dist-packages
 | 1447461010.81 characteristic.py /usr/lib/python2.7/dist-packages
 </pre></div>
 </div>
-<div class="highlight-python" id="example-vfs"><div class="highlight"><pre><span class="c">###</span>
-<span class="c">### A VFS that &quot;obfuscates&quot; the database file contents.  The scheme</span>
-<span class="c">### used is to xor all bytes with 0xa5.  This scheme honours that used</span>
-<span class="c">### for MAPI and SQL Server.</span>
-<span class="c">###</span>
+<div class="highlight-python" id="example-vfs"><div class="highlight"><pre><span></span><span class="c1">###</span>
+<span class="c1">### A VFS that &quot;obfuscates&quot; the database file contents.  The scheme</span>
+<span class="c1">### used is to xor all bytes with 0xa5.  This scheme honours that used</span>
+<span class="c1">### for MAPI and SQL Server.</span>
+<span class="c1">###</span>
 
 <span class="k">def</span> <span class="nf">encryptme</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span> <span class="k">return</span> <span class="n">data</span>
-    <span class="k">return</span> <span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">chr</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">^</span><span class="mh">0xa5</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="p">])</span>
+    <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">chr</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">^</span><span class="mh">0xa5</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="p">])</span>
 
-<span class="c"># Inheriting from a base of &quot;&quot; means the default vfs</span>
+<span class="c1"># Inheriting from a base of &quot;&quot; means the default vfs</span>
 <span class="k">class</span> <span class="nc">ObfuscatedVFS</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">VFS</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vfsname</span><span class="o">=</span><span class="s">&quot;obfu&quot;</span><span class="p">,</span> <span class="n">basevfs</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vfsname</span><span class="o">=</span><span class="s2">&quot;obfu&quot;</span><span class="p">,</span> <span class="n">basevfs</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">vfsname</span><span class="o">=</span><span class="n">vfsname</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">basevfs</span><span class="o">=</span><span class="n">basevfs</span>
-        <span class="n">apsw</span><span class="o">.</span><span class="n">VFS</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vfsname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basevfs</span><span class="p">)</span>
+        <span class="n">apsw</span><span class="o">.</span><span class="n">VFS</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vfsname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basevfs</span><span class="p">)</span>
 
-    <span class="c"># We want to return our own file implmentation, but also</span>
-    <span class="c"># want it to inherit</span>
+    <span class="c1"># We want to return our own file implmentation, but also</span>
+    <span class="c1"># want it to inherit</span>
     <span class="k">def</span> <span class="nf">xOpen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">flags</span><span class="p">):</span>
-        <span class="c"># We can look at uri parameters</span>
+        <span class="c1"># We can look at uri parameters</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">URIFilename</span><span class="p">):</span>
-            <span class="k">print</span> <span class="s">&quot;fast is&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">uri_parameter</span><span class="p">(</span><span class="s">&quot;fast&quot;</span><span class="p">)</span>
-            <span class="k">print</span> <span class="s">&quot;level is&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">uri_int</span><span class="p">(</span><span class="s">&quot;level&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-            <span class="k">print</span> <span class="s">&quot;warp is&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">uri_boolean</span><span class="p">(</span><span class="s">&quot;warp&quot;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
-            <span class="k">print</span> <span class="s">&quot;notpresent is&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">uri_parameter</span><span class="p">(</span><span class="s">&quot;notpresent&quot;</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s2">&quot;fast is&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">uri_parameter</span><span class="p">(</span><span class="s2">&quot;fast&quot;</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s2">&quot;level is&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">uri_int</span><span class="p">(</span><span class="s2">&quot;level&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s2">&quot;warp is&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">uri_boolean</span><span class="p">(</span><span class="s2">&quot;warp&quot;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s2">&quot;notpresent is&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">uri_parameter</span><span class="p">(</span><span class="s2">&quot;notpresent&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>| fast is speed
+<div class="highlight-text"><div class="highlight"><pre><span></span>| fast is speed
 | level is 7
 | warp is True
 | notpresent is None
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre>        <span class="k">return</span> <span class="n">ObfuscatedVFSFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">basevfs</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">flags</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>        <span class="k">return</span> <span class="n">ObfuscatedVFSFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">basevfs</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">flags</span><span class="p">)</span>
 
-<span class="c"># The file implementation where we override xRead and xWrite to call our</span>
-<span class="c"># encryption routine</span>
+<span class="c1"># The file implementation where we override xRead and xWrite to call our</span>
+<span class="c1"># encryption routine</span>
 <span class="k">class</span> <span class="nc">ObfuscatedVFSFile</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">VFSFile</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inheritfromvfsname</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">flags</span><span class="p">):</span>
-        <span class="n">apsw</span><span class="o">.</span><span class="n">VFSFile</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inheritfromvfsname</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">flags</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inheritfromvfsname</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">flags</span><span class="p">):</span>
+        <span class="n">apsw</span><span class="o">.</span><span class="n">VFSFile</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inheritfromvfsname</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">flags</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">xRead</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">amount</span><span class="p">,</span> <span class="n">offset</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">encryptme</span><span class="p">(</span><span class="nb">super</span><span class="p">(</span><span class="n">ObfuscatedVFSFile</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">xRead</span><span class="p">(</span><span class="n">amount</span><span class="p">,</span> <span class="n">offset</span><span class="p">))</span>
@@ -600,69 +601,69 @@ so you can see what gets printed when you run the code.</p>
     <span class="k">def</span> <span class="nf">xWrite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">offset</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ObfuscatedVFSFile</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">xWrite</span><span class="p">(</span><span class="n">encryptme</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">offset</span><span class="p">)</span>
 
-<span class="c"># To register the VFS we just instantiate it</span>
+<span class="c1"># To register the VFS we just instantiate it</span>
 <span class="n">obfuvfs</span><span class="o">=</span><span class="n">ObfuscatedVFS</span><span class="p">()</span>
-<span class="c"># Lets see what vfs are now available?</span>
+<span class="c1"># Lets see what vfs are now available?</span>
 <span class="k">print</span> <span class="n">apsw</span><span class="o">.</span><span class="n">vfsnames</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>| [&#39;unix&#39;, &#39;obfu&#39;, &#39;unix-excl&#39;, &#39;unix-dotfile&#39;, &#39;unix-none&#39;]
+<div class="highlight-text"><div class="highlight"><pre><span></span>| [&#39;unix&#39;, &#39;obfu&#39;, &#39;unix-excl&#39;, &#39;unix-dotfile&#39;, &#39;unix-none&#39;]
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># Make an obfuscated db, passing in some URI parameters</span>
-<span class="n">obfudb</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s">&quot;file:myobfudb?fast=speed&amp;level=7&amp;warp=on&quot;</span><span class="p">,</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Make an obfuscated db, passing in some URI parameters</span>
+<span class="n">obfudb</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;file:myobfudb?fast=speed&amp;level=7&amp;warp=on&quot;</span><span class="p">,</span>
                        <span class="n">flags</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_READWRITE</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_CREATE</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_URI</span><span class="p">,</span>
                        <span class="n">vfs</span><span class="o">=</span><span class="n">obfuvfs</span><span class="o">.</span><span class="n">vfsname</span><span class="p">)</span>
-<span class="c"># Check it works</span>
-<span class="n">obfudb</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;create table foo(x,y); insert into foo values(1,2)&quot;</span><span class="p">)</span>
+<span class="c1"># Check it works</span>
+<span class="n">obfudb</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table foo(x,y); insert into foo values(1,2)&quot;</span><span class="p">)</span>
 
-<span class="c"># Check it really is obfuscated on disk</span>
+<span class="c1"># Check it really is obfuscated on disk</span>
 <span class="k">print</span> <span class="sb">`open(&quot;myobfudb&quot;, &quot;rb&quot;).read()[:20]`</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>| &#39;\xf6\xf4\xe9\xcc\xd1\xc0\x85\xc3\xca\xd7\xc8\xc4\xd1\x85\x96\xa5\xb5\xa5\xa4\xa4&#39;
+<div class="highlight-text"><div class="highlight"><pre><span></span>| &#39;\xf6\xf4\xe9\xcc\xd1\xc0\x85\xc3\xca\xd7\xc8\xc4\xd1\x85\x96\xa5\xb5\xa5\xa4\xa4&#39;
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># And unobfuscating it</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># And unobfuscating it</span>
 <span class="k">print</span> <span class="sb">`encryptme(open(&quot;myobfudb&quot;, &quot;rb&quot;).read()[:20])`</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>| &#39;SQLite format 3\x00\x10\x00\x01\x01&#39;
+<div class="highlight-text"><div class="highlight"><pre><span></span>| &#39;SQLite format 3\x00\x10\x00\x01\x01&#39;
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># Tidy up</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Tidy up</span>
 <span class="n">obfudb</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-<span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s">&quot;myobfudb&quot;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;myobfudb&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python" id="example-limit"><div class="highlight"><pre><span class="c">###</span>
-<span class="c">### Limits</span>
-<span class="c">###</span>
+<div class="highlight-python" id="example-limit"><div class="highlight"><pre><span></span><span class="c1">###</span>
+<span class="c1">### Limits</span>
+<span class="c1">###</span>
 
-<span class="c"># Print some limits</span>
-<span class="k">for</span> <span class="n">limit</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&quot;LENGTH&quot;</span><span class="p">,</span> <span class="s">&quot;COLUMN&quot;</span><span class="p">,</span> <span class="s">&quot;ATTACHED&quot;</span><span class="p">):</span>
-    <span class="n">name</span><span class="o">=</span><span class="s">&quot;SQLITE_LIMIT_&quot;</span><span class="o">+</span><span class="n">limit</span>
-    <span class="n">maxname</span><span class="o">=</span><span class="s">&quot;SQLITE_MAX_&quot;</span><span class="o">+</span><span class="n">limit</span>  <span class="c"># compile time</span>
+<span class="c1"># Print some limits</span>
+<span class="k">for</span> <span class="n">limit</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;LENGTH&quot;</span><span class="p">,</span> <span class="s2">&quot;COLUMN&quot;</span><span class="p">,</span> <span class="s2">&quot;ATTACHED&quot;</span><span class="p">):</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;SQLITE_LIMIT_&quot;</span><span class="o">+</span><span class="n">limit</span>
+    <span class="n">maxname</span><span class="o">=</span><span class="s2">&quot;SQLITE_MAX_&quot;</span><span class="o">+</span><span class="n">limit</span>  <span class="c1"># compile time</span>
     <span class="n">orig</span><span class="o">=</span><span class="n">connection</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">apsw</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
     <span class="k">print</span> <span class="n">name</span><span class="p">,</span> <span class="n">orig</span>
-    <span class="c"># To get the maximum, set to 0x7fffffff and then read value back</span>
+    <span class="c1"># To get the maximum, set to 0x7fffffff and then read value back</span>
     <span class="n">connection</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">apsw</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="mh">0x7fffffff</span><span class="p">)</span>
     <span class="nb">max</span><span class="o">=</span><span class="n">connection</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">apsw</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
     <span class="k">print</span> <span class="n">maxname</span><span class="p">,</span> <span class="nb">max</span>
 
-<span class="c"># Set limit for size of a string</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;create table testlimit(s)&quot;</span><span class="p">)</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into testlimit values(?)&quot;</span><span class="p">,</span> <span class="p">(</span> <span class="s">&quot;x&quot;</span><span class="o">*</span><span class="mi">1024</span><span class="p">,</span> <span class="p">))</span> <span class="c"># 1024 char string</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_LIMIT_LENGTH</span><span class="p">,</span> <span class="mi">1023</span><span class="p">)</span> <span class="c"># limit is now 1023</span>
+<span class="c1"># Set limit for size of a string</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table testlimit(s)&quot;</span><span class="p">)</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into testlimit values(?)&quot;</span><span class="p">,</span> <span class="p">(</span> <span class="s2">&quot;x&quot;</span><span class="o">*</span><span class="mi">1024</span><span class="p">,</span> <span class="p">))</span> <span class="c1"># 1024 char string</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_LIMIT_LENGTH</span><span class="p">,</span> <span class="mi">1023</span><span class="p">)</span> <span class="c1"># limit is now 1023</span>
 <span class="k">try</span><span class="p">:</span>
-    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into testlimit values(?)&quot;</span><span class="p">,</span> <span class="p">(</span> <span class="s">&quot;y&quot;</span><span class="o">*</span><span class="mi">1024</span><span class="p">,</span> <span class="p">))</span>
-    <span class="k">print</span> <span class="s">&quot;string exceeding limit was inserted&quot;</span>
+    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into testlimit values(?)&quot;</span><span class="p">,</span> <span class="p">(</span> <span class="s2">&quot;y&quot;</span><span class="o">*</span><span class="mi">1024</span><span class="p">,</span> <span class="p">))</span>
+    <span class="k">print</span> <span class="s2">&quot;string exceeding limit was inserted&quot;</span>
 <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">TooBigError</span><span class="p">:</span>
-    <span class="k">print</span> <span class="s">&quot;Caught toobig exception&quot;</span>
+    <span class="k">print</span> <span class="s2">&quot;Caught toobig exception&quot;</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_LIMIT_LENGTH</span><span class="p">,</span> <span class="mh">0x7fffffff</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>| SQLITE_LIMIT_LENGTH 1000000000
+<div class="highlight-text"><div class="highlight"><pre><span></span>| SQLITE_LIMIT_LENGTH 1000000000
 | SQLITE_MAX_LENGTH 1000000000
 | SQLITE_LIMIT_COLUMN 2000
 | SQLITE_MAX_COLUMN 2000
@@ -671,72 +672,72 @@ so you can see what gets printed when you run the code.</p>
 | Caught toobig exception
 </pre></div>
 </div>
-<div class="highlight-python" id="example-backup"><div class="highlight"><pre><span class="c">###</span>
-<span class="c">### Backup to memory</span>
-<span class="c">###</span>
+<div class="highlight-python" id="example-backup"><div class="highlight"><pre><span></span><span class="c1">###</span>
+<span class="c1">### Backup to memory</span>
+<span class="c1">###</span>
 
-<span class="c"># We will copy the disk database into a memory database</span>
+<span class="c1"># We will copy the disk database into a memory database</span>
 
-<span class="n">memcon</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s">&quot;:memory:&quot;</span><span class="p">)</span>
+<span class="n">memcon</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
 
-<span class="c"># Copy into memory</span>
-<span class="k">with</span> <span class="n">memcon</span><span class="o">.</span><span class="n">backup</span><span class="p">(</span><span class="s">&quot;main&quot;</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="s">&quot;main&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">backup</span><span class="p">:</span>
-    <span class="n">backup</span><span class="o">.</span><span class="n">step</span><span class="p">()</span> <span class="c"># copy whole database in one go</span>
+<span class="c1"># Copy into memory</span>
+<span class="k">with</span> <span class="n">memcon</span><span class="o">.</span><span class="n">backup</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">backup</span><span class="p">:</span>
+    <span class="n">backup</span><span class="o">.</span><span class="n">step</span><span class="p">()</span> <span class="c1"># copy whole database in one go</span>
 
-<span class="c"># There will be no disk accesses for this query</span>
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">memcon</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;select * from s&quot;</span><span class="p">):</span>
+<span class="c1"># There will be no disk accesses for this query</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">memcon</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from s&quot;</span><span class="p">):</span>
     <span class="k">pass</span>
 </pre></div>
 </div>
-<div class="highlight-python" id="example-shell"><div class="highlight"><pre><span class="c">###</span>
-<span class="c">### Shell</span>
-<span class="c">###</span>
+<div class="highlight-python" id="example-shell"><div class="highlight"><pre><span></span><span class="c1">###</span>
+<span class="c1">### Shell</span>
+<span class="c1">###</span>
 
-<span class="c"># Here we use the shell to do a csv export providing the existing db</span>
-<span class="c"># connection</span>
+<span class="c1"># Here we use the shell to do a csv export providing the existing db</span>
+<span class="c1"># connection</span>
 
-<span class="c"># Export to a StringIO</span>
-<span class="kn">import</span> <span class="nn">StringIO</span> <span class="kn">as</span> <span class="nn">io</span> <span class="c"># use io in Python 3</span>
+<span class="c1"># Export to a StringIO</span>
+<span class="kn">import</span> <span class="nn">StringIO</span> <span class="kn">as</span> <span class="nn">io</span> <span class="c1"># use io in Python 3</span>
 <span class="n">output</span><span class="o">=</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
 <span class="n">shell</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Shell</span><span class="p">(</span><span class="n">stdout</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="n">connection</span><span class="p">)</span>
-<span class="c"># How to execute a dot command</span>
-<span class="n">shell</span><span class="o">.</span><span class="n">process_command</span><span class="p">(</span><span class="s">&quot;.mode csv&quot;</span><span class="p">)</span>
-<span class="n">shell</span><span class="o">.</span><span class="n">process_command</span><span class="p">(</span><span class="s">&quot;.headers on&quot;</span><span class="p">)</span>
-<span class="c"># How to execute SQL</span>
-<span class="n">shell</span><span class="o">.</span><span class="n">process_sql</span><span class="p">(</span><span class="s">&quot;create table csvtest(col1,col2); insert into csvtest values(3,4); insert into csvtest values(&#39;a b&#39;, NULL)&quot;</span><span class="p">)</span>
-<span class="c"># Let the shell figure out SQL vs dot command</span>
-<span class="n">shell</span><span class="o">.</span><span class="n">process_complete_line</span><span class="p">(</span><span class="s">&quot;select * from csvtest&quot;</span><span class="p">)</span>
+<span class="c1"># How to execute a dot command</span>
+<span class="n">shell</span><span class="o">.</span><span class="n">process_command</span><span class="p">(</span><span class="s2">&quot;.mode csv&quot;</span><span class="p">)</span>
+<span class="n">shell</span><span class="o">.</span><span class="n">process_command</span><span class="p">(</span><span class="s2">&quot;.headers on&quot;</span><span class="p">)</span>
+<span class="c1"># How to execute SQL</span>
+<span class="n">shell</span><span class="o">.</span><span class="n">process_sql</span><span class="p">(</span><span class="s2">&quot;create table csvtest(col1,col2); insert into csvtest values(3,4); insert into csvtest values(&#39;a b&#39;, NULL)&quot;</span><span class="p">)</span>
+<span class="c1"># Let the shell figure out SQL vs dot command</span>
+<span class="n">shell</span><span class="o">.</span><span class="n">process_complete_line</span><span class="p">(</span><span class="s2">&quot;select * from csvtest&quot;</span><span class="p">)</span>
 
-<span class="c"># Verify output</span>
+<span class="c1"># Verify output</span>
 <span class="k">print</span> <span class="n">output</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>| col1,col2
+<div class="highlight-text"><div class="highlight"><pre><span></span>| col1,col2
 | 3,4
 | a b,
 |
 </pre></div>
 </div>
-<div class="highlight-python" id="example-status"><div class="highlight"><pre><span class="c">###</span>
-<span class="c">### Statistics</span>
-<span class="c">###</span>
+<div class="highlight-python" id="example-status"><div class="highlight"><pre><span></span><span class="c1">###</span>
+<span class="c1">### Statistics</span>
+<span class="c1">###</span>
 
-<span class="k">print</span> <span class="s">&quot;SQLite memory usage current </span><span class="si">%d</span><span class="s"> max </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">apsw</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_STATUS_MEMORY_USED</span><span class="p">)</span>
+<span class="k">print</span> <span class="s2">&quot;SQLite memory usage current </span><span class="si">%d</span><span class="s2"> max </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">apsw</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_STATUS_MEMORY_USED</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-text"><div class="highlight"><pre>| SQLite memory usage current 500448 max 511376
+<div class="highlight-text"><div class="highlight"><pre><span></span>| SQLite memory usage current 495056 max 511112
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span class="c">###</span>
-<span class="c">### Cleanup</span>
-<span class="c">###</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1">###</span>
+<span class="c1">### Cleanup</span>
+<span class="c1">###</span>
 
-<span class="c"># We can close connections manually (useful if you want to catch exceptions)</span>
-<span class="c"># but you don&#39;t have to</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>  <span class="c"># force it since we want to exit</span>
+<span class="c1"># We can close connections manually (useful if you want to catch exceptions)</span>
+<span class="c1"># but you don&#39;t have to</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>  <span class="c1"># force it since we want to exit</span>
 
-<span class="c"># Delete database - we don&#39;t need it any more</span>
-<span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s">&quot;dbfile&quot;</span><span class="p">)</span>
+<span class="c1"># Delete database - we don&#39;t need it any more</span>
+<span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;dbfile&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -789,13 +790,13 @@ so you can see what gets printed when you run the code.</p>
         <li class="right" >
           <a href="tips.html" title="Tips"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Nov 12, 2017.
+      Last updated on Mar 04, 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

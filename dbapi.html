@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>DBAPI notes &#8212; APSW 3.21.0-r1 documentation</title>
+    <title>DBAPI notes &#8212; APSW 3.22.0-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.21.0-r1',
+        VERSION:     '3.22.0-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -53,7 +53,7 @@
         <li class="right" >
           <a href="execution.html" title="Execution and tracing"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -137,7 +137,7 @@ there are no more results.</p>
 call <code class="xref py py-meth docutils literal"><span class="pre">next()</span></code> for however many results you want.</p>
 <p>fetchall is available, but not too useful. Simply use the cursor as an
 iterator, call <code class="xref py py-meth docutils literal"><span class="pre">next()</span></code>, or use list which is less typing:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="nb">all</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;....&quot;</span><span class="p">))</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">all</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;....&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>nextset is not applicable or implemented.</p>
@@ -170,7 +170,7 @@ way of getting information back.</p>
 insert on any Cursor associated with the the Connection. You can also
 add <a class="reference external" href="https://sqlite.org/lang_corefunc.html">select last_insert_rowid()</a> to the end of your execute
 statements:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;BEGIN; INSERT ... ; INSERT ... ; SELECT last_insert_rowid(); COMMIT&quot;</span><span class="p">):</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;BEGIN; INSERT ... ; INSERT ... ; SELECT last_insert_rowid(); COMMIT&quot;</span><span class="p">):</span>
    <span class="n">lastrowid</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -238,13 +238,13 @@ statements:</p>
         <li class="right" >
           <a href="execution.html" title="Execution and tracing"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Nov 12, 2017.
+      Last updated on Mar 04, 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Blob Input/Output &#8212; APSW 3.21.0-r1 documentation</title>
+    <title>Blob Input/Output &#8212; APSW 3.22.0-r1 documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.21.0-r1',
+        VERSION:     '3.22.0-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -53,7 +53,7 @@
         <li class="right" >
           <a href="cursor.html" title="Cursors (executing SQL)"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -81,8 +81,8 @@ store the filename in the database.  Doing so loses the <a class="reference exte
 supply the entire blob in one go.  To read just one byte also
 required retrieving the blob in its entirety. For example to insert
 a 100MB file you would have done:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">largedata</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="s">&quot;largefile&quot;</span><span class="p">,</span> <span class="s">&quot;rb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-<span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into foo values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">buffer</span><span class="p">(</span><span class="n">largedata</span><span class="p">),))</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">largedata</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;largefile&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">buffer</span><span class="p">(</span><span class="n">largedata</span><span class="p">),))</span>
 </pre></div>
 </div>
 <p>SQLite 3.5 allowed for incremental Blob I/O so you can read and
@@ -91,8 +91,8 @@ so you need to reserve space which you do through zeroblob which
 creates a blob of the specified size but full of zero bytes.  For
 example you would reserve space for your 100MB one of these two
 ways:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into foo values(zeroblob(100000000))&quot;</span><span class="p">)</span>
-<span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s">&quot;insert into foo values(?),</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo values(zeroblob(100000000))&quot;</span><span class="p">)</span>
+<span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo values(?),</span>
              <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">zeroblob</span><span class="p">(</span><span class="mi">100000000</span><span class="p">),))</span>
 </pre></div>
 </div>
@@ -133,8 +133,8 @@ as defined in <span class="target" id="index-0"></span><a class="pep reference e
 the blob is always <code class="xref py py-meth docutils literal"><span class="pre">closed</span></code> on exit from the block, even if an
 exception occurred in the block.</p>
 <p>For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span class="k">with</span> <span class="n">connection</span><span class="o">.</span><span class="n">blobopen</span><span class="p">()</span> <span class="k">as</span> <span class="n">blob</span><span class="p">:</span>
-    <span class="n">blob</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;...&quot;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">connection</span><span class="o">.</span><span class="n">blobopen</span><span class="p">()</span> <span class="k">as</span> <span class="n">blob</span><span class="p">:</span>
+    <span class="n">blob</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">)</span>
     <span class="n">res</span><span class="o">=</span><span class="n">blob</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -351,13 +351,13 @@ inserting the blob.</li>
         <li class="right" >
           <a href="cursor.html" title="Cursors (executing SQL)"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.21.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Nov 12, 2017.
+      Last updated on Mar 04, 2018.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
