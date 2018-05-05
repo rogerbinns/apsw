@@ -14,7 +14,8 @@ compilation and installation.
 A number of the quirks and bugs in the SQLite shell are also
 addressed.  It provides command line editing and completion.  You can
 easily include it into your own program to provide SQLite interaction
-and add your own commands.
+and add your own commands.  The autoimport and find commands are also
+useful.
 
 Commands
 ========
@@ -140,7 +141,8 @@ Example
 
 All examples of using the SQLite shell should work as is, plus you get
 extra features and functionality like colour, command line completion
-and better dumps.
+and better dumps.  (The standard SQLite shell does have several more Commands
+that help with debugging and introspecting SQLite itself.)
 
 You can also use the shell programmatically (or even interactively and
 programmatically at the same time).  See the :ref:`example
@@ -166,7 +168,7 @@ If the shell reads data that is not valid for the input encoding or
 cannot convert Unicode to the output encoding then you will get an
 error.
 
-When the shell starts Python automatically detects the encodings to
+When the shell starts, Python automatically detects the encodings to
 use for console input and output.  (For example on Unix like systems
 the LC_CTYPE environment variable is sometimes used.  On Windows it
 can find out the `code page
