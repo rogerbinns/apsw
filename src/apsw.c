@@ -1643,6 +1643,7 @@ modules etc. For example::
       ADDINT(SQLITE_DBSTATUS_CACHE_WRITE),
       ADDINT(SQLITE_DBSTATUS_DEFERRED_FKS),
       ADDINT(SQLITE_DBSTATUS_CACHE_USED_SHARED),
+      ADDINT(SQLITE_DBSTATUS_CACHE_SPILL),
       END,
 
       DICT("mapping_locking_level"),
@@ -1723,6 +1724,7 @@ modules etc. For example::
       ADDINT(SQLITE_FCNTL_COMMIT_ATOMIC_WRITE),
       ADDINT(SQLITE_FCNTL_ROLLBACK_ATOMIC_WRITE),
       ADDINT(SQLITE_FCNTL_BEGIN_ATOMIC_WRITE),
+      ADDINT(SQLITE_FCNTL_LOCK_TIMEOUT),
       END,
 
       DICT("mapping_conflict_resolution_modes"),
