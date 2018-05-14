@@ -1,20 +1,17 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Types &#8212; APSW 3.22.0-r1 documentation</title>
-    
+    <title>Types &#8212; APSW 3.23.1-r1 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.22.0-r1',
+        VERSION:     '3.23.1-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -37,7 +34,7 @@
 </script>
 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -53,7 +50,7 @@
         <li class="right" >
           <a href="exceptions.html" title="Exceptions"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.23.1-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -77,9 +74,9 @@ Python/SQLite types (or a subclass).</p>
 <li>Python int or long is INTEGER in SQLite. The value represented must
 fit within a 64 bit signed quantity (long long at the C level) or an
 overflow exception is generated.</li>
-<li>Python&#8217;s float type is used for REAL in SQLite. (At the C level they
+<li>Python’s float type is used for REAL in SQLite. (At the C level they
 are both 8 byte quantities and there is no loss of precision).</li>
-<li>In Python 2, Python&#8217;s string or unicode is used for TEXT supplied to
+<li>In Python 2, Python’s string or unicode is used for TEXT supplied to
 SQLite and all text returned from SQLite is unicode.  For Python 3
 only unicode is used.</li>
 <li>For Python 2 the buffer class is used for BLOB in SQLite. In Python
@@ -100,12 +97,12 @@ bare Python string class, and ASPW will automatically call the unicode
 converter if any non-ascii characters are present.</p>
 <p>When returning text values from SQLite, ASPW always uses the Python
 unicode class.</p>
-<p>If you don&#8217;t know much about Unicode then read <a class="reference external" href="http://www.joelonsoftware.com/articles/Unicode.html">Joel&#8217;s article</a>.  SQLite does
+<p>If you don’t know much about Unicode then read <a class="reference external" href="http://www.joelonsoftware.com/articles/Unicode.html">Joel’s article</a>.  SQLite does
 not include conversion from random non-Unicode encodings to or from
 Unicode.  (It does include conversion between 8 bit and 16 bit Unicode
 encodings).  Python includes <a class="reference external" href="http://www.python.org/doc/2.5.2/lib/module-codecs.html">codecs</a> for
 conversion to or from many different character sets.</p>
-<p>If you don&#8217;t want to use Unicode and instead want a simple bytes in
+<p>If you don’t want to use Unicode and instead want a simple bytes in
 are the same bytes out then you should only use blobs.</p>
 <p>If you want to do manipulation of unicode text such as upper/lower
 casing or sorting then you need to know about locales.  This is
@@ -188,14 +185,14 @@ output.</p>
         <li class="right" >
           <a href="exceptions.html" title="Exceptions"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.23.1-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 04, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
+      Last updated on May 14, 2018.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

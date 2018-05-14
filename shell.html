@@ -1,20 +1,17 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Shell &#8212; APSW 3.22.0-r1 documentation</title>
-    
+    <title>Shell &#8212; APSW 3.23.1-r1 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.22.0-r1',
+        VERSION:     '3.23.1-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -37,7 +34,7 @@
 </script>
 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -53,7 +50,7 @@
         <li class="right" >
           <a href="vfs.html" title="Virtual File System (VFS)"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.23.1-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -71,7 +68,8 @@ compilation and installation.</p>
 <p>A number of the quirks and bugs in the SQLite shell are also
 addressed.  It provides command line editing and completion.  You can
 easily include it into your own program to provide SQLite interaction
-and add your own commands.</p>
+and add your own commands.  The autoimport and find commands are also
+useful.</p>
 <div class="section" id="commands">
 <h2>Commands<a class="headerlink" href="#commands" title="Permalink to this headline">¶</a></h2>
 <p>In addition to executing SQL, these are the commands available with
@@ -163,19 +161,20 @@ OPTIONS include:
 <h2>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
 <p>To interrupt the shell press Control-C. (On Windows if you press
 Control-Break then the program will be instantly aborted.)</p>
-<p>For Windows users you won&#8217;t have command line editing and completion
+<p>For Windows users you won’t have command line editing and completion
 unless you install a <a class="reference external" href="http://docs.python.org/library/readline.html">readline module</a>.  Fortunately there
 is one at <a class="reference external" href="https://ipython.org/pyreadline.html">https://ipython.org/pyreadline.html</a> which works.
 However if this <a class="reference internal" href="#apsw.Shell" title="apsw.Shell"><code class="xref py py-class docutils literal"><span class="pre">Shell</span></code></a> offers no completions it will start
 matching filenames even if they make no sense in the context.</p>
-<p>For Windows users you won&#8217;t get colour output unless you install
+<p>For Windows users you won’t get colour output unless you install
 <a class="reference external" href="http://pypi.python.org/pypi/colorama">colorama</a></p>
 </div>
 <div class="section" id="example">
 <h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
 <p>All examples of using the SQLite shell should work as is, plus you get
 extra features and functionality like colour, command line completion
-and better dumps.</p>
+and better dumps.  (The standard SQLite shell does have several more Commands
+that help with debugging and introspecting SQLite itself.)</p>
 <p>You can also use the shell programmatically (or even interactively and
 programmatically at the same time).  See the <a class="reference internal" href="example.html#example-shell"><span class="std std-ref">example</span></a> for using the API.</p>
 </div>
@@ -194,7 +193,7 @@ Unicode.)</p>
 <p>If the shell reads data that is not valid for the input encoding or
 cannot convert Unicode to the output encoding then you will get an
 error.</p>
-<p>When the shell starts Python automatically detects the encodings to
+<p>When the shell starts, Python automatically detects the encodings to
 use for console input and output.  (For example on Unix like systems
 the LC_CTYPE environment variable is sometimes used.  On Windows it
 can find out the <a class="reference external" href="http://en.wikipedia.org/wiki/Code_page">code page</a>.)  You can override this
@@ -206,9 +205,9 @@ a choice for encoding the best value to pick is UTF8 as it allows full
 representation of Unicode.</p>
 <p>In addition to specifying the encoding, you can also specify the error
 handling when a character needs to be output but is not present in the
-encoding.  The default is &#8216;strict&#8217; which results in an error.
-&#8216;replace&#8217; will replace the character with &#8216;?&#8217; or something similar
-while &#8216;xmlcharrefreplace&#8217; uses xml entities.  To specify the error
+encoding.  The default is ‘strict’ which results in an error.
+‘replace’ will replace the character with ‘?’ or something similar
+while ‘xmlcharrefreplace’ uses xml entities.  To specify the error
 handling add a colon and error after the encoding - eg:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">.</span><span class="n">encoding</span> <span class="n">iso</span><span class="o">-</span><span class="mi">8859</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">replace</span>
 </pre></div>
@@ -241,18 +240,18 @@ the shell as needed.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>stdin</strong> &#8211; Where to read input from (default sys.stdin)</li>
-<li><strong>stdout</strong> &#8211; Where to send output (default sys.stdout)</li>
-<li><strong>stderr</strong> &#8211; Where to send errors (default sys.stderr)</li>
-<li><strong>encoding</strong> &#8211; Default encoding for files opened/created by the
+<li><strong>stdin</strong> – Where to read input from (default sys.stdin)</li>
+<li><strong>stdout</strong> – Where to send output (default sys.stdout)</li>
+<li><strong>stderr</strong> – Where to send errors (default sys.stderr)</li>
+<li><strong>encoding</strong> – Default encoding for files opened/created by the
 Shell.  If you want stdin/out/err to use a particular encoding
 then you need to provide them <a class="reference external" href="http://docs.python.org/library/codecs.html#codecs.open">already configured</a> that way.</li>
-<li><strong>args</strong> &#8211; This should be program arguments only (ie if
+<li><strong>args</strong> – This should be program arguments only (ie if
 passing in sys.argv do not include sys.argv[0] which is the
 program name.  You can also pass in None and then call
 <a class="reference internal" href="#apsw.Shell.process_args" title="apsw.Shell.process_args"><code class="xref py py-meth docutils literal"><span class="pre">process_args()</span></code></a> if you want to catch any errors
 in handling the arguments yourself.</li>
-<li><strong>db</strong> &#8211; A existing <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> you wish to use</li>
+<li><strong>db</strong> – A existing <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> you wish to use</li>
 </ul>
 </td>
 </tr>
@@ -290,15 +289,15 @@ functions.</p>
 threads.  It is one huge set of state information which would
 become inconsistent if used simultaneously, and then give baffling
 errors.  It is safe to call methods one at a time from different
-threads.  ie it doesn&#8217;t care what thread calls methods as long as
-you don&#8217;t call more than one concurrently.</p>
+threads.  ie it doesn’t care what thread calls methods as long as
+you don’t call more than one concurrently.</p>
 <dl class="exception">
 <dt id="apsw.Shell.Error">
 <em class="property">exception </em><code class="descname">Error</code><a class="headerlink" href="#apsw.Shell.Error" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class raised on errors.  The expectation is that the error
 will be displayed by the shell as text so there are no
 specific subclasses as the distinctions between different
-types of errors doesn&#8217;t matter.</p>
+types of errors doesn’t matter.</p>
 </dd></dl>
 
 <dl class="method">
@@ -309,7 +308,7 @@ types of errors doesn&#8217;t matter.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>intro</strong> &#8211; Initial text banner to display instead of the
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>intro</strong> – Initial text banner to display instead of the
 default.  Make sure you newline terminate it.</td>
 </tr>
 </tbody>
@@ -339,10 +338,10 @@ subsequent calls.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>line</strong> &#8211; The current complete input line</li>
-<li><strong>token</strong> &#8211; The word readline is looking for matches</li>
-<li><strong>beg</strong> &#8211; Integer offset of token in line</li>
-<li><strong>end</strong> &#8211; Integer end of token in line</li>
+<li><strong>line</strong> – The current complete input line</li>
+<li><strong>token</strong> – The word readline is looking for matches</li>
+<li><strong>beg</strong> – Integer offset of token in line</li>
+<li><strong>end</strong> – Integer end of token in line</li>
 </ul>
 </td>
 </tr>
@@ -362,10 +361,10 @@ subsequent calls.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>line</strong> &#8211; The current complete input line</li>
-<li><strong>token</strong> &#8211; The word readline is looking for matches</li>
-<li><strong>beg</strong> &#8211; Integer offset of token in line</li>
-<li><strong>end</strong> &#8211; Integer end of token in line</li>
+<li><strong>line</strong> – The current complete input line</li>
+<li><strong>token</strong> – The word readline is looking for matches</li>
+<li><strong>beg</strong> – Integer offset of token in line</li>
+<li><strong>end</strong> – Integer end of token in line</li>
 </ul>
 </td>
 </tr>
@@ -435,7 +434,7 @@ It will reraise the exception if necessary (eg if bail is true)</p>
 <dt id="apsw.Shell.handle_interrupt">
 <code class="descname">handle_interrupt</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.handle_interrupt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Deal with keyboard interrupt (typically Control-C).  It
-will <a class="reference internal" href="connection.html#apsw.Connection.interrupt" title="apsw.Connection.interrupt"><code class="xref py py-meth docutils literal"><span class="pre">interrupt()</span></code></a> the database and print&#8221;^C&#8221; if interactive.</p>
+will <a class="reference internal" href="connection.html#apsw.Connection.interrupt" title="apsw.Connection.interrupt"><code class="xref py py-meth docutils literal"><span class="pre">interrupt()</span></code></a> the database and print”^C” if interactive.</p>
 </dd></dl>
 
 <dl class="method">
@@ -472,7 +471,7 @@ argument parsing.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>args</strong> &#8211; A list of string options.  Do not include the
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>args</strong> – A list of string options.  Do not include the
 program as args[0]</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A tuple of (databasefilename, initfiles,
@@ -485,7 +484,7 @@ loop if any sql/commands were provided.</td>
 </table>
 <p>The first non-option is the database file name.  Each
 remaining non-option is treated as a complete input (ie it
-isn&#8217;t joined with others looking for a trailing semi-colon).</p>
+isn’t joined with others looking for a trailing semi-colon).</p>
 <p>The SQLite shell uses single dash in front of options.  We
 allow both single and double dashes.  When an unrecognized
 argument is encountered then
@@ -517,12 +516,12 @@ it (eg <a class="reference internal" href="#apsw.Shell.process_sql" title="apsw.
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>sql</strong> &#8211; SQL to execute</li>
-<li><strong>bindings</strong> &#8211; bindings for the <em>sql</em></li>
-<li><strong>internal</strong> &#8211; If True then this is an internal execution
+<li><strong>sql</strong> – SQL to execute</li>
+<li><strong>bindings</strong> – bindings for the <em>sql</em></li>
+<li><strong>internal</strong> – If True then this is an internal execution
 (eg the .tables or .database command).  When executing
 internal sql timings are not shown nor is the SQL echoed.</li>
-<li><strong>summary</strong> &#8211; If not None then should be a tuple of two
+<li><strong>summary</strong> – If not None then should be a tuple of two
 items.  If the <code class="docutils literal"><span class="pre">sql</span></code> returns any data then the first item
 is printed before the first row, and the second item is
 printed after the last row.  An example usage is the .find
@@ -538,17 +537,17 @@ command which shows table names.</li>
 <dt id="apsw.Shell.process_unknown_args">
 <code class="descname">process_unknown_args</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.process_unknown_args" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is called when <a class="reference internal" href="#apsw.Shell.process_args" title="apsw.Shell.process_args"><code class="xref py py-meth docutils literal"><span class="pre">process_args()</span></code></a> encounters an
-argument it doesn&#8217;t understand.  Override this method if you
+argument it doesn’t understand.  Override this method if you
 want to be able to understand additional command line arguments.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>args</strong> &#8211; A list of the remaining arguments.  The initial one will
-have had the leading dashes removed (eg if it was &#8211;foo on the command
-line then args[0] will be &#8220;foo&#8221;</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>args</strong> – A list of the remaining arguments.  The initial one will
+have had the leading dashes removed (eg if it was –foo on the command
+line then args[0] will be “foo”</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None if you don&#8217;t recognize the argument either.  Otherwise
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None if you don’t recognize the argument either.  Otherwise
 return the list of remaining arguments after you have processed
 yours.</td>
 </tr>
@@ -575,7 +574,7 @@ this.</p>
 <code class="descname">set_encoding</code><span class="sig-paren">(</span><em>enc</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Shell.set_encoding" title="Permalink to this definition">¶</a></dt>
 <dd><p>Saves <em>enc</em> as the default encoding, after verifying that
 it is valid.  You can also include :error to specify error
-handling - eg &#8216;cp437:replace&#8217;</p>
+handling - eg ‘cp437:replace’</p>
 <p>Raises an exception on invalid encoding or error</p>
 </dd></dl>
 
@@ -657,14 +656,14 @@ handling - eg &#8216;cp437:replace&#8217;</p>
         <li class="right" >
           <a href="vfs.html" title="Virtual File System (VFS)"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.23.1-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 04, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
+      Last updated on May 14, 2018.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

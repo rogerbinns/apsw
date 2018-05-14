@@ -2,6 +2,13 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.23.1-r1
+=========
+
+Added constants:
+
+* SQLITE_DBSTATUS_CACHE_SPILL, SQLITE_FCNTL_LOCK_TIMEOUT
+
 3.22.0-r1
 =========
 

@@ -1,20 +1,17 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Benchmarking &#8212; APSW 3.22.0-r1 documentation</title>
-    
+    <title>Benchmarking &#8212; APSW 3.23.1-r1 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.22.0-r1',
+        VERSION:     '3.23.1-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -37,7 +34,7 @@
 </script>
 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -53,7 +50,7 @@
         <li class="right" >
           <a href="pysqlite.html" title="pysqlite differences"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.23.1-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -67,7 +64,7 @@
 <p>Before you do any benchmarking with APSW or other ways of accessing
 SQLite, you must understand how and when SQLite does transactions. See
 <a class="reference external" href="https://sqlite.org/lockingv3.html#transaction_control">transaction control</a>.  <strong>APSW does
-not alter SQLite&#8217;s behaviour with transactions.</strong></p>
+not alter SQLite’s behaviour with transactions.</strong></p>
 <p>Some access layers try to interpret your SQL and manage transactions
 behind your back, which may or may not work well with SQLite also
 doing its own transactions. You should always manage your transactions
@@ -77,7 +74,7 @@ you have one transaction per statement is having a maximum of 60
 statements per second. You need two drive rotations to do a
 transaction - the data has to be committed to the main file and the
 journal - and 7200 RPM drives do 120 rotations a second. On the other
-hand if you don&#8217;t put in the transaction boundaries yourself and get
+hand if you don’t put in the transaction boundaries yourself and get
 more than 60 statements a second, then your access mechanism is
 silently starting transactions for you. This topic also comes up
 fairly frequently in the SQLite mailing list archives.</p>
@@ -88,7 +85,7 @@ distribution</span></a>.  You can use the script to
 compare SQLite performance across different versions of SQLite,
 different host systems (hard drives and controllers matter) as well as
 between pysqlite and APSW.  The underlying queries are based on
-<a class="reference external" href="https://sqlite.org/src/finfo?name=tool/mkspeedsql.tcl">SQLite&#8217;s speed test</a>.</p>
+<a class="reference external" href="https://sqlite.org/src/finfo?name=tool/mkspeedsql.tcl">SQLite’s speed test</a>.</p>
 <div class="highlight-text"><div class="highlight"><pre><span></span>$ python speedtest.py --help
 Usage: speedtest.py [options]
 
@@ -215,14 +212,14 @@ statements_nobindings:
         <li class="right" >
           <a href="pysqlite.html" title="pysqlite differences"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.23.1-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 04, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
+      Last updated on May 14, 2018.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

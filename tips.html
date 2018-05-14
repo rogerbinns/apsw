@@ -1,20 +1,17 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Tips &#8212; APSW 3.22.0-r1 documentation</title>
-    
+    <title>Tips &#8212; APSW 3.23.1-r1 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.22.0-r1',
+        VERSION:     '3.23.1-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -37,7 +34,7 @@
 </script>
 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -53,7 +50,7 @@
         <li class="right" >
           <a href="index.html" title="APSW documentation"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.23.1-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -166,7 +163,7 @@ also use the <a class="reference internal" href="shell.html#shell"><span class="
 database to a text file.  For example you could dump it before and
 after a run to see what changed.</p>
 <p>One fairly common gotcha is using double quotes instead of single
-quotes.  (This wouldn&#8217;t be a problem if you use bindings!)  SQL
+quotes.  (This wouldn’t be a problem if you use bindings!)  SQL
 strings use single quotes.  If you use double quotes then it will
 mostly appear to work, but they are intended to be used for
 identifiers such as column names.  For example if you have a column
@@ -182,7 +179,7 @@ occur.</p>
 <h2>Customizing cursors<a class="headerlink" href="#customizing-cursors" title="Permalink to this headline">¶</a></h2>
 <p>Some developers want to customize the behaviour of cursors.  An
 example would be wanting a <a class="reference internal" href="dbapi.html#rowcount"><span class="std std-ref">rowcount</span></a> or batching returned rows.
-(These don&#8217;t make any sense with SQLite but the desire may be to make
+(These don’t make any sense with SQLite but the desire may be to make
 the code source compatible with other database drivers).</p>
 <p>APSW does not provide a way to subclass the cursor class or any other
 form of factory.  Consequently you will have to subclass the
@@ -218,7 +215,7 @@ which will keep retrying or a <a class="reference internal" href="connection.htm
 <p>When starting a new database, it can be quite difficult to decide what
 tables and fields to have and how to link them.  The technique used to
 design SQL schemas is called <a class="reference external" href="http://en.wikipedia.org/wiki/Database_normalization">normalization</a>.  The page
-also shows common pitfalls if you don&#8217;t normalize your schema.</p>
+also shows common pitfalls if you don’t normalize your schema.</p>
 </div>
 <div class="section" id="shared-cache-mode">
 <span id="sharedcache"></span><h2>Shared Cache Mode<a class="headerlink" href="#shared-cache-mode" title="Permalink to this headline">¶</a></h2>
@@ -231,9 +228,9 @@ the same way.  The timeouts and handlers are ignored and instead
 Consequently you will have to do your own busy handling.  (<a class="reference external" href="https://sqlite.org/src/tktview/ebde3f66fc64e21e61ef2854ed1a36dfff884a2f">SQLite
 ticket</a>,
 <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/59">APSW issue 59</a>)</p>
-<p>The amount of memory and I/O saved is trivial compared to Python&#8217;s
+<p>The amount of memory and I/O saved is trivial compared to Python’s
 overal memory and I/O consumption.  You may also need to tune the
-shared cache&#8217;s memory back up to what it would have been with separate
+shared cache’s memory back up to what it would have been with separate
 connections to get the same performance.</p>
 <p>The shared cache mode is targeted at embedded systems where every
 byte of memory and I/O matters.  For example an MP3 player may only
@@ -254,7 +251,7 @@ can also turn it on for all opened databases by using
 <span class="n">apsw</span><span class="o">.</span><span class="n">connection_hooks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">setwal</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Note that if wal mode can&#8217;t be set (eg the database is in memory or
+<p>Note that if wal mode can’t be set (eg the database is in memory or
 temporary) then the attempt to set wal mode will be ignored.  The
 pragma will return the mode in effect.  It is also harmless to call
 functions like <a class="reference internal" href="connection.html#apsw.Connection.wal_autocheckpoint" title="apsw.Connection.wal_autocheckpoint"><code class="xref py py-meth docutils literal"><span class="pre">Connection.wal_autocheckpoint()</span></code></a> on connections
@@ -333,14 +330,14 @@ indirect call via Python.)</p>
         <li class="right" >
           <a href="index.html" title="APSW documentation"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.23.1-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 04, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
+      Last updated on May 14, 2018.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

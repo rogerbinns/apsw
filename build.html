@@ -1,20 +1,17 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Building &#8212; APSW 3.22.0-r1 documentation</title>
-    
+    <title>Building &#8212; APSW 3.23.1-r1 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.22.0-r1',
+        VERSION:     '3.23.1-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -37,7 +34,7 @@
 </script>
 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -53,7 +50,7 @@
         <li class="right" >
           <a href="download.html" title="Download"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.23.1-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -109,7 +106,7 @@ Microsoft compilers.</td>
 <code class="xref std std-option docutils literal"><span class="pre">--inplace</span></code> test</div>
 </div>
 </td>
-<td>Compiles the extension but doesn&#8217;t install it. The resulting file
+<td>Compiles the extension but doesn’t install it. The resulting file
 will be in the current directory named apsw.so (Unix/Mac) or
 apsw.pyd (Windows). The test suite is then run. (Note on recent versions
 of CPython the extension filenames may be more complicated due to
@@ -168,8 +165,8 @@ which you can override using this flag.</p>
 <div class="last admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">You can also specify <cite>fossil</cite> as the version
-and the current development version from <a class="reference external" href="https://sqlite.org/src/timeline">SQLite&#8217;s source tracking system</a> will be used.  (The system is named
-<a class="reference external" href="http://www.fossil-scm.org">Fossil</a>.) Note that checksums can&#8217;t be checked
+and the current development version from <a class="reference external" href="https://sqlite.org/src/timeline">SQLite’s source tracking system</a> will be used.  (The system is named
+<a class="reference external" href="http://www.fossil-scm.org">Fossil</a>.) Note that checksums can’t be checked
 for fossil. You will also need TCL and make installed for the amalgamation to
 build as well as several other common Unix tools.  (ie this is very unlikely to
 work on Windows.)</p>
@@ -237,7 +234,7 @@ that the traditional APIs for getting time information are not
 re-entrant and cannot be used concurrently from multiple threads.
 Consequently SQLite has mutexes to ensure that concurrent calls do
 not happen.  However you can tell it you have more recent re-entrant
-versions of the calls and it won&#8217;t need to bother with the mutexes.</p>
+versions of the calls and it won’t need to bother with the mutexes.</p>
 <p>After fetching the amalgamation, setup automatically determines what
 new APIs you have by running the <code class="file docutils literal"><span class="pre">configure</span></code> script that comes
 with SQLite and noting the output.  The information is placed in
@@ -292,7 +289,7 @@ is on your path</td>
 This flag only helps when using the amalgamation. If not using the
 amalgamation then you need to separately ensure fts3/4/5 is enabled in the SQLite
 install. You are likely to want the <a class="reference external" href="https://sqlite.org/compile.html#enable_fts3_parenthesis">parenthesis option</a> on unless you have
-legacy code (<cite>&#8211;enable-all-extensions</cite> turns it on).</td>
+legacy code (<cite>–enable-all-extensions</cite> turns it on).</td>
 </tr>
 <tr class="row-even"><td><div class="first last line-block">
 <div class="line"><code class="xref std std-option docutils literal"><span class="pre">--enable=rtree</span></code></div>
@@ -340,7 +337,7 @@ install.</td>
 <code class="xref std std-option docutils literal"><span class="pre">--omit=load_extension</span></code> will omit code to do with loading extensions. If
 using the amalgamation then this will omit the functionality from APSW and
 SQLite, otherwise the functionality will only be omitted from APSW (ie the code
-will still be in SQLite, APSW just won&#8217;t call it). In almost all cases you will need
+will still be in SQLite, APSW just won’t call it). In almost all cases you will need
 to regenerate the SQLite source because the omits also alter the generated SQL
 parser. See <a class="reference external" href="https://sqlite.org/compile.html#omitfeatures">the relevant SQLite documentation</a>.</td>
 </tr>
@@ -422,10 +419,10 @@ sqlite3.c, <a class="reference external" href="https://sqlite.org/faq.html#q17">
 </div>
 <p>The extension just turns into a single file apsw.so (Linux/Mac) or
 apsw.pyd (Windows). (More complicated name on Pythons implementing
-<span class="target" id="index-3"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-3149"><strong>PEP 3149</strong></a>). You don&#8217;t need to install it and can drop it into any
+<span class="target" id="index-3"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-3149"><strong>PEP 3149</strong></a>). You don’t need to install it and can drop it into any
 directory that is more convenient for you and that your code can
 reach. To just do the build and not install, leave out <em>install</em> from
-the lines above. (Use <em>build_ext &#8211;inplace</em> to have the extension put
+the lines above. (Use <em>build_ext –inplace</em> to have the extension put
 in the main directory.)</p>
 <p>The test suite will be run. It will print the APSW file used, APSW and
 SQLite versions and then run lots of tests all of which should pass.</p>
@@ -451,7 +448,7 @@ dedicated to testing than makes up the actual database functionality.</p>
 <p>APSW includes a <code class="file docutils literal"><span class="pre">tests.py</span></code> file which uses the standard Python
 testing modules to verify correct operation. New code is developed
 alongside the tests. Reported issues also have test cases to ensure
-the issue doesn&#8217;t happen or doesn&#8217;t happen again.:</p>
+the issue doesn’t happen or doesn’t happen again.:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ python setup.py test
                Python /usr/bin/python (2, 6, 6, &#39;final&#39;, 0)
 Testing with APSW file /space/apsw/apsw.so
@@ -551,14 +548,14 @@ SQLite supported versions running the tests. See
         <li class="right" >
           <a href="download.html" title="Download"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.23.1-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 04, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
+      Last updated on May 14, 2018.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

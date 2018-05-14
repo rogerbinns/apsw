@@ -1,20 +1,17 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Backup &#8212; APSW 3.22.0-r1 documentation</title>
-    
+    <title>Backup &#8212; APSW 3.23.1-r1 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.22.0-r1',
+        VERSION:     '3.23.1-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -37,7 +34,7 @@
 </script>
 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -53,7 +50,7 @@
         <li class="right" >
           <a href="blob.html" title="Blob Input/Output"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.23.1-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -79,7 +76,7 @@ releasing locks.</p>
         <span class="nb">print</span> <span class="n">b</span><span class="o">.</span><span class="n">remaining</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">pagecount</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">,</span>
 </pre></div>
 </div>
-<p>If you are not using <strong>with</strong> then you&#8217;ll need to ensure
+<p>If you are not using <strong>with</strong> then you’ll need to ensure
 <a class="reference internal" href="#apsw.backup.finish" title="apsw.backup.finish"><code class="xref py py-meth docutils literal"><span class="pre">finish()</span></code></a> is called:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># copies source.main into db</span>
 <span class="n">b</span><span class="o">=</span><span class="n">db</span><span class="o">.</span><span class="n">backup</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span>
@@ -133,7 +130,7 @@ times.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>force</strong> &#8211; If true then any exceptions are ignored.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>force</strong> – If true then any exceptions are ignored.</td>
 </tr>
 </tbody>
 </table>
@@ -160,7 +157,7 @@ an exception.  It is safe to call this method multiple times.</p>
 <dt id="apsw.backup.pagecount">
 <code class="descclassname">backup.</code><code class="descname">pagecount</code><a class="headerlink" href="#apsw.backup.pagecount" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read only. How many pages were in the source database after the last
-step.  If you haven&#8217;t called <a class="reference internal" href="#apsw.backup.step" title="apsw.backup.step"><code class="xref py py-meth docutils literal"><span class="pre">step()</span></code></a> or the backup
+step.  If you haven’t called <a class="reference internal" href="#apsw.backup.step" title="apsw.backup.step"><code class="xref py py-meth docutils literal"><span class="pre">step()</span></code></a> or the backup
 object has been <a class="reference internal" href="#apsw.backup.finish" title="apsw.backup.finish"><code class="xref py py-meth docutils literal"><span class="pre">finished</span></code></a> then zero is
 returned.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/backup_finish.html#sqlite3backuppagecount">sqlite3_backup_pagecount</a></p>
@@ -170,7 +167,7 @@ returned.</p>
 <dt id="apsw.backup.remaining">
 <code class="descclassname">backup.</code><code class="descname">remaining</code><a class="headerlink" href="#apsw.backup.remaining" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read only. How many pages were remaining to be copied after the last
-step.  If you haven&#8217;t called <a class="reference internal" href="#apsw.backup.step" title="apsw.backup.step"><code class="xref py py-meth docutils literal"><span class="pre">step()</span></code></a> or the backup
+step.  If you haven’t called <a class="reference internal" href="#apsw.backup.step" title="apsw.backup.step"><code class="xref py py-meth docutils literal"><span class="pre">step()</span></code></a> or the backup
 object has been <a class="reference internal" href="#apsw.backup.finish" title="apsw.backup.finish"><code class="xref py py-meth docutils literal"><span class="pre">finished</span></code></a> then zero is
 returned.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/backup_finish.html#sqlite3backupremaining">sqlite3_backup_remaining</a></p>
@@ -186,7 +183,7 @@ backup object is <a class="reference internal" href="#apsw.backup.finish" title=
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>npages</strong> &#8211; How many pages to copy. If the parameter is omitted
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>npages</strong> – How many pages to copy. If the parameter is omitted
 or negative then all remaining pages are copied. The default page
 size is 1024 bytes (1kb) which can be changed before database
 creation using a <a class="reference external" href="https://sqlite.org/pragma.html#modify">pragma</a>.</td>
@@ -267,14 +264,14 @@ again.</p>
         <li class="right" >
           <a href="blob.html" title="Blob Input/Output"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.23.1-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 04, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
+      Last updated on May 14, 2018.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

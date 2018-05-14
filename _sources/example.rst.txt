@@ -26,9 +26,9 @@ so you can see what gets printed when you run the code.
 .. code-block:: text
 
    |       Using APSW file /space/apsw/apsw.so
-   |          APSW version 3.22.0-r1
-   |    SQLite lib version 3.22.0
-   | SQLite header version 3022000
+   |          APSW version 3.23.1-r1
+   |    SQLite lib version 3.23.1
+   | SQLite header version 3023001
 
 .. code-block:: python
 
@@ -398,8 +398,7 @@ so you can see what gets printed when you run the code.
 .. code-block:: text
 
    | in commit hook
-   | no commits out of hours
-   | commit was not allowed
+   | commits okay at this time
 
 .. _example-updatehook:
 
@@ -533,9 +532,9 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
-   | 6191464 apsw.so /space/apsw
-   | 456952 _mlt.x86_64-linux-gnu.so /usr/lib/python2.7/dist-packages
+   | 6223624 apsw.so /space/apsw
    | 447393 libxml2.pyc /usr/lib/python2.7/dist-packages
+   | 412920 libxml2mod.x86_64-linux-gnu.so /usr/lib/python2.7/dist-packages
 
 .. code-block:: python
 
@@ -546,8 +545,8 @@ so you can see what gets printed when you run the code.
 .. code-block:: text
 
    | 1447460998.61 sitecustomize.py /usr/lib/python2.7
-   | 1447461008.17 blinker-1.3.egg-info /usr/lib/python2.7/dist-packages
-   | 1447461010.81 characteristic.py /usr/lib/python2.7/dist-packages
+   | 1461270486.46 lzma.x86_64-linux-gnu.so /usr/lib/python2.7/dist-packages
+   | 1461270486.46 liblzma.py /usr/lib/python2.7/dist-packages
 
 .. _example-vfs:
 
@@ -748,7 +747,7 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
-   | SQLite memory usage current 495056 max 511112
+   | SQLite memory usage current 500504 max 511488
 
 .. code-block:: python
 

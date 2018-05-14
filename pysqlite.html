@@ -1,20 +1,17 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>pysqlite differences &#8212; APSW 3.22.0-r1 documentation</title>
-    
+    <title>pysqlite differences &#8212; APSW 3.23.1-r1 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.22.0-r1',
+        VERSION:     '3.23.1-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -37,7 +34,7 @@
 </script>
 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -53,7 +50,7 @@
         <li class="right" >
           <a href="dbapi.html" title="DBAPI notes"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.23.1-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -71,13 +68,13 @@ way is normal for SQLite.  It makes no effort to hide how SQLite is
 different from other databases.</p>
 <p>pysqlite tries to provide a DBAPI compliant wrapper for SQLite and in
 doing so needs to make it have the same behaviour as other databases.
-Consequently it does hide some of SQLite&#8217;s nuances.</p>
+Consequently it does hide some of SQLite’s nuances.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">I suggest using APSW when you want to directly use SQLite and its
 functionality or are using your own code to deal with database
 independence rather than DBAPI.  Use pysqlite and DBAPI if your
-needs are simple, and you don&#8217;t want to use SQLite features.</p>
+needs are simple, and you don’t want to use SQLite features.</p>
 </div>
 <div class="section" id="what-apsw-does-better">
 <h2>What APSW does better<a class="headerlink" href="#what-apsw-does-better" title="Permalink to this headline">¶</a></h2>
@@ -108,7 +105,7 @@ file and several .py files, all of which need to be available.</p>
 manage transactions by parsing your SQL for you, but you can turn it
 off. This can result in very unexpected behaviour with pysqlite.</p>
 </li>
-<li><p class="first">When using a <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> as a <a class="reference internal" href="connection.html#apsw.Connection.__enter__" title="apsw.Connection.__enter__"><code class="xref py py-meth docutils literal"><span class="pre">context</span> <span class="pre">manager</span></code></a> APSW uses SQLite&#8217;s ability to have <a class="reference external" href="https://sqlite.org/lang_savepoint.html">nested
+<li><p class="first">When using a <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> as a <a class="reference internal" href="connection.html#apsw.Connection.__enter__" title="apsw.Connection.__enter__"><code class="xref py py-meth docutils literal"><span class="pre">context</span> <span class="pre">manager</span></code></a> APSW uses SQLite’s ability to have <a class="reference external" href="https://sqlite.org/lang_savepoint.html">nested
 transactions</a>.
 pysqlite only deals with one transaction at a time and cannot nest
 them.  (Savepoints were introduced in SQLite 3.6.8 - another
@@ -143,7 +140,7 @@ work fine in APSW but is not allowed in pysqlite:</p>
 </li>
 <li><p class="first"><a class="reference internal" href="cursor.html#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.executemany()</span></code></a> also works with statements that return
 data such as selects, and you can have multiple statements.
-pysqlite&#8217;s <code class="xref py py-meth docutils literal"><span class="pre">executescript()</span></code> method doesn&#8217;t allow any form of
+pysqlite’s <code class="xref py py-meth docutils literal"><span class="pre">executescript()</span></code> method doesn’t allow any form of
 data being returned (it silently ignores any returned data).</p>
 </li>
 <li><p class="first">pysqlite swallows exceptions in your callbacks making it far harder
@@ -199,7 +196,7 @@ above. See <a class="reference internal" href="exceptions.html#augmentedstacktra
 </li>
 <li><p class="first">APSW has <a class="reference internal" href="execution.html#tracing"><span class="std std-ref">execution and row tracers</span></a>.  pysqlite has no
 equivalent to <a class="reference internal" href="execution.html#executiontracer"><span class="std std-ref">execution tracers</span></a> and does have
-data adaptors which aren&#8217;t the same thing as a <a class="reference internal" href="execution.html#rowtracer"><span class="std std-ref">row tracer</span></a> (for example you can&#8217;t skip rows or add a new column to
+data adaptors which aren’t the same thing as a <a class="reference internal" href="execution.html#rowtracer"><span class="std std-ref">row tracer</span></a> (for example you can’t skip rows or add a new column to
 each row returned).  pysqlite does have a <a class="reference external" href="http://readthedocs.org/docs/pysqlite/en/latest/sqlite3.html#accessing-columns-by-name-instead-of-by-index">row factory</a>
 but you can easily emulate that with the row tracer and
 <a class="reference internal" href="cursor.html#apsw.Cursor.getdescription" title="apsw.Cursor.getdescription"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.getdescription()</span></code></a>.</p>
@@ -217,7 +214,7 @@ example of the difference in approach of the two wrappers.</p>
 <li><p class="first">The APSW test suite is larger and tests more functionality. Code
 coverage by the test suite is 99.6%. pysqlite is good at 81% for C
 code although there are several places that coverage can be
-improved. I haven&#8217;t measured code coverage for pysqlite&#8217;s Python
+improved. I haven’t measured code coverage for pysqlite’s Python
 code.  The consequences of this are that APSW catches issues earlier
 and gives far better diagnostics.  As an example try returning an
 unsupported type from a registered scalar function.</p>
@@ -232,8 +229,8 @@ unsupported type from a registered scalar function.</p>
 <ul>
 <li><p class="first">pysqlite has an <a class="reference external" href="http://readthedocs.org/docs/pysqlite/en/latest/sqlite3.html#using-adapters-to-store-additional-python-types-in-sqlite-databases">adaptor system</a>
 that lets you pretend SQLite stores and returns more types than it
-really supports.  Note that the database won&#8217;t be useful in a
-non-pysqlite context (eg PHP code looking at the same database isn&#8217;t
+really supports.  Note that the database won’t be useful in a
+non-pysqlite context (eg PHP code looking at the same database isn’t
 going to recognise your Point class).  You can implement something similar in APSW by intercepting <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.execute()</span></code></a> calls
 that suitably mangles the bindings going to SQLite and does
 something similar to the rows the iterator returns.</p>
@@ -312,14 +309,14 @@ string, you can cast it to a blob:</p>
         <li class="right" >
           <a href="dbapi.html" title="DBAPI notes"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.23.1-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 04, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
+      Last updated on May 14, 2018.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

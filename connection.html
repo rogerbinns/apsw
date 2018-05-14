@@ -1,20 +1,17 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Connections to a database &#8212; APSW 3.22.0-r1 documentation</title>
-    
+    <title>Connections to a database &#8212; APSW 3.23.1-r1 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.22.0-r1',
+        VERSION:     '3.23.1-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -37,7 +34,7 @@
 </script>
 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -53,7 +50,7 @@
         <li class="right" >
           <a href="apsw.html" title="APSW Module"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.23.1-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -82,10 +79,10 @@ in-memory database that is not shared with any other connections.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>flags</strong> &#8211; One or more of the <a class="reference external" href="https://sqlite.org/c3ref/c_open_autoproxy.html">open flags</a> orred together</li>
-<li><strong>vfs</strong> &#8211; The name of the <a class="reference external" href="https://sqlite.org/c3ref/vfs.html">vfs</a> to use.  If <code class="xref py py-const docutils literal"><span class="pre">None</span></code> then the default
+<li><strong>flags</strong> – One or more of the <a class="reference external" href="https://sqlite.org/c3ref/c_open_autoproxy.html">open flags</a> orred together</li>
+<li><strong>vfs</strong> – The name of the <a class="reference external" href="https://sqlite.org/c3ref/vfs.html">vfs</a> to use.  If <code class="xref py py-const docutils literal"><span class="pre">None</span></code> then the default
 vfs will be used.</li>
-<li><strong>statementcachesize</strong> &#8211; Use zero to disable the statement cache,
+<li><strong>statementcachesize</strong> – Use zero to disable the statement cache,
 or a number larger than the total distinct SQL statements you
 execute frequently.</li>
 </ul>
@@ -146,10 +143,10 @@ database to this database.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>databasename</strong> &#8211; Name of the database.  This will be <code class="docutils literal"><span class="pre">main</span></code> for
+<li><strong>databasename</strong> – Name of the database.  This will be <code class="docutils literal"><span class="pre">main</span></code> for
 the main connection and the name you specified for <a class="reference external" href="https://sqlite.org/lang_attach.html">attached</a> databases.</li>
-<li><strong>sourceconnection</strong> &#8211; The <a class="reference internal" href="#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> to copy a database from.</li>
-<li><strong>sourcedatabasename</strong> &#8211; Name of the database in the source (eg <code class="docutils literal"><span class="pre">main</span></code>).</li>
+<li><strong>sourceconnection</strong> – The <a class="reference internal" href="#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> to copy a database from.</li>
+<li><strong>sourcedatabasename</strong> – Name of the database in the source (eg <code class="docutils literal"><span class="pre">main</span></code>).</li>
 </ul>
 </td>
 </tr>
@@ -176,13 +173,13 @@ the main connection and the name you specified for <a class="reference external"
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>database</strong> &#8211; <p>Name of the database.  This will be <code class="docutils literal"><span class="pre">main</span></code> for
+<li><strong>database</strong> – <p>Name of the database.  This will be <code class="docutils literal"><span class="pre">main</span></code> for
 the main connection and the name you specified for <a class="reference external" href="https://sqlite.org/lang_attach.html">attached</a> databases.</p>
 </li>
-<li><strong>table</strong> &#8211; The name of the table</li>
-<li><strong>column</strong> &#8211; The name of the column</li>
-<li><strong>rowid</strong> &#8211; The id that uniquely identifies the row.</li>
-<li><strong>writeable</strong> &#8211; If True then you can read and write the blob.  If False then you can only read it.</li>
+<li><strong>table</strong> – The name of the table</li>
+<li><strong>column</strong> – The name of the column</li>
+<li><strong>rowid</strong> – The id that uniquely identifies the row.</li>
+<li><strong>writeable</strong> – If True then you can read and write the blob.  If False then you can only read it.</li>
 </ul>
 </td>
 </tr>
@@ -218,12 +215,12 @@ they are closed too.  It is normally not necessary to call this
 method as the database is automatically closed when there are no
 more references.  It is ok to call the method multiple times.</p>
 <p>If your user defined functions or collations have direct or indirect
-references to the Connection then it won&#8217;t be automatically garbage
-collected because of circular referencing that can&#8217;t be
+references to the Connection then it won’t be automatically garbage
+collected because of circular referencing that can’t be
 automatically broken.  Calling <em>close</em> will free all those objects
 and what they reference.</p>
 <p>SQLite is designed to survive power failures at even the most
-awkward moments.  Consequently it doesn&#8217;t matter if it is closed
+awkward moments.  Consequently it doesn’t matter if it is closed
 when the process is exited, or even if the exit is graceful or
 abrupt.  In the worst case of having a transaction in progress, that
 transaction will be rolled back by the next program to open the
@@ -235,7 +232,7 @@ database, reverting the database to a know good state.</p>
 <span class="target" id="index-6"></span><dl class="method">
 <dt id="apsw.Connection.collationneeded">
 <code class="descclassname">Connection.</code><code class="descname">collationneeded</code><span class="sig-paren">(</span><em>callable</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.collationneeded" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>callable</em> will be called if a statement requires a <a class="reference external" href="http://en.wikipedia.org/wiki/Collation">collation</a> that hasn&#8217;t been
+<dd><p><em>callable</em> will be called if a statement requires a <a class="reference external" href="http://en.wikipedia.org/wiki/Collation">collation</a> that hasn’t been
 registered. Your callable will be passed two parameters. The first
 is the connection object. The second is the name of the
 collation. If you have the collation code available then call
@@ -263,8 +260,8 @@ register them.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>op</strong> &#8211; A <a class="reference external" href="https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html">configuration operation</a></li>
-<li><strong>args</strong> &#8211; Zero or more arguments as appropriate for <em>op</em></li>
+<li><strong>op</strong> – A <a class="reference external" href="https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html">configuration operation</a></li>
+<li><strong>args</strong> – Zero or more arguments as appropriate for <em>op</em></li>
 </ul>
 </td>
 </tr>
@@ -283,9 +280,9 @@ the relevant rows such as counting how many there are.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>name</strong> &#8211; The string name of the function.  It should be less than 255 characters</li>
-<li><strong>callable</strong> &#8211; The function that will be called</li>
-<li><strong>numargs</strong> &#8211; How many arguments the function takes, with -1 meaning any number</li>
+<li><strong>name</strong> – The string name of the function.  It should be less than 255 characters</li>
+<li><strong>callable</strong> – The function that will be called</li>
+<li><strong>numargs</strong> – How many arguments the function takes, with -1 meaning any number</li>
 </ul>
 </td>
 </tr>
@@ -373,12 +370,12 @@ first is greater:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>name</strong> &#8211; The string name of the function.  It should be less than 255 characters</li>
-<li><strong>callable</strong> &#8211; The function that will be called</li>
-<li><strong>numargs</strong> &#8211; How many arguments the function takes, with -1 meaning any number</li>
-<li><strong>deterministic</strong> &#8211; When True this means the function always
+<li><strong>name</strong> – The string name of the function.  It should be less than 255 characters</li>
+<li><strong>callable</strong> – The function that will be called</li>
+<li><strong>numargs</strong> – How many arguments the function takes, with -1 meaning any number</li>
+<li><strong>deterministic</strong> – When True this means the function always
 returns the same result for the same input arguments.
-SQLite&#8217;s query planner can perform additional optimisations
+SQLite’s query planner can perform additional optimisations
 for deterministic functions.  For example a random()
 function is not deterministic while one that returns the
 length of a string is.</li>
@@ -397,7 +394,7 @@ length of a string is.</li>
 </pre></div>
 </div>
 <p class="last">The one with the correct <em>numargs</em> will be called and only if that
-doesn&#8217;t exist then the one with negative <em>numargs</em> will be called.</p>
+doesn’t exist then the one with negative <em>numargs</em> will be called.</p>
 </div>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
@@ -427,7 +424,7 @@ doesn&#8217;t exist then the one with negative <em>numargs</em> will be called.<
 <dt id="apsw.Connection.db_filename">
 <code class="descclassname">Connection.</code><code class="descname">db_filename</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span> &#x2192; String<a class="headerlink" href="#apsw.Connection.db_filename" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the full filename of the named (attached) database.  The
-main database is named &#8220;main&#8221;.</p>
+main database is named “main”.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/db_filename.html">sqlite3_db_filename</a></p>
 </dd></dl>
 
@@ -440,7 +437,7 @@ which is disabled by default.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>enable</strong> &#8211; If True then extension loading is enabled, else it is disabled.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>enable</strong> – If True then extension loading is enabled, else it is disabled.</td>
 </tr>
 </tbody>
 </table>
@@ -463,10 +460,10 @@ implementing <a class="reference internal" href="vfs.html#apsw.VFSFile" title="a
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>dbname</strong> &#8211; The name of the database to affect (eg &#8220;main&#8221;, &#8220;temp&#8221;, attached name)</li>
-<li><strong>op</strong> &#8211; A <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_lockstate.html">numeric code</a> with values less
+<li><strong>dbname</strong> – The name of the database to affect (eg “main”, “temp”, attached name)</li>
+<li><strong>op</strong> – A <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_lockstate.html">numeric code</a> with values less
 than 100 reserved for SQLite internal use.</li>
-<li><strong>pointer</strong> &#8211; A number which is treated as a <code class="docutils literal"><span class="pre">void</span> <span class="pre">pointer</span></code> at the C level.</li>
+<li><strong>pointer</strong> – A number which is treated as a <code class="docutils literal"><span class="pre">void</span> <span class="pre">pointer</span></code> at the C level.</li>
 </ul>
 </td>
 </tr>
@@ -579,8 +576,8 @@ returned.  If called with two then the limit is set to <em>newval</em>.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>id</strong> &#8211; One of the <a class="reference external" href="https://sqlite.org/c3ref/c_limit_attached.html">runtime limit ids</a></li>
-<li><strong>newval</strong> &#8211; The new limit.  This is a 32 bit signed integer even on 64 bit platforms.</li>
+<li><strong>id</strong> – One of the <a class="reference external" href="https://sqlite.org/c3ref/c_limit_attached.html">runtime limit ids</a></li>
+<li><strong>newval</strong> – The new limit.  This is a 32 bit signed integer even on 64 bit platforms.</li>
 </ul>
 </td>
 </tr>
@@ -607,14 +604,14 @@ returned.  If called with two then the limit is set to <em>newval</em>.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>filename</strong> &#8211; The file to load.  This must be Unicode or Unicode compatible</li>
-<li><strong>entrypoint</strong> &#8211; The initialization method to call.  If this
+<li><strong>filename</strong> – The file to load.  This must be Unicode or Unicode compatible</li>
+<li><strong>entrypoint</strong> – The initialization method to call.  If this
 parameter is not supplied then the SQLite default of
 <code class="docutils literal"><span class="pre">sqlite3_extension_init</span></code> is used.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="exceptions.html#apsw.ExtensionLoadingError" title="apsw.ExtensionLoadingError"><strong>ExtensionLoadingError</strong></a> &#8211; If the extension could not be
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="exceptions.html#apsw.ExtensionLoadingError" title="apsw.ExtensionLoadingError"><strong>ExtensionLoadingError</strong></a> – If the extension could not be
 loaded.  The exception string includes more details.</p>
 </td>
 </tr>
@@ -651,8 +648,8 @@ loaded.  The exception string includes more details.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>name</strong> &#8211; Function name</li>
-<li><strong>nargs</strong> &#8211; How many arguments the function takes</li>
+<li><strong>name</strong> – Function name</li>
+<li><strong>nargs</strong> – How many arguments the function takes</li>
 </ul>
 </td>
 </tr>
@@ -666,8 +663,8 @@ loaded.  The exception string includes more details.</p>
 <dt id="apsw.Connection.readonly">
 <code class="descclassname">Connection.</code><code class="descname">readonly</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#apsw.Connection.readonly" title="Permalink to this definition">¶</a></dt>
 <dd><p>True or False if the named (attached) database was opened readonly or file
-permissions don&#8217;t allow writing.  The main database is named &#8220;main&#8221;.</p>
-<p>An exception is raised if the database doesn&#8217;t exist.</p>
+permissions don’t allow writing.  The main database is named “main”.</p>
+<p>An exception is raised if the database doesn’t exist.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/db_readonly.html">sqlite3_db_readonly</a></p>
 </dd></dl>
 
@@ -744,7 +741,7 @@ still busy then <a class="reference internal" href="exceptions.html#apsw.BusyErr
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>milliseconds</strong> &#8211; Maximum thousandths of a second to wait.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>milliseconds</strong> – Maximum thousandths of a second to wait.</td>
 </tr>
 </tbody>
 </table>
@@ -803,7 +800,7 @@ removed.</p>
 statement and passed the statement string and how long it took to
 execute. (The execution time is in nanoseconds.) Note that it is
 called only on completion. If for example you do a <code class="docutils literal"><span class="pre">SELECT</span></code> and
-only read the first result, then you won&#8217;t reach the end of the
+only read the first result, then you won’t reach the end of the
 statement.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/profile.html">sqlite3_profile</a></p>
 </dd></dl>
@@ -892,7 +889,7 @@ callback is called with 3 parameters:</p>
 <blockquote>
 <div><ul class="simple">
 <li>The Connection</li>
-<li>The database name (eg &#8220;main&#8221; or the name of an attached database)</li>
+<li>The database name (eg “main” or the name of an attached database)</li>
 <li>The number of pages in the wal log</li>
 </ul>
 </div></blockquote>
@@ -923,8 +920,8 @@ libraries.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>op</strong> &#8211; A <a class="reference external" href="https://sqlite.org/c3ref/c_dbstatus_options.html">status parameter</a></li>
-<li><strong>reset</strong> &#8211; If <em>True</em> then the highwater is set to the current value</li>
+<li><strong>op</strong> – A <a class="reference external" href="https://sqlite.org/c3ref/c_dbstatus_options.html">status parameter</a></li>
+<li><strong>reset</strong> – If <em>True</em> then the highwater is set to the current value</li>
 </ul>
 </td>
 </tr>
@@ -959,7 +956,7 @@ inserted, or deleted since the database connection was opened.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> &#8211; A number representing the checkpointing interval or
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n</strong> – A number representing the checkpointing interval or
 zero/negative to disable auto checkpointing.</td>
 </tr>
 </tbody>
@@ -976,8 +973,8 @@ zero/negative to disable auto checkpointing.</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>dbname</strong> &#8211; The name of the database or all databases if None</li>
-<li><strong>mode</strong> &#8211; One of the <a class="reference external" href="https://sqlite.org/c3ref/wal_checkpoint_v2.html">checkpoint modes</a>.</li>
+<li><strong>dbname</strong> – The name of the database or all databases if None</li>
+<li><strong>mode</strong> – One of the <a class="reference external" href="https://sqlite.org/c3ref/wal_checkpoint_v2.html">checkpoint modes</a>.</li>
 </ul>
 </td>
 </tr>
@@ -1050,14 +1047,14 @@ number of frames checkpointed as described in the
         <li class="right" >
           <a href="apsw.html" title="APSW Module"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.23.1-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 04, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
+      Last updated on May 14, 2018.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

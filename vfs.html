@@ -1,20 +1,17 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Virtual File System (VFS) &#8212; APSW 3.22.0-r1 documentation</title>
-    
+    <title>Virtual File System (VFS) &#8212; APSW 3.23.1-r1 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.22.0-r1',
+        VERSION:     '3.23.1-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -37,7 +34,7 @@
 </script>
 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -53,7 +50,7 @@
         <li class="right" >
           <a href="vtable.html" title="Virtual Tables"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.23.1-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -106,7 +103,7 @@ being unable to load a library, <a class="reference external" href="https://sqli
 parameter), others are unified (eg almost any
 error in xWrite will be returned to the user as disk full
 error). Sometimes errors are ignored as they are harmless such as when
-a journal can&#8217;t be deleted after a commit (the journal is marked as
+a journal can’t be deleted after a commit (the journal is marked as
 obsolete before being deleted).  Simple operations such as opening a
 database can result in many different VFS function calls such as hot
 journals being detected, locking, and read/writes for
@@ -205,7 +202,7 @@ create a VFS your Python class must inherit from <a class="reference internal" h
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> &#8211; The name to register this vfs under.  If the name
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> – The name to register this vfs under.  If the name
 already exists then this vfs will replace the prior one of the
 same name.  Use <a class="reference internal" href="apsw.html#apsw.vfsnames" title="apsw.vfsnames"><code class="xref py py-meth docutils literal"><span class="pre">apsw.vfsnames()</span></code></a> to get a list of
 registered vfs names.  :param base: If you would like to
@@ -213,12 +210,12 @@ inherit behaviour from an already registered vfs then give
 their name.  To inherit from the default vfs, use a zero
 length string <code class="docutils literal"><span class="pre">&quot;&quot;</span></code> as the name.  :param makedefault: If true
 then this vfs will be registered as the default, and will be
-used by any opens that don&#8217;t specify a vfs.  :param
+used by any opens that don’t specify a vfs.  :param
 maxpathname: The maximum length of database name in bytes when
 represented in UTF-8.  If a pathname is passed in longer than
 this value then SQLite will not <a class="reference external" href="https://sqlite.org/src/tktview/c060923a5422590b3734eb92eae0c94934895b68">be able to open it</a>.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>ValueError</strong> &#8211; If <em>base</em> is not <code class="xref py py-const docutils literal"><span class="pre">None</span></code> and the named vfs is not
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>ValueError</strong> – If <em>base</em> is not <code class="xref py py-const docutils literal"><span class="pre">None</span></code> and the named vfs is not
 currently registered.</td>
 </tr>
 </tbody>
@@ -245,9 +242,9 @@ what <code class="docutils literal"><span class="pre">sys.exc_info()</span></cod
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>etype</strong> &#8211; The exception type</li>
-<li><strong>evalue</strong> &#8211; The exception  value</li>
-<li><strong>etraceback</strong> &#8211; The exception traceback.  Note this
+<li><strong>etype</strong> – The exception type</li>
+<li><strong>evalue</strong> – The exception  value</li>
+<li><strong>etraceback</strong> – The exception traceback.  Note this
 includes all frames all the way up to the thread being started.</li>
 </ul>
 </td>
@@ -278,8 +275,8 @@ accordingly.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>pathname</strong> &#8211; File or directory to check</li>
-<li><strong>flags</strong> &#8211; One of the <a class="reference external" href="https://sqlite.org/c3ref/c_access_exists.html">access flags</a></li>
+<li><strong>pathname</strong> – File or directory to check</li>
+<li><strong>flags</strong> – One of the <a class="reference external" href="https://sqlite.org/c3ref/c_access_exists.html">access flags</a></li>
 </ul>
 </td>
 </tr>
@@ -327,8 +324,8 @@ extendedresult <code class="xref py py-const docutils literal"><span class="pre"
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>filename</strong> &#8211; File to delete</li>
-<li><strong>syncdir</strong> &#8211; If True then the directory should be synced
+<li><strong>filename</strong> – File to delete</li>
+<li><strong>syncdir</strong> – If True then the directory should be synced
 ensuring that the file deletion has been recorded on the disk
 platters.  ie if there was an immediate power failure after this
 call returns, on a reboot the file would still be deleted.</li>
@@ -362,7 +359,7 @@ zero/NULL). If you do not supply this routine then SQLite provides
 a generic message. To implement this method, catch exceptions in
 <a class="reference internal" href="#apsw.VFS.xDlOpen" title="apsw.VFS.xDlOpen"><code class="xref py py-meth docutils literal"><span class="pre">xDlOpen()</span></code></a> or <a class="reference internal" href="#apsw.VFS.xDlSym" title="apsw.VFS.xDlSym"><code class="xref py py-meth docutils literal"><span class="pre">xDlSym()</span></code></a>, turn them into
 strings, save them, and return them in this routine.  If you have
-an error in this routine or return None then SQLite&#8217;s generic
+an error in this routine or return None then SQLite’s generic
 message will be used.</p>
 </dd></dl>
 
@@ -396,8 +393,8 @@ SQLite. On error you should return 0 (NULL). You can use ctypes:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>handle</strong> &#8211; The value returned from an earlier <a class="reference internal" href="#apsw.VFS.xDlOpen" title="apsw.VFS.xDlOpen"><code class="xref py py-meth docutils literal"><span class="pre">xDlOpen()</span></code></a> call</li>
-<li><strong>symbol</strong> &#8211; A string</li>
+<li><strong>handle</strong> – The value returned from an earlier <a class="reference internal" href="#apsw.VFS.xDlOpen" title="apsw.VFS.xDlOpen"><code class="xref py py-meth docutils literal"><span class="pre">xDlOpen()</span></code></a> call</li>
+<li><strong>symbol</strong> – A string</li>
 </ul>
 </td>
 </tr>
@@ -460,10 +457,10 @@ can return a <a class="reference internal" href="#apsw.VFSFile" title="apsw.VFSF
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>name</strong> &#8211; File to open.  Note that <em>name</em> may be <code class="xref py py-const docutils literal"><span class="pre">None</span></code> in which
+<li><strong>name</strong> – File to open.  Note that <em>name</em> may be <code class="xref py py-const docutils literal"><span class="pre">None</span></code> in which
 case you should open a temporary file with a name of your
 choosing.  May be an instance of <a class="reference internal" href="#apsw.URIFilename" title="apsw.URIFilename"><code class="xref py py-class docutils literal"><span class="pre">URIFilename</span></code></a>.</li>
-<li><strong>flags</strong> &#8211; A list of two integers <code class="docutils literal"><span class="pre">[inputflags,</span>
+<li><strong>flags</strong> – A list of two integers <code class="docutils literal"><span class="pre">[inputflags,</span>
 <span class="pre">outputflags]</span></code>.  Each integer is one or more of the <a class="reference external" href="https://sqlite.org/c3ref/c_open_autoproxy.html">open flags</a> binary orred
 together.  The <code class="docutils literal"><span class="pre">inputflags</span></code> tells you what SQLite wants.  For
 example <code class="xref py py-const docutils literal"><span class="pre">SQLITE_OPEN_DELETEONCLOSE</span></code> means the file should
@@ -506,8 +503,8 @@ and some other scenarios such as sandboxing.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>name</strong> &#8211; The string name of the system call</li>
-<li><strong>pointer</strong> &#8211; A pointer provided as an int/long.  There is no
+<li><strong>name</strong> – The string name of the system call</li>
+<li><strong>pointer</strong> – A pointer provided as an int/long.  There is no
 reference counting or other memory tracking of the pointer.  If
 you provide one you need to ensure it is around for the lifetime
 of this and any other related VFS.</li>
@@ -567,14 +564,14 @@ operating systems.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>vfs</strong> &#8211; The vfs you want to inherit behaviour from.  You can
+<li><strong>vfs</strong> – The vfs you want to inherit behaviour from.  You can
 use an empty string <code class="docutils literal"><span class="pre">&quot;&quot;</span></code> to inherit from the default vfs.</li>
-<li><strong>name</strong> &#8211; The name of the file being opened.  May be an instance of <a class="reference internal" href="#apsw.URIFilename" title="apsw.URIFilename"><code class="xref py py-class docutils literal"><span class="pre">URIFilename</span></code></a>.</li>
-<li><strong>flags</strong> &#8211; A two list <code class="docutils literal"><span class="pre">[inflags,</span> <span class="pre">outflags]</span></code> as detailed in <a class="reference internal" href="#apsw.VFS.xOpen" title="apsw.VFS.xOpen"><code class="xref py py-meth docutils literal"><span class="pre">VFS.xOpen()</span></code></a>.</li>
+<li><strong>name</strong> – The name of the file being opened.  May be an instance of <a class="reference internal" href="#apsw.URIFilename" title="apsw.URIFilename"><code class="xref py py-class docutils literal"><span class="pre">URIFilename</span></code></a>.</li>
+<li><strong>flags</strong> – A two list <code class="docutils literal"><span class="pre">[inflags,</span> <span class="pre">outflags]</span></code> as detailed in <a class="reference internal" href="#apsw.VFS.xOpen" title="apsw.VFS.xOpen"><code class="xref py py-meth docutils literal"><span class="pre">VFS.xOpen()</span></code></a>.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><strong>ValueError</strong> &#8211; If the named VFS is not registered.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><strong>ValueError</strong> – If the named VFS is not registered.</p>
 </td>
 </tr>
 </tbody>
@@ -603,9 +600,9 @@ correspond to what <code class="docutils literal"><span class="pre">sys.exc_info
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>etype</strong> &#8211; The exception type</li>
-<li><strong>evalue</strong> &#8211; The exception  value</li>
-<li><strong>etraceback</strong> &#8211; The exception traceback.  Note this
+<li><strong>etype</strong> – The exception type</li>
+<li><strong>evalue</strong> – The exception  value</li>
+<li><strong>etraceback</strong> – The exception traceback.  Note this
 includes all frames all the way up to the thread being started.</li>
 </ul>
 </td>
@@ -649,9 +646,9 @@ Python object to this routine.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>op</strong> &#8211; A numeric code.  Codes below 100 are reserved for SQLite
+<li><strong>op</strong> – A numeric code.  Codes below 100 are reserved for SQLite
 internal use.</li>
-<li><strong>ptr</strong> &#8211; An integer corresponding to a pointer at the C level.</li>
+<li><strong>ptr</strong> – An integer corresponding to a pointer at the C level.</li>
 </ul>
 </td>
 </tr>
@@ -689,7 +686,7 @@ any unrecognised codes through to your super class.  For example:</p>
 <code class="descclassname">VFSFile.</code><code class="descname">xLock</code><span class="sig-paren">(</span><em>level</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFile.xLock" title="Permalink to this definition">¶</a></dt>
 <dd><p>Increase the lock to the level specified which is one of the
 <a class="reference external" href="https://sqlite.org/c3ref/c_lock_exclusive.html">SQLITE_LOCK</a>
-family of constants. If you can&#8217;t increase the lock level because
+family of constants. If you can’t increase the lock level because
 someone else has locked it, then raise <a class="reference internal" href="exceptions.html#apsw.BusyError" title="apsw.BusyError"><code class="xref py py-exc docutils literal"><span class="pre">BusyError</span></code></a>.</p>
 </dd></dl>
 
@@ -708,8 +705,8 @@ reads to be a fatal error.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>amount</strong> &#8211; Number of bytes to read</li>
-<li><strong>offset</strong> &#8211; Where to start reading. This number may be 64 bit once the database is larger than 2GB.</li>
+<li><strong>amount</strong> – Number of bytes to read</li>
+<li><strong>offset</strong> – Where to start reading. This number may be 64 bit once the database is larger than 2GB.</li>
 </ul>
 </td>
 </tr>
@@ -765,8 +762,8 @@ write the remaining data.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>offset</strong> &#8211; Where to start writing. This number may be 64 bit once the database is larger than 2GB.</li>
-<li><strong>data</strong> &#8211; (Python 2) string, (Python 3) bytes</li>
+<li><strong>offset</strong> – Where to start writing. This number may be 64 bit once the database is larger than 2GB.</li>
+<li><strong>data</strong> – (Python 2) string, (Python 3) bytes</li>
 </ul>
 </td>
 </tr>
@@ -882,14 +879,14 @@ present.</p>
         <li class="right" >
           <a href="vtable.html" title="Virtual Tables"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.23.1-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 04, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
+      Last updated on May 14, 2018.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

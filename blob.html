@@ -1,20 +1,17 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Blob Input/Output &#8212; APSW 3.22.0-r1 documentation</title>
-    
+    <title>Blob Input/Output &#8212; APSW 3.23.1-r1 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.22.0-r1',
+        VERSION:     '3.23.1-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -37,7 +34,7 @@
 </script>
 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -53,7 +50,7 @@
         <li class="right" >
           <a href="cursor.html" title="Cursors (executing SQL)"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.23.1-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -168,7 +165,7 @@ doing it.)</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>force</strong> &#8211; Ignores any errors during close.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>force</strong> – Ignores any errors during close.</td>
 </tr>
 </tbody>
 </table>
@@ -212,12 +209,12 @@ then copying into buffer.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>buffer</strong> &#8211; A writable buffer like object.  In Python 2.6 onwards
+<li><strong>buffer</strong> – A writable buffer like object.  In Python 2.6 onwards
 there is a bytearray type that is very useful.
 <code class="xref py py-class docutils literal"><span class="pre">array.array</span></code> also works.</li>
-<li><strong>offset</strong> &#8211; The position to start writing into the buffer
+<li><strong>offset</strong> – The position to start writing into the buffer
 defaulting to the beginning.</li>
-<li><strong>length</strong> &#8211; How much of the blob to read.  The default is the
+<li><strong>length</strong> – How much of the blob to read.  The default is the
 remaining space left in the buffer.  Note that if
 there is more space available than blob left then you
 will get a <code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> exception.</li>
@@ -246,14 +243,14 @@ faster than closing an existing blob an opening a new one.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>offset</strong> &#8211; New position to seek to.  Can be positive or negative number.</li>
-<li><strong>whence</strong> &#8211; Use 0 if <em>offset</em> is relative to the beginning of the blob,
+<li><strong>offset</strong> – New position to seek to.  Can be positive or negative number.</li>
+<li><strong>whence</strong> – Use 0 if <em>offset</em> is relative to the beginning of the blob,
 1 if <em>offset</em> is relative to the current position,
 and 2 if <em>offset</em> is relative to the end of the blob.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><strong>ValueError</strong> &#8211; If the resulting offset is before the beginning (less than zero) or beyond the end of the blob.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><strong>ValueError</strong> – If the resulting offset is before the beginning (less than zero) or beyond the end of the blob.</p>
 </td>
 </tr>
 </tbody>
@@ -274,12 +271,12 @@ and 2 if <em>offset</em> is relative to the end of the blob.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>data</strong> &#8211; (Python 2) buffer or string. (Python 3) buffer or bytes.</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>data</strong> – (Python 2) buffer or string. (Python 3) buffer or bytes.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
-<li><strong>TypeError</strong> &#8211; Wrong data type</li>
-<li><strong>ValueError</strong> &#8211; If the data would go beyond the end of the blob.
+<li><strong>TypeError</strong> – Wrong data type</li>
+<li><strong>ValueError</strong> – If the data would go beyond the end of the blob.
 You cannot increase the size of a blob by writing beyond the end.
 You need to use <a class="reference internal" href="#apsw.zeroblob" title="apsw.zeroblob"><code class="xref py py-class docutils literal"><span class="pre">zeroblob</span></code></a> to set the desired size first when
 inserting the blob.</li>
@@ -351,14 +348,14 @@ inserting the blob.</li>
         <li class="right" >
           <a href="cursor.html" title="Cursors (executing SQL)"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.23.1-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 04, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
+      Last updated on May 14, 2018.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

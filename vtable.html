@@ -1,20 +1,17 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Virtual Tables &#8212; APSW 3.22.0-r1 documentation</title>
-    
+    <title>Virtual Tables &#8212; APSW 3.23.1-r1 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '3.22.0-r1',
+        VERSION:     '3.23.1-r1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -37,7 +34,7 @@
 </script>
 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -53,7 +50,7 @@
         <li class="right" >
           <a href="backup.html" title="Backup"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.23.1-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -67,16 +64,16 @@
 <p><a class="reference external" href="https://sqlite.org/vtab.html">Virtual Tables</a> are a feature
 introduced in SQLite 3.3.7. They let a developer provide an underlying
 table implementations, while still presenting a normal SQL interface
-to the user. The person writing SQL doesn&#8217;t need to know or care that
+to the user. The person writing SQL doesn’t need to know or care that
 some of the tables come from elsewhere.</p>
 <p>Some examples of how you might use this:</p>
 <ul class="simple">
 <li>Translating to/from information stored in other formats (eg a csv/ini format file)</li>
-<li>Accessing the data remotely (eg you could make a table that backends into Amazon&#8217;s API)</li>
+<li>Accessing the data remotely (eg you could make a table that backends into Amazon’s API)</li>
 <li>Dynamic information (eg currently running processes, files and directories, objects in your program)</li>
 <li>Information that needs reformatting (eg if you have complex rules about how to convert strings to/from Unicode
 in the dataset)</li>
-<li>Information that isn&#8217;t relationally correct (eg if you have data that has ended up with duplicate &#8220;unique&#8221; keys
+<li>Information that isn’t relationally correct (eg if you have data that has ended up with duplicate “unique” keys
 with code that dynamically corrects it)</li>
 <li>There are other examples on the <a class="reference external" href="https://sqlite.org/vtab.html">SQLite page</a></li>
 </ul>
@@ -150,12 +147,12 @@ set <a class="reference internal" href="#apsw.VTModule.Connect" title="apsw.VTMo
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>connection</strong> &#8211; An instance of <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a></li>
-<li><strong>modulename</strong> &#8211; The string name under which the module was <a class="reference internal" href="connection.html#apsw.Connection.createmodule" title="apsw.Connection.createmodule"><code class="xref py py-meth docutils literal"><span class="pre">registered</span></code></a></li>
-<li><strong>databasename</strong> &#8211; The name of the database.  This will be <code class="docutils literal"><span class="pre">main</span></code> for directly opened files and the name specified in
+<li><strong>connection</strong> – An instance of <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a></li>
+<li><strong>modulename</strong> – The string name under which the module was <a class="reference internal" href="connection.html#apsw.Connection.createmodule" title="apsw.Connection.createmodule"><code class="xref py py-meth docutils literal"><span class="pre">registered</span></code></a></li>
+<li><strong>databasename</strong> – The name of the database.  This will be <code class="docutils literal"><span class="pre">main</span></code> for directly opened files and the name specified in
 <a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a> statements.</li>
-<li><strong>tablename</strong> &#8211; Name of the table the user wants to create.</li>
-<li><strong>args</strong> &#8211; Any arguments that were specified in the <a class="reference external" href="https://sqlite.org/lang_createvtab.html">create virtual table</a> statement.</li>
+<li><strong>tablename</strong> – Name of the table the user wants to create.</li>
+<li><strong>args</strong> – Any arguments that were specified in the <a class="reference external" href="https://sqlite.org/lang_createvtab.html">create virtual table</a> statement.</li>
 </ul>
 </td>
 </tr>
@@ -210,7 +207,7 @@ only if you have an index or index like mechanism available.</p>
 <p class="first admonition-title">Note</p>
 <p class="last">The implementation of this method differs slightly from the
 <a class="reference external" href="https://sqlite.org/vtab.html">SQLite documentation</a>
-for the C API. You are not passed &#8220;unusable&#8221; constraints. The
+for the C API. You are not passed “unusable” constraints. The
 argv/constraintarg positions are not off by one. In the C api, you
 have to return position 1 to get something passed to
 <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><code class="xref py py-meth docutils literal"><span class="pre">VTCursor.Filter()</span></code></a> in position 0. With the APSW
@@ -218,7 +215,7 @@ implementation, you return position 0 to get Filter arg 0,
 position 1 to get Filter arg 1 etc.</p>
 </div>
 <p>The purpose of this method is to ask if you have the ability to
-determine if a row meets certain constraints that doesn&#8217;t involve
+determine if a row meets certain constraints that doesn’t involve
 visiting every row. An example constraint is <code class="docutils literal"><span class="pre">price</span> <span class="pre">&gt;</span> <span class="pre">74.99</span></code>. In a
 traditional SQL database, queries with constraints can be speeded up
 <a class="reference external" href="https://sqlite.org/lang_createindex.html">with indices</a>. If
@@ -241,8 +238,8 @@ then the constraints will be:</p>
 <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_EQ</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Note that you do not get the value of the constraint (ie &#8220;Acme
-Widgets&#8221;, 74.99 and 10 in this example).</p>
+<p>Note that you do not get the value of the constraint (ie “Acme
+Widgets”, 74.99 and 10 in this example).</p>
 </div></blockquote>
 <p>If you do have any suitable indices then you return a sequence the
 same length as constraints with the members mapping to the
@@ -259,13 +256,13 @@ will have to iterate over every row for it.</dd>
 <dt>integer</dt>
 <dd>This is the argument number for the constraintargs being passed
 into the <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><code class="xref py py-meth docutils literal"><span class="pre">Filter()</span></code></a> function of your
-<a class="reference internal" href="#apsw.VTCursor" title="apsw.VTCursor"><code class="xref py py-class docutils literal"><span class="pre">cursor</span></code></a> (the values &#8220;Acme Widgets&#8221;, 74.99
+<a class="reference internal" href="#apsw.VTCursor" title="apsw.VTCursor"><code class="xref py py-class docutils literal"><span class="pre">cursor</span></code></a> (the values “Acme Widgets”, 74.99
 and 10 in the example).</dd>
 <dt>(integer, boolean)</dt>
 <dd>By default SQLite will check what you return. For example if
 you said that you had an index on price, SQLite will still
 check that each row you returned is greater than 74.99. If you
-set the boolean to False then SQLite won&#8217;t do that double
+set the boolean to False then SQLite won’t do that double
 checking.</dd>
 </dl>
 </div></blockquote>
@@ -300,7 +297,7 @@ equality and price.</p>
 </tbody>
 </table>
 <p>When your <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><code class="xref py py-class docutils literal"><span class="pre">Filter</span></code></a> method in the cursor is called,
-constraintarg[0] will be &#8220;Acme Widgets&#8221; (customer constraint value)
+constraintarg[0] will be “Acme Widgets” (customer constraint value)
 and constraintarg[1] will be 74.99 (price constraint value). You can
 also return an index number (integer) and index string to use
 (SQLite attaches no significance to these values - they are passed
@@ -404,7 +401,7 @@ particular scalar function. You should return the function if you
 have it, else return None. You do not have to provide this method.</p>
 <p>This method is called while SQLite is <a class="reference external" href="https://sqlite.org/c3ref/prepare.html">preparing</a> a query.  If a query is
 in the <a class="reference internal" href="execution.html#statementcache"><span class="std std-ref">statement cache</span></a> then <em>FindFunction</em>
-won&#8217;t be called again.  If you want to return different
+won’t be called again.  If you want to return different
 implementations for the same function over time then you will need
 to disable the <a class="reference internal" href="execution.html#statementcache"><span class="std std-ref">statement cache</span></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -412,8 +409,8 @@ to disable the <a class="reference internal" href="execution.html#statementcache
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>name</strong> &#8211; The function name</li>
-<li><strong>nargs</strong> &#8211; How many arguments the function takes</li>
+<li><strong>name</strong> – The function name</li>
+<li><strong>nargs</strong> – How many arguments the function takes</li>
 </ul>
 </td>
 </tr>
@@ -438,7 +435,7 @@ to disable the <a class="reference internal" href="execution.html#statementcache
 <code class="descclassname">VTTable.</code><code class="descname">Rename</code><span class="sig-paren">(</span><em>newname</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Rename" title="Permalink to this definition">¶</a></dt>
 <dd><p>Notification that the table will be given a new name. If you return
 without raising an exception, then SQLite renames the table (you
-don&#8217;t have to do anything). If you raise an exception then the
+don’t have to do anything). If you raise an exception then the
 renaming is prevented.  You do not have to provide this method.</p>
 </dd></dl>
 
@@ -466,9 +463,9 @@ provide the method.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>row</strong> &#8211; The existing 64 bit integer rowid</li>
-<li><strong>newrowid</strong> &#8211; If not the same as <em>row</em> then also change the rowid to this.</li>
-<li><strong>fields</strong> &#8211; A tuple of values the same length and order as columns in your table</li>
+<li><strong>row</strong> – The existing 64 bit integer rowid</li>
+<li><strong>newrowid</strong> – If not the same as <em>row</em> then also change the rowid to this.</li>
+<li><strong>fields</strong> – A tuple of values the same length and order as columns in your table</li>
 </ul>
 </td>
 </tr>
@@ -484,7 +481,7 @@ provide the method.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rowid</strong> &#8211; 64 bit integer</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rowid</strong> – 64 bit integer</td>
 </tr>
 </tbody>
 </table>
@@ -499,8 +496,8 @@ provide the method.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>rowid</strong> &#8211; <code class="xref py py-const docutils literal"><span class="pre">None</span></code> if you should choose the rowid yourself, else a 64 bit integer</li>
-<li><strong>fields</strong> &#8211; A tuple of values the same length and order as columns in your table</li>
+<li><strong>rowid</strong> – <code class="xref py py-const docutils literal"><span class="pre">None</span></code> if you should choose the rowid yourself, else a 64 bit integer</li>
+<li><strong>fields</strong> – A tuple of values the same length and order as columns in your table</li>
 </ul>
 </td>
 </tr>
@@ -611,7 +608,7 @@ appropriate indexed and constrained row.</p>
 </div>
 <div class="section" id="troubleshooting-virtual-tables">
 <h2>Troubleshooting virtual tables<a class="headerlink" href="#troubleshooting-virtual-tables" title="Permalink to this headline">¶</a></h2>
-<p>Virtual Tables are a relatively recent addition to SQLite and haven&#8217;t
+<p>Virtual Tables are a relatively recent addition to SQLite and haven’t
 been widely used yet. They do work well if all your routines work
 perfectly.</p>
 <p>A big help is using the local variables recipe as described in
@@ -624,9 +621,9 @@ then closes the cursor. If you also return an error in the Close
 method then the first error may mask the second or vice versa.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">SQLite may ignore responses from your methods if they don&#8217;t make
+<p class="last">SQLite may ignore responses from your methods if they don’t make
 sense. For example in BestIndex, if you set multiple arguments to
-have the same constraintargs position then your Filter won&#8217;t
+have the same constraintargs position then your Filter won’t
 receive any constraintargs at all.</p>
 </div>
 </div>
@@ -691,14 +688,14 @@ receive any constraintargs at all.</p>
         <li class="right" >
           <a href="backup.html" title="Backup"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.22.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.23.1-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 04, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
+      Last updated on May 14, 2018.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking
