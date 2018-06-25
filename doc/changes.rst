@@ -2,6 +2,17 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.24.0-r1
+=========
+
+Added constants:
+
+* SQLITE_DBCONFIG_RESET_DATABASE, and support for it in :meth:`Connection.config`
+
+* SQLITE_LOCKED_VTAB, and SQLITE_CORRUPT_SEQUENCE extended result codes
+
+
+
 3.23.1-r1
 =========
 

@@ -59,8 +59,8 @@ API Reference
 #include "sqlite3.h"
 #endif
 
-#if SQLITE_VERSION_NUMBER < 3023000
-#error Your SQLite version is too old.  It must be at least 3.23
+#if SQLITE_VERSION_NUMBER < 3024000
+#error Your SQLite version is too old.  It must be at least 3.24
 #endif
 
 /* system headers */
@@ -1492,6 +1492,8 @@ modules etc. For example::
       ADDINT(SQLITE_ERROR_RETRY),
       ADDINT(SQLITE_ERROR_MISSING_COLLSEQ),
       ADDINT(SQLITE_READONLY_DIRECTORY),
+      ADDINT(SQLITE_LOCKED_VTAB),
+      ADDINT(SQLITE_CORRUPT_SEQUENCE),
       END,
 
       /* error codes */
@@ -1598,6 +1600,7 @@ modules etc. For example::
       ADDINT(SQLITE_CONFIG_PMASZ),
       ADDINT(SQLITE_CONFIG_STMTJRNL_SPILL),
       ADDINT(SQLITE_CONFIG_SMALL_MALLOC),
+      ADDINT(SQLITE_CONFIG_SORTERREF_SIZE),
       END,
 
       DICT("mapping_db_config"),
@@ -1614,6 +1617,7 @@ modules etc. For example::
       /* hopefully this constant will be removed */
       ADDINT(SQLITE_DBCONFIG_MAX),
 #endif
+      ADDINT(SQLITE_DBCONFIG_RESET_DATABASE),
       END,
 
       DICT("mapping_status"),
