@@ -3071,6 +3071,11 @@ class APSW(unittest.TestCase):
         self.assertEqual(type(v), tuple)
         self.assertTrue(len(v)>1)
 
+    def testKeywords(self):
+        "Verify keywords"
+        k=apsw.keywords
+        self.assertTrue("INSERT" in k)
+
     def testIssue4(self):
         "Issue 4: Error messages and SQLite ticket 3063"
         connection = apsw.Connection(":memory:")

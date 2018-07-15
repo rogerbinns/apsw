@@ -984,6 +984,42 @@ get_compile_options(void)
   return NULL;
 }
 
+/** .. attribute:: keywords
+
+    A set containing every SQLite keyword
+
+    -* sqlite3_keyword_count
+    -* sqlite_keyword_name
+
+*/
+static PyObject*
+get_keywords(void)
+{
+  int i, j, count, size;
+  PyObject *res=NULL, *tmpstring;
+  const char *name;
+
+  res=PySet_New(NULL);
+  if(!res) goto fail;
+
+  count=sqlite3_keyword_count();  /* No PYSQLITE_CALL needed */
+  for(i=0; i<count; i++)
+  {
+      j=sqlite3_keyword_name(i, &name, &size); /* No PYSQLITE_CALL needed */
+      assert(j==SQLITE_OK);
+      tmpstring=convertutf8stringsize(name, size);
+      if(!tmpstring) goto fail;
+      j=PySet_Add(res, tmpstring);
+      Py_DECREF(tmpstring);
+      if(j) goto fail;
+  }
+
+  return res;
+ fail:
+  Py_XDECREF(res);
+  return NULL;
+}
+
 
 /** .. method:: format_sql_value(value) -> string
 
@@ -1800,6 +1836,7 @@ modules etc. For example::
  add_shell(m);
 
  PyModule_AddObject(m, "compile_options", get_compile_options());
+ PyModule_AddObject(m, "keywords", get_keywords());
 
  if(!PyErr_Occurred())
       {

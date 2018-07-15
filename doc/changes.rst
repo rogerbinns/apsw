@@ -11,6 +11,8 @@ Added constants:
 
 * SQLITE_LOCKED_VTAB, and SQLITE_CORRUPT_SEQUENCE extended result codes
 
+Added :attr:`keywords` and updated the shell to use it.
+
 
 
 3.23.1-r1

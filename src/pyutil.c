@@ -69,6 +69,12 @@ typedef int Py_ssize_t;
 #define APSW_PYTYPE_VERSION
 #endif
 
+/* sets */
+#if PY_VERSION_HEX < 0x02050000
+#define PySet_New()     PyList_New(0)
+#define PySet_Add  PyList_Append
+#endif
+
 
 #if PY_VERSION_HEX < 0x03030000
 #define APSW_Unicode_Return(r)  do { return (r); } while(0)

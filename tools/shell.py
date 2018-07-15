@@ -2643,6 +2643,8 @@ Enter SQL statements terminated with a ";"
     TRIGGER UNION UNIQUE UPDATE USING VACUUM VALUES VIEW VIRTUAL WHEN
     WHERE WITH WITHOUT""".split()
 
+    _sqlite_keywords.extend(getattr(apsw, "keywords", []))
+
     # reserved words need to be quoted.  Only a subset of the above are reserved
     # but what the heck
     _sqlite_reserved=_sqlite_keywords
