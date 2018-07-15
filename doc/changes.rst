@@ -13,7 +13,7 @@ Added constants:
 
 Added :attr:`keywords` and updated the shell to use it.
 
-
+Python 3.7 Windows binaries are provided.
 
 3.23.1-r1
 =========
