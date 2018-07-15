@@ -77,6 +77,11 @@ way to build or all the :ref:`options available <building>`.
   `64bit 
   <https://github.com/rogerbinns/apsw/releases/download/3.24.0-r1/apsw-3.24.0-r1.win-amd64-py3.6.exe>`__
 
+* Windows Python 3.7 `32bit
+  <https://github.com/rogerbinns/apsw/releases/download/3.24.0-r1/apsw-3.24.0-r1.win32-py3.7.exe>`__
+  `64bit 
+  <https://github.com/rogerbinns/apsw/releases/download/3.24.0-r1/apsw-3.24.0-r1.win-amd64-py3.7.exe>`__
+
 * `apsw-3.24.0-r1-sigs.zip 
   <https://github.com/rogerbinns/apsw/releases/download/3.24.0-r1/apsw-3.24.0-r1-sigs.zip>`__
   GPG signatures for all files

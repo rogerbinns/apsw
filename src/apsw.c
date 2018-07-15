@@ -988,8 +988,7 @@ get_compile_options(void)
 
     A set containing every SQLite keyword
 
-    -* sqlite3_keyword_count
-    -* sqlite_keyword_name
+    -* sqlite3_keyword_count sqlite3_keyword_name
 
 */
 static PyObject*
