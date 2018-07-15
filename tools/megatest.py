@@ -185,6 +185,7 @@ def patch_natty_build(setup):
 
 # Default versions we support
 PYVERS=(
+    '3.7.0',
     '3.6.5',
     '3.5.5',
     '3.4.8',
