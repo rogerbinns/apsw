@@ -999,7 +999,7 @@ get_keywords(void)
   PyObject *res=NULL, *tmpstring;
   const char *name;
 
-  res=PySet_New(NULL);
+  res=PySet_New(0);
   if(!res) goto fail;
 
   count=sqlite3_keyword_count();  /* No PYSQLITE_CALL needed */
