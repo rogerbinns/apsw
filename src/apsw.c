@@ -1460,6 +1460,7 @@ modules etc. For example::
       ADDINT(SQLITE_INDEX_CONSTRAINT_ISNOTNULL),
       ADDINT(SQLITE_INDEX_CONSTRAINT_IS),
       ADDINT(SQLITE_INDEX_CONSTRAINT_NE),
+      ADDINT(SQLITE_INDEX_CONSTRAINT_FUNCTION),
       END,
 
       /* extended result codes */
@@ -1529,6 +1530,8 @@ modules etc. For example::
       ADDINT(SQLITE_READONLY_DIRECTORY),
       ADDINT(SQLITE_LOCKED_VTAB),
       ADDINT(SQLITE_CORRUPT_SEQUENCE),
+      ADDINT(SQLITE_CANTOPEN_DIRTYWAL),
+      ADDINT(SQLITE_ERROR_SNAPSHOT),
       END,
 
       /* error codes */
@@ -1764,6 +1767,7 @@ modules etc. For example::
       ADDINT(SQLITE_FCNTL_ROLLBACK_ATOMIC_WRITE),
       ADDINT(SQLITE_FCNTL_BEGIN_ATOMIC_WRITE),
       ADDINT(SQLITE_FCNTL_LOCK_TIMEOUT),
+      ADDINT(SQLITE_FCNTL_DATA_VERSION),
       END,
 
       DICT("mapping_conflict_resolution_modes"),
