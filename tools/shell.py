@@ -535,6 +535,8 @@ OPTIONS include:
         # sqlite shell uses two spaces between columns
         self.write(self.stdout, "  ".join(cols)+"\n")
 
+    output_columns=output_column
+
     def output_csv(self, header, line):
         """
         Items in csv format (comma separated).  Use tabs mode for tab
@@ -660,6 +662,8 @@ OPTIONS include:
         for i in range(len(line)):
             self.write(self.stdout, "%*s = %s\n" % (w, self._line_info[1][i], fmt(line[i])))
         self.write(self.stdout, "\n")
+
+    output_lines=output_line
 
     def output_list(self, header, line):
         "All items on one line with separator"
