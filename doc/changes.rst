@@ -2,6 +2,11 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.25.2-r1
+=========
+
+
+
 3.24.0-r1
 =========
 

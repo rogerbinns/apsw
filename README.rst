@@ -33,6 +33,7 @@ Mailing lists/contacts
 ======================
 
 * `Python SQLite discussion group <http://groups.google.com/group/python-sqlite>`__
+  (preferred)
 * You can also email the author at rogerb@rogerbinns.com
 
 Bugs
