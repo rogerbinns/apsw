@@ -11,6 +11,8 @@ Added constants:
 
 Shell output mode now has lines and columns for compatibility (:issue:`214`)
 
+Example now runs under both Python 2 and 3.
+
 
 3.24.0-r1
 =========
