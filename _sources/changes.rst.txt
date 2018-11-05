@@ -2,6 +2,18 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.25.2-r1
+=========
+
+Added constants:
+
+* SQLITE_INDEX_CONSTRAINT_FUNCTION, SQLITE_CANTOPEN_DIRTYWAL, SQLITE_ERROR_SNAPSHOT, SQLITE_FCNTL_DATA_VERSION
+
+Shell output mode now has lines and columns for compatibility (:issue:`214`)
+
+Example now runs under both Python 2 and 3.
+
+
 3.24.0-r1
 =========
 

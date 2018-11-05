@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Execution and tracing &#8212; APSW 3.24.0-r1 documentation</title>
+    <title>Execution and tracing &#8212; APSW 3.25.2-r1 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '3.24.0-r1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -33,8 +25,7 @@
   _gaq.push(['_trackPageview']);
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -50,7 +41,7 @@
         <li class="right" >
           <a href="types.html" title="Types"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.24.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.25.2-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -63,31 +54,31 @@
 <h1>Execution and tracing<a class="headerlink" href="#execution-and-tracing" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="execution-model">
 <span id="executionmodel"></span><h2>Execution model<a class="headerlink" href="#execution-model" title="Permalink to this headline">¶</a></h2>
-<p>This section only matters if you give multiple SQL statements in one go to <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-exc docutils literal"><span class="pre">Cursor.execute</span></code></a>.
+<p>This section only matters if you give multiple SQL statements in one go to <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-exc docutils literal notranslate"><span class="pre">Cursor.execute</span></code></a>.
 (Statements are separated by semi-colons.)</p>
 <p>SQLite does execution in two steps. First a statement is prepared,
 which verifies the syntax, tables and fields and converts the
 statement into an internal representation. The prepared statement is
 then run. Execution stops when a row is available, there is an error
 or the statement is complete.</p>
-<p>The <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.execute()</span></code></a> method automatically does the preparing and
+<p>The <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> method automatically does the preparing and
 starts execution. If none of the statements return rows then execution
 will go to the end. If a row is returned then you need to call
-<code class="xref py py-meth docutils literal"><span class="pre">Cursor.next()</span></code> to get the row values or use the cursor as an
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.next()</span></code> to get the row values or use the cursor as an
 iterator. Execution will resume as necessary to satisfy
-<code class="xref py py-meth docutils literal"><span class="pre">next()</span></code> calls.</p>
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">next()</span></code> calls.</p>
 <p>However this means that if you don’t read the rows returned then the
 rest of your statements won’t be executed.  APSW will detect
 unexecuted previous statements and generate an exception. For
 example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from foo ; create table bar(x,y,z)&quot;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from foo ; create table bar(x,y,z)&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table bam(x,y,z)&quot;</span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
   File <span class="nb">&quot;&lt;stdin&gt;&quot;</span>, line <span class="m">1</span>, in <span class="n">?</span>
 <span class="gr">apsw.IncompleteExecutionError</span>: <span class="n">Error: there are still remaining sql statements to execute</span>
 </pre></div>
 </div>
-<p>Because I didn’t read the results of <code class="docutils literal"><span class="pre">select</span> <span class="pre">*</span> <span class="pre">from</span> <span class="pre">foo</span></code> then the
+<p>Because I didn’t read the results of <code class="docutils literal notranslate"><span class="pre">select</span> <span class="pre">*</span> <span class="pre">from</span> <span class="pre">foo</span></code> then the
 following create table command didn’t have a chance to get
 executed. On the next execute that condition is detected and an
 exception raised.</p>
@@ -105,14 +96,14 @@ defined functions, collations and the various hooks/handlers run.)</p>
 <p>Note that you cannot use the same cursor object in multiple threads
 concurrently to execute statements. APSW will detect this and throw an
 exception. It is safe to use the object serially (eg calling
-<a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.execute()</span></code></a> in one thread and <code class="xref py py-meth docutils literal"><span class="pre">Cursor.next()</span></code> in
+<a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> in one thread and <code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.next()</span></code> in
 another. You also can’t do things like try to
-<a class="reference internal" href="connection.html#apsw.Connection.close" title="apsw.Connection.close"><code class="xref py py-meth docutils literal"><span class="pre">close()</span></code></a> a Connection concurrently in two threads.</p>
+<a class="reference internal" href="connection.html#apsw.Connection.close" title="apsw.Connection.close"><code class="xref py py-meth docutils literal notranslate"><span class="pre">close()</span></code></a> a Connection concurrently in two threads.</p>
 <p>If you have multiple threads and/or multiple programs accessing the
 same database then there may be contention for the file. SQLite will
 return SQLITE_BUSY which will be raised as BusyError. You can call
-<a class="reference internal" href="connection.html#apsw.Connection.setbusytimeout" title="apsw.Connection.setbusytimeout"><code class="xref py py-meth docutils literal"><span class="pre">Connection.setbusytimeout()</span></code></a> to set how long SQLite will retry
-for or <a class="reference internal" href="connection.html#apsw.Connection.setbusyhandler" title="apsw.Connection.setbusyhandler"><code class="xref py py-meth docutils literal"><span class="pre">Connection.setbusyhandler()</span></code></a> to install your own busy
+<a class="reference internal" href="connection.html#apsw.Connection.setbusytimeout" title="apsw.Connection.setbusytimeout"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.setbusytimeout()</span></code></a> to set how long SQLite will retry
+for or <a class="reference internal" href="connection.html#apsw.Connection.setbusyhandler" title="apsw.Connection.setbusyhandler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.setbusyhandler()</span></code></a> to install your own busy
 handler. Note that SQLite won’t call the busy handler or timeout if it
 believes a deadlock has arisen. SQLite’s locking and concurrency is
 described <a class="reference external" href="https://sqlite.org/lockingv3.html">here</a>.</p>
@@ -138,7 +129,7 @@ more details.</p>
 </div>
 <div class="section" id="statement-cache">
 <span id="statementcache"></span><h2>Statement Cache<a class="headerlink" href="#statement-cache" title="Permalink to this headline">¶</a></h2>
-<p>Each <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> maintains a cache mapping SQL queries to a
+<p>Each <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> maintains a cache mapping SQL queries to a
 <a class="reference external" href="https://sqlite.org/c3ref/stmt.html">prepared statement</a> to avoid
 the overhead of <a class="reference external" href="https://sqlite.org/c3ref/prepare.html">repreparing</a> queries that are executed
 multiple times.  This is a classic tradeoff using more memory to
@@ -149,17 +140,17 @@ new items.</p>
 <p>You should pick a larger cache size if you have more than 100 unique
 queries that you run.  For example if you have 101 different queries
 you run in order then the cache will not help.</p>
-<p>You can also <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">specify</span> <span class="pre">zero</span></code></a> which will disable the
+<p>You can also <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">specify</span> <span class="pre">zero</span></code></a> which will disable the
 statement cache.</p>
-<p>If you are using <a class="reference internal" href="connection.html#apsw.Connection.setauthorizer" title="apsw.Connection.setauthorizer"><code class="xref py py-meth docutils literal"><span class="pre">authorizers</span></code></a> then
+<p>If you are using <a class="reference internal" href="connection.html#apsw.Connection.setauthorizer" title="apsw.Connection.setauthorizer"><code class="xref py py-meth docutils literal notranslate"><span class="pre">authorizers</span></code></a> then
 you should disable the statement cache.  This is because the
 authorizer callback is only called while statements are being
 prepared.</p>
 </div>
 <div class="section" id="tracing">
 <span id="id1"></span><h2>Tracing<a class="headerlink" href="#tracing" title="Permalink to this headline">¶</a></h2>
-<p>You can install tracers on <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal"><span class="pre">cursors</span></code></a> or
-<a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">connections</span></code></a> as an easy way of seeing exactly
+<p>You can install tracers on <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">cursors</span></code></a> or
+<a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">connections</span></code></a> as an easy way of seeing exactly
 what gets executed and what is returned. The tracers can also abort
 execution and cause different values to be returned. This is very
 useful for diagnostics and testing without having to modify your main
@@ -169,7 +160,7 @@ code.</p>
 <p>You cannot issue new execute statements against the cursor
 your tracer was called from. If you would like to make more queries
 in the tracer then do them from a new cursor object.  For example:</p>
-<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">exectracer</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">bindings</span><span class="p">):</span>
+<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">exectracer</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">bindings</span><span class="p">):</span>
   <span class="n">cursor</span><span class="o">.</span><span class="n">getconnection</span><span class="p">()</span><span class="o">.</span><span class="n">cursor</span><span class="p">(</span><span class="s2">&quot;insert into log values(?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">sql</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">bindings</span><span class="p">)))</span>
   <span class="k">return</span> <span class="kc">True</span>
 </pre></div>
@@ -188,18 +179,18 @@ three arguments.</p>
 <dt>sql</dt>
 <dd>The SQL text being executed</dd>
 <dt>bindings</dt>
-<dd>The bindings being used.  This may be <code class="xref py py-const docutils literal"><span class="pre">None</span></code>, a dictionary or
+<dd>The bindings being used.  This may be <code class="xref py py-const docutils literal notranslate"><span class="pre">None</span></code>, a dictionary or
 a tuple.</dd>
 </dl>
 </div></blockquote>
 <p>If the tracer return value evaluates to False/None then execution is
-aborted with an <a class="reference internal" href="exceptions.html#apsw.ExecTraceAbort" title="apsw.ExecTraceAbort"><code class="xref py py-exc docutils literal"><span class="pre">ExecTraceAbort</span></code></a> exception.  See the
+aborted with an <a class="reference internal" href="exceptions.html#apsw.ExecTraceAbort" title="apsw.ExecTraceAbort"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ExecTraceAbort</span></code></a> exception.  See the
 <a class="reference internal" href="example.html#example-exectrace"><span class="std std-ref">example</span></a>.</p>
 <p>Execution tracers can be installed on a specific cursor by calling
-<a class="reference internal" href="cursor.html#apsw.Cursor.setexectrace" title="apsw.Cursor.setexectrace"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.setexectrace()</span></code></a> or for all cursors by calling
-<a class="reference internal" href="connection.html#apsw.Connection.setexectrace" title="apsw.Connection.setexectrace"><code class="xref py py-meth docutils literal"><span class="pre">Connection.setexectrace()</span></code></a>, with the cursor tracer taking
+<a class="reference internal" href="cursor.html#apsw.Cursor.setexectrace" title="apsw.Cursor.setexectrace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.setexectrace()</span></code></a> or for all cursors by calling
+<a class="reference internal" href="connection.html#apsw.Connection.setexectrace" title="apsw.Connection.setexectrace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.setexectrace()</span></code></a>, with the cursor tracer taking
 priority.</p>
-<p>If you use the Connection <a class="reference internal" href="connection.html#apsw.Connection.__enter__" title="apsw.Connection.__enter__"><code class="xref py py-meth docutils literal"><span class="pre">with</span></code></a> statement
+<p>If you use the Connection <a class="reference internal" href="connection.html#apsw.Connection.__enter__" title="apsw.Connection.__enter__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with</span></code></a> statement
 and have a Connection execution tracer then your callback will also be
 called when APSW creates and releases/rollbacks savepoints.  Instead
 of the first argument being a cursor, it will be the connection itself
@@ -218,31 +209,31 @@ two arguments.</p>
 </dl>
 </div></blockquote>
 <p>Whatever you return from the tracer is what is actually returned to
-the caller of <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal"><span class="pre">execute()</span></code></a>. If you return None then the
+the caller of <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">execute()</span></code></a>. If you return None then the
 whole row is skipped. See the <a class="reference internal" href="example.html#example-rowtrace"><span class="std std-ref">example</span></a>.</p>
 <p>Row tracers can be installed on a specific cursor by calling
-<a class="reference internal" href="cursor.html#apsw.Cursor.setrowtrace" title="apsw.Cursor.setrowtrace"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.setrowtrace()</span></code></a> or for all cursors by calling
-<a class="reference internal" href="connection.html#apsw.Connection.setrowtrace" title="apsw.Connection.setrowtrace"><code class="xref py py-meth docutils literal"><span class="pre">Connection.setrowtrace()</span></code></a>, with the cursor tracer taking
+<a class="reference internal" href="cursor.html#apsw.Cursor.setrowtrace" title="apsw.Cursor.setrowtrace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.setrowtrace()</span></code></a> or for all cursors by calling
+<a class="reference internal" href="connection.html#apsw.Connection.setrowtrace" title="apsw.Connection.setrowtrace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.setrowtrace()</span></code></a>, with the cursor tracer taking
 priority.</p>
 </div>
 </div>
 <div class="section" id="apsw-trace">
 <span id="apswtrace"></span><h2>APSW Trace<a class="headerlink" href="#apsw-trace" title="Permalink to this headline">¶</a></h2>
 <p>APSW includes a tracing script as part of the <a class="reference internal" href="download.html#source-and-binaries"><span class="std std-ref">source
-distribution</span></a> named <code class="file docutils literal"><span class="pre">apswtrace.py</span></code>, or you
+distribution</span></a> named <code class="file docutils literal notranslate"><span class="pre">apswtrace.py</span></code>, or you
 can get a copy directly from <a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/tools/apswtrace.py">source control</a> (choose “Raw File”).  This script lets you
 easily trace SQL execution as well as providing a summary report
 without modifying your code.  If it is installed anywhere on your
-<span class="target" id="index-0"></span><code class="xref std std-envvar docutils literal"><span class="pre">PYTHONPATH</span></code> then you can invoke it with <code class="docutils literal"><span class="pre">-m</span></code>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ python -m apswtrace [apswtrace options] yourscript.py [your options]
+<span class="target" id="index-0"></span><code class="xref std std-envvar docutils literal notranslate"><span class="pre">PYTHONPATH</span></code> then you can invoke it with <code class="docutils literal notranslate"><span class="pre">-m</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python -m apswtrace [apswtrace options] yourscript.py [your options]
 </pre></div>
 </div>
 <p>You can also invoke it directly:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ python /path/to/apswtrace.py [apswtrace options] yourscript.py [your options]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python /path/to/apswtrace.py [apswtrace options] yourscript.py [your options]
 </pre></div>
 </div>
 <p>All output is UTF-8 encoded.  The following options are available:</p>
-<div class="highlight-text"><div class="highlight"><pre><span></span>$ python apswtrace.py --help
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>$ python apswtrace.py --help
 Usage: apswtrace.py [options] pythonscript.py [pythonscriptoptions]
 
 This script runs a Python program that uses APSW and reports on SQL queries
@@ -270,9 +261,9 @@ Options:
                         [summary,popular,aggregate,individual]
 </pre></div>
 </div>
-<p>This is sample output with the following options: <code class="xref std std-option docutils literal"><span class="pre">--sql</span></code>,
-<code class="xref std std-option docutils literal"><span class="pre">--rows</span></code>, <code class="xref std std-option docutils literal"><span class="pre">--timestamps</span></code>, <code class="xref std std-option docutils literal"><span class="pre">--thread</span></code></p>
-<div class="highlight-text"><div class="highlight"><pre><span></span>1e0e5a0 0.152 7fccea8456e0 OPEN: &quot;:memory:&quot; unix READWRITE|CREATE
+<p>This is sample output with the following options: <code class="xref std std-option docutils literal notranslate"><span class="pre">--sql</span></code>,
+<code class="xref std std-option docutils literal notranslate"><span class="pre">--rows</span></code>, <code class="xref std std-option docutils literal notranslate"><span class="pre">--timestamps</span></code>, <code class="xref std std-option docutils literal notranslate"><span class="pre">--thread</span></code></p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>1e0e5a0 0.152 7fccea8456e0 OPEN: &quot;:memory:&quot; unix READWRITE|CREATE
 1f72ac0 0.161 7fccea8456e0 OPEN: &quot;testdb&quot; unix READWRITE|CREATE
 1f6b8d0 0.162 7fccea8456e0 CURSORFROM: 1f72ac0 DB: &quot;testdb&quot;
 1f6b8d0 0.162 7fccea8456e0 SQL: create table foo(x,y,z)
@@ -294,7 +285,7 @@ Options:
 <div><dl class="docutils">
 <dt>id</dt>
 <dd>This is the <a class="reference external" href="http://docs.python.org/library/functions.html#id">id</a> of the
-<a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal"><span class="pre">Cursor</span></code></a> or <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a>.  You can easily <a class="reference external" href="http://en.wikipedia.org/wiki/Grep">filter</a> the log if you just want to
+<a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a> or <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a>.  You can easily <a class="reference external" href="http://en.wikipedia.org/wiki/Grep">filter</a> the log if you just want to
 find out what happened on a specific cursor or connection.</dd>
 <dt>timestamp</dt>
 <dd>This is time since the program started in seconds</dd>
@@ -306,10 +297,10 @@ find out what happened on a specific cursor or connection.</dd>
 <blockquote>
 <div><dl class="docutils">
 <dt>OPEN: “dbname” vfs open_flags</dt>
-<dd>A <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> has been opened.  The <em>dbname</em> is the
+<dd>A <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> has been opened.  The <em>dbname</em> is the
 filename exactly as given in the call to
-<a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a>. <em>vfs</em> is the name of the <a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">VFS</span></a>
-used to open the database. <em>open_flags</em> is the set of <code class="xref py py-data docutils literal"><span class="pre">flags</span></code> supplied with the leading <em>SQLITE_OPEN</em>
+<a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a>. <em>vfs</em> is the name of the <a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">VFS</span></a>
+used to open the database. <em>open_flags</em> is the set of <code class="xref py py-data docutils literal notranslate"><span class="pre">flags</span></code> supplied with the leading <em>SQLITE_OPEN</em>
 prefix omitted.</dd>
 <dt>CURSORFROM: connectionid DB: “dbname”</dt>
 <dd>A cursor has been allocated.  The <em>id</em> at the beginning of this row
@@ -333,7 +324,7 @@ program run time.  The processing time is only recorded for queries
 that have no results or where you read all the result rows.
 Processing time also includes waiting time on busy connections.</p>
 <blockquote>
-<div><div class="highlight-text"><div class="highlight"><pre><span></span>APSW TRACE SUMMARY REPORT
+<div><div class="highlight-text notranslate"><div class="highlight"><pre><span></span>APSW TRACE SUMMARY REPORT
 
 Program run time                    83.073 seconds
 Total connections                   1308
@@ -348,7 +339,7 @@ Time spent processing queries       120.530 seconds
 </div></blockquote>
 <p>This shows how many times each query was run.</p>
 <blockquote>
-<div><div class="highlight-text"><div class="highlight"><pre><span></span>MOST POPULAR QUERIES
+<div><div class="highlight-text notranslate"><div class="highlight"><pre><span></span>MOST POPULAR QUERIES
 
  121451 insert into foo values(?)
    1220 insert into abc values(1,2,?)
@@ -369,10 +360,10 @@ Time spent processing queries       120.530 seconds
 </div>
 </div></blockquote>
 <p>This shows how many times a query was run and the sum of the
-processing times in seconds.  The <code class="docutils literal"><span class="pre">begin</span> <span class="pre">immediate</span></code> query
+processing times in seconds.  The <code class="docutils literal notranslate"><span class="pre">begin</span> <span class="pre">immediate</span></code> query
 illustrates how time spent busy waiting is included.</p>
 <blockquote>
-<div><div class="highlight-text"><div class="highlight"><pre><span></span>LONGEST RUNNING - AGGREGATE
+<div><div class="highlight-text notranslate"><div class="highlight"><pre><span></span>LONGEST RUNNING - AGGREGATE
 
     413   94.305 select timesten(x) from foo where x=? order by x
  120637   12.941 select * from foo
@@ -394,7 +385,7 @@ illustrates how time spent busy waiting is included.</p>
 </div></blockquote>
 <p>This shows the longest running queries with time in seconds.</p>
 <blockquote>
-<div><div class="highlight-text"><div class="highlight"><pre><span></span>LONGEST RUNNING - INDIVIDUAL
+<div><div class="highlight-text notranslate"><div class="highlight"><pre><span></span>LONGEST RUNNING - INDIVIDUAL
 
   3.001 begin immediate
   1.377 create index foo_x on foo(x)
@@ -455,12 +446,14 @@ illustrates how time spent busy waiting is included.</p>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -482,14 +475,14 @@ illustrates how time spent busy waiting is included.</p>
         <li class="right" >
           <a href="types.html" title="Types"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.24.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.25.2-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jul 16, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
+      Last updated on Nov 04, 2018.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

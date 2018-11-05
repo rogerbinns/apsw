@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>pysqlite differences &#8212; APSW 3.24.0-r1 documentation</title>
+    <title>pysqlite differences &#8212; APSW 3.25.2-r1 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '3.24.0-r1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -33,8 +25,7 @@
   _gaq.push(['_trackPageview']);
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -50,7 +41,7 @@
         <li class="right" >
           <a href="dbapi.html" title="DBAPI notes"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.24.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.25.2-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -85,17 +76,17 @@ functionality changed in SQLite, APSW tracks them.</p>
 </li>
 <li><p class="first">APSW gives all functionality of SQLite including <a class="reference internal" href="vtable.html#virtualtables"><span class="std std-ref">virtual
 tables</span></a>, <a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">Virtual File System (VFS)</span></a>, <a class="reference internal" href="blob.html#blobio"><span class="std std-ref">BLOB I/O</span></a>,
-<a class="reference internal" href="backup.html#backup"><span class="std std-ref">backups</span></a> and <a class="reference internal" href="connection.html#apsw.Connection.filecontrol" title="apsw.Connection.filecontrol"><code class="xref py py-meth docutils literal"><span class="pre">file</span> <span class="pre">control</span></code></a>.</p>
+<a class="reference internal" href="backup.html#backup"><span class="std std-ref">backups</span></a> and <a class="reference internal" href="connection.html#apsw.Connection.filecontrol" title="apsw.Connection.filecontrol"><code class="xref py py-meth docutils literal notranslate"><span class="pre">file</span> <span class="pre">control</span></code></a>.</p>
 </li>
-<li><p class="first">You can use the same <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> across threads with APSW
+<li><p class="first">You can use the same <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> across threads with APSW
 without needing any additional level of locking.  pysqlite requires
-that the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> and any <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal"><span class="pre">cursors</span></code></a> are
+that the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> and any <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">cursors</span></code></a> are
 used in the same thread.  You can disable its checking, but unless you
 are very careful with your own mutexes you will have a crash or a
 deadlock.</p>
 </li>
-<li><p class="first">APSW is a single file for the extension, <code class="file docutils literal"><span class="pre">apsw.pyd</span></code> on Windows
-and <code class="file docutils literal"><span class="pre">apsw.so</span></code> on Unix/Mac (Note <span class="target" id="index-0"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-3149"><strong>PEP 3149</strong></a>). There are no
+<li><p class="first">APSW is a single file for the extension, <code class="file docutils literal notranslate"><span class="pre">apsw.pyd</span></code> on Windows
+and <code class="file docutils literal notranslate"><span class="pre">apsw.so</span></code> on Unix/Mac (Note <span class="target" id="index-0"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-3149"><strong>PEP 3149</strong></a>). There are no
 other files needed and the <a class="reference internal" href="build.html#building"><span class="std std-ref">build instructions</span></a> show
 you how to include SQLite statically in this file. You can put this
 file anywhere your Python session can reach. pysqlite is one binary
@@ -105,7 +96,7 @@ file and several .py files, all of which need to be available.</p>
 manage transactions by parsing your SQL for you, but you can turn it
 off. This can result in very unexpected behaviour with pysqlite.</p>
 </li>
-<li><p class="first">When using a <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> as a <a class="reference internal" href="connection.html#apsw.Connection.__enter__" title="apsw.Connection.__enter__"><code class="xref py py-meth docutils literal"><span class="pre">context</span> <span class="pre">manager</span></code></a> APSW uses SQLite’s ability to have <a class="reference external" href="https://sqlite.org/lang_savepoint.html">nested
+<li><p class="first">When using a <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> as a <a class="reference internal" href="connection.html#apsw.Connection.__enter__" title="apsw.Connection.__enter__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">context</span> <span class="pre">manager</span></code></a> APSW uses SQLite’s ability to have <a class="reference external" href="https://sqlite.org/lang_savepoint.html">nested
 transactions</a>.
 pysqlite only deals with one transaction at a time and cannot nest
 them.  (Savepoints were introduced in SQLite 3.6.8 - another
@@ -119,7 +110,7 @@ many of its issues but you are still stuck with some.</p>
 multiple commands in the execute string in APSW. There are no
 restrictions on the type of commands used. For example this will
 work fine in APSW but is not allowed in pysqlite:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">apsw</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">apsw</span>
 <span class="n">con</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
 <span class="n">cur</span><span class="o">=</span><span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table foo(x,y,z);insert into foo values (?,?,?);&quot;</span>
@@ -131,16 +122,16 @@ work fine in APSW but is not allowed in pysqlite:</p>
 </pre></div>
 </div>
 <p>And the output as you would expect:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
 <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
 <span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first"><a class="reference internal" href="cursor.html#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.executemany()</span></code></a> also works with statements that return
+<li><p class="first"><a class="reference internal" href="cursor.html#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.executemany()</span></code></a> also works with statements that return
 data such as selects, and you can have multiple statements.
-pysqlite’s <code class="xref py py-meth docutils literal"><span class="pre">executescript()</span></code> method doesn’t allow any form of
+pysqlite’s <code class="xref py py-meth docutils literal notranslate"><span class="pre">executescript()</span></code> method doesn’t allow any form of
 data being returned (it silently ignores any returned data).</p>
 </li>
 <li><p class="first">pysqlite swallows exceptions in your callbacks making it far harder
@@ -151,7 +142,7 @@ but
 that is a poor substitute. apsw does the right thing as demonstrated
 by this example.</p>
 <p>Source:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">badfunc</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">badfunc</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
     <span class="k">return</span> <span class="mi">1</span><span class="o">/</span><span class="mi">0</span>
 
 <span class="c1"># pysqlite</span>
@@ -171,7 +162,7 @@ by this example.</p>
 </pre></div>
 </div>
 <p>Exceptions:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span># pysqlite
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># pysqlite
 
 Traceback (most recent call last):
   File &quot;func.py&quot;, line 8, in ?
@@ -199,7 +190,7 @@ equivalent to <a class="reference internal" href="execution.html#executiontracer
 data adaptors which aren’t the same thing as a <a class="reference internal" href="execution.html#rowtracer"><span class="std std-ref">row tracer</span></a> (for example you can’t skip rows or add a new column to
 each row returned).  pysqlite does have a <a class="reference external" href="http://readthedocs.org/docs/pysqlite/en/latest/sqlite3.html#accessing-columns-by-name-instead-of-by-index">row factory</a>
 but you can easily emulate that with the row tracer and
-<a class="reference internal" href="cursor.html#apsw.Cursor.getdescription" title="apsw.Cursor.getdescription"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.getdescription()</span></code></a>.</p>
+<a class="reference internal" href="cursor.html#apsw.Cursor.getdescription" title="apsw.Cursor.getdescription"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.getdescription()</span></code></a>.</p>
 </li>
 <li><p class="first">APSW has an <a class="reference internal" href="execution.html#apswtrace"><span class="std std-ref">apswtrace</span></a> utility script that traces
 execution and results in your code without having to modify it in
@@ -231,7 +222,7 @@ unsupported type from a registered scalar function.</p>
 that lets you pretend SQLite stores and returns more types than it
 really supports.  Note that the database won’t be useful in a
 non-pysqlite context (eg PHP code looking at the same database isn’t
-going to recognise your Point class).  You can implement something similar in APSW by intercepting <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.execute()</span></code></a> calls
+going to recognise your Point class).  You can implement something similar in APSW by intercepting <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> calls
 that suitably mangles the bindings going to SQLite and does
 something similar to the rows the iterator returns.</p>
 </li>
@@ -242,7 +233,7 @@ that deals with the text data.</p>
 be considered invalid by other tools reading the data (eg Java,
 PHP).  If you somehow do manage to get non-Unicode data as a SQLite
 string, you can cast it to a blob:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select CAST(column as BLOB) from table&quot;</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select CAST(column as BLOB) from table&quot;</span><span class="p">):</span>
    <span class="c1"># row[0] is buffer (py2) or bytes (py3) here</span>
    <span class="n">deal_with_binary_data</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
@@ -282,12 +273,14 @@ string, you can cast it to a blob:</p>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -309,14 +302,14 @@ string, you can cast it to a blob:</p>
         <li class="right" >
           <a href="dbapi.html" title="DBAPI notes"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.24.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.25.2-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jul 16, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
+      Last updated on Nov 04, 2018.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

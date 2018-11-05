@@ -11,24 +11,33 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: python
 
-    import os, sys, time
+    from __future__ import print_function
+
+    # some python 2 and 3 comnpatibility tweaks
+    import sys
+    py3=sys.version_info >= (3, 0)
+    def inext(v):  # next value from iterator
+        return next(v) if py3 else v.next()
+
+    import os
+    import time
     import apsw
 
     ###
     ### Check we have the expected version of apsw and sqlite
     ###
 
-    print "      Using APSW file",apsw.__file__                # from the extension module
-    print "         APSW version",apsw.apswversion()           # from the extension module
-    print "   SQLite lib version",apsw.sqlitelibversion()      # from the sqlite library code
-    print "SQLite header version",apsw.SQLITE_VERSION_NUMBER   # from the sqlite header file at compile time
+    print ("      Using APSW file",apsw.__file__)                # from the extension module
+    print ("         APSW version",apsw.apswversion())           # from the extension module
+    print ("   SQLite lib version",apsw.sqlitelibversion())      # from the sqlite library code
+    print ("SQLite header version",apsw.SQLITE_VERSION_NUMBER)   # from the sqlite header file at compile time
 
 .. code-block:: text
 
    |       Using APSW file /space/apsw/apsw.so
-   |          APSW version 3.24.0-r1
-   |    SQLite lib version 3.24.0
-   | SQLite header version 3024000
+   |          APSW version 3.25.2-r1
+   |    SQLite lib version 3.25.2
+   | SQLite header version 3025002
 
 .. code-block:: python
 
@@ -56,7 +65,7 @@ so you can see what gets printed when you run the code.
     cursor.execute("insert into foo values(?,?,?)", (1, 1.1, None))  # integer, float/real, Null
     cursor.execute("insert into foo(x) values(?)", ("abc", ))        # string (note trailing comma to ensure tuple!)
     cursor.execute("insert into foo(x) values(?)",                   # a blob (binary data)
-                        (buffer("abc\xff\xfe"), ))                   # Use b"abc\xff\xfe" for Python 3
+                        (b"abc\xff\xfe" if py3 else buffer("abc\xff\xfe"), ))
 
     ###
     ### multiple statements
@@ -69,15 +78,15 @@ so you can see what gets printed when you run the code.
     ###
 
     for x,y,z in cursor.execute("select x,y,z from foo"):
-        print cursor.getdescription()  # shows column names and declared types
-        print x,y,z
+        print (cursor.getdescription())  # shows column names and declared types
+        print (x,y,z)
 
     ###
     ### iterator - multiple statements
     ###
 
     for m,n,o in cursor.execute("select x,y,z from foo ; select a,b,c from bar"):
-        print m,n,o
+        print (m,n,o)
 
     ###
     ### bindings - sequence
@@ -102,9 +111,9 @@ so you can see what gets printed when you run the code.
 
     def mytrace(cursor, statement, bindings):
         "Called just before executing each statement"
-        print "SQL:",statement
+        print ("SQL:",statement)
         if bindings:
-            print "Bindings:",bindings
+            print ("Bindings:",bindings)
         return True  # if you return False then execution is aborted
 
     cursor.setexectrace(mytrace)
@@ -128,7 +137,7 @@ so you can see what gets printed when you run the code.
     def rowtrace(cursor, row):
         """Called with each row of results before they are handed off.  You can return None to
         cause the row to be skipped or a different set of values to return"""
-        print "Row:", row
+        print ("Row:", row)
         return row
 
     cursor.setrowtrace(rowtrace)
@@ -158,7 +167,7 @@ so you can see what gets printed when you run the code.
 
     # You can also use it for statements that return data
     for row in cursor.executemany("select * from foo where x=?", ( [1], [2], [3] ) ):
-        print row
+        print (row)
 
 .. _scalar-example:
 
@@ -170,13 +179,13 @@ so you can see what gets printed when you run the code.
 
     def ilove7(*args):
         "a scalar function"
-        print "ilove7 got",args,"but I love 7"
+        print ("ilove7 got",args,"but I love 7")
         return 7
 
     connection.createscalarfunction("seven", ilove7)
 
     for row in cursor.execute("select seven(x,y) from foo"):
-        print row
+        print (row)
 
 .. code-block:: text
 
@@ -227,7 +236,7 @@ so you can see what gets printed when you run the code.
 
     connection.createaggregatefunction("longest", longest.factory)
     for row in cursor.execute("select longest(x,y) from foo"):
-        print row
+        print (row)
 
 .. code-block:: text
 
@@ -249,7 +258,7 @@ so you can see what gets printed when you run the code.
                       ( ["file1"], ["file7"], ["file17"], ["file20"], ["file3"] ) )
 
     for row in cursor.execute("select * from s order by str"):
-        print row
+        print (row)
 
 .. code-block:: text
 
@@ -285,7 +294,7 @@ so you can see what gets printed when you run the code.
     connection.createcollation("strnum", strnumcollate)
 
     for row in cursor.execute("select * from s order by str collate strnum"):
-        print row
+        print (row)
 
 .. code-block:: text
 
@@ -307,8 +316,7 @@ so you can see what gets printed when you run the code.
         """Called when each operation is prepared.  We can return SQLITE_OK, SQLITE_DENY or
         SQLITE_IGNORE"""
         # find the operation name
-        print apsw.mapping_authorizer_function[operation],
-        print paramone, paramtwo, databasename, triggerorview
+        print (apsw.mapping_authorizer_function[operation], paramone, paramtwo, databasename, triggerorview)
         if operation==apsw.SQLITE_CREATE_TABLE and paramone.startswith("private"):
             return apsw.SQLITE_DENY  # not allowed to create tables whose names start with private
 
@@ -340,7 +348,7 @@ so you can see what gets printed when you run the code.
     # something to give us large numbers of random numbers
     import random
     def randomintegers(howmany):
-        for i in xrange(howmany):
+        for i in range(howmany):
             yield (random.randint(0,9999999999),)
 
     # create a table with 100 random numbers
@@ -363,10 +371,10 @@ so you can see what gets printed when you run the code.
     connection.setprogresshandler(progresshandler, 20)
 
     # see it in action - sorting 100 numbers to find the biggest takes a while
-    print "spinny thing -> ",
+    print ("spinny thing -> ", end="")
     for i in cursor.execute("select max(x) from bigone"):
-        print # newline
-        print i # and the maximum number
+        print("\n", i, sep="", end="")
+        sys.stdout.flush()
 
     connection.setprogresshandler(None)
 
@@ -379,26 +387,27 @@ so you can see what gets printed when you run the code.
     ###
 
     def mycommithook():
-        print "in commit hook"
+        print ("in commit hook")
         hour=time.localtime()[3]
         if hour<8 or hour>17:
-            print "no commits out of hours"
+            print ("no commits out of hours")
             return 1  # abort commits outside of 8am through 6pm
-        print "commits okay at this time"
+        print ("commits okay at this time")
         return 0  # let commit go ahead
 
     connection.setcommithook(mycommithook)
     try:
         cursor.execute("begin; create table example(x,y,z); insert into example values (3,4,5) ; commit")
     except apsw.ConstraintError:
-        print "commit was not allowed"
+        print ("commit was not allowed")
 
     connection.setcommithook(None)
 
 .. code-block:: text
 
    | in commit hook
-   | commits okay at this time
+   | no commits out of hours
+   | commit was not allowed
 
 .. _example-updatehook:
 
@@ -409,8 +418,8 @@ so you can see what gets printed when you run the code.
     ###
 
     def myupdatehook(type, databasename, tablename, rowid):
-        print "Updated: %s database %s, table %s, row %d" % (
-            apsw.mapping_authorizer_function[type], databasename, tablename, rowid)
+        print ("Updated: %s database %s, table %s, row %d" % (
+            apsw.mapping_authorizer_function[type], databasename, tablename, rowid))
 
     connection.setupdatehook(myupdatehook)
     cursor.execute("insert into s values(?)", ("file93",))
@@ -438,11 +447,11 @@ so you can see what gets printed when you run the code.
     # Or as a binding
     cursor.execute("insert into blobby values(2,?)", (apsw.zeroblob(20000),))
     # Open a blob for writing.  We need to know the rowid
-    rowid=cursor.execute("select ROWID from blobby where x=1").next()[0]
+    rowid=inext(cursor.execute("select ROWID from blobby where x=1"))[0]
     blob=connection.blobopen("main", "blobby", "y", rowid, 1) # 1 is for read/write
-    blob.write("hello world")
+    blob.write(b"hello world")
     blob.seek(2000)
-    blob.write("hello world, again")
+    blob.write(b"hello world, again")
     blob.close()
 
 .. _example-vtable:
@@ -528,25 +537,25 @@ so you can see what gets printed when you run the code.
 
     # Which 3 files are the biggest?
     for size,directory,file in cursor.execute("select st_size,directory,name from sysfiles order by st_size desc limit 3"):
-        print size,file,directory
+        print (size,file,directory)
 
 .. code-block:: text
 
-   | 6259424 apsw.so /space/apsw
+   | 7869816 apsw.so /space/apsw
+   | 6522744 apsw.cpython-36m-x86_64-linux-gnu.so /space/apsw
    | 447393 libxml2.pyc /usr/lib/python2.7/dist-packages
-   | 412920 libxml2mod.x86_64-linux-gnu.so /usr/lib/python2.7/dist-packages
 
 .. code-block:: python
 
     # Which 3 files are the oldest?
     for ctime,directory,file in cursor.execute("select st_ctime,directory,name from sysfiles order by st_ctime limit 3"):
-        print ctime,file,directory
+        print (ctime,file,directory)
 
 .. code-block:: text
 
    | 1447460998.61 sitecustomize.py /usr/lib/python2.7
-   | 1461270486.46 lzma.x86_64-linux-gnu.so /usr/lib/python2.7/dist-packages
-   | 1461270486.46 liblzma.py /usr/lib/python2.7/dist-packages
+   | 1476235153.2 pdfshuffler-0.6.0.egg-info /usr/lib/python2.7/dist-packages
+   | 1484006373.74 notify2.py /usr/lib/python2.7/dist-packages
 
 .. _example-vfs:
 
@@ -560,6 +569,9 @@ so you can see what gets printed when you run the code.
 
     def encryptme(data):
         if not data: return data
+        if py3:
+            return bytes([x^0xa5 for x in data])
+
         return "".join([chr(ord(x)^0xa5) for x in data])
 
     # Inheriting from a base of "" means the default vfs
@@ -574,10 +586,10 @@ so you can see what gets printed when you run the code.
         def xOpen(self, name, flags):
             # We can look at uri parameters
             if isinstance(name, apsw.URIFilename):
-                print "fast is", name.uri_parameter("fast")
-                print "level is", name.uri_int("level", 3)
-                print "warp is", name.uri_boolean("warp", False)
-                print "notpresent is", name.uri_parameter("notpresent")
+                print ("fast is", name.uri_parameter("fast"))
+                print ("level is", name.uri_int("level", 3))
+                print ("warp is", name.uri_boolean("warp", False))
+                print ("notpresent is", name.uri_parameter("notpresent"))
 
 .. code-block:: text
 
@@ -605,7 +617,7 @@ so you can see what gets printed when you run the code.
     # To register the VFS we just instantiate it
     obfuvfs=ObfuscatedVFS()
     # Lets see what vfs are now available?
-    print apsw.vfsnames()
+    print (apsw.vfsnames())
 
 .. code-block:: text
 
@@ -621,20 +633,20 @@ so you can see what gets printed when you run the code.
     obfudb.cursor().execute("create table foo(x,y); insert into foo values(1,2)")
 
     # Check it really is obfuscated on disk
-    print `open("myobfudb", "rb").read()[:20]`
+    print (open("myobfudb", "rb").read()[:20])
 
 .. code-block:: text
 
-   | '\xf6\xf4\xe9\xcc\xd1\xc0\x85\xc3\xca\xd7\xc8\xc4\xd1\x85\x96\xa5\xb5\xa5\xa4\xa4'
+   | öôéÌÑÀ…ÃÊ×ÈÄÑ…–¥µ¥¤¤
 
 .. code-block:: python
 
     # And unobfuscating it
-    print `encryptme(open("myobfudb", "rb").read()[:20])`
+    print (encryptme(open("myobfudb", "rb").read()[:20]))
 
 .. code-block:: text
 
-   | 'SQLite format 3\x00\x10\x00\x01\x01'
+   | SQLite format 3  
 
 .. code-block:: python
 
@@ -655,11 +667,11 @@ so you can see what gets printed when you run the code.
         name="SQLITE_LIMIT_"+limit
         maxname="SQLITE_MAX_"+limit  # compile time
         orig=connection.limit(getattr(apsw, name))
-        print name, orig
+        print (name, orig)
         # To get the maximum, set to 0x7fffffff and then read value back
         connection.limit(getattr(apsw, name), 0x7fffffff)
         max=connection.limit(getattr(apsw, name))
-        print maxname, max
+        print (maxname, max)
 
     # Set limit for size of a string
     cursor.execute("create table testlimit(s)")
@@ -667,9 +679,9 @@ so you can see what gets printed when you run the code.
     connection.limit(apsw.SQLITE_LIMIT_LENGTH, 1023) # limit is now 1023
     try:
         cursor.execute("insert into testlimit values(?)", ( "y"*1024, ))
-        print "string exceeding limit was inserted"
+        print ("string exceeding limit was inserted")
     except apsw.TooBigError:
-        print "Caught toobig exception"
+        print ("Caught toobig exception")
     connection.limit(apsw.SQLITE_LIMIT_LENGTH, 0x7fffffff)
 
 .. code-block:: text
@@ -714,7 +726,11 @@ so you can see what gets printed when you run the code.
     # connection
 
     # Export to a StringIO
-    import StringIO as io # use io in Python 3
+    if py3:
+        import io
+    else:
+        import StringIO as io
+
     output=io.StringIO()
     shell=apsw.Shell(stdout=output, db=connection)
     # How to execute a dot command
@@ -726,7 +742,7 @@ so you can see what gets printed when you run the code.
     shell.process_complete_line("select * from csvtest")
 
     # Verify output
-    print output.getvalue()
+    print (output.getvalue())
 
 .. code-block:: text
 
@@ -743,11 +759,11 @@ so you can see what gets printed when you run the code.
     ### Statistics
     ###
 
-    print "SQLite memory usage current %d max %d" % apsw.status(apsw.SQLITE_STATUS_MEMORY_USED)
+    print ("SQLite memory usage current %d max %d" % apsw.status(apsw.SQLITE_STATUS_MEMORY_USED))
 
 .. code-block:: text
 
-   | SQLite memory usage current 501144 max 512128
+   | SQLite memory usage current 497712 max 513800
 
 .. code-block:: python
 

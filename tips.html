@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Tips &#8212; APSW 3.24.0-r1 documentation</title>
+    <title>Tips &#8212; APSW 3.25.2-r1 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '3.24.0-r1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -33,8 +25,7 @@
   _gaq.push(['_trackPageview']);
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -50,7 +41,7 @@
         <li class="right" >
           <a href="index.html" title="APSW documentation"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.24.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.25.2-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -102,7 +93,7 @@ provides valid UTF-8).  It is possible using other wrappers and tools
 to cause invalid UTF-8 to appear in the database which will then cause
 retrieval errors.  You can work around this by using the SQL <em>CAST</em>
 operator.  For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">SELECT</span> <span class="nb">id</span><span class="p">,</span> <span class="n">CAST</span><span class="p">(</span><span class="n">label</span> <span class="n">AS</span> <span class="n">blob</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">table</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SELECT</span> <span class="nb">id</span><span class="p">,</span> <span class="n">CAST</span><span class="p">(</span><span class="n">label</span> <span class="n">AS</span> <span class="n">blob</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">table</span>
 </pre></div>
 </div>
 <p>Then proceed to give the <a class="reference external" href="http://www.joelonsoftware.com/articles/Unicode.html">Joel Unicode article</a> to all people
@@ -115,7 +106,7 @@ will be signalled via an <a class="reference internal" href="exceptions.html"><s
 <p>APSW ensures you have <a class="reference internal" href="exceptions.html#augmentedstacktraces"><span class="std std-ref">detailed information</span></a> both in the stack trace as well as what data
 APSW/SQLite was operating on.</p>
 <p>SQLite has a <a class="reference external" href="http://www.sqlite.org/errlog.html">warning/error logging facility</a>.  To set your own logger use:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">errcode</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">errcode</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
     <span class="n">errstr</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">mapping_result_codes</span><span class="p">[</span><span class="n">errcode</span> <span class="o">&amp;</span> <span class="mi">255</span><span class="p">]</span>
     <span class="n">extended</span><span class="o">=</span><span class="n">errcode</span> <span class="o">&amp;</span> <span class="o">~</span> <span class="mi">255</span>
     <span class="nb">print</span> <span class="s2">&quot;SQLITE_LOG: </span><span class="si">%s</span><span class="s2"> (</span><span class="si">%d</span><span class="s2">) </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">errcode</span><span class="p">,</span> <span class="n">errstr</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_extended_result_codes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">extended</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
@@ -127,13 +118,13 @@ APSW/SQLite was operating on.</p>
 <p class="first admonition-title">Note</p>
 <p class="last">The handler <strong>must</strong> be set before any other calls to SQLite.
 Once SQLite is initialised you cannot change the logger - a
-<a class="reference internal" href="exceptions.html#apsw.MisuseError" title="apsw.MisuseError"><code class="xref py py-exc docutils literal"><span class="pre">MisuseError</span></code></a> will happen (this restriction is in SQLite not
+<a class="reference internal" href="exceptions.html#apsw.MisuseError" title="apsw.MisuseError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">MisuseError</span></code></a> will happen (this restriction is in SQLite not
 APSW).</p>
 </div>
-<p>This is an example of what gets printed when I use <code class="docutils literal"><span class="pre">/dev/null</span></code> as
-the database name in the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> and then tried to create
+<p>This is an example of what gets printed when I use <code class="docutils literal notranslate"><span class="pre">/dev/null</span></code> as
+the database name in the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> and then tried to create
 a table.:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">SQLITE_LOG</span><span class="p">:</span> <span class="n">cannot</span> <span class="nb">open</span> <span class="n">file</span> <span class="n">at</span> <span class="n">line</span> <span class="mi">28729</span> <span class="n">of</span> <span class="p">[</span><span class="mi">7</span><span class="n">dd4968f23</span><span class="p">]</span> <span class="p">(</span><span class="mi">14</span><span class="p">)</span> <span class="n">SQLITE_CANTOPEN</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SQLITE_LOG</span><span class="p">:</span> <span class="n">cannot</span> <span class="nb">open</span> <span class="n">file</span> <span class="n">at</span> <span class="n">line</span> <span class="mi">28729</span> <span class="n">of</span> <span class="p">[</span><span class="mi">7</span><span class="n">dd4968f23</span><span class="p">]</span> <span class="p">(</span><span class="mi">14</span><span class="p">)</span> <span class="n">SQLITE_CANTOPEN</span>
 <span class="n">SQLITE_LOG</span><span class="p">:</span> <span class="n">os_unix</span><span class="o">.</span><span class="n">c</span><span class="p">:</span><span class="mi">28729</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="nb">open</span><span class="p">(</span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">null</span><span class="o">-</span><span class="n">journal</span><span class="p">)</span> <span class="o">-</span> <span class="n">No</span> <span class="n">such</span> <span class="n">file</span> <span class="ow">or</span> <span class="n">directory</span> <span class="p">(</span><span class="mi">14</span><span class="p">)</span> <span class="n">SQLITE_CANTOPEN</span>
 <span class="n">SQLITE_LOG</span><span class="p">:</span> <span class="n">statement</span> <span class="n">aborts</span> <span class="n">at</span> <span class="mi">38</span><span class="p">:</span> <span class="p">[</span><span class="n">create</span> <span class="n">table</span> <span class="n">foo</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">);]</span> <span class="n">unable</span> <span class="n">to</span> <span class="nb">open</span> <span class="n">database</span> <span class="n">file</span> <span class="p">(</span><span class="mi">14</span><span class="p">)</span> <span class="n">SQLITE_CANTOPEN</span>
 </pre></div>
@@ -144,10 +135,10 @@ a table.:</p>
 <p>Sometimes you want to know what a particular SQL statement does.  The
 SQLite query parser directly generates VDBE byte code and cannot be
 hooked into.  There is however an easier way.</p>
-<p>Make a new <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> object making sure the statement cache
-is disabled (size zero).  Install an <a class="reference internal" href="execution.html#executiontracer"><span class="std std-ref">execution tracer</span></a> that returns <code class="docutils literal"><span class="pre">apsw.SQLITE_DENY</span></code> which will
-prevent any queries from running.  Install an <a class="reference internal" href="connection.html#apsw.Connection.setauthorizer" title="apsw.Connection.setauthorizer"><code class="xref py py-meth docutils literal"><span class="pre">authorizer</span></code></a>.</p>
-<p>Then call <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.execute()</span></code></a> on your query.  Your authorizer will
+<p>Make a new <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> object making sure the statement cache
+is disabled (size zero).  Install an <a class="reference internal" href="execution.html#executiontracer"><span class="std std-ref">execution tracer</span></a> that returns <code class="docutils literal notranslate"><span class="pre">apsw.SQLITE_DENY</span></code> which will
+prevent any queries from running.  Install an <a class="reference internal" href="connection.html#apsw.Connection.setauthorizer" title="apsw.Connection.setauthorizer"><code class="xref py py-meth docutils literal notranslate"><span class="pre">authorizer</span></code></a>.</p>
+<p>Then call <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> on your query.  Your authorizer will
 then be called (multiple times if necessary) with details of what the
 query does including expanding views and triggers that fire.  Finally
 the execution tracer will fire.  If the query string had multiple
@@ -167,8 +158,8 @@ quotes.  (This wouldn’t be a problem if you use bindings!)  SQL
 strings use single quotes.  If you use double quotes then it will
 mostly appear to work, but they are intended to be used for
 identifiers such as column names.  For example if you have a column
-named <code class="docutils literal"><span class="pre">a</span> <span class="pre">b</span></code> (a space b) then you would need to use:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">SELECT</span> <span class="s2">&quot;a b&quot;</span> <span class="kn">from</span> <span class="nn">table</span>
+named <code class="docutils literal notranslate"><span class="pre">a</span> <span class="pre">b</span></code> (a space b) then you would need to use:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SELECT</span> <span class="s2">&quot;a b&quot;</span> <span class="kn">from</span> <span class="nn">table</span>
 </pre></div>
 </div>
 <p>If you use double quotes and happen to use a string whose contents are
@@ -183,15 +174,15 @@ example would be wanting a <a class="reference internal" href="dbapi.html#rowcou
 the code source compatible with other database drivers).</p>
 <p>APSW does not provide a way to subclass the cursor class or any other
 form of factory.  Consequently you will have to subclass the
-<a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> and provide an alternate implementation of
-<a class="reference internal" href="connection.html#apsw.Connection.cursor" title="apsw.Connection.cursor"><code class="xref py py-meth docutils literal"><span class="pre">Connection.cursor()</span></code></a>.  You should encapsulate the APSW cursor -
+<a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> and provide an alternate implementation of
+<a class="reference internal" href="connection.html#apsw.Connection.cursor" title="apsw.Connection.cursor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.cursor()</span></code></a>.  You should encapsulate the APSW cursor -
 ie store it as a member of your cursor class and forward calls as
 appropriate.  The cursor only has two important methods -
-<a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.execute()</span></code></a> and <a class="reference internal" href="cursor.html#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.executemany()</span></code></a>.</p>
+<a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> and <a class="reference internal" href="cursor.html#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.executemany()</span></code></a>.</p>
 <p>If you want to change the rows returned then use a <a class="reference internal" href="execution.html#rowtracer"><span class="std std-ref">row tracer</span></a>.  For example you could call
-<a class="reference internal" href="cursor.html#apsw.Cursor.getdescription" title="apsw.Cursor.getdescription"><code class="xref py py-meth docutils literal"><span class="pre">Cursor.getdescription()</span></code></a> and return a dictionary instead of a
+<a class="reference internal" href="cursor.html#apsw.Cursor.getdescription" title="apsw.Cursor.getdescription"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.getdescription()</span></code></a> and return a dictionary instead of a
 tuple:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">row_factory</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">row</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">row_factory</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">row</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">getdescription</span><span class="p">())}</span>
 
 <span class="c1"># You can also set this on just a cursor</span>
@@ -206,9 +197,9 @@ connections (within the same process or in a different process).  The
 general goal is to have the locks be as lax as possible (allowing
 concurrency) and when using more restrictive locks to keep them for as
 short a time as possible.  See the <a class="reference external" href="https://sqlite.org/lockingv3.html">SQLite documentation</a> for more details.</p>
-<p>By default you will get a <a class="reference internal" href="exceptions.html#apsw.BusyError" title="apsw.BusyError"><code class="xref py py-exc docutils literal"><span class="pre">BusyError</span></code></a> if a lock cannot be
-acquired.  You can set a <a class="reference internal" href="connection.html#apsw.Connection.setbusytimeout" title="apsw.Connection.setbusytimeout"><code class="xref py py-meth docutils literal"><span class="pre">timeout</span></code></a>
-which will keep retrying or a <a class="reference internal" href="connection.html#apsw.Connection.setbusyhandler" title="apsw.Connection.setbusyhandler"><code class="xref py py-meth docutils literal"><span class="pre">callback</span></code></a> where you decide what to do.</p>
+<p>By default you will get a <a class="reference internal" href="exceptions.html#apsw.BusyError" title="apsw.BusyError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">BusyError</span></code></a> if a lock cannot be
+acquired.  You can set a <a class="reference internal" href="connection.html#apsw.Connection.setbusytimeout" title="apsw.Connection.setbusytimeout"><code class="xref py py-meth docutils literal notranslate"><span class="pre">timeout</span></code></a>
+which will keep retrying or a <a class="reference internal" href="connection.html#apsw.Connection.setbusyhandler" title="apsw.Connection.setbusyhandler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">callback</span></code></a> where you decide what to do.</p>
 </div>
 <div class="section" id="database-schema">
 <h2>Database schema<a class="headerlink" href="#database-schema" title="Permalink to this headline">¶</a></h2>
@@ -224,7 +215,7 @@ to the same database can share a cache instead of having their own.
 It is not recommended that you use this mode.</p>
 <p>A big issue is that <a class="reference internal" href="#busyhandling"><span class="std std-ref">busy handling</span></a> is not done
 the same way.  The timeouts and handlers are ignored and instead
-<code class="xref py py-const docutils literal"><span class="pre">SQLITE_LOCKED_SHAREDCACHE</span></code> extended error is returned.
+<code class="xref py py-const docutils literal notranslate"><span class="pre">SQLITE_LOCKED_SHAREDCACHE</span></code> extended error is returned.
 Consequently you will have to do your own busy handling.  (<a class="reference external" href="https://sqlite.org/src/tktview/ebde3f66fc64e21e61ef2854ed1a36dfff884a2f">SQLite
 ticket</a>,
 <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/59">APSW issue 59</a>)</p>
@@ -242,8 +233,8 @@ have kilobytes of memory available for SQLite.</p>
 also some drawbacks as the page documents.  WAL mode is off by
 default.  In addition to turning it on manually for each database, you
 can also turn it on for all opened databases by using
-<a class="reference internal" href="apsw.html#apsw.connection_hooks" title="apsw.connection_hooks"><code class="xref py py-attr docutils literal"><span class="pre">connection_hooks</span></code></a>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">setwal</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
+<a class="reference internal" href="apsw.html#apsw.connection_hooks" title="apsw.connection_hooks"><code class="xref py py-attr docutils literal notranslate"><span class="pre">connection_hooks</span></code></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">setwal</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
     <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;pragma journal_mode=wal&quot;</span><span class="p">)</span>
     <span class="c1"># custom auto checkpoint interval (use zero to disable)</span>
     <span class="n">db</span><span class="o">.</span><span class="n">wal_autocheckpoint</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
@@ -254,7 +245,7 @@ can also turn it on for all opened databases by using
 <p>Note that if wal mode can’t be set (eg the database is in memory or
 temporary) then the attempt to set wal mode will be ignored.  The
 pragma will return the mode in effect.  It is also harmless to call
-functions like <a class="reference internal" href="connection.html#apsw.Connection.wal_autocheckpoint" title="apsw.Connection.wal_autocheckpoint"><code class="xref py py-meth docutils literal"><span class="pre">Connection.wal_autocheckpoint()</span></code></a> on connections
+functions like <a class="reference internal" href="connection.html#apsw.Connection.wal_autocheckpoint" title="apsw.Connection.wal_autocheckpoint"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.wal_autocheckpoint()</span></code></a> on connections
 that are not in wal mode.</p>
 <p>If you write your own VFS, then inheriting from an existing VFS that
 supports WAL will make your VFS support the extra WAL methods too.
@@ -303,12 +294,14 @@ indirect call via Python.)</p>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -330,14 +323,14 @@ indirect call via Python.)</p>
         <li class="right" >
           <a href="index.html" title="APSW documentation"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.24.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.25.2-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jul 16, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
+      Last updated on Nov 04, 2018.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

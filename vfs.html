@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Virtual File System (VFS) &#8212; APSW 3.24.0-r1 documentation</title>
+    <title>Virtual File System (VFS) &#8212; APSW 3.25.2-r1 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '3.24.0-r1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -33,8 +25,7 @@
   _gaq.push(['_trackPageview']);
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -50,7 +41,7 @@
         <li class="right" >
           <a href="vtable.html" title="Virtual Tables"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.24.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.25.2-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -72,21 +63,21 @@ methods. The method names are exactly the same as SQLite uses making
 it easier to read the SQLite documentation, trouble tickets, web
 searches or mailing lists. The SQLite convention results in names like
 xAccess, xCurrentTime and xWrite.</p>
-<p>You specify which VFS to use as a parameter to the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a>
+<p>You specify which VFS to use as a parameter to the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a>
 constructor.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">db</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;file&quot;</span><span class="p">,</span> <span class="n">vfs</span><span class="o">=</span><span class="s2">&quot;myvfs&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">db</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;file&quot;</span><span class="p">,</span> <span class="n">vfs</span><span class="o">=</span><span class="s2">&quot;myvfs&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The easiest way to get started is to make a <a class="reference internal" href="#apsw.VFS" title="apsw.VFS"><code class="xref py py-class docutils literal"><span class="pre">VFS</span></code></a> derived class
+<p>The easiest way to get started is to make a <a class="reference internal" href="#apsw.VFS" title="apsw.VFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">VFS</span></code></a> derived class
 that inherits from the default vfs.  Then override methods you want to
 change behaviour of.  If you want to just change how file operations
-are done then you have to override <a class="reference internal" href="#apsw.VFS.xOpen" title="apsw.VFS.xOpen"><code class="xref py py-meth docutils literal"><span class="pre">VFS.xOpen()</span></code></a> to return a file
-instance that has your overridden <a class="reference internal" href="#apsw.VFSFile" title="apsw.VFSFile"><code class="xref py py-class docutils literal"><span class="pre">VFSFile</span></code></a> methods.  The
+are done then you have to override <a class="reference internal" href="#apsw.VFS.xOpen" title="apsw.VFS.xOpen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFS.xOpen()</span></code></a> to return a file
+instance that has your overridden <a class="reference internal" href="#apsw.VFSFile" title="apsw.VFSFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">VFSFile</span></code></a> methods.  The
 <a class="reference internal" href="example.html#example-vfs"><span class="std std-ref">example</span></a> demonstrates obfuscating the database
 file contents.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">All strings supplied and returned to <a class="reference internal" href="#apsw.VFS" title="apsw.VFS"><code class="xref py py-class docutils literal"><span class="pre">VFS</span></code></a>/<a class="reference internal" href="#apsw.VFSFile" title="apsw.VFSFile"><code class="xref py py-class docutils literal"><span class="pre">VFSFile</span></code></a>
+<p class="last">All strings supplied and returned to <a class="reference internal" href="#apsw.VFS" title="apsw.VFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">VFS</span></code></a>/<a class="reference internal" href="#apsw.VFSFile" title="apsw.VFSFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">VFSFile</span></code></a>
 routines are treated as Unicode.</p>
 </div>
 <div class="section" id="exceptions-and-errors">
@@ -94,9 +85,9 @@ routines are treated as Unicode.</p>
 <p>To return an error from any routine you should raise an exception. The
 exception will be translated into the appropriate SQLite error code
 for SQLite. To return a specific SQLite error code use
-<a class="reference internal" href="apsw.html#apsw.exceptionfor" title="apsw.exceptionfor"><code class="xref py py-meth docutils literal"><span class="pre">exceptionfor()</span></code></a>.  If the exception does not map to any specific
-error code then <code class="xref py py-const docutils literal"><span class="pre">SQLITE_ERROR</span></code> which corresponds to
-<a class="reference internal" href="exceptions.html#apsw.SQLError" title="apsw.SQLError"><code class="xref py py-exc docutils literal"><span class="pre">SQLError</span></code></a> is returned to SQLite.</p>
+<a class="reference internal" href="apsw.html#apsw.exceptionfor" title="apsw.exceptionfor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">exceptionfor()</span></code></a>.  If the exception does not map to any specific
+error code then <code class="xref py py-const docutils literal notranslate"><span class="pre">SQLITE_ERROR</span></code> which corresponds to
+<a class="reference internal" href="exceptions.html#apsw.SQLError" title="apsw.SQLError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">SQLError</span></code></a> is returned to SQLite.</p>
 <p>The SQLite code that deals with VFS errors behaves in varying
 ways. Some routines have no way to return an error (eg <a class="reference external" href="https://sqlite.org/c3ref/vfs.html">xDlOpen</a> just returns zero/NULL on
 being unable to load a library, <a class="reference external" href="https://sqlite.org/c3ref/vfs.html">xSleep</a> has no error return
@@ -112,14 +103,14 @@ playback/rollback.</p>
 exceptions from normal code to open Connections or execute SQL
 queries, VFS exceptions are not raised in the normal way. (If they
 were, only one could be raised and it would obscure whatever
-exceptions the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal"><span class="pre">Connection</span></code></a> open or SQL query execute wanted to
-raise.)  Instead the <a class="reference internal" href="#apsw.VFS.excepthook" title="apsw.VFS.excepthook"><code class="xref py py-meth docutils literal"><span class="pre">VFS.excepthook()</span></code></a> or
-<a class="reference internal" href="#apsw.VFSFile.excepthook" title="apsw.VFSFile.excepthook"><code class="xref py py-meth docutils literal"><span class="pre">VFSFile.excepthook()</span></code></a> method is called with a tuple of exception
+exceptions the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> open or SQL query execute wanted to
+raise.)  Instead the <a class="reference internal" href="#apsw.VFS.excepthook" title="apsw.VFS.excepthook"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFS.excepthook()</span></code></a> or
+<a class="reference internal" href="#apsw.VFSFile.excepthook" title="apsw.VFSFile.excepthook"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFSFile.excepthook()</span></code></a> method is called with a tuple of exception
 type, exception value and exception traceback. The default
-implementation of <code class="docutils literal"><span class="pre">excepthook</span></code> calls <code class="docutils literal"><span class="pre">sys.excepthook()</span></code> which
+implementation of <code class="docutils literal notranslate"><span class="pre">excepthook</span></code> calls <code class="docutils literal notranslate"><span class="pre">sys.excepthook()</span></code> which
 under Python 2 shows the stack trace and under Python 3 merely prints
-the exception value. (If <code class="docutils literal"><span class="pre">sys.excepthook</span></code> fails then
-<code class="docutils literal"><span class="pre">PyErr_Display()</span></code> is called.)</p>
+the exception value. (If <code class="docutils literal notranslate"><span class="pre">sys.excepthook</span></code> fails then
+<code class="docutils literal notranslate"><span class="pre">PyErr_Display()</span></code> is called.)</p>
 <p>In normal VFS usage there will be no exceptions raised, or specific
 expected ones which APSW clears after noting them and returning the
 appropriate value back to SQLite. The exception hooking behaviour
@@ -142,7 +133,7 @@ across.</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">cursor.execute(&quot;update</span> <span class="pre">table</span> <span class="pre">set</span> <span class="pre">foo=3&quot;)</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">cursor.execute(&quot;update</span> <span class="pre">table</span> <span class="pre">set</span> <span class="pre">foo=3&quot;)</span></code></td>
 <td>&#160;</td>
 <td>&#160;</td>
 </tr>
@@ -160,11 +151,11 @@ across.</p>
 </tr>
 <tr class="row-even"><td>&#160;</td>
 <td>&#160;</td>
-<td><a class="reference internal" href="#apsw.VFSFile.excepthook" title="apsw.VFSFile.excepthook"><code class="xref py py-meth docutils literal"><span class="pre">VFSFile.excepthook()</span></code></a> is called with
+<td><a class="reference internal" href="#apsw.VFSFile.excepthook" title="apsw.VFSFile.excepthook"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFSFile.excepthook()</span></code></a> is called with
 ZeroDivision exception</td>
 </tr>
 <tr class="row-odd"><td>&#160;</td>
-<td><code class="xref py py-const docutils literal"><span class="pre">SQLITE_ERROR</span></code> (closest
+<td><code class="xref py py-const docutils literal notranslate"><span class="pre">SQLITE_ERROR</span></code> (closest
 matching SQLite error code) is
 returned to SQLite by APSW</td>
 <td>&#160;</td>
@@ -175,15 +166,15 @@ recovery operates which calls
 more VFS routines.</td>
 <td>More VFS routines are called.  Any
 exceptions in these routines will result in
-<a class="reference internal" href="#apsw.VFSFile.excepthook" title="apsw.VFSFile.excepthook"><code class="xref py py-meth docutils literal"><span class="pre">VFSFile.excepthook()</span></code></a> being called with
+<a class="reference internal" href="#apsw.VFSFile.excepthook" title="apsw.VFSFile.excepthook"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFSFile.excepthook()</span></code></a> being called with
 them.</td>
 </tr>
 <tr class="row-odd"><td>&#160;</td>
 <td>SQLite returns
-<code class="xref py py-const docutils literal"><span class="pre">SQLITE_FULL</span></code> to APSW</td>
+<code class="xref py py-const docutils literal notranslate"><span class="pre">SQLITE_FULL</span></code> to APSW</td>
 <td>&#160;</td>
 </tr>
-<tr class="row-even"><td>APSW returns <a class="reference internal" href="exceptions.html#apsw.FullError" title="apsw.FullError"><code class="xref py py-class docutils literal"><span class="pre">apsw.FullError</span></code></a></td>
+<tr class="row-even"><td>APSW returns <a class="reference internal" href="exceptions.html#apsw.FullError" title="apsw.FullError"><code class="xref py py-class docutils literal notranslate"><span class="pre">apsw.FullError</span></code></a></td>
 <td>&#160;</td>
 <td>&#160;</td>
 </tr>
@@ -197,25 +188,25 @@ them.</td>
 <em class="property">class </em><code class="descname">VFS</code><span class="sig-paren">(</span><em>name</em><span class="optional">[</span>, <em>base=None</em>, <em>makedefault=False</em>, <em>maxpathname=1024</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Provides operating system access.  You can get an overview in the
 <a class="reference external" href="https://sqlite.org/c3ref/vfs.html">SQLite documentation</a>.  To
-create a VFS your Python class must inherit from <a class="reference internal" href="#apsw.VFS" title="apsw.VFS"><code class="xref py py-class docutils literal"><span class="pre">VFS</span></code></a>.</p>
+create a VFS your Python class must inherit from <a class="reference internal" href="#apsw.VFS" title="apsw.VFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">VFS</span></code></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> – The name to register this vfs under.  If the name
 already exists then this vfs will replace the prior one of the
-same name.  Use <a class="reference internal" href="apsw.html#apsw.vfsnames" title="apsw.vfsnames"><code class="xref py py-meth docutils literal"><span class="pre">apsw.vfsnames()</span></code></a> to get a list of
+same name.  Use <a class="reference internal" href="apsw.html#apsw.vfsnames" title="apsw.vfsnames"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.vfsnames()</span></code></a> to get a list of
 registered vfs names.  :param base: If you would like to
 inherit behaviour from an already registered vfs then give
 their name.  To inherit from the default vfs, use a zero
-length string <code class="docutils literal"><span class="pre">&quot;&quot;</span></code> as the name.  :param makedefault: If true
+length string <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> as the name.  :param makedefault: If true
 then this vfs will be registered as the default, and will be
 used by any opens that don’t specify a vfs.  :param
 maxpathname: The maximum length of database name in bytes when
 represented in UTF-8.  If a pathname is passed in longer than
 this value then SQLite will not <a class="reference external" href="https://sqlite.org/src/tktview/c060923a5422590b3734eb92eae0c94934895b68">be able to open it</a>.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>ValueError</strong> – If <em>base</em> is not <code class="xref py py-const docutils literal"><span class="pre">None</span></code> and the named vfs is not
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><strong>ValueError</strong> – If <em>base</em> is not <code class="xref py py-const docutils literal notranslate"><span class="pre">None</span></code> and the named vfs is not
 currently registered.</td>
 </tr>
 </tbody>
@@ -233,10 +224,10 @@ currently registered.</td>
 <dl class="method">
 <dt id="apsw.VFS.excepthook">
 <code class="descclassname">VFS.</code><code class="descname">excepthook</code><span class="sig-paren">(</span><em>etype</em>, <em>evalue</em>, <em>etraceback</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFS.excepthook" title="Permalink to this definition">¶</a></dt>
-<dd><p>Called when there has been an exception in a <a class="reference internal" href="#apsw.VFS" title="apsw.VFS"><code class="xref py py-class docutils literal"><span class="pre">VFS</span></code></a> routine.
-The default implementation calls <code class="docutils literal"><span class="pre">sys.excepthook</span></code> and if that
-fails then <code class="docutils literal"><span class="pre">PyErr_Display</span></code>.  The three arguments correspond to
-what <code class="docutils literal"><span class="pre">sys.exc_info()</span></code> would return.</p>
+<dd><p>Called when there has been an exception in a <a class="reference internal" href="#apsw.VFS" title="apsw.VFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">VFS</span></code></a> routine.
+The default implementation calls <code class="docutils literal notranslate"><span class="pre">sys.excepthook</span></code> and if that
+fails then <code class="docutils literal notranslate"><span class="pre">PyErr_Display</span></code>.  The three arguments correspond to
+what <code class="docutils literal notranslate"><span class="pre">sys.exc_info()</span></code> would return.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -306,15 +297,15 @@ is the time. Do not adjust for timezone (ie use <a class="reference external" hr
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td>SQLite &lt; 3.7.8</td>
-<td>Raise an <a class="reference internal" href="exceptions.html#apsw.IOError" title="apsw.IOError"><code class="xref py py-exc docutils literal"><span class="pre">IOError</span></code></a> if the file does not
+<td>Raise an <a class="reference internal" href="exceptions.html#apsw.IOError" title="apsw.IOError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> if the file does not
 exist.</td>
 </tr>
 <tr class="row-even"><td>SQLite &gt;= 3.7.8 and SQLite &lt; 3.7.15</td>
 <td>Do not raise an exception</td>
 </tr>
 <tr class="row-odd"><td>SQLite &gt;= 3.7.15</td>
-<td>Raise an <a class="reference internal" href="exceptions.html#apsw.IOError" title="apsw.IOError"><code class="xref py py-exc docutils literal"><span class="pre">IOError</span></code></a> exception with
-extendedresult <code class="xref py py-const docutils literal"><span class="pre">SQLITE_IOERR_DELETE_NOENT</span></code></td>
+<td>Raise an <a class="reference internal" href="exceptions.html#apsw.IOError" title="apsw.IOError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code></a> exception with
+extendedresult <code class="xref py py-const docutils literal notranslate"><span class="pre">SQLITE_IOERR_DELETE_NOENT</span></code></td>
 </tr>
 </tbody>
 </table>
@@ -340,9 +331,9 @@ call returns, on a reboot the file would still be deleted.</li>
 <dt id="apsw.VFS.xDlClose">
 <code class="descclassname">VFS.</code><code class="descname">xDlClose</code><span class="sig-paren">(</span><em>handle</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFS.xDlClose" title="Permalink to this definition">¶</a></dt>
 <dd><p>Close and unload the library corresponding to the handle you
-returned from <a class="reference internal" href="#apsw.VFS.xDlOpen" title="apsw.VFS.xDlOpen"><code class="xref py py-meth docutils literal"><span class="pre">xDlOpen()</span></code></a>.  You can use ctypes to do
+returned from <a class="reference internal" href="#apsw.VFS.xDlOpen" title="apsw.VFS.xDlOpen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">xDlOpen()</span></code></a>.  You can use ctypes to do
 this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xDlClose</span><span class="p">(</span><span class="n">handle</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xDlClose</span><span class="p">(</span><span class="n">handle</span><span class="p">):</span>
    <span class="c1"># Note leading underscore in _ctypes</span>
    <span class="n">_ctypes</span><span class="o">.</span><span class="n">dlclose</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>       <span class="c1"># Linux/Mac/Unix</span>
    <span class="n">_ctypes</span><span class="o">.</span><span class="n">FreeLibrary</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>   <span class="c1"># Windows</span>
@@ -354,10 +345,10 @@ this:</p>
 <dt id="apsw.VFS.xDlError">
 <code class="descclassname">VFS.</code><code class="descname">xDlError</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; string<a class="headerlink" href="#apsw.VFS.xDlError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an error string describing the last error of
-<a class="reference internal" href="#apsw.VFS.xDlOpen" title="apsw.VFS.xDlOpen"><code class="xref py py-meth docutils literal"><span class="pre">xDlOpen()</span></code></a> or <a class="reference internal" href="#apsw.VFS.xDlSym" title="apsw.VFS.xDlSym"><code class="xref py py-meth docutils literal"><span class="pre">xDlSym()</span></code></a> (ie they returned
+<a class="reference internal" href="#apsw.VFS.xDlOpen" title="apsw.VFS.xDlOpen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">xDlOpen()</span></code></a> or <a class="reference internal" href="#apsw.VFS.xDlSym" title="apsw.VFS.xDlSym"><code class="xref py py-meth docutils literal notranslate"><span class="pre">xDlSym()</span></code></a> (ie they returned
 zero/NULL). If you do not supply this routine then SQLite provides
 a generic message. To implement this method, catch exceptions in
-<a class="reference internal" href="#apsw.VFS.xDlOpen" title="apsw.VFS.xDlOpen"><code class="xref py py-meth docutils literal"><span class="pre">xDlOpen()</span></code></a> or <a class="reference internal" href="#apsw.VFS.xDlSym" title="apsw.VFS.xDlSym"><code class="xref py py-meth docutils literal"><span class="pre">xDlSym()</span></code></a>, turn them into
+<a class="reference internal" href="#apsw.VFS.xDlOpen" title="apsw.VFS.xDlOpen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">xDlOpen()</span></code></a> or <a class="reference internal" href="#apsw.VFS.xDlSym" title="apsw.VFS.xDlSym"><code class="xref py py-meth docutils literal notranslate"><span class="pre">xDlSym()</span></code></a>, turn them into
 strings, save them, and return them in this routine.  If you have
 an error in this routine or return None then SQLite’s generic
 message will be used.</p>
@@ -369,10 +360,10 @@ message will be used.</p>
 <dd><p>Load the shared library. You should return a number which will be
 treated as a void pointer at the C level. On error you should
 return 0 (NULL). The number is passed as is to
-<a class="reference internal" href="#apsw.VFS.xDlSym" title="apsw.VFS.xDlSym"><code class="xref py py-meth docutils literal"><span class="pre">xDlSym()</span></code></a>/<a class="reference internal" href="#apsw.VFS.xDlClose" title="apsw.VFS.xDlClose"><code class="xref py py-meth docutils literal"><span class="pre">xDlClose()</span></code></a> so it can represent
+<a class="reference internal" href="#apsw.VFS.xDlSym" title="apsw.VFS.xDlSym"><code class="xref py py-meth docutils literal notranslate"><span class="pre">xDlSym()</span></code></a>/<a class="reference internal" href="#apsw.VFS.xDlClose" title="apsw.VFS.xDlClose"><code class="xref py py-meth docutils literal notranslate"><span class="pre">xDlClose()</span></code></a> so it can represent
 anything that is convenient for you (eg an index into an
 array). You can use ctypes to load a library:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xDlOpen</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xDlOpen</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
    <span class="k">return</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">cdll</span><span class="o">.</span><span class="n">LoadLibrary</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">_handle</span>
 </pre></div>
 </div>
@@ -383,7 +374,7 @@ array). You can use ctypes to load a library:</p>
 <code class="descclassname">VFS.</code><code class="descname">xDlSym</code><span class="sig-paren">(</span><em>handle</em>, <em>symbol</em><span class="sig-paren">)</span> &#x2192; address<a class="headerlink" href="#apsw.VFS.xDlSym" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the address of the named symbol which will be called by
 SQLite. On error you should return 0 (NULL). You can use ctypes:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xDlSym</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xDlSym</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
    <span class="k">return</span> <span class="n">_ctypes</span><span class="o">.</span><span class="n">dlsym</span> <span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>  <span class="c1"># Linux/Unix/Mac etc (note leading underscore)</span>
    <span class="k">return</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">win32</span><span class="o">.</span><span class="n">kernel32</span><span class="o">.</span><span class="n">GetProcAddress</span> <span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>  <span class="c1"># Windows</span>
 </pre></div>
@@ -393,7 +384,7 @@ SQLite. On error you should return 0 (NULL). You can use ctypes:</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>handle</strong> – The value returned from an earlier <a class="reference internal" href="#apsw.VFS.xDlOpen" title="apsw.VFS.xDlOpen"><code class="xref py py-meth docutils literal"><span class="pre">xDlOpen()</span></code></a> call</li>
+<li><strong>handle</strong> – The value returned from an earlier <a class="reference internal" href="#apsw.VFS.xDlOpen" title="apsw.VFS.xDlOpen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">xDlOpen()</span></code></a> call</li>
 <li><strong>symbol</strong> – A string</li>
 </ul>
 </td>
@@ -408,7 +399,7 @@ SQLite. On error you should return 0 (NULL). You can use ctypes:</p>
 <dl class="method">
 <dt id="apsw.VFS.xFullPathname">
 <code class="descclassname">VFS.</code><code class="descname">xFullPathname</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span> &#x2192; string<a class="headerlink" href="#apsw.VFS.xFullPathname" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the absolute pathname for name.  You can use <code class="docutils literal"><span class="pre">os.path.abspath</span></code> to do this.</p>
+<dd><p>Return the absolute pathname for name.  You can use <code class="docutils literal notranslate"><span class="pre">os.path.abspath</span></code> to do this.</p>
 </dd></dl>
 
 <dl class="method">
@@ -451,22 +442,22 @@ repeatedly doing it.</p>
 <dt id="apsw.VFS.xOpen">
 <code class="descclassname">VFS.</code><code class="descname">xOpen</code><span class="sig-paren">(</span><em>name</em>, <em>flags</em><span class="sig-paren">)</span> &#x2192; VFSFile or similar object<a class="headerlink" href="#apsw.VFS.xOpen" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method should return a new file object based on name.  You
-can return a <a class="reference internal" href="#apsw.VFSFile" title="apsw.VFSFile"><code class="xref py py-class docutils literal"><span class="pre">VFSFile</span></code></a> from a completely different VFS.</p>
+can return a <a class="reference internal" href="#apsw.VFSFile" title="apsw.VFSFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">VFSFile</span></code></a> from a completely different VFS.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>name</strong> – File to open.  Note that <em>name</em> may be <code class="xref py py-const docutils literal"><span class="pre">None</span></code> in which
+<li><strong>name</strong> – File to open.  Note that <em>name</em> may be <code class="xref py py-const docutils literal notranslate"><span class="pre">None</span></code> in which
 case you should open a temporary file with a name of your
-choosing.  May be an instance of <a class="reference internal" href="#apsw.URIFilename" title="apsw.URIFilename"><code class="xref py py-class docutils literal"><span class="pre">URIFilename</span></code></a>.</li>
-<li><strong>flags</strong> – A list of two integers <code class="docutils literal"><span class="pre">[inputflags,</span>
+choosing.  May be an instance of <a class="reference internal" href="#apsw.URIFilename" title="apsw.URIFilename"><code class="xref py py-class docutils literal notranslate"><span class="pre">URIFilename</span></code></a>.</li>
+<li><strong>flags</strong> – A list of two integers <code class="docutils literal notranslate"><span class="pre">[inputflags,</span>
 <span class="pre">outputflags]</span></code>.  Each integer is one or more of the <a class="reference external" href="https://sqlite.org/c3ref/c_open_autoproxy.html">open flags</a> binary orred
-together.  The <code class="docutils literal"><span class="pre">inputflags</span></code> tells you what SQLite wants.  For
-example <code class="xref py py-const docutils literal"><span class="pre">SQLITE_OPEN_DELETEONCLOSE</span></code> means the file should
-be automatically deleted when closed.  The <code class="docutils literal"><span class="pre">outputflags</span></code>
+together.  The <code class="docutils literal notranslate"><span class="pre">inputflags</span></code> tells you what SQLite wants.  For
+example <code class="xref py py-const docutils literal notranslate"><span class="pre">SQLITE_OPEN_DELETEONCLOSE</span></code> means the file should
+be automatically deleted when closed.  The <code class="docutils literal notranslate"><span class="pre">outputflags</span></code>
 describes how you actually did open the file.  For example if you
-opened it read only then <code class="xref py py-const docutils literal"><span class="pre">SQLITE_OPEN_READONLY</span></code> should be
+opened it read only then <code class="xref py py-const docutils literal notranslate"><span class="pre">SQLITE_OPEN_READONLY</span></code> should be
 set.</li>
 </ul>
 </td>
@@ -480,7 +471,7 @@ set.</li>
 <code class="descclassname">VFS.</code><code class="descname">xRandomness</code><span class="sig-paren">(</span><em>numbytes</em><span class="sig-paren">)</span> &#x2192; bytes<a class="headerlink" href="#apsw.VFS.xRandomness" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method is called once when SQLite needs to seed the random
 number generator. It is called on the default VFS only. It is not
-called again, even across <a class="reference internal" href="apsw.html#apsw.shutdown" title="apsw.shutdown"><code class="xref py py-meth docutils literal"><span class="pre">apsw.shutdown()</span></code></a> calls.  You can
+called again, even across <a class="reference internal" href="apsw.html#apsw.shutdown" title="apsw.shutdown"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.shutdown()</span></code></a> calls.  You can
 return less than the number of bytes requested including None. If
 you return more then the surplus is ignored.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -514,7 +505,7 @@ of this and any other related VFS.</li>
 </tbody>
 </table>
 <p>Raise an exception to return an error.  If the system call does
-not exist then raise <a class="reference internal" href="exceptions.html#apsw.NotFoundError" title="apsw.NotFoundError"><code class="xref py py-exc docutils literal"><span class="pre">NotFoundError</span></code></a>.</p>
+not exist then raise <a class="reference internal" href="exceptions.html#apsw.NotFoundError" title="apsw.NotFoundError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NotFoundError</span></code></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -552,7 +543,7 @@ should return that rounded up value.</td>
 <dt id="apsw.VFSFile">
 <em class="property">class </em><code class="descname">VFSFile</code><span class="sig-paren">(</span><em>vfs</em>, <em>name</em>, <em>flags</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wraps access to a file.  You only need to derive from this class
-if you want the file object returned from <a class="reference internal" href="#apsw.VFS.xOpen" title="apsw.VFS.xOpen"><code class="xref py py-meth docutils literal"><span class="pre">VFS.xOpen()</span></code></a> to
+if you want the file object returned from <a class="reference internal" href="#apsw.VFS.xOpen" title="apsw.VFS.xOpen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFS.xOpen()</span></code></a> to
 inherit from an existing VFS implementation.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -565,9 +556,9 @@ operating systems.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>vfs</strong> – The vfs you want to inherit behaviour from.  You can
-use an empty string <code class="docutils literal"><span class="pre">&quot;&quot;</span></code> to inherit from the default vfs.</li>
-<li><strong>name</strong> – The name of the file being opened.  May be an instance of <a class="reference internal" href="#apsw.URIFilename" title="apsw.URIFilename"><code class="xref py py-class docutils literal"><span class="pre">URIFilename</span></code></a>.</li>
-<li><strong>flags</strong> – A two list <code class="docutils literal"><span class="pre">[inflags,</span> <span class="pre">outflags]</span></code> as detailed in <a class="reference internal" href="#apsw.VFS.xOpen" title="apsw.VFS.xOpen"><code class="xref py py-meth docutils literal"><span class="pre">VFS.xOpen()</span></code></a>.</li>
+use an empty string <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> to inherit from the default vfs.</li>
+<li><strong>name</strong> – The name of the file being opened.  May be an instance of <a class="reference internal" href="#apsw.URIFilename" title="apsw.URIFilename"><code class="xref py py-class docutils literal notranslate"><span class="pre">URIFilename</span></code></a>.</li>
+<li><strong>flags</strong> – A two list <code class="docutils literal notranslate"><span class="pre">[inflags,</span> <span class="pre">outflags]</span></code> as detailed in <a class="reference internal" href="#apsw.VFS.xOpen" title="apsw.VFS.xOpen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFS.xOpen()</span></code></a>.</li>
 </ul>
 </td>
 </tr>
@@ -579,22 +570,22 @@ use an empty string <code class="docutils literal"><span class="pre">&quot;&quot
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">If the VFS that you inherit from supports <a class="reference internal" href="tips.html#wal"><span class="std std-ref">write ahead
-logging</span></a> then your <a class="reference internal" href="#apsw.VFSFile" title="apsw.VFSFile"><code class="xref py py-class docutils literal"><span class="pre">VFSFile</span></code></a> will also support the
+logging</span></a> then your <a class="reference internal" href="#apsw.VFSFile" title="apsw.VFSFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">VFSFile</span></code></a> will also support the
 xShm methods necessary to implement wal.</p>
 </div>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#apsw.VFS.xOpen" title="apsw.VFS.xOpen"><code class="xref py py-meth docutils literal"><span class="pre">VFS.xOpen()</span></code></a></p>
+<p class="last"><a class="reference internal" href="#apsw.VFS.xOpen" title="apsw.VFS.xOpen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFS.xOpen()</span></code></a></p>
 </div>
 </dd></dl>
 
 <dl class="method">
 <dt id="apsw.VFSFile.excepthook">
 <code class="descclassname">VFSFile.</code><code class="descname">excepthook</code><span class="sig-paren">(</span><em>etype</em>, <em>evalue</em>, <em>etraceback</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFile.excepthook" title="Permalink to this definition">¶</a></dt>
-<dd><p>Called when there has been an exception in a <a class="reference internal" href="#apsw.VFSFile" title="apsw.VFSFile"><code class="xref py py-class docutils literal"><span class="pre">VFSFile</span></code></a>
-routine.  The default implementation calls <code class="docutils literal"><span class="pre">sys.excepthook</span></code> and
-if that fails then <code class="docutils literal"><span class="pre">PyErr_Display</span></code>.  The three arguments
-correspond to what <code class="docutils literal"><span class="pre">sys.exc_info()</span></code> would return.</p>
+<dd><p>Called when there has been an exception in a <a class="reference internal" href="#apsw.VFSFile" title="apsw.VFSFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">VFSFile</span></code></a>
+routine.  The default implementation calls <code class="docutils literal notranslate"><span class="pre">sys.excepthook</span></code> and
+if that fails then <code class="docutils literal notranslate"><span class="pre">PyErr_Display</span></code>.  The three arguments
+correspond to what <code class="docutils literal notranslate"><span class="pre">sys.exc_info()</span></code> would return.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -638,8 +629,8 @@ error then 0 (the SQLite default) is returned.</p>
 <dt id="apsw.VFSFile.xFileControl">
 <code class="descclassname">VFSFile.</code><code class="descname">xFileControl</code><span class="sig-paren">(</span><em>op</em>, <em>ptr</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#apsw.VFSFile.xFileControl" title="Permalink to this definition">¶</a></dt>
 <dd><p>Receives <a class="reference external" href="https://sqlite.org/c3ref/file_control.html">file control</a> request typically
-issued by <a class="reference internal" href="connection.html#apsw.Connection.filecontrol" title="apsw.Connection.filecontrol"><code class="xref py py-meth docutils literal"><span class="pre">Connection.filecontrol()</span></code></a>.  See
-<a class="reference internal" href="connection.html#apsw.Connection.filecontrol" title="apsw.Connection.filecontrol"><code class="xref py py-meth docutils literal"><span class="pre">Connection.filecontrol()</span></code></a> for an example of how to pass a
+issued by <a class="reference internal" href="connection.html#apsw.Connection.filecontrol" title="apsw.Connection.filecontrol"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.filecontrol()</span></code></a>.  See
+<a class="reference internal" href="connection.html#apsw.Connection.filecontrol" title="apsw.Connection.filecontrol"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.filecontrol()</span></code></a> for an example of how to pass a
 Python object to this routine.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -660,7 +651,7 @@ internal use.</li>
 <p>As of SQLite 3.6.10, this method is called by SQLite if you have
 inherited from an underlying VFSFile.  Consequently ensure you pass
 any unrecognised codes through to your super class.  For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xFileControl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">ptr</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xFileControl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">ptr</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">op</span><span class="o">==</span><span class="mi">1027</span><span class="p">:</span>
         <span class="n">process_quick</span><span class="p">(</span><span class="n">ptr</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">op</span><span class="o">==</span><span class="mi">1028</span><span class="p">:</span>
@@ -687,7 +678,7 @@ any unrecognised codes through to your super class.  For example:</p>
 <dd><p>Increase the lock to the level specified which is one of the
 <a class="reference external" href="https://sqlite.org/c3ref/c_lock_exclusive.html">SQLITE_LOCK</a>
 family of constants. If you can’t increase the lock level because
-someone else has locked it, then raise <a class="reference internal" href="exceptions.html#apsw.BusyError" title="apsw.BusyError"><code class="xref py py-exc docutils literal"><span class="pre">BusyError</span></code></a>.</p>
+someone else has locked it, then raise <a class="reference internal" href="exceptions.html#apsw.BusyError" title="apsw.BusyError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">BusyError</span></code></a>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -781,10 +772,10 @@ write the remaining data.</p>
 C filename representation and parameters together.  This class
 encapsulates that binding.  The <a class="reference internal" href="example.html#example-vfs"><span class="std std-ref">example</span></a> shows
 usage of this class.</p>
-<p>Your <a class="reference internal" href="#apsw.VFS.xOpen" title="apsw.VFS.xOpen"><code class="xref py py-meth docutils literal"><span class="pre">VFS.xOpen()</span></code></a> method will generally be passed one of
+<p>Your <a class="reference internal" href="#apsw.VFS.xOpen" title="apsw.VFS.xOpen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFS.xOpen()</span></code></a> method will generally be passed one of
 these instead of a string as the filename if the URI flag was used
 or the main database flag is set.</p>
-<p>You can safely pass it on to the <a class="reference internal" href="#apsw.VFSFile" title="apsw.VFSFile"><code class="xref py py-class docutils literal"><span class="pre">VFSFile</span></code></a> constructor
+<p>You can safely pass it on to the <a class="reference internal" href="#apsw.VFSFile" title="apsw.VFSFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">VFSFile</span></code></a> constructor
 which knows how to get the name back out.</p>
 </dd></dl>
 
@@ -852,12 +843,14 @@ present.</p>
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -879,14 +872,14 @@ present.</p>
         <li class="right" >
           <a href="vtable.html" title="Virtual Tables"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.24.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.25.2-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2017, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jul 16, 2018.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
+      Last updated on Nov 04, 2018.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.9.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking
