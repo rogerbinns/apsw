@@ -1656,6 +1656,7 @@ modules etc. For example::
       ADDINT(SQLITE_DBCONFIG_MAX),
 #endif
       ADDINT(SQLITE_DBCONFIG_RESET_DATABASE),
+      ADDINT(SQLITE_DBCONFIG_DEFENSIVE),
       END,
 
       DICT("mapping_status"),
