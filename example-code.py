@@ -482,12 +482,12 @@ obfudb.cursor().execute("create table foo(x,y); insert into foo values(1,2)")
 
 # Check it really is obfuscated on disk
 #@@CAPTURE
-print (open("myobfudb", "rb").read()[:20])
+print (repr(open("myobfudb", "rb").read()[:20]))
 #@@ENDCAPTURE
 
 # And unobfuscating it
 #@@CAPTURE
-print (encryptme(open("myobfudb", "rb").read()[:20]))
+print (repr(encryptme(open("myobfudb", "rb").read()[:20])))
 #@@ENDCAPTURE
 
 # Tidy up
