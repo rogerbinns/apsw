@@ -35,9 +35,9 @@ so you can see what gets printed when you run the code.
 .. code-block:: text
 
    |       Using APSW file /space/apsw/apsw.so
-   |          APSW version 3.25.2-r1
-   |    SQLite lib version 3.25.2
-   | SQLite header version 3025002
+   |          APSW version 3.26.0-r1
+   |    SQLite lib version 3.26.0
+   | SQLite header version 3026000
 
 .. code-block:: python
 
@@ -406,8 +406,7 @@ so you can see what gets printed when you run the code.
 .. code-block:: text
 
    | in commit hook
-   | no commits out of hours
-   | commit was not allowed
+   | commits okay at this time
 
 .. _example-updatehook:
 
@@ -541,7 +540,7 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
-   | 7869816 apsw.so /space/apsw
+   | 7881888 apsw.so /space/apsw
    | 6522744 apsw.cpython-36m-x86_64-linux-gnu.so /space/apsw
    | 447393 libxml2.pyc /usr/lib/python2.7/dist-packages
 
@@ -633,20 +632,20 @@ so you can see what gets printed when you run the code.
     obfudb.cursor().execute("create table foo(x,y); insert into foo values(1,2)")
 
     # Check it really is obfuscated on disk
-    print (open("myobfudb", "rb").read()[:20])
+    print (repr(open("myobfudb", "rb").read()[:20]))
 
 .. code-block:: text
 
-   | öôéÌÑÀ…ÃÊ×ÈÄÑ…–¥µ¥¤¤
+   | '\xf6\xf4\xe9\xcc\xd1\xc0\x85\xc3\xca\xd7\xc8\xc4\xd1\x85\x96\xa5\xb5\xa5\xa4\xa4'
 
 .. code-block:: python
 
     # And unobfuscating it
-    print (encryptme(open("myobfudb", "rb").read()[:20]))
+    print (repr(encryptme(open("myobfudb", "rb").read()[:20])))
 
 .. code-block:: text
 
-   | SQLite format 3  
+   | 'SQLite format 3\x00\x10\x00\x01\x01'
 
 .. code-block:: python
 
@@ -763,7 +762,7 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
-   | SQLite memory usage current 497712 max 513800
+   | SQLite memory usage current 503312 max 514272
 
 .. code-block:: python
 

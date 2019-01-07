@@ -2,6 +2,13 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.26.0-r1
+=========
+
+Added constant:
+
+* SQLITE_DBCONFIG_DEFENSIVE
+
 3.25.2-r1
 =========
 
