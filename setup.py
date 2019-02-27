@@ -76,7 +76,9 @@ def fixup_download_url(url):
     if ver:
         ver=int(ver.group(0))
         if ver>=3071600:
-            if ver>=3220000:
+            if ver>=3270000:
+                year="2019"
+            elif ver>=3220000:
                 year="2018"
             elif ver>=3160000:
                 year="2017"
