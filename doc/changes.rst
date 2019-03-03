@@ -2,6 +2,14 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.27.2-r1
+=========
+
+Added constant:
+
+* SQLITE_CONFIG_MEMDB_MAXSIZE, SQLITE_FCNTL_SIZE_LIMIT
+
+
 3.26.0-r1
 =========
 

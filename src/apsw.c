@@ -1639,6 +1639,7 @@ modules etc. For example::
       ADDINT(SQLITE_CONFIG_STMTJRNL_SPILL),
       ADDINT(SQLITE_CONFIG_SMALL_MALLOC),
       ADDINT(SQLITE_CONFIG_SORTERREF_SIZE),
+      ADDINT(SQLITE_CONFIG_MEMDB_MAXSIZE),
       END,
 
       DICT("mapping_db_config"),
@@ -1769,6 +1770,7 @@ modules etc. For example::
       ADDINT(SQLITE_FCNTL_BEGIN_ATOMIC_WRITE),
       ADDINT(SQLITE_FCNTL_LOCK_TIMEOUT),
       ADDINT(SQLITE_FCNTL_DATA_VERSION),
+      ADDINT(SQLITE_FCNTL_SIZE_LIMIT),
       END,
 
       DICT("mapping_conflict_resolution_modes"),
