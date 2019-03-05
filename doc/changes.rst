@@ -5,7 +5,7 @@ Change History
 3.27.2-r1
 =========
 
-Added constant:
+Added constants:
 
 * SQLITE_CONFIG_MEMDB_MAXSIZE, SQLITE_FCNTL_SIZE_LIMIT
 
