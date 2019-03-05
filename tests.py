@@ -2009,6 +2009,18 @@ class APSW(unittest.TestCase):
         check("x1>2 AND x2<7 AND y1>17.2 AND y2<=8", [])
         check("x1>5 AND x2<=6 AND y1>-11 AND y2<=8", [1])
 
+    def testGeopolyExtenstion(self):
+        "Check geopoly extension if present"
+        if not self.checkOptionalExtension("geopoly", "CREATE VIRTUAL TABLE newtab USING geopoly()"):
+            return
+        found=0
+        for row in self.db.cursor().execute(
+            "CREATE VIRTUAL TABLE newtab USING geopoly();"
+            "INSERT INTO newtab(_shape) VALUES('[[0,0],[1,0],[0.5,1],[0,0]]');"
+            "SELECT * FROM newtab WHERE geopoly_overlap(_shape, $1);", ("[[0,0],[1,0],[0.5,1],[0,0]]",)):
+            found+=1
+        self.assertEqual(found, 1)
+
     def testICUExtension(self):
         "Check ICU extension if present"
         if not self.checkOptionalExtension("icu", "select lower('I', 'tr_tr')"):

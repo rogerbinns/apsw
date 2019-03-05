@@ -9,6 +9,7 @@ Added constants:
 
 * SQLITE_CONFIG_MEMDB_MAXSIZE, SQLITE_FCNTL_SIZE_LIMIT
 
+Added support for the geopoly extension (:issue:`253`)
 
 3.26.0-r1
 =========
