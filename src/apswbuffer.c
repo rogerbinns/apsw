@@ -94,6 +94,10 @@ APSWBuffer_fini(void)
 #endif
 
 
+/* This is the same algorithm as used for Python strings/bytes/buffer.  Note
+   they can also use a hash seed which alters the value.  There is no need
+   for this hash and strings/bytes etc be the same, but usually they are.  We
+   add an extra 1 to put APSWBuffer into a different hash bucket. */
 static long
 APSWBuffer_hash(APSWBuffer *self)
 {
@@ -104,9 +108,6 @@ APSWBuffer_hash(APSWBuffer *self)
   if(self->hash!=-1)
     return self->hash;
 
-  /* this is the same algorithm as used for Python
-     strings/bytes/buffer except we add one so that there is no hash
-     collision */
   p=(unsigned char*)self->data;
   len=self->length;
 
@@ -176,31 +177,7 @@ APSWBuffer_FromObject(PyObject *base, Py_ssize_t offset, Py_ssize_t length)
   res->base=base;
   res->data=PyBytes_AS_STRING(base)+offset;
   res->length=length;
-
-  /* Performance hack. If the bytes/string we are copying from has
-     already calculated a hash then use that rather than recalculating
-     it ourselves. */
   res->hash= -1;
-#ifndef PYPY_VERSION
-  assert(PyBytes_CheckExact(base));
-  if(offset==0 && length==PyBytes_GET_SIZE(base))
-    {
-      res->hash=((PyBytesObject*)base)->ob_shash;
-      if(res->hash<-2 || res->hash>-1)
-        res->hash+=1;
-    }
-#endif
-
-#ifndef NDEBUG
-  /* check our conniving performance hack actually worked */
-  if(res->hash!=-1)
-    {
-      long tmp=res->hash;
-      res->hash= -1;
-      assert(tmp==APSWBuffer_hash(res));
-      res->hash=tmp;
-    }
-#endif
 
   return (PyObject*)res;
 }

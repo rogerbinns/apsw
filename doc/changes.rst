@@ -11,6 +11,8 @@ Added constants:
 
 Added support for the geopoly extension (:issue:`253`)
 
+Removed hash optimisation that isn't useful any more (:issue:`256`)
+
 3.26.0-r1
 =========
 
