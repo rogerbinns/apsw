@@ -1866,11 +1866,10 @@ static void
 add_shell(PyObject *apswmodule)
 {
 #ifndef PYPY_VERSION
-  PyObject *res=NULL, *maindict=NULL, *apswdict, *msvciscrap=NULL;
+  PyObject *res=NULL, *apswdict, *msvciscrap=NULL;
 
-  maindict=PyModule_GetDict(PyImport_AddModule("__main__"));
   apswdict=PyModule_GetDict(apswmodule);
-  PyDict_SetItemString(apswdict, "__builtins__", PyDict_GetItemString(maindict, "__builtins__"));
+  PyDict_SetItemString(apswdict, "__builtins__", PyImport_AddModule("__builtin__"));
   PyDict_SetItemString(apswdict, "apsw", apswmodule);
 
   /* the toy compiler from microsoft falls over on string constants
