@@ -185,7 +185,7 @@ def patch_natty_build(setup):
 
 # Default versions we support
 PYVERS=(
-    '3.7.2',
+    '3.7.3',
     '3.6.8',
     '3.5.6',
     '3.4.9',
@@ -201,9 +201,7 @@ PYVERS=(
 )
 
 SQLITEVERS=(
-    '3.27.2',
-    '3.27.1',
-    '3.27.0',
+    '3.28.0',
 )
 
 if __name__=='__main__':
