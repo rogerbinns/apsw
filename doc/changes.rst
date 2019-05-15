@@ -2,6 +2,13 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.28.0-r1
+=========
+
+Added constant:
+
+* SQLITE_DBCONFIG_WRITABLE_SCHEMA
+
 3.27.2-r1
 =========
 

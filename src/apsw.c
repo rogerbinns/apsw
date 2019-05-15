@@ -1658,6 +1658,7 @@ modules etc. For example::
 #endif
       ADDINT(SQLITE_DBCONFIG_RESET_DATABASE),
       ADDINT(SQLITE_DBCONFIG_DEFENSIVE),
+      ADDINT(SQLITE_DBCONFIG_WRITABLE_SCHEMA),
       END,
 
       DICT("mapping_status"),
