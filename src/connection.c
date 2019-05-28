@@ -2791,6 +2791,97 @@ Connection_wal_checkpoint(Connection *self, PyObject *args, PyObject *kwargs)
   return NULL;
 }
 
+#if defined(SQLITE_HAS_CODEC)
+
+/** .. method:: key(key, dbname=None)
+
+    Initially set encryption key for main or attached database
+
+    :param key: Encryption key
+    :param dbname: The name of the database or main if None
+
+  -* sqlite3_key_v2
+*/
+static PyObject *
+Connection_key(Connection *self, PyObject *args, PyObject *kwargs)
+{
+  static char *kwlist[]={"key", "dbname", NULL};
+  int res=SQLITE_OK;
+  const char *key=NULL;
+  Py_ssize_t key_len=0;
+  char *dbname=NULL;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  if(!PyArg_ParseTupleAndKeywords(args, kwargs, "z#|es:key(key,dbname=None)",
+                                  kwlist, &key, &key_len, STRENCODING, &dbname))
+    return NULL;
+
+  if (dbname)
+    {
+      PYSQLITE_CON_CALL(res=sqlite3_key_v2(self->db, dbname, key, key_len));
+    }
+  else
+    {
+      PYSQLITE_CON_CALL(res=sqlite3_key(self->db, key, key_len));
+    }
+
+  SET_EXC(res, self->db);
+
+  if (dbname) PyMem_Free(dbname);
+
+  if(PyErr_Occurred())
+    return NULL;
+
+  Py_RETURN_NONE;
+}
+
+/** .. method:: rekey(key, dbname=None)
+
+    Change encryption key for main or attached database
+
+    :param key: Encryption key
+    :param dbname: The name of the database or main if None
+
+  -* sqlite3_rekey_v2
+*/
+static PyObject *
+Connection_rekey(Connection *self, PyObject *args, PyObject *kwargs)
+{
+  static char *kwlist[]={"key", "dbname", NULL};
+  int res=SQLITE_OK;
+  const char *key=NULL;
+  Py_ssize_t key_len=0;
+  char *dbname=NULL;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  if(!PyArg_ParseTupleAndKeywords(args, kwargs, "z#|es:rekey(key,dbname=None)",
+                                  kwlist, &key, &key_len, STRENCODING, &dbname))
+    return NULL;
+
+  if (dbname)
+    {
+      PYSQLITE_CON_CALL(res=sqlite3_rekey_v2(self->db, dbname, key, key_len));
+    }
+  else
+    {
+      PYSQLITE_CON_CALL(res=sqlite3_rekey(self->db, key, key_len));
+    }
+
+  SET_EXC(res, self->db);
+
+  if (dbname) PyMem_Free(dbname);
+
+  if(PyErr_Occurred())
+    return NULL;
+
+  Py_RETURN_NONE;
+}
+
+#endif
 
 #ifdef EXPERIMENTAL
 
@@ -3446,6 +3537,10 @@ static PyMethodDef Connection_methods[] = {
    "Check if database is readonly"},
   {"db_filename", (PyCFunction)Connection_db_filename, METH_O,
    "Return filename of main or attached database"},
+  {"key", (PyCFunction)Connection_key, METH_VARARGS|METH_KEYWORDS,
+   "Initially set encryption key for main or attached database" },
+  {"rekey", (PyCFunction)Connection_rekey, METH_VARARGS|METH_KEYWORDS,
+   "Change encryption key for main or attached database" },
   {0, 0, 0, 0}  /* Sentinel */
 };
 
