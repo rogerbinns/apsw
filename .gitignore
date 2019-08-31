@@ -45,3 +45,4 @@ testdb
 /.coverage
 apsw.egg-info
 /.ropeproject/
+/.mypy_cache/
