@@ -17,6 +17,8 @@ import Queue
 import optparse
 import traceback
 
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 # disable testfileprefix
 os.putenv("APSWTESTPREFIX", "")
 try:
