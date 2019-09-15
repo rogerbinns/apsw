@@ -8,6 +8,11 @@ Change History
 Added constants:
 
 * SQLITE_DBCONFIG_DQS_DML, SQLITE_DBCONFIG_DQS_DDL, SQLITE_DBCONFIG_LEGACY_ALTER_TABLE
+
+Updated :meth:`Connection.config` with all current `SQLITE_DBCONFIG
+<https://sqlite.org/c3ref/c_dbconfig_defensive.html>`__ constants. Also fixes
+:issue:`249`.
+
 3.28.0-r1
 =========
 

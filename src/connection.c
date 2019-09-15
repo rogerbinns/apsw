@@ -3178,6 +3178,8 @@ Connection_exit(Connection *self, PyObject *args)
       <https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__
     :param args: Zero or more arguments as appropriate for *op*
 
+    Only optiona that take an int and return one are implemented.
+
     -* sqlite3_db_config
 */
 static PyObject *
@@ -3200,9 +3202,16 @@ Connection_config(Connection *self, PyObject *args)
     {
     case SQLITE_DBCONFIG_ENABLE_FKEY:
     case SQLITE_DBCONFIG_ENABLE_TRIGGER:
-    case SQLITE_DBCONFIG_ENABLE_QPSG:
+    case SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER:
+    case SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION:
     case SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE:
+    case SQLITE_DBCONFIG_ENABLE_QPSG:
     case SQLITE_DBCONFIG_RESET_DATABASE:
+    case SQLITE_DBCONFIG_DEFENSIVE:
+    case SQLITE_DBCONFIG_WRITABLE_SCHEMA:
+    case SQLITE_DBCONFIG_LEGACY_ALTER_TABLE:
+    case SQLITE_DBCONFIG_DQS_DML:
+    case SQLITE_DBCONFIG_DQS_DDL:
       {
 	int opdup, val, current;
 	if(!PyArg_ParseTuple(args, "ii", &opdup, &val))
