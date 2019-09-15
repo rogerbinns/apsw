@@ -2,6 +2,12 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.29.0-r1
+=========
+
+Added constants:
+
+* SQLITE_DBCONFIG_DQS_DML, SQLITE_DBCONFIG_DQS_DDL, SQLITE_DBCONFIG_LEGACY_ALTER_TABLE
 3.28.0-r1
 =========
 
