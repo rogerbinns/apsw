@@ -2271,10 +2271,15 @@ class APSW(unittest.TestCase):
             self.assertRaises(UnicodeDecodeError, self.db.loadextension, "\xa7\x94")
         # they need to be enabled first (off by default)
         self.assertRaises(apsw.ExtensionLoadingError, self.db.loadextension, LOADEXTENSIONFILENAME)
+        self.assertEqual(self.db.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, -1), 0)
         self.db.enableloadextension(False)
         self.assertRaises(ZeroDivisionError, self.db.enableloadextension, BadIsTrue())
         # should still be disabled
+        self.assertEqual(self.db.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, 0), 0)
         self.assertRaises(apsw.ExtensionLoadingError, self.db.loadextension, LOADEXTENSIONFILENAME)
+        self.assertEqual(self.db.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, 1), 1)
+        self.db.loadextension(LOADEXTENSIONFILENAME)
+        self.assertEqual(self.db.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, 0), 0)
         self.db.enableloadextension(True)
         # make sure it checks args
         self.assertRaises(TypeError, self.db.loadextension)
