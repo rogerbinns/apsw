@@ -189,6 +189,8 @@ Connection class
       <https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__
     :param args: Zero or more arguments as appropriate for *op*
 
+    Only optiona that take an int and return one are implemented.
+
     Calls: `sqlite3_db_config <https://sqlite.org/c3ref/db_config.html>`__
 
 .. index:: sqlite3_create_function_v2
