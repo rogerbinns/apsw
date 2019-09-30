@@ -469,7 +469,7 @@ class fetch(Command):
                 break
             except:
                 write("       Error ", str(sys.exc_info()[1]))
-                time.sleep(1.3)
+                time.sleep(3.14*count)
                 count+=1
                 if count>=10:
                     raise
