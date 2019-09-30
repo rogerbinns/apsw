@@ -461,7 +461,7 @@ class fetch(Command):
                 except:
                     # Degrade to http if https is not supported
                     e=sys.exc_info()[1]
-                    if attempt>=4 and url.startswith("https:"):
+                    if count>=4 and url.startswith("https:"):
                         write("        [Python has https issues? - using http instead]")
                         page=urlopen(url.replace("https://", "http://")).read()
                     else:
