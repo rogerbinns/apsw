@@ -2360,9 +2360,6 @@ class APSW(unittest.TestCase):
 
         for i in range(20):
             self.db.createmodule("x" * i, lambda x: i)
-        for ii in range(20):
-            # SQLite 3.7.13 change - can't register same names
-            self.assertRaises(apsw.MisuseError, self.db.createmodule, "x" * ii, lambda x: ii)
 
         # If shared cache is enabled then vtable creation is supposed to fail
         # See https://sqlite.org/cvstrac/tktview?tn=3144
