@@ -6307,7 +6307,7 @@ class APSW(unittest.TestCase):
             # about surrogates not being allowed.  If only it
             # implemented unicode properly.
             cmd(
-                u("create table if not exists nastydata(x,y); insert into nastydata values(null,'xxx\\u1234\\uabcdyyy\r\n\t\"this \\is nasty\u0001stuff!');"
+                u("create table if not exists nastydata(x,y); insert into nastydata values(null,'xxx\\u1234\\uabcdyyy\r\n\t\"this \\\is nasty\u0001stuff!');"
                   ))
             s.cmdloop()
             isempty(fh[1])
