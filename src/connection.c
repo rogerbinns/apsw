@@ -3212,6 +3212,7 @@ Connection_config(Connection *self, PyObject *args)
     case SQLITE_DBCONFIG_LEGACY_ALTER_TABLE:
     case SQLITE_DBCONFIG_DQS_DML:
     case SQLITE_DBCONFIG_DQS_DDL:
+    case SQLITE_DBCONFIG_ENABLE_VIEW:
       {
 	int opdup, val, current;
 	if(!PyArg_ParseTuple(args, "ii", &opdup, &val))
