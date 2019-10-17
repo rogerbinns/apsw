@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 
 # See the accompanying LICENSE file.
@@ -6591,9 +6592,10 @@ class APSW(unittest.TestCase):
         reset()
         cmd("select 3;select error;select 4;\n")
         s.cmdloop()
+        # worked line should be present
         self.assertTrue("select 3;\n" in get(fh[2]))
-        # apsw can't tell where erroneous command ends so all processing on the line stops
-        self.assertTrue("select error;select 4;\n" in get(fh[2]))
+        # as should the error
+        self.assertTrue("no such column: error" in get(fh[2]))
         # is timing info output correctly?
         reset()
         timersupported = False
