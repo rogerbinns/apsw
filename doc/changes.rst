@@ -9,7 +9,7 @@ Added constants:
 
 * SQLITE_DBCONFIG_ENABLE_VIEW
 
-Updated of SQL statements (:issue:`274`)
+Updated hashing of SQL statements (:issue:`274`)
 
 3.29.0-r1
 =========
