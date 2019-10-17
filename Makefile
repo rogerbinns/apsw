@@ -1,8 +1,8 @@
 
-SQLITEVERSION=3.30.0
+SQLITEVERSION=3.30.1
 APSWSUFFIX=-r1
 
-RELEASEDATE="30 September 2019"
+RELEASEDATE="17 October 2019"
 
 VERSION=$(SQLITEVERSION)$(APSWSUFFIX)
 VERDIR=apsw-$(VERSION)
@@ -130,6 +130,8 @@ compile-win:
 	cmd /c del /s /q build
 	cmd /c del /s /q apsw.egg-info
 	-cmd /c md dist
+	set APSW_FORCE_DISTUTILS=t & c:/python38/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
+	set APSW_FORCE_DISTUTILS=t & "c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python38-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	set APSW_FORCE_DISTUTILS=t & c:/python37/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	set APSW_FORCE_DISTUTILS=t & "c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python37-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	set APSW_FORCE_DISTUTILS=t & c:/python36/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
@@ -189,6 +191,8 @@ release:
 	test -f dist/$(VERDIR).win-amd64-py3.6.exe
 	test -f dist/$(VERDIR).win32-py3.7.exe
 	test -f dist/$(VERDIR).win-amd64-py3.7.exe
+	test -f dist/$(VERDIR).win32-py3.8.exe
+	test -f dist/$(VERDIR).win-amd64-py3.8.exe
 	-rm -f dist/$(VERDIR)-sigs.zip dist/*.asc
 	for f in dist/* ; do gpg --use-agent --armor --detach-sig "$$f" ; done
 	cd dist ; zip -m $(VERDIR)-sigs.zip *.asc
