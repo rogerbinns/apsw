@@ -98,10 +98,10 @@ APSWBuffer_fini(void)
    they can also use a hash seed which alters the value.  There is no need
    for this hash and strings/bytes etc be the same, but usually they are.  We
    add an extra 1 to put APSWBuffer into a different hash bucket. */
-static long
+static Py_hash_t
 APSWBuffer_hash(APSWBuffer *self)
 {
-  long hash;
+  Py_hash_t hash;
   unsigned char *p;
   Py_ssize_t len;
 

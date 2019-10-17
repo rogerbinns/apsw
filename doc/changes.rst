@@ -2,12 +2,14 @@ Change History
 **************
 .. currentmodule:: apsw
 
-3.30.0-r1
+3.30.1-r1
 =========
 
 Added constants:
 
-* SQLITE_DBCONFIG_ENABLE_VIEW 
+* SQLITE_DBCONFIG_ENABLE_VIEW
+
+Updated of SQL statements (:issue:`274`)
 
 3.29.0-r1
 =========

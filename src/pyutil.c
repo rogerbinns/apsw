@@ -10,6 +10,10 @@
 typedef int Py_ssize_t;
 #endif
 
+#if PY_VERSION_HEX < 0x03020000
+typedef unsigned long Py_hash_t;
+#endif
+
 /* Python 2.3 doesn't have these */
 #ifndef Py_RETURN_NONE
 #define Py_RETURN_NONE return Py_INCREF(Py_None), Py_None
