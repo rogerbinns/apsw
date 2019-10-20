@@ -11,7 +11,8 @@ typedef int Py_ssize_t;
 #endif
 
 #if PY_VERSION_HEX < 0x03020000
-typedef unsigned long Py_hash_t;
+typedef signed long Py_hash_t;
+typedef unsigned long Py_uhash_t;
 #endif
 
 /* Python 2.3 doesn't have these */

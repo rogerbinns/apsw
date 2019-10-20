@@ -101,7 +101,7 @@ APSWBuffer_fini(void)
 static Py_hash_t
 APSWBuffer_hash(APSWBuffer *self)
 {
-  Py_hash_t hash;
+  Py_uhash_t hash;
   unsigned char *p;
   Py_ssize_t len;
 
@@ -131,7 +131,7 @@ APSWBuffer_hash(APSWBuffer *self)
 
   self->hash=hash;
 
-  return hash;
+  return (Py_hash_t)hash;
 }
 
 
