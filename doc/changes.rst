@@ -11,6 +11,8 @@ Added constants:
 
 Updated hashing of SQL statements (:issue:`274`)
 
+Python 3.8 Windows binaries available.
+
 3.29.0-r1
 =========
 
