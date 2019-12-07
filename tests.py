@@ -1048,7 +1048,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(ZeroDivisionError, c.execute, "insert into one values(1,2,3)")
         c.setexectrace(None)
         self.assertEqual(count, next(c.execute("select count(*) from one"))[0])
-        # test across executemany and multiple statments
+        # test across executemany and multiple statements
         counter = [0]
 
         def tracefunc(cursor, cmd, bindings):
