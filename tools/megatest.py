@@ -255,8 +255,8 @@ if __name__ == '__main__':
         nprocs = 1
 
     concurrency = nprocs * 2
-    if concurrency > 8:
-        concurrency = 8
+    if concurrency > 24:
+        concurrency = 24
 
     parser = optparse.OptionParser()
     parser.add_option("--pyvers",
