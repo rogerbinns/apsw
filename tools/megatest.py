@@ -222,10 +222,10 @@ def patch_natty_build(setup):
 
 # Default versions we support
 PYVERS = (
-    '3.8.0',
-    '3.7.5',
-    '3.6.8',
-    '3.5.6',
+    '3.8.1',
+    '3.7.6',
+    '3.6.10',
+    '3.5.8',
     '3.4.9',
     '3.3.7',
     '3.2.6',
@@ -238,7 +238,7 @@ PYVERS = (
     'system',
 )
 
-SQLITEVERS = ('3.30.0', '3.30.1')
+SQLITEVERS = ('3.31.0', '3.31.1')
 
 if __name__ == '__main__':
     nprocs = 0
