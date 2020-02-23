@@ -7,6 +7,8 @@ import hashlib
 import re
 
 sqlitevers = (
+    '3310100',
+    '3310000',
     '3300100',
     '3300000',
     '3290000',
@@ -59,7 +61,9 @@ def fixup_download_url(url):
     if ver:
         ver=int(ver.group(0))
         if ver>=3071600:
-            if ver>=3270000:
+            if ver>=3310000:
+                year="2020"
+            elif ver>=3270000:
                 year="2019"
             elif ver>=3220000:
                 year="2018"
