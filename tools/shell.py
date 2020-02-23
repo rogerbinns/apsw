@@ -2136,7 +2136,7 @@ Enter SQL statements terminated with a ";"
                 # compile step is needed to associate name with code
                 exec(compile(open(cmd[0]).read(), cmd[0], 'exec'), g, g)
         else:
-            f=codecs.open(cmd[0], "rU", self.encoding[0])
+            f=codecs.open(cmd[0], "r", self.encoding[0])
             try:
                 try:
                     self.push_input()

@@ -2,6 +2,14 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.31.1-r1
+=========
+
+Various updates due to year change
+
+Fix deprecated universal newline use in shell (:issue:`283`)
+
+
 3.30.1-r1
 =========
 

@@ -358,7 +358,7 @@ class fetch(Command):
                     write("    Running configure to work out SQLite compilation flags")
                     res=os.system("./configure >/dev/null")
                     defline=None
-                    for line in read_whole_file("Makefile", "rtU").split("\n"):
+                    for line in read_whole_file("Makefile", "rt").split("\n"):
                         if line.startswith("DEFS = "):
                             defline=line
                             break
