@@ -1532,6 +1532,9 @@ modules etc. For example::
       ADDINT(SQLITE_CORRUPT_SEQUENCE),
       ADDINT(SQLITE_CANTOPEN_DIRTYWAL),
       ADDINT(SQLITE_ERROR_SNAPSHOT),
+      ADDINT(SQLITE_CONSTRAINT_PINNED),
+      ADDINT(SQLITE_OK_SYMLINK),
+      ADDINT(SQLITE_CANTOPEN_SYMLINK),
       END,
 
       /* error codes */
@@ -1592,6 +1595,7 @@ modules etc. For example::
       ADDINT(SQLITE_OPEN_WAL),
       ADDINT(SQLITE_OPEN_URI),
       ADDINT(SQLITE_OPEN_MEMORY),
+      ADDINT(SQLITE_OPEN_NOFOLLOW),
       END,
 
       /* limits */
@@ -1663,6 +1667,8 @@ modules etc. For example::
       ADDINT(SQLITE_DBCONFIG_DQS_DDL),
       ADDINT(SQLITE_DBCONFIG_LEGACY_ALTER_TABLE),
       ADDINT(SQLITE_DBCONFIG_ENABLE_VIEW),
+      ADDINT(SQLITE_DBCONFIG_TRUSTED_SCHEMA),
+      ADDINT(SQLITE_DBCONFIG_LEGACY_FILE_FORMAT),
       END,
 
       DICT("mapping_status"),
@@ -1776,6 +1782,7 @@ modules etc. For example::
       ADDINT(SQLITE_FCNTL_LOCK_TIMEOUT),
       ADDINT(SQLITE_FCNTL_DATA_VERSION),
       ADDINT(SQLITE_FCNTL_SIZE_LIMIT),
+      ADDINT(SQLITE_FCNTL_CKPT_DONE),
       END,
 
       DICT("mapping_conflict_resolution_modes"),
@@ -1788,6 +1795,8 @@ modules etc. For example::
 
       DICT("mapping_virtual_table_configuration_options"),
       ADDINT(SQLITE_VTAB_CONSTRAINT_SUPPORT),
+      ADDINT(SQLITE_VTAB_DIRECTONLY),
+      ADDINT(SQLITE_VTAB_INNOCUOUS),
       END,
 
       DICT("mapping_xshmlock_flags"),

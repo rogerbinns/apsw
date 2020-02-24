@@ -9,6 +9,12 @@ Various updates due to year change
 
 Fix deprecated universal newline use in shell (:issue:`283`)
 
+Added constants:
+
+* SQLITE_DBCONFIG_TRUSTED_SCHEMA, SQLITE_DBCONFIG_LEGACY_FILE_FORMAT,
+  SQLITE_CONSTRAINT_PINNED, SQLITE_OK_SYMLINK, SQLITE_CANTOPEN_SYMLINK,
+  SQLITE_FCNTL_CKPT_DONE, SQLITE_OPEN_NOFOLLOW, SQLITE_VTAB_DIRECTONLY,
+  
 
 3.30.1-r1
 =========
