@@ -2764,8 +2764,18 @@ Enter SQL statements terminated with a ";"
                         except apsw.SQLError:
                             # See https://github.com/rogerbinns/apsw/issues/86
                             pass
+                functions={}
+                for row in cur.execute("pragma function_list"):
+                    name=row[0]
+                    narg=row[4]
+                    functions[name]=max(narg, functions.get(name, -1))
+                def fmtfunc(name, nargs):
+                    if nargs==0:
+                        return name+"()"
+                    return name+"("
+                func_list=[fmtfunc(name, narg) for name, narg in functions.items()]
 
-            self._completion_cache=[self._sqlite_keywords, self._sqlite_functions, self._sqlite_special_names, collations, databases, other]
+            self._completion_cache=[self._sqlite_keywords, func_list, self._sqlite_special_names, collations, databases, other]
             for i in range(len(self._completion_cache)):
                 self._completion_cache[i].sort()
 

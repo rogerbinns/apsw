@@ -9,6 +9,8 @@ Various updates due to year change
 
 Fix deprecated universal newline use in shell (:issue:`283`)
 
+Shell now uses `pragma function_list` to get list of functions for tab completion
+
 Added constants:
 
 * SQLITE_DBCONFIG_TRUSTED_SCHEMA, SQLITE_DBCONFIG_LEGACY_FILE_FORMAT,
