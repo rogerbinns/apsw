@@ -35,9 +35,9 @@ so you can see what gets printed when you run the code.
 .. code-block:: text
 
    |       Using APSW file /space/apsw/apsw.so
-   |          APSW version 3.30.1-r1
-   |    SQLite lib version 3.30.1
-   | SQLite header version 3030001
+   |          APSW version 3.31.1-r1
+   |    SQLite lib version 3.31.1
+   | SQLite header version 3031001
 
 .. code-block:: python
 
@@ -552,9 +552,9 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
-   | 1447460998.61 sitecustomize.py /usr/lib/python2.7
-   | 1484006373.74 notify2.py /usr/lib/python2.7/dist-packages
-   | 1484006373.75 notify2-0.3.egg-info /usr/lib/python2.7/dist-packages
+   | 1581971946.66 CDROM.py /usr/lib/python2.7/plat-x86_64-linux-gnu
+   | 1581971946.66 DLFCN.py /usr/lib/python2.7/plat-x86_64-linux-gnu
+   | 1581971946.67 TYPES.py /usr/lib/python2.7/plat-x86_64-linux-gnu
 
 .. _example-vfs:
 
@@ -762,7 +762,7 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
-   | SQLite memory usage current 505120 max 516048
+   | SQLite memory usage current 364656 max 375808
 
 .. code-block:: python
 
