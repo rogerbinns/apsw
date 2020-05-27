@@ -1322,9 +1322,11 @@ class APSW(unittest.TestCase):
         self.db.createscalarfunction("nondeterministic", Counter(), deterministic=False)
         self.db.createscalarfunction("unspecdeterministic", Counter())
 
-        self.assertEqual(c.execute("select deterministic()=deterministic()").fetchall()[0][0], 1)
+        # only deterministic can be used for indices
+        c.execute("create table td(a,b); create index tda on td(a) where deterministic()")
         self.assertEqual(c.execute("select nondeterministic()=nondeterministic()").fetchall()[0][0], 0)
         self.assertEqual(c.execute("select unspecdeterministic()=unspecdeterministic()").fetchall()[0][0], 0)
+        self.assertRaises(apsw.SQLError, c.execute, "create index tdb on td(b) where nondeterministic()")
 
     def testAggregateFunctions(self):
         "Verify aggregate functions"
