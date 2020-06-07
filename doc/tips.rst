@@ -46,8 +46,9 @@ You can use BEGIN/END to set the transaction boundary::
    db.cursor().execute("COMMIT")
 
 However that is extra effort, and also requires error handling.  For example 
-if the second INSERT failed then you likely want to ROLLBACK the connection,
-so that additional work on the same connection doesn't see the partial data.
+if the second INSERT failed then you likely want to ROLLBACK the incomplete
+transaction, so that additional work on the same connection doesn't see the 
+partial data.
 
 If you use :meth:`with Connection <Connection.__enter__>` then the transaction
 will be automatically started, and commited on success or rolled back if 
