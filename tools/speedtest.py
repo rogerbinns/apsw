@@ -28,6 +28,8 @@ try:
 except ValueError:
     maxuni=0xffff
 
+timerfn=time.process_time if hasattr(time, "process_time") else time.clock
+
 def doit():
     random.seed(0)
     options.tests=[t.strip() for t in options.tests.split(",")]
@@ -419,13 +421,13 @@ def doit():
                     sys.stdout.flush()
                     con=locals().get(driver+"_setup")(options.database)
                     gc.collect(2)
-                    b4cpu=time.clock()
+                    b4cpu=timerfn()
                     b4=time.time()
                     func(con)
                     con.close() # see note above as to why we include this in the timing
                     gc.collect(2)
                     after=time.time()
-                    aftercpu=time.clock()
+                    aftercpu=timerfn()
                     write("%0.3f %0.3f\n" % (after-b4, aftercpu-b4cpu))
 
     # Cleanup if using valgrind
