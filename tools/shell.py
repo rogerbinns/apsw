@@ -47,15 +47,6 @@ class Shell(object):
     Conversions only happen at the point of input or output which you
     can override in your own code.
 
-    This implementation fixes a number of bugs/quirks present in the
-    sqlite shell.  Its control-C handling is also friendlier.  Some
-    examples of issues not present in this implementation:
-
-    * https://sqlite.org/src/info/c25aab7e7e
-    * https://sqlite.org/src/info/7b61b6c6ce
-    * https://sqlite.org/src/info/ee19e690ec
-    * https://sqlite.org/src/info/2466653295
-
     Errors and diagnostics are only ever sent to error output
     (self.stderr) and never to the regular output (self.stdout).  This
     means using shell output is always easy and consistent.
