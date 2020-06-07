@@ -1535,6 +1535,9 @@ modules etc. For example::
       ADDINT(SQLITE_CONSTRAINT_PINNED),
       ADDINT(SQLITE_OK_SYMLINK),
       ADDINT(SQLITE_CANTOPEN_SYMLINK),
+      ADDINT(SQLITE_IOERR_DATA),
+      ADDINT(SQLITE_CORRUPT_INDEX),
+      ADDINT(SQLITE_BUSY_TIMEOUT),
       END,
 
       /* error codes */
@@ -1783,6 +1786,8 @@ modules etc. For example::
       ADDINT(SQLITE_FCNTL_DATA_VERSION),
       ADDINT(SQLITE_FCNTL_SIZE_LIMIT),
       ADDINT(SQLITE_FCNTL_CKPT_DONE),
+      ADDINT(SQLITE_FCNTL_CKPT_START),
+      ADDINT(SQLITE_FCNTL_RESERVE_BYTES),
       END,
 
       DICT("mapping_conflict_resolution_modes"),

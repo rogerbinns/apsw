@@ -2,6 +2,14 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.32.2-r1
+=========
+
+Added constants:
+
+* SQLITE_IOERR_DATA, SQLITE_CORRUPT_INDEX, SQLITE_BUSY_TIMEOUT, SQLITE_FCNTL_CKPT_START,
+  SQLITE_FCNTL_RESERVE_BYTES
+
 3.31.1-r1
 =========
 
