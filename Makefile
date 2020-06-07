@@ -7,7 +7,7 @@ RELEASEDATE="31 May 2020"
 VERSION=$(SQLITEVERSION)$(APSWSUFFIX)
 VERDIR=apsw-$(VERSION)
 
-PYTHON=python
+PYTHON=python3
 
 # Some useful info
 #
