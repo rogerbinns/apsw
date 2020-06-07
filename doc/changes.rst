@@ -10,6 +10,8 @@ Added constants:
 * SQLITE_IOERR_DATA, SQLITE_CORRUPT_INDEX, SQLITE_BUSY_TIMEOUT, SQLITE_FCNTL_CKPT_START,
   SQLITE_FCNTL_RESERVE_BYTES
 
+Minor documentation updates
+
 3.31.1-r1
 =========
 
