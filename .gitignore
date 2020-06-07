@@ -46,3 +46,4 @@ testdb
 apsw.egg-info
 /.ropeproject/
 /.mypy_cache/
+/.vscode/
