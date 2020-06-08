@@ -1657,9 +1657,11 @@ Enter SQL statements terminated with a ";"
         # Very easy for python 3
         if sys.version_info >= (3, 0):
             thefile = codecs.open(filename, "r", self.encoding[0])
-            for line in csv.reader(thefile, **dialect.copy()):
-                yield line
-            thefile.close()
+            try:
+                for line in csv.reader(thefile, **dialect.copy()):
+                    yield line
+            finally:
+                thefile.close()
             return
 
         ###
@@ -2161,7 +2163,11 @@ Enter SQL statements terminated with a ";"
                 execfile(cmd[0], g, g)
             else:
                 # compile step is needed to associate name with code
-                exec(compile(open(cmd[0]).read(), cmd[0], 'exec'), g, g)
+                f=open(cmd[0])
+                try:
+                    exec(compile(f.read(), cmd[0], 'exec'), g, g)
+                finally:
+                    f.close()
         else:
             f = codecs.open(cmd[0], "r", self.encoding[0])
             try:
