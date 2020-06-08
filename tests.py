@@ -6884,7 +6884,7 @@ class APSW(unittest.TestCase):
         # some nasty stuff
         reset()
         cmd(
-            u("create table nastydata(x,y); insert into nastydata values(null,'xxx\\u1234\\uabcd\\U00012345yyy\r\n\t\"this \\is nasty\u0001stuff!');"
+            u("create table nastydata(x,y); insert into nastydata values(null,'xxx\\u1234\\uabcd\\U00012345yyy\r\n\t\"this \\\is nasty\u0001stuff!');"
               'create table "table"([except] int); create table [](""); create table [using]("&");'))
         s.cmdloop()
         isempty(fh[1])
