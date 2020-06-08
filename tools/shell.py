@@ -1657,11 +1657,9 @@ Enter SQL statements terminated with a ";"
         # Very easy for python 3
         if sys.version_info >= (3, 0):
             thefile = codecs.open(filename, "r", self.encoding[0])
-            try:
-                for line in csv.reader(thefile, **dialect.copy()):
-                    yield line
-            finally:
-                thefile.close()
+            for line in csv.reader(thefile, **dialect.copy()):
+                yield line
+            thefile.close()
             return
 
         ###

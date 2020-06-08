@@ -7009,6 +7009,7 @@ insert into xxblah values(3);
         ###
         ### Command - encoding
         ###
+        self.suppressWarning("ResourceWarning")
         for i in ".encoding one two", ".encoding", ".encoding utf8 another":
             reset()
             cmd(i)
