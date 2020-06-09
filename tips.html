@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Tips &#8212; APSW 3.31.1-r1 documentation</title>
+    <title>Tips &#8212; APSW 3.32.2-r1 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
@@ -44,7 +44,7 @@
         <li class="right" >
           <a href="index.html" title="APSW documentation"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.31.1-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.32.2-r1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -63,6 +63,52 @@ read all the documentation as well.</p>
 also unique in many ways.  Read about the unique features at the
 <a class="reference external" href="https://sqlite.org/different.html">SQLite website</a>.</p>
 </div>
+<div class="section" id="transactions">
+<h2>Transactions<a class="headerlink" href="#transactions" title="Permalink to this headline">¶</a></h2>
+<p>Transactions are the changes applied to a database file as a whole.
+They either happen completely, or not at all.  SQLite notes all the changes
+made during a transaction, and at the end when you do a commit will cause
+them to permanently end up in the database.  If you do not commit, or
+just exit, then other/new connections will not see the changes and SQLite
+handles tidying up the work in progress automatically.</p>
+<p>Committing a transaction can be quite time consuming.  SQLite uses a robust
+multi-step process that has to handle errors that can occur at any point,
+and asks the operating system to ensure that data is on storage and would
+survive a power cycle.  This will <a class="reference external" href="https://www.sqlite.org/faq.html#q19">limit the rate at which you can do
+transactions</a>.</p>
+<p>If you do nothing, then each statement is a single transaction:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># this will be 3 separate transactions</span>
+<span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
+<span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
+<span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can use BEGIN/END to set the transaction boundary:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># this will be one transaction</span>
+<span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;BEGIN&quot;</span><span class="p">)</span>
+<span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
+<span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
+<span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
+<span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;COMMIT&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>However that is extra effort, and also requires error handling.  For example
+if the second INSERT failed then you likely want to ROLLBACK the incomplete
+transaction, so that additional work on the same connection doesn’t see the
+partial data.</p>
+<p>If you use <a class="reference internal" href="connection.html#apsw.Connection.__enter__" title="apsw.Connection.__enter__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with</span> <span class="pre">Connection</span></code></a> then the transaction
+will be automatically started, and commited on success or rolled back if
+exceptions occur:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># this will be one transaction with automatic commit and rollback</span>
+<span class="k">with</span> <span class="n">db</span><span class="p">:</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>There are <a class="reference external" href="https://www.sqlite.org/lang_transaction.html">technical details</a>
+at the <a class="reference external" href="https://www.sqlite.org/docs.html">SQLite site</a>.</p>
+</div>
 <div class="section" id="cursors">
 <h2>Cursors<a class="headerlink" href="#cursors" title="Permalink to this headline">¶</a></h2>
 <p>SQLite only calculates each result row as you request it.  For example
@@ -73,6 +119,11 @@ for it.</p>
 from each other.  Anything done on one cursor is immediately visible
 to all other Cursors on the same connection.  This still applies if
 you start transactions.  Connections are isolated from each other.</p>
+<p>Cursor objects are obtained by <a class="reference internal" href="connection.html#apsw.Connection.cursor" title="apsw.Connection.cursor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.cursor()</span></code></a> and are very
+cheap.  It is best practise to not re-use them, and instead get a new one
+each time.  If you don’t, code refactoring and nested loops can unintentially
+use the same cursor object which will not crash but will cause hard to
+diagnose behaviour in your program.</p>
 <p>Read more about <a class="reference internal" href="cursor.html#cursors"><span class="std std-ref">Cursors</span></a>.</p>
 </div>
 <div class="section" id="bindings">
@@ -267,6 +318,7 @@ indirect call via Python.)</p>
   <ul>
 <li><a class="reference internal" href="#">Tips</a><ul>
 <li><a class="reference internal" href="#sqlite-is-different">SQLite is different</a></li>
+<li><a class="reference internal" href="#transactions">Transactions</a></li>
 <li><a class="reference internal" href="#cursors">Cursors</a></li>
 <li><a class="reference internal" href="#bindings">Bindings</a></li>
 <li><a class="reference internal" href="#unicode">Unicode</a></li>
@@ -326,13 +378,13 @@ indirect call via Python.)</p>
         <li class="right" >
           <a href="index.html" title="APSW documentation"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.31.1-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.32.2-r1 documentation</a> &#187;</li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2020, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 02, 2020.
+      Last updated on Jun 09, 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

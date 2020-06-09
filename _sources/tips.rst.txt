@@ -13,6 +13,56 @@ While SQLite provides a SQL database like many others out there, it is
 also unique in many ways.  Read about the unique features at the
 `SQLite website <https://sqlite.org/different.html>`__.
 
+Transactions
+============
+
+Transactions are the changes applied to a database file as a whole.
+They either happen completely, or not at all.  SQLite notes all the changes
+made during a transaction, and at the end when you do a commit will cause
+them to permanently end up in the database.  If you do not commit, or 
+just exit, then other/new connections will not see the changes and SQLite
+handles tidying up the work in progress automatically.
+
+Committing a transaction can be quite time consuming.  SQLite uses a robust
+multi-step process that has to handle errors that can occur at any point, 
+and asks the operating system to ensure that data is on storage and would 
+survive a power cycle.  This will `limit the rate at which you can do 
+transactions <https://www.sqlite.org/faq.html#q19>`__.
+
+If you do nothing, then each statement is a single transaction:: 
+
+   # this will be 3 separate transactions
+   db.cursor().execute("INSERT ...")
+   db.cursor().execute("INSERT ...")
+   db.cursor().execute("INSERT ...")
+
+You can use BEGIN/END to set the transaction boundary::
+
+   # this will be one transaction
+   db.cursor().execute("BEGIN")
+   db.cursor().execute("INSERT ...")
+   db.cursor().execute("INSERT ...")
+   db.cursor().execute("INSERT ...")
+   db.cursor().execute("COMMIT")
+
+However that is extra effort, and also requires error handling.  For example 
+if the second INSERT failed then you likely want to ROLLBACK the incomplete
+transaction, so that additional work on the same connection doesn't see the 
+partial data.
+
+If you use :meth:`with Connection <Connection.__enter__>` then the transaction
+will be automatically started, and commited on success or rolled back if 
+exceptions occur::
+
+   # this will be one transaction with automatic commit and rollback
+   with db:
+       db.cursor().execute("INSERT ...")
+       db.cursor().execute("INSERT ...")
+       db.cursor().execute("INSERT ...")
+
+There are `technical details <https://www.sqlite.org/lang_transaction.html>`__ 
+at the `SQLite site <https://www.sqlite.org/docs.html>`__.
+
 Cursors
 =======
 
@@ -25,6 +75,12 @@ Cursors on the same :ref:`Connection <connections>` are not isolated
 from each other.  Anything done on one cursor is immediately visible
 to all other Cursors on the same connection.  This still applies if
 you start transactions.  Connections are isolated from each other.
+
+Cursor objects are obtained by :meth:`Connection.cursor` and are very
+cheap.  It is best practise to not re-use them, and instead get a new one
+each time.  If you don't, code refactoring and nested loops can unintentially
+use the same cursor object which will not crash but will cause hard to
+diagnose behaviour in your program.
 
 Read more about :ref:`Cursors <cursors>`.
 
