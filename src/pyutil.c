@@ -239,8 +239,43 @@ convertutf8stringsize(const char *str, Py_ssize_t size)
   assert(str);
   assert(size>=0);
 
-  PyObject *r=PyUnicode_DecodeUTF8(str, size, NULL);
-  APSW_Unicode_Return(r);
+  /* Performance optimization:  If str is all ascii then we
+     can just make a unicode object and fill in the chars. PyUnicode_DecodeUTF8 is rather long
+  */
+  if(size<16384)
+    {
+      int isallascii=1;
+      int i=size;
+      const char *p=str;
+      while(isallascii && i)
+        {
+          isallascii=! (*p & 0x80);
+          i--;
+          p++;
+        }
+      if(i==0 && isallascii)
+        {
+          Py_UNICODE *out;
+          PyObject *res=PyUnicode_FromUnicode(NULL, size);
+          if(!res) return res;
+          out=PyUnicode_AS_UNICODE(res);
+
+          i=size;
+          while(i)
+            {
+              i--;
+              *out=*str;
+              out++;
+              str++;
+            }
+          APSW_Unicode_Return(res);
+        }
+    }
+
+    {
+        PyObject *r=PyUnicode_DecodeUTF8(str, size, NULL);
+        APSW_Unicode_Return(r);
+    }
 }
 
 /* Convert a NULL terminated UTF-8 string into a Python object.  None
