@@ -247,8 +247,10 @@ convertutf8stringsize(const char *str, Py_ssize_t size)
   assert(str);
   assert(size >= 0);
 
+#if PY_VERSION_HEX < 0x03030000
   /* Performance optimization:  If str is all ascii then we
-     can just make a unicode object and fill in the chars. PyUnicode_DecodeUTF8 is rather long
+     can just make a unicode object and fill in the chars. PyUnicode_DecodeUTF8 is rather long,
+     but was fixed in later Python 3 releases
   */
   if (size < 16384)
   {
@@ -280,7 +282,7 @@ convertutf8stringsize(const char *str, Py_ssize_t size)
       APSW_Unicode_Return(res);
     }
   }
-
+#endif
   {
     PyObject *r = PyUnicode_DecodeUTF8(str, size, NULL);
     APSW_Unicode_Return(r);

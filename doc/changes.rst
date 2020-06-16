@@ -2,6 +2,11 @@ Change History
 **************
 .. currentmodule:: apsw
 
+next-r1
+=======
+
+Small performance improvement in string handling
+
 3.32.2-r1
 =========
 
