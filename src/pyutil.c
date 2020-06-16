@@ -30,20 +30,20 @@ typedef unsigned long Py_uhash_t;
 #endif
 
 #ifndef Py_REFCNT
-#define Py_REFCNT(x) (((PyObject*)x)->ob_refcnt)
+#define Py_REFCNT(x) (((PyObject *)x)->ob_refcnt)
 #endif
 
 #ifndef Py_CLEAR
-#define Py_CLEAR(exp)                                   \
-         do                                             \
-           {                                            \
-             if(exp)                                    \
-               {                                        \
-                 PyObject *_tmpclear=(PyObject*)(exp);  \
-                 exp=0;                                 \
-                 Py_DECREF(_tmpclear);                  \
-               }                                        \
-           } while(0)
+#define Py_CLEAR(exp)                          \
+  do                                           \
+  {                                            \
+    if (exp)                                   \
+    {                                          \
+      PyObject *_tmpclear = (PyObject *)(exp); \
+      exp = 0;                                 \
+      Py_DECREF(_tmpclear);                    \
+    }                                          \
+  } while (0)
 #endif
 
 /* define as zero if not present - introduced in Python 2.6 */
@@ -53,75 +53,84 @@ typedef unsigned long Py_uhash_t;
 
 /* How to make a string from a utf8 constant */
 #if PY_MAJOR_VERSION < 3
-#define MAKESTR  PyString_FromString
+#define MAKESTR PyString_FromString
 #else
-#define MAKESTR  PyUnicode_FromString
+#define MAKESTR PyUnicode_FromString
 #endif
 
 /* Py 2 vs 3 can't decide how to start type initialization */
 #if PY_MAJOR_VERSION < 3
 /* The zero is ob_size */
 #define APSW_PYTYPE_INIT \
-  PyObject_HEAD_INIT(NULL)   0,
+  PyObject_HEAD_INIT(NULL) 0,
 #else
-#define APSW_PYTYPE_INIT PyVarObject_HEAD_INIT(NULL,0)
+#define APSW_PYTYPE_INIT PyVarObject_HEAD_INIT(NULL, 0)
 #endif
 
 /* version tag? */
 #if PY_VERSION_HEX >= 0x02060000
-#define APSW_PYTYPE_VERSION ,0
+#define APSW_PYTYPE_VERSION , 0
 #else
 #define APSW_PYTYPE_VERSION
 #endif
 
 /* sets */
 #if PY_VERSION_HEX < 0x02050000
-#define PySet_New     PyList_New
-#define PySet_Add  PyList_Append
+#define PySet_New PyList_New
+#define PySet_Add PyList_Append
 #endif
-
 
 #if PY_VERSION_HEX < 0x03030000
-#define APSW_Unicode_Return(r)  do { return (r); } while(0)
+#define APSW_Unicode_Return(r) \
+  do                           \
+  {                            \
+    return (r);                \
+  } while (0)
 #else
-#define APSW_Unicode_Return(r) do { int i__=(r)?(PyUnicode_READY(r)):-1; if(i__!=0) Py_CLEAR(r); return (r);} while(0)
+#define APSW_Unicode_Return(r)                 \
+  do                                           \
+  {                                            \
+    int i__ = (r) ? (PyUnicode_READY(r)) : -1; \
+    if (i__ != 0)                              \
+      Py_CLEAR(r);                             \
+    return (r);                                \
+  } while (0)
 #endif
 
-
 #if PY_MAJOR_VERSION < 3
-#define PyBytes_Check             PyString_Check
+#define PyBytes_Check PyString_Check
 #define PyBytes_FromStringAndSize PyString_FromStringAndSize
-#define PyBytes_AsString          PyString_AsString
-#define PyBytes_AS_STRING         PyString_AS_STRING
-#define PyBytes_GET_SIZE          PyString_GET_SIZE
-#define _PyBytes_Resize           _PyString_Resize
-#define PyBytes_CheckExact        PyString_CheckExact
-#define PyBytesObject             PyStringObject
-#define PyIntLong_Check(x)        (PyInt_Check((x)) || PyLong_Check((x)))
-#define PyIntLong_AsLong(x)       ( (PyInt_Check((x))) ? ( PyInt_AsLong((x)) ) : ( (PyLong_AsLong((x)))))
-#define PyIntLong_AsLongLong(x)   ( (PyInt_Check((x))) ? ( PyInt_AsLong((x)) ) : ( (PyLong_AsLongLong((x)))))
-#define PyBytes_FromFormat        PyString_FromFormat
+#define PyBytes_AsString PyString_AsString
+#define PyBytes_AS_STRING PyString_AS_STRING
+#define PyBytes_GET_SIZE PyString_GET_SIZE
+#define _PyBytes_Resize _PyString_Resize
+#define PyBytes_CheckExact PyString_CheckExact
+#define PyBytesObject PyStringObject
+#define PyIntLong_Check(x) (PyInt_Check((x)) || PyLong_Check((x)))
+#define PyIntLong_AsLong(x) ((PyInt_Check((x))) ? (PyInt_AsLong((x))) : ((PyLong_AsLong((x)))))
+#define PyIntLong_AsLongLong(x) ((PyInt_Check((x))) ? (PyInt_AsLong((x))) : ((PyLong_AsLongLong((x)))))
+#define PyBytes_FromFormat PyString_FromFormat
 #else
-#define PyIntLong_Check           PyLong_Check
-#define PyIntLong_AsLong          PyLong_AsLong
-#define PyInt_FromLong            PyLong_FromLong
-#define PyIntLong_AsLongLong      PyLong_AsLongLong
-#define PyObject_Unicode          PyObject_Str
+#define PyIntLong_Check PyLong_Check
+#define PyIntLong_AsLong PyLong_AsLong
+#define PyInt_FromLong PyLong_FromLong
+#define PyIntLong_AsLongLong PyLong_AsLongLong
+#define PyObject_Unicode PyObject_Str
 #endif
 
 /* we clear weakref lists when close is called on a blob/cursor as
    well as when it is deallocated */
-#define APSW_CLEAR_WEAKREFS                             \
-  do {                                                  \
-    if(self->weakreflist)                               \
-      {                                                 \
-        PyObject_ClearWeakRefs((PyObject*)self);        \
-        self->weakreflist=0;                            \
-      }                                                 \
-  } while(0)
+#define APSW_CLEAR_WEAKREFS                     \
+  do                                            \
+  {                                             \
+    if (self->weakreflist)                      \
+    {                                           \
+      PyObject_ClearWeakRefs((PyObject *)self); \
+      self->weakreflist = 0;                    \
+    }                                           \
+  } while (0)
 
-
-#if PY_VERSION_HEX<0x02040000
+#if PY_VERSION_HEX < 0x02040000
 /* Introduced in Python 2.4 */
 static int PyDict_Contains(PyObject *dict, PyObject *key)
 {
@@ -130,52 +139,51 @@ static int PyDict_Contains(PyObject *dict, PyObject *key)
 #endif
 
 /* Calls the named method of object with the provided args */
-static PyObject*
+static PyObject *
 Call_PythonMethod(PyObject *obj, const char *methodname, int mandatory, PyObject *args)
 {
-  PyObject *method=NULL;
-  PyObject *res=NULL;
+  PyObject *method = NULL;
+  PyObject *res = NULL;
 
   /* we may be called when there is already an error.  eg if you return an error in
      a cursor method, then SQLite calls vtabClose which calls us.  We don't want to
      clear pre-existing errors, but we do want to clear ones when the function doesn't
      exist but is optional */
-  PyObject *etype=NULL, *evalue=NULL, *etraceback=NULL;
-  void *pyerralreadyoccurred=PyErr_Occurred();
-  if(pyerralreadyoccurred)
+  PyObject *etype = NULL, *evalue = NULL, *etraceback = NULL;
+  void *pyerralreadyoccurred = PyErr_Occurred();
+  if (pyerralreadyoccurred)
     PyErr_Fetch(&etype, &evalue, &etraceback);
 
-
-  /* we should only be called with ascii methodnames so no need to do
+    /* we should only be called with ascii methodnames so no need to do
      character set conversions etc */
 #if PY_VERSION_HEX < 0x02050000
-  method=PyObject_GetAttrString(obj, (char*)methodname);
+  method = PyObject_GetAttrString(obj, (char *)methodname);
 #else
-  method=PyObject_GetAttrString(obj, methodname);
+  method = PyObject_GetAttrString(obj, methodname);
 #endif
-  assert(method!=obj);
+  assert(method != obj);
   if (!method)
+  {
+    if (!mandatory)
     {
-      if(!mandatory)
-	{
-	  /* pretend method existed and returned None */
-	  PyErr_Clear();
-	  res=Py_None;
-	  Py_INCREF(res);
-	}
-      goto finally;
+      /* pretend method existed and returned None */
+      PyErr_Clear();
+      res = Py_None;
+      Py_INCREF(res);
     }
+    goto finally;
+  }
 
-  res=PyEval_CallObject(method, args);
-  if(!pyerralreadyoccurred && PyErr_Occurred())
+  res = PyEval_CallObject(method, args);
+  if (!pyerralreadyoccurred && PyErr_Occurred())
     AddTraceBackHere(__FILE__, __LINE__, "Call_PythonMethod", "{s: s, s: i, s: O, s: O}",
                      "methodname", methodname,
                      "mandatory", mandatory,
                      "args", args,
                      "method", method);
 
- finally:
-  if(pyerralreadyoccurred)
+finally:
+  if (pyerralreadyoccurred)
     PyErr_Restore(etype, evalue, etraceback);
   Py_XDECREF(method);
   return res;
@@ -184,14 +192,14 @@ Call_PythonMethod(PyObject *obj, const char *methodname, int mandatory, PyObject
 static PyObject *
 Call_PythonMethodV(PyObject *obj, const char *methodname, int mandatory, const char *format, ...)
 {
-  PyObject *args=NULL, *result=NULL;
+  PyObject *args = NULL, *result = NULL;
   va_list list;
-  va_start (list, format);
-  args=Py_VaBuildValue(format, list);
+  va_start(list, format);
+  args = Py_VaBuildValue(format, list);
   va_end(list);
 
   if (args)
-    result=Call_PythonMethod(obj, methodname, mandatory, args);
+    result = Call_PythonMethod(obj, methodname, mandatory, args);
 
   Py_XDECREF(args);
   return result;
@@ -206,23 +214,23 @@ converttobytes(const void *ptr, Py_ssize_t size)
 {
 
   PyObject *item;
-  item=PyBuffer_New(size);
-  if(item)
+  item = PyBuffer_New(size);
+  if (item)
+  {
+    void *buffy = 0;
+    Py_ssize_t size2 = size;
+    int aswb = PyObject_AsWriteBuffer(item, &buffy, &size2);
+
+    APSW_FAULT_INJECT(AsWriteBufferFails, , (PyErr_NoMemory(), aswb = -1));
+
+    if (aswb == 0)
+      memcpy(buffy, ptr, size);
+    else
     {
-      void *buffy=0;
-      Py_ssize_t size2=size;
-      int aswb=PyObject_AsWriteBuffer(item, &buffy, &size2);
-
-      APSW_FAULT_INJECT(AsWriteBufferFails,,(PyErr_NoMemory(),aswb=-1));
-
-      if(aswb==0)
-        memcpy(buffy, ptr, size);
-      else
-        {
-          Py_DECREF(item);
-          item=NULL;
-        }
+      Py_DECREF(item);
+      item = NULL;
     }
+  }
   return item;
 }
 #else
@@ -237,45 +245,46 @@ static PyObject *
 convertutf8stringsize(const char *str, Py_ssize_t size)
 {
   assert(str);
-  assert(size>=0);
+  assert(size >= 0);
 
   /* Performance optimization:  If str is all ascii then we
      can just make a unicode object and fill in the chars. PyUnicode_DecodeUTF8 is rather long
   */
-  if(size<16384)
+  if (size < 16384)
+  {
+    int isallascii = 1;
+    int i = size;
+    const char *p = str;
+    while (isallascii && i)
     {
-      int isallascii=1;
-      int i=size;
-      const char *p=str;
-      while(isallascii && i)
-        {
-          isallascii=! (*p & 0x80);
-          i--;
-          p++;
-        }
-      if(i==0 && isallascii)
-        {
-          Py_UNICODE *out;
-          PyObject *res=PyUnicode_FromUnicode(NULL, size);
-          if(!res) return res;
-          out=PyUnicode_AS_UNICODE(res);
-
-          i=size;
-          while(i)
-            {
-              i--;
-              *out=*str;
-              out++;
-              str++;
-            }
-          APSW_Unicode_Return(res);
-        }
+      isallascii = !(*p & 0x80);
+      i--;
+      p++;
     }
-
+    if (i == 0 && isallascii)
     {
-        PyObject *r=PyUnicode_DecodeUTF8(str, size, NULL);
-        APSW_Unicode_Return(r);
+      Py_UNICODE *out;
+      PyObject *res = PyUnicode_FromUnicode(NULL, size);
+      if (!res)
+        return res;
+      out = PyUnicode_AS_UNICODE(res);
+
+      i = size;
+      while (i)
+      {
+        i--;
+        *out = *str;
+        out++;
+        str++;
+      }
+      APSW_Unicode_Return(res);
     }
+  }
+
+  {
+    PyObject *r = PyUnicode_DecodeUTF8(str, size, NULL);
+    APSW_Unicode_Return(r);
+  }
 }
 
 /* Convert a NULL terminated UTF-8 string into a Python object.  None
@@ -283,7 +292,7 @@ convertutf8stringsize(const char *str, Py_ssize_t size)
 static PyObject *
 convertutf8string(const char *str)
 {
-  if(!str)
+  if (!str)
     Py_RETURN_NONE;
 
   return convertutf8stringsize(str, strlen(str));
@@ -295,18 +304,18 @@ convertutf8string(const char *str)
 static PyObject *
 getutf8string(PyObject *string)
 {
-  PyObject *inunicode=NULL;
-  PyObject *utf8string=NULL;
+  PyObject *inunicode = NULL;
+  PyObject *utf8string = NULL;
 
-  if(PyUnicode_CheckExact(string))
-    {
-      inunicode=string;
-      Py_INCREF(string);
-    }
+  if (PyUnicode_CheckExact(string))
+  {
+    inunicode = string;
+    Py_INCREF(string);
+  }
 #if PY_MAJOR_VERSION < 3
-  else if(PyString_CheckExact(string))
-    {
-      /* A python 2 performance optimisation.  If the string consists
+  else if (PyString_CheckExact(string))
+  {
+    /* A python 2 performance optimisation.  If the string consists
          only of ascii characters then it is already valid utf8.  And
          in py2 pybytes and pystring are the same thing.  This avoids
          doing a conversion to unicode and then a conversion to utf8.
@@ -314,35 +323,35 @@ getutf8string(PyObject *string)
          We only do this optimisation for strings that aren't
          ridiculously long.
       */
-      if(PyString_GET_SIZE(string)<16384)
-        {
-          int isallascii=1;
-          int i=PyString_GET_SIZE(string);
-          const char *p=PyString_AS_STRING(string);
-          while(isallascii && i)
-            {
-              isallascii=! (*p & 0x80);
-              i--;
-              p++;
-            }
-          if(i==0 && isallascii)
-            {
-              Py_INCREF(string);
-              return string;
-            }
-        }
+    if (PyString_GET_SIZE(string) < 16384)
+    {
+      int isallascii = 1;
+      int i = PyString_GET_SIZE(string);
+      const char *p = PyString_AS_STRING(string);
+      while (isallascii && i)
+      {
+        isallascii = !(*p & 0x80);
+        i--;
+        p++;
+      }
+      if (i == 0 && isallascii)
+      {
+        Py_INCREF(string);
+        return string;
+      }
     }
+  }
 #endif
 
-  if(!inunicode)
-      inunicode=PyUnicode_FromObject(string);
+  if (!inunicode)
+    inunicode = PyUnicode_FromObject(string);
 
-  if(!inunicode)
+  if (!inunicode)
     return NULL;
 
   assert(!PyErr_Occurred());
 
-  utf8string=PyUnicode_AsUTF8String(inunicode);
+  utf8string = PyUnicode_AsUTF8String(inunicode);
   Py_DECREF(inunicode);
   return utf8string;
 }
