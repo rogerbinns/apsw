@@ -370,7 +370,7 @@ class APSW(unittest.TestCase):
         gc.collect()
         self.deltempfiles()
         self.db = apsw.Connection(TESTFILEPREFIX + "testdb", flags=openflags)
-        self.warnings_filters=warnings.filters
+        self.warnings_filters = warnings.filters
 
     def tearDown(self):
         if self.db is not None:
@@ -379,8 +379,8 @@ class APSW(unittest.TestCase):
         apsw.connection_hooks = self.saved_connection_hooks.pop()  # back to original value
         gc.collect()
         self.deltempfiles()
-        warnings.filters=self.warnings_filters
-        getattr(warnings, "_filters_mutated", lambda : True)()
+        warnings.filters = self.warnings_filters
+        getattr(warnings, "_filters_mutated", lambda: True)()
 
     def suppressWarning(self, name):
         if hasattr(__builtins__, name):
