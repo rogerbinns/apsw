@@ -311,7 +311,7 @@ def doit():
                     write('limited functionality (ignoring)\n')
                     continue
 
-                con = globals().get(driver + "_setup")(":memory:")  # we always correctness test on memory
+                con = locals().get(driver + "_setup")(":memory:")  # we always correctness test on memory
 
                 if test == 'bigstmt':
                     cursor = con.cursor()
@@ -339,8 +339,7 @@ def doit():
                 write(str(len(res[name])) + "\n")
 
         # All elements of res should be identical
-        elements = res.keys()
-        elements.sort()
+        elements = sorted(res.keys())
         for i in range(0, len(elements) - 1):
             write("%s == %s %s\n" % (elements[i], elements[i + 1], res[elements[i]] == res[elements[i + 1]]))
 
