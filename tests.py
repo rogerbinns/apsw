@@ -386,6 +386,9 @@ class APSW(unittest.TestCase):
         if hasattr(__builtins__, name):
             warnings.simplefilter("ignore", getattr(__builtins__, name))
 
+    def assertRaisesRegexCompat(self, etype, pattern, func, *args):
+        self.assertRaises(etype, func)
+
     def assertTableExists(self, tablename):
         self.assertEqual(next(self.db.cursor().execute("select count(*) from [" + tablename + "]"))[0], 0)
 
@@ -469,6 +472,14 @@ class APSW(unittest.TestCase):
         apsw.mapping_file_control["SQLITE_FCNTL_SIZE_HINT"] == apsw.SQLITE_FCNTL_SIZE_HINT
         apsw.URIFilename
         self.assertTrue(len(apsw.sqlite3_sourceid()) > 10)
+
+    def testModuleExposed(self):
+        "Check what is exposed and usage"
+        for name in "Connection", "Cursor", "Blob", "Backup", "zeroblob", "VFS", "VFSFile", "URIFilename":
+            self.assertTrue(hasattr(apsw, name), "expected name apsw."+name)
+
+        for name in "Cursor", "Blob", "Backup":
+            self.assertRaisesRegex(TypeError, "cannot create .* instances", getattr(apsw, name))
 
     def testConnection(self):
         "Test connection opening"
@@ -8663,6 +8674,10 @@ def setup(write=write):
     if "APSW_PY_COVERAGE" in os.environ:
         APSW._originaltestShell = APSW.testShell
         APSW.testShell = APSW._testShellWithCoverage
+
+    # python version compatibility
+    if not hasattr(APSW, "assertRaisesRegex"):
+        APSW.assertRaisesRegex=APSW.assertRaisesRegexCompat
 
     del memdb
 

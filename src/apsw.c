@@ -1319,7 +1319,14 @@ PyInit_apsw(void)
   Py_INCREF(&ConnectionType);
   PyModule_AddObject(m, "Connection", (PyObject *)&ConnectionType);
 
-  /* we don't add cursor, blob or backup to the module since users shouldn't be able to instantiate them directly */
+  Py_INCREF(&APSWCursorType);
+  PyModule_AddObject(m, "Cursor", (PyObject *)&APSWCursorType);
+
+  Py_INCREF(&APSWBlobType);
+  PyModule_AddObject(m, "Blob", (PyObject *)&APSWBlobType);
+
+  Py_INCREF(&APSWBackupType);
+  PyModule_AddObject(m, "Backup", (PyObject *)&APSWBackupType);
 
   Py_INCREF(&ZeroBlobBindType);
   PyModule_AddObject(m, "zeroblob", (PyObject *)&ZeroBlobBindType);

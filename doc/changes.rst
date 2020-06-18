@@ -7,6 +7,8 @@ next-r1
 
 Small performance improvement in string handling
 
+apsw module exposes Cursor, Blob, and Backup types (:issue:`273`)
+
 3.32.2-r1
 =========
 

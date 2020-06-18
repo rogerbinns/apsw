@@ -81,7 +81,7 @@ for name, obj in (
             if isinstance(getattr(apsw, c), type) and issubclass(getattr(apsw, c), Exception):
                 continue
             # ignore classes !!!
-            if c in ("Connection", "VFS", "VFSFile", "zeroblob", "Shell", "URIFilename"):
+            if c in ("Connection", "VFS", "VFSFile", "zeroblob", "Shell", "URIFilename", "Cursor", "Blob", "Backup"):
                 continue
             # ignore mappings !!!
             if c.startswith("mapping_"):
