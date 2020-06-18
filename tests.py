@@ -8623,6 +8623,9 @@ def setup(write=write):
     if hasattr(apsw, "fork_checker") and hasattr(os, "fork"):
         try:
             import multiprocessing
+            if hasattr(multiprocessing, "get_start_method"):
+                if multiprocessing.get_start_method() != "fork":
+                    raise ImportError
             # sometimes the import works but doing anything fails
             val = multiprocessing.Value("i", 0)
             forkcheck = True
