@@ -187,7 +187,7 @@ def buildpython(workdir, pyver, ucs, logfilename):
 def patch_natty_build(setup):
     assert os.path.isfile(setup)
     out = []
-    for line in open(setup, "rtU"):
+    for line in open(setup, "rt"):
         if line.strip().startswith("lib_dirs = self.compiler.library_dirs + ["):
             t = " '/usr/lib/" + os.popen("dpkg-architecture -qDEB_HOST_MULTIARCH", "r").read().strip() + "', "
             i = line.index("[")
