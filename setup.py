@@ -583,6 +583,9 @@ class apsw_build_ext(beparent):
             exts = ["fts4", "fts3", "fts3_parenthesis", "rtree", "stat4", "json1", "fts5", "rbu", "geopoly"]
             if find_in_path("icu-config"):
                 exts.append("icu")
+            elif find_in_path("pkg-config"):
+                if len(os.popen("pkg-config --silence-errors --cflags --libs icu-uc icu-i18n", "r").read().strip()):
+                    exts.append("icu")
             if not self.enable:
                 self.enable = ",".join(exts)
             else:
@@ -682,11 +685,20 @@ class apsw_build_ext(beparent):
         # icu
         if addicuinclib:
             foundicu = False
+            method = "pkg-config"
             kwargs = {}
+            cmds = {
+                "icu-config": ["icu-config --cppflags", "icu-config --ldflags"],
+                "pkg-config": ["pkg-config --cflags icu-uc icu-i18n", "pkg-config --libs icu-uc icu-i18n"],
+            }
+
+            if find_in_path("icu-config"):
+                method = "icu-config"
+
             if sys.version_info >= (2, 6):
                 # if posix is true then quotes get stripped such as from -Dfoo="bar"
                 kwargs["posix"] = False
-            for part in shlex.split(os.popen("icu-config --cppflags", "r").read(), **kwargs):
+            for part in shlex.split(os.popen(cmds[method][0], "r").read(), **kwargs):
                 if part.startswith("-I"):
                     ext.include_dirs.append(part[2:])
                     foundicu = True
@@ -699,7 +711,7 @@ class apsw_build_ext(beparent):
                     ext.define_macros.append(part)
                     foundicu = True
 
-            for part in shlex.split(os.popen("icu-config --ldflags", "r").read(), **kwargs):
+            for part in shlex.split(os.popen(cmds[method][1], "r").read(), **kwargs):
                 if part.startswith("-L"):
                     ext.library_dirs.append(part[2:])
                     foundicu = True
@@ -708,9 +720,9 @@ class apsw_build_ext(beparent):
                     foundicu = True
 
             if foundicu:
-                write("ICU: Added includes, flags and libraries from icu-config")
+                write("ICU: Added includes, flags and libraries from " + method)
             else:
-                write("ICU: Unable to determine includes/libraries for ICU using icu-config")
+                write("ICU: Unable to determine includes/libraries for ICU using pkg-config or icu-config")
                 write("ICU: You will need to manually edit setup.py or setup.cfg to set them")
 
         # shell

@@ -9,6 +9,12 @@ Small performance improvement in string handling
 
 apsw module exposes Cursor, Blob, and Backup types (:issue:`273`)
 
+pkg-config is used to detect `International Components for Unicode (ICU) sdk
+<http://userguide.icu-project.org/howtouseicu>`__ when the `SQLite ICU extension
+<https://www.sqlite.org/src/artifact?ci=trunk&filename=ext/icu/README.txt>`___ is
+enabled.  It falls back to icu-config as before. (:issue:`268`).
+
+
 3.32.2-r1
 =========
 
