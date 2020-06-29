@@ -471,6 +471,7 @@ class APSW(unittest.TestCase):
         apsw.SQLITE_FCNTL_SIZE_HINT
         apsw.mapping_file_control["SQLITE_FCNTL_SIZE_HINT"] == apsw.SQLITE_FCNTL_SIZE_HINT
         apsw.URIFilename
+        apsw.SQLITE_INDEX_CONSTRAINT_NE  # ticket 289
         self.assertTrue(len(apsw.sqlite3_sourceid()) > 10)
 
     def testModuleExposed(self):
