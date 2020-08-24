@@ -59,8 +59,8 @@ API Reference
 #include "sqlite3.h"
 #endif
 
-#if SQLITE_VERSION_NUMBER < 3032000
-#error Your SQLite version is too old.  It must be at least 3.32
+#if SQLITE_VERSION_NUMBER < 3033000
+#error Your SQLite version is too old.  It must be at least 3.33
 #endif
 
 /* system headers */
@@ -1626,7 +1626,6 @@ modules etc. For example::
         ADDINT(SQLITE_OPEN_MAIN_JOURNAL),
         ADDINT(SQLITE_OPEN_TEMP_JOURNAL),
         ADDINT(SQLITE_OPEN_SUBJOURNAL),
-        ADDINT(SQLITE_OPEN_MASTER_JOURNAL),
         ADDINT(SQLITE_OPEN_NOMUTEX),
         ADDINT(SQLITE_OPEN_FULLMUTEX),
         ADDINT(SQLITE_OPEN_PRIVATECACHE),
@@ -1636,6 +1635,7 @@ modules etc. For example::
         ADDINT(SQLITE_OPEN_URI),
         ADDINT(SQLITE_OPEN_MEMORY),
         ADDINT(SQLITE_OPEN_NOFOLLOW),
+        ADDINT(SQLITE_OPEN_SUPER_JOURNAL),
         END,
 
         /* limits */

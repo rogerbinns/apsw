@@ -1,1 +1,1 @@
-#define APSW_VERSION "3.32.2-r1"
+#define APSW_VERSION "3.33.0-r1"

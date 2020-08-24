@@ -2,8 +2,8 @@ Change History
 **************
 .. currentmodule:: apsw
 
-next-r1
-=======
+3.33.0-r1
+=========
 
 Small performance improvement in string handling
 
@@ -14,6 +14,9 @@ pkg-config is used to detect `International Components for Unicode (ICU) sdk
 <https://www.sqlite.org/src/artifact?ci=trunk&filename=ext/icu/README.txt>`___ is
 enabled.  It falls back to icu-config as before. (:issue:`268`).
 
+Added constants:
+
+* SQLITE_OPEN_SUPER_JOURNAL
 
 3.32.2-r1
 =========
