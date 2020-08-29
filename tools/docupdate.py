@@ -36,9 +36,12 @@ for line in open("doc/download.rst", "rt"):
         op.append("  (Source, includes this HTML Help)")
         op.append("")
         not64 = ("2.3", "2.4", "2.5")
+        not32 = ("3.5", )
         for pyver in ("2.3", "2.4", "2.5", "2.6", "2.7", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7", "3.8"):
-            op.append("* Windows Python %s `32bit" % (pyver, ))
-            op.append(url % ("apsw-%s.win32-py%s.exe" % (version, pyver)))
+            op.append("* Windows Python %s" % (pyver, ))
+            if pyver not in not32:
+                op.append("  `32bit ")
+                op.append(url % ("apsw-%s.win32-py%s.exe" % (version, pyver)))
             if pyver not in not64:
                 op.append("  `64bit ")
                 op.append(url % ("apsw-%s.win-amd64-py%s.exe" % (version, pyver)))

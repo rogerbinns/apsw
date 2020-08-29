@@ -136,7 +136,6 @@ compile-win:
 	set APSW_FORCE_DISTUTILS=t & "c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python37-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	set APSW_FORCE_DISTUTILS=t & c:/python36/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	set APSW_FORCE_DISTUTILS=t & "c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python36-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
-	set APSW_FORCE_DISTUTILS=t & c:/python35/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	set APSW_FORCE_DISTUTILS=t & "c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python35-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	set APSW_FORCE_DISTUTILS=t & c:/python34/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
 	set APSW_FORCE_DISTUTILS=t & c:/python34-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST)
@@ -185,7 +184,6 @@ release:
 	test -f dist/$(VERDIR).win-amd64-py3.3.exe
 	test -f dist/$(VERDIR).win32-py3.4.exe
 	test -f dist/$(VERDIR).win-amd64-py3.4.exe
-	test -f dist/$(VERDIR).win32-py3.5.exe
 	test -f dist/$(VERDIR).win-amd64-py3.5.exe
 	test -f dist/$(VERDIR).win32-py3.6.exe
 	test -f dist/$(VERDIR).win-amd64-py3.6.exe
