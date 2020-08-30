@@ -134,7 +134,7 @@ SQLite has a `warning/error logging facility
     def handler(errcode, message):
         errstr=apsw.mapping_result_codes[errcode & 255]
         extended=errcode & ~ 255
-        print "SQLITE_LOG: %s (%d) %s %s" % (message, errcode, errstr, apsw.mapping_extended_result_codes.get(extended, ""))
+        print ("SQLITE_LOG: %s (%d) %s %s" % (message, errcode, errstr, apsw.mapping_extended_result_codes.get(extended, "")))
 
     apsw.config(apsw.SQLITE_CONFIG_LOG, handler)
 
