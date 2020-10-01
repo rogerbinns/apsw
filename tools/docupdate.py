@@ -10,6 +10,7 @@ import sys
 
 version = sys.argv[1]
 url = "  <https://github.com/rogerbinns/apsw/releases/download/" + version + "/%s>`__"
+version_no_r = version.split("-r")[0]
 
 pip_template = """
 .. pip-begin
@@ -37,14 +38,17 @@ for line in open("doc/download.rst", "rt"):
         op.append("")
         not64 = ("2.3", "2.4", "2.5")
         not32 = ("3.5", )
+        incrbit = ("2.3", "2.4")
+        nomsi = ("2.3", "2.4")
         for pyver in ("2.3", "2.4", "2.5", "2.6", "2.7", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7", "3.8"):
+            usever=version_no_r if pyver not in incrbit else version
             op.append("* Windows Python %s" % (pyver, ))
             if pyver not in not32:
                 op.append("  `32bit ")
-                op.append(url % ("apsw-%s.win32-py%s.exe" % (version, pyver)))
+                op.append(url % ("apsw-%s.win32-py%s.exe" % (usever, pyver)))
             if pyver not in not64:
                 op.append("  `64bit ")
-                op.append(url % ("apsw-%s.win-amd64-py%s.exe" % (version, pyver)))
+                op.append(url % ("apsw-%s.win-amd64-py%s.exe" % (usever, pyver)))
             op.append("")
         op.append("* `apsw-%s-sigs.zip " % (version, ))
         op.append(url % ("apsw-%s-sigs.zip" % version))

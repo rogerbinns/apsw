@@ -6,6 +6,7 @@ RELEASEDATE="30 August 2020"
 
 VERSION=$(SQLITEVERSION)$(APSWSUFFIX)
 VERDIR=apsw-$(VERSION)
+VERWIN=apsw-$(SQLITEVERSION)
 
 PYTHON=python3
 
@@ -171,26 +172,46 @@ release:
 	test -f dist/$(VERDIR).zip
 	test -f dist/$(VERDIR).win32-py2.3.exe
 	test -f dist/$(VERDIR).win32-py2.4.exe
-	test -f dist/$(VERDIR).win32-py2.5.exe
-	test -f dist/$(VERDIR).win32-py2.6.exe
-	test -f dist/$(VERDIR).win-amd64-py2.6.exe
-	test -f dist/$(VERDIR).win32-py2.7.exe
-	test -f dist/$(VERDIR).win-amd64-py2.7.exe
-	test -f dist/$(VERDIR).win32-py3.1.exe
-	test -f dist/$(VERDIR).win-amd64-py3.1.exe
-	test -f dist/$(VERDIR).win32-py3.2.exe
-	test -f dist/$(VERDIR).win-amd64-py3.2.exe
-	test -f dist/$(VERDIR).win32-py3.3.exe
-	test -f dist/$(VERDIR).win-amd64-py3.3.exe
-	test -f dist/$(VERDIR).win32-py3.4.exe
-	test -f dist/$(VERDIR).win-amd64-py3.4.exe
-	test -f dist/$(VERDIR).win-amd64-py3.5.exe
-	test -f dist/$(VERDIR).win32-py3.6.exe
-	test -f dist/$(VERDIR).win-amd64-py3.6.exe
-	test -f dist/$(VERDIR).win32-py3.7.exe
-	test -f dist/$(VERDIR).win-amd64-py3.7.exe
-	test -f dist/$(VERDIR).win32-py3.8.exe
-	test -f dist/$(VERDIR).win-amd64-py3.8.exe
+	test -f dist/$(VERWIN).win32-py2.5.exe
+	test -f dist/$(VERWIN).win32-py2.5.msi
+	test -f dist/$(VERWIN).win32-py2.6.exe
+	test -f dist/$(VERWIN).win32-py2.6.msi
+	test -f dist/$(VERWIN).win-amd64-py2.6.exe
+	test -f dist/$(VERWIN).win-amd64-py2.6.msi
+	test -f dist/$(VERWIN).win32-py2.7.exe
+	test -f dist/$(VERWIN).win32-py2.7.msi
+	test -f dist/$(VERWIN).win-amd64-py2.7.exe
+	test -f dist/$(VERWIN).win-amd64-py2.7.msi
+	test -f dist/$(VERWIN).win32-py3.1.exe
+	test -f dist/$(VERWIN).win32-py3.1.msi
+	test -f dist/$(VERWIN).win-amd64-py3.1.exe
+	test -f dist/$(VERWIN).win-amd64-py3.1.msi
+	test -f dist/$(VERWIN).win32-py3.2.exe
+	test -f dist/$(VERWIN).win32-py3.2.msi
+	test -f dist/$(VERWIN).win-amd64-py3.2.exe
+	test -f dist/$(VERWIN).win-amd64-py3.2.msi
+	test -f dist/$(VERWIN).win32-py3.3.exe
+	test -f dist/$(VERWIN).win32-py3.3.msi
+	test -f dist/$(VERWIN).win-amd64-py3.3.exe
+	test -f dist/$(VERWIN).win-amd64-py3.3.msi
+	test -f dist/$(VERWIN).win32-py3.4.exe
+	test -f dist/$(VERWIN).win32-py3.4.msi
+	test -f dist/$(VERWIN).win-amd64-py3.4.exe
+	test -f dist/$(VERWIN).win-amd64-py3.4.msi
+	test -f dist/$(VERWIN).win-amd64-py3.5.exe
+	test -f dist/$(VERWIN).win-amd64-py3.5.msi
+	test -f dist/$(VERWIN).win32-py3.6.exe
+	test -f dist/$(VERWIN).win32-py3.6.msi
+	test -f dist/$(VERWIN).win-amd64-py3.6.exe
+	test -f dist/$(VERWIN).win-amd64-py3.6.msi
+	test -f dist/$(VERWIN).win32-py3.7.exe
+	test -f dist/$(VERWIN).win32-py3.7.msi
+	test -f dist/$(VERWIN).win-amd64-py3.7.exe
+	test -f dist/$(VERWIN).win-amd64-py3.7.msi
+	test -f dist/$(VERWIN).win32-py3.8.exe
+	test -f dist/$(VERWIN).win32-py3.8.msi
+	test -f dist/$(VERWIN).win-amd64-py3.8.exe
+	test -f dist/$(VERWIN).win-amd64-py3.8.msi
 	-rm -f dist/$(VERDIR)-sigs.zip dist/*.asc
 	for f in dist/* ; do gpg --use-agent --armor --detach-sig "$$f" ; done
 	cd dist ; zip -m $(VERDIR)-sigs.zip *.asc
