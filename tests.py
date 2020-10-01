@@ -2091,7 +2091,7 @@ class APSW(unittest.TestCase):
         c = self.db.cursor()
         c.execute("create table foo(row,str)")
         vals = ("a simple string", "a simple string\0with a null", "a string\0with two\0nulls",
-                "or even a \0\0\0\0\0\0sequence\0\0\0\0\of them", u(r"a \u1234 unicode \ufe54 string \u0089"),
+                "or even a \0\0\0\0\0\0sequence\0\0\0\0of them", u(r"a \u1234 unicode \ufe54 string \u0089"),
                 u(r"a \u1234 unicode \ufe54 string \u0089\0and some text"),
                 u(r"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET}\0more\0than you\0can handle"),
                 u(r"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET}\0\0\0\0\0sequences\0\0\0of them"))
@@ -6329,7 +6329,7 @@ class APSW(unittest.TestCase):
             # about surrogates not being allowed.  If only it
             # implemented unicode properly.
             cmd(
-                u("create table if not exists nastydata(x,y); insert into nastydata values(null,'xxx\\u1234\\uabcdyyy\r\n\t\"this \\\is nasty\u0001stuff!');"
+                u("create table if not exists nastydata(x,y); insert into nastydata values(null,'xxx\\u1234\\uabcdyyy\r\n\t\"this is nasty\u0001stuff!');"
                   ))
             s.cmdloop()
             isempty(fh[1])
@@ -6904,7 +6904,7 @@ class APSW(unittest.TestCase):
         # some nasty stuff
         reset()
         cmd(
-            u("create table nastydata(x,y); insert into nastydata values(null,'xxx\\u1234\\uabcd\\U00012345yyy\r\n\t\"this \\\is nasty\u0001stuff!');"
+            u("create table nastydata(x,y); insert into nastydata values(null,'xxx\\u1234\\uabcd\\U00012345yyy\r\n\t\"this is nasty\u0001stuff!');"
               'create table "table"([except] int); create table [](""); create table [using]("&");'))
         s.cmdloop()
         isempty(fh[1])
