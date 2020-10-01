@@ -2,6 +2,12 @@ Change History
 **************
 .. currentmodule:: apsw
 
+next-r1
+=======
+
+Windows MSI installer files are now provided in addition to the
+exe files (:issue:`294`)
+
 3.33.0-r1
 =========
 

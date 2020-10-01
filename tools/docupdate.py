@@ -44,11 +44,19 @@ for line in open("doc/download.rst", "rt"):
             usever=version_no_r if pyver not in incrbit else version
             op.append("* Windows Python %s" % (pyver, ))
             if pyver not in not32:
-                op.append("  `32bit ")
+                op.append("  `➥ 32bit exe ")
                 op.append(url % ("apsw-%s.win32-py%s.exe" % (usever, pyver)))
+                if pyver not in nomsi:
+                    op.append("  `➥ 32bit msi ")
+                    op.append(url % ("apsw-%s.win32-py%s.msi" % (usever, pyver)))
+
             if pyver not in not64:
-                op.append("  `64bit ")
+                op.append("  `➥ 64bit exe ")
                 op.append(url % ("apsw-%s.win-amd64-py%s.exe" % (usever, pyver)))
+                if pyver not in nomsi:
+                    op.append("  `➥ 64bit msi ")
+                    op.append(url % ("apsw-%s.win-amd64-py%s.msi" % (usever, pyver)))
+
             op.append("")
         op.append("* `apsw-%s-sigs.zip " % (version, ))
         op.append(url % ("apsw-%s-sigs.zip" % version))
