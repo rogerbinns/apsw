@@ -151,11 +151,12 @@ up package management tools and various dependencies on your build
 machine.
 
 +-------------------+----------------------------------------------------------------------------------+
-| Debian            | Install `python-apsw <http://packages.debian.org/python-apsw>`__                 |
+| Debian            | Install `python-apsw <http://packages.debian.org/python-apsw>`__   or            |
+|                   | `python3-apsw <http://packages.debian.org/python3-apsw>`__                       |
 +-------------------+----------------------------------------------------------------------------------+
-| Fedora            | Install `python-apsw <https://apps.fedoraproject.org/packages/s/apsw>`__         |
+| Fedora            | Install ``python-apsw`` or ``python3-apsw``                                      |
 +-------------------+----------------------------------------------------------------------------------+
-| Ubuntu            | Install `python-apsw <http://packages.ubuntu.com/search?keywords=python-apsw>`__ |
+| Ubuntu            | Install ``python-apsw`` or ``python3-apsw``                                      |
 +-------------------+----------------------------------------------------------------------------------+
 | Gentoo            | Install `dev-python/apsw <http://packages.gentoo.org/package/dev-python/apsw>`_  |
 +-------------------+----------------------------------------------------------------------------------+
