@@ -116,6 +116,7 @@ WINBPREFIX=fetch --version=$(SQLITEVERSION) --all build --enable-all-extensions
 WINBSUFFIX=install build_test_extension test
 WINBINST=bdist_wininst
 WINBMSI=bdist_msi
+WINBWHEEL=bdist_wheel
 
 # You need to use the MinGW version of make.  See
 # http://bugs.python.org/issue3308 if 2.6+ or 3.0+ fail to run with
@@ -131,12 +132,12 @@ compile-win:
 	cmd /c del /s /q build
 	cmd /c del /s /q apsw.egg-info
 	-cmd /c md dist
-	set APSW_FORCE_DISTUTILS=t & c:/python38/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
-	set APSW_FORCE_DISTUTILS=t & "c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python38-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
-	set APSW_FORCE_DISTUTILS=t & c:/python37/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
-	set APSW_FORCE_DISTUTILS=t & "c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python37-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
-	set APSW_FORCE_DISTUTILS=t & c:/python36/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
-	set APSW_FORCE_DISTUTILS=t & "c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python36-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
+	c:/python38/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
+	"c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python38-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
+	c:/python37/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
+	"c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python37-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)  $(WINBWHEEL)
+	c:/python36/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
+	"c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python36-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
 	set APSW_FORCE_DISTUTILS=t & "c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python35-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
 	set APSW_FORCE_DISTUTILS=t & c:/python34/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
 	set APSW_FORCE_DISTUTILS=t & c:/python34-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
@@ -153,6 +154,22 @@ compile-win:
 	set APSW_FORCE_DISTUTILS=t & c:/python25/python setup.py $(WINBPREFIX) --compile=mingw32 $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
 	set APSW_FORCE_DISTUTILS=t & c:/python24/python setup.py $(WINBPREFIX) --compile=mingw32 $(WINBSUFFIX) $(WINBINST)
 	set APSW_FORCE_DISTUTILS=t & c:/python23/python setup.py $(WINBPREFIX) --compile=mingw32 $(WINBSUFFIX) $(WINBINST)
+	del dist\\*.egg
+
+setup-wheel:
+	c:/python38/python -m ensurepip
+	c:/python38/python -m pip install --upgrade wheel
+	c:/python38-64/python -m ensurepip
+	c:/python38-64/python -m pip install --upgrade wheel
+	c:/python37/python -m ensurepip
+	c:/python37/python -m pip install --upgrade wheel
+	c:/python37-64/python -m ensurepip
+	c:/python37-64/python -m pip install --upgrade wheel
+	c:/python36/python -m ensurepip
+	c:/python36/python  -m pip install --upgrade wheel
+	c:/python36-64/python -m ensurepip
+	c:/python36-64/python -m pip install --upgrade wheel
+
 
 source_nocheck: docs
 	env APSW_FORCE_DISTUTILS=t $(PYTHON) setup.py sdist --formats zip --add-doc
@@ -202,16 +219,22 @@ release:
 	test -f dist/$(VERWIN).win-amd64-py3.5.msi
 	test -f dist/$(VERWIN).win32-py3.6.exe
 	test -f dist/$(VERWIN).win32-py3.6.msi
+	test -f	dist/$(VERWIN)-cp36-cp36m-win32.whl
 	test -f dist/$(VERWIN).win-amd64-py3.6.exe
 	test -f dist/$(VERWIN).win-amd64-py3.6.msi
+	test -f dist/$(VERWIN)-cp36-cp36m-win_amd64.whl
 	test -f dist/$(VERWIN).win32-py3.7.exe
 	test -f dist/$(VERWIN).win32-py3.7.msi
+	test -f dist/$(VERWIN)-cp37-cp37m-win32.whl
 	test -f dist/$(VERWIN).win-amd64-py3.7.exe
 	test -f dist/$(VERWIN).win-amd64-py3.7.msi
+	test -f dist/$(VERWIN)-cp37-cp37m-win_amd64.whl
 	test -f dist/$(VERWIN).win32-py3.8.exe
 	test -f dist/$(VERWIN).win32-py3.8.msi
+	test -f dist/$(VERWIN)-cp38-cp38-win32.whl
 	test -f dist/$(VERWIN).win-amd64-py3.8.exe
 	test -f dist/$(VERWIN).win-amd64-py3.8.msi
+	test -f dist/$(VERWIN)-cp38-cp38-win_amd64.whl
 	-rm -f dist/$(VERDIR)-sigs.zip dist/*.asc
 	for f in dist/* ; do gpg --use-agent --armor --detach-sig "$$f" ; done
 	cd dist ; zip -m $(VERDIR)-sigs.zip *.asc
