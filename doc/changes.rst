@@ -2,11 +2,12 @@ Change History
 **************
 .. currentmodule:: apsw
 
-next-r1
-=======
+3.34.0-r1
+=========
 
-Windows MSI installer files are now provided in addition to the
-exe files (:issue:`294`)
+Windows MSI installer files are now provided in addition to the exe
+files (:issue:`294`), as well as wheels for Python 3.6+.  Python 3.9
+binaries are also now available.
 
 3.33.0-r1
 =========
