@@ -132,6 +132,8 @@ compile-win:
 	cmd /c del /s /q build
 	cmd /c del /s /q apsw.egg-info
 	-cmd /c md dist
+	c:/python39-32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
+	"c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python39/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
 	c:/python38/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
 	"c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python38-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
 	c:/python37/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
@@ -157,6 +159,10 @@ compile-win:
 	del dist\\*.egg
 
 setup-wheel:
+	c:/python39/python -m ensurepip
+	c:/python39/python -m pip install --upgrade wheel
+	c:/python39-32/python -m ensurepip
+	c:/python39-32/python -m pip install --upgrade wheel
 	c:/python38/python -m ensurepip
 	c:/python38/python -m pip install --upgrade wheel
 	c:/python38-64/python -m ensurepip
@@ -235,6 +241,12 @@ release:
 	test -f dist/$(VERWIN).win-amd64-py3.8.exe
 	test -f dist/$(VERWIN).win-amd64-py3.8.msi
 	test -f dist/$(VERWIN)-cp38-cp38-win_amd64.whl
+	test -f dist/$(VERWIN).win32-py3.9.exe
+	test -f dist/$(VERWIN).win32-py3.9.msi
+	test -f dist/$(VERWIN)-cp39-cp39-win32.whl
+	test -f dist/$(VERWIN).win-amd64-py3.9.exe
+	test -f dist/$(VERWIN).win-amd64-py3.9.msi
+	test -f dist/$(VERWIN)-cp39-cp39-win_amd64.whl
 	-rm -f dist/$(VERDIR)-sigs.zip dist/*.asc
 	for f in dist/* ; do gpg --use-agent --armor --detach-sig "$$f" ; done
 	cd dist ; zip -m $(VERDIR)-sigs.zip *.asc
