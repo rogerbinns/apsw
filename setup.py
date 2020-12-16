@@ -617,8 +617,9 @@ class apsw_build_ext(beparent):
 
         path = findamalgamation()
         if path:
-            if sys.platform == "win32":
-                # double quotes get consumed by windows arg processing
+            if sys.platform == "win32" and sys.version_info < (3, 9):
+                # double quotes get consumed by python windows arg processing, fixed
+                # in python 3.9
                 ext.define_macros.append(('APSW_USE_SQLITE_AMALGAMATION', '\\"' + path + '\\"'))
             else:
                 ext.define_macros.append(('APSW_USE_SQLITE_AMALGAMATION', '"' + path + '"'))
