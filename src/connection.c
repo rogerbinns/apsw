@@ -3326,6 +3326,36 @@ Connection_db_filename(Connection *self, PyObject *name)
   return convertutf8string(res);
 }
 
+/** .. method:: txn_state(schema=None) -> Int
+ 
+  Returns the current transaction state of the database, or a specific schema
+  if provided.  ValueError is raised if schema is not None or a valid schema name.
+  :attr:`apsw.mapping_txn_state` contains the names and values returned.
+
+  -* sqlite3_txn_state
+*/
+
+static PyObject *
+Connection_txn_state(Connection *self, PyObject *args)
+{
+  char *zschema = NULL;
+  int res;
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  if (!PyArg_ParseTuple(args, "|es:tx_state(schema=None", STRENCODING, &zschema))
+    return NULL;
+
+  PYSQLITE_CON_CALL(res = sqlite3_txn_state(self->db, zschema));
+
+  PyMem_Free(zschema);
+
+  if (res >= 0)
+    return Py_BuildValue("i", res);
+
+  return PyErr_Format(PyExc_ValueError, "unknown schema");
+}
+
 /** .. attribute:: filename
 
   The filename of the  database.
@@ -3456,7 +3486,9 @@ static PyMethodDef Connection_methods[] = {
    "Check if database is readonly"},
   {"db_filename", (PyCFunction)Connection_db_filename, METH_O,
    "Return filename of main or attached database"},
-  {0, 0, 0, 0}  /* Sentinel */
+    {"txn_state", (PyCFunction)Connection_txn_state, METH_VARARGS,
+     "Return transaction state"},
+    {0, 0, 0, 0} /* Sentinel */
 };
 
 

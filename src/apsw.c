@@ -1851,8 +1851,13 @@ modules etc. For example::
 
         DICT("mapping_virtual_table_scan_flags"),
         ADDINT(SQLITE_INDEX_SCAN_UNIQUE),
-        END
+        END,
 
+        DICT("mapping_txn_state"),
+        ADDINT(SQLITE_TXN_NONE),
+        ADDINT(SQLITE_TXN_READ),
+        ADDINT(SQLITE_TXN_WRITE),
+        END
     };
 
     for (i = 0; i < sizeof(integers) / sizeof(integers[0]); i++)

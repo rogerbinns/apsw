@@ -4164,6 +4164,18 @@ class APSW(unittest.TestCase):
             self.assertEqual(type(res), tuple)
             self.assertTrue(res[1] == 0 or res[0] <= res[1])
 
+    def testTxnState(self):
+        "Verify db.txn_state"
+        n = u(r"\u1234\u3454324")
+        self.assertRaises(TypeError, self.db.txn_state, 3)
+        self.assertEqual(apsw.mapping_txn_state["SQLITE_TXN_NONE"], self.db.txn_state())
+        self.db.cursor().execute("BEGIN EXCLUSIVE")
+        self.assertEqual(apsw.mapping_txn_state["SQLITE_TXN_WRITE"], self.db.txn_state())
+        self.db.cursor().execute("END")
+        self.assertEqual(apsw.mapping_txn_state["SQLITE_TXN_NONE"], self.db.txn_state())
+        self.assertRaises(ValueError, self.db.txn_state, n)
+        self.assertEqual(apsw.mapping_txn_state["SQLITE_TXN_NONE"], self.db.txn_state("main"))
+
     def testZeroBlob(self):
         "Verify handling of zero blobs"
         self.assertRaises(TypeError, apsw.zeroblob)
