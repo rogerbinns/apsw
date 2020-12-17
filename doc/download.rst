@@ -1,6 +1,17 @@
 Download
 ********
 
+.. note::
+
+   APSW is a single file for the actual extension, :file:`apsw.pyd` on
+   Windows and :file:`apsw.so` on Unix/Mac (Note :pep:`3149`). There
+   are no other files needed and the :ref:`build instructions
+   <building>` show you how to include SQLite statically in this file.
+   You can put this file anywhere your Python session can reach.
+
+   The binary downloads are wrappers around that one file.
+
+
 .. _source_and_binaries:
 
 Source and binaries
@@ -23,7 +34,13 @@ yourself on Windows.  See the :ref:`recommended <recommended_build>`
 way to build or all the :ref:`options available <building>`.
 
 Windows binary exe and msi can be installed by double clicking or running them.  Wheels
-can be installed with ``python3 -m pip install filename.whl``
+can be installed with:
+
+     ``python3 -m pip install filename.whl``
+
+     If you get a message about no pip module, then do this first:
+
+       ``python3 -m ensurepip``
 
 .. downloads-begin
 
@@ -171,6 +188,11 @@ depending on when a machine did an install).  Additionally the world of Python
 packaging is going through another series of changes (distutils2 aka packaging)
 so some solution may come out of that. I'm happy to work with anyone who has a
 solution to this problem.
+
+.. note::
+
+  You can install the Windows prebuilt binary wheels using pip.  See
+  the top of this page.
 
 .. _really_want_pip:
 
