@@ -132,13 +132,21 @@ compile-win:
 	cmd /c del /s /q build
 	cmd /c del /s /q apsw.egg-info
 	-cmd /c md dist
+	-cmd /c del /s /q c:\\python39-32\\lib\\site-packages\\*apsw*
 	c:/python39-32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
+	-cmd /c del /s /q c:\\python39\\lib\\site-packages\\*apsw*
 	"c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python39/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
+	-cmd /c del /s /q c:\\python38\\lib\\site-packages\\*apsw*
 	c:/python38/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
+	-cmd /c del /s /q c:\\python38-64\\lib\\site-packages\\*apsw*
 	"c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python38-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
+	-cmd /c del /s /q c:\\python37\\lib\\site-packages\\*apsw*
 	c:/python37/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
+	-cmd /c del /s /q c:\\python37-64\\lib\\site-packages\\*apsw*
 	"c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python37-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)  $(WINBWHEEL)
+	-cmd /c del /s /q c:\\python36\\lib\\site-packages\\*apsw*
 	c:/python36/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
+	-cmd /c del /s /q c:\\python36-64\\lib\\site-packages\\*apsw*
 	"c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python36-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
 	set APSW_FORCE_DISTUTILS=t & "c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python35-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
 	set APSW_FORCE_DISTUTILS=t & c:/python34/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
@@ -160,21 +168,21 @@ compile-win:
 
 setup-wheel:
 	c:/python39/python -m ensurepip
-	c:/python39/python -m pip install --upgrade wheel
+	c:/python39/python -m pip install --upgrade wheel setuptools
 	c:/python39-32/python -m ensurepip
-	c:/python39-32/python -m pip install --upgrade wheel
+	c:/python39-32/python -m pip install --upgrade wheel setuptools
 	c:/python38/python -m ensurepip
-	c:/python38/python -m pip install --upgrade wheel
+	c:/python38/python -m pip install --upgrade wheel setuptools
 	c:/python38-64/python -m ensurepip
-	c:/python38-64/python -m pip install --upgrade wheel
+	c:/python38-64/python -m pip install --upgrade wheel setuptools
 	c:/python37/python -m ensurepip
-	c:/python37/python -m pip install --upgrade wheel
+	c:/python37/python -m pip install --upgrade wheel setuptools
 	c:/python37-64/python -m ensurepip
-	c:/python37-64/python -m pip install --upgrade wheel
+	c:/python37-64/python -m pip install --upgrade wheel setuptools
 	c:/python36/python -m ensurepip
-	c:/python36/python  -m pip install --upgrade wheel
+	c:/python36/python  -m pip install --upgrade wheel setuptools
 	c:/python36-64/python -m ensurepip
-	c:/python36-64/python -m pip install --upgrade wheel
+	c:/python36-64/python -m pip install --upgrade wheel setuptools
 
 
 source_nocheck: docs
