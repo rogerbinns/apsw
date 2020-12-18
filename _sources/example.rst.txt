@@ -35,9 +35,9 @@ so you can see what gets printed when you run the code.
 .. code-block:: text
 
    |       Using APSW file /space/apsw/apsw.cpython-38-x86_64-linux-gnu.so
-   |          APSW version 3.33.0-r1
-   |    SQLite lib version 3.33.0
-   | SQLite header version 3033000
+   |          APSW version 3.34.0-r1
+   |    SQLite lib version 3.34.0
+   | SQLite header version 3034000
 
 .. code-block:: python
 
@@ -541,8 +541,8 @@ so you can see what gets printed when you run the code.
 .. code-block:: text
 
    | 72831380 56fa58acf89604978a41__mypyc.cpython-38-x86_64-linux-gnu.so /home/rogerb/.local/lib/python3.8/site-packages
-   | 8542184 apsw.cpython-38-x86_64-linux-gnu.so /space/apsw
-   | 4000680 apsw.o /space/apsw
+   | 10160952 apsw.cpython-38-x86_64-linux-gnu.so /space/apsw
+   | 4218912 apsw.o /space/apsw
 
 .. code-block:: python
 
@@ -552,9 +552,9 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
-   | 1581788581.658744 debconf.py /usr/lib/python3/dist-packages
    | 1581788581.6627443 menulibre-2.2.1.egg-info /usr/lib/python3/dist-packages
    | 1581788581.6627443 mugshot-0.4.2.egg-info /usr/lib/python3/dist-packages
+   | 1582056231.6234083 .coverage /space/apsw
 
 .. _example-vfs:
 
@@ -762,7 +762,7 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
-   | SQLite memory usage current 367416 max 378672
+   | SQLite memory usage current 368104 max 379304
 
 .. code-block:: python
 

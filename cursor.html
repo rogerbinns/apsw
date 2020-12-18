@@ -1,20 +1,19 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Cursors (executing SQL) &#8212; APSW 3.33.0-r1 documentation</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cursors (executing SQL) &#8212; APSW 3.34.0-r1 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -44,7 +43,8 @@
         <li class="right" >
           <a href="connection.html" title="Connections to a database"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.33.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.34.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Cursors (executing SQL)</a></li> 
       </ul>
     </div>  
 
@@ -110,7 +110,7 @@ separated statements.  For example:</p>
 </pre></div>
 </div>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
+<p class="admonition-title">Note</p>
 <p>SQLite fetches data as it is needed.  If table <em>example</em> had 10
 million rows it would only get the next row as requested (the for
 loop effectively calls <code class="xref py py-meth docutils literal notranslate"><span class="pre">next()</span></code> to get each row).  This
@@ -132,14 +132,14 @@ ways to work around this.  Use a different cursor:</p>
    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert ...&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="last">This last approach is recommended since you don’t have to worry
+<p>This last approach is recommended since you don’t have to worry
 about the database changing while doing the <code class="docutils literal notranslate"><span class="pre">select</span></code>.  You should
 also understand transactions and where to put the transaction
 boundaries.</p>
 </div>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Cursors on the same <a class="reference internal" href="connection.html#connections"><span class="std std-ref">Connection</span></a> are not isolated
+<p class="admonition-title">Note</p>
+<p>Cursors on the same <a class="reference internal" href="connection.html#connections"><span class="std std-ref">Connection</span></a> are not isolated
 from each other.  Anything done on one cursor is immediately visible
 to all other Cursors on the same connection.  This still applies if
 you start transactions.  Connections are isolated from each other
@@ -147,25 +147,25 @@ with cursors on other connections not seeing changes until they are
 committed.</p>
 </div>
 <div class="admonition seealso">
-<p class="first admonition-title">See also</p>
-<ul class="last simple">
-<li><a class="reference external" href="https://sqlite.org/lang_transaction.html">SQLite transactions</a></li>
-<li><a class="reference external" href="https://sqlite.org/atomiccommit.html">Atomic commit</a></li>
-<li><a class="reference external" href="http://www.mail-archive.com/sqlite-users&#64;sqlite.org/msg42660.html">Example of changing the database while running a query problem</a></li>
-<li><a class="reference internal" href="benchmarking.html#benchmarking"><span class="std std-ref">Benchmarking</span></a></li>
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://sqlite.org/lang_transaction.html">SQLite transactions</a></p></li>
+<li><p><a class="reference external" href="https://sqlite.org/atomiccommit.html">Atomic commit</a></p></li>
+<li><p><a class="reference external" href="http://www.mail-archive.com/sqlite-users&#64;sqlite.org/msg42660.html">Example of changing the database while running a query problem</a></p></li>
+<li><p><a class="reference internal" href="benchmarking.html#benchmarking"><span class="std std-ref">Benchmarking</span></a></p></li>
 </ul>
 </div>
 <div class="section" id="cursor-class">
 <h2>Cursor class<a class="headerlink" href="#cursor-class" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="apsw.Cursor">
-<em class="property">class </em><code class="descname">Cursor</code><a class="headerlink" href="#apsw.Cursor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">Cursor</code><a class="headerlink" href="#apsw.Cursor" title="Permalink to this definition">¶</a></dt>
 <dd><p>You obtain cursors by calling <a class="reference internal" href="connection.html#apsw.Connection.cursor" title="apsw.Connection.cursor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.cursor()</span></code></a>.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.Cursor.close">
-<code class="descclassname">Cursor.</code><code class="descname">close</code><span class="sig-paren">(</span><em>force=False</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Cursor.close" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">close</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">force</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Cursor.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>It is very unlikely you will need to call this method.  It exists
 because older versions of SQLite required all Connection/Cursor
 activity to be confined to the same thread.  That is no longer the
@@ -176,48 +176,41 @@ it has no other references.</p>
 your query included multiple statements), or if you called
 <a class="reference internal" href="#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">executemany()</span></code></a> and not all of the <em>sequenceofbindings</em>
 have been used yet.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>force</strong> – If False then you will get exceptions if there is
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>force</strong> – If False then you will get exceptions if there is
 remaining work to do be in the Cursor such as more statements to
 execute, more data from the executemany binding sequence etc. If
 force is True then all remaining work and state information will be
-silently discarded.</td>
-</tr>
-</tbody>
-</table>
+silently discarded.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="apsw.Cursor.description">
-<code class="descclassname">Cursor.</code><code class="descname">description</code><a class="headerlink" href="#apsw.Cursor.description" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">description</code><a class="headerlink" href="#apsw.Cursor.description" title="Permalink to this definition">¶</a></dt>
 <dd><p>Based on the <a class="reference external" href="http://www.python.org/dev/peps/pep-0249/">DB-API cursor property</a>, this returns the
 same as <a class="reference internal" href="#apsw.Cursor.getdescription" title="apsw.Cursor.getdescription"><code class="xref py py-meth docutils literal notranslate"><span class="pre">getdescription()</span></code></a> but with 5 Nones appended.  See
 also <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/131">APSW issue 131</a>.</p>
 </dd></dl>
 
-<span class="target" id="index-0"></span><dl class="method">
+<span class="target" id="index-0"></span><dl class="py method">
 <dt id="apsw.Cursor.execute">
-<code class="descclassname">Cursor.</code><code class="descname">execute</code><span class="sig-paren">(</span><em>statements</em><span class="optional">[</span>, <em>bindings</em><span class="optional">]</span><span class="sig-paren">)</span> &#x2192; iterator<a class="headerlink" href="#apsw.Cursor.execute" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">execute</code><span class="sig-paren">(</span><em class="sig-param">statements</em><span class="optional">[</span>, <em class="sig-param">bindings</em><span class="optional">]</span><span class="sig-paren">)</span> &#x2192; iterator<a class="headerlink" href="#apsw.Cursor.execute" title="Permalink to this definition">¶</a></dt>
 <dd><p>Executes the statements using the supplied bindings.  Execution
 returns when the first row is available or all statements have
 completed.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>statements</strong> – One or more SQL statements such as <code class="docutils literal notranslate"><span class="pre">select</span> <span class="pre">*</span>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>statements</strong> – One or more SQL statements such as <code class="docutils literal notranslate"><span class="pre">select</span> <span class="pre">*</span>
 <span class="pre">from</span> <span class="pre">books</span></code> or <code class="docutils literal notranslate"><span class="pre">begin;</span> <span class="pre">insert</span> <span class="pre">into</span> <span class="pre">books</span> <span class="pre">...;</span> <span class="pre">select</span>
-<span class="pre">last_insert_rowid();</span> <span class="pre">end</span></code>.</li>
-<li><strong>bindings</strong> – If supplied should either be a sequence or a dictionary.  Each item must be one of the <a class="reference internal" href="types.html#types"><span class="std std-ref">supported types</span></a></li>
+<span class="pre">last_insert_rowid();</span> <span class="pre">end</span></code>.</p></li>
+<li><p><strong>bindings</strong> – If supplied should either be a sequence or a dictionary.  Each item must be one of the <a class="reference internal" href="types.html#types"><span class="std std-ref">supported types</span></a></p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <p>If you use numbered bindings in the query then supply a sequence.
 Any sequence will work including lists and iterators.  For
 example:</p>
@@ -225,7 +218,7 @@ example:</p>
 </pre></div>
 </div>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
+<p class="admonition-title">Note</p>
 <p>A common gotcha is wanting to insert a single string but not
 putting it in a tuple:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into books values(?)&quot;</span><span class="p">,</span> <span class="s2">&quot;a title&quot;</span><span class="p">)</span>
@@ -234,7 +227,7 @@ putting it in a tuple:</p>
 <p>The string is a sequence of 8 characters and so it will look
 like you are supplying 8 bindings when only one is needed.  Use
 a one item tuple with a trailing comma like this:</p>
-<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into books values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a title&quot;</span><span class="p">,)</span> <span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into books values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a title&quot;</span><span class="p">,)</span> <span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -250,45 +243,40 @@ None/null will be used.  For example:</p>
    <span class="nb">print</span> <span class="n">row</span>
 </pre></div>
 </div>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
-<li><strong>TypeError</strong> – The bindings supplied were neither a dict nor a sequence</li>
-<li><a class="reference internal" href="exceptions.html#apsw.BindingsError" title="apsw.BindingsError"><strong>BindingsError</strong></a> – You supplied too many or too few bindings for the statements</li>
-<li><a class="reference internal" href="exceptions.html#apsw.IncompleteExecutionError" title="apsw.IncompleteExecutionError"><strong>IncompleteExecutionError</strong></a> – There are remaining unexecuted queries from your last execute</li>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>TypeError</strong> – The bindings supplied were neither a dict nor a sequence</p></li>
+<li><p><a class="reference internal" href="exceptions.html#apsw.BindingsError" title="apsw.BindingsError"><strong>BindingsError</strong></a> – You supplied too many or too few bindings for the statements</p></li>
+<li><p><a class="reference internal" href="exceptions.html#apsw.IncompleteExecutionError" title="apsw.IncompleteExecutionError"><strong>IncompleteExecutionError</strong></a> – There are remaining unexecuted queries from your last execute</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <div class="admonition seealso">
-<p class="first admonition-title">See also</p>
-<ul class="last simple">
-<li><a class="reference internal" href="execution.html#executionmodel"><span class="std std-ref">Execution model</span></a></li>
-<li><a class="reference internal" href="example.html#example-cursor"><span class="std std-ref">Example</span></a></li>
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="execution.html#executionmodel"><span class="std std-ref">Execution model</span></a></p></li>
+<li><p><a class="reference internal" href="example.html#example-cursor"><span class="std std-ref">Example</span></a></p></li>
 </ul>
 </div>
-<dl class="docutils">
-<dt>Calls:</dt>
-<dd><ul class="first last simple">
-<li><a class="reference external" href="https://sqlite.org/c3ref/prepare.html">sqlite3_prepare_v2</a></li>
-<li><a class="reference external" href="https://sqlite.org/c3ref/step.html">sqlite3_step</a></li>
-<li><a class="reference external" href="https://sqlite.org/c3ref/bind_blob.html">sqlite3_bind_int64</a></li>
-<li><a class="reference external" href="https://sqlite.org/c3ref/bind_blob.html">sqlite3_bind_null</a></li>
-<li><a class="reference external" href="https://sqlite.org/c3ref/bind_blob.html">sqlite3_bind_text</a></li>
-<li><a class="reference external" href="https://sqlite.org/c3ref/bind_blob.html">sqlite3_bind_double</a></li>
-<li><a class="reference external" href="https://sqlite.org/c3ref/bind_blob.html">sqlite3_bind_blob</a></li>
-<li><a class="reference external" href="https://sqlite.org/c3ref/bind_blob.html">sqlite3_bind_zeroblob</a></li>
+<dl class="simple">
+<dt>Calls:</dt><dd><ul class="simple">
+<li><p><a class="reference external" href="https://sqlite.org/c3ref/prepare.html">sqlite3_prepare_v2</a></p></li>
+<li><p><a class="reference external" href="https://sqlite.org/c3ref/step.html">sqlite3_step</a></p></li>
+<li><p><a class="reference external" href="https://sqlite.org/c3ref/bind_blob.html">sqlite3_bind_int64</a></p></li>
+<li><p><a class="reference external" href="https://sqlite.org/c3ref/bind_blob.html">sqlite3_bind_null</a></p></li>
+<li><p><a class="reference external" href="https://sqlite.org/c3ref/bind_blob.html">sqlite3_bind_text</a></p></li>
+<li><p><a class="reference external" href="https://sqlite.org/c3ref/bind_blob.html">sqlite3_bind_double</a></p></li>
+<li><p><a class="reference external" href="https://sqlite.org/c3ref/bind_blob.html">sqlite3_bind_blob</a></p></li>
+<li><p><a class="reference external" href="https://sqlite.org/c3ref/bind_blob.html">sqlite3_bind_zeroblob</a></p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.Cursor.executemany">
-<code class="descclassname">Cursor.</code><code class="descname">executemany</code><span class="sig-paren">(</span><em>statements</em>, <em>sequenceofbindings</em><span class="sig-paren">)</span> &#x2192; iterator<a class="headerlink" href="#apsw.Cursor.executemany" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">executemany</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">statements</span></em>, <em class="sig-param"><span class="n">sequenceofbindings</span></em><span class="sig-paren">)</span> &#x2192; iterator<a class="headerlink" href="#apsw.Cursor.executemany" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method is for when you want to execute the same statements over
 a sequence of bindings.  Conceptually it does this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">binding</span> <span class="ow">in</span> <span class="n">sequenceofbindings</span><span class="p">:</span>
@@ -309,22 +297,22 @@ statements can return data.  See <a class="reference internal" href="#apsw.Curso
 information.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.Cursor.fetchall">
-<code class="descclassname">Cursor.</code><code class="descname">fetchall</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#apsw.Cursor.fetchall" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">fetchall</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#apsw.Cursor.fetchall" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns all remaining result rows as a list.  This method is defined
 in DBAPI.  It is a longer way of doing <code class="docutils literal notranslate"><span class="pre">list(cursor)</span></code>.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.Cursor.fetchone">
-<code class="descclassname">Cursor.</code><code class="descname">fetchone</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; row or None<a class="headerlink" href="#apsw.Cursor.fetchone" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">fetchone</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; row or None<a class="headerlink" href="#apsw.Cursor.fetchone" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the next row of data or None if there are no more rows.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.Cursor.getconnection">
-<code class="descclassname">Cursor.</code><code class="descname">getconnection</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Connection<a class="headerlink" href="#apsw.Cursor.getconnection" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">getconnection</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection">Connection</a><a class="headerlink" href="#apsw.Cursor.getconnection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> this cursor belongs to.  An example usage is to get another cursor:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">cursor</span><span class="p">):</span>
   <span class="c1"># I don&#39;t want to alter existing cursor, so make a new one</span>
@@ -334,9 +322,9 @@ in DBAPI.  It is a longer way of doing <code class="docutils literal notranslate
 </div>
 </dd></dl>
 
-<span class="target" id="index-1"></span><dl class="method">
+<span class="target" id="index-1"></span><dl class="py method">
 <dt id="apsw.Cursor.getdescription">
-<code class="descclassname">Cursor.</code><code class="descname">getdescription</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; tuple<a class="headerlink" href="#apsw.Cursor.getdescription" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">getdescription</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; tuple<a class="headerlink" href="#apsw.Cursor.getdescription" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a tuple describing each column in the result row.  The
 return is identical for every row of the results.  You can only
 call this method once you have started executing a statement and
@@ -381,74 +369,73 @@ but never both.)</p>
 <span class="p">(</span><span class="s1">&#39;fjfjfj&#39;</span><span class="p">,</span> <span class="mf">3.7</span><span class="p">,</span> <span class="mi">97</span><span class="p">)</span>
 </pre></div>
 </div>
-<dl class="docutils">
-<dt>Calls:</dt>
-<dd><ul class="first last simple">
-<li><a class="reference external" href="https://sqlite.org/c3ref/column_name.html">sqlite3_column_name</a></li>
-<li><a class="reference external" href="https://sqlite.org/c3ref/column_decltype.html">sqlite3_column_decltype</a></li>
+<dl class="simple">
+<dt>Calls:</dt><dd><ul class="simple">
+<li><p><a class="reference external" href="https://sqlite.org/c3ref/column_name.html">sqlite3_column_name</a></p></li>
+<li><p><a class="reference external" href="https://sqlite.org/c3ref/column_decltype.html">sqlite3_column_decltype</a></p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.Cursor.getexectrace">
-<code class="descclassname">Cursor.</code><code class="descname">getexectrace</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; callable or None<a class="headerlink" href="#apsw.Cursor.getexectrace" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">getexectrace</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; callable or None<a class="headerlink" href="#apsw.Cursor.getexectrace" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the currently installed (via <a class="reference internal" href="#apsw.Cursor.setexectrace" title="apsw.Cursor.setexectrace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setexectrace()</span></code></a>)
 execution tracer.</p>
 <div class="admonition seealso">
-<p class="first admonition-title">See also</p>
-<ul class="last simple">
-<li><a class="reference internal" href="execution.html#tracing"><span class="std std-ref">Tracing</span></a></li>
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="execution.html#tracing"><span class="std std-ref">Tracing</span></a></p></li>
 </ul>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.Cursor.getrowtrace">
-<code class="descclassname">Cursor.</code><code class="descname">getrowtrace</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; callable or None<a class="headerlink" href="#apsw.Cursor.getrowtrace" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">getrowtrace</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; callable or None<a class="headerlink" href="#apsw.Cursor.getrowtrace" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the currently installed (via <a class="reference internal" href="#apsw.Cursor.setrowtrace" title="apsw.Cursor.setrowtrace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setrowtrace()</span></code></a>)
 row tracer.</p>
 <div class="admonition seealso">
-<p class="first admonition-title">See also</p>
-<ul class="last simple">
-<li><a class="reference internal" href="execution.html#tracing"><span class="std std-ref">Tracing</span></a></li>
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="execution.html#tracing"><span class="std std-ref">Tracing</span></a></p></li>
 </ul>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.Cursor.setexectrace">
-<code class="descclassname">Cursor.</code><code class="descname">setexectrace</code><span class="sig-paren">(</span><em>callable</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Cursor.setexectrace" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">setexectrace</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">callable</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Cursor.setexectrace" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>callable</em> is called with the cursor, statement and bindings for
 each <a class="reference internal" href="#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">execute()</span></code></a> or <a class="reference internal" href="#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">executemany()</span></code></a> on this
 cursor.</p>
 <p>If <em>callable</em> is <code class="xref py py-const docutils literal notranslate"><span class="pre">None</span></code> then any existing execution tracer is
 removed.</p>
 <div class="admonition seealso">
-<p class="first admonition-title">See also</p>
-<ul class="last simple">
-<li><a class="reference internal" href="execution.html#tracing"><span class="std std-ref">Tracing</span></a></li>
-<li><a class="reference internal" href="execution.html#executiontracer"><span class="std std-ref">Execution Tracer</span></a></li>
-<li><a class="reference internal" href="connection.html#apsw.Connection.setexectrace" title="apsw.Connection.setexectrace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.setexectrace()</span></code></a></li>
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="execution.html#tracing"><span class="std std-ref">Tracing</span></a></p></li>
+<li><p><a class="reference internal" href="execution.html#executiontracer"><span class="std std-ref">Execution Tracer</span></a></p></li>
+<li><p><a class="reference internal" href="connection.html#apsw.Connection.setexectrace" title="apsw.Connection.setexectrace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.setexectrace()</span></code></a></p></li>
 </ul>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.Cursor.setrowtrace">
-<code class="descclassname">Cursor.</code><code class="descname">setrowtrace</code><span class="sig-paren">(</span><em>callable</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Cursor.setrowtrace" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">setrowtrace</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">callable</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Cursor.setrowtrace" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>callable</em> is called with cursor and row being returned.  You can
 change the data that is returned or cause the row to be skipped
 altogether.</p>
 <p>If <em>callable</em> is <code class="xref py py-const docutils literal notranslate"><span class="pre">None</span></code> then any existing row tracer is
 removed.</p>
 <div class="admonition seealso">
-<p class="first admonition-title">See also</p>
-<ul class="last simple">
-<li><a class="reference internal" href="execution.html#tracing"><span class="std std-ref">Tracing</span></a></li>
-<li><a class="reference internal" href="execution.html#rowtracer"><span class="std std-ref">Row Tracer</span></a></li>
-<li><a class="reference internal" href="connection.html#apsw.Connection.setexectrace" title="apsw.Connection.setexectrace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.setexectrace()</span></code></a></li>
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="execution.html#tracing"><span class="std std-ref">Tracing</span></a></p></li>
+<li><p><a class="reference internal" href="execution.html#rowtracer"><span class="std std-ref">Row Tracer</span></a></p></li>
+<li><p><a class="reference internal" href="connection.html#apsw.Connection.setexectrace" title="apsw.Connection.setexectrace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.setexectrace()</span></code></a></p></li>
 </ul>
 </div>
 </dd></dl>
@@ -457,6 +444,7 @@ removed.</p>
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -484,17 +472,15 @@ removed.</p>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -514,14 +500,15 @@ removed.</p>
         <li class="right" >
           <a href="connection.html" title="Connections to a database"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.33.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.34.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Cursors (executing SQL)</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2020, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Aug 30, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Last updated on Dec 18, 2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

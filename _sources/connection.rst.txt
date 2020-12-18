@@ -771,6 +771,16 @@ Connection class
 
   Calls: `sqlite3_total_changes <https://sqlite.org/c3ref/total_changes.html>`__
 
+.. index:: sqlite3_txn_state
+
+.. method:: Connection.txn_state(schema=None) -> Int
+
+  Returns the current transaction state of the database, or a specific schema
+  if provided.  ValueError is raised if schema is not None or a valid schema name.
+  :attr:`apsw.mapping_txn_state` contains the names and values returned.
+
+  Calls: `sqlite3_txn_state <https://sqlite.org/c3ref/txn_state.html>`__
+
 .. index:: sqlite3_wal_autocheckpoint
 
 .. method:: Connection.wal_autocheckpoint(n)

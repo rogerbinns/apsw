@@ -1,20 +1,19 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Virtual Tables &#8212; APSW 3.33.0-r1 documentation</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Virtual Tables &#8212; APSW 3.34.0-r1 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -44,7 +43,8 @@
         <li class="right" >
           <a href="backup.html" title="Backup"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.33.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.34.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Virtual Tables</a></li> 
       </ul>
     </div>  
 
@@ -62,14 +62,14 @@ to the user. The person writing SQL doesn’t need to know or care that
 some of the tables come from elsewhere.</p>
 <p>Some examples of how you might use this:</p>
 <ul class="simple">
-<li>Translating to/from information stored in other formats (eg a csv/ini format file)</li>
-<li>Accessing the data remotely (eg you could make a table that backends into Amazon’s API)</li>
-<li>Dynamic information (eg currently running processes, files and directories, objects in your program)</li>
-<li>Information that needs reformatting (eg if you have complex rules about how to convert strings to/from Unicode
-in the dataset)</li>
-<li>Information that isn’t relationally correct (eg if you have data that has ended up with duplicate “unique” keys
-with code that dynamically corrects it)</li>
-<li>There are other examples on the <a class="reference external" href="https://sqlite.org/vtab.html">SQLite page</a></li>
+<li><p>Translating to/from information stored in other formats (eg a csv/ini format file)</p></li>
+<li><p>Accessing the data remotely (eg you could make a table that backends into Amazon’s API)</p></li>
+<li><p>Dynamic information (eg currently running processes, files and directories, objects in your program)</p></li>
+<li><p>Information that needs reformatting (eg if you have complex rules about how to convert strings to/from Unicode
+in the dataset)</p></li>
+<li><p>Information that isn’t relationally correct (eg if you have data that has ended up with duplicate “unique” keys
+with code that dynamically corrects it)</p></li>
+<li><p>There are other examples on the <a class="reference external" href="https://sqlite.org/vtab.html">SQLite page</a></p></li>
 </ul>
 <p>You need to have 3 types of object. A <a class="reference internal" href="#apsw.VTModule" title="apsw.VTModule"><code class="xref py py-class docutils literal notranslate"><span class="pre">module</span></code></a>, a
 <a class="reference internal" href="#apsw.VTTable" title="apsw.VTTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">virtual</span> <span class="pre">table</span></code></a> and a <a class="reference internal" href="#apsw.VTCursor" title="apsw.VTCursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">cursor</span></code></a>. These are documented below. You can also read the <a class="reference external" href="https://sqlite.org/vtab.html">SQLite
@@ -82,14 +82,14 @@ omitted in Python. You can return SQLite error codes (eg
 function to do the mapping.</p>
 <div class="section" id="vtmodule-class">
 <h2>VTModule class<a class="headerlink" href="#vtmodule-class" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="apsw.VTModule">
-<em class="property">class </em><code class="descname">VTModule</code><a class="headerlink" href="#apsw.VTModule" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">VTModule</code><a class="headerlink" href="#apsw.VTModule" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">There is no actual <em>VTModule</em> class - it is just shown this way
+<p class="admonition-title">Note</p>
+<p>There is no actual <em>VTModule</em> class - it is just shown this way
 for documentation convenience.  Your module instance should implement
 all the methods documented here.</p>
 </div>
@@ -109,9 +109,9 @@ a module object, you register it with a connection by calling
 <p>The create step is to tell SQLite about the existence of the table.
 Any number of tables referring to the same module can be made this
 way.  Note the (optional) arguments which are passed to the module.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.VTModule.Connect">
-<code class="descclassname">VTModule.</code><code class="descname">Connect</code><span class="sig-paren">(</span><em>connection</em>, <em>modulename</em>, <em>databasename</em>, <em>tablename</em>, <em>*args</em><span class="sig-paren">)</span> &#x2192; [ sql string, table object ]<a class="headerlink" href="#apsw.VTModule.Connect" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">VTModule.</code><code class="sig-name descname">Connect</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">connection</span></em>, <em class="sig-param"><span class="n">modulename</span></em>, <em class="sig-param"><span class="n">databasename</span></em>, <em class="sig-param"><span class="n">tablename</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span> &#x2192; [ sql string, table object ]<a class="headerlink" href="#apsw.VTModule.Connect" title="Permalink to this definition">¶</a></dt>
 <dd><p>The parameters and return are identical to
 <a class="reference internal" href="#apsw.VTModule.Create" title="apsw.VTModule.Create"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Create()</span></code></a>.  This method is called
 when there are additional references to the table.  <a class="reference internal" href="#apsw.VTModule.Create" title="apsw.VTModule.Create"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Create()</span></code></a> will be called the first time and
@@ -132,43 +132,39 @@ set <a class="reference internal" href="#apsw.VTModule.Connect" title="apsw.VTMo
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.VTModule.Create">
-<code class="descclassname">VTModule.</code><code class="descname">Create</code><span class="sig-paren">(</span><em>connection</em>, <em>modulename</em>, <em>databasename</em>, <em>tablename</em>, <em>*args</em><span class="sig-paren">)</span> &#x2192; [ sql string, table object ]<a class="headerlink" href="#apsw.VTModule.Create" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">VTModule.</code><code class="sig-name descname">Create</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">connection</span></em>, <em class="sig-param"><span class="n">modulename</span></em>, <em class="sig-param"><span class="n">databasename</span></em>, <em class="sig-param"><span class="n">tablename</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span> &#x2192; [ sql string, table object ]<a class="headerlink" href="#apsw.VTModule.Create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called when a table is first created on a <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">connection</span></code></a>.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>connection</strong> – An instance of <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a></li>
-<li><strong>modulename</strong> – The string name under which the module was <a class="reference internal" href="connection.html#apsw.Connection.createmodule" title="apsw.Connection.createmodule"><code class="xref py py-meth docutils literal notranslate"><span class="pre">registered</span></code></a></li>
-<li><strong>databasename</strong> – The name of the database.  This will be <code class="docutils literal notranslate"><span class="pre">main</span></code> for directly opened files and the name specified in
-<a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a> statements.</li>
-<li><strong>tablename</strong> – Name of the table the user wants to create.</li>
-<li><strong>args</strong> – Any arguments that were specified in the <a class="reference external" href="https://sqlite.org/lang_createvtab.html">create virtual table</a> statement.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>connection</strong> – An instance of <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a></p></li>
+<li><p><strong>modulename</strong> – The string name under which the module was <a class="reference internal" href="connection.html#apsw.Connection.createmodule" title="apsw.Connection.createmodule"><code class="xref py py-meth docutils literal notranslate"><span class="pre">registered</span></code></a></p></li>
+<li><p><strong>databasename</strong> – The name of the database.  This will be <code class="docutils literal notranslate"><span class="pre">main</span></code> for directly opened files and the name specified in
+<a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a> statements.</p></li>
+<li><p><strong>tablename</strong> – Name of the table the user wants to create.</p></li>
+<li><p><strong>args</strong> – Any arguments that were specified in the <a class="reference external" href="https://sqlite.org/lang_createvtab.html">create virtual table</a> statement.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A list of two items.  The first is a SQL <a class="reference external" href="https://sqlite.org/lang_createtable.html">create table</a> statement.  The
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of two items.  The first is a SQL <a class="reference external" href="https://sqlite.org/lang_createtable.html">create table</a> statement.  The
 columns are parsed so that SQLite knows what columns and declared types exist for the table.  The second item
 is an object that implements the <a class="reference internal" href="#apsw.VTTable" title="apsw.VTTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">table</span></code></a> methods.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <p>The corresponding call is <a class="reference internal" href="#apsw.VTTable.Destroy" title="apsw.VTTable.Destroy"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.Destroy()</span></code></a>.</p>
 </dd></dl>
 
 </div>
 <div class="section" id="vttable-class">
 <h2>VTTable class<a class="headerlink" href="#vttable-class" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="apsw.VTTable">
-<em class="property">class </em><code class="descname">VTTable</code><a class="headerlink" href="#apsw.VTTable" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">VTTable</code><a class="headerlink" href="#apsw.VTTable" title="Permalink to this definition">¶</a></dt>
 <dd><div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">There is no actual <em>VTTable</em> class - it is just shown this way for
+<p class="admonition-title">Note</p>
+<p>There is no actual <em>VTTable</em> class - it is just shown this way for
 documentation convenience.  Your table instance should implement
 the methods documented here.</p>
 </div>
@@ -183,23 +179,23 @@ table routines identify the columns by number, starting at zero.</p>
 the <a class="reference internal" href="#apsw.VTTable" title="apsw.VTTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> routines such as <a class="reference internal" href="#apsw.VTTable.UpdateChangeRow" title="apsw.VTTable.UpdateChangeRow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">UpdateChangeRow</span></code></a>.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.VTTable.Begin">
-<code class="descclassname">VTTable.</code><code class="descname">Begin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Begin" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">VTTable.</code><code class="sig-name descname">Begin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Begin" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function is used as part of transactions.  You do not have to
 provide the method.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.VTTable.BestIndex">
-<code class="descclassname">VTTable.</code><code class="descname">BestIndex</code><span class="sig-paren">(</span><em>constraints</em>, <em>orderbys</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.BestIndex" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">VTTable.</code><code class="sig-name descname">BestIndex</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">constraints</span></em>, <em class="sig-param"><span class="n">orderbys</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.BestIndex" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is a complex method. To get going initially, just return
 <code class="xref py py-const docutils literal notranslate"><span class="pre">None</span></code> and you will be fine. Implementing this method reduces
 the number of rows scanned in your table to satisfy queries, but
 only if you have an index or index like mechanism available.</p>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">The implementation of this method differs slightly from the
+<p class="admonition-title">Note</p>
+<p>The implementation of this method differs slightly from the
 <a class="reference external" href="https://sqlite.org/vtab.html">SQLite documentation</a>
 for the C API. You are not passed “unusable” constraints. The
 argv/constraintarg positions are not off by one. In the C api, you
@@ -243,45 +239,45 @@ list of constraints and you are returning a list of the same length
 describing how you could satisfy each one.</p>
 <p>Each list item returned corresponding to a constraint is one of:</p>
 <blockquote>
-<div><dl class="docutils">
-<dt>None</dt>
-<dd>This means you have no index for that constraint. SQLite
-will have to iterate over every row for it.</dd>
-<dt>integer</dt>
-<dd>This is the argument number for the constraintargs being passed
+<div><dl class="simple">
+<dt>None</dt><dd><p>This means you have no index for that constraint. SQLite
+will have to iterate over every row for it.</p>
+</dd>
+<dt>integer</dt><dd><p>This is the argument number for the constraintargs being passed
 into the <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Filter()</span></code></a> function of your
 <a class="reference internal" href="#apsw.VTCursor" title="apsw.VTCursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">cursor</span></code></a> (the values “Acme Widgets”, 74.99
-and 10 in the example).</dd>
-<dt>(integer, boolean)</dt>
-<dd>By default SQLite will check what you return. For example if
+and 10 in the example).</p>
+</dd>
+<dt>(integer, boolean)</dt><dd><p>By default SQLite will check what you return. For example if
 you said that you had an index on price, SQLite will still
 check that each row you returned is greater than 74.99. If you
 set the boolean to False then SQLite won’t do that double
-checking.</dd>
+checking.</p>
+</dd>
 </dl>
 </div></blockquote>
 <p>Example query: <code class="docutils literal notranslate"><span class="pre">select</span> <span class="pre">*</span> <span class="pre">from</span> <span class="pre">foo</span> <span class="pre">where</span> <span class="pre">price</span> <span class="pre">&gt;</span> <span class="pre">74.99</span> <span class="pre">and</span>
 <span class="pre">quantity&lt;=10</span> <span class="pre">and</span> <span class="pre">customer=='Acme</span> <span class="pre">Widgets'</span></code>.  customer is column 0,
 price column 2 and quantity column 5.  You can index on customer
 equality and price.</p>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="56%" />
-<col width="44%" />
+<col style="width: 56%" />
+<col style="width: 44%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Constraints (in)</th>
-<th class="head">Constraints used (out)</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>Constraints (in)</p></th>
+<th class="head"><p>Constraints used (out)</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td><div class="first last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_GT</span><span class="p">),</span>
+<tbody>
+<tr class="row-even"><td><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_GT</span><span class="p">),</span>
 <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_LE</span><span class="p">),</span>
 <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_EQ</span><span class="p">)</span>
 </pre></div>
 </div>
 </td>
-<td><div class="first last highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">1</span><span class="p">,</span>
+<td><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">1</span><span class="p">,</span>
 <span class="kc">None</span><span class="p">,</span>
 <span class="mi">0</span>
 </pre></div>
@@ -313,23 +309,23 @@ is. If not, then SQLite will have to sort the results first.</p>
 </div></blockquote>
 <p><strong>Return</strong></p>
 <p>You should return up to 5 items. Items not present in the return have a default value.</p>
-<dl class="docutils">
-<dt>0: constraints used (default None)</dt>
-<dd>This must either be None or a sequence the same length as
+<dl class="simple">
+<dt>0: constraints used (default None)</dt><dd><p>This must either be None or a sequence the same length as
 constraints passed in. Each item should be as specified above
 saying if that constraint is used, and if so which constraintarg
-to make the value be in your <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTCursor.Filter()</span></code></a> function.</dd>
-<dt>1: index number (default zero)</dt>
-<dd>This value is passed as is to <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTCursor.Filter()</span></code></a></dd>
-<dt>2: index string (default None)</dt>
-<dd>This value is passed as is to <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTCursor.Filter()</span></code></a></dd>
-<dt>3: orderby consumed (default False)</dt>
-<dd>Return True if your output will be in exactly the same order as the orderbys passed in</dd>
-<dt>4: estimated cost (default a huge number)</dt>
-<dd>Approximately how many disk operations are needed to provide the
+to make the value be in your <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTCursor.Filter()</span></code></a> function.</p>
+</dd>
+<dt>1: index number (default zero)</dt><dd><p>This value is passed as is to <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTCursor.Filter()</span></code></a></p>
+</dd>
+<dt>2: index string (default None)</dt><dd><p>This value is passed as is to <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCursor.Filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTCursor.Filter()</span></code></a></p>
+</dd>
+<dt>3: orderby consumed (default False)</dt><dd><p>Return True if your output will be in exactly the same order as the orderbys passed in</p>
+</dd>
+<dt>4: estimated cost (default a huge number)</dt><dd><p>Approximately how many disk operations are needed to provide the
 results. SQLite uses the cost to optimise queries. For example if
 the query includes <em>A or B</em> and A has 2,000 operations and B has 100
-then it is best to evaluate B before A.</dd>
+then it is best to evaluate B before A.</p>
+</dd>
 </dl>
 <p><strong>A complete example</strong></p>
 <p>Query is <code class="docutils literal notranslate"><span class="pre">select</span> <span class="pre">*</span> <span class="pre">from</span> <span class="pre">foo</span> <span class="pre">where</span> <span class="pre">price&gt;74.99</span> <span class="pre">and</span> <span class="pre">quantity&lt;=10</span> <span class="pre">and</span>
@@ -363,33 +359,33 @@ index on customer equality and price.</p>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.VTTable.Commit">
-<code class="descclassname">VTTable.</code><code class="descname">Commit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Commit" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">VTTable.</code><code class="sig-name descname">Commit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Commit" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function is used as part of transactions.  You do not have to
 provide the method.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.VTTable.Destroy">
-<code class="descclassname">VTTable.</code><code class="descname">Destroy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Destroy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">VTTable.</code><code class="sig-name descname">Destroy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Destroy" title="Permalink to this definition">¶</a></dt>
 <dd><p>The opposite of <a class="reference internal" href="#apsw.VTModule.Create" title="apsw.VTModule.Create"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTModule.Create()</span></code></a>.  This method is called when
 the table is no longer used.  Note that you must always release
 resources even if you intend to return an error, as it will not be
 called again on error.  SQLite may also <a class="reference external" href="https://sqlite.org/cvstrac/tktview?tn=2099">leak memory</a> if you return an error.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.VTTable.Disconnect">
-<code class="descclassname">VTTable.</code><code class="descname">Disconnect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Disconnect" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">VTTable.</code><code class="sig-name descname">Disconnect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Disconnect" title="Permalink to this definition">¶</a></dt>
 <dd><p>The opposite of <a class="reference internal" href="#apsw.VTModule.Connect" title="apsw.VTModule.Connect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTModule.Connect()</span></code></a>.  This method is called when
 a reference to a virtual table is no longer used, but <a class="reference internal" href="#apsw.VTTable.Destroy" title="apsw.VTTable.Destroy"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.Destroy()</span></code></a> will
 be called when the table is no longer used.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.VTTable.FindFunction">
-<code class="descclassname">VTTable.</code><code class="descname">FindFunction</code><span class="sig-paren">(</span><em>name</em>, <em>nargs</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.FindFunction" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">VTTable.</code><code class="sig-name descname">FindFunction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">nargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.FindFunction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called to find if the virtual table has its own implementation of a
 particular scalar function. You should return the function if you
 have it, else return None. You do not have to provide this method.</p>
@@ -398,181 +394,161 @@ in the <a class="reference internal" href="execution.html#statementcache"><span 
 won’t be called again.  If you want to return different
 implementations for the same function over time then you will need
 to disable the <a class="reference internal" href="execution.html#statementcache"><span class="std std-ref">statement cache</span></a>.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>name</strong> – The function name</li>
-<li><strong>nargs</strong> – How many arguments the function takes</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – The function name</p></li>
+<li><p><strong>nargs</strong> – How many arguments the function takes</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <div class="admonition seealso">
-<p class="first admonition-title">See also</p>
-<ul class="last simple">
-<li><a class="reference internal" href="connection.html#apsw.Connection.overloadfunction" title="apsw.Connection.overloadfunction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.overloadfunction()</span></code></a></li>
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="connection.html#apsw.Connection.overloadfunction" title="apsw.Connection.overloadfunction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.overloadfunction()</span></code></a></p></li>
 </ul>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.VTTable.Open">
-<code class="descclassname">VTTable.</code><code class="descname">Open</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Open" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">VTTable.</code><code class="sig-name descname">Open</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Open" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a <a class="reference internal" href="#apsw.VTCursor" title="apsw.VTCursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">cursor</span></code></a> object.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.VTTable.Rename">
-<code class="descclassname">VTTable.</code><code class="descname">Rename</code><span class="sig-paren">(</span><em>newname</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Rename" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">VTTable.</code><code class="sig-name descname">Rename</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">newname</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Rename" title="Permalink to this definition">¶</a></dt>
 <dd><p>Notification that the table will be given a new name. If you return
 without raising an exception, then SQLite renames the table (you
 don’t have to do anything). If you raise an exception then the
 renaming is prevented.  You do not have to provide this method.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.VTTable.Rollback">
-<code class="descclassname">VTTable.</code><code class="descname">Rollback</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Rollback" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">VTTable.</code><code class="sig-name descname">Rollback</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Rollback" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function is used as part of transactions.  You do not have to
 provide the method.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.VTTable.Sync">
-<code class="descclassname">VTTable.</code><code class="descname">Sync</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Sync" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">VTTable.</code><code class="sig-name descname">Sync</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Sync" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function is used as part of transactions.  You do not have to
 provide the method.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.VTTable.UpdateChangeRow">
-<code class="descclassname">VTTable.</code><code class="descname">UpdateChangeRow</code><span class="sig-paren">(</span><em>row</em>, <em>newrowid</em>, <em>fields</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.UpdateChangeRow" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">VTTable.</code><code class="sig-name descname">UpdateChangeRow</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">row</span></em>, <em class="sig-param"><span class="n">newrowid</span></em>, <em class="sig-param"><span class="n">fields</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.UpdateChangeRow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Change an existing row.  You may also need to change the rowid - for example if the query was
 <code class="docutils literal notranslate"><span class="pre">UPDATE</span> <span class="pre">table</span> <span class="pre">SET</span> <span class="pre">rowid=rowid+100</span> <span class="pre">WHERE</span> <span class="pre">...</span></code></p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>row</strong> – The existing 64 bit integer rowid</li>
-<li><strong>newrowid</strong> – If not the same as <em>row</em> then also change the rowid to this.</li>
-<li><strong>fields</strong> – A tuple of values the same length and order as columns in your table</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>row</strong> – The existing 64 bit integer rowid</p></li>
+<li><p><strong>newrowid</strong> – If not the same as <em>row</em> then also change the rowid to this.</p></li>
+<li><p><strong>fields</strong> – A tuple of values the same length and order as columns in your table</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.VTTable.UpdateDeleteRow">
-<code class="descclassname">VTTable.</code><code class="descname">UpdateDeleteRow</code><span class="sig-paren">(</span><em>rowid</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.UpdateDeleteRow" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">VTTable.</code><code class="sig-name descname">UpdateDeleteRow</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rowid</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.UpdateDeleteRow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete the row with the specified <em>rowid</em>.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rowid</strong> – 64 bit integer</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>rowid</strong> – 64 bit integer</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.VTTable.UpdateInsertRow">
-<code class="descclassname">VTTable.</code><code class="descname">UpdateInsertRow</code><span class="sig-paren">(</span><em>rowid</em>, <em>fields</em><span class="sig-paren">)</span> &#x2192; newrowid<a class="headerlink" href="#apsw.VTTable.UpdateInsertRow" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">VTTable.</code><code class="sig-name descname">UpdateInsertRow</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rowid</span></em>, <em class="sig-param"><span class="n">fields</span></em><span class="sig-paren">)</span> &#x2192; newrowid<a class="headerlink" href="#apsw.VTTable.UpdateInsertRow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Insert a row with the specified <em>rowid</em>.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>rowid</strong> – <code class="xref py py-const docutils literal notranslate"><span class="pre">None</span></code> if you should choose the rowid yourself, else a 64 bit integer</li>
-<li><strong>fields</strong> – A tuple of values the same length and order as columns in your table</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rowid</strong> – <code class="xref py py-const docutils literal notranslate"><span class="pre">None</span></code> if you should choose the rowid yourself, else a 64 bit integer</p></li>
+<li><p><strong>fields</strong> – A tuple of values the same length and order as columns in your table</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">If <em>rowid</em> was <code class="xref py py-const docutils literal notranslate"><span class="pre">None</span></code> then return the id you assigned
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>If <em>rowid</em> was <code class="xref py py-const docutils literal notranslate"><span class="pre">None</span></code> then return the id you assigned
 to the row.  If <em>rowid</em> was not <code class="xref py py-const docutils literal notranslate"><span class="pre">None</span></code> then the return value
 is ignored.</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
 <div class="section" id="vtcursor-class">
 <h2>VTCursor class<a class="headerlink" href="#vtcursor-class" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="apsw.VTCursor">
-<em class="property">class </em><code class="descname">VTCursor</code><a class="headerlink" href="#apsw.VTCursor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">VTCursor</code><a class="headerlink" href="#apsw.VTCursor" title="Permalink to this definition">¶</a></dt>
 <dd><div class="admonition note">
-<p class="first admonition-title">Note</p>
+<p class="admonition-title">Note</p>
 <blockquote>
-<div>There is no actual <em>VTCursor</em> class - it is just shown this
+<div><p>There is no actual <em>VTCursor</em> class - it is just shown this
 way for documentation convenience.  Your cursor instance should
-implement all the methods documented here.</div></blockquote>
+implement all the methods documented here.</p>
+</div></blockquote>
 <p>The <a class="reference internal" href="#apsw.VTCursor" title="apsw.VTCursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">VTCursor</span></code></a> object is used for iterating over a table.
 There may be many cursors simultaneously so each one needs to keep
 track of where it is.</p>
-<div class="last admonition seealso">
-<p class="first admonition-title">See also</p>
-<p class="last"><a class="reference internal" href="#vtablestructure"><span class="std std-ref">Virtual table structure</span></a></p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#vtablestructure"><span class="std std-ref">Virtual table structure</span></a></p>
 </div>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.VTCursor.Close">
-<code class="descclassname">VTCursor.</code><code class="descname">Close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTCursor.Close" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">VTCursor.</code><code class="sig-name descname">Close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTCursor.Close" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is the destructor for the cursor. Note that you must
 cleanup. The method will not be called again if you raise an
 exception.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.VTCursor.Column">
-<code class="descclassname">VTCursor.</code><code class="descname">Column</code><span class="sig-paren">(</span><em>number</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTCursor.Column" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">VTCursor.</code><code class="sig-name descname">Column</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">number</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTCursor.Column" title="Permalink to this definition">¶</a></dt>
 <dd><p>Requests the value of the specified column <em>number</em> of the current
 row.  If <em>number</em> is -1 then return the rowid.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Must be one one of the <a class="reference internal" href="types.html#types"><span class="std std-ref">5
-supported types</span></a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Must be one one of the <a class="reference internal" href="types.html#types"><span class="std std-ref">5
+supported types</span></a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.VTCursor.Eof">
-<code class="descclassname">VTCursor.</code><code class="descname">Eof</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#apsw.VTCursor.Eof" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">VTCursor.</code><code class="sig-name descname">Eof</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#apsw.VTCursor.Eof" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called to ask if we are at the end of the table. It is called after each call to Filter and Next.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">False if the cursor is at a valid row of data, else True</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>False if the cursor is at a valid row of data, else True</p>
+</dd>
+</dl>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">This method can only return True or False to SQLite.  If you have
+<p class="admonition-title">Note</p>
+<p>This method can only return True or False to SQLite.  If you have
 an exception in the method or provide a non-boolean return then
 True (no more data) will be returned to SQLite.</p>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.VTCursor.Filter">
-<code class="descclassname">VTCursor.</code><code class="descname">Filter</code><span class="sig-paren">(</span><em>indexnum</em>, <em>indexname</em>, <em>constraintargs</em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTCursor.Filter" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">VTCursor.</code><code class="sig-name descname">Filter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">indexnum</span></em>, <em class="sig-param"><span class="n">indexname</span></em>, <em class="sig-param"><span class="n">constraintargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTCursor.Filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method is always called first to initialize an iteration to the
 first row of the table. The arguments come from the
 <a class="reference internal" href="#apsw.VTTable.BestIndex" title="apsw.VTTable.BestIndex"><code class="xref py py-meth docutils literal notranslate"><span class="pre">BestIndex()</span></code></a> method in the <a class="reference internal" href="#apsw.VTTable" title="apsw.VTTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">table</span></code></a>
@@ -581,9 +557,9 @@ requested. If you always return None in BestIndex then indexnum will
 be zero, indexstring will be None and constraintargs will be empty).</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.VTCursor.Next">
-<code class="descclassname">VTCursor.</code><code class="descname">Next</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTCursor.Next" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">VTCursor.</code><code class="sig-name descname">Next</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTCursor.Next" title="Permalink to this definition">¶</a></dt>
 <dd><p>Move the cursor to the next row.  Do not have an exception if there
 is no next row.  Instead return False when <a class="reference internal" href="#apsw.VTCursor.Eof" title="apsw.VTCursor.Eof"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Eof()</span></code></a> is
 subsequently called.</p>
@@ -593,9 +569,9 @@ to <a class="reference internal" href="#apsw.VTCursor.Filter" title="apsw.VTCurs
 appropriate indexed and constrained row.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="apsw.VTCursor.Rowid">
-<code class="descclassname">VTCursor.</code><code class="descname">Rowid</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; 64 bit integer<a class="headerlink" href="#apsw.VTCursor.Rowid" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">VTCursor.</code><code class="sig-name descname">Rowid</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; 64 bit integer<a class="headerlink" href="#apsw.VTCursor.Rowid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the current rowid.</p>
 </dd></dl>
 
@@ -614,8 +590,8 @@ example if you have an error in the Filter method of a cursor, SQLite
 then closes the cursor. If you also return an error in the Close
 method then the first error may mask the second or vice versa.</p>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">SQLite may ignore responses from your methods if they don’t make
+<p class="admonition-title">Note</p>
+<p>SQLite may ignore responses from your methods if they don’t make
 sense. For example in BestIndex, if you set multiple arguments to
 have the same constraintargs position then your Filter won’t
 receive any constraintargs at all.</p>
@@ -624,6 +600,7 @@ receive any constraintargs at all.</p>
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -654,17 +631,15 @@ receive any constraintargs at all.</p>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -684,14 +659,15 @@ receive any constraintargs at all.</p>
         <li class="right" >
           <a href="backup.html" title="Backup"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.33.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.34.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Virtual Tables</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2020, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Aug 30, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Last updated on Dec 18, 2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

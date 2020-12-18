@@ -1,20 +1,19 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Building &#8212; APSW 3.33.0-r1 documentation</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Building &#8212; APSW 3.34.0-r1 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -44,7 +43,8 @@
         <li class="right" >
           <a href="download.html" title="Download"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.33.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.34.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Building</a></li> 
       </ul>
     </div>  
 
@@ -60,60 +60,60 @@
 <p>Short story: You run <code class="file docutils literal notranslate"><span class="pre">setup.py</span></code> but you should ideally follow
 the <a class="reference internal" href="#recommended-build"><span class="std std-ref">recommended way</span></a> which will also fetch
 needed components for you.</p>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="46%" />
-<col width="54%" />
+<col style="width: 46%" />
+<col style="width: 54%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Command</th>
-<th class="head">Result</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>Command</p></th>
+<th class="head"><p>Result</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td><div class="first last line-block">
+<tbody>
+<tr class="row-even"><td><div class="line-block">
 <div class="line">python setup.py install test</div>
 </div>
 </td>
-<td>Compiles APSW with default Python compiler, installs it into Python
-site library directory and then runs the test suite.</td>
+<td><p>Compiles APSW with default Python compiler, installs it into Python
+site library directory and then runs the test suite.</p></td>
 </tr>
-<tr class="row-odd"><td><div class="first last line-block">
+<tr class="row-odd"><td><div class="line-block">
 <div class="line">python setup.py install <code class="xref std std-option docutils literal notranslate"><span class="pre">--user</span></code></div>
 </div>
 </td>
-<td>(Python 2.6+, 3). Compiles APSW with default Python
+<td><p>(Python 2.6+, 3). Compiles APSW with default Python
 compiler and installs it into a subdirectory of your home directory.
-See <span class="target" id="index-0"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-0370"><strong>PEP 370</strong></a> for more details.</td>
+See <span class="target" id="index-0"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-0370"><strong>PEP 370</strong></a> for more details.</p></td>
 </tr>
-<tr class="row-even"><td><div class="first last line-block">
+<tr class="row-even"><td><div class="line-block">
 <div class="line">python setup.py build <code class="xref std std-option docutils literal notranslate"><span class="pre">--compile=mingw32</span></code> install</div>
 </div>
 </td>
-<td>On Windows this will use the
+<td><p>On Windows this will use the
 <a class="reference external" href="http://www.gnu.org/philosophy/free-sw.html">free</a>
 <a class="reference external" href="http://mingw.org">MinGW compiler</a> instead of the
-Microsoft compilers.</td>
+Microsoft compilers.</p></td>
 </tr>
-<tr class="row-odd"><td><div class="first last line-block">
+<tr class="row-odd"><td><div class="line-block">
 <div class="line">python setup.py build_ext <code class="xref std std-option docutils literal notranslate"><span class="pre">--force</span></code>
 <code class="xref std std-option docutils literal notranslate"><span class="pre">--inplace</span></code> test</div>
 </div>
 </td>
-<td>Compiles the extension but doesn’t install it. The resulting file
+<td><p>Compiles the extension but doesn’t install it. The resulting file
 will be in the current directory named apsw.so (Unix/Mac) or
 apsw.pyd (Windows). The test suite is then run. (Note on recent versions
 of CPython the extension filenames may be more complicated due to
-<span class="target" id="index-1"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-3149"><strong>PEP 3149</strong></a>.)</td>
+<span class="target" id="index-1"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-3149"><strong>PEP 3149</strong></a>.)</p></td>
 </tr>
-<tr class="row-even"><td><div class="first last line-block">
+<tr class="row-even"><td><div class="line-block">
 <div class="line">python setup.py build <code class="xref std std-option docutils literal notranslate"><span class="pre">--debug</span></code> install</div>
 </div>
 </td>
-<td>Compiles APSW with debug information.  This also turns on <a class="reference external" href="http://en.wikipedia.org/wiki/Assert.h">assertions</a>
+<td><p>Compiles APSW with debug information.  This also turns on <a class="reference external" href="http://en.wikipedia.org/wiki/Assert.h">assertions</a>
 in APSW that double check the code assumptions.  If you are using the
 SQLite amalgamation then assertions are turned on in that too.  Note
-that this will considerably slow down APSW and SQLite.</td>
+that this will considerably slow down APSW and SQLite.</p></td>
 </tr>
 </tbody>
 </table>
@@ -138,27 +138,27 @@ re-fetching.</p>
 <div class="line">python setup.py fetch <em>options</em></div>
 </div>
 </div></blockquote>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="32%" />
-<col width="68%" />
+<col style="width: 32%" />
+<col style="width: 68%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">fetch flag</th>
-<th class="head">Result</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>fetch flag</p></th>
+<th class="head"><p>Result</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td><div class="first last line-block">
+<tbody>
+<tr class="row-even"><td><div class="line-block">
 <div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--version=VERSION</span></code></div>
 </div>
 </td>
-<td><p class="first">By default the <a class="reference external" href="https://sqlite.org/download.html">SQLite download page</a> is
+<td><p>By default the <a class="reference external" href="https://sqlite.org/download.html">SQLite download page</a> is
 consulted to find the current SQLite version
 which you can override using this flag.</p>
-<div class="last admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">You can also specify <cite>fossil</cite> as the version
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can also specify <cite>fossil</cite> as the version
 and the current development version from <a class="reference external" href="https://sqlite.org/src/timeline">SQLite’s source tracking system</a> will be used.  (The system is named
 <a class="reference external" href="http://www.fossil-scm.org">Fossil</a>.) Note that checksums can’t be checked
 for fossil. You will also need TCL and make installed for the amalgamation to
@@ -167,34 +167,34 @@ work on Windows.)</p>
 </div>
 </td>
 </tr>
-<tr class="row-odd"><td><div class="first last line-block">
+<tr class="row-odd"><td><div class="line-block">
 <div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--missing-checksum-ok</span></code></div>
 </div>
 </td>
-<td>Allows setup to continue if the <a class="reference internal" href="#fetch-checksums"><span class="std std-ref">checksum</span></a> is missing.</td>
+<td><p>Allows setup to continue if the <a class="reference internal" href="#fetch-checksums"><span class="std std-ref">checksum</span></a> is missing.</p></td>
 </tr>
-<tr class="row-even"><td><div class="first last line-block">
+<tr class="row-even"><td><div class="line-block">
 <div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--all</span></code></div>
 </div>
 </td>
-<td>Gets all components listed below.</td>
+<td><p>Gets all components listed below.</p></td>
 </tr>
-<tr class="row-odd"><td><div class="first last line-block">
+<tr class="row-odd"><td><div class="line-block">
 <div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--sqlite</span></code></div>
 </div>
 </td>
-<td>Automatically downloads the <a class="reference external" href="https://sqlite.org/amalgamation.html">SQLite amalgamation</a>. The amalgamation is the
+<td><p>Automatically downloads the <a class="reference external" href="https://sqlite.org/amalgamation.html">SQLite amalgamation</a>. The amalgamation is the
 preferred way to use SQLite as you have total control over what components are
 included or excluded (see below) and have no dependencies on any existing
 libraries on your developer or deployment machines. The amalgamation includes the
 fts3/4/5, rtree, json1 and icu extensions. On non-Windows platforms, any existing
 <code class="file docutils literal notranslate"><span class="pre">sqlite3/</span></code> directory will be erased and the downloaded code placed in a newly
-created <code class="file docutils literal notranslate"><span class="pre">sqlite3/</span></code> directory.</td>
+created <code class="file docutils literal notranslate"><span class="pre">sqlite3/</span></code> directory.</p></td>
 </tr>
 </tbody>
 </table>
 <div class="admonition note" id="fetch-checksums">
-<p class="first admonition-title">Note</p>
+<p class="admonition-title">Note</p>
 <p>The SQLite downloads are not <a class="reference external" href="http://en.wikipedia.org/wiki/Digital_signature">digitally signed</a> which means you
 have no way of verifying they were produced by the SQLite team or
 were not modified between the SQLite servers and your computer.</p>
@@ -206,13 +206,13 @@ error occurs.</p>
 could modify it to point at a malicious download version instead.
 (setup only uses the page to determine the current version number -
 the SQLite download site URL is hard coded.)</p>
-<p class="last">If the URL is not listed in the checksums file then setup aborts.
+<p>If the URL is not listed in the checksums file then setup aborts.
 You can use <code class="xref std std-option docutils literal notranslate"><span class="pre">--missing-checksum-ok</span></code> to continue.  You are
 recommended instead to update the checksums file with the
 correct information.</p>
 </div>
 <div class="admonition note" id="fetch-configure">
-<p class="first admonition-title">Note</p>
+<p class="admonition-title">Note</p>
 <p>(This note only applies to non-Windows platforms.)  By default the
 amalgamation will work on your platform.  It detects
 the operating system (and compiler if relevant) and uses the
@@ -234,7 +234,7 @@ new APIs you have by running the <code class="file docutils literal notranslate"
 with SQLite and noting the output.  The information is placed in
 <code class="file docutils literal notranslate"><span class="pre">sqlite3/sqlite3config.h</span></code>.  The build stage will automatically
 take note of this as needed.</p>
-<p class="last">If you get the fossil version then the configure script does not
+<p>If you get the fossil version then the configure script does not
 work.  Instead the fetch will save and re-use any pre-existing
 <code class="file docutils literal notranslate"><span class="pre">sqlite3/sqlite3config.h</span></code>.</p>
 </div>
@@ -255,91 +255,91 @@ need to give the flag once and giving a comma separated list.  For example:</p>
 <div class="line">python setup.py build <code class="xref std std-option docutils literal notranslate"><span class="pre">--enable=fts3,fts3_parenthesis,rtree,icu</span></code></div>
 </div>
 </div></blockquote>
-<table border="1" class="docutils">
+<table class="docutils align-default">
 <colgroup>
-<col width="32%" />
-<col width="68%" />
+<col style="width: 32%" />
+<col style="width: 68%" />
 </colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">build/build_ext flag</th>
-<th class="head">Result</th>
+<thead>
+<tr class="row-odd"><th class="head"><p>build/build_ext flag</p></th>
+<th class="head"><p>Result</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td><div class="first last line-block">
+<tbody>
+<tr class="row-even"><td><div class="line-block">
 <div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--enable-all-extensions</span></code></div>
 </div>
 </td>
-<td>Enables the STAT4, FTS3/4/5, RTree, JSON1, RBU, and ICU extensions if <em>icu-config</em>
-is on your path</td>
+<td><p>Enables the STAT4, FTS3/4/5, RTree, JSON1, RBU, and ICU extensions if <em>icu-config</em>
+is on your path</p></td>
 </tr>
-<tr class="row-odd"><td><div class="first last line-block">
+<tr class="row-odd"><td><div class="line-block">
 <div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--enable=fts3</span></code></div>
 <div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--enable=fts4</span></code></div>
 <div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--enable=fts5</span></code></div>
 </div>
 </td>
-<td>Enables the <a class="reference internal" href="extensions.html#ext-fts3"><span class="std std-ref">full text search extension</span></a>.
+<td><p>Enables the <a class="reference internal" href="extensions.html#ext-fts3"><span class="std std-ref">full text search extension</span></a>.
 This flag only helps when using the amalgamation. If not using the
 amalgamation then you need to separately ensure fts3/4/5 is enabled in the SQLite
 install. You are likely to want the <a class="reference external" href="https://sqlite.org/compile.html#enable_fts3_parenthesis">parenthesis option</a> on unless you have
-legacy code (<cite>–enable-all-extensions</cite> turns it on).</td>
+legacy code (<cite>–enable-all-extensions</cite> turns it on).</p></td>
 </tr>
-<tr class="row-even"><td><div class="first last line-block">
+<tr class="row-even"><td><div class="line-block">
 <div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--enable=rtree</span></code></div>
 </div>
 </td>
-<td>Enables the <a class="reference internal" href="extensions.html#ext-rtree"><span class="std std-ref">spatial table extension</span></a>.
+<td><p>Enables the <a class="reference internal" href="extensions.html#ext-rtree"><span class="std std-ref">spatial table extension</span></a>.
 This flag only helps when using the amalgamation. If not using the
 amalgamation then you need to separately ensure rtree is enabled in the SQLite
-install.</td>
+install.</p></td>
 </tr>
-<tr class="row-odd"><td><div class="first last line-block">
+<tr class="row-odd"><td><div class="line-block">
 <div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--enable=json1</span></code></div>
 </div>
 </td>
-<td>Enables the <a class="reference internal" href="extensions.html#ext-json1"><span class="std std-ref">JSON1 extension</span></a>.
+<td><p>Enables the <a class="reference internal" href="extensions.html#ext-json1"><span class="std std-ref">JSON1 extension</span></a>.
 This flag only helps when using the amalgamation. If not using the
 amalgamation then you need to separately ensure json1 is enabled in the SQLite
-install.</td>
+install.</p></td>
 </tr>
-<tr class="row-even"><td><div class="first last line-block">
+<tr class="row-even"><td><div class="line-block">
 <div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--enable=rbu</span></code></div>
 </div>
 </td>
-<td>Enables the <a class="reference internal" href="extensions.html#ext-rbu"><span class="std std-ref">reumable bulk update extension</span></a>.
+<td><p>Enables the <a class="reference internal" href="extensions.html#ext-rbu"><span class="std std-ref">reumable bulk update extension</span></a>.
 This flag only helps when using the amalgamation. If not using the
 amalgamation then you need to separately ensure rbu is enabled in the SQLite
-install.</td>
+install.</p></td>
 </tr>
-<tr class="row-odd"><td><div class="first last line-block">
+<tr class="row-odd"><td><div class="line-block">
 <div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--enable=icu</span></code></div>
 </div>
 </td>
-<td>Enables the <a class="reference internal" href="extensions.html#ext-icu"><span class="std std-ref">International Components for Unicode extension</span></a>.
+<td><p>Enables the <a class="reference internal" href="extensions.html#ext-icu"><span class="std std-ref">International Components for Unicode extension</span></a>.
 Note that you must have the ICU libraries on your machine which setup will
 automatically try to find using <code class="file docutils literal notranslate"><span class="pre">icu-config</span></code>.
 This flag only helps when using the amalgamation. If not using the
 amalgamation then you need to separately ensure ICU is enabled in the SQLite
-install.</td>
+install.</p></td>
 </tr>
-<tr class="row-even"><td><div class="first last line-block">
+<tr class="row-even"><td><div class="line-block">
 <div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--omit=ITEM</span></code></div>
 </div>
 </td>
-<td>Causes various functionality to be omitted. For example
+<td><p>Causes various functionality to be omitted. For example
 <code class="xref std std-option docutils literal notranslate"><span class="pre">--omit=load_extension</span></code> will omit code to do with loading extensions. If
 using the amalgamation then this will omit the functionality from APSW and
 SQLite, otherwise the functionality will only be omitted from APSW (ie the code
 will still be in SQLite, APSW just won’t call it). In almost all cases you will need
 to regenerate the SQLite source because the omits also alter the generated SQL
-parser. See <a class="reference external" href="https://sqlite.org/compile.html#omitfeatures">the relevant SQLite documentation</a>.</td>
+parser. See <a class="reference external" href="https://sqlite.org/compile.html#omitfeatures">the relevant SQLite documentation</a>.</p></td>
 </tr>
 </tbody>
 </table>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Extension loading is enabled by default when using the amalgamation
+<p class="admonition-title">Note</p>
+<p>Extension loading is enabled by default when using the amalgamation
 and disabled when using existing libraries as this most closely
 matches current practise.  Use <code class="xref std std-option docutils literal notranslate"><span class="pre">--omit=load_extension</span></code> or
 <code class="xref std std-option docutils literal notranslate"><span class="pre">--enable=load_extension</span></code> to explicity disable/enable the
@@ -360,27 +360,31 @@ can manually specify the version, for example
 <blockquote>
 <div><p><a class="reference external" href="https://sqlite.org/amalgamation.html">Amalgamation</a></p>
 <blockquote>
-<div>The file <code class="file docutils literal notranslate"><span class="pre">sqlite3.c</span></code> and then <code class="file docutils literal notranslate"><span class="pre">sqlite3/sqlite3.c</span></code> is
+<div><p>The file <code class="file docutils literal notranslate"><span class="pre">sqlite3.c</span></code> and then <code class="file docutils literal notranslate"><span class="pre">sqlite3/sqlite3.c</span></code> is
 looked for. The SQLite code is then statically compiled into the
 APSW extension and is invisible to the rest of the
 process. There are no runtime library dependencies on SQLite as
 a result.  When you use <code class="xref std std-option docutils literal notranslate"><span class="pre">fetch</span></code> this is where it places
-the downloaded amalgamation.</div></blockquote>
+the downloaded amalgamation.</p>
+</div></blockquote>
 <p>Local build</p>
 <blockquote>
-<div>The header <code class="file docutils literal notranslate"><span class="pre">sqlite3/sqlite3.h</span></code> and library <code class="file docutils literal notranslate"><span class="pre">sqlite3/libsqlite3.</span><em><span class="pre">a,so,dll</span></em></code> is looked for.</div></blockquote>
+<div><p>The header <code class="file docutils literal notranslate"><span class="pre">sqlite3/sqlite3.h</span></code> and library <code class="file docutils literal notranslate"><span class="pre">sqlite3/libsqlite3.</span><em><span class="pre">a,so,dll</span></em></code> is looked for.</p>
+</div></blockquote>
 <p>User directories</p>
 <blockquote>
-<div>If you are using Python 2.6+ or Python 3 and specified
+<div><p>If you are using Python 2.6+ or Python 3 and specified
 <code class="xref std std-option docutils literal notranslate"><span class="pre">--user</span></code> then your user directory is searched first. See
-<span class="target" id="index-2"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-0370"><strong>PEP 370</strong></a> for more details.</div></blockquote>
+<span class="target" id="index-2"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-0370"><strong>PEP 370</strong></a> for more details.</p>
+</div></blockquote>
 <p>System directories</p>
 <blockquote>
-<div>The default compiler include path (eg <code class="file docutils literal notranslate"><span class="pre">/usr/include</span></code>) and library path (eg <code class="file docutils literal notranslate"><span class="pre">/usr/lib</span></code>) are used.</div></blockquote>
+<div><p>The default compiler include path (eg <code class="file docutils literal notranslate"><span class="pre">/usr/include</span></code>) and library path (eg <code class="file docutils literal notranslate"><span class="pre">/usr/lib</span></code>) are used.</p>
+</div></blockquote>
 </div></blockquote>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">If you compiled SQLite with any OMIT flags (eg
+<p class="admonition-title">Note</p>
+<p>If you compiled SQLite with any OMIT flags (eg
 <code class="xref py py-const docutils literal notranslate"><span class="pre">SQLITE_OMIT_LOAD_EXTENSION</span></code>) then you must include them in
 the <code class="file docutils literal notranslate"><span class="pre">setup.py</span></code> command or file. For this example you could use
 <code class="xref std std-option docutils literal notranslate"><span class="pre">setup.py</span> <span class="pre">build</span> <span class="pre">--omit=load_extension</span></code> to add the same flags.</p>
@@ -407,8 +411,8 @@ APSW source to.</p>
 </div>
 </div></blockquote>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">There will be some warnings during the compilation step about
+<p class="admonition-title">Note</p>
+<p>There will be some warnings during the compilation step about
 sqlite3.c, <a class="reference external" href="https://sqlite.org/faq.html#q17">but they are harmless</a></p>
 </div>
 <p>The extension just turns into a single file apsw.so (Linux/Mac) or
@@ -478,6 +482,7 @@ SQLite supported versions running the tests. See
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -514,17 +519,15 @@ SQLite supported versions running the tests. See
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -544,14 +547,15 @@ SQLite supported versions running the tests. See
         <li class="right" >
           <a href="download.html" title="Download"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.33.0-r1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.34.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Building</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2020, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Aug 30, 2020.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+      Last updated on Dec 18, 2020.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking
