@@ -383,6 +383,10 @@ APSWCursor_internal_getdescription(APSWCursor *self, int fmtnum)
 
 /** .. method:: getdescription() -> tuple
 
+   If you are trying to get information about a table or view,
+   then `pragma table_info <https://sqlite.org/pragma.html#pragma_table_info>`__
+   is better.
+
    Returns a tuple describing each column in the result row.  The
    return is identical for every row of the results.  You can only
    call this method once you have started executing a statement and
@@ -393,8 +397,8 @@ APSWCursor_internal_getdescription(APSWCursor *self, int fmtnum)
 
       for row in cursor.execute("select ....."):
          # this works
-         print cursor.getdescription()
-         print row
+         print (cursor.getdescription())
+         print (row)
 
    The information about each column is a tuple of ``(column_name,
    declared_column_type)``.  The type is what was declared in the
@@ -414,8 +418,8 @@ APSWCursor_internal_getdescription(APSWCursor *self, int fmtnum)
       cursor.execute("insert into books values(?,?,?)", ("fjfjfj", 3.7, 97))
 
       for row in cursor.execute("select * from books"):
-         print cursor.getdescription()
-         print row
+         print (cursor.getdescription())
+         print (row)
 
    Output::
 
