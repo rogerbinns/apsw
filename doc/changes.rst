@@ -2,6 +2,11 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.35.0-r1
+=========
+
+Updates for SQLite download url (the year is part of the urls).
+
 3.34.0-r1
 =========
 
