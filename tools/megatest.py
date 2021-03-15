@@ -146,7 +146,7 @@ def getpyurl(pyver):
 
 
 def buildpython(workdir, pyver, ucs, logfilename):
-    if pyver == "system": return "/usr/bin/python", ""
+    if pyver == "system": return "/usr/bin/python3", ""
     url = getpyurl(pyver)
     if url.endswith(".bz2"):
         tarx = "j"
