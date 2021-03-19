@@ -16,6 +16,7 @@ import threading
 import queue
 import optparse
 import traceback
+import re
 
 os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -85,7 +86,7 @@ def main(PYVERS, UCSTEST, SQLITEVERS, concurrency):
 
     for pyver in PYVERS:
         for ucs in UCSTEST:
-            if pyver == "system" or pyver >= "3.3":
+            if pyver == "system" or natural_compare(pyver, "3.3") >= 0:
                 if ucs != 2: continue
                 ucs = 0
             for sqlitever in SQLITEVERS:
@@ -132,7 +133,7 @@ def getpyurl(pyver):
             "2.6.9",
         )
         v2i = lambda x: [int(i) for i in x.split(".")]
-        if pyver >= '3.3':
+        if natural_compare(pyver, '3.3') >= 0:
             ext = "xz"
         for v in switchvers:
             if v2i(dirver)[:2] == v2i(v)[:2] and v2i(dirver) >= v2i(v):
@@ -195,6 +196,22 @@ def patch_natty_build(setup):
         out.append(line)
     open(setup, "wt").write("".join(out))
 
+
+def natural_compare(a, b):
+    # https://stackoverflow.com/a/8408177
+    convert = lambda text: int(text) if text.isdigit() else text.lower()
+    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+
+    return cmp(alphanum_key(a), alphanum_key(b))
+
+
+def cmp(a, b):
+    if a < b:
+        return -1
+    if a > b:
+        return +1
+    assert a == b
+    return 0
 
 # Default versions we support
 PYVERS = (
