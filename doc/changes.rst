@@ -7,6 +7,8 @@ Change History
 
 Updates for SQLite download url (the year is part of the urls).
 
+Compiles under CPython 3.10 (a deprecated function was removed).
+
 3.34.0-r1
 =========
 

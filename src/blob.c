@@ -378,12 +378,17 @@ APSWBlob_readinto(APSWBlob *self, PyObject *args)
   int res;
   Py_ssize_t offset, lengthwanted;
   PyObject *wbuf=NULL;
+  PyObject *errorexitval = NULL;
 
   int aswb;
   void *buffer;
   Py_ssize_t bufsize;
 
   int bloblen;
+#if PY_VERSION_HEX >= 0x03000000
+  Py_buffer py3buffer;
+#endif
+
 
   CHECK_USE(NULL);
   CHECK_BLOB_CLOSED;
@@ -401,9 +406,20 @@ APSWBlob_readinto(APSWBlob *self, PyObject *args)
 		       &wbuf, &offset, &length))
     return NULL;
 
+#define ERREXIT(x) do { errorexitval = (x); goto errorexit; } while (0)
+
+#if PY_VERSION_HEX < 0x03000000
   aswb=PyObject_AsWriteBuffer(wbuf, &buffer, &bufsize);
   if(aswb)
     return NULL;
+#else
+  memset(&py3buffer, 0, sizeof(py3buffer));
+  aswb = PyObject_GetBuffer(wbuf, &py3buffer, PyBUF_WRITABLE | PyBUF_SIMPLE);
+  if(aswb)
+    return NULL;
+  buffer = py3buffer.buf;
+  bufsize = py3buffer.len;
+#endif
 
   /* Although a lot of these checks could be combined into a single
      one, they are kept separate so that we can verify they have each
@@ -415,7 +431,7 @@ APSWBlob_readinto(APSWBlob *self, PyObject *args)
   bloblen=sqlite3_blob_bytes(self->pBlob);
 
   if(offset<0 || offset>bufsize)
-    return PyErr_Format(PyExc_ValueError, "offset is less than zero or beyond end of buffer");
+    ERREXIT(PyErr_Format(PyExc_ValueError, "offset is less than zero or beyond end of buffer"));
 
   if(PyTuple_GET_SIZE(args)<3)
     lengthwanted=bufsize-offset;
@@ -423,26 +439,36 @@ APSWBlob_readinto(APSWBlob *self, PyObject *args)
     lengthwanted=length;
 
   if(lengthwanted<0)
-    return PyErr_Format(PyExc_ValueError, "Length wanted is negative");
+    ERREXIT(PyErr_Format(PyExc_ValueError, "Length wanted is negative"));
 
   if(offset+lengthwanted>bufsize)
-    return PyErr_Format(PyExc_ValueError, "Data would go beyond end of buffer");
+    ERREXIT(PyErr_Format(PyExc_ValueError, "Data would go beyond end of buffer"));
 
   if(lengthwanted>bloblen-self->curoffset)
-    return PyErr_Format(PyExc_ValueError, "More data requested than blob length");
+    ERREXIT(PyErr_Format(PyExc_ValueError, "More data requested than blob length"));
 
   PYSQLITE_BLOB_CALL(res=sqlite3_blob_read(self->pBlob, (char*)buffer+offset, lengthwanted, self->curoffset));
   if(PyErr_Occurred())
-    return NULL;
+    ERREXIT(NULL);
 
   if(res!=SQLITE_OK)
     {
       SET_EXC(res, self->connection->db);
-      return NULL;
+      ERREXIT(NULL);
     }
   self->curoffset+=lengthwanted;
 
+#if PY_VERSION_HEX >= 0x03000000
+  PyBuffer_Release(&py3buffer);
+#endif
   Py_RETURN_NONE;
+
+errorexit:
+#if PY_VERSION_HEX >= 0x03000000
+  PyBuffer_Release(&py3buffer);
+#endif
+  return errorexitval;
+#undef ERREXIT
 }
 
 /** .. method:: seek(offset[, whence=0]) -> None
