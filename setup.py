@@ -582,7 +582,10 @@ class apsw_build_ext(beparent):
         v = beparent.finalize_options(self)
 
         if self.enable_all_extensions:
-            exts = ["fts4", "fts3", "fts3_parenthesis", "rtree", "stat4", "json1", "fts5", "rbu", "geopoly"]
+            exts = [
+                "fts4", "fts3", "fts3_parenthesis", "rtree", "stat4", "json1", "fts5", "rbu", "geopoly",
+                "math_functions"
+            ]
             if find_in_path("icu-config"):
                 exts.append("icu")
             elif find_in_path("pkg-config"):

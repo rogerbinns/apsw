@@ -9,6 +9,9 @@ Updates for SQLite download url (the year is part of the urls).
 
 Compiles under CPython 3.10 (a deprecated function was removed).
 
+Added enable flag for built-in SQL math functions, and enable it
+by default with --enable-all-extensions.
+
 3.34.0-r1
 =========
 
