@@ -54,15 +54,15 @@ The destination database is locked during the copy.  You will get a
 */
 
 /* we love us some macros */
-#define CHECK_BACKUP_CLOSED(e)                                          \
-do                                                                      \
-  {                                                                     \
-    if(!self->backup || (self->dest && !self->dest->db) || (self->source && !self->source->db) ) \
-      {                                                                 \
-        PyErr_Format(ExcConnectionClosed, "The backup is finished or the source or destination databases have been closed"); \
-        return e;                                                       \
-      }                                                                 \
-  } while(0)
+#define CHECK_BACKUP_CLOSED(e)                                                                                             \
+  do                                                                                                                       \
+  {                                                                                                                        \
+    if (!self->backup || (self->dest && !self->dest->db) || (self->source && !self->source->db))                           \
+    {                                                                                                                      \
+      PyErr_Format(ExcConnectionClosed, "The backup is finished or the source or destination databases have been closed"); \
+      return e;                                                                                                            \
+    }                                                                                                                      \
+  } while (0)
 
 /** .. class:: backup
 
@@ -72,7 +72,7 @@ do                                                                      \
 struct APSWBackup
 {
   PyObject_HEAD
-  Connection *dest;
+      Connection *dest;
   Connection *source;
   sqlite3_backup *backup;
   PyObject *done;
@@ -85,62 +85,62 @@ typedef struct APSWBackup APSWBackup;
 static void
 APSWBackup_init(APSWBackup *self, Connection *dest, Connection *source, sqlite3_backup *backup)
 {
-  assert(dest->inuse==0);
-  dest->inuse=1;
-  assert(source->inuse==1);  /* set by caller */
+  assert(dest->inuse == 0);
+  dest->inuse = 1;
+  assert(source->inuse == 1); /* set by caller */
 
-  self->dest=dest;
-  self->source=source;
-  self->backup=backup;
-  self->done=Py_False;
+  self->dest = dest;
+  self->source = source;
+  self->backup = backup;
+  self->done = Py_False;
   Py_INCREF(self->done);
-  self->inuse=0;
-  self->weakreflist=NULL;
+  self->inuse = 0;
+  self->weakreflist = NULL;
 }
 
 /* returns non-zero if it set an exception */
 static int
 APSWBackup_close_internal(APSWBackup *self, int force)
 {
-  int res, setexc=0;
+  int res, setexc = 0;
 
   assert(!self->inuse);
 
-  if(!self->backup)
+  if (!self->backup)
     return 0;
 
-  PYSQLITE_BACKUP_CALL(res=sqlite3_backup_finish(self->backup));
-  if(res)
+  PYSQLITE_BACKUP_CALL(res = sqlite3_backup_finish(self->backup));
+  if (res)
+  {
+    switch (force)
     {
-      switch(force)
-        {
-        case 0:
-          SET_EXC(res, self->dest->db);
-          setexc=1;
-          break;
-        case 1:
-          break;
-        case 2:
-          {
-            PyObject *etype, *eval, *etb;
-            PyErr_Fetch(&etype, &eval, &etb);
+    case 0:
+      SET_EXC(res, self->dest->db);
+      setexc = 1;
+      break;
+    case 1:
+      break;
+    case 2:
+    {
+      PyObject *etype, *eval, *etb;
+      PyErr_Fetch(&etype, &eval, &etb);
 
-            SET_EXC(res, self->dest->db);
-            apsw_write_unraiseable(NULL);
+      SET_EXC(res, self->dest->db);
+      apsw_write_unraiseable(NULL);
 
-            PyErr_Restore(etype, eval, etb);
-            break;
-          }
-        }
+      PyErr_Restore(etype, eval, etb);
+      break;
     }
+    }
+  }
 
-  self->backup=0;
+  self->backup = 0;
 
   assert(self->dest->inuse);
-  self->dest->inuse=0;
+  self->dest->inuse = 0;
 
-  Connection_remove_dependent(self->dest, (PyObject*)self);
-  Connection_remove_dependent(self->source, (PyObject*)self);
+  Connection_remove_dependent(self->dest, (PyObject *)self);
+  Connection_remove_dependent(self->source, (PyObject *)self);
 
   Py_CLEAR(self->dest);
   Py_CLEAR(self->source);
@@ -157,7 +157,7 @@ APSWBackup_dealloc(APSWBackup *self)
 
   Py_CLEAR(self->done);
 
-  Py_TYPE(self)->tp_free((PyObject*)self);
+  Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 /** .. method:: step([npages=All]) -> bool
@@ -183,34 +183,34 @@ APSWBackup_dealloc(APSWBackup *self)
 static PyObject *
 APSWBackup_step(APSWBackup *self, PyObject *args)
 {
-  int pages=-1, res;
+  int pages = -1, res;
 
   CHECK_USE(NULL);
   CHECK_BACKUP_CLOSED(NULL);
 
-  if(args && !PyArg_ParseTuple(args, "|i:step(pages=All)", &pages))
+  if (args && !PyArg_ParseTuple(args, "|i:step(pages=All)", &pages))
     return NULL;
 
-  PYSQLITE_BACKUP_CALL(res=sqlite3_backup_step(self->backup, pages));
-  if(PyErr_Occurred())
+  PYSQLITE_BACKUP_CALL(res = sqlite3_backup_step(self->backup, pages));
+  if (PyErr_Occurred())
     return NULL;
 
-  if(res==SQLITE_DONE)
+  if (res == SQLITE_DONE)
+  {
+    if (self->done != Py_True)
     {
-      if(self->done!=Py_True)
-        {
-          Py_CLEAR(self->done);
-          self->done=Py_True;
-          Py_INCREF(self->done);
-        }
-      res=SQLITE_OK;
+      Py_CLEAR(self->done);
+      self->done = Py_True;
+      Py_INCREF(self->done);
     }
+    res = SQLITE_OK;
+  }
 
-  if(res)
-    {
-      SET_EXC(res, NULL); /* ::TODO:: will likely have message on dest->db */
-      return NULL;
-    }
+  if (res)
+  {
+    SET_EXC(res, NULL); /* ::TODO:: will likely have message on dest->db */
+    return NULL;
+  }
 
   Py_INCREF(self->done);
   return self->done;
@@ -233,11 +233,11 @@ APSWBackup_finish(APSWBackup *self)
   CHECK_USE(NULL);
 
   /* We handle CHECK_BACKUP_CLOSED internally */
-  if(!self->backup)
+  if (!self->backup)
     Py_RETURN_NONE;
 
-  setexc=APSWBackup_close_internal(self, 0);
-  if(setexc)
+  setexc = APSWBackup_close_internal(self, 0);
+  if (setexc)
     return NULL;
 
   Py_RETURN_NONE;
@@ -256,19 +256,19 @@ APSWBackup_finish(APSWBackup *self)
 static PyObject *
 APSWBackup_close(APSWBackup *self, PyObject *args)
 {
-  int force=0, setexc;
+  int force = 0, setexc;
 
   CHECK_USE(NULL);
 
   /* We handle CHECK_BACKUP_CLOSED internally */
-  if(!self->backup)
+  if (!self->backup)
     Py_RETURN_NONE; /* already closed */
 
-  if(args && !PyArg_ParseTuple(args, "|i:close(force=False)", &force))
+  if (args && !PyArg_ParseTuple(args, "|i:close(force=False)", &force))
     return NULL;
 
-  setexc=APSWBackup_close_internal(self, force);
-  if(setexc)
+  setexc = APSWBackup_close_internal(self, force);
+  if (setexc)
     return NULL;
   Py_RETURN_NONE;
 }
@@ -286,7 +286,7 @@ static PyObject *
 APSWBackup_get_remaining(APSWBackup *self, APSW_ARGUNUSED void *ignored)
 {
   CHECK_USE(NULL);
-  return PyInt_FromLong(self->backup?sqlite3_backup_remaining(self->backup):0);
+  return PyInt_FromLong(self->backup ? sqlite3_backup_remaining(self->backup) : 0);
 }
 
 /** .. attribute:: pagecount
@@ -302,7 +302,7 @@ static PyObject *
 APSWBackup_get_pagecount(APSWBackup *self, APSW_ARGUNUSED void *ignored)
 {
   CHECK_USE(NULL);
-  return PyInt_FromLong(self->backup?sqlite3_backup_pagecount(self->backup):0);
+  return PyInt_FromLong(self->backup ? sqlite3_backup_pagecount(self->backup) : 0);
 }
 
 /** .. method:: __enter__() -> self
@@ -319,7 +319,7 @@ APSWBackup_enter(APSWBackup *self)
   CHECK_BACKUP_CLOSED(NULL);
 
   Py_INCREF(self);
-  return (PyObject*)self;
+  return (PyObject *)self;
 }
 
 /** .. method:: __exit__() -> False
@@ -335,11 +335,11 @@ APSWBackup_exit(APSWBackup *self, PyObject *args)
 
   CHECK_USE(NULL);
 
-  if(!PyArg_ParseTuple(args, "OOO", &etype, &evalue, &etb))
+  if (!PyArg_ParseTuple(args, "OOO", &etype, &evalue, &etb))
     return NULL;
 
   /* If already closed then we are fine - CHECK_BACKUP_CLOSED not needed*/
-  if(!self->backup)
+  if (!self->backup)
     Py_RETURN_FALSE;
 
   /* we don't want to override any existing exception with the
@@ -347,100 +347,93 @@ APSWBackup_exit(APSWBackup *self, PyObject *args)
      close exception has more detail.  At the time of writing this
      code the step method only set an error code but not an error
      message */
-  setexc=APSWBackup_close_internal(self, etype!=Py_None||evalue!=Py_None||etb!=Py_None);
+  setexc = APSWBackup_close_internal(self, etype != Py_None || evalue != Py_None || etb != Py_None);
 
-  if(setexc)
-    {
-      assert(PyErr_Occurred());
-      return NULL;
-    }
+  if (setexc)
+  {
+    assert(PyErr_Occurred());
+    return NULL;
+  }
 
   Py_RETURN_FALSE;
 }
-
 
 /** .. attribute:: done
 
   A boolean that is True if the copy completed in the last call to :meth:`~backup.step`.
 */
 static PyMemberDef backup_members[] = {
-  /* name type offset flags doc */
-  {"done", T_OBJECT, offsetof(APSWBackup, done), READONLY, "True if all pages copied"},
-  {0,0,0,0,0}
-};
+    /* name type offset flags doc */
+    {"done", T_OBJECT, offsetof(APSWBackup, done), READONLY, "True if all pages copied"},
+    {0, 0, 0, 0, 0}};
 
 static PyGetSetDef backup_getset[] = {
-  /* name getter setter doc closure */
-  {"remaining", (getter)APSWBackup_get_remaining, NULL, "Pages still to be copied", NULL},
-  {"pagecount", (getter)APSWBackup_get_pagecount, NULL, "Total pages in source database", NULL},
-  {0,0,0,0,0}
-};
+    /* name getter setter doc closure */
+    {"remaining", (getter)APSWBackup_get_remaining, NULL, "Pages still to be copied", NULL},
+    {"pagecount", (getter)APSWBackup_get_pagecount, NULL, "Total pages in source database", NULL},
+    {0, 0, 0, 0, 0}};
 
 static PyMethodDef backup_methods[] = {
-  {"__enter__", (PyCFunction)APSWBackup_enter, METH_NOARGS,
-   "Context manager entry"},
-  {"__exit__", (PyCFunction)APSWBackup_exit, METH_VARARGS,
-   "Context manager exit"},
-  {"step", (PyCFunction)APSWBackup_step, METH_VARARGS,
-   "Copies some pages"},
-  {"finish", (PyCFunction)APSWBackup_finish, METH_NOARGS,
-   "Commits or rollsback backup"},
-  {"close", (PyCFunction)APSWBackup_close, METH_VARARGS,
-   "Alternate way to finish"},
-  {0,0,0,0}
-};
+    {"__enter__", (PyCFunction)APSWBackup_enter, METH_NOARGS,
+     "Context manager entry"},
+    {"__exit__", (PyCFunction)APSWBackup_exit, METH_VARARGS,
+     "Context manager exit"},
+    {"step", (PyCFunction)APSWBackup_step, METH_VARARGS,
+     "Copies some pages"},
+    {"finish", (PyCFunction)APSWBackup_finish, METH_NOARGS,
+     "Commits or rollsback backup"},
+    {"close", (PyCFunction)APSWBackup_close, METH_VARARGS,
+     "Alternate way to finish"},
+    {0, 0, 0, 0}};
 
 static PyTypeObject APSWBackupType =
-  {
-    APSW_PYTYPE_INIT
-    "apsw.backup",             /*tp_name*/
-    sizeof(APSWBackup),        /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor)APSWBackup_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG, /*tp_flags*/
-    "backup object",       /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    offsetof(APSWBackup,weakreflist), /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
-    backup_methods,            /* tp_methods */
-    backup_members,            /* tp_members */
-    backup_getset,             /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    0,                         /* tp_init */
-    0,                         /* tp_alloc */
-    0,                         /* tp_new */
-    0,                         /* tp_free */
-    0,                         /* tp_is_gc */
-    0,                         /* tp_bases */
-    0,                         /* tp_mro */
-    0,                         /* tp_cache */
-    0,                         /* tp_subclasses */
-    0,                         /* tp_weaklist */
-    0                          /* tp_del */
-    APSW_PYTYPE_VERSION
-};
-
-
+    {
+        APSW_PYTYPE_INIT
+        "apsw.backup",                                                          /*tp_name*/
+        sizeof(APSWBackup),                                                     /*tp_basicsize*/
+        0,                                                                      /*tp_itemsize*/
+        (destructor)APSWBackup_dealloc,                                         /*tp_dealloc*/
+        0,                                                                      /*tp_print*/
+        0,                                                                      /*tp_getattr*/
+        0,                                                                      /*tp_setattr*/
+        0,                                                                      /*tp_compare*/
+        0,                                                                      /*tp_repr*/
+        0,                                                                      /*tp_as_number*/
+        0,                                                                      /*tp_as_sequence*/
+        0,                                                                      /*tp_as_mapping*/
+        0,                                                                      /*tp_hash */
+        0,                                                                      /*tp_call*/
+        0,                                                                      /*tp_str*/
+        0,                                                                      /*tp_getattro*/
+        0,                                                                      /*tp_setattro*/
+        0,                                                                      /*tp_as_buffer*/
+        Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG, /*tp_flags*/
+        "backup object",                                                        /* tp_doc */
+        0,                                                                      /* tp_traverse */
+        0,                                                                      /* tp_clear */
+        0,                                                                      /* tp_richcompare */
+        offsetof(APSWBackup, weakreflist),                                      /* tp_weaklistoffset */
+        0,                                                                      /* tp_iter */
+        0,                                                                      /* tp_iternext */
+        backup_methods,                                                         /* tp_methods */
+        backup_members,                                                         /* tp_members */
+        backup_getset,                                                          /* tp_getset */
+        0,                                                                      /* tp_base */
+        0,                                                                      /* tp_dict */
+        0,                                                                      /* tp_descr_get */
+        0,                                                                      /* tp_descr_set */
+        0,                                                                      /* tp_dictoffset */
+        0,                                                                      /* tp_init */
+        0,                                                                      /* tp_alloc */
+        0,                                                                      /* tp_new */
+        0,                                                                      /* tp_free */
+        0,                                                                      /* tp_is_gc */
+        0,                                                                      /* tp_bases */
+        0,                                                                      /* tp_mro */
+        0,                                                                      /* tp_cache */
+        0,                                                                      /* tp_subclasses */
+        0,                                                                      /* tp_weaklist */
+        0                                                                       /* tp_del */
+        APSW_PYTYPE_VERSION};
 
 #endif /* EXPERIMENTAL */

@@ -1857,8 +1857,7 @@ modules etc. For example::
         ADDINT(SQLITE_TXN_NONE),
         ADDINT(SQLITE_TXN_READ),
         ADDINT(SQLITE_TXN_WRITE),
-        END
-    };
+        END};
 
     for (i = 0; i < sizeof(integers) / sizeof(integers[0]); i++)
     {

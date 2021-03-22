@@ -4,7 +4,6 @@
   See the accompanying LICENSE file.
 */
 
-
 /**
 .. _blobio:
 
@@ -24,7 +23,6 @@ store the filename in the database.  Doing so loses the `ACID
 <https://sqlite.org/transactional.html>`_ properties of SQLite.
 
 */
-
 
 /* ZEROBLOB CODE */
 
@@ -54,39 +52,40 @@ store the filename in the database.  Doing so loses the `ACID
   contents.
 */
 
-typedef struct {
-  PyObject_HEAD
-  int blobsize;
+typedef struct
+{
+  PyObject_HEAD int blobsize;
 } ZeroBlobBind;
 
-static PyObject*
+static PyObject *
 ZeroBlobBind_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED PyObject *kwargs)
 {
   ZeroBlobBind *self;
-  self=(ZeroBlobBind*)type->tp_alloc(type, 0);
-  if(self) self->blobsize=0;
-  return (PyObject*)self;
+  self = (ZeroBlobBind *)type->tp_alloc(type, 0);
+  if (self)
+    self->blobsize = 0;
+  return (PyObject *)self;
 }
 
 static int
 ZeroBlobBind_init(ZeroBlobBind *self, PyObject *args, PyObject *kwargs)
 {
   int n;
-  if(kwargs && PyDict_Size(kwargs)!=0)
-    {
-      PyErr_Format(PyExc_TypeError, "Zeroblob constructor does not take keyword arguments");
-      return -1;
-    }
+  if (kwargs && PyDict_Size(kwargs) != 0)
+  {
+    PyErr_Format(PyExc_TypeError, "Zeroblob constructor does not take keyword arguments");
+    return -1;
+  }
 
-  if(!PyArg_ParseTuple(args, "i", &n))
+  if (!PyArg_ParseTuple(args, "i", &n))
     return -1;
 
-  if(n<0)
-    {
-      PyErr_Format(PyExc_TypeError, "zeroblob size must be >= 0");
-      return -1;
-    }
-  self->blobsize=n;
+  if (n < 0)
+  {
+    PyErr_Format(PyExc_TypeError, "zeroblob size must be >= 0");
+    return -1;
+  }
+  self->blobsize = n;
 
   return 0;
 }
@@ -102,71 +101,68 @@ ZeroBlobBind_len(ZeroBlobBind *self)
 }
 
 static PyMethodDef ZeroBlobBind_methods[] = {
-  {"length", (PyCFunction)ZeroBlobBind_len, METH_NOARGS,
-   "Size of zero blob"},
-  {0,0,0,0}
-};
+    {"length", (PyCFunction)ZeroBlobBind_len, METH_NOARGS,
+     "Size of zero blob"},
+    {0, 0, 0, 0}};
 
 static PyTypeObject ZeroBlobBindType = {
     APSW_PYTYPE_INIT
-    "apsw.zeroblob",           /*tp_name*/
-    sizeof(ZeroBlobBind),      /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    0,                         /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
+    "apsw.zeroblob",                                                        /*tp_name*/
+    sizeof(ZeroBlobBind),                                                   /*tp_basicsize*/
+    0,                                                                      /*tp_itemsize*/
+    0,                                                                      /*tp_dealloc*/
+    0,                                                                      /*tp_print*/
+    0,                                                                      /*tp_getattr*/
+    0,                                                                      /*tp_setattr*/
+    0,                                                                      /*tp_compare*/
+    0,                                                                      /*tp_repr*/
+    0,                                                                      /*tp_as_number*/
+    0,                                                                      /*tp_as_sequence*/
+    0,                                                                      /*tp_as_mapping*/
+    0,                                                                      /*tp_hash */
+    0,                                                                      /*tp_call*/
+    0,                                                                      /*tp_str*/
+    0,                                                                      /*tp_getattro*/
+    0,                                                                      /*tp_setattro*/
+    0,                                                                      /*tp_as_buffer*/
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG, /*tp_flags*/
-    "ZeroBlobBind object",     /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
-    ZeroBlobBind_methods,      /* tp_methods */
-    0,                         /* tp_members */
-    0,                         /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    (initproc)ZeroBlobBind_init, /* tp_init */
-    0,                         /* tp_alloc */
-    ZeroBlobBind_new,          /* tp_new */
-    0,                         /* tp_free */
-    0,                         /* tp_is_gc */
-    0,                         /* tp_bases */
-    0,                         /* tp_mro */
-    0,                         /* tp_cache */
-    0,                         /* tp_subclasses */
-    0,                         /* tp_weaklist */
-    0                          /* tp_del */
-    APSW_PYTYPE_VERSION
-};
-
-
+    "ZeroBlobBind object",                                                  /* tp_doc */
+    0,                                                                      /* tp_traverse */
+    0,                                                                      /* tp_clear */
+    0,                                                                      /* tp_richcompare */
+    0,                                                                      /* tp_weaklistoffset */
+    0,                                                                      /* tp_iter */
+    0,                                                                      /* tp_iternext */
+    ZeroBlobBind_methods,                                                   /* tp_methods */
+    0,                                                                      /* tp_members */
+    0,                                                                      /* tp_getset */
+    0,                                                                      /* tp_base */
+    0,                                                                      /* tp_dict */
+    0,                                                                      /* tp_descr_get */
+    0,                                                                      /* tp_descr_set */
+    0,                                                                      /* tp_dictoffset */
+    (initproc)ZeroBlobBind_init,                                            /* tp_init */
+    0,                                                                      /* tp_alloc */
+    ZeroBlobBind_new,                                                       /* tp_new */
+    0,                                                                      /* tp_free */
+    0,                                                                      /* tp_is_gc */
+    0,                                                                      /* tp_bases */
+    0,                                                                      /* tp_mro */
+    0,                                                                      /* tp_cache */
+    0,                                                                      /* tp_subclasses */
+    0,                                                                      /* tp_weaklist */
+    0                                                                       /* tp_del */
+    APSW_PYTYPE_VERSION};
 
 /* BLOB TYPE */
-struct APSWBlob {
+struct APSWBlob
+{
   PyObject_HEAD
-  Connection *connection;
+      Connection *connection;
   sqlite3_blob *pBlob;
-  unsigned inuse;                 /* track if we are in use preventing concurrent thread mangling */
-  int curoffset;                  /* SQLite only supports 32 bit signed int offsets */
-  PyObject *weakreflist;          /* weak reference tracking */
+  unsigned inuse;        /* track if we are in use preventing concurrent thread mangling */
+  int curoffset;         /* SQLite only supports 32 bit signed int offsets */
+  PyObject *weakreflist; /* weak reference tracking */
 };
 
 typedef struct APSWBlob APSWBlob;
@@ -196,61 +192,60 @@ static void
 APSWBlob_init(APSWBlob *self, Connection *connection, sqlite3_blob *blob)
 {
   Py_INCREF(connection);
-  self->connection=connection;
-  self->pBlob=blob;
-  self->curoffset=0;
-  self->inuse=0;
-  self->weakreflist=NULL;
+  self->connection = connection;
+  self->pBlob = blob;
+  self->curoffset = 0;
+  self->inuse = 0;
+  self->weakreflist = NULL;
 }
 
 static int
 APSWBlob_close_internal(APSWBlob *self, int force)
 {
-  int setexc=0;
+  int setexc = 0;
   PyObject *err_type, *err_value, *err_traceback;
 
-  if(force==2)
+  if (force == 2)
     PyErr_Fetch(&err_type, &err_value, &err_traceback);
 
   /* note that sqlite3_blob_close always works even if an error is
      returned - see sqlite ticket #2815 */
 
-  if(self->pBlob)
+  if (self->pBlob)
+  {
+    int res;
+    PYSQLITE_BLOB_CALL(res = sqlite3_blob_close(self->pBlob));
+    if (res != SQLITE_OK)
     {
-      int res;
-      PYSQLITE_BLOB_CALL(res=sqlite3_blob_close(self->pBlob));
-      if(res!=SQLITE_OK)
-        {
-          switch(force)
-            {
-            case 0:
-              SET_EXC(res, self->connection->db);
-              setexc=1;
-              break;
-            case 1:
-              break;
-            case 2:
-              SET_EXC(res, self->connection->db);
-              apsw_write_unraiseable(NULL);
-            }
-        }
-      self->pBlob=0;
+      switch (force)
+      {
+      case 0:
+        SET_EXC(res, self->connection->db);
+        setexc = 1;
+        break;
+      case 1:
+        break;
+      case 2:
+        SET_EXC(res, self->connection->db);
+        apsw_write_unraiseable(NULL);
+      }
     }
+    self->pBlob = 0;
+  }
 
- /* Remove from connection dependents list.  Has to be done before we
+  /* Remove from connection dependents list.  Has to be done before we
      decref self->connection otherwise connection could dealloc and
      we'd still be in list */
-  if(self->connection)
-    Connection_remove_dependent(self->connection, (PyObject*)self);
+  if (self->connection)
+    Connection_remove_dependent(self->connection, (PyObject *)self);
 
   Py_CLEAR(self->connection);
 
-  if(force==2)
+  if (force == 2)
     PyErr_Restore(err_type, err_value, err_traceback);
 
   return setexc;
 }
-
 
 static void
 APSWBlob_dealloc(APSWBlob *self)
@@ -259,14 +254,16 @@ APSWBlob_dealloc(APSWBlob *self)
 
   APSWBlob_close_internal(self, 2);
 
-  Py_TYPE(self)->tp_free((PyObject*)self);
+  Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 /* If the blob is closed, we return the same error as normal python files */
-#define CHECK_BLOB_CLOSED \
-  do { if(!self->pBlob)							\
-    return PyErr_Format(PyExc_ValueError, "I/O operation on closed blob"); \
-  } while(0)
+#define CHECK_BLOB_CLOSED                                                    \
+  do                                                                         \
+  {                                                                          \
+    if (!self->pBlob)                                                        \
+      return PyErr_Format(PyExc_ValueError, "I/O operation on closed blob"); \
+  } while (0)
 
 /** .. method:: length() -> int
 
@@ -298,9 +295,9 @@ APSWBlob_length(APSWBlob *self)
 static PyObject *
 APSWBlob_read(APSWBlob *self, PyObject *args)
 {
-  int length=-1;
+  int length = -1;
   int res;
-  PyObject *buffy=0;
+  PyObject *buffy = 0;
   char *thebuffer;
 
   CHECK_USE(NULL);
@@ -311,41 +308,41 @@ APSWBlob_read(APSWBlob *self, PyObject *args)
      bytes from /dev/zero on a 64 bit machine with lots of swap to see
      why).  In any event we remain consistent with Python file
      objects */
-  if(!PyArg_ParseTuple(args, "|i:read(numbytes=remaining)", &length))
+  if (!PyArg_ParseTuple(args, "|i:read(numbytes=remaining)", &length))
     return NULL;
 
-  if(
-     (self->curoffset==sqlite3_blob_bytes(self->pBlob)) /* eof */
-     ||
-     (length==0)
-     )
+  if (
+      (self->curoffset == sqlite3_blob_bytes(self->pBlob)) /* eof */
+      ||
+      (length == 0))
     return PyBytes_FromStringAndSize(NULL, 0);
 
-  if(length<0)
-    length=sqlite3_blob_bytes(self->pBlob)-self->curoffset;
+  if (length < 0)
+    length = sqlite3_blob_bytes(self->pBlob) - self->curoffset;
 
   /* trying to read more than is in the blob? */
-  if(self->curoffset+length>sqlite3_blob_bytes(self->pBlob))
-    length=sqlite3_blob_bytes(self->pBlob)-self->curoffset;
+  if (self->curoffset + length > sqlite3_blob_bytes(self->pBlob))
+    length = sqlite3_blob_bytes(self->pBlob) - self->curoffset;
 
-  buffy=PyBytes_FromStringAndSize(NULL, length);
+  buffy = PyBytes_FromStringAndSize(NULL, length);
 
-  if(!buffy) return NULL;
-
-  thebuffer= PyBytes_AS_STRING(buffy);
-  PYSQLITE_BLOB_CALL(res=sqlite3_blob_read(self->pBlob, thebuffer, length, self->curoffset));
-  if(PyErr_Occurred())
+  if (!buffy)
     return NULL;
 
-  if(res!=SQLITE_OK)
-    {
-      Py_DECREF(buffy);
-      SET_EXC(res, self->connection->db);
-      return NULL;
-    }
+  thebuffer = PyBytes_AS_STRING(buffy);
+  PYSQLITE_BLOB_CALL(res = sqlite3_blob_read(self->pBlob, thebuffer, length, self->curoffset));
+  if (PyErr_Occurred())
+    return NULL;
+
+  if (res != SQLITE_OK)
+  {
+    Py_DECREF(buffy);
+    SET_EXC(res, self->connection->db);
+    return NULL;
+  }
   else
-    self->curoffset+=length;
-  assert(self->curoffset<=sqlite3_blob_bytes(self->pBlob));
+    self->curoffset += length;
+  assert(self->curoffset <= sqlite3_blob_bytes(self->pBlob));
   return buffy;
 }
 
@@ -371,13 +368,13 @@ APSWBlob_read(APSWBlob *self, PyObject *args)
   -* sqlite3_blob_read
 */
 
-static PyObject*
+static PyObject *
 APSWBlob_readinto(APSWBlob *self, PyObject *args)
 {
   int length;
   int res;
   Py_ssize_t offset, lengthwanted;
-  PyObject *wbuf=NULL;
+  PyObject *wbuf = NULL;
   PyObject *errorexitval = NULL;
 
   int aswb;
@@ -389,33 +386,37 @@ APSWBlob_readinto(APSWBlob *self, PyObject *args)
   Py_buffer py3buffer;
 #endif
 
-
   CHECK_USE(NULL);
   CHECK_BLOB_CLOSED;
 
   /* To get Py_ssize_t we need "n" format but that only exists in
      Python 2.5 plus */
 
-  if(!PyArg_ParseTuple(args, "O|"
+  if (!PyArg_ParseTuple(args, "O|"
 #if PY_VERSION_HEX < 0x02050000
-		       "i"
+                              "i"
 #else
-		       "n"
+                              "n"
 #endif
-		       "i:readinto(wbuf, offset=1, length=wbufremaining)",
-		       &wbuf, &offset, &length))
+                              "i:readinto(wbuf, offset=1, length=wbufremaining)",
+                        &wbuf, &offset, &length))
     return NULL;
 
-#define ERREXIT(x) do { errorexitval = (x); goto errorexit; } while (0)
+#define ERREXIT(x)      \
+  do                    \
+  {                     \
+    errorexitval = (x); \
+    goto errorexit;     \
+  } while (0)
 
 #if PY_VERSION_HEX < 0x03000000
-  aswb=PyObject_AsWriteBuffer(wbuf, &buffer, &bufsize);
-  if(aswb)
+  aswb = PyObject_AsWriteBuffer(wbuf, &buffer, &bufsize);
+  if (aswb)
     return NULL;
 #else
   memset(&py3buffer, 0, sizeof(py3buffer));
   aswb = PyObject_GetBuffer(wbuf, &py3buffer, PyBUF_WRITABLE | PyBUF_SIMPLE);
-  if(aswb)
+  if (aswb)
     return NULL;
   buffer = py3buffer.buf;
   bufsize = py3buffer.len;
@@ -425,38 +426,38 @@ APSWBlob_readinto(APSWBlob *self, PyObject *args)
      one, they are kept separate so that we can verify they have each
      been exercised with code coverage checks */
 
-  if(PyTuple_GET_SIZE(args)<2)
-    offset=0;
+  if (PyTuple_GET_SIZE(args) < 2)
+    offset = 0;
 
-  bloblen=sqlite3_blob_bytes(self->pBlob);
+  bloblen = sqlite3_blob_bytes(self->pBlob);
 
-  if(offset<0 || offset>bufsize)
+  if (offset < 0 || offset > bufsize)
     ERREXIT(PyErr_Format(PyExc_ValueError, "offset is less than zero or beyond end of buffer"));
 
-  if(PyTuple_GET_SIZE(args)<3)
-    lengthwanted=bufsize-offset;
+  if (PyTuple_GET_SIZE(args) < 3)
+    lengthwanted = bufsize - offset;
   else
-    lengthwanted=length;
+    lengthwanted = length;
 
-  if(lengthwanted<0)
+  if (lengthwanted < 0)
     ERREXIT(PyErr_Format(PyExc_ValueError, "Length wanted is negative"));
 
-  if(offset+lengthwanted>bufsize)
+  if (offset + lengthwanted > bufsize)
     ERREXIT(PyErr_Format(PyExc_ValueError, "Data would go beyond end of buffer"));
 
-  if(lengthwanted>bloblen-self->curoffset)
+  if (lengthwanted > bloblen - self->curoffset)
     ERREXIT(PyErr_Format(PyExc_ValueError, "More data requested than blob length"));
 
-  PYSQLITE_BLOB_CALL(res=sqlite3_blob_read(self->pBlob, (char*)buffer+offset, lengthwanted, self->curoffset));
-  if(PyErr_Occurred())
+  PYSQLITE_BLOB_CALL(res = sqlite3_blob_read(self->pBlob, (char *)buffer + offset, lengthwanted, self->curoffset));
+  if (PyErr_Occurred())
     ERREXIT(NULL);
 
-  if(res!=SQLITE_OK)
-    {
-      SET_EXC(res, self->connection->db);
-      ERREXIT(NULL);
-    }
-  self->curoffset+=lengthwanted;
+  if (res != SQLITE_OK)
+  {
+    SET_EXC(res, self->connection->db);
+    ERREXIT(NULL);
+  }
+  self->curoffset += lengthwanted;
 
 #if PY_VERSION_HEX >= 0x03000000
   PyBuffer_Release(&py3buffer);
@@ -485,35 +486,35 @@ errorexit:
 static PyObject *
 APSWBlob_seek(APSWBlob *self, PyObject *args)
 {
-  int offset, whence=0;
+  int offset, whence = 0;
   CHECK_USE(NULL);
   CHECK_BLOB_CLOSED;
 
-  if(!PyArg_ParseTuple(args, "i|i:seek(offset,whence=0)", &offset, &whence))
+  if (!PyArg_ParseTuple(args, "i|i:seek(offset,whence=0)", &offset, &whence))
     return NULL;
 
-  switch(whence)
-    {
-    default:
-      return PyErr_Format(PyExc_ValueError, "whence parameter should be 0, 1 or 2");
-    case 0: /* relative to beginning of file */
-      if(offset<0 || offset>sqlite3_blob_bytes(self->pBlob))
-        goto out_of_range;
-      self->curoffset=offset;
-      break;
-    case 1: /* relative to current position */
-      if(self->curoffset+offset<0 || self->curoffset+offset>sqlite3_blob_bytes(self->pBlob))
-        goto out_of_range;
-      self->curoffset+=offset;
-      break;
-    case 2: /* relative to end of file */
-      if(sqlite3_blob_bytes(self->pBlob)+offset<0 || sqlite3_blob_bytes(self->pBlob)+offset>sqlite3_blob_bytes(self->pBlob))
-        goto out_of_range;
-      self->curoffset=sqlite3_blob_bytes(self->pBlob)+offset;
-      break;
-    }
+  switch (whence)
+  {
+  default:
+    return PyErr_Format(PyExc_ValueError, "whence parameter should be 0, 1 or 2");
+  case 0: /* relative to beginning of file */
+    if (offset < 0 || offset > sqlite3_blob_bytes(self->pBlob))
+      goto out_of_range;
+    self->curoffset = offset;
+    break;
+  case 1: /* relative to current position */
+    if (self->curoffset + offset < 0 || self->curoffset + offset > sqlite3_blob_bytes(self->pBlob))
+      goto out_of_range;
+    self->curoffset += offset;
+    break;
+  case 2: /* relative to end of file */
+    if (sqlite3_blob_bytes(self->pBlob) + offset < 0 || sqlite3_blob_bytes(self->pBlob) + offset > sqlite3_blob_bytes(self->pBlob))
+      goto out_of_range;
+    self->curoffset = sqlite3_blob_bytes(self->pBlob) + offset;
+    break;
+  }
   Py_RETURN_NONE;
- out_of_range:
+out_of_range:
   return PyErr_Format(PyExc_ValueError, "The resulting offset would be less than zero or past the end of the blob");
 }
 
@@ -548,43 +549,43 @@ APSWBlob_tell(APSWBlob *self)
 static PyObject *
 APSWBlob_write(APSWBlob *self, PyObject *obj)
 {
-  const void *buffer=0;
+  const void *buffer = 0;
   Py_ssize_t size;
   int res;
   CHECK_USE(NULL);
   CHECK_BLOB_CLOSED;
 
   /* we support buffers and string for the object */
-  if(!PyUnicode_Check(obj) && PyObject_CheckReadBuffer(obj))
-    {
-      int asrb=PyObject_AsReadBuffer(obj, &buffer, &size);
+  if (!PyUnicode_Check(obj) && PyObject_CheckReadBuffer(obj))
+  {
+    int asrb = PyObject_AsReadBuffer(obj, &buffer, &size);
 
-      APSW_FAULT_INJECT(BlobWriteAsReadBufFails,,(PyErr_NoMemory(), asrb=-1));
+    APSW_FAULT_INJECT(BlobWriteAsReadBufFails, , (PyErr_NoMemory(), asrb = -1));
 
-      if(asrb!=0)
-        return NULL;
-    }
+    if (asrb != 0)
+      return NULL;
+  }
   else
     return PyErr_Format(PyExc_TypeError, "Parameter should be bytes/string or buffer");
 
-  if( ((int)(size+self->curoffset))<self->curoffset)
+  if (((int)(size + self->curoffset)) < self->curoffset)
     return PyErr_Format(PyExc_ValueError, "Data is too large (integer wrap)");
 
-  if( ((int)(size+self->curoffset))>sqlite3_blob_bytes(self->pBlob))
+  if (((int)(size + self->curoffset)) > sqlite3_blob_bytes(self->pBlob))
     return PyErr_Format(PyExc_ValueError, "Data would go beyond end of blob");
 
-  PYSQLITE_BLOB_CALL(res=sqlite3_blob_write(self->pBlob, buffer, size, self->curoffset));
-  if(PyErr_Occurred())
+  PYSQLITE_BLOB_CALL(res = sqlite3_blob_write(self->pBlob, buffer, size, self->curoffset));
+  if (PyErr_Occurred())
     return NULL;
 
-  if(res!=SQLITE_OK)
-    {
-      SET_EXC(res, self->connection->db);
-      return NULL;
-    }
+  if (res != SQLITE_OK)
+  {
+    SET_EXC(res, self->connection->db);
+    return NULL;
+  }
   else
-    self->curoffset+=size;
-  assert(self->curoffset<=sqlite3_blob_bytes(self->pBlob));
+    self->curoffset += size;
+  assert(self->curoffset <= sqlite3_blob_bytes(self->pBlob));
   Py_RETURN_NONE;
 }
 
@@ -614,16 +615,16 @@ static PyObject *
 APSWBlob_close(APSWBlob *self, PyObject *args)
 {
   int setexc;
-  int force=0;
+  int force = 0;
 
   CHECK_USE(NULL);
 
-  if(args && !PyArg_ParseTuple(args, "|i:close(force=False)", &force))
+  if (args && !PyArg_ParseTuple(args, "|i:close(force=False)", &force))
     return NULL;
 
-  setexc=APSWBlob_close_internal(self, !!force);
+  setexc = APSWBlob_close_internal(self, !!force);
 
-  if(setexc)
+  if (setexc)
     return NULL;
 
   Py_RETURN_NONE;
@@ -669,9 +670,10 @@ APSWBlob_exit(APSWBlob *self, APSW_ARGUNUSED PyObject *args)
   CHECK_USE(NULL);
   CHECK_BLOB_CLOSED;
 
-  res=APSWBlob_close(self, NULL);
+  res = APSWBlob_close(self, NULL);
   Py_XDECREF(res);
-  if(!res) return NULL;
+  if (!res)
+    return NULL;
 
   Py_RETURN_FALSE;
 }
@@ -693,105 +695,104 @@ APSWBlob_reopen(APSWBlob *self, PyObject *arg)
   CHECK_USE(NULL);
   CHECK_BLOB_CLOSED;
 
-#if PY_MAJOR_VERSION<3
-  if(PyInt_Check(arg))
-    rowid=PyInt_AS_LONG(arg);
+#if PY_MAJOR_VERSION < 3
+  if (PyInt_Check(arg))
+    rowid = PyInt_AS_LONG(arg);
   else
 #endif
-    if (PyLong_Check(arg))
-      {
-	rowid=PyLong_AsLongLong(arg);
-	if(PyErr_Occurred())
-	  return NULL;
-      }
-    else
-      return PyErr_Format(PyExc_TypeError, "blob reopen argument must be a number");
+      if (PyLong_Check(arg))
+  {
+    rowid = PyLong_AsLongLong(arg);
+    if (PyErr_Occurred())
+      return NULL;
+  }
+  else
+    return PyErr_Format(PyExc_TypeError, "blob reopen argument must be a number");
 
   /* no matter what happens we always reset current offset */
-  self->curoffset=0;
+  self->curoffset = 0;
 
-  PYSQLITE_BLOB_CALL(res=sqlite3_blob_reopen(self->pBlob, rowid));
-  if(PyErr_Occurred())
+  PYSQLITE_BLOB_CALL(res = sqlite3_blob_reopen(self->pBlob, rowid));
+  if (PyErr_Occurred())
     return NULL;
 
-  if(res!=SQLITE_OK)
-    {
-      SET_EXC(res, self->connection->db);
-      return NULL;
-    }
+  if (res != SQLITE_OK)
+  {
+    SET_EXC(res, self->connection->db);
+    return NULL;
+  }
   Py_RETURN_NONE;
 }
 
-static PyMethodDef APSWBlob_methods[]={
-  {"length", (PyCFunction)APSWBlob_length, METH_NOARGS,
-   "Returns length in bytes of the blob"},
-  {"read", (PyCFunction)APSWBlob_read, METH_VARARGS,
-   "Reads data from the blob"},
-  {"readinto", (PyCFunction)APSWBlob_readinto, METH_VARARGS,
-   "Reads data from the blob into a provided buffer"},
-  {"seek", (PyCFunction)APSWBlob_seek, METH_VARARGS,
-   "Seeks to a position in the blob"},
-  {"tell", (PyCFunction)APSWBlob_tell, METH_NOARGS,
-   "Returns current blob offset"},
-  {"write", (PyCFunction)APSWBlob_write, METH_O,
-   "Writes data to blob"},
-  {"reopen", (PyCFunction)APSWBlob_reopen, METH_O,
-   "Changes the blob to point to a different row"},
-  {"close", (PyCFunction)APSWBlob_close, METH_VARARGS,
-   "Closes blob"},
-  {"__enter__", (PyCFunction)APSWBlob_enter, METH_NOARGS,
-   "Context manager entry"},
-  {"__exit__", (PyCFunction)APSWBlob_exit, METH_VARARGS,
-   "Context manager exit"},
-  {0,0,0,0} /* Sentinel */
+static PyMethodDef APSWBlob_methods[] = {
+    {"length", (PyCFunction)APSWBlob_length, METH_NOARGS,
+     "Returns length in bytes of the blob"},
+    {"read", (PyCFunction)APSWBlob_read, METH_VARARGS,
+     "Reads data from the blob"},
+    {"readinto", (PyCFunction)APSWBlob_readinto, METH_VARARGS,
+     "Reads data from the blob into a provided buffer"},
+    {"seek", (PyCFunction)APSWBlob_seek, METH_VARARGS,
+     "Seeks to a position in the blob"},
+    {"tell", (PyCFunction)APSWBlob_tell, METH_NOARGS,
+     "Returns current blob offset"},
+    {"write", (PyCFunction)APSWBlob_write, METH_O,
+     "Writes data to blob"},
+    {"reopen", (PyCFunction)APSWBlob_reopen, METH_O,
+     "Changes the blob to point to a different row"},
+    {"close", (PyCFunction)APSWBlob_close, METH_VARARGS,
+     "Closes blob"},
+    {"__enter__", (PyCFunction)APSWBlob_enter, METH_NOARGS,
+     "Context manager entry"},
+    {"__exit__", (PyCFunction)APSWBlob_exit, METH_VARARGS,
+     "Context manager exit"},
+    {0, 0, 0, 0} /* Sentinel */
 };
 
 static PyTypeObject APSWBlobType = {
     APSW_PYTYPE_INIT
-    "apsw.blob",               /*tp_name*/
-    sizeof(APSWBlob),          /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    (destructor)APSWBlob_dealloc, /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    0,                         /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    0,                         /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_VERSION_TAG, /*tp_flags*/
-    "APSW blob object",        /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    offsetof(APSWBlob, weakreflist), /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
-    APSWBlob_methods,          /* tp_methods */
-    0,                         /* tp_members */
-    0,                         /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    0,                         /* tp_init */
-    0,                         /* tp_alloc */
-    0,                         /* tp_new */
-    0,                         /* tp_free */
-    0,                         /* tp_is_gc */
-    0,                         /* tp_bases */
-    0,                         /* tp_mro */
-    0,                         /* tp_cache */
-    0,                         /* tp_subclasses */
-    0,                         /* tp_weaklist */
-    0                          /* tp_del */
-    APSW_PYTYPE_VERSION
-};
+    "apsw.blob",                                      /*tp_name*/
+    sizeof(APSWBlob),                                 /*tp_basicsize*/
+    0,                                                /*tp_itemsize*/
+    (destructor)APSWBlob_dealloc,                     /*tp_dealloc*/
+    0,                                                /*tp_print*/
+    0,                                                /*tp_getattr*/
+    0,                                                /*tp_setattr*/
+    0,                                                /*tp_compare*/
+    0,                                                /*tp_repr*/
+    0,                                                /*tp_as_number*/
+    0,                                                /*tp_as_sequence*/
+    0,                                                /*tp_as_mapping*/
+    0,                                                /*tp_hash */
+    0,                                                /*tp_call*/
+    0,                                                /*tp_str*/
+    0,                                                /*tp_getattro*/
+    0,                                                /*tp_setattro*/
+    0,                                                /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_VERSION_TAG, /*tp_flags*/
+    "APSW blob object",                               /* tp_doc */
+    0,                                                /* tp_traverse */
+    0,                                                /* tp_clear */
+    0,                                                /* tp_richcompare */
+    offsetof(APSWBlob, weakreflist),                  /* tp_weaklistoffset */
+    0,                                                /* tp_iter */
+    0,                                                /* tp_iternext */
+    APSWBlob_methods,                                 /* tp_methods */
+    0,                                                /* tp_members */
+    0,                                                /* tp_getset */
+    0,                                                /* tp_base */
+    0,                                                /* tp_dict */
+    0,                                                /* tp_descr_get */
+    0,                                                /* tp_descr_set */
+    0,                                                /* tp_dictoffset */
+    0,                                                /* tp_init */
+    0,                                                /* tp_alloc */
+    0,                                                /* tp_new */
+    0,                                                /* tp_free */
+    0,                                                /* tp_is_gc */
+    0,                                                /* tp_bases */
+    0,                                                /* tp_mro */
+    0,                                                /* tp_cache */
+    0,                                                /* tp_subclasses */
+    0,                                                /* tp_weaklist */
+    0                                                 /* tp_del */
+    APSW_PYTYPE_VERSION};

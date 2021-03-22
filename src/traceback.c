@@ -30,36 +30,36 @@
 */
 static void AddTraceBackHere(const char *filename, int lineno, const char *functionname, const char *localsformat, ...)
 {
-  PyObject *srcfile=0, *funcname=0, *empty_dict=0, *empty_tuple=0, *empty_string=0, *localargs=0, *empty_code=0;
-  PyCodeObject *code=0;
-  PyFrameObject *frame=0;
+  PyObject *srcfile = 0, *funcname = 0, *empty_dict = 0, *empty_tuple = 0, *empty_string = 0, *localargs = 0, *empty_code = 0;
+  PyCodeObject *code = 0;
+  PyFrameObject *frame = 0;
   va_list localargsva;
 
   va_start(localargsva, localsformat);
 
   assert(PyErr_Occurred());
 
-#if PY_VERSION_HEX<0x03000000
-  srcfile=PyString_FromString(filename);
-  funcname=PyString_FromString(functionname);
+#if PY_VERSION_HEX < 0x03000000
+  srcfile = PyString_FromString(filename);
+  funcname = PyString_FromString(functionname);
 #else
-  srcfile=PyUnicode_FromString(filename);
-  funcname=PyUnicode_FromString(functionname);
+  srcfile = PyUnicode_FromString(filename);
+  funcname = PyUnicode_FromString(functionname);
 #endif
-  empty_dict=PyDict_New();
-  empty_tuple=PyTuple_New(0);
-#if PY_VERSION_HEX<0x03000000
-  empty_string=PyString_FromString("");
-  empty_code=PyString_FromString("");
+  empty_dict = PyDict_New();
+  empty_tuple = PyTuple_New(0);
+#if PY_VERSION_HEX < 0x03000000
+  empty_string = PyString_FromString("");
+  empty_code = PyString_FromString("");
 #else
-  empty_string=PyUnicode_FromString("");
-  empty_code=PyBytes_FromStringAndSize(NULL,0);
+  empty_string = PyUnicode_FromString("");
+  empty_code = PyBytes_FromStringAndSize(NULL, 0);
 #endif
 
-  localargs=localsformat?(Py_VaBuildValue((char *)localsformat, localargsva)):PyDict_New();
-  if(localsformat)
-    assert(localsformat[0]=='{');
-  if(localargs)
+  localargs = localsformat ? (Py_VaBuildValue((char *)localsformat, localargsva)) : PyDict_New();
+  if (localsformat)
+    assert(localsformat[0] == '{');
+  if (localargs)
     assert(PyDict_Check(localargs));
 
   /* did any fail? */
@@ -68,50 +68,51 @@ static void AddTraceBackHere(const char *filename, int lineno, const char *funct
 
   /* make the dummy code object */
   code = PyCode_New(
-     0,            /*int argcount,*/
+      0, /*int argcount,*/
 #if PY_VERSION_HEX >= 0x03000000
-     0,            /*int kwonlyargcount*/
+      0, /*int kwonlyargcount*/
 #endif
-     0,            /*int nlocals,*/
-     0,            /*int stacksize,*/
-     0,            /*int flags,*/
-     empty_code,   /*PyObject *code,*/
-     empty_tuple,  /*PyObject *consts,*/
-     empty_tuple,  /*PyObject *names,*/
-     empty_tuple,  /*PyObject *varnames,*/
-     empty_tuple,  /*PyObject *freevars,*/
-     empty_tuple,  /*PyObject *cellvars,*/
-     srcfile,      /*PyObject *filename,*/
-     funcname,     /*PyObject *name,*/
-     lineno,       /*int firstlineno,*/
-     empty_code    /*PyObject *lnotab*/
-   );
-  if (!code) goto end;
+      0,           /*int nlocals,*/
+      0,           /*int stacksize,*/
+      0,           /*int flags,*/
+      empty_code,  /*PyObject *code,*/
+      empty_tuple, /*PyObject *consts,*/
+      empty_tuple, /*PyObject *names,*/
+      empty_tuple, /*PyObject *varnames,*/
+      empty_tuple, /*PyObject *freevars,*/
+      empty_tuple, /*PyObject *cellvars,*/
+      srcfile,     /*PyObject *filename,*/
+      funcname,    /*PyObject *name,*/
+      lineno,      /*int firstlineno,*/
+      empty_code   /*PyObject *lnotab*/
+  );
+  if (!code)
+    goto end;
 
   /* make the dummy frame */
-  frame=PyFrame_New(
-           PyThreadState_Get(), /*PyThreadState *tstate,*/
-	   code,                /*PyCodeObject *code,*/
-	   empty_dict,          /*PyObject *globals,*/
-	   localargs            /*PyObject *locals*/
-	   );
-  if(!frame) goto end;
+  frame = PyFrame_New(
+      PyThreadState_Get(), /*PyThreadState *tstate,*/
+      code,                /*PyCodeObject *code,*/
+      empty_dict,          /*PyObject *globals,*/
+      localargs            /*PyObject *locals*/
+  );
+  if (!frame)
+    goto end;
 
   /* add dummy frame to traceback */
-  frame->f_lineno=lineno;
+  frame->f_lineno = lineno;
   PyTraceBack_Here(frame);
-  
+
   /* this epilogue deals with success or failure cases */
- end:
+end:
   va_end(localargsva);
   Py_XDECREF(localargs);
   Py_XDECREF(srcfile);
   Py_XDECREF(funcname);
-  Py_XDECREF(empty_dict); 
-  Py_XDECREF(empty_tuple); 
-  Py_XDECREF(empty_string); 
+  Py_XDECREF(empty_dict);
+  Py_XDECREF(empty_tuple);
+  Py_XDECREF(empty_string);
   Py_XDECREF(empty_code);
-  Py_XDECREF(code); 
-  Py_XDECREF(frame); 
+  Py_XDECREF(code);
+  Py_XDECREF(frame);
 }
-
