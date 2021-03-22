@@ -3379,6 +3379,18 @@ static PyGetSetDef Connection_getseters[] = {
   {NULL, NULL, NULL, NULL, NULL}
 };
 
+static PyObject *
+Connection_execute(Connection *self, PyObject *args)
+{
+  CHECK_CLOSED(self, NULL);
+  PyObject *cursor = PyObject_CallMethod((PyObject*)self, "cursor", NULL);
+  if(!cursor)
+    return NULL;
+  Py_INCREF(cursor);
+  PyObject *result = Call_PythonMethod(cursor, "execute", 1, args);
+  Py_DECREF(cursor);
+  return result;
+}
 
 /** .. attribute:: open_flags
 
@@ -3488,6 +3500,8 @@ static PyMethodDef Connection_methods[] = {
    "Return filename of main or attached database"},
     {"txn_state", (PyCFunction)Connection_txn_state, METH_VARARGS,
      "Return transaction state"},
+  {"execute", (PyCFunction)Connection_execute, METH_VARARGS,
+   "Executes one or more statements" },
     {0, 0, 0, 0} /* Sentinel */
 };
 
