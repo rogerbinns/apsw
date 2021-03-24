@@ -550,7 +550,7 @@ static PyObject *
 APSWBlob_write(APSWBlob *self, PyObject *obj)
 {
   const void *buffer = 0;
-  Py_ssize_t size;
+  Py_ssize_t buflen;
   int res;
   CHECK_USE(NULL);
   CHECK_BLOB_CLOSED;
@@ -558,7 +558,7 @@ APSWBlob_write(APSWBlob *self, PyObject *obj)
   /* we support buffers and string for the object */
   if (!PyUnicode_Check(obj) && PyObject_CheckReadBuffer(obj))
   {
-    int asrb = PyObject_AsReadBuffer(obj, &buffer, &size);
+    int asrb = PyObject_AsReadBuffer(obj, &buffer, &buflen);
 
     APSW_FAULT_INJECT(BlobWriteAsReadBufFails, , (PyErr_NoMemory(), asrb = -1));
 
@@ -568,13 +568,13 @@ APSWBlob_write(APSWBlob *self, PyObject *obj)
   else
     return PyErr_Format(PyExc_TypeError, "Parameter should be bytes/string or buffer");
 
-  if (((int)(size + self->curoffset)) < self->curoffset)
+  if (((int)(buflen + self->curoffset)) < self->curoffset)
     return PyErr_Format(PyExc_ValueError, "Data is too large (integer wrap)");
 
-  if (((int)(size + self->curoffset)) > sqlite3_blob_bytes(self->pBlob))
+  if (((int)(buflen + self->curoffset)) > sqlite3_blob_bytes(self->pBlob))
     return PyErr_Format(PyExc_ValueError, "Data would go beyond end of blob");
 
-  PYSQLITE_BLOB_CALL(res = sqlite3_blob_write(self->pBlob, buffer, size, self->curoffset));
+  PYSQLITE_BLOB_CALL(res = sqlite3_blob_write(self->pBlob, buffer, buflen, self->curoffset));
   if (PyErr_Occurred())
     return NULL;
 
@@ -584,7 +584,7 @@ APSWBlob_write(APSWBlob *self, PyObject *obj)
     return NULL;
   }
   else
-    self->curoffset += size;
+    self->curoffset += buflen;
   assert(self->curoffset <= sqlite3_blob_bytes(self->pBlob));
   Py_RETURN_NONE;
 }
