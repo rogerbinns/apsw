@@ -3838,6 +3838,16 @@ class APSW(unittest.TestCase):
                                   (filename, name, i, func, v['desc'], line.strip()))
 
     def sourceCheckFunction(self, filename, name, lines):
+        # readbuffer stuff
+        rbvars = endrb = 0
+        for line in lines:
+            if "READBUFFERVARS" in line:
+                rbvars += 1
+            if "ENDREADBUFFER" in line:
+                endrb += 1
+        if rbvars and not endrb:
+            self.fail("file %s func %s has missing ENDREADBUFFER" % (filename, name))
+
         # not further checked
         if name.split("_")[0] in ("ZeroBlobBind", "APSWVFS", "APSWVFSFile", "APSWBuffer", "FunctionCBInfo",
                                   "apswurifilename"):

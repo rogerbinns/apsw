@@ -1139,11 +1139,13 @@ formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
     int asrb;
     PyObject *unires;
     Py_UNICODE *res;
-#define _HEXDIGITS
+    READBUFFERVARS;
 
-    asrb = PyObject_AsReadBuffer(value, (const void **)&buffer, &buflen);
+#define _HEXDIGITS
+    compat_PyObjectReadBuffer(value);
     APSW_FAULT_INJECT(FormatSQLValueAsReadBufferFails,
                       ,
+                      ENDREADBUFFER;
                       (PyErr_NoMemory(), asrb = -1));
     if (asrb != 0)
       return NULL;
@@ -1152,7 +1154,10 @@ formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
                       unires = PyUnicode_FromUnicode(NULL, buflen * 2 + 3),
                       unires = PyErr_NoMemory());
     if (!unires)
+    {
+      ENDREADBUFFER;
       return NULL;
+    }
     res = PyUnicode_AS_UNICODE(unires);
     *res++ = 'X';
     *res++ = '\'';
@@ -1163,6 +1168,8 @@ formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
       *res++ = "0123456789ABCDEF"[(*buffer++) & 0x0f];
     }
     *res++ = '\'';
+
+    ENDREADBUFFER;
     APSW_Unicode_Return(unires);
   }
 

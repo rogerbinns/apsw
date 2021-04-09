@@ -986,13 +986,17 @@ apswvfs_xRandomness(sqlite3_vfs *vfs, int nByte, char *zOut)
   {
     const void *buffer;
     Py_ssize_t buflen;
-    int asrb = PyObject_AsReadBuffer(pyresult, &buffer, &buflen);
+    int asrb;
+    READBUFFERVARS;
+
+    compat_PyObjectReadBuffer(pyresult);
     if (asrb == 0)
     {
       if (buflen > nByte)
         buflen = nByte;
       memcpy(zOut, buffer, buflen);
       result = buflen;
+      ENDREADBUFFER;
     }
     else
       assert(PyErr_Occurred());
@@ -2034,9 +2038,10 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
 {
   int result = SQLITE_ERROR;
   PyObject *pybuf = NULL;
-  int asrb;
-  Py_ssize_t size;
+  int asrb = -1;
+  Py_ssize_t buflen;
   const void *buffer;
+  READBUFFERVARS;
 
   FILEPREAMBLE;
 
@@ -2052,9 +2057,9 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
     PyErr_Format(PyExc_TypeError, "Object returned from xRead should be bytes/buffer/string");
     goto finally;
   }
-  asrb = PyObject_AsReadBuffer(pybuf, &buffer, &size);
+  compat_PyObjectReadBuffer(pybuf);
 
-  APSW_FAULT_INJECT(xReadReadBufferFail, , (PyErr_NoMemory(), asrb = -1));
+  APSW_FAULT_INJECT(xReadReadBufferFail, , ENDREADBUFFER; (PyErr_NoMemory(), asrb = -1));
 
   if (asrb != 0)
   {
@@ -2062,11 +2067,11 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
     goto finally;
   }
 
-  if (size < amount)
+  if (buflen < amount)
   {
     result = SQLITE_IOERR_SHORT_READ;
     memset(bufout, 0, amount); /* see https://sqlite.org/cvstrac/chngview?cn=5867 */
-    memcpy(bufout, buffer, size);
+    memcpy(bufout, buffer, buflen);
   }
   else
   {
@@ -2077,7 +2082,8 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
 finally:
   if (PyErr_Occurred())
     AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xRead", "{s: i, s: L, s: O}", "amount", amount, "offset", offset, "result", pybuf ? pybuf : Py_None);
-
+  if (asrb == 0)
+    ENDREADBUFFER;
   Py_XDECREF(pybuf);
   FILEPOSTAMBLE;
   return result;
@@ -2192,8 +2198,9 @@ apswvfsfilepy_xWrite(APSWVFSFile *self, PyObject *args)
   int res;
   PyObject *buffy = NULL;
   const void *buffer;
-  Py_ssize_t size;
+  Py_ssize_t buflen;
   int asrb;
+  READBUFFERVARS;
 
   CHECKVFSFILEPY;
   VFSFILENOTIMPLEMENTED(xWrite, 1);
@@ -2204,7 +2211,7 @@ apswvfsfilepy_xWrite(APSWVFSFile *self, PyObject *args)
     return NULL;
   }
 
-  asrb = PyObject_AsReadBuffer(buffy, &buffer, &size);
+  compat_PyObjectReadBuffer(buffy);
   if (asrb != 0 || PyUnicode_Check(buffy))
   {
     PyErr_Format(PyExc_TypeError, "Object passed to xWrite doesn't do read buffer");
@@ -2212,7 +2219,9 @@ apswvfsfilepy_xWrite(APSWVFSFile *self, PyObject *args)
     return NULL;
   }
 
-  res = self->base->pMethods->xWrite(self->base, buffer, size, offset);
+  res = self->base->pMethods->xWrite(self->base, buffer, buflen, offset);
+
+  ENDREADBUFFER;
 
   if (res == SQLITE_OK)
     Py_RETURN_NONE;

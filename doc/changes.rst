@@ -2,15 +2,16 @@ Change History
 **************
 .. currentmodule:: apsw
 
-3.35.0-r1
+3.35.4-r1
 =========
 
 Updates for SQLite download url (the year is part of the urls).
 
-Compiles under CPython 3.10 (a deprecated function was removed).
-
 Added enable flag for built-in SQL math functions, and enable it
 by default with --enable-all-extensions.
+
+Use the newer buffer API for Python 3 (old API removed in Python
+3.10).
 
 3.34.0-r1
 =========
