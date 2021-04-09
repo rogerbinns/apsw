@@ -357,3 +357,46 @@ getutf8string(PyObject *string)
   Py_DECREF(inunicode);
   return utf8string;
 }
+
+/* PyObject_AsReadBuffer was deprecated in Py 3 and removed in 3.10 */
+#if PY_MAJOR_VERSION < 3
+#define READBUFFERVARS
+
+#define compat_PyObjectReadBuffer(o)                     \
+  do                                                     \
+  {                                                      \
+    buffer = NULL;                                       \
+    buflen = 0;                                          \
+    asrb = PyObject_AsReadBuffer((o), &buffer, &buflen); \
+  } while (0)
+
+#define ENDREADBUFFER
+
+#define compat_CheckReadBuffer(o) PyObject_CheckReadBuffer(o)
+
+#else
+#define READBUFFERVARS Py_buffer py3buffer
+
+#define compat_PyObjectReadBuffer(o)                        \
+  do                                                        \
+  {                                                         \
+    memset(&py3buffer, 0, sizeof(py3buffer));               \
+    buffer = NULL;                                          \
+    buflen = 0;                                             \
+    asrb = PyObject_GetBuffer(o, &py3buffer, PyBUF_SIMPLE); \
+    if (asrb == 0)                                          \
+    {                                                       \
+      buffer = py3buffer.buf;                               \
+      buflen = py3buffer.len;                               \
+    }                                                       \
+  } while (0)
+
+#define ENDREADBUFFER             \
+  do                              \
+  {                               \
+    PyBuffer_Release(&py3buffer); \
+  } while (0)
+
+#define compat_CheckReadBuffer(o) PyObject_CheckBuffer(o)
+
+#endif
