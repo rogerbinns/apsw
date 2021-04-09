@@ -477,7 +477,7 @@ class APSW(unittest.TestCase):
     def testModuleExposed(self):
         "Check what is exposed and usage"
         for name in "Connection", "Cursor", "Blob", "Backup", "zeroblob", "VFS", "VFSFile", "URIFilename":
-            self.assertTrue(hasattr(apsw, name), "expected name apsw."+name)
+            self.assertTrue(hasattr(apsw, name), "expected name apsw." + name)
 
         for name in "Cursor", "Blob", "Backup":
             self.assertRaisesRegex(TypeError, "cannot create .* instances", getattr(apsw, name))
@@ -8697,7 +8697,7 @@ def setup(write=write):
 
     # python version compatibility
     if not hasattr(APSW, "assertRaisesRegex"):
-        APSW.assertRaisesRegex=APSW.assertRaisesRegexCompat
+        APSW.assertRaisesRegex = APSW.assertRaisesRegexCompat
 
     del memdb
 
