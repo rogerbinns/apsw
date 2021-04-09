@@ -556,7 +556,7 @@ APSWBlob_write(APSWBlob *self, PyObject *obj)
   CHECK_BLOB_CLOSED;
 
   /* we support buffers and string for the object */
-  if (!PyUnicode_Check(obj) && PyObject_CheckReadBuffer(obj))
+  if (!PyUnicode_Check(obj) && compat_CheckReadBuffer(obj))
   {
     int asrb = PyObject_AsReadBuffer(obj, &buffer, &buflen);
 

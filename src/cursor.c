@@ -566,7 +566,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
     }
   }
 #endif
-  else if (PyObject_CheckReadBuffer(obj))
+  else if (compat_CheckReadBuffer(obj))
   {
     const void *buffer;
     Py_ssize_t buflen;

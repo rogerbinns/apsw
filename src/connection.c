@@ -1944,7 +1944,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
     return;
   }
 #endif
-  if (PyObject_CheckReadBuffer(obj))
+  if (compat_CheckReadBuffer(obj))
   {
     const void *buffer;
     Py_ssize_t buflen;

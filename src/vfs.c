@@ -2047,7 +2047,7 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
     result = MakeSqliteMsgFromPyException(NULL);
     goto finally;
   }
-  if (PyUnicode_Check(pybuf) || !PyObject_CheckReadBuffer(pybuf))
+  if (PyUnicode_Check(pybuf) || !compat_CheckReadBuffer(pybuf))
   {
     PyErr_Format(PyExc_TypeError, "Object returned from xRead should be bytes/buffer/string");
     goto finally;

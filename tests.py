@@ -3956,6 +3956,8 @@ class APSW(unittest.TestCase):
 
         return
 
+    should_use_compat = ("PyObject_CheckReadBuffer", "PyObject_AsReadBuffer")
+
     def testSourceChecks(self):
         "Check various source code issues"
         # We expect a coding style where the functions are named
@@ -3968,6 +3970,11 @@ class APSW(unittest.TestCase):
             code = read_whole_file(filename, "rt").replace("http://", "http:__").replace("https://", "https:__")
             if "//" in code:
                 self.fail("// style comment in " + filename)
+
+            if filename != "src/pyutil.c":
+                for n in self.should_use_compat:
+                    if n in code:
+                        self.fail("Should be using compat function for %s in file %s" % (n, filename))
 
             # check check funcs
             funcpat1 = re.compile(r"^(\w+_\w+)\s*\(\s*\w+\s*\*\s*self")
