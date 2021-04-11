@@ -53,7 +53,7 @@ else
    apswopt=""
 fi
 
-DEFS=""
+DEFS="-DAPSW_NO_NDEBUG -DAPSW_TESTFIXTURES"
 
 if [ -f sqlite3/sqlite3config.h ]
 then
@@ -67,8 +67,10 @@ CFLAGS=`$PYTHON -c "import sysconfig; print(sysconfig.get_config_var('CFLAGS'))"
 MOREFLAGS=`$PYTHON -c "import sysconfig; print(sysconfig.get_config_var('CCSHARED'))"`
 LINKER=`$PYTHON -c "import sysconfig; print(sysconfig.get_config_var('LDSHARED'))"`
 SOSUFFIX=`$PYTHON -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"`
-set -ex
+
 rm -f apsw.o apsw.*.so apsw.so
+set -ex
+
 $CC $CFLAGS $MOREFLAGS $opt $cflags -DEXPERIMENTAL $DEFS -DAPSW_USE_SQLITE_AMALGAMATION=\"sqlite3/sqlite3.c\" -I$INCLUDEDIR -Isrc -I. -c src/apsw.c
 $LINKER -g $opt apsw.o -o apsw$SOSUFFIX
 time env $apswopt valgrind $options $PYTHON $args
