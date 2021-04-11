@@ -3981,7 +3981,7 @@ class APSW(unittest.TestCase):
             if "//" in code:
                 self.fail("// style comment in " + filename)
 
-            if filename != "src/pyutil.c":
+            if filename.replace("\\", "/") != "src/pyutil.c":
                 for n in self.should_use_compat:
                     if n in code:
                         self.fail("Should be using compat function for %s in file %s" % (n, filename))
