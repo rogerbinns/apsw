@@ -35,9 +35,9 @@ so you can see what gets printed when you run the code.
 .. code-block:: text
 
    |       Using APSW file /space/apsw/apsw.cpython-38-x86_64-linux-gnu.so
-   |          APSW version 3.34.0-r1
-   |    SQLite lib version 3.34.0
-   | SQLite header version 3034000
+   |          APSW version 3.35.4-r1
+   |    SQLite lib version 3.35.4
+   | SQLite header version 3035004
 
 .. code-block:: python
 
@@ -541,8 +541,8 @@ so you can see what gets printed when you run the code.
 .. code-block:: text
 
    | 72831380 56fa58acf89604978a41__mypyc.cpython-38-x86_64-linux-gnu.so /home/rogerb/.local/lib/python3.8/site-packages
-   | 10160952 apsw.cpython-38-x86_64-linux-gnu.so /space/apsw
-   | 4218912 apsw.o /space/apsw
+   | 13856440 apsw.cpython-310-x86_64-linux-gnu.so /space/apsw
+   | 10311560 apsw.cpython-38-x86_64-linux-gnu.so /space/apsw
 
 .. code-block:: python
 
@@ -762,7 +762,7 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
-   | SQLite memory usage current 368104 max 379304
+   | SQLite memory usage current 367968 max 377928
 
 .. code-block:: python
 

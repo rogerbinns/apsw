@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cursors (executing SQL) &#8212; APSW 3.34.0-r1 documentation</title>
+    <title>Cursors (executing SQL) &#8212; APSW 3.35.4-r1 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="connection.html" title="Connections to a database"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.34.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.35.4-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Cursors (executing SQL)</a></li> 
       </ul>
     </div>  
@@ -325,7 +325,10 @@ in DBAPI.  It is a longer way of doing <code class="docutils literal notranslate
 <span class="target" id="index-1"></span><dl class="py method">
 <dt id="apsw.Cursor.getdescription">
 <code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">getdescription</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; tuple<a class="headerlink" href="#apsw.Cursor.getdescription" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a tuple describing each column in the result row.  The
+<dd><p>If you are trying to get information about a table or view,
+then <a class="reference external" href="https://sqlite.org/pragma.html#pragma_table_info">pragma table_info</a>
+is better.</p>
+<p>Returns a tuple describing each column in the result row.  The
 return is identical for every row of the results.  You can only
 call this method once you have started executing a statement and
 before you have finished:</p>
@@ -334,8 +337,8 @@ before you have finished:</p>
 
 <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select .....&quot;</span><span class="p">):</span>
    <span class="c1"># this works</span>
-   <span class="nb">print</span> <span class="n">cursor</span><span class="o">.</span><span class="n">getdescription</span><span class="p">()</span>
-   <span class="nb">print</span> <span class="n">row</span>
+   <span class="nb">print</span> <span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">getdescription</span><span class="p">())</span>
+   <span class="nb">print</span> <span class="p">(</span><span class="n">row</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The information about each column is a tuple of <code class="docutils literal notranslate"><span class="pre">(column_name,</span>
@@ -354,8 +357,8 @@ but never both.)</p>
 <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into books values(?,?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;fjfjfj&quot;</span><span class="p">,</span> <span class="mf">3.7</span><span class="p">,</span> <span class="mi">97</span><span class="p">))</span>
 
 <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from books&quot;</span><span class="p">):</span>
-   <span class="nb">print</span> <span class="n">cursor</span><span class="o">.</span><span class="n">getdescription</span><span class="p">()</span>
-   <span class="nb">print</span> <span class="n">row</span>
+   <span class="nb">print</span> <span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">getdescription</span><span class="p">())</span>
+   <span class="nb">print</span> <span class="p">(</span><span class="n">row</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Output:</p>
@@ -500,14 +503,14 @@ removed.</p>
         <li class="right" >
           <a href="connection.html" title="Connections to a database"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.34.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.35.4-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Cursors (executing SQL)</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
-        &#169; <a href="copyright.html">Copyright</a> 2004-2020, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Dec 18, 2020.
+        &#169; <a href="copyright.html">Copyright</a> 2004-2021, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Apr 12, 2021.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
