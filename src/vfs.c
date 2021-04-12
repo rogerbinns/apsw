@@ -2041,8 +2041,9 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
   int asrb = -1;
   Py_ssize_t buflen;
   const void *buffer;
+#if PY_MAJOR_VERSION >= 3
   READBUFFERVARS;
-
+#endif
   FILEPREAMBLE;
 
   pybuf = Call_PythonMethodV(apswfile->file, "xRead", 1, "(iL)", amount, offset);
