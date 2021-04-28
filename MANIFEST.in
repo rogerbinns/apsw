@@ -20,6 +20,7 @@ include src/vtable.c
 include MANIFEST.in
 
 # other files
+include LICENSE
 include checksums
 include mingwsetup.bat
 include setup.py
