@@ -2,6 +2,13 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.36.0-r1
+=========
+
+Added constants:
+
+* SQLITE_FCNTL_EXTERNAL_READER, SQLITE_FCNTL_CKSM_FILE
+
 3.35.4-r1
 =========
 

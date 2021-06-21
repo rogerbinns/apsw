@@ -1833,6 +1833,8 @@ modules etc. For example::
         ADDINT(SQLITE_FCNTL_CKPT_DONE),
         ADDINT(SQLITE_FCNTL_CKPT_START),
         ADDINT(SQLITE_FCNTL_RESERVE_BYTES),
+        ADDINT(SQLITE_FCNTL_EXTERNAL_READER),
+        ADDINT(SQLITE_FCNTL_CKSM_FILE),
         END,
 
         DICT("mapping_conflict_resolution_modes"),
