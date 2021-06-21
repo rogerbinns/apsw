@@ -43,7 +43,7 @@ if [ -z "$CALLGRIND" ]
 then
    options="--track-fds=yes --num-callers=50 $showleaks --freelist-vol=500000000 --suppressions=`dirname $0`/sqlite3.supp"
    cflags="-DAPSW_TESTFIXTURES -DAPSW_NO_NDEBUG"
-   opt="-Os"
+   opt="-Os -g"
    APSW_TEST_ITERATIONS=${APSW_TEST_ITERATIONS:=150}
    apswopt="APSW_NO_MEMLEAK=t APSW_TEST_ITERATIONS=$APSW_TEST_ITERATIONS"
 else
