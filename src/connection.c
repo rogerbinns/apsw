@@ -1681,6 +1681,55 @@ finally:
   Py_RETURN_NONE;
 }
 
+#ifndef SQLITE_OMIT_DESERIALZE
+/** .. method:: serialize(name: str) -> bytes
+
+   Returns a memory copy of the database. *name* is **"main"** for the
+   main database, **"temp"** for the temporary database etc.
+
+   The memory copy is the same as if the database was backed up to
+   disk.
+
+   .. seealso::
+
+     * :meth:`Connection.deserialize`
+
+   -* sqlite3_serialize
+
+*/
+static PyObject *
+Connection_serialize(Connection *self, PyObject *dbname)
+{
+  PyObject *pyres = NULL, *dbnames = NULL;
+  sqlite3_int64 size = 0;
+  unsigned char *serialization = NULL;
+  int res = SQLITE_OK;
+
+  dbnames = getutf8string(dbname);
+  if (!dbnames)
+    goto end;
+
+  PYSQLITE_CON_CALL(serialization = sqlite3_serialize(self->db, PyBytes_AS_STRING(dbnames), &size, 0));
+
+  if (serialization)
+  {
+    pyres = converttobytes(serialization, size);
+  }
+  else
+  {
+    /* we don't know the reason for failure, so assume memory */
+    res = SQLITE_NOMEM;
+    make_exception(res, self->db);
+  }
+
+end:
+  Py_XDECREF(dbnames);
+  sqlite3_free(serialization);
+  return pyres;
+}
+
+#endif /* SQLITE_OMIT_DESERIALZE */
+
 #if defined(EXPERIMENTAL) && !defined(SQLITE_OMIT_LOAD_EXTENSION) /* extension loading */
 
 /** .. method:: enableloadextension(enable)
@@ -3503,6 +3552,8 @@ static PyMethodDef Connection_methods[] = {
      "Return filename of main or attached database"},
     {"txn_state", (PyCFunction)Connection_txn_state, METH_VARARGS,
      "Return transaction state"},
+    {"serialize", (PyCFunction)Connection_serialize, METH_O,
+     "Return in memory copy of database"},
     {0, 0, 0, 0} /* Sentinel */
 };
 
