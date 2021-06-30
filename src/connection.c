@@ -1690,6 +1690,9 @@ finally:
    The memory copy is the same as if the database was backed up to
    disk.
 
+  If the database name doesn't exist or is empty, then None is
+  returned, not an exception (this is SQLite's behaviour).
+
    .. seealso::
 
      * :meth:`Connection.deserialize`
@@ -1709,23 +1712,25 @@ Connection_serialize(Connection *self, PyObject *dbname)
   if (!dbnames)
     goto end;
 
-  PYSQLITE_CON_CALL(serialization = sqlite3_serialize(self->db, PyBytes_AS_STRING(dbnames), &size, 0));
+  /* sqlite3_serialize does not use the same error pattern as other
+  SQLite APIs.  I originally coded this as though error codes/strings
+  were done behind the scenes.  However that turns out not to be the
+  case so this code can't do anything about errors.  See commit
+  history for prior attempt */
+
+  INUSE_CALL(_PYSQLITE_CALL_V(serialization = sqlite3_serialize(self->db, PyBytes_AS_STRING(dbnames), &size, 0)));
 
   if (serialization)
-  {
     pyres = converttobytes(serialization, size);
-  }
-  else
-  {
-    /* we don't know the reason for failure, so assume memory */
-    res = SQLITE_NOMEM;
-    make_exception(res, self->db);
-  }
 
 end:
   Py_XDECREF(dbnames);
   sqlite3_free(serialization);
-  return pyres;
+  if (pyres)
+    return pyres;
+  if (PyErr_Occurred())
+    return NULL;
+  Py_RETURN_NONE;
 }
 
 #endif /* SQLITE_OMIT_DESERIALZE */

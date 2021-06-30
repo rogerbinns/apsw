@@ -2143,6 +2143,18 @@ class APSW(unittest.TestCase):
         apsw.enablesharedcache(True)
         apsw.enablesharedcache(False)
 
+    def testSerialize(self):
+        "Verify serialize/deserialze calls"
+        self.assertRaises(TypeError, self.db.serialize)
+        self.assertRaises(TypeError, self.db.serialize, "a", "b")
+        self.assertRaises(TypeError, self.db.serialize, 3)
+        # SQLite implementatiom detail: empty db gives back None
+        self.assertEqual(None, self.db.serialize("main"))
+        self.db.cursor().execute("create table foo(x)")
+        self.assertNotEqual(None, self.db.serialize("main"))
+        # SQLite implementation detail: unknowndb gives back None instead of error
+        self.assertEqual(None, self.db.serialize("nosuchdbname"))
+
     # A check that various extensions (such as fts3, rtree, icu)
     # actually work.  We don't know if they were supposed to be
     # compiled in or not so the assumption is that they aren't.
