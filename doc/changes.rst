@@ -5,6 +5,10 @@ Change History
 3.36.0-r1
 =========
 
+Implemented :meth:`Connection.serialize` and
+:meth:`Connection.deserialize`.  They turn a database into bytes, and
+bytes into a database respectively.
+
 Added constants:
 
 * SQLITE_FCNTL_EXTERNAL_READER, SQLITE_FCNTL_CKSM_FILE
