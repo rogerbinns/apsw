@@ -2145,15 +2145,36 @@ class APSW(unittest.TestCase):
 
     def testSerialize(self):
         "Verify serialize/deserialze calls"
+        # check param types
         self.assertRaises(TypeError, self.db.serialize)
         self.assertRaises(TypeError, self.db.serialize, "a", "b")
         self.assertRaises(TypeError, self.db.serialize, 3)
-        # SQLite implementatiom detail: empty db gives back None
+        self.assertRaises(TypeError, self.db.deserialize, 3)
+        self.assertRaises(TypeError, self.db.deserialize, "main", "main")
+
+        # SQLite implementation detail: empty db gives back None
         self.assertEqual(None, self.db.serialize("main"))
-        self.db.cursor().execute("create table foo(x)")
-        self.assertNotEqual(None, self.db.serialize("main"))
-        # SQLite implementation detail: unknowndb gives back None instead of error
+        self.assertEqual(None, self.db.serialize("temp"))
+
+        # SQLite implementation detail: unknown name gives back None instead of error
         self.assertEqual(None, self.db.serialize("nosuchdbname"))
+
+        # populate with real content
+        self.db.cursor().execute("create table temp.foo(x); insert into temp.foo values(3), (4), (5)")
+        # must have content now
+        self.assertNotEqual(None, self.db.serialize("temp"))
+        self.assertTableNotExists("main.foo")
+        self.db.deserialize("main", self.db.serialize("temp"))
+        # without this renaming, things get confused between identical tables in main and temp
+        self.db.cursor().execute("alter table main.foo rename to bar")
+        self.assertTablesEqual(self.db, "bar", self.db, "foo")
+        # check we can modify deserialized
+        self.db.cursor().execute("insert into bar values(3)")
+        self.db.deserialize("main", self.db.serialize("temp"))
+        self.db.cursor().execute("alter table temp.foo rename to bar")
+        self.assertTablesEqual(self.db, "foo", self.db, "bar")
+        # add a megabyte to table
+        self.db.cursor().execute("insert into foo values(zeroblob(1024024))")
 
     # A check that various extensions (such as fts3, rtree, icu)
     # actually work.  We don't know if they were supposed to be
