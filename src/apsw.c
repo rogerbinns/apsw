@@ -71,6 +71,7 @@ API Reference
 #include "apswversion.h"
 
 /* Python headers */
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include <pythread.h>
 #include "structmember.h"
