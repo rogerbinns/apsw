@@ -1733,6 +1733,52 @@ end:
   Py_RETURN_NONE;
 }
 
+/** .. method:: deserialize(name: str, contents: bytes) -> None
+
+   Replaces the named database with an in-memory copy of *contents*.
+   *name* is **"main"** for the main database, **"temp"** for the
+   temporary database etc.
+
+   The resulting database is in-memory, read-write, and the memory is
+   owned, resized, and freed by SQLite.
+
+   .. seealso::
+
+     * :meth:`Connection.serialize`
+
+   -* sqlite3_deserialize
+
+*/
+static PyObject *
+Connection_deserialize(Connection *self, PyObject *args)
+{
+  char *dbname = NULL;
+  const char *contents = NULL;
+  char *newcontents = NULL;
+  Py_ssize_t contents_size = 0;
+  int res = SQLITE_OK;
+
+  if (!PyArg_ParseTuple(args, "esy#", STRENCODING, &dbname, &contents, &contents_size))
+    return NULL;
+
+  newcontents = sqlite3_malloc64(contents_size);
+  if (newcontents)
+    memcpy(newcontents, contents, contents_size);
+  else
+  {
+    res = SQLITE_NOMEM;
+    PyErr_NoMemory();
+  }
+
+  if (res == SQLITE_OK)
+    PYSQLITE_CON_CALL(res = sqlite3_deserialize(self->db, dbname, newcontents, contents_size, contents_size, SQLITE_DESERIALIZE_RESIZEABLE | SQLITE_DESERIALIZE_FREEONCLOSE));
+  SET_EXC(res, self->db);
+
+  PyMem_Free(dbname);
+  if (res != SQLITE_OK)
+    return NULL;
+  Py_RETURN_NONE;
+}
 #endif /* SQLITE_OMIT_DESERIALZE */
 
 #if defined(EXPERIMENTAL) && !defined(SQLITE_OMIT_LOAD_EXTENSION) /* extension loading */
@@ -3559,6 +3605,8 @@ static PyMethodDef Connection_methods[] = {
      "Return transaction state"},
     {"serialize", (PyCFunction)Connection_serialize, METH_O,
      "Return in memory copy of database"},
+    {"deserialize", (PyCFunction)Connection_deserialize, METH_VARARGS,
+     "Provide new in-memory database contents"},
     {0, 0, 0, 0} /* Sentinel */
 };
 
