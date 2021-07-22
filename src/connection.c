@@ -3415,7 +3415,7 @@ Connection_txn_state(Connection *self, PyObject *args)
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (!PyArg_ParseTuple(args, "|es:tx_state(schema=None", STRENCODING, &zschema))
+  if (!PyArg_ParseTuple(args, "|es:tx_state(schema=None)", STRENCODING, &zschema))
     return NULL;
 
   PYSQLITE_CON_CALL(res = sqlite3_txn_state(self->db, zschema));
