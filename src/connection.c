@@ -1704,21 +1704,25 @@ static PyObject *
 Connection_serialize(Connection *self, PyObject *dbname)
 {
   PyObject *pyres = NULL, *dbnames = NULL;
+  const char *dbnames_cp = NULL;
   sqlite3_int64 size = 0;
   unsigned char *serialization = NULL;
   int res = SQLITE_OK;
 
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
   dbnames = getutf8string(dbname);
   if (!dbnames)
     goto end;
-
+  dbnames_cp = PyBytes_AS_STRING(dbnames);
   /* sqlite3_serialize does not use the same error pattern as other
   SQLite APIs.  I originally coded this as though error codes/strings
   were done behind the scenes.  However that turns out not to be the
   case so this code can't do anything about errors.  See commit
   history for prior attempt */
 
-  INUSE_CALL(_PYSQLITE_CALL_V(serialization = sqlite3_serialize(self->db, PyBytes_AS_STRING(dbnames), &size, 0)));
+  INUSE_CALL(_PYSQLITE_CALL_V(serialization = sqlite3_serialize(self->db, dbnames_cp, &size, 0)));
 
   if (serialization)
     pyres = converttobytes(serialization, size);
@@ -1757,6 +1761,9 @@ Connection_deserialize(Connection *self, PyObject *args)
   char *newcontents = NULL;
   Py_ssize_t contents_size = 0;
   int res = SQLITE_OK;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
 
   if (!PyArg_ParseTuple(args, "esy#", STRENCODING, &dbname, &contents, &contents_size))
     return NULL;
