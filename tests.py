@@ -4494,7 +4494,8 @@ class APSW(unittest.TestCase):
 
     def testVFSWithWAL(self):
         "Verify VFS using WAL where possible"
-        apsw.connection_hooks.append(lambda c: c.cursor().execute("pragma journal_mode=WAL"))
+        apsw.connection_hooks.append(
+            lambda c: c.cursor().execute("pragma journal_mode=WAL; PRAGMA wal_autocheckpoint=1"))
         try:
             self.testVFS()
         finally:
@@ -4541,9 +4542,7 @@ class APSW(unittest.TestCase):
         db2 = apsw.Connection(TESTFILEPREFIX + "testdb2", vfs=vfs.vfsname)
         db2.cursor().execute(query)
         db2.close()
-        waswal = self.db.cursor().execute("pragma journal_mode").fetchall()[0][0] == "wal"
-        if waswal:
-            self.db.cursor().execute("pragma journal_mode=delete").fetchall()
+        self.db.cursor().execute("pragma journal_mode=delete").fetchall()
         self.db.close()  # flush
 
         # check the two databases are the same (modulo the XOR)
@@ -4551,14 +4550,10 @@ class APSW(unittest.TestCase):
         obfu = read_whole_file(TESTFILEPREFIX + "testdb2", "rb")
         self.assertEqual(len(orig), len(obfu))
         self.assertNotEqual(orig, obfu)
-        # wal isn't exactly the same
-        if waswal:
-
-            def compare(one, two):
-                self.assertEqual(one[:27], two[:27])
-                self.assertEqual(one[96:], two[96:])
-        else:
-            compare = self.assertEqual
+        # we ignore wal/non-wal differences
+        def compare(one, two):
+            self.assertEqual(one[0:18], two[:18])
+            self.assertEqual(one[96:], two[96:])
 
         compare(orig, encryptme(obfu))
 
