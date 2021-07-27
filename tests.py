@@ -3704,6 +3704,36 @@ class APSW(unittest.TestCase):
         finally:
             b.finish()
 
+    def testIssue311(self):
+        "Indirect descendents of VFS should support WAL (in addition to direct subclasses)"
+
+        class vfswrapped(apsw.VFS):
+            def __init__(self):
+                self.myname = "testIssue311"
+                self.base = ""
+                apsw.VFS.__init__(self, self.myname, self.base)
+
+            def xOpen(self, name, flags):
+                return vfsfilewrap(self.base, name, flags)
+
+        class vfsfilewrap(apsw.VFSFile):
+            def __init__(self, parent, name, flags):
+                apsw.VFSFile.__init__(self, parent, name, flags)
+
+        # we make testdb be wal and then try to work with it
+        self.db.cursor().execute(
+            "pragma journal_mode=wal; create table test(x,y); insert into test values(3,4)").fetchall()
+
+        wrap = vfswrapped()
+
+        con = apsw.Connection(TESTFILEPREFIX + "testdb", vfs=wrap.myname)
+
+        for row in con.cursor().execute("select x+y from test"):
+            self.assertEqual(row[0], 7)
+            break
+        else:
+            self.fail("No rows seen")
+
     def testPysqliteRecursiveIssue(self):
         "Check an issue that affected pysqlite"
         # https://code.google.com/p/pysqlite/source/detail?r=260ee266d6686e0f87b0547c36b68a911e6c6cdb

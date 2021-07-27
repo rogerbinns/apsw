@@ -9,6 +9,9 @@ Implemented :meth:`Connection.serialize` and
 :meth:`Connection.deserialize`.  They turn a database into bytes, and
 bytes into a database respectively.
 
+Allow any subclass of VFS to implement WAL, not just direct
+subclasses.  (:issue:`311`)
+
 Added constants:
 
 * SQLITE_FCNTL_EXTERNAL_READER, SQLITE_FCNTL_CKSM_FILE
