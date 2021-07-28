@@ -1143,7 +1143,7 @@ formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
     READBUFFERVARS;
 
 #define _HEXDIGITS
-    compat_PyObjectReadBuffer(value);
+    compat_PyObjectReadBuffer((const void *)value);
     APSW_FAULT_INJECT(FormatSQLValueAsReadBufferFails,
                       ,
                       ENDREADBUFFER;

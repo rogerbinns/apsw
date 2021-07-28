@@ -555,7 +555,7 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
      object supports version 2 io_methods (Shm* family of functions)
      then we need to allocate an io_methods dupe of our own and fill
      in their shm methods. */
-  if (PyObject_IsInstance(pyresult, &APSWVFSFileType))
+  if (PyObject_IsInstance(pyresult, (PyObject *)&APSWVFSFileType))
   {
     APSWVFSFile *f = (APSWVFSFile *)pyresult;
     if (!f->base || !f->base->pMethods || !f->base->pMethods->xShmMap)
