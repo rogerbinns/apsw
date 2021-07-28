@@ -1757,20 +1757,34 @@ static PyObject *
 Connection_deserialize(Connection *self, PyObject *args)
 {
   char *dbname = NULL;
-  const char *contents = NULL;
+  PyObject *contents_object = NULL;
+  const void *buffer = NULL;
+  Py_ssize_t buflen;
+  int asrb;
   char *newcontents = NULL;
-  Py_ssize_t contents_size = 0;
   int res = SQLITE_OK;
+  READBUFFERVARS;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (!PyArg_ParseTuple(args, "esy#", STRENCODING, &dbname, &contents, &contents_size))
+  if (!PyArg_ParseTuple(args, "esO", STRENCODING, &dbname, &contents_object))
     return NULL;
 
-  newcontents = sqlite3_malloc64(contents_size);
+  if (PyUnicode_Check(contents_object)
+#if PY_MAJOR_VERSION < 3
+      || PyString_Check(contents_object)
+#endif
+      || !compat_CheckReadBuffer(contents_object))
+    return PyErr_Format(PyExc_TypeError, "Expected bytes for contents");
+
+  compat_PyObjectReadBuffer(contents_object);
+  if (asrb != 0)
+    return NULL;
+
+  newcontents = sqlite3_malloc64(buflen);
   if (newcontents)
-    memcpy(newcontents, contents, contents_size);
+    memcpy(newcontents, buffer, buflen);
   else
   {
     res = SQLITE_NOMEM;
@@ -1778,8 +1792,10 @@ Connection_deserialize(Connection *self, PyObject *args)
   }
 
   if (res == SQLITE_OK)
-    PYSQLITE_CON_CALL(res = sqlite3_deserialize(self->db, dbname, newcontents, contents_size, contents_size, SQLITE_DESERIALIZE_RESIZEABLE | SQLITE_DESERIALIZE_FREEONCLOSE));
+    PYSQLITE_CON_CALL(res = sqlite3_deserialize(self->db, dbname, newcontents, buflen, buflen, SQLITE_DESERIALIZE_RESIZEABLE | SQLITE_DESERIALIZE_FREEONCLOSE));
   SET_EXC(res, self->db);
+
+  ENDREADBUFFER;
 
   PyMem_Free(dbname);
   if (res != SQLITE_OK)
