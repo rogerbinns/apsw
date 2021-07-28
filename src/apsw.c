@@ -1135,7 +1135,8 @@ formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
 #endif
   )
   {
-    const unsigned char *buffer;
+    const void *buffer;
+    const char *bufferc = NULL;
     Py_ssize_t buflen;
     int asrb;
     PyObject *unires;
@@ -1143,7 +1144,7 @@ formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
     READBUFFERVARS;
 
 #define _HEXDIGITS
-    compat_PyObjectReadBuffer((const void *)value);
+    compat_PyObjectReadBuffer(value);
     APSW_FAULT_INJECT(FormatSQLValueAsReadBufferFails,
                       ,
                       ENDREADBUFFER;
@@ -1159,14 +1160,15 @@ formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
       ENDREADBUFFER;
       return NULL;
     }
+    bufferc = buffer;
     res = PyUnicode_AS_UNICODE(unires);
     *res++ = 'X';
     *res++ = '\'';
     /* About the billionth time I have written a hex conversion routine */
     for (; buflen; buflen--)
     {
-      *res++ = "0123456789ABCDEF"[(*buffer) >> 4];
-      *res++ = "0123456789ABCDEF"[(*buffer++) & 0x0f];
+      *res++ = "0123456789ABCDEF"[(*bufferc) >> 4];
+      *res++ = "0123456789ABCDEF"[(*bufferc++) & 0x0f];
     }
     *res++ = '\'';
 
