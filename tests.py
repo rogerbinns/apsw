@@ -278,6 +278,10 @@ bgdelthread.start()
 
 
 def deletefile(name):
+    try:
+        os.remove(name)
+    except:
+        pass
     l = list("abcdefghijklmn")
     random.shuffle(l)
     newname = name + "-n-" + "".join(l)
@@ -360,7 +364,7 @@ class APSW(unittest.TestCase):
     def deltempfiles(self):
         for name in ("testdb", "testdb2", "testdb3", "testfile", "testfile2", "testdb2x", "test-shell-1",
                      "test-shell-1.py", "test-shell-in", "test-shell-out", "test-shell-err"):
-            for i in "-wal", "-journal", "":
+            for i in "-shm", "-wal", "-journal", "":
                 if os.path.exists(TESTFILEPREFIX + name + i):
                     deletefile(TESTFILEPREFIX + name + i)
 
