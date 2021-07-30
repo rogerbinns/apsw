@@ -324,6 +324,23 @@ Connection class
 
   Calls: `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__
 
+.. index:: sqlite3_deserialize
+
+.. method:: Connection.deserialize(name: str, contents: bytes) -> None
+
+   Replaces the named database with an in-memory copy of *contents*.
+   *name* is **"main"** for the main database, **"temp"** for the
+   temporary database etc.
+
+   The resulting database is in-memory, read-write, and the memory is
+   owned, resized, and freed by SQLite.
+
+   .. seealso::
+
+     * :meth:`Connection.serialize`
+
+   Calls: `sqlite3_deserialize <https://sqlite.org/c3ref/deserialize.html>`__
+
 .. index:: sqlite3_enable_load_extension
 
 .. method:: Connection.enableloadextension(enable)
@@ -516,6 +533,25 @@ Connection class
   An exception is raised if the database doesn't exist.
 
   Calls: `sqlite3_db_readonly <https://sqlite.org/c3ref/db_readonly.html>`__
+
+.. index:: sqlite3_serialize
+
+.. method:: Connection.serialize(name: str) -> bytes
+
+   Returns a memory copy of the database. *name* is **"main"** for the
+   main database, **"temp"** for the temporary database etc.
+
+   The memory copy is the same as if the database was backed up to
+   disk.
+
+  If the database name doesn't exist or is empty, then None is
+  returned, not an exception (this is SQLite's behaviour).
+
+   .. seealso::
+
+     * :meth:`Connection.deserialize`
+
+  Calls: `sqlite3_serialize <https://sqlite.org/c3ref/serialize.html>`__
 
 .. index:: sqlite3_set_last_insert_rowid
 

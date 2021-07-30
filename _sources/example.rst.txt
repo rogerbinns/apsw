@@ -34,10 +34,10 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
-   |       Using APSW file /space/apsw/apsw.cpython-38-x86_64-linux-gnu.so
-   |          APSW version 3.35.4-r1
-   |    SQLite lib version 3.35.4
-   | SQLite header version 3035004
+   |       Using APSW file /space/apsw/apsw.cpython-39-x86_64-linux-gnu.so
+   |          APSW version 3.36.0-r1
+   |    SQLite lib version 3.36.0
+   | SQLite header version 3036000
 
 .. code-block:: python
 
@@ -540,9 +540,9 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
-   | 72831380 56fa58acf89604978a41__mypyc.cpython-38-x86_64-linux-gnu.so /home/rogerb/.local/lib/python3.8/site-packages
-   | 13856440 apsw.cpython-310-x86_64-linux-gnu.so /space/apsw
-   | 10311560 apsw.cpython-38-x86_64-linux-gnu.so /space/apsw
+   | 74407336 a64f60bb4641b67cb20c__mypyc.cpython-39-x86_64-linux-gnu.so /home/rogerb/.local/lib/python3.9/site-packages
+   | 10322784 apsw.cpython-39-x86_64-linux-gnu.so /space/apsw
+   | 6105000 apsw.o /space/apsw
 
 .. code-block:: python
 
@@ -553,8 +553,8 @@ so you can see what gets printed when you run the code.
 .. code-block:: text
 
    | 1581788581.6627443 menulibre-2.2.1.egg-info /usr/lib/python3/dist-packages
-   | 1581788581.6627443 mugshot-0.4.2.egg-info /usr/lib/python3/dist-packages
    | 1582056231.6234083 .coverage /space/apsw
+   | 1582056231.6234083 .style.yapf /space/apsw
 
 .. _example-vfs:
 
@@ -620,7 +620,7 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
-   | ['unix', 'obf', 'unix-excl', 'unix-dotfile', 'unix-none']
+   | ['unix', 'obf', 'memdb', 'unix-excl', 'unix-dotfile', 'unix-none']
 
 .. code-block:: python
 
@@ -762,7 +762,7 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
-   | SQLite memory usage current 367968 max 377928
+   | SQLite memory usage current 365896 max 375936
 
 .. code-block:: python
 

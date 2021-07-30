@@ -5,15 +5,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cursors (executing SQL) &#8212; APSW 3.35.4-r1 documentation</title>
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <title>Cursors (executing SQL) &#8212; APSW 3.36.0-r1 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -43,7 +42,7 @@
         <li class="right" >
           <a href="connection.html" title="Connections to a database"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.35.4-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.36.0-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Cursors (executing SQL)</a></li> 
       </ul>
     </div>  
@@ -159,13 +158,13 @@ committed.</p>
 <h2>Cursor class<a class="headerlink" href="#cursor-class" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="apsw.Cursor">
-<em class="property">class </em><code class="sig-name descname">Cursor</code><a class="headerlink" href="#apsw.Cursor" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">Cursor</span></code><a class="headerlink" href="#apsw.Cursor" title="Permalink to this definition">¶</a></dt>
 <dd><p>You obtain cursors by calling <a class="reference internal" href="connection.html#apsw.Connection.cursor" title="apsw.Connection.cursor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.cursor()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="apsw.Cursor.close">
-<code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">close</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">force</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Cursor.close" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">Cursor.</span></code><code class="sig-name descname"><span class="pre">close</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Cursor.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>It is very unlikely you will need to call this method.  It exists
 because older versions of SQLite required all Connection/Cursor
 activity to be confined to the same thread.  That is no longer the
@@ -189,7 +188,7 @@ silently discarded.</p>
 
 <dl class="py attribute">
 <dt id="apsw.Cursor.description">
-<code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">description</code><a class="headerlink" href="#apsw.Cursor.description" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">Cursor.</span></code><code class="sig-name descname"><span class="pre">description</span></code><a class="headerlink" href="#apsw.Cursor.description" title="Permalink to this definition">¶</a></dt>
 <dd><p>Based on the <a class="reference external" href="http://www.python.org/dev/peps/pep-0249/">DB-API cursor property</a>, this returns the
 same as <a class="reference internal" href="#apsw.Cursor.getdescription" title="apsw.Cursor.getdescription"><code class="xref py py-meth docutils literal notranslate"><span class="pre">getdescription()</span></code></a> but with 5 Nones appended.  See
 also <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/131">APSW issue 131</a>.</p>
@@ -197,7 +196,7 @@ also <a class="reference external" href="https://github.com/rogerbinns/apsw/issu
 
 <span class="target" id="index-0"></span><dl class="py method">
 <dt id="apsw.Cursor.execute">
-<code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">execute</code><span class="sig-paren">(</span><em class="sig-param">statements</em><span class="optional">[</span>, <em class="sig-param">bindings</em><span class="optional">]</span><span class="sig-paren">)</span> &#x2192; iterator<a class="headerlink" href="#apsw.Cursor.execute" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">Cursor.</span></code><code class="sig-name descname"><span class="pre">execute</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">statements</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">bindings</span></em><span class="optional">]</span><span class="sig-paren">)</span> &#x2192; <span class="pre">iterator</span><a class="headerlink" href="#apsw.Cursor.execute" title="Permalink to this definition">¶</a></dt>
 <dd><p>Executes the statements using the supplied bindings.  Execution
 returns when the first row is available or all statements have
 completed.</p>
@@ -276,7 +275,7 @@ None/null will be used.  For example:</p>
 
 <dl class="py method">
 <dt id="apsw.Cursor.executemany">
-<code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">executemany</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">statements</span></em>, <em class="sig-param"><span class="n">sequenceofbindings</span></em><span class="sig-paren">)</span> &#x2192; iterator<a class="headerlink" href="#apsw.Cursor.executemany" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">Cursor.</span></code><code class="sig-name descname"><span class="pre">executemany</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">statements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequenceofbindings</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">iterator</span><a class="headerlink" href="#apsw.Cursor.executemany" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method is for when you want to execute the same statements over
 a sequence of bindings.  Conceptually it does this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">binding</span> <span class="ow">in</span> <span class="n">sequenceofbindings</span><span class="p">:</span>
@@ -299,20 +298,20 @@ information.</p>
 
 <dl class="py method">
 <dt id="apsw.Cursor.fetchall">
-<code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">fetchall</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#apsw.Cursor.fetchall" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">Cursor.</span></code><code class="sig-name descname"><span class="pre">fetchall</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">list</span><a class="headerlink" href="#apsw.Cursor.fetchall" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns all remaining result rows as a list.  This method is defined
 in DBAPI.  It is a longer way of doing <code class="docutils literal notranslate"><span class="pre">list(cursor)</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="apsw.Cursor.fetchone">
-<code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">fetchone</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; row or None<a class="headerlink" href="#apsw.Cursor.fetchone" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">Cursor.</span></code><code class="sig-name descname"><span class="pre">fetchone</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">row</span> <span class="pre">or</span> <span class="pre">None</span><a class="headerlink" href="#apsw.Cursor.fetchone" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the next row of data or None if there are no more rows.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="apsw.Cursor.getconnection">
-<code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">getconnection</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection">Connection</a><a class="headerlink" href="#apsw.Cursor.getconnection" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">Cursor.</span></code><code class="sig-name descname"><span class="pre">getconnection</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a><a class="headerlink" href="#apsw.Cursor.getconnection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> this cursor belongs to.  An example usage is to get another cursor:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">cursor</span><span class="p">):</span>
   <span class="c1"># I don&#39;t want to alter existing cursor, so make a new one</span>
@@ -324,7 +323,7 @@ in DBAPI.  It is a longer way of doing <code class="docutils literal notranslate
 
 <span class="target" id="index-1"></span><dl class="py method">
 <dt id="apsw.Cursor.getdescription">
-<code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">getdescription</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; tuple<a class="headerlink" href="#apsw.Cursor.getdescription" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">Cursor.</span></code><code class="sig-name descname"><span class="pre">getdescription</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">tuple</span><a class="headerlink" href="#apsw.Cursor.getdescription" title="Permalink to this definition">¶</a></dt>
 <dd><p>If you are trying to get information about a table or view,
 then <a class="reference external" href="https://sqlite.org/pragma.html#pragma_table_info">pragma table_info</a>
 is better.</p>
@@ -383,7 +382,7 @@ but never both.)</p>
 
 <dl class="py method">
 <dt id="apsw.Cursor.getexectrace">
-<code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">getexectrace</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; callable or None<a class="headerlink" href="#apsw.Cursor.getexectrace" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">Cursor.</span></code><code class="sig-name descname"><span class="pre">getexectrace</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">callable</span> <span class="pre">or</span> <span class="pre">None</span><a class="headerlink" href="#apsw.Cursor.getexectrace" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the currently installed (via <a class="reference internal" href="#apsw.Cursor.setexectrace" title="apsw.Cursor.setexectrace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setexectrace()</span></code></a>)
 execution tracer.</p>
 <div class="admonition seealso">
@@ -396,7 +395,7 @@ execution tracer.</p>
 
 <dl class="py method">
 <dt id="apsw.Cursor.getrowtrace">
-<code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">getrowtrace</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; callable or None<a class="headerlink" href="#apsw.Cursor.getrowtrace" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">Cursor.</span></code><code class="sig-name descname"><span class="pre">getrowtrace</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">callable</span> <span class="pre">or</span> <span class="pre">None</span><a class="headerlink" href="#apsw.Cursor.getrowtrace" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the currently installed (via <a class="reference internal" href="#apsw.Cursor.setrowtrace" title="apsw.Cursor.setrowtrace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setrowtrace()</span></code></a>)
 row tracer.</p>
 <div class="admonition seealso">
@@ -409,7 +408,7 @@ row tracer.</p>
 
 <dl class="py method">
 <dt id="apsw.Cursor.setexectrace">
-<code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">setexectrace</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">callable</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Cursor.setexectrace" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">Cursor.</span></code><code class="sig-name descname"><span class="pre">setexectrace</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Cursor.setexectrace" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>callable</em> is called with the cursor, statement and bindings for
 each <a class="reference internal" href="#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">execute()</span></code></a> or <a class="reference internal" href="#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">executemany()</span></code></a> on this
 cursor.</p>
@@ -427,7 +426,7 @@ removed.</p>
 
 <dl class="py method">
 <dt id="apsw.Cursor.setrowtrace">
-<code class="sig-prename descclassname">Cursor.</code><code class="sig-name descname">setrowtrace</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">callable</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Cursor.setrowtrace" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">Cursor.</span></code><code class="sig-name descname"><span class="pre">setrowtrace</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Cursor.setrowtrace" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>callable</em> is called with cursor and row being returned.  You can
 change the data that is returned or cause the row to be skipped
 altogether.</p>
@@ -503,15 +502,15 @@ removed.</p>
         <li class="right" >
           <a href="connection.html" title="Connections to a database"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.35.4-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.36.0-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Cursors (executing SQL)</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2021, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Apr 12, 2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+      Last updated on Jul 30, 2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

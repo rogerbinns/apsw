@@ -5,15 +5,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>APSW Module &#8212; APSW 3.35.4-r1 documentation</title>
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <title>APSW Module &#8212; APSW 3.36.0-r1 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -43,7 +42,7 @@
         <li class="right" >
           <a href="extensions.html" title="Extensions"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.35.4-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.36.0-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">APSW Module</a></li> 
       </ul>
     </div>  
@@ -63,7 +62,7 @@ module have process wide effects.  You can instantiate the
 <h2>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h2>
 <dl class="py data">
 <dt id="apsw.SQLITE_VERSION_NUMBER">
-<code class="sig-name descname">SQLITE_VERSION_NUMBER</code><a class="headerlink" href="#apsw.SQLITE_VERSION_NUMBER" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">SQLITE_VERSION_NUMBER</span></code><a class="headerlink" href="#apsw.SQLITE_VERSION_NUMBER" title="Permalink to this definition">¶</a></dt>
 <dd><p>The integer version number of SQLite that APSW was compiled
 against.  For example SQLite 3.6.4 will have the value <em>3006004</em>.
 This number may be different than the actual library in use if the
@@ -73,13 +72,13 @@ library is shared and has been updated.  Call
 
 <dl class="py method">
 <dt id="apsw.apswversion">
-<code class="sig-name descname">apswversion</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; string<a class="headerlink" href="#apsw.apswversion" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">apswversion</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">string</span><a class="headerlink" href="#apsw.apswversion" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the APSW version.</p>
 </dd></dl>
 
 <span class="target" id="index-0"></span><dl class="py attribute">
 <dt id="apsw.compile_options">
-<code class="sig-name descname">compile_options</code><a class="headerlink" href="#apsw.compile_options" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">compile_options</span></code><a class="headerlink" href="#apsw.compile_options" title="Permalink to this definition">¶</a></dt>
 <dd><p>A tuple of the options used to compile SQLite.  For example it
 will be something like this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="s1">&#39;ENABLE_LOCKING_STYLE=0&#39;</span><span class="p">,</span> <span class="s1">&#39;TEMP_STORE=1&#39;</span><span class="p">,</span> <span class="s1">&#39;THREADSAFE=1&#39;</span><span class="p">)</span>
@@ -90,7 +89,7 @@ will be something like this:</p>
 
 <span class="target" id="index-1"></span><dl class="py method">
 <dt id="apsw.complete">
-<code class="sig-name descname">complete</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">statement</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#apsw.complete" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">complete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">statement</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#apsw.complete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns True if the input string comprises one or more complete SQL
 statements by looking for an unquoted trailing semi-colon.</p>
 <p>An example use would be if you were prompting the user for SQL
@@ -107,7 +106,7 @@ needed to ask for another line:</p>
 
 <span class="target" id="index-2"></span><dl class="py method">
 <dt id="apsw.config">
-<code class="sig-name descname">config</code><span class="sig-paren">(</span><em class="sig-param">op</em><span class="optional">[</span>, <em class="sig-param">*args</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.config" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">op</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">*args</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.config" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -129,7 +128,7 @@ log messages (SQLITE_CONFIG_LOG)</p>
 
 <dl class="py attribute">
 <dt id="apsw.connection_hooks">
-<code class="sig-name descname">connection_hooks</code><a class="headerlink" href="#apsw.connection_hooks" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">connection_hooks</span></code><a class="headerlink" href="#apsw.connection_hooks" title="Permalink to this definition">¶</a></dt>
 <dd><p>The purpose of the hooks is to allow the easy registration of
 <a class="reference internal" href="connection.html#apsw.Connection.createscalarfunction" title="apsw.Connection.createscalarfunction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">functions</span></code></a>,
 <a class="reference internal" href="vtable.html#virtualtables"><span class="std std-ref">virtual tables</span></a> or similar items with
@@ -146,7 +145,7 @@ functions.</p>
 
 <span class="target" id="index-3"></span><dl class="py method">
 <dt id="apsw.enablesharedcache">
-<code class="sig-name descname">enablesharedcache</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bool</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.enablesharedcache" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">enablesharedcache</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.enablesharedcache" title="Permalink to this definition">¶</a></dt>
 <dd><p>If you use the same <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> across threads or use
 multiple <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">connections</span></code></a> accessing the same file,
 then SQLite can <a class="reference external" href="https://sqlite.org/sharedcache.html">share the cache between them</a>.  It is <a class="reference internal" href="tips.html#sharedcache"><span class="std std-ref">not
@@ -156,7 +155,7 @@ recommended</span></a> that you use this.</p>
 
 <dl class="py method">
 <dt id="apsw.exceptionfor">
-<code class="sig-name descname">exceptionfor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; Exception<a class="headerlink" href="#apsw.exceptionfor" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">exceptionfor</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Exception</span><a class="headerlink" href="#apsw.exceptionfor" title="Permalink to this definition">¶</a></dt>
 <dd><p>If you would like to raise an exception that corresponds to a
 particular SQLite <a class="reference external" href="https://sqlite.org/c3ref/c_abort.html">error code</a> then call this function.
 It also understands <a class="reference external" href="https://sqlite.org/c3ref/c_ioerr_access.html">extended error codes</a>.</p>
@@ -168,7 +167,7 @@ It also understands <a class="reference external" href="https://sqlite.org/c3ref
 
 <dl class="py method">
 <dt id="apsw.fork_checker">
-<code class="sig-name descname">fork_checker</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.fork_checker" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">fork_checker</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.fork_checker" title="Permalink to this definition">¶</a></dt>
 <dd><p><strong>Note</strong> This method is not available on Windows as it does not
 support the fork system call.</p>
 <p>SQLite does not allow the use of database connections across <a class="reference external" href="http://en.wikipedia.org/wiki/Fork_(operating_system)">forked</a> processes
@@ -206,7 +205,7 @@ checking as part of your test suite.</p>
 
 <dl class="py method">
 <dt id="apsw.format_sql_value">
-<code class="sig-name descname">format_sql_value</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span> &#x2192; string<a class="headerlink" href="#apsw.format_sql_value" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">format_sql_value</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">string</span><a class="headerlink" href="#apsw.format_sql_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a Python string (unicode) representing the supplied value in
 SQL syntax.  Python 2 note: You must supply unicode strings not
 plain strings.</p>
@@ -214,14 +213,14 @@ plain strings.</p>
 
 <span class="target" id="index-4"></span><dl class="py method">
 <dt id="apsw.initialize">
-<code class="sig-name descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.initialize" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">initialize</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>It is unlikely you will want to call this method as SQLite automatically initializes.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/initialize.html">sqlite3_initialize</a></p>
 </dd></dl>
 
 <span class="target" id="index-5"></span><dl class="py attribute">
 <dt id="apsw.keywords">
-<code class="sig-name descname">keywords</code><a class="headerlink" href="#apsw.keywords" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">keywords</span></code><a class="headerlink" href="#apsw.keywords" title="Permalink to this definition">¶</a></dt>
 <dd><p>A set containing every SQLite keyword</p>
 <dl class="simple">
 <dt>Calls:</dt><dd><ul class="simple">
@@ -234,7 +233,7 @@ plain strings.</p>
 
 <span class="target" id="index-6"></span><dl class="py method">
 <dt id="apsw.log">
-<code class="sig-name descname">log</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">level</span></em>, <em class="sig-param"><span class="n">message</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.log" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">log</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.log" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calls the SQLite logging interface.  Note that you must format the
 message before passing it to this method:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">apsw</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_NOMEM</span><span class="p">,</span> <span class="s2">&quot;Need </span><span class="si">%d</span><span class="s2"> bytes of memory&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="mi">1234</span><span class="p">,))</span>
@@ -247,14 +246,14 @@ receive log messages.</p>
 
 <dl class="py method">
 <dt id="apsw.main">
-<code class="sig-name descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.main" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">main</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.main" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call this to run the interactive shell.  It automatically passes
 in sys.argv[1:] and exits Python when done.</p>
 </dd></dl>
 
 <span class="target" id="index-7"></span><dl class="py method">
 <dt id="apsw.memoryhighwater">
-<code class="sig-name descname">memoryhighwater</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reset</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#apsw.memoryhighwater" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">memoryhighwater</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#apsw.memoryhighwater" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the maximum amount of memory SQLite has used.  If <em>reset</em> is
 True then the high water mark is reset to the current value.</p>
 <div class="admonition seealso">
@@ -266,7 +265,7 @@ True then the high water mark is reset to the current value.</p>
 
 <span class="target" id="index-8"></span><dl class="py method">
 <dt id="apsw.memoryused">
-<code class="sig-name descname">memoryused</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#apsw.memoryused" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">memoryused</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#apsw.memoryused" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the amount of memory SQLite is currently using.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
@@ -277,7 +276,7 @@ True then the high water mark is reset to the current value.</p>
 
 <span class="target" id="index-9"></span><dl class="py method">
 <dt id="apsw.randomness">
-<code class="sig-name descname">randomness</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bytes</span></em><span class="sig-paren">)</span> &#x2192; data<a class="headerlink" href="#apsw.randomness" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">randomness</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">data</span><a class="headerlink" href="#apsw.randomness" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets random data from SQLite’s random number generator.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -292,7 +291,7 @@ True then the high water mark is reset to the current value.</p>
 
 <span class="target" id="index-10"></span><dl class="py method">
 <dt id="apsw.releasememory">
-<code class="sig-name descname">releasememory</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bytes</span></em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#apsw.releasememory" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">releasememory</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#apsw.releasememory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Requests SQLite try to free <em>bytes</em> bytes of memory.  Returns how
 many bytes were freed.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/release_memory.html">sqlite3_release_memory</a></p>
@@ -300,7 +299,7 @@ many bytes were freed.</p>
 
 <span class="target" id="index-11"></span><dl class="py method">
 <dt id="apsw.shutdown">
-<code class="sig-name descname">shutdown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.shutdown" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">shutdown</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.shutdown" title="Permalink to this definition">¶</a></dt>
 <dd><p>It is unlikely you will want to call this method and there is no
 need to do so.  It is a <strong>really</strong> bad idea to call it unless you
 are absolutely sure all <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">connections</span></code></a>,
@@ -311,7 +310,7 @@ etc have been closed, deleted and garbage collected.</p>
 
 <span class="target" id="index-12"></span><dl class="py method">
 <dt id="apsw.softheaplimit">
-<code class="sig-name descname">softheaplimit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">bytes</span></em><span class="sig-paren">)</span> &#x2192; oldlimit<a class="headerlink" href="#apsw.softheaplimit" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">softheaplimit</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">oldlimit</span><a class="headerlink" href="#apsw.softheaplimit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Requests SQLite try to keep memory usage below <em>bytes</em> bytes and
 returns the previous setting.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/hard_heap_limit64.html">sqlite3_soft_heap_limit64</a></p>
@@ -319,7 +318,7 @@ returns the previous setting.</p>
 
 <span class="target" id="index-13"></span><dl class="py method">
 <dt id="apsw.sqlite3_sourceid">
-<code class="sig-name descname">sqlite3_sourceid</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; string<a class="headerlink" href="#apsw.sqlite3_sourceid" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">sqlite3_sourceid</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">string</span><a class="headerlink" href="#apsw.sqlite3_sourceid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the exact checkin information for the SQLite 3 source
 being used.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/libversion.html">sqlite3_sourceid</a></p>
@@ -327,7 +326,7 @@ being used.</p>
 
 <span class="target" id="index-14"></span><dl class="py method">
 <dt id="apsw.sqlitelibversion">
-<code class="sig-name descname">sqlitelibversion</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; string<a class="headerlink" href="#apsw.sqlitelibversion" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">sqlitelibversion</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">string</span><a class="headerlink" href="#apsw.sqlitelibversion" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the version of the SQLite library.  This value is queried at
 run time from the library so if you use shared libraries it will be
 the version in the shared library.</p>
@@ -336,7 +335,7 @@ the version in the shared library.</p>
 
 <span class="target" id="index-15"></span><dl class="py method">
 <dt id="apsw.status">
-<code class="sig-name descname">status</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">op</span></em>, <em class="sig-param"><span class="n">reset</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.status" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">status</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.status" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns current and highwater measurements.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -360,7 +359,7 @@ the version in the shared library.</p>
 
 <dl class="py attribute">
 <dt id="apsw.using_amalgamation">
-<code class="sig-name descname">using_amalgamation</code><a class="headerlink" href="#apsw.using_amalgamation" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">using_amalgamation</span></code><a class="headerlink" href="#apsw.using_amalgamation" title="Permalink to this definition">¶</a></dt>
 <dd><p>If True then <a class="reference external" href="https://sqlite.org/cvstrac/wiki?p=TheAmalgamation">SQLite amalgamation</a> is in
 use (statically compiled into APSW).  Using the amalgamation means
 that SQLite shared libraries are not used and will not affect your
@@ -369,7 +368,7 @@ code.</p>
 
 <dl class="py method">
 <dt id="apsw.vfsnames">
-<code class="sig-name descname">vfsnames</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.vfsnames" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">vfsnames</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.vfsnames" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a list of the currently installed <a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">vfs</span></a>.  The first
 item in the list is the default vfs.</p>
 </dd></dl>
@@ -433,7 +432,7 @@ modules etc. For example:</p>
 </div></blockquote>
 <p>mapping_file_control <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html">Standard File Control Opcodes</a></p>
 <blockquote>
-<div><p><a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlbeginatomicwrite">SQLITE_FCNTL_BEGIN_ATOMIC_WRITE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlbusyhandler">SQLITE_FCNTL_BUSYHANDLER</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlchunksize">SQLITE_FCNTL_CHUNK_SIZE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlckptdone">SQLITE_FCNTL_CKPT_DONE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlckptstart">SQLITE_FCNTL_CKPT_START</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlcommitatomicwrite">SQLITE_FCNTL_COMMIT_ATOMIC_WRITE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlcommitphasetwo">SQLITE_FCNTL_COMMIT_PHASETWO</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntldataversion">SQLITE_FCNTL_DATA_VERSION</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlfilepointer">SQLITE_FCNTL_FILE_POINTER</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html">SQLITE_FCNTL_GET_LOCKPROXYFILE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlhasmoved">SQLITE_FCNTL_HAS_MOVED</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntljournalpointer">SQLITE_FCNTL_JOURNAL_POINTER</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html">SQLITE_FCNTL_LAST_ERRNO</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntllockstate">SQLITE_FCNTL_LOCKSTATE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntllocktimeout">SQLITE_FCNTL_LOCK_TIMEOUT</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlmmapsize">SQLITE_FCNTL_MMAP_SIZE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntloverwrite">SQLITE_FCNTL_OVERWRITE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html">SQLITE_FCNTL_PDB</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlpersistwal">SQLITE_FCNTL_PERSIST_WAL</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlpowersafeoverwrite">SQLITE_FCNTL_POWERSAFE_OVERWRITE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlpragma">SQLITE_FCNTL_PRAGMA</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlrbu">SQLITE_FCNTL_RBU</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html">SQLITE_FCNTL_RESERVE_BYTES</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlrollbackatomicwrite">SQLITE_FCNTL_ROLLBACK_ATOMIC_WRITE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html">SQLITE_FCNTL_SET_LOCKPROXYFILE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlsizehint">SQLITE_FCNTL_SIZE_HINT</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlsizelimit">SQLITE_FCNTL_SIZE_LIMIT</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlsync">SQLITE_FCNTL_SYNC</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlsyncomitted">SQLITE_FCNTL_SYNC_OMITTED</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntltempfilename">SQLITE_FCNTL_TEMPFILENAME</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntltrace">SQLITE_FCNTL_TRACE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlvfsname">SQLITE_FCNTL_VFSNAME</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlvfspointer">SQLITE_FCNTL_VFS_POINTER</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlwalblock">SQLITE_FCNTL_WAL_BLOCK</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlwin32avretry">SQLITE_FCNTL_WIN32_AV_RETRY</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlwin32gethandle">SQLITE_FCNTL_WIN32_GET_HANDLE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlwin32sethandle">SQLITE_FCNTL_WIN32_SET_HANDLE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlzipvfs">SQLITE_FCNTL_ZIPVFS</a></p>
+<div><p><a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlbeginatomicwrite">SQLITE_FCNTL_BEGIN_ATOMIC_WRITE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlbusyhandler">SQLITE_FCNTL_BUSYHANDLER</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlchunksize">SQLITE_FCNTL_CHUNK_SIZE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlckptdone">SQLITE_FCNTL_CKPT_DONE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlckptstart">SQLITE_FCNTL_CKPT_START</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlcksmfile">SQLITE_FCNTL_CKSM_FILE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlcommitatomicwrite">SQLITE_FCNTL_COMMIT_ATOMIC_WRITE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlcommitphasetwo">SQLITE_FCNTL_COMMIT_PHASETWO</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntldataversion">SQLITE_FCNTL_DATA_VERSION</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlexternalreader">SQLITE_FCNTL_EXTERNAL_READER</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlfilepointer">SQLITE_FCNTL_FILE_POINTER</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html">SQLITE_FCNTL_GET_LOCKPROXYFILE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlhasmoved">SQLITE_FCNTL_HAS_MOVED</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntljournalpointer">SQLITE_FCNTL_JOURNAL_POINTER</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html">SQLITE_FCNTL_LAST_ERRNO</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntllockstate">SQLITE_FCNTL_LOCKSTATE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntllocktimeout">SQLITE_FCNTL_LOCK_TIMEOUT</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlmmapsize">SQLITE_FCNTL_MMAP_SIZE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntloverwrite">SQLITE_FCNTL_OVERWRITE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html">SQLITE_FCNTL_PDB</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlpersistwal">SQLITE_FCNTL_PERSIST_WAL</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlpowersafeoverwrite">SQLITE_FCNTL_POWERSAFE_OVERWRITE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlpragma">SQLITE_FCNTL_PRAGMA</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlrbu">SQLITE_FCNTL_RBU</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html">SQLITE_FCNTL_RESERVE_BYTES</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlrollbackatomicwrite">SQLITE_FCNTL_ROLLBACK_ATOMIC_WRITE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html">SQLITE_FCNTL_SET_LOCKPROXYFILE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlsizehint">SQLITE_FCNTL_SIZE_HINT</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlsizelimit">SQLITE_FCNTL_SIZE_LIMIT</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlsync">SQLITE_FCNTL_SYNC</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlsyncomitted">SQLITE_FCNTL_SYNC_OMITTED</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntltempfilename">SQLITE_FCNTL_TEMPFILENAME</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntltrace">SQLITE_FCNTL_TRACE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlvfsname">SQLITE_FCNTL_VFSNAME</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlvfspointer">SQLITE_FCNTL_VFS_POINTER</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlwalblock">SQLITE_FCNTL_WAL_BLOCK</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlwin32avretry">SQLITE_FCNTL_WIN32_AV_RETRY</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlwin32gethandle">SQLITE_FCNTL_WIN32_GET_HANDLE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlwin32sethandle">SQLITE_FCNTL_WIN32_SET_HANDLE</a>, <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlzipvfs">SQLITE_FCNTL_ZIPVFS</a></p>
 </div></blockquote>
 <p>mapping_limits <a class="reference external" href="https://sqlite.org/c3ref/c_limit_attached.html">Run-Time Limit Categories</a></p>
 <blockquote>
@@ -540,15 +539,15 @@ modules etc. For example:</p>
         <li class="right" >
           <a href="extensions.html" title="Extensions"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.35.4-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.36.0-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">APSW Module</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2021, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Apr 12, 2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+      Last updated on Jul 30, 2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

@@ -5,15 +5,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Backup &#8212; APSW 3.35.4-r1 documentation</title>
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <title>Backup &#8212; APSW 3.36.0-r1 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -43,7 +42,7 @@
         <li class="right" >
           <a href="blob.html" title="Blob Input/Output"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.35.4-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.36.0-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Backup</a></li> 
       </ul>
     </div>  
@@ -93,13 +92,13 @@ round trip via SQL.  All pages are copied including free ones.</p>
 <h2>backup class<a class="headerlink" href="#backup-class" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="apsw.backup">
-<em class="property">class </em><code class="sig-name descname">backup</code><a class="headerlink" href="#apsw.backup" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">backup</span></code><a class="headerlink" href="#apsw.backup" title="Permalink to this definition">¶</a></dt>
 <dd><p>You create a backup instance by calling <a class="reference internal" href="connection.html#apsw.Connection.backup" title="apsw.Connection.backup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.backup()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="apsw.backup.__enter__">
-<code class="sig-prename descclassname">backup.</code><code class="sig-name descname">__enter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; self<a class="headerlink" href="#apsw.backup.__enter__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">backup.</span></code><code class="sig-name descname"><span class="pre">__enter__</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">self</span><a class="headerlink" href="#apsw.backup.__enter__" title="Permalink to this definition">¶</a></dt>
 <dd><p>You can use the backup object as a <a class="reference external" href="http://docs.python.org/reference/datamodel.html#with-statement-context-managers">context manager</a>
 as defined in <span class="target" id="index-0"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-0343"><strong>PEP 0343</strong></a>.  The <a class="reference internal" href="#apsw.backup.__exit__" title="apsw.backup.__exit__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__exit__()</span></code></a> method ensures that backup
 is <a class="reference internal" href="#apsw.backup.finish" title="apsw.backup.finish"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finished</span></code></a>.</p>
@@ -107,14 +106,14 @@ is <a class="reference internal" href="#apsw.backup.finish" title="apsw.backup.f
 
 <dl class="py method">
 <dt id="apsw.backup.__exit__">
-<code class="sig-prename descclassname">backup.</code><code class="sig-name descname">__exit__</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; False<a class="headerlink" href="#apsw.backup.__exit__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">backup.</span></code><code class="sig-name descname"><span class="pre">__exit__</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">False</span><a class="headerlink" href="#apsw.backup.__exit__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements context manager in conjunction with <a class="reference internal" href="#apsw.backup.__enter__" title="apsw.backup.__enter__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__enter__()</span></code></a> ensuring
 that the copy is <a class="reference internal" href="#apsw.backup.finish" title="apsw.backup.finish"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finished</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="apsw.backup.close">
-<code class="sig-prename descclassname">backup.</code><code class="sig-name descname">close</code><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param">force=False</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.backup.close" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">backup.</span></code><code class="sig-name descname"><span class="pre">close</span></code><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="pre">force=False</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.backup.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Does the same thing as <a class="reference internal" href="#apsw.backup.finish" title="apsw.backup.finish"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finish()</span></code></a>.  This extra api is
 provided to give the same api as other APSW objects such as
 <a class="reference internal" href="connection.html#apsw.Connection.close" title="apsw.Connection.close"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.close()</span></code></a>, <a class="reference internal" href="blob.html#apsw.blob.close" title="apsw.blob.close"><code class="xref py py-meth docutils literal notranslate"><span class="pre">blob.close()</span></code></a> and
@@ -129,13 +128,13 @@ times.</p>
 
 <dl class="py attribute">
 <dt id="apsw.backup.done">
-<code class="sig-prename descclassname">backup.</code><code class="sig-name descname">done</code><a class="headerlink" href="#apsw.backup.done" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">backup.</span></code><code class="sig-name descname"><span class="pre">done</span></code><a class="headerlink" href="#apsw.backup.done" title="Permalink to this definition">¶</a></dt>
 <dd><p>A boolean that is True if the copy completed in the last call to <a class="reference internal" href="#apsw.backup.step" title="apsw.backup.step"><code class="xref py py-meth docutils literal notranslate"><span class="pre">step()</span></code></a>.</p>
 </dd></dl>
 
 <span class="target" id="index-1"></span><dl class="py method">
 <dt id="apsw.backup.finish">
-<code class="sig-prename descclassname">backup.</code><code class="sig-name descname">finish</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.backup.finish" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">backup.</span></code><code class="sig-name descname"><span class="pre">finish</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.backup.finish" title="Permalink to this definition">¶</a></dt>
 <dd><p>Completes the copy process.  If all pages have been copied then the
 transaction is committed on the destination database, otherwise it
 is rolled back.  This method must be called for your backup to take
@@ -146,7 +145,7 @@ an exception.  It is safe to call this method multiple times.</p>
 
 <span class="target" id="index-2"></span><dl class="py attribute">
 <dt id="apsw.backup.pagecount">
-<code class="sig-prename descclassname">backup.</code><code class="sig-name descname">pagecount</code><a class="headerlink" href="#apsw.backup.pagecount" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">backup.</span></code><code class="sig-name descname"><span class="pre">pagecount</span></code><a class="headerlink" href="#apsw.backup.pagecount" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read only. How many pages were in the source database after the last
 step.  If you haven’t called <a class="reference internal" href="#apsw.backup.step" title="apsw.backup.step"><code class="xref py py-meth docutils literal notranslate"><span class="pre">step()</span></code></a> or the backup
 object has been <a class="reference internal" href="#apsw.backup.finish" title="apsw.backup.finish"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finished</span></code></a> then zero is
@@ -156,7 +155,7 @@ returned.</p>
 
 <span class="target" id="index-3"></span><dl class="py attribute">
 <dt id="apsw.backup.remaining">
-<code class="sig-prename descclassname">backup.</code><code class="sig-name descname">remaining</code><a class="headerlink" href="#apsw.backup.remaining" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">backup.</span></code><code class="sig-name descname"><span class="pre">remaining</span></code><a class="headerlink" href="#apsw.backup.remaining" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read only. How many pages were remaining to be copied after the last
 step.  If you haven’t called <a class="reference internal" href="#apsw.backup.step" title="apsw.backup.step"><code class="xref py py-meth docutils literal notranslate"><span class="pre">step()</span></code></a> or the backup
 object has been <a class="reference internal" href="#apsw.backup.finish" title="apsw.backup.finish"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finished</span></code></a> then zero is
@@ -166,7 +165,7 @@ returned.</p>
 
 <span class="target" id="index-4"></span><dl class="py method">
 <dt id="apsw.backup.step">
-<code class="sig-prename descclassname">backup.</code><code class="sig-name descname">step</code><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param">npages=All</em><span class="optional">]</span><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#apsw.backup.step" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">backup.</span></code><code class="sig-name descname"><span class="pre">step</span></code><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="pre">npages=All</span></em><span class="optional">]</span><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#apsw.backup.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Copies <em>npages</em> pages from the source to destination database.  The source database is locked during the copy so
 using smaller values allows other access to the source database.  The destination database is always locked until the
 backup object is <a class="reference internal" href="#apsw.backup.finish" title="apsw.backup.finish"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finished</span></code></a>.</p>
@@ -250,15 +249,15 @@ again.</p>
         <li class="right" >
           <a href="blob.html" title="Blob Input/Output"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.35.4-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.36.0-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Backup</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2021, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Apr 12, 2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+      Last updated on Jul 30, 2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

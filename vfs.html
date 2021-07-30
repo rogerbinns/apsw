@@ -5,15 +5,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Virtual File System (VFS) &#8212; APSW 3.35.4-r1 documentation</title>
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <title>Virtual File System (VFS) &#8212; APSW 3.36.0-r1 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -43,7 +42,7 @@
         <li class="right" >
           <a href="vtable.html" title="Virtual Tables"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.35.4-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.36.0-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Virtual File System (VFS)</a></li> 
       </ul>
     </div>  
@@ -188,7 +187,7 @@ them.</p></td>
 <h2>VFS class<a class="headerlink" href="#vfs-class" title="Permalink to this headline">¶</a></h2>
 <span class="target" id="index-0"></span><dl class="py class">
 <dt id="apsw.VFS">
-<em class="property">class </em><code class="sig-name descname">VFS</code><span class="sig-paren">(</span><em class="sig-param">name</em><span class="optional">[</span>, <em class="sig-param">base=None</em>, <em class="sig-param">makedefault=False</em>, <em class="sig-param">maxpathname=1024</em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFS" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">VFS</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">base=None</span></em>, <em class="sig-param"><span class="pre">makedefault=False</span></em>, <em class="sig-param"><span class="pre">maxpathname=1024</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Provides operating system access.  You can get an overview in the
 <a class="reference external" href="https://sqlite.org/c3ref/vfs.html">SQLite documentation</a>.  To
 create a VFS your Python class must inherit from <a class="reference internal" href="#apsw.VFS" title="apsw.VFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">VFS</span></code></a>.</p>
@@ -223,7 +222,7 @@ currently registered.</p>
 
 <dl class="py method">
 <dt id="apsw.VFS.excepthook">
-<code class="sig-prename descclassname">VFS.</code><code class="sig-name descname">excepthook</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">etype</span></em>, <em class="sig-param"><span class="n">evalue</span></em>, <em class="sig-param"><span class="n">etraceback</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFS.excepthook" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFS.</span></code><code class="sig-name descname"><span class="pre">excepthook</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">etype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evalue</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">etraceback</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFS.excepthook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called when there has been an exception in a <a class="reference internal" href="#apsw.VFS" title="apsw.VFS"><code class="xref py py-class docutils literal notranslate"><span class="pre">VFS</span></code></a> routine.
 The default implementation calls <code class="docutils literal notranslate"><span class="pre">sys.excepthook</span></code> and if that
 fails then <code class="docutils literal notranslate"><span class="pre">PyErr_Display</span></code>.  The three arguments correspond to
@@ -242,7 +241,7 @@ includes all frames all the way up to the thread being started.</p></li>
 
 <span class="target" id="index-1"></span><dl class="py method">
 <dt id="apsw.VFS.unregister">
-<code class="sig-prename descclassname">VFS.</code><code class="sig-name descname">unregister</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFS.unregister" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFS.</span></code><code class="sig-name descname"><span class="pre">unregister</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFS.unregister" title="Permalink to this definition">¶</a></dt>
 <dd><p>Unregisters the VFS making it unavailable to future database
 opens. You do not need to call this as the VFS is automatically
 unregistered by when the VFS has no more references or open
@@ -254,7 +253,7 @@ unavailable. It is safe to call this routine multiple times.</p>
 
 <dl class="py method">
 <dt id="apsw.VFS.xAccess">
-<code class="sig-prename descclassname">VFS.</code><code class="sig-name descname">xAccess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pathname</span></em>, <em class="sig-param"><span class="n">flags</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#apsw.VFS.xAccess" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFS.</span></code><code class="sig-name descname"><span class="pre">xAccess</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pathname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#apsw.VFS.xAccess" title="Permalink to this definition">¶</a></dt>
 <dd><p>SQLite wants to check access permissions.  Return True or False
 accordingly.</p>
 <dl class="field-list simple">
@@ -269,7 +268,7 @@ accordingly.</p>
 
 <dl class="py method">
 <dt id="apsw.VFS.xCurrentTime">
-<code class="sig-prename descclassname">VFS.</code><code class="sig-name descname">xCurrentTime</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; float<a class="headerlink" href="#apsw.VFS.xCurrentTime" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFS.</span></code><code class="sig-name descname"><span class="pre">xCurrentTime</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">float</span><a class="headerlink" href="#apsw.VFS.xCurrentTime" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the <a class="reference external" href="http://en.wikipedia.org/wiki/Julian_day">Julian Day Number</a> as a floating point
 number where the integer portion is the day and the fractional part
 is the time. Do not adjust for timezone (ie use <a class="reference external" href="http://en.wikipedia.org/wiki/Universal_Time">UTC</a>).</p>
@@ -277,7 +276,7 @@ is the time. Do not adjust for timezone (ie use <a class="reference external" hr
 
 <dl class="py method">
 <dt id="apsw.VFS.xDelete">
-<code class="sig-prename descclassname">VFS.</code><code class="sig-name descname">xDelete</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">syncdir</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFS.xDelete" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFS.</span></code><code class="sig-name descname"><span class="pre">xDelete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">syncdir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFS.xDelete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete the named file.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -317,7 +316,7 @@ call returns, on a reboot the file would still be deleted.</p></li>
 
 <dl class="py method">
 <dt id="apsw.VFS.xDlClose">
-<code class="sig-prename descclassname">VFS.</code><code class="sig-name descname">xDlClose</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">handle</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFS.xDlClose" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFS.</span></code><code class="sig-name descname"><span class="pre">xDlClose</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handle</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFS.xDlClose" title="Permalink to this definition">¶</a></dt>
 <dd><p>Close and unload the library corresponding to the handle you
 returned from <a class="reference internal" href="#apsw.VFS.xDlOpen" title="apsw.VFS.xDlOpen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">xDlOpen()</span></code></a>.  You can use ctypes to do
 this:</p>
@@ -331,7 +330,7 @@ this:</p>
 
 <dl class="py method">
 <dt id="apsw.VFS.xDlError">
-<code class="sig-prename descclassname">VFS.</code><code class="sig-name descname">xDlError</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; string<a class="headerlink" href="#apsw.VFS.xDlError" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFS.</span></code><code class="sig-name descname"><span class="pre">xDlError</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">string</span><a class="headerlink" href="#apsw.VFS.xDlError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an error string describing the last error of
 <a class="reference internal" href="#apsw.VFS.xDlOpen" title="apsw.VFS.xDlOpen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">xDlOpen()</span></code></a> or <a class="reference internal" href="#apsw.VFS.xDlSym" title="apsw.VFS.xDlSym"><code class="xref py py-meth docutils literal notranslate"><span class="pre">xDlSym()</span></code></a> (ie they returned
 zero/NULL). If you do not supply this routine then SQLite provides
@@ -344,7 +343,7 @@ message will be used.</p>
 
 <dl class="py method">
 <dt id="apsw.VFS.xDlOpen">
-<code class="sig-prename descclassname">VFS.</code><code class="sig-name descname">xDlOpen</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em><span class="sig-paren">)</span> &#x2192; number<a class="headerlink" href="#apsw.VFS.xDlOpen" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFS.</span></code><code class="sig-name descname"><span class="pre">xDlOpen</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">number</span><a class="headerlink" href="#apsw.VFS.xDlOpen" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the shared library. You should return a number which will be
 treated as a void pointer at the C level. On error you should
 return 0 (NULL). The number is passed as is to
@@ -359,7 +358,7 @@ array). You can use ctypes to load a library:</p>
 
 <dl class="py method">
 <dt id="apsw.VFS.xDlSym">
-<code class="sig-prename descclassname">VFS.</code><code class="sig-name descname">xDlSym</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">handle</span></em>, <em class="sig-param"><span class="n">symbol</span></em><span class="sig-paren">)</span> &#x2192; address<a class="headerlink" href="#apsw.VFS.xDlSym" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFS.</span></code><code class="sig-name descname"><span class="pre">xDlSym</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">address</span><a class="headerlink" href="#apsw.VFS.xDlSym" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the address of the named symbol which will be called by
 SQLite. On error you should return 0 (NULL). You can use ctypes:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xDlSym</span><span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
@@ -382,13 +381,13 @@ SQLite. On error you should return 0 (NULL). You can use ctypes:</p>
 
 <dl class="py method">
 <dt id="apsw.VFS.xFullPathname">
-<code class="sig-prename descclassname">VFS.</code><code class="sig-name descname">xFullPathname</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span> &#x2192; string<a class="headerlink" href="#apsw.VFS.xFullPathname" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFS.</span></code><code class="sig-name descname"><span class="pre">xFullPathname</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">string</span><a class="headerlink" href="#apsw.VFS.xFullPathname" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the absolute pathname for name.  You can use <code class="docutils literal notranslate"><span class="pre">os.path.abspath</span></code> to do this.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="apsw.VFS.xGetLastError">
-<code class="sig-prename descclassname">VFS.</code><code class="sig-name descname">xGetLastError</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFS.xGetLastError" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFS.</span></code><code class="sig-name descname"><span class="pre">xGetLastError</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFS.xGetLastError" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method is to return an integer error code and (optional) text describing
 the last error that happened in this thread.</p>
 <div class="admonition note">
@@ -400,14 +399,14 @@ earlier versions.  You will need to rewrite earlier implementations.</p>
 
 <dl class="py method">
 <dt id="apsw.VFS.xGetSystemCall">
-<code class="sig-prename descclassname">VFS.</code><code class="sig-name descname">xGetSystemCall</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#apsw.VFS.xGetSystemCall" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFS.</span></code><code class="sig-name descname"><span class="pre">xGetSystemCall</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#apsw.VFS.xGetSystemCall" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a pointer for the current method implementing the named
 system call.  Return None if the call does not exist.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="apsw.VFS.xNextSystemCall">
-<code class="sig-prename descclassname">VFS.</code><code class="sig-name descname">xNextSystemCall</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span> &#x2192; String or None<a class="headerlink" href="#apsw.VFS.xNextSystemCall" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFS.</span></code><code class="sig-name descname"><span class="pre">xNextSystemCall</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">String</span> <span class="pre">or</span> <span class="pre">None</span><a class="headerlink" href="#apsw.VFS.xNextSystemCall" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method is repeatedly called to iterate over all of the system
 calls in the vfs.  When called with None you should return the
 name of the first system call.  In subsequent calls return the
@@ -424,7 +423,7 @@ repeatedly doing it.</p>
 
 <dl class="py method">
 <dt id="apsw.VFS.xOpen">
-<code class="sig-prename descclassname">VFS.</code><code class="sig-name descname">xOpen</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">flags</span></em><span class="sig-paren">)</span> &#x2192; VFSFile or similar object<a class="headerlink" href="#apsw.VFS.xOpen" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFS.</span></code><code class="sig-name descname"><span class="pre">xOpen</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">VFSFile</span> <span class="pre">or</span> <span class="pre">similar</span> <span class="pre">object</span><a class="headerlink" href="#apsw.VFS.xOpen" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method should return a new file object based on name.  You
 can return a <a class="reference internal" href="#apsw.VFSFile" title="apsw.VFSFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">VFSFile</span></code></a> from a completely different VFS.</p>
 <dl class="field-list simple">
@@ -448,7 +447,7 @@ set.</p></li>
 
 <dl class="py method">
 <dt id="apsw.VFS.xRandomness">
-<code class="sig-prename descclassname">VFS.</code><code class="sig-name descname">xRandomness</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">numbytes</span></em><span class="sig-paren">)</span> &#x2192; bytes<a class="headerlink" href="#apsw.VFS.xRandomness" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFS.</span></code><code class="sig-name descname"><span class="pre">xRandomness</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">numbytes</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bytes</span><a class="headerlink" href="#apsw.VFS.xRandomness" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method is called once when SQLite needs to seed the random
 number generator. It is called on the default VFS only. It is not
 called again, even across <a class="reference internal" href="apsw.html#apsw.shutdown" title="apsw.shutdown"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.shutdown()</span></code></a> calls.  You can
@@ -463,7 +462,7 @@ you return more then the surplus is ignored.</p>
 
 <dl class="py method">
 <dt id="apsw.VFS.xSetSystemCall">
-<code class="sig-prename descclassname">VFS.</code><code class="sig-name descname">xSetSystemCall</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">pointer</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#apsw.VFS.xSetSystemCall" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFS.</span></code><code class="sig-name descname"><span class="pre">xSetSystemCall</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pointer</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#apsw.VFS.xSetSystemCall" title="Permalink to this definition">¶</a></dt>
 <dd><p>Change a system call used by the VFS.  This is useful for testing
 and some other scenarios such as sandboxing.</p>
 <dl class="field-list simple">
@@ -489,7 +488,7 @@ call is not known.</p>
 
 <dl class="py method">
 <dt id="apsw.VFS.xSleep">
-<code class="sig-prename descclassname">VFS.</code><code class="sig-name descname">xSleep</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">microseconds</span></em><span class="sig-paren">)</span> &#x2192; integer<a class="headerlink" href="#apsw.VFS.xSleep" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFS.</span></code><code class="sig-name descname"><span class="pre">xSleep</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">microseconds</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">integer</span><a class="headerlink" href="#apsw.VFS.xSleep" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pause execution of the thread for at least the specified number of
 microseconds (millionths of a second).  This routine is typically called from the busy handler.</p>
 <dl class="field-list simple">
@@ -508,7 +507,7 @@ should return that rounded up value.</p>
 <h2>VFSFile class<a class="headerlink" href="#vfsfile-class" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="apsw.VFSFile">
-<em class="property">class </em><code class="sig-name descname">VFSFile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">vfs</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">flags</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFile" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">VFSFile</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vfs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wraps access to a file.  You only need to derive from this class
 if you want the file object returned from <a class="reference internal" href="#apsw.VFS.xOpen" title="apsw.VFS.xOpen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFS.xOpen()</span></code></a> to
 inherit from an existing VFS implementation.</p>
@@ -544,7 +543,7 @@ xShm methods necessary to implement wal.</p>
 
 <dl class="py method">
 <dt id="apsw.VFSFile.excepthook">
-<code class="sig-prename descclassname">VFSFile.</code><code class="sig-name descname">excepthook</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">etype</span></em>, <em class="sig-param"><span class="n">evalue</span></em>, <em class="sig-param"><span class="n">etraceback</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFile.excepthook" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFSFile.</span></code><code class="sig-name descname"><span class="pre">excepthook</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">etype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evalue</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">etraceback</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFile.excepthook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called when there has been an exception in a <a class="reference internal" href="#apsw.VFSFile" title="apsw.VFSFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">VFSFile</span></code></a>
 routine.  The default implementation calls <code class="docutils literal notranslate"><span class="pre">sys.excepthook</span></code> and
 if that fails then <code class="docutils literal notranslate"><span class="pre">PyErr_Display</span></code>.  The three arguments
@@ -563,14 +562,14 @@ includes all frames all the way up to the thread being started.</p></li>
 
 <dl class="py method">
 <dt id="apsw.VFSFile.xCheckReservedLock">
-<code class="sig-prename descclassname">VFSFile.</code><code class="sig-name descname">xCheckReservedLock</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFile.xCheckReservedLock" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFSFile.</span></code><code class="sig-name descname"><span class="pre">xCheckReservedLock</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFile.xCheckReservedLock" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns True if any database connection (in this or another process)
 has a lock other than <a class="reference external" href="https://sqlite.org/c3ref/c_lock_exclusive.html">SQLITE_LOCK_NONE or SQLITE_LOCK_SHARED</a>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="apsw.VFSFile.xClose">
-<code class="sig-prename descclassname">VFSFile.</code><code class="sig-name descname">xClose</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFile.xClose" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFSFile.</span></code><code class="sig-name descname"><span class="pre">xClose</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFile.xClose" title="Permalink to this definition">¶</a></dt>
 <dd><p>Close the database. Note that even if you return an error you should
 still close the file.  It is safe to call this method mutliple
 times.</p>
@@ -578,7 +577,7 @@ times.</p>
 
 <dl class="py method">
 <dt id="apsw.VFSFile.xDeviceCharacteristics">
-<code class="sig-prename descclassname">VFSFile.</code><code class="sig-name descname">xDeviceCharacteristics</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#apsw.VFSFile.xDeviceCharacteristics" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFSFile.</span></code><code class="sig-name descname"><span class="pre">xDeviceCharacteristics</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#apsw.VFSFile.xDeviceCharacteristics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <a class="reference external" href="https://sqlite.org/c3ref/c_iocap_atomic.html">I/O capabilities</a> (bitwise or of
 appropriate values). If you do not implement the function or have an
 error then 0 (the SQLite default) is returned.</p>
@@ -586,7 +585,7 @@ error then 0 (the SQLite default) is returned.</p>
 
 <dl class="py method">
 <dt id="apsw.VFSFile.xFileControl">
-<code class="sig-prename descclassname">VFSFile.</code><code class="sig-name descname">xFileControl</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">op</span></em>, <em class="sig-param"><span class="n">ptr</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#apsw.VFSFile.xFileControl" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFSFile.</span></code><code class="sig-name descname"><span class="pre">xFileControl</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ptr</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#apsw.VFSFile.xFileControl" title="Permalink to this definition">¶</a></dt>
 <dd><p>Receives <a class="reference external" href="https://sqlite.org/c3ref/file_control.html">file control</a> request typically
 issued by <a class="reference internal" href="connection.html#apsw.Connection.filecontrol" title="apsw.Connection.filecontrol"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.filecontrol()</span></code></a>.  See
 <a class="reference internal" href="connection.html#apsw.Connection.filecontrol" title="apsw.Connection.filecontrol"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.filecontrol()</span></code></a> for an example of how to pass a
@@ -622,14 +621,14 @@ any unrecognised codes through to your super class.  For example:</p>
 
 <dl class="py method">
 <dt id="apsw.VFSFile.xFileSize">
-<code class="sig-prename descclassname">VFSFile.</code><code class="sig-name descname">xFileSize</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#apsw.VFSFile.xFileSize" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFSFile.</span></code><code class="sig-name descname"><span class="pre">xFileSize</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#apsw.VFSFile.xFileSize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the size of the file in bytes.  Remember that file sizes are
 64 bit quantities even on 32 bit operating systems.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="apsw.VFSFile.xLock">
-<code class="sig-prename descclassname">VFSFile.</code><code class="sig-name descname">xLock</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">level</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFile.xLock" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFSFile.</span></code><code class="sig-name descname"><span class="pre">xLock</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFile.xLock" title="Permalink to this definition">¶</a></dt>
 <dd><p>Increase the lock to the level specified which is one of the
 <a class="reference external" href="https://sqlite.org/c3ref/c_lock_exclusive.html">SQLITE_LOCK</a>
 family of constants. If you can’t increase the lock level because
@@ -638,7 +637,7 @@ someone else has locked it, then raise <a class="reference internal" href="excep
 
 <dl class="py method">
 <dt id="apsw.VFSFile.xRead">
-<code class="sig-prename descclassname">VFSFile.</code><code class="sig-name descname">xRead</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">amount</span></em>, <em class="sig-param"><span class="n">offset</span></em><span class="sig-paren">)</span> &#x2192; bytes<a class="headerlink" href="#apsw.VFSFile.xRead" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFSFile.</span></code><code class="sig-name descname"><span class="pre">xRead</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">amount</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bytes</span><a class="headerlink" href="#apsw.VFSFile.xRead" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read the specified <em>amount</em> of data starting at <em>offset</em>. You
 should make every effort to read all the data requested, or return
 an error. If you have the file open for non-blocking I/O or if
@@ -661,7 +660,7 @@ reads to be a fatal error.</p>
 
 <dl class="py method">
 <dt id="apsw.VFSFile.xSectorSize">
-<code class="sig-prename descclassname">VFSFile.</code><code class="sig-name descname">xSectorSize</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#apsw.VFSFile.xSectorSize" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFSFile.</span></code><code class="sig-name descname"><span class="pre">xSectorSize</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#apsw.VFSFile.xSectorSize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the native underlying sector size. SQLite uses the value
 returned in determining the default database page size. If you do
 not implement the function or have an error then 4096 (the SQLite
@@ -670,7 +669,7 @@ default) is returned.</p>
 
 <dl class="py method">
 <dt id="apsw.VFSFile.xSync">
-<code class="sig-prename descclassname">VFSFile.</code><code class="sig-name descname">xSync</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">flags</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFile.xSync" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFSFile.</span></code><code class="sig-name descname"><span class="pre">xSync</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flags</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFile.xSync" title="Permalink to this definition">¶</a></dt>
 <dd><p>Ensure data is on the disk platters (ie could survive a power
 failure immediately after the call returns) with the <a class="reference external" href="https://sqlite.org/c3ref/c_sync_dataonly.html">sync flags</a> detailing what
 needs to be synced.  You can sync more than what is requested.</p>
@@ -678,14 +677,14 @@ needs to be synced.  You can sync more than what is requested.</p>
 
 <dl class="py method">
 <dt id="apsw.VFSFile.xTruncate">
-<code class="sig-prename descclassname">VFSFile.</code><code class="sig-name descname">xTruncate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">newsize</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFile.xTruncate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFSFile.</span></code><code class="sig-name descname"><span class="pre">xTruncate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">newsize</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFile.xTruncate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the file length to <em>newsize</em> (which may be more or less than the
 current length).</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="apsw.VFSFile.xUnlock">
-<code class="sig-prename descclassname">VFSFile.</code><code class="sig-name descname">xUnlock</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">level</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFile.xUnlock" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFSFile.</span></code><code class="sig-name descname"><span class="pre">xUnlock</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFile.xUnlock" title="Permalink to this definition">¶</a></dt>
 <dd><p>Decrease the lock to the level specified which is one of the
 <a class="reference external" href="https://sqlite.org/c3ref/c_lock_exclusive.html">SQLITE_LOCK</a>
 family of constants.</p>
@@ -693,7 +692,7 @@ family of constants.</p>
 
 <dl class="py method">
 <dt id="apsw.VFSFile.xWrite">
-<code class="sig-prename descclassname">VFSFile.</code><code class="sig-name descname">xWrite</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">offset</span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFile.xWrite" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">VFSFile.</span></code><code class="sig-name descname"><span class="pre">xWrite</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VFSFile.xWrite" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the <em>data</em> starting at absolute <em>offset</em>. You must write all the data
 requested, or return an error. If you have the file open for
 non-blocking I/O or if signals happen then it is possible for the
@@ -714,7 +713,7 @@ write the remaining data.</p>
 <h2>URIFilename class<a class="headerlink" href="#urifilename-class" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="apsw.URIFilename">
-<em class="property">class </em><code class="sig-name descname">URIFilename</code><a class="headerlink" href="#apsw.URIFilename" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">URIFilename</span></code><a class="headerlink" href="#apsw.URIFilename" title="Permalink to this definition">¶</a></dt>
 <dd><p>SQLite uses a convoluted method of storing <a class="reference external" href="https://sqlite.org/uri.html">uri parameters</a> after the filename binding the
 C filename representation and parameters together.  This class
 encapsulates that binding.  The <a class="reference internal" href="example.html#example-vfs"><span class="std std-ref">example</span></a> shows
@@ -728,13 +727,13 @@ which knows how to get the name back out.</p>
 
 <dl class="py method">
 <dt id="apsw.URIFilename.filename">
-<code class="sig-prename descclassname">URIFilename.</code><code class="sig-name descname">filename</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; str<a class="headerlink" href="#apsw.URIFilename.filename" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">URIFilename.</span></code><code class="sig-name descname"><span class="pre">filename</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#apsw.URIFilename.filename" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the filename.</p>
 </dd></dl>
 
 <span class="target" id="index-2"></span><dl class="py method">
 <dt id="apsw.URIFilename.uri_boolean">
-<code class="sig-prename descclassname">URIFilename.</code><code class="sig-name descname">uri_boolean</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">default</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#apsw.URIFilename.uri_boolean" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">URIFilename.</span></code><code class="sig-name descname"><span class="pre">uri_boolean</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#apsw.URIFilename.uri_boolean" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the boolean value for parameter <cite>name</cite> or <cite>default</cite> if not
 present.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/uri_boolean.html">sqlite3_uri_boolean</a></p>
@@ -742,7 +741,7 @@ present.</p>
 
 <span class="target" id="index-3"></span><dl class="py method">
 <dt id="apsw.URIFilename.uri_int">
-<code class="sig-prename descclassname">URIFilename.</code><code class="sig-name descname">uri_int</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">default</span></em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#apsw.URIFilename.uri_int" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">URIFilename.</span></code><code class="sig-name descname"><span class="pre">uri_int</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#apsw.URIFilename.uri_int" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the integer value for parameter <cite>name</cite> or <cite>default</cite> if not
 present.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/uri_boolean.html">sqlite3_uri_int64</a></p>
@@ -750,7 +749,7 @@ present.</p>
 
 <span class="target" id="index-4"></span><dl class="py method">
 <dt id="apsw.URIFilename.uri_parameter">
-<code class="sig-prename descclassname">URIFilename.</code><code class="sig-name descname">uri_parameter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span> &#x2192; str<a class="headerlink" href="#apsw.URIFilename.uri_parameter" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">URIFilename.</span></code><code class="sig-name descname"><span class="pre">uri_parameter</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#apsw.URIFilename.uri_parameter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the value of parameter <cite>name</cite> or None.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/uri_boolean.html">sqlite3_uri_parameter</a></p>
 </dd></dl>
@@ -818,15 +817,15 @@ present.</p>
         <li class="right" >
           <a href="vtable.html" title="Virtual Tables"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.35.4-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.36.0-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Virtual File System (VFS)</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2021, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Apr 12, 2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
+      Last updated on Jul 30, 2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking
