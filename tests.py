@@ -3738,6 +3738,28 @@ class APSW(unittest.TestCase):
         else:
             self.fail("No rows seen")
 
+    def testIssue314(self):
+        "Reference cycles between instance, Connection and instance.method"
+        cleared = []
+
+        class SelfReferencer:
+            def __del__(self):
+                cleared.append(id(self))
+
+            def __init__(self):
+                self.db = apsw.Connection("")
+                self.db.setbusyhandler(self.refme)
+
+            def refme(self):
+                pass
+
+        for i in range(1000):
+            SelfReferencer()
+        gc.collect()
+        if sys.version_info >= (3, 4):
+            # the reference cycles are broken before py3.4 but not the collect just called
+            self.assertEqual(1000, len(cleared))
+
     def testPysqliteRecursiveIssue(self):
         "Check an issue that affected pysqlite"
         # https://code.google.com/p/pysqlite/source/detail?r=260ee266d6686e0f87b0547c36b68a911e6c6cdb
@@ -3934,7 +3956,7 @@ class APSW(unittest.TestCase):
             },
             "Connection": {
                 "skip": ("internal_cleanup", "dealloc", "init", "close", "interrupt", "close_internal",
-                         "remove_dependent", "readonly", "getmainfilename", "db_filename"),
+                         "remove_dependent", "readonly", "getmainfilename", "db_filename", "traverse", "clear"),
                 "req": {
                     "use": "CHECK_USE",
                     "closed": "CHECK_CLOSED",

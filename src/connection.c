@@ -3529,6 +3529,42 @@ static PyGetSetDef Connection_getseters[] = {
   The string name of the vfs used to open the database.
 */
 
+static int
+Connection_traverse(Connection *self, visitproc visit, void *arg)
+{
+  Py_VISIT(self->busyhandler);
+  Py_VISIT(self->rollbackhook);
+  Py_VISIT(self->profile);
+  Py_VISIT(self->updatehook);
+  Py_VISIT(self->commithook);
+  Py_VISIT(self->walhook);
+  Py_VISIT(self->progresshandler);
+  Py_VISIT(self->authorizer);
+  Py_VISIT(self->collationneeded);
+  Py_VISIT(self->exectrace);
+  Py_VISIT(self->rowtrace);
+  Py_VISIT(self->vfs);
+  return 0;
+}
+
+static int
+Connection_clear(Connection *self)
+{
+  Py_CLEAR(self->busyhandler);
+  Py_CLEAR(self->rollbackhook);
+  Py_CLEAR(self->profile);
+  Py_CLEAR(self->updatehook);
+  Py_CLEAR(self->commithook);
+  Py_CLEAR(self->walhook);
+  Py_CLEAR(self->progresshandler);
+  Py_CLEAR(self->authorizer);
+  Py_CLEAR(self->collationneeded);
+  Py_CLEAR(self->exectrace);
+  Py_CLEAR(self->rowtrace);
+  Py_CLEAR(self->vfs);
+  return 0;
+}
+
 static PyMemberDef Connection_members[] = {
     /* name type offset flags doc */
     {"open_flags", T_OBJECT, offsetof(Connection, open_flags), READONLY, "list of [flagsin, flagsout] used to open connection"},
@@ -3636,49 +3672,49 @@ static PyMethodDef Connection_methods[] = {
 static PyTypeObject ConnectionType =
     {
         APSW_PYTYPE_INIT
-        "apsw.Connection",                                                      /*tp_name*/
-        sizeof(Connection),                                                     /*tp_basicsize*/
-        0,                                                                      /*tp_itemsize*/
-        (destructor)Connection_dealloc,                                         /*tp_dealloc*/
-        0,                                                                      /*tp_print*/
-        0,                                                                      /*tp_getattr*/
-        0,                                                                      /*tp_setattr*/
-        0,                                                                      /*tp_compare*/
-        0,                                                                      /*tp_repr*/
-        0,                                                                      /*tp_as_number*/
-        0,                                                                      /*tp_as_sequence*/
-        0,                                                                      /*tp_as_mapping*/
-        0,                                                                      /*tp_hash */
-        0,                                                                      /*tp_call*/
-        0,                                                                      /*tp_str*/
-        0,                                                                      /*tp_getattro*/
-        0,                                                                      /*tp_setattro*/
-        0,                                                                      /*tp_as_buffer*/
-        Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG, /*tp_flags*/
-        "Connection object",                                                    /* tp_doc */
-        0,                                                                      /* tp_traverse */
-        0,                                                                      /* tp_clear */
-        0,                                                                      /* tp_richcompare */
-        offsetof(Connection, weakreflist),                                      /* tp_weaklistoffset */
-        0,                                                                      /* tp_iter */
-        0,                                                                      /* tp_iternext */
-        Connection_methods,                                                     /* tp_methods */
-        Connection_members,                                                     /* tp_members */
-        Connection_getseters,                                                   /* tp_getset */
-        0,                                                                      /* tp_base */
-        0,                                                                      /* tp_dict */
-        0,                                                                      /* tp_descr_get */
-        0,                                                                      /* tp_descr_set */
-        0,                                                                      /* tp_dictoffset */
-        (initproc)Connection_init,                                              /* tp_init */
-        0,                                                                      /* tp_alloc */
-        Connection_new,                                                         /* tp_new */
-        0,                                                                      /* tp_free */
-        0,                                                                      /* tp_is_gc */
-        0,                                                                      /* tp_bases */
-        0,                                                                      /* tp_mro */
-        0,                                                                      /* tp_cache */
-        0,                                                                      /* tp_subclasses */
-        0,                                                                      /* tp_weaklist */
-        0                                                                       /* tp_del */
+        "apsw.Connection",                                                                           /*tp_name*/
+        sizeof(Connection),                                                                          /*tp_basicsize*/
+        0,                                                                                           /*tp_itemsize*/
+        (destructor)Connection_dealloc,                                                              /*tp_dealloc*/
+        0,                                                                                           /*tp_print*/
+        0,                                                                                           /*tp_getattr*/
+        0,                                                                                           /*tp_setattr*/
+        0,                                                                                           /*tp_compare*/
+        0,                                                                                           /*tp_repr*/
+        0,                                                                                           /*tp_as_number*/
+        0,                                                                                           /*tp_as_sequence*/
+        0,                                                                                           /*tp_as_mapping*/
+        0,                                                                                           /*tp_hash */
+        0,                                                                                           /*tp_call*/
+        0,                                                                                           /*tp_str*/
+        0,                                                                                           /*tp_getattro*/
+        0,                                                                                           /*tp_setattro*/
+        0,                                                                                           /*tp_as_buffer*/
+        Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG | Py_TPFLAGS_HAVE_GC, /*tp_flags*/
+        "Connection object",                                                                         /* tp_doc */
+        Connection_traverse,                                                                         /* tp_traverse */
+        Connection_clear,                                                                            /* tp_clear */
+        0,                                                                                           /* tp_richcompare */
+        offsetof(Connection, weakreflist),                                                           /* tp_weaklistoffset */
+        0,                                                                                           /* tp_iter */
+        0,                                                                                           /* tp_iternext */
+        Connection_methods,                                                                          /* tp_methods */
+        Connection_members,                                                                          /* tp_members */
+        Connection_getseters,                                                                        /* tp_getset */
+        0,                                                                                           /* tp_base */
+        0,                                                                                           /* tp_dict */
+        0,                                                                                           /* tp_descr_get */
+        0,                                                                                           /* tp_descr_set */
+        0,                                                                                           /* tp_dictoffset */
+        (initproc)Connection_init,                                                                   /* tp_init */
+        0,                                                                                           /* tp_alloc */
+        Connection_new,                                                                              /* tp_new */
+        0,                                                                                           /* tp_free */
+        0,                                                                                           /* tp_is_gc */
+        0,                                                                                           /* tp_bases */
+        0,                                                                                           /* tp_mro */
+        0,                                                                                           /* tp_cache */
+        0,                                                                                           /* tp_subclasses */
+        0,                                                                                           /* tp_weaklist */
+        0                                                                                            /* tp_del */
         APSW_PYTYPE_VERSION};

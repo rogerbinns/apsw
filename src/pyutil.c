@@ -46,6 +46,19 @@ typedef unsigned long Py_uhash_t;
   } while (0)
 #endif
 
+#ifndef Py_VISIT
+#define Py_VISIT(op)               \
+  do                               \
+  {                                \
+    if (op)                        \
+    {                              \
+      int vret = visit((op), arg); \
+      if (vret)                    \
+        return vret;               \
+    }                              \
+  } while (0)
+#endif
+
 /* define as zero if not present - introduced in Python 2.6 */
 #ifndef Py_TPFLAGS_HAVE_VERSION_TAG
 #define Py_TPFLAGS_HAVE_VERSION_TAG 0
