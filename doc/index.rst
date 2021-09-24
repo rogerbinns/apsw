@@ -5,6 +5,11 @@ APSW documentation
 
 Use with SQLite 3.36 or later, CPython (2.3 and later, 3.1 and later).
 
+This is the last release supporting Python 2 and Python 3 before 3.6.
+If you still use those Python versions then you should pin to this
+APSW version.  (`More information
+<https://www.rogerbinns.com/blog/XXXXXX>`__).
+
 APSW provides an SQLite 3 wrapper that provides the thinnest layer
 over the `SQLite <https://sqlite.org>`_ database library
 possible. Everything you can do from the `SQLite C API
