@@ -3749,6 +3749,8 @@ class APSW(unittest.TestCase):
             def __init__(self):
                 self.db = apsw.Connection("")
                 self.db.setbusyhandler(self.refme)
+                self.cur=self.db.cursor()
+                self.cur.setrowtrace(self.refme)
 
             def refme(self):
                 pass

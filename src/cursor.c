@@ -318,6 +318,14 @@ APSWCursor_init(APSWCursor *self, Connection *connection)
   self->description_cache[1] = 0;
 }
 
+static int
+Cursor_tp_traverse(APSWCursor *self, visitproc visit, void *arg)
+{
+  Py_VISIT(self->exectrace);
+  Py_VISIT(self->rowtrace);
+  return 0;
+}
+
 static const char *description_formats[] = {
     "(O&O&)",
     "(O&O&OOOOO)"};
@@ -1519,13 +1527,13 @@ static PyTypeObject APSWCursorType = {
     0,                              /*tp_getattro*/
     0,                              /*tp_setattro*/
     0,                              /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG | | Py_TPFLAGS_HAVE_GC
 #if PY_MAJOR_VERSION < 3
         | Py_TPFLAGS_HAVE_ITER
 #endif
     ,                                  /*tp_flags*/
     "Cursor object",                   /* tp_doc */
-    0,                                 /* tp_traverse */
+    Cursor_tp_traverse,                /* tp_traverse */
     0,                                 /* tp_clear */
     0,                                 /* tp_richcompare */
     offsetof(APSWCursor, weakreflist), /* tp_weaklistoffset */

@@ -3530,7 +3530,7 @@ static PyGetSetDef Connection_getseters[] = {
 */
 
 static int
-Connection_traverse(Connection *self, visitproc visit, void *arg)
+Connection_tp_traverse(Connection *self, visitproc visit, void *arg)
 {
   Py_VISIT(self->busyhandler);
   Py_VISIT(self->rollbackhook);
@@ -3544,24 +3544,6 @@ Connection_traverse(Connection *self, visitproc visit, void *arg)
   Py_VISIT(self->exectrace);
   Py_VISIT(self->rowtrace);
   Py_VISIT(self->vfs);
-  return 0;
-}
-
-static int
-Connection_clear(Connection *self)
-{
-  Py_CLEAR(self->busyhandler);
-  Py_CLEAR(self->rollbackhook);
-  Py_CLEAR(self->profile);
-  Py_CLEAR(self->updatehook);
-  Py_CLEAR(self->commithook);
-  Py_CLEAR(self->walhook);
-  Py_CLEAR(self->progresshandler);
-  Py_CLEAR(self->authorizer);
-  Py_CLEAR(self->collationneeded);
-  Py_CLEAR(self->exectrace);
-  Py_CLEAR(self->rowtrace);
-  Py_CLEAR(self->vfs);
   return 0;
 }
 
@@ -3692,8 +3674,8 @@ static PyTypeObject ConnectionType =
         0,                                                                                           /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG | Py_TPFLAGS_HAVE_GC, /*tp_flags*/
         "Connection object",                                                                         /* tp_doc */
-        Connection_traverse,                                                                         /* tp_traverse */
-        Connection_clear,                                                                            /* tp_clear */
+        Connection_tp_traverse,                                                                      /* tp_traverse */
+        0,                                                                                           /* tp_clear */
         0,                                                                                           /* tp_richcompare */
         offsetof(Connection, weakreflist),                                                           /* tp_weaklistoffset */
         0,                                                                                           /* tp_iter */
