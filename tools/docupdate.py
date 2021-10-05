@@ -42,7 +42,7 @@ def get_downloads(pyver, bit):
             res.append(("msi", url % ("apsw-%s.win32-py%s.msi" % (usever, pyver))))
         if pyver in ("3.6", "3.7"):
             res.append(("wheel", url % ("apsw-%s-cp%s-cp%sm-win32.whl" % (usever, whlver, whlver))))
-        if pyver in ("3.8", "3.9"):
+        if pyver in ("3.8", "3.9", "3.10"):
             # they removed the m
             res.append(("wheel", url % ("apsw-%s-cp%s-cp%s-win32.whl" % (usever, whlver, whlver))))
         res.append(("exe", url % ("apsw-%s.win32-py%s.exe" % (usever, pyver))))
@@ -51,7 +51,7 @@ def get_downloads(pyver, bit):
         res.append(("msi", url % ("apsw-%s.win-amd64-py%s.msi" % (usever, pyver))))
         if pyver in ("3.6", "3.7"):
             res.append(("wheel", url % ("apsw-%s-cp%s-cp%sm-win_amd64.whl" % (usever, whlver, whlver))))
-        if pyver in ("3.8", "3.9"):
+        if pyver in ("3.8", "3.9", "3.10"):
             # they removed the m
             res.append(("wheel", url % ("apsw-%s-cp%s-cp%s-win_amd64.whl" % (usever, whlver, whlver))))
         res.append(("exe", url % ("apsw-%s.win-amd64-py%s.exe" % (usever, pyver))))
@@ -73,7 +73,7 @@ for line in open("doc/download.rst", "rt"):
         op.append("")
         nomsi = ("2.3", "2.4")
         for pyver in reversed(
-            ("2.3", "2.4", "2.5", "2.6", "2.7", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7", "3.8", "3.9")):
+            ("2.3", "2.4", "2.5", "2.6", "2.7", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7", "3.8", "3.9", "3.10")):
             op.append("* Windows Python %s" % (pyver, ))
             for bit in (64, 32):
                 dl = get_downloads(pyver, bit)
