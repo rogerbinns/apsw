@@ -45,7 +45,8 @@ def get_downloads(pyver, bit):
         if pyver in ("3.8", "3.9", "3.10"):
             # they removed the m
             res.append(("wheel", url % ("apsw-%s-cp%s-cp%s-win32.whl" % (usever, whlver, whlver))))
-        res.append(("exe", url % ("apsw-%s.win32-py%s.exe" % (usever, pyver))))
+        if pyver not in ("3.10",):
+            res.append(("exe", url % ("apsw-%s.win32-py%s.exe" % (usever, pyver))))
 
     if bit == 64:
         res.append(("msi", url % ("apsw-%s.win-amd64-py%s.msi" % (usever, pyver))))
@@ -54,7 +55,8 @@ def get_downloads(pyver, bit):
         if pyver in ("3.8", "3.9", "3.10"):
             # they removed the m
             res.append(("wheel", url % ("apsw-%s-cp%s-cp%s-win_amd64.whl" % (usever, whlver, whlver))))
-        res.append(("exe", url % ("apsw-%s.win-amd64-py%s.exe" % (usever, pyver))))
+        if pyver not in ("3.10",):
+            res.append(("exe", url % ("apsw-%s.win-amd64-py%s.exe" % (usever, pyver))))
 
     return res
 

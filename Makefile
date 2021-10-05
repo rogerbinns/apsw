@@ -134,9 +134,9 @@ compile-win:
 	cmd /c del /s /q apsw.egg-info
 	-cmd /c md dist
 	-cmd /c del /s /q c:\\python310-32\\lib\\site-packages\\*apsw*
-	c:/python310-32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
+	c:/python310-32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBMSI) $(WINBWHEEL)
 	-cmd /c del /s /q c:\\python310\\lib\\site-packages\\*apsw*
-	"c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python310/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
+	"c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python310/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBMSI) $(WINBWHEEL)
 	-cmd /c del /s /q c:\\python39-32\\lib\\site-packages\\*apsw*
 	c:/python39-32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
 	-cmd /c del /s /q c:\\python39\\lib\\site-packages\\*apsw*
@@ -264,10 +264,8 @@ release:
 	test -f dist/$(VERWIN).win-amd64-py3.9.exe
 	test -f dist/$(VERWIN).win-amd64-py3.9.msi
 	test -f dist/$(VERWIN)-cp39-cp39-win_amd64.whl
-	test -f dist/$(VERWIN).win32-py3.10.exe
 	test -f dist/$(VERWIN).win32-py3.10.msi
 	test -f dist/$(VERWIN)-cp39-cp310-win32.whl
-	test -f dist/$(VERWIN).win-amd64-py3.10.exe
 	test -f dist/$(VERWIN).win-amd64-py3.10.msi
 	test -f dist/$(VERWIN)-cp310-cp310-win_amd64.whl
 	-rm -f dist/$(VERDIR)-sigs.zip dist/*.asc
