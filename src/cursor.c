@@ -1527,7 +1527,7 @@ static PyTypeObject APSWCursorType = {
     0,                              /*tp_getattro*/
     0,                              /*tp_setattro*/
     0,                              /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG | | Py_TPFLAGS_HAVE_GC
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG | Py_TPFLAGS_HAVE_GC
 #if PY_MAJOR_VERSION < 3
         | Py_TPFLAGS_HAVE_ITER
 #endif
