@@ -40,9 +40,11 @@ API Reference
 
 /* SQLite amalgamation */
 #ifdef APSW_USE_SQLITE_AMALGAMATION
+#ifndef APSW_NO_NDEBUG
 /* See SQLite ticket 2554 */
 #define SQLITE_API static
 #define SQLITE_EXTERN static
+#endif
 #define SQLITE_ENABLE_API_ARMOR 1
 #include APSW_USE_SQLITE_AMALGAMATION
 #undef small
