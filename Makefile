@@ -28,7 +28,7 @@ GENDOCS = \
 	doc/apsw.rst \
 	doc/backup.rst
 
-.PHONY : all docs doc header linkcheck publish showsymbols compile-win source source_nocheck release tags clean ppa dpkg dpkg-bin coverage valgrind valgrind1 tagpush
+.PHONY : all docs doc header linkcheck publish showsymbols compile-win source source_nocheck release tags clean ppa dpkg dpkg-bin coverage valgrind valgrind1 tagpush pydebug test fulltest test_debug
 
 all: header docs
 
@@ -65,30 +65,20 @@ $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
 build_ext:
 	env APSW_FORCE_DISTUTILS=t $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --force --enable-all-extensions
 
+build_ext_debug:
+	env APSW_FORCE_DISTUTILS=t $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --force --enable-all-extensions --debug
+
 coverage:
 	env APSW_FORCE_DISTUTILS=t $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all && env APSW_PY_COVERAGE=t tools/coverage.sh
 
 test: build_ext
 	env PYTHONHASHSEED=random APSW_FORCE_DISTUTILS=t $(PYTHON) tests.py
 
-debugtest:
-	gcc -pthread -fno-strict-aliasing -g -fPIC -Wall -DAPSW_USE_SQLITE_CONFIG=\"sqlite3/sqlite3config.h\" -DEXPERIMENTAL -DSQLITE_DEBUG -DAPSW_USE_SQLITE_AMALGAMATION=\"sqlite3.c\" -DAPSW_NO_NDEBUG -DAPSW_TESTFIXTURES -I`$(PYTHON) -c "import distutils.sysconfig,sys; sys.stdout.write(distutils.sysconfig.get_python_inc())"` -I. -Isqlite3 -Isrc -c src/apsw.c
-	gcc -pthread -g -shared apsw.o -o apsw.so
-	env PYTHONHASHSEED=random $(PYTHON) tests.py $(APSWTESTS)
+test_debug: $(PYDEBUG_DIR)/bin/python3
+	$(MAKE) build_ext_debug PYTHON=$(PYDEBUG_DIR)/bin/python3
+	env PYTHONHASHSEED=random APSW_FORCE_DISTUTILS=t $(PYDEBUG_DIR)/bin/python3 tests.py
 
-# Needs a debug python.  Look at the final numbers at the bottom of
-# l6, l7 and l8 and see if any are growing
-valgrind: /space/pydebug/bin/python
-	$(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all && \
-	  env APSWTESTPREFIX=/tmp/ PATH=/space/pydebug/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=6 tools/valgrind.sh 2>&1 | tee l6 && \
-	  env APSWTESTPREFIX=/tmp/ PATH=/space/pydebug/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=7 tools/valgrind.sh 2>&1 | tee l7 && \
-	  env APSWTESTPREFIX=/tmp/ PATH=/space/pydebug/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=8 tools/valgrind.sh 2>&1 | tee l8
-
-# Same as above but does just one run
-valgrind1: /space/pydebug/bin/python
-	$(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all && \
-	  env APSWTESTPREFIX=/tmp/ PATH=/space/pydebug/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=1 tools/valgrind.sh
-
+fulltest: test test_debug
 
 linkcheck:
 	make RELEASEDATE=$(RELEASEDATE) VERSION=$(VERSION) -C doc linkcheck
@@ -275,3 +265,40 @@ release:
 tags:
 	rm -f TAGS
 	ctags-exuberant -e --recurse --exclude=build --exclude=work .
+
+# building a python debug interpreter
+
+PYDEBUG_VER=3.9.4
+PYDEBUG_DIR=/space/pydebug
+PYVALGRIND_VER=$(PYDEBUG_VER)
+PYVALGRIND_DIR=/space/pyvalgrind
+PYDEBUG_WORKDIR=/space/apsw/work
+
+# Build a debug python including address sanitizer.  Extensions it builds are also address sanitized
+pydebug:
+	set -x && cd "$(PYDEBUG_DIR)" && find . -delete && \
+	curl https://www.python.org/ftp/python/$(PYDEBUG_VER)/Python-$(PYDEBUG_VER).tar.xz | tar xfJ - && \
+	cd Python-$(PYDEBUG_VER) && \
+	./configure --with-address-sanitizer --without-pymalloc --prefix="$(PYDEBUG_DIR)" \
+	CPPFLAGS="-DPyDict_MAXFREELIST=0 -DPyFloat_MAXFREELIST=0 -DPyTuple_MAXFREELIST=0 -DPyList_MAXFREELIST=0" && \
+	env PATH="/usr/lib/ccache:$$PATH" make -j install
+
+pyvalgrind:
+	set -x && cd "$(PYVALGRIND_DIR)" && find . -delete && \
+	curl https://www.python.org/ftp/python/$(PYVALGRIND_VER)/Python-$(PYVALGRIND_VER).tar.xz | tar xfJ - && \
+	cd Python-$(PYVALGRIND_VER) && \
+	./configure --with-valgrind --without-pymalloc --prefix="$(PYVALGRIND_DIR)" \
+	CPPFLAGS="-DPyDict_MAXFREELIST=0 -DPyFloat_MAXFREELIST=0 -DPyTuple_MAXFREELIST=0 -DPyList_MAXFREELIST=0" && \
+	env PATH="/usr/lib/ccache:$$PATH" make -j install
+
+# Look at the final numbers at the bottom of l6, l7 and l8 and see if any are growing
+valgrind: $(PYVALGRIND_DIR)/bin/python3
+	$(PYVALGRIND_DIR)/bin/python3 setup.py fetch --version=$(SQLITEVERSION) --all && \
+	  env APSWTESTPREFIX=$(PYDEBUG_WORKDIR) PATH=$(PYVALGRIND_DIR)/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=6 tools/valgrind.sh 2>&1 | tee l6 && \
+	  env APSWTESTPREFIX=$(PYDEBUG_WORKDIR) PATH=$(PYVALGRIND_DIR)/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=7 tools/valgrind.sh 2>&1 | tee l7 && \
+	  env APSWTESTPREFIX=$(PYDEBUG_WORKDIR) PATH=$(PYVALGRIND_DIR)/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=8 tools/valgrind.sh 2>&1 | tee l8
+
+# Same as above but does just one run
+valgrind1: $(PYVALGRIND_DIR)/bin/python3
+	$(PYVALGRIND_DIR)/bin/python3 setup.py fetch --version=$(SQLITEVERSION) --all && \
+	  env APSWTESTPREFIX=$(PYDEBUG_WORKDIR) PATH=$(PYVALGRIND_DIR)/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=1 tools/valgrind.sh
