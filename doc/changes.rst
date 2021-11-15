@@ -14,6 +14,9 @@ If you still use those Python versions then you should pin to this
 APSW version.  (`More information
 <https://www.rogerbinns.com/blog/XXXXXX>`__).
 
+Windows Python 3.10 binaries are available to download.  The .exe format
+is no longer with this Python version.
+
 3.36.0-r1
 =========
 
