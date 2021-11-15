@@ -1,29 +1,7 @@
 #!/bin/bash
 # Run valgrind on testsuite
 #
-# See the accompanying LICENSE file.
-#
-# You should build a debug Python, with this being an example using /space/pydebug as
-# the root.
-#
-# ver=3.9.4
-# mkdir /space/pydebug
-# cd /space/pydebug
-# wget -O -  https://www.python.org/ftp/python/$ver/Python-$ver.tar.xz | tar xfJ -
-# cd Python-$ver
-# # As an optimization Python keeps lists of various objects around for quick recycling
-# # instead of freeing and then mallocing.  Unfortunately that obfuscates which code
-# # was actually responsible for their existence.  Consequently we set all these to zero
-# # so that normal malloc/frees happen and valgrind can do its magic.  Before Python 2.6
-# # they all had different arbitrary names and in many cases could not be overridden.
-#
-# s="_MAXFREELIST=0"
-# ./configure --with-pydebug --with-valgrind --without-pymalloc --prefix=/space/pydebug \
-# CPPFLAGS="-DPyDict$s -DPyFloat$s -DPyTuple$s -DPyList$s -DPyFrame$s"
-#
-# make install
-#
-# Then put /space/pydebug/bin/ first on your path.  The CPPFLAGS setting is to make sure no tuples are saved on freelists
+# A debug Python build is recommended - see Makefile
 
 if [ $# = 0 ]
 then
