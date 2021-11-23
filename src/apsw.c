@@ -742,6 +742,13 @@ static apsw_mutex *apsw_mutexes[] =
         NULL,
         NULL,
         NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
         NULL};
 
 static sqlite3_mutex_methods apsw_orig_mutex_methods;
