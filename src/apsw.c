@@ -1972,9 +1972,12 @@ APSW_Should_Fault(const char *name)
 {
   PyGILState_STATE gilstate;
   PyObject *faultdict = NULL, *truthval = NULL, *value = NULL;
+  PyObject *errsave1 = NULL, *errsave2 = NULL, *errsave3 = NULL;
   int res = 0;
 
   gilstate = PyGILState_Ensure();
+
+  PyErr_Fetch(&errsave1, &errsave2, &errsave3);
 
   if (!PyObject_HasAttrString(apswmodule, "faultdict"))
     PyObject_SetAttrString(apswmodule, "faultdict", PyDict_New());
@@ -1994,6 +1997,8 @@ APSW_Should_Fault(const char *name)
 finally:
   Py_XDECREF(value);
   Py_XDECREF(faultdict);
+
+  PyErr_Restore(errsave1, errsave2, errsave3);
 
   PyGILState_Release(gilstate);
   return res;
