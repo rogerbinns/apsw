@@ -76,7 +76,7 @@ test: build_ext
 
 test_debug: $(PYDEBUG_DIR)/bin/python3
 	$(MAKE) build_ext_debug PYTHON=$(PYDEBUG_DIR)/bin/python3
-	env PYTHONHASHSEED=random APSW_FORCE_DISTUTILS=t $(PYDEBUG_DIR)/bin/python3 tests.py
+	env PYTHONHASHSEED=random APSW_FORCE_DISTUTILS=t APSWTESTPREFIX=$(PYDEBUG_WORKDIR) $(PYDEBUG_DIR)/bin/python3 tests.py -v
 
 fulltest: test test_debug
 
@@ -268,11 +268,12 @@ tags:
 
 # building a python debug interpreter
 
-PYDEBUG_VER=3.9.4
+PYDEBUG_VER=3.9.9
 PYDEBUG_DIR=/space/pydebug
 PYVALGRIND_VER=$(PYDEBUG_VER)
 PYVALGRIND_DIR=/space/pyvalgrind
-PYDEBUG_WORKDIR=/space/apsw/work
+# This must end in slash
+PYDEBUG_WORKDIR=/space/apsw/work/
 
 # Build a debug python including address sanitizer.  Extensions it builds are also address sanitized
 pydebug:
