@@ -1,68 +1,135 @@
 name: build
 
 on:
-  push:
-    tags:
-      - '*.*.*-r*'
+
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Write 'PUBLISH' to publish to pypi. BEWARE! ARTIFACTS ARE IMMUTABLE AND CANNOT BE REPLACED ONCE PUBLISHED!
+      publish_test:
+        description: Write 'PUBLISH_TEST' to publish to test-pypi. BEWARE! ARTIFACTS ARE IMMUTABLE AND CANNOT BE REPLACED ONCE PUBLISHED!
 
 jobs:
 
-  builds:
+  wheels:
     runs-on: ${{ matrix.os }}
+
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-20.04, windows-2019, macos-10.15]
+        include:
+        - {os: ubuntu-20.04, CIBW_BUILD: "*-manylinux_x86_64"}
+        - {os: ubuntu-20.04, CIBW_BUILD: "*-manylinux_i686"}
+
+        - {os: ubuntu-20.04, CIBW_BUILD: "*-musllinux_x86_64"}
+        - {os: ubuntu-20.04, CIBW_BUILD: "*-musllinux_i686"}
+
+        - {os: ubuntu-20.04, CIBW_BUILD: cp36-manylinux_aarch64}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp37-manylinux_aarch64}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp38-manylinux_aarch64}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp39-manylinux_aarch64}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp310-manylinux_aarch64}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp36-manylinux_ppc64le}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp37-manylinux_ppc64le}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp38-manylinux_ppc64le}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp39-manylinux_ppc64le}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp310-manylinux_ppc64le}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp36-manylinux_s390x}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp37-manylinux_s390x}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp38-manylinux_s390x}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp39-manylinux_s390x}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp310-manylinux_s390x}
+
+        - {os: ubuntu-20.04, CIBW_BUILD: cp36-musllinux_aarch64}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp37-musllinux_aarch64}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp38-musllinux_aarch64}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp39-musllinux_aarch64}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp310-musllinux_aarch64}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp36-musllinux_ppc64le}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp37-musllinux_ppc64le}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp38-musllinux_ppc64le}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp39-musllinux_ppc64le}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp310-musllinux_ppc64le}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp36-musllinux_s390x}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp37-musllinux_s390x}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp38-musllinux_s390x}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp39-musllinux_s390x}
+        - {os: ubuntu-20.04, CIBW_BUILD: cp310-musllinux_s390x}
+
+        - {os: macos-10.15, CIBW_BUILD: "*-macosx_x86_64"}
+
+        - {os: windows-2019, CIBW_BUILD: "*-win32"}
+        - {os: windows-2019, CIBW_BUILD: "*-win_amd64"}
+
+    env:
+      CIBW_BUILD_VERBOSITY: 1
+      CIBW_BUILD: ${{ matrix.CIBW_BUILD }}
+      CIBW_ARCHS: all
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/cache@v2
+        id: cache-wheel
+        with:
+          path: wheelhouse
+          key: wheel-${{ matrix.CIBW_BUILD }}-${{ matrix.CIBW_ARCHS }}-${{ github.sha }}
+
+      - uses: docker/setup-qemu-action@v1
+        if: steps.cache-wheel.outputs.cache-hit != 'true' && runner.os == 'Linux'
+
+      - uses: pypa/cibuildwheel@v2.2.2
+        if: steps.cache-wheel.outputs.cache-hit != 'true'
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: ./wheelhouse/*.whl
+
+  sdist:
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
 
       - uses: actions/setup-python@v2
 
-      - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.1.1
-
-      - name: Build wheels
-        run: python -m cibuildwheel --output-dir wheelhouse
-        env:
-          CIBW_BEFORE_BUILD: python setup.py fetch --all build --enable-all-extensions
-          CIBW_TEST_COMMAND: python {package}/tests.py
-          CIBW_SKIP: pp*
+      - run: python setup.py configure_pinned sdist
 
       - uses: actions/upload-artifact@v2
         with:
-          name: wheelhouse
-          path: ./wheelhouse/*.whl
+          name: dist
+          path: ./dist/*.tar.gz
 
-  upload:
-    needs: builds
+  upload_pypi:
+    needs: [ wheels, sdist ]
     runs-on: ubuntu-latest
+    if: needs.wheels.result == 'success' && needs.sdist.result == 'success' && github.event.inputs.publish == 'PUBLISH_TEST'
 
     steps:
-    - uses: actions/checkout@v2
-
-    - name: Set up Python
-      uses: actions/setup-python@v2
+    - uses: actions/download-artifact@v2
       with:
-        python-version: 3.9
+        name: dist
+        path: dist
 
-    - name: Install dependencies
-      run: |
-        pip install --upgrade pip
-
-    - name: Create source dist
-      run: python setup.py fetch --all sdist
-
-    - name: Stage wheels
-      uses: actions/download-artifact@v2
+    - uses: pypa/gh-action-pypi-publish@release/v1
       with:
-        name: wheelhouse
-        path: wheelhouse
-    - run: |
-        mv -v wheelhouse/* dist/
-        ls -l dist/
+        password: ${{ secrets.PYPI_API_TOKEN }}
+        skip_existing: true
 
-    # - name: Publish package
-    #   uses: pypa/gh-action-pypi-publish@release/v1
-    #   with:
-    #     user: __token__
-    #     password: ${{ secrets.PYPI_API_TOKEN }}
+  upload_pypi_test:
+    needs: [ wheels, sdist ]
+    runs-on: ubuntu-latest
+    if: needs.wheels.result == 'success' && needs.sdist.result == 'success' && github.event.inputs.publish == 'PUBLISH'
+
+    steps:
+    - uses: actions/download-artifact@v2
+      with:
+        name: dist
+        path: dist
+
+    - uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        skip_existing: true
+        repository_url: https://test.pypi.org/legacy/

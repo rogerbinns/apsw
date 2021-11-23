@@ -106,6 +106,38 @@ def fixup_download_url(url):
     return url
 
 
+class configure_pinned(Command):
+
+    description = "Configure the build for pypi-style version pinning"
+
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        import configparser
+        parser = configparser.ConfigParser()
+        parser.read("setup.cfg")
+
+        if not parser.has_section("fetch"):
+            parser.add_section("fetch")
+        parser["fetch"]["all"] = "True"
+        parser["fetch"]["version"] = re.match(r"(\d+\.\d+\.\d+).*", version).group(1)
+
+        if not parser.has_section("build_ext"):
+            parser.add_section("build_ext")
+        parser["build_ext"]["fetch"] = "True"
+        # This is the set of --enable-all-extensions, minus icu
+        parser["build_ext"]["enable"] = "fts4,fts3,fts3_parenthesis,rtree,stat4,json1,fts5,rbu,geopoly,math_functions"
+
+        with open("setup.cfg", mode="w") as fp:
+            parser.write(fp)
+
+
 # Run test suite
 class run_tests(Command):
 
@@ -515,6 +547,7 @@ class fetch(Command):
 build_enable = None
 build_omit = None
 build_enable_all_extensions = False
+build_fetch = False
 
 bparent = build.build
 
@@ -524,14 +557,16 @@ class apsw_build(bparent):
                   [ ("enable=", None, "Enable SQLite options (comma separated list)"),
                     ("omit=", None, "Omit SQLite functionality (comma separated list)"),
                     ("enable-all-extensions", None, "Enable all SQLite extensions"),
+                    ("fetch", None, "Implicitly fetch before building"),
                     ]
-    boolean_options = bparent.boolean_options + ["enable-all-extensions"]
+    boolean_options = bparent.boolean_options + ["enable-all-extensions", "fetch"]
 
     def initialize_options(self):
         v = bparent.initialize_options(self)
         self.enable = None
         self.omit = None
         self.enable_all_extensions = build_enable_all_extensions
+        self.fetch = build_fetch
         return v
 
     def finalize_options(self):
@@ -539,6 +574,7 @@ class apsw_build(bparent):
         build_enable = self.enable
         build_omit = self.omit
         build_enable_all_extensions = self.enable_all_extensions
+        build_fetch = self.fetch
         return bparent.finalize_options(self)
 
 
@@ -568,18 +604,23 @@ class apsw_build_ext(beparent):
                   [ ("enable=", None, "Enable SQLite options (comma separated list)"),
                     ("omit=", None, "Omit SQLite functionality (comma separated list)"),
                     ("enable-all-extensions", None, "Enable all SQLite extensions"),
+                    ("fetch", None, "Implicitly fetch before building"),
                     ]
-    boolean_options = beparent.boolean_options + ["enable-all-extensions"]
+    boolean_options = beparent.boolean_options + ["enable-all-extensions", "fetch"]
 
     def initialize_options(self):
         v = beparent.initialize_options(self)
         self.enable = build_enable
         self.omit = build_omit
         self.enable_all_extensions = build_enable_all_extensions
+        self.fetch = build_fetch
         return v
 
     def finalize_options(self):
         v = beparent.finalize_options(self)
+
+        if self.fetch:
+            self.run_command("fetch")
 
         if self.enable_all_extensions:
             exts = [
@@ -949,5 +990,6 @@ complete SQLite API into Python.""",
                 'build_ext': apsw_build_ext,
                 'build': apsw_build,
                 'sdist': apsw_sdist,
-                'win64hackvars': win64hackvars}
+                'win64hackvars': win64hackvars,
+                'configure_pinned': configure_pinned}
       )

@@ -1,0 +1,7 @@
+[project]
+requires-python = ">=3.6"
+
+[tool.cibuildwheel]
+before-all = "python3 setup.py configure_pinned"
+skip = "pp*"
+test-command = "python {package}/tests.py"
