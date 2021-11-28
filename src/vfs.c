@@ -2783,7 +2783,7 @@ apswvfsfilepy_xClose(APSWVFSFile *self)
 #define APSWPROXYBASE                                          \
   APSWSQLite3File *apswfile = (APSWSQLite3File *)(void *)file; \
   APSWVFSFile *f = (APSWVFSFile *)(apswfile->file);            \
-  assert(Py_TYPE(f) == &APSWVFSFileType)
+  assert(PyObject_TypeCheck(f, &APSWVFSFileType));
 
 static int
 apswproxyxShmLock(sqlite3_file *file, int offset, int n, int flags)
