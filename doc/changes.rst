@@ -17,6 +17,10 @@ APSW version.  (`More information
 Windows Python 3.10 binaries are available to download.  The .exe format
 is no longer with this Python version.
 
+Fixed custom VFS extension loading failure could leave the error
+message unterminated.
+
+
 3.36.0-r1
 =========
 
@@ -95,7 +99,7 @@ Added constants:
 * SQLITE_DBCONFIG_TRUSTED_SCHEMA, SQLITE_DBCONFIG_LEGACY_FILE_FORMAT,
   SQLITE_CONSTRAINT_PINNED, SQLITE_OK_SYMLINK, SQLITE_CANTOPEN_SYMLINK,
   SQLITE_FCNTL_CKPT_DONE, SQLITE_OPEN_NOFOLLOW, SQLITE_VTAB_DIRECTONLY
-  
+
 
 3.30.1-r1
 =========
