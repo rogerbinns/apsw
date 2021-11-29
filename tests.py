@@ -1380,13 +1380,17 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, self.db.createaggregatefunction, True, True, True,
                           True)  # wrong number/type of params
         self.assertRaises(TypeError, self.db.createaggregatefunction, "twelve", 12)  # must be callable
-        try:
-            self.db.createaggregatefunction("twelve", longest.factory, 923)  # max args is 127
-        except (apsw.SQLError, apsw.MisuseError):
-            # used to be SQLerror then changed https://sqlite.org/cvstrac/tktview?tn=3875
-            pass
+
+        if "DEBUG" not in apsw.compile_options:
+            # these cause assertion failures in sqlite
+            try:
+                self.db.createaggregatefunction("twelve", longest.factory, 923)  # max args is 127
+            except (apsw.SQLError, apsw.MisuseError):
+                # used to be SQLerror then changed https://sqlite.org/cvstrac/tktview?tn=3875
+                pass
+            self.db.createaggregatefunction("twelve", None)
+
         self.assertRaises(TypeError, self.db.createaggregatefunction, u(r"twelve\N{BLACK STAR}"), 12)  # must be ascii
-        self.db.createaggregatefunction("twelve", None)
         self.db.createaggregatefunction("longest", longest.factory)
 
         vals = (
