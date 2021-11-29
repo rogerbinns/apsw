@@ -20,6 +20,8 @@ is no longer with this Python version.
 Fixed custom VFS extension loading failure could leave the error
 message unterminated.
 
+Updated size of mutex array used by the :func:`fork checker <fork_checker>`
+
 
 3.36.0-r1
 =========
