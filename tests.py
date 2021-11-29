@@ -3947,7 +3947,7 @@ class APSW(unittest.TestCase):
 
         # not further checked
         if name.split("_")[0] in ("ZeroBlobBind", "APSWVFS", "APSWVFSFile", "APSWBuffer", "FunctionCBInfo",
-                                  "apswurifilename"):
+                                  "apswurifilename", "Cursor"):
             return
 
         checks = {
@@ -3962,7 +3962,8 @@ class APSW(unittest.TestCase):
             },
             "Connection": {
                 "skip": ("internal_cleanup", "dealloc", "init", "close", "interrupt", "close_internal",
-                         "remove_dependent", "readonly", "getmainfilename", "db_filename", "traverse", "clear"),
+                         "remove_dependent", "readonly", "getmainfilename", "db_filename", "traverse", "clear",
+                         "tp_traverse"),
                 "req": {
                     "use": "CHECK_USE",
                     "closed": "CHECK_CLOSED",
