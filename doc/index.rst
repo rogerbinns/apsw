@@ -3,7 +3,7 @@ APSW documentation
 
 .. centered:: APSW |version| released |today|
 
-Use with SQLite 3.36 or later, CPython (2.3 and later, 3.1 and later).
+Use with SQLite 3.37 or later, CPython (2.3 and later, 3.1 and later).
 
 This is the last release supporting Python 2 and Python 3 before 3.6.
 If you still use those Python versions then you should pin to this
