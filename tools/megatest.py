@@ -215,8 +215,9 @@ def cmp(a, b):
 
 # Default versions we support
 PYVERS = (
+    '3.11.0a2',
     '3.10.0',
-    '3.9.5',
+    '3.9.9',
     '3.8.10',
     '3.7.10',
     '3.6.13',
@@ -233,7 +234,7 @@ PYVERS = (
     'system',
 )
 
-SQLITEVERS = ('3.36.0', )
+SQLITEVERS = ('3.37.0', )
 
 if __name__ == '__main__':
     nprocs = 0
