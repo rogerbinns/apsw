@@ -1595,6 +1595,7 @@ modules etc. For example::
         ADDINT(SQLITE_CORRUPT_INDEX),
         ADDINT(SQLITE_BUSY_TIMEOUT),
         ADDINT(SQLITE_IOERR_CORRUPTFS),
+        ADDINT(SQLITE_CONSTRAINT_DATATYPE),
         END,
 
         /* error codes */
@@ -1656,6 +1657,7 @@ modules etc. For example::
         ADDINT(SQLITE_OPEN_MEMORY),
         ADDINT(SQLITE_OPEN_NOFOLLOW),
         ADDINT(SQLITE_OPEN_SUPER_JOURNAL),
+        ADDINT(SQLITE_OPEN_EXRESCODE),
         END,
 
         /* limits */

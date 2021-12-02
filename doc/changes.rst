@@ -15,13 +15,16 @@ APSW version.  (`More information
 <https://www.rogerbinns.com/blog/XXXXXX>`__).
 
 Windows Python 3.10 binaries are available to download.  The .exe format
-is no longer with this Python version.
+is no longer available with this Python version.
 
 Fixed custom VFS extension loading failure could leave the error
 message unterminated.
 
 Updated size of mutex array used by the :func:`fork checker <fork_checker>`
 
+Added constants:
+
+* SQLITE_CONSTRAINT_DATATYPE, SQLITE_OPEN_EXRESCODE
 
 3.36.0-r1
 =========
