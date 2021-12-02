@@ -379,6 +379,8 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "es|izi:Connection(filename, flags=SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE, vfs=None, statementcachesize=100)", kwlist, STRENCODING, &filename, &flags, &vfs, &statementcachesize))
     return -1;
 
+  flags |= SQLITE_OPEN_EXRESCODE;
+
   if (statementcachesize < 0)
     statementcachesize = 0;
 

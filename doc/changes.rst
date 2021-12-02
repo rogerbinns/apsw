@@ -22,6 +22,9 @@ message unterminated.
 
 Updated size of mutex array used by the :func:`fork checker <fork_checker>`
 
+Connections are opened with SQLITE_OPEN_EXRESCODE so open errors will
+also include exteded result codes.
+
 Added constants:
 
 * SQLITE_CONSTRAINT_DATATYPE, SQLITE_OPEN_EXRESCODE
