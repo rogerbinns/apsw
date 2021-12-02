@@ -18,7 +18,7 @@ Exceptions
 .. attribute:: Error.extendedresult
 
          APSW runs with `extended result codes
-         <https://sqlite.org/c3ref/c_ioerr_blocked.html>`_ turned on.
+         <https://sqlite.org/rescode.html>`_ turned on.
          This attribute includes the detailed code.
 
 As an example, if SQLite issued a read request and the system returned
