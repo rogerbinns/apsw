@@ -2756,6 +2756,7 @@ Enter SQL statements terminated with a ";"
         "soft_heap_limit=": None,
         "synchronous=": ("OFF", "NORMAL", "FULL"),
         "table_info(": None,
+        "table_list": None,
         "temp_store=": ("DEFAULT", "FILE", "MEMORY"),
         "threads=": None,
         "user_version=": None,
