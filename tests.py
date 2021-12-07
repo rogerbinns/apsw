@@ -4038,7 +4038,7 @@ class APSW(unittest.TestCase):
         elif prefix in checks:
             checker = checks[prefix]
         else:
-            self.fail(filename + ": " + prefix + " not in checks")
+            self.fail(filename + ": " + prefix + " not in checks (" + name + ")")
 
         if base in checker.get("skip", ()):
             return
