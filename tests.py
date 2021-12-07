@@ -764,8 +764,8 @@ class APSW(unittest.TestCase):
         self.assertTrue(c.getconnection() is self.db)
         # check getdescription - note column with space in name and [] syntax to quote it
         cols = (
-            ("x a space", "integer"),
-            ("y", "text"),
+            ("x a space", "INTEGER"),
+            ("y", "TEXT"),
             ("z", "foo"),
             ("a", "char"),
             (u(r"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}"),
