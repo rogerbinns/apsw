@@ -101,8 +101,6 @@ static void APSWBackup_init(struct APSWBackup *self, Connection *dest, Connectio
 static PyTypeObject APSWBackupType;
 #endif
 
-struct APSWCursor;
-static void APSWCursor_init(struct APSWCursor *, Connection *);
 static PyTypeObject APSWCursorType;
 
 struct ZeroBlobBind;
@@ -695,13 +693,10 @@ Connection_cursor(Connection *self)
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  APSW_FAULT_INJECT(CursorAllocFails, cursor = PyObject_New(struct APSWCursor, &APSWCursorType), (PyErr_NoMemory(), cursor = NULL));
+  APSW_FAULT_INJECT(CursorAllocFails, cursor = PyObject_CallFunction(&APSWCursorType, "O", self), cursor = PyErr_NoMemory());
   if (!cursor)
     return NULL;
 
-  /* incref me since cursor holds a pointer */
-  Py_INCREF((PyObject *)self);
-  APSWCursor_init(cursor, self);
   weakref = PyWeakref_NewRef((PyObject *)cursor, self->dependent_remove);
   PyList_Append(self->dependents, weakref);
   Py_DECREF(weakref);

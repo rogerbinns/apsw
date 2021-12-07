@@ -485,7 +485,7 @@ class APSW(unittest.TestCase):
         for name in "Connection", "Cursor", "Blob", "Backup", "zeroblob", "VFS", "VFSFile", "URIFilename":
             self.assertTrue(hasattr(apsw, name), "expected name apsw." + name)
 
-        for name in "Cursor", "Blob", "Backup":
+        for name in "Blob", "Backup":
             self.assertRaisesRegex(TypeError, "cannot create .* instances", getattr(apsw, name))
 
     def testConnection(self):
@@ -722,7 +722,16 @@ class APSW(unittest.TestCase):
         "Check functionality of the cursor"
         c = self.db.cursor()
         # shouldn't be able to manually create
-        self.assertRaises(TypeError, type(c))
+        self.assertRaises(TypeError, apsw.Cursor)
+        self.assertRaises(TypeError, apsw.Cursor, 3)
+        self.assertRaises(TypeError, apsw.Cursor, c)
+
+        class consub(apsw.Connection):
+            pass
+
+        con2=consub("")
+        assert isinstance(con2, apsw.Connection) and not type(con2) == apsw.Connection
+        apsw.Cursor(con2)
 
         # give bad params
         self.assertRaises(TypeError, c.execute)
@@ -3947,13 +3956,13 @@ class APSW(unittest.TestCase):
 
         # not further checked
         if name.split("_")[0] in ("ZeroBlobBind", "APSWVFS", "APSWVFSFile", "APSWBuffer", "FunctionCBInfo",
-                                  "apswurifilename", "Cursor"):
+                                  "apswurifilename"):
             return
 
         checks = {
             "APSWCursor": {
                 "skip": ("dealloc", "init", "dobinding", "dobindings", "doexectrace", "dorowtrace", "step", "close",
-                         "close_internal"),
+                         "close_internal", "tp_traverse"),
                 "req": {
                     "use": "CHECK_USE",
                     "closed": "CHECK_CURSOR_CLOSED",
