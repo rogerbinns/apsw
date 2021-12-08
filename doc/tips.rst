@@ -3,8 +3,37 @@ Tips
 
 .. currentmodule:: apsw
 
-These tips are based on mailing list postings.  You are recommended to
-read all the documentation as well.
+These tips are based on mailing list postings, issues, and emails.
+You are recommended to read all the documentation as well.
+
+.. _version_stuff:
+
+About Python, APSW, and SQLite versions
+=======================================
+
+SQLite has approximately quarterly releases.  These include tweaks,
+bug fixes, and new functionality based on the billions of SQLite
+databases in use, and the many many programs that use SQLite (eg
+almost every browser, mail client, photo library, mobile and desktop
+OS).  Despite these changes, SQLite retains backwards and forwards
+compatibility with the `file format
+<https://www.sqlite.org/onefile.html>`__ and APIs.
+
+APSW wraps the `SQLite C API
+<https://www.sqlite.org/c3ref/intro.html>`__.  That means when SQLite
+adds new constant or API, then so does APSW.  You can think of APSW as
+the Python expression of SQLite's C API.
+
+Consequently the APSW version mirrors the SQLite version.  You can use
+APSW with the corresponding version of SQLite, or any newer version of
+SQLite.  You could use the original 2004 release of APSW with today's
+SQLite just fine, although it wouldn't know about the new APIs and
+constants.
+
+APSW has compatibility with a broad range of Python versions.  This is
+so that you can update the SQLite version you use, access new
+constants and APIs (if desired), all without having to change your
+Python version.
 
 SQLite is different
 ===================
