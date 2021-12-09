@@ -18,7 +18,7 @@ Source and binaries
 ===================
 
 You can download this release as binaries for Windows.  Just run the
-executable corresponding with the Python version you are using.  The
+download corresponding with the Python version you are using.  The
 Windows binaries all include the :ref:`FTS <ext-fts3>` and
 :ref:`RTree <ext-rtree>` extensions.  (`FTS3_PARENTHESIS
 <https://sqlite.org/compile.html#enable_fts3_parenthesis>`_ is on.)
