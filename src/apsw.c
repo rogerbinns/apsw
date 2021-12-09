@@ -1992,10 +1992,7 @@ APSW_Should_Fault(const char *name)
   {
     PyObject *dict = PyDict_New();
     if (dict)
-    {
-      PyObject_SetAttrString(apswmodule, "faultdict", dict);
-      Py_DECREF(dict);
-    }
+      PyModule_AddObject(apswmodule, "faultdict", dict);
   }
 
   value = MAKESTR(name);
