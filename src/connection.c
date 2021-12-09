@@ -693,7 +693,7 @@ Connection_cursor(Connection *self)
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  APSW_FAULT_INJECT(CursorAllocFails, cursor = PyObject_CallFunction(&APSWCursorType, "O", self), cursor = PyErr_NoMemory());
+  APSW_FAULT_INJECT(CursorAllocFails, cursor = (struct APSWCursor *)PyObject_CallFunction((PyObject *)&APSWCursorType, "O", self), cursor = PyErr_NoMemory());
   if (!cursor)
     return NULL;
 
@@ -3477,7 +3477,7 @@ Connection_db_filename(Connection *self, PyObject *name)
 }
 
 /** .. method:: txn_state(schema=None) -> Int
- 
+
   Returns the current transaction state of the database, or a specific schema
   if provided.  ValueError is raised if schema is not None or a valid schema name.
   :attr:`apsw.mapping_txn_state` contains the names and values returned.
@@ -3683,7 +3683,7 @@ static PyTypeObject ConnectionType =
         0,                                                                                           /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG | Py_TPFLAGS_HAVE_GC, /*tp_flags*/
         "Connection object",                                                                         /* tp_doc */
-        Connection_tp_traverse,                                                                      /* tp_traverse */
+        (traverseproc)Connection_tp_traverse,                                                        /* tp_traverse */
         0,                                                                                           /* tp_clear */
         0,                                                                                           /* tp_richcompare */
         offsetof(Connection, weakreflist),                                                           /* tp_weaklistoffset */
