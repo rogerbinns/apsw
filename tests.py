@@ -1683,6 +1683,10 @@ class APSW(unittest.TestCase):
             c.execute("insert into foo values(?)", (i + 1000, ))
         c.execute("commit")
         self.assertEqual(300, self.db.totalchanges())
+        if hasattr(apsw, "faultdict"):
+            # check 64 bit conversion works
+            apsw.faultdict["ConnectionChanges64"] = True
+            self.assertEqual(1000000000 * 7 * 3, self.db.changes())
 
     def testLastInsertRowId(self):
         "Check last insert row id"

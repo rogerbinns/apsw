@@ -753,14 +753,22 @@ Connection_setbusytimeout(Connection *self, PyObject *args)
   or deleted) by the most recently completed INSERT, UPDATE, or DELETE
   statement.
 
-  -* sqlite3_changes
+  -* sqlite3_changes64
 */
 static PyObject *
 Connection_changes(Connection *self)
 {
+  sqlite3_int64 changes;
+
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
-  return PyLong_FromLong(sqlite3_changes(self->db));
+
+  changes = sqlite3_changes64(self->db);
+
+  /* verify 64 bit values convert fully */
+  APSW_FAULT_INJECT(ConnectionChanges64, , changes = ((sqlite3_int64)1000000000) * 7 * 3);
+
+  return PyIntLong_FromLongLong(changes);
 }
 
 /** .. method:: totalchanges() -> int
@@ -768,14 +776,18 @@ Connection_changes(Connection *self)
   Returns the total number of database rows that have be modified,
   inserted, or deleted since the database connection was opened.
 
-  -* sqlite3_total_changes
+  -* sqlite3_total_changes64
 */
 static PyObject *
 Connection_totalchanges(Connection *self)
 {
+  sqlite3_int64 changes;
+
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
-  return PyLong_FromLong(sqlite3_total_changes(self->db));
+
+  changes = sqlite3_total_changes64(self->db);
+  return PyIntLong_FromLongLong(changes);
 }
 
 /** .. method:: getautocommit() -> bool

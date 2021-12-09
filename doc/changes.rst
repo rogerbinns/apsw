@@ -25,6 +25,10 @@ Updated size of mutex array used by the :func:`fork checker <fork_checker>`
 Connections are opened with SQLITE_OPEN_EXRESCODE so open errors will
 also include exteded result codes.
 
+:meth:`Connection.changes` and :meth:`Connection.totalchanges` use the
+new SQLite APIs that return 64 bit values (ie can now return values
+greater than 2 billion).
+
 Added constants:
 
 * SQLITE_CONSTRAINT_DATATYPE, SQLITE_OPEN_EXRESCODE
