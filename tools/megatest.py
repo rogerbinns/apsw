@@ -42,14 +42,14 @@ def run(cmd):
     raise Exception("Failed with signal " + str(os.WTERMSIG(status)) + ": " + cmd)
 
 
-def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever):
-    run("set -e ; cd %s ; ( env LD_LIBRARY_PATH=%s APSW_FORCE_DISTUTILS=t %s setup.py fetch --version=%s --all build_test_extension build_ext --inplace --force --enable-all-extensions test -v ) >%s 2>&1"
-        % (workdir, pylib, pybin, sqlitever, os.path.abspath(os.path.join(logdir, "buildruntests.txt"))))
+def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug):
+    run("set -e ; cd %s ; ( env LD_LIBRARY_PATH=%s APSW_FORCE_DISTUTILS=t %s setup.py fetch --version=%s --all build_test_extension build_ext --inplace --force --enable-all-extensions%stest -v ) >%s 2>&1"
+        % (workdir, pylib, pybin, sqlitever, " --debug " if debug else " ", os.path.abspath(os.path.join(logdir, "buildruntests.txt"))))
 
 
-def runtest(workdir, pyver, ucs, sqlitever, logdir):
+def runtest(workdir, pyver, ucs, sqlitever, logdir, debug):
     pybin, pylib = buildpython(workdir, pyver, ucs, os.path.abspath(os.path.join(logdir, "pybuild.txt")))
-    dotest(pyver, logdir, pybin, pylib, workdir, sqlitever)
+    dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug)
 
 
 def threadrun(queue):
@@ -90,15 +90,16 @@ def main(PYVERS, UCSTEST, SQLITEVERS, concurrency):
                 if ucs != 2: continue
                 ucs = 0
             for sqlitever in SQLITEVERS:
-                print("Python", pyver, "ucs", ucs, "   SQLite", sqlitever)
-                workdir = os.path.abspath(os.path.join("work", "py%s-ucs%d-sq%s" % (pyver, ucs, sqlitever)))
-                logdir = os.path.abspath(os.path.join("megatestresults", "py%s-ucs%d-sq%s" % (pyver, ucs, sqlitever)))
-                run("mkdir -p %s/src %s/tools %s" % (workdir, workdir, logdir))
-                run("cp *.py checksums " + workdir)
-                run("cp tools/*.py " + workdir + "/tools/")
-                run("cp src/*.c src/*.h " + workdir + "/src/")
+                for debug in False, True:
+                    print("Python", pyver, "ucs", ucs, "   SQLite", sqlitever, "  debug", debug)
+                    workdir = os.path.abspath(os.path.join("work", "py%s-ucs%d-sq%s%s" % (pyver, ucs, sqlitever, "-debug" if debug else "")))
+                    logdir = os.path.abspath(os.path.join("megatestresults", "py%s-ucs%d-sq%s%s" % (pyver, ucs, sqlitever,"-debug" if debug else "")))
+                    run("mkdir -p %s/src %s/tools %s" % (workdir, workdir, logdir))
+                    run("cp *.py checksums " + workdir)
+                    run("cp tools/*.py " + workdir + "/tools/")
+                    run("cp src/*.c src/*.h " + workdir + "/src/")
 
-                q.put({'workdir': workdir, 'pyver': pyver, 'ucs': ucs, 'sqlitever': sqlitever, 'logdir': logdir})
+                    q.put({'workdir': workdir, 'pyver': pyver, 'ucs': ucs, 'sqlitever': sqlitever, 'logdir': logdir, "debug": debug})
 
     threads = []
     for i in range(concurrency):
