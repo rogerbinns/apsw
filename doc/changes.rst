@@ -6,10 +6,10 @@ Change History
 =========
 
 Allow breaking of reference cycles between objects that contain a
-:obj:`Connection` and also use callbacks from that object (eg busy
-handler). (:issue:`314`)
+:obj:`Connection` or :obj:`Cursor`, and also use callbacks from that
+object (eg busy handler). (:issue:`314`)
 
-This is the last release supporting Python 2 and Python 3 before 3.6.
+This is the last release supporting Python 2 and Python 3 before 3.7.
 If you still use those Python versions then you should pin to this
 APSW version.  (`More information
 <https://www.rogerbinns.com/blog/XXXXXX>`__).
