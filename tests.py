@@ -350,6 +350,7 @@ class APSW(unittest.TestCase):
         'set_last_insert_rowid': 1,
         'serialize': 1,
         'deserialize': 2,
+        'autovacuum_pages': 1,
         }
 
     cursor_nargs = {
