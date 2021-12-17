@@ -29,6 +29,8 @@ also include exteded result codes.
 new SQLite APIs that return 64 bit values (ie can now return values
 greater than 2 billion).
 
+Added :meth:`Connection.autovacuum_pages`.
+
 Added constants:
 
 * SQLITE_CONSTRAINT_DATATYPE, SQLITE_OPEN_EXRESCODE

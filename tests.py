@@ -4525,6 +4525,51 @@ class APSW(unittest.TestCase):
             klass, value = sys.exc_info()[:2]
             self.assertTrue(klass is apsw.AbortError)
 
+    def testAutovacuumPages(self):
+        self.assertRaises(TypeError, self.db.autovacuum_pages)
+        self.assertRaises(TypeError, self.db.autovacuum_pages, 3)
+        for stmt in (
+            "pragma page_size=512",
+            "pragma auto_vacuum=FULL",
+            "create table foo(x)",
+            "begin"
+        ):
+            self.db.cursor().execute(stmt)
+        self.db.cursor().executemany("insert into foo values(zeroblob(1023))", [tuple() for _ in range(500)])
+
+        self.db.cursor().execute("commit")
+
+        rowids = [row[0]
+                  for row in self.db.cursor().execute("select ROWID from foo")]
+
+        last_free = [0]
+
+        def avpcb(schema, nPages, nFreePages, nBytesPerPage):
+            self.assertEqual(schema, "main")
+            self.assert_(nFreePages < nPages)
+            self.assert_(nFreePages >= 2)
+            self.assertEqual(nBytesPerPage, 512)
+            # we always return 1, so second call must have more free pages than first
+            if last_free[0]:
+                self.assert_(nFreePages > last_free[0])
+            else:
+                last_free[0] = nFreePages
+            return 1
+
+        def noparams():
+            pass
+
+        self.db.cursor().execute("delete from foo where rowid=?", (rowids.pop(),))
+
+        self.db.autovacuum_pages(noparams)
+        self.assertRaises(TypeError, self.db.cursor().execute,
+                          "delete from foo where rowid=?", (rowids.pop(),))
+        self.db.autovacuum_pages(None)
+        self.db.cursor().execute("delete from foo where rowid=?", (rowids.pop(),))
+        self.db.autovacuum_pages(avpcb)
+        self.db.cursor().execute("delete from foo where rowid=?", (rowids.pop(),))
+        self.db.cursor().execute("delete from foo where rowid=?", (rowids.pop(),))
+
     def testURIFilenames(self):
         assertRaises = self.assertRaises
         assertEqual = self.assertEqual

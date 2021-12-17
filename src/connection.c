@@ -1500,6 +1500,101 @@ finally:
 }
 
 static void
+autovacuum_pages_cleanup(void *callable)
+{
+  PyGILState_STATE gilstate;
+
+  gilstate = PyGILState_Ensure();
+  Py_DECREF((PyObject *)callable);
+  PyGILState_Release(gilstate);
+}
+
+/* Python 2.4 introduced unsigned int I */
+#if PY_VERSION_HEX < 0x02040000
+#define AVPCB_CALL "(O&iii)"
+#define AVPCB_TB "{s: O, s: s:, s: i, s: i, s: i, s: O}"
+#else
+#define AVPCB_CALL "(O&III)"
+#define AVPCB_TB "{s: O, s: s:, s: I, s: I, s: I, s: O}"
+#endif
+
+static int
+autovacuum_pages_cb(void *callable, const char *schema, unsigned int nPages, unsigned int nFreePages, unsigned int nBytesPerPage)
+{
+  PyGILState_STATE gilstate;
+  PyObject *retval = NULL;
+  long res = 0;
+  gilstate = PyGILState_Ensure();
+
+  retval = PyObject_CallFunction((PyObject *)callable, AVPCB_CALL, convertutf8string, schema, nPages, nFreePages, nBytesPerPage);
+
+  if (retval && PyIntLong_Check(retval))
+  {
+    res = PyIntLong_AsLong(retval);
+    goto finally;
+  }
+
+  if (retval)
+    PyErr_Format(PyExc_TypeError, "autovacuum_pages callback must return a number not %O", retval ? retval : Py_None);
+  AddTraceBackHere(__FILE__, __LINE__, "autovacuum_pages_callback", AVPCB_TB,
+                   "callback", (PyObject *)callable, "schema", schema, "nPages", nPages, "nFreePages", nFreePages, "nBytesPerPage", nBytesPerPage,
+                   "result", retval);
+
+finally:
+  Py_XDECREF(retval);
+  PyGILState_Release(gilstate);
+  return (int)res;
+}
+
+#undef AVPCB_CAL
+#undef AVPCB_TB
+
+/** .. method:: autovacuum_pages(callable | None) -> None
+
+  Calls `callable` to find out how many pages to autovacuum.  The callback has 4 parameters:
+
+  * Database name: str (eg "main")
+  * Database pages: int (how many pages make up the database now)
+  * Free pages: int (how many pages could be freed)
+  * Page size: int (page size in bytes)
+
+  Return how many pages should be freed.  Values less than zero or more than the free pages are
+  treated as zero or free page count.  On error zero is returned.
+
+  READ THE NOTE IN THE SQLITE DOCUMENTATION.  Calling into SQLite can result in crashes, corrupt
+  databases or worse.
+
+  -* sqlite3_autovacuum_pages
+*/
+static PyObject *
+Connection_autovacuum_pages(Connection *self, PyObject *callable)
+{
+  int res;
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  if (callable == Py_None)
+  {
+    PYSQLITE_CON_CALL(res = sqlite3_autovacuum_pages(self->db, NULL, NULL, NULL));
+  }
+  else
+  {
+    if (!PyCallable_Check(callable))
+      return PyErr_Format(PyExc_TypeError, "autovacuum_pages must be callable");
+    PYSQLITE_CON_CALL(res = sqlite3_autovacuum_pages(self->db, autovacuum_pages_cb, callable, autovacuum_pages_cleanup));
+    if (res == SQLITE_OK)
+      Py_INCREF(callable);
+  }
+
+  if (res != SQLITE_OK)
+  {
+    SET_EXC(res, self->db);
+    return NULL;
+  }
+  Py_RETURN_NONE;
+}
+
+static void
 collationneeded_cb(void *pAux, APSW_ARGUNUSED sqlite3 *db, int eTextRep, const char *name)
 {
   PyObject *res = NULL, *pyname = NULL;
@@ -3657,6 +3752,8 @@ static PyMethodDef Connection_methods[] = {
      "Return in memory copy of database"},
     {"deserialize", (PyCFunction)Connection_deserialize, METH_VARARGS,
      "Provide new in-memory database contents"},
+    {"autovacuum_pages", (PyCFunction)Connection_autovacuum_pages, METH_O,
+     "Autovacuum Compaction Amount Callback"},
     {0, 0, 0, 0} /* Sentinel */
 };
 
