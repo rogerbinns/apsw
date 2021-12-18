@@ -576,9 +576,10 @@ static PyObject *
 vfsnames(APSW_ARGUNUSED PyObject *self)
 {
   PyObject *result = NULL, *str = NULL;
+  int res;
   sqlite3_vfs *vfs = sqlite3_vfs_find(0);
 
-  result = PyList_New(0);
+  APSW_FAULT_INJECT(vfsnamesallocfail, result = PyList_New(0), result = PyErr_NoMemory());
   if (!result)
     goto error;
 
@@ -589,7 +590,8 @@ vfsnames(APSW_ARGUNUSED PyObject *self)
                       str = PyErr_NoMemory());
     if (!str)
       goto error;
-    if (PyList_Append(result, str))
+    APSW_FAULT_INJECT(vfsnamesappendfails, res = PyList_Append(result, str), (res = -1, PyErr_NoMemory()));
+    if (res)
       goto error;
     Py_DECREF(str);
     vfs = vfs->pNext;
@@ -986,6 +988,8 @@ get_compile_options(void)
   const char *opt;
   PyObject *tmpstring;
   PyObject *res = 0;
+
+  /* this method is only called once at startup */
 
   for (i = 0;; i++)
   {

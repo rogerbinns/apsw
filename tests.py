@@ -8512,6 +8512,14 @@ shell.write(shell.stdout, "hello world\\n")
         ## vfsnamesfails
         apsw.faultdict["vfsnamesfails"] = True
         self.assertRaises(MemoryError, apsw.vfsnames)
+        apsw.faultdict["vfsnamesallocfail"] = True
+        try:
+            apsw.vfsnames()
+            1/0
+        except MemoryError:
+            pass
+        apsw.faultdict["vfsnamesappendfails"] = True
+        self.assertRaises(MemoryError, apsw.vfsnames)
 
         ## StatementCacheAllocFails
         apsw.faultdict["StatementCacheAllocFails"] = True
