@@ -4547,12 +4547,12 @@ class APSW(unittest.TestCase):
 
         def avpcb(schema, nPages, nFreePages, nBytesPerPage):
             self.assertEqual(schema, "main")
-            self.assert_(nFreePages < nPages)
-            self.assert_(nFreePages >= 2)
+            self.assertTrue(nFreePages < nPages)
+            self.assertTrue(nFreePages >= 2)
             self.assertEqual(nBytesPerPage, 512)
             # we always return 1, so second call must have more free pages than first
             if last_free[0]:
-                self.assert_(nFreePages > last_free[0])
+                self.assertTrue(nFreePages > last_free[0])
             else:
                 last_free[0] = nFreePages
             return 1
