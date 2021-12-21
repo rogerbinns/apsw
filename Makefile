@@ -72,11 +72,11 @@ coverage:
 	env APSW_FORCE_DISTUTILS=t $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all && env APSW_PY_COVERAGE=t tools/coverage.sh
 
 test: build_ext
-	env PYTHONHASHSEED=random APSW_FORCE_DISTUTILS=t $(PYTHON) tests.py
+	env PYTHONHASHSEED=random $(PYTHON) tests.py
 
 test_debug: $(PYDEBUG_DIR)/bin/python3
 	$(MAKE) build_ext_debug PYTHON=$(PYDEBUG_DIR)/bin/python3
-	env PYTHONHASHSEED=random APSW_FORCE_DISTUTILS=t APSWTESTPREFIX=$(PYDEBUG_WORKDIR) $(PYDEBUG_DIR)/bin/python3 tests.py -v
+	env PYTHONHASHSEED=random APSWTESTPREFIX=$(PYDEBUG_WORKDIR) $(PYDEBUG_DIR)/bin/python3 tests.py -v
 
 fulltest: test test_debug
 
