@@ -226,13 +226,17 @@ static void make_exception(int res, sqlite3 *db)
   for (i = 0; exc_descriptors[i].name; i++)
     if (exc_descriptors[i].code == (res & 0xff))
     {
-      PyObject *etype, *eval, *etb;
+      PyObject *etype, *eval, *etb, *tmp;
       assert(exc_descriptors[i].cls);
       PyErr_Format(exc_descriptors[i].cls, "%sError: %s", exc_descriptors[i].name, errmsg);
       PyErr_Fetch(&etype, &eval, &etb);
       PyErr_NormalizeException(&etype, &eval, &etb);
-      PyObject_SetAttrString(eval, "result", Py_BuildValue("i", res & 0xff));
-      PyObject_SetAttrString(eval, "extendedresult", Py_BuildValue("i", res));
+      tmp = PyIntLong_FromLongLong(res & 0xff);
+      PyObject_SetAttrString(eval, "result", tmp);
+      Py_DECREF(tmp);
+      tmp = PyIntLong_FromLongLong(res);
+      PyObject_SetAttrString(eval, "extendedresult", tmp);
+      Py_DECREF(tmp);
       PyErr_Restore(etype, eval, etb);
       assert(PyErr_Occurred());
       return;
