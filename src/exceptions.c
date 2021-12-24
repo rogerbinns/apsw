@@ -189,7 +189,9 @@ static int init_exceptions(PyObject *m)
     *apswexceptions[i].var = PyErr_NewException(buffy, APSWException, NULL);
     if (!*apswexceptions[i].var)
       return -1;
-    Py_INCREF(*apswexceptions[i].var);
+    /* PyModule_AddObject steals the ref, but we don't add a ref for
+      ourselves because it leaks on module unload when we couldn't use
+      these anyway */
     if (PyModule_AddObject(m, apswexceptions[i].name, *apswexceptions[i].var))
       return -1;
   }
@@ -201,9 +203,11 @@ static int init_exceptions(PyObject *m)
     obj = PyErr_NewException(buffy, APSWException, NULL);
     if (!obj)
       return -1;
-    Py_INCREF(obj);
     exc_descriptors[i].cls = obj;
     sprintf(buffy, "%sError", exc_descriptors[i].name);
+    /* PyModule_AddObject steals the ref, but we don't add a ref for
+      ourselves because it leaks on module unload when we couldn't use
+      these anyway */
     if (PyModule_AddObject(m, buffy, obj))
       return -1;
   }
