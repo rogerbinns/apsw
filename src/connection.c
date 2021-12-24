@@ -1878,11 +1878,18 @@ Connection_deserialize(Connection *self, PyObject *args)
       || PyString_Check(contents_object)
 #endif
       || !compat_CheckReadBuffer(contents_object))
-    return PyErr_Format(PyExc_TypeError, "Expected bytes for contents");
+  {
+    PyErr_Format(PyExc_TypeError, "Expected bytes for contents");
+    res = SQLITE_ERROR;
+    goto finally;
+  }
 
   compat_PyObjectReadBuffer(contents_object);
   if (asrb != 0)
-    return NULL;
+  {
+    res = SQLITE_ERROR;
+    goto finally;
+  }
 
   newcontents = sqlite3_malloc64(buflen);
   if (newcontents)
@@ -1899,6 +1906,7 @@ Connection_deserialize(Connection *self, PyObject *args)
 
   ENDREADBUFFER;
 
+finally:
   PyMem_Free(dbname);
   if (res != SQLITE_OK)
     return NULL;
