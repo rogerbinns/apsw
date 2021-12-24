@@ -448,9 +448,7 @@ pyexception:
   /* clean up db since it is useless - no need for user to call close */
   assert(PyErr_Occurred());
   res = -1;
-  sqlite3_close(self->db); /* PYSQLITE_CALL not needed since no-one else can have a reference to this connection */
-  self->db = 0;
-  Connection_internal_cleanup(self);
+  Connection_close_internal(self, 2);
   assert(PyErr_Occurred());
 
 finally:
