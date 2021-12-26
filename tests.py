@@ -8580,6 +8580,18 @@ shell.write(shell.stdout, "hello world\\n")
         except MemoryError:
             pass
 
+        ## BackupTupleFails
+        apsw.faultdict["BackupTupleFails"] = True
+        try:
+            db = apsw.Connection(":memory:")
+            # add dependent
+            cur = db.cursor()
+            cur.execute("select 3; select 4")
+            db.backup("main", apsw.Connection(":memory:"), "main")
+            1 / 0
+        except MemoryError:
+            pass
+
         ## FormatSQLValueResizeFails
         apsw.faultdict["FormatSQLValueResizeFails"] = True
         try:
@@ -8618,6 +8630,14 @@ shell.write(shell.stdout, "hello world\\n")
             apsw.Connection(":memory:").wal_checkpoint()
             1 / 0
         except apsw.IOError:
+            pass
+
+        ## SCPHConfigFails
+        apsw.faultdict["SCPHConfigFails"] = True
+        try:
+            apsw.config(apsw.SQLITE_CONFIG_PCACHE_HDRSZ)
+            1/0
+        except apsw.FullError:
             pass
 
     # This test is run last by deliberate name choice.  If it did

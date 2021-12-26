@@ -565,7 +565,7 @@ Connection_backup(Connection *self, PyObject *args)
   {
     PyObject *args = NULL, *etype, *evalue, *etb;
 
-    args = PyTuple_New(2);
+    APSW_FAULT_INJECT(BackupTupleFails, args = PyTuple_New(2), args = PyErr_NoMemory());
     if (!args)
       goto thisfinally;
     PyTuple_SET_ITEM(args, 0, MAKESTR("The destination database has outstanding objects open on it.  They must all be closed for the backup to proceed (otherwise corruption would be possible.)"));

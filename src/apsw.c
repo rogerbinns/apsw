@@ -368,7 +368,7 @@ config(APSW_ARGUNUSED PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &optdup))
       return NULL;
     assert(opt == optdup);
-    res = sqlite3_config((int)opt, &outval);
+    APSW_FAULT_INJECT(SCPHConfigFails, res = sqlite3_config((int)opt, &outval), res = SQLITE_FULL);
     if (res)
     {
       SET_EXC(res, NULL);
