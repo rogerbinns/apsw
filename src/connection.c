@@ -637,16 +637,18 @@ Connection_backup(Connection *self, PyObject *args)
   backup = NULL;
 
   /* add to dependent lists */
-  weakref = PyWeakref_NewRef((PyObject *)apswbackup, self->dependent_remove);
+  APSW_FAULT_INJECT(BackupDependent1, weakref = PyWeakref_NewRef((PyObject *)apswbackup, self->dependent_remove), weakref = PyErr_NoMemory());
   if (!weakref)
     goto finally;
-  if (PyList_Append(self->dependents, weakref))
+  APSW_FAULT_INJECT(BackupDependent2, res = PyList_Append(self->dependents, weakref), (PyErr_NoMemory(), res = -1));
+  if (res)
     goto finally;
   Py_DECREF(weakref);
-  weakref = PyWeakref_NewRef((PyObject *)apswbackup, ((Connection *)source)->dependent_remove);
+  APSW_FAULT_INJECT(BackupDependent3,  weakref = PyWeakref_NewRef((PyObject *)apswbackup, ((Connection *)source)->dependent_remove), weakref = PyErr_NoMemory());
   if (!weakref)
     goto finally;
-  if (PyList_Append(((Connection *)source)->dependents, weakref))
+  APSW_FAULT_INJECT(BackupDependent4, res = PyList_Append(((Connection *)source)->dependents, weakref), (PyErr_NoMemory(), res = -1));
+  if (res)
     goto finally;
   Py_DECREF(weakref);
   weakref = 0;
