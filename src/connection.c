@@ -1535,7 +1535,7 @@ autovacuum_pages_cb(void *callable, const char *schema, unsigned int nPages, uns
   }
 
   if (retval)
-    PyErr_Format(PyExc_TypeError, "autovacuum_pages callback must return a number not %O", retval ? retval : Py_None);
+    PyErr_Format(PyExc_TypeError, "autovacuum_pages callback must return a number not %R", retval ? retval : Py_None);
   AddTraceBackHere(__FILE__, __LINE__, "autovacuum_pages_callback", AVPCB_TB,
                    "callback", (PyObject *)callable, "schema", schema, "nPages", nPages, "nFreePages", nFreePages, "nBytesPerPage", nBytesPerPage,
                    "result", retval);

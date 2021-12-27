@@ -4566,6 +4566,9 @@ class APSW(unittest.TestCase):
         def noparams():
             pass
 
+        def badreturn(*args):
+            return "seven"
+
         self.db.cursor().execute("delete from foo where rowid=?", (rowids.pop(),))
 
         self.db.autovacuum_pages(noparams)
@@ -4575,6 +4578,9 @@ class APSW(unittest.TestCase):
         self.db.cursor().execute("delete from foo where rowid=?", (rowids.pop(),))
         self.db.autovacuum_pages(avpcb)
         self.db.cursor().execute("delete from foo where rowid=?", (rowids.pop(),))
+        self.db.autovacuum_pages(badreturn)
+        self.assertRaises(TypeError, self.db.cursor().execute, "delete from foo where rowid=?", (rowids.pop(),))
+        self.db.autovacuum_pages(None)
         self.db.cursor().execute("delete from foo where rowid=?", (rowids.pop(),))
 
     def testURIFilenames(self):
