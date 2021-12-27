@@ -171,7 +171,6 @@ def ehook(etype, evalue, etraceback):
     sys.stderr.write("Unraiseable exception " + str(etype) + ":" + str(evalue) + "\n")
     traceback.print_tb(etraceback)
 
-
 sys.excepthook = ehook
 
 # exec is a huge amount of fun having different syntax
@@ -435,14 +434,21 @@ class APSW(unittest.TestCase):
         return self.baseAssertRaisesUnraisable(False, exc, func, args, kwargs)
 
     def baseAssertRaisesUnraisable(self, must_raise, exc, func, args, kwargs):
-        orig = sys.excepthook
+        orig = sys.excepthook, getattr(sys, "unraisablehook", None)
         try:
             called = []
 
-            def ehook(t, v, tb):
+            def ehook(*args):
+                if len(args) == 1:
+                    t = args[0].exc_type
+                    v = args[0].exc_value
+                    tb = args[0].exc_traceback
+                else:
+                    t, v, tb = args
                 called.append((t, v, tb))
 
-            sys.excepthook = ehook
+            sys.excepthook = sys.unraisablehook = ehook
+
             try:
                 try:
                     return func(*args, **kwargs)
@@ -464,7 +470,7 @@ class APSW(unittest.TestCase):
                 if len(called):
                     self.assertEqual(exc, called[0][0])  # check it was the correct type
         finally:
-            sys.excepthook = orig
+            sys.excepthook, sys.unraisablehook = orig
 
     def testSanity(self):
         "Check all parts compiled and are present"
