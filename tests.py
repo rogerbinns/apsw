@@ -2174,7 +2174,7 @@ class APSW(unittest.TestCase):
         apsw.enablesharedcache(False)
 
     def testSerialize(self):
-        "Verify serialize/deserialze calls"
+        "Verify serialize/deserialize calls"
         # check param types
         self.assertRaises(TypeError, self.db.serialize)
         self.assertRaises(TypeError, self.db.serialize, "a", "b")
@@ -8157,6 +8157,14 @@ shell.write(shell.stdout, "hello world\\n")
             self.assertRaisesUnraisable(Exception, f)
         except ZeroDivisionError:
             pass
+
+        ## DeserializeReadBufferFail
+        apsw.faultdict["DeserializeReadBufferFail"] = True
+        self.assertRaises(MemoryError, self.db.deserialize, "main", b("aaaaaa"))
+
+        ## DeserializeMallocFail
+        apsw.faultdict["DeserializeMallocFail"] = True
+        self.assertRaises(MemoryError, self.db.deserialize, "main", b("aaaaaa"))
 
         ## Virtual table code
         class Source:
