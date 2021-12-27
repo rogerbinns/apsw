@@ -1581,7 +1581,9 @@ Connection_autovacuum_pages(Connection *self, PyObject *callable)
   {
     if (!PyCallable_Check(callable))
       return PyErr_Format(PyExc_TypeError, "autovacuum_pages must be callable");
-    PYSQLITE_CON_CALL(res = sqlite3_autovacuum_pages(self->db, autovacuum_pages_cb, callable, autovacuum_pages_cleanup));
+    APSW_FAULT_INJECT(AutovacuumPagesFails,
+                      PYSQLITE_CON_CALL(res = sqlite3_autovacuum_pages(self->db, autovacuum_pages_cb, callable, autovacuum_pages_cleanup)),
+                      res = SQLITE_NOMEM);
     if (res == SQLITE_OK)
       Py_INCREF(callable);
   }

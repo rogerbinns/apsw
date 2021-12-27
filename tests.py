@@ -8125,6 +8125,10 @@ shell.write(shell.stdout, "hello world\\n")
         except MemoryError:
             pass
 
+        ## AutovacuumPagesFails
+        apsw.faultdict["AutovacuumPagesFails"] = True
+        self.assertRaises(apsw.NoMemError, self.db.autovacuum_pages, lambda x: x)
+
         ## CBDispatchExistingError
         apsw.faultdict["CBDispatchExistingError"] = True
         try:
