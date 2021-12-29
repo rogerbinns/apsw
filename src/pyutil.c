@@ -396,6 +396,7 @@ getutf8string(PyObject *string)
 #else
 #define READBUFFERVARS Py_buffer py3buffer
 
+/* ::TODO:: take a name for fault injection */
 #define compat_PyObjectReadBuffer(o)                        \
   do                                                        \
   {                                                         \
