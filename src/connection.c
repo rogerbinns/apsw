@@ -1889,7 +1889,7 @@ Connection_deserialize(Connection *self, PyObject *args)
   }
 
   compat_PyObjectReadBuffer(contents_object);
-  APSW_FAULT_INJECT(DeserializeReadBufferFail, , (PyErr_NoMemory(), asrb = -1));
+  APSW_FAULT_INJECT(DeserializeReadBufferFail, , ENDREADBUFFER; (PyErr_NoMemory(), asrb = -1));
   if (asrb != 0)
   {
     res = SQLITE_ERROR;
@@ -1909,8 +1909,9 @@ Connection_deserialize(Connection *self, PyObject *args)
     PYSQLITE_CON_CALL(res = sqlite3_deserialize(self->db, dbname, newcontents, buflen, buflen, SQLITE_DESERIALIZE_RESIZEABLE | SQLITE_DESERIALIZE_FREEONCLOSE));
   SET_EXC(res, self->db);
 
-finally:
   ENDREADBUFFER;
+
+finally:
   PyMem_Free(dbname);
   if (res != SQLITE_OK)
     return NULL;
