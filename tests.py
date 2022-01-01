@@ -4627,15 +4627,13 @@ class APSW(unittest.TestCase):
                           vfs="uritest")
 
     def testVFSWithWAL(self):
-        "Verify VFS using WAL where possible"
-        if not iswindows:
-            apsw.connection_hooks.append(
-                lambda c: c.cursor().execute("pragma journal_mode=WAL; PRAGMA wal_autocheckpoint=1").fetchall())
+        "Verify VFS using WAL"
+        apsw.connection_hooks.append(
+            lambda c: c.cursor().execute("pragma journal_mode=WAL; PRAGMA wal_autocheckpoint=1").fetchall())
         try:
             self.testVFS()
         finally:
-            if not iswindows:
-                apsw.connection_hooks.pop()
+            apsw.connection_hooks.pop()
 
     def testVFS(self):
         "Verify VFS functionality"
