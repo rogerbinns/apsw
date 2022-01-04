@@ -23,9 +23,6 @@ def print_version_info(write=write):
     write("SQLite headers version " + str(apsw.SQLITE_VERSION_NUMBER) + "\n")
     write("    Using amalgamation " + str(apsw.using_amalgamation) + "\n")
 
-    if [int(x) for x in apsw.sqlitelibversion().split(".")] < [3, 7, 8]:
-        write("You are using an earlier version of SQLite than recommended\n")
-
     sys.stdout.flush()
 
 
