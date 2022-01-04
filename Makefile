@@ -255,7 +255,7 @@ release:
 	test -f dist/$(VERWIN).win-amd64-py3.9.msi
 	test -f dist/$(VERWIN)-cp39-cp39-win_amd64.whl
 	test -f dist/$(VERWIN).win32-py3.10.msi
-	test -f dist/$(VERWIN)-cp39-cp310-win32.whl
+	test -f dist/$(VERWIN)-cp310-cp310-win32.whl
 	test -f dist/$(VERWIN).win-amd64-py3.10.msi
 	test -f dist/$(VERWIN)-cp310-cp310-win_amd64.whl
 	-rm -f dist/$(VERDIR)-sigs.zip dist/*.asc
