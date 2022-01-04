@@ -47,8 +47,8 @@ def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug):
         % (workdir, pylib, pybin, sqlitever, " --debug " if debug else " ", os.path.abspath(os.path.join(logdir, "buildruntests.txt"))))
 
 
-def runtest(workdir, pyver, ucs, sqlitever, logdir, debug):
-    pybin, pylib = buildpython(workdir, pyver, ucs, os.path.abspath(os.path.join(logdir, "pybuild.txt")))
+def runtest(workdir, pyver, sqlitever, logdir, debug):
+    pybin, pylib = buildpython(workdir, pyver, os.path.abspath(os.path.join(logdir, "pybuild.txt")))
     dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug)
 
 
@@ -67,7 +67,7 @@ def threadrun(queue):
             print("\nFAILED", d)
 
 
-def main(PYVERS, UCSTEST, SQLITEVERS, concurrency):
+def main(PYVERS, SQLITEVERS, concurrency):
     try:
         del os.environ["APSWTESTPREFIX"]
     except KeyError:
@@ -85,21 +85,17 @@ def main(PYVERS, UCSTEST, SQLITEVERS, concurrency):
     threads = []
 
     for pyver in PYVERS:
-        for ucs in UCSTEST:
-            if pyver == "system" or natural_compare(pyver, "3.3") >= 0:
-                if ucs != 2: continue
-                ucs = 0
             for sqlitever in SQLITEVERS:
                 for debug in False, True:
-                    print("Python", pyver, "ucs", ucs, "   SQLite", sqlitever, "  debug", debug)
-                    workdir = os.path.abspath(os.path.join("work", "py%s-ucs%d-sq%s%s" % (pyver, ucs, sqlitever, "-debug" if debug else "")))
-                    logdir = os.path.abspath(os.path.join("megatestresults", "py%s-ucs%d-sq%s%s" % (pyver, ucs, sqlitever,"-debug" if debug else "")))
+                    print("Python", pyver, "   SQLite", sqlitever, "  debug", debug)
+                    workdir = os.path.abspath(os.path.join("work", "py%s-sq%s%s" % (pyver, sqlitever, "-debug" if debug else "")))
+                    logdir = os.path.abspath(os.path.join("megatestresults", "py%s-sq%s%s" % (pyver, sqlitever,"-debug" if debug else "")))
                     run("mkdir -p %s/src %s/tools %s" % (workdir, workdir, logdir))
                     run("cp *.py checksums " + workdir)
                     run("cp tools/*.py " + workdir + "/tools/")
                     run("cp src/*.c src/*.h " + workdir + "/src/")
 
-                    q.put({'workdir': workdir, 'pyver': pyver, 'ucs': ucs, 'sqlitever': sqlitever, 'logdir': logdir, "debug": debug})
+                    q.put({'workdir': workdir, 'pyver': pyver, 'sqlitever': sqlitever, 'logdir': logdir, "debug": debug})
 
     threads = []
     for i in range(concurrency):
@@ -122,80 +118,30 @@ def getpyurl(pyver):
         dirver = dirver.split('b')[0]
     elif 'rc' in dirver:
         dirver = dirver.split('rc')[0]
-    if pyver > '2.3.0':
-        # Upper or lower case 'p' in download filename is somewhat random
-        p = 'P'
-        ext = "bz2"
-        # Python stopped making new releases as bz2 and instead it is
-        # xz in the middle of a release stream
-        switchvers = (
-            "3.2.6",
-            "2.7.7",
-            "2.6.9",
-        )
-        v2i = lambda x: [int(i) for i in x.split(".")]
-        if natural_compare(pyver, '3.3') >= 0:
-            ext = "xz"
-        for v in switchvers:
-            if v2i(dirver)[:2] == v2i(v)[:2] and v2i(dirver) >= v2i(v):
-                ext = "xz"
-                break
-        return "https://www.python.org/ftp/python/%s/%sython-%s.tar.%s" % (dirver, p, pyver, ext)
-    if pyver == '2.3.0':
-        pyver = '2.3'
-        dirver = '2.3'
-    return "https://www.python.org/ftp/python/%s/Python-%s.tgz" % (dirver, pyver)
+
+    # Upper or lower case 'p' in download filename is somewhat random
+    p = 'P'
+    ext = "xz"
+    return "https://www.python.org/ftp/python/%s/%sython-%s.tar.%s" % (dirver, p, pyver, ext)
 
 
-def buildpython(workdir, pyver, ucs, logfilename):
+def buildpython(workdir, pyver, logfilename):
     if pyver == "system": return "/usr/bin/python3", ""
     url = getpyurl(pyver)
-    if url.endswith(".bz2"):
-        tarx = "j"
-    elif url.endswith(".xz"):
-        tarx = "J"
-    else:
-        tarx = "z"
-    if pyver == "2.3.0": pyver = "2.3"
+    tarx = "J"
     run("set -e ; cd %s ; mkdir pyinst ; ( echo \"Getting %s\"; wget -q %s -O - | tar xf%s -  ) > %s 2>&1" %
         (workdir, url, url, tarx, logfilename))
-    # See https://bugs.launchpad.net/ubuntu/+source/gcc-defaults/+bug/286334
-    if pyver.startswith("2.3"):
-        # https://bugs.launchpad.net/bugs/286334
-        opt = 'BASECFLAGS=-U_FORTIFY_SOURCE'
-    else:
-        opt = ''
-    if pyver.startswith("3.0"):
-        full = "full"  # 3.1 rc 1 doesn't need 'fullinstall'
-    else:
-        full = ""
+    opt = ''
+    full = ""
     if sys.platform.startswith("linux"):
-        # zlib on natty issue: http://lipyrary.blogspot.com/2011/05/how-to-compile-python-on-ubuntu-1104.html
-        # LDFLAGS works for Python 2.5 onwards.  Edit setup on 2.3 and 2.4
-        if pyver.startswith("2.3") or pyver.startswith("2.4"):
-            patch_natty_build(os.path.join(workdir, "Python-" + pyver, "setup.py"))
         ldflags = "LDFLAGS=\"-L/usr/lib/$(dpkg-architecture -qDEB_HOST_MULTIARCH)\"; export LDFLAGS;"
     else:
         ldflags = ""
-    run("set -e ; %s cd %s ; cd ?ython-%s ; ./configure %s --enable-unicode=ucs%d --prefix=%s/pyinst  >> %s 2>&1; make >>%s 2>&1; make  %sinstall >>%s 2>&1 ; make clean >/dev/null"
-        % (ldflags, workdir, pyver, opt, ucs, workdir, logfilename, logfilename, full, logfilename))
-    suf = ""
-    if pyver >= "3.1":
-        suf = "3"
+    run("set -e ; %s cd %s ; cd ?ython-%s ; ./configure %s --prefix=%s/pyinst  >> %s 2>&1; make >>%s 2>&1; make  %sinstall >>%s 2>&1 ; make clean >/dev/null"
+        % (ldflags, workdir, pyver, opt, workdir, logfilename, logfilename, full, logfilename))
+    suf = "3"
     pybin = os.path.join(workdir, "pyinst", "bin", "python" + suf)
     return pybin, os.path.join(workdir, "pyinst", "lib")
-
-
-def patch_natty_build(setup):
-    assert os.path.isfile(setup)
-    out = []
-    for line in open(setup, "rt"):
-        if line.strip().startswith("lib_dirs = self.compiler.library_dirs + ["):
-            t = " '/usr/lib/" + os.popen("dpkg-architecture -qDEB_HOST_MULTIARCH", "r").read().strip() + "', "
-            i = line.index("[")
-            line = line[:i + 1] + t + line[i + 1:]
-        out.append(line)
-    open(setup, "wt").write("".join(out))
 
 
 def natural_compare(a, b):
@@ -220,17 +166,6 @@ PYVERS = (
     '3.9.9',
     '3.8.10',
     '3.7.10',
-    '3.6.13',
-    '3.5.8',
-    '3.4.9',
-    '3.3.7',
-    '3.2.6',
-    '3.1.5',
-    '2.7.16',
-    '2.6.9',
-    '2.5.6',
-    '2.4.6',
-    '2.3.7',
     'system',
 )
 
@@ -268,7 +203,6 @@ if __name__ == '__main__':
                       help="Also test current SQLite FOSSIL version [%default]",
                       default=False,
                       action="store_true")
-    parser.add_option("--ucs", dest="ucs", help="Unicode character widths to test in bytes [%default]", default="2,4")
     parser.add_option("--tasks",
                       dest="concurrency",
                       help="Number of simultaneous builds/tests to run [%default]",
@@ -283,7 +217,6 @@ if __name__ == '__main__':
     sqlitevers = options.sqlitevers.split(",")
     if options.fossil:
         sqlitevers.append("fossil")
-    ucstest = [int(x) for x in options.ucs.split(",")]
     concurrency = int(options.concurrency)
     sqlitevers = [x for x in sqlitevers if x]
-    main(pyvers, ucstest, sqlitevers, concurrency)
+    main(pyvers, sqlitevers, concurrency)

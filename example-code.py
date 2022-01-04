@@ -1,13 +1,7 @@
-from __future__ import print_function
-
-# some python 2 and 3 comnpatibility tweaks
-import sys
-py3=sys.version_info >= (3, 0)
-def inext(v):  # next value from iterator
-    return next(v) if py3 else v.next()
-
+#!/usr/bin/env python3
 
 import os
+import sys
 import time
 import apsw
 
@@ -42,7 +36,7 @@ cursor.execute("create table foo(x,y,z)")
 cursor.execute("insert into foo values(?,?,?)", (1, 1.1, None))  # integer, float/real, Null
 cursor.execute("insert into foo(x) values(?)", ("abc", ))        # string (note trailing comma to ensure tuple!)
 cursor.execute("insert into foo(x) values(?)",                   # a blob (binary data)
-                    (b"abc\xff\xfe" if py3 else buffer("abc\xff\xfe"), ))
+                    (b"abc\xff\xfe",))
 
 ###
 ### multiple statements
@@ -325,7 +319,7 @@ cursor.execute("insert into blobby values(1,zeroblob(10000))")
 # Or as a binding
 cursor.execute("insert into blobby values(2,?)", (apsw.zeroblob(20000),))
 # Open a blob for writing.  We need to know the rowid
-rowid=inext(cursor.execute("select ROWID from blobby where x=1"))[0]
+rowid=next(cursor.execute("select ROWID from blobby where x=1"))[0]
 blob=connection.blobopen("main", "blobby", "y", rowid, 1) # 1 is for read/write
 blob.write(b"hello world")
 blob.seek(2000)
@@ -429,10 +423,7 @@ for ctime,directory,file in cursor.execute("select st_ctime,directory,name from 
 
 def encryptme(data):
     if not data: return data
-    if py3:
-        return bytes([x^0xa5 for x in data])
-
-    return "".join([chr(ord(x)^0xa5) for x in data])
+    return bytes([x^0xa5 for x in data])
 
 # Inheriting from a base of "" means the default vfs
 class ObfuscatedVFS(apsw.VFS):
@@ -548,11 +539,8 @@ for row in memcon.cursor().execute("select * from s"):
 # connection
 
 # Export to a StringIO
-if py3:
-    import io
-else:
-    import StringIO as io
-    
+import io
+
 output=io.StringIO()
 shell=apsw.Shell(stdout=output, db=connection)
 # How to execute a dot command

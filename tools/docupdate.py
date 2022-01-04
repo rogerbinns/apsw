@@ -28,19 +28,12 @@ download = open("doc/download.rst", "rt").read()
 def get_downloads(pyver, bit):
     assert bit in {32, 64}
     res = []
-    # no 64 bit for these
-    if bit == 64 and pyver in ("2.3", "2.4", "2.5"):
-        return res
-    # 32 bit compiler crashes
-    if bit == 32 and pyver in ("3.5", ):
-        return res
-    usever = version_no_r if pyver not in ("2.3", "2.4") else version
+    usever = version_no_r
     whlver = pyver.replace(".", "")
 
     if bit == 32:
-        if pyver not in ("2.3", "2.4"):
-            res.append(("msi", url % ("apsw-%s.win32-py%s.msi" % (usever, pyver))))
-        if pyver in ("3.6", "3.7"):
+        res.append(("msi", url % ("apsw-%s.win32-py%s.msi" % (usever, pyver))))
+        if pyver in ("3.7",):
             res.append(("wheel", url % ("apsw-%s-cp%s-cp%sm-win32.whl" % (usever, whlver, whlver))))
         if pyver in ("3.8", "3.9", "3.10"):
             # they removed the m
@@ -50,7 +43,7 @@ def get_downloads(pyver, bit):
 
     if bit == 64:
         res.append(("msi", url % ("apsw-%s.win-amd64-py%s.msi" % (usever, pyver))))
-        if pyver in ("3.6", "3.7"):
+        if pyver in ("3.7",):
             res.append(("wheel", url % ("apsw-%s-cp%s-cp%sm-win_amd64.whl" % (usever, whlver, whlver))))
         if pyver in ("3.8", "3.9", "3.10"):
             # they removed the m
