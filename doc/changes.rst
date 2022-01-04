@@ -12,7 +12,7 @@ object (eg busy handler). (:issue:`314`)
 This is the last release supporting Python 2 and Python 3 before 3.7.
 If you still use those Python versions then you should pin to this
 APSW version.  (`More information
-<https://www.rogerbinns.com/blog/XXXXXX>`__).
+<https://www.rogerbinns.com/blog/apsw-ending-python2early3.html>`__).
 
 Windows Python 3.10 binaries are available to download.  The .exe format
 is no longer available with this Python version.
