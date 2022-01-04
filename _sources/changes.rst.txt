@@ -2,6 +2,39 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.37.0-r1
+=========
+
+Allow breaking of reference cycles between objects that contain a
+:obj:`Connection` or :obj:`Cursor`, and also use callbacks from that
+object (eg busy handler). (:issue:`314`)
+
+This is the last release supporting Python 2 and Python 3 before 3.7.
+If you still use those Python versions then you should pin to this
+APSW version.  (`More information
+<https://www.rogerbinns.com/blog/apsw-ending-python2early3.html>`__).
+
+Windows Python 3.10 binaries are available to download.  The .exe format
+is no longer available with this Python version.
+
+Fixed custom VFS extension loading failure could leave the error
+message unterminated.
+
+Updated size of mutex array used by the :func:`fork checker <fork_checker>`
+
+Connections are opened with SQLITE_OPEN_EXRESCODE so open errors will
+also include extended result codes.
+
+:meth:`Connection.changes` and :meth:`Connection.totalchanges` use the
+new SQLite APIs that return 64 bit values (ie can now return values
+greater than 2 billion).
+
+Added :meth:`Connection.autovacuum_pages`.
+
+Added constants:
+
+* SQLITE_CONSTRAINT_DATATYPE, SQLITE_OPEN_EXRESCODE
+
 3.36.0-r1
 =========
 
@@ -80,7 +113,7 @@ Added constants:
 * SQLITE_DBCONFIG_TRUSTED_SCHEMA, SQLITE_DBCONFIG_LEGACY_FILE_FORMAT,
   SQLITE_CONSTRAINT_PINNED, SQLITE_OK_SYMLINK, SQLITE_CANTOPEN_SYMLINK,
   SQLITE_FCNTL_CKPT_DONE, SQLITE_OPEN_NOFOLLOW, SQLITE_VTAB_DIRECTONLY
-  
+
 
 3.30.1-r1
 =========

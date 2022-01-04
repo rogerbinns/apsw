@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tips &#8212; APSW 3.36.0-r1 documentation</title>
+    <title>Tips &#8212; APSW 3.37.0-r1 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     
@@ -42,7 +42,7 @@
         <li class="right" >
           <a href="index.html" title="APSW documentation"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.36.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.37.0-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Tips</a></li> 
       </ul>
     </div>  
@@ -54,8 +54,29 @@
             
   <div class="section" id="tips">
 <h1>Tips<a class="headerlink" href="#tips" title="Permalink to this headline">¶</a></h1>
-<p>These tips are based on mailing list postings.  You are recommended to
-read all the documentation as well.</p>
+<p>These tips are based on mailing list postings, issues, and emails.
+You are recommended to read all the documentation as well.</p>
+<div class="section" id="about-python-apsw-and-sqlite-versions">
+<span id="version-stuff"></span><h2>About Python, APSW, and SQLite versions<a class="headerlink" href="#about-python-apsw-and-sqlite-versions" title="Permalink to this headline">¶</a></h2>
+<p>SQLite has approximately quarterly releases.  These include tweaks,
+bug fixes, and new functionality based on the billions of SQLite
+databases in use, and the many many programs that use SQLite (eg
+almost every browser, mail client, photo library, mobile and desktop
+OS).  Despite these changes, SQLite retains backwards and forwards
+compatibility with the <a class="reference external" href="https://www.sqlite.org/onefile.html">file format</a> and APIs.</p>
+<p>APSW wraps the <a class="reference external" href="https://www.sqlite.org/c3ref/intro.html">SQLite C API</a>.  That means when SQLite
+adds new constant or API, then so does APSW.  You can think of APSW as
+the Python expression of SQLite’s C API.</p>
+<p>Consequently the APSW version mirrors the SQLite version.  You can use
+APSW with the corresponding version of SQLite, or any newer version of
+SQLite.  You could use the original 2004 release of APSW with today’s
+SQLite just fine, although it wouldn’t know about the new APIs and
+constants.</p>
+<p>APSW has compatibility with a broad range of Python versions.  This is
+so that you can update the SQLite version you use, access new
+constants and APIs (if desired), all without having to change your
+Python version.</p>
+</div>
 <div class="section" id="sqlite-is-different">
 <h2>SQLite is different<a class="headerlink" href="#sqlite-is-different" title="Permalink to this headline">¶</a></h2>
 <p>While SQLite provides a SQL database like many others out there, it is
@@ -317,6 +338,7 @@ indirect call via Python.)</p>
   <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Tips</a><ul>
+<li><a class="reference internal" href="#about-python-apsw-and-sqlite-versions">About Python, APSW, and SQLite versions</a></li>
 <li><a class="reference internal" href="#sqlite-is-different">SQLite is different</a></li>
 <li><a class="reference internal" href="#transactions">Transactions</a></li>
 <li><a class="reference internal" href="#cursors">Cursors</a></li>
@@ -376,14 +398,14 @@ indirect call via Python.)</p>
         <li class="right" >
           <a href="index.html" title="APSW documentation"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.36.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.37.0-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Tips</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2021, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jul 30, 2021.
+      Last updated on Jan 04, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

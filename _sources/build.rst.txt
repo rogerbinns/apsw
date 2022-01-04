@@ -3,6 +3,9 @@
 Building
 ********
 
+See :ref:`version info <version_stuff>` to understand the
+relationship between Python, APSW, and SQLite versions.
+
 setup.py
 ========
 

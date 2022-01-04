@@ -75,6 +75,25 @@ Connection class
   *with* block is raised after committing or rolling back the
   savepoint.
 
+.. index:: sqlite3_autovacuum_pages
+
+.. method:: Connection.autovacuum_pages(callable | None) -> None
+
+  Calls `callable` to find out how many pages to autovacuum.  The callback has 4 parameters:
+
+  * Database name: str (eg "main")
+  * Database pages: int (how many pages make up the database now)
+  * Free pages: int (how many pages could be freed)
+  * Page size: int (page size in bytes)
+
+  Return how many pages should be freed.  Values less than zero or more than the free pages are
+  treated as zero or free page count.  On error zero is returned.
+
+  READ THE NOTE IN THE SQLITE DOCUMENTATION.  Calling into SQLite can result in crashes, corrupt
+  databases or worse.
+
+  Calls: `sqlite3_autovacuum_pages <https://sqlite.org/c3ref/autovacuum_pages.html>`__
+
 .. index:: sqlite3_backup_init
 
 .. method:: Connection.backup(databasename, sourceconnection, sourcedatabasename)  -> backup
@@ -119,7 +138,7 @@ Connection class
 
    Calls: `sqlite3_blob_open <https://sqlite.org/c3ref/blob_open.html>`__
 
-.. index:: sqlite3_changes
+.. index:: sqlite3_changes64
 
 .. method:: Connection.changes() -> int
 
@@ -127,7 +146,7 @@ Connection class
   or deleted) by the most recently completed INSERT, UPDATE, or DELETE
   statement.
 
-  Calls: `sqlite3_changes <https://sqlite.org/c3ref/changes.html>`__
+  Calls: `sqlite3_changes64 <https://sqlite.org/c3ref/changes.html>`__
 
 .. index:: sqlite3_close
 
@@ -798,14 +817,14 @@ Connection class
 
   Calls: `sqlite3_db_status <https://sqlite.org/c3ref/db_status.html>`__
 
-.. index:: sqlite3_total_changes
+.. index:: sqlite3_total_changes64
 
 .. method:: Connection.totalchanges() -> int
 
   Returns the total number of database rows that have be modified,
   inserted, or deleted since the database connection was opened.
 
-  Calls: `sqlite3_total_changes <https://sqlite.org/c3ref/total_changes.html>`__
+  Calls: `sqlite3_total_changes64 <https://sqlite.org/c3ref/total_changes.html>`__
 
 .. index:: sqlite3_txn_state
 

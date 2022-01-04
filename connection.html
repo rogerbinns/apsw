@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Connections to a database &#8212; APSW 3.36.0-r1 documentation</title>
+    <title>Connections to a database &#8212; APSW 3.37.0-r1 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     
@@ -42,7 +42,7 @@
         <li class="right" >
           <a href="apsw.html" title="APSW Module"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.36.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.37.0-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Connections to a database</a></li> 
       </ul>
     </div>  
@@ -123,6 +123,23 @@ savepoint.</p>
 </dd></dl>
 
 <span class="target" id="index-2"></span><dl class="py method">
+<dt id="apsw.Connection.autovacuum_pages">
+<code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">autovacuum_pages</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">callable</span> <span class="pre">|</span> <span class="pre">None</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="headerlink" href="#apsw.Connection.autovacuum_pages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calls <cite>callable</cite> to find out how many pages to autovacuum.  The callback has 4 parameters:</p>
+<ul class="simple">
+<li><p>Database name: str (eg “main”)</p></li>
+<li><p>Database pages: int (how many pages make up the database now)</p></li>
+<li><p>Free pages: int (how many pages could be freed)</p></li>
+<li><p>Page size: int (page size in bytes)</p></li>
+</ul>
+<p>Return how many pages should be freed.  Values less than zero or more than the free pages are
+treated as zero or free page count.  On error zero is returned.</p>
+<p>READ THE NOTE IN THE SQLITE DOCUMENTATION.  Calling into SQLite can result in crashes, corrupt
+databases or worse.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/autovacuum_pages.html">sqlite3_autovacuum_pages</a></p>
+</dd></dl>
+
+<span class="target" id="index-3"></span><dl class="py method">
 <dt id="apsw.Connection.backup">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">backup</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">databasename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sourceconnection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sourcedatabasename</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="backup.html#apsw.backup" title="apsw.backup"><span class="pre">backup</span></a><a class="headerlink" href="#apsw.Connection.backup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Opens a <a class="reference internal" href="backup.html#backup"><span class="std std-ref">backup object</span></a>.  All data will be copied from source
@@ -149,7 +166,7 @@ the main connection and the name you specified for <a class="reference external"
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/backup_finish.html#sqlite3backupinit">sqlite3_backup_init</a></p>
 </dd></dl>
 
-<span class="target" id="index-3"></span><dl class="py method">
+<span class="target" id="index-4"></span><dl class="py method">
 <dt id="apsw.Connection.blobopen">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">blobopen</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rowid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">writeable</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="blob.html#apsw.blob" title="apsw.blob"><span class="pre">blob</span></a><a class="headerlink" href="#apsw.Connection.blobopen" title="Permalink to this definition">¶</a></dt>
 <dd><p>Opens a blob for <a class="reference internal" href="blob.html#blobio"><span class="std std-ref">incremental I/O</span></a>.</p>
@@ -179,16 +196,16 @@ the main connection and the name you specified for <a class="reference external"
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/blob_open.html">sqlite3_blob_open</a></p>
 </dd></dl>
 
-<span class="target" id="index-4"></span><dl class="py method">
+<span class="target" id="index-5"></span><dl class="py method">
 <dt id="apsw.Connection.changes">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">changes</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#apsw.Connection.changes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the number of database rows that were changed (or inserted
 or deleted) by the most recently completed INSERT, UPDATE, or DELETE
 statement.</p>
-<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/changes.html">sqlite3_changes</a></p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/changes.html">sqlite3_changes64</a></p>
 </dd></dl>
 
-<span class="target" id="index-5"></span><dl class="py method">
+<span class="target" id="index-6"></span><dl class="py method">
 <dt id="apsw.Connection.close">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">close</span></code><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="pre">force=False</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.close" title="Permalink to this definition">¶</a></dt>
 <dd><p>Closes the database.  If there are any outstanding <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">cursors</span></code></a>, <a class="reference internal" href="blob.html#apsw.blob" title="apsw.blob"><code class="xref py py-class docutils literal notranslate"><span class="pre">blobs</span></code></a> or <a class="reference internal" href="backup.html#apsw.backup" title="apsw.backup"><code class="xref py py-class docutils literal notranslate"><span class="pre">backups</span></code></a> then
@@ -210,7 +227,7 @@ database, reverting the database to a know good state.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/close.html">sqlite3_close</a></p>
 </dd></dl>
 
-<span class="target" id="index-6"></span><dl class="py method">
+<span class="target" id="index-7"></span><dl class="py method">
 <dt id="apsw.Connection.collationneeded">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">collationneeded</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.collationneeded" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>callable</em> will be called if a statement requires a <a class="reference external" href="http://en.wikipedia.org/wiki/Collation">collation</a> that hasn’t been
@@ -233,7 +250,7 @@ register them.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/collation_needed.html">sqlite3_collation_needed</a></p>
 </dd></dl>
 
-<span class="target" id="index-7"></span><dl class="py method">
+<span class="target" id="index-8"></span><dl class="py method">
 <dt id="apsw.Connection.config">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">op</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">*args</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.config" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
@@ -248,7 +265,7 @@ register them.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/db_config.html">sqlite3_db_config</a></p>
 </dd></dl>
 
-<span class="target" id="index-8"></span><dl class="py method">
+<span class="target" id="index-9"></span><dl class="py method">
 <dt id="apsw.Connection.createaggregatefunction">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">createaggregatefunction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name</span></em>, <em class="sig-param"><span class="pre">factory</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">numargs=-1</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.createaggregatefunction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Registers an aggregate function.  Aggregate functions operate on all
@@ -295,7 +312,7 @@ callables and <em>numargs</em>.  See
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/create_function.html">sqlite3_create_function_v2</a></p>
 </dd></dl>
 
-<span class="target" id="index-9"></span><dl class="py method">
+<span class="target" id="index-10"></span><dl class="py method">
 <dt id="apsw.Connection.createcollation">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">createcollation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.createcollation" title="Permalink to this definition">¶</a></dt>
 <dd><p>You can control how SQLite sorts (termed <a class="reference external" href="http://en.wikipedia.org/wiki/Collation">collation</a>) when giving the
@@ -322,7 +339,7 @@ first is greater:</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/create_collation.html">sqlite3_create_collation_v2</a></p>
 </dd></dl>
 
-<span class="target" id="index-10"></span><dl class="py method">
+<span class="target" id="index-11"></span><dl class="py method">
 <dt id="apsw.Connection.createmodule">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">createmodule</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datasource</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.createmodule" title="Permalink to this definition">¶</a></dt>
 <dd><p>Registers a virtual table.  See <a class="reference internal" href="vtable.html#virtualtables"><span class="std std-ref">Virtual Tables</span></a> for details.</p>
@@ -335,7 +352,7 @@ first is greater:</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/create_module.html">sqlite3_create_module_v2</a></p>
 </dd></dl>
 
-<span class="target" id="index-11"></span><dl class="py method">
+<span class="target" id="index-12"></span><dl class="py method">
 <dt id="apsw.Connection.createscalarfunction">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">createscalarfunction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name</span></em>, <em class="sig-param"><span class="pre">callable</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">numargs=-1</span></em>, <em class="sig-param"><span class="pre">deterministic=False</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.createscalarfunction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Registers a scalar function.  Scalar functions operate on one set of parameters once.</p>
@@ -387,7 +404,7 @@ doesn’t exist then the one with negative <em>numargs</em> will be called.</p>
 </dl>
 </dd></dl>
 
-<span class="target" id="index-12"></span><dl class="py method">
+<span class="target" id="index-13"></span><dl class="py method">
 <dt id="apsw.Connection.db_filename">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">db_filename</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">String</span><a class="headerlink" href="#apsw.Connection.db_filename" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the full filename of the named (attached) database.  The
@@ -395,7 +412,7 @@ main database is named “main”.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/db_filename.html">sqlite3_db_filename</a></p>
 </dd></dl>
 
-<span class="target" id="index-13"></span><dl class="py method">
+<span class="target" id="index-14"></span><dl class="py method">
 <dt id="apsw.Connection.deserialize">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">deserialize</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contents</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="headerlink" href="#apsw.Connection.deserialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Replaces the named database with an in-memory copy of <em>contents</em>.
@@ -412,7 +429,7 @@ owned, resized, and freed by SQLite.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/deserialize.html">sqlite3_deserialize</a></p>
 </dd></dl>
 
-<span class="target" id="index-14"></span><dl class="py method">
+<span class="target" id="index-15"></span><dl class="py method">
 <dt id="apsw.Connection.enableloadextension">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">enableloadextension</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enable</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.enableloadextension" title="Permalink to this definition">¶</a></dt>
 <dd><p>Enables/disables <a class="reference external" href="https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions">extension loading</a>
@@ -431,7 +448,7 @@ which is disabled by default.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/enable_load_extension.html">sqlite3_enable_load_extension</a></p>
 </dd></dl>
 
-<span class="target" id="index-15"></span><dl class="py method">
+<span class="target" id="index-16"></span><dl class="py method">
 <dt id="apsw.Connection.filecontrol">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">filecontrol</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dbname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">op</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pointer</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#apsw.Connection.filecontrol" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calls the <a class="reference internal" href="vfs.html#apsw.VFSFile.xFileControl" title="apsw.VFSFile.xFileControl"><code class="xref py py-meth docutils literal notranslate"><span class="pre">xFileControl()</span></code></a> method on the <a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">Virtual File System (VFS)</span></a>
@@ -485,14 +502,14 @@ before the filecontrol call is made:</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/file_control.html">sqlite3_file_control</a></p>
 </dd></dl>
 
-<span class="target" id="index-16"></span><dl class="py attribute">
+<span class="target" id="index-17"></span><dl class="py attribute">
 <dt id="apsw.Connection.filename">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">filename</span></code><a class="headerlink" href="#apsw.Connection.filename" title="Permalink to this definition">¶</a></dt>
 <dd><p>The filename of the  database.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/db_filename.html">sqlite3_db_filename</a></p>
 </dd></dl>
 
-<span class="target" id="index-17"></span><dl class="py method">
+<span class="target" id="index-18"></span><dl class="py method">
 <dt id="apsw.Connection.getautocommit">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">getautocommit</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#apsw.Connection.getautocommit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns if the Connection is in auto commit mode (ie not in a transaction).</p>
@@ -525,7 +542,7 @@ row tracer.</p>
 </div>
 </dd></dl>
 
-<span class="target" id="index-18"></span><dl class="py method">
+<span class="target" id="index-19"></span><dl class="py method">
 <dt id="apsw.Connection.interrupt">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">interrupt</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.interrupt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Causes any pending operations on the database to abort at the
@@ -536,14 +553,14 @@ will be raised in the query that got interrupted.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/interrupt.html">sqlite3_interrupt</a></p>
 </dd></dl>
 
-<span class="target" id="index-19"></span><dl class="py method">
+<span class="target" id="index-20"></span><dl class="py method">
 <dt id="apsw.Connection.last_insert_rowid">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">last_insert_rowid</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#apsw.Connection.last_insert_rowid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the integer key of the most recent insert in the database.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/last_insert_rowid.html">sqlite3_last_insert_rowid</a></p>
 </dd></dl>
 
-<span class="target" id="index-20"></span><dl class="py method">
+<span class="target" id="index-21"></span><dl class="py method">
 <dt id="apsw.Connection.limit">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">limit</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">id</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">newval</span></em><span class="optional">]</span><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#apsw.Connection.limit" title="Permalink to this definition">¶</a></dt>
 <dd><p>If called with one parameter then the current limit for that <em>id</em> is
@@ -568,7 +585,7 @@ returned.  If called with two then the limit is set to <em>newval</em>.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/limit.html">sqlite3_limit</a></p>
 </dd></dl>
 
-<span class="target" id="index-21"></span><dl class="py method">
+<span class="target" id="index-22"></span><dl class="py method">
 <dt id="apsw.Connection.loadextension">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">loadextension</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">filename</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">entrypoint</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.loadextension" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads <em>filename</em> as an <a class="reference external" href="https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions">extension</a></p>
@@ -607,7 +624,7 @@ loaded.  The exception string includes more details.</p>
 <dd><p>The string name of the vfs used to open the database.</p>
 </dd></dl>
 
-<span class="target" id="index-22"></span><dl class="py method">
+<span class="target" id="index-23"></span><dl class="py method">
 <dt id="apsw.Connection.overloadfunction">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">overloadfunction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.overloadfunction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Registers a placeholder function so that a virtual table can provide an implementation via
@@ -624,7 +641,7 @@ loaded.  The exception string includes more details.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/overload_function.html">sqlite3_overload_function</a></p>
 </dd></dl>
 
-<span class="target" id="index-23"></span><dl class="py method">
+<span class="target" id="index-24"></span><dl class="py method">
 <dt id="apsw.Connection.readonly">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">readonly</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#apsw.Connection.readonly" title="Permalink to this definition">¶</a></dt>
 <dd><p>True or False if the named (attached) database was opened readonly or file
@@ -633,7 +650,7 @@ permissions don’t allow writing.  The main database is named “main”.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/db_readonly.html">sqlite3_db_readonly</a></p>
 </dd></dl>
 
-<span class="target" id="index-24"></span><dl class="py method">
+<span class="target" id="index-25"></span><dl class="py method">
 <dt id="apsw.Connection.serialize">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">serialize</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bytes</span><a class="headerlink" href="#apsw.Connection.serialize" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
@@ -655,14 +672,14 @@ returned, not an exception (this is SQLite’s behaviour).</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/serialize.html">sqlite3_serialize</a></p>
 </dd></dl>
 
-<span class="target" id="index-25"></span><dl class="py method">
+<span class="target" id="index-26"></span><dl class="py method">
 <dt id="apsw.Connection.set_last_insert_rowid">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">set_last_insert_rowid</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.set_last_insert_rowid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the value calls to <a class="reference internal" href="#apsw.Connection.last_insert_rowid" title="apsw.Connection.last_insert_rowid"><code class="xref py py-meth docutils literal notranslate"><span class="pre">last_insert_rowid()</span></code></a> will return.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/set_last_insert_rowid.html">sqlite3_set_last_insert_rowid</a></p>
 </dd></dl>
 
-<span class="target" id="index-26"></span><dl class="py method">
+<span class="target" id="index-27"></span><dl class="py method">
 <dt id="apsw.Connection.setauthorizer">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">setauthorizer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.setauthorizer" title="Permalink to this definition">¶</a></dt>
 <dd><p>While <a class="reference external" href="https://sqlite.org/c3ref/prepare.html">preparing</a>
@@ -695,7 +712,7 @@ Python code).</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/set_authorizer.html">sqlite3_set_authorizer</a></p>
 </dd></dl>
 
-<span class="target" id="index-27"></span><dl class="py method">
+<span class="target" id="index-28"></span><dl class="py method">
 <dt id="apsw.Connection.setbusyhandler">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">setbusyhandler</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.setbusyhandler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the busy handler to callable. callable will be called with one
@@ -717,7 +734,7 @@ calling this overrides that.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/busy_handler.html">sqlite3_busy_handler</a></p>
 </dd></dl>
 
-<span class="target" id="index-28"></span><dl class="py method">
+<span class="target" id="index-29"></span><dl class="py method">
 <dt id="apsw.Connection.setbusytimeout">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">setbusytimeout</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">millseconds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.setbusytimeout" title="Permalink to this definition">¶</a></dt>
 <dd><p>If the database is locked such as when another connection is making
@@ -741,7 +758,7 @@ calling this overrides that.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/busy_timeout.html">sqlite3_busy_timeout</a></p>
 </dd></dl>
 
-<span class="target" id="index-29"></span><dl class="py method">
+<span class="target" id="index-30"></span><dl class="py method">
 <dt id="apsw.Connection.setcommithook">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">setcommithook</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.setcommithook" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>callable</em> will be called just before a commit.  It should return
@@ -777,7 +794,7 @@ removed.</p>
 </div>
 </dd></dl>
 
-<span class="target" id="index-30"></span><dl class="py method">
+<span class="target" id="index-31"></span><dl class="py method">
 <dt id="apsw.Connection.setprofile">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">setprofile</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.setprofile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets a callable which is invoked at the end of execution of each
@@ -789,7 +806,7 @@ statement.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/profile.html">sqlite3_profile</a></p>
 </dd></dl>
 
-<span class="target" id="index-31"></span><dl class="py method">
+<span class="target" id="index-32"></span><dl class="py method">
 <dt id="apsw.Connection.setprogresshandler">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">setprogresshandler</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">callable</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">nsteps=20</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.setprogresshandler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets a callable which is invoked every <em>nsteps</em> SQLite
@@ -805,7 +822,7 @@ then non-zero will be returned).</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/progress_handler.html">sqlite3_progress_handler</a></p>
 </dd></dl>
 
-<span class="target" id="index-32"></span><dl class="py method">
+<span class="target" id="index-33"></span><dl class="py method">
 <dt id="apsw.Connection.setrollbackhook">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">setrollbackhook</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.setrollbackhook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets a callable which is invoked during a rollback.  If <em>callable</em>
@@ -833,7 +850,7 @@ removed.</p>
 </div>
 </dd></dl>
 
-<span class="target" id="index-33"></span><dl class="py method">
+<span class="target" id="index-34"></span><dl class="py method">
 <dt id="apsw.Connection.setupdatehook">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">setupdatehook</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.setupdatehook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calls <em>callable</em> whenever a row is updated, deleted or inserted.  If
@@ -864,7 +881,7 @@ apply them in a different connection.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/update_hook.html">sqlite3_update_hook</a></p>
 </dd></dl>
 
-<span class="target" id="index-34"></span><dl class="py method">
+<span class="target" id="index-35"></span><dl class="py method">
 <dt id="apsw.Connection.setwalhook">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">setwalhook</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.setwalhook" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>callable</em> will be called just after data is committed in <a class="reference internal" href="tips.html#wal"><span class="std std-ref">Write Ahead Logging</span></a>
@@ -895,7 +912,7 @@ the pointer.  It is also a very good idea to call
 libraries.</p>
 </dd></dl>
 
-<span class="target" id="index-35"></span><dl class="py method">
+<span class="target" id="index-36"></span><dl class="py method">
 <dt id="apsw.Connection.status">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">status</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.status" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns current and highwater measurements for the database.</p>
@@ -920,15 +937,15 @@ libraries.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/db_status.html">sqlite3_db_status</a></p>
 </dd></dl>
 
-<span class="target" id="index-36"></span><dl class="py method">
+<span class="target" id="index-37"></span><dl class="py method">
 <dt id="apsw.Connection.totalchanges">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">totalchanges</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">int</span><a class="headerlink" href="#apsw.Connection.totalchanges" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the total number of database rows that have be modified,
 inserted, or deleted since the database connection was opened.</p>
-<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/total_changes.html">sqlite3_total_changes</a></p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/total_changes.html">sqlite3_total_changes64</a></p>
 </dd></dl>
 
-<span class="target" id="index-37"></span><dl class="py method">
+<span class="target" id="index-38"></span><dl class="py method">
 <dt id="apsw.Connection.txn_state">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">txn_state</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Int</span><a class="headerlink" href="#apsw.Connection.txn_state" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the current transaction state of the database, or a specific schema
@@ -937,7 +954,7 @@ if provided.  ValueError is raised if schema is not None or a valid schema name.
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/txn_state.html">sqlite3_txn_state</a></p>
 </dd></dl>
 
-<span class="target" id="index-38"></span><dl class="py method">
+<span class="target" id="index-39"></span><dl class="py method">
 <dt id="apsw.Connection.wal_autocheckpoint">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">wal_autocheckpoint</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.wal_autocheckpoint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets how often the <a class="reference internal" href="tips.html#wal"><span class="std std-ref">Write Ahead Logging</span></a> checkpointing is run.</p>
@@ -950,7 +967,7 @@ zero/negative to disable auto checkpointing.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/wal_autocheckpoint.html">sqlite3_wal_autocheckpoint</a></p>
 </dd></dl>
 
-<span class="target" id="index-39"></span><dl class="py method">
+<span class="target" id="index-40"></span><dl class="py method">
 <dt id="apsw.Connection.wal_checkpoint">
 <code class="sig-prename descclassname"><span class="pre">Connection.</span></code><code class="sig-name descname"><span class="pre">wal_checkpoint</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dbname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">apsw.SQLITE_CHECKPOINT_PASSIVE</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Connection.wal_checkpoint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Does a WAL checkpoint.  Has no effect if the database(s) are not in WAL mode.</p>
@@ -1030,14 +1047,14 @@ number of frames checkpointed as described in the
         <li class="right" >
           <a href="apsw.html" title="APSW Module"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.36.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.37.0-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Connections to a database</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2021, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jul 30, 2021.
+      Last updated on Jan 04, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

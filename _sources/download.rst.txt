@@ -18,7 +18,7 @@ Source and binaries
 ===================
 
 You can download this release as binaries for Windows.  Just run the
-executable corresponding with the Python version you are using.  The
+download corresponding with the Python version you are using.  The
 Windows binaries all include the :ref:`FTS <ext-fts3>` and
 :ref:`RTree <ext-rtree>` extensions.  (`FTS3_PARENTHESIS
 <https://sqlite.org/compile.html#enable_fts3_parenthesis>`_ is on.)
@@ -44,64 +44,68 @@ can be installed with:
 
 .. downloads-begin
 
-* `apsw-3.36.0-r1.zip
-  <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0-r1.zip>`__
+* `apsw-3.37.0-r1.zip
+  <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0-r1.zip>`__
   (Source, includes this HTML Help)
 
+* Windows Python 3.10
+  ➥ 64 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win-amd64-py3.10.msi>`__ `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0-cp310-cp310-win_amd64.whl>`__
+  ➥ 32 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win32-py3.10.msi>`__ `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0-cp310-cp310-win32.whl>`__
+
 * Windows Python 3.9
-  ➥ 64 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win-amd64-py3.9.msi>`__ `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0-cp39-cp39-win_amd64.whl>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win-amd64-py3.9.exe>`__
-  ➥ 32 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win32-py3.9.msi>`__ `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0-cp39-cp39-win32.whl>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win32-py3.9.exe>`__
+  ➥ 64 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win-amd64-py3.9.msi>`__ `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0-cp39-cp39-win_amd64.whl>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win-amd64-py3.9.exe>`__
+  ➥ 32 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win32-py3.9.msi>`__ `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0-cp39-cp39-win32.whl>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win32-py3.9.exe>`__
 
 * Windows Python 3.8
-  ➥ 64 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win-amd64-py3.8.msi>`__ `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0-cp38-cp38-win_amd64.whl>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win-amd64-py3.8.exe>`__
-  ➥ 32 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win32-py3.8.msi>`__ `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0-cp38-cp38-win32.whl>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win32-py3.8.exe>`__
+  ➥ 64 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win-amd64-py3.8.msi>`__ `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0-cp38-cp38-win_amd64.whl>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win-amd64-py3.8.exe>`__
+  ➥ 32 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win32-py3.8.msi>`__ `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0-cp38-cp38-win32.whl>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win32-py3.8.exe>`__
 
 * Windows Python 3.7
-  ➥ 64 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win-amd64-py3.7.msi>`__ `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0-cp37-cp37m-win_amd64.whl>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win-amd64-py3.7.exe>`__
-  ➥ 32 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win32-py3.7.msi>`__ `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0-cp37-cp37m-win32.whl>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win32-py3.7.exe>`__
+  ➥ 64 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win-amd64-py3.7.msi>`__ `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0-cp37-cp37m-win_amd64.whl>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win-amd64-py3.7.exe>`__
+  ➥ 32 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win32-py3.7.msi>`__ `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0-cp37-cp37m-win32.whl>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win32-py3.7.exe>`__
 
 * Windows Python 3.6
-  ➥ 64 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win-amd64-py3.6.msi>`__ `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0-cp36-cp36m-win_amd64.whl>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win-amd64-py3.6.exe>`__
-  ➥ 32 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win32-py3.6.msi>`__ `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0-cp36-cp36m-win32.whl>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win32-py3.6.exe>`__
+  ➥ 64 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win-amd64-py3.6.msi>`__ `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0-cp36-cp36m-win_amd64.whl>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win-amd64-py3.6.exe>`__
+  ➥ 32 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win32-py3.6.msi>`__ `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0-cp36-cp36m-win32.whl>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win32-py3.6.exe>`__
 
 * Windows Python 3.5
-  ➥ 64 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win-amd64-py3.5.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win-amd64-py3.5.exe>`__
+  ➥ 64 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win-amd64-py3.5.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win-amd64-py3.5.exe>`__
 
 * Windows Python 3.4
-  ➥ 64 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win-amd64-py3.4.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win-amd64-py3.4.exe>`__
-  ➥ 32 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win32-py3.4.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win32-py3.4.exe>`__
+  ➥ 64 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win-amd64-py3.4.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win-amd64-py3.4.exe>`__
+  ➥ 32 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win32-py3.4.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win32-py3.4.exe>`__
 
 * Windows Python 3.3
-  ➥ 64 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win-amd64-py3.3.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win-amd64-py3.3.exe>`__
-  ➥ 32 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win32-py3.3.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win32-py3.3.exe>`__
+  ➥ 64 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win-amd64-py3.3.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win-amd64-py3.3.exe>`__
+  ➥ 32 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win32-py3.3.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win32-py3.3.exe>`__
 
 * Windows Python 3.2
-  ➥ 64 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win-amd64-py3.2.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win-amd64-py3.2.exe>`__
-  ➥ 32 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win32-py3.2.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win32-py3.2.exe>`__
+  ➥ 64 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win-amd64-py3.2.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win-amd64-py3.2.exe>`__
+  ➥ 32 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win32-py3.2.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win32-py3.2.exe>`__
 
 * Windows Python 3.1
-  ➥ 64 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win-amd64-py3.1.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win-amd64-py3.1.exe>`__
-  ➥ 32 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win32-py3.1.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win32-py3.1.exe>`__
+  ➥ 64 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win-amd64-py3.1.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win-amd64-py3.1.exe>`__
+  ➥ 32 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win32-py3.1.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win32-py3.1.exe>`__
 
 * Windows Python 2.7
-  ➥ 64 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win-amd64-py2.7.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win-amd64-py2.7.exe>`__
-  ➥ 32 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win32-py2.7.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win32-py2.7.exe>`__
+  ➥ 64 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win-amd64-py2.7.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win-amd64-py2.7.exe>`__
+  ➥ 32 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win32-py2.7.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win32-py2.7.exe>`__
 
 * Windows Python 2.6
-  ➥ 64 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win-amd64-py2.6.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win-amd64-py2.6.exe>`__
-  ➥ 32 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win32-py2.6.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win32-py2.6.exe>`__
+  ➥ 64 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win-amd64-py2.6.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win-amd64-py2.6.exe>`__
+  ➥ 32 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win32-py2.6.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win32-py2.6.exe>`__
 
 * Windows Python 2.5
-  ➥ 32 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win32-py2.5.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0.win32-py2.5.exe>`__
+  ➥ 32 bit  `msi   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win32-py2.5.msi>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0.win32-py2.5.exe>`__
 
 * Windows Python 2.4
-  ➥ 32 bit  `exe   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0-r1.win32-py2.4.exe>`__
+  ➥ 32 bit  `exe   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0-r1.win32-py2.4.exe>`__
 
 * Windows Python 2.3
-  ➥ 32 bit  `exe   <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0-r1.win32-py2.3.exe>`__
+  ➥ 32 bit  `exe   <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0-r1.win32-py2.3.exe>`__
 
-* `apsw-3.36.0-r1-sigs.zip 
-  <https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0-r1-sigs.zip>`__
+* `apsw-3.37.0-r1-sigs.zip 
+  <https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0-r1-sigs.zip>`__
   GPG signatures for all files
 
 .. downloads-end
@@ -141,7 +145,7 @@ Verify
   To verify a file just use --verify specifying the corresponding
   ``.asc`` filename.  This example verifies the source::
 
-      $ gpg --verify apsw-3.36.0-r1.zip.asc
+      $ gpg --verify apsw-3.37.0-r1.zip.asc
       gpg: Signature made ... date ... using DSA key ID 0DFBD904
       gpg: Good signature from "Roger Binns <rogerb@rogerbinns.com>"
 
@@ -206,8 +210,8 @@ official site, and builds/installs with all extensions enabled.
 
 Use this (all one command)::
 
-    pip install --user https://github.com/rogerbinns/apsw/releases/download/3.36.0-r1/apsw-3.36.0-r1.zip \
-    --global-option=fetch --global-option=--version --global-option=3.36.0 --global-option=--all \
+    pip install --user https://github.com/rogerbinns/apsw/releases/download/3.37.0-r1/apsw-3.37.0-r1.zip \
+    --global-option=fetch --global-option=--version --global-option=3.37.0 --global-option=--all \
     --global-option=build --global-option=--enable-all-extensions
 
 .. pip-end
