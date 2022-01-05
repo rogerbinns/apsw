@@ -99,21 +99,12 @@ showsymbols:
 	test -f apsw`$(PYTHON) -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"`
 	set +e; nm --extern-only --defined-only apsw`$(PYTHON) -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"` | egrep -v ' (__bss_start|_edata|_end|_fini|_init|initapsw|PyInit_apsw)$$' ; test $$? -eq 1 || false
 
-# Getting Visual Studio 2008 Express to work for 64 compilations is a
-# pain, so use this builtin hidden command
-WIN64HACK=win64hackvars
+# Windows compilation
 WINBPREFIX=fetch --version=$(SQLITEVERSION) --all build --enable-all-extensions
 WINBSUFFIX=install build_test_extension test
 WINBINST=bdist_wininst
 WINBMSI=bdist_msi
 WINBWHEEL=bdist_wheel
-
-# You need to use the MinGW version of make.  See
-# http://bugs.python.org/issue3308 if 2.6+ or 3.0+ fail to run with
-# missing symbols/dll issues.  For Python 3.1 they went out of their
-# way to prevent mingw from working.  You have to install msvc.
-# Google for "visual c++ express edition 2008" and hope the right version
-# is still available.
 
 compile-win:
 	-del /q apsw*.pyd
@@ -126,19 +117,19 @@ compile-win:
 	-cmd /c del /s /q c:\\python310-32\\lib\\site-packages\\*apsw*
 	c:/python310-32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBMSI) $(WINBWHEEL)
 	-cmd /c del /s /q c:\\python310\\lib\\site-packages\\*apsw*
-	"c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python310/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBMSI) $(WINBWHEEL)
+	c:/python310/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBMSI) $(WINBWHEEL)
 	-cmd /c del /s /q c:\\python39-32\\lib\\site-packages\\*apsw*
 	c:/python39-32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
 	-cmd /c del /s /q c:\\python39\\lib\\site-packages\\*apsw*
-	"c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python39/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
+	c:/python39/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
 	-cmd /c del /s /q c:\\python38\\lib\\site-packages\\*apsw*
 	c:/python38/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
 	-cmd /c del /s /q c:\\python38-64\\lib\\site-packages\\*apsw*
-	"c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python38-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
+	c:/python38-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
 	-cmd /c del /s /q c:\\python37\\lib\\site-packages\\*apsw*
 	c:/python37/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
 	-cmd /c del /s /q c:\\python37-64\\lib\\site-packages\\*apsw*
-	"c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python37-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)  $(WINBWHEEL)
+	c:/python37-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)  $(WINBWHEEL)
 	del dist\\*.egg
 
 setup-wheel:
