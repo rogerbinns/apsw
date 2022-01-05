@@ -43,7 +43,7 @@ def run(cmd):
 
 
 def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug):
-    run("set -e ; cd %s ; ( env LD_LIBRARY_PATH=%s APSW_FORCE_DISTUTILS=t %s setup.py fetch --version=%s --all build_test_extension build_ext --inplace --force --enable-all-extensions%stest -v ) >%s 2>&1"
+    run("set -e ; cd %s ; ( env LD_LIBRARY_PATH=%s %s setup.py fetch --version=%s --all build_test_extension build_ext --inplace --force --enable-all-extensions%stest -v ) >%s 2>&1"
         % (workdir, pylib, pybin, sqlitever, " --debug " if debug else " ", os.path.abspath(os.path.join(logdir, "buildruntests.txt"))))
 
 

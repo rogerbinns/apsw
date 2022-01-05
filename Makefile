@@ -63,13 +63,13 @@ $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
 	env PYTHONPATH=. $(PYTHON) tools/code2rst.py $(SQLITEVERSION) $< $@
 
 build_ext:
-	env APSW_FORCE_DISTUTILS=t $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --force --enable-all-extensions
+	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --force --enable-all-extensions
 
 build_ext_debug:
-	env APSW_FORCE_DISTUTILS=t $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --force --enable-all-extensions --debug
+	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --force --enable-all-extensions --debug
 
 coverage:
-	env APSW_FORCE_DISTUTILS=t $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all && env APSW_PY_COVERAGE=t tools/coverage.sh
+	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all && env APSW_PY_COVERAGE=t tools/coverage.sh
 
 test: build_ext
 	env PYTHONHASHSEED=random $(PYTHON) tests.py
@@ -161,7 +161,7 @@ setup-wheel:
 
 
 source_nocheck: docs
-	env APSW_FORCE_DISTUTILS=t $(PYTHON) setup.py sdist --formats zip --add-doc
+	env $(PYTHON) setup.py sdist --formats zip --add-doc
 
 # Make the source and then check it builds and tests correctly.  This will catch missing files etc
 source: source_nocheck
