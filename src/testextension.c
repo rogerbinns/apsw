@@ -20,6 +20,9 @@ static void halfFunc(
     ** modules here.  This is usually the only exported symbol in
     ** the shared library.
     */
+#ifdef _WIN32
+__declspec(dllexport)
+#endif
 int sqlite3_extension_init(
     sqlite3 *db,
     char **pzErrMsg,
@@ -41,6 +44,9 @@ static void doubleFunc(
   sqlite3_result_double(context, 2.0 * sqlite3_value_double(argv[0]));
 }
 
+#ifdef _WIN32
+__declspec(dllexport)
+#endif
 int alternate_sqlite3_extension_init(
     sqlite3 *db,
     char **pzErrMsg,

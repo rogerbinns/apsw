@@ -4091,6 +4091,8 @@ class APSW(unittest.TestCase):
         if not os.path.exists("src/apsw.c"): return
 
         for filename in glob.glob("src/*.c"):
+            if filename.endswith("testextension.c"):
+                continue
             # check not using C++ style comments
             code = read_whole_file(filename, "rt").replace("http://", "http:__").replace("https://", "https:__")
             if "//" in code:

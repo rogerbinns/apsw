@@ -13,11 +13,7 @@ import tarfile
 
 from distutils.core import setup, Extension, Command
 from distutils.command import build_ext, build, sdist
-
-##
-## Do your customizations here or by creating a setup.cfg as documented at
-## http://www.python.org/doc/2.5.2/dist/setup-config.html
-##
+import distutils.ccompiler
 
 include_dirs = ['src']
 library_dirs = []
@@ -145,58 +141,12 @@ class build_test_extension(Command):
         pass
 
     def run(self):
-        # On 64 bit windows we have to use MSVC
-        if sys.platform == 'win32':  # yes even on 64 bit
-            try:
-                import platform
-                if platform.architecture()[0] == '64bit':
-                    res = os.system(
-                        "cl /Gd src/testextension.c /I sqlite3 /I . /DDLL /LD /link /export:sqlite3_extension_init /export:alternate_sqlite3_extension_init /out:testextension.sqlext"
-                    )
-                    if res != 0:
-                        raise RuntimeError("Building test extension failed")
-                    return
-            except ImportError:
-                pass
-        shared = "shared"
-        if sys.platform.startswith("darwin"):
-            shared = "bundle"
-        res = os.system("gcc -fPIC -%s -o testextension.sqlext -Isqlite3 -I. src/testextension.c" % (shared, ))
-        if res != 0:
-            raise RuntimeError("Building test extension failed")
-
-
-# Another hack.  Visual Studio 2008 & 2010 ship with 64
-# compilers, headers and the Windows SDK but claims it doesn't and
-# distutils can't find it.  The separate Windows SDK can't find this
-# and gets very confused not to mention being one of the buggiest cmd
-# scripts I have ever seen.  This hack just sets some environment
-# variables directly since all the "proper" ways are very broken.
-class win64hackvars(Command):
-    description = "Set env vars for Visual Studio 2008/2010 Express 64 bit"
-
-    user_options = []
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        vcver = 9
-        if sys.version_info >= (3, 3):
-            vcver = 10
-        sdkdir = r"C:\Program Files\Microsoft SDKs\Windows\v6.0A"
-        vsdir = r"C:\Program Files (x86)\Microsoft Visual Studio %d.0\VC" % vcver
-        assert os.path.isdir(sdkdir), "Expected sdk dir " + sdkdir
-        assert os.path.isdir(vsdir), "Expected visual studio dir " + vsdir
-        os.environ["PATH"] = r"%s\bin\amd64;%s\bin" % (vsdir, sdkdir)
-        os.environ["INCLUDE"] = r"%s\include;%s\include" % (vsdir, sdkdir)
-        os.environ["LIB"] = r"%s\lib\amd64;%s\lib\x64" % (vsdir, sdkdir)
-        os.environ["DISTUTILS_USE_SDK"] = "1"
-        os.environ["MSSdk"] = sdkdir
-
+        name = "testextension.sqlext"
+        compiler = distutils.ccompiler.new_compiler(verbose=True)
+        compiler.add_include_dir("sqlite3")
+        preargs = ["/Gd"] if "msvc" in str(compiler.__class__).lower() else ["-fPIC"]
+        objs = compiler.compile(["src/testextension.c"], extra_preargs=preargs)
+        compiler.link_shared_object(objs, name)
 
 # deal with various python version compatibility issues with how
 # to treat returned web data as lines of text
@@ -943,5 +893,4 @@ complete SQLite API into Python.""",
                 'build_ext': apsw_build_ext,
                 'build': apsw_build,
                 'sdist': apsw_sdist,
-                'win64hackvars': win64hackvars}
-      )
+      })
