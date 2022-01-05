@@ -245,8 +245,9 @@ class fetch(Command):
         self.missing_checksum_ok = False
 
     def finalize_options(self):
-        # If all is selected then turn on all components
         global fetch_parts
+        if self.version == "self":
+            self.version = version.split("-")[0]
         if self.all:
             for i in self.fetch_options:
                 setattr(self, i, True)
