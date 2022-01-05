@@ -4,102 +4,13 @@
   See the accompanying LICENSE file.
 */
 
-/* Python 2.5 compatibility when size_t types become 64 bit.
-   SQLite3 is limited to 32 bit sizes even on a 64 bit machine. */
-#if PY_VERSION_HEX < 0x02050000
-typedef int Py_ssize_t;
-#endif
-
-#if PY_VERSION_HEX < 0x03020000
-typedef signed long Py_hash_t;
-typedef unsigned long Py_uhash_t;
-#endif
-
-/* Python 2.3 doesn't have these */
-#ifndef Py_RETURN_NONE
-#define Py_RETURN_NONE return Py_INCREF(Py_None), Py_None
-#endif
-#ifndef Py_RETURN_TRUE
-#define Py_RETURN_TRUE return Py_INCREF(Py_True), Py_True
-#define Py_RETURN_FALSE return Py_INCREF(Py_False), Py_False
-#endif
-
-/* fun with objects - this is defined in Python 3 */
-#ifndef Py_TYPE
-#define Py_TYPE(x) ((x)->ob_type)
-#endif
-
-#ifndef Py_REFCNT
-#define Py_REFCNT(x) (((PyObject *)x)->ob_refcnt)
-#endif
-
-#ifndef Py_CLEAR
-#define Py_CLEAR(exp)                          \
-  do                                           \
-  {                                            \
-    if (exp)                                   \
-    {                                          \
-      PyObject *_tmpclear = (PyObject *)(exp); \
-      exp = 0;                                 \
-      Py_DECREF(_tmpclear);                    \
-    }                                          \
-  } while (0)
-#endif
-
-#ifndef Py_VISIT
-#define Py_VISIT(op)               \
-  do                               \
-  {                                \
-    if (op)                        \
-    {                              \
-      int vret = visit((op), arg); \
-      if (vret)                    \
-        return vret;               \
-    }                              \
-  } while (0)
-#endif
-
-/* define as zero if not present - introduced in Python 2.6 */
-#ifndef Py_TPFLAGS_HAVE_VERSION_TAG
-#define Py_TPFLAGS_HAVE_VERSION_TAG 0
-#endif
-
 /* How to make a string from a utf8 constant */
-#if PY_MAJOR_VERSION < 3
-#define MAKESTR PyString_FromString
-#else
 #define MAKESTR PyUnicode_FromString
-#endif
 
-/* Py 2 vs 3 can't decide how to start type initialization */
-#if PY_MAJOR_VERSION < 3
-/* The zero is ob_size */
-#define APSW_PYTYPE_INIT \
-  PyObject_HEAD_INIT(NULL) 0,
-#else
 #define APSW_PYTYPE_INIT PyVarObject_HEAD_INIT(NULL, 0)
-#endif
 
-/* version tag? */
-#if PY_VERSION_HEX >= 0x02060000
 #define APSW_PYTYPE_VERSION , 0
-#else
-#define APSW_PYTYPE_VERSION
-#endif
 
-/* sets */
-#if PY_VERSION_HEX < 0x02050000
-#define PySet_New PyList_New
-#define PySet_Add PyList_Append
-#endif
-
-#if PY_VERSION_HEX < 0x03030000
-#define APSW_Unicode_Return(r) \
-  do                           \
-  {                            \
-    return (r);                \
-  } while (0)
-#else
 #define APSW_Unicode_Return(r)                 \
   do                                           \
   {                                            \
@@ -108,34 +19,15 @@ typedef unsigned long Py_uhash_t;
       Py_CLEAR(r);                             \
     return (r);                                \
   } while (0)
-#endif
 
-#if PY_MAJOR_VERSION < 3
-#define PyBytes_Check PyString_Check
-#define PyBytes_FromStringAndSize PyString_FromStringAndSize
-#define PyBytes_AsString PyString_AsString
-#define PyBytes_AS_STRING PyString_AS_STRING
-#define PyBytes_GET_SIZE PyString_GET_SIZE
-#define _PyBytes_Resize _PyString_Resize
-#define PyBytes_CheckExact PyString_CheckExact
-#define PyBytesObject PyStringObject
-#define PyIntLong_Check(x) (PyInt_Check((x)) || PyLong_Check((x)))
-#define PyIntLong_AsLong(x) ((PyInt_Check((x))) ? (PyInt_AsLong((x))) : ((PyLong_AsLong((x)))))
-#define PyIntLong_AsLongLong(x) ((PyInt_Check((x))) ? (PyInt_AsLong((x))) : ((PyLong_AsLongLong((x)))))
-#define PyBytes_FromFormat PyString_FromFormat
-#else
+
 #define PyIntLong_Check PyLong_Check
 #define PyIntLong_AsLong PyLong_AsLong
 #define PyInt_FromLong PyLong_FromLong
 #define PyIntLong_AsLongLong PyLong_AsLongLong
 #define PyObject_Unicode PyObject_Str
-#endif
 
-#if PY_MAJOR_VERSION < 3
-#define PyIntLong_FromLongLong(val) (((val) >= LONG_MIN && (val) <= LONG_MAX) ? PyInt_FromLong((long)(val)) : PyLong_FromLongLong(val))
-#else
 #define PyIntLong_FromLongLong(val) PyLong_FromLongLong(val)
-#endif
 
 /* we clear weakref lists when close is called on a blob/cursor as
    well as when it is deallocated */
@@ -148,14 +40,6 @@ typedef unsigned long Py_uhash_t;
       self->weakreflist = 0;                    \
     }                                           \
   } while (0)
-
-#if PY_VERSION_HEX < 0x02040000
-/* Introduced in Python 2.4 */
-static int PyDict_Contains(PyObject *dict, PyObject *key)
-{
-  return !!PyDict_GetItem(dict, key);
-}
-#endif
 
 /* Calls the named method of object with the provided args */
 static PyObject *
@@ -175,11 +59,8 @@ Call_PythonMethod(PyObject *obj, const char *methodname, int mandatory, PyObject
 
     /* we should only be called with ascii methodnames so no need to do
      character set conversions etc */
-#if PY_VERSION_HEX < 0x02050000
-  method = PyObject_GetAttrString(obj, (char *)methodname);
-#else
   method = PyObject_GetAttrString(obj, methodname);
-#endif
+
   assert(method != obj);
   if (!method)
   {
@@ -226,35 +107,7 @@ Call_PythonMethodV(PyObject *obj, const char *methodname, int mandatory, const c
 
 /* CONVENIENCE FUNCTIONS */
 
-/* Return a PyBuffer (py2) or PyBytes (py3) */
-#if PY_MAJOR_VERSION < 3
-static PyObject *
-converttobytes(const void *ptr, Py_ssize_t size)
-{
-
-  PyObject *item;
-  item = PyBuffer_New(size);
-  if (item)
-  {
-    void *buffy = 0;
-    Py_ssize_t size2 = size;
-    int aswb = PyObject_AsWriteBuffer(item, &buffy, &size2);
-
-    APSW_FAULT_INJECT(AsWriteBufferFails, , (PyErr_NoMemory(), aswb = -1));
-
-    if (aswb == 0)
-      memcpy(buffy, ptr, size);
-    else
-    {
-      Py_DECREF(item);
-      item = NULL;
-    }
-  }
-  return item;
-}
-#else
 #define converttobytes PyBytes_FromStringAndSize
-#endif
 
 /* Convert a pointer and size UTF-8 string into a Python object.
    Pointer must be non-NULL.  New behaviour in 3.3.8 - always return
@@ -266,42 +119,6 @@ convertutf8stringsize(const char *str, Py_ssize_t size)
   assert(str);
   assert(size >= 0);
 
-#if PY_VERSION_HEX < 0x03030000
-  /* Performance optimization:  If str is all ascii then we
-     can just make a unicode object and fill in the chars. PyUnicode_DecodeUTF8 is rather long,
-     but was fixed in later Python 3 releases
-  */
-  if (size < 16384)
-  {
-    int isallascii = 1;
-    int i = size;
-    const char *p = str;
-    while (isallascii && i)
-    {
-      isallascii = !(*p & 0x80);
-      i--;
-      p++;
-    }
-    if (i == 0 && isallascii)
-    {
-      Py_UNICODE *out;
-      PyObject *res = PyUnicode_FromUnicode(NULL, size);
-      if (!res)
-        return res;
-      out = PyUnicode_AS_UNICODE(res);
-
-      i = size;
-      while (i)
-      {
-        i--;
-        *out = *str;
-        out++;
-        str++;
-      }
-      APSW_Unicode_Return(res);
-    }
-  }
-#endif
   {
     PyObject *r = PyUnicode_DecodeUTF8(str, size, NULL);
     APSW_Unicode_Return(r);
@@ -333,36 +150,6 @@ getutf8string(PyObject *string)
     inunicode = string;
     Py_INCREF(string);
   }
-#if PY_MAJOR_VERSION < 3
-  else if (PyString_CheckExact(string))
-  {
-    /* A python 2 performance optimisation.  If the string consists
-         only of ascii characters then it is already valid utf8.  And
-         in py2 pybytes and pystring are the same thing.  This avoids
-         doing a conversion to unicode and then a conversion to utf8.
-
-         We only do this optimisation for strings that aren't
-         ridiculously long.
-      */
-    if (PyString_GET_SIZE(string) < 16384)
-    {
-      int isallascii = 1;
-      int i = PyString_GET_SIZE(string);
-      const char *p = PyString_AS_STRING(string);
-      while (isallascii && i)
-      {
-        isallascii = !(*p & 0x80);
-        i--;
-        p++;
-      }
-      if (i == 0 && isallascii)
-      {
-        Py_INCREF(string);
-        return string;
-      }
-    }
-  }
-#endif
 
   if (!inunicode)
     inunicode = PyUnicode_FromObject(string);
@@ -378,22 +165,6 @@ getutf8string(PyObject *string)
 }
 
 /* PyObject_AsReadBuffer was deprecated in Py 3 and removed in 3.10 */
-#if PY_MAJOR_VERSION < 3
-#define READBUFFERVARS
-
-#define compat_PyObjectReadBuffer(o)                     \
-  do                                                     \
-  {                                                      \
-    buffer = NULL;                                       \
-    buflen = 0;                                          \
-    asrb = PyObject_AsReadBuffer((o), &buffer, &buflen); \
-  } while (0)
-
-#define ENDREADBUFFER
-
-#define compat_CheckReadBuffer(o) PyObject_CheckReadBuffer(o)
-
-#else
 #define READBUFFERVARS Py_buffer py3buffer
 
 /* ::TODO:: take a name for fault injection */
@@ -418,5 +189,3 @@ getutf8string(PyObject *string)
   } while (0)
 
 #define compat_CheckReadBuffer(o) PyObject_CheckBuffer(o)
-
-#endif
