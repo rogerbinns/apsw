@@ -144,6 +144,7 @@ class build_test_extension(Command):
         name = "testextension.sqlext"
         compiler = distutils.ccompiler.new_compiler(verbose=True)
         compiler.add_include_dir("sqlite3")
+        compiler.add_include_dir(".")
         preargs = ["/Gd"] if "msvc" in str(compiler.__class__).lower() else ["-fPIC"]
         objs = compiler.compile(["src/testextension.c"], extra_preargs=preargs)
         compiler.link_shared_object(objs, name)
