@@ -66,9 +66,8 @@ for line in open("doc/download.rst", "rt"):
         op.append(url % ("apsw-%s.zip" % version))
         op.append("  (Source, includes this HTML Help)")
         op.append("")
-        nomsi = ("2.3", "2.4")
         for pyver in reversed(
-            ("2.3", "2.4", "2.5", "2.6", "2.7", "3.1", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7", "3.8", "3.9", "3.10")):
+            ("3.7", "3.8", "3.9", "3.10")):
             op.append("* Windows Python %s" % (pyver, ))
             for bit in (64, 32):
                 dl = get_downloads(pyver, bit)

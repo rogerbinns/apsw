@@ -139,26 +139,6 @@ compile-win:
 	c:/python37/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
 	-cmd /c del /s /q c:\\python37-64\\lib\\site-packages\\*apsw*
 	"c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python37-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)  $(WINBWHEEL)
-	-cmd /c del /s /q c:\\python36\\lib\\site-packages\\*apsw*
-	c:/python36/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
-	-cmd /c del /s /q c:\\python36-64\\lib\\site-packages\\*apsw*
-	"c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python36-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
-	set APSW_FORCE_DISTUTILS=t & "c:\program files (x86)\microsoft visual studio 14.0\vc\vcvarsall.bat" amd64 & c:/python35-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
-	set APSW_FORCE_DISTUTILS=t & c:/python34/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
-	set APSW_FORCE_DISTUTILS=t & c:/python34-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
-	set APSW_FORCE_DISTUTILS=t & c:/python33/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
-	set APSW_FORCE_DISTUTILS=t & c:/python33-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
-	set APSW_FORCE_DISTUTILS=t & c:/python32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
-	set APSW_FORCE_DISTUTILS=t & c:/python32-64/python setup.py  $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
-	set APSW_FORCE_DISTUTILS=t & c:/python31/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
-	set APSW_FORCE_DISTUTILS=t & c:/python31-64/python setup.py  $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
-	set APSW_FORCE_DISTUTILS=t & c:/python27/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
-	set APSW_FORCE_DISTUTILS=t & c:/python27-64/python setup.py  $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
-	set APSW_FORCE_DISTUTILS=t & c:/python26/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
-	set APSW_FORCE_DISTUTILS=t & c:/python26-64/python setup.py $(WIN64HACK) $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
-	set APSW_FORCE_DISTUTILS=t & c:/python25/python setup.py $(WINBPREFIX) --compile=mingw32 $(WINBSUFFIX) $(WINBINST) $(WINBMSI)
-	set APSW_FORCE_DISTUTILS=t & c:/python24/python setup.py $(WINBPREFIX) --compile=mingw32 $(WINBSUFFIX) $(WINBINST)
-	set APSW_FORCE_DISTUTILS=t & c:/python23/python setup.py $(WINBPREFIX) --compile=mingw32 $(WINBSUFFIX) $(WINBINST)
 	del dist\\*.egg
 
 setup-wheel:
@@ -178,10 +158,6 @@ setup-wheel:
 	c:/python37/python -m pip install --upgrade wheel setuptools
 	c:/python37-64/python -m ensurepip
 	c:/python37-64/python -m pip install --upgrade wheel setuptools
-	c:/python36/python -m ensurepip
-	c:/python36/python  -m pip install --upgrade wheel setuptools
-	c:/python36-64/python -m ensurepip
-	c:/python36-64/python -m pip install --upgrade wheel setuptools
 
 
 source_nocheck: docs
@@ -200,42 +176,6 @@ source: source_nocheck
 
 release:
 	test -f dist/$(VERDIR).zip
-	test -f dist/$(VERDIR).win32-py2.3.exe
-	test -f dist/$(VERDIR).win32-py2.4.exe
-	test -f dist/$(VERWIN).win32-py2.5.exe
-	test -f dist/$(VERWIN).win32-py2.5.msi
-	test -f dist/$(VERWIN).win32-py2.6.exe
-	test -f dist/$(VERWIN).win32-py2.6.msi
-	test -f dist/$(VERWIN).win-amd64-py2.6.exe
-	test -f dist/$(VERWIN).win-amd64-py2.6.msi
-	test -f dist/$(VERWIN).win32-py2.7.exe
-	test -f dist/$(VERWIN).win32-py2.7.msi
-	test -f dist/$(VERWIN).win-amd64-py2.7.exe
-	test -f dist/$(VERWIN).win-amd64-py2.7.msi
-	test -f dist/$(VERWIN).win32-py3.1.exe
-	test -f dist/$(VERWIN).win32-py3.1.msi
-	test -f dist/$(VERWIN).win-amd64-py3.1.exe
-	test -f dist/$(VERWIN).win-amd64-py3.1.msi
-	test -f dist/$(VERWIN).win32-py3.2.exe
-	test -f dist/$(VERWIN).win32-py3.2.msi
-	test -f dist/$(VERWIN).win-amd64-py3.2.exe
-	test -f dist/$(VERWIN).win-amd64-py3.2.msi
-	test -f dist/$(VERWIN).win32-py3.3.exe
-	test -f dist/$(VERWIN).win32-py3.3.msi
-	test -f dist/$(VERWIN).win-amd64-py3.3.exe
-	test -f dist/$(VERWIN).win-amd64-py3.3.msi
-	test -f dist/$(VERWIN).win32-py3.4.exe
-	test -f dist/$(VERWIN).win32-py3.4.msi
-	test -f dist/$(VERWIN).win-amd64-py3.4.exe
-	test -f dist/$(VERWIN).win-amd64-py3.4.msi
-	test -f dist/$(VERWIN).win-amd64-py3.5.exe
-	test -f dist/$(VERWIN).win-amd64-py3.5.msi
-	test -f dist/$(VERWIN).win32-py3.6.exe
-	test -f dist/$(VERWIN).win32-py3.6.msi
-	test -f	dist/$(VERWIN)-cp36-cp36m-win32.whl
-	test -f dist/$(VERWIN).win-amd64-py3.6.exe
-	test -f dist/$(VERWIN).win-amd64-py3.6.msi
-	test -f dist/$(VERWIN)-cp36-cp36m-win_amd64.whl
 	test -f dist/$(VERWIN).win32-py3.7.exe
 	test -f dist/$(VERWIN).win32-py3.7.msi
 	test -f dist/$(VERWIN)-cp37-cp37m-win32.whl
