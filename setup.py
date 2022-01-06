@@ -492,6 +492,9 @@ def findamalgamation():
                     os.path.join(os.path.dirname(os.path.abspath(__file__)), "sqlite3", "sqlite3.c"))
     for path in amalgamation:
         if os.path.exists(path):
+            if sys.platform == "win32":
+                # backslashes can result in escape sequences that the compiler doesn't like
+                path = path.replace("\\", "/")
             return path
     return None
 
