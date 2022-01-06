@@ -567,15 +567,10 @@ class apsw_build_ext(beparent):
 
         path = findamalgamation()
         if path:
-            if sys.platform == "win32" and sys.version_info < (3, 9):
-                # double quotes get consumed by python windows arg processing, fixed
-                # in python 3.9
-                ext.define_macros.append(('APSW_USE_SQLITE_AMALGAMATION', '\\"' + path + '\\"'))
-            else:
-                ext.define_macros.append(('APSW_USE_SQLITE_AMALGAMATION', '"' + path + '"'))
+            ext.define_macros.append(('APSW_USE_SQLITE_AMALGAMATION', '1'))
             ext.depends.append(path)
             # we also add the directory to include path since icu tries to use it
-            ext.include_dirs.append(os.path.dirname(path))
+            ext.include_dirs.insert(0, os.path.dirname(path))
             write("SQLite: Using amalgamation", path)
             load_extension = True
         else:

@@ -46,7 +46,7 @@ API Reference
 #define SQLITE_EXTERN static
 #endif
 #define SQLITE_ENABLE_API_ARMOR 1
-#include APSW_USE_SQLITE_AMALGAMATION
+#include "sqlite3.c"
 #undef small
 
 /* Fight with SQLite over ndebug */
