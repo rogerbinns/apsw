@@ -58,7 +58,9 @@ def fixup_download_url(url):
     if ver:
         ver = int(ver.group(0))
         if ver >= 3071600:
-            if ver >= 3340100:
+            if ver >= 3370200:
+                year = "2022"
+            elif ver >= 3340100:
                 year = "2021"
             elif ver >= 3310000:
                 year = "2020"
