@@ -2,32 +2,23 @@
 
 # See the accompanying LICENSE file.
 
-# APSW test suite - runs under both Python 2 and Python 3 hence a lot
-# of weird constructs to be simultaneously compatible with both.
-# (2to3 is not used).
-
 import apsw
 import sys
 import os
 import codecs
 import warnings
 
-write = sys.stdout.write
-
-
-def print_version_info(write=write):
-    write("                Python " + sys.executable + " " + str(sys.version_info) + "\n")
-    write("Testing with APSW file " + apsw.__file__ + "\n")
-    write("          APSW version " + apsw.apswversion() + "\n")
-    write("    SQLite lib version " + apsw.sqlitelibversion() + "\n")
-    write("SQLite headers version " + str(apsw.SQLITE_VERSION_NUMBER) + "\n")
-    write("    Using amalgamation " + str(apsw.using_amalgamation) + "\n")
-
-    sys.stdout.flush()
+def print_version_info():
+    print("                Python ", sys.executable, sys.version_info)
+    print("Testing with APSW file ", apsw.__file__)
+    print("          APSW version ", apsw.apswversion())
+    print("    SQLite lib version ", apsw.sqlitelibversion())
+    print("SQLite headers version ", apsw.SQLITE_VERSION_NUMBER)
+    print("    Using amalgamation ", apsw.using_amalgamation)
 
 
 # sigh
-iswindows = sys.platform in ('win32', 'win64')
+iswindows = sys.platform in ('win32',)
 
 py3 = sys.version_info >= (3, 0)
 
@@ -1813,7 +1804,7 @@ class APSW(unittest.TestCase):
         # this sometimes fails in virtualized environments due to time
         # going backwards or not going forwards consistently.
         if took + 1 < TIMEOUT:
-            write("Timeout was %d seconds but only %f seconds elapsed!" % (TIMEOUT, took))
+            print(f"Timeout was { TIMEOUT } seconds but only { took } seconds elapsed!")
             self.assertTrue(took >= TIMEOUT)
 
         # check clearing of handler
@@ -8862,12 +8853,12 @@ MEMLEAKITERATIONS = 1000
 PROFILESTEPS = 250000
 
 
-def setup(write=write):
+def setup():
     """Call this if importing this test suite as it will ensure tests
     we can't run are removed etc.  It will also print version
     information."""
 
-    print_version_info(write)
+    print_version_info()
 
     if hasattr(apsw, "config"):
         apsw.config(apsw.SQLITE_CONFIG_MEMSTATUS, True)  # ensure memory tracking is on
@@ -8908,13 +8899,9 @@ def setup(write=write):
 
     # We can do extension loading but no extension present ...
     if getattr(memdb, "enableloadextension", None) and not os.path.exists(LOADEXTENSIONFILENAME):
-        write("Not doing LoadExtension test.  You need to compile the extension first\n")
-        if sys.platform.startswith("darwin"):
-            write("  gcc -fPIC -bundle -o " + LOADEXTENSIONFILENAME + " -I. -Isqlite3 src/testextension.c\n")
-        else:
-            write("  gcc -fPIC -shared -o " + LOADEXTENSIONFILENAME + " -I. -Isqlite3 src/testextension.c\n")
+        print("Not doing LoadExtension test.  You need to compile the extension first\n")
+        print("  python3 setup.py build_test_extension")
         del APSW.testLoadExtension
-        sys.stdout.flush()
 
     # coverage testing of the shell
     if "APSW_PY_COVERAGE" in os.environ:
@@ -8973,7 +8960,7 @@ if __name__ == '__main__':
         try:
             if "APSW_TEST_WALMODE" in os.environ:
                 apsw.connection_hooks.append(set_wal_mode)
-                sys.stderr.write("WAL: ")
+                print("WAL mode testing")
 
             if os.getenv("PYTRACE"):
                 import trace
@@ -8997,9 +8984,8 @@ if __name__ == '__main__':
         PROFILESTEPS = 1000
         v = int(v)
         for i in range(v):
-            write("Iteration " + str(i + 1) + " of " + str(v) + "\n")
+            print(f"Iteration { i + 1 }  of { v }")
             try:
-
                 runtests()
             except SystemExit:
                 exitcode = sys.exc_info()[1].code
