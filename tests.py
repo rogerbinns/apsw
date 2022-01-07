@@ -8,6 +8,7 @@ import os
 import codecs
 import warnings
 
+
 def print_version_info():
     print("                Python ", sys.executable, sys.version_info)
     print("Testing with APSW file ", apsw.__file__)
@@ -18,9 +19,7 @@ def print_version_info():
 
 
 # sigh
-iswindows = sys.platform in ('win32',)
-
-py3 = sys.version_info >= (3, 0)
+iswindows = sys.platform in ('win32', )
 
 # prefix for test files (eg if you want it on tmpfs)
 TESTFILEPREFIX = os.environ.get("APSWTESTPREFIX", "")
@@ -62,11 +61,7 @@ import glob
 import pickle
 import shutil
 import getpass
-
-if py3:
-    import queue as Queue
-else:
-    import Queue
+import queue
 import traceback
 import re
 import gc
@@ -79,57 +74,6 @@ except:
 
 # yay
 is64bit = ctypes and ctypes.sizeof(ctypes.c_size_t) >= 8
-
-# Unicode string/bytes prefix
-if py3:
-    UPREFIX = ""
-    BPREFIX = "b"
-else:
-    UPREFIX = "u"
-    BPREFIX = ""
-
-
-# Return a unicode string - x should have been raw
-def u(x):
-    return eval(UPREFIX + "'''" + x + "'''")
-
-
-# Return a bytes (py3)/buffer (py2) - x should have been raw
-def b(x):
-    if py3:
-        return eval(BPREFIX + "'''" + x + "'''")
-    return eval("buffer('''" + x + "''')")
-
-
-# return bytes (py3)/string (py2) - x should have been raw
-# Use this instead of b for file i/o data as py2 uses str
-def BYTES(x):
-    if py3: return b(x)
-    return eval("'''" + x + "'''")
-
-
-def l(x):
-    if py3: return eval(x)
-    return eval(x + "L")
-
-
-# Various py3 things
-if py3:
-    long = int
-
-if not py3:
-    # emulation of py3 next built-in.  In py2 the iternext method is exposed
-    # as object.next() but in py3 it is object.__next__().
-    def next(iterator, *args):
-        if len(args) > 1:
-            raise TypeError("bad args")
-        try:
-            return iterator.next()
-        except StopIteration:
-            if len(args):
-                return args[0]
-            raise
-
 
 # Make next switch between the iterator and fetchone alternately
 _realnext = next
@@ -159,21 +103,8 @@ def ehook(etype, evalue, etraceback):
     sys.stderr.write("Unraiseable exception " + str(etype) + ":" + str(evalue) + "\n")
     traceback.print_tb(etraceback)
 
+
 sys.excepthook = ehook
-
-# exec is a huge amount of fun having different syntax
-if py3:
-
-    def execwrapper(astring, theglobals, thelocals):
-        thelocals = thelocals.copy()
-        thelocals["astring"] = astring
-        exec("exec(astring, theglobals, thelocals)")
-else:
-
-    def execwrapper(astring, theglobals, thelocals):
-        thelocals = thelocals.copy()
-        thelocals["astring"] = astring
-        exec("exec astring in theglobals, thelocals")
 
 
 # helper functions
@@ -194,11 +125,6 @@ def randomstring(length):
 # An instance of this class is used to get the -1 return value to the
 # C api PyObject_IsTrue
 class BadIsTrue(int):
-    # py2 does this
-    def __nonzero__(self):
-        1 / 0
-
-    # py3 does this
     def __bool__(self):
         1 / 0
 
@@ -211,7 +137,7 @@ class ThreadRunner(threading.Thread):
         self.callable = callable
         self.args = args
         self.kwargs = kwargs
-        self.q = Queue.Queue()
+        self.q = queue.Queue()
         self.started = False
 
     def start(self):
@@ -225,10 +151,7 @@ class ThreadRunner(threading.Thread):
         if t:  # result
             return res
         else:  # exception
-            if py3:
-                exec("raise res[1].with_traceback(res[2])")
-            else:
-                exec("raise res[0], res[1], res[2]")
+            raise res[1].with_traceback(res[2])
 
     def run(self):
         try:
@@ -258,7 +181,7 @@ def bgdel():
                 time.sleep(0.1)
 
 
-bgdelq = Queue.Queue()
+bgdelq = queue.Queue()
 bgdelthread = threading.Thread(target=bgdel)
 bgdelthread.setDaemon(True)
 bgdelthread.start()
@@ -489,9 +412,6 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, apsw.Connection, ":memory:", user="nobody")
         # wrong types
         self.assertRaises(TypeError, apsw.Connection, 3)
-        # non-unicode
-        if not py3:
-            self.assertRaises(UnicodeDecodeError, apsw.Connection, "\xef\x22\xd3\x9e")
         # bad file (cwd)
         self.assertRaises(apsw.CantOpenError, apsw.Connection, ".")
         # bad open flags can't be tested as sqlite accepts them all - ticket #3037
@@ -506,14 +426,14 @@ class APSW(unittest.TestCase):
         # Note that testVFS deals with success cases and the actual vfs backend
         self.assertRaises(TypeError, self.db.filecontrol, 1, 2)
         self.assertRaises(TypeError, self.db.filecontrol, "main", 1001, "foo")
-        self.assertRaises(OverflowError, self.db.filecontrol, "main", 1001, l("45236748972389749283"))
+        self.assertRaises(OverflowError, self.db.filecontrol, "main", 1001, 45236748972389749283)
         self.assertEqual(self.db.filecontrol("main", 1001, 25), False)
 
     def testConnectionConfig(self):
         "Test Connection.config function"
         self.assertRaises(TypeError, self.db.config)
         self.assertRaises(TypeError, self.db.config, "three")
-        x = long(0x7fffffff)
+        x = 0x7fffffff
         self.assertRaises(OverflowError, self.db.config, x * x * x * x * x)
         self.assertRaises(ValueError, self.db.config, 82397)
         self.assertRaises(TypeError, self.db.config, apsw.SQLITE_DBCONFIG_ENABLE_FKEY, "banana")
@@ -528,8 +448,8 @@ class APSW(unittest.TestCase):
         # simple memory leaks will show up
         c = self.db.cursor()
         c.execute("create table foo(x)")
-        vals = [[1], [None], [math.pi], ["kjkljkljl"], [u(r"\u1234\u345432432423423kjgjklhdfgkjhsdfjkghdfjskh")],
-                [b(r"78696ghgjhgjhkgjkhgjhg\xfe\xdf")]]
+        vals = [[1], [None], [math.pi], ["kjkljkljl"], [u"\u1234\u345432432423423kjgjklhdfgkjhsdfjkghdfjskh"],
+                [b"78696ghgjhgjhkgjkhgjhg\xfe\xdf"]]
         c.executemany("insert into foo values(?)", vals)
         for i in range(MEMLEAKITERATIONS):
             db = apsw.Connection(TESTFILEPREFIX + "testdb")
@@ -588,14 +508,14 @@ class APSW(unittest.TestCase):
                 'c': 3
             }),
             # some unicode fun
-            (u(r"($\N{LATIN SMALL LETTER E WITH CIRCUMFLEX},:\N{LATIN SMALL LETTER A WITH TILDE},$\N{LATIN SMALL LETTER O WITH DIAERESIS})"
-               ), (1, 2, 3)),
-            (u(r"($\N{LATIN SMALL LETTER E WITH CIRCUMFLEX},:\N{LATIN SMALL LETTER A WITH TILDE},$\N{LATIN SMALL LETTER O WITH DIAERESIS})"
-               ), {
-                   u(r"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}"): 1,
-                   u(r"\N{LATIN SMALL LETTER A WITH TILDE}"): 2,
-                   u(r"\N{LATIN SMALL LETTER O WITH DIAERESIS}"): 3,
-               }))
+            (u"($\N{LATIN SMALL LETTER E WITH CIRCUMFLEX},:\N{LATIN SMALL LETTER A WITH TILDE},$\N{LATIN SMALL LETTER O WITH DIAERESIS})",
+             (1, 2, 3)),
+            (u"($\N{LATIN SMALL LETTER E WITH CIRCUMFLEX},:\N{LATIN SMALL LETTER A WITH TILDE},$\N{LATIN SMALL LETTER O WITH DIAERESIS})",
+             {
+                 u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}": 1,
+                 u"\N{LATIN SMALL LETTER A WITH TILDE}": 2,
+                 u"\N{LATIN SMALL LETTER O WITH DIAERESIS}": 3,
+             }))
 
         for str, bindings in vals:
             c.execute("insert into foo values" + str, bindings)
@@ -705,13 +625,12 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.IncompleteExecutionError, c.executemany, "begin")
 
         # set type (pysqlite error with this)
-        if sys.version_info >= (2, 4, 0):
-            c.execute("create table xxset(x,y,z)")
-            c.execute("insert into xxset values(?,?,?)", set((1, 2, 3)))
-            c.executemany("insert into xxset values(?,?,?)", (set((4, 5, 6)), ))
-            result = [(1, 2, 3), (4, 5, 6)]
-            for i, v in enumerate(c.execute("select * from xxset order by x")):
-                self.assertEqual(v, result[i])
+        c.execute("create table xxset(x,y,z)")
+        c.execute("insert into xxset values(?,?,?)", set((1, 2, 3)))
+        c.executemany("insert into xxset values(?,?,?)", (set((4, 5, 6)), ))
+        result = [(1, 2, 3), (4, 5, 6)]
+        for i, v in enumerate(c.execute("select * from xxset order by x")):
+            self.assertEqual(v, result[i])
 
     def testCursor(self):
         "Check functionality of the cursor"
@@ -724,7 +643,7 @@ class APSW(unittest.TestCase):
         class consub(apsw.Connection):
             pass
 
-        con2=consub("")
+        con2 = consub("")
         assert isinstance(con2, apsw.Connection) and not type(con2) == apsw.Connection
         apsw.Cursor(con2)
 
@@ -737,9 +656,7 @@ class APSW(unittest.TestCase):
         c.execute(" ;\n\t\r;;")
 
         # unicode
-        self.assertEqual(3, next(c.execute(u("select 3")))[0])
-        if not py3:
-            self.assertRaises(UnicodeDecodeError, c.execute, "\x99\xaa\xbb\xcc")
+        self.assertEqual(3, next(c.execute(u"select 3"))[0])
 
         # does it work?
         c.execute("create table foo(x,y,z)")
@@ -763,8 +680,8 @@ class APSW(unittest.TestCase):
             ("y", "TEXT"),
             ("z", "foo"),
             ("a", "char"),
-            (u(r"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}"),
-             u(r"\N{LATIN SMALL LETTER O WITH DIAERESIS}\N{LATIN SMALL LETTER U WITH CIRCUMFLEX}")),
+            (u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}",
+             u"\N{LATIN SMALL LETTER O WITH DIAERESIS}\N{LATIN SMALL LETTER U WITH CIRCUMFLEX}"),
         )
         c.execute("drop table foo; create table foo (%s)" % (", ".join(["[%s] %s" % (n, t) for n, t in cols]), ))
         c.execute("insert into foo([x a space]) values(1)")
@@ -845,10 +762,6 @@ class APSW(unittest.TestCase):
         self.assertRaises(OverflowError, c.execute, "insert into foo values(9999,?)", (922337203685477580799, ))
         self.assertRaises(OverflowError, c.execute, "insert into foo values(9999,?)", (-922337203685477580799, ))
 
-        # invalid character data - non-ascii data must be provided in unicode
-        if not py3:  # py3 - all strings are unicode so not a problem
-            self.assertRaises(UnicodeDecodeError, c.execute, "insert into foo values(9999,?)", ("\xfe\xfb\x80\x92", ))
-
         # not valid types for SQLite
         self.assertRaises(TypeError, c.execute, "insert into foo values(9999,?)", (apsw, ))  # a module
         self.assertRaises(TypeError, c.execute, "insert into foo values(9999,?)", (type, ))  # type
@@ -856,28 +769,6 @@ class APSW(unittest.TestCase):
 
         # check nothing got inserted
         self.assertEqual(0, next(c.execute("select count(*) from foo where row=9999"))[0])
-
-        # playing with default encoding and non-ascii strings - py2 only
-        if py3: return
-        enc = sys.getdefaultencoding()
-        reload(sys)  # gets setdefaultencoding function back
-        try:
-            for v in vals:
-                if type(v) != unicode:
-                    continue
-
-                def encoding(*args):
-                    return v.encode("utf8")  # returns as str not unicode
-
-                self.db.createscalarfunction("encoding", encoding)
-                sys.setdefaultencoding("utf8")
-                for row in c.execute("select encoding(3)"):
-                    self.assertEqual(v, row[0])
-                c.execute("insert into foo values(1234,?)", (v.encode("utf8"), ))
-                for row in c.execute("select x from foo where rowid=" + str(self.db.last_insert_rowid())):
-                    self.assertEqual(v, row[0])
-        finally:
-            sys.setdefaultencoding(enc)
 
     def testFormatSQLValue(self):
         "Verify text formatting of values"
@@ -890,8 +781,8 @@ class APSW(unittest.TestCase):
             (-9223372036854775808, "-9223372036854775808"),
             (None, "NULL"),
             ("ABC", "'ABC'"),
-            (u(r"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET} "),
-             "'" + u(r"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET} ") + "'"),
+            (u"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET} ",
+             "'" + u"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET} " + "'"),
             ("", "''"),
             ("'", "''''"),
             ("'a", "'''a'"),
@@ -903,20 +794,12 @@ class APSW(unittest.TestCase):
             ("A'B'\0C", "'A''B'''||X'00'||'C'"),
             ("\0A'B", "''||X'00'||'A''B'"),
             ("A'B\0", "'A''B'||X'00'||''"),
-            (b(r"AB\0C"), "X'41420043'"),
+            (b"AB\0C", "X'41420043'"),
         )
         for vin, vout in vals:
-            if not py3:
-                if isinstance(vin, str):
-                    vin = unicode(vin)
             out = apsw.format_sql_value(vin)
-            if not py3:
-                self.assertEqual(out, unicode(vout))
-            else:
-                self.assertEqual(out, vout)
+            self.assertEqual(out, vout)
         # Errors
-        if not py3:
-            self.assertRaises(TypeError, apsw.format_sql_value, "plain string")
         self.assertRaises(TypeError, apsw.format_sql_value, apsw)
         self.assertRaises(TypeError, apsw.format_sql_value)
 
@@ -929,10 +812,9 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, self.db.wal_checkpoint, -1)
         self.db.wal_checkpoint()
         self.db.wal_checkpoint("main")
-        if sys.version_info > (2, 4):  # 2.3 barfs internally
-            v = self.db.wal_checkpoint(mode=apsw.SQLITE_CHECKPOINT_PASSIVE)
-            self.assertTrue(isinstance(v, tuple) and len(v) == 2 and isinstance(v[0], int) and isinstance(v[1], int))
-            self.assertRaises(apsw.MisuseError, self.db.wal_checkpoint, mode=876786)
+        v = self.db.wal_checkpoint(mode=apsw.SQLITE_CHECKPOINT_PASSIVE)
+        self.assertTrue(isinstance(v, tuple) and len(v) == 2 and isinstance(v[0], int) and isinstance(v[1], int))
+        self.assertRaises(apsw.MisuseError, self.db.wal_checkpoint, mode=876786)
         self.assertRaises(TypeError, self.db.setwalhook)
         self.assertRaises(TypeError, self.db.setwalhook, 12)
         self.db.setwalhook(None)
@@ -987,7 +869,7 @@ class APSW(unittest.TestCase):
         # this should fail
         self.assertRaises(TypeError, self.db.setauthorizer, 12)  # must be callable
         self.db.setauthorizer(authorizer)
-        for val in apsw.SQLITE_DENY, long(apsw.SQLITE_DENY), 0x800276889000212112:
+        for val in apsw.SQLITE_DENY, apsw.SQLITE_DENY, 0x800276889000212112:
             retval = val
             if val < 100:
                 self.assertRaises(apsw.AuthError, c.execute, "create table privatetwo(x)")
@@ -1271,11 +1153,11 @@ class APSW(unittest.TestCase):
             # https://sqlite.org/cvstrac/tktview?tn=3875
             pass
         # some unicode fun
-        self.db.createscalarfunction, u(r"twelve\N{BLACK STAR}"), ilove7
+        self.db.createscalarfunction, u"twelve\N{BLACK STAR}", ilove7
         try:
             # SQLite happily registers the function, but you can't
             # call it
-            self.assertEqual(c.execute("select " + u(r"twelve\N{BLACK STAR}") + "(3)").fetchall(), [[7]])
+            self.assertEqual(c.execute("select " + u"twelve\N{BLACK STAR}" + "(3)").fetchall(), [[7]])
         except apsw.SQLError:
             pass
 
@@ -1315,8 +1197,7 @@ class APSW(unittest.TestCase):
             return "\x99\xaa\xbb\xcc"
 
         self.db.createscalarfunction("ilove8bit", ilove8bit)
-        if not py3:
-            self.assertRaises(UnicodeDecodeError, c.execute, "select ilove8bit(*) from foo")
+
         # coverage
         def bad(*args):
             1 / 0
@@ -1394,7 +1275,7 @@ class APSW(unittest.TestCase):
                 pass
             self.db.createaggregatefunction("twelve", None)
 
-        self.assertRaises(TypeError, self.db.createaggregatefunction, u(r"twelve\N{BLACK STAR}"), 12)  # must be ascii
+        self.assertRaises(TypeError, self.db.createaggregatefunction, u"twelve\N{BLACK STAR}", 12)  # must be ascii
         self.db.createaggregatefunction("longest", longest.factory)
 
         vals = (
@@ -1537,7 +1418,7 @@ class APSW(unittest.TestCase):
             if values[0] < values[1]:
                 return -1  # return an int
             if values[0] > values[1]:
-                return long(1)  # and a long
+                return 1  # and a long
             return 0
 
         self.assertRaises(TypeError, self.db.createcollation, "twelve", strnumcollate, 12)  # wrong # params
@@ -1545,7 +1426,7 @@ class APSW(unittest.TestCase):
         self.db.createcollation("strnum", strnumcollate)
         c.execute("create table foo(x)")
         # adding this unicode in front improves coverage
-        uni = u(r"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}")
+        uni = u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}"
         vals = (uni + "file1", uni + "file7", uni + "file9", uni + "file17", uni + "file20")
         valsrev = list(vals)
         valsrev.reverse()  # put them into table in reverse order
@@ -1718,9 +1599,7 @@ class APSW(unittest.TestCase):
         self.assertEqual(True, apsw.complete("select * from foo; select *;"))
         self.assertEqual(False, apsw.complete("select * from foo where x=1"))
         self.assertEqual(True, apsw.complete("select * from foo;"))
-        self.assertEqual(True, apsw.complete(u(r"select '\u9494\ua7a7';")))
-        if not py3:
-            self.assertRaises(UnicodeDecodeError, apsw.complete, "select '\x94\xa7';")
+        self.assertEqual(True, apsw.complete(u"select '\u9494\ua7a7';"))
         self.assertRaises(TypeError, apsw.complete, 12)  # wrong type
         self.assertRaises(TypeError, apsw.complete)  # not enough args
         self.assertRaises(TypeError, apsw.complete, "foo", "bar")  # too many args
@@ -2109,22 +1988,18 @@ class APSW(unittest.TestCase):
         c = self.db.cursor()
         c.execute("create table foo(row,str)")
         vals = ("a simple string", "a simple string\0with a null", "a string\0with two\0nulls",
-                "or even a \0\0\0\0\0\0sequence\0\0\0\0of them", u(r"a \u1234 unicode \ufe54 string \u0089"),
-                u(r"a \u1234 unicode \ufe54 string \u0089\0and some text"),
-                u(r"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET}\0more\0than you\0can handle"),
-                u(r"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET}\0\0\0\0\0sequences\0\0\0of them"))
+                "or even a \0\0\0\0\0\0sequence\0\0\0\0of them", u"a \u1234 unicode \ufe54 string \u0089",
+                u"a \u1234 unicode \ufe54 string \u0089\0and some text",
+                u"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET}\0more\0than you\0can handle",
+                u"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET}\0\0\0\0\0sequences\0\0\0of them")
 
         vals = vals + (
             "a simple string\0",
-            u(r"a \u1234 unicode \ufe54 string \u0089\0"),
+            u"a \u1234 unicode \ufe54 string \u0089\0",
         )
 
         for i, v in enumerate(vals):
             c.execute("insert into foo values(?,?)", (i, v))
-
-        if not py3:
-            self.assertRaises(UnicodeDecodeError, c.execute, "insert into foo values(9000,?)",
-                              ("a simple string\0with a null and \xfe\xfb\x80\x92", ))
 
         # add function to test conversion back as well
         def snap(*args):
@@ -2340,8 +2215,6 @@ class APSW(unittest.TestCase):
     def testLoadExtension(self):
         "Check loading of extensions"
         # unicode issues
-        if not py3:
-            self.assertRaises(UnicodeDecodeError, self.db.loadextension, "\xa7\x94")
         # they need to be enabled first (off by default)
         self.assertRaises(apsw.ExtensionLoadingError, self.db.loadextension, LOADEXTENSIONFILENAME)
         self.assertEqual(self.db.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, -1), 0)
@@ -2380,44 +2253,30 @@ class APSW(unittest.TestCase):
 
             def Create2(self, *args):
                 e = apsw.IOError()
-                e.extendedresult = long(apsw.SQLITE_IOERR_ACCESS)
+                e.extendedresult = (0x80 << 32) + apsw.SQLITE_IOERR_ACCESS  # bigger than 32 bits
                 raise e
 
-            def Create3(self, *args):
-                e = apsw.IOError()
-                e.extendedresult = (long("0x80") << 32) + apsw.SQLITE_IOERR_ACCESS  # bigger than 32 bits
-                raise e
-
-        if not hasattr(self.db, "createmodule"): return
         self.db.createmodule("foo", Source())
-        for i in "1", "2", "3":
+        for i in "1", "2":
             Source.Create = getattr(Source, "Create" + i)
             try:
                 self.db.cursor().execute("create virtual table vt using foo()")
                 1 / 0
             except:
                 klass, value, tb = sys.exc_info()
-            # check types and values
-            if i == "3":
-                self.assertEqual(klass, ValueError)
-                continue
+
             self.assertEqual(klass, apsw.IOError)
             self.assertTrue(isinstance(value, apsw.IOError))
-            # python 2.3 totally messes up on long<->int and signed conversions causing the test to fail
-            # but the code is fine - so just ignore rest of test for py2.3
-            if sys.version_info < (2, 4):
-                return
-
-            self.assertEqual(value.extendedresult & ((long(0xffff) << 16) | long(0xffff)), apsw.SQLITE_IOERR_ACCESS)
+            self.assertEqual(value.extendedresult & ((0xffff << 16) | 0xffff), apsw.SQLITE_IOERR_ACCESS)
 
     def testVtables(self):
         "Test virtual table functionality"
 
         data = (  # row 0 is headers, column 0 is rowid
             ("rowid", "name", "number", "item", "description"),
-            (1, "Joe Smith", 1.1, u(r"\u00f6\u1234"), "foo"),
-            (6000000000, "Road Runner", -7.3, u(r"\u00f6\u1235"), "foo"),
-            (77, "Fred", 0, u(r"\u00f6\u1236"), "foo"),
+            (1, "Joe Smith", 1.1, u"\u00f6\u1234", "foo"),
+            (6000000000, "Road Runner", -7.3, u"\u00f6\u1235", "foo"),
+            (77, "Fred", 0, u"\u00f6\u1236", "foo"),
         )
 
         dataschema = "create table this_should_be_ignored" + str(data[0][1:])
@@ -2474,8 +2333,8 @@ class APSW(unittest.TestCase):
 
             def CreateUnicodeException(self, *args):
                 raise Exception(
-                    u(r"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}\N{LATIN SMALL LETTER O WITH DIAERESIS}"
-                      ))
+                    u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}\N{LATIN SMALL LETTER O WITH DIAERESIS}"
+                )
 
             def CreateBadSchemaType(self, *args):
                 return 12, None
@@ -2502,12 +2361,11 @@ class APSW(unittest.TestCase):
         self.db.createmodule("testmod1", Source("testmod1", "main", "xyzzy", "1", '"one"'))
         self.assertRaises(ZeroDivisionError, cur.execute, 'create virtual table xyzzy using testmod1(1,"one")')
         # unicode
-        uni = u(
-            r"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}\N{LATIN SMALL LETTER O WITH DIAERESIS}"
-        )
+        uni = u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}\N{LATIN SMALL LETTER A WITH TILDE}\N{LATIN SMALL LETTER O WITH DIAERESIS}"
+
         self.db.createmodule("testmod1dash1", Source("testmod1dash1", "main", uni, "1", '"' + uni + '"'))
         self.assertRaises(ZeroDivisionError, cur.execute,
-                          u('create virtual table %s using testmod1dash1(1,"%s")') % (uni, uni))
+                          u'create virtual table %s using testmod1dash1(1,"%s")' % (uni, uni))
         Source.Create = Source.CreateErrorCode
         self.assertRaises(apsw.BusyError, cur.execute, 'create virtual table xyzzz using testmod1(2, "two")')
         Source.Create = Source.CreateUnicodeException
@@ -2567,7 +2425,7 @@ class APSW(unittest.TestCase):
 
             def BestIndex4(self, constraints, orderbys):
                 # this gives ValueError ("bad" is not a float)
-                return (None, 12, u(r"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}"), "anything", "bad")
+                return (None, 12, u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}", "anything", "bad")
 
             def BestIndex5(self, constraints, orderbys):
                 # unicode error
@@ -2577,7 +2435,7 @@ class APSW(unittest.TestCase):
                 return ((0, 1, (2, BadIsTrue()), 3, 4), )
 
             def BestIndex7(self, constraints, orderbys):
-                return (None, long(77), "foo", BadIsTrue(), 99)
+                return (None, 77, "foo", BadIsTrue(), 99)
 
             _bestindexreturn = 99
 
@@ -2586,8 +2444,8 @@ class APSW(unittest.TestCase):
                 cl.sort()
                 assert allconstraintsl == cl
                 assert orderbys == ((2, False), )
-                retval = ([long(4), (3, True), [long(2), False], 1, (0, False)], 997,
-                          u(r"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}"), False, 99)[:self._bestindexreturn]
+                retval = ([4, (3, True), [2, False], 1, (0, False)], 997, u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}",
+                          False, 99)[:self._bestindexreturn]
                 return retval
 
             def BestIndexGood(self, constraints, orderbys):
@@ -2752,7 +2610,7 @@ class APSW(unittest.TestCase):
                     return
                 # 3 or more
                 assert idxnum == 997
-                assert idxstr == u(r"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}")
+                assert idxstr == u"\N{LATIN SMALL LETTER E WITH CIRCUMFLEX}"
                 assert constraintargs == ('foo', 'A', 12.4, 'A', -1000)
 
             def Filter(self, *args):
@@ -2834,9 +2692,6 @@ class APSW(unittest.TestCase):
             self.assertRaises(TypeError, cur.execute, allconstraints)
         VTable.BestIndex = VTable.BestIndex4
         self.assertRaises(ValueError, cur.execute, allconstraints)
-        if not py3:
-            VTable.BestIndex = VTable.BestIndex5
-            self.assertRaises(UnicodeDecodeError, cur.execute, allconstraints)
         VTable.BestIndex = VTable.BestIndex6
         self.assertRaises(ZeroDivisionError, cur.execute, allconstraints)
         VTable.BestIndex = VTable.BestIndex7
@@ -3093,7 +2948,7 @@ class APSW(unittest.TestCase):
 
         class Source:
             def Create(self, db, modulename, dbname, tablename, *args):
-                columns, data = getfiledata([eval(UPREFIX + a) for a in args])  # eval strips off layer of quotes
+                columns, data = getfiledata([eval(a) for a in args])  # eval strips off layer of quotes
                 schema = "create table foo(" + ','.join(["'%s'" % (x, ) for x in columns[1:]]) + ")"
                 return schema, Table(columns, data)
 
@@ -3267,52 +3122,26 @@ class APSW(unittest.TestCase):
         apsw.faultdict["SetContextResultLargeUnicode"] = True
         try:
             db = apsw.Connection(":memory:")
-            db.createscalarfunction("foo", lambda x: u("a unicode string"))
+            db.createscalarfunction("foo", lambda x: u"a unicode string")
             for row in db.cursor().execute("select foo(3)"):
                 pass
             1 / 0
         except apsw.TooBigError:
             pass
 
-        ## SetContextResultLargeString
-        if sys.version_info < (3, 0):
-            apsw.faultdict["SetContextResultLargeString"] = True
-            try:
-                db = apsw.Connection(":memory:")
-
-                def func(x):
-                    return "an ordinary string" * 10000
-
-                db.createscalarfunction("foo", func)
-                for row in db.cursor().execute("select foo(3)"):
-                    pass
-                1 / 0
-            except apsw.TooBigError:
-                pass
-
         ## DoBindingLargeUnicode
         apsw.faultdict["DoBindingLargeUnicode"] = True
         try:
             db = apsw.Connection(":memory:")
-            db.cursor().execute("create table foo(x); insert into foo values(?)", (u("aaaa"), ))
+            db.cursor().execute("create table foo(x); insert into foo values(?)", (u"aaaa", ))
             1 / 0
         except apsw.TooBigError:
             pass
 
-        ## DoBindingLargeString
-        if sys.version_info < (3, 0):
-            apsw.faultdict["DoBindingLargeString"] = True
-            try:
-                db = apsw.Connection(":memory:")
-                db.cursor().execute("create table foo(x); insert into foo values(?)", ("aaaa" * 10000, ))
-                1 / 0
-            except apsw.TooBigError:
-                pass
-
     def testErrorCodes(self):
         "Verify setting of result codes on error/exception"
         fname = TESTFILEPREFIX + "gunk-errcode-test"
-        write_whole_file(fname, "wb", b("A") * 8192)
+        write_whole_file(fname, "wb", b"A" * 8192)
         db = None
         try:
             # The exception could be thrown on either of these lines
@@ -3618,8 +3447,8 @@ class APSW(unittest.TestCase):
         orig_getuser = getpass.getuser
         fh = []
         try:
-            time.strftime = lambda arg: BYTES(r"gjkTIMEJUNKhgjhg\xfe\xdf")
-            getpass.getuser = lambda: BYTES(r"\x81\x82\x83gjkhgUSERJUNKjhg\xfe\xdf")
+            time.strftime = lambda arg: b"gjkTIMEJUNKhgjhg\xfe\xdf"
+            getpass.getuser = lambda: b"\x81\x82\x83gjkhgUSERJUNKjhg\xfe\xdf"
             import codecs
             fh = [codecs.open(TESTFILEPREFIX + "test-shell-" + t, "w+b", encoding="utf8") for t in ("in", "out", "err")]
             kwargs = {"stdin": fh[0], "stdout": fh[1], "stderr": fh[2]}
@@ -3761,7 +3590,7 @@ class APSW(unittest.TestCase):
             def __init__(self):
                 self.db = apsw.Connection("")
                 self.db.setbusyhandler(self.refme)
-                self.cur=self.db.cursor()
+                self.cur = self.db.cursor()
                 self.cur.setrowtrace(self.refme)
 
             def refme(self):
@@ -3770,9 +3599,7 @@ class APSW(unittest.TestCase):
         for i in range(1000):
             SelfReferencer()
         gc.collect()
-        if sys.version_info >= (3, 4):
-            # the reference cycles are broken before py3.4 but not the collect just called
-            self.assertEqual(1000, len(cleared))
+        self.assertEqual(1000, len(cleared))
 
     def testPysqliteRecursiveIssue(self):
         "Check an issue that affected pysqlite"
@@ -3799,7 +3626,7 @@ class APSW(unittest.TestCase):
                 "create table foo(x); insert into foo values(x'aabbccdd'); select rowid from foo"))[0]
             blob = db.blobopen("main", "foo", "x", rowid, False)
             try:
-                blob.write(b("badd"))
+                blob.write(b"badd")
             except apsw.ReadOnlyError:
                 pass
             del db
@@ -3865,7 +3692,7 @@ class APSW(unittest.TestCase):
         # Get some coverage - overflow apswbuffer recycle.  100 is
         # statementcache size, 256 is apswbufferrecycle bin size, and
         # 17 is to overflow
-        l = [self.db.cursor().execute(u("select 3" + " " * i)) for i in range(100 + 256 + 17)]
+        l = [self.db.cursor().execute(u"select 3" + " " * i) for i in range(100 + 256 + 17)]
         while l:
             l.pop().fetchall()
 
@@ -3877,9 +3704,7 @@ class APSW(unittest.TestCase):
     def testWikipedia(self):
         "Use front page of wikipedia to check unicode handling"
         # the text also includes characters that can't be represented in 16 bits
-        text = u(
-            """WIKIPEDIA\nEnglish\nThe Free Encyclopedia\n2 386 000+ articles\nDeutsch\nDie freie Enzyklop\\u00e4die\n753 000+ Artikel\nFran\\u00e7ais\nL\\u2019encyclop\\u00e9die libre\n662 000+ articles\nPolski\nWolna encyklopedia\n503 000+ hase\\u0142\n\\u65e5\\u672c\\u8a9e\n\\u30d5\\u30ea\\u30fc\\u767e\\u79d1\\u4e8b\\u5178\n492 000+ \\u8a18\\u4e8b\nItaliano\nL\\u2019enciclopedia libera\n456 000+ voci\nNederlands\nDe vrije encyclopedie\n440 000+ artikelen\nPortugu\\u00eas\nA enciclop\\u00e9dia livre\n380 000+ artigos\nEspa\\u00f1ol\nLa enciclopedia libre\n363 000+ art\\u00edculos\n\\u0420\\u0443\\u0441\\u0441\\u043a\\u0438\\u0439\n\\u0421\\u0432\\u043e\\u0431\\u043e\\u0434\\u043d\\u0430\\u044f \\u044d\\u043d\\u0446\\u0438\\u043a\\u043b\\u043e\\u043f\\u0435\\u0434\\u0438\\u044f\n285 000+ \\u0441\\u0442\\u0430\\u0442\\u0435\\u0439\nSearch \\u00b7 Suche \\u00b7 Rechercher \\u00b7 Szukaj \\u00b7 \\u691c\\u7d22 \\u00b7 Ricerca \\u00b7 Zoeken \\u00b7 Busca \\u00b7 Buscar\n\\u041f\\u043e\\u0438\\u0441\\u043a \\u00b7 S\\u00f6k \\u00b7 \\u641c\\u7d22 \\u00b7 S\\u00f8k \\u00b7 Haku \\u00b7 Cerca \\u00b7 Suk \\u00b7 \\u041f\\u043e\\u0448\\u0443\\u043a \\u00b7 C\\u0103utare \\u00b7 Ara\n 100 000+ \nCatal\\u00e0 \\u00b7 Deutsch \\u00b7 English \\u00b7 Espa\\u00f1ol \\u00b7 Fran\\u00e7ais \\u00b7 Italiano \\u00b7 Nederlands \\u00b7 \\u65e5\\u672c\\u8a9e \\u00b7 Norsk (bokm\\u00e5l) \\u00b7 Polski \\u00b7 Portugu\\u00eas \\u00b7 \\u0420\\u0443\\u0441\\u0441\\u043a\\u0438\\u0439 \\u00b7 Rom\\u00e2n\\u0103 \\u00b7 Suomi \\u00b7 Svenska \\u00b7 T\\u00fcrk\\u00e7e \\u00b7 \\u0423\\u043a\\u0440\\u0430\\u0457\\u043d\\u0441\\u044c\\u043a\\u0430 \\u00b7 Volap\\u00fck \\u00b7 \\u4e2d\\u6587\n 10 000+ \n\\u0627\\u0644\\u0639\\u0631\\u0628\\u064a\\u0629 \\u00b7 Asturianu \\u00b7 Krey\\u00f2l Ayisyen \\u00b7 Az\\u0259rbaycan / \\u0622\\u0630\\u0631\\u0628\\u0627\\u064a\\u062c\\u0627\\u0646 \\u062f\\u064a\\u0644\\u06cc \\u00b7 \\u09ac\\u09be\\u0982\\u09b2\\u09be \\u00b7 \\u0411\\u0435\\u043b\\u0430\\u0440\\u0443\\u0441\\u043a\\u0430\\u044f (\\u0410\\u043a\\u0430\\u0434\\u044d\\u043c\\u0456\\u0447\\u043d\\u0430\\u044f) \\u00b7 \\u09ac\\u09bf\\u09b7\\u09cd\\u09a3\\u09c1\\u09aa\\u09cd\\u09b0\\u09bf\\u09af\\u09bc\\u09be \\u09ae\\u09a3\\u09bf\\u09aa\\u09c1\\u09b0\\u09c0 \\u00b7 Bosanski \\u00b7 Brezhoneg \\u00b7 \\u0411\\u044a\\u043b\\u0433\\u0430\\u0440\\u0441\\u043a\\u0438 \\u00b7 \\u010cesky \\u00b7 Cymraeg \\u00b7 Dansk \\u00b7 Eesti \\u00b7 \\u0395\\u03bb\\u03bb\\u03b7\\u03bd\\u03b9\\u03ba\\u03ac \\u00b7 Esperanto \\u00b7 Euskara \\u00b7 \\u0641\\u0627\\u0631\\u0633\\u06cc \\u00b7 Galego \\u00b7 \\ud55c\\uad6d\\uc5b4 \\u00b7 \\u0939\\u093f\\u0928\\u094d\\u0926\\u0940 \\u00b7 Hrvatski \\u00b7 Ido \\u00b7 Bahasa Indonesia \\u00b7 \\u00cdslenska \\u00b7 \\u05e2\\u05d1\\u05e8\\u05d9\\u05ea \\u00b7 Basa Jawa \\u00b7 \\u10e5\\u10d0\\u10e0\\u10d7\\u10e3\\u10da\\u10d8 \\u00b7 Kurd\\u00ee / \\u0643\\u0648\\u0631\\u062f\\u06cc \\u00b7 Latina \\u00b7 Lumbaart \\u00b7 Latvie\\u0161u \\u00b7 L\\u00ebtzebuergesch \\u00b7 Lietuvi\\u0173 \\u00b7 Magyar \\u00b7 \\u041c\\u0430\\u043a\\u0435\\u0434\\u043e\\u043d\\u0441\\u043a\\u0438 \\u00b7 \\u092e\\u0930\\u093e\\u0920\\u0940 \\u00b7 Bahasa Melayu \\u00b7 \\u0928\\u0947\\u092a\\u093e\\u0932 \\u092d\\u093e\\u0937\\u093e \\u00b7 Norsk (nynorsk) \\u00b7 Nnapulitano \\u00b7 Occitan \\u00b7 Piemont\\u00e8is \\u00b7 Plattd\\u00fc\\u00fctsch \\u00b7 Shqip \\u00b7 Sicilianu \\u00b7 Simple English \\u00b7 Sinugboanon \\u00b7 Sloven\\u010dina \\u00b7 Sloven\\u0161\\u010dina \\u00b7 \\u0421\\u0440\\u043f\\u0441\\u043a\\u0438 \\u00b7 Srpskohrvatski / \\u0421\\u0440\\u043f\\u0441\\u043a\\u043e\\u0445\\u0440\\u0432\\u0430\\u0442\\u0441\\u043a\\u0438 \\u00b7 Basa Sunda \\u00b7 Tagalog \\u00b7 \\u0ba4\\u0bae\\u0bbf\\u0bb4\\u0bcd \\u00b7 \\u0c24\\u0c46\\u0c32\\u0c41\\u0c17\\u0c41 \\u00b7 \\u0e44\\u0e17\\u0e22 \\u00b7 Ti\\u1ebfng Vi\\u1ec7t \\u00b7 Walon\n 1 000+ \nAfrikaans \\u00b7 Alemannisch \\u00b7 \\u12a0\\u121b\\u122d\\u129b \\u00b7 Aragon\\u00e9s \\u00b7 Arm\\u00e3neashce \\u00b7 Arpitan \\u00b7 B\\u00e2n-l\\u00e2m-g\\u00fa \\u00b7 Basa Banyumasan \\u00b7 \\u0411\\u0435\\u043b\\u0430\\u0440\\u0443\\u0441\\u043a\\u0430\\u044f (\\u0422\\u0430\\u0440\\u0430\\u0448\\u043a\\u0435\\u0432i\\u0446\\u0430) \\u00b7 \\u092d\\u094b\\u091c\\u092a\\u0941\\u0930\\u0940 \\u00b7 Boarisch \\u00b7 Corsu \\u00b7 \\u0427\\u0103\\u0432\\u0430\\u0448 \\u00b7 Deitsch \\u00b7 \\u078b\\u07a8\\u0788\\u07ac\\u0780\\u07a8 \\u00b7 Eald Englisc \\u00b7 F\\u00f8royskt \\u00b7 Frysk \\u00b7 Furlan \\u00b7 Gaeilge \\u00b7 Gaelg \\u00b7 G\\u00e0idhlig \\u00b7 \\u53e4\\u6587 / \\u6587\\u8a00\\u6587 \\u00b7 \\u02bb\\u014clelo Hawai\\u02bbi \\u00b7 \\u0540\\u0561\\u0575\\u0565\\u0580\\u0565\\u0576 \\u00b7 Hornjoserbsce \\u00b7 Ilokano \\u00b7 Interlingua \\u00b7 \\u0418\\u0440\\u043e\\u043d \\u00e6\\u0432\\u0437\\u0430\\u0433 \\u00b7 \\u0c95\\u0ca8\\u0ccd\\u0ca8\\u0ca1 \\u00b7 Kapampangan \\u00b7 Kasz\\u00ebbsczi \\u00b7 Kernewek \\u00b7 \\u1797\\u17b6\\u179f\\u17b6\\u1781\\u17d2\\u1798\\u17c2\\u179a \\u00b7 Ladino / \\u05dc\\u05d0\\u05d3\\u05d9\\u05e0\\u05d5 \\u00b7 Ligure \\u00b7 Limburgs \\u00b7 Ling\\u00e1la \\u00b7 \\u0d2e\\u0d32\\u0d2f\\u0d3e\\u0d33\\u0d02 \\u00b7 Malti \\u00b7 M\\u0101ori \\u00b7 \\u041c\\u043e\\u043d\\u0433\\u043e\\u043b \\u00b7 N\\u0101huatlaht\\u014dlli \\u00b7 Nedersaksisch \\u00b7 \\u0928\\u0947\\u092a\\u093e\\u0932\\u0940 \\u00b7 Nouormand \\u00b7 Novial \\u00b7 O\\u2018zbek \\u00b7 \\u092a\\u093e\\u0934\\u093f \\u00b7 Pangasin\\u00e1n \\u00b7 \\u067e\\u069a\\u062a\\u0648 \\u00b7 \\u049a\\u0430\\u0437\\u0430\\u049b\\u0448\\u0430 \\u00b7 Ripoarisch \\u00b7 Rumantsch \\u00b7 Runa Simi \\u00b7 \\u0938\\u0902\\u0938\\u094d\\u0915\\u0943\\u0924\\u092e\\u094d \\u00b7 S\\u00e1megiella \\u00b7 Scots \\u00b7 Kiswahili \\u00b7 Tarand\\u00edne \\u00b7 Tatar\\u00e7a \\u00b7 \\u0422\\u043e\\u04b7\\u0438\\u043a\\u04e3 \\u00b7 Lea faka-Tonga \\u00b7 T\\u00fcrkmen \\u00b7 \\u0627\\u0631\\u062f\\u0648 \\u00b7 V\\u00e8neto \\u00b7 V\\u00f5ro \\u00b7 West-Vlams \\u00b7 Winaray \\u00b7 \\u5434\\u8bed \\u00b7 \\u05d9\\u05d9\\u05b4\\u05d3\\u05d9\\u05e9 \\u00b7 \\u7cb5\\u8a9e \\u00b7 Yor\\u00f9b\\u00e1 \\u00b7 Zazaki \\u00b7 \\u017demait\\u0117\\u0161ka\n 100+ \n\\u0710\\u072a\\u0721\\u071d\\u0710 \\u00b7 Ava\\u00f1e\\u2019\\u1ebd \\u00b7 \\u0410\\u0432\\u0430\\u0440 \\u00b7 Aymara \\u00b7 Bamanankan \\u00b7 \\u0411\\u0430\\u0448\\u04a1\\u043e\\u0440\\u0442 \\u00b7 Bikol Central \\u00b7 \\u0f56\\u0f7c\\u0f51\\u0f0b\\u0f61\\u0f72\\u0f42 \\u00b7 Chamoru \\u00b7 Chavacano de Zamboanga \\u00b7 Bislama \\u00b7 Din\\u00e9 Bizaad \\u00b7 Dolnoserbski \\u00b7 Emigli\\u00e0n-Rumagn\\u00f2l \\u00b7 E\\u028begbe \\u00b7 \\u06af\\u06cc\\u0644\\u06a9\\u06cc \\u00b7 \\u0a97\\u0ac1\\u0a9c\\u0ab0\\u0abe\\u0aa4\\u0ac0 \\u00b7 \\U00010332\\U0001033f\\U00010344\\U00010339\\U00010343\\U0001033a \\u00b7 Hak-k\\u00e2-fa / \\u5ba2\\u5bb6\\u8a71 \\u00b7 Igbo \\u00b7 \\u1403\\u14c4\\u1483\\u144e\\u1450\\u1466 / Inuktitut \\u00b7 Interlingue \\u00b7 \\u0915\\u0936\\u094d\\u092e\\u0940\\u0930\\u0940 / \\u0643\\u0634\\u0645\\u064a\\u0631\\u064a \\u00b7 Kongo \\u00b7 \\u041a\\u044b\\u0440\\u0433\\u044b\\u0437\\u0447\\u0430 \\u00b7 \\u0e9e\\u0eb2\\u0eaa\\u0eb2\\u0ea5\\u0eb2\\u0ea7 \\u00b7 lojban \\u00b7 Malagasy \\u00b7 M\\u0101z\\u0259r\\u016bni / \\u0645\\u0627\\u0632\\u0650\\u0631\\u0648\\u0646\\u06cc \\u00b7 M\\u00ecng-d\\u0115\\u0324ng-ng\\u1e73\\u0304 \\u00b7 \\u041c\\u043e\\u043b\\u0434\\u043e\\u0432\\u0435\\u043d\\u044f\\u0441\\u043a\\u044d \\u00b7 \\u1017\\u1019\\u102c\\u1005\\u102c \\u00b7 Ekakair\\u0169 Naoero \\u00b7 N\\u0113hiyaw\\u0113win / \\u14c0\\u1426\\u1403\\u152d\\u140d\\u140f\\u1423 \\u00b7 Norfuk / Pitkern \\u00b7 \\u041d\\u043e\\u0445\\u0447\\u0438\\u0439\\u043d \\u00b7 \\u0b13\\u0b21\\u0b3c\\u0b3f\\u0b06 \\u00b7 Afaan Oromoo \\u00b7 \\u0985\\u09b8\\u09ae\\u09c0\\u09af\\u09bc\\u09be \\u00b7 \\u0a2a\\u0a70\\u0a1c\\u0a3e\\u0a2c\\u0a40 / \\u067e\\u0646\\u062c\\u0627\\u0628\\u06cc \\u00b7 Papiamentu \\u00b7 Q\\u0131r\\u0131mtatarca \\u00b7 Romani / \\u0930\\u094b\\u092e\\u093e\\u0928\\u0940 \\u00b7 Kinyarwanda \\u00b7 Gagana S\\u0101moa \\u00b7 Sardu \\u00b7 Seeltersk \\u00b7 \\u0dc3\\u0dd2\\u0d82\\u0dc4\\u0dbd \\u00b7 \\u0633\\u0646\\u068c\\u064a \\u00b7 \\u0421\\u043b\\u043e\\u0432\\u0463\\u043d\\u044c\\u0441\\u043a\\u044a \\u00b7 Af Soomaali \\u00b7 SiSwati \\u00b7 Reo Tahiti \\u00b7 Taqbaylit \\u00b7 Tetun \\u00b7 \\u1275\\u130d\\u122d\\u129b \\u00b7 Tok Pisin \\u00b7 \\u13e3\\u13b3\\u13a9 \\u00b7 \\u0423\\u0434\\u043c\\u0443\\u0440\\u0442 \\u00b7 Uyghur / \\u0626\\u06c7\\u064a\\u063a\\u06c7\\u0631\\u0686\\u0647 \\u00b7 Tshiven\\u1e13a \\u00b7 Wollof \\u00b7 isiXhosa \\u00b7 Ze\\u00eauws \\u00b7 isiZulu\nOther languages \\u00b7 Weitere Sprachen \\u00b7 \\u4ed6\\u306e\\u8a00\\u8a9e \\u00b7 Kompletna lista j\\u0119zyk\\u00f3w \\u00b7 \\u5176\\u4ed6\\u8bed\\u8a00 \\u00b7 \\u0414\\u0440\\u0443\\u0433\\u0438\\u0435 \\u044f\\u0437\\u044b\\u043a\\u0438 \\u00b7 Aliaj lingvoj \\u00b7 \\ub2e4\\ub978 \\uc5b8\\uc5b4 \\u00b7 Ng\\u00f4n ng\\u1eef kh\\u00e1c"""
-        )
+        text = u"""WIKIPEDIA\nEnglish\nThe Free Encyclopedia\n2 386 000+ articles\nDeutsch\nDie freie Enzyklop\\u00e4die\n753 000+ Artikel\nFran\\u00e7ais\nL\\u2019encyclop\\u00e9die libre\n662 000+ articles\nPolski\nWolna encyklopedia\n503 000+ hase\\u0142\n\\u65e5\\u672c\\u8a9e\n\\u30d5\\u30ea\\u30fc\\u767e\\u79d1\\u4e8b\\u5178\n492 000+ \\u8a18\\u4e8b\nItaliano\nL\\u2019enciclopedia libera\n456 000+ voci\nNederlands\nDe vrije encyclopedie\n440 000+ artikelen\nPortugu\\u00eas\nA enciclop\\u00e9dia livre\n380 000+ artigos\nEspa\\u00f1ol\nLa enciclopedia libre\n363 000+ art\\u00edculos\n\\u0420\\u0443\\u0441\\u0441\\u043a\\u0438\\u0439\n\\u0421\\u0432\\u043e\\u0431\\u043e\\u0434\\u043d\\u0430\\u044f \\u044d\\u043d\\u0446\\u0438\\u043a\\u043b\\u043e\\u043f\\u0435\\u0434\\u0438\\u044f\n285 000+ \\u0441\\u0442\\u0430\\u0442\\u0435\\u0439\nSearch \\u00b7 Suche \\u00b7 Rechercher \\u00b7 Szukaj \\u00b7 \\u691c\\u7d22 \\u00b7 Ricerca \\u00b7 Zoeken \\u00b7 Busca \\u00b7 Buscar\n\\u041f\\u043e\\u0438\\u0441\\u043a \\u00b7 S\\u00f6k \\u00b7 \\u641c\\u7d22 \\u00b7 S\\u00f8k \\u00b7 Haku \\u00b7 Cerca \\u00b7 Suk \\u00b7 \\u041f\\u043e\\u0448\\u0443\\u043a \\u00b7 C\\u0103utare \\u00b7 Ara\n 100 000+ \nCatal\\u00e0 \\u00b7 Deutsch \\u00b7 English \\u00b7 Espa\\u00f1ol \\u00b7 Fran\\u00e7ais \\u00b7 Italiano \\u00b7 Nederlands \\u00b7 \\u65e5\\u672c\\u8a9e \\u00b7 Norsk (bokm\\u00e5l) \\u00b7 Polski \\u00b7 Portugu\\u00eas \\u00b7 \\u0420\\u0443\\u0441\\u0441\\u043a\\u0438\\u0439 \\u00b7 Rom\\u00e2n\\u0103 \\u00b7 Suomi \\u00b7 Svenska \\u00b7 T\\u00fcrk\\u00e7e \\u00b7 \\u0423\\u043a\\u0440\\u0430\\u0457\\u043d\\u0441\\u044c\\u043a\\u0430 \\u00b7 Volap\\u00fck \\u00b7 \\u4e2d\\u6587\n 10 000+ \n\\u0627\\u0644\\u0639\\u0631\\u0628\\u064a\\u0629 \\u00b7 Asturianu \\u00b7 Krey\\u00f2l Ayisyen \\u00b7 Az\\u0259rbaycan / \\u0622\\u0630\\u0631\\u0628\\u0627\\u064a\\u062c\\u0627\\u0646 \\u062f\\u064a\\u0644\\u06cc \\u00b7 \\u09ac\\u09be\\u0982\\u09b2\\u09be \\u00b7 \\u0411\\u0435\\u043b\\u0430\\u0440\\u0443\\u0441\\u043a\\u0430\\u044f (\\u0410\\u043a\\u0430\\u0434\\u044d\\u043c\\u0456\\u0447\\u043d\\u0430\\u044f) \\u00b7 \\u09ac\\u09bf\\u09b7\\u09cd\\u09a3\\u09c1\\u09aa\\u09cd\\u09b0\\u09bf\\u09af\\u09bc\\u09be \\u09ae\\u09a3\\u09bf\\u09aa\\u09c1\\u09b0\\u09c0 \\u00b7 Bosanski \\u00b7 Brezhoneg \\u00b7 \\u0411\\u044a\\u043b\\u0433\\u0430\\u0440\\u0441\\u043a\\u0438 \\u00b7 \\u010cesky \\u00b7 Cymraeg \\u00b7 Dansk \\u00b7 Eesti \\u00b7 \\u0395\\u03bb\\u03bb\\u03b7\\u03bd\\u03b9\\u03ba\\u03ac \\u00b7 Esperanto \\u00b7 Euskara \\u00b7 \\u0641\\u0627\\u0631\\u0633\\u06cc \\u00b7 Galego \\u00b7 \\ud55c\\uad6d\\uc5b4 \\u00b7 \\u0939\\u093f\\u0928\\u094d\\u0926\\u0940 \\u00b7 Hrvatski \\u00b7 Ido \\u00b7 Bahasa Indonesia \\u00b7 \\u00cdslenska \\u00b7 \\u05e2\\u05d1\\u05e8\\u05d9\\u05ea \\u00b7 Basa Jawa \\u00b7 \\u10e5\\u10d0\\u10e0\\u10d7\\u10e3\\u10da\\u10d8 \\u00b7 Kurd\\u00ee / \\u0643\\u0648\\u0631\\u062f\\u06cc \\u00b7 Latina \\u00b7 Lumbaart \\u00b7 Latvie\\u0161u \\u00b7 L\\u00ebtzebuergesch \\u00b7 Lietuvi\\u0173 \\u00b7 Magyar \\u00b7 \\u041c\\u0430\\u043a\\u0435\\u0434\\u043e\\u043d\\u0441\\u043a\\u0438 \\u00b7 \\u092e\\u0930\\u093e\\u0920\\u0940 \\u00b7 Bahasa Melayu \\u00b7 \\u0928\\u0947\\u092a\\u093e\\u0932 \\u092d\\u093e\\u0937\\u093e \\u00b7 Norsk (nynorsk) \\u00b7 Nnapulitano \\u00b7 Occitan \\u00b7 Piemont\\u00e8is \\u00b7 Plattd\\u00fc\\u00fctsch \\u00b7 Shqip \\u00b7 Sicilianu \\u00b7 Simple English \\u00b7 Sinugboanon \\u00b7 Sloven\\u010dina \\u00b7 Sloven\\u0161\\u010dina \\u00b7 \\u0421\\u0440\\u043f\\u0441\\u043a\\u0438 \\u00b7 Srpskohrvatski / \\u0421\\u0440\\u043f\\u0441\\u043a\\u043e\\u0445\\u0440\\u0432\\u0430\\u0442\\u0441\\u043a\\u0438 \\u00b7 Basa Sunda \\u00b7 Tagalog \\u00b7 \\u0ba4\\u0bae\\u0bbf\\u0bb4\\u0bcd \\u00b7 \\u0c24\\u0c46\\u0c32\\u0c41\\u0c17\\u0c41 \\u00b7 \\u0e44\\u0e17\\u0e22 \\u00b7 Ti\\u1ebfng Vi\\u1ec7t \\u00b7 Walon\n 1 000+ \nAfrikaans \\u00b7 Alemannisch \\u00b7 \\u12a0\\u121b\\u122d\\u129b \\u00b7 Aragon\\u00e9s \\u00b7 Arm\\u00e3neashce \\u00b7 Arpitan \\u00b7 B\\u00e2n-l\\u00e2m-g\\u00fa \\u00b7 Basa Banyumasan \\u00b7 \\u0411\\u0435\\u043b\\u0430\\u0440\\u0443\\u0441\\u043a\\u0430\\u044f (\\u0422\\u0430\\u0440\\u0430\\u0448\\u043a\\u0435\\u0432i\\u0446\\u0430) \\u00b7 \\u092d\\u094b\\u091c\\u092a\\u0941\\u0930\\u0940 \\u00b7 Boarisch \\u00b7 Corsu \\u00b7 \\u0427\\u0103\\u0432\\u0430\\u0448 \\u00b7 Deitsch \\u00b7 \\u078b\\u07a8\\u0788\\u07ac\\u0780\\u07a8 \\u00b7 Eald Englisc \\u00b7 F\\u00f8royskt \\u00b7 Frysk \\u00b7 Furlan \\u00b7 Gaeilge \\u00b7 Gaelg \\u00b7 G\\u00e0idhlig \\u00b7 \\u53e4\\u6587 / \\u6587\\u8a00\\u6587 \\u00b7 \\u02bb\\u014clelo Hawai\\u02bbi \\u00b7 \\u0540\\u0561\\u0575\\u0565\\u0580\\u0565\\u0576 \\u00b7 Hornjoserbsce \\u00b7 Ilokano \\u00b7 Interlingua \\u00b7 \\u0418\\u0440\\u043e\\u043d \\u00e6\\u0432\\u0437\\u0430\\u0433 \\u00b7 \\u0c95\\u0ca8\\u0ccd\\u0ca8\\u0ca1 \\u00b7 Kapampangan \\u00b7 Kasz\\u00ebbsczi \\u00b7 Kernewek \\u00b7 \\u1797\\u17b6\\u179f\\u17b6\\u1781\\u17d2\\u1798\\u17c2\\u179a \\u00b7 Ladino / \\u05dc\\u05d0\\u05d3\\u05d9\\u05e0\\u05d5 \\u00b7 Ligure \\u00b7 Limburgs \\u00b7 Ling\\u00e1la \\u00b7 \\u0d2e\\u0d32\\u0d2f\\u0d3e\\u0d33\\u0d02 \\u00b7 Malti \\u00b7 M\\u0101ori \\u00b7 \\u041c\\u043e\\u043d\\u0433\\u043e\\u043b \\u00b7 N\\u0101huatlaht\\u014dlli \\u00b7 Nedersaksisch \\u00b7 \\u0928\\u0947\\u092a\\u093e\\u0932\\u0940 \\u00b7 Nouormand \\u00b7 Novial \\u00b7 O\\u2018zbek \\u00b7 \\u092a\\u093e\\u0934\\u093f \\u00b7 Pangasin\\u00e1n \\u00b7 \\u067e\\u069a\\u062a\\u0648 \\u00b7 \\u049a\\u0430\\u0437\\u0430\\u049b\\u0448\\u0430 \\u00b7 Ripoarisch \\u00b7 Rumantsch \\u00b7 Runa Simi \\u00b7 \\u0938\\u0902\\u0938\\u094d\\u0915\\u0943\\u0924\\u092e\\u094d \\u00b7 S\\u00e1megiella \\u00b7 Scots \\u00b7 Kiswahili \\u00b7 Tarand\\u00edne \\u00b7 Tatar\\u00e7a \\u00b7 \\u0422\\u043e\\u04b7\\u0438\\u043a\\u04e3 \\u00b7 Lea faka-Tonga \\u00b7 T\\u00fcrkmen \\u00b7 \\u0627\\u0631\\u062f\\u0648 \\u00b7 V\\u00e8neto \\u00b7 V\\u00f5ro \\u00b7 West-Vlams \\u00b7 Winaray \\u00b7 \\u5434\\u8bed \\u00b7 \\u05d9\\u05d9\\u05b4\\u05d3\\u05d9\\u05e9 \\u00b7 \\u7cb5\\u8a9e \\u00b7 Yor\\u00f9b\\u00e1 \\u00b7 Zazaki \\u00b7 \\u017demait\\u0117\\u0161ka\n 100+ \n\\u0710\\u072a\\u0721\\u071d\\u0710 \\u00b7 Ava\\u00f1e\\u2019\\u1ebd \\u00b7 \\u0410\\u0432\\u0430\\u0440 \\u00b7 Aymara \\u00b7 Bamanankan \\u00b7 \\u0411\\u0430\\u0448\\u04a1\\u043e\\u0440\\u0442 \\u00b7 Bikol Central \\u00b7 \\u0f56\\u0f7c\\u0f51\\u0f0b\\u0f61\\u0f72\\u0f42 \\u00b7 Chamoru \\u00b7 Chavacano de Zamboanga \\u00b7 Bislama \\u00b7 Din\\u00e9 Bizaad \\u00b7 Dolnoserbski \\u00b7 Emigli\\u00e0n-Rumagn\\u00f2l \\u00b7 E\\u028begbe \\u00b7 \\u06af\\u06cc\\u0644\\u06a9\\u06cc \\u00b7 \\u0a97\\u0ac1\\u0a9c\\u0ab0\\u0abe\\u0aa4\\u0ac0 \\u00b7 \\U00010332\\U0001033f\\U00010344\\U00010339\\U00010343\\U0001033a \\u00b7 Hak-k\\u00e2-fa / \\u5ba2\\u5bb6\\u8a71 \\u00b7 Igbo \\u00b7 \\u1403\\u14c4\\u1483\\u144e\\u1450\\u1466 / Inuktitut \\u00b7 Interlingue \\u00b7 \\u0915\\u0936\\u094d\\u092e\\u0940\\u0930\\u0940 / \\u0643\\u0634\\u0645\\u064a\\u0631\\u064a \\u00b7 Kongo \\u00b7 \\u041a\\u044b\\u0440\\u0433\\u044b\\u0437\\u0447\\u0430 \\u00b7 \\u0e9e\\u0eb2\\u0eaa\\u0eb2\\u0ea5\\u0eb2\\u0ea7 \\u00b7 lojban \\u00b7 Malagasy \\u00b7 M\\u0101z\\u0259r\\u016bni / \\u0645\\u0627\\u0632\\u0650\\u0631\\u0648\\u0646\\u06cc \\u00b7 M\\u00ecng-d\\u0115\\u0324ng-ng\\u1e73\\u0304 \\u00b7 \\u041c\\u043e\\u043b\\u0434\\u043e\\u0432\\u0435\\u043d\\u044f\\u0441\\u043a\\u044d \\u00b7 \\u1017\\u1019\\u102c\\u1005\\u102c \\u00b7 Ekakair\\u0169 Naoero \\u00b7 N\\u0113hiyaw\\u0113win / \\u14c0\\u1426\\u1403\\u152d\\u140d\\u140f\\u1423 \\u00b7 Norfuk / Pitkern \\u00b7 \\u041d\\u043e\\u0445\\u0447\\u0438\\u0439\\u043d \\u00b7 \\u0b13\\u0b21\\u0b3c\\u0b3f\\u0b06 \\u00b7 Afaan Oromoo \\u00b7 \\u0985\\u09b8\\u09ae\\u09c0\\u09af\\u09bc\\u09be \\u00b7 \\u0a2a\\u0a70\\u0a1c\\u0a3e\\u0a2c\\u0a40 / \\u067e\\u0646\\u062c\\u0627\\u0628\\u06cc \\u00b7 Papiamentu \\u00b7 Q\\u0131r\\u0131mtatarca \\u00b7 Romani / \\u0930\\u094b\\u092e\\u093e\\u0928\\u0940 \\u00b7 Kinyarwanda \\u00b7 Gagana S\\u0101moa \\u00b7 Sardu \\u00b7 Seeltersk \\u00b7 \\u0dc3\\u0dd2\\u0d82\\u0dc4\\u0dbd \\u00b7 \\u0633\\u0646\\u068c\\u064a \\u00b7 \\u0421\\u043b\\u043e\\u0432\\u0463\\u043d\\u044c\\u0441\\u043a\\u044a \\u00b7 Af Soomaali \\u00b7 SiSwati \\u00b7 Reo Tahiti \\u00b7 Taqbaylit \\u00b7 Tetun \\u00b7 \\u1275\\u130d\\u122d\\u129b \\u00b7 Tok Pisin \\u00b7 \\u13e3\\u13b3\\u13a9 \\u00b7 \\u0423\\u0434\\u043c\\u0443\\u0440\\u0442 \\u00b7 Uyghur / \\u0626\\u06c7\\u064a\\u063a\\u06c7\\u0631\\u0686\\u0647 \\u00b7 Tshiven\\u1e13a \\u00b7 Wollof \\u00b7 isiXhosa \\u00b7 Ze\\u00eauws \\u00b7 isiZulu\nOther languages \\u00b7 Weitere Sprachen \\u00b7 \\u4ed6\\u306e\\u8a00\\u8a9e \\u00b7 Kompletna lista j\\u0119zyk\\u00f3w \\u00b7 \\u5176\\u4ed6\\u8bed\\u8a00 \\u00b7 \\u0414\\u0440\\u0443\\u0433\\u0438\\u0435 \\u044f\\u0437\\u044b\\u043a\\u0438 \\u00b7 Aliaj lingvoj \\u00b7 \\ub2e4\\ub978 \\uc5b8\\uc5b4 \\u00b7 Ng\\u00f4n ng\\u1eef kh\\u00e1c"""
         self.db.close()
 
         for encoding in "UTF-16", "UTF-16le", "UTF-16be", "UTF-8":
@@ -3969,9 +3794,9 @@ class APSW(unittest.TestCase):
                 "order": ("use", "closed")
             },
             "Connection": {
-                "skip": ("internal_cleanup", "dealloc", "init", "close", "interrupt", "close_internal",
-                         "remove_dependent", "readonly", "getmainfilename", "db_filename", "traverse", "clear",
-                         "tp_traverse"),
+                "skip":
+                ("internal_cleanup", "dealloc", "init", "close", "interrupt", "close_internal", "remove_dependent",
+                 "readonly", "getmainfilename", "db_filename", "traverse", "clear", "tp_traverse"),
                 "req": {
                     "use": "CHECK_USE",
                     "closed": "CHECK_CLOSED",
@@ -4144,13 +3969,12 @@ class APSW(unittest.TestCase):
             self.assertRaises(TypeError, apsw.config)
             self.assertRaises(TypeError, apsw.config, "chicken")
             apsw.config(apsw.SQLITE_CONFIG_SINGLETHREAD)
-            apsw.config(long(apsw.SQLITE_CONFIG_SINGLETHREAD))
             self.assertRaises(TypeError, apsw.config, apsw.SQLITE_CONFIG_SINGLETHREAD, 2)
             self.assertRaises(TypeError, apsw.config, apsw.SQLITE_CONFIG_MEMSTATUS)
             apsw.config(apsw.SQLITE_CONFIG_MEMSTATUS, True)
             apsw.config(apsw.SQLITE_CONFIG_MEMSTATUS, False)
             self.assertRaises(TypeError, apsw.config, 89748937)
-            x = long(0x7fffffff)
+            x = 0x7fffffff
             self.assertRaises(OverflowError, apsw.config, x * x * x * x)
             self.assertTrue(apsw.config(apsw.SQLITE_CONFIG_PCACHE_HDRSZ) >= 0)
             apsw.config(apsw.SQLITE_CONFIG_PMASZ, -1)
@@ -4171,14 +3995,14 @@ class APSW(unittest.TestCase):
         apsw.softheaplimit(0)
         self.assertRaises(TypeError, apsw.releasememory, 1, 2)
         res = apsw.releasememory(0x7fffffff)
-        self.assertTrue(type(res) in (int, long))
-        apsw.softheaplimit(l("0x1234567890abc"))
-        self.assertEqual(l("0x1234567890abc"), apsw.softheaplimit(l("0x1234567890abe")))
+        self.assertTrue(type(res) in (int, ))
+        apsw.softheaplimit(0x1234567890abc)
+        self.assertEqual(0x1234567890abc, apsw.softheaplimit(0x1234567890abe))
 
     def testRandomness(self):
         "Verify randomness routine"
         self.assertRaises(TypeError, apsw.randomness, "three")
-        self.assertRaises(OverflowError, apsw.randomness, l("0xffffffffee"))
+        self.assertRaises(OverflowError, apsw.randomness, 0xffffffffee)
         self.assertRaises(ValueError, apsw.randomness, -2)
         self.assertEqual(0, len(apsw.randomness(0)))
         self.assertEqual(1, len(apsw.randomness(1)))
@@ -4188,7 +4012,7 @@ class APSW(unittest.TestCase):
     def testSqlite3Pointer(self):
         "Verify getting underlying sqlite3 pointer"
         self.assertRaises(TypeError, self.db.sqlite3pointer, 7)
-        self.assertTrue(type(self.db.sqlite3pointer()) in (int, long))
+        self.assertTrue(type(self.db.sqlite3pointer()) in (int, ))
         self.assertEqual(self.db.sqlite3pointer(), self.db.sqlite3pointer())
         self.assertNotEqual(self.db.sqlite3pointer(), apsw.Connection(":memory:").sqlite3pointer())
 
@@ -4227,15 +4051,7 @@ class APSW(unittest.TestCase):
         cursor.execute("create table if not exists t(i,x)")
 
         def canpickle(val):
-            if py3: return True
-            # Python <= 2.5 wide builds screws up unicode codepoints
-            # above 0xffff with pickle
-            if sys.version_info < (2, 6) and isinstance(val, unicode):
-                for a in val:
-                    if ord(a) > 0xffff:
-                        return False
-
-            return not isinstance(val, buffer)
+            return True
 
         cursor.execute("BEGIN")
         cursor.executemany("insert into t values(?,?)", [(i, v) for i, v in enumerate(vals) if canpickle(v)])
@@ -4291,7 +4107,7 @@ class APSW(unittest.TestCase):
 
     def testTxnState(self):
         "Verify db.txn_state"
-        n = u(r"\u1234\u3454324")
+        n = u"\u1234\u3454324"
         self.assertRaises(TypeError, self.db.txn_state, 3)
         self.assertEqual(apsw.mapping_txn_state["SQLITE_TXN_NONE"], self.db.txn_state())
         self.db.cursor().execute("BEGIN EXCLUSIVE")
@@ -4312,7 +4128,7 @@ class APSW(unittest.TestCase):
         cur.execute("create table foo(x)")
         cur.execute("insert into foo values(?)", (apsw.zeroblob(27), ))
         v = next(cur.execute("select * from foo"))[0]
-        self.assertEqual(v, b(r"\x00" * 27))
+        self.assertEqual(v, b"\x00" * 27)
 
         # Make sure inheritance works
         class multi:
@@ -4326,7 +4142,7 @@ class APSW(unittest.TestCase):
 
         cur.execute("delete from foo; insert into foo values(?)", (derived(28), ))
         v = next(cur.execute("select * from foo"))[0]
-        self.assertEqual(v, b(r"\x00" * 28))
+        self.assertEqual(v, b"\x00" * 28)
         self.assertEqual(apsw.zeroblob(91210).length(), 91210)
 
     def testBlobIO(self):
@@ -4335,13 +4151,9 @@ class APSW(unittest.TestCase):
         rowid = next(
             cur.execute("create table foo(x blob); insert into foo values(zeroblob(98765)); select rowid from foo"))[0]
         self.assertRaises(TypeError, self.db.blobopen, 1)
-        self.assertRaises(TypeError, self.db.blobopen, u("main"), "foo\xf3")
-        if sys.version_info >= (2, 4):
-            # Bug in python 2.3 gives internal error when complex is
-            # passed to PyArg_ParseTuple for Long instead of raising
-            # TypeError.  Corrected in 2.4
-            self.assertRaises(TypeError, self.db.blobopen, u("main"), "foo", "x", complex(-1, -1), True)
-        self.assertRaises(TypeError, self.db.blobopen, u("main"), "foo", "x", rowid, True, False)
+        self.assertRaises(TypeError, self.db.blobopen, u"main", "foo\xf3")
+        self.assertRaises(TypeError, self.db.blobopen, u"main", "foo", "x", complex(-1, -1), True)
+        self.assertRaises(TypeError, self.db.blobopen, u"main", "foo", "x", rowid, True, False)
         self.assertRaises(apsw.SQLError, self.db.blobopen, "main", "foo", "x", rowid + 27, False)
         self.assertRaises(apsw.SQLError, self.db.blobopen, "foo", "foo", "x", rowid, False)
         self.assertRaises(apsw.SQLError, self.db.blobopen, "main", "x", "x", rowid, False)
@@ -4352,15 +4164,15 @@ class APSW(unittest.TestCase):
         # check vals
         self.assertEqual(blobro.length(), 98765)
         self.assertEqual(blobro.length(), 98765)
-        self.assertEqual(blobro.read(0), BYTES(""))
-        zero = BYTES(r"\x00")
+        self.assertEqual(blobro.read(0), b"")
+        zero = b"\x00"
         step = 5  # must be exact multiple of size
         assert (blobro.length() % step == 0)
         for i in range(0, 98765, step):
             x = blobro.read(step)
             self.assertEqual(zero * step, x)
         x = blobro.read(10)
-        self.assertEqual(x, BYTES(""))
+        self.assertEqual(x, b"")
         blobro.seek(0, 1)
         self.assertEqual(blobro.tell(), 98765)
         blobro.seek(0)
@@ -4370,9 +4182,9 @@ class APSW(unittest.TestCase):
         self.assertEqual(blobro.tell(), 2222)
         blobro.seek(0, 0)
         self.assertEqual(blobro.tell(), 0)
-        self.assertEqual(blobro.read(), BYTES(r"\x00" * 98765))
+        self.assertEqual(blobro.read(), b"\x00" * 98765)
         blobro.seek(-3, 2)
-        self.assertEqual(blobro.read(), BYTES(r"\x00" * 3))
+        self.assertEqual(blobro.read(), b"\x00" * 3)
         # check types
         self.assertRaises(TypeError, blobro.read, "foo")
         self.assertRaises(TypeError, blobro.tell, "foo")
@@ -4390,12 +4202,12 @@ class APSW(unittest.TestCase):
         self.assertRaises(ValueError, blobro.seek, -100000, 2)
         # close testing
         blobro.seek(0, 0)
-        self.assertRaises(apsw.ReadOnlyError, blobro.write, b("kermit was here"))
+        self.assertRaises(apsw.ReadOnlyError, blobro.write, b"kermit was here")
         # you get the error on the close too, and blob is always closed - sqlite ticket #2815
         self.assertRaises(apsw.ReadOnlyError, blobro.close)
         # check can't work on closed blob
         self.assertRaises(ValueError, blobro.read)
-        self.assertRaises(ValueError, blobro.readinto, BYTES("ab"))
+        self.assertRaises(ValueError, blobro.readinto, b"ab")
         self.assertRaises(ValueError, blobro.seek, 0, 0)
         self.assertRaises(ValueError, blobro.tell)
         self.assertRaises(ValueError, blobro.write, "abc")
@@ -4407,23 +4219,13 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, blobro.readinto, 3)
         buffers = []
         import array
-        if sys.version_info < (3, ):
-            buffers.append(array.array("c", "\0\0\0\0"))
-        else:
-            buffers.append(array.array("b", b(r"\0\0\0\0")))
+        buffers.append(array.array("b", b"\0\0\0\0"))
+        buffers.append(bytearray(b"\0\0\0\0"))
 
-        if sys.version_info >= (2, 6):
-            if sys.version_info < (3, ):
-                buffers.append(bytearray("\0\0\0\0"))
-            else:
-                buffers.append(bytearray(b(r"\0\0\0\0")))
         # bytearray returns ints rather than chars so a fixup
         def _fixup(c):
             if type(c) == int:
-                if py3:
-                    return bytes([c])
-                else:
-                    return chr(c)
+                return bytes([c])
             return c
 
         for buf in buffers:
@@ -4433,19 +4235,19 @@ class APSW(unittest.TestCase):
             self.assertRaises(TypeError, blobro.readinto, buf, 1, 1, buf)
             blobro.seek(0)
             blobro.readinto(buf, 1, 1)
-            self.assertEqual(_fixup(buf[0]), BYTES(r"\x00"))
-            self.assertEqual(_fixup(buf[1]), BYTES(r"\x11"))
-            self.assertEqual(_fixup(buf[2]), BYTES(r"\x00"))
-            self.assertEqual(_fixup(buf[3]), BYTES(r"\x00"))
+            self.assertEqual(_fixup(buf[0]), b"\x00")
+            self.assertEqual(_fixup(buf[1]), b"\x11")
+            self.assertEqual(_fixup(buf[2]), b"\x00")
+            self.assertEqual(_fixup(buf[3]), b"\x00")
             self.assertEqual(len(buf), 4)
             blobro.seek(3)
             blobro.readinto(buf)
 
             def check_unchanged():
-                self.assertEqual(_fixup(buf[0]), BYTES(r"\x44"))
-                self.assertEqual(_fixup(buf[1]), BYTES(r"\x55"))
-                self.assertEqual(_fixup(buf[2]), BYTES(r"\x66"))
-                self.assertEqual(_fixup(buf[3]), BYTES(r"\x77"))
+                self.assertEqual(_fixup(buf[0]), b"\x44")
+                self.assertEqual(_fixup(buf[1]), b"\x55")
+                self.assertEqual(_fixup(buf[2]), b"\x66")
+                self.assertEqual(_fixup(buf[3]), b"\x77")
                 self.assertEqual(len(buf), 4)
 
             check_unchanged()
@@ -4458,7 +4260,7 @@ class APSW(unittest.TestCase):
             self.assertRaises(ValueError, blobro.readinto, buf, 1, 7)
             self.assertRaises(ValueError, blobro.readinto, buf, -1, 2)
             self.assertRaises(ValueError, blobro.readinto, buf, 10000, 2)
-            self.assertRaises(OverflowError, blobro.readinto, buf, 1, l("45236748972389749283"))
+            self.assertRaises(OverflowError, blobro.readinto, buf, 1, 45236748972389749283)
             check_unchanged()
         # get a read error
         blobro.seek(0)
@@ -4466,44 +4268,42 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.AbortError, blobro.readinto, buf)
         # should fail with buffer being a string
         self.assertRaises(TypeError, blobro.readinto, "abcd", 1, 1)
-        self.assertRaises(TypeError, blobro.readinto, u("abcd"), 1, 1)
-        if not py3:
-            self.assertRaises(TypeError, blobro.readinto, buffer("abcd"), 1, 1)
+        self.assertRaises(TypeError, blobro.readinto, u"abcd", 1, 1)
         # write tests
         blobrw = self.db.blobopen("main", "foo", "x", rowid, True)
         self.assertEqual(blobrw.length(), 98765)
-        blobrw.write(b("abcd"))
+        blobrw.write(b"abcd")
         blobrw.seek(0, 0)
-        self.assertEqual(blobrw.read(4), BYTES("abcd"))
-        blobrw.write(b("efg"))
+        self.assertEqual(blobrw.read(4), b"abcd")
+        blobrw.write(b"efg")
         blobrw.seek(0, 0)
-        self.assertEqual(blobrw.read(7), BYTES("abcdefg"))
+        self.assertEqual(blobrw.read(7), b"abcdefg")
         blobrw.seek(50, 0)
-        blobrw.write(b("hijkl"))
+        blobrw.write(b"hijkl")
         blobrw.seek(-98765, 2)
-        self.assertEqual(blobrw.read(55), BYTES("abcdefg" + r"\x00" * 43 + "hijkl"))
+        self.assertEqual(blobrw.read(55), b"abcdefg" + b"\x00" * 43 + b"hijkl")
         self.assertRaises(TypeError, blobrw.write, 12)
         self.assertRaises(TypeError, blobrw.write)
-        self.assertRaises(TypeError, blobrw.write, u("foo"))
+        self.assertRaises(TypeError, blobrw.write, u"foo")
         # try to go beyond end
-        self.assertRaises(ValueError, blobrw.write, b(" " * 100000))
+        self.assertRaises(ValueError, blobrw.write, b" " * 100000)
         self.assertRaises(TypeError, blobrw.close, "elephant")
         # coverage
         blobro = self.db.blobopen("main", "foo", "x", rowid, False)
-        self.assertRaises(apsw.ReadOnlyError, blobro.write, b("abcd"))
+        self.assertRaises(apsw.ReadOnlyError, blobro.write, b"abcd")
         blobro.close(True)
         self.db.cursor().execute("insert into foo(_rowid_, x) values(99, 1)")
         blobro = self.db.blobopen("main", "foo", "x", rowid, False)
         self.assertRaises(TypeError, blobro.reopen)
         self.assertRaises(TypeError, blobro.reopen, "banana")
-        self.assertRaises(OverflowError, blobro.reopen, l("45236748972389749283"))
+        self.assertRaises(OverflowError, blobro.reopen, 45236748972389749283)
         first = blobro.read(2)
         # check position is reset
         blobro.reopen(rowid)
         self.assertEqual(blobro.tell(), 0)
         self.assertEqual(first, blobro.read(2))
         # invalid reopen
-        self.assertRaises(apsw.SQLError, blobro.reopen, l("0x1ffffffff"))
+        self.assertRaises(apsw.SQLError, blobro.reopen, 0x1ffffffff)
         blobro.close()
 
     def testBlobReadError(self):
@@ -4525,19 +4325,13 @@ class APSW(unittest.TestCase):
     def testAutovacuumPages(self):
         self.assertRaises(TypeError, self.db.autovacuum_pages)
         self.assertRaises(TypeError, self.db.autovacuum_pages, 3)
-        for stmt in (
-            "pragma page_size=512",
-            "pragma auto_vacuum=FULL",
-            "create table foo(x)",
-            "begin"
-        ):
+        for stmt in ("pragma page_size=512", "pragma auto_vacuum=FULL", "create table foo(x)", "begin"):
             self.db.cursor().execute(stmt)
         self.db.cursor().executemany("insert into foo values(zeroblob(1023))", [tuple() for _ in range(500)])
 
         self.db.cursor().execute("commit")
 
-        rowids = [row[0]
-                  for row in self.db.cursor().execute("select ROWID from foo")]
+        rowids = [row[0] for row in self.db.cursor().execute("select ROWID from foo")]
 
         last_free = [0]
 
@@ -4559,19 +4353,18 @@ class APSW(unittest.TestCase):
         def badreturn(*args):
             return "seven"
 
-        self.db.cursor().execute("delete from foo where rowid=?", (rowids.pop(),))
+        self.db.cursor().execute("delete from foo where rowid=?", (rowids.pop(), ))
 
         self.db.autovacuum_pages(noparams)
-        self.assertRaises(TypeError, self.db.cursor().execute,
-                          "delete from foo where rowid=?", (rowids.pop(),))
+        self.assertRaises(TypeError, self.db.cursor().execute, "delete from foo where rowid=?", (rowids.pop(), ))
         self.db.autovacuum_pages(None)
-        self.db.cursor().execute("delete from foo where rowid=?", (rowids.pop(),))
+        self.db.cursor().execute("delete from foo where rowid=?", (rowids.pop(), ))
         self.db.autovacuum_pages(avpcb)
-        self.db.cursor().execute("delete from foo where rowid=?", (rowids.pop(),))
+        self.db.cursor().execute("delete from foo where rowid=?", (rowids.pop(), ))
         self.db.autovacuum_pages(badreturn)
-        self.assertRaises(TypeError, self.db.cursor().execute, "delete from foo where rowid=?", (rowids.pop(),))
+        self.assertRaises(TypeError, self.db.cursor().execute, "delete from foo where rowid=?", (rowids.pop(), ))
         self.db.autovacuum_pages(None)
-        self.db.cursor().execute("delete from foo where rowid=?", (rowids.pop(),))
+        self.db.cursor().execute("delete from foo where rowid=?", (rowids.pop(), ))
 
     def testURIFilenames(self):
         assertRaises = self.assertRaises
@@ -4590,8 +4383,7 @@ class APSW(unittest.TestCase):
                 assertRaises(TypeError, name.uri_int, 7)
                 assertRaises(TypeError, name.uri_int, 7, 7)
                 assertRaises(TypeError, name.uri_int, 7, 7, 7)
-                if sys.version_info > (2, 4):  # 2.3 does systemerror instead of typeerror
-                    assertRaises(TypeError, name.uri_int, "seven", "seven")
+                assertRaises(TypeError, name.uri_int, "seven", "seven")
                 assertRaises(TypeError, name.uri_boolean, "seven")
                 assertRaises(TypeError, name.uri_boolean, "seven", "seven")
                 assertRaises(TypeError, name.uri_boolean, "seven", None)
@@ -4635,9 +4427,7 @@ class APSW(unittest.TestCase):
         def encryptme(data):
             # An "encryption" scheme in honour of MAPI and SQL server passwords
             if not data: return data
-            if py3:
-                return bytes([x ^ 0xa5 for x in data])
-            return "".join([chr(ord(x) ^ 0xa5) for x in data])
+            return bytes([x ^ 0xa5 for x in data])
 
         class ObfuscatedVFSFile(apsw.VFSFile):
             def __init__(self, inheritfromvfsname, filename, flags):
@@ -4674,6 +4464,7 @@ class APSW(unittest.TestCase):
         obfu = read_whole_file(TESTFILEPREFIX + "testdb2", "rb")
         self.assertEqual(len(orig), len(obfu))
         self.assertNotEqual(orig, obfu)
+
         # we ignore wal/non-wal differences
         def compare(one, two):
             self.assertEqual(one[0:18], two[:18])
@@ -4684,7 +4475,7 @@ class APSW(unittest.TestCase):
         # helper routines
         self.assertRaises(TypeError, apsw.exceptionfor, "three")
         self.assertRaises(ValueError, apsw.exceptionfor, 8764324)
-        self.assertRaises(OverflowError, apsw.exceptionfor, l("0xffffffffffffffff10"))
+        self.assertRaises(OverflowError, apsw.exceptionfor, 0xffffffffffffffff10)
 
         # test raw file object
         f = ObfuscatedVFSFile("", os.path.abspath(TESTFILEPREFIX + "testdb"),
@@ -4736,7 +4527,7 @@ class APSW(unittest.TestCase):
                 apsw.VFS.__init__(self, "randomupper", defvfs)
 
             def xRandomness1(self, n):
-                return b(r"\xaa\xbb")
+                return b"\xaa\xbb"
 
         class RandomVFS(apsw.VFS):
             def __init__(self):
@@ -4749,13 +4540,13 @@ class APSW(unittest.TestCase):
                 1 / 0
 
             def xRandomness3(self, n):
-                return b("abcd")
+                return b"abcd"
 
             def xRandomness4(self, n):
-                return u("abcd")
+                return u"abcd"
 
             def xRandomness5(self, n):
-                return b("a") * (2 * n)
+                return b"a" * (2 * n)
 
             def xRandomness6(self, n):
                 return None
@@ -4822,7 +4613,7 @@ class APSW(unittest.TestCase):
                 super(TestVFS, self).xDelete("bad", "arguments")
 
             def xDelete99(self, name, syncdir):
-                assert (type(name) == type(u("")))
+                assert (type(name) == type(""))
                 assert (type(syncdir) == type(1))
                 return super(TestVFS, self).xDelete(name, syncdir)
 
@@ -4839,7 +4630,7 @@ class APSW(unittest.TestCase):
                 return (3, )
 
             def xAccess99(self, name, flags):
-                assert (type(name) == type(u("")))
+                assert (type(name) == type(""))
                 assert (type(flags) == type(1))
                 return super(TestVFS, self).xAccess(name, flags)
 
@@ -4864,7 +4655,7 @@ class APSW(unittest.TestCase):
                 return 12  # bad return type
 
             def xFullPathname99(self, name):
-                assert (type(name) == type(u("")))
+                assert (type(name) == type(u""))
                 return super(TestVFS, self).xFullPathname(name)
 
             def xOpen1(self, bad, number, of, arguments):
@@ -4883,11 +4674,11 @@ class APSW(unittest.TestCase):
                 return None
 
             def xOpen99(self, name, flags):
-                assert (isinstance(name, apsw.URIFilename) or name is None or type(name) == type(u("")))
+                assert (isinstance(name, apsw.URIFilename) or name is None or type(name) == type(u""))
                 assert (type(flags) == type([]))
                 assert (len(flags) == 2)
-                assert (type(flags[0]) in (int, long))
-                assert (type(flags[1]) in (int, long))
+                assert (type(flags[0]) in (int, ))
+                assert (type(flags[1]) in (int, ))
                 return super(TestVFS, self).xOpen(name, flags)
 
             def xOpen100(self, name, flags):
@@ -4910,13 +4701,13 @@ class APSW(unittest.TestCase):
 
             # python 3 only test
             def xDlOpen6(self, name):
-                return super(TestVFS, self).xDlOpen(b("abcd"))  # bad string type
+                return super(TestVFS, self).xDlOpen(b"abcd")  # bad string type
 
             def xDlOpen7(self, name):
-                return l("0xffffffffffffffff10")
+                return 0xffffffffffffffff10
 
             def xDlOpen99(self, name):
-                assert (type(name) == type(u("")))
+                assert (type(name) == type(u""))
                 res = super(TestVFS, self).xDlOpen(name)
                 if ctypes:
                     try:
@@ -4939,14 +4730,14 @@ class APSW(unittest.TestCase):
                 super(TestVFS, self).xDlSym(3, 3)
 
             def xDlSym5(self, handle, name):
-                return super(TestVFS, self).xDlSym(handle, b("abcd"))
+                return super(TestVFS, self).xDlSym(handle, b"abcd")
 
             def xDlSym6(self, handle, name):
-                return l("0xffffffffffffffff10")
+                return 0xffffffffffffffff10
 
             def xDlSym99(self, handle, name):
-                assert (type(handle) in (int, long))
-                assert (type(name) == type(u("")))
+                assert (type(handle) in (int, ))
+                assert (type(name) == type(u""))
                 res = super(TestVFS, self).xDlSym(handle, name)
                 if not iswindows and _ctypes:
                     assert (_ctypes.dlsym(handle, name) == res)
@@ -4963,7 +4754,7 @@ class APSW(unittest.TestCase):
                 return super(TestVFS, self).xDlClose("three")
 
             def xDlClose99(self, handle):
-                assert (type(handle) in (int, long))
+                assert (type(handle) in (int, ))
                 super(TestVFS, self).xDlClose(handle)
 
             def xDlError1(self, bad, number, of, arguments):
@@ -4979,7 +4770,7 @@ class APSW(unittest.TestCase):
                 return 3
 
             def xDlError5(self):
-                return b("abcd")
+                return b"abcd"
 
             def xDlError6(self):
                 return None
@@ -5000,13 +4791,13 @@ class APSW(unittest.TestCase):
                 return "three"
 
             def xSleep5(self, microseconds):
-                return l("0xffffffff0")
+                return 0xffffffff0
 
             def xSleep6(self, microseconds):
-                return l("0xffffffffeeeeeeee0")
+                return 0xffffffffeeeeeeee0
 
             def xSleep99(self, microseconds):
-                assert (type(microseconds) in (int, long))
+                assert (type(microseconds) in (int, ))
                 return super(TestVFS, self).xSleep(microseconds)
 
             def xCurrentTime1(self, bad, args):
@@ -5126,10 +4917,10 @@ class APSW(unittest.TestCase):
                 super(TestFile, self).__init__("bogus", "4", [4, 4, 4, 4])
 
             def init5(self, name, flags):
-                super(TestFile, self).__init__("", name, [l("0xffffffffeeeeeeee0"), l("0xffffffffeeeeeeee0")])
+                super(TestFile, self).__init__("", name, [0xffffffffeeeeeeee0, 0xffffffffeeeeeeee0])
 
             def init6(self, name, flags):
-                super(TestFile, self).__init__("", name, [l("0xffffffffa"), 0])  # 64 bit int vs long overflow
+                super(TestFile, self).__init__("", name, [0xffffffffa, 0])  # 64 bit int vs long overflow
 
             def init7(self, name, flags):
                 super(TestFile, self).__init__("", name, (6, 7))
@@ -5167,7 +4958,7 @@ class APSW(unittest.TestCase):
                 return 3
 
             def xRead4(self, amount, offset):
-                return u("a") * amount
+                return u"a" * amount
 
             def xRead5(self, amount, offset):
                 return super(TestFile, self).xRead(amount - 1, offset)
@@ -5230,7 +5021,7 @@ class APSW(unittest.TestCase):
                 return "three"
 
             def xSectorSize4(self):
-                return l("0xffffffffeeeeeeee0")
+                return 0xffffffffeeeeeeee0
 
             def xSectorSize99(self):
                 return super(TestFile, self).xSectorSize()
@@ -5245,7 +5036,7 @@ class APSW(unittest.TestCase):
                 return "three"
 
             def xDeviceCharacteristics4(self):
-                return l("0xffffffffeeeeeeee0")
+                return 0xffffffffeeeeeeee0
 
             def xDeviceCharacteristics99(self):
                 return super(TestFile, self).xDeviceCharacteristics()
@@ -5260,7 +5051,7 @@ class APSW(unittest.TestCase):
                 return "three"
 
             def xFileSize4(self):
-                return l("0xffffffffeeeeeeee0")
+                return 0xffffffffeeeeeeee0
 
             def xFileSize99(self):
                 res = super(TestFile, self).xFileSize()
@@ -5278,7 +5069,7 @@ class APSW(unittest.TestCase):
                 return "three"
 
             def xCheckReservedLock4(self):
-                return l("0xffffffffeeeeeeee0")
+                return 0xffffffffeeeeeeee0
 
             def xCheckReservedLock99(self):
                 return super(TestFile, self).xCheckReservedLock()
@@ -5345,10 +5136,10 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestVFS.xAccess = TestVFS.xAccess99
         if iswindows:
-            self.assertRaises(apsw.IOError, vfs.xAccess, u("<bad<filename:"), apsw.SQLITE_ACCESS_READWRITE)
+            self.assertRaises(apsw.IOError, vfs.xAccess, u"<bad<filename:", apsw.SQLITE_ACCESS_READWRITE)
         else:
-            self.assertEqual(False, vfs.xAccess(u("<bad<filename:"), apsw.SQLITE_ACCESS_READWRITE))
-            self.assertEqual(True, vfs.xAccess(u("."), apsw.SQLITE_ACCESS_EXISTS))
+            self.assertEqual(False, vfs.xAccess(u"<bad<filename:", apsw.SQLITE_ACCESS_READWRITE))
+            self.assertEqual(True, vfs.xAccess(u".", apsw.SQLITE_ACCESS_EXISTS))
         # unix vfs doesn't ever return error so we have to indirect through one of ours
         errvfs = ErrorVFS()
         errvfs.xAccess = errvfs.errorme
@@ -5387,9 +5178,9 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, vfs.xOpen, None, [1, 2, 3])
         self.assertRaises(TypeError, vfs.xOpen, None, ["1", 2])
         self.assertRaises(TypeError, vfs.xOpen, None, [1, "2"])
-        self.assertRaises(OverflowError, vfs.xOpen, None, [l("0xffffffffeeeeeeee0"), 2])
-        self.assertRaises(OverflowError, vfs.xOpen, None, [l("0xffffffff0"), 2])
-        self.assertRaises(OverflowError, vfs.xOpen, None, [1, l("0xffffffff0")])
+        self.assertRaises(OverflowError, vfs.xOpen, None, [0xffffffffeeeeeeee0, 2])
+        self.assertRaises(OverflowError, vfs.xOpen, None, [0xffffffff0, 2])
+        self.assertRaises(OverflowError, vfs.xOpen, None, [1, 0xffffffff0])
         self.assertRaises(
             apsw.CantOpenError,
             self.assertRaisesUnraisable,
@@ -5410,10 +5201,7 @@ class APSW(unittest.TestCase):
         if hasattr(apsw.Connection(":memory:"), "enableloadextension") and os.path.exists(LOADEXTENSIONFILENAME):
             ## xDlOpen
             self.assertRaises(TypeError, vfs.xDlOpen, 3)
-            if py3:
-                self.assertRaises(TypeError, vfs.xDlOpen, b(r"\xfb\xfc\xfd\xfe\xff\xff\xff\xff"))
-            else:
-                self.assertRaises(UnicodeDecodeError, vfs.xDlOpen, b(r"\xfb\xfc\xfd\xfe\xff\xff\xff\xff"))
+            self.assertRaises(TypeError, vfs.xDlOpen, b"\xfb\xfc\xfd\xfe\xff\xff\xff\xff")
             TestVFS.xDlOpen = TestVFS.xDlOpen1
             self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
             TestVFS.xDlOpen = TestVFS.xDlOpen2
@@ -5424,9 +5212,8 @@ class APSW(unittest.TestCase):
             self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
             TestVFS.xDlOpen = TestVFS.xDlOpen5
             self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
-            if py3:
-                TestVFS.xDlOpen = TestVFS.xDlOpen6
-                self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
+            TestVFS.xDlOpen = TestVFS.xDlOpen6
+            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
             TestVFS.xDlOpen = TestVFS.xDlOpen7
             self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, OverflowError, testdb)
             TestVFS.xDlOpen = TestVFS.xDlOpen99
@@ -5444,9 +5231,8 @@ class APSW(unittest.TestCase):
             self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
             TestVFS.xDlSym = TestVFS.xDlSym4
             self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
-            if py3:
-                TestVFS.xDlSym = TestVFS.xDlSym5
-                self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
+            TestVFS.xDlSym = TestVFS.xDlSym5
+            self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, TypeError, testdb)
             TestVFS.xDlSym = TestVFS.xDlSym6
             self.assertRaises(apsw.ExtensionLoadingError, self.assertRaisesUnraisable, OverflowError, testdb)
             TestVFS.xDlSym = TestVFS.xDlSym99
@@ -5454,7 +5240,7 @@ class APSW(unittest.TestCase):
 
             ## xDlClose
             self.assertRaises(TypeError, vfs.xDlClose, "three")
-            self.assertRaises(OverflowError, vfs.xDlClose, l("0xffffffffffffffff10"))
+            self.assertRaises(OverflowError, vfs.xDlClose, 0xffffffffffffffff10)
             TestVFS.xDlClose = TestVFS.xDlClose1
             self.assertRaisesUnraisable(TypeError, testdb)
             TestVFS.xDlClose = TestVFS.xDlClose2
@@ -5474,9 +5260,8 @@ class APSW(unittest.TestCase):
             self.assertRaisesUnraisable(TypeError, testdb)
             TestVFS.xDlError = TestVFS.xDlError4
             self.assertRaisesUnraisable(TypeError, testdb)
-            if py3:
-                TestVFS.xDlError = TestVFS.xDlError5
-                self.assertRaisesUnraisable(TypeError, testdb)
+            TestVFS.xDlError = TestVFS.xDlError5
+            self.assertRaisesUnraisable(TypeError, testdb)
             TestVFS.xDlError = TestVFS.xDlError6  # should not error
             testdb()
             TestVFS.xDlError = TestVFS.xDlError99
@@ -5552,16 +5337,10 @@ class APSW(unittest.TestCase):
             self.assertNotEqual(0, len(items))
             self.assertTrue("open" in items)
 
-            if not py3:
-                self.assertRaises(UnicodeDecodeError, vfs.xNextSystemCall, "foo\xf3")
-
             TestVFS.xNextSystemCall = TestVFS.xNextSystemCall1
             self.assertRaisesUnraisable(TypeError, vfs2.xNextSystemCall, "open")
             TestVFS.xNextSystemCall = TestVFS.xNextSystemCall2
             self.assertRaisesUnraisable(TypeError, vfs2.xNextSystemCall, "open")
-            if not py3:
-                TestVFS.xNextSystemCall = TestVFS.xNextSystemCall3
-                self.assertRaisesUnraisable(UnicodeDecodeError, vfs2.xNextSystemCall, "open")
             TestVFS.xNextSystemCall = TestVFS.xNextSystemCall4
             self.assertEqual(None, self.assertRaisesUnraisable(ZeroDivisionError, vfs2.xNextSystemCall, "open"))
             TestVFS.xNextSystemCall = TestVFS.xNextSystemCall99
@@ -5571,7 +5350,7 @@ class APSW(unittest.TestCase):
             self.assertRaises(TypeError, vfs.xGetSystemCall)
             self.assertRaises(TypeError, vfs.xGetSystemCall, 3)
             self.assertEqual(None, vfs.xGetSystemCall("a name that won't exist"))
-            self.assertTrue(isinstance(vfs.xGetSystemCall("open"), (int, long)))
+            self.assertTrue(isinstance(vfs.xGetSystemCall("open"), (int, )))
 
             TestVFS.xGetSystemCall = TestVFS.xGetSystemCall1
             self.assertRaisesUnraisable(TypeError, vfs2.xGetSystemCall, "open")
@@ -5649,8 +5428,8 @@ class APSW(unittest.TestCase):
         t = TestFile(os.path.abspath(TESTFILEPREFIX + "testfile"),
                      [apsw.SQLITE_OPEN_MAIN_DB | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_READWRITE, 0])
         self.assertRaises(TypeError, t.xRead, "three", "four")
-        self.assertRaises(OverflowError, t.xRead, l("0xffffffffeeeeeeee0"), 1)
-        self.assertRaises(OverflowError, t.xRead, 1, l("0xffffffffeeeeeeee0"))
+        self.assertRaises(OverflowError, t.xRead, 0xffffffffeeeeeeee0, 1)
+        self.assertRaises(OverflowError, t.xRead, 1, 0xffffffffeeeeeeee0)
         TestFile.xRead = TestFile.xRead1
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.xRead = TestFile.xRead2
@@ -5665,10 +5444,9 @@ class APSW(unittest.TestCase):
         testdb()
 
         ## xWrite
-        if sys.version_info >= (2, 4):  # py2.3 has bug
-            self.assertRaises(TypeError, t.xWrite, "three", "four")
-        self.assertRaises(OverflowError, t.xWrite, "three", l("0xffffffffeeeeeeee0"))
-        self.assertRaises(TypeError, t.xWrite, u("foo"), 0)
+        self.assertRaises(TypeError, t.xWrite, "three", "four")
+        self.assertRaises(OverflowError, t.xWrite, "three", 0xffffffffeeeeeeee0)
+        self.assertRaises(TypeError, t.xWrite, u"foo", 0)
         TestFile.xWrite = TestFile.xWrite1
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.xWrite = TestFile.xWrite2
@@ -5678,12 +5456,10 @@ class APSW(unittest.TestCase):
 
         ## xUnlock
         self.assertRaises(TypeError, t.xUnlock, "three")
-        self.assertRaises(OverflowError, t.xUnlock, l("0xffffffffeeeeeeee0"))
+        self.assertRaises(OverflowError, t.xUnlock, 0xffffffffeeeeeeee0)
         # doesn't care about nonsensical levels - assert fails in debug build
         # t.xUnlock(-1)
-        # python 3.4 garbage collection changes mean these get called during cleanup which
-        # causes confusing messages in wal mode
-        if not (apsw.connection_hooks and list(sys.version_info) >= [3, 4]):
+        if not apsw.connection_hooks:
             TestFile.xUnlock = TestFile.xUnlock1
             self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
             TestFile.xUnlock = TestFile.xUnlock2
@@ -5693,7 +5469,7 @@ class APSW(unittest.TestCase):
 
         ## xLock
         self.assertRaises(TypeError, t.xLock, "three")
-        self.assertRaises(OverflowError, t.xLock, l("0xffffffffeeeeeeee0"))
+        self.assertRaises(OverflowError, t.xLock, 0xffffffffeeeeeeee0)
         # doesn't care about nonsensical levels - assert fails in debug build
         # t.xLock(0xffffff)
         TestFile.xLock = TestFile.xLock1
@@ -5704,9 +5480,8 @@ class APSW(unittest.TestCase):
         testdb()
 
         ## xTruncate
-        if sys.version_info >= (2, 4):  # work around py2.3 bug
-            self.assertRaises(TypeError, t.xTruncate, "three")
-        self.assertRaises(OverflowError, t.xTruncate, l("0xffffffffeeeeeeee0"))
+        self.assertRaises(TypeError, t.xTruncate, "three")
+        self.assertRaises(OverflowError, t.xTruncate, 0xffffffffeeeeeeee0)
         if not iswindows:
             # windows is happy to truncate to -77 bytes
             # see https://sqlite.org/cvstrac/tktview?tn=3415
@@ -5719,9 +5494,8 @@ class APSW(unittest.TestCase):
         testdb()
 
         ## xSync
-        if sys.version_info >= (2, 4):  # work around py2.3 bug
-            self.assertRaises(TypeError, t.xSync, "three")
-        self.assertRaises(OverflowError, t.xSync, l("0xffffffffeeeeeeee0"))
+        self.assertRaises(TypeError, t.xSync, "three")
+        self.assertRaises(OverflowError, t.xSync, 0xffffffffeeeeeeee0)
         TestFile.xSync = TestFile.xSync1
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.xSync = TestFile.xSync2
@@ -5787,7 +5561,7 @@ class APSW(unittest.TestCase):
 
         ## xFileControl
         self.assertRaises(TypeError, t.xFileControl, "three", "four")
-        self.assertRaises(OverflowError, t.xFileControl, 10, l("0xffffffffeeeeeeee0"))
+        self.assertRaises(OverflowError, t.xFileControl, 10, 0xffffffffeeeeeeee0)
         self.assertRaises(TypeError, t.xFileControl, 10, "three")
         self.assertEqual(t.xFileControl(2000, 3000), False)
         fc1 = testdb(TESTFILEPREFIX + "testdb", closedb=False).filecontrol
@@ -5832,33 +5606,13 @@ class APSW(unittest.TestCase):
 
     def testWith(self):
         "Context manager functionality"
-        # we need py 2.5 for with stuff
-        if sys.version_info < (2, 5):
-            return
-        prefix = "\n"
-        if sys.version_info < (2, 6):
-            prefix = "from __future__ import with_statement\n"
-
-        def run(s, **kwargs):
-            # ensure indentation matches first line
-            s = s.strip("\n")
-            s = s.rstrip(" ")
-            s = (len(s) - len(s.lstrip(" "))) * " " + prefix + s
-            l = locals().copy()
-            l["self"] = self
-            for k, v in kwargs.items():
-                l[k] = v
-            # now remove indentation
-            s = s.split("\n")
-            p = len(s[0]) - len(s[0].lstrip(" "))
-            s = "\n".join([s[p:] for s in s])
-            execwrapper(s, globals(), l)
 
         # Does it work?
         # the autocommit tests are to make sure we are not in a transaction
         self.assertEqual(True, self.db.getautocommit())
         self.assertTableNotExists("foo1")
-        run("with self.db as db: db.cursor().execute('create table foo1(x)')")
+        with self.db as db:
+            db.cursor().execute('create table foo1(x)')
         self.assertTableExists("foo1")
         self.assertEqual(True, self.db.getautocommit())
 
@@ -5866,28 +5620,24 @@ class APSW(unittest.TestCase):
         self.assertEqual(True, self.db.getautocommit())
         self.assertTableNotExists("foo2")
         try:
-            run("""
             with self.db as db:
                 db.cursor().execute('create table foo2(x)')
-                1/0
-                """)
+                1 / 0
         except ZeroDivisionError:
             pass
         self.assertTableNotExists("foo2")
         self.assertEqual(True, self.db.getautocommit())
 
         # nested - simple - success
-        run("""
         with self.db as db:
-           self.assertEqual(False, self.db.getautocommit())
-           db.cursor().execute('create table foo2(x)')
-           with db as db2:
-              self.assertEqual(False, self.db.getautocommit())
-              db.cursor().execute('create table foo3(x)')
-              with db2 as db3:
-                 self.assertEqual(False, self.db.getautocommit())
-                 db.cursor().execute('create table foo4(x)')
-        """)
+            self.assertEqual(False, self.db.getautocommit())
+            db.cursor().execute('create table foo2(x)')
+            with db as db2:
+                self.assertEqual(False, self.db.getautocommit())
+                db.cursor().execute('create table foo3(x)')
+                with db2 as db3:
+                    self.assertEqual(False, self.db.getautocommit())
+                    db.cursor().execute('create table foo4(x)')
         self.assertEqual(True, self.db.getautocommit())
         self.assertTableExists("foo2")
         self.assertTableExists("foo3")
@@ -5895,19 +5645,17 @@ class APSW(unittest.TestCase):
 
         # nested - simple - failure
         try:
-            run("""
-        self.db.cursor().execute('begin; create table foo5(x)')
-        with self.db as db:
-           self.assertEqual(False, self.db.getautocommit())
-           db.cursor().execute('create table foo6(x)')
-           with db as db2:
-              self.assertEqual(False, self.db.getautocommit())
-              db.cursor().execute('create table foo7(x)')
-              with db2 as db3:
-                 self.assertEqual(False, self.db.getautocommit())
-                 db.cursor().execute('create table foo8(x)')
-                 1/0
-        """)
+            self.db.cursor().execute('begin; create table foo5(x)')
+            with self.db as db:
+                self.assertEqual(False, self.db.getautocommit())
+                db.cursor().execute('create table foo6(x)')
+                with db as db2:
+                    self.assertEqual(False, self.db.getautocommit())
+                    db.cursor().execute('create table foo7(x)')
+                    with db2 as db3:
+                        self.assertEqual(False, self.db.getautocommit())
+                        db.cursor().execute('create table foo8(x)')
+                        1 / 0
         except ZeroDivisionError:
             pass
         self.assertEqual(False, self.db.getautocommit())
@@ -5941,10 +5689,8 @@ class APSW(unittest.TestCase):
 
         self.db.setexectrace(et)
         try:
-            run("""
-                 with self.db as db:
-                   db.cursor().execute('create table foo2(x)')
-                """)
+            with self.db as db:
+                db.cursor().execute('create table foo2(x)')
         except apsw.SQLError:  # table already exists so we should get an error
             pass
 
@@ -5958,10 +5704,8 @@ class APSW(unittest.TestCase):
 
         self.db.setexectrace(et)
         try:
-            run("""
-                 with self.db as db:
-                   db.cursor().execute('create table etfoo2(x)')
-                """)
+            with self.db as db:
+                db.cursor().execute('create table etfoo2(x)')
         except ZeroDivisionError:
             pass
         self.assertTableNotExists("etfoo2")
@@ -5971,10 +5715,8 @@ class APSW(unittest.TestCase):
 
         self.db.setexectrace(et)
         try:
-            run("""
-                 with self.db as db:
-                   db.cursor().execute('create table etfoo2(x)')
-                """)
+            with self.db as db:
+                db.cursor().execute('create table etfoo2(x)')
         except apsw.ExecTraceAbort:
             pass
         self.db.setexectrace(None)
@@ -5984,12 +5726,9 @@ class APSW(unittest.TestCase):
         self.db.cursor().execute("create table blobby(x); insert into blobby values(x'aabbccddee')")
         rowid = self.db.last_insert_rowid()
         blob = self.db.blobopen('main', 'blobby', 'x', rowid, 0)
-        run("""
-          with blob as b:
-                self.assertEqual(id(blob), id(b))
-                b.read(1)
-          """,
-            blob=blob)
+        with blob as b:
+            self.assertEqual(id(blob), id(b))
+            b.read(1)
         # blob gives ValueError if you do operations on closed blob
         self.assertRaises(ValueError, blob.read)
 
@@ -5997,13 +5736,10 @@ class APSW(unittest.TestCase):
         rowid = self.db.last_insert_rowid()
         blob = self.db.blobopen('main', 'blobby', 'x', rowid, 0)
         try:
-            run("""
-              with blob as b:
-                  self.assertEqual(id(blob), id(b))
-                  1/0
-                  b.read(1)
-                  """,
-                blob=blob)
+            with blob as b:
+                self.assertEqual(id(blob), id(b))
+                1 / 0
+                b.read(1)
         except ZeroDivisionError:
             # blob gives ValueError if you do operating on closed blob
             self.assertRaises(ValueError, blob.read)
@@ -6011,14 +5747,11 @@ class APSW(unittest.TestCase):
         # backup code
         if not hasattr(self.db, "backup"): return  # experimental
         db2 = apsw.Connection(":memory:")
-        run("""
-          with db2.backup("main", self.db, "main") as b:
-             while not b.done:
+        with db2.backup("main", self.db, "main") as b:
+            while not b.done:
                 b.step(1)
-          self.assertEqual(b.done, True)
-          self.assertDbIdentical(self.db, db2)
-          """,
-            db2=db2)
+        self.assertEqual(b.done, True)
+        self.assertDbIdentical(self.db, db2)
 
     def fillWithRandomStuff(self, db, seed=1):
         "Fills a database with random content"
@@ -6200,21 +5933,21 @@ class APSW(unittest.TestCase):
             def handler(code, message, called=called):
                 called[0] += 1
                 self.assertEqual(code, apsw.SQLITE_MISUSE)
-                self.assertEqual(message, u(r"a \u1234 unicode ' \ufe54 string \u0089"))
+                self.assertEqual(message, u"a \u1234 unicode ' \ufe54 string \u0089")
 
             apsw.config(apsw.SQLITE_CONFIG_LOG, handler)
-            apsw.log(apsw.SQLITE_MISUSE, u(r"a \u1234 unicode ' \ufe54 string \u0089"))
+            apsw.log(apsw.SQLITE_MISUSE, u"a \u1234 unicode ' \ufe54 string \u0089")
             self.assertEqual(called[0], 1)
 
             def badhandler(code, message, called=called):
                 called[0] += 1
                 self.assertEqual(code, apsw.SQLITE_NOMEM)
-                self.assertEqual(message, u(r"Xa \u1234 unicode ' \ufe54 string \u0089"))
+                self.assertEqual(message, u"Xa \u1234 unicode ' \ufe54 string \u0089")
                 1 / 0
 
             apsw.config(apsw.SQLITE_CONFIG_LOG, badhandler)
             self.assertRaisesUnraisable(ZeroDivisionError, apsw.log, apsw.SQLITE_NOMEM,
-                                        u(r"Xa \u1234 unicode ' \ufe54 string \u0089"))
+                                        u"Xa \u1234 unicode ' \ufe54 string \u0089")
             self.assertEqual(called[0], 2)
         finally:
             gc.collect()
@@ -6252,15 +5985,8 @@ class APSW(unittest.TestCase):
         # wasted enough time trying to work around it but give up. We
         # just don't test the shell in Windows before Python 3.  Feel
         # free to waste your own time trying to fix this.
-        if iswindows and not py3:
-            return
-
         if shellclass is None:
             shellclass = apsw.Shell
-
-        # Python 3.3.0 crashes in csv module - fixed in 3.3.1
-        if sys.version_info >= (3, 3, 0) and sys.version_info < (3, 3, 1):
-            return
 
         # I originally tried to use stringio for this but it barfs
         # badly over non-ascii stuff and there was no way to make all
@@ -6511,9 +6237,8 @@ class APSW(unittest.TestCase):
             # py 3 barfs with any codepoints above 0xffff whining
             # about surrogates not being allowed.  If only it
             # implemented unicode properly.
-            cmd(
-                u("create table if not exists nastydata(x,y); insert into nastydata values(null,'xxx\\u1234\\uabcdyyy\r\n\t\"this is nasty\u0001stuff!');"
-                  ))
+            cmd(u"create table if not exists nastydata(x,y); insert into nastydata values(null,'xxx\\u1234\\uabcdyyy\r\n\t\"this is nasty\u0001stuff!');"
+                )
             s.cmdloop()
             isempty(fh[1])
             isempty(fh[2])
@@ -6555,7 +6280,7 @@ class APSW(unittest.TestCase):
         self.assertNotEqual(v[0], v[1])
         self.assertEqual(len(v[0]), len(v[1]))
         # do not output blob as is
-        self.assertTrue(u("\xaa") not in get(fh[1]))
+        self.assertTrue(u"\xaa" not in get(fh[1]))
         # undo explain
         reset()
         cmd(".explain OFF\n")
@@ -6743,7 +6468,7 @@ class APSW(unittest.TestCase):
         isempty(fh[2])
         v = eval(get(fh[1]))
         self.assertEqual(len(v), 1)  # 1 tuple
-        self.assertEqual(v, ((3, None, 0.0, 'a', b(r"\xaa\x44\xbb")), ))
+        self.assertEqual(v, ((3, None, 0.0, 'a', b"\xaa\x44\xbb"), ))
         reset()
         cmd(".header on\n.mode python\nselect 3 as a, null as b, 0.0 as c, 'a' as d, x'aa44bb' as e;\n")
         s.cmdloop()
@@ -6752,7 +6477,7 @@ class APSW(unittest.TestCase):
         self.assertEqual(len(v), 2)  # headers and row
         self.assertEqual(v, (
             ("a", "b", "c", "d", "e"),
-            (3, None, 0.0, 'a', b(r"\xaa\x44\xbb")),
+            (3, None, 0.0, 'a', b"\xaa\x44\xbb"),
         ))
         testnasty()
 
@@ -7086,9 +6811,8 @@ class APSW(unittest.TestCase):
         s.db.cursor().execute("pragma user_version=0")
         # some nasty stuff
         reset()
-        cmd(
-            u("create table nastydata(x,y); insert into nastydata values(null,'xxx\\u1234\\uabcd\\U00012345yyy\r\n\t\"this is nasty\u0001stuff!');"
-              'create table "table"([except] int); create table [](""); create table [using]("&");'))
+        cmd(u"create table nastydata(x,y); insert into nastydata values(null,'xxx\\u1234\\uabcd\\U00012345yyy\r\n\t\"this is nasty\u0001stuff!');"
+            'create table "table"([except] int); create table [](""); create table [using]("&");')
         s.cmdloop()
         isempty(fh[1])
         isempty(fh[2])
@@ -7218,7 +6942,7 @@ insert into xxblah values(3);
         self.assertTrue("no known encoding" in get(fh[2]).lower())
         # use iso8859-1 to make sure data is read correctly - it
         # differs from utf8
-        us = u(r"unitestdata \xaa\x89 34")
+        us = u"unitestdata \xaa\x89 34"
         write_whole_file(TESTFILEPREFIX + "test-shell-1", "w", "iso8859-1",
                          "insert into enctest values('%s');\n" % (us, ))
         gc.collect()
@@ -7262,7 +6986,7 @@ insert into xxblah values(3);
         self.assertTrue("blahblah" in get(fh[2]))
         # check replace works
         reset()
-        us = u(r"\N{BLACK STAR}8\N{WHITE STAR}")
+        us = u"\N{BLACK STAR}8\N{WHITE STAR}"
         write_whole_file(TESTFILEPREFIX + "test-shell-1", "w", "utf8", "insert into enctest values('%s');" % (us, ))
         cmd(".encoding utf8\n.read %stest-shell-1\n.encoding cp437:replace\n.output %stest-shell-1\nselect * from enctest;\n.encoding utf8\n.output stdout"
             % (TESTFILEPREFIX, TESTFILEPREFIX))
@@ -7394,10 +7118,7 @@ insert into xxblah values(3);
         isempty(fh[1])
         isempty(fh[2])
         # make sure encoding took
-        if sys.version_info >= (3, 0):
-            self.assertTrue(b("xab") not in read_whole_file(TESTFILEPREFIX + "test-shell-1", "rb"))
-        else:
-            self.assertTrue("xab" not in read_whole_file(TESTFILEPREFIX + "test-shell-1", "rb"))
+        self.assertTrue(b"xab" not in read_whole_file(TESTFILEPREFIX + "test-shell-1", "rb"))
         data = s.db.cursor().execute("select * from imptest; delete from imptest").fetchall()
         self.assertEqual(2, len(data))
         reset()
@@ -7508,14 +7229,13 @@ insert into xxblah values(3);
 
         # Check diagnostics when unable to import
         for err, content in (
-            ("current encoding", b(r"\x81\x82\x83\tfoo\n\x84\x97\xff\tbar")),
+            ("current encoding", b"\x81\x82\x83\tfoo\n\x84\x97\xff\tbar"),
             ("known type", "abcdef\nhiojklmnop\n"),
             ("more than one", 'ab,c\tdef\nqr,dd\t\n'),
             ("ambiguous data format", "a,b\n1/1/2001,3\n2001/4/4,4\n"),
         ):
-            if py3:
-                if isinstance(content, bytes):
-                    continue
+            if isinstance(content, bytes):
+                continue
             write_whole_file(TESTFILEPREFIX + "test-shell-1", "wt", content)
             reset()
             cmd("drop table [test-shell-1];\n.autoimport %stest-shell-1" % (TESTFILEPREFIX, ))
@@ -7789,8 +7509,8 @@ shell.write(shell.stdout, "hello world\\n")
         ###
         ### Unicode output with all output modes
         ###
-        colname = u(r"\N{BLACK STAR}8\N{WHITE STAR}")
-        val = u('xxx\\u1234\\uabcdyyy this\" is nasty\u0001stuff!')
+        colname = u"\N{BLACK STAR}8\N{WHITE STAR}"
+        val = u'xxx\u1234\uabcdyyy this\" is nasty\u0001stuff!'
         noheadermodes = ('insert', )
         # possible ways val can be represented (eg csv doubles up double quotes)
         outputs = (val, val.replace('"', '""'), val.replace('"', '&quot;'), val.replace('"', '\\"'))
@@ -7870,16 +7590,6 @@ shell.write(shell.stdout, "hello world\\n")
             klass, value = sys.exc_info()[:2]
             self.assertTrue(klass is apsw.Error)
             self.assertTrue("254" in str(value))
-
-        ## AsWriteBufferFails
-        if not py3:
-            apsw.faultdict["AsWriteBufferFails"] = True
-            try:
-                for row in self.db.cursor().execute("select x'1234ccddeeff'"):
-                    pass
-                1 / 0
-            except MemoryError:
-                pass
 
         ## ConnectionCloseFail
         if "APSW_NO_MEMLEAK" not in os.environ:
@@ -8057,30 +7767,18 @@ shell.write(shell.stdout, "hello world\\n")
         apsw.faultdict["SetContextResultUnicodeConversionFails"] = True
         try:
             db = apsw.Connection(":memory:")
-            db.createscalarfunction("foo", lambda x: u("another unicode string"))
+            db.createscalarfunction("foo", lambda x: u"another unicode string")
             for row in db.cursor().execute("select foo(3)"):
                 pass
             1 / 0
         except MemoryError:
             pass
 
-        ## SetContextResultStringUnicodeConversionFails
-        if sys.version_info < (3, 0):
-            apsw.faultdict["SetContextResultStringUnicodeConversionFails"] = True
-            try:
-                db = apsw.Connection(":memory:")
-                db.createscalarfunction("foo", lambda x: "another string" * 10000)
-                for row in db.cursor().execute("select foo(3)"):
-                    pass
-                1 / 0
-            except MemoryError:
-                pass
-
         ## SetContextResultAsReadBufferFail
         apsw.faultdict["SetContextResultAsReadBufferFail"] = True
         try:
             db = apsw.Connection(":memory:")
-            db.createscalarfunction("foo", lambda x: b("another string"))
+            db.createscalarfunction("foo", lambda x: b"another string")
             for row in db.cursor().execute("select foo(3)"):
                 pass
             1 / 0
@@ -8148,11 +7846,11 @@ shell.write(shell.stdout, "hello world\\n")
 
         ## DeserializeReadBufferFail
         apsw.faultdict["DeserializeReadBufferFail"] = True
-        self.assertRaises(MemoryError, self.db.deserialize, "main", b("aaaaaa"))
+        self.assertRaises(MemoryError, self.db.deserialize, "main", b"aaaaaa")
 
         ## DeserializeMallocFail
         apsw.faultdict["DeserializeMallocFail"] = True
-        self.assertRaises(MemoryError, self.db.deserialize, "main", b("aaaaaa"))
+        self.assertRaises(MemoryError, self.db.deserialize, "main", b"aaaaaa")
 
         ## Virtual table code
         class Source:
@@ -8272,7 +7970,7 @@ shell.write(shell.stdout, "hello world\\n")
             blob = db.blobopen("main", "foo", "b", 2, False)  # open read-only
             # deliberately cause problem
             try:
-                blob.write(b('a'))
+                blob.write(b'a')
             except apsw.ReadOnlyError:
                 pass
             # garbage collect
@@ -8287,7 +7985,7 @@ shell.write(shell.stdout, "hello world\\n")
             db = apsw.Connection(":memory:")
             db.cursor().execute("create table foo(b);insert into foo(rowid,b) values(2,x'aabbccddee')")
             blob = db.blobopen("main", "foo", "b", 2, True)
-            blob.write(b("aaaaaa"))
+            blob.write(b"aaaaaa")
             1 / 0
         except MemoryError:
             pass
@@ -8307,26 +8005,16 @@ shell.write(shell.stdout, "hello world\\n")
         apsw.faultdict["DoBindingUnicodeConversionFails"] = True
         try:
             db = apsw.Connection(":memory:")
-            db.cursor().execute("select ?", (u("abc"), ))
+            db.cursor().execute("select ?", (u"abc", ))
             1 / 0
         except MemoryError:
             pass
-
-        ## DoBindingStringConversionFails
-        if sys.version_info < (3, 0):
-            apsw.faultdict["DoBindingStringConversionFails"] = True
-            try:
-                db = apsw.Connection(":memory:")
-                db.cursor().execute("select ?", ("abc" * 10000, ))
-                1 / 0
-            except MemoryError:
-                pass
 
         ## DoBindingAsReadBufferFails
         apsw.faultdict["DoBindingAsReadBufferFails"] = True
         try:
             db = apsw.Connection(":memory:")
-            db.cursor().execute("select ?", (b("abcd"), ))
+            db.cursor().execute("select ?", (b"abcd", ))
             1 / 0
         except MemoryError:
             pass
@@ -8527,7 +8215,7 @@ shell.write(shell.stdout, "hello world\\n")
         apsw.faultdict["vfsnamesallocfail"] = True
         try:
             apsw.vfsnames()
-            1/0
+            1 / 0
         except MemoryError:
             pass
         apsw.faultdict["vfsnamesappendfails"] = True
@@ -8620,7 +8308,7 @@ shell.write(shell.stdout, "hello world\\n")
         ## FormatSQLValueResizeFails
         apsw.faultdict["FormatSQLValueResizeFails"] = True
         try:
-            apsw.format_sql_value(u("fsdkljfl'fdsfds"))
+            apsw.format_sql_value(u"fsdkljfl'fdsfds")
             1 / 0
         except SystemError:
             pass
@@ -8628,7 +8316,7 @@ shell.write(shell.stdout, "hello world\\n")
         ## FormatSQLValueAsReadBufferFails
         apsw.faultdict["FormatSQLValueAsReadBufferFails"] = True
         try:
-            apsw.format_sql_value(b("abcd"))
+            apsw.format_sql_value(b"abcd")
             1 / 0
         except MemoryError:
             pass
@@ -8636,7 +8324,7 @@ shell.write(shell.stdout, "hello world\\n")
         ## FormatSQLValuePyUnicodeFromUnicodeFails
         apsw.faultdict["FormatSQLValuePyUnicodeFromUnicodeFails"] = True
         try:
-            apsw.format_sql_value(b("abcd"))
+            apsw.format_sql_value(b"abcd")
             1 / 0
         except MemoryError:
             pass
@@ -8661,7 +8349,7 @@ shell.write(shell.stdout, "hello world\\n")
         apsw.faultdict["SCPHConfigFails"] = True
         try:
             apsw.config(apsw.SQLITE_CONFIG_PCACHE_HDRSZ)
-            1/0
+            1 / 0
         except apsw.FullError:
             pass
 
@@ -8828,7 +8516,7 @@ def testdb(filename=TESTFILEPREFIX + "testdb2", vfsname="apswtest", closedb=True
 
         f = open(filename + "x-journal", "ab")
         f.seek(-1032, 2)  # 1032 bytes before end of file
-        f.write(b(r"\x00\x00\x00\x00"))
+        f.write(b"\x00\x00\x00\x00")
         f.close()
 
         hotdb = apsw.Connection(filename + "x", vfs=vfsname)
@@ -8920,23 +8608,23 @@ def setup():
 test_types_vals = (
     "a simple string",  # "ascii" string
     "0123456789" * 200000,  # a longer string
-    u(r"a \u1234 unicode \ufe54 string \u0089"),  # simple unicode string
-    u(r"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET} "),  # funky unicode or an episode of b5
-    u(r"\N{MUSICAL SYMBOL G CLEF}"),  # http://www.cmlenz.net/archives/2008/07/the-truth-about-unicode-in-python
+    u"a \u1234 unicode \ufe54 string \u0089",  # simple unicode string
+    u"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET} ",  # funky unicode or an episode of b5
+    u"\N{MUSICAL SYMBOL G CLEF}",  # http://www.cmlenz.net/archives/2008/07/the-truth-about-unicode-in-python
     97,  # integer
     2147483647,  # numbers on 31 bit boundary (32nd bit used for integer sign), and then
     -2147483647,  # start using 32nd bit (must be represented by 64bit to avoid losing
-    long(2147483648),  # detail)
-    long(-2147483648),
-    long(2147483999),
-    long(-2147483999),
+    2147483648,  # detail)
+    -2147483648,
+    2147483999,
+    -2147483999,
     992147483999,
     -992147483999,
     9223372036854775807,
     -9223372036854775808,
-    b("a set of bytes"),  # bag of bytes initialised from a string, but don't confuse it with a
-    b("".join(["\\x%02x" % (x, ) for x in range(256)])),  # string
-    b("".join(["\\x%02x" % (x, ) for x in range(256)]) * 20000),  # non-trivial size
+    b"a set of bytes",  # bag of bytes initialised from a string, but don't confuse it with a
+    b"".join([b"\\x%02x" % (x, ) for x in range(256)]),  # string
+    b"".join([b"\\x%02x" % (x, ) for x in range(256)]) * 20000,  # non-trivial size
     None,  # our good friend NULL/None
     1.1,  # floating point can't be compared exactly - assertAlmostEqual is used to check
     10.2,  # see Appendix B in the Python Tutorial
@@ -9013,26 +8701,9 @@ if __name__ == '__main__':
     del random
     del time
     del threading
-    del Queue
+    del queue
     del traceback
     del re
     gc.collect()
 
-    if py3:  # doesn't handle modules being deleted very well
-        exit(exitcode)
-
-    # In py3 gc and sys can end up being None even though we take care not to delete them
-    for k in list(sys.modules.keys()):
-        if k not in ('gc', 'sys', '__main__'):
-            try:
-                del sys.modules[k]
-            except:
-                pass
-
-    del sys
-
-    if gc:
-        gc.collect()
-
-    del gc
     exit(exitcode)
