@@ -8,6 +8,7 @@ include src/blob.c
 include src/connection.c
 include src/cursor.c
 include src/exceptions.c
+include src/pypycompat.c
 include src/pyutil.c
 include src/statementcache.c
 include src/traceback.c
