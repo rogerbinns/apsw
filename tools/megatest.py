@@ -169,7 +169,7 @@ PYVERS = (
     'system',
 )
 
-SQLITEVERS = ('3.37.0', )
+SQLITEVERS = ('3.37.0', '3.37.1', '3.37.2')
 
 if __name__ == '__main__':
     nprocs = 0

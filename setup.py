@@ -69,29 +69,14 @@ def fixup_download_url(url):
     ver = re.search("3[0-9]{6}", url)
     if ver:
         ver = int(ver.group(0))
-        if ver >= 3071600:
-            if ver >= 3340100:
-                year = "2021"
-            elif ver >= 3310000:
-                year = "2020"
-            elif ver >= 3270000:
-                year = "2019"
-            elif ver >= 3220000:
-                year = "2018"
-            elif ver >= 3160000:
-                year = "2017"
-            elif ver >= 3100000:
-                year = "2016"
-            elif ver >= 3080800:
-                year = "2015"
-            elif ver >= 3080300:
-                year = "2014"
-            else:
-                year = "2013"
-            if "/" + year + "/" not in url:
-                url = url.split("/")
-                url.insert(3, year)
-                return "/".join(url)
+        if ver >= 3370200:
+            year = "2022"
+        elif ver >= 3340100:
+            year = "2021"
+        if "/" + year + "/" not in url:
+            url = url.split("/")
+            url.insert(3, year)
+            return "/".join(url)
     return url
 
 
@@ -850,37 +835,37 @@ if "bdist_msi" in sys.argv:
 
     version = ".".join([str(v) for v in version])
 
-setup(name="apsw",
-      version=version,
-      description="Another Python SQLite Wrapper",
-      long_description=\
-"""A Python wrapper for the SQLite embedded relational database engine.
-In contrast to other wrappers such as pysqlite it focuses on being
-a minimal layer over SQLite attempting just to translate the
-complete SQLite API into Python.""",
-      author="Roger Binns",
-      author_email="rogerb@rogerbinns.com",
-      url="https://github.com/rogerbinns/apsw/",
-      classifiers=[
-    "Development Status :: 5 - Production/Stable",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved",
-    "Operating System :: OS Independent",
-    "Programming Language :: C",
-    "Programming Language :: Python :: 2",
-    "Programming Language :: Python :: 3",
-    "Topic :: Database :: Front-Ends",
-    ],
-      keywords=["database", "sqlite"],
-      license="OSI Approved ::",
+if __name__ == '__main__':
+    setup(name="apsw",
+        version=version,
+        description="Another Python SQLite Wrapper",
+        long_description=\
+    """A Python wrapper for the SQLite embedded relational database engine.
+    In contrast to other wrappers such as pysqlite it focuses on being
+    a minimal layer over SQLite attempting just to translate the
+    complete SQLite API into Python.""",
+        author="Roger Binns",
+        author_email="rogerb@rogerbinns.com",
+        url="https://github.com/rogerbinns/apsw/",
+        classifiers=[
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved",
+        "Operating System :: OS Independent",
+        "Programming Language :: C",
+        "Programming Language :: Python :: 3",
+        "Topic :: Database :: Front-Ends",
+        ],
+        keywords=["database", "sqlite"],
+        license="OSI Approved ::",
 
-      ext_modules=[Extension("apsw",
-                             ["src/apsw.c"],
-                             include_dirs=include_dirs,
-                             library_dirs=library_dirs,
-                             libraries=libraries,
-                             define_macros=define_macros,
-                             depends=depends)],
+        ext_modules=[Extension("apsw",
+                                ["src/apsw.c"],
+                                include_dirs=include_dirs,
+                                library_dirs=library_dirs,
+                                libraries=libraries,
+                                define_macros=define_macros,
+                                depends=depends)],
 
 
       cmdclass={'test': run_tests,
