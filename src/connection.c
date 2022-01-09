@@ -95,11 +95,9 @@ struct APSWBlob;
 static void APSWBlob_init(struct APSWBlob *self, Connection *connection, sqlite3_blob *blob);
 static PyTypeObject APSWBlobType;
 
-#ifdef EXPERIMENTAL
 struct APSWBackup;
 static void APSWBackup_init(struct APSWBackup *self, Connection *dest, Connection *source, sqlite3_backup *backup);
 static PyTypeObject APSWBackupType;
-#endif
 
 static PyTypeObject APSWCursorType;
 
@@ -524,7 +522,6 @@ Connection_blobopen(Connection *self, PyObject *args)
   return (PyObject *)apswblob;
 }
 
-#ifdef EXPERIMENTAL
 /** .. method:: backup(databasename, sourceconnection, sourcedatabasename)  -> backup
 
    Opens a :ref:`backup object <Backup>`.  All data will be copied from source
@@ -676,7 +673,6 @@ finally:
     source->inuse = 0;
   return result;
 }
-#endif
 
 /** .. method:: cursor() -> Cursor
 
@@ -1047,7 +1043,6 @@ finally:
   Py_RETURN_NONE;
 }
 
-#ifdef EXPERIMENTAL /* sqlite3_profile */
 static void
 profilecb(void *context, const char *statement, sqlite_uint64 runtime)
 {
@@ -1115,7 +1110,6 @@ finally:
 
   Py_RETURN_NONE;
 }
-#endif /* EXPERIMENTAL - sqlite3_profile */
 
 static int
 commithookcb(void *context)
@@ -1919,7 +1913,6 @@ finally:
 }
 #endif /* SQLITE_OMIT_DESERIALZE */
 
-#if defined(EXPERIMENTAL) && !defined(SQLITE_OMIT_LOAD_EXTENSION) /* extension loading */
 
 /** .. method:: enableloadextension(enable)
 
@@ -2009,7 +2002,6 @@ Connection_loadextension(Connection *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
-#endif /* EXPERIMENTAL extension loading */
 
 /* USER DEFINED FUNCTION CODE.*/
 static PyTypeObject FunctionCBInfoType =
@@ -3040,8 +3032,6 @@ Connection_wal_checkpoint(Connection *self, PyObject *args, PyObject *kwargs)
   return NULL;
 }
 
-#ifdef EXPERIMENTAL
-
 static struct sqlite3_module apsw_vtable_module;
 static void apswvtabFree(void *context);
 
@@ -3128,8 +3118,6 @@ Connection_overloadfunction(Connection *self, PyObject *args)
 
   Py_RETURN_NONE;
 }
-
-#endif
 
 /** .. method:: setexectrace(callable)
 
@@ -3713,7 +3701,6 @@ static PyMethodDef Connection_methods[] = {
      "Sets the WAL hook"},
     {"limit", (PyCFunction)Connection_limit, METH_VARARGS,
      "Gets and sets limits"},
-#ifdef EXPERIMENTAL
     {"setprofile", (PyCFunction)Connection_setprofile, METH_O,
      "Sets a callable invoked with profile information after each statement"},
 #if !defined(SQLITE_OMIT_LOAD_EXTENSION)
@@ -3728,7 +3715,6 @@ static PyMethodDef Connection_methods[] = {
      "overloads function for virtual table"},
     {"backup", (PyCFunction)Connection_backup, METH_VARARGS,
      "starts a backup"},
-#endif
     {"filecontrol", (PyCFunction)Connection_filecontrol, METH_VARARGS,
      "file control"},
     {"sqlite3pointer", (PyCFunction)Connection_sqlite3pointer, METH_NOARGS,

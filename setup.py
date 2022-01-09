@@ -20,10 +20,6 @@ library_dirs = []
 define_macros = []
 libraries = []
 
-# This includes the functionality marked as experimental in SQLite 3.
-# Comment out the line to exclude them
-define_macros.append(('EXPERIMENTAL', '1'))
-
 ##
 ## End of customizations
 ##

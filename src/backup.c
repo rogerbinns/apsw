@@ -6,7 +6,6 @@
   See the accompanying LICENSE file.
 */
 
-#ifdef EXPERIMENTAL
 
 /**
 
@@ -436,4 +435,3 @@ static PyTypeObject APSWBackupType =
         0                                                                       /* tp_del */
         APSW_PYTYPE_VERSION};
 
-#endif /* EXPERIMENTAL */

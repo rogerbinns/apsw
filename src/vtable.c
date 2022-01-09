@@ -4,8 +4,6 @@
    See the accompanying LICENSE file.
 */
 
-#ifdef EXPERIMENTAL
-
 /**
 
 .. _virtualtables:
@@ -1550,5 +1548,4 @@ method then the first error may mask the second or vice versa.
    receive any constraintargs at all.
 */
 
-#endif /* EXPERIMENTAL */
 /* end of Virtual table code */

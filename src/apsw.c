@@ -295,7 +295,6 @@ sqliteshutdown(void)
   -* sqlite3_config
 */
 
-#ifdef EXPERIMENTAL
 static PyObject *logger_cb = NULL;
 
 static void
@@ -424,7 +423,6 @@ config(APSW_ARGUNUSED PyObject *self, PyObject *args)
 
   Py_RETURN_NONE;
 }
-#endif /* EXPERIMENTAL */
 
 /** .. method:: memoryused() -> int
 
@@ -1234,12 +1232,10 @@ static PyMethodDef module_methods[] = {
      "Shutdown SQLite library"},
     {"format_sql_value", (PyCFunction)formatsqlvalue, METH_O,
      "Formats a SQL value as a string"},
-#ifdef EXPERIMENTAL
     {"config", (PyCFunction)config, METH_VARARGS,
      "Calls sqlite3_config"},
     {"log", (PyCFunction)apsw_log, METH_VARARGS,
      "Calls sqlite3_log"},
-#endif
     {"memoryused", (PyCFunction)memoryused, METH_NOARGS,
      "Current SQLite memory in use"},
     {"memoryhighwater", (PyCFunction)memoryhighwater, METH_VARARGS,
@@ -1310,9 +1306,7 @@ PyInit_apsw(void)
   }
 
   if (PyType_Ready(&ConnectionType) < 0 || PyType_Ready(&APSWCursorType) < 0 || PyType_Ready(&ZeroBlobBindType) < 0 || PyType_Ready(&APSWBlobType) < 0 || PyType_Ready(&APSWVFSType) < 0 || PyType_Ready(&APSWVFSFileType) < 0 || PyType_Ready(&APSWURIFilenameType) < 0 || PyType_Ready(&APSWStatementType) < 0 || PyType_Ready(&APSWBufferType) < 0 || PyType_Ready(&FunctionCBInfoType) < 0
-#ifdef EXPERIMENTAL
       || PyType_Ready(&APSWBackupType) < 0
-#endif
   )
     goto fail;
 
