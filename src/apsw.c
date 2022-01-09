@@ -1947,7 +1947,6 @@ fail:
 static void
 add_shell(PyObject *apswmodule)
 {
-#ifndef PYPY_VERSION
   PyObject *res = NULL, *maindict = NULL, *apswdict, *msvciscrap = NULL;
 
   maindict = PyModule_GetDict(PyImport_AddModule("__main__"));
@@ -1971,7 +1970,6 @@ add_shell(PyObject *apswmodule)
   assert(res);
   Py_XDECREF(res);
   Py_XDECREF(msvciscrap);
-#endif
 }
 
 #ifdef APSW_TESTFIXTURES

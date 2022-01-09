@@ -118,7 +118,6 @@ apsw_write_unraiseable(PyObject *hookobject)
   PyObject *result = NULL;
   PyFrameObject *frame = NULL;
 
-#ifndef PYPY_VERSION
   /* fill in the rest of the traceback */
   frame = PyThreadState_GET()->frame;
   while (frame)
@@ -126,7 +125,6 @@ apsw_write_unraiseable(PyObject *hookobject)
     PyTraceBack_Here(frame);
     frame = frame->f_back;
   }
-#endif
 
   /* Get the exception details */
   PyErr_Fetch(&err_type, &err_value, &err_traceback);
@@ -157,9 +155,7 @@ apsw_write_unraiseable(PyObject *hookobject)
 
   /* remove any error from callback failure */
   PyErr_Clear();
-#ifndef PYPY_VERSION
   PyErr_Display(err_type, err_value, err_traceback);
-#endif
 
 finally:
   Py_XDECREF(excepthook);
