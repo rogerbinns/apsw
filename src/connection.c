@@ -1512,7 +1512,7 @@ autovacuum_pages_cleanup(void *callable)
 #define AVPCB_TB "{s: O, s: s:, s: I, s: I, s: I, s: O}"
 #endif
 
-static int
+static unsigned int
 autovacuum_pages_cb(void *callable, const char *schema, unsigned int nPages, unsigned int nFreePages, unsigned int nBytesPerPage)
 {
   PyGILState_STATE gilstate;
