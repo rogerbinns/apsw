@@ -382,9 +382,7 @@ APSWBlob_readinto(APSWBlob *self, PyObject *args)
   Py_ssize_t bufsize;
 
   int bloblen;
-#if PY_VERSION_HEX >= 0x03000000
   Py_buffer py3buffer;
-#endif
 
   CHECK_USE(NULL);
   CHECK_BLOB_CLOSED;
@@ -392,13 +390,7 @@ APSWBlob_readinto(APSWBlob *self, PyObject *args)
   /* To get Py_ssize_t we need "n" format but that only exists in
      Python 2.5 plus */
 
-  if (!PyArg_ParseTuple(args, "O|"
-#if PY_VERSION_HEX < 0x02050000
-                              "i"
-#else
-                              "n"
-#endif
-                              "i:readinto(wbuf, offset=1, length=wbufremaining)",
+  if (!PyArg_ParseTuple(args, "O|ni:readinto(wbuf, offset=1, length=wbufremaining)",
                         &wbuf, &offset, &length))
     return NULL;
 
@@ -409,18 +401,12 @@ APSWBlob_readinto(APSWBlob *self, PyObject *args)
     goto errorexit;     \
   } while (0)
 
-#if PY_VERSION_HEX < 0x03000000
-  aswb = PyObject_AsWriteBuffer(wbuf, &buffer, &bufsize);
-  if (aswb)
-    return NULL;
-#else
   memset(&py3buffer, 0, sizeof(py3buffer));
   aswb = PyObject_GetBuffer(wbuf, &py3buffer, PyBUF_WRITABLE | PyBUF_SIMPLE);
   if (aswb)
     return NULL;
   buffer = py3buffer.buf;
   bufsize = py3buffer.len;
-#endif
 
   /* Although a lot of these checks could be combined into a single
      one, they are kept separate so that we can verify they have each
@@ -459,15 +445,11 @@ APSWBlob_readinto(APSWBlob *self, PyObject *args)
   }
   self->curoffset += lengthwanted;
 
-#if PY_VERSION_HEX >= 0x03000000
   PyBuffer_Release(&py3buffer);
-#endif
   Py_RETURN_NONE;
 
 errorexit:
-#if PY_VERSION_HEX >= 0x03000000
   PyBuffer_Release(&py3buffer);
-#endif
   return errorexitval;
 #undef ERREXIT
 }

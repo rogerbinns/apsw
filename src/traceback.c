@@ -18,7 +18,7 @@
 #include "frameobject.h"
 #include "traceback.h"
 
-/* Add a dummy frame to the traceback so the developer has a better idea of what C code was doing 
+/* Add a dummy frame to the traceback so the developer has a better idea of what C code was doing
 
    @param filename: Use __FILE__ for this - it will be the filename reported in the frame
    @param lineno: Use __LINE__ for this - it will be the line number reported in the frame
@@ -39,22 +39,12 @@ static void AddTraceBackHere(const char *filename, int lineno, const char *funct
 
   assert(PyErr_Occurred());
 
-#if PY_VERSION_HEX < 0x03000000
-  srcfile = PyString_FromString(filename);
-  funcname = PyString_FromString(functionname);
-#else
   srcfile = PyUnicode_FromString(filename);
   funcname = PyUnicode_FromString(functionname);
-#endif
   empty_dict = PyDict_New();
   empty_tuple = PyTuple_New(0);
-#if PY_VERSION_HEX < 0x03000000
-  empty_string = PyString_FromString("");
-  empty_code = PyString_FromString("");
-#else
   empty_string = PyUnicode_FromString("");
   empty_code = PyBytes_FromStringAndSize(NULL, 0);
-#endif
 
   localargs = localsformat ? (Py_VaBuildValue((char *)localsformat, localargsva)) : PyDict_New();
   if (localsformat)
@@ -69,9 +59,7 @@ static void AddTraceBackHere(const char *filename, int lineno, const char *funct
   /* make the dummy code object */
   code = PyCode_New(
       0, /*int argcount,*/
-#if PY_VERSION_HEX >= 0x03000000
       0, /*int kwonlyargcount*/
-#endif
       0,           /*int nlocals,*/
       0,           /*int stacksize,*/
       0,           /*int flags,*/

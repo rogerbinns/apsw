@@ -1503,14 +1503,8 @@ autovacuum_pages_cleanup(void *callable)
   PyGILState_Release(gilstate);
 }
 
-/* Python 2.4 introduced unsigned int I */
-#if PY_VERSION_HEX < 0x02040000
-#define AVPCB_CALL "(O&iii)"
-#define AVPCB_TB "{s: O, s: s:, s: i, s: i, s: i, s: O}"
-#else
 #define AVPCB_CALL "(O&III)"
 #define AVPCB_TB "{s: O, s: s:, s: I, s: I, s: I, s: O}"
-#endif
 
 static unsigned int
 autovacuum_pages_cb(void *callable, const char *schema, unsigned int nPages, unsigned int nFreePages, unsigned int nBytesPerPage)
