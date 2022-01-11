@@ -15,61 +15,53 @@ import time
 import gc
 import optparse
 
-# This would be a py 2 vs py 3 funky thing
-write = sys.stdout.write
-if sys.version_info >= (3, ):
-    xrange = range
-    unichr = chr
-
 # Sigh
 try:
     maxuni = 0x10ffff
-    unichr(maxuni)
+    chr(maxuni)
 except ValueError:
     maxuni = 0xffff
 
-timerfn = time.process_time if hasattr(time, "process_time") else time.clock
+timerfn = time.process_time
 
 
 def doit():
     random.seed(0)
     options.tests = [t.strip() for t in options.tests.split(",")]
 
-    write("         Python %s %s\n" % (sys.executable, str(sys.version_info)))
-    write("          Scale %d\n" % (options.scale, ))
-    write("       Database %s\n" % (options.database, ))
-    write("          Tests %s\n" % (", ".join(options.tests), ))
-    write("     Iterations %d\n" % (options.iterations, ))
-    write("Statement Cache %d\n" % (options.scsize, ))
+    print("         Python", sys.executable, sys.version_info)
+    print("          Scale", options.scale)
+    print("       Database", options.database)
+    print("          Tests", ", ".join(options.tests))
+    print("     Iterations", options.iterations)
+    print("Statement Cache", options.scsize)
 
-    write("\n")
+    print("\n")
     if options.apsw:
         import apsw
 
-        write("    Testing with APSW file " + apsw.__file__ + "\n")
-        write("              APSW version " + apsw.apswversion() + "\n")
-        write("        SQLite lib version " + apsw.sqlitelibversion() + "\n")
-        write("    SQLite headers version " + str(apsw.SQLITE_VERSION_NUMBER) + "\n\n")
+        print("    Testing with APSW file ", apsw.__file__)
+        print("              APSW version ", apsw.apswversion())
+        print("        SQLite lib version ", apsw.sqlitelibversion())
+        print("    SQLite headers version ", apsw.SQLITE_VERSION_NUMBER, end="\n\n")
 
         def apsw_setup(dbfile):
             con = apsw.Connection(dbfile, statementcachesize=options.scsize)
             con.createscalarfunction("number_name", number_name, 1)
             return con
 
-    if options.pysqlite:
-        try:
-            from pysqlite2 import dbapi2 as pysqlite
-        except ImportError:
-            import sqlite3 as pysqlite
+    if options.sqlite3:
+        import sqlite3
 
-        write("Testing with pysqlite file " + pysqlite.__file__ + "\n")
-        write("          pysqlite version " + pysqlite.version + "\n")
-        write("            SQLite version " + pysqlite.sqlite_version + "\n\n")
+        print("Testing with sqlite3 file ", sqlite3.__file__)
+        print("          sqlite3 version ", sqlite3.version)
+        print("           SQLite version ", sqlite3.sqlite_version, end="\n\n")
 
-        def pysqlite_setup(dbfile):
-            con = pysqlite.connect(dbfile, isolation_level=None, cached_statements=options.scsize)
+        def sqlite3_setup(dbfile):
+            con = sqlite3.connect(dbfile, isolation_level=None, cached_statements=options.scsize)
             con.create_function("number_name", 1, number_name)
             return con
+
     ones = ("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve",
             "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen")
     tens = ("", "ten", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety")
@@ -113,7 +105,7 @@ def doit():
                     t = random.randint(0xa1, maxuni)
                     # we don't want the surrogate range or apostrophe
                     if t < 0xd800 or t > 0xdfff: break
-                newt.append(unichr(t))
+                newt.append(chr(t))
             text = "".join(newt)
         return text
 
@@ -149,7 +141,7 @@ def doit():
 
         # 50,000 inserts on an unindexed table
         yield ("BEGIN", )
-        for i in xrange(1, scale * 10000 + 1):
+        for i in range(1, scale * 10000 + 1):
             r = random.randint(0, 500000)
             if bindings:
                 yield ("INSERT INTO t1 VALUES(:1, :2, number_name(:2))", (i, r))
@@ -160,7 +152,7 @@ def doit():
         # 50,000 inserts on an indexed table
         t1c_list = []
         yield ("BEGIN", )
-        for i in xrange(1, scale * 10000 + 1):
+        for i in range(1, scale * 10000 + 1):
             r = random.randint(0, 500000)
             x = number_name(r)
             t1c_list.append(x)
@@ -172,12 +164,12 @@ def doit():
 
         # 50 SELECTs on an integer comparison.  There is no index so
         # a full table scan is required.
-        for i in xrange(scale):
+        for i in range(scale):
             yield ("SELECT count(*), avg(b) FROM t1 WHERE b>=%d AND b<%d" % (i * 100, (i + 10) * 100), )
 
         # 50 SELECTs on an LIKE comparison.  There is no index so a full
         # table scan is required.
-        for i in xrange(scale):
+        for i in range(scale):
             yield ("SELECT count(*), avg(b) FROM t1 WHERE c LIKE '%%%s%%'" % (number_name(i), ), )
 
         # Create indices
@@ -190,19 +182,19 @@ def doit():
 
         # 5000 SELECTs on an integer comparison where the integer is
         # indexed.
-        for i in xrange(scale * 100):
+        for i in range(scale * 100):
             yield ("SELECT count(*), avg(b) FROM t1 WHERE b>=%d AND b<%d" % (i * 100, (i + 10) * 100), )
 
         # 100000 random SELECTs against rowid.
-        for i in xrange(1, scale * 2000 + 1):
+        for i in range(1, scale * 2000 + 1):
             yield ("SELECT c FROM t1 WHERE rowid=%d" % (1 + random.randint(0, 50000), ), )
 
         # 100000 random SELECTs against a unique indexed column.
-        for i in xrange(1, scale * 2000 + 1):
+        for i in range(1, scale * 2000 + 1):
             yield ("SELECT c FROM t1 WHERE a=%d" % (1 + random.randint(0, 50000), ), )
 
         # 50000 random SELECTs against an indexed column text column
-        for i in xrange(scale * 1000):
+        for i in range(scale * 1000):
             if bindings:
                 yield (
                     "SELECT c FROM t1 WHERE c=?",
@@ -218,13 +210,13 @@ def doit():
 
         # 5000 updates of ranges where the field being compared is indexed.
         yield ("BEGIN", )
-        for i in xrange(scale * 100):
+        for i in range(scale * 100):
             yield ("UPDATE t1 SET b=b*2 WHERE a>=%d AND a<%d" % (i * 2, (i + 1) * 2), )
         yield ("COMMIT", )
 
         # 50000 single-row updates.  An index is used to find the row quickly.
         yield ("BEGIN", )
-        for i in xrange(scale * 1000):
+        for i in range(scale * 1000):
             if bindings:
                 yield ("UPDATE t1 SET b=? WHERE a=%d" % (i, ), (random.randint(0, 500000), ))
             else:
@@ -237,7 +229,7 @@ def doit():
         # Many individual text updates.  Each row in the table is
         # touched through an index.
         yield ("BEGIN", )
-        for i in xrange(1, scale * 1000 + 1):
+        for i in range(1, scale * 1000 + 1):
             if bindings:
                 yield ("UPDATE t1 SET c=? WHERE a=%d" % (i, ), (number_name(random.randint(0, 500000)), ))
             else:
@@ -288,7 +280,7 @@ def doit():
 
     # Do a correctness test first
     if options.correctness:
-        write("Correctness test\n")
+        print("Correctness test\n")
         if 'bigstmt' in options.tests:
             text = ";\n".join([x[0] for x in getlines(scale=1)]) + ";"
         if 'statements' in options.tests:
@@ -297,18 +289,18 @@ def doit():
             withoutbindings = [line for line in getlines(scale=1, bindings=False)]
 
         res = {}
-        for driver in ('apsw', 'pysqlite'):
+        for driver in ('apsw', 'sqlite3'):
             if not getattr(options, driver):
                 continue
 
             for test in options.tests:
                 name = driver + "_" + test
 
-                write(name + '\t')
+                print(name + '\t')
                 sys.stdout.flush()
 
-                if name == 'pysqlite_bigstmt':
-                    write('limited functionality (ignoring)\n')
+                if name == 'sqlite3_bigstmt':
+                    print('limited functionality (ignoring)\n')
                     continue
 
                 con = locals().get(driver + "_setup")(":memory:")  # we always correctness test on memory
@@ -321,7 +313,7 @@ def doit():
                         func = cursor.executescript
 
                     res[name] = [row for row in func(text)]
-                    write(str(len(res[name])) + "\n")
+                    print(str(len(res[name])) + "\n")
                     continue
 
                 cursor = con.cursor()
@@ -336,12 +328,12 @@ def doit():
                         l.append(row)
 
                 res[name] = l
-                write(str(len(res[name])) + "\n")
+                print(str(len(res[name])) + "\n")
 
         # All elements of res should be identical
         elements = sorted(res.keys())
         for i in range(0, len(elements) - 1):
-            write("%s == %s %s\n" % (elements[i], elements[i + 1], res[elements[i]] == res[elements[i + 1]]))
+            print("%s == %s %s\n" % (elements[i], elements[i + 1], res[elements[i]] == res[elements[i + 1]]))
 
         del res
     text = None
@@ -349,9 +341,9 @@ def doit():
     withoutbindings = None
 
     if options.dump_filename or "bigstmt" in options.tests:
-        text = ";\n".join([x[0] for x in getlines(scale=options.scale)]) + ";"  # pysqlite requires final semicolon
+        text = ";\n".join([x[0] for x in getlines(scale=options.scale)]) + ";"  # sqlite3 requires final semicolon
         if options.dump_filename:
-            open(options.dump_filename, "wt").write(text.encode("utf8"))
+            open(options.dump_filename, "wt").print(text.encode("utf8"))
             sys.exit(0)
 
     if "statements" in options.tests:
@@ -375,8 +367,8 @@ def doit():
             pdb.set_trace()
             pass
 
-    def pysqlite_bigstmt(con):
-        "pysqlite big statement"
+    def sqlite3_bigstmt(con):
+        "sqlite3 big statement"
         for row in con.executescript(text):
             pass
 
@@ -387,8 +379,8 @@ def doit():
             for row in cursor.execute(*b):
                 pass
 
-    def pysqlite_statements(con, bindings=withbindings):
-        "pysqlite individual statements with bindings"
+    def sqlite3_statements(con, bindings=withbindings):
+        "sqlite3 individual statements with bindings"
         cursor = con.cursor()
         for b in bindings:
             for row in cursor.execute(*b):
@@ -398,29 +390,27 @@ def doit():
         "APSW individual statements without bindings"
         return apsw_statements(con, withoutbindings)
 
-    def pysqlite_statements_nobindings(con):
-        "pysqlite individual statements without bindings"
-        return pysqlite_statements(con, withoutbindings)
+    def sqlite3_statements_nobindings(con):
+        "sqlite3 individual statements without bindings"
+        return sqlite3_statements(con, withoutbindings)
 
     # Do the work
-    write("\nRunning tests - elapsed, CPU (results in seconds, lower is better)\n")
+    print("\nRunning tests - elapsed, CPU (results in seconds, lower is better)\n")
 
     for i in range(options.iterations):
-        write("%d/%d\n" % (i + 1, options.iterations))
+        print("%d/%d" % (i + 1, options.iterations))
         for test in options.tests:
             # funky stuff is to alternate order each round
-            for driver in (("apsw", "pysqlite"), ("pysqlite", "apsw"))[i % 2]:
+            for driver in (("apsw", "sqlite3"), ("sqlite3", "apsw"))[i % 2]:
                 if getattr(options, driver):
                     name = driver + "_" + test
                     func = locals().get(name, None)
                     if not func:
-                        sys.stderr.write("No such test " + name + "\n")
-                        sys.exit(1)
+                        sys.exit("No such test " + name + "\n")
 
                     if os.path.exists(options.database):
                         os.remove(options.database)
-                    write("\t" + func.__name__ + (" " * (40 - len(func.__name__))))
-                    sys.stdout.flush()
+                    print("\t" + func.__name__ + (" " * (40 - len(func.__name__))), end="")
                     con = locals().get(driver + "_setup")(options.database)
                     gc.collect(2)
                     b4cpu = timerfn()
@@ -430,22 +420,14 @@ def doit():
                     gc.collect(2)
                     after = time.time()
                     aftercpu = timerfn()
-                    write("%0.3f %0.3f\n" % (after - b4, aftercpu - b4cpu))
-
-    # Cleanup if using valgrind
-    if options.apsw:
-        if hasattr(apsw, "_fini"):
-            # Cleans out buffer recycle cache
-            apsw._fini()
-
+                    print("%0.3f %0.3f" % (after - b4, aftercpu - b4cpu))
 
 parser = optparse.OptionParser()
 parser.add_option("--apsw", dest="apsw", action="store_true", default=False, help="Include apsw in testing (%default)")
-parser.add_option("--pysqlite",
-                  dest="pysqlite",
+parser.add_option("--sqlite3",
                   action="store_true",
                   default=False,
-                  help="Include pysqlite in testing (%default)")
+                  help="Include sqlite3 module in testing (%default)")
 parser.add_option("--correctness", dest="correctness", action="store_true", default=False, help="Do a correctness test")
 parser.add_option(
     "--scale",
@@ -482,7 +464,7 @@ parser.add_option(
     default=100,
     metavar="N",
     help=
-    "Size of the statement cache. APSW will disable cache with value of zero.  Pysqlite ensures a minimum of 5 [Default %default]"
+    "Size of the statement cache. APSW will disable cache with value of zero.  sqlite3 ensures a minimum of 5 [Default %default]"
 )
 parser.add_option("--unicode",
                   dest="unicode",
@@ -504,10 +486,10 @@ bigstmt:
 
   Supplies the SQL as a single string consisting of multiple
   statements.  apsw handles this normally via cursor.execute while
-  pysqlite requires that cursor.executescript is called.  The string
+  sqlite3 requires that cursor.executescript is called.  The string
   will be several kilobytes and with a factor of 50 will be in the
   megabyte range.  This is the kind of query you would run if you were
-  restoring a database from a dump.  (Note that pysqlite silently
+  restoring a database from a dump.  (Note that sqlite3 silently
   ignores returned data which also makes it execute faster).
 
 statements:
@@ -542,10 +524,10 @@ if __name__ == "__main__":
         parser.error("Unexpected arguments " + str(args))
 
     if options.tests_detail:
-        write(tests_detail)
+        print(tests_detail)
         sys.exit(0)
 
-    if not options.apsw and not options.pysqlite and not options.dump_filename:
-        parser.error("You should select at least one of --apsw or --pysqlite")
+    if not options.apsw and not options.sqlite3 and not options.dump_filename:
+        parser.error("You should select at least one of --apsw or --sqlite3")
 
     doit()
