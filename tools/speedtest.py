@@ -422,12 +422,10 @@ def doit():
                     aftercpu = timerfn()
                     print("%0.3f %0.3f" % (after - b4, aftercpu - b4cpu))
 
+
 parser = optparse.OptionParser()
 parser.add_option("--apsw", dest="apsw", action="store_true", default=False, help="Include apsw in testing (%default)")
-parser.add_option("--sqlite3",
-                  action="store_true",
-                  default=False,
-                  help="Include sqlite3 module in testing (%default)")
+parser.add_option("--sqlite3", action="store_true", default=False, help="Include sqlite3 module in testing (%default)")
 parser.add_option("--correctness", dest="correctness", action="store_true", default=False, help="Do a correctness test")
 parser.add_option(
     "--scale",
