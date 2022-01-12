@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # See the accompanying LICENSE file.
 #
@@ -12,20 +12,12 @@ import weakref
 class APSWTracer(object):
 
     def __init__(self, options):
-        if sys.version_info<(3,):
-            self.u=eval("u''")
-            import thread
-            self.threadid=thread.get_ident
-            self.stringtypes=(unicode,str)
-            self.numtypes=(int, long, float)
-            self.binarytypes=(buffer,)
-        else:
-            self.u=""
-            import _thread
-            self.threadid=_thread.get_ident
-            self.stringtypes=(str,)
-            self.numtypes=(int, float)
-            self.binarytypes=(bytes,)
+        self.u=""
+        import _thread
+        self.threadid=_thread.get_ident
+        self.stringtypes=(str,)
+        self.numtypes=(int, float)
+        self.binarytypes=(bytes,)
         self.options=options
         if options.output in ("-", "stdout"):
             self._writer=sys.stdout.write
@@ -54,17 +46,10 @@ class APSWTracer(object):
         self.numconnections=0
         self.timestart=time.time()
 
-    def writerpy2(self, s):
-        # s should be a unicode string
-        self._writer(s.encode("utf-8")+"\n")
-
     def writerpy3(self, s):
         self._writer(s+"\n")
 
-    if sys.version_info<(3,):
-        writer=writerpy2
-    else:
-        writer=writerpy3
+    writer=writerpy3
 
     def format(self, obj):
         if isinstance(obj, dict):
@@ -116,10 +101,7 @@ class APSWTracer(object):
             return "X'"+"".join(["%x" % obj[i] for i in range(len(obj))])+"'"
         return "(%d) X'"%(len(obj),)+"".join(["%x" % obj[i] for i in range(self.options.length)])+"..'"
 
-    if sys.version_info<(3,):
-        formatbinary=formatbinarypy2
-    else:
-        formatbinary=formatbinarypy3
+    formatbinary=formatbinarypy3
 
     def sanitizesql(self, sql):
         sql=sql.strip("; \t\r\n")
@@ -127,7 +109,7 @@ class APSWTracer(object):
             sql=sql.split("\n", 1)[1]
             sql=sql.lstrip("; \t\r\n")
         return sql
-            
+
     def profiler(self, sql, nanoseconds):
         sql=self.sanitizesql(sql)
         if sql not in self.timings:
@@ -206,19 +188,16 @@ class APSWTracer(object):
         import sys
         import __main__
         d=__main__.__dict__
-        if sys.version_info<(3,):
-            execfile(sys.argv[0],d, d)
-        else:
-            # We use compile so that filename is present in printed exceptions
-            code=compile(open(sys.argv[0], "rb").read(), sys.argv[0], "exec")
-            exec(code, d, d)
+        # We use compile so that filename is present in printed exceptions
+        code=compile(open(sys.argv[0], "rb").read(), sys.argv[0], "exec")
+        exec(code, d, d)
 
     def mostpopular(self, howmany):
         all=[(v,k) for k,v in self.queries.items()]
         all.sort()
         all.reverse()
         return all[:howmany]
-        
+
     def longestrunningaggregate(self, howmany):
         all=[(sum(v),len(v),k) for k,v in self.timings.items()]
         all.sort()
