@@ -512,15 +512,6 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
 
   if (obj == Py_None)
     PYSQLITE_CUR_CALL(res = sqlite3_bind_null(self->statement->vdbestatement, arg));
-    /* Python uses a 'long' for storage of PyInt.  This could
-     be a 32bit or 64bit quantity depending on the platform. */
-#if PY_MAJOR_VERSION < 3
-  else if (PyInt_Check(obj))
-  {
-    long v = PyInt_AS_LONG(obj);
-    PYSQLITE_CUR_CALL(res = sqlite3_bind_int64(self->statement->vdbestatement, arg, v));
-  }
-#endif
   else if (PyLong_Check(obj))
   {
     /* nb: PyLong_AsLongLong can cause Python level error */
@@ -557,53 +548,6 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
       return -1;
     }
   }
-#if PY_MAJOR_VERSION < 3
-  else if (PyString_Check(obj))
-  {
-    const char *val = PyString_AS_STRING(obj);
-    const size_t lenval = PyString_GET_SIZE(obj);
-    const char *chk = val;
-
-    if (lenval < 10000)
-      for (; chk < val + lenval && !((*chk) & 0x80); chk++)
-        ;
-    if (chk < val + lenval)
-    {
-      const void *badptr = NULL;
-      PyObject *str2 = PyUnicode_FromObject(obj);
-      if (!str2)
-        return -1;
-      UNIDATABEGIN(str2)
-      APSW_FAULT_INJECT(DoBindingStringConversionFails, , strdata = (char *)PyErr_NoMemory());
-#ifdef APSW_TEST_LARGE_OBJECTS
-      APSW_FAULT_INJECT(DoBindingLargeString, , strbytes = 0x001234567890L);
-#endif
-      badptr = strdata;
-      if (strdata)
-      {
-        if (strbytes > APSW_INT32_MAX)
-        {
-          SET_EXC(SQLITE_TOOBIG, NULL);
-          res = SQLITE_TOOBIG;
-        }
-        else
-          PYSQLITE_CUR_CALL(res = USE16(sqlite3_bind_text)(self->statement->vdbestatement, arg, strdata, strbytes, SQLITE_TRANSIENT));
-      }
-      UNIDATAEND(str2);
-      Py_DECREF(str2);
-      if (!badptr)
-      {
-        assert(PyErr_Occurred());
-        return -1;
-      }
-    }
-    else
-    {
-      assert(lenval < APSW_INT32_MAX);
-      PYSQLITE_CUR_CALL(res = sqlite3_bind_text(self->statement->vdbestatement, arg, val, lenval, SQLITE_TRANSIENT));
-    }
-  }
-#endif
   else if (compat_CheckReadBuffer(obj))
   {
     const void *buffer;
@@ -1557,11 +1501,7 @@ static PyTypeObject APSWCursorType = {
     0,                              /*tp_getattro*/
     0,                              /*tp_setattro*/
     0,                              /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG | Py_TPFLAGS_HAVE_GC
-#if PY_MAJOR_VERSION < 3
-        | Py_TPFLAGS_HAVE_ITER
-#endif
-    ,                                     /*tp_flags*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG | Py_TPFLAGS_HAVE_GC,  /*tp_flags*/
     "Cursor object",                      /* tp_doc */
     (traverseproc)APSWCursor_tp_traverse, /* tp_traverse */
     0,                                    /* tp_clear */

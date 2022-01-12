@@ -1865,11 +1865,7 @@ Connection_deserialize(Connection *self, PyObject *args)
   if (!PyArg_ParseTuple(args, "esO", STRENCODING, &dbname, &contents_object))
     return NULL;
 
-  if (PyUnicode_Check(contents_object)
-#if PY_MAJOR_VERSION < 3
-      || PyString_Check(contents_object)
-#endif
-      || !compat_CheckReadBuffer(contents_object))
+  if (PyUnicode_Check(contents_object) || !compat_CheckReadBuffer(contents_object))
   {
     PyErr_Format(PyExc_TypeError, "Expected bytes for contents");
     res = SQLITE_ERROR;
@@ -2082,13 +2078,6 @@ set_context_result(sqlite3_context *context, PyObject *obj)
     sqlite3_result_null(context);
     return;
   }
-#if PY_MAJOR_VERSION < 3
-  if (PyInt_Check(obj))
-  {
-    sqlite3_result_int64(context, PyInt_AS_LONG(obj));
-    return;
-  }
-#endif
   if (PyLong_Check(obj))
   {
     sqlite3_result_int64(context, PyLong_AsLongLong(obj));
@@ -2122,52 +2111,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
     UNIDATAEND(obj);
     return;
   }
-#if PY_MAJOR_VERSION < 3
-  if (PyString_Check(obj))
-  {
-    const char *val = PyString_AS_STRING(obj);
-    const Py_ssize_t lenval = PyString_GET_SIZE(obj);
-    const char *chk = val;
-    /* check if string is all ascii if less than 10kb in size */
-    if (lenval < 10000)
-      for (; chk < val + lenval && !((*chk) & 0x80); chk++)
-        ;
-    /* Non-ascii or long, so convert to unicode */
-    if (chk < val + lenval)
-    {
-      PyObject *str2 = PyUnicode_FromObject(obj);
-      if (!str2)
-      {
-        sqlite3_result_error(context, "PyUnicode_FromObject failed", -1);
-        return;
-      }
-      UNIDATABEGIN(str2)
-      APSW_FAULT_INJECT(SetContextResultStringUnicodeConversionFails, , strdata = (char *)PyErr_NoMemory());
-      if (strdata)
-      {
-#ifdef APSW_TEST_LARGE_OBJECTS
-        APSW_FAULT_INJECT(SetContextResultLargeString, , strbytes = 0x001234567890L);
-#endif
-        if (strbytes > APSW_INT32_MAX)
-        {
-          SET_EXC(SQLITE_TOOBIG, NULL);
-          sqlite3_result_error_toobig(context);
-        }
-        else
-          USE16(sqlite3_result_text)
-        (context, strdata, strbytes, SQLITE_TRANSIENT);
-      }
-      else
-        sqlite3_result_error(context, "Unicode conversions failed", -1);
-      UNIDATAEND(str2);
-      Py_DECREF(str2);
-    }
-    else /* just ascii chars */
-      sqlite3_result_text(context, val, lenval, SQLITE_TRANSIENT);
 
-    return;
-  }
-#endif
   if (compat_CheckReadBuffer(obj))
   {
     const void *buffer;

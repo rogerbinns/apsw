@@ -1447,11 +1447,7 @@ apswvfs_xNextSystemCall(sqlite3_vfs *vfs, const char *zName)
 
   if (pyresult && pyresult != Py_None)
   {
-    if (PyUnicode_CheckExact(pyresult)
-#if PY_MAJOR_VERSION < 3
-        || PyString_CheckExact(pyresult)
-#endif
-    )
+    if (PyUnicode_CheckExact(pyresult))
     {
       utf8 = getutf8string(pyresult);
       if (utf8)
@@ -1503,11 +1499,7 @@ apswvfspy_xNextSystemCall(APSWVFS *self, PyObject *name)
 
   if (name != Py_None)
   {
-    if (PyUnicode_CheckExact(name)
-#if PY_MAJOR_VERSION < 3
-        || PyString_CheckExact(name)
-#endif
-    )
+    if (PyUnicode_CheckExact(name))
     {
       utf8 = getutf8string(name);
     }
@@ -2041,9 +2033,8 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
   int asrb = -1;
   Py_ssize_t buflen;
   const void *buffer;
-#if PY_MAJOR_VERSION >= 3
   READBUFFERVARS;
-#endif
+
   FILEPREAMBLE;
 
   pybuf = Call_PythonMethodV(apswfile->file, "xRead", 1, "(iL)", amount, offset);

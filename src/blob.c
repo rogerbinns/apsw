@@ -691,12 +691,7 @@ APSWBlob_reopen(APSWBlob *self, PyObject *arg)
   CHECK_USE(NULL);
   CHECK_BLOB_CLOSED;
 
-#if PY_MAJOR_VERSION < 3
-  if (PyInt_Check(arg))
-    rowid = PyInt_AS_LONG(arg);
-  else
-#endif
-      if (PyLong_Check(arg))
+  if (PyLong_Check(arg))
   {
     rowid = PyLong_AsLongLong(arg);
     if (PyErr_Occurred())

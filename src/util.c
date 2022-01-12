@@ -93,7 +93,7 @@
 #define APSW_INT32_MIN (-2147483647 - 1)
 #define APSW_INT32_MAX 2147483647
 
-/* 
+/*
    The default Python PyErr_WriteUnraiseable is almost useless.  It
    only prints the str() of the exception and the str() of the object
    passed in.  This gives the developer no clue whatsoever where in
@@ -166,7 +166,7 @@ finally:
   PyErr_Clear(); /* being paranoid - make sure no errors on return */
 }
 
-/* 
+/*
    Python's handling of Unicode is horrible.  It can use 2 or 4 byte
    unicode chars and the conversion routines like to put out BOMs
    which makes life even harder.  These macros are used in pairs to do
@@ -220,10 +220,6 @@ convert_value_to_pyobject(sqlite3_value *value)
   case SQLITE_INTEGER:
   {
     sqlite3_int64 val = sqlite3_value_int64(value);
-#if PY_MAJOR_VERSION < 3
-    if (val >= LONG_MIN && val <= LONG_MAX)
-      return PyInt_FromLong((long)val);
-#endif
     return PyLong_FromLongLong(val);
   }
 
@@ -247,8 +243,8 @@ convert_value_to_pyobject(sqlite3_value *value)
   return NULL;
 }
 
-/* Converts column to PyObject.  Returns a new reference. Almost identical to above 
-   but we cannot just use sqlite3_column_value and then call the above function as 
+/* Converts column to PyObject.  Returns a new reference. Almost identical to above
+   but we cannot just use sqlite3_column_value and then call the above function as
    SQLite doesn't allow that ("unprotected values") */
 static PyObject *
 convert_column_to_pyobject(sqlite3_stmt *stmt, int col)

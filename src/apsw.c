@@ -1049,11 +1049,10 @@ fail:
   return NULL;
 }
 
-/** .. method:: format_sql_value(value) -> string
+/** .. method:: format_sql_value(value) -> str
 
   Returns a Python string (unicode) representing the supplied value in
-  SQL syntax.  Python 2 note: You must supply unicode strings not
-  plain strings.
+  SQL syntax.
 
 */
 static PyObject *
@@ -1072,11 +1071,7 @@ formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
   if (PyIntLong_Check(value) /* ::TODO:: verify L is not appended in py 2.3 and similar vintage */
       || PyFloat_Check(value))
     return PyObject_Unicode(value);
-#if PY_MAJOR_VERSION < 3
-  /* We don't support plain strings only unicode */
-  if (PyString_Check(value))
-    return PyErr_Format(PyExc_TypeError, "Old plain strings not supported - use unicode");
-#endif
+
   /* Unicode */
   if (PyUnicode_Check(value))
   {
@@ -1133,13 +1128,7 @@ formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
     APSW_Unicode_Return(unires);
   }
   /* Blob */
-  if (
-#if PY_MAJOR_VERSION < 3
-      PyBuffer_Check(value)
-#else
-      PyBytes_Check(value)
-#endif
-  )
+  if (PyBytes_Check(value))
   {
     const void *buffer;
     const char *bufferc = NULL;
@@ -1269,7 +1258,6 @@ static PyMethodDef module_methods[] = {
 
 static void add_shell(PyObject *module);
 
-#if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef apswmoduledef = {
     PyModuleDef_HEAD_INIT,
     "apsw",
@@ -1280,14 +1268,9 @@ static struct PyModuleDef apswmoduledef = {
     0,
     0,
     0};
-#endif
 
 PyMODINIT_FUNC
-#if PY_MAJOR_VERSION < 3
-initapsw(void)
-#else
 PyInit_apsw(void)
-#endif
 {
   PyObject *m = NULL;
   PyObject *thedict = NULL;
@@ -1310,12 +1293,7 @@ PyInit_apsw(void)
   )
     goto fail;
 
-#if PY_MAJOR_VERSION < 3
-  m = apswmodule = Py_InitModule3("apsw", module_methods,
-                                  "Another Python SQLite Wrapper.");
-#else
   m = apswmodule = PyModule_Create(&apswmoduledef);
-#endif
 
   if (m == NULL)
     goto fail;
@@ -1919,20 +1897,12 @@ modules etc. For example::
 
   if (!PyErr_Occurred())
   {
-    return
-#if PY_MAJOR_VERSION >= 3
-        m
-#endif
-        ;
+    return m;
   }
 
 fail:
   Py_XDECREF(m);
-  return
-#if PY_MAJOR_VERSION >= 3
-      NULL
-#endif
-      ;
+  return NULL;
 }
 
 static void
