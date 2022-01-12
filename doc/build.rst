@@ -19,14 +19,9 @@ needed components for you.
 | | python setup.py install test                              | Compiles APSW with default Python compiler, installs it into Python     |
 |                                                             | site library directory and then runs the test suite.                    |
 +-------------------------------------------------------------+-------------------------------------------------------------------------+
-| | python setup.py install :option:`--user`                  | (Python 2.6+, 3). Compiles APSW with default Python                     |
+| | python setup.py install :option:`--user`                  | Compiles APSW with default Python                                       |
 |                                                             | compiler and installs it into a subdirectory of your home directory.    |
 |                                                             | See :pep:`370` for more details.                                        |
-+-------------------------------------------------------------+-------------------------------------------------------------------------+
-| | python setup.py build :option:`--compile=mingw32` install | On Windows this will use the                                            |
-|                                                             | `free <http://www.gnu.org/philosophy/free-sw.html>`_                    |
-|                                                             | `MinGW compiler <http://mingw.org>`_ instead of the                     |
-|                                                             | Microsoft compilers.                                                    |
 +-------------------------------------------------------------+-------------------------------------------------------------------------+
 | | python setup.py build_ext :option:`--force`               | Compiles the extension but doesn't install it. The resulting file       |
 |   :option:`--inplace` test                                  | will be in the current directory named apsw.so (Unix/Mac) or            |

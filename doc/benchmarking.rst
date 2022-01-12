@@ -32,7 +32,7 @@ APSW includes a speed testing script as part of the :ref:`source
 distribution <source_and_binaries>`.  You can use the script to
 compare SQLite performance across different versions of SQLite,
 different host systems (hard drives and controllers matter) as well as
-between pysqlite and APSW.  The underlying queries are based on
+between sqlite3 and APSW.  The underlying queries are based on
 `SQLite's speed test
 <https://sqlite.org/src/finfo?name=tool/mkspeedsql.tcl>`_.
 
@@ -46,7 +46,7 @@ between pysqlite and APSW.  The underlying queries are based on
     Options:
       -h, --help           show this help message and exit
       --apsw               Include apsw in testing (False)
-      --pysqlite           Include pysqlite in testing (False)
+      --sqlite3            Include sqlite3 module in testing (False)
       --correctness        Do a correctness test
       --scale=SCALE        How many statements to execute.  Each unit takes about
                            2 seconds per test on memory only databases. [Default
@@ -60,7 +60,7 @@ between pysqlite and APSW.  The underlying queries are based on
       --dump-sql=FILENAME  Name of file to dump SQL to.  This is useful for
                            feeding into the SQLite command line shell.
       --sc-size=N          Size of the statement cache. APSW will disable cache
-                           with value of zero.  Pysqlite ensures a minimum of 5
+                           with value of zero.  sqlite3 ensures a minimum of 5
                            [Default 100]
       --unicode=UNICODE    Percentage of text that is unicode characters [Default
                            0]
@@ -76,10 +76,10 @@ between pysqlite and APSW.  The underlying queries are based on
     
       Supplies the SQL as a single string consisting of multiple
       statements.  apsw handles this normally via cursor.execute while
-      pysqlite requires that cursor.executescript is called.  The string
+      sqlite3 requires that cursor.executescript is called.  The string
       will be several kilobytes and with a factor of 50 will be in the
       megabyte range.  This is the kind of query you would run if you were
-      restoring a database from a dump.  (Note that pysqlite silently
+      restoring a database from a dump.  (Note that sqlite3 silently
       ignores returned data which also makes it execute faster).
     
     statements:

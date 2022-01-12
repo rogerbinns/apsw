@@ -103,8 +103,7 @@ manipulating dates and time which are represented as strings or
 `Julian days <http://en.wikipedia.org/wiki/Julian_day>`_ (floating
 point number).
 
-Use the standard Python buffer class for BLOBs in Python 2 and the
-bytes type in Python 3.
+Use the standard bytes type for blobs.
 
 Optional DB API Extensions
 ==========================

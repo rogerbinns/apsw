@@ -154,8 +154,6 @@ class longest:
     def final(self):
         return self.longest
 
-    # Under Python 2.3 remove the following line and add
-    # factory=classmethod(factory) at the end
     @classmethod
     def factory(cls):
         return cls(), cls.step, cls.final
