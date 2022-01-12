@@ -327,8 +327,8 @@ OPTIONS include:
     ### but also by random other pieces of code.
     ###
 
-    _binary_type = eval(("buffer", "bytes")[sys.version_info >= (3, 0)])
-    _basestring = eval(("basestring", "str")[sys.version_info >= (3, 0)])
+    _binary_type = bytes
+    _basestring = str
 
     # bytes that are ok in C strings - no need for quoting
     _printable = [
@@ -357,12 +357,8 @@ OPTIONS include:
         elif v is None:
             return '"' + self.nullvalue + '"'
         elif isinstance(v, self._binary_type):
-            if sys.version_info < (3, 0):
-                o = lambda x: ord(x)
-                fromc = lambda x: x
-            else:
-                o = lambda x: x
-                fromc = lambda x: chr(x)
+            o = lambda x: x
+            fromc = chr
             res = ['"']
             for c in v:
                 if o(c) in self._printable:
@@ -416,10 +412,7 @@ OPTIONS include:
         elif v is None:
             return 'null'
         elif isinstance(v, self._binary_type):
-            if sys.version_info < (3, 0):
-                o = base64.encodestring(v)
-            else:
-                o = base64.encodebytes(v).decode("ascii")
+            o = base64.encodebytes(v).decode("ascii")
             if o[-1] == "\n":
                 o = o[:-1]
             return '"' + o + '"'
@@ -434,24 +427,14 @@ OPTIONS include:
         elif isinstance(v, self._basestring):
             return repr(v)
         elif isinstance(v, self._binary_type):
-            if sys.version_info < (3, 0):
-                res = ["buffer(\""]
-                for i in v:
-                    if ord(i) in self._printable:
-                        res.append(i)
-                    else:
-                        res.append("\\x%02X" % (ord(i), ))
-                res.append("\")")
-                return "".join(res)
-            else:
-                res = ['b"']
-                for i in v:
-                    if i in self._printable:
-                        res.append(chr(i))
-                    else:
-                        res.append("\\x%02X" % (i, ))
-                res.append('"')
-                return "".join(res)
+            res = ['b"']
+            for i in v:
+                if i in self._printable:
+                    res.append(chr(i))
+                else:
+                    res.append("\\x%02X" % (i, ))
+            res.append('"')
+            return "".join(res)
         else:
             return "%s" % (v, )
 
@@ -550,17 +533,10 @@ OPTIONS include:
         # supplied. _csv is a tuple of a StringIO and the csv.writer
         # instance.
 
-        # Sigh
-        if sys.version_info < (3, 0):
-            fixdata = lambda x: x.encode("utf8")
-        else:
-            fixdata = lambda x: x
+        fixdata = lambda x: x
 
         if header:
-            if sys.version_info < (3, 0):
-                import StringIO as io
-            else:
-                import io
+            import io
             s = io.StringIO()
             kwargs = {}
             if self.separator == ",":
@@ -591,8 +567,6 @@ OPTIONS include:
             line = [fmt(l) for l in line]
         self._csv[1].writerow(line)
         t = self._csv[0].getvalue()
-        if sys.version_info < (3, 0):
-            t = t.decode("utf8")
         # csv lib always does DOS eol
         assert (t.endswith("\r\n"))
         t = t[:-2]
@@ -720,8 +694,6 @@ Enter SQL statements terminated with a ";"
 """ % (apsw.sqlitelibversion(), apsw.apswversion())
             intro = intro.lstrip()
         if self.interactive and intro:
-            if sys.version_info < (3, 0):
-                intro = unicode(intro)
             c = self.colour
             self.write(self.stdout, c.intro + intro + c.intro_)
 
@@ -916,12 +888,7 @@ Enter SQL statements terminated with a ";"
         """
         if self.echo:
             self.write(self.stderr, cmd + "\n")
-        # broken with unicode on Python 2!!!
-        if sys.version_info < (3, 0):
-            cmd = cmd.encode("utf8")
-            cmd = [c.decode("utf8") for c in shlex.split(cmd)]
-        else:
-            cmd = shlex.split(cmd)
+        cmd = shlex.split(cmd)
         assert cmd[0][0] == "."
         cmd[0] = cmd[0][1:]
         fn = getattr(self, "command_" + cmd[0], None)
@@ -1045,8 +1012,6 @@ Enter SQL statements terminated with a ";"
 
         # Used in comment() - see issue 142
         outputstrtype = str
-        if sys.version_info < (3, 0):
-            outputstrtype = unicode
 
         # Python 2.3 can end up with nonsense like "en_us" so we fall
         # back to ascii in that case
@@ -1653,36 +1618,11 @@ Enter SQL statements terminated with a ";"
     def _csvin_wrapper(self, filename, dialect):
         # Returns a csv reader that works around python bugs and uses
         # dialect dict to configure reader
-
-        # Very easy for python 3
-        if sys.version_info >= (3, 0):
-            thefile = codecs.open(filename, "r", self.encoding[0])
-            for line in csv.reader(thefile, **dialect.copy()):
-                yield line
-            thefile.close()
-            return
-
-        ###
-        ### csv module is not good at unicode so we have to
-        ### indirect unless utf8 is in use
-        ###
-        if self.encoding[0].lower() == "utf8":  # no need for tempfile
-            thefile = open(filename, "rb")
-        else:
-            import tempfile
-            thefile = tempfile.TemporaryFile(prefix="apsw_import")
-            thefile.write(codecs.open(filename, "r", self.encoding[0]).read().encode("utf8"))
-            # move back to beginning
-            thefile.seek(0, 0)
-
-        # Ensure all values are utf8 not unicode
-        for k, v in dialect.items():
-            if isinstance(v, unicode):
-                dialect[k] = v.encode("utf8")
-        for line in csv.reader(thefile, **dialect):
-            # back to unicode again
-            yield [x.decode("utf8") for x in line]
+        thefile = codecs.open(filename, "r", self.encoding[0])
+        for line in csv.reader(thefile, **dialect.copy()):
+            yield line
         thefile.close()
+        return
 
     def command_autoimport(self, cmd):
         """autoimport FILENAME ?TABLE?: Imports filename creating a table and automatically working out separators and data types (alternative to .import command)
@@ -2157,15 +2097,12 @@ Enter SQL statements terminated with a ";"
         if cmd[0].lower().endswith(".py"):
             g = {}
             g.update({'apsw': apsw, 'shell': self})
-            if sys.version_info < (3, 0):
-                execfile(cmd[0], g, g)
-            else:
-                # compile step is needed to associate name with code
-                f=open(cmd[0])
-                try:
-                    exec(compile(f.read(), cmd[0], 'exec'), g, g)
-                finally:
-                    f.close()
+            # compile step is needed to associate name with code
+            f=open(cmd[0])
+            try:
+                exec(compile(f.read(), cmd[0], 'exec'), g, g)
+            finally:
+                f.close()
         else:
             f = codecs.open(cmd[0], "r", self.encoding[0])
             try:
@@ -2495,37 +2432,11 @@ Enter SQL statements terminated with a ";"
                 raise self.Error("Unknown backslash sequence \\" + c)
         return "".join(res)
 
-    if sys.version_info < (3, 0):
+    def write(self, dest, text):
+        "Writes text to dest.  dest will typically be one of self.stdout or self.stderr."
+        dest.write(text)
 
-        def write(self, dest, text):
-            """Writes text to dest.  dest will typically be one of self.stdout or self.stderr."""
-            # ensure text is unicode to catch codeset issues here
-            if type(text) != unicode:
-                text = unicode(text)
-            try:
-                dest.write(text)
-            except UnicodeEncodeError:
-                ev = sys.exc_info()[1]
-                # See issue108 and try to work around it
-                if ev.args[0]=="ascii" and dest.encoding and ev.args[0]!=dest.encoding and hasattr(dest, "fileno") and \
-                   isinstance(dest.fileno(), int) and dest.fileno()>=0:
-                    args = [
-                        dest.encoding,
-                    ]
-                    if dest.errors:
-                        args.append(dest.errors)
-                    dest.write(text.encode(*args))
-                else:
-                    raise
-
-        _raw_input = raw_input
-    else:
-
-        def write(self, dest, text):
-            "Writes text to dest.  dest will typically be one of self.stdout or self.stderr."
-            dest.write(text)
-
-        _raw_input = input
+    _raw_input = input
 
     def getline(self, prompt=""):
         """Returns a single line of input (may be incomplete SQL) from self.stdin.

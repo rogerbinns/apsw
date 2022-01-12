@@ -36,15 +36,8 @@ def write(*args):
     dest.flush()
 
 
-py3 = sys.version_info >= (3, 0)
-
-
 # ensure files are closed
 def read_whole_file(name, mode):
-    if sys.version_info < (2, 4):
-        if "r" in mode and "U" in mode:
-            # python 2.3 returns file not found if "U" present!
-            mode = "".join([m for m in mode if m != "U"])
     f = open(name, mode)
     try:
         return f.read()
@@ -133,15 +126,10 @@ class build_test_extension(Command):
 # deal with various python version compatibility issues with how
 # to treat returned web data as lines of text
 def fixupcode(code):
-    if sys.version_info < (2, 5):
-        if type(code) != str:
-            code = code.read()
-
-    if sys.version_info >= (3, 0):
-        if type(code) != bytes:
-            code = code.read()
-        if type(code) == bytes:
-            code = code.decode("iso8859-1")
+    if type(code) != bytes:
+        code = code.read()
+    if type(code) == bytes:
+        code = code.decode("iso8859-1")
 
     if type(code) == str:
         return [l + "\n" for l in code.split("\n")]
@@ -389,16 +377,10 @@ class fetch(Command):
 
     # download a url
     def download(self, url, text=False, checksum=True):
-        if py3:
-            import urllib.request
-            urlopen = urllib.request.urlopen
-            import io
-            bytesio = io.BytesIO
-        else:
-            import urllib2
-            urlopen = urllib2.urlopen
-            import cStringIO
-            bytesio = cStringIO.StringIO
+        import urllib.request
+        urlopen = urllib.request.urlopen
+        import io
+        bytesio = io.BytesIO
 
         write("    Fetching", url)
         count = 0
@@ -425,8 +407,7 @@ class fetch(Command):
                     raise
 
         if text:
-            if py3:
-                page = page.decode("iso8859_1")
+            page = page.decode("iso8859_1")
 
         if checksum:
             self.verifyurl(url, page)
@@ -622,9 +603,8 @@ class apsw_build_ext(beparent):
             if find_in_path("icu-config"):
                 method = "icu-config"
 
-            if sys.version_info >= (2, 6):
-                # if posix is true then quotes get stripped such as from -Dfoo="bar"
-                kwargs["posix"] = False
+            # if posix is true then quotes get stripped such as from -Dfoo="bar"
+            kwargs["posix"] = False
             for part in shlex.split(os.popen(cmds[method][0], "r").read(), **kwargs):
                 if part.startswith("-I"):
                     ext.include_dirs.append(part[2:])
