@@ -1310,9 +1310,6 @@ PyInit_apsw(void)
   )
     goto fail;
 
-  /* ensure threads are available */
-  PyEval_InitThreads();
-
 #if PY_MAJOR_VERSION < 3
   m = apswmodule = Py_InitModule3("apsw", module_methods,
                                   "Another Python SQLite Wrapper.");
