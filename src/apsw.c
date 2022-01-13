@@ -264,6 +264,9 @@ initialize(void)
 
   -* sqlite3_shutdown
 */
+#ifdef APSW_FORK_CHECKER
+static void free_fork_checker(void);
+#endif
 
 static PyObject *
 sqliteshutdown(void)
@@ -275,6 +278,10 @@ sqliteshutdown(void)
 
   if (res != SQLITE_OK)
     return NULL;
+
+#ifdef APSW_FORK_CHECKER
+  free_fork_checker();
+#endif
 
   Py_RETURN_NONE;
 }
@@ -761,6 +768,10 @@ apsw_xMutexEnd(void)
   return apsw_orig_mutex_methods.xMutexEnd();
 }
 
+#define MUTEX_MAX_ALLOC 20
+static apsw_mutex *fork_checker_mutexes[MUTEX_MAX_ALLOC];
+static int current_apsw_fork_mutex = 0;
+
 static sqlite3_mutex *
 apsw_xMutexAlloc(int which)
 {
@@ -774,8 +785,8 @@ apsw_xMutexAlloc(int which)
 
     if (!m)
       return m;
-
-    am = malloc(sizeof(apsw_mutex));
+    assert(current_apsw_fork_mutex < MUTEX_MAX_ALLOC);
+    fork_checker_mutexes[current_apsw_fork_mutex++] = am = malloc(sizeof(apsw_mutex));
     am->pid = getpid();
     am->underlying_mutex = m;
     return (sqlite3_mutex *)am;
@@ -792,6 +803,23 @@ apsw_xMutexAlloc(int which)
     }
     return (sqlite3_mutex *)apsw_mutexes[which];
   }
+}
+
+static void
+free_fork_checker(void)
+{
+  int i;
+  for (i = 0; i<sizeof(apsw_mutexes) / sizeof(apsw_mutexes[0]); i++)
+  {
+      free(apsw_mutexes[i]);
+      apsw_mutexes[i] = NULL;
+  }
+  for (i = 0; i < MUTEX_MAX_ALLOC; i++)
+  {
+    free(fork_checker_mutexes[i]);
+    fork_checker_mutexes[i] = 0;
+  }
+  current_apsw_fork_mutex = 0;
 }
 
 static int
