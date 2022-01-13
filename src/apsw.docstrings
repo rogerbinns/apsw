@@ -18,7 +18,7 @@
 "\n" \
 "Calls: `sqlite3_complete <https://sqlite.org/c3ref/complete.html>`__\n" 
 
-#define  Apsw_config_DOC "config($self, op, /)\n--\n\napsw.config(op[, *args])\n\n" \
+#define  Apsw_config_DOC "config($self, op, *args)\n--\n\napsw.config(op: int, *args) -> None\n\n" \
 ":param op: A `configuration operation <https://sqlite.org/c3ref/c_config_chunkalloc.html>`_\n" \
 ":param args: Zero or more arguments as appropriate for *op*\n" \
 "\n" \
@@ -34,7 +34,7 @@
 "\n" \
 "Calls: `sqlite3_config <https://sqlite.org/c3ref/config.html>`__\n" 
 
-#define  Apsw_enablesharedcache_DOC "enablesharedcache($self, bool, /)\n--\n\napsw.enablesharedcache(bool)\n\n" \
+#define  Apsw_enablesharedcache_DOC "enablesharedcache($self, enable, /)\n--\n\napsw.enablesharedcache(enable: bool) -> None\n\n" \
 "If you use the same :class:`Connection` across threads or use\n" \
 "multiple :class:`connections <Connection>` accessing the same file,\n" \
 "then SQLite can `share the cache between them\n" \
@@ -43,7 +43,7 @@
 "\n" \
 "Calls: `sqlite3_enable_shared_cache <https://sqlite.org/c3ref/enable_shared_cache.html>`__\n" 
 
-#define  Apsw_exceptionfor_DOC "exceptionfor($self, int, /)\n--\n\napsw.exceptionfor(int) -> Exception\n\n" \
+#define  Apsw_exceptionfor_DOC "exceptionfor($self, code, /)\n--\n\napsw.exceptionfor(code: int) -> Exception\n\n" \
 "If you would like to raise an exception that corresponds to a\n" \
 "particular SQLite `error code\n" \
 "<https://sqlite.org/c3ref/c_abort.html>`_ then call this function.\n" \
@@ -54,7 +54,7 @@
 "\n" \
 "  raise apsw.exceptionfor(apsw.SQLITE_IOERR_ACCESS)\n" 
 
-#define  Apsw_fork_checker_DOC "fork_checker($self, /)\n--\n\napsw.fork_checker()\n\n" \
+#define  Apsw_fork_checker_DOC "fork_checker($self, /)\n--\n\napsw.fork_checker() -> None\n\n" \
 "**Note** This method is not available on Windows as it does not\n" \
 "support the fork system call.\n" \
 "\n" \
@@ -98,27 +98,27 @@
 "the program will later crash.  The recommended use is to use the fork\n" \
 "checking as part of your test suite.\n" 
 
-#define  Apsw_format_sql_value_DOC "format_sql_value($self, value, /)\n--\n\napsw.format_sql_value(value) -> str\n\n" \
+#define  Apsw_format_sql_value_DOC "format_sql_value($self, value, /)\n--\n\napsw.format_sql_value(value: Union[None, int, float, bytes, str]) -> str\n\n" \
 "Returns a Python string (unicode) representing the supplied value in\n" \
 "SQL syntax.\n" 
 
-#define  Apsw_initialize_DOC "initialize($self, /)\n--\n\napsw.initialize()\n\n" \
+#define  Apsw_initialize_DOC "initialize($self, /)\n--\n\napsw.initialize() -> None\n\n" \
 "It is unlikely you will want to call this method as SQLite automatically initializes.\n" \
 "\n" \
 "Calls: `sqlite3_initialize <https://sqlite.org/c3ref/initialize.html>`__\n" 
 
-#define  Apsw_log_DOC "log($self, level, message, /)\n--\n\napsw.log(level, message)\n\n" \
+#define  Apsw_log_DOC "log($self, errorcode, message, /)\n--\n\napsw.log(errorcode: int, message: str) -> None\n\n" \
 "Calls the SQLite logging interface.  Note that you must format the\n" \
 "message before passing it to this method::\n" \
 "\n" \
-"    apsw.log(apsw.SQLITE_NOMEM, \"Need %d bytes of memory\" % (1234,))\n" \
+"    apsw.log(apsw.SQLITE_NOMEM, \"Need %s bytes of memory\" % (1234,))\n" \
 "\n" \
 "See :ref:`tips <diagnostics_tips>` for an example of how to\n" \
 "receive log messages.\n" \
 "\n" \
 "Calls: `sqlite3_log <https://sqlite.org/c3ref/log.html>`__\n" 
 
-#define  Apsw_memoryhighwater_DOC "memoryhighwater($self, reset, /)\n--\n\napsw.memoryhighwater(reset=False) -> int\n\n" \
+#define  Apsw_memoryhighwater_DOC "memoryhighwater($self, reset, /)\n--\n\napsw.memoryhighwater(reset: bool = False) -> int\n\n" \
 "Returns the maximum amount of memory SQLite has used.  If *reset* is\n" \
 "True then the high water mark is reset to the current value.\n" \
 "\n" \
@@ -136,21 +136,20 @@
 "\n" \
 "Calls: `sqlite3_memory_used <https://sqlite.org/c3ref/memory_highwater.html>`__\n" 
 
-#define  Apsw_randomness_DOC "randomness($self, bytes, /)\n--\n\napsw.randomness(bytes)  -> data\n\n" \
+#define  Apsw_randomness_DOC "randomness($self, amount, /)\n--\n\napsw.randomness(amount: int)  -> bytes\n\n" \
 "Gets random data from SQLite's random number generator.\n" \
 "\n" \
-":param bytes: How many bytes to return\n" \
-":rtype: (Python 2) string, (Python 3) bytes\n" \
+":param amount: How many bytes to return\n" \
 "\n" \
 "Calls: `sqlite3_randomness <https://sqlite.org/c3ref/randomness.html>`__\n" 
 
-#define  Apsw_releasememory_DOC "releasememory($self, bytes, /)\n--\n\napsw.releasememory(bytes) -> int\n\n" \
-"Requests SQLite try to free *bytes* bytes of memory.  Returns how\n" \
+#define  Apsw_releasememory_DOC "releasememory($self, amount, /)\n--\n\napsw.releasememory(amount: int) -> int\n\n" \
+"Requests SQLite try to free *amount* bytes of memory.  Returns how\n" \
 "many bytes were freed.\n" \
 "\n" \
 "Calls: `sqlite3_release_memory <https://sqlite.org/c3ref/release_memory.html>`__\n" 
 
-#define  Apsw_shutdown_DOC "shutdown($self, /)\n--\n\napsw.shutdown()\n\n" \
+#define  Apsw_shutdown_DOC "shutdown($self, /)\n--\n\napsw.shutdown() -> None\n\n" \
 "It is unlikely you will want to call this method and there is no\n" \
 "need to do so.  It is a **really** bad idea to call it unless you\n" \
 "are absolutely sure all :class:`connections <Connection>`,\n" \
@@ -159,26 +158,26 @@
 "\n" \
 "Calls: `sqlite3_shutdown <https://sqlite.org/c3ref/initialize.html>`__\n" 
 
-#define  Apsw_softheaplimit_DOC "softheaplimit($self, bytes, /)\n--\n\napsw.softheaplimit(bytes) -> oldlimit\n\n" \
-"Requests SQLite try to keep memory usage below *bytes* bytes and\n" \
-"returns the previous setting.\n" \
+#define  Apsw_softheaplimit_DOC "softheaplimit($self, amount, /)\n--\n\napsw.softheaplimit(amount) -> int\n\n" \
+"Requests SQLite try to keep memory usage below *amount* bytes and\n" \
+"returns the previous limit.\n" \
 "\n" \
 "Calls: `sqlite3_soft_heap_limit64 <https://sqlite.org/c3ref/hard_heap_limit64.html>`__\n" 
 
-#define  Apsw_sqlite3_sourceid_DOC "sqlite3_sourceid($self, /)\n--\n\napsw.sqlite3_sourceid() -> string\n\n" \
+#define  Apsw_sqlite3_sourceid_DOC "sqlite3_sourceid($self, /)\n--\n\napsw.sqlite3_sourceid() -> str\n\n" \
 "Returns the exact checkin information for the SQLite 3 source\n" \
 "being used.\n" \
 "\n" \
 "Calls: `sqlite3_sourceid <https://sqlite.org/c3ref/libversion.html>`__\n" 
 
-#define  Apsw_sqlitelibversion_DOC "sqlitelibversion($self, /)\n--\n\napsw.sqlitelibversion() -> string\n\n" \
+#define  Apsw_sqlitelibversion_DOC "sqlitelibversion($self, /)\n--\n\napsw.sqlitelibversion() -> str\n\n" \
 "Returns the version of the SQLite library.  This value is queried at\n" \
 "run time from the library so if you use shared libraries it will be\n" \
 "the version in the shared library.\n" \
 "\n" \
 "Calls: `sqlite3_libversion <https://sqlite.org/c3ref/libversion.html>`__\n" 
 
-#define  Apsw_status_DOC "status($self, op, reset, /)\n--\n\napsw.status(op, reset=False) -> (int, int)\n\n" \
+#define  Apsw_status_DOC "status($self, op, reset, /)\n--\n\napsw.status(op: int, reset: bool = False) -> Tuple[int, int]\n\n" \
 "Returns current and highwater measurements.\n" \
 "\n" \
 ":param op: A `status parameter <https://sqlite.org/c3ref/c_status_malloc_size.html>`_\n" \
@@ -675,7 +674,7 @@
 "\n" \
 "Calls: `sqlite3_deserialize <https://sqlite.org/c3ref/deserialize.html>`__\n" 
 
-#define  Connection_enableloadextension_DOC "enableloadextension($self, enable, /)\n--\n\nConnection.enableloadextension(enable: Union[bool, Dict[Any, Any]]) -> None\n\n" \
+#define  Connection_enableloadextension_DOC "enableloadextension($self, enable, /)\n--\n\nConnection.enableloadextension(enable: bool) -> None\n\n" \
 "Enables/disables `extension loading\n" \
 "<https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_\n" \
 "which is disabled by default.\n" \
