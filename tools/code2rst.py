@@ -102,6 +102,11 @@ def do_mappings():
         "Status Parameters for prepared statements",
         "Testing Interface Operation Codes",
         "Text Encodings",
+        "Flags for sqlite3_deserialize()",
+        "Flags for sqlite3_serialize",
+        "Prepare Flags",
+        "SQL Trace Event Codes",
+        "Win32 Directory Types",
     }
 
     for d in sorted(consts.keys()):
