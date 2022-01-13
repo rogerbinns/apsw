@@ -133,7 +133,7 @@ class BadIsTrue(int):
 class ThreadRunner(threading.Thread):
     def __init__(self, callable, *args, **kwargs):
         threading.Thread.__init__(self)
-        self.setDaemon(True)
+        self.daemon - True
         self.callable = callable
         self.args = args
         self.kwargs = kwargs
@@ -183,7 +183,7 @@ def bgdel():
 
 bgdelq = queue.Queue()
 bgdelthread = threading.Thread(target=bgdel)
-bgdelthread.setDaemon(True)
+bgdelthread.daemon = True
 bgdelthread.start()
 
 
