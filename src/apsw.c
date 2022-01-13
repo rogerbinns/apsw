@@ -167,7 +167,7 @@ static PyObject *apswmodule;
 
 /* MODULE METHODS */
 
-/** .. method:: sqlitelibversion() -> string
+/** .. method:: sqlitelibversion() -> str
 
   Returns the version of the SQLite library.  This value is queried at
   run time from the library so if you use shared libraries it will be
@@ -182,7 +182,7 @@ getsqliteversion(void)
   return MAKESTR(sqlite3_libversion());
 }
 
-/** .. method:: sqlite3_sourceid() -> string
+/** .. method:: sqlite3_sourceid() -> str
 
     Returns the exact checkin information for the SQLite 3 source
     being used.
@@ -206,7 +206,7 @@ getapswversion(void)
   return MAKESTR(APSW_VERSION);
 }
 
-/** .. method:: enablesharedcache(bool)
+/** .. method:: enablesharedcache(enable: bool) -> None
 
   If you use the same :class:`Connection` across threads or use
   multiple :class:`connections <Connection>` accessing the same file,
@@ -232,7 +232,7 @@ enablesharedcache(APSW_ARGUNUSED PyObject *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
-/** .. method:: initialize()
+/** .. method:: initialize() -> None
 
   It is unlikely you will want to call this method as SQLite automatically initializes.
 
@@ -254,7 +254,7 @@ initialize(void)
   Py_RETURN_NONE;
 }
 
-/** .. method:: shutdown()
+/** .. method:: shutdown() -> None
 
   It is unlikely you will want to call this method and there is no
   need to do so.  It is a **really** bad idea to call it unless you
@@ -279,7 +279,7 @@ sqliteshutdown(void)
   Py_RETURN_NONE;
 }
 
-/** .. method:: config(op[, *args])
+/** .. method:: config(op: int, *args) -> None
 
   :param op: A `configuration operation <https://sqlite.org/c3ref/c_config_chunkalloc.html>`_
   :param args: Zero or more arguments as appropriate for *op*
@@ -442,7 +442,7 @@ memoryused(void)
   return PyLong_FromLongLong(sqlite3_memory_used());
 }
 
-/** .. method:: memoryhighwater(reset=False) -> int
+/** .. method:: memoryhighwater(reset: bool = False) -> int
 
   Returns the maximum amount of memory SQLite has used.  If *reset* is
   True then the high water mark is reset to the current value.
@@ -464,10 +464,10 @@ memoryhighwater(APSW_ARGUNUSED PyObject *self, PyObject *args)
   return PyLong_FromLongLong(sqlite3_memory_highwater(reset));
 }
 
-/** .. method:: softheaplimit(bytes) -> oldlimit
+/** .. method:: softheaplimit(amount) -> int
 
-  Requests SQLite try to keep memory usage below *bytes* bytes and
-  returns the previous setting.
+  Requests SQLite try to keep memory usage below *amount* bytes and
+  returns the previous limit.
 
   -* sqlite3_soft_heap_limit64
 */
@@ -484,12 +484,11 @@ softheaplimit(APSW_ARGUNUSED PyObject *self, PyObject *args)
   return PyLong_FromLongLong(oldlimit);
 }
 
-/** .. method:: randomness(bytes)  -> data
+/** .. method:: randomness(amount: int)  -> bytes
 
   Gets random data from SQLite's random number generator.
 
-  :param bytes: How many bytes to return
-  :rtype: (Python 2) string, (Python 3) bytes
+  :param amount: How many bytes to return
 
   -* sqlite3_randomness
 */
@@ -510,9 +509,9 @@ randomness(APSW_ARGUNUSED PyObject *self, PyObject *args)
   return bytes;
 }
 
-/** .. method:: releasememory(bytes) -> int
+/** .. method:: releasememory(amount: int) -> int
 
-  Requests SQLite try to free *bytes* bytes of memory.  Returns how
+  Requests SQLite try to free *amount* bytes of memory.  Returns how
   many bytes were freed.
 
   -* sqlite3_release_memory
@@ -529,7 +528,7 @@ releasememory(APSW_ARGUNUSED PyObject *self, PyObject *args)
   return PyInt_FromLong(sqlite3_release_memory(amount));
 }
 
-/** .. method:: status(op, reset=False) -> (int, int)
+/** .. method:: status(op: int, reset: bool = False) -> Tuple[int, int]
 
   Returns current and highwater measurements.
 
@@ -562,7 +561,7 @@ status(APSW_ARGUNUSED PyObject *self, PyObject *args)
   return Py_BuildValue("(LL)", current, highwater);
 }
 
-/** .. method:: vfsnames() -> list(string)
+/** .. method:: vfsnames() -> List[str]
 
   Returns a list of the currently installed :ref:`vfs <vfs>`.  The first
   item in the list is the default vfs.
@@ -599,7 +598,7 @@ error:
   return NULL;
 }
 
-/** .. method:: exceptionfor(int) -> Exception
+/** .. method:: exceptionfor(code: int) -> Exception
 
   If you would like to raise an exception that corresponds to a
   particular SQLite `error code
@@ -880,7 +879,7 @@ static sqlite3_mutex_methods apsw_mutex_methods =
 #endif
 };
 
-/** .. method:: fork_checker()
+/** .. method:: fork_checker() -> None
 
   **Note** This method is not available on Windows as it does not
   support the fork system call.
@@ -1051,7 +1050,7 @@ fail:
   return NULL;
 }
 
-/** .. method:: format_sql_value(value) -> str
+/** .. method:: format_sql_value(value: Union[None, int, float, bytes, str]) -> str
 
   Returns a Python string (unicode) representing the supplied value in
   SQL syntax.
@@ -1069,9 +1068,8 @@ formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
     Py_INCREF(nullstr);
     return nullstr;
   }
-  /* Integer/Long/Float */
-  if (PyIntLong_Check(value) /* ::TODO:: verify L is not appended in py 2.3 and similar vintage */
-      || PyFloat_Check(value))
+  /* Integer/Float */
+  if (PyIntLong_Check(value) || PyFloat_Check(value))
     return PyObject_Unicode(value);
 
   /* Unicode */
@@ -1182,12 +1180,12 @@ formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
   my code with the actual docstring from tools.py:main().
 */
 
-/** .. method:: log(level, message)
+/** .. method:: log(errorcode: int, message: str) -> None
 
     Calls the SQLite logging interface.  Note that you must format the
     message before passing it to this method::
 
-        apsw.log(apsw.SQLITE_NOMEM, "Need %d bytes of memory" % (1234,))
+        apsw.log(apsw.SQLITE_NOMEM, "Need %s bytes of memory" % (1234,))
 
     See :ref:`tips <diagnostics_tips>` for an example of how to
     receive log messages.
