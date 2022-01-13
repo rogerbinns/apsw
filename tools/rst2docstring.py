@@ -6,7 +6,7 @@ import io
 import textwrap
 import glob
 
-from typing import Union
+from typing import Union, List
 
 # symbols to skip because we can't apply docstrings
 skip = {
@@ -23,7 +23,7 @@ skipseen = set()
 def process_file(name: str) -> list:
     "Read one rst file and extract docstrings"
     items = []
-    current = []
+    current : List[str] = []
 
     def do_current():
         nonlocal current
@@ -156,20 +156,20 @@ def simplify_signature(s: str) -> str:
             skip_to_next = False
             continue
 
-        if name and not (name + c).isidentifier():
+        if name and not (name + c).isidentifier() and not (name[0] == "*" and (name[1:] + c).isidentifier()):
             skip_to_next = True
             continue
 
         if skip_to_next:
             continue
 
-        if c.isidentifier() or (not name and c == "/"):
+        if c.isidentifier() or (not name and c in "/*"):
             name += c
 
     if name:
         params.append(name)
 
-    if "/" not in params:
+    if "/" not in params and not any(p.startswith("*") for p in params):
         params.append("/")
 
     return f"({ ', '.join(params) })"
@@ -185,9 +185,9 @@ method, mid, eol, end = "#define ", " ", " \\", ""
 for item in sorted(items, key=lambda x: x["symbol"]):
     print(f"""{ method } { item["symbol"] }{ mid }{ fixup( item, eol) } { end }\n""", file=out)
 
-out = out.getvalue()
-if not os.path.exists(sys.argv[1]) or open(sys.argv[1]).read() != out:
-    open(sys.argv[1], "w").write(out)
+outval = out.getvalue()
+if not os.path.exists(sys.argv[1]) or open(sys.argv[1]).read() != outval:
+    open(sys.argv[1], "w").write(outval)
 
 symbols = sorted([item["symbol"] for item in items])
 
