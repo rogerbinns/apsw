@@ -1736,23 +1736,23 @@ error:
 }
 
 static PyMethodDef APSWVFS_methods[] = {
-    {"xDelete", (PyCFunction)apswvfspy_xDelete, METH_VARARGS, "xDelete"},
-    {"xFullPathname", (PyCFunction)apswvfspy_xFullPathname, METH_O, "xFullPathname"},
-    {"xOpen", (PyCFunction)apswvfspy_xOpen, METH_VARARGS, "xOpen"},
-    {"xAccess", (PyCFunction)apswvfspy_xAccess, METH_VARARGS, "xAccess"},
-    {"xDlOpen", (PyCFunction)apswvfspy_xDlOpen, METH_VARARGS, "xDlOpen"},
-    {"xDlSym", (PyCFunction)apswvfspy_xDlSym, METH_VARARGS, "xDlSym"},
-    {"xDlClose", (PyCFunction)apswvfspy_xDlClose, METH_O, "xDlClose"},
-    {"xDlError", (PyCFunction)apswvfspy_xDlError, METH_NOARGS, "xDlError"},
-    {"xRandomness", (PyCFunction)apswvfspy_xRandomness, METH_VARARGS, "xRandomness"},
-    {"xSleep", (PyCFunction)apswvfspy_xSleep, METH_VARARGS, "xSleep"},
-    {"xCurrentTime", (PyCFunction)apswvfspy_xCurrentTime, METH_NOARGS, "xCurrentTime"},
-    {"xGetLastError", (PyCFunction)apswvfspy_xGetLastError, METH_NOARGS, "xGetLastError"},
-    {"xSetSystemCall", (PyCFunction)apswvfspy_xSetSystemCall, METH_VARARGS, "xSetSystemCall"},
-    {"xGetSystemCall", (PyCFunction)apswvfspy_xGetSystemCall, METH_VARARGS, "xGetSystemCall"},
-    {"xNextSystemCall", (PyCFunction)apswvfspy_xNextSystemCall, METH_O, "xNextSystemCall"},
-    {"unregister", (PyCFunction)apswvfspy_unregister, METH_NOARGS, "Unregisters the vfs"},
-    {"excepthook", (PyCFunction)apswvfs_excepthook, METH_VARARGS, "Exception hook"},
+    {"xDelete", (PyCFunction)apswvfspy_xDelete, METH_VARARGS, VFS_xDelete_DOC},
+    {"xFullPathname", (PyCFunction)apswvfspy_xFullPathname, METH_O, VFS_xFullPathname_DOC},
+    {"xOpen", (PyCFunction)apswvfspy_xOpen, METH_VARARGS, VFS_xOpen_DOC},
+    {"xAccess", (PyCFunction)apswvfspy_xAccess, METH_VARARGS, VFS_xAccess_DOC},
+    {"xDlOpen", (PyCFunction)apswvfspy_xDlOpen, METH_VARARGS, VFS_xDlOpen_DOC},
+    {"xDlSym", (PyCFunction)apswvfspy_xDlSym, METH_VARARGS, VFS_xDlSym_DOC},
+    {"xDlClose", (PyCFunction)apswvfspy_xDlClose, METH_O, VFS_xDlClose_DOC},
+    {"xDlError", (PyCFunction)apswvfspy_xDlError, METH_NOARGS, VFS_xDlError_DOC},
+    {"xRandomness", (PyCFunction)apswvfspy_xRandomness, METH_VARARGS, VFS_xRandomness_DOC},
+    {"xSleep", (PyCFunction)apswvfspy_xSleep, METH_VARARGS, VFS_xSleep_DOC},
+    {"xCurrentTime", (PyCFunction)apswvfspy_xCurrentTime, METH_NOARGS, VFS_xCurrentTime_DOC},
+    {"xGetLastError", (PyCFunction)apswvfspy_xGetLastError, METH_NOARGS, VFS_xGetLastError_DOC},
+    {"xSetSystemCall", (PyCFunction)apswvfspy_xSetSystemCall, METH_VARARGS, VFS_xSetSystemCall_DOC},
+    {"xGetSystemCall", (PyCFunction)apswvfspy_xGetSystemCall, METH_VARARGS, VFS_xGetSystemCall_DOC},
+    {"xNextSystemCall", (PyCFunction)apswvfspy_xNextSystemCall, METH_O, VFS_xNextSystemCall_DOC},
+    {"unregister", (PyCFunction)apswvfspy_unregister, METH_NOARGS, VFS_unregister_DOC},
+    {"excepthook", (PyCFunction)apswvfs_excepthook, METH_VARARGS, VFS_excepthook_DOC},
     /* Sentinel */
     {0, 0, 0, 0}};
 
@@ -1778,7 +1778,7 @@ static PyTypeObject APSWVFSType =
         0,                                                                      /*tp_setattro*/
         0,                                                                      /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG, /*tp_flags*/
-        "VFS object",                                                           /* tp_doc */
+        VFS__init__DOC,                                                         /* tp_doc */
         0,                                                                      /* tp_traverse */
         0,                                                                      /* tp_clear */
         0,                                                                      /* tp_richcompare */
@@ -2847,19 +2847,19 @@ static const struct sqlite3_io_methods apsw_io_methods_v2 =
 };
 
 static PyMethodDef APSWVFSFile_methods[] = {
-    {"xRead", (PyCFunction)apswvfsfilepy_xRead, METH_VARARGS, "xRead"},
-    {"xUnlock", (PyCFunction)apswvfsfilepy_xUnlock, METH_VARARGS, "xUnlock"},
-    {"xLock", (PyCFunction)apswvfsfilepy_xLock, METH_VARARGS, "xLock"},
-    {"xClose", (PyCFunction)apswvfsfilepy_xClose, METH_NOARGS, "xClose"},
-    {"xSectorSize", (PyCFunction)apswvfsfilepy_xSectorSize, METH_NOARGS, "xSectorSize"},
-    {"xFileSize", (PyCFunction)apswvfsfilepy_xFileSize, METH_NOARGS, "xFileSize"},
-    {"xDeviceCharacteristics", (PyCFunction)apswvfsfilepy_xDeviceCharacteristics, METH_NOARGS, "xDeviceCharacteristics"},
-    {"xCheckReservedLock", (PyCFunction)apswvfsfilepy_xCheckReservedLock, METH_NOARGS, "xCheckReservedLock"},
-    {"xWrite", (PyCFunction)apswvfsfilepy_xWrite, METH_VARARGS, "xWrite"},
-    {"xSync", (PyCFunction)apswvfsfilepy_xSync, METH_VARARGS, "xSync"},
-    {"xTruncate", (PyCFunction)apswvfsfilepy_xTruncate, METH_VARARGS, "xTruncate"},
-    {"xFileControl", (PyCFunction)apswvfsfilepy_xFileControl, METH_VARARGS, "xFileControl"},
-    {"excepthook", (PyCFunction)apswvfs_excepthook, METH_VARARGS, "Exception hook"},
+    {"xRead", (PyCFunction)apswvfsfilepy_xRead, METH_VARARGS, VFSFile_xRead_DOC},
+    {"xUnlock", (PyCFunction)apswvfsfilepy_xUnlock, METH_VARARGS, VFSFile_xUnlock_DOC},
+    {"xLock", (PyCFunction)apswvfsfilepy_xLock, METH_VARARGS, VFSFile_xLock_DOC},
+    {"xClose", (PyCFunction)apswvfsfilepy_xClose, METH_NOARGS, VFSFile_xClose_DOC},
+    {"xSectorSize", (PyCFunction)apswvfsfilepy_xSectorSize, METH_NOARGS, VFSFile_xSectorSize_DOC},
+    {"xFileSize", (PyCFunction)apswvfsfilepy_xFileSize, METH_NOARGS, VFSFile_xFileSize_DOC},
+    {"xDeviceCharacteristics", (PyCFunction)apswvfsfilepy_xDeviceCharacteristics, METH_NOARGS, VFSFile_xDeviceCharacteristics_DOC},
+    {"xCheckReservedLock", (PyCFunction)apswvfsfilepy_xCheckReservedLock, METH_NOARGS, VFSFile_xCheckReservedLock_DOC},
+    {"xWrite", (PyCFunction)apswvfsfilepy_xWrite, METH_VARARGS, VFSFile_xWrite_DOC},
+    {"xSync", (PyCFunction)apswvfsfilepy_xSync, METH_VARARGS, VFSFile_xSync_DOC},
+    {"xTruncate", (PyCFunction)apswvfsfilepy_xTruncate, METH_VARARGS, VFSFile_xTruncate_DOC},
+    {"xFileControl", (PyCFunction)apswvfsfilepy_xFileControl, METH_VARARGS, VFSFile_xFileControl_DOC},
+    {"excepthook", (PyCFunction)apswvfs_excepthook, METH_VARARGS, VFSFile_excepthook_DOC},
     /* Sentinel */
     {0, 0, 0, 0}};
 
@@ -2885,7 +2885,7 @@ static PyTypeObject APSWVFSFileType =
         0,                                                                      /*tp_setattro*/
         0,                                                                      /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG, /*tp_flags*/
-        "VFSFile object",                                                       /* tp_doc */
+        VFSFile__init__DOC,                                                     /* tp_doc */
         0,                                                                      /* tp_traverse */
         0,                                                                      /* tp_clear */
         0,                                                                      /* tp_richcompare */
@@ -3004,10 +3004,10 @@ apswurifilename_uri_boolean(APSWURIFilename *self, PyObject *args)
 }
 
 static PyMethodDef APSWURIFilenameMethods[] = {
-    {"filename", (PyCFunction)apswurifilename_filename, METH_NOARGS, "Get filename"},
-    {"uri_parameter", (PyCFunction)apswurifilename_uri_parameter, METH_O, "Get URI value"},
-    {"uri_int", (PyCFunction)apswurifilename_uri_int, METH_VARARGS, "Get URI integer value"},
-    {"uri_boolean", (PyCFunction)apswurifilename_uri_boolean, METH_VARARGS, "Get URI boolean value"},
+    {"filename", (PyCFunction)apswurifilename_filename, METH_NOARGS, URIFilename_filename_DOC},
+    {"uri_parameter", (PyCFunction)apswurifilename_uri_parameter, METH_O, URIFilename_uri_parameter_DOC},
+    {"uri_int", (PyCFunction)apswurifilename_uri_int, METH_VARARGS, URIFilename_uri_int_DOC},
+    {"uri_boolean", (PyCFunction)apswurifilename_uri_boolean, METH_VARARGS, URIFilename_uri_boolean_DOC},
     /* Sentinel */
     {0, 0, 0, 0}};
 
@@ -3033,7 +3033,7 @@ static PyTypeObject APSWURIFilenameType =
         0,                                                                      /*tp_setattro*/
         0,                                                                      /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG, /*tp_flags*/
-        "Filename and URI",                                                     /* tp_doc */
+        URIFilename__init__DOC,                                                 /* tp_doc */
         0,                                                                      /* tp_traverse */
         0,                                                                      /* tp_clear */
         0,                                                                      /* tp_richcompare */

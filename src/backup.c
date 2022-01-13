@@ -363,26 +363,26 @@ APSWBackup_exit(APSWBackup *self, PyObject *args)
 */
 static PyMemberDef backup_members[] = {
     /* name type offset flags doc */
-    {"done", T_OBJECT, offsetof(APSWBackup, done), READONLY, "True if all pages copied"},
+    {"done", T_OBJECT, offsetof(APSWBackup, done), READONLY, Backup_done_DOC},
     {0, 0, 0, 0, 0}};
 
 static PyGetSetDef backup_getset[] = {
     /* name getter setter doc closure */
-    {"remaining", (getter)APSWBackup_get_remaining, NULL, "Pages still to be copied", NULL},
-    {"pagecount", (getter)APSWBackup_get_pagecount, NULL, "Total pages in source database", NULL},
+    {"remaining", (getter)APSWBackup_get_remaining, NULL, Backup_remaining_DOC, NULL},
+    {"pagecount", (getter)APSWBackup_get_pagecount, NULL, Backup_pagecount_DOC, NULL},
     {0, 0, 0, 0, 0}};
 
 static PyMethodDef backup_methods[] = {
     {"__enter__", (PyCFunction)APSWBackup_enter, METH_NOARGS,
-     "Context manager entry"},
+     Backup__enter__DOC},
     {"__exit__", (PyCFunction)APSWBackup_exit, METH_VARARGS,
-     "Context manager exit"},
+     Backup__exit__DOC},
     {"step", (PyCFunction)APSWBackup_step, METH_VARARGS,
-     "Copies some pages"},
+     Backup_step_DOC},
     {"finish", (PyCFunction)APSWBackup_finish, METH_NOARGS,
-     "Commits or rollsback backup"},
+     Backup_finish_DOC},
     {"close", (PyCFunction)APSWBackup_close, METH_VARARGS,
-     "Alternate way to finish"},
+     Backup_close_DOC},
     {0, 0, 0, 0}};
 
 static PyTypeObject APSWBackupType =
@@ -407,7 +407,7 @@ static PyTypeObject APSWBackupType =
         0,                                                                      /*tp_setattro*/
         0,                                                                      /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG, /*tp_flags*/
-        "backup object",                                                        /* tp_doc */
+        Backup__init__DOC,                                                      /* tp_doc */
         0,                                                                      /* tp_traverse */
         0,                                                                      /* tp_clear */
         0,                                                                      /* tp_richcompare */

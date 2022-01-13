@@ -102,7 +102,7 @@ ZeroBlobBind_len(ZeroBlobBind *self)
 
 static PyMethodDef ZeroBlobBind_methods[] = {
     {"length", (PyCFunction)ZeroBlobBind_len, METH_NOARGS,
-     "Size of zero blob"},
+     Zeroblob_length_DOC},
     {0, 0, 0, 0}};
 
 static PyTypeObject ZeroBlobBindType = {
@@ -126,7 +126,7 @@ static PyTypeObject ZeroBlobBindType = {
     0,                                                                      /*tp_setattro*/
     0,                                                                      /*tp_as_buffer*/
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG, /*tp_flags*/
-    "ZeroBlobBind object",                                                  /* tp_doc */
+    Zeroblob__init__DOC,                                                    /* tp_doc */
     0,                                                                      /* tp_traverse */
     0,                                                                      /* tp_clear */
     0,                                                                      /* tp_richcompare */
@@ -717,25 +717,25 @@ APSWBlob_reopen(APSWBlob *self, PyObject *arg)
 
 static PyMethodDef APSWBlob_methods[] = {
     {"length", (PyCFunction)APSWBlob_length, METH_NOARGS,
-     "Returns length in bytes of the blob"},
+     Blob_length_DOC},
     {"read", (PyCFunction)APSWBlob_read, METH_VARARGS,
-     "Reads data from the blob"},
+     Blob_read_DOC},
     {"readinto", (PyCFunction)APSWBlob_readinto, METH_VARARGS,
-     "Reads data from the blob into a provided buffer"},
+     Blob_readinto_DOC},
     {"seek", (PyCFunction)APSWBlob_seek, METH_VARARGS,
-     "Seeks to a position in the blob"},
+     Blob_seek_DOC},
     {"tell", (PyCFunction)APSWBlob_tell, METH_NOARGS,
-     "Returns current blob offset"},
+     Blob_tell_DOC},
     {"write", (PyCFunction)APSWBlob_write, METH_O,
-     "Writes data to blob"},
+     Blob_write_DOC},
     {"reopen", (PyCFunction)APSWBlob_reopen, METH_O,
-     "Changes the blob to point to a different row"},
+     Blob_reopen_DOC},
     {"close", (PyCFunction)APSWBlob_close, METH_VARARGS,
-     "Closes blob"},
+     Blob_close_DOC},
     {"__enter__", (PyCFunction)APSWBlob_enter, METH_NOARGS,
-     "Context manager entry"},
+     Blob__enter__DOC},
     {"__exit__", (PyCFunction)APSWBlob_exit, METH_VARARGS,
-     "Context manager exit"},
+     Blob__exit__DOC},
     {0, 0, 0, 0} /* Sentinel */
 };
 
@@ -760,7 +760,7 @@ static PyTypeObject APSWBlobType = {
     0,                                                /*tp_setattro*/
     0,                                                /*tp_as_buffer*/
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_VERSION_TAG, /*tp_flags*/
-    "APSW blob object",                               /* tp_doc */
+    Blob__init__DOC,                                  /* tp_doc */
     0,                                                /* tp_traverse */
     0,                                                /* tp_clear */
     0,                                                /* tp_richcompare */

@@ -72,6 +72,8 @@ API Reference
 /* Get the version number */
 #include "apswversion.h"
 
+#include "apsw.docstrings"
+
 /* Python headers */
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
@@ -194,7 +196,7 @@ get_sqlite3_sourceid(void)
   return MAKESTR(sqlite3_sourceid());
 }
 
-/** .. method:: apswversion() -> string
+/** .. method:: apswversion() -> str
 
   Returns the APSW version.
 */
@@ -1206,41 +1208,41 @@ apsw_log(APSW_ARGUNUSED PyObject *self, PyObject *args)
 
 static PyMethodDef module_methods[] = {
     {"sqlite3_sourceid", (PyCFunction)get_sqlite3_sourceid, METH_NOARGS,
-     "Return the source identification of the SQLite library"},
+     Apsw_sqlite3_sourceid_DOC},
     {"sqlitelibversion", (PyCFunction)getsqliteversion, METH_NOARGS,
-     "Return the version of the SQLite library"},
+     Apsw_sqlitelibversion_DOC},
     {"apswversion", (PyCFunction)getapswversion, METH_NOARGS,
-     "Return the version of the APSW wrapper"},
+     Apsw_apswversion_DOC},
     {"vfsnames", (PyCFunction)vfsnames, METH_NOARGS,
-     "Returns list of vfs names"},
+     Apsw_vfsnames_DOC},
     {"enablesharedcache", (PyCFunction)enablesharedcache, METH_VARARGS,
-     "Sets shared cache semantics for this thread"},
+     Apsw_enablesharedcache_DOC},
     {"initialize", (PyCFunction)initialize, METH_NOARGS,
-     "Initialize SQLite library"},
+     Apsw_initialize_DOC},
     {"shutdown", (PyCFunction)sqliteshutdown, METH_NOARGS,
-     "Shutdown SQLite library"},
+     Apsw_shutdown_DOC},
     {"format_sql_value", (PyCFunction)formatsqlvalue, METH_O,
-     "Formats a SQL value as a string"},
+     Apsw_format_sql_value_DOC},
     {"config", (PyCFunction)config, METH_VARARGS,
-     "Calls sqlite3_config"},
+     Apsw_config_DOC},
     {"log", (PyCFunction)apsw_log, METH_VARARGS,
-     "Calls sqlite3_log"},
+     Apsw_log_DOC},
     {"memoryused", (PyCFunction)memoryused, METH_NOARGS,
-     "Current SQLite memory in use"},
+     Apsw_memoryused_DOC},
     {"memoryhighwater", (PyCFunction)memoryhighwater, METH_VARARGS,
-     "Most amount of memory used"},
+     Apsw_memoryhighwater_DOC},
     {"status", (PyCFunction)status, METH_VARARGS,
-     "Gets various SQLite counters"},
+     Apsw_status_DOC},
     {"softheaplimit", (PyCFunction)softheaplimit, METH_VARARGS,
-     "Sets soft limit on SQLite memory usage"},
+     Apsw_softheaplimit_DOC},
     {"releasememory", (PyCFunction)releasememory, METH_VARARGS,
-     "Attempts to free specified amount of memory"},
+     Apsw_releasememory_DOC},
     {"randomness", (PyCFunction)randomness, METH_VARARGS,
-     "Obtains random bytes"},
+     Apsw_randomness_DOC},
     {"exceptionfor", (PyCFunction)getapswexceptionfor, METH_O,
-     "Returns exception instance corresponding to supplied sqlite error code"},
+     Apsw_exceptionfor_DOC},
     {"complete", (PyCFunction)apswcomplete, METH_VARARGS,
-     "Tests if a complete SQLite statement has been supplied (ie ends with ;)"},
+     Apsw_complete_DOC},
 #if defined(APSW_TESTFIXTURES) && defined(APSW_USE_SQLITE_AMALGAMATION)
     {"test_reset_rng", (PyCFunction)apsw_test_reset_rng, METH_NOARGS,
      "Resets random number generator so we can test vfs xRandomness"},
@@ -1251,7 +1253,7 @@ static PyMethodDef module_methods[] = {
 #endif
 #ifdef APSW_FORK_CHECKER
     {"fork_checker", (PyCFunction)apsw_fork_checker, METH_NOARGS,
-     "Installs fork checking code"},
+     Apsw_fork_checker_DOC},
 #endif
     {0, 0, 0, 0} /* Sentinel */
 };

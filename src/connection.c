@@ -1904,7 +1904,7 @@ finally:
 #endif /* SQLITE_OMIT_DESERIALZE */
 
 
-/** .. method:: enableloadextension(enable)
+/** .. method:: enableloadextension(enable: bool) -> None
 
   Enables/disables `extension loading
   <https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_
@@ -2779,7 +2779,7 @@ Connection_createcollation(Connection *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
-/** .. method:: filecontrol(dbname, op, pointer) -> bool
+/** .. method:: filecontrol(dbname: str, op: int, pointer: int) -> bool
 
   Calls the :meth:`~VFSFile.xFileControl` method on the :ref:`VFS`
   implementing :class:`file access <VFSFile>` for the database.
@@ -3556,7 +3556,7 @@ static PyGetSetDef Connection_getseters[] = {
     /* name getter setter doc closure */
     {"filename",
      (getter)Connection_getmainfilename, NULL,
-     "Returns filename of the database", NULL},
+     Connection_filename_DOC, NULL},
     /* Sentinel */
     {NULL, NULL, NULL, NULL, NULL}};
 
@@ -3590,105 +3590,105 @@ Connection_tp_traverse(Connection *self, visitproc visit, void *arg)
 
 static PyMemberDef Connection_members[] = {
     /* name type offset flags doc */
-    {"open_flags", T_OBJECT, offsetof(Connection, open_flags), READONLY, "list of [flagsin, flagsout] used to open connection"},
-    {"open_vfs", T_OBJECT, offsetof(Connection, open_vfs), READONLY, "VFS name used to open database"},
+    {"open_flags", T_OBJECT, offsetof(Connection, open_flags), READONLY, Connection_open_flags_DOC},
+    {"open_vfs", T_OBJECT, offsetof(Connection, open_vfs), READONLY, Connection_open_vfs_DOC},
     {0, 0, 0, 0, 0}};
 
 static PyMethodDef Connection_methods[] = {
     {"cursor", (PyCFunction)Connection_cursor, METH_NOARGS,
-     "Create a new cursor"},
+     Connection_cursor_DOC},
     {"close", (PyCFunction)Connection_close, METH_VARARGS,
-     "Closes the connection"},
+     Connection_close_DOC},
     {"setbusytimeout", (PyCFunction)Connection_setbusytimeout, METH_VARARGS,
-     "Sets the sqlite busy timeout in milliseconds.  Use zero to disable the timeout"},
+     Connection_setbusytimeout_DOC},
     {"interrupt", (PyCFunction)Connection_interrupt, METH_NOARGS,
-     "Causes any pending database operations to abort at the earliest opportunity"},
+     Connection_interrupt_DOC},
     {"createscalarfunction", (PyCFunction)Connection_createscalarfunction, METH_VARARGS | METH_KEYWORDS,
-     "Creates a scalar function"},
+     Connection_createscalarfunction_DOC},
     {"createaggregatefunction", (PyCFunction)Connection_createaggregatefunction, METH_VARARGS,
-     "Creates an aggregate function"},
+     Connection_createaggregatefunction_DOC},
     {"setbusyhandler", (PyCFunction)Connection_setbusyhandler, METH_O,
-     "Sets the busy handler"},
+     Connection_setbusyhandler_DOC},
     {"changes", (PyCFunction)Connection_changes, METH_NOARGS,
-     "Returns the number of rows changed by last query"},
+     Connection_changes_DOC},
     {"totalchanges", (PyCFunction)Connection_totalchanges, METH_NOARGS,
-     "Returns the total number of changes to database since it was opened"},
+     Connection_totalchanges_DOC},
     {"getautocommit", (PyCFunction)Connection_getautocommit, METH_NOARGS,
-     "Returns if the database is in auto-commit mode"},
+     Connection_getautocommit_DOC},
     {"createcollation", (PyCFunction)Connection_createcollation, METH_VARARGS,
-     "Creates a collation function"},
+     Connection_createcollation_DOC},
     {"last_insert_rowid", (PyCFunction)Connection_last_insert_rowid, METH_NOARGS,
-     "Returns rowid for last insert"},
+     Connection_last_insert_rowid_DOC},
     {"set_last_insert_rowid", (PyCFunction)Connection_set_last_insert_rowid, METH_O,
-     "Sets rowid returned for for last insert_rowid"},
+     Connection_set_last_insert_rowid_DOC},
     {"collationneeded", (PyCFunction)Connection_collationneeded, METH_O,
-     "Sets collation needed callback"},
+     Connection_collationneeded_DOC},
     {"setauthorizer", (PyCFunction)Connection_setauthorizer, METH_O,
-     "Sets an authorizer function"},
+     Connection_setauthorizer_DOC},
     {"setupdatehook", (PyCFunction)Connection_setupdatehook, METH_O,
-     "Sets an update hook"},
+     Connection_setupdatehook_DOC},
     {"setrollbackhook", (PyCFunction)Connection_setrollbackhook, METH_O,
-     "Sets a callable invoked before each rollback"},
+     Connection_setrollbackhook_DOC},
     {"blobopen", (PyCFunction)Connection_blobopen, METH_VARARGS,
-     "Opens a blob for i/o"},
+     Connection_blobopen_DOC},
     {"setprogresshandler", (PyCFunction)Connection_setprogresshandler, METH_VARARGS,
-     "Sets a callback invoked periodically during long running calls"},
+     Connection_setprogresshandler_DOC},
     {"setcommithook", (PyCFunction)Connection_setcommithook, METH_O,
-     "Sets a callback invoked on each commit"},
+     Connection_setcommithook_DOC},
     {"setwalhook", (PyCFunction)Connection_setwalhook, METH_O,
-     "Sets the WAL hook"},
+     Connection_setwalhook_DOC},
     {"limit", (PyCFunction)Connection_limit, METH_VARARGS,
-     "Gets and sets limits"},
+     Connection_limit_DOC},
     {"setprofile", (PyCFunction)Connection_setprofile, METH_O,
-     "Sets a callable invoked with profile information after each statement"},
+     Connection_setprofile_DOC},
 #if !defined(SQLITE_OMIT_LOAD_EXTENSION)
     {"enableloadextension", (PyCFunction)Connection_enableloadextension, METH_O,
-     "Enables loading of SQLite extensions from shared libraries"},
+     Connection_enableloadextension_DOC},
     {"loadextension", (PyCFunction)Connection_loadextension, METH_VARARGS,
-     "loads SQLite extension"},
+     Connection_loadextension_DOC},
 #endif
     {"createmodule", (PyCFunction)Connection_createmodule, METH_VARARGS,
-     "registers a virtual table"},
+     Connection_createmodule_DOC},
     {"overloadfunction", (PyCFunction)Connection_overloadfunction, METH_VARARGS,
-     "overloads function for virtual table"},
+     Connection_overloadfunction_DOC},
     {"backup", (PyCFunction)Connection_backup, METH_VARARGS,
-     "starts a backup"},
+     Connection_backup_DOC},
     {"filecontrol", (PyCFunction)Connection_filecontrol, METH_VARARGS,
-     "file control"},
+     Connection_filecontrol_DOC},
     {"sqlite3pointer", (PyCFunction)Connection_sqlite3pointer, METH_NOARGS,
-     "gets underlying pointer"},
+     Connection_sqlite3pointer_DOC},
     {"setexectrace", (PyCFunction)Connection_setexectrace, METH_O,
-     "Installs a function called for every statement executed"},
+     Connection_setexectrace_DOC},
     {"setrowtrace", (PyCFunction)Connection_setrowtrace, METH_O,
-     "Installs a function called for every row returned"},
+     Connection_setrowtrace_DOC},
     {"getexectrace", (PyCFunction)Connection_getexectrace, METH_NOARGS,
-     "Returns the current exec tracer function"},
+     Connection_getexectrace_DOC},
     {"getrowtrace", (PyCFunction)Connection_getrowtrace, METH_NOARGS,
-     "Returns the current row tracer function"},
+     Connection_getrowtrace_DOC},
     {"__enter__", (PyCFunction)Connection_enter, METH_NOARGS,
-     "Context manager entry"},
+     Connection__enter__DOC},
     {"__exit__", (PyCFunction)Connection_exit, METH_VARARGS,
-     "Context manager exit"},
+     Connection__exit__DOC},
     {"wal_autocheckpoint", (PyCFunction)Connection_wal_autocheckpoint, METH_O,
-     "Set wal checkpoint threshold"},
+     Connection_wal_autocheckpoint_DOC},
     {"wal_checkpoint", (PyCFunction)Connection_wal_checkpoint, METH_VARARGS | METH_KEYWORDS,
-     "Do immediate WAL checkpoint"},
+     Connection_wal_checkpoint_DOC},
     {"config", (PyCFunction)Connection_config, METH_VARARGS,
-     "Configure this connection"},
+     Connection_config_DOC},
     {"status", (PyCFunction)Connection_status, METH_VARARGS,
-     "Information about this connection"},
+     Connection_status_DOC},
     {"readonly", (PyCFunction)Connection_readonly, METH_O,
-     "Check if database is readonly"},
+     Connection_readonly_DOC},
     {"db_filename", (PyCFunction)Connection_db_filename, METH_O,
-     "Return filename of main or attached database"},
+     Connection_db_filename_DOC},
     {"txn_state", (PyCFunction)Connection_txn_state, METH_VARARGS,
-     "Return transaction state"},
+     Connection_txn_state_DOC},
     {"serialize", (PyCFunction)Connection_serialize, METH_O,
-     "Return in memory copy of database"},
+     Connection_serialize_DOC},
     {"deserialize", (PyCFunction)Connection_deserialize, METH_VARARGS,
-     "Provide new in-memory database contents"},
+     Connection_deserialize_DOC},
     {"autovacuum_pages", (PyCFunction)Connection_autovacuum_pages, METH_O,
-     "Autovacuum Compaction Amount Callback"},
+     Connection_autovacuum_pages_DOC},
     {0, 0, 0, 0} /* Sentinel */
 };
 
@@ -3714,7 +3714,7 @@ static PyTypeObject ConnectionType =
         0,                                                                                           /*tp_setattro*/
         0,                                                                                           /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG | Py_TPFLAGS_HAVE_GC, /*tp_flags*/
-        "Connection object",                                                                         /* tp_doc */
+        Connection__init__DOC,                                                                       /* tp_doc */
         (traverseproc)Connection_tp_traverse,                                                        /* tp_traverse */
         0,                                                                                           /* tp_clear */
         0,                                                                                           /* tp_richcompare */

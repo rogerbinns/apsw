@@ -1452,33 +1452,32 @@ APSWCursor_fetchone(APSWCursor *self)
 
 static PyMethodDef APSWCursor_methods[] = {
     {"execute", (PyCFunction)APSWCursor_execute, METH_VARARGS,
-     "Executes one or more statements"},
+     Cursor_execute_DOC},
     {"executemany", (PyCFunction)APSWCursor_executemany, METH_VARARGS,
-     "Repeatedly executes statements on sequence"},
+     Cursor_executemany_DOC},
     {"setexectrace", (PyCFunction)APSWCursor_setexectrace, METH_O,
-     "Installs a function called for every statement executed"},
+     Cursor_setexectrace_DOC},
     {"setrowtrace", (PyCFunction)APSWCursor_setrowtrace, METH_O,
-     "Installs a function called for every row returned"},
+     Cursor_setrowtrace_DOC},
     {"getexectrace", (PyCFunction)APSWCursor_getexectrace, METH_NOARGS,
-     "Returns the current exec tracer function"},
+     Cursor_getexectrace_DOC},
     {"getrowtrace", (PyCFunction)APSWCursor_getrowtrace, METH_NOARGS,
-     "Returns the current row tracer function"},
+     Cursor_getrowtrace_DOC},
     {"getconnection", (PyCFunction)APSWCursor_getconnection, METH_NOARGS,
-     "Returns the connection object for this cursor"},
+     Cursor_getconnection_DOC},
     {"getdescription", (PyCFunction)APSWCursor_getdescription, METH_NOARGS,
-     "Returns the description for the current row"},
+     Cursor_getdescription_DOC},
     {"close", (PyCFunction)APSWCursor_close, METH_VARARGS,
-     "Closes the cursor"},
+     Cursor_close_DOC},
     {"fetchall", (PyCFunction)APSWCursor_fetchall, METH_NOARGS,
-     "Fetches all result rows"},
+     Cursor_fetchall_DOC},
     {"fetchone", (PyCFunction)APSWCursor_fetchone, METH_NOARGS,
-     "Fetches next result row"},
-
+     Cursor_fetchone_DOC},
     {0, 0, 0, 0} /* Sentinel */
 };
 
 static PyGetSetDef APSWCursor_getset[] = {
-    {"description", (getter)APSWCursor_getdescription_dbapi, NULL, "Subset of DB-API description attribute", NULL},
+    {"description", (getter)APSWCursor_getdescription_dbapi, NULL, Cursor_description_DOC, NULL},
     {NULL, NULL, NULL, NULL, NULL}};
 
 static PyTypeObject APSWCursorType = {
@@ -1502,7 +1501,7 @@ static PyTypeObject APSWCursorType = {
     0,                              /*tp_setattro*/
     0,                              /*tp_as_buffer*/
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG | Py_TPFLAGS_HAVE_GC,  /*tp_flags*/
-    "Cursor object",                      /* tp_doc */
+    Cursor__init__DOC,                    /* tp_doc */
     (traverseproc)APSWCursor_tp_traverse, /* tp_traverse */
     0,                                    /* tp_clear */
     0,                                    /* tp_richcompare */
