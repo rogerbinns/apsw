@@ -2,6 +2,16 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.37.2-r1
+=========
+
+All items now have full docstrings including type information.
+(Previously just one line summaries).  Due to CPython limitations,
+inspect/typing can provide parameter names, but not types.
+
+Removal of code, tests, and documentation only relevant to Python
+before 3.7.
+
 3.37.0-r1
 =========
 
