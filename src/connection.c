@@ -220,7 +220,7 @@ Connection_close_internal(Connection *self, int force)
   return 0;
 }
 
-/** .. method:: close([force=False])
+/** .. method:: close(force: bool = False)
 
   Closes the database.  If there are any outstanding :class:`cursors
   <Cursor>`, :class:`blobs <blob>` or :class:`backups <backup>` then
@@ -335,7 +335,7 @@ Connection_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED
   return (PyObject *)self;
 }
 
-/** .. method:: __init__(filename, flags=SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs=None, statementcachesize=100)
+/** .. method:: __init__(filename: str, flags: int =SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: str = None, statementcachesize: int = 100)
 
   Opens the named database.  You can use ``:memory:`` to get a private temporary
   in-memory database that is not shared with any other connections.
@@ -460,7 +460,7 @@ finally:
   return res;
 }
 
-/** .. method:: blobopen(database, table, column, rowid, writeable)  -> blob
+/** .. method:: blobopen(database: str, table: str, column: str, rowid: int, writeable: bool)  -> blob
 
    Opens a blob for :ref:`incremental I/O <blobio>`.
 
@@ -522,7 +522,7 @@ Connection_blobopen(Connection *self, PyObject *args)
   return (PyObject *)apswblob;
 }
 
-/** .. method:: backup(databasename, sourceconnection, sourcedatabasename)  -> backup
+/** .. method:: backup(databasename: str, sourceconnection: Connection, sourcedatabasename: str)  -> backup
 
    Opens a :ref:`backup object <Backup>`.  All data will be copied from source
    database to this database.
@@ -700,7 +700,7 @@ Connection_cursor(Connection *self)
   return (PyObject *)cursor;
 }
 
-/** .. method:: setbusytimeout(millseconds)
+/** .. method:: setbusytimeout(millseconds: int) -> None
 
   If the database is locked such as when another connection is making
   changes, SQLite will keep retrying.  This sets the maximum amount of
@@ -817,7 +817,7 @@ Connection_last_insert_rowid(Connection *self)
   return PyLong_FromLongLong(sqlite3_last_insert_rowid(self->db));
 }
 
-/** .. method:: set_last_insert_rowid(int)
+/** .. method:: set_last_insert_rowid(rowid: int) -> None
 
   Sets the value calls to :meth:`last_insert_rowid` will return.
 
@@ -843,7 +843,7 @@ Connection_set_last_insert_rowid(Connection *self, PyObject *o)
   Py_RETURN_NONE;
 }
 
-/** .. method:: interrupt()
+/** .. method:: interrupt() -> None
 
   Causes any pending operations on the database to abort at the
   earliest opportunity. You can call this from any thread.  For
@@ -862,7 +862,7 @@ Connection_interrupt(Connection *self)
   Py_RETURN_NONE;
 }
 
-/** .. method:: limit(id[, newval]) -> int
+/** .. method:: limit(id: int, newval: int = -1) -> int
 
   If called with one parameter then the current limit for that *id* is
   returned.  If called with two then the limit is set to *newval*.
@@ -920,7 +920,7 @@ finally:
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: setupdatehook(callable)
+/** .. method:: setupdatehook(callable: Option[Callable]) -> None
 
   Calls *callable* whenever a row is updated, deleted or inserted.  If
   *callable* is :const:`None` then any existing update hook is
@@ -1004,7 +1004,7 @@ finally:
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: setrollbackhook(callable)
+/** .. method:: setrollbackhook(callable: Option[Callable]) -> None
 
   Sets a callable which is invoked during a rollback.  If *callable*
   is :const:`None` then any existing rollback hook is removed.
@@ -1069,7 +1069,7 @@ finally:
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: setprofile(callable)
+/** .. method:: setprofile(callable: Option[Callable]) -> None
 
   Sets a callable which is invoked at the end of execution of each
   statement and passed the statement string and how long it took to
@@ -1152,7 +1152,7 @@ finally:
   return ok;
 }
 
-/** .. method:: setcommithook(callable)
+/** .. method:: setcommithook(callable: Option[Callable]) -> None
 
   *callable* will be called just before a commit.  It should return
   zero for the commit to go ahead and non-zero for it to be turned
@@ -1239,7 +1239,7 @@ finally:
   return code;
 }
 
-/** .. method:: setwalhook(callable)
+/** .. method:: setwalhook(callable: Option[Callable]) -> None
 
  *callable* will be called just after data is committed in :ref:`wal`
  mode.  It should return :const:`SQLITE_OK` or an error code.  The
@@ -1320,7 +1320,7 @@ finally:
   return ok;
 }
 
-/** .. method:: setprogresshandler(callable[, nsteps=20])
+/** .. method:: setprogresshandler(callable: Option[Callable], nsteps: int = 20])
 
   Sets a callable which is invoked every *nsteps* SQLite
   inststructions. The callable should return a non-zero value to abort
@@ -1419,7 +1419,7 @@ finally:
   return result;
 }
 
-/** .. method:: setauthorizer(callable)
+/** .. method:: setauthorizer(callable: Callable) -> None
 
   While `preparing <https://sqlite.org/c3ref/prepare.html>`_
   statements, SQLite will call any defined authorizer to see if a
@@ -1537,7 +1537,7 @@ finally:
 #undef AVPCB_CAL
 #undef AVPCB_TB
 
-/** .. method:: autovacuum_pages(callable | None) -> None
+/** .. method:: autovacuum_pages(callable: Option[Callable]) -> None
 
   Calls `callable` to find out how many pages to autovacuum.  The callback has 4 parameters:
 
@@ -1609,7 +1609,7 @@ finally:
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: collationneeded(callable)
+/** .. method:: collationneeded(callable: Option[Callable]) -> None
 
   *callable* will be called if a statement requires a `collation
   <http://en.wikipedia.org/wiki/Collation>`_ that hasn't been
@@ -1711,7 +1711,7 @@ finally:
   return result;
 }
 
-/** .. method:: setbusyhandler(callable)
+/** .. method:: setbusyhandler(callable: Option[Callable]) -> None
 
    Sets the busy handler to callable. callable will be called with one
    integer argument which is the number of prior calls to the busy
@@ -1778,11 +1778,11 @@ finally:
 #ifndef SQLITE_OMIT_DESERIALZE
 /** .. method:: serialize(name: str) -> bytes
 
-   Returns a memory copy of the database. *name* is **"main"** for the
-   main database, **"temp"** for the temporary database etc.
+  Returns a memory copy of the database. *name* is **"main"** for the
+  main database, **"temp"** for the temporary database etc.
 
-   The memory copy is the same as if the database was backed up to
-   disk.
+  The memory copy is the same as if the database was backed up to
+  disk.
 
   If the database name doesn't exist or is empty, then None is
   returned, not an exception (this is SQLite's behaviour).
@@ -1946,7 +1946,7 @@ Connection_enableloadextension(Connection *self, PyObject *enabled)
   return NULL;
 }
 
-/** .. method:: loadextension(filename[, entrypoint])
+/** .. method:: loadextension(filename: str, entrypoint: Option[str]) -> None
 
   Loads *filename* as an `extension <https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_
 
@@ -2429,7 +2429,7 @@ apsw_free_func(void *funcinfo)
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: createscalarfunction(name, callable[, numargs=-1, deterministic=False])
+/** .. method:: createscalarfunction(name: str, callable: Callable, numargs: int = -1, deterministic: bool = False])
 
   Registers a scalar function.  Scalar functions operate on one set of parameters once.
 
@@ -2540,13 +2540,13 @@ finally:
   Py_RETURN_NONE;
 }
 
-/** .. method:: createaggregatefunction(name, factory[, numargs=-1])
+/** .. method:: createaggregatefunction(name: str, factory: Callable, numargs: int = -1)
 
   Registers an aggregate function.  Aggregate functions operate on all
   the relevant rows such as counting how many there are.
 
   :param name: The string name of the function.  It should be less than 255 characters
-  :param callable: The function that will be called
+  :param factory: The function that will be called
   :param numargs: How many arguments the function takes, with -1 meaning any number
 
   When a query starts, the *factory* will be called and must return a tuple of 3 items:
@@ -2709,7 +2709,7 @@ collation_destroy(void *context)
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: createcollation(name, callback)
+/** .. method:: createcollation(name: str, callback: Callable) -> None
 
   You can control how SQLite sorts (termed `collation
   <http://en.wikipedia.org/wiki/Collation>`_) when giving the
@@ -2794,7 +2794,7 @@ Connection_createcollation(Connection *self, PyObject *args)
 
   If you want data returned back then the *pointer* needs to point to
   something mutable.  Here is an example using `ctypes
-  <http://www.python.org/doc/2.5.2/lib/module-ctypes.html>`_ of
+  <https://docs.python.org/3/library/ctypes.html>`_ of
   passing a Python dictionary to :meth:`~VFSFile.xFileControl` which
   can then modify the dictionary to set return values::
 
@@ -2812,9 +2812,9 @@ Connection_createcollation(Connection *self, PyObject *args)
         if op==123:                      # our op code
             obj=ctypes.py_object.from_address(pointer).value
             # play with obj - you can use id() to verify it is the same
-            print obj["foo"]
+            print(obj["foo"])
             obj["result"]="it worked"
-	    return True
+            return True
         else:
             # pass to parent/superclass
             return super(MyFile, self).xFileControl(op, pointer)
@@ -2894,7 +2894,7 @@ Connection_sqlite3pointer(Connection *self)
   return PyLong_FromVoidPtr(self->db);
 }
 
-/** .. method:: wal_autocheckpoint(n)
+/** .. method:: wal_autocheckpoint(n: int) -> None
 
     Sets how often the :ref:`wal` checkpointing is run.
 
@@ -2927,7 +2927,7 @@ Connection_wal_autocheckpoint(Connection *self, PyObject *arg)
   return NULL;
 }
 
-/** .. method:: wal_checkpoint(dbname=None, mode=apsw.SQLITE_CHECKPOINT_PASSIVE) -> ( int, int )
+/** .. method:: wal_checkpoint(dbname: Option[str] = None, mode: int = apsw.SQLITE_CHECKPOINT_PASSIVE) -> Tuple[int, int]
 
     Does a WAL checkpoint.  Has no effect if the database(s) are not in WAL mode.
 
@@ -2973,7 +2973,7 @@ Connection_wal_checkpoint(Connection *self, PyObject *args, PyObject *kwargs)
 static struct sqlite3_module apsw_vtable_module;
 static void apswvtabFree(void *context);
 
-/** .. method:: createmodule(name, datasource)
+/** .. method:: createmodule(name: str, datasource)
 
     Registers a virtual table.  See :ref:`virtualtables` for details.
 
@@ -3020,7 +3020,7 @@ Connection_createmodule(Connection *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
-/** .. method:: overloadfunction(name, nargs)
+/** .. method:: overloadfunction(name: str, nargs: int)
 
   Registers a placeholder function so that a virtual table can provide an implementation via
   :meth:`VTTable.FindFunction`.
@@ -3057,7 +3057,7 @@ Connection_overloadfunction(Connection *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
-/** .. method:: setexectrace(callable)
+/** .. method:: setexectrace(callable: Option[Callable]) -> None
 
   *callable* is called with the cursor, statement and bindings for
   each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
@@ -3095,7 +3095,7 @@ Connection_setexectrace(Connection *self, PyObject *func)
   Py_RETURN_NONE;
 }
 
-/** .. method:: setrowtrace(callable)
+/** .. method:: setrowtrace(callable: Option[Callable]) -> None
 
   *callable* is called with the cursor and row being returned for
   :class:`cursors <Cursor>` associated with this Connection, unless
@@ -3132,7 +3132,7 @@ Connection_setrowtrace(Connection *self, PyObject *func)
   Py_RETURN_NONE;
 }
 
-/** .. method:: getexectrace() -> callable or None
+/** .. method:: getexectrace() -> Option[Callable]
 
   Returns the currently installed (via :meth:`~Connection.setexectrace`)
   execution tracer.
@@ -3154,7 +3154,7 @@ Connection_getexectrace(Connection *self)
   return ret;
 }
 
-/** .. method:: getrowtrace() -> callable or None
+/** .. method:: getrowtrace() -> Option[Callable]
 
   Returns the currently installed (via :meth:`~Connection.setrowtrace`)
   row tracer.
@@ -3176,7 +3176,7 @@ Connection_getrowtrace(Connection *self)
   return ret;
 }
 
-/** .. method:: __enter__() -> context
+/** .. method:: __enter__() -> Connection
 
   You can use the database as a `context manager
   <http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
@@ -3197,7 +3197,7 @@ Connection_getrowtrace(Connection *self)
 
   Behind the scenes the `savepoint
   <https://sqlite.org/lang_savepoint.html>`_ functionality introduced in
-  SQLite 3.6.8 is used.
+  SQLite 3.6.8 is used to provide nested transactions.
 */
 static PyObject *
 Connection_enter(Connection *self)
@@ -3355,7 +3355,7 @@ Connection_exit(Connection *self, PyObject *args)
   Py_RETURN_FALSE;
 }
 
-/** .. method:: config(op[, *args])
+/** .. method:: config(op: int, *args) -> int
 
     :param op: A `configuration operation
       <https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__
@@ -3416,7 +3416,7 @@ Connection_config(Connection *self, PyObject *args)
   }
 }
 
-/** .. method:: status(op, reset=False) -> (int, int)
+/** .. method:: status(op: int, reset: bool = False) -> Tuple[int, int]
 
   Returns current and highwater measurements for the database.
 
@@ -3452,7 +3452,7 @@ Connection_status(Connection *self, PyObject *args)
   return Py_BuildValue("(ii)", current, highwater);
 }
 
-/** .. method:: readonly(name) -> bool
+/** .. method:: readonly(name: str) -> bool
 
   True or False if the named (attached) database was opened readonly or file
   permissions don't allow writing.  The main database is named "main".
@@ -3484,7 +3484,7 @@ Connection_readonly(Connection *self, PyObject *name)
   return PyErr_Format(exc_descriptors[0].cls, "Unknown database name");
 }
 
-/** .. method:: db_filename(name) -> String
+/** .. method:: db_filename(name: str) -> str
 
   Returns the full filename of the named (attached) database.  The
   main database is named "main".
@@ -3508,7 +3508,7 @@ Connection_db_filename(Connection *self, PyObject *name)
   return convertutf8string(res);
 }
 
-/** .. method:: txn_state(schema=None) -> Int
+/** .. method:: txn_state(schema: str) -> int
 
   Returns the current transaction state of the database, or a specific schema
   if provided.  ValueError is raised if schema is not None or a valid schema name.
