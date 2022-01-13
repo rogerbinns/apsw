@@ -8360,6 +8360,7 @@ shell.write(shell.stdout, "hello world\\n")
         "Test detection of using objects across fork"
         # need to free up everything that already exists
         self.db.close()
+        self.db = None
         gc.collect()
         # install it
         apsw.fork_checker()
@@ -8434,6 +8435,13 @@ shell.write(shell.stdout, "hello world\\n")
         p.join()
         self.assertEqual(1, val.value)  # did child complete ok?
         teststuff(*parent)
+
+        # we call shutdown to free mutexes used in fork checker,
+        # so clear out all the things first
+        del child
+        del parent
+        gc.collect()
+        apsw.shutdown()
 
 
 testtimeout = False  # timeout testing adds several seconds to each run
