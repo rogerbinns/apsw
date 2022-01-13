@@ -2999,8 +2999,8 @@ Enter SQL statements terminated with a ";"
 def main():
     # Docstring must start on second line so dedenting works correctly
     """
-    Call this to run the interactive shell.  It automatically passes
-    in sys.argv[1:] and exits Python when done.
+    Call this to run the :ref:`interactive shell <shell>`.  It
+    automatically passes in sys.argv[1:] and exits Python when done.
 
     """
     try:
