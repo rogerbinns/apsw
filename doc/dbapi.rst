@@ -45,7 +45,7 @@ appropriate. The `SQLite documentation
 <https://sqlite.org/lockingv3.html>`_ has more details.  In
 particular note that SQLite does not support nested transactions.  You
 can only start one transaction and will get an error if you try to
-start another one.
+start another one, although savepoints can be used.
 
 Several methods that are defined in DBAPI to be on the cursor are
 instead on the Connection object, since this is where SQLite actually
