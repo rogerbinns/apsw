@@ -3904,8 +3904,6 @@ class APSW(unittest.TestCase):
         # We expect a coding style where the functions are named
         # Object_method, are at the start of the line and have a first
         # parameter named self.
-        if not os.path.exists("src/apsw.c"): return
-
         for filename in glob.glob("src/*.c"):
             if filename.endswith("testextension.c"):
                 continue
