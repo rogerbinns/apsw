@@ -3982,6 +3982,30 @@ class APSW(unittest.TestCase):
             apsw.config(apsw.SQLITE_CONFIG_MEMSTATUS, True)
             apsw.initialize()
 
+    def testFaultInjectionTested(self):
+        "Make sure all fault injection is tested"
+        faults = set()
+        for filename in glob.glob("src/*.c"):
+            with open(filename, "rt") as f:
+                for line in f:
+                    if "APSW_FAULT_INJECT" in line and "#define" not in line:
+                        mo = re.match(r".*APSW_FAULT_INJECT\s*\(\s*(?P<name>\w+)\s*,.*", line)
+                        assert mo, f"Failed to match line { line }"
+                        name = mo.group("name")
+                        assert name not in faults, f"fault inject name { name } found multiple times"
+                        faults.add(name)
+
+
+        testcode = read_whole_file(__file__, "rt")
+
+        # special case
+        if re.search(r"\bBackupDependent\b", testcode):
+            for n in range(1, 6):
+                testcode += f"\nBackupDependent{ n }\n"
+
+        for name in sorted(faults):
+            self.assertTrue(re.search(f"\\b{ name }\\b", testcode), f"Couldn't find test for fault '{ name }'")
+
     def testMemory(self):
         "Verify memory tracking functions"
         self.assertNotEqual(apsw.memoryused(), 0)
