@@ -28,7 +28,7 @@ Here is an example usage using the **with** statement to ensure
   with db.backup("main", source, "main") as b:
       while not b.done:
           b.step(100)
-          print b.remaining, b.pagecount, "\r",
+          print(b.remaining, b.pagecount, "\r", flush = True)
 
 If you are not using **with** then you'll need to ensure
 :meth:`~backup.finish` is called::
@@ -38,7 +38,7 @@ If you are not using **with** then you'll need to ensure
   try:
       while not b.done:
           b.step(100)
-          print b.remaining, b.pagecount, "\r",
+          print(b.remaining, b.pagecount, "\r", flush = True)
   finally:
       b.finish()
 
@@ -159,7 +159,7 @@ APSWBackup_dealloc(APSWBackup *self)
   Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
-/** .. method:: step([npages=All]) -> bool
+/** .. method:: step(npages: int = -1) -> bool
 
   Copies *npages* pages from the source to destination database.  The source database is locked during the copy so
   using smaller values allows other access to the source database.  The destination database is always locked until the
@@ -215,7 +215,7 @@ APSWBackup_step(APSWBackup *self, PyObject *args)
   return self->done;
 }
 
-/** .. method:: finish()
+/** .. method:: finish() -> None
 
   Completes the copy process.  If all pages have been copied then the
   transaction is committed on the destination database, otherwise it
@@ -242,7 +242,7 @@ APSWBackup_finish(APSWBackup *self)
   Py_RETURN_NONE;
 }
 
-/** .. method:: close([force=False])
+/** .. method:: close(force: bool = False) -> None
 
   Does the same thing as :meth:`~backup.finish`.  This extra api is
   provided to give the same api as other APSW objects such as
@@ -304,7 +304,7 @@ APSWBackup_get_pagecount(APSWBackup *self, APSW_ARGUNUSED void *ignored)
   return PyInt_FromLong(self->backup ? sqlite3_backup_pagecount(self->backup) : 0);
 }
 
-/** .. method:: __enter__() -> self
+/** .. method:: __enter__() -> backup
 
   You can use the backup object as a `context manager
   <http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_

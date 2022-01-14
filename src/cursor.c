@@ -916,7 +916,7 @@ APSWCursor_step(APSWCursor *self)
   return NULL;
 }
 
-/** .. method:: execute(statements[, bindings]) -> iterator
+/** .. method:: execute(statements: str, bindings: Option[Union[Tuple, List, Dict]]) -> Iterator
 
     Executes the statements using the supplied bindings.  Execution
     returns when the first row is available or all statements have
@@ -1053,7 +1053,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
   return retval;
 }
 
-/** .. method:: executemany(statements, sequenceofbindings)  -> iterator
+/** .. method:: executemany(statements: str, sequenceofbindings: Option[Sequence[Union[Tuple, List, Dict]]]) -> Iterator
 
   This method is for when you want to execute the same statements over
   a sequence of bindings.  Conceptually it does this::
@@ -1173,7 +1173,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
   return retval;
 }
 
-/** .. method:: close(force=False)
+/** .. method:: close(force: bool = False) -> None
 
   It is very unlikely you will need to call this method.  It exists
   because older versions of SQLite required all Connection/Cursor
@@ -1282,7 +1282,7 @@ APSWCursor_iter(APSWCursor *self)
   return (PyObject *)self;
 }
 
-/** .. method:: setexectrace(callable)
+/** .. method:: setexectrace(callable: Option[Callable]) -> None
 
   *callable* is called with the cursor, statement and bindings for
   each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
@@ -1317,7 +1317,7 @@ APSWCursor_setexectrace(APSWCursor *self, PyObject *func)
   Py_RETURN_NONE;
 }
 
-/** .. method:: setrowtrace(callable)
+/** .. method:: setrowtrace(callable: Option[Callable]) -> None
 
   *callable* is called with cursor and row being returned.  You can
   change the data that is returned or cause the row to be skipped
@@ -1352,7 +1352,7 @@ APSWCursor_setrowtrace(APSWCursor *self, PyObject *func)
   Py_RETURN_NONE;
 }
 
-/** .. method:: getexectrace() -> callable or None
+/** .. method:: getexectrace() -> Option[Callable]
 
   Returns the currently installed (via :meth:`~Cursor.setexectrace`)
   execution tracer.
@@ -1374,7 +1374,7 @@ APSWCursor_getexectrace(APSWCursor *self)
   return ret;
 }
 
-/** .. method:: getrowtrace() -> callable or None
+/** .. method:: getrowtrace() -> Option[Callable]
 
   Returns the currently installed (via :meth:`~Cursor.setrowtrace`)
   row tracer.
@@ -1429,7 +1429,7 @@ APSWCursor_fetchall(APSWCursor *self)
   return PySequence_List((PyObject *)self);
 }
 
-/** .. method:: fetchone() -> row or None
+/** .. method:: fetchone() -> Option[Any]
 
   Returns the next row of data or None if there are no more rows.
 */

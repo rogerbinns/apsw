@@ -26,7 +26,7 @@ store the filename in the database.  Doing so loses the `ACID
 
 /* ZEROBLOB CODE */
 
-/** .. class:: zeroblob(size)
+/** .. class:: zeroblob(size: int)
 
   If you want to insert a blob into a row, you previously needed to
   supply the entire blob in one go.  To read just one byte also
@@ -34,7 +34,7 @@ store the filename in the database.  Doing so loses the `ACID
   a 100MB file you would have done::
 
      largedata=open("largefile", "rb").read()
-     cur.execute("insert into foo values(?)", (buffer(largedata),))
+     cur.execute("insert into foo values(?)", (largedata,))
 
   SQLite 3.5 allowed for incremental Blob I/O so you can read and
   write blobs in small amounts.  You cannot change the size of a blob
@@ -280,14 +280,12 @@ APSWBlob_length(APSWBlob *self)
   return PyLong_FromLong(sqlite3_blob_bytes(self->pBlob));
 }
 
-/** .. method:: read([nbytes]) -> bytes
+/** .. method:: read(nbytes: Option[int]) -> bytes
 
   Reads amount of data requested, or till end of file, whichever is
   earlier. Attempting to read beyond the end of the blob returns the
-  empty string/bytes, in the same manner as end of file on normal file
+  empty bytes in the same manner as end of file on normal file
   objects.
-
-  :rtype: (Python 2) string  (Python 3) bytes
 
   -* sqlite3_blob_read
 */
@@ -346,15 +344,15 @@ APSWBlob_read(APSWBlob *self, PyObject *args)
   return buffy;
 }
 
-/** .. method:: readinto(buffer[, offset=0, length=remaining-buffer]) -> None
+/** .. method:: readinto(buffer, offset: int = 0, length: int = -1]) -> None
 
   Reads from the blob into a buffer you have supplied.  This method is
   useful if you already have a buffer like object that data is being
   assembled in, and avoids allocating results in :meth:`blob.read` and
   then copying into buffer.
 
-  :param buffer: A writable buffer like object.  In Python 2.6 onwards
-                 there is a bytearray type that is very useful.
+  :param buffer: A writable buffer like object.
+                 There is a bytearray type that is very useful.
                  :class:`array.array` also works.
 
   :param offset: The position to start writing into the buffer
@@ -454,7 +452,7 @@ errorexit:
 #undef ERREXIT
 }
 
-/** .. method:: seek(offset[, whence=0]) -> None
+/** .. method:: seek(offset: int, whence: int = 0]) -> None
 
   Changes current position to *offset* biased by *whence*.
 
@@ -513,11 +511,11 @@ APSWBlob_tell(APSWBlob *self)
   return PyLong_FromLong(self->curoffset);
 }
 
-/** .. method:: write(data) -> None
+/** .. method:: write(data: bytes) -> None
 
   Writes the data to the blob.
 
-  :param data: (Python 2) buffer or string. (Python 3) buffer or bytes.
+  :param data: bytes to write
 
   :raises TypeError: Wrong data type
 
@@ -585,7 +583,7 @@ errout:
   return errval;
 }
 
-/** .. method:: close([force=False])
+/** .. method:: close(force: bool = False) -> None
 
   Closes the blob.  Note that even if an error occurs the blob is
   still closed.
@@ -626,7 +624,7 @@ APSWBlob_close(APSWBlob *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
-/** .. method:: __enter__() -> context
+/** .. method:: __enter__() -> blob
 
   You can use a blob as a `context manager
   <http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
@@ -674,7 +672,7 @@ APSWBlob_exit(APSWBlob *self, APSW_ARGUNUSED PyObject *args)
   Py_RETURN_FALSE;
 }
 
-/** .. method:: reopen(rowid)
+/** .. method:: reopen(rowid: int) -> None
 
   Change this blob object to point to a different row.  It can be
   faster than closing an existing blob an opening a new one.

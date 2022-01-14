@@ -303,24 +303,11 @@ apswvfs_xDelete(sqlite3_vfs *vfs, const char *zName, int syncDir)
   return result;
 }
 
-/** .. method:: xDelete(filename, syncdir)
+/** .. method:: xDelete(filename: str, syncdir: bool) -> None
 
-    Delete the named file.
-
-    .. note::
-
-       SQLite has 3 different behaviours depending on version for how to handle missing files.
-
-
-       +----------------------------------------+-------------------------------------------------+
-       | SQLite < 3.7.8                         |Raise an :exc:`IOError` if the file does not     |
-       |                                        |exist.                                           |
-       +----------------------------------------+-------------------------------------------------+
-       | SQLite >= 3.7.8 and SQLite < 3.7.15    |Do not raise an exception                        |
-       +----------------------------------------+-------------------------------------------------+
-       | SQLite >= 3.7.15                       |Raise an :exc:`IOError` exception with           |
-       |                                        |extendedresult :const:`SQLITE_IOERR_DELETE_NOENT`|
-       +----------------------------------------+-------------------------------------------------+
+    Delete the named file. If the file is missing then raise an
+    :exc:`IOError` exception with extendedresult
+    :const:`SQLITE_IOERR_DELETE_NOENT`
 
     :param filename: File to delete
 
@@ -380,7 +367,7 @@ finally:
   return result;
 }
 
-/** .. method:: xAccess(pathname, flags) -> bool
+/** .. method:: xAccess(pathname: str, flags: int) -> bool
 
     SQLite wants to check access permissions.  Return True or False
     accordingly.
@@ -456,7 +443,7 @@ finally:
   return result;
 }
 
-/** .. method:: xFullPathname(name) -> string
+/** .. method:: xFullPathname(name: str) -> str
 
   Return the absolute pathname for name.  You can use ``os.path.abspath`` to do this.
 */
@@ -582,7 +569,7 @@ finally:
   return result;
 }
 
-/** .. method:: xOpen(name, flags) -> VFSFile or similar object
+/** .. method:: xOpen(name: Option[str,URIFilename], flags: int) -> VFSFile
 
     This method should return a new file object based on name.  You
     can return a :class:`VFSFile` from a completely different VFS.
@@ -723,7 +710,7 @@ apswvfs_xDlOpen(sqlite3_vfs *vfs, const char *zName)
   return result;
 }
 
-/** .. method:: xDlOpen(filename) -> number
+/** .. method:: xDlOpen(filename: str) -> int
 
    Load the shared library. You should return a number which will be
    treated as a void pointer at the C level. On error you should
@@ -780,7 +767,7 @@ static void (*apswvfs_xDlSym(sqlite3_vfs *vfs, void *handle, const char *zName))
   return result;
 }
 
-/** .. method:: xDlSym(handle, symbol) -> address
+/** .. method:: xDlSym(handle: int, symbol: str) -> int
 
     Returns the address of the named symbol which will be called by
     SQLite. On error you should return 0 (NULL). You can use ctypes::
@@ -791,7 +778,6 @@ static void (*apswvfs_xDlSym(sqlite3_vfs *vfs, void *handle, const char *zName))
 
     :param handle: The value returned from an earlier :meth:`~VFS.xDlOpen` call
     :param symbol: A string
-    :rtype: An int/long with the symbol address
 */
 static PyObject *
 apswvfspy_xDlSym(APSWVFS *self, PyObject *args)
@@ -844,7 +830,7 @@ apswvfs_xDlClose(sqlite3_vfs *vfs, void *handle)
   VFSPOSTAMBLE;
 }
 
-/** .. method:: xDlClose(handle)
+/** .. method:: xDlClose(handle: int)
 
     Close and unload the library corresponding to the handle you
     returned from :meth:`~VFS.xDlOpen`.  You can use ctypes to do
@@ -913,7 +899,7 @@ apswvfs_xDlError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
   VFSPOSTAMBLE;
 }
 
-/** .. method:: xDlError() -> string
+/** .. method:: xDlError() -> str
 
     Return an error string describing the last error of
     :meth:`~VFS.xDlOpen` or :meth:`~VFS.xDlSym` (ie they returned
@@ -1010,7 +996,7 @@ apswvfs_xRandomness(sqlite3_vfs *vfs, int nByte, char *zOut)
   return result;
 }
 
-/** .. method:: xRandomness(numbytes) -> bytes
+/** .. method:: xRandomness(numbytes: int) -> bytes
 
   This method is called once when SQLite needs to seed the random
   number generator. It is called on the default VFS only. It is not
@@ -1018,7 +1004,6 @@ apswvfs_xRandomness(sqlite3_vfs *vfs, int nByte, char *zOut)
   return less than the number of bytes requested including None. If
   you return more then the surplus is ignored.
 
-  :rtype: (Python 2) string, buffer (Python 3) bytes, buffer
 */
 static PyObject *
 apswvfspy_xRandomness(APSWVFS *self, PyObject *args)
@@ -1087,7 +1072,7 @@ apswvfs_xSleep(sqlite3_vfs *vfs, int microseconds)
   return result;
 }
 
-/** .. method:: xSleep(microseconds) -> integer
+/** .. method:: xSleep(microseconds: int) -> int
 
     Pause execution of the thread for at least the specified number of
     microseconds (millionths of a second).  This routine is typically called from the busy handler.
@@ -1243,7 +1228,7 @@ end:
   return intres;
 }
 
-/** .. method:: xGetLastError() -> (int, string or None)
+/** .. method:: xGetLastError() -> Tuple[int, str]
 
    This method is to return an integer error code and (optional) text describing
    the last error that happened in this thread.
@@ -1325,14 +1310,14 @@ apswvfs_xSetSystemCall(sqlite3_vfs *vfs, const char *zName, sqlite3_syscall_ptr 
   return res;
 }
 
-/** .. method:: xSetSystemCall(name, pointer) -> bool
+/** .. method:: xSetSystemCall(name: str, pointer: int) -> bool
 
     Change a system call used by the VFS.  This is useful for testing
     and some other scenarios such as sandboxing.
 
     :param name: The string name of the system call
 
-    :param pointer: A pointer provided as an int/long.  There is no
+    :param pointer: A pointer provided as an int.  There is no
       reference counting or other memory tracking of the pointer.  If
       you provide one you need to ensure it is around for the lifetime
       of this and any other related VFS.
@@ -1409,7 +1394,7 @@ finally:
   return ptr;
 }
 
-/** .. method:: xGetSystemCall(name) -> int
+/** .. method:: xGetSystemCall(name: str) -> Option[int]
 
     Returns a pointer for the current method implementing the named
     system call.  Return None if the call does not exist.
@@ -1471,7 +1456,7 @@ apswvfs_xNextSystemCall(sqlite3_vfs *vfs, const char *zName)
   return res;
 }
 
-/** .. method:: xNextSystemCall(name) -> String or None
+/** .. method:: xNextSystemCall(name: str) -> Option[str]
 
     This method is repeatedly called to iterate over all of the system
     calls in the vfs.  When called with None you should return the
@@ -1527,7 +1512,7 @@ finally:
   return res;
 }
 
-/** .. method:: unregister()
+/** .. method:: unregister() -> None
 
    Unregisters the VFS making it unavailable to future database
    opens. You do not need to call this as the VFS is automatically
@@ -1615,7 +1600,7 @@ APSWVFS_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED Py
   return (PyObject *)self;
 }
 
-/** .. method:: __init__(name[, base=None, makedefault=False, maxpathname=1024])
+/** .. method:: __init__(name, base: str = None, makedefault: bool = False, maxpathname: int = 1024])
 
     :param name: The name to register this vfs under.  If the name
         already exists then this vfs will replace the prior one of the
@@ -1874,7 +1859,7 @@ APSWVFSFile_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSE
   return (PyObject *)self;
 }
 
-/** .. method:: __init__(vfs, name, flags)
+/** .. method:: __init__(vfs: str, name: str, flags: Tuple[int, int])
 
     :param vfs: The vfs you want to inherit behaviour from.  You can
        use an empty string ``""`` to inherit from the default vfs.
@@ -2081,7 +2066,7 @@ finally:
   return result;
 }
 
-/** .. method:: xRead(amount, offset) -> bytes
+/** .. method:: xRead(amount: int, offset: int) -> bytes
 
     Read the specified *amount* of data starting at *offset*. You
     should make every effort to read all the data requested, or return
@@ -2093,8 +2078,6 @@ finally:
 
     :param amount: Number of bytes to read
     :param offset: Where to start reading. This number may be 64 bit once the database is larger than 2GB.
-
-    :rtype: (Python 2) string, buffer.  (Python 3) bytes, buffer
 */
 static PyObject *
 apswvfsfilepy_xRead(APSWVFSFile *self, PyObject *args)
@@ -2171,7 +2154,7 @@ finally:
   return result;
 }
 
-/** .. method:: xWrite(data, offset)
+/** .. method:: xWrite(data: bytes, offset: int)
 
   Write the *data* starting at absolute *offset*. You must write all the data
   requested, or return an error. If you have the file open for
@@ -2180,7 +2163,6 @@ finally:
   write the remaining data.
 
   :param offset: Where to start writing. This number may be 64 bit once the database is larger than 2GB.
-  :param data: (Python 2) string, (Python 3) bytes
 */
 
 static PyObject *
@@ -2242,7 +2224,7 @@ apswvfsfile_xUnlock(sqlite3_file *file, int flag)
   return result;
 }
 
-/** .. method:: xUnlock(level)
+/** .. method:: xUnlock(level: int) -> None
 
     Decrease the lock to the level specified which is one of the
     `SQLITE_LOCK <https://sqlite.org/c3ref/c_lock_exclusive.html>`_
@@ -2296,7 +2278,7 @@ apswvfsfile_xLock(sqlite3_file *file, int flag)
   return result;
 }
 
-/** .. method:: xLock(level)
+/** .. method:: xLock(level: int) -> None
 
   Increase the lock to the level specified which is one of the
   `SQLITE_LOCK <https://sqlite.org/c3ref/c_lock_exclusive.html>`_
@@ -2343,7 +2325,7 @@ apswvfsfile_xTruncate(sqlite3_file *file, sqlite3_int64 size)
   return result;
 }
 
-/** .. method:: xTruncate(newsize)
+/** .. method:: xTruncate(newsize: int) -> None
 
   Set the file length to *newsize* (which may be more or less than the
   current length).
@@ -2389,7 +2371,7 @@ apswvfsfile_xSync(sqlite3_file *file, int flags)
   return result;
 }
 
-/** .. method:: xSync(flags)
+/** .. method:: xSync(flags: int) -> None
 
   Ensure data is on the disk platters (ie could survive a power
   failure immediately after the call returns) with the `sync flags
@@ -2597,7 +2579,7 @@ apswvfsfile_xCheckReservedLock(sqlite3_file *file, int *pResOut)
   return result;
 }
 
-/** .. method:: xCheckReservedLock()
+/** .. method:: xCheckReservedLock() -> bool
 
   Returns True if any database connection (in this or another process)
   has a lock other than `SQLITE_LOCK_NONE or SQLITE_LOCK_SHARED
@@ -2655,7 +2637,7 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
   return result;
 }
 
-/** .. method:: xFileControl(op, ptr) -> bool
+/** .. method:: xFileControl(op: int, ptr: int) -> bool
 
    Receives `file control
    <https://sqlite.org/c3ref/file_control.html>`_ request typically
@@ -2739,7 +2721,7 @@ apswvfsfile_xClose(sqlite3_file *file)
   return result;
 }
 
-/** .. method:: xClose()
+/** .. method:: xClose() -> None
 
   Close the database. Note that even if you return an error you should
   still close the file.  It is safe to call this method mutliple
@@ -2939,7 +2921,7 @@ apswurifilename_filename(APSWURIFilename *self)
   return convertutf8string(self->filename);
 }
 
-/** .. method:: uri_parameter(name) -> str
+/** .. method:: uri_parameter(name: str) -> Option[str]
 
     Returns the value of parameter `name` or None.
 
@@ -2957,7 +2939,7 @@ apswurifilename_uri_parameter(APSWURIFilename *self, PyObject *param)
   return convertutf8string(res);
 }
 
-/** .. method:: uri_int(name, default) -> int
+/** .. method:: uri_int(name: str, default: int) -> int
 
     Returns the integer value for parameter `name` or `default` if not
     present.
@@ -2979,7 +2961,7 @@ apswurifilename_uri_int(APSWURIFilename *self, PyObject *args)
   return PyLong_FromLongLong(res);
 }
 
-/** .. method:: uri_boolean(name, default) -> bool
+/** .. method:: uri_boolean(name: str, default: bool) -> bool
 
     Returns the boolean value for parameter `name` or `default` if not
     present.
