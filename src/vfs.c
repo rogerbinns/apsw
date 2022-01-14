@@ -1912,7 +1912,7 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
     if (!utf8name)
       goto finally;
     len = strlen(PyBytes_AS_STRING(utf8name));
-    APSW_FAULT_INJECT(vfspyopen_fullpathnamemallocfailed,
+    APSW_FAULT_INJECT(vfspyopen_fullpathnamemallocfailed_ininit,
                       self->filename = PyMem_Malloc(len + 3),
                       self->filename = (char *)PyErr_NoMemory());
     if (!self->filename)
