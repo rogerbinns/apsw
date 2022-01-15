@@ -628,7 +628,7 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args)
                       filename = (char *)PyErr_NoMemory());
     if (!filename)
       goto finally;
-    strcpy(filename, PyBytes_AS_STRING(utf8name));
+    PyOS_snprintf(filename, len + 1, "%s", PyBytes_AS_STRING(utf8name));
     /* ensure extra null padding for URI params */
     filename[len] = filename[len + 1] = filename[len + 2] = 0;
   }
@@ -1917,7 +1917,7 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
                       self->filename = (char *)PyErr_NoMemory());
     if (!self->filename)
       goto finally;
-    strcpy(self->filename, PyBytes_AS_STRING(utf8name));
+    PyOS_snprintf(self->filename, len + 1, "%s", PyBytes_AS_STRING(utf8name));
     /* ensure extra null padding for URI params */
     self->filename[len] = self->filename[len + 1] = self->filename[len + 2] = 0;
     self->filenamefree = 1;

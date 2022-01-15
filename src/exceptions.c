@@ -185,7 +185,7 @@ static int init_exceptions(PyObject *m)
 
   for (i = 0; i < sizeof(apswexceptions) / sizeof(apswexceptions[0]); i++)
   {
-    sprintf(buffy, "apsw.%s", apswexceptions[i].name);
+    PyOS_snprintf(buffy, sizeof(buffy), "apsw.%s", apswexceptions[i].name);
     *apswexceptions[i].var = PyErr_NewException(buffy, APSWException, NULL);
     if (!*apswexceptions[i].var)
       return -1;
@@ -199,12 +199,12 @@ static int init_exceptions(PyObject *m)
   /* all the ones corresponding to SQLITE error codes */
   for (i = 0; exc_descriptors[i].name; i++)
   {
-    sprintf(buffy, "apsw.%sError", exc_descriptors[i].name);
+    PyOS_snprintf(buffy, sizeof(buffy), "apsw.%sError", exc_descriptors[i].name);
     obj = PyErr_NewException(buffy, APSWException, NULL);
     if (!obj)
       return -1;
     exc_descriptors[i].cls = obj;
-    sprintf(buffy, "%sError", exc_descriptors[i].name);
+    PyOS_snprintf(buffy, sizeof(buffy), "%sError", exc_descriptors[i].name);
     /* PyModule_AddObject steals the ref, but we don't add a ref for
       ourselves because it leaks on module unload when we couldn't use
       these anyway */
