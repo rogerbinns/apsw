@@ -1933,6 +1933,9 @@ fail:
   return NULL;
 }
 
+static const char *apsw_shell_code =
+#include "shell.c"
+    ;
 static void
 add_shell(PyObject *apswmodule)
 {
@@ -1943,22 +1946,13 @@ add_shell(PyObject *apswmodule)
   PyDict_SetItemString(apswdict, "__builtins__", PyDict_GetItemString(maindict, "__builtins__"));
   PyDict_SetItemString(apswdict, "apsw", apswmodule);
 
-  /* the toy compiler from microsoft falls over on string constants
-     bigger than will fit in a 16 bit quantity.  You remember 16 bits?
-     All the rage in the early 1980s.  So we have to compose chunks
-     into a bytes and use that instead.  The format string is as many
-     %s as there are chunks.  It is generated in setup.py.
-  */
-  msvciscrap = PyBytes_FromFormat(
-#include "shell.c"
-  );
-  if (msvciscrap)
-    res = PyRun_StringFlags(PyBytes_AS_STRING(msvciscrap), Py_file_input, apswdict, apswdict, NULL);
-  if (!res)
+  res = PyRun_StringFlags(apsw_shell_code, Py_file_input, apswdict, apswdict, NULL);
+  if (!res) {
     PyErr_Print();
-  assert(res);
-  Py_XDECREF(res);
-  Py_XDECREF(msvciscrap);
+    return;
+  }
+
+  Py_DECREF(res);
 }
 
 #ifdef APSW_TESTFIXTURES
