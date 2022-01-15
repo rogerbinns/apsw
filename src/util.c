@@ -343,7 +343,7 @@ static char *apsw_strdup(const char *source)
 {
   char *res = PyMem_Malloc(strlen(source) + 1);
   if (res)
-    strcpy(res, source);
+    PyOS_snprintf(res, strlen(source) + 1, "%s", source);
   return res;
 }
 

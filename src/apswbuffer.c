@@ -132,7 +132,7 @@ APSWBuffer_hash(APSWBuffer *self)
   if (hash == (Py_uhash_t)-1)
     hash = -2;
 
-  self->hash = hash;
+  self->hash = (Py_hash_t)hash;
 
   return (Py_hash_t)hash;
 }
