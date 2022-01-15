@@ -15,8 +15,9 @@ import sys
 import threading
 import queue
 import optparse
-import traceback
+import subprocess
 import re
+import shutil
 
 os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -26,11 +27,6 @@ try:
     del os.environ["APSWTESTPREFIX"]
 except KeyError:
     pass
-
-# make sure all extensions are tested
-for e in "fts3", "rtree", "icu":
-    os.putenv("APSW_TEST_" + e.upper(), e)
-
 
 def run(cmd):
     status = os.system(cmd)
@@ -90,11 +86,9 @@ def main(PYVERS, SQLITEVERS, concurrency):
                     print("Python", pyver, "   SQLite", sqlitever, "  debug", debug)
                     workdir = os.path.abspath(os.path.join("work", "py%s-sq%s%s" % (pyver, sqlitever, "-debug" if debug else "")))
                     logdir = os.path.abspath(os.path.join("megatestresults", "py%s-sq%s%s" % (pyver, sqlitever,"-debug" if debug else "")))
-                    run("mkdir -p %s/src %s/tools %s" % (workdir, workdir, logdir))
-                    run("cp *.py checksums " + workdir)
-                    run("cp tools/*.py " + workdir + "/tools/")
-                    run("cp src/*.c src/*.h " + workdir + "/src/")
-
+                    os.makedirs(logdir)
+                    os.makedirs(workdir)
+                    copy_git_files(workdir)
                     q.put({'workdir': workdir, 'pyver': pyver, 'sqlitever': sqlitever, 'logdir': logdir, "debug": debug})
 
     threads = []
@@ -104,10 +98,22 @@ def main(PYVERS, SQLITEVERS, concurrency):
         t.start()
         threads.append(t)
 
-    print("All builds started, now waiting for them to finish (%d concurrency)" % (concurrency, ))
+    print(f"All builds started, now waiting for them to finish ({ concurrency } concurrency)")
     for t in threads:
         t.join()
     print("\nFinished")
+
+
+def copy_git_files(destdir):
+    for line in subprocess.run(["git", "ls-files"], text=True, capture_output=True, check=True).stdout.split("\n"):
+        if not line:
+            continue
+        fn = line.split("/")
+        if fn[0] in {".github", "doc"}:
+            continue
+        if len(fn) > 1:
+            os.makedirs(os.path.join(destdir, "/".join(fn[:-1])), exist_ok=True)
+        shutil.copyfile(line, os.path.join(destdir, line))
 
 
 def getpyurl(pyver):
