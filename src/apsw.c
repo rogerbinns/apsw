@@ -793,7 +793,7 @@ apsw_xMutexAlloc(int which)
   }
   default:
     /* verify we have space */
-    assert(which < sizeof(apsw_mutexes) / sizeof(apsw_mutexes[0]));
+    assert((unsigned)which < sizeof(apsw_mutexes) / sizeof(apsw_mutexes[0]));
     /* fill in if missing */
     if (!apsw_mutexes[which])
     {
@@ -808,7 +808,7 @@ apsw_xMutexAlloc(int which)
 static void
 free_fork_checker(void)
 {
-  int i;
+  unsigned i;
   for (i = 0; i<sizeof(apsw_mutexes) / sizeof(apsw_mutexes[0]); i++)
   {
       free(apsw_mutexes[i]);
@@ -1939,7 +1939,7 @@ static const char *apsw_shell_code =
 static void
 add_shell(PyObject *apswmodule)
 {
-  PyObject *res = NULL, *maindict = NULL, *apswdict, *msvciscrap = NULL;
+  PyObject *res = NULL, *maindict = NULL, *apswdict = NULL;
 
   maindict = PyModule_GetDict(PyImport_AddModule("__main__"));
   apswdict = PyModule_GetDict(apswmodule);

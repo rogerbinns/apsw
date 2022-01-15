@@ -641,7 +641,7 @@ Connection_backup(Connection *self, PyObject *args)
   if (res)
     goto finally;
   Py_DECREF(weakref);
-  APSW_FAULT_INJECT(BackupDependent3,  weakref = PyWeakref_NewRef((PyObject *)apswbackup, ((Connection *)source)->dependent_remove), weakref = PyErr_NoMemory());
+  APSW_FAULT_INJECT(BackupDependent3, weakref = PyWeakref_NewRef((PyObject *)apswbackup, ((Connection *)source)->dependent_remove), weakref = PyErr_NoMemory());
   if (!weakref)
     goto finally;
   APSW_FAULT_INJECT(BackupDependent4, res = PyList_Append(((Connection *)source)->dependents, weakref), (PyErr_NoMemory(), res = -1));
@@ -689,7 +689,7 @@ Connection_cursor(Connection *self)
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  APSW_FAULT_INJECT(CursorAllocFails, cursor = (struct APSWCursor *)PyObject_CallFunction((PyObject *)&APSWCursorType, "O", self), cursor = PyErr_NoMemory());
+  APSW_FAULT_INJECT(CursorAllocFails, cursor = (struct APSWCursor *)PyObject_CallFunction((PyObject *)&APSWCursorType, "O", self), cursor = (struct APSWCursor *)PyErr_NoMemory());
   if (!cursor)
     return NULL;
 
@@ -1801,7 +1801,6 @@ Connection_serialize(Connection *self, PyObject *dbname)
   const char *dbnames_cp = NULL;
   sqlite3_int64 size = 0;
   unsigned char *serialization = NULL;
-  int res = SQLITE_OK;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
@@ -1819,7 +1818,7 @@ Connection_serialize(Connection *self, PyObject *dbname)
   INUSE_CALL(_PYSQLITE_CALL_V(serialization = sqlite3_serialize(self->db, dbnames_cp, &size, 0)));
 
   if (serialization)
-    pyres = converttobytes(serialization, size);
+    pyres = converttobytes((char *)serialization, size);
 
 end:
   Py_XDECREF(dbnames);
@@ -1890,7 +1889,7 @@ Connection_deserialize(Connection *self, PyObject *args)
   }
 
   if (res == SQLITE_OK)
-    PYSQLITE_CON_CALL(res = sqlite3_deserialize(self->db, dbname, newcontents, buflen, buflen, SQLITE_DESERIALIZE_RESIZEABLE | SQLITE_DESERIALIZE_FREEONCLOSE));
+    PYSQLITE_CON_CALL(res = sqlite3_deserialize(self->db, dbname, (unsigned char *)newcontents, buflen, buflen, SQLITE_DESERIALIZE_RESIZEABLE | SQLITE_DESERIALIZE_FREEONCLOSE));
   SET_EXC(res, self->db);
 
   ENDREADBUFFER;

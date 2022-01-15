@@ -129,7 +129,7 @@ APSWBuffer_hash(APSWBuffer *self)
   hash++; /* avoid collision */
 
   /* I tried to find a string that would have a hash of -2 but failed. */
-  if (hash == -1)
+  if (hash == (Py_uhash_t)-1)
     hash = -2;
 
   self->hash = hash;
