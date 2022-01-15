@@ -8223,11 +8223,11 @@ shell.write(shell.stdout, "hello world\\n")
 
         ## vfspyopen_fullpathnamemallocfailed
         del FaultVFS.xOpen  # remove overriding fault xOpen method so we get default implementation
-        apsw.faultdict["vfspyopen_fullpathnamemallocfailed_ininit"] = True
+        apsw.faultdict["vfspyopen_fullpathnamemallocfailed"] = True
         self.assertRaises(MemoryError, vfs.xOpen, "doesn't matter",
                           apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_READWRITE)
         # and again in file open
-        apsw.faultdict["vfspyopen_fullpathnamemallocfailed"] = True
+        apsw.faultdict["vfspyopen_fullpathnamemallocfailed_ininit"] = True
         self.assertRaises(MemoryError, apsw.VFSFile, "", "/doesn't matter",
                           [apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_READWRITE, 0])
 
