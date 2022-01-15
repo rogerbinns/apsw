@@ -564,7 +564,8 @@ class apsw_build_ext(beparent):
                 ext.define_macros.append(("SQLITE_ENABLE_" + e.upper(), 1))
                 if e.upper() == "ICU":
                     addicuinclib = True
-                os.putenv("APSW_TEST_" + e.upper(), "1")
+                else:
+                    os.putenv("APSW_TEST_" + e.upper(), "1")
                 # See issue #55 where I had left off the 3 in fts3.  This code
                 # tries to catch misspelling the name of an extension.
                 # However the SQLITE_ENABLE prefix is also used by other
@@ -628,6 +629,7 @@ class apsw_build_ext(beparent):
 
             if foundicu:
                 write("ICU: Added includes, flags and libraries from " + method)
+                os.putenv("APSW_TEST_ICU", "1")
             else:
                 write("ICU: Unable to determine includes/libraries for ICU using pkg-config or icu-config")
                 write("ICU: You will need to manually edit setup.py or setup.cfg to set them")
