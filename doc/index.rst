@@ -3,12 +3,13 @@ APSW documentation
 
 .. centered:: APSW |version| released |today|
 
-Use with SQLite 3.37 or later, CPython (2.3 and later, 3.1 and later).
+Use with SQLite 3.37 or later, CPython 3.7 and later:
 
-This is the last release supporting Python 2 and Python 3 before 3.7.
-If you still use those Python versions then you should pin to this
-APSW version.  (`More information
-<https://www.rogerbinns.com/blog/apsw-ending-python2early3.html>`__).
+  A `release
+  <https://www.rogerbinns.com/blog/apsw-ending-python2early3.html>`__
+  from January 2022 supports all CPython versions back to 2.3.  The
+  `tips <https://rogerbinns.github.io/apsw/tips.html>`__ include more
+  information about versions.
 
 APSW provides an SQLite 3 wrapper that provides the thinnest layer
 over the `SQLite <https://sqlite.org>`_ database library possible.
@@ -16,9 +17,7 @@ Everything you can do from the `SQLite C API
 <https://sqlite.org/c3ref/intro.html>`_, you can do from Python.
 Although APSW looks vaguely similar to the :pep:`249` (DBAPI), it is
 :ref:`not compliant <dbapinotes>` with that API because instead it
-works the way SQLite 3 does. (`pysqlite
-<https://github.com/ghaering/pysqlite>`_ which became the builtin
-sqlite3 module is DBAPI compliant - see the :ref:`differences
+works the way SQLite 3 does. (Read more about the :ref:`differences
 <pysqlitediffs>`).
 
 In general you should use Python's builtin sqlite3 module.  Use APSW

@@ -6,7 +6,7 @@ pysqlite differences
 .. currentmodule:: apsw
 
 The `sqlite3 <https://docs.python.org/3/library/sqlite3.html>`__
-standard module` and APSW approached the problem of providing access
+standard module and APSW approached the problem of providing access
 to SQLite from Python from fundamentally different directions.
 
 APSW provides access in whatever way is normal for SQLite.  It makes
@@ -40,7 +40,7 @@ module:
 
 * You can use the same :class:`Connection` across threads with APSW
   without needing any additional level of locking.  sqlite3 `requires
-  <https://docs.python.org/3/library/sqlite3.html?highlight=sqlite#sqlite3.threadsafety>`__`
+  <https://docs.python.org/3/library/sqlite3.html?highlight=sqlite#sqlite3.threadsafety>`__
   that the :class:`Connection` and any :class:`cursors <Cursor>` are
   used in the same thread.  You can disable its checking, but unless
   you are very careful with your own mutexes you will have a crash or
