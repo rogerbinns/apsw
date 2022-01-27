@@ -126,7 +126,7 @@ static PyTypeObject ZeroBlobBindType = {
     0,                                                                      /*tp_setattro*/
     0,                                                                      /*tp_as_buffer*/
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG, /*tp_flags*/
-    Zeroblob__init__DOC,                                                    /* tp_doc */
+    Zeroblob_init_DOC,                                                      /* tp_doc */
     0,                                                                      /* tp_traverse */
     0,                                                                      /* tp_clear */
     0,                                                                      /* tp_richcompare */
@@ -731,9 +731,9 @@ static PyMethodDef APSWBlob_methods[] = {
     {"close", (PyCFunction)APSWBlob_close, METH_VARARGS,
      Blob_close_DOC},
     {"__enter__", (PyCFunction)APSWBlob_enter, METH_NOARGS,
-     Blob__enter__DOC},
+     Blob_enter_DOC},
     {"__exit__", (PyCFunction)APSWBlob_exit, METH_VARARGS,
-     Blob__exit__DOC},
+     Blob_exit_DOC},
     {0, 0, 0, 0} /* Sentinel */
 };
 
@@ -758,7 +758,7 @@ static PyTypeObject APSWBlobType = {
     0,                                                /*tp_setattro*/
     0,                                                /*tp_as_buffer*/
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_VERSION_TAG, /*tp_flags*/
-    Blob__init__DOC,                                  /* tp_doc */
+    Blob_init_DOC,                                    /* tp_doc */
     0,                                                /* tp_traverse */
     0,                                                /* tp_clear */
     0,                                                /* tp_richcompare */

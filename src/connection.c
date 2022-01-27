@@ -3665,9 +3665,9 @@ static PyMethodDef Connection_methods[] = {
     {"getrowtrace", (PyCFunction)Connection_getrowtrace, METH_NOARGS,
      Connection_getrowtrace_DOC},
     {"__enter__", (PyCFunction)Connection_enter, METH_NOARGS,
-     Connection__enter__DOC},
+     Connection_enter_DOC},
     {"__exit__", (PyCFunction)Connection_exit, METH_VARARGS,
-     Connection__exit__DOC},
+     Connection_exit_DOC},
     {"wal_autocheckpoint", (PyCFunction)Connection_wal_autocheckpoint, METH_O,
      Connection_wal_autocheckpoint_DOC},
     {"wal_checkpoint", (PyCFunction)Connection_wal_checkpoint, METH_VARARGS | METH_KEYWORDS,
@@ -3713,7 +3713,7 @@ static PyTypeObject ConnectionType =
         0,                                                                                           /*tp_setattro*/
         0,                                                                                           /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG | Py_TPFLAGS_HAVE_GC, /*tp_flags*/
-        Connection__init__DOC,                                                                       /* tp_doc */
+        Connection_init_DOC,                                                                         /* tp_doc */
         (traverseproc)Connection_tp_traverse,                                                        /* tp_traverse */
         0,                                                                                           /* tp_clear */
         0,                                                                                           /* tp_richcompare */
