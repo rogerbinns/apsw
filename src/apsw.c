@@ -669,7 +669,7 @@ apswcomplete(PyObject *self, PyObject *args, PyObject *kwds)
   int res;
 
   {
-    static const char *kwlist[] = {"statement", NULL};
+    static char *kwlist[] = {"statement", NULL};
     Apsw_complete_CHECK;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:" Apsw_complete_USAGE, kwlist, &statement))
       return NULL;
