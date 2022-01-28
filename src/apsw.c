@@ -646,7 +646,7 @@ getapswexceptionfor(APSW_ARGUNUSED PyObject *self, PyObject *pycode)
   return result;
 }
 
-/** .. method:: complete(statement) -> bool
+/** .. method:: complete(statement: str) -> bool
 
   Returns True if the input string comprises one or more complete SQL
   statements by looking for an unquoted trailing semi-colon.
@@ -655,33 +655,31 @@ getapswexceptionfor(APSW_ARGUNUSED PyObject *self, PyObject *pycode)
   statements and needed to know if you had a whole statement, or
   needed to ask for another line::
 
-    statement=raw_input("SQL> ")
+    statement = input("SQL> ")
     while not apsw.complete(statement):
-       more=raw_input("  .. ")
-       statement=statement+"\n"+more
+       more = input("  .. ")
+       statement = statement + "\\n" + more
 
   -* sqlite3_complete
 */
 static PyObject *
-apswcomplete(APSW_ARGUNUSED Connection *self, PyObject *args)
+apswcomplete(PyObject *self, PyObject *args, PyObject *kwds)
 {
-  char *statements = NULL;
+  const char *statement = NULL;
   int res;
 
-  if (!PyArg_ParseTuple(args, "es:complete(statement)", STRENCODING, &statements))
-    return NULL;
+  {
+    static const char *kwlist[] = {"statement", NULL};
+    Apsw_complete_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:" Apsw_complete_USAGE, kwlist, &statement))
+      return NULL;
+  }
 
-  res = sqlite3_complete(statements);
-
-  PyMem_Free(statements);
+  res = sqlite3_complete(statement);
 
   if (res)
-  {
-    Py_INCREF(Py_True);
-    return Py_True;
-  }
-  Py_INCREF(Py_False);
-  return Py_False;
+    Py_RETURN_TRUE;
+  Py_RETURN_FALSE;
 }
 
 #if defined(APSW_TESTFIXTURES) && defined(APSW_USE_SQLITE_AMALGAMATION)
@@ -1267,7 +1265,7 @@ static PyMethodDef module_methods[] = {
      Apsw_randomness_DOC},
     {"exceptionfor", (PyCFunction)getapswexceptionfor, METH_O,
      Apsw_exceptionfor_DOC},
-    {"complete", (PyCFunction)apswcomplete, METH_VARARGS,
+    {"complete", (PyCFunction)apswcomplete, METH_VARARGS | METH_KEYWORDS,
      Apsw_complete_DOC},
 #if defined(APSW_TESTFIXTURES) && defined(APSW_USE_SQLITE_AMALGAMATION)
     {"test_reset_rng", (PyCFunction)apsw_test_reset_rng, METH_NOARGS,
