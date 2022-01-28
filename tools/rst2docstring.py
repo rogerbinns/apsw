@@ -292,7 +292,7 @@ def do_argparse(item):
 
     code = f"""\
   {{
-    static const char *kwlist[] = {{{ ",".join('"' + a + '"' for a in argnames) }, NULL}};
+    static char *kwlist[] = {{{ ",".join('"' + a + '"' for a in argnames) }, NULL}};
     { item['symbol'] }_CHECK;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "{ fstr }:" { item['symbol'] }_USAGE, kwlist, { ",".join("&" + a for a in argnames) }))
       return NULL;
