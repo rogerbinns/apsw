@@ -809,10 +809,10 @@ static void
 free_fork_checker(void)
 {
   unsigned i;
-  for (i = 0; i<sizeof(apsw_mutexes) / sizeof(apsw_mutexes[0]); i++)
+  for (i = 0; i < sizeof(apsw_mutexes) / sizeof(apsw_mutexes[0]); i++)
   {
-      free(apsw_mutexes[i]);
-      apsw_mutexes[i] = NULL;
+    free(apsw_mutexes[i]);
+    apsw_mutexes[i] = NULL;
   }
   for (i = 0; i < MUTEX_MAX_ALLOC; i++)
   {
@@ -1316,9 +1316,7 @@ PyInit_apsw(void)
     goto fail;
   }
 
-  if (PyType_Ready(&ConnectionType) < 0 || PyType_Ready(&APSWCursorType) < 0 || PyType_Ready(&ZeroBlobBindType) < 0 || PyType_Ready(&APSWBlobType) < 0 || PyType_Ready(&APSWVFSType) < 0 || PyType_Ready(&APSWVFSFileType) < 0 || PyType_Ready(&APSWURIFilenameType) < 0 || PyType_Ready(&APSWStatementType) < 0 || PyType_Ready(&APSWBufferType) < 0 || PyType_Ready(&FunctionCBInfoType) < 0
-      || PyType_Ready(&APSWBackupType) < 0
-  )
+  if (PyType_Ready(&ConnectionType) < 0 || PyType_Ready(&APSWCursorType) < 0 || PyType_Ready(&ZeroBlobBindType) < 0 || PyType_Ready(&APSWBlobType) < 0 || PyType_Ready(&APSWVFSType) < 0 || PyType_Ready(&APSWVFSFileType) < 0 || PyType_Ready(&APSWURIFilenameType) < 0 || PyType_Ready(&APSWStatementType) < 0 || PyType_Ready(&APSWBufferType) < 0 || PyType_Ready(&FunctionCBInfoType) < 0 || PyType_Ready(&APSWBackupType) < 0)
     goto fail;
 
   m = apswmodule = PyModule_Create(&apswmoduledef);
@@ -1947,7 +1945,8 @@ add_shell(PyObject *apswmodule)
   PyDict_SetItemString(apswdict, "apsw", apswmodule);
 
   res = PyRun_StringFlags(apsw_shell_code, Py_file_input, apswdict, apswdict, NULL);
-  if (!res) {
+  if (!res)
+  {
     PyErr_Print();
     return;
   }
