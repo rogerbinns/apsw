@@ -279,6 +279,9 @@ def do_argparse(item):
         elif param["type"] == "bool":
             type = "int"
             kind = "b"
+        elif param["type"] == "int":
+            type = "int"
+            kind = "i"
         else:
             assert False, f"Don't know how to handle type for { item ['name'] } param { param }"
 
