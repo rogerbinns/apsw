@@ -344,7 +344,7 @@ apsw_logger(void *arg, int errcode, const char *message)
 }
 
 static PyObject *
-config(APSW_ARGUNUSED PyObject *self, PyObject *args)
+config(PyObject *Py_UNUSED(self), PyObject *args)
 {
   int res, optdup;
   long opt;
@@ -464,7 +464,7 @@ memoryused(void)
   -* sqlite3_memory_highwater
 */
 static PyObject *
-memoryhighwater(APSW_ARGUNUSED PyObject *self, PyObject *args)
+memoryhighwater(PyObject *Py_UNUSED(self), PyObject *args)
 {
   int reset = 0;
 
@@ -482,7 +482,7 @@ memoryhighwater(APSW_ARGUNUSED PyObject *self, PyObject *args)
   -* sqlite3_soft_heap_limit64
 */
 static PyObject *
-softheaplimit(APSW_ARGUNUSED PyObject *self, PyObject *args)
+softheaplimit(PyObject *Py_UNUSED(self), PyObject *args)
 {
   long long limit, oldlimit;
 
@@ -503,7 +503,7 @@ softheaplimit(APSW_ARGUNUSED PyObject *self, PyObject *args)
   -* sqlite3_randomness
 */
 static PyObject *
-randomness(APSW_ARGUNUSED PyObject *self, PyObject *args)
+randomness(PyObject *Py_UNUSED(self), PyObject *args)
 {
   int amount;
   PyObject *bytes;
@@ -528,7 +528,7 @@ randomness(APSW_ARGUNUSED PyObject *self, PyObject *args)
 */
 
 static PyObject *
-releasememory(APSW_ARGUNUSED PyObject *self, PyObject *args)
+releasememory(PyObject *Py_UNUSED(self), PyObject *args)
 {
   int amount;
 
@@ -554,7 +554,7 @@ releasememory(APSW_ARGUNUSED PyObject *self, PyObject *args)
 
 */
 static PyObject *
-status(APSW_ARGUNUSED PyObject *self, PyObject *args)
+status(PyObject *Py_UNUSED(self), PyObject *args)
 {
   int res, op, reset = 0;
   sqlite3_int64 current = 0, highwater = 0;
@@ -577,7 +577,7 @@ status(APSW_ARGUNUSED PyObject *self, PyObject *args)
   item in the list is the default vfs.
 */
 static PyObject *
-vfsnames(APSW_ARGUNUSED PyObject *self)
+vfsnames(PyObject *Py_UNUSED(self))
 {
   PyObject *result = NULL, *str = NULL;
   int res;
@@ -622,7 +622,7 @@ error:
 
 */
 static PyObject *
-getapswexceptionfor(APSW_ARGUNUSED PyObject *self, PyObject *pycode)
+getapswexceptionfor(PyObject *Py_UNUSED(self), PyObject *pycode)
 {
   int code, i;
   PyObject *result = NULL;
@@ -666,7 +666,7 @@ getapswexceptionfor(APSW_ARGUNUSED PyObject *self, PyObject *pycode)
   -* sqlite3_complete
 */
 static PyObject *
-apswcomplete(PyObject *self, PyObject *args, PyObject *kwds)
+apswcomplete(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
 {
   const char *statement = NULL;
   int res;
@@ -688,7 +688,7 @@ apswcomplete(PyObject *self, PyObject *args, PyObject *kwds)
 #if defined(APSW_TESTFIXTURES) && defined(APSW_USE_SQLITE_AMALGAMATION)
 /* a routine to reset the random number generator so that we can test xRandomness */
 static PyObject *
-apsw_test_reset_rng(APSW_ARGUNUSED PyObject *self)
+apsw_test_reset_rng(PyObject *Py_UNUSED(self))
 {
   /* See sqlite3PrngResetState in sqlite's random.c */
   GLOBAL(struct sqlite3PrngType, sqlite3Prng).isInit = 0;
@@ -699,7 +699,7 @@ apsw_test_reset_rng(APSW_ARGUNUSED PyObject *self)
 
 #ifdef APSW_TESTFIXTURES
 static PyObject *
-apsw_fini(APSW_ARGUNUSED PyObject *self)
+apsw_fini(PyObject *Py_UNUSED(self))
 {
   APSWBuffer_fini();
   Py_XDECREF(tls_errmsg);
@@ -954,7 +954,7 @@ static sqlite3_mutex_methods apsw_mutex_methods =
   checking as part of your test suite.
 */
 static PyObject *
-apsw_fork_checker(APSW_ARGUNUSED PyObject *self)
+apsw_fork_checker(PyObject *Py_UNUSED(self))
 {
   int rc;
 
@@ -1086,7 +1086,7 @@ fail:
 
 */
 static PyObject *
-formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
+formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value)
 {
   /* NULL/None */
   if (value == Py_None)
@@ -1222,7 +1222,7 @@ formatsqlvalue(APSW_ARGUNUSED PyObject *self, PyObject *value)
     -* sqlite3_log
  */
 static PyObject *
-apsw_log(APSW_ARGUNUSED PyObject *self, PyObject *args)
+apsw_log(PyObject *Py_UNUSED(self), PyObject *args)
 {
   int level;
   char *message;

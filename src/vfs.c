@@ -267,7 +267,7 @@ typedef struct
 /* This function only needs to call sys.excepthook.  If things mess up
    then whoever called us will fallback on PyErr_Display etc */
 static PyObject *
-apswvfs_excepthook(APSW_ARGUNUSED PyObject *donotuseself, PyObject *args)
+apswvfs_excepthook(PyObject *Py_UNUSED(donotuseself), PyObject *args)
 {
   /* NOTE: do not use the self argument as this function is used for
      both apswvfs and apswvfsfile.  If you need to use self then make
@@ -1587,7 +1587,7 @@ APSWVFS_dealloc(APSWVFS *self)
 }
 
 static PyObject *
-APSWVFS_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED PyObject *kwds)
+APSWVFS_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSED(kwds))
 {
   APSWVFS *self;
   self = (APSWVFS *)type->tp_alloc(type, 0);
@@ -1846,7 +1846,7 @@ APSWVFSFile_dealloc(APSWVFSFile *self)
 
 /*ARGSUSED*/
 static PyObject *
-APSWVFSFile_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED PyObject *kwds)
+APSWVFSFile_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSED(kwds))
 {
   APSWVFSFile *self;
   self = (APSWVFSFile *)type->tp_alloc(type, 0);

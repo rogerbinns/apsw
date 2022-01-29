@@ -301,7 +301,7 @@ APSWCursor_dealloc(APSWCursor *self)
 }
 
 static PyObject *
-APSWCursor_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED PyObject *kwds)
+APSWCursor_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSED(kwds))
 {
   APSWCursor *self;
 

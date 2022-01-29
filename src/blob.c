@@ -58,7 +58,7 @@ typedef struct
 } ZeroBlobBind;
 
 static PyObject *
-ZeroBlobBind_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED PyObject *kwargs)
+ZeroBlobBind_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSED(kwargs))
 {
   ZeroBlobBind *self;
   self = (ZeroBlobBind *)type->tp_alloc(type, 0);
@@ -658,7 +658,7 @@ APSWBlob_enter(APSWBlob *self)
 */
 
 static PyObject *
-APSWBlob_exit(APSWBlob *self, APSW_ARGUNUSED PyObject *args)
+APSWBlob_exit(APSWBlob *self, PyObject *Py_UNUSED(args))
 {
   PyObject *res;
   CHECK_USE(NULL);

@@ -282,7 +282,7 @@ APSWBackup_close(APSWBackup *self, PyObject *args)
   -* sqlite3_backup_remaining
 */
 static PyObject *
-APSWBackup_get_remaining(APSWBackup *self, APSW_ARGUNUSED void *ignored)
+APSWBackup_get_remaining(APSWBackup *self, void *Py_UNUSED(ignored))
 {
   CHECK_USE(NULL);
   return PyInt_FromLong(self->backup ? sqlite3_backup_remaining(self->backup) : 0);
@@ -298,7 +298,7 @@ APSWBackup_get_remaining(APSWBackup *self, APSW_ARGUNUSED void *ignored)
   -* sqlite3_backup_pagecount
 */
 static PyObject *
-APSWBackup_get_pagecount(APSWBackup *self, APSW_ARGUNUSED void *ignored)
+APSWBackup_get_pagecount(APSWBackup *self, void *Py_UNUSED(ignored))
 {
   CHECK_USE(NULL);
   return PyInt_FromLong(self->backup ? sqlite3_backup_pagecount(self->backup) : 0);

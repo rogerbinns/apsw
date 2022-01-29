@@ -302,7 +302,7 @@ Connection_remove_dependent(Connection *self, PyObject *o)
 }
 
 static PyObject *
-Connection_new(PyTypeObject *type, APSW_ARGUNUSED PyObject *args, APSW_ARGUNUSED PyObject *kwds)
+Connection_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSED(kwds))
 {
   Connection *self;
 
@@ -1197,7 +1197,7 @@ finally:
 }
 
 static int
-walhookcb(void *context, APSW_ARGUNUSED sqlite3 *db, const char *dbname, int npages)
+walhookcb(void *context, sqlite3 *db, const char *dbname, int npages)
 {
   PyGILState_STATE gilstate;
   PyObject *retval = NULL;
@@ -1585,7 +1585,7 @@ Connection_autovacuum_pages(Connection *self, PyObject *callable)
 }
 
 static void
-collationneeded_cb(void *pAux, APSW_ARGUNUSED sqlite3 *db, int eTextRep, const char *name)
+collationneeded_cb(void *pAux, sqlite3 *Py_UNUSED(db), int eTextRep, const char *name)
 {
   PyObject *res = NULL, *pyname = NULL;
   Connection *self = (Connection *)pAux;
