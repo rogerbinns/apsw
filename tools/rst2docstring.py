@@ -276,6 +276,9 @@ def do_argparse(item):
         if param["type"] == "str":
             type = "const char *"
             kind = "s"
+        elif param["type"] == "bool":
+            type = "int"
+            kind = "b"
         else:
             assert False, f"Don't know how to handle type for { item ['name'] } param { param }"
 
