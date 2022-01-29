@@ -217,13 +217,16 @@ getapswversion(void)
   -* sqlite3_enable_shared_cache
 */
 static PyObject *
-enablesharedcache(APSW_ARGUNUSED PyObject *self, PyObject *args)
+enablesharedcache(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
 {
-  int setting, res;
-  if (!PyArg_ParseTuple(args, "i:enablesharedcache(boolean)", &setting))
-    return NULL;
-
-  APSW_FAULT_INJECT(EnableSharedCacheFail, res = sqlite3_enable_shared_cache(setting), res = SQLITE_NOMEM);
+  int enable = 0, res;
+  {
+    static char *kwlist[] = {"enable", NULL};
+    Apsw_enablesharedcache_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "b:" Apsw_enablesharedcache_USAGE, kwlist, &enable))
+      return NULL;
+  }
+  APSW_FAULT_INJECT(EnableSharedCacheFail, res = sqlite3_enable_shared_cache(enable), res = SQLITE_NOMEM);
   SET_EXC(res, NULL);
 
   if (res != SQLITE_OK)
@@ -1239,7 +1242,7 @@ static PyMethodDef module_methods[] = {
      Apsw_apswversion_DOC},
     {"vfsnames", (PyCFunction)vfsnames, METH_NOARGS,
      Apsw_vfsnames_DOC},
-    {"enablesharedcache", (PyCFunction)enablesharedcache, METH_VARARGS,
+    {"enablesharedcache", (PyCFunction)enablesharedcache, METH_VARARGS | METH_KEYWORDS,
      Apsw_enablesharedcache_DOC},
     {"initialize", (PyCFunction)initialize, METH_NOARGS,
      Apsw_initialize_DOC},
