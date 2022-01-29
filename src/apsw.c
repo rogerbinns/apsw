@@ -622,16 +622,17 @@ error:
 
 */
 static PyObject *
-getapswexceptionfor(PyObject *Py_UNUSED(self), PyObject *pycode)
+getapswexceptionfor(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
 {
-  int code, i;
+  int code = 0, i;
   PyObject *result = NULL;
 
-  if (!PyIntLong_Check(pycode))
-    return PyErr_Format(PyExc_TypeError, "Argument should be an integer");
-  code = PyIntLong_AsLong(pycode);
-  if (PyErr_Occurred())
-    return NULL;
+  {
+    static char *kwlist[] = {"code", NULL};
+    Apsw_exceptionfor_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" Apsw_exceptionfor_USAGE, kwlist, &code))
+      return NULL;
+  }
 
   for (i = 0; exc_descriptors[i].name; i++)
     if (exc_descriptors[i].code == (code & 0xff))
@@ -1266,7 +1267,7 @@ static PyMethodDef module_methods[] = {
      Apsw_releasememory_DOC},
     {"randomness", (PyCFunction)randomness, METH_VARARGS,
      Apsw_randomness_DOC},
-    {"exceptionfor", (PyCFunction)getapswexceptionfor, METH_O,
+    {"exceptionfor", (PyCFunction)getapswexceptionfor, METH_VARARGS | METH_KEYWORDS,
      Apsw_exceptionfor_DOC},
     {"complete", (PyCFunction)apswcomplete, METH_VARARGS | METH_KEYWORDS,
      Apsw_complete_DOC},
