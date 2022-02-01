@@ -1220,7 +1220,7 @@ formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value)
     Calls the SQLite logging interface.  Note that you must format the
     message before passing it to this method::
 
-        apsw.log(apsw.SQLITE_NOMEM, "Need %s bytes of memory" % (1234,))
+        apsw.log(apsw.SQLITE_NOMEM, f"Need { needed } bytes of memory")
 
     See :ref:`tips <diagnostics_tips>` for an example of how to
     receive log messages.
@@ -1228,14 +1228,18 @@ formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value)
     -* sqlite3_log
  */
 static PyObject *
-apsw_log(PyObject *Py_UNUSED(self), PyObject *args)
+apsw_log(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
 {
-  int level;
-  char *message;
-  if (!PyArg_ParseTuple(args, "ies", &level, STRENCODING, &message))
-    return NULL;
-  sqlite3_log(level, "%s", message); /* PYSQLITE_CALL not needed */
-  PyMem_Free(message);
+  int errorcode;
+  const char *message;
+  {
+    static char *kwlist[] = {"errorcode","message", NULL};
+    Apsw_log_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "is:" Apsw_log_USAGE, kwlist, &errorcode,&message))
+      return NULL;
+  }
+  sqlite3_log(errorcode, "%s", message); /* PYSQLITE_CALL not needed */
+
   Py_RETURN_NONE;
 }
 
@@ -1258,7 +1262,7 @@ static PyMethodDef module_methods[] = {
      Apsw_format_sql_value_DOC},
     {"config", (PyCFunction)config, METH_VARARGS,
      Apsw_config_DOC},
-    {"log", (PyCFunction)apsw_log, METH_VARARGS,
+    {"log", (PyCFunction)apsw_log, METH_VARARGS | METH_KEYWORDS,
      Apsw_log_DOC},
     {"memoryused", (PyCFunction)memoryused, METH_NOARGS,
      Apsw_memoryused_DOC},
