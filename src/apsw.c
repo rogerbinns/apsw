@@ -83,22 +83,22 @@ API Reference
 #ifdef APSW_TESTFIXTURES
 /* Fault injection */
 #define APSW_FAULT_INJECT(faultName, good, bad) \
-  do                                       \
-  {                                        \
+  do                                            \
+  {                                             \
     if (APSW_Should_Fault(#faultName))          \
-    {                                      \
-      do                                   \
-      {                                    \
-        bad;                               \
-      } while (0);                         \
-    }                                      \
-    else                                   \
-    {                                      \
-      do                                   \
-      {                                    \
-        good;                              \
-      } while (0);                         \
-    }                                      \
+    {                                           \
+      do                                        \
+      {                                         \
+        bad;                                    \
+      } while (0);                              \
+    }                                           \
+    else                                        \
+    {                                           \
+      do                                        \
+      {                                         \
+        good;                                   \
+      } while (0);                              \
+    }                                           \
   } while (0)
 
 static int APSW_Should_Fault(const char *);
@@ -110,9 +110,9 @@ static int APSW_Should_Fault(const char *);
 
 #else /* APSW_TESTFIXTURES */
 #define APSW_FAULT_INJECT(faultName, good, bad) \
-  do                                       \
-  {                                        \
-    good;                                  \
+  do                                            \
+  {                                             \
+    good;                                       \
   } while (0)
 
 #endif
