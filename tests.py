@@ -7604,12 +7604,17 @@ shell.write(shell.stdout, "hello world\\n")
         with open(__file__) as f:
             test_code = f.read()
 
+        seen = set()
+
         for macro, faultname in re.findall(r"(APSW_FAULT_INJECT|GET_BUFFER|STRING_NEW)\s*[(]\s*(?P<fault_name>.*?)\s*,",
                                            code):
             if faultname == "faultName":
                 continue
-            if faultname not in test_code:
+            if faultname not in test_code and not faultname.startswith("BackupDependent"):
                 raise Exception(f"Fault injected { faultname } not found in tests.py")
+            if faultname in seen:
+                raise Exception(f"Fault { faultname } seen multiple times")
+            seen.add(faultname)
 
         def dummy(*args):
             1 / 0
