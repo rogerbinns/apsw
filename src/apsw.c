@@ -1082,8 +1082,7 @@ fail:
 
 /** .. method:: format_sql_value(value: Union[None, int, float, bytes, str]) -> str
 
-  Returns a Python string (unicode) representing the supplied value in
-  SQL syntax.
+  Returns a Python string representing the supplied value in SQL syntax.
 
 */
 static PyObject *
@@ -1091,114 +1090,120 @@ formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value)
 {
   /* NULL/None */
   if (value == Py_None)
-  {
-    static PyObject *nullstr;
-    if (!nullstr)
-      nullstr = PyObject_Unicode(MAKESTR("NULL"));
-    Py_INCREF(nullstr);
-    return nullstr;
-  }
+    return MAKESTR("NULL");
+
   /* Integer/Float */
-  if (PyIntLong_Check(value) || PyFloat_Check(value))
+  if (PyLong_Check(value) || PyFloat_Check(value))
     return PyObject_Unicode(value);
 
   /* Unicode */
   if (PyUnicode_Check(value))
   {
-    /* We optimize for the default case of there being no nuls or single quotes */
-    PyObject *unires;
-    Py_UNICODE *res;
-    Py_ssize_t left;
-    unires = PyUnicode_FromUnicode(NULL, PyUnicode_GET_SIZE(value) + 2);
-    if (!unires)
-      return NULL;
-    res = PyUnicode_AS_UNICODE(unires);
-    *res++ = '\'';
-    memcpy(res, PyUnicode_AS_UNICODE(value), PyUnicode_GET_DATA_SIZE(value));
-    res += PyUnicode_GET_SIZE(value);
-    *res++ = '\'';
-    /* Now look for nuls and single quotes */
-    res = PyUnicode_AS_UNICODE(unires) + 1;
-    left = PyUnicode_GET_SIZE(value);
-    for (; left; left--, res++)
+    Py_ssize_t needed_chars = 2; /* leading and trailing quote */
+    unsigned int input_kind = PyUnicode_KIND(value), output_kind;
+    void *input_data = PyUnicode_DATA(value);
+    Py_ssize_t input_length = PyUnicode_GET_LENGTH(value);
+    Py_ssize_t pos, outpos;
+    int simple = 1;
+    Py_UCS4 ch;
+
+    PyObject *strres;
+    void *output_data;
+
+    for (pos = 0; pos < input_length; pos++)
     {
-      if (*res == '\'' || *res == 0)
+      switch (PyUnicode_READ(input_kind, input_data, pos))
       {
-        /* we add one char for ' and 10 for null */
-        const int moveamount = *res == '\'' ? 1 : 10;
-        int retval;
-        APSW_FAULT_INJECT(FormatSQLValueResizeFails,
-                          retval = PyUnicode_Resize(&unires, PyUnicode_GET_SIZE(unires) + moveamount),
-                          retval = PyUnicode_Resize(&unires, -17));
-        if (retval == -1)
-        {
-          Py_DECREF(unires);
-          return NULL;
-        }
-        res = PyUnicode_AS_UNICODE(unires) + (PyUnicode_GET_SIZE(unires) - left - moveamount - 1);
-        memmove(res + moveamount, res, sizeof(Py_UNICODE) * (left + 1));
-        if (*res == 0)
-        {
-          *res++ = '\'';
-          *res++ = '|';
-          *res++ = '|';
-          *res++ = 'X';
-          *res++ = '\'';
-          *res++ = '0';
-          *res++ = '0';
-          *res++ = '\'';
-          *res++ = '|';
-          *res++ = '|';
-          *res = '\'';
-        }
-        else
-          res++;
+      case '\'':
+        needed_chars += 2;
+        simple = 0;
+        break;
+      case 0:
+        /* To output an embedded null we have to concatenate a blob
+           containing only a null to a string and sqlite does the
+           necessary co-ercion and gets things right irrespective of
+           the underlying string being utf8 or utf16.  It takes 11
+           characters to do that. */
+        needed_chars += 11;
+        simple = 0;
+        break;
+      default:
+        needed_chars += 1;
       }
     }
-    APSW_Unicode_Return(unires);
+
+    STRING_NEW(formatsqlStrFail, strres, needed_chars, PyUnicode_MAX_CHAR_VALUE(value));
+    if (!strres)
+      return NULL;
+    output_kind = PyUnicode_KIND(strres);
+    output_data = PyUnicode_DATA(strres);
+
+    PyUnicode_WRITE(output_kind, output_data, 0, '\'');
+    PyUnicode_WRITE(output_kind, output_data, needed_chars - 1, '\'');
+
+    if (simple)
+    {
+      PyUnicode_CopyCharacters(strres, 1, value, 0, input_length);
+      return strres;
+    }
+
+    outpos = 1;
+
+    for (pos = 0; pos < input_length; pos++)
+    {
+      switch (ch = PyUnicode_READ(input_kind, input_data, pos))
+      {
+      case 0:
+      {
+        int i;
+        for (i = 0; i < 11; i++)
+          PyUnicode_WRITE(output_kind, output_data, outpos++, "'||X'00'||'"[i]);
+      }
+      break;
+      case '\'':
+        PyUnicode_WRITE(output_kind, output_data, outpos++, ch);
+        /* fall through */
+      default:
+        PyUnicode_WRITE(output_kind, output_data, outpos++, ch);
+      }
+    }
+    return strres;
   }
   /* Blob */
   if (PyBytes_Check(value))
   {
-    const void *buffer;
-    const char *bufferc = NULL;
-    Py_ssize_t buflen;
     int asrb;
-    PyObject *unires;
-    Py_UNICODE *res;
-    READBUFFERVARS;
+    PyObject *strres;
+    void *unidata;
+    Py_ssize_t unipos = 0;
+    Py_buffer buffer;
+    Py_ssize_t buflen;
+    const unsigned char *bufferc;
 
-#define _HEXDIGITS
-    compat_PyObjectReadBuffer(value);
-    APSW_FAULT_INJECT(FormatSQLValueAsReadBufferFails,
-                      ,
-                      ENDREADBUFFER;
-                      (PyErr_NoMemory(), asrb = -1));
-    if (asrb != 0)
+    GET_BUFFER(formatsqlHexBufFail, asrb, value, &buffer);
+    if (asrb == -1)
       return NULL;
-    /* 3 is X, ', '  */
-    APSW_FAULT_INJECT(FormatSQLValuePyUnicodeFromUnicodeFails,
-                      unires = PyUnicode_FromUnicode(NULL, buflen * 2 + 3),
-                      unires = PyErr_NoMemory());
-    if (!unires)
-    {
-      ENDREADBUFFER;
-      return NULL;
-    }
-    bufferc = buffer;
-    res = PyUnicode_AS_UNICODE(unires);
-    *res++ = 'X';
-    *res++ = '\'';
+
+    STRING_NEW(formatsqlHexStrFail, strres, buffer.len * 2 + 3, 127);
+    if (!strres)
+      goto bytesfinally;
+
+    bufferc = buffer.buf;
+    buflen = buffer.len;
+    unidata = PyUnicode_DATA(strres);
+    PyUnicode_WRITE(PyUnicode_1BYTE_KIND, unidata, unipos++, 'X');
+    PyUnicode_WRITE(PyUnicode_1BYTE_KIND, unidata, unipos++, '\'');
     /* About the billionth time I have written a hex conversion routine */
     for (; buflen; buflen--)
     {
-      *res++ = "0123456789ABCDEF"[(*bufferc) >> 4];
-      *res++ = "0123456789ABCDEF"[(*bufferc++) & 0x0f];
+      PyUnicode_WRITE(PyUnicode_1BYTE_KIND, unidata, unipos++, "0123456789ABCDEF"[(*bufferc) >> 4]);
+      PyUnicode_WRITE(PyUnicode_1BYTE_KIND, unidata, unipos++, "0123456789ABCDEF"[(*bufferc++) & 0x0f]);
     }
-    *res++ = '\'';
+    PyUnicode_WRITE(PyUnicode_1BYTE_KIND, unidata, unipos++, '\'');
 
-    ENDREADBUFFER;
-    APSW_Unicode_Return(unires);
+  bytesfinally:
+    PyBuffer_Release(&buffer);
+    return strres;
   }
 
   return PyErr_Format(PyExc_TypeError, "Unsupported type");

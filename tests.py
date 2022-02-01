@@ -772,6 +772,7 @@ class APSW(unittest.TestCase):
 
     def testFormatSQLValue(self):
         "Verify text formatting of values"
+        wt = APSW.wikipedia_text
         vals = (
             (3, "3"),
             (3.1, "3.1"),
@@ -783,6 +784,8 @@ class APSW(unittest.TestCase):
             ("ABC", "'ABC'"),
             (u"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET} ",
              "'" + u"\N{BLACK STAR} \N{WHITE STAR} \N{LIGHTNING} \N{COMET} " + "'"),
+            (u"\N{BLACK STAR} \N{WHITE STAR} ' \N{LIGHTNING} \N{COMET} ",
+             "'" + u"\N{BLACK STAR} \N{WHITE STAR} '' \N{LIGHTNING} \N{COMET} " + "'"),
             ("", "''"),
             ("'", "''''"),
             ("'a", "'''a'"),
@@ -790,11 +793,15 @@ class APSW(unittest.TestCase):
             ("''", "''''''"),
             ("'" * 20000, "'" + "'" * 40000 + "'"),
             ("\0", "''||X'00'||''"),
+            ("\0\0\0", "''||X'00'||''||X'00'||''||X'00'||''"),
             ("AB\0C", "'AB'||X'00'||'C'"),
             ("A'B'\0C", "'A''B'''||X'00'||'C'"),
             ("\0A'B", "''||X'00'||'A''B'"),
             ("A'B\0", "'A''B'||X'00'||''"),
-            (b"AB\0C", "X'41420043'"),
+            (b"ABDE\0C", "X'414244450043'"),
+            (b"", "X''"),
+            (wt, "'" + wt + "'"),
+            (wt[:77] + "'" + wt[77:], "'" + wt[:77] + "''" + wt[77:] + "'"),
         )
         for vin, vout in vals:
             out = apsw.format_sql_value(vin)
@@ -8350,29 +8357,13 @@ shell.write(shell.stdout, "hello world\\n")
             except MemoryError:
                 pass
 
-        ## FormatSQLValueResizeFails
-        apsw.faultdict["FormatSQLValueResizeFails"] = True
-        try:
-            apsw.format_sql_value(u"fsdkljfl'fdsfds")
-            1 / 0
-        except SystemError:
-            pass
-
-        ## FormatSQLValueAsReadBufferFails
-        apsw.faultdict["FormatSQLValueAsReadBufferFails"] = True
-        try:
-            apsw.format_sql_value(b"abcd")
-            1 / 0
-        except MemoryError:
-            pass
-
-        ## FormatSQLValuePyUnicodeFromUnicodeFails
-        apsw.faultdict["FormatSQLValuePyUnicodeFromUnicodeFails"] = True
-        try:
-            apsw.format_sql_value(b"abcd")
-            1 / 0
-        except MemoryError:
-            pass
+        ### apsw.format_sql_value
+        apsw.faultdict["formatsqlHexStrFail"] = True
+        self.assertRaises(MemoryError, apsw.format_sql_value, b"aabbcc")
+        apsw.faultdict["formatsqlHexBufFail"] = True
+        self.assertRaises(MemoryError, apsw.format_sql_value, b"aabbcc")
+        apsw.faultdict["formatsqlStrFail"] = True
+        self.assertRaises(MemoryError, apsw.format_sql_value, "aabbcc")
 
         ## WalAutocheckpointFails
         apsw.faultdict["WalAutocheckpointFails"] = True
