@@ -288,7 +288,7 @@ def do_argparse(item):
         res.append(f"  assert(__builtin_types_compatible_p(typeof({ param['name'] }),typeof({ type }))); \\")
 
         if not optional and param["default"]:
-            fstr.append("|")
+            fstr+= "|"
             optional = True
 
         fstr += kind
