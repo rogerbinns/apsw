@@ -464,13 +464,16 @@ memoryused(void)
   -* sqlite3_memory_highwater
 */
 static PyObject *
-memoryhighwater(PyObject *Py_UNUSED(self), PyObject *args)
+memoryhighwater(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
 {
   int reset = 0;
 
-  if (!PyArg_ParseTuple(args, "|i:memoryhighwater(reset=False)", &reset))
-    return NULL;
-
+  {
+    static char *kwlist[] = {"reset", NULL};
+    Apsw_memoryhighwater_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|b:" Apsw_memoryhighwater_USAGE, kwlist, &reset))
+      return NULL;
+  }
   return PyLong_FromLongLong(sqlite3_memory_highwater(reset));
 }
 
@@ -1266,7 +1269,7 @@ static PyMethodDef module_methods[] = {
      Apsw_log_DOC},
     {"memoryused", (PyCFunction)memoryused, METH_NOARGS,
      Apsw_memoryused_DOC},
-    {"memoryhighwater", (PyCFunction)memoryhighwater, METH_VARARGS,
+    {"memoryhighwater", (PyCFunction)memoryhighwater, METH_VARARGS | METH_KEYWORDS,
      Apsw_memoryhighwater_DOC},
     {"status", (PyCFunction)status, METH_VARARGS,
      Apsw_status_DOC},
