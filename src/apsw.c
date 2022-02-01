@@ -82,10 +82,10 @@ API Reference
 
 #ifdef APSW_TESTFIXTURES
 /* Fault injection */
-#define APSW_FAULT_INJECT(name, good, bad) \
+#define APSW_FAULT_INJECT(faultName, good, bad) \
   do                                       \
   {                                        \
-    if (APSW_Should_Fault(#name))          \
+    if (APSW_Should_Fault(#faultName))          \
     {                                      \
       do                                   \
       {                                    \
@@ -109,7 +109,7 @@ static int APSW_Should_Fault(const char *);
 #endif
 
 #else /* APSW_TESTFIXTURES */
-#define APSW_FAULT_INJECT(name, good, bad) \
+#define APSW_FAULT_INJECT(faultName, good, bad) \
   do                                       \
   {                                        \
     good;                                  \

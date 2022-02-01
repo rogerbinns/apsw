@@ -7593,6 +7593,23 @@ shell.write(shell.stdout, "hello world\\n")
         if not hasattr(apsw, "faultdict"):
             return
 
+        # Verify we test all fault locations
+        code = []
+        for fn in glob.glob("*/*.c"):
+            with open(fn) as f:
+                code.append(f.read())
+        code = "\n".join(code)
+
+        with open(__file__) as f:
+            test_code = f.read()
+
+        for macro, faultname in re.findall(r"(APSW_FAULT_INJECT|GET_BUFFER|STRING_NEW)\s*[(]\s*(?P<fault_name>.*?)\s*,",
+                                           code):
+            if faultname == "faultName":
+                continue
+            if faultname not in test_code:
+                raise Exception(f"Fault injected { faultname } not found in tests.py")
+
         def dummy(*args):
             1 / 0
 
