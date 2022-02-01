@@ -339,7 +339,8 @@ if __name__ == '__main__':
             if any(param["name"] != "return"
                    for param in item["signature"]) and not any(param["name"].startswith("*")
                                                                for param in item["signature"]):
-                missing.append(item["name"])
+                if item["name"] not in {"apsw.format_sql_value"}:
+                    missing.append(item["name"])
 
     outval = out.getvalue()
     replace_if_different(sys.argv[1], outval)
