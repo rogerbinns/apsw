@@ -189,3 +189,8 @@ getutf8string(PyObject *string)
   } while (0)
 
 #define compat_CheckReadBuffer(o) PyObject_CheckBuffer(o)
+
+
+#define GET_BUFFER(faultName, var, src, dest) APSW_FAULT_INJECT(faultName, var = PyObject_GetBuffer(src, dest, PyBUF_SIMPLE), (PyErr_NoMemory(), var = -1))
+
+#define STRING_NEW(faultName, var, size, maxchar) APSW_FAULT_INJECT(faultName, var = PyUnicode_New(size, maxchar), var = PyErr_NoMemory())
