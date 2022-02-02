@@ -260,6 +260,11 @@ def replace_if_different(filename: str, contents: str) -> None:
         open(filename, "w").write(contents)
 
 
+# only "int" shows up in signature (python type) but could correspond to
+# different c types such as 64 bit int
+int_overrides = {"apsw.softheaplimit": {"limit": "int64"}}
+
+
 def do_argparse(item):
     for param in item["signature"]:
         if not param["type"].strip():
@@ -273,6 +278,9 @@ def do_argparse(item):
     for param in item["signature"]:
         if param["name"] == "return":
             continue
+        if item["name"] in int_overrides and param["name"] in int_overrides[item["name"]]:
+            assert param["type"] == "int"
+            param["type"] = int_overrides[item["name"]][param["name"]]
         if param["type"] == "str":
             type = "const char *"
             kind = "s"
@@ -282,13 +290,16 @@ def do_argparse(item):
         elif param["type"] == "int":
             type = "int"
             kind = "i"
+        elif param["type"] == "int64":
+            type = "long long"
+            kind = "L"
         else:
             assert False, f"Don't know how to handle type for { item ['name'] } param { param }"
 
-        res.append(f"  assert(__builtin_types_compatible_p(typeof({ param['name'] }),typeof({ type }))); \\")
+        res.append(f"  assert(__builtin_types_compatible_p(typeof({ param['name'] }), { type })); \\")
 
         if not optional and param["default"]:
-            fstr+= "|"
+            fstr += "|"
             optional = True
 
         fstr += kind
@@ -298,9 +309,9 @@ def do_argparse(item):
 
     code = f"""\
   {{
-    static char *kwlist[] = {{{ ",".join('"' + a + '"' for a in argnames) }, NULL}};
+    static char *kwlist[] = {{{ ", ".join('"' + a + '"' for a in argnames) }, NULL}};
     { item['symbol'] }_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "{ fstr }:" { item['symbol'] }_USAGE, kwlist, { ",".join("&" + a for a in argnames) }))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "{ fstr }:" { item['symbol'] }_USAGE, kwlist, { ", ".join("&" + a for a in argnames) }))
       return NULL;
   }}"""
 
