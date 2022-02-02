@@ -477,7 +477,7 @@ memoryhighwater(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   return PyLong_FromLongLong(sqlite3_memory_highwater(reset));
 }
 
-/** .. method:: softheaplimit(amount) -> int
+/** .. method:: softheaplimit(limit: int) -> int
 
   Requests SQLite try to keep memory usage below *amount* bytes and
   returns the previous limit.
