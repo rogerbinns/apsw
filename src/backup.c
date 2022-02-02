@@ -180,17 +180,20 @@ APSWBackup_dealloc(APSWBackup *self)
   -* sqlite3_backup_step
 */
 static PyObject *
-APSWBackup_step(APSWBackup *self, PyObject *args)
+APSWBackup_step(APSWBackup *self, PyObject *args, PyObject *kwds)
 {
-  int pages = -1, res;
+  int npages = -1, res;
 
   CHECK_USE(NULL);
   CHECK_BACKUP_CLOSED(NULL);
 
-  if (args && !PyArg_ParseTuple(args, "|i:step(pages=All)", &pages))
-    return NULL;
-
-  PYSQLITE_BACKUP_CALL(res = sqlite3_backup_step(self->backup, pages));
+  {
+    static char *kwlist[] = {"npages", NULL};
+    Backup_step_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|i:" Backup_step_USAGE, kwlist, &npages))
+      return NULL;
+  }
+  PYSQLITE_BACKUP_CALL(res = sqlite3_backup_step(self->backup, npages));
   if (PyErr_Occurred())
     return NULL;
 
@@ -253,7 +256,7 @@ APSWBackup_finish(APSWBackup *self)
   :param force: If true then any exceptions are ignored.
 */
 static PyObject *
-APSWBackup_close(APSWBackup *self, PyObject *args)
+APSWBackup_close(APSWBackup *self, PyObject *args, PyObject *kwds)
 {
   int force = 0, setexc;
 
@@ -263,9 +266,12 @@ APSWBackup_close(APSWBackup *self, PyObject *args)
   if (!self->backup)
     Py_RETURN_NONE; /* already closed */
 
-  if (args && !PyArg_ParseTuple(args, "|i:close(force=False)", &force))
-    return NULL;
-
+  {
+    static char *kwlist[] = {"force", NULL};
+    Backup_close_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|b:" Backup_close_USAGE, kwlist, &force))
+      return NULL;
+  }
   setexc = APSWBackup_close_internal(self, force);
   if (setexc)
     return NULL;
@@ -377,11 +383,11 @@ static PyMethodDef backup_methods[] = {
      Backup_enter_DOC},
     {"__exit__", (PyCFunction)APSWBackup_exit, METH_VARARGS,
      Backup_exit_DOC},
-    {"step", (PyCFunction)APSWBackup_step, METH_VARARGS,
+    {"step", (PyCFunction)APSWBackup_step, METH_VARARGS | METH_KEYWORDS,
      Backup_step_DOC},
     {"finish", (PyCFunction)APSWBackup_finish, METH_NOARGS,
      Backup_finish_DOC},
-    {"close", (PyCFunction)APSWBackup_close, METH_VARARGS,
+    {"close", (PyCFunction)APSWBackup_close, METH_VARARGS | METH_KEYWORDS,
      Backup_close_DOC},
     {0, 0, 0, 0}};
 

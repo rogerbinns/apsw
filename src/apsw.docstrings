@@ -271,6 +271,13 @@
 "\n" \
 ":param force: If true then any exceptions are ignored.\n" 
 
+#define Backup_close_USAGE "backup.close(force: bool = False) -> None"
+
+#define Backup_close_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(force), int)); \
+} while(0)
+
+
 #define  Backup_done_DOC "A boolean that is True if the copy completed in the last call to :meth:`~backup.step`.\n" 
 
 #define  Backup_enter_DOC "__enter__($self,/)\n--\n\nbackup.__enter__() -> backup\n\n" \
@@ -326,6 +333,13 @@
 ":returns: True if this copied the last remaining outstanding pages, else false.  This is the same value as :attr:`~backup.done`\n" \
 "\n" \
 "Calls: `sqlite3_backup_step <https://sqlite.org/c3ref/backup_finish.html#sqlite3backupstep>`__\n" 
+
+#define Backup_step_USAGE "backup.step(npages: int = -1) -> bool"
+
+#define Backup_step_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(npages), int)); \
+} while(0)
+
 
 #define  Blob_close_DOC "close($self,force,/)\n--\n\nblob.close(force: bool = False) -> None\n\n" \
 "Closes the blob.  Note that even if an error occurs the blob is\n" \
