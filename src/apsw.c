@@ -485,13 +485,15 @@ memoryhighwater(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   -* sqlite3_soft_heap_limit64
 */
 static PyObject *
-softheaplimit(PyObject *Py_UNUSED(self), PyObject *args)
+softheaplimit(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
 {
-  long long limit, oldlimit;
-
-  if (!PyArg_ParseTuple(args, "L", &limit))
-    return NULL;
-
+  sqlite3_int64 limit, oldlimit;
+  {
+    static char *kwlist[] = {"limit", NULL};
+    Apsw_softheaplimit_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "L:" Apsw_softheaplimit_USAGE, kwlist, &limit))
+      return NULL;
+  }
   oldlimit = sqlite3_soft_heap_limit64(limit);
 
   return PyLong_FromLongLong(oldlimit);
@@ -506,15 +508,20 @@ softheaplimit(PyObject *Py_UNUSED(self), PyObject *args)
   -* sqlite3_randomness
 */
 static PyObject *
-randomness(PyObject *Py_UNUSED(self), PyObject *args)
+randomness(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
 {
   int amount;
   PyObject *bytes;
 
-  if (!PyArg_ParseTuple(args, "i", &amount))
-    return NULL;
+  {
+    static char *kwlist[] = {"amount", NULL};
+    Apsw_randomness_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" Apsw_randomness_USAGE, kwlist, &amount))
+      return NULL;
+  }
   if (amount < 0)
     return PyErr_Format(PyExc_ValueError, "Can't have negative number of bytes");
+
   bytes = PyBytes_FromStringAndSize(NULL, amount);
   if (!bytes)
     return bytes;
@@ -531,13 +538,16 @@ randomness(PyObject *Py_UNUSED(self), PyObject *args)
 */
 
 static PyObject *
-releasememory(PyObject *Py_UNUSED(self), PyObject *args)
+releasememory(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
 {
   int amount;
 
-  if (!PyArg_ParseTuple(args, "i", &amount))
-    return NULL;
-
+  {
+    static char *kwlist[] = {"amount", NULL};
+    Apsw_releasememory_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" Apsw_releasememory_USAGE, kwlist, &amount))
+      return NULL;
+  }
   return PyInt_FromLong(sqlite3_release_memory(amount));
 }
 
@@ -557,13 +567,17 @@ releasememory(PyObject *Py_UNUSED(self), PyObject *args)
 
 */
 static PyObject *
-status(PyObject *Py_UNUSED(self), PyObject *args)
+status(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
 {
   int res, op, reset = 0;
   sqlite3_int64 current = 0, highwater = 0;
 
-  if (!PyArg_ParseTuple(args, "i|i:status(op, reset=False)", &op, &reset))
-    return NULL;
+  {
+    static char *kwlist[] = {"op", "reset", NULL};
+    Apsw_status_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|b:" Apsw_status_USAGE, kwlist, &op, &reset))
+      return NULL;
+  }
 
   res = sqlite3_status64(op, &current, &highwater, reset);
   SET_EXC(res, NULL);
@@ -1236,9 +1250,9 @@ apsw_log(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   int errorcode;
   const char *message;
   {
-    static char *kwlist[] = {"errorcode","message", NULL};
+    static char *kwlist[] = {"errorcode", "message", NULL};
     Apsw_log_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "is:" Apsw_log_USAGE, kwlist, &errorcode,&message))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "is:" Apsw_log_USAGE, kwlist, &errorcode, &message))
       return NULL;
   }
   sqlite3_log(errorcode, "%s", message); /* PYSQLITE_CALL not needed */
@@ -1271,13 +1285,13 @@ static PyMethodDef module_methods[] = {
      Apsw_memoryused_DOC},
     {"memoryhighwater", (PyCFunction)memoryhighwater, METH_VARARGS | METH_KEYWORDS,
      Apsw_memoryhighwater_DOC},
-    {"status", (PyCFunction)status, METH_VARARGS,
+    {"status", (PyCFunction)status, METH_VARARGS | METH_KEYWORDS,
      Apsw_status_DOC},
-    {"softheaplimit", (PyCFunction)softheaplimit, METH_VARARGS,
+    {"softheaplimit", (PyCFunction)softheaplimit, METH_VARARGS | METH_KEYWORDS,
      Apsw_softheaplimit_DOC},
-    {"releasememory", (PyCFunction)releasememory, METH_VARARGS,
+    {"releasememory", (PyCFunction)releasememory, METH_VARARGS | METH_KEYWORDS,
      Apsw_releasememory_DOC},
-    {"randomness", (PyCFunction)randomness, METH_VARARGS,
+    {"randomness", (PyCFunction)randomness, METH_VARARGS | METH_KEYWORDS,
      Apsw_randomness_DOC},
     {"exceptionfor", (PyCFunction)getapswexceptionfor, METH_VARARGS | METH_KEYWORDS,
      Apsw_exceptionfor_DOC},
