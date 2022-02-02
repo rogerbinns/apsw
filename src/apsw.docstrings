@@ -25,7 +25,7 @@
 #define Apsw_complete_USAGE "apsw.complete(statement: str) -> bool"
 
 #define Apsw_complete_CHECK do { \
-  assert(__builtin_types_compatible_p(typeof(statement),typeof(const char *))); \
+  assert(__builtin_types_compatible_p(typeof(statement), const char *)); \
 } while(0)
 
 
@@ -54,6 +54,13 @@
 "\n" \
 "Calls: `sqlite3_enable_shared_cache <https://sqlite.org/c3ref/enable_shared_cache.html>`__\n" 
 
+#define Apsw_enablesharedcache_USAGE "apsw.enablesharedcache(enable: bool) -> None"
+
+#define Apsw_enablesharedcache_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(enable), int)); \
+} while(0)
+
+
 #define  Apsw_exceptionfor_DOC "exceptionfor($self,code,/)\n--\n\napsw.exceptionfor(code: int) -> Exception\n\n" \
 "If you would like to raise an exception that corresponds to a\n" \
 "particular SQLite `error code\n" \
@@ -64,6 +71,13 @@
 "For example to raise `SQLITE_IOERR_ACCESS <https://sqlite.org/c3ref/c_ioerr_access.html>`_::\n" \
 "\n" \
 "  raise apsw.exceptionfor(apsw.SQLITE_IOERR_ACCESS)\n" 
+
+#define Apsw_exceptionfor_USAGE "apsw.exceptionfor(code: int) -> Exception"
+
+#define Apsw_exceptionfor_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(code), int)); \
+} while(0)
+
 
 #define  Apsw_fork_checker_DOC "fork_checker($self,/)\n--\n\napsw.fork_checker() -> None\n\n" \
 "**Note** This method is not available on Windows as it does not\n" \
@@ -110,8 +124,7 @@
 "checking as part of your test suite.\n" 
 
 #define  Apsw_format_sql_value_DOC "format_sql_value($self,value,/)\n--\n\napsw.format_sql_value(value: Union[None, int, float, bytes, str]) -> str\n\n" \
-"Returns a Python string (unicode) representing the supplied value in\n" \
-"SQL syntax.\n" 
+"Returns a Python string representing the supplied value in SQL syntax.\n" 
 
 #define  Apsw_initialize_DOC "initialize($self,/)\n--\n\napsw.initialize() -> None\n\n" \
 "It is unlikely you will want to call this method as SQLite automatically initializes.\n" \
@@ -122,12 +135,20 @@
 "Calls the SQLite logging interface.  Note that you must format the\n" \
 "message before passing it to this method::\n" \
 "\n" \
-"    apsw.log(apsw.SQLITE_NOMEM, \"Need %s bytes of memory\" % (1234,))\n" \
+"    apsw.log(apsw.SQLITE_NOMEM, f\"Need { needed } bytes of memory\")\n" \
 "\n" \
 "See :ref:`tips <diagnostics_tips>` for an example of how to\n" \
 "receive log messages.\n" \
 "\n" \
 "Calls: `sqlite3_log <https://sqlite.org/c3ref/log.html>`__\n" 
+
+#define Apsw_log_USAGE "apsw.log(errorcode: int, message: str) -> None"
+
+#define Apsw_log_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(errorcode), int)); \
+  assert(__builtin_types_compatible_p(typeof(message), const char *)); \
+} while(0)
+
 
 #define  Apsw_memoryhighwater_DOC "memoryhighwater($self,reset,/)\n--\n\napsw.memoryhighwater(reset: bool = False) -> int\n\n" \
 "Returns the maximum amount of memory SQLite has used.  If *reset* is\n" \
@@ -138,6 +159,13 @@
 "  :meth:`status`\n" \
 "\n" \
 "Calls: `sqlite3_memory_highwater <https://sqlite.org/c3ref/memory_highwater.html>`__\n" 
+
+#define Apsw_memoryhighwater_USAGE "apsw.memoryhighwater(reset: bool = False) -> int"
+
+#define Apsw_memoryhighwater_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(reset), int)); \
+} while(0)
+
 
 #define  Apsw_memoryused_DOC "memoryused($self,/)\n--\n\napsw.memoryused() -> int\n\n" \
 "Returns the amount of memory SQLite is currently using.\n" \
@@ -154,11 +182,25 @@
 "\n" \
 "Calls: `sqlite3_randomness <https://sqlite.org/c3ref/randomness.html>`__\n" 
 
+#define Apsw_randomness_USAGE "apsw.randomness(amount: int)  -> bytes"
+
+#define Apsw_randomness_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(amount), int)); \
+} while(0)
+
+
 #define  Apsw_releasememory_DOC "releasememory($self,amount,/)\n--\n\napsw.releasememory(amount: int) -> int\n\n" \
 "Requests SQLite try to free *amount* bytes of memory.  Returns how\n" \
 "many bytes were freed.\n" \
 "\n" \
 "Calls: `sqlite3_release_memory <https://sqlite.org/c3ref/release_memory.html>`__\n" 
+
+#define Apsw_releasememory_USAGE "apsw.releasememory(amount: int) -> int"
+
+#define Apsw_releasememory_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(amount), int)); \
+} while(0)
+
 
 #define  Apsw_shutdown_DOC "shutdown($self,/)\n--\n\napsw.shutdown() -> None\n\n" \
 "It is unlikely you will want to call this method and there is no\n" \
@@ -169,11 +211,18 @@
 "\n" \
 "Calls: `sqlite3_shutdown <https://sqlite.org/c3ref/initialize.html>`__\n" 
 
-#define  Apsw_softheaplimit_DOC "softheaplimit($self,amount,/)\n--\n\napsw.softheaplimit(amount) -> int\n\n" \
+#define  Apsw_softheaplimit_DOC "softheaplimit($self,limit,/)\n--\n\napsw.softheaplimit(limit: int) -> int\n\n" \
 "Requests SQLite try to keep memory usage below *amount* bytes and\n" \
 "returns the previous limit.\n" \
 "\n" \
 "Calls: `sqlite3_soft_heap_limit64 <https://sqlite.org/c3ref/hard_heap_limit64.html>`__\n" 
+
+#define Apsw_softheaplimit_USAGE "apsw.softheaplimit(limit: int) -> int"
+
+#define Apsw_softheaplimit_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(limit), long long)); \
+} while(0)
+
 
 #define  Apsw_sqlite3_sourceid_DOC "sqlite3_sourceid($self,/)\n--\n\napsw.sqlite3_sourceid() -> str\n\n" \
 "Returns the exact checkin information for the SQLite 3 source\n" \
@@ -200,6 +249,14 @@
 "  * :ref:`Status example <example-status>`\n" \
 "\n" \
 "Calls: `sqlite3_status64 <https://sqlite.org/c3ref/status.html>`__\n" 
+
+#define Apsw_status_USAGE "apsw.status(op: int, reset: bool = False) -> Tuple[int, int]"
+
+#define Apsw_status_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(op), int)); \
+  assert(__builtin_types_compatible_p(typeof(reset), int)); \
+} while(0)
+
 
 #define  Apsw_vfsnames_DOC "vfsnames($self,/)\n--\n\napsw.vfsnames() -> List[str]\n\n" \
 "Returns a list of the currently installed :ref:`vfs <vfs>`.  The first\n" \
