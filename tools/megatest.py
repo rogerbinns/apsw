@@ -12,12 +12,12 @@ for it to finish a lot sooner.
 
 import os
 import sys
-import threading
-import queue
-import optparse
+import argparse
 import subprocess
 import re
 import shutil
+import subprocess
+import concurrent.futures
 
 os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -28,48 +28,29 @@ try:
 except KeyError:
     pass
 
+
 def run(cmd):
-    status = os.system(cmd)
-    if os.WIFEXITED(status):
-        code = os.WEXITSTATUS(status)
-        if code == 0:
-            return
-        raise Exception("Exited with code " + str(code) + ": " + cmd)
-    raise Exception("Failed with signal " + str(os.WTERMSIG(status)) + ": " + cmd)
+    subprocess.run(cmd, shell=True, check=True)
 
 
 def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug):
     run("set -e ; cd %s ; ( env LD_LIBRARY_PATH=%s %s setup.py fetch --version=%s --all build_test_extension build_ext --inplace --force --enable-all-extensions%stest -v ) >%s 2>&1"
-        % (workdir, pylib, pybin, sqlitever, " --debug " if debug else " ", os.path.abspath(os.path.join(logdir, "buildruntests.txt"))))
+        % (workdir, pylib, pybin, sqlitever, " --debug " if debug else " ",
+           os.path.abspath(os.path.join(logdir, "buildruntests.txt"))))
 
 
-def runtest(workdir, pyver, sqlitever, logdir, debug):
-    pybin, pylib = buildpython(workdir, pyver, os.path.abspath(os.path.join(logdir, "pybuild.txt")))
+def runtest(workdir, pyver, bits, sqlitever, logdir, debug):
+    pybin, pylib = buildpython(workdir, pyver, bits, os.path.abspath(os.path.join(logdir, "pybuild.txt")))
     dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug)
 
 
-def threadrun(queue):
-    while True:
-        d = queue.get()
-        if d is None:
-            return
-        try:
-            runtest(**d)
-            sys.stdout.write(".")
-            sys.stdout.flush()
-        except:
-            # uncomment to debug problems with this script
-            # traceback.print_exc()
-            print("\nFAILED", d)
-
-
-def main(PYVERS, SQLITEVERS, concurrency):
+def main(PYVERS, SQLITEVERS, BITS, concurrency):
     try:
         del os.environ["APSWTESTPREFIX"]
     except KeyError:
         pass
     print("Test starting")
-    os.system("rm -rf apsw.so megatestresults 2>/dev/null ; mkdir megatestresults")
+    os.system("rm -rf apsw.*so megatestresults 2>/dev/null ; mkdir megatestresults")
     print("  ... removing old work directory")
     workdir = os.path.abspath("work")
     os.system("rm -rf %s/* 2>/dev/null ; mkdir -p %s" % (workdir, workdir))
@@ -77,31 +58,42 @@ def main(PYVERS, SQLITEVERS, concurrency):
     os.system('rm -rf $HOME/.local/lib/python*/site-packages/apsw* 2>/dev/null')
     print("      done")
 
-    q = queue.Queue()
-    threads = []
+    jobs = []
 
-    for pyver in PYVERS:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=concurrency) as executor:
+        for pyver in PYVERS:
             for sqlitever in SQLITEVERS:
                 for debug in False, True:
-                    print("Python", pyver, "   SQLite", sqlitever, "  debug", debug)
-                    workdir = os.path.abspath(os.path.join("work", "py%s-sq%s%s" % (pyver, sqlitever, "-debug" if debug else "")))
-                    logdir = os.path.abspath(os.path.join("megatestresults", "py%s-sq%s%s" % (pyver, sqlitever,"-debug" if debug else "")))
-                    os.makedirs(logdir)
-                    os.makedirs(workdir)
-                    copy_git_files(workdir)
-                    q.put({'workdir': workdir, 'pyver': pyver, 'sqlitever': sqlitever, 'logdir': logdir, "debug": debug})
+                    for bits in BITS:
+                        if pyver == "system" and bits != 64: continue
+                        print(f"Python { pyver } { bits }bit  SQLite { sqlitever }  debug { debug }")
+                        workdir = os.path.abspath(
+                            os.path.join("work",
+                                         "py%s-%d-sq%s%s" % (pyver, bits, sqlitever, "-debug" if debug else "")))
+                        logdir = os.path.abspath(
+                            os.path.join("megatestresults",
+                                         "py%s-%d-sq%s%s" % (pyver, bits, sqlitever, "-debug" if debug else "")))
+                        os.makedirs(logdir)
+                        os.makedirs(workdir)
+                        copy_git_files(workdir)
+                        jobs.append(
+                            executor.submit(runtest,
+                                            workdir=workdir,
+                                            bits=bits,
+                                            pyver=pyver,
+                                            sqlitever=sqlitever,
+                                            logdir=logdir,
+                                            debug=debug))
 
-    threads = []
-    for i in range(concurrency):
-        q.put(None)  # exit sentinel
-        t = threading.Thread(target=threadrun, args=(q, ))
-        t.start()
-        threads.append(t)
+        print(f"All builds started, now waiting for them to finish ({ concurrency } concurrency)")
+        for job in concurrent.futures.as_completed(jobs):
+            try:
+                job.result()
+                print(".", flush=True)
+            except Exception:
+                print("E", flush=True)
 
-    print(f"All builds started, now waiting for them to finish ({ concurrency } concurrency)")
-    for t in threads:
-        t.join()
-    print("\nFinished")
+        print("\nFinished")
 
 
 def copy_git_files(destdir):
@@ -131,20 +123,19 @@ def getpyurl(pyver):
     return "https://www.python.org/ftp/python/%s/%sython-%s.tar.%s" % (dirver, p, pyver, ext)
 
 
-def buildpython(workdir, pyver, logfilename):
+def buildpython(workdir, pyver, bits, logfilename):
     if pyver == "system": return "/usr/bin/python3", ""
     url = getpyurl(pyver)
     tarx = "J"
     run("set -e ; cd %s ; mkdir pyinst ; ( echo \"Getting %s\"; wget -q %s -O - | tar xf%s -  ) > %s 2>&1" %
         (workdir, url, url, tarx, logfilename))
-    opt = ''
     full = ""
     if sys.platform.startswith("linux"):
         ldflags = "LDFLAGS=\"-L/usr/lib/$(dpkg-architecture -qDEB_HOST_MULTIARCH)\"; export LDFLAGS;"
     else:
         ldflags = ""
-    run("set -e ; %s cd %s ; cd ?ython-%s ; ./configure %s --prefix=%s/pyinst  >> %s 2>&1; make >>%s 2>&1; make  %sinstall >>%s 2>&1 ; make clean >/dev/null"
-        % (ldflags, workdir, pyver, opt, workdir, logfilename, logfilename, full, logfilename))
+    run(f"set -e ; cd { workdir } ; cd Python-{ pyver } ; env CC='gcc -m{ bits }' ./configure --prefix={ workdir }/pyinst  >> { logfilename } 2>&1; make >>{ logfilename } 2>&1; make  install >>{ logfilename } 2>&1 ; make clean >/dev/null"
+        )
     suf = "3"
     pybin = os.path.join(workdir, "pyinst", "bin", "python" + suf)
     return pybin, os.path.join(workdir, "pyinst", "lib")
@@ -166,6 +157,7 @@ def cmp(a, b):
     assert a == b
     return 0
 
+
 # Default versions we support
 PYVERS = (
     '3.10.1',
@@ -176,6 +168,8 @@ PYVERS = (
 )
 
 SQLITEVERS = ('3.37.0', '3.37.1', '3.37.2')
+
+BITS = (64, )
 
 if __name__ == '__main__':
     nprocs = 0
@@ -195,34 +189,30 @@ if __name__ == '__main__':
     if concurrency > 24:
         concurrency = 24
 
-    parser = optparse.OptionParser()
-    parser.add_option("--pyvers",
-                      dest="pyvers",
-                      help="Which Python versions to test against [%default]",
-                      default=",".join(PYVERS))
-    parser.add_option("--sqlitevers",
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--pyvers", help="Which Python versions to test against [%(default)s]", default=",".join(PYVERS))
+    parser.add_argument("--sqlitevers",
                       dest="sqlitevers",
-                      help="Which SQLite versions to test against [%default]",
+                      help="Which SQLite versions to test against [%(default)s]",
                       default=",".join(SQLITEVERS))
-    parser.add_option("--fossil",
-                      dest="fossil",
-                      help="Also test current SQLite FOSSIL version [%default]",
+    parser.add_argument("--fossil",
+                      help="Also test current SQLite FOSSIL version [%(default)s]",
                       default=False,
                       action="store_true")
-    parser.add_option("--tasks",
+    parser.add_argument("--bits", default=",".join(str(b) for b in BITS), help="Bits [%(default)s]")
+    parser.add_argument("--tasks",
+                    type=int,
                       dest="concurrency",
-                      help="Number of simultaneous builds/tests to run [%default]",
+                      help="Number of simultaneous builds/tests to run [%(default)s]",
                       default=concurrency)
 
-    options, args = parser.parse_args()
-
-    if args:
-        parser.error("Unexpected options " + str(options))
+    options = parser.parse_args()
 
     pyvers = options.pyvers.split(",")
     sqlitevers = options.sqlitevers.split(",")
+    bits = tuple(int(b.strip()) for b in options.bits.split(","))
     if options.fossil:
         sqlitevers.append("fossil")
-    concurrency = int(options.concurrency)
+    concurrency = options.concurrency
     sqlitevers = [x for x in sqlitevers if x]
-    main(pyvers, sqlitevers, concurrency)
+    main(pyvers, sqlitevers, bits, concurrency)
