@@ -5,7 +5,6 @@
 import apsw
 import sys
 import os
-import codecs
 import warnings
 
 
@@ -27,7 +26,7 @@ TESTFILEPREFIX = os.environ.get("APSWTESTPREFIX", "")
 
 def read_whole_file(name, mode, encoding=None):
     if encoding:
-        f = codecs.open(name, mode, encoding)
+        f = open(name, mode, encoding=encoding)
     else:
         f = open(name, mode)
     try:
@@ -37,13 +36,11 @@ def read_whole_file(name, mode, encoding=None):
 
 
 # If two is present then one is encoding
-def write_whole_file(name, mode, one, two=None):
-    if two:
-        f = codecs.open(name, mode, one)
-        data = two
+def write_whole_file(name, mode, data, *, encoding=None):
+    if encoding:
+        f = open(name, mode, encoding=encoding)
     else:
         f = open(name, mode)
-        data = one
     try:
         f.write(data)
     finally:
@@ -3456,8 +3453,7 @@ class APSW(unittest.TestCase):
         try:
             time.strftime = lambda arg: b"gjkTIMEJUNKhgjhg\xfe\xdf"
             getpass.getuser = lambda: b"\x81\x82\x83gjkhgUSERJUNKjhg\xfe\xdf"
-            import codecs
-            fh = [codecs.open(TESTFILEPREFIX + "test-shell-" + t, "w+b", encoding="utf8") for t in ("in", "out", "err")]
+            fh = [open(TESTFILEPREFIX + "test-shell-" + t, "w+", encoding="utf8") for t in ("in", "out", "err")]
             kwargs = {"stdin": fh[0], "stdout": fh[1], "stderr": fh[2]}
 
             rows = (["correct"], ["horse"], ["battery"], ["staple"])
@@ -3710,7 +3706,7 @@ class APSW(unittest.TestCase):
 
     # the text also includes characters that can't be represented in 16 bits (BMP)
     wikipedia_text = u"""Wikipedia\nThe Free Encyclopedia\nEnglish\n6 383 000+ articles\n日本語\n1 292 000+ 記事\nРусский\n1 756 000+ статей\nDeutsch\n2 617 000+ Artikel\nEspañol\n1 717 000+ artículos\nFrançais\n2 362 000+ articles\nItaliano\n1 718 000+ voci\n中文\n1 231 000+ 條目\nPolski\n1 490 000+ haseł\nPortuguês\n1 074 000+ artigos\nSearch Wikipedia\nEN\nEnglish\n\n Read Wikipedia in your language\n1 000 000+ articles\nPolski\nالعربية\nDeutsch\nEnglish\nEspañol\nFrançais\nItaliano\nمصرى\nNederlands\n日本語\nPortuguês\nРусский\nSinugboanong Binisaya\nSvenska\nУкраїнська\nTiếng Việt\nWinaray\n中文\n100 000+ articles\nAfrikaans\nSlovenčina\nAsturianu\nAzərbaycanca\nБългарски\nBân-lâm-gú / Hō-ló-oē\nবাংলা\nБеларуская\nCatalà\nČeština\nCymraeg\nDansk\nEesti\nΕλληνικά\nEsperanto\nEuskara\nفارسی\nGalego\n한국어\nՀայերեն\nहिन्दी\nHrvatski\nBahasa Indonesia\nעברית\nქართული\nLatina\nLatviešu\nLietuvių\nMagyar\nМакедонски\nBahasa Melayu\nBahaso Minangkabau\nNorskbokmålnynorsk\nНохчийн\nOʻzbekcha / Ўзбекча\nҚазақша / Qazaqşa / قازاقشا\nRomână\nSimple English\nSlovenščina\nСрпски / Srpski\nSrpskohrvatski / Српскохрватски\nSuomi\nதமிழ்\nТатарча / Tatarça\nภาษาไทย\nТоҷикӣ\nتۆرکجه\nTürkçe\nاردو\nVolapük\n粵語\nမြန်မာဘာသာ\n10 000+ articles\nBahsa Acèh\nAlemannisch\nአማርኛ\nAragonés\nBasa Banyumasan\nБашҡортса\nБеларуская (Тарашкевіца)\nBikol Central\nবিষ্ণুপ্রিয়া মণিপুরী\nBoarisch\nBosanski\nBrezhoneg\nЧӑвашла\nDiné Bizaad\nEmigliàn–Rumagnòl\nFøroyskt\nFrysk\nGaeilge\nGàidhlig\nગુજરાતી\nHausa\nHornjoserbsce\nIdo\nIlokano\nInterlingua\nИрон æвзаг\nÍslenska\nJawa\nಕನ್ನಡ\nKreyòl Ayisyen\nKurdî / كوردی\nکوردیی ناوەندی\nКыргызча\nКырык Мары\nLëtzebuergesch\nLimburgs\nLombard\nLìgure\nमैथिली\nMalagasy\nമലയാളം\n文言\nमराठी\nმარგალური\nمازِرونی\nMìng-dĕ̤ng-ngṳ̄ / 閩東語\nМонгол\nनेपाल भाषा\nनेपाली\nNnapulitano\nNordfriisk\nOccitan\nМарий\nଓଡି଼ଆ\nਪੰਜਾਬੀ (ਗੁਰਮੁਖੀ)\nپنجابی (شاہ مکھی)\nپښتو\nPiemontèis\nPlattdüütsch\nQırımtatarca\nRuna Simi\nसंस्कृतम्\nСаха Тыла\nScots\nShqip\nSicilianu\nසිංහල\nسنڌي\nŚlůnski\nBasa Sunda\nKiswahili\nTagalog\nతెలుగు\nᨅᨔ ᨕᨙᨁᨗ / Basa Ugi\nVèneto\nWalon\n吳語\nייִדיש\nYorùbá\nZazaki\nŽemaitėška\nisiZulu\n1 000+ articles\nАдыгэбзэ\nÆnglisc\nAkan\nаԥсшәа\nԱրեւմտահայերէն\nArmãneashce\nArpitan\nܐܬܘܪܝܐ\nAvañe’ẽ\nАвар\nAymar\nBasa Bali\nBahasa Banjar\nभोजपुरी\nBislama\nབོད་ཡིག\nБуряад\nChavacano de Zamboanga\nCorsu\nVahcuengh / 話僮\nDavvisámegiella\nDeitsch\nދިވެހިބަސް\nDolnoserbski\nЭрзянь\nEstremeñu\nFiji Hindi\nFurlan\nGaelg\nGagauz\nGĩkũyũ\nگیلکی\n贛語\nHak-kâ-ngî / 客家語\nХальмг\nʻŌlelo Hawaiʻi\nIgbo\nInterlingue\nKabɩyɛ\nKapampangan\nKaszëbsczi\nKernewek\nភាសាខ្មែរ\nKinyarwanda\nКоми\nKongo\nकोंकणी / Konknni\nKriyòl Gwiyannen\nພາສາລາວ\nDzhudezmo / לאדינו\nЛакку\nLatgaļu\nЛезги\nLingála\nlojban\nLuganda\nMalti\nReo Mā’ohi\nMāori\nMirandés\nМокшень\nߒߞߏ\nNa Vosa Vaka-Viti\nNāhuatlahtōlli\nDorerin Naoero\nNedersaksisch\nNouormand / Normaund\nNovial\nAfaan Oromoo\nঅসমীযা়\nपालि\nPangasinán\nPapiamentu\nПерем Коми\nPfälzisch\nPicard\nКъарачай–Малкъар\nQaraqalpaqsha\nRipoarisch\nRumantsch\nРусиньскый Язык\nGagana Sāmoa\nSardu\nSeeltersk\nSesotho sa Leboa\nChiShona\nSoomaaliga\nSranantongo\nTaqbaylit\nTarandíne\nTetun\nTok Pisin\nfaka Tonga\nTürkmençe\nТыва дыл\nУдмурт\nئۇيغۇرچه\nVepsän\nVõro\nWest-Vlams\nWolof\nisiXhosa\nZeêuws\n100+ articles\nBamanankan\nChamoru\nChichewa\nEʋegbe\nFulfulde\n𐌲𐌿𐍄𐌹𐍃𐌺\nᐃᓄᒃᑎᑐᑦ / Inuktitut\nIñupiak\nKalaallisut\nكٲشُر\nLi Niha\nNēhiyawēwin / ᓀᐦᐃᔭᐍᐏᐣ\nNorfuk / Pitkern\nΠοντιακά\nརྫོང་ཁ\nRomani\nKirundi\nSängö\nSesotho\nSetswana\nСловѣ́ньскъ / ⰔⰎⰑⰂⰡⰐⰠⰔⰍⰟ\nSiSwati\nThuɔŋjäŋ\nᏣᎳᎩ\nTsėhesenėstsestotse\nTshivenḓa\nXitsonga\nchiTumbuka\nTwi\nትግርኛ\nဘာသာ မန်\n"""
-    assert(any(ord(c) > 65536 for c in wikipedia_text))
+    assert (any(ord(c) > 65536 for c in wikipedia_text))
 
     def testWikipedia(self):
         "Use front page of wikipedia to check unicode handling"
@@ -4004,7 +4000,7 @@ class APSW(unittest.TestCase):
                         assert name not in faults, f"fault inject name { name } found multiple times"
                         faults.add(name)
 
-        testcode = read_whole_file(__file__, "rt")
+        testcode = read_whole_file(__file__, "rt", "utf8")
 
         # special case
         if re.search(r"\bBackupDependent\b", testcode):
@@ -6007,22 +6003,10 @@ class APSW(unittest.TestCase):
 
     def testShell(self, shellclass=None):
         "Check Shell functionality"
-        # The windows stdio library is hopelessly broken when used
-        # with codecs.  Sadly Python before version 3 tried to use it
-        # and you get a dismal mess - complaints about BOMs lacking on
-        # zero length files, arbitrary truncation, inability to read
-        # and write from the file and far too much other nonsense.  I
-        # wasted enough time trying to work around it but give up. We
-        # just don't test the shell in Windows before Python 3.  Feel
-        # free to waste your own time trying to fix this.
         if shellclass is None:
             shellclass = apsw.Shell
 
-        # I originally tried to use stringio for this but it barfs
-        # badly over non-ascii stuff and there was no way to make all
-        # the python versions simultaneously happy
-        import codecs
-        fh = [codecs.open(TESTFILEPREFIX + "test-shell-" + t, "w+b", encoding="utf8") for t in ("in", "out", "err")]
+        fh = [open(TESTFILEPREFIX + "test-shell-" + t, "w+", encoding="utf8") for t in ("in", "out", "err")]
         kwargs = {"stdin": fh[0], "stdout": fh[1], "stderr": fh[2]}
 
         def reset():
@@ -6973,8 +6957,10 @@ insert into xxblah values(3);
         # use iso8859-1 to make sure data is read correctly - it
         # differs from utf8
         us = u"unitestdata \xaa\x89 34"
-        write_whole_file(TESTFILEPREFIX + "test-shell-1", "w", "iso8859-1",
-                         "insert into enctest values('%s');\n" % (us, ))
+        write_whole_file(TESTFILEPREFIX + "test-shell-1",
+                         "w",
+                         f"insert into enctest values('{ us }');\n",
+                         encoding="iso8859-1")
         gc.collect()
         reset()
         cmd(".encoding iso8859-1\ncreate table enctest(x);\n.echo on\n.read %stest-shell-1\n.echo off" %
@@ -6983,7 +6969,7 @@ insert into xxblah values(3);
         self.assertEqual(s.db.cursor().execute("select * from enctest").fetchall()[0][0], us)
         self.assertTrue(us in get(fh[2]))
         reset()
-        write_whole_file(TESTFILEPREFIX + "test-shell-1", "w", "iso8859-1", us + "\n")
+        write_whole_file(TESTFILEPREFIX + "test-shell-1", "w", us + "\n", encoding="iso8859-1")
         cmd("drop table enctest;create table enctest(x);\n.import %stest-shell-1 enctest" % (TESTFILEPREFIX, ))
         s.cmdloop()
         isempty(fh[2])
@@ -7017,7 +7003,10 @@ insert into xxblah values(3);
         # check replace works
         reset()
         us = u"\N{BLACK STAR}8\N{WHITE STAR}"
-        write_whole_file(TESTFILEPREFIX + "test-shell-1", "w", "utf8", "insert into enctest values('%s');" % (us, ))
+        write_whole_file(TESTFILEPREFIX + "test-shell-1",
+                         "w",
+                         f"insert into enctest values('{ us }');",
+                         encoding="utf8")
         cmd(".encoding utf8\n.read %stest-shell-1\n.encoding cp437:replace\n.output %stest-shell-1\nselect * from enctest;\n.encoding utf8\n.output stdout"
             % (TESTFILEPREFIX, TESTFILEPREFIX))
         s.cmdloop()
