@@ -361,6 +361,13 @@
 "\n" \
 "Calls: `sqlite3_blob_close <https://sqlite.org/c3ref/blob_close.html>`__\n" 
 
+#define Blob_close_USAGE "blob.close(force: bool = False) -> None"
+
+#define Blob_close_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(force), int)); \
+} while(0)
+
+
 #define  Blob_enter_DOC "__enter__($self,/)\n--\n\nblob.__enter__() -> blob\n\n" \
 "You can use a blob as a `context manager\n" \
 "<http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_\n" \
@@ -398,13 +405,20 @@
 "\n" \
 "Calls: `sqlite3_blob_bytes <https://sqlite.org/c3ref/blob_bytes.html>`__\n" 
 
-#define  Blob_read_DOC "read($self,nbytes,/)\n--\n\nblob.read(nbytes: Option[int]) -> bytes\n\n" \
+#define  Blob_read_DOC "read($self,length,/)\n--\n\nblob.read(length: int = -1) -> bytes\n\n" \
 "Reads amount of data requested, or till end of file, whichever is\n" \
-"earlier. Attempting to read beyond the end of the blob returns the\n" \
+"earlier. Attempting to read beyond the end of the blob returns an\n" \
 "empty bytes in the same manner as end of file on normal file\n" \
-"objects.\n" \
+"objects.  Negative numbers read remaining data.\n" \
 "\n" \
 "Calls: `sqlite3_blob_read <https://sqlite.org/c3ref/blob_read.html>`__\n" 
+
+#define Blob_read_USAGE "blob.read(length: int = -1) -> bytes"
+
+#define Blob_read_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(length), int)); \
+} while(0)
+
 
 #define  Blob_readinto_DOC "readinto($self,buffer,offset,length,/)\n--\n\nblob.readinto(buffer, offset: int = 0, length: int = -1]) -> None\n\n" \
 "Reads from the blob into a buffer you have supplied.  This method is\n" \
@@ -426,11 +440,27 @@
 "\n" \
 "Calls: `sqlite3_blob_read <https://sqlite.org/c3ref/blob_read.html>`__\n" 
 
+#define Blob_readinto_USAGE "blob.readinto(buffer, offset: int = 0, length: int = -1]) -> None"
+
+#define Blob_readinto_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(buffer), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(offset), long long)); \
+  assert(__builtin_types_compatible_p(typeof(length), long long)); \
+} while(0)
+
+
 #define  Blob_reopen_DOC "reopen($self,rowid,/)\n--\n\nblob.reopen(rowid: int) -> None\n\n" \
 "Change this blob object to point to a different row.  It can be\n" \
 "faster than closing an existing blob an opening a new one.\n" \
 "\n" \
 "Calls: `sqlite3_blob_reopen <https://sqlite.org/c3ref/blob_reopen.html>`__\n" 
+
+#define Blob_reopen_USAGE "blob.reopen(rowid: int) -> None"
+
+#define Blob_reopen_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(rowid), long long)); \
+} while(0)
+
 
 #define  Blob_seek_DOC "seek($self,offset,whence,/)\n--\n\nblob.seek(offset: int, whence: int = 0]) -> None\n\n" \
 "Changes current position to *offset* biased by *whence*.\n" \
@@ -440,6 +470,14 @@
 "               1 if *offset* is relative to the current position,\n" \
 "               and 2 if *offset* is relative to the end of the blob.\n" \
 ":raises ValueError: If the resulting offset is before the beginning (less than zero) or beyond the end of the blob.\n" 
+
+#define Blob_seek_USAGE "blob.seek(offset: int, whence: int = 0]) -> None"
+
+#define Blob_seek_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(offset), int)); \
+  assert(__builtin_types_compatible_p(typeof(whence), int)); \
+} while(0)
+
 
 #define  Blob_tell_DOC "tell($self,/)\n--\n\nblob.tell() -> int\n\n" \
 "Returns the current offset.\n" 
@@ -457,6 +495,13 @@
 "    inserting the blob.\n" \
 "\n" \
 "Calls: `sqlite3_blob_write <https://sqlite.org/c3ref/blob_write.html>`__\n" 
+
+#define Blob_write_USAGE "blob.write(data: bytes) -> None"
+
+#define Blob_write_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(data), Py_buffer)); \
+} while(0)
+
 
 #define  Connection_autovacuum_pages_DOC "autovacuum_pages($self,callable,/)\n--\n\nConnection.autovacuum_pages(callable: Option[Callable]) -> None\n\n" \
 "Calls `callable` to find out how many pages to autovacuum.  The callback has 4 parameters:\n" \

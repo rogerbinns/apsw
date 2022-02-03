@@ -8031,17 +8031,6 @@ shell.write(shell.stdout, "hello world\\n")
 
         self.assertRaisesUnraisable(apsw.ReadOnlyError, f)
 
-        ## BlobWriteAsReadBufFails
-        apsw.faultdict["BlobWriteAsReadBufFails"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.cursor().execute("create table foo(b);insert into foo(rowid,b) values(2,x'aabbccddee')")
-            blob = db.blobopen("main", "foo", "b", 2, True)
-            blob.write(b"aaaaaa")
-            1 / 0
-        except MemoryError:
-            pass
-
         ## GetDescriptionFail
         apsw.faultdict["GetDescriptionFail"] = True
         try:
