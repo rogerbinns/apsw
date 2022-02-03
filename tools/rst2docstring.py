@@ -260,14 +260,30 @@ def replace_if_different(filename: str, contents: str) -> None:
         open(filename, "w").write(contents)
 
 
-# only "int" shows up in signature (python type) but could correspond to
-# different c types such as 64 bit int
-int_overrides = {"apsw.softheaplimit": {"limit": "int64"}}
+# Python 'int' can be different C sizes (int32, int64 etc) so we override with more
+# specific types here
+type_overrides = {
+    "apsw.softheaplimit": {
+        "limit": "int64"
+    },
+    "blob.readinto": {
+        "buffer": "PyObject",
+        "offset": "int64",
+        "length": "int64"
+    },
+    "blob.reopen": {
+        "rowid": "int64"
+    }
+}
 
 
 def do_argparse(item):
     for param in item["signature"]:
-        if not param["type"].strip():
+        try:
+            param["type"] = type_overrides[item['name']][param["name"]]
+        except KeyError:
+            pass
+        if not param["type"]:
             sys.exit(f"{ item['name'] } param { param } has no type from { item['signature_original'] }")
     res = [f"#define { item['symbol'] }_CHECK do {{ \\"]
 
@@ -278,10 +294,7 @@ def do_argparse(item):
     for param in item["signature"]:
         if param["name"] == "return":
             continue
-        if item["name"] in int_overrides and param["name"] in int_overrides[item["name"]]:
-            assert param["type"] == "int"
-            param["type"] = int_overrides[item["name"]][param["name"]]
-        if param["type"] == "str":
+        elif param["type"] == "str":
             type = "const char *"
             kind = "s"
         elif param["type"] == "bool":
@@ -293,6 +306,12 @@ def do_argparse(item):
         elif param["type"] == "int64":
             type = "long long"
             kind = "L"
+        elif param["type"] == "PyObject":
+            type = "PyObject *"
+            kind = "O"
+        elif param["type"] == "bytes":
+            type = "Py_buffer"
+            kind = "y*"
         else:
             assert False, f"Don't know how to handle type for { item ['name'] } param { param }"
 
