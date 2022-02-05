@@ -1534,12 +1534,20 @@
 " force is True then all remaining work and state information will be\n" \
 " silently discarded.\n" 
 
+#define Cursor_close_USAGE "Cursor.close(force: bool = False) -> None"
+
+#define Cursor_close_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(force), int)); \
+  assert(force == 0); \
+} while(0)
+
+
 #define  Cursor_description_DOC "Based on the `DB-API cursor property\n" \
 "<http://www.python.org/dev/peps/pep-0249/>`__, this returns the\n" \
 "same as :meth:`getdescription` but with 5 Nones appended.  See\n" \
 "also :issue:`131`.\n" 
 
-#define  Cursor_execute_DOC "execute($self,statements,bindings,/)\n--\n\nCursor.execute(statements: str, bindings: Option[Union[Tuple, List, Dict]]) -> Iterator\n\n" \
+#define  Cursor_execute_DOC "execute($self,statements,bindings,/)\n--\n\nCursor.execute(statements: str, bindings: Optional[Union[Tuple, List, Dict]] = None) -> Iterator\n\n" \
 "Executes the statements using the supplied bindings.  Execution\n" \
 "returns when the first row is available or all statements have\n" \
 "completed.\n" \
@@ -1688,7 +1696,7 @@
 "  * `sqlite3_column_name <https://sqlite.org/c3ref/column_name.html>`__\n" \
 "  * `sqlite3_column_decltype <https://sqlite.org/c3ref/column_decltype.html>`__\n" 
 
-#define  Cursor_getexectrace_DOC "getexectrace($self,/)\n--\n\nCursor.getexectrace() -> Option[Callable]\n\n" \
+#define  Cursor_getexectrace_DOC "getexectrace($self,/)\n--\n\nCursor.getexectrace() -> Optional[Callable]\n\n" \
 "Returns the currently installed (via :meth:`~Cursor.setexectrace`)\n" \
 "execution tracer.\n" \
 "\n" \
@@ -1696,7 +1704,7 @@
 "\n" \
 "  * :ref:`tracing`\n" 
 
-#define  Cursor_getrowtrace_DOC "getrowtrace($self,/)\n--\n\nCursor.getrowtrace() -> Option[Callable]\n\n" \
+#define  Cursor_getrowtrace_DOC "getrowtrace($self,/)\n--\n\nCursor.getrowtrace() -> Optional[Callable]\n\n" \
 "Returns the currently installed (via :meth:`~Cursor.setrowtrace`)\n" \
 "row tracer.\n" \
 "\n" \
@@ -1706,13 +1714,13 @@
 
 #define  Cursor_init_DOC "You obtain cursors by calling :meth:`Connection.cursor`.\n" 
 
-#define  Cursor_setexectrace_DOC "setexectrace($self,callable,/)\n--\n\nCursor.setexectrace(callable: Option[Callable]) -> None\n\n" \
+#define  Cursor_setexectrace_DOC "setexectrace($self,callable,/)\n--\n\nCursor.setexectrace(callable: Optional[Callable]) -> None\n\n" \
 "*callable* is called with the cursor, statement and bindings for\n" \
 "each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this\n" \
 "cursor.\n" \
 "\n" \
 "If *callable* is :const:`None` then any existing execution tracer is\n" \
-"removed.\n" \
+"unregistered.\n" \
 "\n" \
 ".. seealso::\n" \
 "\n" \
@@ -1720,19 +1728,33 @@
 "  * :ref:`executiontracer`\n" \
 "  * :meth:`Connection.setexectrace`\n" 
 
-#define  Cursor_setrowtrace_DOC "setrowtrace($self,callable,/)\n--\n\nCursor.setrowtrace(callable: Option[Callable]) -> None\n\n" \
+#define Cursor_setexectrace_USAGE "Cursor.setexectrace(callable: Optional[Callable]) -> None"
+
+#define Cursor_setexectrace_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
+} while(0)
+
+
+#define  Cursor_setrowtrace_DOC "setrowtrace($self,callable,/)\n--\n\nCursor.setrowtrace(callable: Optional[Callable]) -> None\n\n" \
 "*callable* is called with cursor and row being returned.  You can\n" \
 "change the data that is returned or cause the row to be skipped\n" \
 "altogether.\n" \
 "\n" \
 "If *callable* is :const:`None` then any existing row tracer is\n" \
-"removed.\n" \
+"unregistered.\n" \
 "\n" \
 ".. seealso::\n" \
 "\n" \
 "  * :ref:`tracing`\n" \
 "  * :ref:`rowtracer`\n" \
 "  * :meth:`Connection.setexectrace`\n" 
+
+#define Cursor_setrowtrace_USAGE "Cursor.setrowtrace(callable: Optional[Callable]) -> None"
+
+#define Cursor_setrowtrace_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
+} while(0)
+
 
 #define  URIFilename_filename_DOC "filename($self,/)\n--\n\nURIFilename.filename() -> str\n\n" \
 "Returns the filename.\n" 
