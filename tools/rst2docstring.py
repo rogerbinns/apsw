@@ -273,7 +273,18 @@ type_overrides = {
     },
     "blob.reopen": {
         "rowid": "int64"
-    }
+    },
+    "Connection.blobopen": {
+        "rowid": "int64"
+    },
+    "Connection.filecontrol": {
+        # technically 32 bit on 32 bit platforms
+        "pointer": "int64"
+    },
+    "Connection.set_last_insert_rowid": {
+        "rowid": "int64"
+    },
+
 }
 
 
@@ -290,47 +301,108 @@ def do_argparse(item):
     fstr = ""
     optional = False
     argnames = []
+    parse_args = []
 
     for param in item["signature"]:
         if param["name"] == "return":
             continue
-        elif param["type"] == "str":
+        args = ["&" + param["name"]]
+        default_check = None
+        if param["type"] == "str":
             type = "const char *"
             kind = "s"
+            if param["default"]:
+                if param["default"] == "None":
+                    default_check = f"{ param['name'] } == 0"
+                else:
+                    breakpoint()
+                    pass
+        elif param["type"] == "Optional[str]":
+            type = "const char *"
+            kind = "z"
+            if param["default"]:
+                if param["default"] == "None":
+                    default_check = f"{ param['name'] } == 0"
+                else:
+                    breakpoint()
+                    pass
         elif param["type"] == "bool":
             type = "int"
-            kind = "b"
+            kind = "O&"
+            args = ["argcheck_bool"] + args
+            if param["default"]:
+                assert param["default"] in {"True", "False"}
+                dval = int(param["default"] == "True")
+                default_check = f"{ param['name'] } == { dval }"
         elif param["type"] == "int":
             type = "int"
             kind = "i"
+            if param["default"]:
+                try:
+                    val = int(param['default'])
+                except ValueError:
+                    val = param['default'].replace("apsw.", "")
+                default_check = f"{ param['name'] } == { val }"
         elif param["type"] == "int64":
             type = "long long"
             kind = "L"
-        elif param["type"] == "PyObject":
+            if param["default"]:
+                default_check = f"{ param['name'] } == { int(param['default']) }L"
+        elif param["type"] in {"PyObject", "Any"}:
             type = "PyObject *"
             kind = "O"
+            if param["default"]:
+                breakpoint()
+                pass
         elif param["type"] == "bytes":
             type = "Py_buffer"
             kind = "y*"
+            if param["default"]:
+                breakpoint()
+                pass
+        elif param["type"] == "Optional[Callable]":
+            type = "PyObject *"
+            kind = "O&"
+            args = ["argcheck_Optional_Callable"] + args
+            if param["default"]:
+                breakpoint()
+                pass
+        elif param["type"] == "Callable":
+            type = "PyObject *"
+            kind = "O&"
+            args = ["argcheck_Callable"] + args
+            if param["default"]:
+                breakpoint()
+                pass
+        elif param["type"] == "Connection":
+            type = "Connection *"
+            kind = "O!"
+            args = ["&ConnectionType"] + args
+            if param["default"]:
+                breakpoint()
+                pass
         else:
             assert False, f"Don't know how to handle type for { item ['name'] } param { param }"
 
+        argnames.append(param["name"])
         res.append(f"  assert(__builtin_types_compatible_p(typeof({ param['name'] }), { type })); \\")
+        if default_check:
+            res.append(f"  assert({ default_check }); \\")
 
         if not optional and param["default"]:
             fstr += "|"
             optional = True
 
         fstr += kind
-        argnames.append(param["name"])
+        parse_args.extend(args)
 
     res.append("} while(0)\n")
 
     code = f"""\
   {{
-    static char *kwlist[] = {{{ ", ".join('"' + a + '"' for a in argnames) }, NULL}};
+    static char *kwlist[] = {{{ ", ".join(f'"{ a }"' for a in argnames) }, NULL}};
     { item['symbol'] }_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "{ fstr }:" { item['symbol'] }_USAGE, kwlist, { ", ".join("&" + a for a in argnames) }))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "{ fstr }:" { item['symbol'] }_USAGE, kwlist, { ", ".join(parse_args) }))
       return NULL;
   }}"""
 
