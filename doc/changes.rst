@@ -12,6 +12,12 @@ inspect/typing can provide parameter names, but not types.
 Removal of code, tests, and documentation only relevant to Python
 before 3.7.
 
+Boolean parameters are stricter.  For example the string "False" will
+not be accepted, which previously could be treated as `bool("False")`
+- ie True.
+
+Keyword arguments can be used everywhere.
+
 3.37.0-r1
 =========
 
