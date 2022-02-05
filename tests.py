@@ -7885,10 +7885,6 @@ shell.write(shell.stdout, "hello world\\n")
         except ZeroDivisionError:
             pass
 
-        ## DeserializeReadBufferFail
-        apsw.faultdict["DeserializeReadBufferFail"] = True
-        self.assertRaises(MemoryError, self.db.deserialize, "main", b"aaaaaa")
-
         ## DeserializeMallocFail
         apsw.faultdict["DeserializeMallocFail"] = True
         self.assertRaises(MemoryError, self.db.deserialize, "main", b"aaaaaa")
