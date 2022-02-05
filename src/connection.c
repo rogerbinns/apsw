@@ -3055,8 +3055,7 @@ Connection_setexectrace(Connection *self, PyObject *args, PyObject *kwds)
       return NULL;
   }
 
-  if (callable)
-    Py_INCREF(callable);
+  Py_XINCREF(callable);
   Py_XDECREF(self->exectrace);
   self->exectrace = callable;
 
@@ -3095,8 +3094,7 @@ Connection_setrowtrace(Connection *self, PyObject *args, PyObject *kwds)
       return NULL;
   }
 
-  if (callable)
-    Py_INCREF(callable);
+  Py_XINCREF(callable);
   Py_XDECREF(self->rowtrace);
   self->rowtrace = callable;
 
