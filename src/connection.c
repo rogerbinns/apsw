@@ -335,7 +335,7 @@ Connection_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
   return (PyObject *)self;
 }
 
-/** .. method:: __init__(filename: str, flags: int =SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: str = None, statementcachesize: int = 100)
+/** .. method:: __init__(filename: str, flags: int = apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE, vfs: Optional[str] = None, statementcachesize: int = 100)
 
   Opens the named database.  You can use ``:memory:`` to get a private temporary
   in-memory database that is not shared with any other connections.
@@ -363,18 +363,20 @@ static int apswvfs_xAccess(sqlite3_vfs *vfs, const char *zName, int flags, int *
 static int
 Connection_init(Connection *self, PyObject *args, PyObject *kwds)
 {
-  static char *kwlist[] = {"filename", "flags", "vfs", "statementcachesize", NULL};
   PyObject *hooks = NULL, *hook = NULL, *iterator = NULL, *hookargs = NULL, *hookresult = NULL;
-  char *filename = NULL;
+  const char *filename = NULL;
   int res = 0;
   int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
-  char *vfs = 0;
+  const char *vfs = 0;
   int statementcachesize = 100;
   sqlite3_vfs *vfsused = 0;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "es|izi:Connection(filename, flags=SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE, vfs=None, statementcachesize=100)", kwlist, STRENCODING, &filename, &flags, &vfs, &statementcachesize))
-    return -1;
-
+  {
+    static char *kwlist[] = {"filename", "flags", "vfs", "statementcachesize", NULL};
+    Connection_init_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|izi:" Connection_init_USAGE, kwlist, &filename, &flags, &vfs, &statementcachesize))
+      return -1;
+  }
   flags |= SQLITE_OPEN_EXRESCODE;
 
   if (statementcachesize < 0)
@@ -450,8 +452,6 @@ pyexception:
   assert(PyErr_Occurred());
 
 finally:
-  if (filename)
-    PyMem_Free(filename);
   Py_XDECREF(hookargs);
   Py_XDECREF(iterator);
   Py_XDECREF(hooks);
