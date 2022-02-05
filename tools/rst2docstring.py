@@ -342,7 +342,7 @@ def do_argparse(item):
                     val = int(param['default'])
                 except ValueError:
                     val = param['default'].replace("apsw.", "")
-                default_check = f"{ param['name'] } == { val }"
+                default_check = f"{ param['name'] } == ({ val })"
         elif param["type"] == "int64":
             type = "long long"
             kind = "L"
