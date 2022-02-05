@@ -25,9 +25,9 @@ processes.
 /* details of a registered function passed as user data to sqlite3_create_function */
 typedef struct FunctionCBInfo
 {
-  PyObject_HEAD char *name;   /* utf8 function name */
-  PyObject *scalarfunc;       /* the function to call for stepping */
-  PyObject *aggregatefactory; /* factory for aggregate functions */
+  PyObject_HEAD const char *name; /* utf8 function name */
+  PyObject *scalarfunc;           /* the function to call for stepping */
+  PyObject *aggregatefactory;     /* factory for aggregate functions */
 } FunctionCBInfo;
 
 /* a particular aggregate function instance used as sqlite3_aggregate_context */
@@ -108,7 +108,7 @@ static void
 FunctionCBInfo_dealloc(FunctionCBInfo *self)
 {
   if (self->name)
-    PyMem_Free(self->name);
+    PyMem_Free((void *)(self->name));
   Py_CLEAR(self->scalarfunc);
   Py_CLEAR(self->aggregatefactory);
   Py_TYPE(self)->tp_free((PyObject *)self);
@@ -248,19 +248,19 @@ Connection_close_internal(Connection *self, int force)
 
 /* Closes cursors and blobs belonging to this connection */
 static PyObject *
-Connection_close(Connection *self, PyObject *args)
+Connection_close(Connection *self, PyObject *args, PyObject *kwds)
 {
   int force = 0;
 
   CHECK_USE(NULL);
 
   assert(!PyErr_Occurred());
-
-  if (!PyArg_ParseTuple(args, "|i:close(force=False)", &force))
-    return NULL;
-
-  force = !!force; /* must be zero or one */
-
+  {
+    static char *kwlist[] = {"force", NULL};
+    Connection_close_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&:" Connection_close_USAGE, kwlist, argcheck_bool, &force))
+      return NULL;
+  }
   if (Connection_close_internal(self, force))
   {
     assert(PyErr_Occurred());
@@ -482,28 +482,27 @@ finally:
    -* sqlite3_blob_open
 */
 static PyObject *
-Connection_blobopen(Connection *self, PyObject *args)
+Connection_blobopen(Connection *self, PyObject *args, PyObject *kwds)
 {
   struct APSWBlob *apswblob = 0;
   sqlite3_blob *blob = 0;
-  const char *dbname, *tablename, *column;
+  const char *database, *table, *column;
   long long rowid;
-  int writing;
+  int writeable = 0;
   int res;
   PyObject *weakref;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (!PyArg_ParseTuple(args, "esesesLi:blobopen(database, table, column, rowid, rd_wr)",
-                        STRENCODING, &dbname, STRENCODING, &tablename, STRENCODING, &column, &rowid, &writing))
-    return NULL;
+  {
+    static char *kwlist[] = {"database", "table", "column", "rowid", "writeable", NULL};
+    Connection_blobopen_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sssLO&:" Connection_blobopen_USAGE, kwlist, &database, &table, &column, &rowid, argcheck_bool, &writeable))
+      return NULL;
+  }
+  PYSQLITE_CON_CALL(res = sqlite3_blob_open(self->db, database, table, column, rowid, writeable, &blob));
 
-  PYSQLITE_CON_CALL(res = sqlite3_blob_open(self->db, dbname, tablename, column, rowid, writing, &blob));
-
-  PyMem_Free((void *)dbname);
-  PyMem_Free((void *)tablename);
-  PyMem_Free((void *)column);
   SET_EXC(res, self->db);
   if (res != SQLITE_OK)
     return NULL;
@@ -542,14 +541,14 @@ Connection_blobopen(Connection *self, PyObject *args)
    -* sqlite3_backup_init
 */
 static PyObject *
-Connection_backup(Connection *self, PyObject *args)
+Connection_backup(Connection *self, PyObject *args, PyObject *kwds)
 {
   struct APSWBackup *apswbackup = 0;
   sqlite3_backup *backup = 0;
   int res = -123456; /* stupid compiler */
   PyObject *result = NULL;
   PyObject *weakref = NULL;
-  Connection *source = NULL;
+  Connection *sourceconnection = NULL;
   const char *databasename = NULL;
   const char *sourcedatabasename = NULL;
   int isetsourceinuse = 0;
@@ -580,39 +579,35 @@ Connection_backup(Connection *self, PyObject *args)
     goto finally;
   }
 
-  if (!PyArg_ParseTuple(args, "esOes:blobopen(databasename, sourceconnection, sourcedatabasename)",
-                        STRENCODING, &databasename, &source, STRENCODING, &sourcedatabasename))
-    return NULL;
-
-  if (!PyObject_IsInstance((PyObject *)source, (PyObject *)&ConnectionType))
   {
-    PyErr_Format(PyExc_TypeError, "source connection needs to be a Connection instance");
-    goto finally;
+    static char *kwlist[] = {"databasename", "sourceconnection", "sourcedatabasename", NULL};
+    Connection_backup_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO!s:" Connection_backup_USAGE, kwlist, &databasename, &ConnectionType, &sourceconnection, &sourcedatabasename))
+      return NULL;
   }
-
-  if (!source->db)
+  if (!sourceconnection->db)
   {
     PyErr_Format(PyExc_ValueError, "source connection is closed!");
     goto finally;
   }
 
-  if (source->inuse)
+  if (sourceconnection->inuse)
   {
     PyErr_Format(ExcThreadingViolation, "source connection is in concurrent use in another thread");
     goto finally;
   }
 
-  if (source->db == self->db)
+  if (sourceconnection->db == self->db)
   {
     PyErr_Format(PyExc_ValueError, "source and destination are the same which sqlite3_backup doesn't allow");
     goto finally;
   }
 
-  source->inuse = 1;
+  sourceconnection->inuse = 1;
   isetsourceinuse = 1;
 
   APSW_FAULT_INJECT(BackupInitFails,
-                    PYSQLITE_CON_CALL((backup = sqlite3_backup_init(self->db, databasename, source->db, sourcedatabasename),
+                    PYSQLITE_CON_CALL((backup = sqlite3_backup_init(self->db, databasename, sourceconnection->db, sourcedatabasename),
                                        res = backup ? SQLITE_OK : sqlite3_extended_errcode(self->db))),
                     res = SQLITE_NOMEM);
 
@@ -628,9 +623,9 @@ Connection_backup(Connection *self, PyObject *args)
   if (!apswbackup)
     goto finally;
 
-  APSWBackup_init(apswbackup, self, source, backup);
+  APSWBackup_init(apswbackup, self, sourceconnection, backup);
   Py_INCREF(self);
-  Py_INCREF(source);
+  Py_INCREF(sourceconnection);
   backup = NULL;
 
   /* add to dependent lists */
@@ -641,10 +636,10 @@ Connection_backup(Connection *self, PyObject *args)
   if (res)
     goto finally;
   Py_DECREF(weakref);
-  APSW_FAULT_INJECT(BackupDependent3, weakref = PyWeakref_NewRef((PyObject *)apswbackup, ((Connection *)source)->dependent_remove), weakref = PyErr_NoMemory());
+  APSW_FAULT_INJECT(BackupDependent3, weakref = PyWeakref_NewRef((PyObject *)apswbackup, sourceconnection->dependent_remove), weakref = PyErr_NoMemory());
   if (!weakref)
     goto finally;
-  APSW_FAULT_INJECT(BackupDependent4, res = PyList_Append(((Connection *)source)->dependents, weakref), (PyErr_NoMemory(), res = -1));
+  APSW_FAULT_INJECT(BackupDependent4, res = PyList_Append(sourceconnection->dependents, weakref), (PyErr_NoMemory(), res = -1));
   if (res)
     goto finally;
   Py_DECREF(weakref);
@@ -659,10 +654,7 @@ finally:
   assert(result ? (backup == NULL) : 1);
   if (backup)
     PYSQLITE_VOID_CALL(sqlite3_backup_finish(backup));
-  if (databasename)
-    PyMem_Free((void *)databasename);
-  if (sourcedatabasename)
-    PyMem_Free((void *)sourcedatabasename);
+
   Py_XDECREF((PyObject *)apswbackup);
   Py_XDECREF(weakref);
 
@@ -670,7 +662,7 @@ finally:
   assert((self->inuse) ? (!!result) : (result == NULL));
   assert(result ? (self->inuse) : (!self->inuse));
   if (isetsourceinuse)
-    source->inuse = 0;
+    sourceconnection->inuse = 0;
   return result;
 }
 
@@ -700,7 +692,7 @@ Connection_cursor(Connection *self)
   return (PyObject *)cursor;
 }
 
-/** .. method:: setbusytimeout(millseconds: int) -> None
+/** .. method:: setbusytimeout(milliseconds: int) -> None
 
   If the database is locked such as when another connection is making
   changes, SQLite will keep retrying.  This sets the maximum amount of
@@ -720,18 +712,21 @@ Connection_cursor(Connection *self)
   -* sqlite3_busy_timeout
 */
 static PyObject *
-Connection_setbusytimeout(Connection *self, PyObject *args)
+Connection_setbusytimeout(Connection *self, PyObject *args, PyObject *kwds)
 {
-  int ms = 0;
+  int milliseconds = 0;
   int res;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (!PyArg_ParseTuple(args, "i:setbusytimeout(millseconds)", &ms))
-    return NULL;
-
-  PYSQLITE_CON_CALL(res = sqlite3_busy_timeout(self->db, ms));
+  {
+    static char *kwlist[] = {"milliseconds", NULL};
+    Connection_setbusytimeout_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" Connection_setbusytimeout_USAGE, kwlist, &milliseconds))
+      return NULL;
+  }
+  PYSQLITE_CON_CALL(res = sqlite3_busy_timeout(self->db, milliseconds));
   SET_EXC(res, self->db);
   if (res != SQLITE_OK)
     return NULL;
@@ -824,19 +819,19 @@ Connection_last_insert_rowid(Connection *self)
   -* sqlite3_set_last_insert_rowid
 */
 static PyObject *
-Connection_set_last_insert_rowid(Connection *self, PyObject *o)
+Connection_set_last_insert_rowid(Connection *self, PyObject *args, PyObject *kwds)
 {
   sqlite3_int64 rowid;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (!PyIntLong_Check(o))
-    return PyErr_Format(PyExc_TypeError, "rowid should be 64bit number");
-
-  rowid = PyIntLong_AsLongLong(o);
-  if (PyErr_Occurred())
-    return NULL;
+  {
+    static char *kwlist[] = {"rowid", NULL};
+    Connection_set_last_insert_rowid_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "L:" Connection_set_last_insert_rowid_USAGE, kwlist, &rowid))
+      return NULL;
+  }
 
   PYSQLITE_VOID_CALL(sqlite3_set_last_insert_rowid(self->db, rowid));
 
@@ -881,15 +876,18 @@ Connection_interrupt(Connection *self)
 
 */
 static PyObject *
-Connection_limit(Connection *self, PyObject *args)
+Connection_limit(Connection *self, PyObject *args, PyObject *kwds)
 {
-  int val = -1, res, id;
+  int newval = -1, res, id;
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
-  if (!PyArg_ParseTuple(args, "i|i", &id, &val))
-    return NULL;
-
-  res = sqlite3_limit(self->db, id, val);
+  {
+    static char *kwlist[] = {"id", "newval", NULL};
+    Connection_limit_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|i:" Connection_limit_USAGE, kwlist, &id, &newval))
+      return NULL;
+  }
+  res = sqlite3_limit(self->db, id, newval);
 
   return PyLong_FromLong(res);
 }
@@ -920,11 +918,11 @@ finally:
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: setupdatehook(callable: Option[Callable]) -> None
+/** .. method:: setupdatehook(callable: Optional[Callable]) -> None
 
   Calls *callable* whenever a row is updated, deleted or inserted.  If
   *callable* is :const:`None` then any existing update hook is
-  removed.  The update hook cannot make changes to the database while
+  unregistered.  The update hook cannot make changes to the database while
   the query is still executing, but can record them for later use or
   apply them in a different connection.
 
@@ -947,28 +945,28 @@ finally:
   -* sqlite3_update_hook
 */
 static PyObject *
-Connection_setupdatehook(Connection *self, PyObject *callable)
+Connection_setupdatehook(Connection *self, PyObject *args, PyObject *kwds)
 {
   /* sqlite3_update_hook doesn't return an error code */
-
+  PyObject *callable;
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (callable == Py_None)
+  {
+    static char *kwlist[] = {"callable", NULL};
+    Connection_setupdatehook_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setupdatehook_USAGE, kwlist, argcheck_Optional_Callable, &callable))
+      return NULL;
+  }
+  if (!callable)
   {
     PYSQLITE_VOID_CALL(sqlite3_update_hook(self->db, NULL, NULL));
-    callable = NULL;
-    goto finally;
   }
-
-  if (!PyCallable_Check(callable))
-    return PyErr_Format(PyExc_TypeError, "update hook must be callable");
-
-  PYSQLITE_VOID_CALL(sqlite3_update_hook(self->db, updatecb, self));
-
-  Py_INCREF(callable);
-
-finally:
+  else
+  {
+    PYSQLITE_VOID_CALL(sqlite3_update_hook(self->db, updatecb, self));
+    Py_INCREF(callable);
+  }
 
   Py_XDECREF(self->updatehook);
   self->updatehook = callable;
@@ -1004,38 +1002,39 @@ finally:
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: setrollbackhook(callable: Option[Callable]) -> None
+/** .. method:: setrollbackhook(callable: Optional[Callable]) -> None
 
   Sets a callable which is invoked during a rollback.  If *callable*
-  is :const:`None` then any existing rollback hook is removed.
+  is :const:`None` then any existing rollback hook is unregistered.
 
   The *callable* is called with no parameters and the return value is ignored.
 
   -* sqlite3_rollback_hook
 */
 static PyObject *
-Connection_setrollbackhook(Connection *self, PyObject *callable)
+Connection_setrollbackhook(Connection *self, PyObject *args, PyObject *kwds)
 {
   /* sqlite3_rollback_hook doesn't return an error code */
-
+  PyObject *callable;
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (callable == Py_None)
   {
-    PYSQLITE_VOID_CALL(sqlite3_rollback_hook(self->db, NULL, NULL));
-    callable = NULL;
-    goto finally;
+    static char *kwlist[] = {"callable", NULL};
+    Connection_setrollbackhook_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setrollbackhook_USAGE, kwlist, argcheck_Optional_Callable, &callable))
+      return NULL;
   }
 
-  if (!PyCallable_Check(callable))
-    return PyErr_Format(PyExc_TypeError, "rollback hook must be callable");
-
-  PYSQLITE_VOID_CALL(sqlite3_rollback_hook(self->db, rollbackhookcb, self));
-
-  Py_INCREF(callable);
-
-finally:
+  if (!callable)
+  {
+    PYSQLITE_VOID_CALL(sqlite3_rollback_hook(self->db, NULL, NULL));
+  }
+  else
+  {
+    PYSQLITE_VOID_CALL(sqlite3_rollback_hook(self->db, rollbackhookcb, self));
+    Py_INCREF(callable);
+  }
 
   Py_XDECREF(self->rollbackhook);
   self->rollbackhook = callable;
@@ -1069,7 +1068,7 @@ finally:
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: setprofile(callable: Option[Callable]) -> None
+/** .. method:: setprofile(callable: Optional[Callable]) -> None
 
   Sets a callable which is invoked at the end of execution of each
   statement and passed the statement string and how long it took to
@@ -1082,28 +1081,29 @@ finally:
 */
 
 static PyObject *
-Connection_setprofile(Connection *self, PyObject *callable)
+Connection_setprofile(Connection *self, PyObject *args, PyObject *kwds)
 {
   /* sqlite3_profile doesn't return an error code */
-
+  PyObject *callable;
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (callable == Py_None)
+  {
+    static char *kwlist[] = {"callable", NULL};
+    Connection_setprofile_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setprofile_USAGE, kwlist, argcheck_Optional_Callable, &callable))
+      return NULL;
+  }
+  if (!callable)
   {
     PYSQLITE_VOID_CALL(sqlite3_profile(self->db, NULL, NULL));
     callable = NULL;
-    goto finally;
   }
-
-  if (!PyCallable_Check(callable))
-    return PyErr_Format(PyExc_TypeError, "profile function must be callable");
-
-  PYSQLITE_VOID_CALL(sqlite3_profile(self->db, profilecb, self));
-
-  Py_INCREF(callable);
-
-finally:
+  else
+  {
+    PYSQLITE_VOID_CALL(sqlite3_profile(self->db, profilecb, self));
+    Py_INCREF(callable);
+  }
 
   Py_XDECREF(self->profile);
   self->profile = callable;
@@ -1152,12 +1152,13 @@ finally:
   return ok;
 }
 
-/** .. method:: setcommithook(callable: Option[Callable]) -> None
+/** .. method:: setcommithook(callable: Optional[Callable]) -> None
 
   *callable* will be called just before a commit.  It should return
   zero for the commit to go ahead and non-zero for it to be turned
   into a rollback. In the case of an exception in your callable, a
-  non-zero (ie rollback) value is returned.
+  non-zero (ie rollback) value is returned.  Pass None to unregister
+  the existing hook.
 
   .. seealso::
 
@@ -1167,22 +1168,24 @@ finally:
 
 */
 static PyObject *
-Connection_setcommithook(Connection *self, PyObject *callable)
+Connection_setcommithook(Connection *self, PyObject *args, PyObject *kwds)
 {
   /* sqlite3_commit_hook doesn't return an error code */
-
+  PyObject *callable;
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (callable == Py_None)
+  {
+    static char *kwlist[] = {"callable", NULL};
+    Connection_setcommithook_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setcommithook_USAGE, kwlist, argcheck_Optional_Callable, &callable))
+      return NULL;
+  }
+  if (!callable)
   {
     PYSQLITE_VOID_CALL(sqlite3_commit_hook(self->db, NULL, NULL));
-    callable = NULL;
     goto finally;
   }
-
-  if (!PyCallable_Check(callable))
-    return PyErr_Format(PyExc_TypeError, "commit hook must be callable");
 
   PYSQLITE_VOID_CALL(sqlite3_commit_hook(self->db, commithookcb, self));
 
@@ -1239,7 +1242,7 @@ finally:
   return code;
 }
 
-/** .. method:: setwalhook(callable: Option[Callable]) -> None
+/** .. method:: setwalhook(callable: Optional[Callable]) -> None
 
  *callable* will be called just after data is committed in :ref:`wal`
  mode.  It should return :const:`SQLITE_OK` or an error code.  The
@@ -1249,34 +1252,36 @@ finally:
    * The database name (eg "main" or the name of an attached database)
    * The number of pages in the wal log
 
- You can pass in None in order to clear an existing hook.
+ You can pass in None in order to unregister an existing hook.
 
  -* sqlite3_wal_hook
 
 */
 
 static PyObject *
-Connection_setwalhook(Connection *self, PyObject *callable)
+Connection_setwalhook(Connection *self, PyObject *args, PyObject *kwds)
 {
+  PyObject *callable;
+
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (callable == Py_None)
   {
-    PYSQLITE_VOID_CALL(sqlite3_wal_hook(self->db, NULL, NULL));
-    callable = NULL;
-    goto finally;
+    static char *kwlist[] = {"callable", NULL};
+    Connection_setwalhook_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setwalhook_USAGE, kwlist, argcheck_Optional_Callable, &callable))
+      return NULL;
   }
 
-  if (!PyCallable_Check(callable))
-    return PyErr_Format(PyExc_TypeError, "wal hook must be callable");
-
-  PYSQLITE_VOID_CALL(sqlite3_wal_hook(self->db, walhookcb, self));
-
-  Py_INCREF(callable);
-
-finally:
-
+  if (!callable)
+  {
+    PYSQLITE_VOID_CALL(sqlite3_wal_hook(self->db, NULL, NULL));
+  }
+  else
+  {
+    PYSQLITE_VOID_CALL(sqlite3_wal_hook(self->db, walhookcb, self));
+    Py_INCREF(callable);
+  }
   Py_XDECREF(self->walhook);
   self->walhook = callable;
 
@@ -1320,7 +1325,7 @@ finally:
   return ok;
 }
 
-/** .. method:: setprogresshandler(callable: Option[Callable], nsteps: int = 20])
+/** .. method:: setprogresshandler(callable: Optional[Callable], nsteps: int = 20)
 
   Sets a callable which is invoked every *nsteps* SQLite
   inststructions. The callable should return a non-zero value to abort
@@ -1335,7 +1340,7 @@ finally:
 */
 
 static PyObject *
-Connection_setprogresshandler(Connection *self, PyObject *args)
+Connection_setprogresshandler(Connection *self, PyObject *args, PyObject *kwds)
 {
   /* sqlite3_progress_handler doesn't return an error code */
   int nsteps = 20;
@@ -1343,24 +1348,21 @@ Connection_setprogresshandler(Connection *self, PyObject *args)
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
-
-  if (!PyArg_ParseTuple(args, "O|i:setprogresshandler(callable, nsteps=20)", &callable, &nsteps))
-    return NULL;
-
-  if (callable == Py_None)
+  {
+    static char *kwlist[] = {"callable", "nsteps", NULL};
+    Connection_setprogresshandler_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|i:" Connection_setprogresshandler_USAGE, kwlist, argcheck_Optional_Callable, &callable, &nsteps))
+      return NULL;
+  }
+  if (!callable)
   {
     PYSQLITE_VOID_CALL(sqlite3_progress_handler(self->db, 0, NULL, NULL));
-    callable = NULL;
-    goto finally;
   }
-
-  if (!PyCallable_Check(callable))
-    return PyErr_Format(PyExc_TypeError, "progress handler must be callable");
-
-  PYSQLITE_VOID_CALL(sqlite3_progress_handler(self->db, nsteps, progresshandlercb, self));
-  Py_INCREF(callable);
-
-finally:
+  else
+  {
+    PYSQLITE_VOID_CALL(sqlite3_progress_handler(self->db, nsteps, progresshandlercb, self));
+    Py_INCREF(callable);
+  }
 
   Py_XDECREF(self->progresshandler);
   self->progresshandler = callable;
@@ -1419,7 +1421,7 @@ finally:
   return result;
 }
 
-/** .. method:: setauthorizer(callable: Callable) -> None
+/** .. method:: setauthorizer(callable: Optional[Callable]) -> None
 
   While `preparing <https://sqlite.org/c3ref/prepare.html>`_
   statements, SQLite will call any defined authorizer to see if a
@@ -1442,6 +1444,8 @@ finally:
   (:const:`SQLITE_DENY` is returned if there is an error in your
   Python code).
 
+  Passing None unregisters the existing authorizer.
+
   .. seealso::
 
     * :ref:`Example <authorizer-example>`
@@ -1451,14 +1455,22 @@ finally:
 */
 
 static PyObject *
-Connection_setauthorizer(Connection *self, PyObject *callable)
+Connection_setauthorizer(Connection *self, PyObject *args, PyObject *kwds)
 {
   int res;
+  PyObject *callable;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (callable == Py_None)
+  {
+    static char *kwlist[] = {"callable", NULL};
+    Connection_setauthorizer_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setauthorizer_USAGE, kwlist, argcheck_Optional_Callable, &callable))
+      return NULL;
+  }
+
+  if (!callable)
   {
     APSW_FAULT_INJECT(SetAuthorizerNullFail,
                       PYSQLITE_CON_CALL(res = sqlite3_set_authorizer(self->db, NULL, NULL)),
@@ -1468,16 +1480,13 @@ Connection_setauthorizer(Connection *self, PyObject *callable)
       SET_EXC(res, self->db);
       return NULL;
     }
-    callable = NULL;
     goto finally;
   }
-
-  if (!PyCallable_Check(callable))
-    return PyErr_Format(PyExc_TypeError, "authorizer must be callable");
 
   APSW_FAULT_INJECT(SetAuthorizerFail,
                     PYSQLITE_CON_CALL(res = sqlite3_set_authorizer(self->db, authorizercb, self)),
                     res = SQLITE_IOERR);
+
   if (res != SQLITE_OK)
   {
     SET_EXC(res, self->db);
@@ -1537,7 +1546,7 @@ finally:
 #undef AVPCB_CAL
 #undef AVPCB_TB
 
-/** .. method:: autovacuum_pages(callable: Option[Callable]) -> None
+/** .. method:: autovacuum_pages(callable: Optional[Callable]) -> None
 
   Calls `callable` to find out how many pages to autovacuum.  The callback has 4 parameters:
 
@@ -1555,20 +1564,25 @@ finally:
   -* sqlite3_autovacuum_pages
 */
 static PyObject *
-Connection_autovacuum_pages(Connection *self, PyObject *callable)
+Connection_autovacuum_pages(Connection *self, PyObject *args, PyObject *kwds)
 {
   int res;
+  PyObject *callable;
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (callable == Py_None)
+  {
+    static char *kwlist[] = {"callable", NULL};
+    Connection_autovacuum_pages_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_autovacuum_pages_USAGE, kwlist, argcheck_Optional_Callable, &callable))
+      return NULL;
+  }
+  if (!callable)
   {
     PYSQLITE_CON_CALL(res = sqlite3_autovacuum_pages(self->db, NULL, NULL, NULL));
   }
   else
   {
-    if (!PyCallable_Check(callable))
-      return PyErr_Format(PyExc_TypeError, "autovacuum_pages must be callable");
     APSW_FAULT_INJECT(AutovacuumPagesFails,
                       PYSQLITE_CON_CALL(res = sqlite3_autovacuum_pages(self->db, autovacuum_pages_cb, callable, autovacuum_pages_cleanup)),
                       res = SQLITE_NOMEM);
@@ -1609,7 +1623,7 @@ finally:
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: collationneeded(callable: Option[Callable]) -> None
+/** .. method:: collationneeded(callable: Optional[Callable]) -> None
 
   *callable* will be called if a statement requires a `collation
   <http://en.wikipedia.org/wiki/Collation>`_ that hasn't been
@@ -1633,14 +1647,22 @@ finally:
   -* sqlite3_collation_needed
 */
 static PyObject *
-Connection_collationneeded(Connection *self, PyObject *callable)
+Connection_collationneeded(Connection *self, PyObject *args, PyObject *kwds)
 {
   int res;
+  PyObject *callable;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (callable == Py_None)
+  {
+    static char *kwlist[] = {"callable", NULL};
+    Connection_collationneeded_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_collationneeded_USAGE, kwlist, argcheck_Optional_Callable, &callable))
+      return NULL;
+  }
+
+  if (!callable)
   {
     APSW_FAULT_INJECT(CollationNeededNullFail,
                       PYSQLITE_CON_CALL(res = sqlite3_collation_needed(self->db, NULL, NULL)),
@@ -1653,9 +1675,6 @@ Connection_collationneeded(Connection *self, PyObject *callable)
     callable = NULL;
     goto finally;
   }
-
-  if (!PyCallable_Check(callable))
-    return PyErr_Format(PyExc_TypeError, "collationneeded callback must be callable");
 
   APSW_FAULT_INJECT(CollationNeededFail,
                     PYSQLITE_CON_CALL(res = sqlite3_collation_needed(self->db, self, collationneeded_cb)),
@@ -1711,7 +1730,7 @@ finally:
   return result;
 }
 
-/** .. method:: setbusyhandler(callable: Option[Callable]) -> None
+/** .. method:: setbusyhandler(callable: Optional[Callable]) -> None
 
    Sets the busy handler to callable. callable will be called with one
    integer argument which is the number of prior calls to the busy
@@ -1724,6 +1743,8 @@ finally:
    If you previously called :meth:`~Connection.setbusytimeout` then
    calling this overrides that.
 
+   Passing None unregisters the existing handler.
+
    .. seealso::
 
      * :meth:`Connection.setbusytimeout`
@@ -1733,14 +1754,22 @@ finally:
 
 */
 static PyObject *
-Connection_setbusyhandler(Connection *self, PyObject *callable)
+Connection_setbusyhandler(Connection *self, PyObject *args, PyObject *kwds)
 {
   int res = SQLITE_OK;
+  PyObject *callable;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (callable == Py_None)
+  {
+    static char *kwlist[] = {"callable", NULL};
+    Connection_setbusyhandler_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setbusyhandler_USAGE, kwlist, argcheck_Optional_Callable, &callable))
+      return NULL;
+  }
+
+  if (!callable)
   {
     APSW_FAULT_INJECT(SetBusyHandlerNullFail,
                       PYSQLITE_CON_CALL(res = sqlite3_busy_handler(self->db, NULL, NULL)),
@@ -1750,12 +1779,8 @@ Connection_setbusyhandler(Connection *self, PyObject *callable)
       SET_EXC(res, self->db);
       return NULL;
     }
-    callable = NULL;
     goto finally;
   }
-
-  if (!PyCallable_Check(callable))
-    return PyErr_Format(PyExc_TypeError, "busyhandler must be callable");
 
   APSW_FAULT_INJECT(SetBusyHandlerFail,
                     PYSQLITE_CON_CALL(res = sqlite3_busy_handler(self->db, busyhandlercb, self)),
@@ -1795,33 +1820,34 @@ finally:
 
 */
 static PyObject *
-Connection_serialize(Connection *self, PyObject *dbname)
+Connection_serialize(Connection *self, PyObject *args, PyObject *kwds)
 {
-  PyObject *pyres = NULL, *dbnames = NULL;
-  const char *dbnames_cp = NULL;
+  PyObject *pyres = NULL;
+  const char *name;
   sqlite3_int64 size = 0;
   unsigned char *serialization = NULL;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  dbnames = getutf8string(dbname);
-  if (!dbnames)
-    goto end;
-  dbnames_cp = PyBytes_AS_STRING(dbnames);
+  {
+    static char *kwlist[] = {"name", NULL};
+    Connection_serialize_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:" Connection_serialize_USAGE, kwlist, &name))
+      return NULL;
+  }
+
   /* sqlite3_serialize does not use the same error pattern as other
   SQLite APIs.  I originally coded this as though error codes/strings
   were done behind the scenes.  However that turns out not to be the
   case so this code can't do anything about errors.  See commit
   history for prior attempt */
 
-  INUSE_CALL(_PYSQLITE_CALL_V(serialization = sqlite3_serialize(self->db, dbnames_cp, &size, 0)));
+  INUSE_CALL(_PYSQLITE_CALL_V(serialization = sqlite3_serialize(self->db, name, &size, 0)));
 
   if (serialization)
     pyres = converttobytes((char *)serialization, size);
 
-end:
-  Py_XDECREF(dbnames);
   sqlite3_free(serialization);
   if (pyres)
     return pyres;
@@ -1847,41 +1873,27 @@ end:
 
 */
 static PyObject *
-Connection_deserialize(Connection *self, PyObject *args)
+Connection_deserialize(Connection *self, PyObject *args, PyObject *kwds)
 {
-  char *dbname = NULL;
-  PyObject *contents_object = NULL;
-  const void *buffer = NULL;
-  Py_ssize_t buflen;
-  int asrb;
+  const char *name = NULL;
+  Py_buffer contents;
+
   char *newcontents = NULL;
   int res = SQLITE_OK;
-  READBUFFERVARS;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (!PyArg_ParseTuple(args, "esO", STRENCODING, &dbname, &contents_object))
-    return NULL;
-
-  if (PyUnicode_Check(contents_object) || !compat_CheckReadBuffer(contents_object))
   {
-    PyErr_Format(PyExc_TypeError, "Expected bytes for contents");
-    res = SQLITE_ERROR;
-    goto finally;
+    static char *kwlist[] = {"name", "contents", NULL};
+    Connection_deserialize_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sy*:" Connection_deserialize_USAGE, kwlist, &name, &contents))
+      return NULL;
   }
 
-  compat_PyObjectReadBuffer(contents_object);
-  APSW_FAULT_INJECT(DeserializeReadBufferFail, , ENDREADBUFFER; (PyErr_NoMemory(), asrb = -1));
-  if (asrb != 0)
-  {
-    res = SQLITE_ERROR;
-    goto finally;
-  }
-
-  APSW_FAULT_INJECT(DeserializeMallocFail, newcontents = sqlite3_malloc64(buflen), newcontents = NULL);
+  APSW_FAULT_INJECT(DeserializeMallocFail, newcontents = sqlite3_malloc64(contents.len), newcontents = NULL);
   if (newcontents)
-    memcpy(newcontents, buffer, buflen);
+    memcpy(newcontents, contents.buf, contents.len);
   else
   {
     res = SQLITE_NOMEM;
@@ -1889,19 +1901,14 @@ Connection_deserialize(Connection *self, PyObject *args)
   }
 
   if (res == SQLITE_OK)
-    PYSQLITE_CON_CALL(res = sqlite3_deserialize(self->db, dbname, (unsigned char *)newcontents, buflen, buflen, SQLITE_DESERIALIZE_RESIZEABLE | SQLITE_DESERIALIZE_FREEONCLOSE));
+    PYSQLITE_CON_CALL(res = sqlite3_deserialize(self->db, name, (unsigned char *)newcontents, contents.len, contents.len, SQLITE_DESERIALIZE_RESIZEABLE | SQLITE_DESERIALIZE_FREEONCLOSE));
   SET_EXC(res, self->db);
 
-  ENDREADBUFFER;
-
-finally:
-  PyMem_Free(dbname);
   if (res != SQLITE_OK)
     return NULL;
   Py_RETURN_NONE;
 }
 #endif /* SQLITE_OMIT_DESERIALZE */
-
 
 /** .. method:: enableloadextension(enable: bool) -> None
 
@@ -1919,23 +1926,22 @@ finally:
 */
 
 static PyObject *
-Connection_enableloadextension(Connection *self, PyObject *enabled)
+Connection_enableloadextension(Connection *self, PyObject *args, PyObject *kwds)
 {
-  int enabledp, res;
+  int enable, res;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  /* get the boolean value */
-  enabledp = PyObject_IsTrue(enabled);
-  if (enabledp == -1)
-    return NULL;
-  if (PyErr_Occurred())
-    return NULL;
-
+  {
+    static char *kwlist[] = {"enable", NULL};
+    Connection_enableloadextension_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_enableloadextension_USAGE, kwlist, argcheck_bool, &enable))
+      return NULL;
+  }
   /* call function */
   APSW_FAULT_INJECT(EnableLoadExtensionFail,
-                    PYSQLITE_CON_CALL(res = sqlite3_enable_load_extension(self->db, enabledp)),
+                    PYSQLITE_CON_CALL(res = sqlite3_enable_load_extension(self->db, enable)),
                     res = SQLITE_IOERR);
   SET_EXC(res, self->db);
 
@@ -1945,7 +1951,7 @@ Connection_enableloadextension(Connection *self, PyObject *enabled)
   return NULL;
 }
 
-/** .. method:: loadextension(filename: str, entrypoint: Option[str]) -> None
+/** .. method:: loadextension(filename: str, entrypoint: str = None) -> None
 
   Loads *filename* as an `extension <https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_
 
@@ -1965,20 +1971,21 @@ Connection_enableloadextension(Connection *self, PyObject *enabled)
     * :meth:`~Connection.enableloadextension`
 */
 static PyObject *
-Connection_loadextension(Connection *self, PyObject *args)
+Connection_loadextension(Connection *self, PyObject *args, PyObject *kwds)
 {
   int res;
-  char *zfile = NULL, *zproc = NULL, *errmsg = NULL;
+  const char *filename = NULL, *entrypoint = NULL;
+  char *errmsg = NULL; /* sqlite doesn't believe in const */
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
-
-  if (!PyArg_ParseTuple(args, "es|z:loadextension(filename, entrypoint=None)", STRENCODING, &zfile, &zproc))
-    return NULL;
-
-  PYSQLITE_CON_CALL(res = sqlite3_load_extension(self->db, zfile, zproc, &errmsg));
-
-  PyMem_Free(zfile);
+  {
+    static char *kwlist[] = {"filename", "entrypoint", NULL};
+    Connection_loadextension_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|s:" Connection_loadextension_USAGE, kwlist, &filename, &entrypoint))
+      return NULL;
+  }
+  PYSQLITE_CON_CALL(res = sqlite3_load_extension(self->db, filename, entrypoint, &errmsg));
 
   /* load_extension doesn't set the error message on the db so we have to make exception manually */
   if (res != SQLITE_OK)
@@ -1990,7 +1997,6 @@ Connection_loadextension(Connection *self, PyObject *args)
   }
   Py_RETURN_NONE;
 }
-
 
 /* USER DEFINED FUNCTION CODE.*/
 static PyTypeObject FunctionCBInfoType =
@@ -2428,12 +2434,12 @@ apsw_free_func(void *funcinfo)
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: createscalarfunction(name: str, callable: Callable, numargs: int = -1, deterministic: bool = False])
+/** .. method:: createscalarfunction(name: str, callable: Optional[Callable], numargs: int = -1, deterministic: bool = False) -> None
 
   Registers a scalar function.  Scalar functions operate on one set of parameters once.
 
   :param name: The string name of the function.  It should be less than 255 characters
-  :param callable: The function that will be called
+  :param callable: The function that will be called.  Use None to unregister.
   :param numargs: How many arguments the function takes, with -1 meaning any number
   :param deterministic: When True this means the function always
            returns the same result for the same input arguments.
@@ -2463,42 +2469,25 @@ apsw_free_func(void *funcinfo)
 */
 
 static PyObject *
-Connection_createscalarfunction(Connection *self, PyObject *args, PyObject *kwargs)
+Connection_createscalarfunction(Connection *self, PyObject *args, PyObject *kwds)
 {
-  static char *kwlist[] = {"name", "callable", "numargs", "deterministic", NULL};
   int numargs = -1;
   PyObject *callable = NULL;
-  PyObject *odeterministic = NULL;
   int deterministic = 0;
-  char *name = 0;
+  const char *name = 0;
   FunctionCBInfo *cbinfo;
   int res;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "esO|iO!:createscalarfunction(name,callback, numargs=-1, deterministic=False)",
-                                   kwlist, STRENCODING, &name, &callable, &numargs, &PyBool_Type, &odeterministic))
-    return NULL;
-
-  assert(name);
-  assert(callable);
-  if (odeterministic)
   {
-    res = PyObject_IsTrue(odeterministic);
-    if (res < 0)
+    static char *kwlist[] = {"name", "callable", "numargs", "deterministic", NULL};
+    Connection_createscalarfunction_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&|iO&:" Connection_createscalarfunction_USAGE, kwlist, &name, argcheck_Optional_Callable, &callable, &numargs, argcheck_bool, &deterministic))
       return NULL;
-    deterministic = res;
   }
-
-  if (callable != Py_None && !PyCallable_Check(callable))
-  {
-    PyMem_Free(name);
-    PyErr_SetString(PyExc_TypeError, "parameter must be callable");
-    return NULL;
-  }
-
-  if (callable == Py_None)
+  if (!callable)
   {
     cbinfo = 0;
   }
@@ -2507,7 +2496,7 @@ Connection_createscalarfunction(Connection *self, PyObject *args, PyObject *kwar
     cbinfo = allocfunccbinfo();
     if (!cbinfo)
       goto finally;
-    cbinfo->name = name;
+    cbinfo->name = apsw_strdup(name);
     cbinfo->scalarfunc = callable;
     Py_INCREF(callable);
   }
@@ -2530,22 +2519,19 @@ Connection_createscalarfunction(Connection *self, PyObject *args, PyObject *kwar
     goto finally;
   }
 
-  if (callable == Py_None)
-    PyMem_Free(name);
-
 finally:
   if (PyErr_Occurred())
     return NULL;
   Py_RETURN_NONE;
 }
 
-/** .. method:: createaggregatefunction(name: str, factory: Callable, numargs: int = -1)
+/** .. method:: createaggregatefunction(name: str, factory: Optional[Callable], numargs: int = -1)
 
   Registers an aggregate function.  Aggregate functions operate on all
   the relevant rows such as counting how many there are.
 
   :param name: The string name of the function.  It should be less than 255 characters
-  :param factory: The function that will be called
+  :param factory: The function that will be called.  Use None to delete the function.
   :param numargs: How many arguments the function takes, with -1 meaning any number
 
   When a query starts, the *factory* will be called and must return a tuple of 3 items:
@@ -2580,31 +2566,25 @@ finally:
 */
 
 static PyObject *
-Connection_createaggregatefunction(Connection *self, PyObject *args)
+Connection_createaggregatefunction(Connection *self, PyObject *args, PyObject *kwds)
 {
   int numargs = -1;
-  PyObject *callable;
-  char *name = 0;
+  PyObject *factory;
+  const char *name = 0;
   FunctionCBInfo *cbinfo;
   int res;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (!PyArg_ParseTuple(args, "esO|i:createaggregatefunction(name, factorycallback, numargs=-1)", STRENCODING, &name, &callable, &numargs))
-    return NULL;
-
-  assert(name);
-  assert(callable);
-
-  if (callable != Py_None && !PyCallable_Check(callable))
   {
-    PyMem_Free(name);
-    PyErr_SetString(PyExc_TypeError, "parameter must be callable");
-    return NULL;
+    static char *kwlist[] = {"name", "factory", "numargs", NULL};
+    Connection_createaggregatefunction_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&|i:" Connection_createaggregatefunction_USAGE, kwlist, &name, argcheck_Optional_Callable, &factory, &numargs))
+      return NULL;
   }
 
-  if (callable == Py_None)
+  if (!factory)
     cbinfo = 0;
   else
   {
@@ -2612,9 +2592,9 @@ Connection_createaggregatefunction(Connection *self, PyObject *args)
     if (!cbinfo)
       goto finally;
 
-    cbinfo->name = name;
-    cbinfo->aggregatefactory = callable;
-    Py_INCREF(callable);
+    cbinfo->name = apsw_strdup(name);
+    cbinfo->aggregatefactory = factory;
+    Py_INCREF(factory);
   }
 
   PYSQLITE_CON_CALL(
@@ -2635,9 +2615,6 @@ Connection_createaggregatefunction(Connection *self, PyObject *args)
     SET_EXC(res, self->db);
     goto finally;
   }
-
-  if (callable == Py_None)
-    PyMem_Free(name);
 
 finally:
   if (PyErr_Occurred())
@@ -2708,7 +2685,7 @@ collation_destroy(void *context)
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: createcollation(name: str, callback: Callable) -> None
+/** .. method:: createcollation(name: str, callback: Optional[Callable]) -> None
 
   You can control how SQLite sorts (termed `collation
   <http://en.wikipedia.org/wiki/Collation>`_) when giving the
@@ -2728,6 +2705,8 @@ collation_destroy(void *context)
          if one > two:
              return 1
 
+  Passing None as the callback will unregister the collation.
+
   .. seealso::
 
     * :ref:`Example <collation-example>`
@@ -2736,44 +2715,38 @@ collation_destroy(void *context)
 */
 
 static PyObject *
-Connection_createcollation(Connection *self, PyObject *args)
+Connection_createcollation(Connection *self, PyObject *args, PyObject *kwds)
 {
-  PyObject *callable = NULL;
-  char *name = 0;
+  PyObject *callback = NULL;
+  const char *name = 0;
   int res;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (!PyArg_ParseTuple(args, "esO:createcollation(name,callback)", STRENCODING, &name, &callable))
-    return NULL;
-
-  assert(name);
-  assert(callable);
-
-  if (callable != Py_None && !PyCallable_Check(callable))
   {
-    PyMem_Free(name);
-    PyErr_SetString(PyExc_TypeError, "parameter must be callable");
-    return NULL;
+    static char *kwlist[] = {"name", "callback", NULL};
+    Connection_createcollation_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&:" Connection_createcollation_USAGE, kwlist, &name, argcheck_Optional_Callable, &callback))
+      return NULL;
   }
 
   PYSQLITE_CON_CALL(
       res = sqlite3_create_collation_v2(self->db,
                                         name,
                                         SQLITE_UTF8,
-                                        (callable != Py_None) ? callable : NULL,
-                                        (callable != Py_None) ? collation_cb : NULL,
-                                        (callable != Py_None) ? collation_destroy : NULL));
-  PyMem_Free(name);
+                                        callback ? callback : NULL,
+                                        callback ? collation_cb : NULL,
+                                        callback ? collation_destroy : NULL));
+
   if (res != SQLITE_OK)
   {
     SET_EXC(res, self->db);
     return NULL;
   }
 
-  if (callable != Py_None)
-    Py_INCREF(callable);
+  if (callback)
+    Py_INCREF(callback);
 
   Py_RETURN_NONE;
 }
@@ -2829,38 +2802,26 @@ Connection_createcollation(Connection *self, PyObject *args)
 */
 
 static PyObject *
-Connection_filecontrol(Connection *self, PyObject *args)
+Connection_filecontrol(Connection *self, PyObject *args, PyObject *kwds)
 {
-  PyObject *pyptr;
-  void *ptr = NULL;
+  long long pointer;
   int res = SQLITE_ERROR, op;
-  char *dbname = NULL;
+  const char *dbname = NULL;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (!PyArg_ParseTuple(args, "esiO", STRENCODING, &dbname, &op, &pyptr))
-    return NULL;
-
-  if (PyIntLong_Check(pyptr))
-    ptr = PyLong_AsVoidPtr(pyptr);
-  else
-    PyErr_Format(PyExc_TypeError, "Argument is not a number (pointer)");
-
-  if (PyErr_Occurred())
   {
-    AddTraceBackHere(__FILE__, __LINE__, "Connection.filecontrol", "{s: O}", "args", args);
-    goto finally;
+    static char *kwlist[] = {"dbname", "op", "pointer", NULL};
+    Connection_filecontrol_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "siL:" Connection_filecontrol_USAGE, kwlist, &dbname, &op, &pointer))
+      return NULL;
   }
 
-  PYSQLITE_CON_CALL(res = sqlite3_file_control(self->db, dbname, op, ptr));
+  PYSQLITE_CON_CALL(res = sqlite3_file_control(self->db, dbname, op, (void *)pointer));
 
   if (res != SQLITE_OK && res != SQLITE_NOTFOUND)
     SET_EXC(res, self->db);
-
-finally:
-  if (dbname)
-    PyMem_Free(dbname);
 
   if (PyErr_Occurred())
     return NULL;
@@ -2903,19 +2864,21 @@ Connection_sqlite3pointer(Connection *self)
    -* sqlite3_wal_autocheckpoint
 */
 static PyObject *
-Connection_wal_autocheckpoint(Connection *self, PyObject *arg)
+Connection_wal_autocheckpoint(Connection *self, PyObject *args, PyObject *kwds)
 {
-  long v;
-  int res;
+  int n, res;
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (!PyIntLong_Check(arg))
-    return PyErr_Format(PyExc_TypeError, "Parameter must be a number");
-  v = PyIntLong_AsLong(arg);
+  {
+    static char *kwlist[] = {"n", NULL};
+    Connection_wal_autocheckpoint_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" Connection_wal_autocheckpoint_USAGE, kwlist, &n))
+      return NULL;
+  }
 
   APSW_FAULT_INJECT(WalAutocheckpointFails,
-                    PYSQLITE_CON_CALL(res = sqlite3_wal_autocheckpoint(self->db, (int)v)),
+                    PYSQLITE_CON_CALL(res = sqlite3_wal_autocheckpoint(self->db, n)),
                     res = SQLITE_IOERR);
 
   SET_EXC(res, self->db);
@@ -2926,7 +2889,7 @@ Connection_wal_autocheckpoint(Connection *self, PyObject *arg)
   return NULL;
 }
 
-/** .. method:: wal_checkpoint(dbname: Option[str] = None, mode: int = apsw.SQLITE_CHECKPOINT_PASSIVE) -> Tuple[int, int]
+/** .. method:: wal_checkpoint(dbname: Optional[str] = None, mode: int = apsw.SQLITE_CHECKPOINT_PASSIVE) -> Tuple[int, int]
 
     Does a WAL checkpoint.  Has no effect if the database(s) are not in WAL mode.
 
@@ -2942,27 +2905,28 @@ Connection_wal_autocheckpoint(Connection *self, PyObject *arg)
   -* sqlite3_wal_checkpoint_v2
 */
 static PyObject *
-Connection_wal_checkpoint(Connection *self, PyObject *args, PyObject *kwargs)
+Connection_wal_checkpoint(Connection *self, PyObject *args, PyObject *kwds)
 {
-  static char *kwlist[] = {"dbname", "mode", NULL};
   int res;
-  char *dbname = NULL;
+  const char *dbname = NULL;
   int mode = SQLITE_CHECKPOINT_PASSIVE;
   int nLog = 0, nCkpt = 0;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|esi:wal_checkpoint(dbname=None)",
-                                   kwlist, STRENCODING, &dbname, &mode))
-    return NULL;
-
+  {
+    static char *kwlist[] = {"dbname", "mode", NULL};
+    Connection_wal_checkpoint_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|zi:" Connection_wal_checkpoint_USAGE, kwlist, &dbname, &mode))
+      return NULL;
+  }
   APSW_FAULT_INJECT(WalCheckpointFails,
                     PYSQLITE_CON_CALL(res = sqlite3_wal_checkpoint_v2(self->db, dbname, mode, &nLog, &nCkpt)),
                     res = SQLITE_IOERR);
 
   SET_EXC(res, self->db);
-  PyMem_Free(dbname);
+
   /* done */
   if (res == SQLITE_OK)
     return Py_BuildValue("ii", nLog, nCkpt);
@@ -2972,7 +2936,7 @@ Connection_wal_checkpoint(Connection *self, PyObject *args, PyObject *kwargs)
 static struct sqlite3_module apsw_vtable_module;
 static void apswvtabFree(void *context);
 
-/** .. method:: createmodule(name: str, datasource)
+/** .. method:: createmodule(name: str, datasource: Any) -> None
 
     Registers a virtual table.  See :ref:`virtualtables` for details.
 
@@ -2983,9 +2947,9 @@ static void apswvtabFree(void *context);
     -* sqlite3_create_module_v2
 */
 static PyObject *
-Connection_createmodule(Connection *self, PyObject *args)
+Connection_createmodule(Connection *self, PyObject *args, PyObject *kwds)
 {
-  char *name = NULL;
+  const char *name = NULL;
   PyObject *datasource = NULL;
   vtableinfo *vti;
   int res;
@@ -2993,9 +2957,12 @@ Connection_createmodule(Connection *self, PyObject *args)
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (!PyArg_ParseTuple(args, "esO:createmodule(name, datasource)", STRENCODING, &name, &datasource))
-    return NULL;
-
+  {
+    static char *kwlist[] = {"name", "datasource", NULL};
+    Connection_createmodule_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO:" Connection_createmodule_USAGE, kwlist, &name, &datasource))
+      return NULL;
+  }
   Py_INCREF(datasource);
   vti = PyMem_Malloc(sizeof(vtableinfo));
   vti->connection = self;
@@ -3006,7 +2973,6 @@ Connection_createmodule(Connection *self, PyObject *args)
   APSW_FAULT_INJECT(CreateModuleFail,
                     PYSQLITE_CON_CALL((res = sqlite3_create_module_v2(self->db, name, &apsw_vtable_module, vti, apswvtabFree), vti = NULL)),
                     res = SQLITE_IOERR);
-  PyMem_Free(name);
   SET_EXC(res, self->db);
 
   if (res != SQLITE_OK)
@@ -3019,7 +2985,7 @@ Connection_createmodule(Connection *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
-/** .. method:: overloadfunction(name: str, nargs: int)
+/** .. method:: overloadfunction(name: str, nargs: int) -> None
 
   Registers a placeholder function so that a virtual table can provide an implementation via
   :meth:`VTTable.FindFunction`.
@@ -3032,21 +2998,22 @@ Connection_createmodule(Connection *self, PyObject *args)
   -* sqlite3_overload_function
 */
 static PyObject *
-Connection_overloadfunction(Connection *self, PyObject *args)
+Connection_overloadfunction(Connection *self, PyObject *args, PyObject *kwds)
 {
-  char *name;
+  const char *name;
   int nargs, res;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
-
-  if (!PyArg_ParseTuple(args, "esi:overloadfunction(name, nargs)", STRENCODING, &name, &nargs))
-    return NULL;
-
+  {
+    static char *kwlist[] = {"name", "nargs", NULL};
+    Connection_overloadfunction_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "si:" Connection_overloadfunction_USAGE, kwlist, &name, &nargs))
+      return NULL;
+  }
   APSW_FAULT_INJECT(OverloadFails,
                     PYSQLITE_CON_CALL(res = sqlite3_overload_function(self->db, name, nargs)),
                     res = SQLITE_NOMEM);
-  PyMem_Free(name);
 
   SET_EXC(res, self->db);
 
@@ -3056,7 +3023,7 @@ Connection_overloadfunction(Connection *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
-/** .. method:: setexectrace(callable: Option[Callable]) -> None
+/** .. method:: setexectrace(callable: Optional[Callable]) -> None
 
   *callable* is called with the cursor, statement and bindings for
   each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
@@ -3075,26 +3042,28 @@ Connection_overloadfunction(Connection *self, PyObject *args)
 */
 
 static PyObject *
-Connection_setexectrace(Connection *self, PyObject *func)
+Connection_setexectrace(Connection *self, PyObject *args, PyObject *kwds)
 {
+  PyObject *callable;
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (func != Py_None && !PyCallable_Check(func))
   {
-    PyErr_SetString(PyExc_TypeError, "parameter must be callable");
-    return NULL;
+    static char *kwlist[] = {"callable", NULL};
+    Connection_setexectrace_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setexectrace_USAGE, kwlist, argcheck_Optional_Callable, &callable))
+      return NULL;
   }
 
-  if (func != Py_None)
-    Py_INCREF(func);
+  if (callable)
+    Py_INCREF(callable);
   Py_XDECREF(self->exectrace);
-  self->exectrace = (func == Py_None) ? 0 : func;
+  self->exectrace = callable;
 
   Py_RETURN_NONE;
 }
 
-/** .. method:: setrowtrace(callable: Option[Callable]) -> None
+/** .. method:: setrowtrace(callable: Optional[Callable]) -> None
 
   *callable* is called with the cursor and row being returned for
   :class:`cursors <Cursor>` associated with this Connection, unless
@@ -3102,7 +3071,7 @@ Connection_setexectrace(Connection *self, PyObject *func)
   is returned or cause the row to be skipped altogether.
 
   If *callable* is :const:`None` then any existing row tracer is
-  removed.
+  unregistered.
 
   .. seealso::
 
@@ -3112,21 +3081,24 @@ Connection_setexectrace(Connection *self, PyObject *func)
 */
 
 static PyObject *
-Connection_setrowtrace(Connection *self, PyObject *func)
+Connection_setrowtrace(Connection *self, PyObject *args, PyObject *kwds)
 {
+  PyObject *callable;
+
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (func != Py_None && !PyCallable_Check(func))
   {
-    PyErr_SetString(PyExc_TypeError, "parameter must be callable");
-    return NULL;
+    static char *kwlist[] = {"callable", NULL};
+    Connection_setrowtrace_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setrowtrace_USAGE, kwlist, argcheck_Optional_Callable, &callable))
+      return NULL;
   }
 
-  if (func != Py_None)
-    Py_INCREF(func);
+  if (callable)
+    Py_INCREF(callable);
   Py_XDECREF(self->rowtrace);
-  self->rowtrace = (func == Py_None) ? 0 : func;
+  self->rowtrace = callable;
 
   Py_RETURN_NONE;
 }
@@ -3433,14 +3405,18 @@ Connection_config(Connection *self, PyObject *args)
 
 */
 static PyObject *
-Connection_status(Connection *self, PyObject *args)
+Connection_status(Connection *self, PyObject *args, PyObject *kwds)
 {
   int res, op, current = 0, highwater = 0, reset = 0;
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (!PyArg_ParseTuple(args, "i|i:status(op, reset=False)", &op, &reset))
-    return NULL;
+  {
+    static char *kwlist[] = {"op", "reset", NULL};
+    Connection_status_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|O&:" Connection_status_USAGE, kwlist, &op, argcheck_bool, &reset))
+      return NULL;
+  }
 
   PYSQLITE_CON_CALL(res = sqlite3_db_status(self->db, op, &current, &highwater, reset));
   SET_EXC(res, NULL);
@@ -3462,18 +3438,19 @@ Connection_status(Connection *self, PyObject *args)
 
 */
 static PyObject *
-Connection_readonly(Connection *self, PyObject *name)
+Connection_readonly(Connection *self, PyObject *args, PyObject *kwds)
 {
   int res = -1;
-  PyObject *utf8name = NULL;
+  const char *name;
+
   CHECK_CLOSED(self, NULL);
-
-  utf8name = getutf8string(name);
-  if (!utf8name)
-    return NULL;
-
-  res = sqlite3_db_readonly(self->db, PyBytes_AS_STRING(utf8name));
-  Py_DECREF(utf8name);
+  {
+    static char *kwlist[] = {"name", NULL};
+    Connection_readonly_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:" Connection_readonly_USAGE, kwlist, &name))
+      return NULL;
+  }
+  res = sqlite3_db_readonly(self->db, name);
 
   if (res == 1)
     Py_RETURN_TRUE;
@@ -3491,23 +3468,25 @@ Connection_readonly(Connection *self, PyObject *name)
   -* sqlite3_db_filename
 */
 static PyObject *
-Connection_db_filename(Connection *self, PyObject *name)
+Connection_db_filename(Connection *self, PyObject *args, PyObject *kwds)
 {
   const char *res;
-  PyObject *utf8name = NULL;
+  const char *name;
   CHECK_CLOSED(self, NULL);
 
-  utf8name = getutf8string(name);
-  if (!utf8name)
-    return NULL;
+  {
+    static char *kwlist[] = {"name", NULL};
+    Connection_db_filename_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:" Connection_db_filename_USAGE, kwlist, &name))
+      return NULL;
+  }
 
-  res = sqlite3_db_filename(self->db, PyBytes_AS_STRING(utf8name));
-  Py_DECREF(utf8name);
+  res = sqlite3_db_filename(self->db, name);
 
   return convertutf8string(res);
 }
 
-/** .. method:: txn_state(schema: str) -> int
+/** .. method:: txn_state(schema: str = None) -> int
 
   Returns the current transaction state of the database, or a specific schema
   if provided.  ValueError is raised if schema is not None or a valid schema name.
@@ -3517,22 +3496,23 @@ Connection_db_filename(Connection *self, PyObject *name)
 */
 
 static PyObject *
-Connection_txn_state(Connection *self, PyObject *args)
+Connection_txn_state(Connection *self, PyObject *args, PyObject *kwds)
 {
-  char *zschema = NULL;
+  const char *schema = NULL;
   int res;
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (!PyArg_ParseTuple(args, "|es:tx_state(schema=None)", STRENCODING, &zschema))
-    return NULL;
-
-  PYSQLITE_CON_CALL(res = sqlite3_txn_state(self->db, zschema));
-
-  PyMem_Free(zschema);
+  {
+    static char *kwlist[] = {"schema", NULL};
+    Connection_txn_state_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|s:" Connection_txn_state_USAGE, kwlist, &schema))
+      return NULL;
+  }
+  PYSQLITE_CON_CALL(res = sqlite3_txn_state(self->db, schema));
 
   if (res >= 0)
-    return Py_BuildValue("i", res);
+    return PyLong_FromLong(res);
 
   return PyErr_Format(PyExc_ValueError, "unknown schema");
 }
@@ -3596,17 +3576,17 @@ static PyMemberDef Connection_members[] = {
 static PyMethodDef Connection_methods[] = {
     {"cursor", (PyCFunction)Connection_cursor, METH_NOARGS,
      Connection_cursor_DOC},
-    {"close", (PyCFunction)Connection_close, METH_VARARGS,
+    {"close", (PyCFunction)Connection_close, METH_VARARGS | METH_KEYWORDS,
      Connection_close_DOC},
-    {"setbusytimeout", (PyCFunction)Connection_setbusytimeout, METH_VARARGS,
+    {"setbusytimeout", (PyCFunction)Connection_setbusytimeout, METH_VARARGS | METH_KEYWORDS,
      Connection_setbusytimeout_DOC},
     {"interrupt", (PyCFunction)Connection_interrupt, METH_NOARGS,
      Connection_interrupt_DOC},
     {"createscalarfunction", (PyCFunction)Connection_createscalarfunction, METH_VARARGS | METH_KEYWORDS,
      Connection_createscalarfunction_DOC},
-    {"createaggregatefunction", (PyCFunction)Connection_createaggregatefunction, METH_VARARGS,
+    {"createaggregatefunction", (PyCFunction)Connection_createaggregatefunction, METH_VARARGS | METH_KEYWORDS,
      Connection_createaggregatefunction_DOC},
-    {"setbusyhandler", (PyCFunction)Connection_setbusyhandler, METH_O,
+    {"setbusyhandler", (PyCFunction)Connection_setbusyhandler, METH_VARARGS | METH_KEYWORDS,
      Connection_setbusyhandler_DOC},
     {"changes", (PyCFunction)Connection_changes, METH_NOARGS,
      Connection_changes_DOC},
@@ -3614,51 +3594,51 @@ static PyMethodDef Connection_methods[] = {
      Connection_totalchanges_DOC},
     {"getautocommit", (PyCFunction)Connection_getautocommit, METH_NOARGS,
      Connection_getautocommit_DOC},
-    {"createcollation", (PyCFunction)Connection_createcollation, METH_VARARGS,
+    {"createcollation", (PyCFunction)Connection_createcollation, METH_VARARGS | METH_KEYWORDS,
      Connection_createcollation_DOC},
     {"last_insert_rowid", (PyCFunction)Connection_last_insert_rowid, METH_NOARGS,
      Connection_last_insert_rowid_DOC},
-    {"set_last_insert_rowid", (PyCFunction)Connection_set_last_insert_rowid, METH_O,
+    {"set_last_insert_rowid", (PyCFunction)Connection_set_last_insert_rowid, METH_VARARGS | METH_KEYWORDS,
      Connection_set_last_insert_rowid_DOC},
-    {"collationneeded", (PyCFunction)Connection_collationneeded, METH_O,
+    {"collationneeded", (PyCFunction)Connection_collationneeded, METH_VARARGS | METH_KEYWORDS,
      Connection_collationneeded_DOC},
-    {"setauthorizer", (PyCFunction)Connection_setauthorizer, METH_O,
+    {"setauthorizer", (PyCFunction)Connection_setauthorizer, METH_VARARGS | METH_KEYWORDS,
      Connection_setauthorizer_DOC},
-    {"setupdatehook", (PyCFunction)Connection_setupdatehook, METH_O,
+    {"setupdatehook", (PyCFunction)Connection_setupdatehook, METH_VARARGS | METH_KEYWORDS,
      Connection_setupdatehook_DOC},
-    {"setrollbackhook", (PyCFunction)Connection_setrollbackhook, METH_O,
+    {"setrollbackhook", (PyCFunction)Connection_setrollbackhook, METH_VARARGS | METH_KEYWORDS,
      Connection_setrollbackhook_DOC},
-    {"blobopen", (PyCFunction)Connection_blobopen, METH_VARARGS,
+    {"blobopen", (PyCFunction)Connection_blobopen, METH_VARARGS | METH_KEYWORDS,
      Connection_blobopen_DOC},
-    {"setprogresshandler", (PyCFunction)Connection_setprogresshandler, METH_VARARGS,
+    {"setprogresshandler", (PyCFunction)Connection_setprogresshandler, METH_VARARGS | METH_KEYWORDS,
      Connection_setprogresshandler_DOC},
-    {"setcommithook", (PyCFunction)Connection_setcommithook, METH_O,
+    {"setcommithook", (PyCFunction)Connection_setcommithook, METH_VARARGS | METH_KEYWORDS,
      Connection_setcommithook_DOC},
-    {"setwalhook", (PyCFunction)Connection_setwalhook, METH_O,
+    {"setwalhook", (PyCFunction)Connection_setwalhook, METH_VARARGS | METH_KEYWORDS,
      Connection_setwalhook_DOC},
-    {"limit", (PyCFunction)Connection_limit, METH_VARARGS,
+    {"limit", (PyCFunction)Connection_limit, METH_VARARGS | METH_KEYWORDS,
      Connection_limit_DOC},
-    {"setprofile", (PyCFunction)Connection_setprofile, METH_O,
+    {"setprofile", (PyCFunction)Connection_setprofile, METH_VARARGS | METH_KEYWORDS,
      Connection_setprofile_DOC},
 #if !defined(SQLITE_OMIT_LOAD_EXTENSION)
-    {"enableloadextension", (PyCFunction)Connection_enableloadextension, METH_O,
+    {"enableloadextension", (PyCFunction)Connection_enableloadextension, METH_VARARGS | METH_KEYWORDS,
      Connection_enableloadextension_DOC},
-    {"loadextension", (PyCFunction)Connection_loadextension, METH_VARARGS,
+    {"loadextension", (PyCFunction)Connection_loadextension, METH_VARARGS | METH_KEYWORDS,
      Connection_loadextension_DOC},
 #endif
-    {"createmodule", (PyCFunction)Connection_createmodule, METH_VARARGS,
+    {"createmodule", (PyCFunction)Connection_createmodule, METH_VARARGS | METH_KEYWORDS,
      Connection_createmodule_DOC},
-    {"overloadfunction", (PyCFunction)Connection_overloadfunction, METH_VARARGS,
+    {"overloadfunction", (PyCFunction)Connection_overloadfunction, METH_VARARGS | METH_KEYWORDS,
      Connection_overloadfunction_DOC},
-    {"backup", (PyCFunction)Connection_backup, METH_VARARGS,
+    {"backup", (PyCFunction)Connection_backup, METH_VARARGS | METH_KEYWORDS,
      Connection_backup_DOC},
-    {"filecontrol", (PyCFunction)Connection_filecontrol, METH_VARARGS,
+    {"filecontrol", (PyCFunction)Connection_filecontrol, METH_VARARGS | METH_KEYWORDS,
      Connection_filecontrol_DOC},
     {"sqlite3pointer", (PyCFunction)Connection_sqlite3pointer, METH_NOARGS,
      Connection_sqlite3pointer_DOC},
-    {"setexectrace", (PyCFunction)Connection_setexectrace, METH_O,
+    {"setexectrace", (PyCFunction)Connection_setexectrace, METH_VARARGS | METH_KEYWORDS,
      Connection_setexectrace_DOC},
-    {"setrowtrace", (PyCFunction)Connection_setrowtrace, METH_O,
+    {"setrowtrace", (PyCFunction)Connection_setrowtrace, METH_VARARGS | METH_KEYWORDS,
      Connection_setrowtrace_DOC},
     {"getexectrace", (PyCFunction)Connection_getexectrace, METH_NOARGS,
      Connection_getexectrace_DOC},
@@ -3668,25 +3648,25 @@ static PyMethodDef Connection_methods[] = {
      Connection_enter_DOC},
     {"__exit__", (PyCFunction)Connection_exit, METH_VARARGS,
      Connection_exit_DOC},
-    {"wal_autocheckpoint", (PyCFunction)Connection_wal_autocheckpoint, METH_O,
+    {"wal_autocheckpoint", (PyCFunction)Connection_wal_autocheckpoint, METH_VARARGS | METH_KEYWORDS,
      Connection_wal_autocheckpoint_DOC},
     {"wal_checkpoint", (PyCFunction)Connection_wal_checkpoint, METH_VARARGS | METH_KEYWORDS,
      Connection_wal_checkpoint_DOC},
     {"config", (PyCFunction)Connection_config, METH_VARARGS,
      Connection_config_DOC},
-    {"status", (PyCFunction)Connection_status, METH_VARARGS,
+    {"status", (PyCFunction)Connection_status, METH_VARARGS | METH_KEYWORDS,
      Connection_status_DOC},
-    {"readonly", (PyCFunction)Connection_readonly, METH_O,
+    {"readonly", (PyCFunction)Connection_readonly, METH_VARARGS | METH_KEYWORDS,
      Connection_readonly_DOC},
-    {"db_filename", (PyCFunction)Connection_db_filename, METH_O,
+    {"db_filename", (PyCFunction)Connection_db_filename, METH_VARARGS | METH_KEYWORDS,
      Connection_db_filename_DOC},
-    {"txn_state", (PyCFunction)Connection_txn_state, METH_VARARGS,
+    {"txn_state", (PyCFunction)Connection_txn_state, METH_VARARGS | METH_KEYWORDS,
      Connection_txn_state_DOC},
-    {"serialize", (PyCFunction)Connection_serialize, METH_O,
+    {"serialize", (PyCFunction)Connection_serialize, METH_VARARGS | METH_KEYWORDS,
      Connection_serialize_DOC},
-    {"deserialize", (PyCFunction)Connection_deserialize, METH_VARARGS,
+    {"deserialize", (PyCFunction)Connection_deserialize, METH_VARARGS | METH_KEYWORDS,
      Connection_deserialize_DOC},
-    {"autovacuum_pages", (PyCFunction)Connection_autovacuum_pages, METH_O,
+    {"autovacuum_pages", (PyCFunction)Connection_autovacuum_pages, METH_VARARGS | METH_KEYWORDS,
      Connection_autovacuum_pages_DOC},
     {0, 0, 0, 0} /* Sentinel */
 };
