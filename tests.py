@@ -1040,7 +1040,7 @@ class APSW(unittest.TestCase):
         traced = [False, False]
         c.setexectrace(None)
         c.execute("select 3")
-        self.assertEqual(traced, [False, False])
+        self.assertEqual(traced, [True, False])
         traced = [False, False]
         self.db.cursor().execute("select 3")
         self.assertEqual(traced, [True, False])
@@ -1139,7 +1139,7 @@ class APSW(unittest.TestCase):
         c.setrowtrace(None)
         for row in c.execute("select 3"):
             pass
-        self.assertEqual(traced, [False, False])
+        self.assertEqual(traced, [True, False])
         self.assertEqual(self.db.getrowtrace(), contrace)
 
     def testScalarFunctions(self):
