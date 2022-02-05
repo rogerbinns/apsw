@@ -403,7 +403,7 @@ def do_argparse(item):
     static char *kwlist[] = {{{ ", ".join(f'"{ a }"' for a in argnames) }, NULL}};
     { item['symbol'] }_CHECK;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "{ fstr }:" { item['symbol'] }_USAGE, kwlist, { ", ".join(parse_args) }))
-      return NULL;
+      return { "NULL" if not item['symbol'].endswith("_init") else -1 };
   }}"""
 
     usage = f"{ item['name'] }{ item['signature_original'] }".replace('"', '\\"')
