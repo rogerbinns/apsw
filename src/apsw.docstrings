@@ -341,7 +341,7 @@
 
 #define Backup_step_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(npages), int)); \
-  assert(npages == -1); \
+  assert(npages == (-1)); \
 } while(0)
 
 
@@ -422,7 +422,7 @@
 
 #define Blob_read_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(length), int)); \
-  assert(length == -1); \
+  assert(length == (-1)); \
 } while(0)
 
 
@@ -484,7 +484,7 @@
 #define Blob_seek_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(offset), int)); \
   assert(__builtin_types_compatible_p(typeof(whence), int)); \
-  assert(whence == 0); \
+  assert(whence == (0)); \
 } while(0)
 
 
@@ -714,7 +714,7 @@
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
   assert(__builtin_types_compatible_p(typeof(factory), PyObject *)); \
   assert(__builtin_types_compatible_p(typeof(numargs), int)); \
-  assert(numargs == -1); \
+  assert(numargs == (-1)); \
 } while(0)
 
 
@@ -808,7 +808,7 @@
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
   assert(__builtin_types_compatible_p(typeof(numargs), int)); \
-  assert(numargs == -1); \
+  assert(numargs == (-1)); \
   assert(__builtin_types_compatible_p(typeof(deterministic), int)); \
   assert(deterministic == 0); \
 } while(0)
@@ -984,7 +984,7 @@
 "\n" \
 "  * :ref:`tracing`\n" 
 
-#define  Connection_init_DOC "__init__($self,filename,flags,vfs,statementcachesize,/)\n--\n\nConnection.__init__(filename: str, flags: int =SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: str = None, statementcachesize: int = 100)\n\n" \
+#define  Connection_init_DOC "__init__($self,filename,flags,vfs,statementcachesize,/)\n--\n\nConnection.__init__(filename: str, flags: int = apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE, vfs: Optional[str] = None, statementcachesize: int = 100)\n\n" \
 "This object wraps a `sqlite3 pointer\n" \
 "<https://sqlite.org/c3ref/sqlite3.html>`_.\n" \
 "\n" \
@@ -1006,6 +1006,19 @@
 "  * :ref:`vfs`\n" \
 "\n" \
 "Calls: `sqlite3_open_v2 <https://sqlite.org/c3ref/open.html>`__\n" 
+
+#define Connection_init_USAGE "Connection.__init__(filename: str, flags: int = apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE, vfs: Optional[str] = None, statementcachesize: int = 100)"
+
+#define Connection_init_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(filename), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(flags), int)); \
+  assert(flags == (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)); \
+  assert(__builtin_types_compatible_p(typeof(vfs), const char *)); \
+  assert(vfs == 0); \
+  assert(__builtin_types_compatible_p(typeof(statementcachesize), int)); \
+  assert(statementcachesize == (100)); \
+} while(0)
+
 
 #define  Connection_interrupt_DOC "interrupt($self,/)\n--\n\nConnection.interrupt() -> None\n\n" \
 "Causes any pending operations on the database to abort at the\n" \
@@ -1041,7 +1054,7 @@
 #define Connection_limit_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(id), int)); \
   assert(__builtin_types_compatible_p(typeof(newval), int)); \
-  assert(newval == -1); \
+  assert(newval == (-1)); \
 } while(0)
 
 
@@ -1313,7 +1326,7 @@
 #define Connection_setprogresshandler_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
   assert(__builtin_types_compatible_p(typeof(nsteps), int)); \
-  assert(nsteps == 20); \
+  assert(nsteps == (20)); \
 } while(0)
 
 
@@ -1498,7 +1511,7 @@
   assert(__builtin_types_compatible_p(typeof(dbname), const char *)); \
   assert(dbname == 0); \
   assert(__builtin_types_compatible_p(typeof(mode), int)); \
-  assert(mode == SQLITE_CHECKPOINT_PASSIVE); \
+  assert(mode == (SQLITE_CHECKPOINT_PASSIVE)); \
 } while(0)
 
 
