@@ -349,7 +349,7 @@ APSWBlob_read(APSWBlob *self, PyObject *args, PyObject *kwds)
   return buffy;
 }
 
-/** .. method:: readinto(buffer, offset: int = 0, length: int = -1]) -> None
+/** .. method:: readinto(buffer, offset: int = 0, length: int = -1) -> None
 
   Reads from the blob into a buffer you have supplied.  This method is
   useful if you already have a buffer like object that data is being
@@ -438,7 +438,7 @@ errorexit:
 #undef ERREXIT
 }
 
-/** .. method:: seek(offset: int, whence: int = 0]) -> None
+/** .. method:: seek(offset: int, whence: int = 0) -> None
 
   Changes current position to *offset* biased by *whence*.
 
@@ -597,7 +597,7 @@ APSWBlob_close(APSWBlob *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"force", NULL};
     Blob_close_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|b:" Blob_close_USAGE, kwlist, &force))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&:" Blob_close_USAGE, kwlist, argcheck_bool, &force))
       return NULL;
   }
   setexc = APSWBlob_close_internal(self, !!force);

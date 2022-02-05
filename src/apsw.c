@@ -129,6 +129,9 @@ static int APSW_Should_Fault(const char *);
 /* The module object */
 static PyObject *apswmodule;
 
+/* Argument parsing helpers */
+#include "argparse.c"
+
 /* Augment tracebacks */
 #include "traceback.c"
 
@@ -223,7 +226,7 @@ enablesharedcache(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"enable", NULL};
     Apsw_enablesharedcache_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "b:" Apsw_enablesharedcache_USAGE, kwlist, &enable))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Apsw_enablesharedcache_USAGE, kwlist, argcheck_bool, &enable))
       return NULL;
   }
   APSW_FAULT_INJECT(EnableSharedCacheFail, res = sqlite3_enable_shared_cache(enable), res = SQLITE_NOMEM);
@@ -471,7 +474,7 @@ memoryhighwater(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"reset", NULL};
     Apsw_memoryhighwater_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|b:" Apsw_memoryhighwater_USAGE, kwlist, &reset))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&:" Apsw_memoryhighwater_USAGE, kwlist, argcheck_bool, &reset))
       return NULL;
   }
   return PyLong_FromLongLong(sqlite3_memory_highwater(reset));
@@ -575,7 +578,7 @@ status(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"op", "reset", NULL};
     Apsw_status_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|b:" Apsw_status_USAGE, kwlist, &op, &reset))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|O&:" Apsw_status_USAGE, kwlist, &op, argcheck_bool, &reset))
       return NULL;
   }
 
