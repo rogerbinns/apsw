@@ -306,14 +306,17 @@ def do_argparse(item):
     for param in item["signature"]:
         if param["name"] == "return":
             continue
-        args = ["&" + param["name"]]
+        pname = param["name"]
+        if pname in {"default"}:
+            pname += "_"
+        args = ["&" + pname]
         default_check = None
         if param["type"] == "str":
             type = "const char *"
             kind = "s"
             if param["default"]:
                 if param["default"] == "None":
-                    default_check = f"{ param['name'] } == 0"
+                    default_check = f"{ pname } == 0"
                 else:
                     breakpoint()
                     pass
@@ -322,7 +325,7 @@ def do_argparse(item):
             kind = "z"
             if param["default"]:
                 if param["default"] == "None":
-                    default_check = f"{ param['name'] } == 0"
+                    default_check = f"{ pname } == 0"
                 else:
                     breakpoint()
                     pass
@@ -333,7 +336,7 @@ def do_argparse(item):
             if param["default"]:
                 assert param["default"] in {"True", "False"}
                 dval = int(param["default"] == "True")
-                default_check = f"{ param['name'] } == { dval }"
+                default_check = f"{ pname } == { dval }"
         elif param["type"] == "int":
             type = "int"
             kind = "i"
@@ -342,12 +345,12 @@ def do_argparse(item):
                     val = int(param['default'])
                 except ValueError:
                     val = param['default'].replace("apsw.", "")
-                default_check = f"{ param['name'] } == ({ val })"
+                default_check = f"{ pname } == ({ val })"
         elif param["type"] == "int64":
             type = "long long"
             kind = "L"
             if param["default"]:
-                default_check = f"{ param['name'] } == { int(param['default']) }L"
+                default_check = f"{ pname } == { int(param['default']) }L"
         elif param["type"] in {"PyObject", "Any"}:
             type = "PyObject *"
             kind = "O"
@@ -384,8 +387,8 @@ def do_argparse(item):
         else:
             assert False, f"Don't know how to handle type for { item ['name'] } param { param }"
 
-        argnames.append(param["name"])
-        res.append(f"  assert(__builtin_types_compatible_p(typeof({ param['name'] }), { type })); \\")
+        argnames.append(pname)
+        res.append(f"  assert(__builtin_types_compatible_p(typeof({ pname }), { type })); \\")
         if default_check:
             res.append(f"  assert({ default_check }); \\")
 
