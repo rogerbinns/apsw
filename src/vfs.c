@@ -2921,21 +2921,23 @@ apswurifilename_filename(APSWURIFilename *self)
   return convertutf8string(self->filename);
 }
 
-/** .. method:: uri_parameter(name: str) -> Option[str]
+/** .. method:: uri_parameter(name: str) -> Optional[str]
 
     Returns the value of parameter `name` or None.
 
     -* sqlite3_uri_parameter
 */
 static PyObject *
-apswurifilename_uri_parameter(APSWURIFilename *self, PyObject *param)
+apswurifilename_uri_parameter(APSWURIFilename *self, PyObject *args, PyObject *kwds)
 {
-  const char *res;
-  PyObject *asutf8 = getutf8string(param);
-  if (!asutf8)
-    return NULL;
-  res = sqlite3_uri_parameter(self->filename, PyBytes_AS_STRING(asutf8));
-  Py_DECREF(asutf8);
+  const char *res, *name;
+  {
+    static char *kwlist[] = {"name", NULL};
+    URIFilename_uri_parameter_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:" URIFilename_uri_parameter_USAGE, kwlist, &name))
+      return NULL;
+  }
+  res = sqlite3_uri_parameter(self->filename, name);
   return convertutf8string(res);
 }
 
@@ -2947,16 +2949,18 @@ apswurifilename_uri_parameter(APSWURIFilename *self, PyObject *param)
     -* sqlite3_uri_int64
 */
 static PyObject *
-apswurifilename_uri_int(APSWURIFilename *self, PyObject *args)
+apswurifilename_uri_int(APSWURIFilename *self, PyObject *args, PyObject *kwds)
 {
-  char *param = NULL;
-  long long res = 0;
+  const char *name = NULL;
+  long long res = 0, default_;
 
-  if (!PyArg_ParseTuple(args, "esL", STRENCODING, &param, &res))
-    return NULL;
-
-  res = sqlite3_uri_int64(self->filename, param, res);
-  PyMem_Free(param);
+  {
+    static char *kwlist[] = {"name", "default_", NULL};
+    URIFilename_uri_int_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sL:" URIFilename_uri_int_USAGE, kwlist, &name, &default_))
+      return NULL;
+  }
+  res = sqlite3_uri_int64(self->filename, name, default_);
 
   return PyLong_FromLongLong(res);
 }
@@ -2969,16 +2973,19 @@ apswurifilename_uri_int(APSWURIFilename *self, PyObject *args)
     -* sqlite3_uri_boolean
  */
 static PyObject *
-apswurifilename_uri_boolean(APSWURIFilename *self, PyObject *args)
+apswurifilename_uri_boolean(APSWURIFilename *self, PyObject *args, PyObject *kwds)
 {
-  char *param = NULL;
-  int res = 0;
+  const char *name = NULL;
+  int default_ = 0, res;
 
-  if (!PyArg_ParseTuple(args, "esi", STRENCODING, &param, &res))
-    return NULL;
+  {
+    static char *kwlist[] = {"name", "default_", NULL};
+    URIFilename_uri_boolean_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&:" URIFilename_uri_boolean_USAGE, kwlist, &name, argcheck_bool, &default_))
+      return NULL;
+  }
 
-  res = sqlite3_uri_boolean(self->filename, param, res);
-  PyMem_Free(param);
+  res = sqlite3_uri_boolean(self->filename, name, default_);
 
   if (res)
     Py_RETURN_TRUE;
@@ -2987,9 +2994,9 @@ apswurifilename_uri_boolean(APSWURIFilename *self, PyObject *args)
 
 static PyMethodDef APSWURIFilenameMethods[] = {
     {"filename", (PyCFunction)apswurifilename_filename, METH_NOARGS, URIFilename_filename_DOC},
-    {"uri_parameter", (PyCFunction)apswurifilename_uri_parameter, METH_O, URIFilename_uri_parameter_DOC},
-    {"uri_int", (PyCFunction)apswurifilename_uri_int, METH_VARARGS, URIFilename_uri_int_DOC},
-    {"uri_boolean", (PyCFunction)apswurifilename_uri_boolean, METH_VARARGS, URIFilename_uri_boolean_DOC},
+    {"uri_parameter", (PyCFunction)apswurifilename_uri_parameter, METH_VARARGS | METH_KEYWORDS, URIFilename_uri_parameter_DOC},
+    {"uri_int", (PyCFunction)apswurifilename_uri_int, METH_VARARGS | METH_KEYWORDS, URIFilename_uri_int_DOC},
+    {"uri_boolean", (PyCFunction)apswurifilename_uri_boolean, METH_VARARGS | METH_KEYWORDS, URIFilename_uri_boolean_DOC},
     /* Sentinel */
     {0, 0, 0, 0}};
 

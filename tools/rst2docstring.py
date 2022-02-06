@@ -284,7 +284,9 @@ type_overrides = {
     "Connection.set_last_insert_rowid": {
         "rowid": "int64"
     },
-
+    "URIFilename.uri_int": {
+        "default": "int64",
+    }
 }
 
 

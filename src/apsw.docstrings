@@ -1778,16 +1778,39 @@
 "\n" \
 "Calls: `sqlite3_uri_boolean <https://sqlite.org/c3ref/uri_boolean.html>`__\n" 
 
+#define URIFilename_uri_boolean_USAGE "URIFilename.uri_boolean(name: str, default: bool) -> bool"
+
+#define URIFilename_uri_boolean_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(name), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(default_), int)); \
+} while(0)
+
+
 #define  URIFilename_uri_int_DOC "uri_int($self,name,default,/)\n--\n\nURIFilename.uri_int(name: str, default: int) -> int\n\n" \
 "Returns the integer value for parameter `name` or `default` if not\n" \
 "present.\n" \
 "\n" \
 "Calls: `sqlite3_uri_int64 <https://sqlite.org/c3ref/uri_boolean.html>`__\n" 
 
-#define  URIFilename_uri_parameter_DOC "uri_parameter($self,name,/)\n--\n\nURIFilename.uri_parameter(name: str) -> Option[str]\n\n" \
+#define URIFilename_uri_int_USAGE "URIFilename.uri_int(name: str, default: int) -> int"
+
+#define URIFilename_uri_int_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(name), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(default_), long long)); \
+} while(0)
+
+
+#define  URIFilename_uri_parameter_DOC "uri_parameter($self,name,/)\n--\n\nURIFilename.uri_parameter(name: str) -> Optional[str]\n\n" \
 "Returns the value of parameter `name` or None.\n" \
 "\n" \
 "Calls: `sqlite3_uri_parameter <https://sqlite.org/c3ref/uri_boolean.html>`__\n" 
+
+#define URIFilename_uri_parameter_USAGE "URIFilename.uri_parameter(name: str) -> Optional[str]"
+
+#define URIFilename_uri_parameter_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(name), const char *)); \
+} while(0)
+
 
 #define  VFSFile_excepthook_DOC "excepthook($self,etype,evalue,etraceback,/)\n--\n\nVFSFile.excepthook(etype, evalue, etraceback)\n\n" \
 "Called when there has been an exception in a :class:`VFSFile`\n" \
