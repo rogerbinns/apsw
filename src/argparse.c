@@ -19,9 +19,7 @@ argcheck_Optional_Callable(PyObject *object, void *result)
 
       method("False")  # considered to be method(True)
 
-   This converter rejects accidents (ie types intended for adjecent
-   parameters), but does still let through stuff like BadIsTrue from
-   the test suite.
+   This converter only accepts bool / int (or subclasses)
 */
 static int
 argcheck_bool(PyObject *object, void *result)
@@ -29,16 +27,12 @@ argcheck_bool(PyObject *object, void *result)
     int *res = (int *)result;
     int val;
 
-    if (PyBool_Check(object) || PyLong_Check(object))
-        goto goahead;
+    if (!PyBool_Check(object) && !PyLong_Check(object))
+    {
+        PyErr_Format(PyExc_TypeError, "Function argument expected a bool");
+        return 0;
+    }
 
-    if (!PyUnicode_Check(object) && !PyDict_Check(object) && !PyBytes_Check(object) && !PyFloat_Check(object) && !PyList_Check(object) && !PyTuple_Check(object) && !PyMethod_Check(object) && !PyModule_Check(object))
-        goto goahead;
-
-    PyErr_Format(PyExc_TypeError, "Function argument expected a bool");
-    return 0;
-
-goahead:
     val = PyObject_IsTrue(object);
     switch (val)
     {
