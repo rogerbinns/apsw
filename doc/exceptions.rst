@@ -158,7 +158,9 @@ Internal Errors
 
 .. exception:: MisuseError
 
-  :const:`SQLITE_MISUSE`.  SQLite library used incorrectly.
+  :const:`SQLITE_MISUSE`.  SQLite library used incorrectly - typically similar to ValueError in Python.  Examples include not
+  having enough flags when opening a connection (eg not including a READ or WRITE flag), or out of spec such as registering
+  a function with more than 127 parameters.
 
 .. exception:: RangeError
 
