@@ -44,3 +44,56 @@ argcheck_bool(PyObject *object, void *result)
         return 0;
     }
 }
+
+/* Doing this here avoids cleanup in the calling function */
+static int
+argcheck_List_int_int(PyObject *object, void *result)
+{
+    int i;
+    PyObject **output = (PyObject **)result;
+
+    if (!PyList_Check(object))
+    {
+        PyErr_Format(PyExc_TypeError, "Function argument expected a list");
+        return 0;
+    }
+
+    if (PySequence_Length(object) != 2)
+    {
+        PyErr_Format(PyExc_ValueError, "Function argument expected a two item list");
+        return 0;
+    }
+
+    for (i = 0; i < 2; i++)
+    {
+        int check;
+        PyObject *list_item = PySequence_GetItem(object, i);
+        if (!list_item)
+            return 0;
+        check = PyLong_Check(list_item);
+        Py_DECREF(list_item);
+        if (!check)
+        {
+            PyErr_Format(PyExc_TypeError, "Function argument list[int,int] expected int for item %d", i);
+            return 0;
+        }
+    }
+    *output = object;
+    return 1;
+}
+
+
+static PyTypeObject APSWURIFilenameType;
+static int
+argcheck_Optional_str_URIFilename(PyObject *object, void *result)
+{
+    PyObject **output = (PyObject **)result;
+
+    if (object == Py_None || PyUnicode_Check(object) || PyObject_IsInstance(object, (PyObject *)&APSWURIFilenameType))
+    {
+        *output = object;
+        return 1;
+    }
+    PyErr_Format(PyExc_TypeError, "Function argument expect None | str | apsw.URIFilename");
+    return 0;
+}

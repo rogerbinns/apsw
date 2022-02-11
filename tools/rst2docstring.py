@@ -286,7 +286,11 @@ type_overrides = {
     },
     "URIFilename.uri_int": {
         "default": "int64",
+    },
+    "VFSFile.__init__": {
+        "filename": "PyObject",
     }
+
 }
 
 
@@ -302,7 +306,9 @@ def do_argparse(item):
 
     fstr = ""
     optional = False
-    argnames = []
+    # names of python level keywords
+    kwlist = []
+    # what is passed at C level
     parse_args = []
 
     for param in item["signature"]:
@@ -372,6 +378,13 @@ def do_argparse(item):
             if param["default"]:
                 breakpoint()
                 pass
+        elif param["type"] == "Optional[str,URIFilename]":
+            type = "PyObject *"
+            kind = "O&"
+            args = ["argcheck_Optional_str_URIFilename"] + args
+            if param["default"]:
+                breakpoint()
+                pass
         elif param["type"] == "Callable":
             type = "PyObject *"
             kind = "O&"
@@ -386,10 +399,17 @@ def do_argparse(item):
             if param["default"]:
                 breakpoint()
                 pass
+        elif param["type"] == "List[int,int]":
+            type = "PyObject *"
+            kind = "O&"
+            args = ["argcheck_List_int_int"] + args
+            if param["default"]:
+                breakpoint()
+                pass
         else:
             assert False, f"Don't know how to handle type for { item ['name'] } param { param }"
 
-        argnames.append(pname)
+        kwlist.append(pname)
         res.append(f"  assert(__builtin_types_compatible_p(typeof({ pname }), { type })); \\")
         if default_check:
             res.append(f"  assert({ default_check }); \\")
@@ -405,7 +425,7 @@ def do_argparse(item):
 
     code = f"""\
   {{
-    static char *kwlist[] = {{{ ", ".join(f'"{ a }"' for a in argnames) }, NULL}};
+    static char *kwlist[] = {{{ ", ".join(f'"{ a }"' for a in kwlist) }, NULL}};
     { item['symbol'] }_CHECK;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "{ fstr }:" { item['symbol'] }_USAGE, kwlist, { ", ".join(parse_args) }))
       return { "NULL" if not item['symbol'].endswith("_init") else -1 };
@@ -419,6 +439,8 @@ def do_argparse(item):
     res = "\n".join(res) + "\n"
     return res
 
+def is_sequence(s):
+    return isinstance(s, (list, tuple))
 
 if __name__ == '__main__':
     items = []
@@ -446,7 +468,7 @@ if __name__ == '__main__':
             if any(param["name"] != "return"
                    for param in item["signature"]) and not any(param["name"].startswith("*")
                                                                for param in item["signature"]):
-                if item["name"] not in {"apsw.format_sql_value"}:
+                if item["name"] not in {"apsw.format_sql_value", "VFSFile.excepthook"}:
                     missing.append(item["name"])
 
     outval = out.getvalue()

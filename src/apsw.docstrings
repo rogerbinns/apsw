@@ -1823,7 +1823,7 @@
 ":param etraceback: The exception traceback.  Note this\n" \
 "  includes all frames all the way up to the thread being started.\n" 
 
-#define  VFSFile_init_DOC "__init__($self,vfs,name,flags,/)\n--\n\nVFSFile.__init__(vfs: str, name: str, flags: Tuple[int, int])\n\n" \
+#define  VFSFile_init_DOC "__init__($self,vfs,filename,flags,/)\n--\n\nVFSFile.__init__(vfs: str, filename: Union[str,URIFilename], flags: List[int,int])\n\n" \
 "Wraps access to a file.  You only need to derive from this class\n" \
 "if you want the file object returned from :meth:`VFS.xOpen` to\n" \
 "inherit from an existing VFS implementation.\n" \
@@ -1836,7 +1836,7 @@
 ":param vfs: The vfs you want to inherit behaviour from.  You can\n" \
 "   use an empty string ``\"\"`` to inherit from the default vfs.\n" \
 ":param name: The name of the file being opened.  May be an instance of :class:`URIFilename`.\n" \
-":param flags: A two list ``[inflags, outflags]`` as detailed in :meth:`VFS.xOpen`.\n" \
+":param flags: A two item list ``[inflags, outflags]`` as detailed in :meth:`VFS.xOpen`.\n" \
 "\n" \
 ":raises ValueError: If the named VFS is not registered.\n" \
 "\n" \
@@ -1849,6 +1849,15 @@
 ".. seealso::\n" \
 "\n" \
 "  :meth:`VFS.xOpen`\n" 
+
+#define VFSFile_init_USAGE "VFSFile.__init__(vfs: str, filename: Union[str,URIFilename], flags: List[int,int])"
+
+#define VFSFile_init_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(vfs), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(filename), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(flags), PyObject *)); \
+} while(0)
+
 
 #define  VFSFile_xCheckReservedLock_DOC "xCheckReservedLock($self,/)\n--\n\nVFSFile.xCheckReservedLock() -> bool\n\n" \
 "Returns True if any database connection (in this or another process)\n" \
@@ -1949,16 +1958,11 @@
 "URIFilename class\n" \
 "=================\n" 
 
-#define  VFS_excepthook_DOC "excepthook($self,etype,evalue,etraceback,/)\n--\n\nVFS.excepthook(etype, evalue, etraceback)\n\n" \
+#define  VFS_excepthook_DOC "excepthook($self,*args,/)\n--\n\nVFS.excepthook(*args) -> Any\n\n" \
 "Called when there has been an exception in a :class:`VFS` routine.\n" \
-"The default implementation calls ``sys.excepthook`` and if that\n" \
+"The default implementation passes args to ``sys.excepthook`` and if that\n" \
 "fails then ``PyErr_Display``.  The three arguments correspond to\n" \
-"what ``sys.exc_info()`` would return.\n" \
-"\n" \
-":param etype: The exception type\n" \
-":param evalue: The exception  value\n" \
-":param etraceback: The exception traceback.  Note this\n" \
-"  includes all frames all the way up to the thread being started.\n" 
+"what ``sys.exc_info()`` would return.\n" 
 
 #define  VFS_init_DOC "__init__($self,name,base,makedefault,maxpathname,/)\n--\n\nVFS.__init__(name, base: str = None, makedefault: bool = False, maxpathname: int = 1024])\n\n" \
 "Provides operating system access.  You can get an overview in the\n" \
@@ -2092,7 +2096,7 @@
 "  should build up the list of call names once rather than\n" \
 "  repeatedly doing it.\n" 
 
-#define  VFS_xOpen_DOC "xOpen($self,name,flags,/)\n--\n\nVFS.xOpen(name: Option[str,URIFilename], flags: int) -> VFSFile\n\n" \
+#define  VFS_xOpen_DOC "xOpen($self,name,flags,/)\n--\n\nVFS.xOpen(name: Optional[str,URIFilename], flags: List[int,int]) -> VFSFile\n\n" \
 "This method should return a new file object based on name.  You\n" \
 "can return a :class:`VFSFile` from a completely different VFS.\n" \
 "\n" \
@@ -2109,6 +2113,14 @@
 "  describes how you actually did open the file.  For example if you\n" \
 "  opened it read only then :const:`SQLITE_OPEN_READONLY` should be\n" \
 "  set.\n" 
+
+#define VFS_xOpen_USAGE "VFS.xOpen(name: Optional[str,URIFilename], flags: List[int,int]) -> VFSFile"
+
+#define VFS_xOpen_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(name), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(flags), PyObject *)); \
+} while(0)
+
 
 #define  VFS_xRandomness_DOC "xRandomness($self,numbytes,/)\n--\n\nVFS.xRandomness(numbytes: int) -> bytes\n\n" \
 "This method is called once when SQLite needs to seed the random\n" \

@@ -4958,16 +4958,12 @@ class APSW(unittest.TestCase):
                 super(TestFile, self).__init__("", name, (6, "six"))
 
             def init10(self, name, flags):
-                class badlist(list):  # only allows setting an element once
+                class badlist(list):  # doesn't allows setting an element
                     def __init__(self, *args):
                         super(badlist, self).__init__(args)
-                        self.frozen = False
 
                     def __setitem__(self, key, value):
-                        if self.frozen:
-                            raise ValueError("container is frozen")
-                        super(badlist, self).__setitem__(key, value)
-                        self.frozen = True
+                        raise ValueError("container is frozen")
 
                 super(TestFile, self).__init__("", name, badlist(flags[0], flags[1]))
 
@@ -5201,7 +5197,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, vfs.xOpen, 3)
         self.assertRaises(TypeError, vfs.xOpen, 3, 3)
         self.assertRaises(TypeError, vfs.xOpen, None, (1, 2))
-        self.assertRaises(TypeError, vfs.xOpen, None, [1, 2, 3])
+        self.assertRaises(ValueError, vfs.xOpen, None, [1, 2, 3])
         self.assertRaises(TypeError, vfs.xOpen, None, ["1", 2])
         self.assertRaises(TypeError, vfs.xOpen, None, [1, "2"])
         self.assertRaises(OverflowError, vfs.xOpen, None, [0xffffffffeeeeeeee0, 2])
@@ -5430,7 +5426,7 @@ class APSW(unittest.TestCase):
         TestFile.__init__ = TestFile.init3
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
         TestFile.__init__ = TestFile.init4
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ValueError, testdb)
         TestFile.__init__ = TestFile.init5
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, OverflowError, testdb)
         TestFile.__init__ = TestFile.init6
@@ -8224,16 +8220,6 @@ shell.write(shell.stdout, "hello world\\n")
             gc.collect()
 
         self.assertRaisesUnraisable(apsw.IOError, foo)
-
-        ## vfspyopen_fullpathnamemallocfailed
-        del FaultVFS.xOpen  # remove overriding fault xOpen method so we get default implementation
-        apsw.faultdict["vfspyopen_fullpathnamemallocfailed"] = True
-        self.assertRaises(MemoryError, vfs.xOpen, "doesn't matter",
-                          apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_READWRITE)
-        # and again in file open
-        apsw.faultdict["vfspyopen_fullpathnamemallocfailed_ininit"] = True
-        self.assertRaises(MemoryError, apsw.VFSFile, "", "/doesn't matter",
-                          [apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_READWRITE, 0])
 
         ## vfsnamesfails
         apsw.faultdict["vfsnamesfails"] = True

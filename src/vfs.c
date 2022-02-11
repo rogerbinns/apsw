@@ -225,8 +225,14 @@ typedef struct /* inherits */
 typedef struct
 {
   PyObject_HEAD struct sqlite3_file *base;
-  char *filename;   /* obtained from fullpathname - has to be around for lifetime of base */
-  int filenamefree; /* filename should be freed on close */
+  /* filename as to be around for lifetime of base.  This will
+     either be utf8 text (a string was passed in) or point
+     to the filename in APSWURIFilename.  The former needs
+     to be freed, the latter not.
+
+     The format is a utf8 bytes, NULL, uri parameters, NULL */
+  const char *filename;
+  int free_filename; /* should filename be freed in destructor */
   /* If you add any new members then also initialize them in
      apswvfspy_xOpen() as that function does not call init because it
      has values already */
@@ -240,7 +246,7 @@ static const struct sqlite3_io_methods apsw_io_methods_v2;
 
 typedef struct
 {
-  PyObject_HEAD char *filename;
+  PyObject_HEAD const char *filename;
 } APSWURIFilename;
 
 /** .. class:: VFS
@@ -251,17 +257,12 @@ typedef struct
 
 */
 
-/** .. method:: excepthook(etype, evalue, etraceback)
+/** .. method:: excepthook(*args) -> Any
 
     Called when there has been an exception in a :class:`VFS` routine.
-    The default implementation calls ``sys.excepthook`` and if that
+    The default implementation passes args to ``sys.excepthook`` and if that
     fails then ``PyErr_Display``.  The three arguments correspond to
     what ``sys.exc_info()`` would return.
-
-    :param etype: The exception type
-    :param evalue: The exception  value
-    :param etraceback: The exception traceback.  Note this
-      includes all frames all the way up to the thread being started.
 */
 
 /* This function only needs to call sys.excepthook.  If things mess up
@@ -569,7 +570,7 @@ finally:
   return result;
 }
 
-/** .. method:: xOpen(name: Option[str,URIFilename], flags: int) -> VFSFile
+/** .. method:: xOpen(name: Optional[str,URIFilename], flags: List[int,int]) -> VFSFile
 
     This method should return a new file object based on name.  You
     can return a :class:`VFSFile` from a completely different VFS.
@@ -591,56 +592,45 @@ finally:
 
 */
 static PyObject *
-apswvfspy_xOpen(APSWVFS *self, PyObject *args)
+apswvfspy_xOpen(APSWVFS *self, PyObject *args, PyObject *kwds)
 {
   sqlite3_file *file = NULL;
   int flagsout = 0;
   int flagsin = 0;
   int res;
-  PyObject *result = NULL, *flags;
-  PyObject *pyname = NULL, *utf8name = NULL;
+
+  PyObject *name = NULL, *flags = NULL, *result = NULL;
   APSWVFSFile *apswfile = NULL;
-  char *filename = NULL;
+  const char *filename = NULL;
+  int free_filename = 1;
 
   CHECKVFSPY;
   VFSNOTIMPLEMENTED(xOpen, 1);
 
-  if (!PyArg_ParseTuple(args, "OO", &pyname, &flags))
-    return NULL;
+  {
+    static char *kwlist[] = {"name", "flags", NULL};
+    VFS_xOpen_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&:" VFS_xOpen_USAGE, kwlist, argcheck_Optional_str_URIFilename, &name, argcheck_List_int_int, &flags))
+      return NULL;
+  }
 
-  if (pyname == Py_None)
+  if (name == Py_None)
   {
     filename = NULL;
   }
-  else if (pyname->ob_type == &APSWURIFilenameType)
+  else if (name->ob_type == &APSWURIFilenameType)
   {
-    filename = ((APSWURIFilename *)pyname)->filename;
+    filename = ((APSWURIFilename *)name)->filename;
+    free_filename = 0;
   }
   else
   {
-    size_t len;
-    utf8name = getutf8string(pyname);
-    if (!utf8name)
-      goto finally;
-    len = strlen(PyBytes_AS_STRING(utf8name));
-    APSW_FAULT_INJECT(vfspyopen_fullpathnamemallocfailed,
-                      filename = PyMem_Malloc(len + 3),
-                      filename = (char *)PyErr_NoMemory());
-    if (!filename)
-      goto finally;
-    PyOS_snprintf(filename, len + 1, "%s", PyBytes_AS_STRING(utf8name));
-    /* ensure extra null padding for URI params */
-    filename[len] = filename[len + 1] = filename[len + 2] = 0;
-  }
-
-  if (!PyList_Check(flags) || PyList_GET_SIZE(flags) != 2 || !PyIntLong_Check(PyList_GET_ITEM(flags, 0)) || !PyIntLong_Check(PyList_GET_ITEM(flags, 1)))
-  {
-    PyErr_Format(PyExc_TypeError, "Flags argument needs to be a list of two integers");
-    goto finally;
+    filename = apsw_strdup(PyUnicode_AsUTF8(name));
   }
 
   flagsout = PyIntLong_AsLong(PyList_GET_ITEM(flags, 1));
   flagsin = PyIntLong_AsLong(PyList_GET_ITEM(flags, 0));
+
   /* check for overflow */
   if (flagsout != PyIntLong_AsLong(PyList_GET_ITEM(flags, 1)) || flagsin != PyIntLong_AsLong(PyList_GET_ITEM(flags, 0)))
     PyErr_Format(PyExc_OverflowError, "Flags arguments need to fit in 32 bits");
@@ -669,17 +659,16 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args)
     goto finally;
   apswfile->base = file;
   apswfile->filename = filename;
-  apswfile->filenamefree = !!utf8name;
+  apswfile->free_filename = free_filename;
   filename = NULL;
   file = NULL;
-  result = (PyObject *)(void *)apswfile;
+  result = (PyObject *)apswfile;
 
 finally:
   if (file)
     PyMem_Free(file);
-  if (utf8name && filename)
-    PyMem_Free(filename);
-  Py_XDECREF(utf8name);
+  if (free_filename)
+    PyMem_Free((void*)filename);
   return result;
 }
 
@@ -1723,7 +1712,7 @@ error:
 static PyMethodDef APSWVFS_methods[] = {
     {"xDelete", (PyCFunction)apswvfspy_xDelete, METH_VARARGS, VFS_xDelete_DOC},
     {"xFullPathname", (PyCFunction)apswvfspy_xFullPathname, METH_O, VFS_xFullPathname_DOC},
-    {"xOpen", (PyCFunction)apswvfspy_xOpen, METH_VARARGS, VFS_xOpen_DOC},
+    {"xOpen", (PyCFunction)apswvfspy_xOpen, METH_VARARGS | METH_KEYWORDS, VFS_xOpen_DOC},
     {"xAccess", (PyCFunction)apswvfspy_xAccess, METH_VARARGS, VFS_xAccess_DOC},
     {"xDlOpen", (PyCFunction)apswvfspy_xDlOpen, METH_VARARGS, VFS_xDlOpen_DOC},
     {"xDlSym", (PyCFunction)apswvfspy_xDlSym, METH_VARARGS, VFS_xDlSym_DOC},
@@ -1831,8 +1820,8 @@ APSWVFSFile_dealloc(APSWVFSFile *self)
     PyObject *x = apswvfsfilepy_xClose(self);
     Py_XDECREF(x);
   }
-  if (self->filenamefree)
-    PyMem_Free(self->filename);
+  if (self->free_filename)
+    PyMem_Free((void *)(self->filename));
 
   if (PyErr_Occurred())
   {
@@ -1844,7 +1833,6 @@ APSWVFSFile_dealloc(APSWVFSFile *self)
   PyErr_Restore(a, b, c);
 }
 
-/*ARGSUSED*/
 static PyObject *
 APSWVFSFile_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSED(kwds))
 {
@@ -1854,17 +1842,18 @@ APSWVFSFile_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUS
   {
     self->base = NULL;
     self->filename = NULL;
+    self->free_filename = 1;
   }
 
   return (PyObject *)self;
 }
 
-/** .. method:: __init__(vfs: str, name: str, flags: Tuple[int, int])
+/** .. method:: __init__(vfs: str, filename: Union[str,URIFilename], flags: List[int,int])
 
     :param vfs: The vfs you want to inherit behaviour from.  You can
        use an empty string ``""`` to inherit from the default vfs.
     :param name: The name of the file being opened.  May be an instance of :class:`URIFilename`.
-    :param flags: A two list ``[inflags, outflags]`` as detailed in :meth:`VFS.xOpen`.
+    :param flags: A two item list ``[inflags, outflags]`` as detailed in :meth:`VFS.xOpen`.
 
     :raises ValueError: If the named VFS is not registered.
 
@@ -1881,76 +1870,44 @@ APSWVFSFile_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUS
 static int
 APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
 {
-  static char *kwlist[] = {"vfs", "name", "flags", NULL};
-  char *vfs = NULL;
-  PyObject *flags = NULL, *pyname = NULL, *utf8name = NULL;
+  const char *vfs = NULL;
+  PyObject *flags = NULL, *pyflagsin = NULL, *pyflagsout = NULL, *filename = NULL;
   int xopenresult;
-  int flagsout = 0;
-  long flagsin;
   int res = -1; /* error */
+  long flagsin;
+  int flagsout = 0;
 
-  PyObject *itemzero = NULL, *itemone = NULL, *zero = NULL, *pyflagsout = NULL;
   sqlite3_vfs *vfstouse = NULL;
   sqlite3_file *file = NULL;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "esOO:init(vfs, name, flags)", kwlist, STRENCODING, &vfs, &pyname, &flags))
-    return -1;
-
-  self->filenamefree = 0;
-  if (pyname == Py_None)
   {
-    self->filename = NULL;
+    static char *kwlist[] = {"vfs", "filename", "flags", NULL};
+    VFSFile_init_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sOO&:" VFSFile_init_USAGE, kwlist, &vfs, &filename, argcheck_List_int_int, &flags))
+      return -1;
   }
-  else if (pyname->ob_type == &APSWURIFilenameType)
+
+  if (filename->ob_type == &APSWURIFilenameType)
   {
-    self->filename = ((APSWURIFilename *)pyname)->filename;
+    self->filename = ((APSWURIFilename *)filename)->filename;
+    self->free_filename = 0;
   }
   else
   {
-    size_t len;
-    utf8name = getutf8string(pyname);
-    if (!utf8name)
-      goto finally;
-    len = strlen(PyBytes_AS_STRING(utf8name));
-    APSW_FAULT_INJECT(vfspyopen_fullpathnamemallocfailed_ininit,
-                      self->filename = PyMem_Malloc(len + 3),
-                      self->filename = (char *)PyErr_NoMemory());
-    if (!self->filename)
-      goto finally;
-    PyOS_snprintf(self->filename, len + 1, "%s", PyBytes_AS_STRING(utf8name));
-    /* ensure extra null padding for URI params */
-    self->filename[len] = self->filename[len + 1] = self->filename[len + 2] = 0;
-    self->filenamefree = 1;
+    assert(PyUnicode_Check(filename));
+    self->filename = apsw_strdup(PyUnicode_AsUTF8(filename));
   }
 
-  /* type checking */
-  if (strlen(vfs) == 0)
+  if (0 == strlen(vfs))
   {
     /* sqlite uses null for default vfs - we use empty string */
-    PyMem_Free(vfs);
     vfs = NULL;
   }
-  /* flags need to be a list of two integers */
-  if (!PySequence_Check(flags) || PySequence_Size(flags) != 2)
-  {
-    PyErr_Format(PyExc_TypeError, "Flags should be a sequence of two integers");
-    goto finally;
-  }
-  itemzero = PySequence_GetItem(flags, 0);
-  itemone = PySequence_GetItem(flags, 1);
-  if (!itemzero || !itemone || !PyIntLong_Check(itemzero) || !PyIntLong_Check(itemone))
-  {
-    PyErr_Format(PyExc_TypeError, "Flags should contain two integers");
-    goto finally;
-  }
-  /* check we can change item 1 */
-  zero = PyInt_FromLong(0);
-  if (!zero)
-    goto finally;
-  if (-1 == PySequence_SetItem(flags, 1, zero))
-    goto finally;
 
-  flagsin = PyIntLong_AsLong(itemzero);
+  assert(PyList_Check(flags) && PySequence_Length(flags) == 2);
+  pyflagsin = PySequence_GetItem(flags, 0);
+
+  flagsin = PyIntLong_AsLong(pyflagsin);
   if (flagsin != (int)flagsin)
   {
     PyErr_Format(PyExc_OverflowError, "flags[0] is too big!");
@@ -1998,15 +1955,10 @@ finally:
   if (PyErr_Occurred())
     AddTraceBackHere(__FILE__, __LINE__, "vfsfile.init", "{s: O, s: O}", "args", args, "kwargs", kwds);
 
+  Py_XDECREF(pyflagsin);
   Py_XDECREF(pyflagsout);
-  Py_XDECREF(itemzero);
-  Py_XDECREF(itemone);
-  Py_XDECREF(zero);
-  Py_XDECREF(utf8name);
   if (res != 0 && file)
     PyMem_Free(file);
-  if (vfs)
-    PyMem_Free(vfs);
   return res;
 }
 

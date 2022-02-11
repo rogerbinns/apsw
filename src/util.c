@@ -332,12 +332,17 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
     }                                                                      \
   } while (0)
 
-/* It is 2009 - why do I have to write this? */
+/* This adds double nulls on the end - needed if string is a filename
+   used near vfs as it puts extra info after the first null */
 static char *apsw_strdup(const char *source)
 {
-  char *res = PyMem_Malloc(strlen(source) + 1);
+  size_t len = strlen(source);
+  char *res = PyMem_Malloc(len + 3);
   if (res)
-    PyOS_snprintf(res, strlen(source) + 1, "%s", source);
+  {
+    res[len] = res[len + 1] = res[len + 2] = 0;
+    PyOS_snprintf(res, len + 1, "%s", source);
+  }
   return res;
 }
 
