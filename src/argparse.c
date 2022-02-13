@@ -82,7 +82,6 @@ argcheck_List_int_int(PyObject *object, void *result)
     return 1;
 }
 
-
 static PyTypeObject APSWURIFilenameType;
 static int
 argcheck_Optional_str_URIFilename(PyObject *object, void *result)
@@ -96,4 +95,17 @@ argcheck_Optional_str_URIFilename(PyObject *object, void *result)
     }
     PyErr_Format(PyExc_TypeError, "Function argument expect None | str | apsw.URIFilename");
     return 0;
+}
+
+static int
+argcheck_pointer(PyObject *object, void *result)
+{
+    void **output = (void **)result;
+    if (!PyLong_Check(object))
+    {
+        PyErr_Format(PyExc_TypeError, "Function argument expected int (to be used as a pointer)");
+        return 0;
+    }
+    *output = PyLong_AsVoidPtr(object);
+    return PyErr_Occurred() ? 0 : 1;
 }

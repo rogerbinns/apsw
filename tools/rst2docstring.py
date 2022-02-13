@@ -278,8 +278,7 @@ type_overrides = {
         "rowid": "int64"
     },
     "Connection.filecontrol": {
-        # technically 32 bit on 32 bit platforms
-        "pointer": "int64"
+        "pointer": "pointer"
     },
     "Connection.set_last_insert_rowid": {
         "rowid": "int64"
@@ -289,6 +288,9 @@ type_overrides = {
     },
     "VFSFile.__init__": {
         "filename": "PyObject",
+    },
+    "VFSFile.xFileControl": {
+        "ptr": "pointer"
     }
 
 }
@@ -359,6 +361,13 @@ def do_argparse(item):
             kind = "L"
             if param["default"]:
                 default_check = f"{ pname } == { int(param['default']) }L"
+        elif param["type"] == "pointer":
+            type = "void *"
+            kind = "O&"
+            args = ["argcheck_pointer"] + args
+            if param["default"]:
+                breakpoint()
+                pass
         elif param["type"] in {"PyObject", "Any"}:
             type = "PyObject *"
             kind = "O"
