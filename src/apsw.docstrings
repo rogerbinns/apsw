@@ -955,7 +955,7 @@
 #define Connection_filecontrol_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(dbname), const char *)); \
   assert(__builtin_types_compatible_p(typeof(op), int)); \
-  assert(__builtin_types_compatible_p(typeof(pointer), long long)); \
+  assert(__builtin_types_compatible_p(typeof(pointer), void *)); \
 } while(0)
 
 
@@ -1903,6 +1903,14 @@
 "		# we understood the op\n" \
 "	        return True\n" 
 
+#define VFSFile_xFileControl_USAGE "VFSFile.xFileControl(op: int, ptr: int) -> bool"
+
+#define VFSFile_xFileControl_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(op), int)); \
+  assert(__builtin_types_compatible_p(typeof(ptr), void *)); \
+} while(0)
+
+
 #define  VFSFile_xFileSize_DOC "xFileSize($self,/)\n--\n\nVFSFile.xFileSize() -> int\n\n" \
 "Return the size of the file in bytes.  Remember that file sizes are\n" \
 "64 bit quantities even on 32 bit operating systems.\n" 
@@ -1912,6 +1920,13 @@
 "`SQLITE_LOCK <https://sqlite.org/c3ref/c_lock_exclusive.html>`_\n" \
 "family of constants. If you can't increase the lock level because\n" \
 "someone else has locked it, then raise :exc:`BusyError`.\n" 
+
+#define VFSFile_xLock_USAGE "VFSFile.xLock(level: int) -> None"
+
+#define VFSFile_xLock_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(level), int)); \
+} while(0)
+
 
 #define  VFSFile_xRead_DOC "xRead($self,amount,offset,/)\n--\n\nVFSFile.xRead(amount: int, offset: int) -> bytes\n\n" \
 "Read the specified *amount* of data starting at *offset*. You\n" \

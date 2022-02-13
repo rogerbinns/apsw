@@ -2804,7 +2804,7 @@ Connection_createcollation(Connection *self, PyObject *args, PyObject *kwds)
 static PyObject *
 Connection_filecontrol(Connection *self, PyObject *args, PyObject *kwds)
 {
-  long long pointer;
+  void *pointer;
   int res = SQLITE_ERROR, op;
   const char *dbname = NULL;
 
@@ -2814,11 +2814,11 @@ Connection_filecontrol(Connection *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"dbname", "op", "pointer", NULL};
     Connection_filecontrol_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "siL:" Connection_filecontrol_USAGE, kwlist, &dbname, &op, &pointer))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "siO&:" Connection_filecontrol_USAGE, kwlist, &dbname, &op, argcheck_pointer, &pointer))
       return NULL;
   }
 
-  PYSQLITE_CON_CALL(res = sqlite3_file_control(self->db, dbname, op, (void *)pointer));
+  PYSQLITE_CON_CALL(res = sqlite3_file_control(self->db, dbname, op, pointer));
 
   if (res != SQLITE_OK && res != SQLITE_NOTFOUND)
     SET_EXC(res, self->db);

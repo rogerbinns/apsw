@@ -2238,17 +2238,21 @@ apswvfsfile_xLock(sqlite3_file *file, int flag)
   someone else has locked it, then raise :exc:`BusyError`.
 */
 static PyObject *
-apswvfsfilepy_xLock(APSWVFSFile *self, PyObject *args)
+apswvfsfilepy_xLock(APSWVFSFile *self, PyObject *args, PyObject *kwds)
 {
-  int flag, res;
+  int level, res;
 
   CHECKVFSFILEPY;
   VFSFILENOTIMPLEMENTED(xLock, 1);
 
-  if (!PyArg_ParseTuple(args, "i", &flag))
-    return NULL;
+  {
+    static char *kwlist[] = {"level", NULL};
+    VFSFile_xLock_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" VFSFile_xLock_USAGE, kwlist, &level))
+      return NULL;
+  }
 
-  res = self->base->pMethods->xLock(self->base, flag);
+  res = self->base->pMethods->xLock(self->base, level);
 
   if (res == SQLITE_OK)
     Py_RETURN_NONE;
@@ -2619,33 +2623,27 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
 	        return True
 */
 static PyObject *
-apswvfsfilepy_xFileControl(APSWVFSFile *self, PyObject *args)
+apswvfsfilepy_xFileControl(APSWVFSFile *self, PyObject *args, PyObject *kwds)
 {
   int op, res = SQLITE_ERROR;
-  PyObject *pyptr;
   void *ptr = NULL;
 
   CHECKVFSFILEPY;
   VFSFILENOTIMPLEMENTED(xFileControl, 1);
 
-  if (!PyArg_ParseTuple(args, "iO", &op, &pyptr))
-    return NULL;
-
-  if (PyIntLong_Check(pyptr))
-    ptr = PyLong_AsVoidPtr(pyptr);
-  else
-    PyErr_Format(PyExc_TypeError, "Argument is not number (pointer)");
-
-  if (PyErr_Occurred())
-    goto finally;
-
+  {
+    static char *kwlist[] = {"op", "ptr", NULL};
+    VFSFile_xFileControl_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iO&:" VFSFile_xFileControl_USAGE, kwlist, &op, argcheck_pointer, &ptr))
+      return NULL;
+  }
   res = self->base->pMethods->xFileControl(self->base, op, ptr);
 
   if (res == SQLITE_OK)
     Py_RETURN_TRUE;
   if (res == SQLITE_NOTFOUND)
     Py_RETURN_FALSE;
-finally:
+
   SET_EXC(res, NULL);
   return NULL;
 }
@@ -2783,7 +2781,7 @@ static const struct sqlite3_io_methods apsw_io_methods_v2 =
 static PyMethodDef APSWVFSFile_methods[] = {
     {"xRead", (PyCFunction)apswvfsfilepy_xRead, METH_VARARGS, VFSFile_xRead_DOC},
     {"xUnlock", (PyCFunction)apswvfsfilepy_xUnlock, METH_VARARGS, VFSFile_xUnlock_DOC},
-    {"xLock", (PyCFunction)apswvfsfilepy_xLock, METH_VARARGS, VFSFile_xLock_DOC},
+    {"xLock", (PyCFunction)apswvfsfilepy_xLock, METH_VARARGS | METH_KEYWORDS, VFSFile_xLock_DOC},
     {"xClose", (PyCFunction)apswvfsfilepy_xClose, METH_NOARGS, VFSFile_xClose_DOC},
     {"xSectorSize", (PyCFunction)apswvfsfilepy_xSectorSize, METH_NOARGS, VFSFile_xSectorSize_DOC},
     {"xFileSize", (PyCFunction)apswvfsfilepy_xFileSize, METH_NOARGS, VFSFile_xFileSize_DOC},
@@ -2792,7 +2790,7 @@ static PyMethodDef APSWVFSFile_methods[] = {
     {"xWrite", (PyCFunction)apswvfsfilepy_xWrite, METH_VARARGS, VFSFile_xWrite_DOC},
     {"xSync", (PyCFunction)apswvfsfilepy_xSync, METH_VARARGS, VFSFile_xSync_DOC},
     {"xTruncate", (PyCFunction)apswvfsfilepy_xTruncate, METH_VARARGS, VFSFile_xTruncate_DOC},
-    {"xFileControl", (PyCFunction)apswvfsfilepy_xFileControl, METH_VARARGS, VFSFile_xFileControl_DOC},
+    {"xFileControl", (PyCFunction)apswvfsfilepy_xFileControl, METH_VARARGS | METH_KEYWORDS, VFSFile_xFileControl_DOC},
     {"excepthook", (PyCFunction)apswvfs_excepthook, METH_VARARGS, VFSFile_excepthook_DOC},
     /* Sentinel */
     {0, 0, 0, 0}};
