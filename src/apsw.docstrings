@@ -1877,31 +1877,31 @@
 
 #define  VFSFile_xFileControl_DOC "xFileControl($self,op,ptr,/)\n--\n\nVFSFile.xFileControl(op: int, ptr: int) -> bool\n\n" \
 "Receives `file control\n" \
-"   <https://sqlite.org/c3ref/file_control.html>`_ request typically\n" \
-"   issued by :meth:`Connection.filecontrol`.  See\n" \
-"   :meth:`Connection.filecontrol` for an example of how to pass a\n" \
-"   Python object to this routine.\n" \
+"<https://sqlite.org/c3ref/file_control.html>`_ request typically\n" \
+"issued by :meth:`Connection.filecontrol`.  See\n" \
+":meth:`Connection.filecontrol` for an example of how to pass a\n" \
+"Python object to this routine.\n" \
 "\n" \
-"   :param op: A numeric code.  Codes below 100 are reserved for SQLite\n" \
-"     internal use.\n" \
-"   :param ptr: An integer corresponding to a pointer at the C level.\n" \
+":param op: A numeric code.  Codes below 100 are reserved for SQLite\n" \
+"  internal use.\n" \
+":param ptr: An integer corresponding to a pointer at the C level.\n" \
 "\n" \
-"   :returns: A boolean indicating if the op was understood\n" \
+":returns: A boolean indicating if the op was understood\n" \
 "\n" \
-"   As of SQLite 3.6.10, this method is called by SQLite if you have\n" \
-"   inherited from an underlying VFSFile.  Consequently ensure you pass\n" \
-"   any unrecognised codes through to your super class.  For example::\n" \
+"As of SQLite 3.6.10, this method is called by SQLite if you have\n" \
+"inherited from an underlying VFSFile.  Consequently ensure you pass\n" \
+"any unrecognised codes through to your super class.  For example::\n" \
 "\n" \
-"            def xFileControl(self, op, ptr):\n" \
-"                if op==1027:\n" \
-"                    process_quick(ptr)\n" \
-"                elif op==1028:\n" \
-"                    obj=ctypes.py_object.from_address(ptr).value\n" \
-"                else:\n" \
-"                    # this ensures superclass implementation is called\n" \
-"                    return super(MyFile, self).xFileControl(op, ptr)\n" \
-"		# we understood the op\n" \
-"	        return True\n" 
+"         def xFileControl(self, op, ptr):\n" \
+"             if op==1027:\n" \
+"                 process_quick(ptr)\n" \
+"             elif op==1028:\n" \
+"                 obj=ctypes.py_object.from_address(ptr).value\n" \
+"             else:\n" \
+"                 # this ensures superclass implementation is called\n" \
+"                 return super(MyFile, self).xFileControl(op, ptr)\n" \
+" # we understood the op\n" \
+"       return True\n" 
 
 #define VFSFile_xFileControl_USAGE "VFSFile.xFileControl(op: int, ptr: int) -> bool"
 
@@ -1940,6 +1940,14 @@
 ":param amount: Number of bytes to read\n" \
 ":param offset: Where to start reading. This number may be 64 bit once the database is larger than 2GB.\n" 
 
+#define VFSFile_xRead_USAGE "VFSFile.xRead(amount: int, offset: int) -> bytes"
+
+#define VFSFile_xRead_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(amount), int)); \
+  assert(__builtin_types_compatible_p(typeof(offset), long long)); \
+} while(0)
+
+
 #define  VFSFile_xSectorSize_DOC "xSectorSize($self,/)\n--\n\nVFSFile.xSectorSize() -> int\n\n" \
 "Return the native underlying sector size. SQLite uses the value\n" \
 "returned in determining the default database page size. If you do\n" \
@@ -1952,16 +1960,37 @@
 "<https://sqlite.org/c3ref/c_sync_dataonly.html>`_ detailing what\n" \
 "needs to be synced.  You can sync more than what is requested.\n" 
 
+#define VFSFile_xSync_USAGE "VFSFile.xSync(flags: int) -> None"
+
+#define VFSFile_xSync_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(flags), int)); \
+} while(0)
+
+
 #define  VFSFile_xTruncate_DOC "xTruncate($self,newsize,/)\n--\n\nVFSFile.xTruncate(newsize: int) -> None\n\n" \
 "Set the file length to *newsize* (which may be more or less than the\n" \
 "current length).\n" 
+
+#define VFSFile_xTruncate_USAGE "VFSFile.xTruncate(newsize: int) -> None"
+
+#define VFSFile_xTruncate_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(newsize), long long)); \
+} while(0)
+
 
 #define  VFSFile_xUnlock_DOC "xUnlock($self,level,/)\n--\n\nVFSFile.xUnlock(level: int) -> None\n\n" \
 "Decrease the lock to the level specified which is one of the\n" \
 "`SQLITE_LOCK <https://sqlite.org/c3ref/c_lock_exclusive.html>`_\n" \
 "family of constants.\n" 
 
-#define  VFSFile_xWrite_DOC "xWrite($self,data,offset,/)\n--\n\nVFSFile.xWrite(data: bytes, offset: int)\n\n" \
+#define VFSFile_xUnlock_USAGE "VFSFile.xUnlock(level: int) -> None"
+
+#define VFSFile_xUnlock_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(level), int)); \
+} while(0)
+
+
+#define  VFSFile_xWrite_DOC "xWrite($self,data,offset,/)\n--\n\nVFSFile.xWrite(data: bytes, offset: int) -> None\n\n" \
 "Write the *data* starting at absolute *offset*. You must write all the data\n" \
 "  requested, or return an error. If you have the file open for\n" \
 "  non-blocking I/O or if signals happen then it is possible for the\n" \
@@ -1973,13 +2002,21 @@
 "URIFilename class\n" \
 "=================\n" 
 
+#define VFSFile_xWrite_USAGE "VFSFile.xWrite(data: bytes, offset: int) -> None"
+
+#define VFSFile_xWrite_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(data), Py_buffer)); \
+  assert(__builtin_types_compatible_p(typeof(offset), long long)); \
+} while(0)
+
+
 #define  VFS_excepthook_DOC "excepthook($self,*args,/)\n--\n\nVFS.excepthook(*args) -> Any\n\n" \
 "Called when there has been an exception in a :class:`VFS` routine.\n" \
 "The default implementation passes args to ``sys.excepthook`` and if that\n" \
 "fails then ``PyErr_Display``.  The three arguments correspond to\n" \
 "what ``sys.exc_info()`` would return.\n" 
 
-#define  VFS_init_DOC "__init__($self,name,base,makedefault,maxpathname,/)\n--\n\nVFS.__init__(name, base: str = None, makedefault: bool = False, maxpathname: int = 1024])\n\n" \
+#define  VFS_init_DOC "__init__($self,name,base,makedefault,maxpathname,/)\n--\n\nVFS.__init__(name: str, base: str = None, makedefault: bool = False, maxpathname: int = 1024)\n\n" \
 "Provides operating system access.  You can get an overview in the\n" \
 "`SQLite documentation <https://sqlite.org/c3ref/vfs.html>`_.  To\n" \
 "create a VFS your Python class must inherit from :class:`VFS`.\n" \
@@ -1987,13 +2024,16 @@
 ":param name: The name to register this vfs under.  If the name\n" \
 "    already exists then this vfs will replace the prior one of the\n" \
 "    same name.  Use :meth:`apsw.vfsnames` to get a list of\n" \
-"    registered vfs names.  :param base: If you would like to\n" \
-"    inherit behaviour from an already registered vfs then give\n" \
+"    registered vfs names.\n" \
+"\n" \
+":param base: If you would like to inherit behaviour from an already registered vfs then give\n" \
 "    their name.  To inherit from the default vfs, use a zero\n" \
-"    length string ``\"\"`` as the name.  :param makedefault: If true\n" \
-"    then this vfs will be registered as the default, and will be\n" \
-"    used by any opens that don't specify a vfs.  :param\n" \
-"    maxpathname: The maximum length of database name in bytes when\n" \
+"    length string ``\"\"`` as the name.\n" \
+"\n" \
+":param makedefault: If true then this vfs will be registered as the default, and will be\n" \
+"    used by any opens that don't specify a vfs.\n" \
+"\n" \
+":param maxpathname: The maximum length of database name in bytes when\n" \
 "    represented in UTF-8.  If a pathname is passed in longer than\n" \
 "    this value then SQLite will not `be able to open it\n" \
 "    <https://sqlite.org/src/tktview/c060923a5422590b3734eb92eae0c94934895b68>`__.\n" \
@@ -2004,6 +2044,19 @@
 "Calls:\n" \
 "  * `sqlite3_vfs_register <https://sqlite.org/c3ref/vfs_find.html>`__\n" \
 "  * `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__\n" 
+
+#define VFS_init_USAGE "VFS.__init__(name: str, base: str = None, makedefault: bool = False, maxpathname: int = 1024)"
+
+#define VFS_init_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(name), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(base), const char *)); \
+  assert(base == 0); \
+  assert(__builtin_types_compatible_p(typeof(makedefault), int)); \
+  assert(makedefault == 0); \
+  assert(__builtin_types_compatible_p(typeof(maxpathname), int)); \
+  assert(maxpathname == (1024)); \
+} while(0)
+
 
 #define  VFS_unregister_DOC "unregister($self,/)\n--\n\nVFS.unregister() -> None\n\n" \
 "Unregisters the VFS making it unavailable to future database\n" \
@@ -2021,6 +2074,14 @@
 "\n" \
 ":param pathname: File or directory to check\n" \
 ":param flags: One of the `access flags <https://sqlite.org/c3ref/c_access_exists.html>`_\n" 
+
+#define VFS_xAccess_USAGE "VFS.xAccess(pathname: str, flags: int) -> bool"
+
+#define VFS_xAccess_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(pathname), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(flags), int)); \
+} while(0)
+
 
 #define  VFS_xCurrentTime_DOC "xCurrentTime($self,/)\n--\n\nVFS.xCurrentTime()  -> float\n\n" \
 "Return the `Julian Day Number\n" \
@@ -2041,7 +2102,15 @@
 "  platters.  ie if there was an immediate power failure after this\n" \
 "  call returns, on a reboot the file would still be deleted.\n" 
 
-#define  VFS_xDlClose_DOC "xDlClose($self,handle,/)\n--\n\nVFS.xDlClose(handle: int)\n\n" \
+#define VFS_xDelete_USAGE "VFS.xDelete(filename: str, syncdir: bool) -> None"
+
+#define VFS_xDelete_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(filename), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(syncdir), int)); \
+} while(0)
+
+
+#define  VFS_xDlClose_DOC "xDlClose($self,handle,/)\n--\n\nVFS.xDlClose(handle: int) -> None\n\n" \
 "Close and unload the library corresponding to the handle you\n" \
 "returned from :meth:`~VFS.xDlOpen`.  You can use ctypes to do\n" \
 "this::\n" \
@@ -2050,6 +2119,13 @@
 "     # Note leading underscore in _ctypes\n" \
 "     _ctypes.dlclose(handle)       # Linux/Mac/Unix\n" \
 "     _ctypes.FreeLibrary(handle)   # Windows\n" 
+
+#define VFS_xDlClose_USAGE "VFS.xDlClose(handle: int) -> None"
+
+#define VFS_xDlClose_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(handle), void *)); \
+} while(0)
+
 
 #define  VFS_xDlError_DOC "xDlError($self,/)\n--\n\nVFS.xDlError() -> str\n\n" \
 "Return an error string describing the last error of\n" \
@@ -2072,6 +2148,13 @@
 "  def xDlOpen(name):\n" \
 "     return ctypes.cdll.LoadLibrary(name)._handle\n" 
 
+#define VFS_xDlOpen_USAGE "VFS.xDlOpen(filename: str) -> int"
+
+#define VFS_xDlOpen_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(filename), const char *)); \
+} while(0)
+
+
 #define  VFS_xDlSym_DOC "xDlSym($self,handle,symbol,/)\n--\n\nVFS.xDlSym(handle: int, symbol: str) -> int\n\n" \
 "Returns the address of the named symbol which will be called by\n" \
 "SQLite. On error you should return 0 (NULL). You can use ctypes::\n" \
@@ -2083,8 +2166,23 @@
 ":param handle: The value returned from an earlier :meth:`~VFS.xDlOpen` call\n" \
 ":param symbol: A string\n" 
 
+#define VFS_xDlSym_USAGE "VFS.xDlSym(handle: int, symbol: str) -> int"
+
+#define VFS_xDlSym_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(handle), void *)); \
+  assert(__builtin_types_compatible_p(typeof(symbol), const char *)); \
+} while(0)
+
+
 #define  VFS_xFullPathname_DOC "xFullPathname($self,name,/)\n--\n\nVFS.xFullPathname(name: str) -> str\n\n" \
 "Return the absolute pathname for name.  You can use ``os.path.abspath`` to do this.\n" 
+
+#define VFS_xFullPathname_USAGE "VFS.xFullPathname(name: str) -> str"
+
+#define VFS_xFullPathname_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(name), const char *)); \
+} while(0)
+
 
 #define  VFS_xGetLastError_DOC "xGetLastError($self,/)\n--\n\nVFS.xGetLastError() -> Tuple[int, str]\n\n" \
 "This method is to return an integer error code and (optional) text describing\n" \
@@ -2093,11 +2191,18 @@
 ".. note:: SQLite 3.12 changed the semantics in an incompatible way from\n" \
 "     earlier versions.  You will need to rewrite earlier implementations.\n" 
 
-#define  VFS_xGetSystemCall_DOC "xGetSystemCall($self,name,/)\n--\n\nVFS.xGetSystemCall(name: str) -> Option[int]\n\n" \
+#define  VFS_xGetSystemCall_DOC "xGetSystemCall($self,name,/)\n--\n\nVFS.xGetSystemCall(name: str) -> Optional[int]\n\n" \
 "Returns a pointer for the current method implementing the named\n" \
 "system call.  Return None if the call does not exist.\n" 
 
-#define  VFS_xNextSystemCall_DOC "xNextSystemCall($self,name,/)\n--\n\nVFS.xNextSystemCall(name: str) -> Option[str]\n\n" \
+#define VFS_xGetSystemCall_USAGE "VFS.xGetSystemCall(name: str) -> Optional[int]"
+
+#define VFS_xGetSystemCall_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(name), const char *)); \
+} while(0)
+
+
+#define  VFS_xNextSystemCall_DOC "xNextSystemCall($self,name,/)\n--\n\nVFS.xNextSystemCall(name: Optional[str]) -> Optional[str]\n\n" \
 "This method is repeatedly called to iterate over all of the system\n" \
 "calls in the vfs.  When called with None you should return the\n" \
 "name of the first system call.  In subsequent calls return the\n" \
@@ -2110,6 +2215,13 @@
 "  be leaked on each call to this function.  Consequently you\n" \
 "  should build up the list of call names once rather than\n" \
 "  repeatedly doing it.\n" 
+
+#define VFS_xNextSystemCall_USAGE "VFS.xNextSystemCall(name: Optional[str]) -> Optional[str]"
+
+#define VFS_xNextSystemCall_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(name), const char *)); \
+} while(0)
+
 
 #define  VFS_xOpen_DOC "xOpen($self,name,flags,/)\n--\n\nVFS.xOpen(name: Optional[str,URIFilename], flags: List[int,int]) -> VFSFile\n\n" \
 "This method should return a new file object based on name.  You\n" \
@@ -2144,7 +2256,14 @@
 "return less than the number of bytes requested including None. If\n" \
 "you return more then the surplus is ignored.\n" 
 
-#define  VFS_xSetSystemCall_DOC "xSetSystemCall($self,name,pointer,/)\n--\n\nVFS.xSetSystemCall(name: str, pointer: int) -> bool\n\n" \
+#define VFS_xRandomness_USAGE "VFS.xRandomness(numbytes: int) -> bytes"
+
+#define VFS_xRandomness_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(numbytes), int)); \
+} while(0)
+
+
+#define  VFS_xSetSystemCall_DOC "xSetSystemCall($self,name,pointer,/)\n--\n\nVFS.xSetSystemCall(name: Optional[str], pointer: int) -> bool\n\n" \
 "Change a system call used by the VFS.  This is useful for testing\n" \
 "and some other scenarios such as sandboxing.\n" \
 "\n" \
@@ -2158,8 +2277,19 @@
 "Raise an exception to return an error.  If the system call does\n" \
 "not exist then raise :exc:`NotFoundError`.\n" \
 "\n" \
+"If `name` is None, then all systemcalls are reset to their defaults.  This\n" \
+"behaviour is not documented.\n" \
+"\n" \
 ":returns: True if the system call was set.  False if the system\n" \
 "  call is not known.\n" 
+
+#define VFS_xSetSystemCall_USAGE "VFS.xSetSystemCall(name: Optional[str], pointer: int) -> bool"
+
+#define VFS_xSetSystemCall_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(name), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(pointer), void *)); \
+} while(0)
+
 
 #define  VFS_xSleep_DOC "xSleep($self,microseconds,/)\n--\n\nVFS.xSleep(microseconds: int) -> int\n\n" \
 "Pause execution of the thread for at least the specified number of\n" \
@@ -2173,6 +2303,13 @@
 "\n" \
 "VFSFile class\n" \
 "=============\n" 
+
+#define VFS_xSleep_USAGE "VFS.xSleep(microseconds: int) -> int"
+
+#define VFS_xSleep_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(microseconds), int)); \
+} while(0)
+
 
 #define  Zeroblob_init_DOC "__init__($self,size,/)\n--\n\nzeroblob.__init__(size: int)\n\n" \
 "If you want to insert a blob into a row, you previously needed to\n" \
@@ -2197,6 +2334,13 @@
 "This class is used for the second way.  Once a blob exists in the\n" \
 "database, you then use the :class:`blob` class to read and write its\n" \
 "contents.\n" 
+
+#define Zeroblob_init_USAGE "zeroblob.__init__(size: int)"
+
+#define Zeroblob_init_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(size), int)); \
+} while(0)
+
 
 #define  Zeroblob_length_DOC "length($self,/)\n--\n\nzeroblob.length() -> int\n\n" \
 "Size of zero blob in bytes.\n" \

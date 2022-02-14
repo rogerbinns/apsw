@@ -68,24 +68,22 @@ ZeroBlobBind_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNU
 }
 
 static int
-ZeroBlobBind_init(ZeroBlobBind *self, PyObject *args, PyObject *kwargs)
+ZeroBlobBind_init(ZeroBlobBind *self, PyObject *args, PyObject *kwds)
 {
-  int n;
-  if (kwargs && PyDict_Size(kwargs) != 0)
+  int size;
+
   {
-    PyErr_Format(PyExc_TypeError, "Zeroblob constructor does not take keyword arguments");
-    return -1;
+    static char *kwlist[] = {"size", NULL};
+    Zeroblob_init_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" Zeroblob_init_USAGE, kwlist, &size))
+      return -1;
   }
-
-  if (!PyArg_ParseTuple(args, "i", &n))
-    return -1;
-
-  if (n < 0)
+  if (size < 0)
   {
     PyErr_Format(PyExc_TypeError, "zeroblob size must be >= 0");
     return -1;
   }
-  self->blobsize = n;
+  self->blobsize = size;
 
   return 0;
 }

@@ -318,19 +318,21 @@ apswvfs_xDelete(sqlite3_vfs *vfs, const char *zName, int syncDir)
       call returns, on a reboot the file would still be deleted.
 */
 static PyObject *
-apswvfspy_xDelete(APSWVFS *self, PyObject *args)
+apswvfspy_xDelete(APSWVFS *self, PyObject *args, PyObject *kwds)
 {
-  char *zName = NULL;
-  int syncDir, res;
+  const char *filename = NULL;
+  int syncdir, res;
 
   CHECKVFSPY;
   VFSNOTIMPLEMENTED(xDelete, 1);
 
-  if (!PyArg_ParseTuple(args, "esi", STRENCODING, &zName, &syncDir))
-    return NULL;
-
-  res = self->basevfs->xDelete(self->basevfs, zName, syncDir);
-  PyMem_Free(zName);
+  {
+    static char *kwlist[] = {"filename", "syncdir", NULL};
+    VFS_xDelete_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&:" VFS_xDelete_USAGE, kwlist, &filename, argcheck_bool, &syncdir))
+      return NULL;
+  }
+  res = self->basevfs->xDelete(self->basevfs, filename, syncdir);
 
   if (res == SQLITE_OK)
     Py_RETURN_NONE;
@@ -377,19 +379,22 @@ finally:
     :param flags: One of the `access flags <https://sqlite.org/c3ref/c_access_exists.html>`_
 */
 static PyObject *
-apswvfspy_xAccess(APSWVFS *self, PyObject *args)
+apswvfspy_xAccess(APSWVFS *self, PyObject *args, PyObject *kwds)
 {
-  char *zName = NULL;
+  const char *pathname = NULL;
   int res, flags, resout = 0;
 
   CHECKVFSPY;
   VFSNOTIMPLEMENTED(xAccess, 1);
 
-  if (!PyArg_ParseTuple(args, "esi", STRENCODING, &zName, &flags))
-    return NULL;
+  {
+    static char *kwlist[] = {"pathname", "flags", NULL};
+    VFS_xAccess_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "si:" VFS_xAccess_USAGE, kwlist, &pathname, &flags))
+      return NULL;
+  }
 
-  res = self->basevfs->xAccess(self->basevfs, zName, flags, &resout);
-  PyMem_Free(zName);
+  res = self->basevfs->xAccess(self->basevfs, pathname, flags, &resout);
 
   if (res == SQLITE_OK)
   {
@@ -449,26 +454,27 @@ finally:
   Return the absolute pathname for name.  You can use ``os.path.abspath`` to do this.
 */
 static PyObject *
-apswvfspy_xFullPathname(APSWVFS *self, PyObject *name)
+apswvfspy_xFullPathname(APSWVFS *self, PyObject *args, PyObject *kwds)
 {
   char *resbuf = NULL;
-  PyObject *result = NULL, *utf8 = NULL;
+  const char *name;
+  PyObject *result = NULL;
   int res = SQLITE_NOMEM;
 
   CHECKVFSPY;
   VFSNOTIMPLEMENTED(xFullPathname, 1);
 
-  utf8 = getutf8string(name);
-  if (!utf8)
   {
-    AddTraceBackHere(__FILE__, __LINE__, "vfspy.xFullPathname", "{s: O}", "name", name);
-    goto finally;
+    static char *kwlist[] = {"name", NULL};
+    VFS_xFullPathname_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:" VFS_xFullPathname_USAGE, kwlist, &name))
+      return NULL;
   }
 
   resbuf = PyMem_Malloc(self->basevfs->mxPathname + 1);
   memset(resbuf, 0, self->basevfs->mxPathname + 1); /* make sure it is null terminated */
   if (resbuf)
-    res = self->basevfs->xFullPathname(self->basevfs, PyBytes_AsString(utf8), self->basevfs->mxPathname + 1, resbuf);
+    res = self->basevfs->xFullPathname(self->basevfs, name, self->basevfs->mxPathname + 1, resbuf);
 
   if (res == SQLITE_OK)
     APSW_FAULT_INJECT(xFullPathnameConversion, result = convertutf8string(resbuf), result = PyErr_NoMemory());
@@ -479,11 +485,9 @@ apswvfspy_xFullPathname(APSWVFS *self, PyObject *name)
   if (res != SQLITE_OK)
   {
     SET_EXC(res, NULL);
-    AddTraceBackHere(__FILE__, __LINE__, "vfspy.xFullPathname", "{s: O, s: i, s: O}", "name", name, "res", res, "result", result ? result : Py_None);
+    AddTraceBackHere(__FILE__, __LINE__, "vfspy.xFullPathname", "{s: s, s: i, s: O}", "name", name, "res", res, "result", result ? result : Py_None);
   }
 
-finally:
-  Py_XDECREF(utf8);
   if (resbuf)
     PyMem_Free(resbuf);
 
@@ -668,7 +672,7 @@ finally:
   if (file)
     PyMem_Free(file);
   if (free_filename)
-    PyMem_Free((void*)filename);
+    PyMem_Free((void *)filename);
   return result;
 }
 
@@ -713,19 +717,20 @@ apswvfs_xDlOpen(sqlite3_vfs *vfs, const char *zName)
 
 */
 static PyObject *
-apswvfspy_xDlOpen(APSWVFS *self, PyObject *args)
+apswvfspy_xDlOpen(APSWVFS *self, PyObject *args, PyObject *kwds)
 {
-  char *zName = NULL;
+  const char *filename = NULL;
   void *res;
 
   CHECKVFSPY;
   VFSNOTIMPLEMENTED(xDlOpen, 1);
-
-  if (!PyArg_ParseTuple(args, "es", STRENCODING, &zName))
-    return NULL;
-
-  res = self->basevfs->xDlOpen(self->basevfs, zName);
-  PyMem_Free(zName);
+  {
+    static char *kwlist[] = {"filename", NULL};
+    VFS_xDlOpen_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:" VFS_xDlOpen_USAGE, kwlist, &filename))
+      return NULL;
+  }
+  res = self->basevfs->xDlOpen(self->basevfs, filename);
 
   return PyLong_FromVoidPtr(res);
 }
@@ -769,31 +774,22 @@ static void (*apswvfs_xDlSym(sqlite3_vfs *vfs, void *handle, const char *zName))
     :param symbol: A string
 */
 static PyObject *
-apswvfspy_xDlSym(APSWVFS *self, PyObject *args)
+apswvfspy_xDlSym(APSWVFS *self, PyObject *args, PyObject *kwds)
 {
-  char *zName = NULL;
+  const char *symbol = NULL;
   void *res = NULL;
-  PyObject *pyptr;
-  void *ptr = NULL;
+  void *handle = NULL;
 
   CHECKVFSPY;
   VFSNOTIMPLEMENTED(xDlSym, 1);
 
-  if (!PyArg_ParseTuple(args, "Oes", &pyptr, STRENCODING, &zName))
-    return NULL;
-
-  if (PyIntLong_Check(pyptr))
-    ptr = PyLong_AsVoidPtr(pyptr);
-  else
-    PyErr_Format(PyExc_TypeError, "Pointer must be int/long");
-
-  if (PyErr_Occurred())
-    goto finally;
-
-  res = self->basevfs->xDlSym(self->basevfs, ptr, zName);
-
-finally:
-  PyMem_Free(zName);
+  {
+    static char *kwlist[] = {"handle", "symbol", NULL};
+    VFS_xDlSym_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&s:" VFS_xDlSym_USAGE, kwlist, argcheck_pointer, &handle, &symbol))
+      return NULL;
+  }
+  res = self->basevfs->xDlSym(self->basevfs, handle, symbol);
 
   if (PyErr_Occurred())
   {
@@ -819,7 +815,7 @@ apswvfs_xDlClose(sqlite3_vfs *vfs, void *handle)
   VFSPOSTAMBLE;
 }
 
-/** .. method:: xDlClose(handle: int)
+/** .. method:: xDlClose(handle: int) -> None
 
     Close and unload the library corresponding to the handle you
     returned from :meth:`~VFS.xDlOpen`.  You can use ctypes to do
@@ -831,28 +827,24 @@ apswvfs_xDlClose(sqlite3_vfs *vfs, void *handle)
          _ctypes.FreeLibrary(handle)   # Windows
 */
 static PyObject *
-apswvfspy_xDlClose(APSWVFS *self, PyObject *pyptr)
+apswvfspy_xDlClose(APSWVFS *self, PyObject *args, PyObject *kwds)
 {
-  void *ptr = NULL;
+  void *handle = NULL;
 
   CHECKVFSPY;
   VFSNOTIMPLEMENTED(xDlClose, 1);
 
-  if (PyIntLong_Check(pyptr))
-    ptr = PyLong_AsVoidPtr(pyptr);
-  else
-    PyErr_Format(PyExc_TypeError, "Argument is not number (pointer)");
-
-  if (PyErr_Occurred())
-    goto finally;
-
-  self->basevfs->xDlClose(self->basevfs, ptr);
-
-finally:
+  {
+    static char *kwlist[] = {"handle", NULL};
+    VFS_xDlClose_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" VFS_xDlClose_USAGE, kwlist, argcheck_pointer, &handle))
+      return NULL;
+  }
+  self->basevfs->xDlClose(self->basevfs, handle);
 
   if (PyErr_Occurred())
   {
-    AddTraceBackHere(__FILE__, __LINE__, "vfspy.xDlClose", "{s: O}", "ptr", pyptr);
+    AddTraceBackHere(__FILE__, __LINE__, "vfspy.xDlClose", "{s: K}", "handle", (unsigned long long)handle);
     return NULL;
   }
 
@@ -995,33 +987,36 @@ apswvfs_xRandomness(sqlite3_vfs *vfs, int nByte, char *zOut)
 
 */
 static PyObject *
-apswvfspy_xRandomness(APSWVFS *self, PyObject *args)
+apswvfspy_xRandomness(APSWVFS *self, PyObject *args, PyObject *kwds)
 {
   PyObject *res = NULL;
-  int nbyte = 0;
+  int numbytes = 0;
 
   CHECKVFSPY;
   VFSNOTIMPLEMENTED(xRandomness, 1);
 
-  if (!PyArg_ParseTuple(args, "i", &nbyte))
-    return NULL;
-
-  if (nbyte < 0)
+  {
+    static char *kwlist[] = {"numbytes", NULL};
+    VFS_xRandomness_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" VFS_xRandomness_USAGE, kwlist, &numbytes))
+      return NULL;
+  }
+  if (numbytes < 0)
     return PyErr_Format(PyExc_ValueError, "You can't have negative amounts of randomness!");
 
   APSW_FAULT_INJECT(xRandomnessAllocFail,
-                    res = PyBytes_FromStringAndSize(NULL, nbyte),
+                    res = PyBytes_FromStringAndSize(NULL, numbytes),
                     res = PyErr_NoMemory());
   if (res)
   {
     int amt = self->basevfs->xRandomness(self->basevfs, PyBytes_GET_SIZE(res), PyBytes_AS_STRING(res));
-    if (amt < nbyte)
+    if (amt < numbytes)
       _PyBytes_Resize(&res, amt);
   }
 
   if (PyErr_Occurred())
   {
-    AddTraceBackHere(__FILE__, __LINE__, "vfspy.xRandomness", "{s: i}", "nbyte", nbyte);
+    AddTraceBackHere(__FILE__, __LINE__, "vfspy.xRandomness", "{s: i}", "numbytes", numbytes);
     Py_XDECREF(res);
     return NULL;
   }
@@ -1073,16 +1068,19 @@ apswvfs_xSleep(sqlite3_vfs *vfs, int microseconds)
       should return that rounded up value.
 */
 static PyObject *
-apswvfspy_xSleep(APSWVFS *self, PyObject *args)
+apswvfspy_xSleep(APSWVFS *self, PyObject *args, PyObject *kwds)
 {
   int microseconds = 0;
 
   CHECKVFSPY;
   VFSNOTIMPLEMENTED(xSleep, 1);
 
-  if (!PyArg_ParseTuple(args, "i", &microseconds))
-    return NULL;
-
+  {
+    static char *kwlist[] = {"microseconds", NULL};
+    VFS_xSleep_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" VFS_xSleep_USAGE, kwlist, &microseconds))
+      return NULL;
+  }
   return PyLong_FromLong(self->basevfs->xSleep(self->basevfs, microseconds));
 }
 
@@ -1299,7 +1297,7 @@ apswvfs_xSetSystemCall(sqlite3_vfs *vfs, const char *zName, sqlite3_syscall_ptr 
   return res;
 }
 
-/** .. method:: xSetSystemCall(name: str, pointer: int) -> bool
+/** .. method:: xSetSystemCall(name: Optional[str], pointer: int) -> bool
 
     Change a system call used by the VFS.  This is useful for testing
     and some other scenarios such as sandboxing.
@@ -1314,36 +1312,33 @@ apswvfs_xSetSystemCall(sqlite3_vfs *vfs, const char *zName, sqlite3_syscall_ptr 
     Raise an exception to return an error.  If the system call does
     not exist then raise :exc:`NotFoundError`.
 
+    If `name` is None, then all systemcalls are reset to their defaults.  This
+    behaviour is not documented.
+
     :returns: True if the system call was set.  False if the system
       call is not known.
 */
 static PyObject *
-apswvfspy_xSetSystemCall(APSWVFS *self, PyObject *args)
+apswvfspy_xSetSystemCall(APSWVFS *self, PyObject *args, PyObject *kwds)
 {
   const char *name = 0;
-  PyObject *pyptr;
-  void *ptr = NULL;
+  void *pointer = NULL;
   int res = -7; /* initialization to stop compiler whining */
 
   CHECKVFSPY;
   VFSNOTIMPLEMENTED(xSetSystemCall, 3);
 
-  if (!PyArg_ParseTuple(args, "zO", &name, &pyptr))
-    return NULL;
+  {
+    static char *kwlist[] = {"name", "pointer", NULL};
+    VFS_xSetSystemCall_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "zO&:" VFS_xSetSystemCall_USAGE, kwlist, &name, argcheck_pointer, &pointer))
+      return NULL;
+  }
 
-  if (PyIntLong_Check(pyptr))
-    ptr = PyLong_AsVoidPtr(pyptr);
-  else
-    PyErr_Format(PyExc_TypeError, "Pointer must be int/long");
-
-  if (PyErr_Occurred())
-    goto finally;
-
-  res = self->basevfs->xSetSystemCall(self->basevfs, name, ptr);
+  res = self->basevfs->xSetSystemCall(self->basevfs, name, pointer);
   if (res != SQLITE_OK && res != SQLITE_NOTFOUND)
     SET_EXC(res, NULL);
 
-finally:
   if (PyErr_Occurred())
   {
     AddTraceBackHere(__FILE__, __LINE__, "vfspy.xSetSystemCall", "{s: O, s: i}", "args", args, "res", res);
@@ -1383,26 +1378,28 @@ finally:
   return ptr;
 }
 
-/** .. method:: xGetSystemCall(name: str) -> Option[int]
+/** .. method:: xGetSystemCall(name: str) -> Optional[int]
 
     Returns a pointer for the current method implementing the named
     system call.  Return None if the call does not exist.
 
 */
 static PyObject *
-apswvfspy_xGetSystemCall(APSWVFS *self, PyObject *args)
+apswvfspy_xGetSystemCall(APSWVFS *self, PyObject *args, PyObject *kwds)
 {
   const char *name;
   sqlite3_syscall_ptr ptr;
 
   CHECKVFSPY;
   VFSNOTIMPLEMENTED(xGetSystemCall, 3);
-  if (!PyArg_ParseTuple(args, "es", STRENCODING, &name))
-    return NULL;
-
+  {
+    static char *kwlist[] = {"name", NULL};
+    VFS_xGetSystemCall_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:" VFS_xGetSystemCall_USAGE, kwlist, &name))
+      return NULL;
+  }
   ptr = self->basevfs->xGetSystemCall(self->basevfs, name);
 
-  PyMem_Free((void *)name);
   if (ptr)
     return PyLong_FromVoidPtr(ptr);
   Py_RETURN_NONE;
@@ -1445,7 +1442,7 @@ apswvfs_xNextSystemCall(sqlite3_vfs *vfs, const char *zName)
   return res;
 }
 
-/** .. method:: xNextSystemCall(name: str) -> Option[str]
+/** .. method:: xNextSystemCall(name: Optional[str]) -> Optional[str]
 
     This method is repeatedly called to iterate over all of the system
     calls in the vfs.  When called with None you should return the
@@ -1462,29 +1459,22 @@ apswvfs_xNextSystemCall(sqlite3_vfs *vfs, const char *zName)
 
 */
 static PyObject *
-apswvfspy_xNextSystemCall(APSWVFS *self, PyObject *name)
+apswvfspy_xNextSystemCall(APSWVFS *self, PyObject *args, PyObject *kwds)
 {
-  const char *zName = NULL;
+  const char *name = NULL, *zName;
   PyObject *res = NULL;
-  PyObject *utf8 = NULL;
 
   CHECKVFSPY;
   VFSNOTIMPLEMENTED(xNextSystemCall, 3);
 
-  if (name != Py_None)
   {
-    if (PyUnicode_CheckExact(name))
-    {
-      utf8 = getutf8string(name);
-    }
-    else
-      PyErr_Format(PyExc_TypeError, "You must provide a string or None");
+    static char *kwlist[] = {"name", NULL};
+    VFS_xNextSystemCall_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "z:" VFS_xNextSystemCall_USAGE, kwlist, &name))
+      return NULL;
   }
 
-  if (PyErr_Occurred())
-    goto finally;
-
-  zName = self->basevfs->xNextSystemCall(self->basevfs, utf8 ? PyBytes_AsString(utf8) : NULL);
+  zName = self->basevfs->xNextSystemCall(self->basevfs, name);
   if (zName)
     res = convertutf8string(zName);
   else
@@ -1493,11 +1483,9 @@ apswvfspy_xNextSystemCall(APSWVFS *self, PyObject *name)
     res = Py_None;
   }
 
-finally:
   if (PyErr_Occurred())
-    AddTraceBackHere(__FILE__, __LINE__, "vfspy.xNextSystemCall", "{s:O}", "name", name);
+    AddTraceBackHere(__FILE__, __LINE__, "vfspy.xNextSystemCall", "{s:s}", "name", name);
 
-  Py_XDECREF(utf8);
   return res;
 }
 
@@ -1589,18 +1577,21 @@ APSWVFS_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSED(k
   return (PyObject *)self;
 }
 
-/** .. method:: __init__(name, base: str = None, makedefault: bool = False, maxpathname: int = 1024])
+/** .. method:: __init__(name: str, base: str = None, makedefault: bool = False, maxpathname: int = 1024)
 
     :param name: The name to register this vfs under.  If the name
         already exists then this vfs will replace the prior one of the
         same name.  Use :meth:`apsw.vfsnames` to get a list of
-        registered vfs names.  :param base: If you would like to
-        inherit behaviour from an already registered vfs then give
+        registered vfs names.
+
+    :param base: If you would like to inherit behaviour from an already registered vfs then give
         their name.  To inherit from the default vfs, use a zero
-        length string ``""`` as the name.  :param makedefault: If true
-        then this vfs will be registered as the default, and will be
-        used by any opens that don't specify a vfs.  :param
-        maxpathname: The maximum length of database name in bytes when
+        length string ``""`` as the name.
+
+    :param makedefault: If true then this vfs will be registered as the default, and will be
+        used by any opens that don't specify a vfs.
+
+    :param maxpathname: The maximum length of database name in bytes when
         represented in UTF-8.  If a pathname is passed in longer than
         this value then SQLite will not `be able to open it
         <https://sqlite.org/src/tktview/c060923a5422590b3734eb92eae0c94934895b68>`__.
@@ -1613,20 +1604,21 @@ APSWVFS_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSED(k
 static int
 APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
 {
-  static char *kwlist[] = {"name", "base", "makedefault", "maxpathname", NULL};
-  char *base = NULL, *name = NULL;
-  int makedefault = 0, maxpathname = 0, res;
+  const char *base = NULL, *name = NULL;
+  int makedefault = 0, maxpathname = 1024, res;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "es|esii:init(name, base=None, makedefault=False, maxpathname=1024)", kwlist,
-                                   STRENCODING, &name, STRENCODING, &base, &makedefault, &maxpathname))
-    return -1;
+  {
+    static char *kwlist[] = {"name", "base", "makedefault", "maxpathname", NULL};
+    VFS_init_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|sO&i:" VFS_init_USAGE, kwlist, &name, &base, argcheck_bool, &makedefault, &maxpathname))
+      return -1;
+  }
 
   if (base)
   {
     int baseversion;
     if (!strlen(base))
     {
-      PyMem_Free(base);
       base = NULL;
     }
     self->basevfs = sqlite3_vfs_find(base);
@@ -1642,8 +1634,6 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
       PyErr_Format(PyExc_ValueError, "Base vfs implements version %d of vfs spec, but apsw only supports versions 1, 2 and 3", baseversion);
       goto error;
     }
-    if (base)
-      PyMem_Free(base);
   }
 
   self->containingvfs = (sqlite3_vfs *)PyMem_Malloc(sizeof(sqlite3_vfs));
@@ -1655,9 +1645,8 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
   if (self->basevfs && !maxpathname)
     self->containingvfs->mxPathname = self->basevfs->mxPathname;
   else
-    self->containingvfs->mxPathname = maxpathname ? maxpathname : 1024;
-  self->containingvfs->zName = name;
-  name = NULL;
+    self->containingvfs->mxPathname = maxpathname;
+  self->containingvfs->zName = apsw_strdup(name);
   self->containingvfs->pAppData = self;
 #define METHOD(meth) \
   self->containingvfs->x##meth = apswvfs_x##meth;
@@ -1697,10 +1686,6 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
   SET_EXC(res, NULL);
 
 error:
-  if (name)
-    PyMem_Free(name);
-  if (base)
-    PyMem_Free(base);
   if (self->containingvfs && self->containingvfs->zName)
     PyMem_Free((void *)(self->containingvfs->zName));
   if (self->containingvfs)
@@ -1710,21 +1695,21 @@ error:
 }
 
 static PyMethodDef APSWVFS_methods[] = {
-    {"xDelete", (PyCFunction)apswvfspy_xDelete, METH_VARARGS, VFS_xDelete_DOC},
-    {"xFullPathname", (PyCFunction)apswvfspy_xFullPathname, METH_O, VFS_xFullPathname_DOC},
+    {"xDelete", (PyCFunction)apswvfspy_xDelete, METH_VARARGS | METH_KEYWORDS, VFS_xDelete_DOC},
+    {"xFullPathname", (PyCFunction)apswvfspy_xFullPathname, METH_VARARGS | METH_KEYWORDS, VFS_xFullPathname_DOC},
     {"xOpen", (PyCFunction)apswvfspy_xOpen, METH_VARARGS | METH_KEYWORDS, VFS_xOpen_DOC},
-    {"xAccess", (PyCFunction)apswvfspy_xAccess, METH_VARARGS, VFS_xAccess_DOC},
-    {"xDlOpen", (PyCFunction)apswvfspy_xDlOpen, METH_VARARGS, VFS_xDlOpen_DOC},
-    {"xDlSym", (PyCFunction)apswvfspy_xDlSym, METH_VARARGS, VFS_xDlSym_DOC},
-    {"xDlClose", (PyCFunction)apswvfspy_xDlClose, METH_O, VFS_xDlClose_DOC},
+    {"xAccess", (PyCFunction)apswvfspy_xAccess, METH_VARARGS | METH_KEYWORDS, VFS_xAccess_DOC},
+    {"xDlOpen", (PyCFunction)apswvfspy_xDlOpen, METH_VARARGS | METH_KEYWORDS, VFS_xDlOpen_DOC},
+    {"xDlSym", (PyCFunction)apswvfspy_xDlSym, METH_VARARGS | METH_KEYWORDS, VFS_xDlSym_DOC},
+    {"xDlClose", (PyCFunction)apswvfspy_xDlClose, METH_VARARGS | METH_KEYWORDS, VFS_xDlClose_DOC},
     {"xDlError", (PyCFunction)apswvfspy_xDlError, METH_NOARGS, VFS_xDlError_DOC},
-    {"xRandomness", (PyCFunction)apswvfspy_xRandomness, METH_VARARGS, VFS_xRandomness_DOC},
-    {"xSleep", (PyCFunction)apswvfspy_xSleep, METH_VARARGS, VFS_xSleep_DOC},
+    {"xRandomness", (PyCFunction)apswvfspy_xRandomness, METH_VARARGS | METH_KEYWORDS, VFS_xRandomness_DOC},
+    {"xSleep", (PyCFunction)apswvfspy_xSleep, METH_VARARGS | METH_KEYWORDS, VFS_xSleep_DOC},
     {"xCurrentTime", (PyCFunction)apswvfspy_xCurrentTime, METH_NOARGS, VFS_xCurrentTime_DOC},
     {"xGetLastError", (PyCFunction)apswvfspy_xGetLastError, METH_NOARGS, VFS_xGetLastError_DOC},
-    {"xSetSystemCall", (PyCFunction)apswvfspy_xSetSystemCall, METH_VARARGS, VFS_xSetSystemCall_DOC},
-    {"xGetSystemCall", (PyCFunction)apswvfspy_xGetSystemCall, METH_VARARGS, VFS_xGetSystemCall_DOC},
-    {"xNextSystemCall", (PyCFunction)apswvfspy_xNextSystemCall, METH_O, VFS_xNextSystemCall_DOC},
+    {"xSetSystemCall", (PyCFunction)apswvfspy_xSetSystemCall, METH_VARARGS | METH_KEYWORDS, VFS_xSetSystemCall_DOC},
+    {"xGetSystemCall", (PyCFunction)apswvfspy_xGetSystemCall, METH_VARARGS | METH_KEYWORDS, VFS_xGetSystemCall_DOC},
+    {"xNextSystemCall", (PyCFunction)apswvfspy_xNextSystemCall, METH_VARARGS | METH_KEYWORDS, VFS_xNextSystemCall_DOC},
     {"unregister", (PyCFunction)apswvfspy_unregister, METH_NOARGS, VFS_unregister_DOC},
     {"excepthook", (PyCFunction)apswvfs_excepthook, METH_VARARGS, VFS_excepthook_DOC},
     /* Sentinel */
@@ -2032,7 +2017,7 @@ finally:
     :param offset: Where to start reading. This number may be 64 bit once the database is larger than 2GB.
 */
 static PyObject *
-apswvfsfilepy_xRead(APSWVFSFile *self, PyObject *args)
+apswvfsfilepy_xRead(APSWVFSFile *self, PyObject *args, PyObject *kwds)
 {
   int amount;
   sqlite3_int64 offset;
@@ -2042,10 +2027,11 @@ apswvfsfilepy_xRead(APSWVFSFile *self, PyObject *args)
   CHECKVFSFILEPY;
   VFSFILENOTIMPLEMENTED(xRead, 1);
 
-  if (!PyArg_ParseTuple(args, "iL", &amount, &offset))
   {
-    assert(PyErr_Occurred());
-    return NULL;
+    static char *kwlist[] = {"amount", "offset", NULL};
+    VFSFile_xRead_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iL:" VFSFile_xRead_USAGE, kwlist, &amount, &offset))
+      return NULL;
   }
 
   buffy = PyBytes_FromStringAndSize(NULL, amount);
@@ -2106,7 +2092,7 @@ finally:
   return result;
 }
 
-/** .. method:: xWrite(data: bytes, offset: int)
+/** .. method:: xWrite(data: bytes, offset: int) -> None
 
   Write the *data* starting at absolute *offset*. You must write all the data
   requested, or return an error. If you have the file open for
@@ -2118,36 +2104,25 @@ finally:
 */
 
 static PyObject *
-apswvfsfilepy_xWrite(APSWVFSFile *self, PyObject *args)
+apswvfsfilepy_xWrite(APSWVFSFile *self, PyObject *args, PyObject *kwds)
 {
   sqlite3_int64 offset;
   int res;
-  PyObject *buffy = NULL;
-  const void *buffer;
-  Py_ssize_t buflen;
-  int asrb;
-  READBUFFERVARS;
+  Py_buffer data;
 
   CHECKVFSFILEPY;
   VFSFILENOTIMPLEMENTED(xWrite, 1);
 
-  if (!PyArg_ParseTuple(args, "OL", &buffy, &offset))
   {
-    assert(PyErr_Occurred());
-    return NULL;
+    static char *kwlist[] = {"data", "offset", NULL};
+    VFSFile_xWrite_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y*L:" VFSFile_xWrite_USAGE, kwlist, &data, &offset))
+      return NULL;
   }
 
-  compat_PyObjectReadBuffer(buffy);
-  if (asrb != 0 || PyUnicode_Check(buffy))
-  {
-    PyErr_Format(PyExc_TypeError, "Object passed to xWrite doesn't do read buffer");
-    AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xWrite", "{s: L, s: O}", "offset", offset, "buffer", buffy);
-    return NULL;
-  }
+  res = self->base->pMethods->xWrite(self->base, data.buf, data.len, offset);
 
-  res = self->base->pMethods->xWrite(self->base, buffer, buflen, offset);
-
-  ENDREADBUFFER;
+  PyBuffer_Release(&data);
 
   if (res == SQLITE_OK)
     Py_RETURN_NONE;
@@ -2183,17 +2158,20 @@ apswvfsfile_xUnlock(sqlite3_file *file, int flag)
     family of constants.
 */
 static PyObject *
-apswvfsfilepy_xUnlock(APSWVFSFile *self, PyObject *args)
+apswvfsfilepy_xUnlock(APSWVFSFile *self, PyObject *args, PyObject *kwds)
 {
-  int flag, res;
+  int level, res;
 
   CHECKVFSFILEPY;
   VFSFILENOTIMPLEMENTED(xUnlock, 1);
 
-  if (!PyArg_ParseTuple(args, "i", &flag))
-    return NULL;
-
-  res = self->base->pMethods->xUnlock(self->base, flag);
+  {
+    static char *kwlist[] = {"level", NULL};
+    VFSFile_xUnlock_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" VFSFile_xUnlock_USAGE, kwlist, &level))
+      return NULL;
+  }
+  res = self->base->pMethods->xUnlock(self->base, level);
 
   APSW_FAULT_INJECT(xUnlockFails, , res = SQLITE_IOERR);
 
@@ -2287,18 +2265,21 @@ apswvfsfile_xTruncate(sqlite3_file *file, sqlite3_int64 size)
   current length).
 */
 static PyObject *
-apswvfsfilepy_xTruncate(APSWVFSFile *self, PyObject *args)
+apswvfsfilepy_xTruncate(APSWVFSFile *self, PyObject *args, PyObject *kwds)
 {
   int res;
-  sqlite3_int64 size;
+  sqlite3_int64 newsize;
 
   CHECKVFSFILEPY;
   VFSFILENOTIMPLEMENTED(xTruncate, 1);
 
-  if (!PyArg_ParseTuple(args, "L", &size))
-    return NULL;
-
-  res = self->base->pMethods->xTruncate(self->base, size);
+  {
+    static char *kwlist[] = {"newsize", NULL};
+    VFSFile_xTruncate_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "L:" VFSFile_xTruncate_USAGE, kwlist, &newsize))
+      return NULL;
+  }
+  res = self->base->pMethods->xTruncate(self->base, newsize);
 
   if (res == SQLITE_OK)
     Py_RETURN_NONE;
@@ -2335,16 +2316,18 @@ apswvfsfile_xSync(sqlite3_file *file, int flags)
   needs to be synced.  You can sync more than what is requested.
 */
 static PyObject *
-apswvfsfilepy_xSync(APSWVFSFile *self, PyObject *args)
+apswvfsfilepy_xSync(APSWVFSFile *self, PyObject *args, PyObject *kwds)
 {
   int flags, res;
 
   CHECKVFSFILEPY;
   VFSFILENOTIMPLEMENTED(xSync, 1);
-
-  if (!PyArg_ParseTuple(args, "i", &flags))
-    return NULL;
-
+  {
+    static char *kwlist[] = {"flags", NULL};
+    VFSFile_xSync_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" VFSFile_xSync_USAGE, kwlist, &flags))
+      return NULL;
+  }
   res = self->base->pMethods->xSync(self->base, flags);
 
   APSW_FAULT_INJECT(xSyncFails, , res = SQLITE_IOERR);
@@ -2619,8 +2602,8 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
                 else:
                     # this ensures superclass implementation is called
                     return super(MyFile, self).xFileControl(op, ptr)
-		# we understood the op
-	        return True
+    # we understood the op
+          return True
 */
 static PyObject *
 apswvfsfilepy_xFileControl(APSWVFSFile *self, PyObject *args, PyObject *kwds)
@@ -2779,17 +2762,17 @@ static const struct sqlite3_io_methods apsw_io_methods_v2 =
 };
 
 static PyMethodDef APSWVFSFile_methods[] = {
-    {"xRead", (PyCFunction)apswvfsfilepy_xRead, METH_VARARGS, VFSFile_xRead_DOC},
-    {"xUnlock", (PyCFunction)apswvfsfilepy_xUnlock, METH_VARARGS, VFSFile_xUnlock_DOC},
+    {"xRead", (PyCFunction)apswvfsfilepy_xRead, METH_VARARGS | METH_KEYWORDS, VFSFile_xRead_DOC},
+    {"xUnlock", (PyCFunction)apswvfsfilepy_xUnlock, METH_VARARGS | METH_KEYWORDS, VFSFile_xUnlock_DOC},
     {"xLock", (PyCFunction)apswvfsfilepy_xLock, METH_VARARGS | METH_KEYWORDS, VFSFile_xLock_DOC},
     {"xClose", (PyCFunction)apswvfsfilepy_xClose, METH_NOARGS, VFSFile_xClose_DOC},
     {"xSectorSize", (PyCFunction)apswvfsfilepy_xSectorSize, METH_NOARGS, VFSFile_xSectorSize_DOC},
     {"xFileSize", (PyCFunction)apswvfsfilepy_xFileSize, METH_NOARGS, VFSFile_xFileSize_DOC},
     {"xDeviceCharacteristics", (PyCFunction)apswvfsfilepy_xDeviceCharacteristics, METH_NOARGS, VFSFile_xDeviceCharacteristics_DOC},
     {"xCheckReservedLock", (PyCFunction)apswvfsfilepy_xCheckReservedLock, METH_NOARGS, VFSFile_xCheckReservedLock_DOC},
-    {"xWrite", (PyCFunction)apswvfsfilepy_xWrite, METH_VARARGS, VFSFile_xWrite_DOC},
+    {"xWrite", (PyCFunction)apswvfsfilepy_xWrite, METH_VARARGS | METH_KEYWORDS, VFSFile_xWrite_DOC},
     {"xSync", (PyCFunction)apswvfsfilepy_xSync, METH_VARARGS, VFSFile_xSync_DOC},
-    {"xTruncate", (PyCFunction)apswvfsfilepy_xTruncate, METH_VARARGS, VFSFile_xTruncate_DOC},
+    {"xTruncate", (PyCFunction)apswvfsfilepy_xTruncate, METH_VARARGS | METH_KEYWORDS, VFSFile_xTruncate_DOC},
     {"xFileControl", (PyCFunction)apswvfsfilepy_xFileControl, METH_VARARGS | METH_KEYWORDS, VFSFile_xFileControl_DOC},
     {"excepthook", (PyCFunction)apswvfs_excepthook, METH_VARARGS, VFSFile_excepthook_DOC},
     /* Sentinel */

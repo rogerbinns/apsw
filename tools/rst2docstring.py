@@ -291,8 +291,25 @@ type_overrides = {
     },
     "VFSFile.xFileControl": {
         "ptr": "pointer"
+    },
+    "VFSFile.xRead": {
+        "offset": "int64"
+    },
+    "VFSFile.xTruncate": {
+        "newsize": "int64"
+    },
+    "VFSFile.xWrite": {
+        "offset": "int64"
+    },
+    "VFS.xDlClose": {
+        "handle": "pointer"
+    },
+    "VFS.xDlSym": {
+        "handle": "pointer"
+    },
+    "VFS.xSetSystemCall": {
+        "pointer": "pointer"
     }
-
 }
 
 
@@ -448,8 +465,10 @@ def do_argparse(item):
     res = "\n".join(res) + "\n"
     return res
 
+
 def is_sequence(s):
     return isinstance(s, (list, tuple))
+
 
 if __name__ == '__main__':
     items = []

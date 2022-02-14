@@ -4148,7 +4148,6 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, apsw.zeroblob)
         self.assertRaises(TypeError, apsw.zeroblob, "foo")
         self.assertRaises(TypeError, apsw.zeroblob, -7)
-        self.assertRaises(TypeError, apsw.zeroblob, size=27)
         self.assertRaises(OverflowError, apsw.zeroblob, 4000000000)
         cur = self.db.cursor()
         cur.execute("create table foo(x)")
@@ -5467,7 +5466,7 @@ class APSW(unittest.TestCase):
 
         ## xWrite
         self.assertRaises(TypeError, t.xWrite, "three", "four")
-        self.assertRaises(OverflowError, t.xWrite, "three", 0xffffffffeeeeeeee0)
+        self.assertRaises(OverflowError, t.xWrite, b"three", 0xffffffffeeeeeeee0)
         self.assertRaises(TypeError, t.xWrite, u"foo", 0)
         TestFile.xWrite = TestFile.xWrite1
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
