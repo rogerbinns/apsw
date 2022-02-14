@@ -221,7 +221,7 @@ convert_value_to_pyobject(sqlite3_value *value)
     return PyFloat_FromDouble(sqlite3_value_double(value));
 
   case SQLITE_TEXT:
-    return convertutf8stringsize((const char *)sqlite3_value_text(value), sqlite3_value_bytes(value));
+    return PyUnicode_FromStringAndSize((const char *)sqlite3_value_text(value), sqlite3_value_bytes(value));
 
   case SQLITE_NULL:
     Py_RETURN_NONE;
@@ -269,7 +269,7 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
     const char *data;
     size_t len;
     _PYSQLITE_CALL_V((data = (const char *)sqlite3_column_text(stmt, col), len = sqlite3_column_bytes(stmt, col)));
-    return convertutf8stringsize(data, len);
+    return PyUnicode_FromStringAndSize(data, len);
   }
 
   case SQLITE_NULL:

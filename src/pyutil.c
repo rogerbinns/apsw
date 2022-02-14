@@ -4,22 +4,9 @@
   See the accompanying LICENSE file.
 */
 
-/* How to make a string from a utf8 constant */
-#define MAKESTR PyUnicode_FromString
-
 #define APSW_PYTYPE_INIT PyVarObject_HEAD_INIT(NULL, 0)
 
 #define APSW_PYTYPE_VERSION , 0
-
-#define APSW_Unicode_Return(r)                 \
-  do                                           \
-  {                                            \
-    int i__ = (r) ? (PyUnicode_READY(r)) : -1; \
-    if (i__ != 0)                              \
-      Py_CLEAR(r);                             \
-    return (r);                                \
-  } while (0)
-
 
 /* we clear weakref lists when close is called on a blob/cursor as
    well as when it is deallocated */
@@ -101,22 +88,6 @@ Call_PythonMethodV(PyObject *obj, const char *methodname, int mandatory, const c
 
 #define converttobytes PyBytes_FromStringAndSize
 
-/* Convert a pointer and size UTF-8 string into a Python object.
-   Pointer must be non-NULL.  New behaviour in 3.3.8 - always return
-   Unicode strings
-*/
-static PyObject *
-convertutf8stringsize(const char *str, Py_ssize_t size)
-{
-  assert(str);
-  assert(size >= 0);
-
-  {
-    PyObject *r = PyUnicode_DecodeUTF8(str, size, NULL);
-    APSW_Unicode_Return(r);
-  }
-}
-
 /* Convert a NULL terminated UTF-8 string into a Python object.  None
    is returned if NULL is passed in. */
 static PyObject *
@@ -125,7 +96,7 @@ convertutf8string(const char *str)
   if (!str)
     Py_RETURN_NONE;
 
-  return convertutf8stringsize(str, strlen(str));
+  return PyUnicode_FromStringAndSize(str, strlen(str));
 }
 
 /* Returns a PyBytes/String encoded in UTF8 - new reference.

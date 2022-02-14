@@ -173,7 +173,7 @@ static PyObject *apswmodule;
 static PyObject *
 getsqliteversion(void)
 {
-  return MAKESTR(sqlite3_libversion());
+  return PyUnicode_FromString(sqlite3_libversion());
 }
 
 /** .. method:: sqlite3_sourceid() -> str
@@ -187,7 +187,7 @@ getsqliteversion(void)
 static PyObject *
 get_sqlite3_sourceid(void)
 {
-  return MAKESTR(sqlite3_sourceid());
+  return PyUnicode_FromString(sqlite3_sourceid());
 }
 
 /** .. method:: apswversion() -> str
@@ -197,7 +197,7 @@ get_sqlite3_sourceid(void)
 static PyObject *
 getapswversion(void)
 {
-  return MAKESTR(APSW_VERSION);
+  return PyUnicode_FromString(APSW_VERSION);
 }
 
 /** .. method:: enablesharedcache(enable: bool) -> None
@@ -1041,7 +1041,7 @@ get_compile_options(void)
   {
     opt = sqlite3_compileoption_get(i); /* No PYSQLITE_CALL needed */
     assert(opt);
-    tmpstring = MAKESTR(opt);
+    tmpstring = PyUnicode_FromString(opt);
     if (!tmpstring)
       goto fail;
     PyTuple_SET_ITEM(res, i, tmpstring);
@@ -1076,7 +1076,7 @@ get_keywords(void)
   {
     j = sqlite3_keyword_name(i, &name, &size); /* No PYSQLITE_CALL needed */
     assert(j == SQLITE_OK);
-    tmpstring = convertutf8stringsize(name, size);
+    tmpstring = PyUnicode_FromStringAndSize(name, size);
     if (!tmpstring)
       goto fail;
     j = PySet_Add(res, tmpstring);
@@ -1101,7 +1101,7 @@ formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value)
 {
   /* NULL/None */
   if (value == Py_None)
-    return MAKESTR("NULL");
+    return PyUnicode_FromString("NULL");
 
   /* Integer/Float */
   if (PyLong_Check(value) || PyFloat_Check(value))
@@ -1925,7 +1925,7 @@ modules etc. For example::
       }
       /* regular ADDINT */
       PyModule_AddIntConstant(m, name, value);
-      pyname = MAKESTR(name);
+      pyname = PyUnicode_FromString(name);
       pyvalue = PyLong_FromLong(value);
       if (!pyname || !pyvalue)
         goto fail;
@@ -1996,7 +1996,7 @@ APSW_Should_Fault(const char *name)
       PyModule_AddObject(apswmodule, "faultdict", dict);
   }
 
-  value = MAKESTR(name);
+  value = PyUnicode_FromString(name);
 
   faultdict = PyObject_GetAttrString(apswmodule, "faultdict");
 

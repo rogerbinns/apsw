@@ -206,7 +206,7 @@ statementcache_reprepare(StatementCache *sc, APSWStatement *statement)
 
  error:
   SET_EXC(res, sc->db);
-  AddTraceBackHere(__FILE__, __LINE__, "sqlite3_prepare", "{s: N}", "sql", convertutf8stringsize(buffer, buflen));
+  AddTraceBackHere(__FILE__, __LINE__, "sqlite3_prepare", "{s: N}", "sql", PyUnicode_FromStringAndSize(buffer, buflen));
   /* we don't want to clobber the errmsg so pretend everything is ok */
   res2=res;
   res=SQLITE_OK;
@@ -379,7 +379,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query, int usepreparev2)
   if(res!=SQLITE_OK || PyErr_Occurred())
     {
       SET_EXC(res, sc->db);
-      AddTraceBackHere(__FILE__, __LINE__, "sqlite3_prepare", "{s: N}", "sql", convertutf8stringsize(buffer, buflen));
+      AddTraceBackHere(__FILE__, __LINE__, "sqlite3_prepare", "{s: N}", "sql", PyUnicode_FromStringAndSize(buffer, buflen));
       goto error;
     }
 
@@ -662,7 +662,7 @@ static PyObject *
 convertutf8buffertounicode(PyObject *buffer)
 {
   assert(APSWBuffer_Check(buffer));
-  return convertutf8stringsize(APSWBuffer_AS_STRING(buffer), APSWBuffer_GET_SIZE(buffer));
+  return PyUnicode_FromStringAndSize(APSWBuffer_AS_STRING(buffer), APSWBuffer_GET_SIZE(buffer));
 }
 
 /* Convert a utf8 buffer and size to PyUnicode */
@@ -672,7 +672,7 @@ convertutf8buffersizetounicode(PyObject *buffer, Py_ssize_t len)
   assert(APSWBuffer_Check(buffer));
   assert(len<=APSWBuffer_GET_SIZE(buffer));
 
-  return convertutf8stringsize(APSWBuffer_AS_STRING(buffer), len);
+  return PyUnicode_FromStringAndSize(APSWBuffer_AS_STRING(buffer), len);
 }
 
 

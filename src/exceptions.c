@@ -294,7 +294,7 @@ MakeSqliteMsgFromPyException(char **errmsg)
     if (!str && etype)
       str = PyObject_Str(etype);
     if (!str)
-      str = MAKESTR("python exception with no information");
+      str = PyUnicode_FromString("python exception with no information");
     if (*errmsg)
       sqlite3_free(*errmsg);
     *errmsg = sqlite3_mprintf("%s", PyBytes_AsString(str));

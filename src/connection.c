@@ -564,7 +564,7 @@ Connection_backup(Connection *self, PyObject *args, PyObject *kwds)
     APSW_FAULT_INJECT(BackupTupleFails, args = PyTuple_New(2), args = PyErr_NoMemory());
     if (!args)
       goto thisfinally;
-    PyTuple_SET_ITEM(args, 0, MAKESTR("The destination database has outstanding objects open on it.  They must all be closed for the backup to proceed (otherwise corruption would be possible.)"));
+    PyTuple_SET_ITEM(args, 0, PyUnicode_FromString("The destination database has outstanding objects open on it.  They must all be closed for the backup to proceed (otherwise corruption would be possible.)"));
     PyTuple_SET_ITEM(args, 1, self->dependents);
     Py_INCREF(self->dependents);
 
@@ -2641,8 +2641,8 @@ collation_cb(void *context,
   if (PyErr_Occurred())
     goto finally; /* outstanding error */
 
-  pys1 = convertutf8stringsize(stringonedata, stringonelen);
-  pys2 = convertutf8stringsize(stringtwodata, stringtwolen);
+  pys1 = PyUnicode_FromStringAndSize(stringonedata, stringonelen);
+  pys2 = PyUnicode_FromStringAndSize(stringtwodata, stringtwolen);
 
   if (!pys1 || !pys2)
     goto finally; /* failed to allocate strings */
