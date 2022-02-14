@@ -25,7 +25,6 @@
 #define PyIntLong_AsLong PyLong_AsLong
 #define PyInt_FromLong PyLong_FromLong
 #define PyIntLong_AsLongLong PyLong_AsLongLong
-#define PyObject_Unicode PyObject_Str
 
 #define PyIntLong_FromLongLong(val) PyLong_FromLongLong(val)
 

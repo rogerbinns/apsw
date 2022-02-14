@@ -1105,7 +1105,7 @@ formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value)
 
   /* Integer/Float */
   if (PyLong_Check(value) || PyFloat_Check(value))
-    return PyObject_Unicode(value);
+    return PyObject_Str(value);
 
   /* Unicode */
   if (PyUnicode_Check(value))
