@@ -117,15 +117,6 @@ static int APSW_Should_Fault(const char *);
 
 #endif
 
-/* The encoding we use with SQLite.  SQLite supports either utf8 or 16
-   bit unicode (host byte order).  If the latter is used then all
-   functions have "16" appended to their name.  The encoding used also
-   affects how strings are stored in the database.  We use utf8 since
-   it is more space efficient, and Python can't make its mind up about
-   Unicode (it uses 16 or 32 bit unichars and often likes to use Byte
-   Order Markers as well). */
-#define STRENCODING "utf-8"
-
 /* The module object */
 static PyObject *apswmodule;
 
