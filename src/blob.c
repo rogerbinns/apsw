@@ -95,7 +95,7 @@ ZeroBlobBind_init(ZeroBlobBind *self, PyObject *args, PyObject *kwds)
 static PyObject *
 ZeroBlobBind_len(ZeroBlobBind *self)
 {
-  return PyInt_FromLong(self->blobsize);
+  return PyLong_FromLong(self->blobsize);
 }
 
 static PyMethodDef ZeroBlobBind_methods[] = {

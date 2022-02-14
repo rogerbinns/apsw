@@ -235,10 +235,10 @@ static void make_exception(int res, sqlite3 *db)
       PyErr_Format(exc_descriptors[i].cls, "%sError: %s", exc_descriptors[i].name, errmsg);
       PyErr_Fetch(&etype, &eval, &etb);
       PyErr_NormalizeException(&etype, &eval, &etb);
-      tmp = PyIntLong_FromLongLong(res & 0xff);
+      tmp = PyLong_FromLongLong(res & 0xff);
       PyObject_SetAttrString(eval, "result", tmp);
       Py_DECREF(tmp);
-      tmp = PyIntLong_FromLongLong(res);
+      tmp = PyLong_FromLongLong(res);
       PyObject_SetAttrString(eval, "extendedresult", tmp);
       Py_DECREF(tmp);
       PyErr_Restore(etype, eval, etb);
@@ -278,9 +278,9 @@ MakeSqliteMsgFromPyException(char **errmsg)
       {
         /* extract it */
         PyObject *extended = PyObject_GetAttrString(evalue, "extendedresult");
-        if (extended && PyIntLong_Check(extended))
+        if (extended && PyLong_Check(extended))
           /* Any errors in this will be swallowed */
-          res = (PyIntLong_AsLong(extended) & 0xffffff00u) | res;
+          res = (PyLong_AsLong(extended) & 0xffffff00u) | res;
         Py_XDECREF(extended);
       }
       break;

@@ -676,9 +676,9 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
         continue;
       }
       /* or an integer */
-      if (PyIntLong_Check(constraint))
+      if (PyLong_Check(constraint))
       {
-        indexinfo->aConstraintUsage[i].argvIndex = PyIntLong_AsLong(constraint) + 1;
+        indexinfo->aConstraintUsage[i].argvIndex = PyLong_AsLong(constraint) + 1;
         Py_DECREF(constraint);
         continue;
       }
@@ -695,7 +695,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
       omit = PySequence_GetItem(constraint, 1);
       if (!argvindex || !omit)
         goto constraintfail;
-      if (!PyIntLong_Check(argvindex))
+      if (!PyLong_Check(argvindex))
       {
         PyErr_Format(PyExc_TypeError, "argvindex for constraint #%d should be an integer", j);
         AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex.result_constraint_argvindex", "{s: O, s: O, s: O, s: O, s: O}",
@@ -705,7 +705,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
       omitv = PyObject_IsTrue(omit);
       if (omitv == -1)
         goto constraintfail;
-      indexinfo->aConstraintUsage[i].argvIndex = PyIntLong_AsLong(argvindex) + 1;
+      indexinfo->aConstraintUsage[i].argvIndex = PyLong_AsLong(argvindex) + 1;
       indexinfo->aConstraintUsage[i].omit = omitv;
       Py_DECREF(constraint);
       Py_DECREF(argvindex);
@@ -729,14 +729,14 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
       goto pyexception;
     if (idxnum != Py_None)
     {
-      if (!PyIntLong_Check(idxnum))
+      if (!PyLong_Check(idxnum))
       {
         PyErr_Format(PyExc_TypeError, "idxnum must be an integer");
         AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex.result_indexnum", "{s: O, s: O, s: O}", "self", vtable, "result", res, "indexnum", idxnum);
         Py_DECREF(idxnum);
         goto pyexception;
       }
-      indexinfo->idxNum = PyIntLong_AsLong(idxnum);
+      indexinfo->idxNum = PyLong_AsLong(idxnum);
     }
     Py_DECREF(idxnum);
   }

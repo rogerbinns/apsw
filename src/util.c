@@ -255,7 +255,7 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
   {
     sqlite3_int64 val;
     _PYSQLITE_CALL_V(val = sqlite3_column_int64(stmt, col));
-    return PyIntLong_FromLongLong(val);
+    return PyLong_FromLongLong(val);
   }
 
   case SQLITE_FLOAT:

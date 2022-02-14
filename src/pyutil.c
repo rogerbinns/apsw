@@ -21,13 +21,6 @@
   } while (0)
 
 
-#define PyIntLong_Check PyLong_Check
-#define PyIntLong_AsLong PyLong_AsLong
-#define PyInt_FromLong PyLong_FromLong
-#define PyIntLong_AsLongLong PyLong_AsLongLong
-
-#define PyIntLong_FromLongLong(val) PyLong_FromLongLong(val)
-
 /* we clear weakref lists when close is called on a blob/cursor as
    well as when it is deallocated */
 #define APSW_CLEAR_WEAKREFS                     \

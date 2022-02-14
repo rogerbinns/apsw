@@ -401,7 +401,7 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
   }
 
   /* record information */
-  self->open_flags = PyInt_FromLong(flags);
+  self->open_flags = PyLong_FromLong(flags);
   if (vfsused)
     self->open_vfs = convertutf8string(vfsused->zName);
 
@@ -759,7 +759,7 @@ Connection_changes(Connection *self)
   /* verify 64 bit values convert fully */
   APSW_FAULT_INJECT(ConnectionChanges64, , changes = ((sqlite3_int64)1000000000) * 7 * 3);
 
-  return PyIntLong_FromLongLong(changes);
+  return PyLong_FromLongLong(changes);
 }
 
 /** .. method:: totalchanges() -> int
@@ -778,7 +778,7 @@ Connection_totalchanges(Connection *self)
   CHECK_CLOSED(self, NULL);
 
   changes = sqlite3_total_changes64(self->db);
-  return PyIntLong_FromLongLong(changes);
+  return PyLong_FromLongLong(changes);
 }
 
 /** .. method:: getautocommit() -> bool
@@ -1224,7 +1224,7 @@ walhookcb(void *context, sqlite3 *db, const char *dbname, int npages)
                      "npages", npages);
     goto finally;
   }
-  if (!PyIntLong_Check(retval))
+  if (!PyLong_Check(retval))
   {
     PyErr_Format(PyExc_TypeError, "wal hook must return a number");
     AddTraceBackHere(__FILE__, __LINE__, "walhookcallback", "{s: O, s: s, s: i, s: O}",
@@ -1234,7 +1234,7 @@ walhookcb(void *context, sqlite3 *db, const char *dbname, int npages)
                      "retval", retval);
     goto finally;
   }
-  code = (int)PyIntLong_AsLong(retval);
+  code = (int)PyLong_AsLong(retval);
 
 finally:
   Py_XDECREF(retval);
@@ -1399,9 +1399,9 @@ authorizercb(void *context, int operation, const char *paramone, const char *par
   if (!retval)
     goto finally; /* abort due to exeception */
 
-  if (PyIntLong_Check(retval))
+  if (PyLong_Check(retval))
   {
-    result = PyIntLong_AsLong(retval);
+    result = PyLong_AsLong(retval);
     goto haveval;
   }
 
@@ -1525,9 +1525,9 @@ autovacuum_pages_cb(void *callable, const char *schema, unsigned int nPages, uns
 
   retval = PyObject_CallFunction((PyObject *)callable, AVPCB_CALL, convertutf8string, schema, nPages, nFreePages, nBytesPerPage);
 
-  if (retval && PyIntLong_Check(retval))
+  if (retval && PyLong_Check(retval))
   {
-    res = PyIntLong_AsLong(retval);
+    res = PyLong_AsLong(retval);
     goto finally;
   }
 
@@ -2655,9 +2655,9 @@ collation_cb(void *context,
     goto finally; /* execution failed */
   }
 
-  if (PyIntLong_Check(retval))
+  if (PyLong_Check(retval))
   {
-    result = PyIntLong_AsLong(retval);
+    result = PyLong_AsLong(retval);
     goto haveval;
   }
 
@@ -3343,10 +3343,10 @@ Connection_config(Connection *self, PyObject *args)
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  if (PyTuple_GET_SIZE(args) < 1 || !PyIntLong_Check(PyTuple_GET_ITEM(args, 0)))
+  if (PyTuple_GET_SIZE(args) < 1 || !PyLong_Check(PyTuple_GET_ITEM(args, 0)))
     return PyErr_Format(PyExc_TypeError, "There should be at least one argument with the first being a number");
 
-  opt = PyIntLong_AsLong(PyTuple_GET_ITEM(args, 0));
+  opt = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
   if (PyErr_Occurred())
     return NULL;
 
@@ -3378,7 +3378,7 @@ Connection_config(Connection *self, PyObject *args)
       SET_EXC(res, self->db);
       return NULL;
     }
-    return PyInt_FromLong(current);
+    return PyLong_FromLong(current);
   }
   default:
     return PyErr_Format(PyExc_ValueError, "Unknown config operation %d", (int)opt);

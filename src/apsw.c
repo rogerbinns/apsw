@@ -343,10 +343,10 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
   int res, optdup;
   long opt;
 
-  if (PyTuple_GET_SIZE(args) < 1 || !PyIntLong_Check(PyTuple_GET_ITEM(args, 0)))
+  if (PyTuple_GET_SIZE(args) < 1 || !PyLong_Check(PyTuple_GET_ITEM(args, 0)))
     return PyErr_Format(PyExc_TypeError, "There should be at least one argument with the first being a number");
 
-  opt = PyIntLong_AsLong(PyTuple_GET_ITEM(args, 0));
+  opt = PyLong_AsLong(PyTuple_GET_ITEM(args, 0));
   if (PyErr_Occurred())
     return NULL;
 
@@ -374,7 +374,7 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
       SET_EXC(res, NULL);
       return NULL;
     }
-    return PyInt_FromLong(outval);
+    return PyLong_FromLong(outval);
   }
 
   case SQLITE_CONFIG_MEMSTATUS:
@@ -542,7 +542,7 @@ releasememory(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" Apsw_releasememory_USAGE, kwlist, &amount))
       return NULL;
   }
-  return PyInt_FromLong(sqlite3_release_memory(amount));
+  return PyLong_FromLong(sqlite3_release_memory(amount));
 }
 
 /** .. method:: status(op: int, reset: bool = False) -> Tuple[int, int]
@@ -656,8 +656,8 @@ getapswexceptionfor(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   if (!result)
     return PyErr_Format(PyExc_ValueError, "%d is not a known error code", code);
 
-  PyObject_SetAttrString(result, "extendedresult", PyInt_FromLong(code));
-  PyObject_SetAttrString(result, "result", PyInt_FromLong(code & 0xff));
+  PyObject_SetAttrString(result, "extendedresult", PyLong_FromLong(code));
+  PyObject_SetAttrString(result, "result", PyLong_FromLong(code & 0xff));
   return result;
 }
 
@@ -1926,7 +1926,7 @@ modules etc. For example::
       /* regular ADDINT */
       PyModule_AddIntConstant(m, name, value);
       pyname = MAKESTR(name);
-      pyvalue = PyInt_FromLong(value);
+      pyvalue = PyLong_FromLong(value);
       if (!pyname || !pyvalue)
         goto fail;
       PyDict_SetItem(thedict, pyname, pyvalue);
