@@ -968,7 +968,7 @@
 "\n" \
 "Calls: `sqlite3_get_autocommit <https://sqlite.org/c3ref/get_autocommit.html>`__\n" 
 
-#define  Connection_getexectrace_DOC "getexectrace($self,/)\n--\n\nConnection.getexectrace() -> Option[Callable]\n\n" \
+#define  Connection_getexectrace_DOC "getexectrace($self,/)\n--\n\nConnection.getexectrace() -> Optional[Callable]\n\n" \
 "Returns the currently installed (via :meth:`~Connection.setexectrace`)\n" \
 "execution tracer.\n" \
 "\n" \
@@ -976,7 +976,7 @@
 "\n" \
 "  * :ref:`tracing`\n" 
 
-#define  Connection_getrowtrace_DOC "getrowtrace($self,/)\n--\n\nConnection.getrowtrace() -> Option[Callable]\n\n" \
+#define  Connection_getrowtrace_DOC "getrowtrace($self,/)\n--\n\nConnection.getrowtrace() -> Optional[Callable]\n\n" \
 "Returns the currently installed (via :meth:`~Connection.setrowtrace`)\n" \
 "row tracer.\n" \
 "\n" \
@@ -1607,7 +1607,7 @@
 "  * `sqlite3_bind_blob <https://sqlite.org/c3ref/bind_blob.html>`__\n" \
 "  * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__\n" 
 
-#define  Cursor_executemany_DOC "executemany($self,statements,sequenceofbindings,/)\n--\n\nCursor.executemany(statements: str, sequenceofbindings: Option[Sequence[Union[Tuple, List, Dict]]]) -> Iterator\n\n" \
+#define  Cursor_executemany_DOC "executemany($self,statements,sequenceofbindings,/)\n--\n\nCursor.executemany(statements: str, sequenceofbindings: Optional[Sequence[Union[Tuple, List, Dict]]]) -> Iterator\n\n" \
 "This method is for when you want to execute the same statements over\n" \
 "a sequence of bindings.  Conceptually it does this::\n" \
 "\n" \
@@ -1631,7 +1631,7 @@
 "Returns all remaining result rows as a list.  This method is defined\n" \
 "in DBAPI.  It is a longer way of doing ``list(cursor)``.\n" 
 
-#define  Cursor_fetchone_DOC "fetchone($self,/)\n--\n\nCursor.fetchone() -> Option[Any]\n\n" \
+#define  Cursor_fetchone_DOC "fetchone($self,/)\n--\n\nCursor.fetchone() -> Optional[Any]\n\n" \
 "Returns the next row of data or None if there are no more rows.\n" 
 
 #define  Cursor_getconnection_DOC "getconnection($self,/)\n--\n\nCursor.getconnection() -> Connection\n\n" \

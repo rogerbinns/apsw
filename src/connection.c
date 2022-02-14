@@ -3101,7 +3101,7 @@ Connection_setrowtrace(Connection *self, PyObject *args, PyObject *kwds)
   Py_RETURN_NONE;
 }
 
-/** .. method:: getexectrace() -> Option[Callable]
+/** .. method:: getexectrace() -> Optional[Callable]
 
   Returns the currently installed (via :meth:`~Connection.setexectrace`)
   execution tracer.
@@ -3123,7 +3123,7 @@ Connection_getexectrace(Connection *self)
   return ret;
 }
 
-/** .. method:: getrowtrace() -> Option[Callable]
+/** .. method:: getrowtrace() -> Optional[Callable]
 
   Returns the currently installed (via :meth:`~Connection.setrowtrace`)
   row tracer.

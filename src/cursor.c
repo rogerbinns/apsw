@@ -1053,7 +1053,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
   return retval;
 }
 
-/** .. method:: executemany(statements: str, sequenceofbindings: Option[Sequence[Union[Tuple, List, Dict]]]) -> Iterator
+/** .. method:: executemany(statements: str, sequenceofbindings: Optional[Sequence[Union[Tuple, List, Dict]]]) -> Iterator
 
   This method is for when you want to execute the same statements over
   a sequence of bindings.  Conceptually it does this::
@@ -1436,7 +1436,7 @@ APSWCursor_fetchall(APSWCursor *self)
   return PySequence_List((PyObject *)self);
 }
 
-/** .. method:: fetchone() -> Option[Any]
+/** .. method:: fetchone() -> Optional[Any]
 
   Returns the next row of data or None if there are no more rows.
 */
