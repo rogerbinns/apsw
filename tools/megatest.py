@@ -89,9 +89,9 @@ def main(PYVERS, SQLITEVERS, BITS, concurrency):
         for job in concurrent.futures.as_completed(jobs):
             try:
                 job.result()
-                print(".", flush=True)
+                print(".", flush=True, end="")
             except Exception:
-                print("E", flush=True)
+                print("E", flush=True, end="")
 
         print("\nFinished")
 
@@ -160,8 +160,8 @@ def cmp(a, b):
 
 # Default versions we support
 PYVERS = (
-    '3.10.1',
-    '3.9.9',
+    '3.10.2',
+    '3.9.10',
     '3.8.10',
     '3.7.10',
     'system',
