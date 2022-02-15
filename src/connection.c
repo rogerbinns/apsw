@@ -86,8 +86,8 @@ typedef struct _vtableinfo
 {
   PyObject *datasource;   /* object with create/connect methods */
   Connection *connection; /* the Connection this is registered against so we don't
-				     have to have a global table mapping sqlite3_db* to
-				     Connection* */
+             have to have a global table mapping sqlite3_db* to
+             Connection* */
 } vtableinfo;
 
 /* forward declarations */
@@ -2001,8 +2001,7 @@ Connection_loadextension(Connection *self, PyObject *args, PyObject *kwds)
 /* USER DEFINED FUNCTION CODE.*/
 static PyTypeObject FunctionCBInfoType =
     {
-        APSW_PYTYPE_INIT
-        "apsw.FunctionCBInfo",                                                  /*tp_name*/
+        PyVarObject_HEAD_INIT(NULL, 0) "apsw.FunctionCBInfo",                   /*tp_name*/
         sizeof(FunctionCBInfo),                                                 /*tp_basicsize*/
         0,                                                                      /*tp_itemsize*/
         (destructor)FunctionCBInfo_dealloc,                                     /*tp_dealloc*/
@@ -2046,8 +2045,11 @@ static PyTypeObject FunctionCBInfoType =
         0,                                                                      /* tp_cache */
         0,                                                                      /* tp_subclasses */
         0,                                                                      /* tp_weaklist */
-        0                                                                       /* tp_del */
-        APSW_PYTYPE_VERSION};
+        0,                                                                      /* tp_del */
+        0,                                                                      /* tp_version_tag */
+        0,                                                                      /* tp_finalize */
+        0                                                                       /* tp_vectorcall */
+};
 
 static FunctionCBInfo *
 allocfunccbinfo(void)
@@ -2513,8 +2515,7 @@ Connection_createscalarfunction(Connection *self, PyObject *args, PyObject *kwds
                                        apsw_free_func));
   if (res)
   {
-    /* Note: On error sqlite3_create_function_v2 calls the
-	 destructor (apsw_free_func)! */
+    /* Note: On error sqlite3_create_function_v2 calls the destructor (apsw_free_func)! */
     SET_EXC(res, self->db);
     goto finally;
   }
@@ -2611,7 +2612,7 @@ Connection_createaggregatefunction(Connection *self, PyObject *args, PyObject *k
   if (res)
   {
     /* Note: On error sqlite3_create_function_v2 calls the
-	 destructor (apsw_free_func)! */
+   destructor (apsw_free_func)! */
     SET_EXC(res, self->db);
     goto finally;
   }
@@ -3671,8 +3672,7 @@ static PyMethodDef Connection_methods[] = {
 
 static PyTypeObject ConnectionType =
     {
-        APSW_PYTYPE_INIT
-        "apsw.Connection",                                                                           /*tp_name*/
+        PyVarObject_HEAD_INIT(NULL, 0) "apsw.Connection",                                            /*tp_name*/
         sizeof(Connection),                                                                          /*tp_basicsize*/
         0,                                                                                           /*tp_itemsize*/
         (destructor)Connection_dealloc,                                                              /*tp_dealloc*/
@@ -3716,5 +3716,8 @@ static PyTypeObject ConnectionType =
         0,                                                                                           /* tp_cache */
         0,                                                                                           /* tp_subclasses */
         0,                                                                                           /* tp_weaklist */
-        0                                                                                            /* tp_del */
-        APSW_PYTYPE_VERSION};
+        0,                                                                                           /* tp_del */
+        0,                                                                                           /* tp_version_tag */
+        0,                                                                                           /* tp_finalize */
+        0                                                                                            /* tp_vectorcall */
+};

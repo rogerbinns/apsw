@@ -104,8 +104,7 @@ static PyMethodDef ZeroBlobBind_methods[] = {
     {0, 0, 0, 0}};
 
 static PyTypeObject ZeroBlobBindType = {
-    APSW_PYTYPE_INIT
-    "apsw.zeroblob",                                                        /*tp_name*/
+    PyVarObject_HEAD_INIT(NULL, 0) "apsw.zeroblob",                         /*tp_name*/
     sizeof(ZeroBlobBind),                                                   /*tp_basicsize*/
     0,                                                                      /*tp_itemsize*/
     0,                                                                      /*tp_dealloc*/
@@ -149,8 +148,11 @@ static PyTypeObject ZeroBlobBindType = {
     0,                                                                      /* tp_cache */
     0,                                                                      /* tp_subclasses */
     0,                                                                      /* tp_weaklist */
-    0                                                                       /* tp_del */
-    APSW_PYTYPE_VERSION};
+    0,                                                                      /* tp_del */
+    0,                                                                      /* tp_version_tag */
+    0,                                                                      /* tp_finalize */
+    0                                                                       /* tp_vectorcall */
+};
 
 /* BLOB TYPE */
 struct APSWBlob
@@ -716,8 +718,7 @@ static PyMethodDef APSWBlob_methods[] = {
 };
 
 static PyTypeObject APSWBlobType = {
-    APSW_PYTYPE_INIT
-    "apsw.blob",                                      /*tp_name*/
+    PyVarObject_HEAD_INIT(NULL, 0) "apsw.blob",       /*tp_name*/
     sizeof(APSWBlob),                                 /*tp_basicsize*/
     0,                                                /*tp_itemsize*/
     (destructor)APSWBlob_dealloc,                     /*tp_dealloc*/
@@ -761,5 +762,8 @@ static PyTypeObject APSWBlobType = {
     0,                                                /* tp_cache */
     0,                                                /* tp_subclasses */
     0,                                                /* tp_weaklist */
-    0                                                 /* tp_del */
-    APSW_PYTYPE_VERSION};
+    0,                                                /* tp_del */
+    0,                                                /* tp_version_tag */
+    0,                                                /* tp_finalize */
+    0                                                 /* tp_vectorcall */
+};

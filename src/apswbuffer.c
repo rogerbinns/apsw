@@ -221,8 +221,7 @@ equal:
 
 static PyTypeObject APSWBufferType =
     {
-        APSW_PYTYPE_INIT
-        "apsw.APSWBuffer",                                                      /*tp_name*/
+        PyVarObject_HEAD_INIT(NULL, 0) "apsw.APSWBuffer",                       /*tp_name*/
         sizeof(APSWBuffer),                                                     /*tp_basicsize*/
         0,                                                                      /*tp_itemsize*/
         (destructor)APSWBuffer_dealloc,                                         /*tp_dealloc*/
@@ -266,5 +265,8 @@ static PyTypeObject APSWBufferType =
         0,                                                                      /* tp_cache */
         0,                                                                      /* tp_subclasses */
         0,                                                                      /* tp_weaklist */
-        0                                                                       /* tp_del */
-        APSW_PYTYPE_VERSION};
+        0,                                                                      /* tp_del */
+        0,                                                                      /* tp_version_tag */
+        0,                                                                      /* tp_finalize */
+        0                                                                       /* tp_vectorcall */
+};

@@ -1488,8 +1488,7 @@ static PyGetSetDef APSWCursor_getset[] = {
     {NULL, NULL, NULL, NULL, NULL}};
 
 static PyTypeObject APSWCursorType = {
-    APSW_PYTYPE_INIT
-    "apsw.Cursor",                                                                               /*tp_name*/
+    PyVarObject_HEAD_INIT(NULL, 0) "apsw.Cursor",                                                /*tp_name*/
     sizeof(APSWCursor),                                                                          /*tp_basicsize*/
     0,                                                                                           /*tp_itemsize*/
     (destructor)APSWCursor_dealloc,                                                              /*tp_dealloc*/
@@ -1533,5 +1532,8 @@ static PyTypeObject APSWCursorType = {
     0,                                                                                           /* tp_cache */
     0,                                                                                           /* tp_subclasses */
     0,                                                                                           /* tp_weaklist */
-    0                                                                                            /* tp_del */
-    APSW_PYTYPE_VERSION};
+    0,                                                                                           /* tp_del */
+    0,                                                                                           /* tp_version_tag */
+    0,                                                                                           /* tp_finalize */
+    0                                                                                            /* tp_vectorcall */
+};

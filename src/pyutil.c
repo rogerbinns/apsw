@@ -4,10 +4,6 @@
   See the accompanying LICENSE file.
 */
 
-#define APSW_PYTYPE_INIT PyVarObject_HEAD_INIT(NULL, 0)
-
-#define APSW_PYTYPE_VERSION , 0
-
 /* we clear weakref lists when close is called on a blob/cursor as
    well as when it is deallocated */
 #define APSW_CLEAR_WEAKREFS                     \

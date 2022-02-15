@@ -6,7 +6,6 @@
   See the accompanying LICENSE file.
 */
 
-
 /**
 
 .. _backup:
@@ -393,8 +392,7 @@ static PyMethodDef backup_methods[] = {
 
 static PyTypeObject APSWBackupType =
     {
-        APSW_PYTYPE_INIT
-        "apsw.backup",                                                          /*tp_name*/
+        PyVarObject_HEAD_INIT(NULL, 0) "apsw.backup",                           /*tp_name*/
         sizeof(APSWBackup),                                                     /*tp_basicsize*/
         0,                                                                      /*tp_itemsize*/
         (destructor)APSWBackup_dealloc,                                         /*tp_dealloc*/
@@ -438,6 +436,8 @@ static PyTypeObject APSWBackupType =
         0,                                                                      /* tp_cache */
         0,                                                                      /* tp_subclasses */
         0,                                                                      /* tp_weaklist */
-        0                                                                       /* tp_del */
-        APSW_PYTYPE_VERSION};
-
+        0,                                                                      /* tp_del */
+        0,                                                                      /* tp_version_tag */
+        0,                                                                      /* tp_finalize */
+        0                                                                       /* tp_vectorcall */
+};
