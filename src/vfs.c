@@ -1717,8 +1717,7 @@ static PyMethodDef APSWVFS_methods[] = {
 
 static PyTypeObject APSWVFSType =
     {
-        APSW_PYTYPE_INIT
-        "apsw.VFS",                                                             /*tp_name*/
+        PyVarObject_HEAD_INIT(NULL, 0) "apsw.VFS",                              /*tp_name*/
         sizeof(APSWVFS),                                                        /*tp_basicsize*/
         0,                                                                      /*tp_itemsize*/
         (destructor)APSWVFS_dealloc,                                            /*tp_dealloc*/
@@ -1762,8 +1761,11 @@ static PyTypeObject APSWVFSType =
         0,                                                                      /* tp_cache */
         0,                                                                      /* tp_subclasses */
         0,                                                                      /* tp_weaklist */
-        0                                                                       /* tp_del */
-        APSW_PYTYPE_VERSION};
+        0,                                                                      /* tp_del */
+        0,                                                                      /* tp_version_tag */
+        0,                                                                      /* tp_finalize */
+        0                                                                       /* tp_vectorcall */
+};
 
 /** .. class:: VFSFile
 
@@ -2780,8 +2782,7 @@ static PyMethodDef APSWVFSFile_methods[] = {
 
 static PyTypeObject APSWVFSFileType =
     {
-        APSW_PYTYPE_INIT
-        "apsw.VFSFile",                                                         /*tp_name*/
+        PyVarObject_HEAD_INIT(NULL, 0) "apsw.VFSFile",                          /*tp_name*/
         sizeof(APSWVFSFile),                                                    /*tp_basicsize*/
         0,                                                                      /*tp_itemsize*/
         (destructor)APSWVFSFile_dealloc,                                        /*tp_dealloc*/
@@ -2825,8 +2826,11 @@ static PyTypeObject APSWVFSFileType =
         0,                                                                      /* tp_cache */
         0,                                                                      /* tp_subclasses */
         0,                                                                      /* tp_weaklist */
-        0                                                                       /* tp_del */
-        APSW_PYTYPE_VERSION};
+        0,                                                                      /* tp_del */
+        0,                                                                      /* tp_version_tag */
+        0,                                                                      /* tp_finalize */
+        0                                                                       /* tp_vectorcall */
+};
 
 /** .. class:: URIFilename
 
@@ -2935,8 +2939,7 @@ static PyMethodDef APSWURIFilenameMethods[] = {
 
 static PyTypeObject APSWURIFilenameType =
     {
-        APSW_PYTYPE_INIT
-        "apsw.URIFilename",                                                     /*tp_name*/
+        PyVarObject_HEAD_INIT(NULL, 0) "apsw.URIFilename",                      /*tp_name*/
         sizeof(APSWURIFilename),                                                /*tp_basicsize*/
         0,                                                                      /*tp_itemsize*/
         0,                                                                      /*tp_dealloc*/
@@ -2980,5 +2983,8 @@ static PyTypeObject APSWURIFilenameType =
         0,                                                                      /* tp_cache */
         0,                                                                      /* tp_subclasses */
         0,                                                                      /* tp_weaklist */
-        0                                                                       /* tp_del */
-        APSW_PYTYPE_VERSION};
+        0,                                                                      /* tp_del */
+        0,                                                                      /* tp_version_tag */
+        0,                                                                      /* tp_finalize */
+        0                                                                       /* tp_vectorcall */
+};
