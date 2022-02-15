@@ -75,7 +75,7 @@ module:
                            "create table bar(x,y);insert into bar values(?,?);"
                            "insert into bar values(?,?);select * from bar;",
                            (1,2,3,4,5,6,7,8,9,10)):
-                               print row
+                               print (row)
 
   And the output as you would expect::
 

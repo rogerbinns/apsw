@@ -26,7 +26,7 @@ You can also read data back.  The row is returned as a tuple of the
 column values::
 
   for row in cursor.execute("select * from example"):
-     print row
+     print(row)
 
 There are two ways of supplying data to a query.  The **really bad** way is to compose a string::
 
@@ -956,7 +956,7 @@ APSWCursor_step(APSWCursor *self)
     The return is the cursor object itself which is also an iterator.  This allows you to write::
 
        for row in cursor.execute("select * from books"):
-          print row
+          print(row)
 
     :raises TypeError: The bindings supplied were neither a dict nor a sequence
     :raises BindingsError: You supplied too many or too few bindings for the statements

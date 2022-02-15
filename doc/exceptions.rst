@@ -340,7 +340,7 @@ information. You can print out the variables using `ASPN recipe 52215 <http://as
         tb = tb.tb_next
 
     traceback.print_exc()
-    print "Locals by frame, innermost last"
+    print ("Locals by frame, innermost last")
 
 
 Here is a far more complex example from some :ref:`virtual tables
