@@ -1846,7 +1846,7 @@ Connection_serialize(Connection *self, PyObject *args, PyObject *kwds)
   INUSE_CALL(_PYSQLITE_CALL_V(serialization = sqlite3_serialize(self->db, name, &size, 0)));
 
   if (serialization)
-    pyres = converttobytes((char *)serialization, size);
+    pyres = PyBytes_FromStringAndSize((char *)serialization, size);
 
   sqlite3_free(serialization);
   if (pyres)

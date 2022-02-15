@@ -227,7 +227,7 @@ convert_value_to_pyobject(sqlite3_value *value)
     Py_RETURN_NONE;
 
   case SQLITE_BLOB:
-    return converttobytes(sqlite3_value_blob(value), sqlite3_value_bytes(value));
+    return PyBytes_FromStringAndSize(sqlite3_value_blob(value), sqlite3_value_bytes(value));
 
   default:
     return PyErr_Format(APSWException, "Unknown sqlite column type %d!", coltype);
@@ -280,7 +280,7 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
     const void *data;
     size_t len;
     _PYSQLITE_CALL_V((data = sqlite3_column_blob(stmt, col), len = sqlite3_column_bytes(stmt, col)));
-    return converttobytes(data, len);
+    return PyBytes_FromStringAndSize(data, len);
   }
 
   default:

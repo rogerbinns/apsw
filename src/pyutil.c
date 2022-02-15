@@ -82,8 +82,6 @@ Call_PythonMethodV(PyObject *obj, const char *methodname, int mandatory, const c
 
 /* CONVENIENCE FUNCTIONS */
 
-#define converttobytes PyBytes_FromStringAndSize
-
 /* Convert a NULL terminated UTF-8 string into a Python object.  None
    is returned if NULL is passed in. */
 static PyObject *
