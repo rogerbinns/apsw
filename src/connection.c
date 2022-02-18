@@ -335,7 +335,7 @@ Connection_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
   return (PyObject *)self;
 }
 
-/** .. method:: __init__(filename: str, flags: int = apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE, vfs: Optional[str] = None, statementcachesize: int = 100)
+/** .. method:: __init__(filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: Optional[str] = None, statementcachesize: int = 100)
 
   Opens the named database.  You can use ``:memory:`` to get a private temporary
   in-memory database that is not shared with any other connections.

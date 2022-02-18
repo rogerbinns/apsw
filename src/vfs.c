@@ -1835,7 +1835,7 @@ APSWVFSFile_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUS
   return (PyObject *)self;
 }
 
-/** .. method:: __init__(vfs: str, filename: Union[str,URIFilename], flags: List[int,int])
+/** .. method:: __init__(vfs: str, filename: Union[str,URIFilename], flags: List[int])
 
     :param vfs: The vfs you want to inherit behaviour from.  You can
        use an empty string ``""`` to inherit from the default vfs.

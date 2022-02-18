@@ -1008,7 +1008,7 @@ fail:
 #endif
 
 /** .. attribute:: compile_options
-    :type: Tuple[str]
+    :type: Tuple
 
     A tuple of the options used to compile SQLite.  For example it
     will be something like this::
@@ -1312,7 +1312,7 @@ static void add_shell(PyObject *module);
 
 static struct PyModuleDef apswmoduledef = {
     PyModuleDef_HEAD_INIT,
-    "apsw (Another Python SQLite Wrapper)",
+    "apsw",
     NULL,
     -1,
     module_methods,
