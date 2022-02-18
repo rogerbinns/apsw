@@ -22,7 +22,7 @@ if sys.platform == "win32":
         pass
 
 
-class Shell(object):
+class Shell:
     """Implements a SQLite shell
 
     :param stdin: Where to read input from (default sys.stdin)
@@ -79,7 +79,6 @@ class Shell(object):
 
     def __init__(self, stdin=None, stdout=None, stderr=None, encoding="utf8", args=None, db=None):
         """Create instance, set defaults and do argument processing."""
-        super(Shell, self).__init__()
         # The parameter doc has to be in main class doc as sphinx
         # ignores any described here
         self.exceptions = False
