@@ -6,8 +6,13 @@ Change History
 =========
 
 All items now have full docstrings including type information.
-(Previously just one line summaries).  Due to CPython limitations,
-inspect/typing can provide parameter names, but not types.
+(Previously just one line summaries).  Note the C implemented
+functions and data (ie almost all of APSW) can't provide the same
+level of type information as regular Python code.
+
+apsw.pyi file is included which does provide all the typing
+information in `type stub
+<https://typing.readthedocs.io/en/latest/source/stubs.html>__` format,
 
 Removal of code, tests, and documentation only relevant to Python
 before 3.7.

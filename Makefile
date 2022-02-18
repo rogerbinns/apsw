@@ -63,7 +63,7 @@ $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
 	env PYTHONPATH=. $(PYTHON) tools/code2rst.py $(SQLITEVERSION) $< $@
 
 src/apsw.docstrings: $(GENDOCS) tools/rst2docstring.py
-	$(PYTHON) tools/rst2docstring.py src/apsw.docstrings $(GENDOCS)
+	env PYTHONPATH=. $(PYTHON) tools/rst2docstring.py src/apsw.docstrings $(GENDOCS)
 
 build_ext:
 	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --force --enable-all-extensions
@@ -94,6 +94,8 @@ publish: docs
 header:
 	echo "#define APSW_VERSION \"$(VERSION)\"" > src/apswversion.h
 
+stubtest: build_ext
+	env PYTHONPATH=. $(PYTHON) -m mypy.stubtest --allowlist tools/stubtest.allowlist apsw
 
 # the funky test stuff is to exit successfully when grep has rc==1 since that means no lines found.
 showsymbols:

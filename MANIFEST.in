@@ -1,11 +1,14 @@
 # The C source
 
-include  src/*.c
+include src/*.c
+include src/apswversion.h
+include src/apsw.docstrings
 
 # See https://github.com/rogerbinns/apsw/issues/89
 include MANIFEST.in
 
 # other files
+include apsw.pyi
 include LICENSE
 include checksums
 include setup.py

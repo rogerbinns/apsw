@@ -830,6 +830,8 @@ if __name__ == '__main__':
                                 define_macros=define_macros,
                                 depends=depends)],
 
+        data_files=[("", ["apsw.pyi"])],
+
 
       cmdclass={'test': run_tests,
                 'build_test_extension': build_test_extension,
