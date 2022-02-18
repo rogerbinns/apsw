@@ -460,7 +460,7 @@ finally:
   return res;
 }
 
-/** .. method:: blobopen(database: str, table: str, column: str, rowid: int, writeable: bool)  -> blob
+/** .. method:: blobopen(database: str, table: str, column: str, rowid: int, writeable: bool)  -> Blob
 
    Opens a blob for :ref:`incremental I/O <blobio>`.
 
@@ -521,7 +521,7 @@ Connection_blobopen(Connection *self, PyObject *args, PyObject *kwds)
   return (PyObject *)apswblob;
 }
 
-/** .. method:: backup(databasename: str, sourceconnection: Connection, sourcedatabasename: str)  -> backup
+/** .. method:: backup(databasename: str, sourceconnection: Connection, sourcedatabasename: str)  -> Backup
 
    Opens a :ref:`backup object <Backup>`.  All data will be copied from source
    database to this database.
@@ -3223,7 +3223,7 @@ error:
   return NULL;
 }
 
-/** .. method:: __exit__() -> False
+/** .. method:: __exit__() -> Literal[False]
 
   Implements context manager in conjunction with
   :meth:`~Connection.__enter__`.  Any exception that happened in the
@@ -3517,6 +3517,7 @@ Connection_txn_state(Connection *self, PyObject *args, PyObject *kwds)
 }
 
 /** .. attribute:: filename
+  :type: str
 
   The filename of the  database.
 
@@ -3539,11 +3540,13 @@ static PyGetSetDef Connection_getseters[] = {
     {NULL, NULL, NULL, NULL, NULL}};
 
 /** .. attribute:: open_flags
+  :type: int
 
   The integer flags used to open the database.
 */
 
 /** .. attribute:: open_vfs
+  :type: str
 
   The string name of the vfs used to open the database.
 */

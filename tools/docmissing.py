@@ -50,7 +50,7 @@ del classes['VTCursor']
 for name, obj in (
     ('Connection', con),
     ('Cursor', cur),
-    ('blob', blob),
+    ('Blob', blob),
     ('VFS', vfs),
     ('VFSFile', vfsfile),
     ('apsw', apsw),

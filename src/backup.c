@@ -62,7 +62,7 @@ The destination database is locked during the copy.  You will get a
     }                                                                                                                      \
   } while (0)
 
-/** .. class:: backup
+/** .. class:: Backup
 
   You create a backup instance by calling :meth:`Connection.backup`.
 */
@@ -278,6 +278,7 @@ APSWBackup_close(APSWBackup *self, PyObject *args, PyObject *kwds)
 }
 
 /** .. attribute:: remaining
+  :type: int
 
   Read only. How many pages were remaining to be copied after the last
   step.  If you haven't called :meth:`~backup.step` or the backup
@@ -294,6 +295,7 @@ APSWBackup_get_remaining(APSWBackup *self, void *Py_UNUSED(ignored))
 }
 
 /** .. attribute:: pagecount
+  :type: int
 
   Read only. How many pages were in the source database after the last
   step.  If you haven't called :meth:`~backup.step` or the backup
@@ -309,7 +311,7 @@ APSWBackup_get_pagecount(APSWBackup *self, void *Py_UNUSED(ignored))
   return PyLong_FromLong(self->backup ? sqlite3_backup_pagecount(self->backup) : 0);
 }
 
-/** .. method:: __enter__() -> backup
+/** .. method:: __enter__() -> Backup
 
   You can use the backup object as a `context manager
   <http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
@@ -326,7 +328,7 @@ APSWBackup_enter(APSWBackup *self)
   return (PyObject *)self;
 }
 
-/** .. method:: __exit__() -> False
+/** .. method:: __exit__() -> Literal[False]
 
   Implements context manager in conjunction with :meth:`~backup.__enter__` ensuring
   that the copy is :meth:`finished <backup.finish>`.
@@ -363,6 +365,7 @@ APSWBackup_exit(APSWBackup *self, PyObject *args)
 }
 
 /** .. attribute:: done
+  :type: bool
 
   A boolean that is True if the copy completed in the last call to :meth:`~backup.step`.
 */
@@ -392,7 +395,7 @@ static PyMethodDef backup_methods[] = {
 
 static PyTypeObject APSWBackupType =
     {
-        PyVarObject_HEAD_INIT(NULL, 0) "apsw.backup",                           /*tp_name*/
+        PyVarObject_HEAD_INIT(NULL, 0) "apsw.Backup",                           /*tp_name*/
         sizeof(APSWBackup),                                                     /*tp_basicsize*/
         0,                                                                      /*tp_itemsize*/
         (destructor)APSWBackup_dealloc,                                         /*tp_dealloc*/

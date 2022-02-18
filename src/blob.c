@@ -171,7 +171,7 @@ static PyTypeObject APSWBlobType;
 
 /* BLOB CODE */
 
-/** .. class:: blob
+/** .. class:: Blob
 
   This object is created by :meth:`Connection.blobopen` and provides
   access to a blob in the database.  It behaves like a Python file.
@@ -608,7 +608,7 @@ APSWBlob_close(APSWBlob *self, PyObject *args, PyObject *kwds)
   Py_RETURN_NONE;
 }
 
-/** .. method:: __enter__() -> blob
+/** .. method:: __enter__() -> Blob
 
   You can use a blob as a `context manager
   <http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
@@ -634,7 +634,7 @@ APSWBlob_enter(APSWBlob *self)
   return (PyObject *)self;
 }
 
-/** .. method:: __exit__() -> False
+/** .. method:: __exit__() -> Literal[False]
 
   Implements context manager in conjunction with
   :meth:`~blob.__enter__`.  Any exception that happened in the
@@ -718,7 +718,7 @@ static PyMethodDef APSWBlob_methods[] = {
 };
 
 static PyTypeObject APSWBlobType = {
-    PyVarObject_HEAD_INIT(NULL, 0) "apsw.blob",       /*tp_name*/
+    PyVarObject_HEAD_INIT(NULL, 0) "apsw.Blob",       /*tp_name*/
     sizeof(APSWBlob),                                 /*tp_basicsize*/
     0,                                                /*tp_itemsize*/
     (destructor)APSWBlob_dealloc,                     /*tp_dealloc*/

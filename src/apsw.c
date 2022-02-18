@@ -1008,6 +1008,7 @@ fail:
 #endif
 
 /** .. attribute:: compile_options
+    :type: Tuple[str]
 
     A tuple of the options used to compile SQLite.  For example it
     will be something like this::
@@ -1054,6 +1055,7 @@ fail:
 }
 
 /** .. attribute:: keywords
+    :type: Set[str]
 
     A set containing every SQLite keyword
 
@@ -1310,7 +1312,7 @@ static void add_shell(PyObject *module);
 
 static struct PyModuleDef apswmoduledef = {
     PyModuleDef_HEAD_INIT,
-    "apsw",
+    "apsw (Another Python SQLite Wrapper)",
     NULL,
     -1,
     module_methods,
@@ -1374,6 +1376,7 @@ PyInit_apsw(void)
   PyModule_AddObject(m, "URIFilename", (PyObject *)&APSWURIFilenameType);
 
   /** .. attribute:: connection_hooks
+       :type: List[Callable]
 
        The purpose of the hooks is to allow the easy registration of
        :meth:`functions <Connection.createscalarfunction>`,
@@ -1394,7 +1397,8 @@ PyInit_apsw(void)
     goto fail;
   PyModule_AddObject(m, "connection_hooks", hooks);
 
-  /** .. data:: SQLITE_VERSION_NUMBER
+  /** .. attribute:: SQLITE_VERSION_NUMBER
+    :type: int
 
     The integer version number of SQLite that APSW was compiled
     against.  For example SQLite 3.6.4 will have the value *3006004*.
@@ -1406,6 +1410,7 @@ PyInit_apsw(void)
   PyModule_AddIntConstant(m, "SQLITE_VERSION_NUMBER", SQLITE_VERSION_NUMBER);
 
   /** .. attribute:: using_amalgamation
+    :type: bool
 
     If True then `SQLite amalgamation
     <https://sqlite.org/cvstrac/wiki?p=TheAmalgamation>`__ is in

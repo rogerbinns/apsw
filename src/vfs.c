@@ -574,7 +574,7 @@ finally:
   return result;
 }
 
-/** .. method:: xOpen(name: Optional[str,URIFilename], flags: List[int,int]) -> VFSFile
+/** .. method:: xOpen(name: Optional[Union[str,URIFilename]], flags: List[int,int]) -> VFSFile
 
     This method should return a new file object based on name.  You
     can return a :class:`VFSFile` from a completely different VFS.
