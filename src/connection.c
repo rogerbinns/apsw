@@ -2097,25 +2097,22 @@ set_context_result(sqlite3_context *context, PyObject *obj)
   }
   if (PyUnicode_Check(obj))
   {
-    UNIDATABEGIN(obj)
-    APSW_FAULT_INJECT(SetContextResultUnicodeConversionFails, , strdata = (char *)PyErr_NoMemory());
+    const char *strdata;
+    Py_ssize_t strbytes;
+
+    APSW_FAULT_INJECT(SetContextResultUnicodeConversionFails, strdata = PyUnicode_AsUTF8AndSize(obj, &strbytes), strdata = (const char *)PyErr_NoMemory());
     if (strdata)
     {
-#ifdef APSW_TEST_LARGE_OBJECTS
-      APSW_FAULT_INJECT(SetContextResultLargeUnicode, , strbytes = 0x001234567890L);
-#endif
       if (strbytes > APSW_INT32_MAX)
       {
         SET_EXC(SQLITE_TOOBIG, NULL);
         sqlite3_result_error_toobig(context);
       }
       else
-        USE16(sqlite3_result_text)
-      (context, strdata, strbytes, SQLITE_TRANSIENT);
+        sqlite3_result_text(context, strdata, strbytes, SQLITE_TRANSIENT);
     }
     else
       sqlite3_result_error(context, "Unicode conversions failed", -1);
-    UNIDATAEND(obj);
     return;
   }
 

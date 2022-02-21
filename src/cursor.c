@@ -526,13 +526,9 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
   }
   else if (PyUnicode_Check(obj))
   {
-    const void *badptr = NULL;
-    UNIDATABEGIN(obj)
-    APSW_FAULT_INJECT(DoBindingUnicodeConversionFails, , strdata = (char *)PyErr_NoMemory());
-    badptr = strdata;
-#ifdef APSW_TEST_LARGE_OBJECTS
-    APSW_FAULT_INJECT(DoBindingLargeUnicode, , strbytes = 0x001234567890L);
-#endif
+    const char *strdata = NULL;
+    Py_ssize_t strbytes = 0;
+    APSW_FAULT_INJECT(DoBindingUnicodeConversionFails, strdata = PyUnicode_AsUTF8AndSize(obj, &strbytes), strdata = (const char *)PyErr_NoMemory());
     if (strdata)
     {
       if (strbytes > APSW_INT32_MAX)
@@ -540,10 +536,9 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
         SET_EXC(SQLITE_TOOBIG, NULL);
       }
       else
-        PYSQLITE_CUR_CALL(res = USE16(sqlite3_bind_text)(self->statement->vdbestatement, arg, strdata, strbytes, SQLITE_TRANSIENT));
+        PYSQLITE_CUR_CALL(res = sqlite3_bind_text(self->statement->vdbestatement, arg, strdata, strbytes, SQLITE_TRANSIENT));
     }
-    UNIDATAEND(obj);
-    if (!badptr)
+    else
     {
       assert(PyErr_Occurred());
       return -1;

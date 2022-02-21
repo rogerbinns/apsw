@@ -3122,26 +3122,6 @@ class APSW(unittest.TestCase):
         if not hasattr(apsw, "faultdict"):
             return
 
-        ## SetContextResultLargeUnicode
-        apsw.faultdict["SetContextResultLargeUnicode"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.createscalarfunction("foo", lambda x: u"a unicode string")
-            for row in db.cursor().execute("select foo(3)"):
-                pass
-            1 / 0
-        except apsw.TooBigError:
-            pass
-
-        ## DoBindingLargeUnicode
-        apsw.faultdict["DoBindingLargeUnicode"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.cursor().execute("create table foo(x); insert into foo values(?)", (u"aaaa", ))
-            1 / 0
-        except apsw.TooBigError:
-            pass
-
     def testErrorCodes(self):
         "Verify setting of result codes on error/exception"
         fname = TESTFILEPREFIX + "gunk-errcode-test"

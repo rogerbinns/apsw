@@ -160,47 +160,6 @@ finally:
   PyErr_Clear(); /* being paranoid - make sure no errors on return */
 }
 
-/*
-   Python's handling of Unicode is horrible.  It can use 2 or 4 byte
-   unicode chars and the conversion routines like to put out BOMs
-   which makes life even harder.  These macros are used in pairs to do
-   the right form of conversion and tell us whether to use the plain
-   or -16 version of the SQLite function that is about to be called.
-*/
-
-#if Py_UNICODE_SIZE == 2
-#define UNIDATABEGIN(obj)                          \
-  {                                                \
-    size_t strbytes = 2 * PyUnicode_GET_SIZE(obj); \
-    const void *strdata = PyUnicode_AS_DATA(obj);
-
-#define UNIDATAEND(obj) \
-  }
-
-#define USE16(x) x##16
-
-#else /* Py_UNICODE_SIZE!=2 */
-
-#define UNIDATABEGIN(obj)                 \
-  {                                       \
-    Py_ssize_t strbytes = 0;              \
-    const char *strdata = NULL;           \
-    PyObject *_utf8 = NULL;               \
-    _utf8 = PyUnicode_AsUTF8String(obj);  \
-    if (_utf8)                            \
-    {                                     \
-      strbytes = PyBytes_GET_SIZE(_utf8); \
-      strdata = PyBytes_AS_STRING(_utf8); \
-    }
-
-#define UNIDATAEND(obj) \
-  Py_XDECREF(_utf8);    \
-  }
-
-#define USE16(x) x
-
-#endif /* Py_UNICODE_SIZE */
-
 /* Converts sqlite3_value to PyObject.  Returns a new reference. */
 static PyObject *
 convert_value_to_pyobject(sqlite3_value *value)
