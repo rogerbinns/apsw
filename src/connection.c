@@ -2116,27 +2116,23 @@ set_context_result(sqlite3_context *context, PyObject *obj)
     return;
   }
 
-  if (compat_CheckReadBuffer(obj))
+  if (PyObject_CheckBuffer(obj))
   {
-    const void *buffer;
-    Py_ssize_t buflen;
     int asrb;
-    READBUFFERVARS;
+    Py_buffer py3buffer;
 
-    compat_PyObjectReadBuffer(obj);
-
-    APSW_FAULT_INJECT(SetContextResultAsReadBufferFail, , ENDREADBUFFER; (PyErr_NoMemory(), asrb = -1));
+    APSW_FAULT_INJECT(SetContextResultAsReadBufferFail, asrb = PyObject_GetBuffer(obj, &py3buffer, PyBUF_SIMPLE), (PyErr_NoMemory(), asrb = -1));
 
     if (asrb != 0)
     {
-      sqlite3_result_error(context, "Object_AsReadBuffer failed", -1);
+      sqlite3_result_error(context, "PyObject_GetBuffer failed", -1);
       return;
     }
-    if (buflen > APSW_INT32_MAX)
+    if (py3buffer.len > APSW_INT32_MAX)
       sqlite3_result_error_toobig(context);
     else
-      sqlite3_result_blob(context, buffer, buflen, SQLITE_TRANSIENT);
-    ENDREADBUFFER;
+      sqlite3_result_blob(context, py3buffer.buf, py3buffer.len, SQLITE_TRANSIENT);
+    PyBuffer_Release(&py3buffer);
     return;
   }
 

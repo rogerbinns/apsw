@@ -947,23 +947,21 @@ apswvfs_xRandomness(sqlite3_vfs *vfs, int nByte, char *zOut)
 
   pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xRandomness", 1, "(i)", nByte);
 
-  if (pyresult && PyUnicode_Check(pyresult))
-    PyErr_Format(PyExc_TypeError, "Randomness object must be data/bytes not unicode");
-  else if (pyresult && pyresult != Py_None)
+  if (pyresult && pyresult != Py_None)
   {
-    const void *buffer;
-    Py_ssize_t buflen;
     int asrb;
-    READBUFFERVARS;
+    Py_buffer py3buffer;
+    Py_ssize_t len;
 
-    compat_PyObjectReadBuffer(pyresult);
+    asrb = PyObject_GetBuffer(pyresult, &py3buffer, PyBUF_SIMPLE);
     if (asrb == 0)
     {
-      if (buflen > nByte)
-        buflen = nByte;
-      memcpy(zOut, buffer, buflen);
-      result = buflen;
-      ENDREADBUFFER;
+      len = py3buffer.len;
+      if (len > nByte)
+        len = nByte;
+      memcpy(zOut, py3buffer.buf, len);
+      result = len;
+      PyBuffer_Release(&py3buffer);
     }
     else
       assert(PyErr_Occurred());
@@ -1955,9 +1953,7 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
   int result = SQLITE_ERROR;
   PyObject *pybuf = NULL;
   int asrb = -1;
-  Py_ssize_t buflen;
-  const void *buffer;
-  READBUFFERVARS;
+  Py_buffer py3buffer;
 
   FILEPREAMBLE;
 
@@ -1968,14 +1964,13 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
     result = MakeSqliteMsgFromPyException(NULL);
     goto finally;
   }
-  if (PyUnicode_Check(pybuf) || !compat_CheckReadBuffer(pybuf))
+  if (!PyObject_CheckBuffer(pybuf))
   {
-    PyErr_Format(PyExc_TypeError, "Object returned from xRead should be bytes/buffer/string");
+    PyErr_Format(PyExc_TypeError, "Object returned from xRead should be buffer (bytes etc)");
     goto finally;
   }
-  compat_PyObjectReadBuffer(pybuf);
 
-  APSW_FAULT_INJECT(xReadReadBufferFail, , ENDREADBUFFER; (PyErr_NoMemory(), asrb = -1));
+  APSW_FAULT_INJECT(xReadReadBufferFail, asrb = PyObject_GetBuffer(pybuf, &py3buffer, PyBUF_SIMPLE), (PyErr_NoMemory(), asrb = -1));
 
   if (asrb != 0)
   {
@@ -1983,15 +1978,15 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
     goto finally;
   }
 
-  if (buflen < amount)
+  if (py3buffer.len < amount)
   {
     result = SQLITE_IOERR_SHORT_READ;
     memset(bufout, 0, amount); /* see https://sqlite.org/cvstrac/chngview?cn=5867 */
-    memcpy(bufout, buffer, buflen);
+    memcpy(bufout, py3buffer.buf, py3buffer.len);
   }
   else
   {
-    memcpy(bufout, buffer, amount);
+    memcpy(bufout, py3buffer.buf, amount);
     result = SQLITE_OK;
   }
 
@@ -1999,7 +1994,7 @@ finally:
   if (PyErr_Occurred())
     AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xRead", "{s: i, s: L, s: O}", "amount", amount, "offset", offset, "result", pybuf ? pybuf : Py_None);
   if (asrb == 0)
-    ENDREADBUFFER;
+    PyBuffer_Release(&py3buffer);
   Py_XDECREF(pybuf);
   FILEPOSTAMBLE;
   return result;

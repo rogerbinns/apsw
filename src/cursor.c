@@ -544,27 +544,23 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
       return -1;
     }
   }
-  else if (compat_CheckReadBuffer(obj))
+  else if (PyObject_CheckBuffer(obj))
   {
-    const void *buffer;
-    Py_ssize_t buflen;
     int asrb;
-    READBUFFERVARS;
+    Py_buffer py3buffer;
 
-    compat_PyObjectReadBuffer(obj);
-
-    APSW_FAULT_INJECT(DoBindingAsReadBufferFails, , ENDREADBUFFER; (PyErr_NoMemory(), asrb = -1));
+    APSW_FAULT_INJECT(DoBindingAsReadBufferFails, asrb = PyObject_GetBuffer(obj, &py3buffer, PyBUF_SIMPLE), (PyErr_NoMemory(), asrb = -1));
     if (asrb != 0)
       return -1;
 
-    if (buflen > APSW_INT32_MAX)
+    if (py3buffer.len > APSW_INT32_MAX)
     {
       SET_EXC(SQLITE_TOOBIG, NULL);
-      ENDREADBUFFER;
+      PyBuffer_Release(&py3buffer);
       return -1;
     }
-    PYSQLITE_CUR_CALL(res = sqlite3_bind_blob(self->statement->vdbestatement, arg, buffer, buflen, SQLITE_TRANSIENT));
-    ENDREADBUFFER;
+    PYSQLITE_CUR_CALL(res = sqlite3_bind_blob(self->statement->vdbestatement, arg, py3buffer.buf, py3buffer.len, SQLITE_TRANSIENT));
+    PyBuffer_Release(&py3buffer);
   }
   else if (PyObject_TypeCheck(obj, &ZeroBlobBindType) == 1)
   {

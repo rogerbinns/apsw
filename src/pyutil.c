@@ -121,33 +121,6 @@ getutf8string(PyObject *string)
   return utf8string;
 }
 
-/* PyObject_AsReadBuffer was deprecated in Py 3 and removed in 3.10 */
-#define READBUFFERVARS Py_buffer py3buffer
-
-/* ::TODO:: take a name for fault injection */
-#define compat_PyObjectReadBuffer(o)                        \
-  do                                                        \
-  {                                                         \
-    memset(&py3buffer, 0, sizeof(py3buffer));               \
-    buffer = NULL;                                          \
-    buflen = 0;                                             \
-    asrb = PyObject_GetBuffer(o, &py3buffer, PyBUF_SIMPLE); \
-    if (asrb == 0)                                          \
-    {                                                       \
-      buffer = py3buffer.buf;                               \
-      buflen = py3buffer.len;                               \
-    }                                                       \
-  } while (0)
-
-#define ENDREADBUFFER             \
-  do                              \
-  {                               \
-    PyBuffer_Release(&py3buffer); \
-  } while (0)
-
-#define compat_CheckReadBuffer(o) PyObject_CheckBuffer(o)
-
-
 #define GET_BUFFER(faultName, var, src, dest) APSW_FAULT_INJECT(faultName, var = PyObject_GetBuffer(src, dest, PyBUF_SIMPLE), (PyErr_NoMemory(), var = -1))
 
 #define STRING_NEW(faultName, var, size, maxchar) APSW_FAULT_INJECT(faultName, var = PyUnicode_New(size, maxchar), var = PyErr_NoMemory())
