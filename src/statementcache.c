@@ -242,7 +242,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query, int usepreparev2)
             }
         }
 
-      utf8=getutf8string(query);
+      utf8=PyUnicode_AsUTF8String(query);
 
       if(!utf8)
         return NULL;
@@ -367,7 +367,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query, int usepreparev2)
   buflen=APSWBuffer_GET_SIZE(utf8);
 
   /* If buffer[lengthpassedin-1] is not zero then SQLite makes a duplicate copy of the
-     entire string passed in.  The buffer we originally got from getutf8string
+     entire string passed in.  The buffer we originally got from PyUnicode_AsUTF8String
      will always have had an extra zero on the end.  The assert is just to make
      sure */
   assert(buffer[buflen+1-1]==0);

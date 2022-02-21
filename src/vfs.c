@@ -410,20 +410,25 @@ apswvfspy_xAccess(APSWVFS *self, PyObject *args, PyObject *kwds)
 static int
 apswvfs_xFullPathname(sqlite3_vfs *vfs, const char *zName, int nOut, char *zOut)
 {
-  PyObject *pyresult = NULL, *utf8 = NULL;
+  PyObject *pyresult = NULL;
   int result = SQLITE_OK;
 
   VFSPREAMBLE;
 
   pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xFullPathname", 1, "(N)", convertutf8string(zName));
-  if (!pyresult)
+  if (!pyresult || !PyUnicode_Check(pyresult))
   {
+    if (pyresult)
+      PyErr_Format(PyExc_TypeError, "Expected a string");
     result = MakeSqliteMsgFromPyException(NULL);
     AddTraceBackHere(__FILE__, __LINE__, "vfs.xFullPathname", "{s: s, s: i}", "zName", zName, "nOut", nOut);
   }
-  else
+  else if (PyUnicode_Check(pyresult))
   {
-    utf8 = getutf8string(pyresult);
+    const char *utf8;
+    Py_ssize_t utf8len;
+
+    utf8 = PyUnicode_AsUTF8AndSize(pyresult, &utf8len);
     if (!utf8)
     {
       result = SQLITE_ERROR;
@@ -431,18 +436,17 @@ apswvfs_xFullPathname(sqlite3_vfs *vfs, const char *zName, int nOut, char *zOut)
       goto finally;
     }
     /* nOut includes null terminator space (ie is mxPathname+1) */
-    if (PyBytes_GET_SIZE(utf8) + 1 > nOut)
+    if (utf8len + 1 > nOut)
     {
       result = SQLITE_TOOBIG;
       SET_EXC(result, NULL);
-      AddTraceBackHere(__FILE__, __LINE__, "vfs.xFullPathname", "{s: s, s: O, s: i}", "zName", zName, "result_from_python", utf8, "nOut", nOut);
+      AddTraceBackHere(__FILE__, __LINE__, "vfs.xFullPathname", "{s: s, s: O, s: i}", "zName", zName, "result_from_python", pyresult, "nOut", nOut);
       goto finally;
     }
-    memcpy(zOut, PyBytes_AS_STRING(utf8), PyBytes_GET_SIZE(utf8) + 1); /* Python always null terminates hence +1 */
+    memcpy(zOut, utf8, utf8len + 1); /* Python always null terminates hence +1 */
   }
 
 finally:
-  Py_XDECREF(utf8);
   Py_XDECREF(pyresult);
 
   VFSPOSTAMBLE;
@@ -854,29 +858,35 @@ apswvfspy_xDlClose(APSWVFS *self, PyObject *args, PyObject *kwds)
 static void
 apswvfs_xDlError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
 {
-  PyObject *pyresult = NULL, *utf8 = NULL;
+  PyObject *pyresult = NULL;
   VFSPREAMBLE;
 
   pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xDlError", 0, "()");
 
   if (pyresult && pyresult != Py_None)
   {
-    utf8 = getutf8string(pyresult);
-    if (utf8)
+    if (PyUnicode_Check(pyresult))
     {
-      size_t len = PyBytes_GET_SIZE(utf8);
-      if (len > (size_t)nByte - 1)
-        len = (size_t)nByte - 1;
-      memcpy(zErrMsg, PyBytes_AS_STRING(utf8), len);
-      zErrMsg[len] = 0;
+      const char *utf8;
+      Py_ssize_t utf8len;
+
+      utf8 = PyUnicode_AsUTF8AndSize(pyresult, &utf8len);
+      if (utf8)
+      {
+        if (utf8len > (Py_ssize_t)nByte - 1)
+          utf8len = (Py_ssize_t)nByte - 1;
+        memcpy(zErrMsg, utf8, utf8len);
+        zErrMsg[utf8len] = 0;
+      }
     }
+    else
+      PyErr_Format(PyExc_TypeError, "xDlError must return a string");
   }
 
   if (PyErr_Occurred())
     AddTraceBackHere(__FILE__, __LINE__, "vfs.xDlError", NULL);
 
   Py_XDECREF(pyresult);
-  Py_XDECREF(utf8);
   VFSPOSTAMBLE;
 }
 
@@ -1139,7 +1149,7 @@ apswvfspy_xCurrentTime(APSWVFS *self)
 static int
 apswvfs_xGetLastError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
 {
-  PyObject *pyresult = NULL, *utf8 = NULL, *item0 = NULL, *item1 = NULL;
+  PyObject *pyresult = NULL, *item0 = NULL, *item1 = NULL;
   int intres = -1;
   long longres;
 
@@ -1187,17 +1197,26 @@ apswvfs_xGetLastError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
   if (item1 == Py_None)
     goto end;
 
-  utf8 = getutf8string(item1);
-  if (utf8)
+  if (!PyUnicode_Check(item1))
   {
-    /* Get size includes trailing null */
-    size_t len = PyBytes_GET_SIZE(utf8);
-    if (zErrMsg && len > 0)
+    PyErr_Format(PyExc_TypeError, "xGetLastError return second item must be None or str");
+    goto end;
+  }
+  {
+    const char *utf8;
+    Py_ssize_t utf8len;
+    utf8 = PyUnicode_AsUTF8AndSize(item1, &utf8len);
+    if (utf8)
     {
-      if (len > (size_t)nByte)
-        len = (size_t)nByte;
-      memcpy(zErrMsg, PyBytes_AS_STRING(utf8), len);
-      zErrMsg[len - 1] = 0;
+      /* Get size includes trailing null */
+      size_t len = utf8len;
+      if (zErrMsg && len > 0)
+      {
+        if (len > (size_t)nByte)
+          len = (size_t)nByte;
+        memcpy(zErrMsg, utf8, len);
+        zErrMsg[len - 1] = 0;
+      }
     }
   }
 
@@ -1206,7 +1225,6 @@ end:
     AddTraceBackHere(__FILE__, __LINE__, "vfs.xGetLastError", NULL);
 
   Py_XDECREF(pyresult);
-  Py_XDECREF(utf8);
   Py_XDECREF(item0);
   Py_XDECREF(item1);
   VFSPOSTAMBLE;
@@ -1407,7 +1425,6 @@ static const char *
 apswvfs_xNextSystemCall(sqlite3_vfs *vfs, const char *zName)
 {
   PyObject *pyresult = NULL;
-  PyObject *utf8 = NULL;
   const char *res = NULL;
 
   VFSPREAMBLE;
@@ -1416,16 +1433,10 @@ apswvfs_xNextSystemCall(sqlite3_vfs *vfs, const char *zName)
 
   if (pyresult && pyresult != Py_None)
   {
-    if (PyUnicode_CheckExact(pyresult))
+    if (PyUnicode_Check(pyresult))
     {
-      utf8 = getutf8string(pyresult);
-      if (utf8)
-        /* note this deliberately leaks memory due to SQLite semantics */
-        res = sqlite3_mprintf("%s", PyBytes_AsString(utf8));
-      else
-      {
-        assert(PyErr_Occurred());
-      }
+      /* note this deliberately leaks memory due to SQLite semantics */
+      res = sqlite3_mprintf("%s", PyUnicode_AsUTF8String(pyresult));
     }
     else
       PyErr_Format(PyExc_TypeError, "You must return a string or None");
@@ -1435,7 +1446,6 @@ apswvfs_xNextSystemCall(sqlite3_vfs *vfs, const char *zName)
     AddTraceBackHere(__FILE__, __LINE__, "vfs.xNextSystemCall", "{s:O}", "pyresult", pyresult);
 
   Py_XDECREF(pyresult);
-  Py_XDECREF(utf8);
   VFSPOSTAMBLE;
   return res;
 }

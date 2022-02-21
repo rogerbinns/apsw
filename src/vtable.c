@@ -156,15 +156,15 @@ apswvtabCreateOrConnect(sqlite3 *db,
   schema = PySequence_GetItem(pyres, 0);
   if (!schema)
     goto pyexception;
-
+  if (!PyUnicode_Check(schema)) {
+    PyErr_Format(PyExc_TypeError, "Expected string for schema");
+    goto pyexception;
+  }
   {
-    PyObject *utf8schema = getutf8string(schema);
-    const char *cp_utf8schema;
-    if (!utf8schema)
+    const char *utf8schema = PyUnicode_AsUTF8(schema);
+    if(!utf8schema)
       goto pyexception;
-    cp_utf8schema = PyBytes_AsString(utf8schema);
-    _PYSQLITE_CALL_E(db, res = sqlite3_declare_vtab(db, cp_utf8schema));
-    Py_DECREF(utf8schema);
+    _PYSQLITE_CALL_E(db, res = sqlite3_declare_vtab(db, utf8schema));
     if (res != SQLITE_OK)
     {
       SET_EXC(res, db);
@@ -745,23 +745,21 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
   if (PySequence_Size(res) < 3)
     goto finally;
   {
-    PyObject *utf8str = NULL, *idxstr = NULL;
+    PyObject *idxstr = NULL;
     idxstr = PySequence_GetItem(res, 2);
     if (!idxstr)
       goto pyexception;
     if (idxstr != Py_None)
     {
-      utf8str = getutf8string(idxstr);
-      if (!utf8str)
-      {
+      if(!PyUnicode_Check(idxstr)) {
+        PyErr_Format(PyExc_TypeError, "Expected a string for idxStr");
         Py_DECREF(idxstr);
         goto pyexception;
       }
-      indexinfo->idxStr = sqlite3_mprintf("%s", PyBytes_AsString(utf8str));
+      indexinfo->idxStr = sqlite3_mprintf("%s", PyUnicode_AsUTF8(idxstr));
       indexinfo->needToFreeIdxStr = 1;
     }
-    Py_XDECREF(utf8str);
-    Py_DECREF(idxstr);
+
   }
 
   /* item 3 is orderByConsumed */

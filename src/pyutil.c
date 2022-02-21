@@ -93,34 +93,6 @@ convertutf8string(const char *str)
   return PyUnicode_FromStringAndSize(str, strlen(str));
 }
 
-/* Returns a PyBytes/String encoded in UTF8 - new reference.
-   Use PyBytes/String_AsString on the return value to get a
-   const char * to utf8 bytes */
-static PyObject *
-getutf8string(PyObject *string)
-{
-  PyObject *inunicode = NULL;
-  PyObject *utf8string = NULL;
-
-  if (PyUnicode_CheckExact(string))
-  {
-    inunicode = string;
-    Py_INCREF(string);
-  }
-
-  if (!inunicode)
-    inunicode = PyUnicode_FromObject(string);
-
-  if (!inunicode)
-    return NULL;
-
-  assert(!PyErr_Occurred());
-
-  utf8string = PyUnicode_AsUTF8String(inunicode);
-  Py_DECREF(inunicode);
-  return utf8string;
-}
-
 #define GET_BUFFER(faultName, var, src, dest) APSW_FAULT_INJECT(faultName, var = PyObject_GetBuffer(src, dest, PyBUF_SIMPLE), (PyErr_NoMemory(), var = -1))
 
 #define STRING_NEW(faultName, var, size, maxchar) APSW_FAULT_INJECT(faultName, var = PyUnicode_New(size, maxchar), var = PyErr_NoMemory())
