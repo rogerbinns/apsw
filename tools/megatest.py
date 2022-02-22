@@ -76,22 +76,24 @@ def main(PYVERS, SQLITEVERS, BITS, concurrency):
                         os.makedirs(logdir)
                         os.makedirs(workdir)
                         copy_git_files(workdir)
-                        jobs.append(
-                            executor.submit(runtest,
-                                            workdir=workdir,
-                                            bits=bits,
-                                            pyver=pyver,
-                                            sqlitever=sqlitever,
-                                            logdir=logdir,
-                                            debug=debug))
+                        job = executor.submit(runtest,
+                                              workdir=workdir,
+                                              bits=bits,
+                                              pyver=pyver,
+                                              sqlitever=sqlitever,
+                                              logdir=logdir,
+                                              debug=debug)
+                        job.info = f"py { pyver } sqlite { sqlitever } debug { debug } bits { bits }"
+                        jobs.append(job)
 
-        print(f"All builds started, now waiting for them to finish ({ concurrency } concurrency)")
+        print(f"\nAll builds started, now waiting for them to finish ({ concurrency } concurrency)\n")
         for job in concurrent.futures.as_completed(jobs):
+            print(job.info, "-> ", end="", flush=True)
             try:
                 job.result()
-                print(".", flush=True, end="")
+                print("\t OK", flush=True)
             except Exception:
-                print("E", flush=True, end="")
+                print("\t FAIL", flush=True)
 
         print("\nFinished")
 
@@ -169,7 +171,7 @@ PYVERS = (
 
 SQLITEVERS = ('3.37.0', '3.37.1', '3.37.2')
 
-BITS = (64, )
+BITS = (64, 32)
 
 if __name__ == '__main__':
     nprocs = 0
@@ -190,21 +192,23 @@ if __name__ == '__main__':
         concurrency = 24
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--pyvers", help="Which Python versions to test against [%(default)s]", default=",".join(PYVERS))
+    parser.add_argument("--pyvers",
+                        help="Which Python versions to test against [%(default)s]",
+                        default=",".join(PYVERS))
     parser.add_argument("--sqlitevers",
-                      dest="sqlitevers",
-                      help="Which SQLite versions to test against [%(default)s]",
-                      default=",".join(SQLITEVERS))
+                        dest="sqlitevers",
+                        help="Which SQLite versions to test against [%(default)s]",
+                        default=",".join(SQLITEVERS))
     parser.add_argument("--fossil",
-                      help="Also test current SQLite FOSSIL version [%(default)s]",
-                      default=False,
-                      action="store_true")
+                        help="Also test current SQLite FOSSIL version [%(default)s]",
+                        default=False,
+                        action="store_true")
     parser.add_argument("--bits", default=",".join(str(b) for b in BITS), help="Bits [%(default)s]")
     parser.add_argument("--tasks",
-                    type=int,
-                      dest="concurrency",
-                      help="Number of simultaneous builds/tests to run [%(default)s]",
-                      default=concurrency)
+                        type=int,
+                        dest="concurrency",
+                        help="Number of simultaneous builds/tests to run [%(default)s]",
+                        default=concurrency)
 
     options = parser.parse_args()
 
