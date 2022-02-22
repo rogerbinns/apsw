@@ -2778,7 +2778,7 @@ static PyMethodDef APSWVFSFile_methods[] = {
     {"xDeviceCharacteristics", (PyCFunction)apswvfsfilepy_xDeviceCharacteristics, METH_NOARGS, VFSFile_xDeviceCharacteristics_DOC},
     {"xCheckReservedLock", (PyCFunction)apswvfsfilepy_xCheckReservedLock, METH_NOARGS, VFSFile_xCheckReservedLock_DOC},
     {"xWrite", (PyCFunction)apswvfsfilepy_xWrite, METH_VARARGS | METH_KEYWORDS, VFSFile_xWrite_DOC},
-    {"xSync", (PyCFunction)apswvfsfilepy_xSync, METH_VARARGS, VFSFile_xSync_DOC},
+    {"xSync", (PyCFunction)apswvfsfilepy_xSync, METH_VARARGS | METH_KEYWORDS, VFSFile_xSync_DOC},
     {"xTruncate", (PyCFunction)apswvfsfilepy_xTruncate, METH_VARARGS | METH_KEYWORDS, VFSFile_xTruncate_DOC},
     {"xFileControl", (PyCFunction)apswvfsfilepy_xFileControl, METH_VARARGS | METH_KEYWORDS, VFSFile_xFileControl_DOC},
     {"excepthook", (PyCFunction)apswvfs_excepthook, METH_VARARGS, VFSFile_excepthook_DOC},
