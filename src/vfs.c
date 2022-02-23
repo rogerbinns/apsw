@@ -279,7 +279,7 @@ apswvfs_excepthook(PyObject *Py_UNUSED(donotuseself), PyObject *args)
   if (!excepthook)
     return NULL;
 
-  return PyEval_CallObject(excepthook, args);
+  return PyObject_CallObject(excepthook, args);
 }
 
 static int

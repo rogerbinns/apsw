@@ -130,7 +130,7 @@ apsw_write_unraiseable(PyObject *hookobject)
     PyErr_Clear();
     if (excepthook)
     {
-      result = PyEval_CallFunction(excepthook, "(OOO)", err_type ? err_type : Py_None, err_value ? err_value : Py_None, err_traceback ? err_traceback : Py_None);
+      result = PyObject_CallFunction(excepthook, "(OOO)", err_type ? err_type : Py_None, err_value ? err_value : Py_None, err_traceback ? err_traceback : Py_None);
       if (result)
         goto finally;
     }
@@ -142,7 +142,7 @@ apsw_write_unraiseable(PyObject *hookobject)
   {
     Py_INCREF(excepthook); /* borrowed reference from PySys_GetObject so we increment */
     PyErr_Clear();
-    result = PyEval_CallFunction(excepthook, "(OOO)", err_type ? err_type : Py_None, err_value ? err_value : Py_None, err_traceback ? err_traceback : Py_None);
+    result = PyObject_CallFunction(excepthook, "(OOO)", err_type ? err_type : Py_None, err_value ? err_value : Py_None, err_traceback ? err_traceback : Py_None);
     if (result)
       goto finally;
   }

@@ -430,7 +430,7 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
 
   while ((hook = PyIter_Next(iterator)))
   {
-    hookresult = PyEval_CallObject(hook, hookargs);
+    hookresult = PyObject_CallObject(hook, hookargs);
     if (!hookresult)
       goto pyexception;
     Py_DECREF(hook);
@@ -995,7 +995,7 @@ rollbackhookcb(void *context)
   if (PyErr_Occurred())
     goto finally; /* abort hook due to outstanding exception */
 
-  retval = PyEval_CallObject(self->rollbackhook, NULL);
+  retval = PyObject_CallObject(self->rollbackhook, NULL);
 
 finally:
   Py_XDECREF(retval);
@@ -1133,7 +1133,7 @@ commithookcb(void *context)
   if (PyErr_Occurred())
     goto finally; /* abort hook due to outstanding exception */
 
-  retval = PyEval_CallObject(self->commithook, NULL);
+  retval = PyObject_CallObject(self->commithook, NULL);
 
   if (!retval)
     goto finally; /* abort hook due to exeception */
@@ -1214,7 +1214,7 @@ walhookcb(void *context, sqlite3 *db, const char *dbname, int npages)
 
   gilstate = PyGILState_Ensure();
 
-  retval = PyEval_CallFunction(self->walhook, "(OO&i)", self, convertutf8string, dbname, npages);
+  retval = PyObject_CallFunction(self->walhook, "(OO&i)", self, convertutf8string, dbname, npages);
   if (!retval)
   {
     assert(PyErr_Occurred());
@@ -1304,7 +1304,7 @@ progresshandlercb(void *context)
 
   gilstate = PyGILState_Ensure();
 
-  retval = PyEval_CallObject(self->progresshandler, NULL);
+  retval = PyObject_CallObject(self->progresshandler, NULL);
 
   if (!retval)
     goto finally; /* abort due to exeception */
@@ -1612,7 +1612,7 @@ collationneeded_cb(void *pAux, sqlite3 *Py_UNUSED(db), int eTextRep, const char 
     goto finally;
   pyname = convertutf8string(name);
   if (pyname)
-    res = PyEval_CallFunction(self->collationneeded, "(OO)", self, pyname);
+    res = PyObject_CallFunction(self->collationneeded, "(OO)", self, pyname);
   if (!pyname || !res)
     AddTraceBackHere(__FILE__, __LINE__, "collationneeded callback", "{s: O, s: i, s: s}",
                      "Connection", self, "eTextRep", eTextRep, "name", name);
@@ -2211,7 +2211,7 @@ cbdispatch_func(sqlite3_context *context, int argc, sqlite3_value **argv)
     goto finally;
 
   assert(!PyErr_Occurred());
-  retval = PyEval_CallObject(cbinfo->scalarfunc, pyargs);
+  retval = PyObject_CallObject(cbinfo->scalarfunc, pyargs);
   if (retval)
     set_context_result(context, retval);
 
@@ -2252,7 +2252,7 @@ getaggregatefunctioncontext(sqlite3_context *context)
   assert(cbinfo->aggregatefactory);
 
   /* call the aggregatefactory to get our working objects */
-  retval = PyEval_CallObject(cbinfo->aggregatefactory, NULL);
+  retval = PyObject_CallObject(cbinfo->aggregatefactory, NULL);
 
   if (!retval)
     return aggfc;
@@ -2331,7 +2331,7 @@ cbdispatch_step(sqlite3_context *context, int argc, sqlite3_value **argv)
     goto finally;
 
   assert(!PyErr_Occurred());
-  retval = PyEval_CallObject(aggfc->stepfunc, pyargs);
+  retval = PyObject_CallObject(aggfc->stepfunc, pyargs);
   Py_DECREF(pyargs);
   Py_XDECREF(retval);
 

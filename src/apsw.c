@@ -318,7 +318,7 @@ apsw_logger(void *arg, int errcode, const char *message)
 
   msgaspystring = convertutf8string(message);
   if (msgaspystring)
-    res = PyEval_CallFunction(arg, "iO", errcode, msgaspystring);
+    res = PyObject_CallFunction(arg, "iO", errcode, msgaspystring);
   if (!res)
   {
     AddTraceBackHere(__FILE__, __LINE__, "Call_Logger",
