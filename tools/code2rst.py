@@ -195,7 +195,7 @@ def do_methods():
             # we have to 'automethod' main ourselves since sphinx is too stupid
             # to get the module right
             op.append(".. method:: main()\n")
-            import importlib
+            import importlib, importlib.machinery
             op.extend(
                 importlib.machinery.SourceFileLoader("apswshell",
                                                      "tools/shell.py").load_module().main.__doc__.split("\n"))
