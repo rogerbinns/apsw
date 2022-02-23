@@ -722,7 +722,5 @@ static PyTypeObject APSWStatementType =
         0,                                                                      /* tp_subclasses */
         0,                                                                      /* tp_weaklist */
         0,                                                                      /* tp_del */
-        0,                                                                      /* tp_version_tag */
-        0,                                                                      /* tp_finalize */
-        0                                                                       /* tp_vectorcall */
+        PyType_TRAILER
 };

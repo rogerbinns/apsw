@@ -1770,9 +1770,7 @@ static PyTypeObject APSWVFSType =
         0,                                                                      /* tp_subclasses */
         0,                                                                      /* tp_weaklist */
         0,                                                                      /* tp_del */
-        0,                                                                      /* tp_version_tag */
-        0,                                                                      /* tp_finalize */
-        0                                                                       /* tp_vectorcall */
+        PyType_TRAILER
 };
 
 /** .. class:: VFSFile
@@ -2832,9 +2830,7 @@ static PyTypeObject APSWVFSFileType =
         0,                                                                      /* tp_subclasses */
         0,                                                                      /* tp_weaklist */
         0,                                                                      /* tp_del */
-        0,                                                                      /* tp_version_tag */
-        0,                                                                      /* tp_finalize */
-        0                                                                       /* tp_vectorcall */
+        PyType_TRAILER
 };
 
 /** .. class:: URIFilename
@@ -2989,7 +2985,5 @@ static PyTypeObject APSWURIFilenameType =
         0,                                                                      /* tp_subclasses */
         0,                                                                      /* tp_weaklist */
         0,                                                                      /* tp_del */
-        0,                                                                      /* tp_version_tag */
-        0,                                                                      /* tp_finalize */
-        0                                                                       /* tp_vectorcall */
+        PyType_TRAILER
 };

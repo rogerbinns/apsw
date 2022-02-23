@@ -96,3 +96,10 @@ convertutf8string(const char *str)
 #define GET_BUFFER(faultName, var, src, dest) APSW_FAULT_INJECT(faultName, var = PyObject_GetBuffer(src, dest, PyBUF_SIMPLE), (PyErr_NoMemory(), var = -1))
 
 #define STRING_NEW(faultName, var, size, maxchar) APSW_FAULT_INJECT(faultName, var = PyUnicode_New(size, maxchar), var = PyErr_NoMemory())
+
+/* These correspond to the slots tp_version_tag, tp_finalize, tp_vectorcall */
+#if PY_VERSION_HEX < 0x03080000
+#define PyType_TRAILER  0
+#else
+#define PyType_TRAILER  0, 0, 0
+#endif
