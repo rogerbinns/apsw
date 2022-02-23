@@ -231,7 +231,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query, int usepreparev2)
     {
       /* Check to see if query is already in cache.  The size checks are to
          avoid calculating hashes on long strings */
-      if( sc->cache && sc->numentries && ((PyUnicode_CheckExact(query) && PyUnicode_GET_DATA_SIZE(query) < SC_MAXSIZE)))
+      if( sc->cache && sc->numentries && ((PyUnicode_CheckExact(query) && PyUnicode_GetLength(query) < SC_MAXSIZE)))
         {
           val=(APSWStatement*)PyDict_GetItem(sc->cache, query);
           if(val)
