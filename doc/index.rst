@@ -3,7 +3,7 @@ APSW documentation
 
 .. centered:: APSW |version| released |today|
 
-Use with SQLite 3.37 or later, CPython 3.7 and later:
+Use with SQLite 3.38 or later, CPython 3.7 and later:
 
   A `release
   <https://www.rogerbinns.com/blog/apsw-ending-python2early3.html>`__
