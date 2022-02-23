@@ -10,10 +10,11 @@ import re
 import time
 import zipfile
 import tarfile
+import subprocess
+import sysconfig
 
 from distutils.core import setup, Extension, Command
 from distutils.command import build_ext, build, sdist
-import distutils.ccompiler
 
 include_dirs = ['src']
 library_dirs = []
@@ -116,12 +117,15 @@ class build_test_extension(Command):
 
     def run(self):
         name = "testextension.sqlext"
-        compiler = distutils.ccompiler.new_compiler(verbose=True)
-        compiler.add_include_dir("sqlite3")
-        compiler.add_include_dir(".")
-        preargs = ["/Gd"] if "msvc" in str(compiler.__class__).lower() else ["-fPIC"]
-        objs = compiler.compile(["src/testextension.c"], extra_preargs=preargs)
-        compiler.link_shared_object(objs, name)
+        def v(n):
+            return sysconfig.get_config_var(n)
+
+        cc=f"{ v('CC') } { v('CFLAGS') } { v('CCSHARED') } -Isqlite3 -I. -c src/testextension.c"
+        ld=f"{ v('LDSHARED') } testextension.o -o { name }"
+
+        for cmd in cc, ld:
+            print(cmd)
+            subprocess.run(cmd, shell=True, check=True)
 
 # deal with various python version compatibility issues with how
 # to treat returned web data as lines of text
