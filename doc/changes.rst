@@ -2,7 +2,7 @@ Change History
 **************
 .. currentmodule:: apsw
 
-3.37.2-r1
+3.38.0-r1
 =========
 
 All items now have full docstrings including type information.
@@ -14,10 +14,14 @@ apsw.pyi file is included which does provide all the typing
 information in `type stub
 <https://typing.readthedocs.io/en/latest/source/stubs.html>__` format,
 
-Removal of code, tests, and documentation only relevant to Python
+Removal of code, tests, and documentation only relevant to CPython
 before 3.7.
 
 Keyword arguments can be used everywhere.
+
+Added constants:
+
+* SQLITE_INDEX_CONSTRAINT_OFFSET, SQLITE_INDEX_CONSTRAINT_LIMIT
 
 3.37.0-r1
 =========
