@@ -1,0 +1,5 @@
+apsw.Backup.__init__
+apsw.Blob.__init__
+apsw.Cursor.__init__
+apsw.Shell
+apsw.URIFilename.__init__
