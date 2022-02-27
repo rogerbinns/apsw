@@ -135,9 +135,6 @@ static PyObject *apswmodule;
 /* various utility functions and macros */
 #include "util.c"
 
-/* buffer used in statement cache */
-#include "apswbuffer.c"
-
 /* The statement cache */
 #include "statementcache.c"
 
@@ -713,7 +710,6 @@ apsw_test_reset_rng(PyObject *Py_UNUSED(self))
 static PyObject *
 apsw_fini(PyObject *Py_UNUSED(self))
 {
-  APSWBuffer_fini();
   Py_XDECREF(tls_errmsg);
 
   Py_RETURN_NONE;
@@ -1340,7 +1336,7 @@ PyInit_apsw(void)
     goto fail;
   }
 
-  if (PyType_Ready(&ConnectionType) < 0 || PyType_Ready(&APSWCursorType) < 0 || PyType_Ready(&ZeroBlobBindType) < 0 || PyType_Ready(&APSWBlobType) < 0 || PyType_Ready(&APSWVFSType) < 0 || PyType_Ready(&APSWVFSFileType) < 0 || PyType_Ready(&APSWURIFilenameType) < 0 || PyType_Ready(&APSWStatementType) < 0 || PyType_Ready(&APSWBufferType) < 0 || PyType_Ready(&FunctionCBInfoType) < 0 || PyType_Ready(&APSWBackupType) < 0)
+  if (PyType_Ready(&ConnectionType) < 0 || PyType_Ready(&APSWCursorType) < 0 || PyType_Ready(&ZeroBlobBindType) < 0 || PyType_Ready(&APSWBlobType) < 0 || PyType_Ready(&APSWVFSType) < 0 || PyType_Ready(&APSWVFSFileType) < 0 || PyType_Ready(&APSWURIFilenameType) < 0 || PyType_Ready(&FunctionCBInfoType) < 0 || PyType_Ready(&APSWBackupType) < 0)
     goto fail;
 
   m = apswmodule = PyModule_Create(&apswmoduledef);

@@ -172,8 +172,8 @@ static int
 resetcursor(APSWCursor *self, int force)
 {
   int res = SQLITE_OK;
-  PyObject *nextquery = self->statement ? self->statement->next : NULL;
   PyObject *etype, *eval, *etb;
+  int hasmore = statementcache_hasmore(self->statement);
 
   Py_CLEAR(self->description_cache[0]);
   Py_CLEAR(self->description_cache[1]);
@@ -181,27 +181,18 @@ resetcursor(APSWCursor *self, int force)
   if (force)
     PyErr_Fetch(&etype, &eval, &etb);
 
-  Py_XINCREF(nextquery);
-
   if (self->statement)
   {
-    INUSE_CALL(res = statementcache_finalize(self->connection->stmtcache, self->statement, !force));
+    INUSE_CALL(res = statementcache_finalize(self->connection->stmtcache, self->statement));
     if (!force) /* we don't care about errors when forcing */
-    {
-      if (res == SQLITE_SCHEMA)
-      {
-        Py_XDECREF(nextquery);
-        return res;
-      }
       SET_EXC(res, self->connection->db);
-    }
     self->statement = 0;
   }
 
   Py_CLEAR(self->bindings);
   self->bindingsoffset = -1;
 
-  if (!force && self->status != C_DONE && nextquery)
+  if (!force && self->status != C_DONE && hasmore)
   {
     if (res == SQLITE_OK)
     {
@@ -210,12 +201,9 @@ resetcursor(APSWCursor *self, int force)
       if (!PyErr_Occurred())
       {
         PyErr_Format(ExcIncomplete, "Error: there are still remaining sql statements to execute");
-        AddTraceBackHere(__FILE__, __LINE__, "resetcursor", "{s: N}", "remaining", convertutf8buffertounicode(nextquery));
       }
     }
   }
-
-  Py_XDECREF(nextquery);
 
   if (!force && self->status != C_DONE && self->emiter)
   {
@@ -645,14 +633,14 @@ APSWCursor_dobindings(APSWCursor *self)
   if (self->bindings)
     sz = PySequence_Fast_GET_SIZE(self->bindings);
   /* there is another statement after this one ... */
-  if (self->statement->next && sz - self->bindingsoffset < nargs)
+  if (statementcache_hasmore(self->statement) && sz - self->bindingsoffset < nargs)
   {
     PyErr_Format(ExcBindings, "Incorrect number of bindings supplied.  The current statement uses %d and there are only %d left.  Current offset is %d",
                  nargs, (self->bindings) ? sz : 0, (int)(self->bindingsoffset));
     return -1;
   }
   /* no more statements */
-  if (!self->statement->next && sz - self->bindingsoffset != nargs)
+  if (!statementcache_hasmore(self->statement) && sz - self->bindingsoffset != nargs)
   {
     PyErr_Format(ExcBindings, "Incorrect number of bindings supplied.  The current statement uses %d and there are %d supplied.  Current offset is %d",
                  nargs, (self->bindings) ? sz : 0, (int)(self->bindingsoffset));
@@ -691,7 +679,7 @@ APSWCursor_doexectrace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
   assert(self->statement);
 
   /* make a string of the command */
-  sqlcmd = convertutf8buffersizetounicode(self->statement->utf8, self->statement->querylen);
+  sqlcmd = PyUnicode_FromStringAndSize(self->statement->utf8, self->statement->query_size);
 
   if (!sqlcmd)
     return -1;
@@ -806,7 +794,7 @@ APSWCursor_step(APSWCursor *self)
 
     /* done with that statement, are there any more? */
     self->status = C_DONE;
-    if (!self->statement->next)
+    if (!statementcache_hasmore(self->statement))
     {
       PyObject *next;
 
@@ -835,7 +823,7 @@ APSWCursor_step(APSWCursor *self)
       }
 
       /* we need to clear just completed and restart original executemany statement */
-      INUSE_CALL(statementcache_finalize(self->connection->stmtcache, self->statement, 0));
+      INUSE_CALL(statementcache_finalize(self->connection->stmtcache, self->statement));
       self->statement = NULL;
       /* don't need bindings from last round if emiter.next() */
       Py_CLEAR(self->bindings);
@@ -859,13 +847,13 @@ APSWCursor_step(APSWCursor *self)
     {
       /* we are going again in executemany mode */
       assert(self->emiter);
-      INUSE_CALL(self->statement = statementcache_prepare(self->connection->stmtcache, self->emoriginalquery, 1));
+      INUSE_CALL(self->statement = statementcache_prepare(self->connection->stmtcache, self->emoriginalquery));
       res = (self->statement) ? SQLITE_OK : SQLITE_ERROR;
     }
     else
     {
       /* next sql statement */
-      INUSE_CALL(res = statementcache_next(self->connection->stmtcache, &self->statement, !!self->bindings));
+      INUSE_CALL(res = statementcache_next(self->connection->stmtcache, &self->statement));
       SET_EXC(res, self->connection->db);
     }
 
@@ -908,7 +896,7 @@ APSWCursor_step(APSWCursor *self)
   return NULL;
 }
 
-/** .. method:: execute(statements: str, bindings: Optional[Union[Tuple, List, Dict]] = None) -> Iterator
+/** .. method:: execute(statements: str, bindings: Optional[Union[Sequence,Dict]] = None) -> Iterator
 
     Executes the statements using the supplied bindings.  Execution
     returns when the first row is available or all statements have
@@ -963,12 +951,12 @@ APSWCursor_step(APSWCursor *self)
 
 */
 static PyObject *
-APSWCursor_execute(APSWCursor *self, PyObject *args)
+APSWCursor_execute(APSWCursor *self, PyObject *args, PyObject *kwds)
 {
   int res;
   int savedbindingsoffset = -1;
   PyObject *retval = NULL;
-  PyObject *query;
+  PyObject *statements, *bindings=NULL;
 
   CHECK_USE(NULL);
   CHECK_CURSOR_CLOSED(NULL);
@@ -981,15 +969,13 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
   }
 
   assert(!self->bindings);
-  assert(PyTuple_Check(args));
-
-  if (PyTuple_GET_SIZE(args) < 1 || PyTuple_GET_SIZE(args) > 2)
-    return PyErr_Format(PyExc_TypeError, "Incorrect number of arguments.  execute(statements [,bindings])");
-
-  query = PyTuple_GET_ITEM(args, 0);
-  if (PyTuple_GET_SIZE(args) == 2)
-    if (PyTuple_GET_ITEM(args, 1) != Py_None)
-      self->bindings = PyTuple_GET_ITEM(args, 1);
+  {
+    static char *kwlist[] = {"statements", "bindings", NULL};
+    Cursor_execute_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O&:" Cursor_execute_USAGE, kwlist, &PyUnicode_Type, &statements, argcheck_Optional_Union_Sequence_Dict, &bindings))
+      return NULL;
+  }
+  self->bindings = bindings;
 
   if (self->bindings)
   {
@@ -1005,12 +991,12 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
 
   assert(!self->statement);
   assert(!PyErr_Occurred());
-  INUSE_CALL(self->statement = statementcache_prepare(self->connection->stmtcache, query, !!self->bindings));
+  INUSE_CALL(self->statement = statementcache_prepare(self->connection->stmtcache, statements));
   if (!self->statement)
   {
     AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_execute.sqlite3_prepare", "{s: O, s: O}",
                      "Connection", self->connection,
-                     "statement", query);
+                     "statement", statements);
     return NULL;
   }
   assert(!PyErr_Occurred());
@@ -1045,7 +1031,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
   return retval;
 }
 
-/** .. method:: executemany(statements: str, sequenceofbindings: Optional[Sequence[Union[Tuple, List, Dict]]]) -> Iterator
+/** .. method:: executemany(statements: str, sequenceofbindings: Sequence[Union[Sequence,Dict]]) -> Iterator
 
   This method is for when you want to execute the same statements over
   a sequence of bindings.  Conceptually it does this::
@@ -1068,13 +1054,13 @@ APSWCursor_execute(APSWCursor *self, PyObject *args)
 */
 
 static PyObject *
-APSWCursor_executemany(APSWCursor *self, PyObject *args)
+APSWCursor_executemany(APSWCursor *self, PyObject *args, PyObject *kwds)
 {
   int res;
   PyObject *retval = NULL;
-  PyObject *theiterable = NULL;
+  PyObject *sequenceofbindings = NULL;
   PyObject *next = NULL;
-  PyObject *query = NULL;
+  PyObject *statements = NULL;
   int savedbindingsoffset = -1;
 
   CHECK_USE(NULL);
@@ -1091,11 +1077,13 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
   assert(!self->emiter);
   assert(!self->emoriginalquery);
   assert(self->status == C_DONE);
-
-  if (!PyArg_ParseTuple(args, "OO:executemany(statements, sequenceofbindings)", &query, &theiterable))
-    return NULL;
-
-  self->emiter = PyObject_GetIter(theiterable);
+  {
+    static char *kwlist[] = {"statements", "sequenceofbindings", NULL};
+    Cursor_executemany_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!O&:" Cursor_executemany_USAGE, kwlist, &PyUnicode_Type, &statements, argcheck_Sequence, &sequenceofbindings))
+      return NULL;
+  }
+  self->emiter = PyObject_GetIter(sequenceofbindings);
   if (!self->emiter)
     return PyErr_Format(PyExc_TypeError, "2nd parameter must be iterable");
 
@@ -1122,17 +1110,17 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args)
   assert(!self->statement);
   assert(!PyErr_Occurred());
   assert(!self->statement);
-  INUSE_CALL(self->statement = statementcache_prepare(self->connection->stmtcache, query, 1));
+  INUSE_CALL(self->statement = statementcache_prepare(self->connection->stmtcache, statements));
   if (!self->statement)
   {
     AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_executemany.sqlite3_prepare", "{s: O, s: O}",
                      "Connection", self->connection,
-                     "statement", query);
+                     "statements", statements);
     return NULL;
   }
   assert(!PyErr_Occurred());
 
-  self->emoriginalquery = self->statement->utf8;
+  self->emoriginalquery = statements;
   Py_INCREF(self->emoriginalquery);
 
   self->bindingsoffset = 0;
@@ -1450,9 +1438,9 @@ APSWCursor_fetchone(APSWCursor *self)
 }
 
 static PyMethodDef APSWCursor_methods[] = {
-    {"execute", (PyCFunction)APSWCursor_execute, METH_VARARGS,
+    {"execute", (PyCFunction)APSWCursor_execute, METH_VARARGS | METH_KEYWORDS,
      Cursor_execute_DOC},
-    {"executemany", (PyCFunction)APSWCursor_executemany, METH_VARARGS,
+    {"executemany", (PyCFunction)APSWCursor_executemany, METH_VARARGS | METH_KEYWORDS,
      Cursor_executemany_DOC},
     {"setexectrace", (PyCFunction)APSWCursor_setexectrace, METH_VARARGS | METH_KEYWORDS,
      Cursor_setexectrace_DOC},

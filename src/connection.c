@@ -379,8 +379,11 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
   }
   flags |= SQLITE_OPEN_EXRESCODE;
 
+  /* clamp cache size */
   if (statementcachesize < 0)
     statementcachesize = 0;
+  if (statementcachesize > 16384)
+    statementcachesize = 16384;
 
   /* Technically there is a race condition as a vfs of the same name
      could be registered between our find and the open starting.
@@ -2046,8 +2049,7 @@ static PyTypeObject FunctionCBInfoType =
         0,                                                                      /* tp_subclasses */
         0,                                                                      /* tp_weaklist */
         0,                                                                      /* tp_del */
-        PyType_TRAILER
-};
+        PyType_TRAILER};
 
 static FunctionCBInfo *
 allocfunccbinfo(void)
@@ -3711,5 +3713,4 @@ static PyTypeObject ConnectionType =
         0,                                                                                           /* tp_subclasses */
         0,                                                                                           /* tp_weaklist */
         0,                                                                                           /* tp_del */
-        PyType_TRAILER
-};
+        PyType_TRAILER};
