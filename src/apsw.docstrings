@@ -1563,7 +1563,7 @@
 "same as :meth:`getdescription` but with 5 Nones appended.  See\n" \
 "also :issue:`131`.\n" 
 
-#define  Cursor_execute_DOC "execute($self,statements,bindings=None)\n--\n\nCursor.execute(statements: str, bindings: Optional[Union[Tuple, List, Dict]] = None) -> Iterator\n\n" \
+#define  Cursor_execute_DOC "execute($self,statements,bindings=None)\n--\n\nCursor.execute(statements: str, bindings: Optional[Union[Sequence,Dict]] = None) -> Iterator\n\n" \
 "Executes the statements using the supplied bindings.  Execution\n" \
 "returns when the first row is available or all statements have\n" \
 "completed.\n" \
@@ -1623,7 +1623,16 @@
 "  * `sqlite3_bind_blob <https://sqlite.org/c3ref/bind_blob.html>`__\n" \
 "  * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__\n" 
 
-#define  Cursor_executemany_DOC "executemany($self,statements,sequenceofbindings)\n--\n\nCursor.executemany(statements: str, sequenceofbindings: Optional[Sequence[Union[Tuple, List, Dict]]]) -> Iterator\n\n" \
+#define Cursor_execute_USAGE "Cursor.execute(statements: str, bindings: Optional[Union[Sequence,Dict]] = None) -> Iterator"
+
+#define Cursor_execute_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(statements), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(bindings), PyObject *)); \
+  assert(bindings == NULL); \
+} while(0)
+
+
+#define  Cursor_executemany_DOC "executemany($self,statements,sequenceofbindings)\n--\n\nCursor.executemany(statements: str, sequenceofbindings: Sequence[Union[Sequence,Dict]]) -> Iterator\n\n" \
 "This method is for when you want to execute the same statements over\n" \
 "a sequence of bindings.  Conceptually it does this::\n" \
 "\n" \
@@ -1642,6 +1651,14 @@
 "The return is the cursor itself which acts as an iterator.  Your\n" \
 "statements can return data.  See :meth:`~Cursor.execute` for more\n" \
 "information.\n" 
+
+#define Cursor_executemany_USAGE "Cursor.executemany(statements: str, sequenceofbindings: Sequence[Union[Sequence,Dict]]) -> Iterator"
+
+#define Cursor_executemany_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(statements), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(sequenceofbindings), PyObject *)); \
+} while(0)
+
 
 #define  Cursor_fetchall_DOC "fetchall($self)\n--\n\nCursor.fetchall() -> list\n\n" \
 "Returns all remaining result rows as a list.  This method is defined\n" \

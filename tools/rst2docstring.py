@@ -289,6 +289,13 @@ type_overrides = {
     "Connection.set_last_insert_rowid": {
         "rowid": "int64"
     },
+    "Cursor.execute": {
+        "statements": "strtype"
+    },
+    "Cursor.executemany": {
+        "statements": "strtype",
+        "sequenceofbindings": "Sequence"
+    },
     "URIFilename.uri_int": {
         "default": "int64",
     },
@@ -421,6 +428,16 @@ def do_argparse(item):
             if param["default"]:
                 breakpoint()
                 pass
+        elif param["type"] == "Optional[Union[Sequence,Dict]]":
+            type = "PyObject *"
+            kind = "O&"
+            args = ["argcheck_Optional_Union_Sequence_Dict"] + args
+            if param["default"]:
+                if param["default"] == "None":
+                    default_check = f"{ pname } == NULL"
+                else:
+                    breakpoint()
+                pass
         elif param["type"] == "Callable":
             type = "PyObject *"
             kind = "O&"
@@ -428,10 +445,24 @@ def do_argparse(item):
             if param["default"]:
                 breakpoint()
                 pass
+        elif param["type"] == "Sequence":
+            type = "PyObject *"
+            kind = "O&"
+            args = ["argcheck_Sequence"] + args
+            if param["default"]:
+                breakpoint()
+                pass
         elif param["type"] == "Connection":
             type = "Connection *"
             kind = "O!"
             args = ["&ConnectionType"] + args
+            if param["default"]:
+                breakpoint()
+                pass
+        elif param["type"] == "strtype":
+            type = "PyObject *"
+            kind = "O!"
+            args = ["&PyUnicode_Type"] + args
             if param["default"]:
                 breakpoint()
                 pass

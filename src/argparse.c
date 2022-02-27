@@ -45,6 +45,19 @@ argcheck_bool(PyObject *object, void *result)
     }
 }
 
+static int
+argcheck_Sequence(PyObject *object, void *result)
+{
+    PyObject **res = (PyObject **)result;
+    if (PySequence_Check(object))
+    {
+        *res = object;
+        return 1;
+    }
+    PyErr_Format(PyExc_TypeError, "Function argument expected a Sequence");
+    return 0;
+}
+
 /* Doing this here avoids cleanup in the calling function */
 static int
 argcheck_List_int_int(PyObject *object, void *result)
@@ -108,4 +121,22 @@ argcheck_pointer(PyObject *object, void *result)
     }
     *output = PyLong_AsVoidPtr(object);
     return PyErr_Occurred() ? 0 : 1;
+}
+
+static int
+argcheck_Optional_Union_Sequence_Dict(PyObject *object, void *result)
+{
+    PyObject **output = (PyObject **)result;
+    if (object == Py_None)
+    {
+        *output = NULL;
+        return 1;
+    }
+    if (PySequence_Check(object) || PyDict_Check(object))
+    {
+        *output = object;
+        return 1;
+    }
+    PyErr_Format(PyExc_TypeError, "Function argument expected None | Sequence | Dict");
+    return 0;
 }
