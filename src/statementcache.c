@@ -241,7 +241,7 @@ statementcache_free(StatementCache *sc)
     if (sc->caches)
     {
       unsigned i;
-      for (i = 0; i < sc->highest_used; i++)
+      for (i = 0; i <= sc->highest_used; i++)
         if (sc->caches[i])
         {
           statementcache_free_statement(sc, sc->caches[i]);
