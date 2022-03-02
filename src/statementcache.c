@@ -54,21 +54,26 @@ typedef struct StatementCache
   unsigned next_eviction; /* which entry is evicted next */
 } StatementCache;
 
+/* we don't bother caching larger than this many bytes */
+#define SC_MAX_ITEM_SIZE 16384
+
 /* the hash value we use for unoccupied */
 #define SC_SENTINEL_HASH (-1)
 
 static void
-statementcache_free_statement(APSWStatement *s)
+statementcache_free_statement(StatementCache *sc, APSWStatement *s)
 {
+  int res;
   Py_CLEAR(s->query);
-  sqlite3_finalize(s->vdbestatement);
+  PYSQLITE_SC_CALL(res = sqlite3_finalize(s->vdbestatement));
+  assert(res == SQLITE_OK);
   PyMem_Free(s);
 }
 
 static int
 statementcache_hasmore(APSWStatement *statement)
 {
-  return (statement->query_size != statement->utf8_size;
+  return statement ? (statement->query_size != statement->utf8_size) : 0;
 }
 
 /* completely done with this statement */
@@ -79,12 +84,12 @@ statementcache_finalize(StatementCache *sc, APSWStatement *statement)
   if (!statement)
     return res;
   PYSQLITE_SC_CALL(res = sqlite3_reset(statement->vdbestatement));
-  if (sc->maxentries)
+  if (statement->hash != SC_SENTINEL_HASH)
   {
     if (sc->caches[sc->next_eviction])
     {
       assert(sc->hashes[sc->next_eviction] != SC_SENTINEL_HASH);
-      statementcache_free_statement(sc->caches[sc->next_eviction]);
+      statementcache_free_statement(sc, sc->caches[sc->next_eviction]);
     }
     sc->hashes[sc->next_eviction] = statement->hash;
     sc->caches[sc->next_eviction] = statement;
@@ -95,8 +100,8 @@ statementcache_finalize(StatementCache *sc, APSWStatement *statement)
   }
   else
   {
-    /* no cache */
-    statementcache_free_statement(statement);
+    /* not caching */
+    statementcache_free_statement(sc, statement);
   }
   return res;
 }
@@ -106,14 +111,13 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
 {
   Py_hash_t hash;
   APSWStatement *statement = NULL;
-  const char *tail;
-  sqlite3_stmt *vdbestatement;
+  const char *tail = NULL;
+  sqlite3_stmt *vdbestatement = NULL;
   int res;
 
   *statement_out = NULL;
-
-  hash = _Py_HashBytes(utf8, utf8size);
-  if (hash != SC_SENTINEL_HASH && sc->maxentries)
+  hash = (sc->maxentries && utf8size < SC_MAX_ITEM_SIZE) ? _Py_HashBytes(utf8, utf8size) : SC_SENTINEL_HASH;
+  if (hash != SC_SENTINEL_HASH)
   {
     unsigned i;
     for (i = 0; i <= sc->highest_used; i++)
@@ -124,9 +128,10 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
         sc->hashes[i] = SC_SENTINEL_HASH;
         statement = sc->caches[i];
         sc->caches[i] = NULL;
-        PYSQLITE_SC_CALL((res = sqlite3_reset(statement->vdbestatement), res = (res ? res : sqlite3_clear_bindings(statement->vdbestatement))));
+        PYSQLITE_SC_CALL(res = sqlite3_clear_bindings(statement->vdbestatement));
         if (res)
         {
+          SET_EXC(res, sc->db);
           statementcache_finalize(sc, statement);
           return res;
         }
@@ -137,15 +142,23 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
     }
   }
   /* cache miss */
-  res = sqlite3_prepare_v2(sc->db, utf8, utf8size, &vdbestatement, &tail);
-  if (res)
-    return res;
+
+  /* note that prepare can return ok while a python level occurred that couldn't be reported */
+  PYSQLITE_SC_CALL(res = sqlite3_prepare_v2(sc->db, utf8, utf8size, &vdbestatement, &tail));
+  if (res != SQLITE_OK || PyErr_Occurred())
+  {
+    SET_EXC(res, sc->db);
+    PYSQLITE_SC_CALL(sqlite3_finalize(vdbestatement));
+    return res ? res : SQLITE_ERROR;
+  }
 
   statement = PyMem_Malloc(sizeof(APSWStatement));
   if (!statement)
   {
-    sqlite3_finalize(vdbestatement);
-    return SQLITE_NOMEM;
+    PYSQLITE_SC_CALL(sqlite3_finalize(vdbestatement));
+    res = SQLITE_NOMEM;
+    SET_EXC(res, sc->db);
+    return res;
   }
 
   statement->hash = hash;
@@ -153,10 +166,10 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   statement->query_size = tail - utf8;
   statement->utf8_size = utf8size;
 
-  if (statement->query_size == statement->utf8_size)
+  if (!statementcache_hasmore(statement))
   {
     /* no subsequent queries, so use sqlite's copy of the utf8 */
-    statement->utf8 = sqlite3_sql(vdbestatement);
+    PYSQLITE_SC_CALL(statement->utf8 = sqlite3_sql(vdbestatement));
     statement->query = NULL;
   }
   else
@@ -166,7 +179,6 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
     statement->query = query;
     Py_INCREF(query);
   }
-
   *statement_out = statement;
   return SQLITE_OK;
 }
@@ -176,7 +188,7 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
 {
   const char *utf8 = NULL;
   Py_ssize_t utf8size = 0;
-  APSWStatement *statement;
+  APSWStatement *statement = NULL;
   int res;
 
   assert(PyUnicode_Check(query));
@@ -185,10 +197,9 @@ statementcache_prepare(StatementCache *sc, PyObject *query)
     return NULL;
 
   res = statementcache_prepare_internal(sc, utf8, utf8size, query, &statement);
-  assert((res == SQLITE_OK && statement) || (res != SQLITE_OK && !statement));
+  assert((res == SQLITE_OK && statement && !PyErr_Occurred()) || (res != SQLITE_OK && !statement));
   if (res)
     SET_EXC(res, sc->db);
-
   return statement;
 }
 
@@ -217,6 +228,7 @@ statementcache_next(StatementCache *sc, APSWStatement **statement)
       return res2;
     return res;
   }
+  *statement = new;
   return SQLITE_OK;
 }
 
@@ -232,7 +244,7 @@ statementcache_free(StatementCache *sc)
       for (i = 0; i < sc->highest_used; i++)
         if (sc->caches[i])
         {
-          statementcache_free_statement(sc->caches[i]);
+          statementcache_free_statement(sc, sc->caches[i]);
         }
     }
     PyMem_Free(sc->caches);
