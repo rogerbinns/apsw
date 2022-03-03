@@ -26,13 +26,13 @@ set -ex
 
 if [ -f sqlite3/sqlite3config.h ]
 then
-    CFLAGS="$CFLAGS -DAPSW_USE_SQLITE_CONFIG=\"sqlite3/sqlite3config.h\""
+    CFLAGS="$CFLAGS -DAPSW_USE_SQLITE_CONFIG"
 fi
 
 PROFILE="-ftest-coverage -fprofile-arcs -g"
 
 set -ex
-$CC $CFLAGS $MOREFLAGS $PROFILE -DEXPERIMENTAL -DSQLITE_ENABLE_API_ARMOR -DAPSW_USE_SQLITE_AMALGAMATION=\"sqlite3/sqlite3.c\" -DAPSW_TESTFIXTURES -I$INCLUDEDIR -I. -Isrc -c src/apsw.c
+$CC $CFLAGS $MOREFLAGS $PROFILE -DEXPERIMENTAL -DSQLITE_ENABLE_API_ARMOR -DAPSW_USE_SQLITE_AMALGAMATION  -DAPSW_TESTFIXTURES -I$INCLUDEDIR -Isrc -Isqlite3 -I. -c src/apsw.c
 $LINKER $PROFILE apsw.o -o apsw$SOSUFFIX
 gcc -fPIC -shared -Isqlite3 -I. -o testextension.sqlext -Isqlite3 src/testextension.c
 set +ex
