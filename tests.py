@@ -3723,8 +3723,6 @@ class APSW(unittest.TestCase):
            # methods will only be called from that same thread so it
            # isn't a problem.
                         'skipcalls': re.compile("^sqlite3_(blob_bytes|column_count|bind_parameter_count|data_count|vfs_.+|changes64|total_changes64|get_autocommit|last_insert_rowid|complete|interrupt|limit|malloc64|free|threadsafe|value_.+|libversion|enable_shared_cache|initialize|shutdown|config|memory_.+|soft_heap_limit(64)?|randomness|db_readonly|db_filename|release_memory|status64|result_.+|user_data|mprintf|aggregate_context|declare_vtab|backup_remaining|backup_pagecount|sourceid|uri_.+)$"),
-                        # also ignore this file
-                        'skipfiles': re.compile(r"[/\\]apsw.c$"),
                         # error message
                         'desc': "sqlite3_ calls must wrap with PYSQLITE_CALL",
                         },
@@ -3754,16 +3752,6 @@ class APSW(unittest.TestCase):
                                   (filename, name, i, func, v['desc'], line.strip()))
 
     def sourceCheckFunction(self, filename, name, lines):
-        # readbuffer stuff
-        rbvars = endrb = 0
-        for line in lines:
-            if "READBUFFERVARS" in line:
-                rbvars += 1
-            if "ENDREADBUFFER" in line:
-                endrb += 1
-        if rbvars and not endrb:
-            self.fail("file %s func %s has missing ENDREADBUFFER" % (filename, name))
-
         # not further checked
         if name.split("_")[0] in ("ZeroBlobBind", "APSWVFS", "APSWVFSFile", "APSWBuffer", "FunctionCBInfo",
                                   "apswurifilename"):
@@ -8219,21 +8207,6 @@ shell.write(shell.stdout, "hello world\\n")
             apsw.Connection(":memory:")
             1 / 0
         except MemoryError:
-            pass
-
-        ## TransferBindingsFail
-        apsw.faultdict["TransferBindingsFail"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.cursor().execute("create table foo(x,y); insert into foo values(3,4)")
-            db.cursor().execute("create index fooxy on foo(x,y)")
-            for row in db.cursor().execute("select * from foo"):
-                pass
-            db.cursor().execute("drop index fooxy")
-            for row in db.cursor().execute("select * from foo"):
-                pass
-            1 / 0
-        except apsw.NoMemError:
             pass
 
         ## OverloadFails
