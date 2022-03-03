@@ -343,7 +343,7 @@ def doit():
     if options.dump_filename or "bigstmt" in options.tests:
         text = ";\n".join([x[0] for x in getlines(scale=options.scale)]) + ";"  # sqlite3 requires final semicolon
         if options.dump_filename:
-            open(options.dump_filename, "wt").print(text.encode("utf8"))
+            open(options.dump_filename, "wt", encoding="utf8").write(text)
             sys.exit(0)
 
     if "statements" in options.tests:
