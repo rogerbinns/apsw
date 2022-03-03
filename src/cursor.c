@@ -1080,7 +1080,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"statements", "sequenceofbindings", NULL};
     Cursor_executemany_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!O&:" Cursor_executemany_USAGE, kwlist, &PyUnicode_Type, &statements, argcheck_Sequence, &sequenceofbindings))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!O:" Cursor_executemany_USAGE, kwlist, &PyUnicode_Type, &statements, &sequenceofbindings))
       return NULL;
   }
   self->emiter = PyObject_GetIter(sequenceofbindings);
