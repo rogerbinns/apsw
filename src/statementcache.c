@@ -55,10 +55,18 @@ typedef struct StatementCache
 } StatementCache;
 
 /* we don't bother caching larger than this many bytes */
-#define SC_MAX_ITEM_SIZE 16384
+#define SC_MAX_ITEM_SIZE 16
 
 /* the hash value we use for unoccupied */
 #define SC_SENTINEL_HASH (-1)
+
+/* recycle bin for APSWStatements to avoid repeated malloc/free calls */
+#define SC_STATEMENT_RECYCLE_BIN_ENTRIES 256
+
+#if SC_STATEMENT_RECYCLE_BIN_ENTRIES > 0
+static APSWStatement *apsw_sc_recycle_bin[SC_STATEMENT_RECYCLE_BIN_ENTRIES];
+static unsigned apsw_sc_recycle_bin_next = 0;
+#endif
 
 static void
 statementcache_free_statement(StatementCache *sc, APSWStatement *s)
@@ -67,7 +75,12 @@ statementcache_free_statement(StatementCache *sc, APSWStatement *s)
   Py_CLEAR(s->query);
   PYSQLITE_SC_CALL(res = sqlite3_finalize(s->vdbestatement));
   assert(res == SQLITE_OK);
-  PyMem_Free(s);
+#if SC_STATEMENT_RECYCLE_BIN_ENTRIES > 0
+  if (apsw_sc_recycle_bin_next + 1 < SC_STATEMENT_RECYCLE_BIN_ENTRIES)
+    apsw_sc_recycle_bin[apsw_sc_recycle_bin_next++] = s;
+  else
+#endif
+    PyMem_Free(s);
 }
 
 static int
@@ -143,8 +156,21 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   }
   /* cache miss */
 
+  /* Undocumented stuff alert:  if the size passed to sqlite3_prepare
+     doesn't include the trailing null then sqlite makes a copy of the
+     sql text in order to run on a buffer that does have a trailing
+     null.  When using speedtest bigstmt (about 20MB of sql text)
+     runtime goes from 2 seconds to 2 minutes due to that copying
+     which happens on each statement as we progress through the sql.
+
+     The utf8 we originally got from PyUnicode_AsUTF8AndSize is
+     documented to always have a trailing null (not included in the
+     size) so we have an assert to verify that, and add one to the
+     length passed to sqlite3_prepare */
+
+  assert(0 == utf8[utf8size + 1]);
   /* note that prepare can return ok while a python level occurred that couldn't be reported */
-  PYSQLITE_SC_CALL(res = sqlite3_prepare_v2(sc->db, utf8, utf8size, &vdbestatement, &tail));
+  PYSQLITE_SC_CALL(res = sqlite3_prepare_v2(sc->db, utf8, utf8size + 1, &vdbestatement, &tail));
   if (res != SQLITE_OK || PyErr_Occurred())
   {
     SET_EXC(res, sc->db);
@@ -152,13 +178,20 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
     return res ? res : SQLITE_ERROR;
   }
 
-  statement = PyMem_Malloc(sizeof(APSWStatement));
-  if (!statement)
+#if SC_STATEMENT_RECYCLE_BIN_ENTRIES > 0
+  if (apsw_sc_recycle_bin_next)
+    statement = apsw_sc_recycle_bin[--apsw_sc_recycle_bin_next];
+  else
+#endif
   {
-    PYSQLITE_SC_CALL(sqlite3_finalize(vdbestatement));
-    res = SQLITE_NOMEM;
-    SET_EXC(res, sc->db);
-    return res;
+    statement = PyMem_Malloc(sizeof(APSWStatement));
+    if (!statement)
+    {
+      PYSQLITE_SC_CALL(sqlite3_finalize(vdbestatement));
+      res = SQLITE_NOMEM;
+      SET_EXC(res, sc->db);
+      return res;
+    }
   }
 
   statement->hash = hash;
@@ -169,7 +202,7 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   if (!statementcache_hasmore(statement))
   {
     /* no subsequent queries, so use sqlite's copy of the utf8 */
-    PYSQLITE_SC_CALL(statement->utf8 = sqlite3_sql(vdbestatement));
+    statement->utf8 = sqlite3_sql(vdbestatement);
     statement->query = NULL;
   }
   else
@@ -255,7 +288,8 @@ statementcache_free(StatementCache *sc)
 static StatementCache *
 statementcache_init(sqlite3 *db, unsigned size)
 {
-  StatementCache *res = (StatementCache *)PyMem_Malloc(sizeof(StatementCache));
+  StatementCache *res;
+  APSW_FAULT_INJECT(StatementCacheAllocFails, res = (StatementCache *)PyMem_Malloc(sizeof(StatementCache)), res = NULL);
   if (res)
   {
     res->hashes = size ? PyMem_Calloc(size, sizeof(Py_hash_t)) : 0;
@@ -267,7 +301,7 @@ statementcache_init(sqlite3 *db, unsigned size)
     if (res->hashes)
     {
       unsigned i;
-      for (i = 0; i < size; i++)
+      for (i = 0; i <= res->highest_used; i++)
         res->hashes[i] = SC_SENTINEL_HASH;
     }
   }
@@ -275,6 +309,16 @@ statementcache_init(sqlite3 *db, unsigned size)
   {
     statementcache_free(res);
     res = NULL;
+    PyErr_NoMemory();
   }
   return res;
+}
+
+static void
+statementcache_fini(void)
+{
+#if SC_STATEMENT_RECYCLE_BIN_ENTRIES > 0
+  while (apsw_sc_recycle_bin_next)
+    PyMem_Free(apsw_sc_recycle_bin[apsw_sc_recycle_bin_next--]);
+#endif
 }

@@ -711,7 +711,7 @@ static PyObject *
 apsw_fini(PyObject *Py_UNUSED(self))
 {
   Py_XDECREF(tls_errmsg);
-
+  statementcache_fini();
   Py_RETURN_NONE;
 }
 #endif

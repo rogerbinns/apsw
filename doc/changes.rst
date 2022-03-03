@@ -19,6 +19,10 @@ before 3.7.
 
 Keyword arguments can be used everywhere.
 
+The statement cache implementation changed from a dictionary to a
+list.  This allows the cache to be used for the same query text
+multiple times.  (The code is also a quarter of the size and simpler).
+
 Added constants:
 
 * SQLITE_INDEX_CONSTRAINT_OFFSET, SQLITE_INDEX_CONSTRAINT_LIMIT

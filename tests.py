@@ -3732,6 +3732,7 @@ class APSW(unittest.TestCase):
                         'match': re.compile(r"(convert_column_to_pyobject|statementcache_prepare|statementcache_finalize|statementcache_next)\s*\("),
                         'needs': re.compile("INUSE_CALL"),
                         'desc': "call needs INUSE wrapper",
+                        "skipfiles": re.compile(r".*[/\\]statementcache.c$"),
                         },
         }
 
