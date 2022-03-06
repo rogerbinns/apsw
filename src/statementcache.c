@@ -99,10 +99,11 @@ statementcache_finalize(StatementCache *sc, APSWStatement *statement)
   PYSQLITE_SC_CALL(res = sqlite3_reset(statement->vdbestatement));
   if (statement->hash != SC_SENTINEL_HASH)
   {
+    APSWStatement *evictee = NULL;
     if (sc->caches[sc->next_eviction])
     {
       assert(sc->hashes[sc->next_eviction] != SC_SENTINEL_HASH);
-      statementcache_free_statement(sc, sc->caches[sc->next_eviction]);
+      evictee = sc->caches[sc->next_eviction];
     }
     sc->hashes[sc->next_eviction] = statement->hash;
     sc->caches[sc->next_eviction] = statement;
@@ -110,6 +111,8 @@ statementcache_finalize(StatementCache *sc, APSWStatement *statement)
     sc->next_eviction++;
     if (sc->next_eviction == sc->maxentries)
       sc->next_eviction = 0;
+    if (evictee)
+      statementcache_free_statement(sc, evictee);
   }
   else
   {
@@ -122,17 +125,18 @@ statementcache_finalize(StatementCache *sc, APSWStatement *statement)
 static int
 statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t utf8size, PyObject *query, APSWStatement **statement_out)
 {
-  Py_hash_t hash;
+  Py_hash_t hash = SC_SENTINEL_HASH;
   APSWStatement *statement = NULL;
   const char *tail = NULL;
   sqlite3_stmt *vdbestatement = NULL;
   int res;
 
   *statement_out = NULL;
-  hash = (sc->maxentries && utf8size < SC_MAX_ITEM_SIZE) ? _Py_HashBytes(utf8, utf8size) : SC_SENTINEL_HASH;
-  if (hash != SC_SENTINEL_HASH)
+  if (sc->maxentries && utf8size < SC_MAX_ITEM_SIZE)
   {
     unsigned i;
+
+    hash = _Py_HashBytes(utf8, utf8size);
     for (i = 0; i <= sc->highest_used; i++)
     {
       if (sc->hashes[i] == hash && sc->caches[i]->utf8_size == utf8size && 0 == memcmp(utf8, sc->caches[i]->utf8, utf8size))
@@ -168,7 +172,7 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
      size) so we have an assert to verify that, and add one to the
      length passed to sqlite3_prepare */
 
-  assert(0 == utf8[utf8size + 1]);
+  assert(0 == utf8[utf8size]);
   /* note that prepare can return ok while a python level occurred that couldn't be reported */
   PYSQLITE_SC_CALL(res = sqlite3_prepare_v2(sc->db, utf8, utf8size + 1, &vdbestatement, &tail));
   if (res != SQLITE_OK || PyErr_Occurred())
@@ -202,7 +206,7 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   if (!statementcache_hasmore(statement))
   {
     /* no subsequent queries, so use sqlite's copy of the utf8 */
-    statement->utf8 = sqlite3_sql(vdbestatement);
+    statement->utf8 = sqlite3_sql(vdbestatement); /* No PYSQLITE_CALL needed as the function does not take a mutex */
     statement->query = NULL;
   }
   else
