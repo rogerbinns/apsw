@@ -40,6 +40,7 @@ $PYTHON $args
 res=$?
 gcov $GCOVOPTS apsw.gcno > /dev/null
 mv sqlite3.c.gcov sqlite3/
+rm -f src/*.gcov
 mv *.gcov src/
 $PYTHON tools/coverageanalyser.py
 exit $res
