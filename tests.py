@@ -8275,7 +8275,7 @@ shell.write(shell.stdout, "hello world\\n")
         db = apsw.Connection("")
         apsw.faultdict["SCAllocFails"] = True
         # we have to overflow the recycle bin
-        inuse=[]
+        inuse = []
         for n in range(4096):
             try:
                 inuse.append(db.cursor().execute("select ?", (3, )))
@@ -8287,6 +8287,15 @@ shell.write(shell.stdout, "hello world\\n")
         del inuse
         apsw.faultdict["SCClearBindingsFails"] = True
         self.assertRaises(apsw.NoMemError, db.cursor().execute, "select ?", (4, ))
+
+        ### blobs
+        self.db.cursor().execute("create table blobs(x); insert into blobs values (zeroblob(33))")
+        rowid = self.db.last_insert_rowid()
+        apsw.faultdict["BlobReadIntoPyError"] = True
+        blob = self.db.blobopen("main", "blobs", "x", rowid, writeable=True)
+        self.assertRaises(MemoryError, blob.readinto, bytearray(33))
+        apsw.faultdict["BlobWritePyError"] = True
+        self.assertRaises(MemoryError, blob.write, b"123")
 
         ### apsw.format_sql_value
         apsw.faultdict["formatsqlHexStrFail"] = True

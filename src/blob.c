@@ -372,7 +372,7 @@ APSWBlob_read(APSWBlob *self, PyObject *args, PyObject *kwds)
 static PyObject *
 APSWBlob_readinto(APSWBlob *self, PyObject *args, PyObject *kwds)
 {
-  int res;
+  int res = SQLITE_OK;
   long long offset = 0, length = -1;
   PyObject *buffer = NULL;
 
@@ -416,7 +416,9 @@ APSWBlob_readinto(APSWBlob *self, PyObject *args, PyObject *kwds)
   if (length > bloblen - self->curoffset)
     ERREXIT(PyErr_Format(PyExc_ValueError, "More data requested than blob length"));
 
-  PYSQLITE_BLOB_CALL(res = sqlite3_blob_read(self->pBlob, (char *)(py3buffer.buf) + offset, length, self->curoffset));
+  APSW_FAULT_INJECT(BlobReadIntoPyError,
+    PYSQLITE_BLOB_CALL(res = sqlite3_blob_read(self->pBlob, (char *)(py3buffer.buf) + offset, length, self->curoffset)),
+    PyErr_NoMemory());
   if (PyErr_Occurred())
     ERREXIT(NULL);
 
@@ -516,7 +518,7 @@ APSWBlob_tell(APSWBlob *self)
 static PyObject *
 APSWBlob_write(APSWBlob *self, PyObject *args, PyObject *kwds)
 {
-  int ok = 0, res;
+  int ok = 0, res = SQLITE_OK;
   Py_buffer data;
 
   CHECK_USE(NULL);
@@ -541,7 +543,9 @@ APSWBlob_write(APSWBlob *self, PyObject *args, PyObject *kwds)
     goto finally;
   }
 
-  PYSQLITE_BLOB_CALL(res = sqlite3_blob_write(self->pBlob, data.buf, data.len, self->curoffset));
+  APSW_FAULT_INJECT(BlobWritePyError,
+    PYSQLITE_BLOB_CALL(res = sqlite3_blob_write(self->pBlob, data.buf, data.len, self->curoffset)),
+    PyErr_NoMemory());
   if (PyErr_Occurred())
     goto finally;
 
