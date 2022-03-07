@@ -145,7 +145,9 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
         sc->hashes[i] = SC_SENTINEL_HASH;
         statement = sc->caches[i];
         sc->caches[i] = NULL;
-        PYSQLITE_SC_CALL(res = sqlite3_clear_bindings(statement->vdbestatement));
+        APSW_FAULT_INJECT(SCClearBindingsFails,
+                          PYSQLITE_SC_CALL(res = sqlite3_clear_bindings(statement->vdbestatement)),
+                          res = SQLITE_NOMEM);
         if (res)
         {
           SET_EXC(res, sc->db);
@@ -188,7 +190,7 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   else
 #endif
   {
-    statement = PyMem_Malloc(sizeof(APSWStatement));
+    APSW_FAULT_INJECT(SCAllocFails, statement = PyMem_Malloc(sizeof(APSWStatement)), statement = NULL);
     if (!statement)
     {
       PYSQLITE_SC_CALL(sqlite3_finalize(vdbestatement));

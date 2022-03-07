@@ -8271,6 +8271,23 @@ shell.write(shell.stdout, "hello world\\n")
             except MemoryError:
                 pass
 
+        ### statement cache
+        db = apsw.Connection("")
+        apsw.faultdict["SCAllocFails"] = True
+        # we have to overflow the recycle bin
+        inuse=[]
+        for n in range(4096):
+            try:
+                inuse.append(db.cursor().execute("select ?", (3, )))
+            except apsw.NoMemError:
+                print("HERE")
+                break
+        else:
+            self.fail("Expected memoryerror")
+        del inuse
+        apsw.faultdict["SCClearBindingsFails"] = True
+        self.assertRaises(apsw.NoMemError, db.cursor().execute, "select ?", (4, ))
+
         ### apsw.format_sql_value
         apsw.faultdict["formatsqlHexStrFail"] = True
         self.assertRaises(MemoryError, apsw.format_sql_value, b"aabbcc")
