@@ -244,9 +244,8 @@ These methods are tried in order:
 
   User directories
 
-    If you are using Python 2.6+ or Python 3 and specified
-    :option:`--user` then your user directory is searched first. See
-    :pep:`370` for more details.
+    If specifying :option:`--user` then your user directory is
+    searched first. See :pep:`370` for more details.
 
   System directories
 

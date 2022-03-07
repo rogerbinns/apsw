@@ -3098,7 +3098,7 @@ class APSW(unittest.TestCase):
         cur.close()
 
     def testLargeObjects(self):
-        "Verify handling of large strings/blobs (>2GB) [Python 2.5+, 64 bit platform]"
+        "Verify handling of large strings/blobs (>2GB) [requires 64 bit platform]"
         if not is64bit:
             return
         # For binary/blobs I use an anonymous area slightly larger than 2GB chunk of memory, but don't touch any of it
@@ -8587,8 +8587,6 @@ def setup():
     del memdb
 
 
-# This can't be a member of APSW class above because Python 2.3
-# unittest gets confused and tries to execute it!
 test_types_vals = (
     "a simple string",  # "ascii" string
     "0123456789" * 200000,  # a longer string

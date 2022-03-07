@@ -79,19 +79,15 @@ your trace or user defined functions.
 
 .. _x64bitpy25:
 
-64 bit hosts, Python 2.5+
-=========================
+64 bit hosts
+============
 
-Prior to Python 2.5, you were limited to 32 bit quantities for items
-in Python such as the length of strings, number of items in a sequence
-etc. Python 2.5 and above use 64 bit limits on 64 bit hosts.  APSW
-will work correctly with those items in Python 2.5 and above that use
-64 bits. Unfortunately SQLite is limited to 32 bit quantities for
-strings, blobs, number of columns etc even when compiled for 64
-bit. Consequently you will get a TooBig exception from APSW which
-checks if strings/buffers longer than 1GB or 2GB (depends on internal
-storage) are used. See :cvstrac:`2125` and :cvstrac:`3246` for
-more details.
+APSW is tested and works correctly on 32 and 64 bit hosts.
+Unfortunately SQLite is limited to 32 bit quantities for strings,
+blobs, number of columns etc even when compiled for 64 bit.
+Consequently you will get a TooBig exception from APSW which checks if
+strings/buffers longer than 1GB or 2GB (depends on internal storage)
+are used. See :cvstrac:`2125` and :cvstrac:`3246` for more details.
 
 .. _statementcache:
 

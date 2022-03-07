@@ -76,9 +76,8 @@ exceptions the :class:`Connection` open or SQL query execute wanted to
 raise.)  Instead the :meth:`VFS.excepthook` or
 :meth:`VFSFile.excepthook` method is called with a tuple of exception
 type, exception value and exception traceback. The default
-implementation of ``excepthook`` calls ``sys.excepthook()`` which
-under Python 2 shows the stack trace and under Python 3 merely prints
-the exception value. (If ``sys.excepthook`` fails then
+implementation of ``excepthook`` calls ``sys.excepthook()`` under
+Python 3 merely prints the exception value. (If ``sys.excepthook`` fails then
 ``PyErr_Display()`` is called.)
 
 In normal VFS usage there will be no exceptions raised, or specific

@@ -4,8 +4,7 @@
 #
 # Do speed tests.  The tests try to correspond to
 # https://sqlite.org/cvstrac/fileview?f=sqlite/tool/mkspeedsql.tcl
-# This file needs to run under both Python 2 and Python 3 hence a few
-# funky things.  Command line options etc were added later hence the
+# Command line options etc were added later hence the
 # somewhat weird structuring.
 
 import sys
