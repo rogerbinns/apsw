@@ -3321,7 +3321,8 @@ class APSW(unittest.TestCase):
                     sql = "select timesten(x) from foo where x=? order by x"
                     self.db.cursor().execute(sql, (i, ))
 
-        threads = [ThreadRunner(dostuff, 15) for _ in range(20)]
+        runtime = int(os.getenv("APSW_HEAVY_DURATION")) if os.getenv("APSW_HEAVY_DURATION") else 15
+        threads = [ThreadRunner(dostuff, runtime) for _ in range(20)]
         for t in threads:
             t.start()
 
