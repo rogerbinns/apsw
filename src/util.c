@@ -305,14 +305,3 @@ static char *apsw_strdup(const char *source)
   return res;
 }
 
-/* It is 2016 - why do I have to write this? */
-static size_t apsw_strnlen(const char *s, size_t maxlen)
-{
-  size_t res = 0;
-  while (*s && res < maxlen)
-  {
-    s++;
-    res++;
-  }
-  return res;
-}
