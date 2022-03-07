@@ -32,7 +32,7 @@ fi
 PROFILE="-ftest-coverage -fprofile-arcs -g"
 
 set -ex
-$CC $CFLAGS $MOREFLAGS $PROFILE -DEXPERIMENTAL -DSQLITE_ENABLE_API_ARMOR -DAPSW_USE_SQLITE_AMALGAMATION  -DAPSW_TESTFIXTURES -I$INCLUDEDIR -Isrc -Isqlite3 -I. -c src/apsw.c
+$CC $CFLAGS $MOREFLAGS $PROFILE -DAPSW_NO_NDEBUG -DSQLITE_ENABLE_API_ARMOR -DAPSW_USE_SQLITE_AMALGAMATION  -DAPSW_TESTFIXTURES -I$INCLUDEDIR -Isrc -Isqlite3 -I. -c src/apsw.c
 $LINKER $PROFILE apsw.o -o apsw$SOSUFFIX
 gcc -fPIC -shared -Isqlite3 -I. -o testextension.sqlext -Isqlite3 src/testextension.c
 set +ex
