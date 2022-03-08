@@ -8555,18 +8555,6 @@ def setup():
     if not forkcheck or "APSW_TEST_ITERATIONS" in os.environ:
         del APSW.testzzForkChecker
 
-    # These tests are of experimental features
-    if not hasattr(memdb, "backup"):
-        del APSW.testBackup
-    if not hasattr(apsw, "config"):
-        del APSW.testConfig
-    if not hasattr(memdb, "limit"):
-        del APSW.testLimits
-    if not hasattr(memdb, "setprofile"):
-        del APSW.testProfile
-    if not hasattr(memdb, "createmodule"):
-        del APSW.testVtables
-        del APSW.testVTableExample
 
     # We can do extension loading but no extension present ...
     if getattr(memdb, "enableloadextension", None) and not os.path.exists(LOADEXTENSIONFILENAME):
