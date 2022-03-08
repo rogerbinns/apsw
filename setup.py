@@ -55,6 +55,10 @@ def write_whole_file(name, mode, data):
         f.close()
 
 
+# work out version number
+version = read_whole_file(os.path.join("src", "apswversion.h"), "rt").split()[2].strip('"')
+
+
 # They keep messing with where files are in URI
 def fixup_download_url(url):
     ver = re.search("3[0-9]{6}", url)
@@ -160,7 +164,7 @@ fetch_parts = []
 class fetch(Command):
     description = "Automatically downloads SQLite and components"
     user_options = [
-        ("version=", None, "Which version of SQLite/components to get (default current)"),
+        ("version=", None, f"Which version of SQLite/components to get (default { version.split('-')[0] })"),
         ("missing-checksum-ok", None, "Continue on a missing checksum (default abort)"),
         ("sqlite", None, "Download SQLite amalgamation"),
         ("all", None, "Download all downloadable components"),
@@ -176,7 +180,7 @@ class fetch(Command):
 
     def finalize_options(self):
         global fetch_parts
-        if self.version == "self":
+        if self.version in ("self", None):
             self.version = version.split("-")[0]
         if self.all:
             for i in self.fetch_options:
@@ -186,8 +190,8 @@ class fetch(Command):
 
     def run(self):
         # work out the version
-        if self.version is None:
-            write("  Getting download page to work out current SQLite version")
+        if self.version == "latest":
+            write("  Getting download page to work out latest SQLite version")
             page = self.download("https://sqlite.org/download.html", text=True, checksum=False)
             match = re.search(r'sqlite-amalgamation-3([0-9][0-9])([0-9][0-9])([0-9][0-9])\.zip', page)
             if match:
@@ -195,7 +199,7 @@ class fetch(Command):
                 if self.version.endswith(".0"):
                     self.version = self.version[:-len(".0")]
             else:
-                write("Unable to determine current SQLite version.  Use --version=VERSION", sys.stderr)
+                write("Unable to determine latest SQLite version.  Use --version=VERSION", sys.stderr)
                 write("to set version - eg setup.py fetch --version=3.6.18", sys.stderr)
                 sys.exit(17)
             write("    Version is " + self.version)
@@ -788,9 +792,6 @@ for f in (findamalgamation(), ):
         depends.append(f)
 # we produce a .c file from this
 depends.append("tools/shell.py")
-
-# work out version number
-version = read_whole_file(os.path.join("src", "apswversion.h"), "rt").split()[2].strip('"')
 
 # msi can't use normal version numbers because distutils is retarded,
 # so mangle ours to suit it

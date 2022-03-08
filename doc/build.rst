@@ -63,10 +63,9 @@ re-fetching.
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | fetch flag                             |  Result                                                                              |
 +========================================+======================================================================================+
-| | :option:`--version=VERSION`          | By default the `SQLite download page                                                 |
-|                                        | <https://sqlite.org/download.html>`__ is                                             |
-|                                        | consulted to find the current SQLite version                                         |
-|                                        | which you can override using this flag.                                              |
+| | :option:`--version=VERSION`          | By default the SQLite version corresponding to the APSW release is retrieved,  You   |
+|                                        | can also ask for specific versions, or for `latest` which uses the SQLite download   |
+|                                        | page to work out the most recent version.                                            |
 |                                        |                                                                                      |
 |                                        | .. note::                                                                            |
 |                                        |                                                                                      |

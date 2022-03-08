@@ -23,6 +23,9 @@ The statement cache implementation changed from a dictionary to a
 list.  This allows the cache to be used for the same query text
 multiple times.  (The code is also a quarter of the size and simpler).
 
+The default for setup.py's fetch command is to get the SQLite version
+corresponding to APSW's release.  (Previously it got the latest release.)
+
 Added constants:
 
 * SQLITE_INDEX_CONSTRAINT_OFFSET, SQLITE_INDEX_CONSTRAINT_LIMIT
