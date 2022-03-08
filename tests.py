@@ -8272,7 +8272,7 @@ shell.write(shell.stdout, "hello world\\n")
                 pass
 
         ### statement cache
-        db = apsw.Connection("")
+        db = apsw.Connection("", statementcachesize=1000000)
         apsw.faultdict["SCAllocFails"] = True
         # we have to overflow the recycle bin
         inuse = []
@@ -8280,7 +8280,6 @@ shell.write(shell.stdout, "hello world\\n")
             try:
                 inuse.append(db.cursor().execute("select ?", (3, )))
             except apsw.NoMemError:
-                print("HERE")
                 break
         else:
             self.fail("Expected memoryerror")
