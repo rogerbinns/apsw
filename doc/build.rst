@@ -179,11 +179,6 @@ need to give the flag once and giving a comma separated list.  For example:
 |                                        | amalgamation then you need to separately ensure rtree is enabled in the SQLite       |
 |                                        | install.                                                                             |
 +----------------------------------------+--------------------------------------------------------------------------------------+
-| | :option:`--enable=json1`             | Enables the :ref:`JSON1 extension <ext-json1>`.                                      |
-|                                        | This flag only helps when using the amalgamation. If not using the                   |
-|                                        | amalgamation then you need to separately ensure json1 is enabled in the SQLite       |
-|                                        | install.                                                                             |
-+----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--enable=rbu`               | Enables the :ref:`reumable bulk update extension <ext-rbu>`.                         |
 |                                        | This flag only helps when using the amalgamation. If not using the                   |
 |                                        | amalgamation then you need to separately ensure rbu is enabled in the SQLite         |
