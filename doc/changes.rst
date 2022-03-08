@@ -13,9 +13,10 @@ level of type information as regular Python code.
 apsw.pyi file is included which does provide all the typing
 information in `type stub
 <https://typing.readthedocs.io/en/latest/source/stubs.html>__` format,
+and shown by most IDEs.
 
 Removal of code, tests, and documentation only relevant to CPython
-before 3.7.
+before 3.7.  (Python 3.6 does still work, but is end of life.)
 
 Keyword arguments can be used everywhere.
 
