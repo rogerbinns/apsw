@@ -170,8 +170,8 @@ official site, and builds/installs with all extensions enabled.
 
 Use this (all one command)::
 
-    pip install --user https://github.com/rogerbinns/apsw/releases/download/3.38.0-r1/apsw-3.38.0-r1.zip \
-    --global-option=fetch --global-option=--version --global-option=3.38.0 --global-option=--all \
-    --global-option=build --global-option=--enable-all-extensions
+    pip install --user https://github.com/rogerbinns/apsw/releases/download/3.38.0-r1/apsw-3.38.0.zip \
+    --global-option=fetch --global-option=--all --global-option=build \
+    --global-option=--enable-all-extensions
 
 .. pip-end
