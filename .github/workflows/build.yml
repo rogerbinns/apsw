@@ -50,7 +50,7 @@ jobs:
         pip install --upgrade pip
 
     - name: Create source dist
-      run: python setup.py fetch --all sdist
+      run: python setup.py --all sdist
 
     - name: Stage wheels
       uses: actions/download-artifact@v2
