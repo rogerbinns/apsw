@@ -268,8 +268,7 @@ APSW source to.
 
   Windows::
 
-      # Leave out --compile=mingw32 flag if using Microsoft compiler
-    > python setup.py fetch --all build --enable-all-extensions --compile=mingw32 install test
+    > python setup.py fetch --all build --enable-all-extensions install test
 
   Mac/Linux etc::
 
@@ -277,7 +276,7 @@ APSW source to.
 
 .. note::
 
-  There will be some warnings during the compilation step about
+  There may be some warnings during the compilation step about
   sqlite3.c, `but they are harmless <https://sqlite.org/faq.html#q17>`_
 
 
@@ -318,16 +317,21 @@ testing modules to verify correct operation. New code is developed
 alongside the tests. Reported issues also have test cases to ensure
 the issue doesn't happen or doesn't happen again.::
 
-  $ python setup.py test
-                 Python /usr/bin/python (2, 6, 6, 'final', 0)
-  Testing with APSW file /space/apsw/apsw.so
-            APSW version 3.7.4-r1
-      SQLite lib version 3.7.4
-  SQLite headers version 3007004
-      Using amalgamation True
-  ............................................................................
+  $ python3 setup.py test
+  running test
+                  Python  /usr/bin/python3 sys.version_info(major=3, minor=9, micro=7, releaselevel='final', serial=0)
+  Testing with APSW file  /space/apsw/apsw.cpython-39-x86_64-linux-gnu.so
+            APSW version  3.38.0-r1
+      SQLite lib version  3.38.0
+  SQLite headers version  3038000
+      Using amalgamation  True
+
+  Skipping large tests (multi-gigabyte values)
+    Requires gigabytes of memory and storage.  Set $APSW_TEST_LARGE to enable
+
+  ..............................................................................................
   ----------------------------------------------------------------------
-  Ran 76 tests in 404.557s
+  Ran 94 tests in 27.713s
 
   OK
 
@@ -343,11 +347,11 @@ A memory checker `Valgrind <http://valgrind.org>`_ is used while
 running the test suite. The test suite is run multiple times to make
 any memory leaks or similar issues stand out. A checking version of
 Python is also used.  See :source:`tools/valgrind.sh` in the source.
+The same testing is also done with the compiler's sanitizer option.
 
 To ensure compatibility with the various Python versions, a script
-downloads and compiles all supported Python versions in both 2 byte
-and 4 byte Unicode character configurations against the APSW and
-SQLite supported versions running the tests. See
-:source:`tools/megatest.py` in the source.
+downloads and compiles all supported Python versions in both debug and
+release configurations against the APSW and SQLite supported versions
+running the tests. See :source:`tools/megatest.py` in the source.
 
 In short both SQLite and APSW have a lot of testing!
