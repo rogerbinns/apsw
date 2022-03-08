@@ -858,21 +858,13 @@ Enter SQL statements terminated with a ";"
             # then the exec tracer won't have seen it so it won't be
             # printed and the user will be wondering exactly what sql
             # had the error.  We look in the traceback and deduce if
-            # the error was happening in a prepare or not.  Also we
-            # need to ignore the case where SQLITE_SCHEMA happened and
-            # a reprepare is being done since the exec tracer will
-            # have been called in that situation.
+            # the error was happening in a prepare or not.
             if not internal and self.echo:
                 tb = sys.exc_info()[2]
                 last = None
                 while tb:
                     last = tb.tb_frame
                     tb = tb.tb_next
-
-                if last and last.f_code.co_name=="sqlite3_prepare" \
-                   and last.f_code.co_filename.endswith("statementcache.c") \
-                   and "sql" in last.f_locals:
-                    self.write(self.stderr, last.f_locals["sql"] + "\n")
             raise
 
         if not internal and self.timer:

@@ -783,11 +783,6 @@ APSWCursor_step(APSWCursor *self)
         res = resetcursor(self, 0); /* this will get the error code for us */
         assert(res != SQLITE_OK);
       }
-      if (res == SQLITE_SCHEMA && !PyErr_Occurred())
-      {
-        self->status = C_BEGIN;
-        continue;
-      }
       return NULL;
     }
     assert(res == SQLITE_DONE);
