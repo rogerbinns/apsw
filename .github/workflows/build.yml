@@ -24,7 +24,7 @@ jobs:
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
-          CIBW_BEFORE_BUILD: python setup.py fetch --version=self --all build --enable-all-extensions
+          CIBW_BEFORE_BUILD: python setup.py fetch --all build --enable-all-extensions
           CIBW_TEST_COMMAND: python {package}/tests.py
           CIBW_SKIP: pp*
 
