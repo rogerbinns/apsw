@@ -3679,6 +3679,13 @@ class APSW(unittest.TestCase):
         l = [self.db.cursor().execute(u"select 3" + " " * i) for i in range(100 + 256 + 17)]
         while l:
             l.pop().fetchall()
+        # embedded nulls
+        got = []
+        try:
+            for row in cur.execute("select 3;select 4\0;select 5"):
+                got.append(row[0])
+        except ValueError:
+            self.assertEqual(got, [3])
 
     def testStatementCacheZeroSize(self):
         "Rerun statement cache tests with a zero sized/disabled cache"

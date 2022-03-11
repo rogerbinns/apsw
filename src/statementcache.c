@@ -183,6 +183,8 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   assert(0 == utf8[utf8size]);
   /* note that prepare can return ok while a python level occurred that couldn't be reported */
   PYSQLITE_SC_CALL(res = sqlite3_prepare_v2(sc->db, utf8, utf8size + 1, &vdbestatement, &tail));
+  if (!*tail && tail - utf8 < utf8size)
+    PyErr_Format(PyExc_ValueError, "null character in query");
   if (res != SQLITE_OK || PyErr_Occurred())
   {
     SET_EXC(res, sc->db);
