@@ -55,13 +55,13 @@ typedef struct StatementCache
 } StatementCache;
 
 /* we don't bother caching larger than this many bytes */
-#define SC_MAX_ITEM_SIZE 16
+#define SC_MAX_ITEM_SIZE 16384
 
 /* the hash value we use for unoccupied */
 #define SC_SENTINEL_HASH (-1)
 
 /* recycle bin for APSWStatements to avoid repeated malloc/free calls */
-#define SC_STATEMENT_RECYCLE_BIN_ENTRIES 256
+#define SC_STATEMENT_RECYCLE_BIN_ENTRIES 32
 
 #if SC_STATEMENT_RECYCLE_BIN_ENTRIES > 0
 static APSWStatement *apsw_sc_recycle_bin[SC_STATEMENT_RECYCLE_BIN_ENTRIES];
