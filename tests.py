@@ -3686,6 +3686,16 @@ class APSW(unittest.TestCase):
                 got.append(row[0])
         except ValueError:
             self.assertEqual(got, [3])
+        # these compile to null vdbe
+        for _ in range(5):  # ensure statement cache is used
+            for query in (
+                "",
+                "-- foo",
+                ";",
+                "\n",
+            ):
+                for row in cur.execute(query):
+                    self.fail("Query is empty")
 
     def testStatementCacheZeroSize(self):
         "Rerun statement cache tests with a zero sized/disabled cache"

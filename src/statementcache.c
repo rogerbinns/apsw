@@ -71,10 +71,9 @@ static unsigned apsw_sc_recycle_bin_next = 0;
 static void
 statementcache_free_statement(StatementCache *sc, APSWStatement *s)
 {
-  int res;
   Py_CLEAR(s->query);
-  PYSQLITE_SC_CALL(res = sqlite3_finalize(s->vdbestatement));
-  assert(res == SQLITE_OK);
+  /* always succeeds and returns last err that happened which we don't care about */
+  _PYSQLITE_CALL_V(sqlite3_finalize(s->vdbestatement));
 #if SC_STATEMENT_RECYCLE_BIN_ENTRIES > 0
   if (apsw_sc_recycle_bin_next + 1 < SC_STATEMENT_RECYCLE_BIN_ENTRIES)
     apsw_sc_recycle_bin[apsw_sc_recycle_bin_next++] = s;
@@ -96,10 +95,13 @@ statementcache_finalize(StatementCache *sc, APSWStatement *statement)
   int res = SQLITE_OK;
   if (!statement)
     return res;
-  PYSQLITE_SC_CALL(res = sqlite3_reset(statement->vdbestatement));
+
   if (statement->hash != SC_SENTINEL_HASH)
   {
     APSWStatement *evictee = NULL;
+
+    PYSQLITE_SC_CALL(res = sqlite3_reset(statement->vdbestatement));
+
     if (sc->caches[sc->next_eviction])
     {
       assert(sc->hashes[sc->next_eviction] != SC_SENTINEL_HASH);
@@ -129,7 +131,7 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   APSWStatement *statement = NULL;
   const char *tail = NULL;
   sqlite3_stmt *vdbestatement = NULL;
-  int res;
+  int res = SQLITE_OK;
 
   *statement_out = NULL;
   if (sc->maxentries && utf8size < SC_MAX_ITEM_SIZE)
@@ -145,15 +147,9 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
         sc->hashes[i] = SC_SENTINEL_HASH;
         statement = sc->caches[i];
         sc->caches[i] = NULL;
-        if (statement->vdbestatement)
-        {
-          /* vdbe can be NULL when SQLite executed the query during
-             prepare (or the query was empty/comment), but
-             sqlite3_clear_bindings can't handle the same NULL */
-          APSW_FAULT_INJECT(SCClearBindingsFails,
-                            PYSQLITE_SC_CALL(res = sqlite3_clear_bindings(statement->vdbestatement)),
-                            res = SQLITE_NOMEM);
-        }
+        APSW_FAULT_INJECT(SCClearBindingsFails,
+                          PYSQLITE_SC_CALL(res = sqlite3_clear_bindings(statement->vdbestatement)),
+                          res = SQLITE_NOMEM);
         if (res)
         {
           SET_EXC(res, sc->db);
@@ -191,6 +187,11 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
     PYSQLITE_SC_CALL(sqlite3_finalize(vdbestatement));
     return res ? res : SQLITE_ERROR;
   }
+
+  /* comments and some pragmas result in no vdbe, which we shouldn't
+     cache either */
+  if (!vdbestatement)
+    hash = SC_SENTINEL_HASH;
 
 #if SC_STATEMENT_RECYCLE_BIN_ENTRIES > 0
   if (apsw_sc_recycle_bin_next)
