@@ -18,9 +18,9 @@ pip_template = """
 Use this (all one command)::
 
     pip install --user https://github.com/rogerbinns/apsw/releases/download/%s/apsw-%s.zip \\
-    --global-option=fetch --global-option=--version --global-option=%s --global-option=--all \\
-    --global-option=build --global-option=--enable-all-extensions
-""" % (version, version, version.split("-")[0])
+    --global-option=fetch --global-option=--all --global-option=build \\
+    --global-option=--enable-all-extensions
+""" % (version, version.split("-")[0])
 
 download = open("doc/download.rst", "rt").read()
 
