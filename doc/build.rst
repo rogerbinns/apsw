@@ -326,9 +326,6 @@ the issue doesn't happen or doesn't happen again.::
   SQLite headers version  3038000
       Using amalgamation  True
 
-  Skipping large tests (multi-gigabyte values)
-    Requires gigabytes of memory and storage.  Set $APSW_TEST_LARGE to enable
-
   ..............................................................................................
   ----------------------------------------------------------------------
   Ran 94 tests in 27.713s

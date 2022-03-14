@@ -3099,8 +3099,7 @@ class APSW(unittest.TestCase):
 
     def testLargeObjects(self):
         "Verify handling of large strings/blobs (>2GB) [requires 64 bit platform]"
-        if not is64bit:
-            return
+        assert is64bit
         # For binary/blobs I use an anonymous area slightly larger than 2GB chunk of memory, but don't touch any of it
         import mmap
         f = mmap.mmap(-1, 2 * 1024 * 1024 * 1024 + 25000)
@@ -8572,6 +8571,8 @@ def setup():
     if not forkcheck or "APSW_TEST_ITERATIONS" in os.environ:
         del APSW.testzzForkChecker
 
+    if not is64bit or "APSW_TEST_LARGE" not in os.environ:
+        del APSW.testLargeObjects
 
     # We can do extension loading but no extension present ...
     if getattr(memdb, "enableloadextension", None) and not os.path.exists(LOADEXTENSIONFILENAME):
