@@ -2,7 +2,7 @@ Change History
 **************
 .. currentmodule:: apsw
 
-3.38.0-r1
+3.38.1-r1
 =========
 
 All items now have full docstrings including type information.
