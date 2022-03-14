@@ -40,7 +40,7 @@ clean:
 	make PYTHONPATH="`pwd`" VERSION=$(VERSION) -C doc clean
 	rm -rf dist build work/* megatestresults apsw.egg-info __pycache__ :memory: .mypy_cache .ropeproject
 	mkdir dist
-	for i in '*.pyc' '*.pyo' '*~' '*.o' '*.so' '*.dll' '*.pyd' '*.gcov' '*.gcda' '*.gcno' '*.orig' '*.tmp' 'testdb*' 'testextension.sqlext' ; do \
+	for i in 'vgcore.*' '.coverage' '*.pyc' '*.pyo' '*~' '*.o' '*.so' '*.dll' '*.pyd' '*.gcov' '*.gcda' '*.gcno' '*.orig' '*.tmp' 'testdb*' 'testextension.sqlext' ; do \
 		find . -type f -name "$$i" -print0 | xargs -0t --no-run-if-empty rm -f ; done
 
 doc: docs
