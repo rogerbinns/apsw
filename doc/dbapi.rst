@@ -42,10 +42,11 @@ Connection Objects
 There are no commit or rollback methods. You should use
 :meth:`Cursor.execute` with `BEGIN` and `COMMIT` or `ROLLBACK` as
 appropriate. The `SQLite documentation
-<https://sqlite.org/lockingv3.html>`_ has more details.  In
-particular note that SQLite does not support nested transactions.  You
-can only start one transaction and will get an error if you try to
-start another one, although savepoints can be used.
+<https://sqlite.org/lockingv3.html>`_ has more details.  In particular
+note that SQLite does not support nested transactions, using BEGIN.
+You can use `savepoints <https://sqlite.org/lang_savepoint.html>`__ to
+get nested transactions, which :meth:`with Connection
+<Connection.__enter__>` does.
 
 Several methods that are defined in DBAPI to be on the cursor are
 instead on the Connection object, since this is where SQLite actually
@@ -76,16 +77,10 @@ as an iterator to get the results (if any).
 it as an iterator to get the results (if any).
 
 fetchone is not available. Use the cursor as an iterator, or call
-:meth:`~Cursor.next` to get the next row, or raises StopIteration when
-there are no more results.
+:meth:`~Cursor.next` to get the next row.
 
-fetchmany is not available. Simply use the cursor as an iterator or
-call :meth:`~Cursor.next` for however many results you want.
-
-fetchall is available, but not too useful. Simply use the cursor as an
-iterator, call :meth:`~Cursor.next`, or use list which is less typing::
-
-  all=list(cursor.execute("...."))
+fetchmany is not available. Use :meth:`~Cursor.fetchall` to get all
+remaining results.
 
 nextset is not applicable or implemented.
 
