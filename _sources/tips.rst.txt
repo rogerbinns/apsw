@@ -48,17 +48,17 @@ Transactions
 Transactions are the changes applied to a database file as a whole.
 They either happen completely, or not at all.  SQLite notes all the changes
 made during a transaction, and at the end when you do a commit will cause
-them to permanently end up in the database.  If you do not commit, or 
+them to permanently end up in the database.  If you do not commit, or
 just exit, then other/new connections will not see the changes and SQLite
 handles tidying up the work in progress automatically.
 
 Committing a transaction can be quite time consuming.  SQLite uses a robust
-multi-step process that has to handle errors that can occur at any point, 
-and asks the operating system to ensure that data is on storage and would 
-survive a power cycle.  This will `limit the rate at which you can do 
+multi-step process that has to handle errors that can occur at any point,
+and asks the operating system to ensure that data is on storage and would
+survive a power cycle.  This will `limit the rate at which you can do
 transactions <https://www.sqlite.org/faq.html#q19>`__.
 
-If you do nothing, then each statement is a single transaction:: 
+If you do nothing, then each statement is a single transaction::
 
    # this will be 3 separate transactions
    db.cursor().execute("INSERT ...")
@@ -74,13 +74,13 @@ You can use BEGIN/END to set the transaction boundary::
    db.cursor().execute("INSERT ...")
    db.cursor().execute("COMMIT")
 
-However that is extra effort, and also requires error handling.  For example 
+However that is extra effort, and also requires error handling.  For example
 if the second INSERT failed then you likely want to ROLLBACK the incomplete
-transaction, so that additional work on the same connection doesn't see the 
+transaction, so that additional work on the same connection doesn't see the
 partial data.
 
 If you use :meth:`with Connection <Connection.__enter__>` then the transaction
-will be automatically started, and commited on success or rolled back if 
+will be automatically started, and commited on success or rolled back if
 exceptions occur::
 
    # this will be one transaction with automatic commit and rollback
@@ -89,7 +89,7 @@ exceptions occur::
        db.cursor().execute("INSERT ...")
        db.cursor().execute("INSERT ...")
 
-There are `technical details <https://www.sqlite.org/lang_transaction.html>`__ 
+There are `technical details <https://www.sqlite.org/lang_transaction.html>`__
 at the `SQLite site <https://www.sqlite.org/docs.html>`__.
 
 Cursors
@@ -181,6 +181,45 @@ a table.::
     SQLITE_LOG: cannot open file at line 28729 of [7dd4968f23] (14) SQLITE_CANTOPEN
     SQLITE_LOG: os_unix.c:28729: (2) open(/dev/null-journal) - No such file or directory (14) SQLITE_CANTOPEN
     SQLITE_LOG: statement aborts at 38: [create table foo(x,y);] unable to open database file (14) SQLITE_CANTOPEN
+
+Managing and updating your schema
+=================================
+
+If your program uses SQLite for `data
+<https://sqlite.org/appfileformat.html>`__ then you'll need to manage
+and update your schema.  The hard way of doing this is to test for the
+existence of tables and their columns, and doing that maintenance
+programmatically.  The easy way is to use `pragma user_version
+<https://sqlite.org/pragma.html#pragma_user_version>`__ as in this example::
+
+  def user_version(db):
+    return db.cursor().execute("pragma user_version").fetchall()[0][0]
+
+  def ensure_schema(db):
+    if user_version(db)==0:
+      with db:
+        db.cursor().execute("""
+          CREATE TABLE IF NOT EXISTS foo(x,y,z);
+          CREATE TABLE IF NOT EXISTS bar(x,y,z);
+          PRAGMA user_version=1;""")
+
+    if user_version(db)==1:
+      with db:
+        db.cursor().execute("""
+        CREATE TABLE IF NOT EXISTS baz(x,y,z);
+        CREATE INDEX ....
+        PRAGMA user_version=2;""")
+
+    if user_version(con)==2:
+      with db:
+        db.cursor().execute("""
+        ALTER TABLE .....
+        PRAGMA user_version=3;""")
+
+This approach will automatically upgrade the schema as you expect.
+You can also use `pragma application_id
+<https://sqlite.org/pragma.html#pragma_application_id>`__ to mark the
+database as made by your application.
 
 Parsing SQL
 ===========

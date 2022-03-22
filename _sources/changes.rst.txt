@@ -2,6 +2,35 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.38.1-r1
+=========
+
+All items now have full docstrings including type information.
+(Previously just one line summaries).  Note the C implemented
+functions and data (ie almost all of APSW) can't provide the same
+level of type information as regular Python code.
+
+apsw.pyi file is included which does provide all the typing
+information in `type stub
+<https://typing.readthedocs.io/en/latest/source/stubs.html>`__ format,
+and shown by most IDEs.
+
+Removal of code, tests, and documentation only relevant to CPython
+before 3.7.  (Python 3.6 does still work, but is end of life.)
+
+Keyword arguments can be used everywhere.
+
+The statement cache implementation changed from a dictionary to a
+list.  This allows the cache to be used for the same query text
+multiple times.  (The code is also a quarter of the size and simpler).
+
+The default for setup.py's fetch command is to get the SQLite version
+corresponding to APSW's release.  (Previously it got the latest release.)
+
+Added constants:
+
+* SQLITE_INDEX_CONSTRAINT_OFFSET, SQLITE_INDEX_CONSTRAINT_LIMIT
+
 3.37.0-r1
 =========
 

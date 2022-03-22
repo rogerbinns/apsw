@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Exceptions &#8212; APSW 3.37.0-r1 documentation</title>
+    <title>Exceptions &#8212; APSW 3.38.1-r1 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     
@@ -42,7 +42,7 @@
         <li class="right" >
           <a href="shell.html" title="Shell"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.37.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.1-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Exceptions</a></li> 
       </ul>
     </div>  
@@ -235,7 +235,9 @@ controls.</p>
 <dl class="py exception">
 <dt id="apsw.MisuseError">
 <em class="property"><span class="pre">exception</span> </em><code class="sig-name descname"><span class="pre">MisuseError</span></code><a class="headerlink" href="#apsw.MisuseError" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-const docutils literal notranslate"><span class="pre">SQLITE_MISUSE</span></code>.  SQLite library used incorrectly.</p>
+<dd><p><code class="xref py py-const docutils literal notranslate"><span class="pre">SQLITE_MISUSE</span></code>.  SQLite library used incorrectly - typically similar to ValueError in Python.  Examples include not
+having enough flags when opening a connection (eg not including a READ or WRITE flag), or out of spec such as registering
+a function with more than 127 parameters.</p>
 </dd></dl>
 
 <dl class="py exception">
@@ -467,7 +469,7 @@ the case). Change the function to start like this:</p>
     <span class="n">tb</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">tb_next</span>
 
 <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
-<span class="nb">print</span> <span class="s2">&quot;Locals by frame, innermost last&quot;</span>
+<span class="nb">print</span> <span class="p">(</span><span class="s2">&quot;Locals by frame, innermost last&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -580,14 +582,14 @@ traceback is almost completely useless.</p>
         <li class="right" >
           <a href="shell.html" title="Shell"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.37.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.1-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Exceptions</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
-        &#169; <a href="copyright.html">Copyright</a> 2004-2021, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jan 04, 2022.
+        &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Mar 22, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

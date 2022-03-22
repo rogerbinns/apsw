@@ -11,15 +11,10 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: python
 
-    from __future__ import print_function
-
-    # some python 2 and 3 comnpatibility tweaks
-    import sys
-    py3=sys.version_info >= (3, 0)
-    def inext(v):  # next value from iterator
-        return next(v) if py3 else v.next()
+    #!/usr/bin/env python3
 
     import os
+    import sys
     import time
     import apsw
 
@@ -35,9 +30,9 @@ so you can see what gets printed when you run the code.
 .. code-block:: text
 
    |       Using APSW file /space/apsw/apsw.cpython-39-x86_64-linux-gnu.so
-   |          APSW version 3.37.0-r1
-   |    SQLite lib version 3.37.0
-   | SQLite header version 3037000
+   |          APSW version 3.38.1-r1
+   |    SQLite lib version 3.38.1
+   | SQLite header version 3038001
 
 .. code-block:: python
 
@@ -65,7 +60,7 @@ so you can see what gets printed when you run the code.
     cursor.execute("insert into foo values(?,?,?)", (1, 1.1, None))  # integer, float/real, Null
     cursor.execute("insert into foo(x) values(?)", ("abc", ))        # string (note trailing comma to ensure tuple!)
     cursor.execute("insert into foo(x) values(?)",                   # a blob (binary data)
-                        (b"abc\xff\xfe" if py3 else buffer("abc\xff\xfe"), ))
+                        (b"abc\xff\xfe",))
 
     ###
     ### multiple statements
@@ -122,8 +117,8 @@ so you can see what gets printed when you run the code.
 .. code-block:: text
 
    | SQL: drop table bar ;
-   | SQL: create table bar(x,y,z);
-   | SQL: select * from foo where x=?
+   | SQL:  create table bar(x,y,z);
+   | SQL:  select * from foo where x=?
    | Bindings: (3,)
 
 .. _example-rowtrace:
@@ -228,8 +223,6 @@ so you can see what gets printed when you run the code.
         def final(self):
             return self.longest
 
-        # Under Python 2.3 remove the following line and add
-        # factory=classmethod(factory) at the end
         @classmethod
         def factory(cls):
             return cls(), cls.step, cls.final
@@ -446,7 +439,7 @@ so you can see what gets printed when you run the code.
     # Or as a binding
     cursor.execute("insert into blobby values(2,?)", (apsw.zeroblob(20000),))
     # Open a blob for writing.  We need to know the rowid
-    rowid=inext(cursor.execute("select ROWID from blobby where x=1"))[0]
+    rowid=next(cursor.execute("select ROWID from blobby where x=1"))[0]
     blob=connection.blobopen("main", "blobby", "y", rowid, 1) # 1 is for read/write
     blob.write(b"hello world")
     blob.seek(2000)
@@ -540,9 +533,9 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
-   | 74407336 a64f60bb4641b67cb20c__mypyc.cpython-39-x86_64-linux-gnu.so /home/rogerb/.local/lib/python3.9/site-packages
-   | 9882280 apsw.o /space/apsw
-   | 7477120 apsw.cpython-39-x86_64-linux-gnu.so /space/apsw
+   | 42642856 f9cd58ee140be1597db0__mypyc.cpython-39-x86_64-linux-gnu.so /home/rogerb/.local/lib/python3.9/site-packages
+   | 7598536 apsw.cpython-39-x86_64-linux-gnu.so /space/apsw
+   | 3546224 qdldl.cpython-39-x86_64-linux-gnu.so /home/rogerb/.local/lib/python3.9/site-packages
 
 .. code-block:: python
 
@@ -553,8 +546,8 @@ so you can see what gets printed when you run the code.
 .. code-block:: text
 
    | 1581788581.6627443 menulibre-2.2.1.egg-info /usr/lib/python3/dist-packages
-   | 1582056231.6234083 .coverage /space/apsw
    | 1582056231.6234083 .style.yapf /space/apsw
+   | 1582056231.8954034 setup.cfg /space/apsw
 
 .. _example-vfs:
 
@@ -568,10 +561,7 @@ so you can see what gets printed when you run the code.
 
     def encryptme(data):
         if not data: return data
-        if py3:
-            return bytes([x^0xa5 for x in data])
-
-        return "".join([chr(ord(x)^0xa5) for x in data])
+        return bytes([x^0xa5 for x in data])
 
     # Inheriting from a base of "" means the default vfs
     class ObfuscatedVFS(apsw.VFS):
@@ -725,10 +715,7 @@ so you can see what gets printed when you run the code.
     # connection
 
     # Export to a StringIO
-    if py3:
-        import io
-    else:
-        import StringIO as io
+    import io
 
     output=io.StringIO()
     shell=apsw.Shell(stdout=output, db=connection)
@@ -762,7 +749,7 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
-   | SQLite memory usage current 361584 max 373456
+   | SQLite memory usage current 314808 max 326752
 
 .. code-block:: python
 

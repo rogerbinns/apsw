@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DBAPI notes &#8212; APSW 3.37.0-r1 documentation</title>
+    <title>DBAPI notes &#8212; APSW 3.38.1-r1 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     
@@ -42,7 +42,7 @@
         <li class="right" >
           <a href="execution.html" title="Execution and tracing"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.37.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.1-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">DBAPI notes</a></li> 
       </ul>
     </div>  
@@ -96,10 +96,10 @@ used correspond to specific SQLite error codes.</p>
 <h2>Connection Objects<a class="headerlink" href="#connection-objects" title="Permalink to this headline">¶</a></h2>
 <p>There are no commit or rollback methods. You should use
 <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> with <cite>BEGIN</cite> and <cite>COMMIT</cite> or <cite>ROLLBACK</cite> as
-appropriate. The <a class="reference external" href="https://sqlite.org/lockingv3.html">SQLite documentation</a> has more details.  In
-particular note that SQLite does not support nested transactions.  You
-can only start one transaction and will get an error if you try to
-start another one.</p>
+appropriate. The <a class="reference external" href="https://sqlite.org/lockingv3.html">SQLite documentation</a> has more details.  In particular
+note that SQLite does not support nested transactions, using BEGIN.
+You can use <a class="reference external" href="https://sqlite.org/lang_savepoint.html">savepoints</a> to
+get nested transactions, which <a class="reference internal" href="connection.html#apsw.Connection.__enter__" title="apsw.Connection.__enter__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with</span> <span class="pre">Connection</span></code></a> does.</p>
 <p>Several methods that are defined in DBAPI to be on the cursor are
 instead on the Connection object, since this is where SQLite actually
 stores the information. Doing operations in any other cursor attached
@@ -121,15 +121,9 @@ as an iterator to get the results (if any).</p>
 <p><a class="reference internal" href="cursor.html#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">executemany()</span></code></a> returns the Cursor object and you can use
 it as an iterator to get the results (if any).</p>
 <p>fetchone is not available. Use the cursor as an iterator, or call
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">next()</span></code> to get the next row, or raises StopIteration when
-there are no more results.</p>
-<p>fetchmany is not available. Simply use the cursor as an iterator or
-call <code class="xref py py-meth docutils literal notranslate"><span class="pre">next()</span></code> for however many results you want.</p>
-<p>fetchall is available, but not too useful. Simply use the cursor as an
-iterator, call <code class="xref py py-meth docutils literal notranslate"><span class="pre">next()</span></code>, or use list which is less typing:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">all</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;....&quot;</span><span class="p">))</span>
-</pre></div>
-</div>
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">next()</span></code> to get the next row.</p>
+<p>fetchmany is not available. Use <a class="reference internal" href="cursor.html#apsw.Cursor.fetchall" title="apsw.Cursor.fetchall"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fetchall()</span></code></a> to get all
+remaining results.</p>
 <p>nextset is not applicable or implemented.</p>
 <p>arraysize is not available as fetchmany isn’t.</p>
 <p>Neither setinputsizes or setoutputsize are applicable or implemented.</p>
@@ -141,8 +135,7 @@ have a native date or time type.  There are <a class="reference external" href="
 manipulating dates and time which are represented as strings or
 <a class="reference external" href="http://en.wikipedia.org/wiki/Julian_day">Julian days</a> (floating
 point number).</p>
-<p>Use the standard Python buffer class for BLOBs in Python 2 and the
-bytes type in Python 3.</p>
+<p>Use the standard bytes type for blobs.</p>
 </div>
 <div class="section" id="optional-db-api-extensions">
 <h2>Optional DB API Extensions<a class="headerlink" href="#optional-db-api-extensions" title="Permalink to this headline">¶</a></h2>
@@ -229,14 +222,14 @@ statements:</p>
         <li class="right" >
           <a href="execution.html" title="Execution and tracing"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.37.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.1-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">DBAPI notes</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
-        &#169; <a href="copyright.html">Copyright</a> 2004-2021, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jan 04, 2022.
+        &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Mar 22, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

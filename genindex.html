@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; APSW 3.37.0-r1 documentation</title>
+    <title>Index &#8212; APSW 3.38.1-r1 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     
@@ -34,7 +34,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.37.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.1-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Index</a></li> 
       </ul>
     </div>  
@@ -77,20 +77,20 @@
 <h2 id="_">_</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="backup.html#apsw.backup.__enter__">__enter__() (backup method)</a>
+      <li><a href="backup.html#apsw.Backup.__enter__">__enter__() (Backup method)</a>
 
       <ul>
-        <li><a href="blob.html#apsw.blob.__enter__">(blob method)</a>
+        <li><a href="blob.html#apsw.Blob.__enter__">(Blob method)</a>
 </li>
         <li><a href="connection.html#apsw.Connection.__enter__">(Connection method)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="backup.html#apsw.backup.__exit__">__exit__() (backup method)</a>
+      <li><a href="backup.html#apsw.Backup.__exit__">__exit__() (Backup method)</a>
 
       <ul>
-        <li><a href="blob.html#apsw.blob.__exit__">(blob method)</a>
+        <li><a href="blob.html#apsw.Blob.__exit__">(Blob method)</a>
 </li>
         <li><a href="connection.html#apsw.Connection.__exit__">(Connection method)</a>
 </li>
@@ -124,7 +124,7 @@
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="backup.html#apsw.backup">backup (class in apsw)</a>
+      <li><a href="backup.html#apsw.Backup">Backup (class in apsw)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.backup">backup() (Connection method)</a>
 </li>
@@ -136,7 +136,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="exceptions.html#apsw.BindingsError">BindingsError</a>
 </li>
-      <li><a href="blob.html#apsw.blob">blob (class in apsw)</a>
+      <li><a href="blob.html#apsw.Blob">Blob (class in apsw)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.blobopen">blobopen() (Connection method)</a>
 </li>
@@ -152,10 +152,10 @@
 </li>
       <li><a href="connection.html#apsw.Connection.changes">changes() (Connection method)</a>
 </li>
-      <li><a href="backup.html#apsw.backup.close">close() (backup method)</a>
+      <li><a href="backup.html#apsw.Backup.close">close() (Backup method)</a>
 
       <ul>
-        <li><a href="blob.html#apsw.blob.close">(blob method)</a>
+        <li><a href="blob.html#apsw.Blob.close">(Blob method)</a>
 </li>
         <li><a href="connection.html#apsw.Connection.close">(Connection method)</a>
 </li>
@@ -244,7 +244,7 @@
 </li>
       <li><a href="shell.html#apsw.Shell.display_timing">display_timing() (Shell method)</a>
 </li>
-      <li><a href="backup.html#apsw.backup.done">done (backup attribute)</a>
+      <li><a href="backup.html#apsw.Backup.done">done (Backup attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -313,7 +313,7 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="backup.html#apsw.backup.finish">finish() (backup method)</a>
+      <li><a href="backup.html#apsw.Backup.finish">finish() (Backup method)</a>
 </li>
       <li><a href="shell.html#apsw.Shell.fixup_backslashes">fixup_backslashes() (Shell method)</a>
 </li>
@@ -407,7 +407,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="connection.html#apsw.Connection.last_insert_rowid">last_insert_rowid() (Connection method)</a>
 </li>
-      <li><a href="blob.html#apsw.blob.length">length() (blob method)</a>
+      <li><a href="blob.html#apsw.Blob.length">length() (Blob method)</a>
 
       <ul>
         <li><a href="blob.html#apsw.zeroblob.length">(zeroblob method)</a>
@@ -488,7 +488,7 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="backup.html#apsw.backup.pagecount">pagecount (backup attribute)</a>
+      <li><a href="backup.html#apsw.Backup.pagecount">pagecount (Backup attribute)</a>
 </li>
       <li><a href="exceptions.html#apsw.PermissionsError">PermissionsError</a>
 </li>
@@ -539,9 +539,9 @@
 </li>
       <li><a href="exceptions.html#apsw.RangeError">RangeError</a>
 </li>
-      <li><a href="blob.html#apsw.blob.read">read() (blob method)</a>
+      <li><a href="blob.html#apsw.Blob.read">read() (Blob method)</a>
 </li>
-      <li><a href="blob.html#apsw.blob.readinto">readinto() (blob method)</a>
+      <li><a href="blob.html#apsw.Blob.readinto">readinto() (Blob method)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.readonly">readonly() (Connection method)</a>
 </li>
@@ -551,11 +551,11 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#apsw.releasememory">releasememory() (in module apsw)</a>
 </li>
-      <li><a href="backup.html#apsw.backup.remaining">remaining (backup attribute)</a>
+      <li><a href="backup.html#apsw.Backup.remaining">remaining (Backup attribute)</a>
 </li>
       <li><a href="vtable.html#apsw.VTTable.Rename">Rename() (VTTable method)</a>
 </li>
-      <li><a href="blob.html#apsw.blob.reopen">reopen() (blob method)</a>
+      <li><a href="blob.html#apsw.Blob.reopen">reopen() (Blob method)</a>
 </li>
       <li><a href="exceptions.html#apsw.Error.result">result (Error attribute)</a>
 </li>
@@ -571,7 +571,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="exceptions.html#apsw.SchemaChangeError">SchemaChangeError</a>
 </li>
-      <li><a href="blob.html#apsw.blob.seek">seek() (blob method)</a>
+      <li><a href="blob.html#apsw.Blob.seek">seek() (Blob method)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.serialize">serialize() (Connection method)</a>
 </li>
@@ -795,7 +795,7 @@
         <li><a href="apsw.html#apsw.status">(in module apsw)</a>
 </li>
       </ul></li>
-      <li><a href="backup.html#apsw.backup.step">step() (backup method)</a>
+      <li><a href="backup.html#apsw.Backup.step">step() (Backup method)</a>
 </li>
       <li><a href="vtable.html#apsw.VTTable.Sync">Sync() (VTTable method)</a>
 </li>
@@ -805,7 +805,7 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="blob.html#apsw.blob.tell">tell() (blob method)</a>
+      <li><a href="blob.html#apsw.Blob.tell">tell() (Blob method)</a>
 </li>
       <li><a href="exceptions.html#apsw.ThreadingViolationError">ThreadingViolationError</a>
 </li>
@@ -881,7 +881,7 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="blob.html#apsw.blob.write">write() (blob method)</a>
+      <li><a href="blob.html#apsw.Blob.write">write() (Blob method)</a>
 
       <ul>
         <li><a href="shell.html#apsw.Shell.write">(Shell method)</a>
@@ -991,14 +991,14 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.37.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.1-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Index</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
-        &#169; <a href="copyright.html">Copyright</a> 2004-2021, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jan 04, 2022.
+        &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Mar 22, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

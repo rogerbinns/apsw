@@ -16,7 +16,8 @@ module have process wide effects.  You can instantiate the
 API Reference
 =============
 
-.. data:: SQLITE_VERSION_NUMBER
+.. attribute:: SQLITE_VERSION_NUMBER
+    :type: int
 
     The integer version number of SQLite that APSW was compiled
     against.  For example SQLite 3.6.4 will have the value *3006004*.
@@ -24,13 +25,14 @@ API Reference
     library is shared and has been updated.  Call
     :meth:`sqlitelibversion` to get the actual library version.
 
-.. method:: apswversion() -> string
+.. method:: apswversion() -> str
 
   Returns the APSW version.
 
 .. index:: sqlite3_compileoption_get
 
 .. attribute:: compile_options
+    :type: Tuple
 
     A tuple of the options used to compile SQLite.  For example it
     will be something like this::
@@ -41,7 +43,7 @@ API Reference
 
 .. index:: sqlite3_complete
 
-.. method:: complete(statement) -> bool
+.. method:: complete(statement: str) -> bool
 
   Returns True if the input string comprises one or more complete SQL
   statements by looking for an unquoted trailing semi-colon.
@@ -50,16 +52,16 @@ API Reference
   statements and needed to know if you had a whole statement, or
   needed to ask for another line::
 
-    statement=raw_input("SQL> ")
+    statement = input("SQL> ")
     while not apsw.complete(statement):
-       more=raw_input("  .. ")
-       statement=statement+"\n"+more
+       more = input("  .. ")
+       statement = statement + "\\n" + more
 
   Calls: `sqlite3_complete <https://sqlite.org/c3ref/complete.html>`__
 
 .. index:: sqlite3_config
 
-.. method:: config(op[, *args])
+.. method:: config(op: int, *args) -> None
 
   :param op: A `configuration operation <https://sqlite.org/c3ref/c_config_chunkalloc.html>`_
   :param args: Zero or more arguments as appropriate for *op*
@@ -77,6 +79,7 @@ API Reference
   Calls: `sqlite3_config <https://sqlite.org/c3ref/config.html>`__
 
 .. attribute:: connection_hooks
+       :type: List[Callable]
 
        The purpose of the hooks is to allow the easy registration of
        :meth:`functions <Connection.createscalarfunction>`,
@@ -94,7 +97,7 @@ API Reference
 
 .. index:: sqlite3_enable_shared_cache
 
-.. method:: enablesharedcache(bool)
+.. method:: enablesharedcache(enable: bool) -> None
 
   If you use the same :class:`Connection` across threads or use
   multiple :class:`connections <Connection>` accessing the same file,
@@ -104,7 +107,7 @@ API Reference
 
   Calls: `sqlite3_enable_shared_cache <https://sqlite.org/c3ref/enable_shared_cache.html>`__
 
-.. method:: exceptionfor(int) -> Exception
+.. method:: exceptionfor(code: int) -> Exception
 
   If you would like to raise an exception that corresponds to a
   particular SQLite `error code
@@ -116,7 +119,7 @@ API Reference
 
     raise apsw.exceptionfor(apsw.SQLITE_IOERR_ACCESS)
 
-.. method:: fork_checker()
+.. method:: fork_checker() -> None
 
   **Note** This method is not available on Windows as it does not
   support the fork system call.
@@ -161,15 +164,13 @@ API Reference
   the program will later crash.  The recommended use is to use the fork
   checking as part of your test suite.
 
-.. method:: format_sql_value(value) -> string
+.. method:: format_sql_value(value: Union[None, int, float, bytes, str]) -> str
 
-  Returns a Python string (unicode) representing the supplied value in
-  SQL syntax.  Python 2 note: You must supply unicode strings not
-  plain strings.
+  Returns a Python string representing the supplied value in SQL syntax.
 
 .. index:: sqlite3_initialize
 
-.. method:: initialize()
+.. method:: initialize() -> None
 
   It is unlikely you will want to call this method as SQLite automatically initializes.
 
@@ -178,6 +179,7 @@ API Reference
 .. index:: sqlite3_keyword_count, sqlite3_keyword_name
 
 .. attribute:: keywords
+    :type: Set[str]
 
     A set containing every SQLite keyword
 
@@ -187,12 +189,12 @@ API Reference
 
 .. index:: sqlite3_log
 
-.. method:: log(level, message)
+.. method:: log(errorcode: int, message: str) -> None
 
     Calls the SQLite logging interface.  Note that you must format the
     message before passing it to this method::
 
-        apsw.log(apsw.SQLITE_NOMEM, "Need %d bytes of memory" % (1234,))
+        apsw.log(apsw.SQLITE_NOMEM, f"Need { needed } bytes of memory")
 
     See :ref:`tips <diagnostics_tips>` for an example of how to
     receive log messages.
@@ -201,12 +203,12 @@ API Reference
 
 .. method:: main()
 
-    Call this to run the interactive shell.  It automatically passes
-    in sys.argv[1:] and exits Python when done.
+    Call this to run the :ref:`interactive shell <shell>`.  It
+    automatically passes in sys.argv[1:] and exits Python when done.
 
 .. index:: sqlite3_memory_highwater
 
-.. method:: memoryhighwater(reset=False) -> int
+.. method:: memoryhighwater(reset: bool = False) -> int
 
   Returns the maximum amount of memory SQLite has used.  If *reset* is
   True then the high water mark is reset to the current value.
@@ -230,27 +232,26 @@ API Reference
 
 .. index:: sqlite3_randomness
 
-.. method:: randomness(bytes)  -> data
+.. method:: randomness(amount: int)  -> bytes
 
   Gets random data from SQLite's random number generator.
 
-  :param bytes: How many bytes to return
-  :rtype: (Python 2) string, (Python 3) bytes
+  :param amount: How many bytes to return
 
   Calls: `sqlite3_randomness <https://sqlite.org/c3ref/randomness.html>`__
 
 .. index:: sqlite3_release_memory
 
-.. method:: releasememory(bytes) -> int
+.. method:: releasememory(amount: int) -> int
 
-  Requests SQLite try to free *bytes* bytes of memory.  Returns how
+  Requests SQLite try to free *amount* bytes of memory.  Returns how
   many bytes were freed.
 
   Calls: `sqlite3_release_memory <https://sqlite.org/c3ref/release_memory.html>`__
 
 .. index:: sqlite3_shutdown
 
-.. method:: shutdown()
+.. method:: shutdown() -> None
 
   It is unlikely you will want to call this method and there is no
   need to do so.  It is a **really** bad idea to call it unless you
@@ -262,16 +263,16 @@ API Reference
 
 .. index:: sqlite3_soft_heap_limit64
 
-.. method:: softheaplimit(bytes) -> oldlimit
+.. method:: softheaplimit(limit: int) -> int
 
-  Requests SQLite try to keep memory usage below *bytes* bytes and
-  returns the previous setting.
+  Requests SQLite try to keep memory usage below *amount* bytes and
+  returns the previous limit.
 
   Calls: `sqlite3_soft_heap_limit64 <https://sqlite.org/c3ref/hard_heap_limit64.html>`__
 
 .. index:: sqlite3_sourceid
 
-.. method:: sqlite3_sourceid() -> string
+.. method:: sqlite3_sourceid() -> str
 
     Returns the exact checkin information for the SQLite 3 source
     being used.
@@ -280,7 +281,7 @@ API Reference
 
 .. index:: sqlite3_libversion
 
-.. method:: sqlitelibversion() -> string
+.. method:: sqlitelibversion() -> str
 
   Returns the version of the SQLite library.  This value is queried at
   run time from the library so if you use shared libraries it will be
@@ -290,7 +291,7 @@ API Reference
 
 .. index:: sqlite3_status64
 
-.. method:: status(op, reset=False) -> (int, int)
+.. method:: status(op: int, reset: bool = False) -> Tuple[int, int]
 
   Returns current and highwater measurements.
 
@@ -305,6 +306,7 @@ API Reference
   Calls: `sqlite3_status64 <https://sqlite.org/c3ref/status.html>`__
 
 .. attribute:: using_amalgamation
+    :type: bool
 
     If True then `SQLite amalgamation
     <https://sqlite.org/cvstrac/wiki?p=TheAmalgamation>`__ is in
@@ -312,7 +314,7 @@ API Reference
     that SQLite shared libraries are not used and will not affect your
     code.
 
-.. method:: vfsnames() -> list(string)
+.. method:: vfsnames() -> List[str]
 
   Returns a list of the currently installed :ref:`vfs <vfs>`.  The first
   item in the list is the default vfs.
@@ -352,7 +354,7 @@ mapping_authorizer_return `Authorizer Return Codes <https://sqlite.org/c3ref/c_d
 
 mapping_bestindex_constraints `Virtual Table Constraint Operator Codes <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__
 
-    `SQLITE_INDEX_CONSTRAINT_EQ <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_FUNCTION <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_GE <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_GLOB <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_GT <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_IS <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_ISNOT <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_ISNOTNULL <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_ISNULL <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_LE <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_LIKE <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_LT <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_MATCH <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_NE <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_REGEXP <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__
+    `SQLITE_INDEX_CONSTRAINT_EQ <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_FUNCTION <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_GE <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_GLOB <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_GT <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_IS <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_ISNOT <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_ISNOTNULL <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_ISNULL <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_LE <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_LIKE <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_LIMIT <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_LT <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_MATCH <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_NE <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_OFFSET <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__, `SQLITE_INDEX_CONSTRAINT_REGEXP <https://sqlite.org/c3ref/c_index_constraint_eq.html>`__
 
 mapping_config `Configuration Options <https://sqlite.org/c3ref/c_config_covering_index_scan.html>`__
 
@@ -376,7 +378,7 @@ mapping_device_characteristics `Device Characteristics <https://sqlite.org/c3ref
 
 mapping_extended_result_codes `Extended Result Codes <https://sqlite.org/rescode.html>`__
 
-    `SQLITE_ABORT_ROLLBACK <https://sqlite.org/rescode.html#abort_rollback>`__, `SQLITE_AUTH_USER <https://sqlite.org/c3ref/c_abort_rollback.html>`__, `SQLITE_BUSY_RECOVERY <https://sqlite.org/rescode.html#busy_recovery>`__, `SQLITE_BUSY_SNAPSHOT <https://sqlite.org/rescode.html#busy_snapshot>`__, `SQLITE_BUSY_TIMEOUT <https://sqlite.org/rescode.html#busy_timeout>`__, `SQLITE_CANTOPEN_CONVPATH <https://sqlite.org/rescode.html#cantopen_convpath>`__, `SQLITE_CANTOPEN_DIRTYWAL <https://sqlite.org/rescode.html#cantopen_dirtywal>`__, `SQLITE_CANTOPEN_FULLPATH <https://sqlite.org/rescode.html#cantopen_fullpath>`__, `SQLITE_CANTOPEN_ISDIR <https://sqlite.org/rescode.html#cantopen_isdir>`__, `SQLITE_CANTOPEN_NOTEMPDIR <https://sqlite.org/rescode.html#cantopen_notempdir>`__, `SQLITE_CANTOPEN_SYMLINK <https://sqlite.org/rescode.html#cantopen_symlink>`__, `SQLITE_CONSTRAINT_CHECK <https://sqlite.org/rescode.html#constraint_check>`__, `SQLITE_CONSTRAINT_COMMITHOOK <https://sqlite.org/rescode.html#constraint_commithook>`__, `SQLITE_CONSTRAINT_DATATYPE <https://sqlite.org/c3ref/c_abort_rollback.html>`__, `SQLITE_CONSTRAINT_FOREIGNKEY <https://sqlite.org/rescode.html#constraint_foreignkey>`__, `SQLITE_CONSTRAINT_FUNCTION <https://sqlite.org/rescode.html#constraint_function>`__, `SQLITE_CONSTRAINT_NOTNULL <https://sqlite.org/rescode.html#constraint_notnull>`__, `SQLITE_CONSTRAINT_PINNED <https://sqlite.org/rescode.html#constraint_pinned>`__, `SQLITE_CONSTRAINT_PRIMARYKEY <https://sqlite.org/rescode.html#constraint_primarykey>`__, `SQLITE_CONSTRAINT_ROWID <https://sqlite.org/rescode.html#constraint_rowid>`__, `SQLITE_CONSTRAINT_TRIGGER <https://sqlite.org/rescode.html#constraint_trigger>`__, `SQLITE_CONSTRAINT_UNIQUE <https://sqlite.org/rescode.html#constraint_unique>`__, `SQLITE_CONSTRAINT_VTAB <https://sqlite.org/rescode.html#constraint_vtab>`__, `SQLITE_CORRUPT_INDEX <https://sqlite.org/rescode.html#corrupt_index>`__, `SQLITE_CORRUPT_SEQUENCE <https://sqlite.org/rescode.html#corrupt_sequence>`__, `SQLITE_CORRUPT_VTAB <https://sqlite.org/rescode.html#corrupt_vtab>`__, `SQLITE_ERROR_MISSING_COLLSEQ <https://sqlite.org/rescode.html#error_missing_collseq>`__, `SQLITE_ERROR_RETRY <https://sqlite.org/rescode.html#error_retry>`__, `SQLITE_ERROR_SNAPSHOT <https://sqlite.org/rescode.html#error_snapshot>`__, `SQLITE_IOERR_ACCESS <https://sqlite.org/rescode.html#ioerr_access>`__, `SQLITE_IOERR_AUTH <https://sqlite.org/rescode.html#ioerr_auth>`__, `SQLITE_IOERR_BEGIN_ATOMIC <https://sqlite.org/rescode.html#ioerr_begin_atomic>`__, `SQLITE_IOERR_BLOCKED <https://sqlite.org/rescode.html#ioerr_blocked>`__, `SQLITE_IOERR_CHECKRESERVEDLOCK <https://sqlite.org/rescode.html#ioerr_checkreservedlock>`__, `SQLITE_IOERR_CLOSE <https://sqlite.org/rescode.html#ioerr_close>`__, `SQLITE_IOERR_COMMIT_ATOMIC <https://sqlite.org/rescode.html#ioerr_commit_atomic>`__, `SQLITE_IOERR_CONVPATH <https://sqlite.org/rescode.html#ioerr_convpath>`__, `SQLITE_IOERR_CORRUPTFS <https://sqlite.org/c3ref/c_abort_rollback.html>`__, `SQLITE_IOERR_DATA <https://sqlite.org/rescode.html#ioerr_data>`__, `SQLITE_IOERR_DELETE <https://sqlite.org/rescode.html#ioerr_delete>`__, `SQLITE_IOERR_DELETE_NOENT <https://sqlite.org/rescode.html#ioerr_delete_noent>`__, `SQLITE_IOERR_DIR_CLOSE <https://sqlite.org/rescode.html#ioerr_dir_close>`__, `SQLITE_IOERR_DIR_FSYNC <https://sqlite.org/rescode.html#ioerr_dir_fsync>`__, `SQLITE_IOERR_FSTAT <https://sqlite.org/rescode.html#ioerr_fstat>`__, `SQLITE_IOERR_FSYNC <https://sqlite.org/rescode.html#ioerr_fsync>`__, `SQLITE_IOERR_GETTEMPPATH <https://sqlite.org/rescode.html#ioerr_gettemppath>`__, `SQLITE_IOERR_LOCK <https://sqlite.org/rescode.html#ioerr_lock>`__, `SQLITE_IOERR_MMAP <https://sqlite.org/rescode.html#ioerr_mmap>`__, `SQLITE_IOERR_NOMEM <https://sqlite.org/rescode.html#ioerr_nomem>`__, `SQLITE_IOERR_RDLOCK <https://sqlite.org/rescode.html#ioerr_rdlock>`__, `SQLITE_IOERR_READ <https://sqlite.org/rescode.html#ioerr_read>`__, `SQLITE_IOERR_ROLLBACK_ATOMIC <https://sqlite.org/rescode.html#ioerr_rollback_atomic>`__, `SQLITE_IOERR_SEEK <https://sqlite.org/rescode.html#ioerr_seek>`__, `SQLITE_IOERR_SHMLOCK <https://sqlite.org/rescode.html#ioerr_shmlock>`__, `SQLITE_IOERR_SHMMAP <https://sqlite.org/rescode.html#ioerr_shmmap>`__, `SQLITE_IOERR_SHMOPEN <https://sqlite.org/rescode.html#ioerr_shmopen>`__, `SQLITE_IOERR_SHMSIZE <https://sqlite.org/rescode.html#ioerr_shmsize>`__, `SQLITE_IOERR_SHORT_READ <https://sqlite.org/rescode.html#ioerr_short_read>`__, `SQLITE_IOERR_TRUNCATE <https://sqlite.org/rescode.html#ioerr_truncate>`__, `SQLITE_IOERR_UNLOCK <https://sqlite.org/rescode.html#ioerr_unlock>`__, `SQLITE_IOERR_VNODE <https://sqlite.org/rescode.html#ioerr_vnode>`__, `SQLITE_IOERR_WRITE <https://sqlite.org/rescode.html#ioerr_write>`__, `SQLITE_LOCKED_SHAREDCACHE <https://sqlite.org/rescode.html#locked_sharedcache>`__, `SQLITE_LOCKED_VTAB <https://sqlite.org/rescode.html#locked_vtab>`__, `SQLITE_NOTICE_RECOVER_ROLLBACK <https://sqlite.org/rescode.html#notice_recover_rollback>`__, `SQLITE_NOTICE_RECOVER_WAL <https://sqlite.org/rescode.html#notice_recover_wal>`__, `SQLITE_OK_LOAD_PERMANENTLY <https://sqlite.org/rescode.html#ok_load_permanently>`__, `SQLITE_OK_SYMLINK <https://sqlite.org/c3ref/c_abort_rollback.html>`__, `SQLITE_READONLY_CANTINIT <https://sqlite.org/rescode.html#readonly_cantinit>`__, `SQLITE_READONLY_CANTLOCK <https://sqlite.org/rescode.html#readonly_cantlock>`__, `SQLITE_READONLY_DBMOVED <https://sqlite.org/rescode.html#readonly_dbmoved>`__, `SQLITE_READONLY_DIRECTORY <https://sqlite.org/rescode.html#readonly_directory>`__, `SQLITE_READONLY_RECOVERY <https://sqlite.org/rescode.html#readonly_recovery>`__, `SQLITE_READONLY_ROLLBACK <https://sqlite.org/rescode.html#readonly_rollback>`__, `SQLITE_WARNING_AUTOINDEX <https://sqlite.org/rescode.html#warning_autoindex>`__
+    `SQLITE_ABORT_ROLLBACK <https://sqlite.org/rescode.html#abort_rollback>`__, `SQLITE_AUTH_USER <https://sqlite.org/rescode.html#auth_user>`__, `SQLITE_BUSY_RECOVERY <https://sqlite.org/rescode.html#busy_recovery>`__, `SQLITE_BUSY_SNAPSHOT <https://sqlite.org/rescode.html#busy_snapshot>`__, `SQLITE_BUSY_TIMEOUT <https://sqlite.org/rescode.html#busy_timeout>`__, `SQLITE_CANTOPEN_CONVPATH <https://sqlite.org/rescode.html#cantopen_convpath>`__, `SQLITE_CANTOPEN_DIRTYWAL <https://sqlite.org/rescode.html#cantopen_dirtywal>`__, `SQLITE_CANTOPEN_FULLPATH <https://sqlite.org/rescode.html#cantopen_fullpath>`__, `SQLITE_CANTOPEN_ISDIR <https://sqlite.org/rescode.html#cantopen_isdir>`__, `SQLITE_CANTOPEN_NOTEMPDIR <https://sqlite.org/rescode.html#cantopen_notempdir>`__, `SQLITE_CANTOPEN_SYMLINK <https://sqlite.org/rescode.html#cantopen_symlink>`__, `SQLITE_CONSTRAINT_CHECK <https://sqlite.org/rescode.html#constraint_check>`__, `SQLITE_CONSTRAINT_COMMITHOOK <https://sqlite.org/rescode.html#constraint_commithook>`__, `SQLITE_CONSTRAINT_DATATYPE <https://sqlite.org/rescode.html#constraint_datatype>`__, `SQLITE_CONSTRAINT_FOREIGNKEY <https://sqlite.org/rescode.html#constraint_foreignkey>`__, `SQLITE_CONSTRAINT_FUNCTION <https://sqlite.org/rescode.html#constraint_function>`__, `SQLITE_CONSTRAINT_NOTNULL <https://sqlite.org/rescode.html#constraint_notnull>`__, `SQLITE_CONSTRAINT_PINNED <https://sqlite.org/rescode.html#constraint_pinned>`__, `SQLITE_CONSTRAINT_PRIMARYKEY <https://sqlite.org/rescode.html#constraint_primarykey>`__, `SQLITE_CONSTRAINT_ROWID <https://sqlite.org/rescode.html#constraint_rowid>`__, `SQLITE_CONSTRAINT_TRIGGER <https://sqlite.org/rescode.html#constraint_trigger>`__, `SQLITE_CONSTRAINT_UNIQUE <https://sqlite.org/rescode.html#constraint_unique>`__, `SQLITE_CONSTRAINT_VTAB <https://sqlite.org/rescode.html#constraint_vtab>`__, `SQLITE_CORRUPT_INDEX <https://sqlite.org/rescode.html#corrupt_index>`__, `SQLITE_CORRUPT_SEQUENCE <https://sqlite.org/rescode.html#corrupt_sequence>`__, `SQLITE_CORRUPT_VTAB <https://sqlite.org/rescode.html#corrupt_vtab>`__, `SQLITE_ERROR_MISSING_COLLSEQ <https://sqlite.org/rescode.html#error_missing_collseq>`__, `SQLITE_ERROR_RETRY <https://sqlite.org/rescode.html#error_retry>`__, `SQLITE_ERROR_SNAPSHOT <https://sqlite.org/rescode.html#error_snapshot>`__, `SQLITE_IOERR_ACCESS <https://sqlite.org/rescode.html#ioerr_access>`__, `SQLITE_IOERR_AUTH <https://sqlite.org/rescode.html#ioerr_auth>`__, `SQLITE_IOERR_BEGIN_ATOMIC <https://sqlite.org/rescode.html#ioerr_begin_atomic>`__, `SQLITE_IOERR_BLOCKED <https://sqlite.org/rescode.html#ioerr_blocked>`__, `SQLITE_IOERR_CHECKRESERVEDLOCK <https://sqlite.org/rescode.html#ioerr_checkreservedlock>`__, `SQLITE_IOERR_CLOSE <https://sqlite.org/rescode.html#ioerr_close>`__, `SQLITE_IOERR_COMMIT_ATOMIC <https://sqlite.org/rescode.html#ioerr_commit_atomic>`__, `SQLITE_IOERR_CONVPATH <https://sqlite.org/rescode.html#ioerr_convpath>`__, `SQLITE_IOERR_CORRUPTFS <https://sqlite.org/rescode.html#ioerr_corruptfs>`__, `SQLITE_IOERR_DATA <https://sqlite.org/rescode.html#ioerr_data>`__, `SQLITE_IOERR_DELETE <https://sqlite.org/rescode.html#ioerr_delete>`__, `SQLITE_IOERR_DELETE_NOENT <https://sqlite.org/rescode.html#ioerr_delete_noent>`__, `SQLITE_IOERR_DIR_CLOSE <https://sqlite.org/rescode.html#ioerr_dir_close>`__, `SQLITE_IOERR_DIR_FSYNC <https://sqlite.org/rescode.html#ioerr_dir_fsync>`__, `SQLITE_IOERR_FSTAT <https://sqlite.org/rescode.html#ioerr_fstat>`__, `SQLITE_IOERR_FSYNC <https://sqlite.org/rescode.html#ioerr_fsync>`__, `SQLITE_IOERR_GETTEMPPATH <https://sqlite.org/rescode.html#ioerr_gettemppath>`__, `SQLITE_IOERR_LOCK <https://sqlite.org/rescode.html#ioerr_lock>`__, `SQLITE_IOERR_MMAP <https://sqlite.org/rescode.html#ioerr_mmap>`__, `SQLITE_IOERR_NOMEM <https://sqlite.org/rescode.html#ioerr_nomem>`__, `SQLITE_IOERR_RDLOCK <https://sqlite.org/rescode.html#ioerr_rdlock>`__, `SQLITE_IOERR_READ <https://sqlite.org/rescode.html#ioerr_read>`__, `SQLITE_IOERR_ROLLBACK_ATOMIC <https://sqlite.org/rescode.html#ioerr_rollback_atomic>`__, `SQLITE_IOERR_SEEK <https://sqlite.org/rescode.html#ioerr_seek>`__, `SQLITE_IOERR_SHMLOCK <https://sqlite.org/rescode.html#ioerr_shmlock>`__, `SQLITE_IOERR_SHMMAP <https://sqlite.org/rescode.html#ioerr_shmmap>`__, `SQLITE_IOERR_SHMOPEN <https://sqlite.org/rescode.html#ioerr_shmopen>`__, `SQLITE_IOERR_SHMSIZE <https://sqlite.org/rescode.html#ioerr_shmsize>`__, `SQLITE_IOERR_SHORT_READ <https://sqlite.org/rescode.html#ioerr_short_read>`__, `SQLITE_IOERR_TRUNCATE <https://sqlite.org/rescode.html#ioerr_truncate>`__, `SQLITE_IOERR_UNLOCK <https://sqlite.org/rescode.html#ioerr_unlock>`__, `SQLITE_IOERR_VNODE <https://sqlite.org/rescode.html#ioerr_vnode>`__, `SQLITE_IOERR_WRITE <https://sqlite.org/rescode.html#ioerr_write>`__, `SQLITE_LOCKED_SHAREDCACHE <https://sqlite.org/rescode.html#locked_sharedcache>`__, `SQLITE_LOCKED_VTAB <https://sqlite.org/rescode.html#locked_vtab>`__, `SQLITE_NOTICE_RECOVER_ROLLBACK <https://sqlite.org/rescode.html#notice_recover_rollback>`__, `SQLITE_NOTICE_RECOVER_WAL <https://sqlite.org/rescode.html#notice_recover_wal>`__, `SQLITE_OK_LOAD_PERMANENTLY <https://sqlite.org/rescode.html#ok_load_permanently>`__, `SQLITE_OK_SYMLINK <https://sqlite.org/c3ref/c_abort_rollback.html>`__, `SQLITE_READONLY_CANTINIT <https://sqlite.org/rescode.html#readonly_cantinit>`__, `SQLITE_READONLY_CANTLOCK <https://sqlite.org/rescode.html#readonly_cantlock>`__, `SQLITE_READONLY_DBMOVED <https://sqlite.org/rescode.html#readonly_dbmoved>`__, `SQLITE_READONLY_DIRECTORY <https://sqlite.org/rescode.html#readonly_directory>`__, `SQLITE_READONLY_RECOVERY <https://sqlite.org/rescode.html#readonly_recovery>`__, `SQLITE_READONLY_ROLLBACK <https://sqlite.org/rescode.html#readonly_rollback>`__, `SQLITE_WARNING_AUTOINDEX <https://sqlite.org/rescode.html#warning_autoindex>`__
 
 mapping_file_control `Standard File Control Opcodes <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>`__
 

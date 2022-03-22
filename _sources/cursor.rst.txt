@@ -24,7 +24,7 @@ You can also read data back.  The row is returned as a tuple of the
 column values::
 
   for row in cursor.execute("select * from example"):
-     print row
+     print(row)
 
 There are two ways of supplying data to a query.  The **really bad** way is to compose a string::
 
@@ -118,7 +118,7 @@ Cursor class
 
   You obtain cursors by calling :meth:`Connection.cursor`.
 
-.. method:: Cursor.close(force=False)
+.. method:: Cursor.close(force: bool = False) -> None
 
   It is very unlikely you will need to call this method.  It exists
   because older versions of SQLite required all Connection/Cursor
@@ -139,6 +139,7 @@ Cursor class
    silently discarded.
 
 .. attribute:: Cursor.description
+    :type: tuple
 
     Based on the `DB-API cursor property
     <http://www.python.org/dev/peps/pep-0249/>`__, this returns the
@@ -147,7 +148,7 @@ Cursor class
 
 .. index:: sqlite3_prepare_v2, sqlite3_step, sqlite3_bind_int64, sqlite3_bind_null, sqlite3_bind_text, sqlite3_bind_double, sqlite3_bind_blob, sqlite3_bind_zeroblob
 
-.. method:: Cursor.execute(statements[, bindings]) -> iterator
+.. method:: Cursor.execute(statements: str, bindings: Optional[Union[Sequence,Dict]] = None) -> Iterator
 
     Executes the statements using the supplied bindings.  Execution
     returns when the first row is available or all statements have
@@ -187,7 +188,7 @@ Cursor class
     The return is the cursor object itself which is also an iterator.  This allows you to write::
 
        for row in cursor.execute("select * from books"):
-          print row
+          print(row)
 
     :raises TypeError: The bindings supplied were neither a dict nor a sequence
     :raises BindingsError: You supplied too many or too few bindings for the statements
@@ -208,7 +209,7 @@ Cursor class
       * `sqlite3_bind_blob <https://sqlite.org/c3ref/bind_blob.html>`__
       * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__
 
-.. method:: Cursor.executemany(statements, sequenceofbindings)  -> iterator
+.. method:: Cursor.executemany(statements: str, sequenceofbindings: Sequence[Union[Sequence,Dict]]) -> Iterator
 
   This method is for when you want to execute the same statements over
   a sequence of bindings.  Conceptually it does this::
@@ -234,7 +235,7 @@ Cursor class
   Returns all remaining result rows as a list.  This method is defined
   in DBAPI.  It is a longer way of doing ``list(cursor)``.
 
-.. method:: Cursor.fetchone() -> row or None
+.. method:: Cursor.fetchone() -> Optional[Any]
 
   Returns the next row of data or None if there are no more rows.
 
@@ -304,7 +305,7 @@ Cursor class
      * `sqlite3_column_name <https://sqlite.org/c3ref/column_name.html>`__
      * `sqlite3_column_decltype <https://sqlite.org/c3ref/column_decltype.html>`__
 
-.. method:: Cursor.getexectrace() -> callable or None
+.. method:: Cursor.getexectrace() -> Optional[Callable]
 
   Returns the currently installed (via :meth:`~Cursor.setexectrace`)
   execution tracer.
@@ -313,7 +314,7 @@ Cursor class
 
     * :ref:`tracing`
 
-.. method:: Cursor.getrowtrace() -> callable or None
+.. method:: Cursor.getrowtrace() -> Optional[Callable]
 
   Returns the currently installed (via :meth:`~Cursor.setrowtrace`)
   row tracer.
@@ -322,14 +323,14 @@ Cursor class
 
     * :ref:`tracing`
 
-.. method:: Cursor.setexectrace(callable)
+.. method:: Cursor.setexectrace(callable: Optional[Callable]) -> None
 
   *callable* is called with the cursor, statement and bindings for
   each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
   cursor.
 
   If *callable* is :const:`None` then any existing execution tracer is
-  removed.
+  unregistered.
 
   .. seealso::
 
@@ -337,14 +338,14 @@ Cursor class
     * :ref:`executiontracer`
     * :meth:`Connection.setexectrace`
 
-.. method:: Cursor.setrowtrace(callable)
+.. method:: Cursor.setrowtrace(callable: Optional[Callable]) -> None
 
   *callable* is called with cursor and row being returned.  You can
   change the data that is returned or cause the row to be skipped
   altogether.
 
   If *callable* is :const:`None` then any existing row tracer is
-  removed.
+  unregistered.
 
   .. seealso::
 

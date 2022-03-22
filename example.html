@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Example &#8212; APSW 3.37.0-r1 documentation</title>
+    <title>Example &#8212; APSW 3.38.1-r1 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     
@@ -42,7 +42,7 @@
         <li class="right" >
           <a href="tips.html" title="Tips"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.37.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.1-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Example</a></li> 
       </ul>
     </div>  
@@ -57,15 +57,10 @@
 <p>This code demonstrates usage of the APSW api.  It gives you a good
 overview of all the things that can be done.  Also included is output
 so you can see what gets printed when you run the code.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
-
-<span class="c1"># some python 2 and 3 comnpatibility tweaks</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="n">py3</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">inext</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>  <span class="c1"># next value from iterator</span>
-    <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">py3</span> <span class="k">else</span> <span class="n">v</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">apsw</span>
 
@@ -80,9 +75,9 @@ so you can see what gets printed when you run the code.</p>
 </pre></div>
 </div>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>|       Using APSW file /space/apsw/apsw.cpython-39-x86_64-linux-gnu.so
-|          APSW version 3.37.0-r1
-|    SQLite lib version 3.37.0
-| SQLite header version 3037000
+|          APSW version 3.38.1-r1
+|    SQLite lib version 3.38.1
+| SQLite header version 3038001
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">###</span>
@@ -106,7 +101,7 @@ so you can see what gets printed when you run the code.</p>
 <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo values(?,?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>  <span class="c1"># integer, float/real, Null</span>
 <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo(x) values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;abc&quot;</span><span class="p">,</span> <span class="p">))</span>        <span class="c1"># string (note trailing comma to ensure tuple!)</span>
 <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo(x) values(?)&quot;</span><span class="p">,</span>                   <span class="c1"># a blob (binary data)</span>
-                    <span class="p">(</span><span class="sa">b</span><span class="s2">&quot;abc</span><span class="se">\xff\xfe</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">py3</span> <span class="k">else</span> <span class="n">buffer</span><span class="p">(</span><span class="s2">&quot;abc</span><span class="se">\xff\xfe</span><span class="s2">&quot;</span><span class="p">),</span> <span class="p">))</span>
+                    <span class="p">(</span><span class="sa">b</span><span class="s2">&quot;abc</span><span class="se">\xff\xfe</span><span class="s2">&quot;</span><span class="p">,))</span>
 
 <span class="c1">###</span>
 <span class="c1">### multiple statements</span>
@@ -159,8 +154,8 @@ so you can see what gets printed when you run the code.</p>
 </pre></div>
 </div>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| SQL: drop table bar ;
-| SQL: create table bar(x,y,z);
-| SQL: select * from foo where x=?
+| SQL:  create table bar(x,y,z);
+| SQL:  select * from foo where x=?
 | Bindings: (3,)
 </pre></div>
 </div>
@@ -253,8 +248,6 @@ so you can see what gets printed when you run the code.</p>
     <span class="k">def</span> <span class="nf">final</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">longest</span>
 
-    <span class="c1"># Under Python 2.3 remove the following line and add</span>
-    <span class="c1"># factory=classmethod(factory) at the end</span>
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">factory</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(),</span> <span class="bp">cls</span><span class="o">.</span><span class="n">step</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">final</span>
@@ -445,7 +438,7 @@ so you can see what gets printed when you run the code.</p>
 <span class="c1"># Or as a binding</span>
 <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into blobby values(2,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">zeroblob</span><span class="p">(</span><span class="mi">20000</span><span class="p">),))</span>
 <span class="c1"># Open a blob for writing.  We need to know the rowid</span>
-<span class="n">rowid</span><span class="o">=</span><span class="n">inext</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select ROWID from blobby where x=1&quot;</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">rowid</span><span class="o">=</span><span class="nb">next</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select ROWID from blobby where x=1&quot;</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">blob</span><span class="o">=</span><span class="n">connection</span><span class="o">.</span><span class="n">blobopen</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="s2">&quot;blobby&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">rowid</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># 1 is for read/write</span>
 <span class="n">blob</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;hello world&quot;</span><span class="p">)</span>
 <span class="n">blob</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">2000</span><span class="p">)</span>
@@ -535,9 +528,9 @@ so you can see what gets printed when you run the code.</p>
     <span class="nb">print</span> <span class="p">(</span><span class="n">size</span><span class="p">,</span><span class="n">file</span><span class="p">,</span><span class="n">directory</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| 74407336 a64f60bb4641b67cb20c__mypyc.cpython-39-x86_64-linux-gnu.so /home/rogerb/.local/lib/python3.9/site-packages
-| 9882280 apsw.o /space/apsw
-| 7477120 apsw.cpython-39-x86_64-linux-gnu.so /space/apsw
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| 42642856 f9cd58ee140be1597db0__mypyc.cpython-39-x86_64-linux-gnu.so /home/rogerb/.local/lib/python3.9/site-packages
+| 7598536 apsw.cpython-39-x86_64-linux-gnu.so /space/apsw
+| 3546224 qdldl.cpython-39-x86_64-linux-gnu.so /home/rogerb/.local/lib/python3.9/site-packages
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Which 3 files are the oldest?</span>
@@ -546,8 +539,8 @@ so you can see what gets printed when you run the code.</p>
 </pre></div>
 </div>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| 1581788581.6627443 menulibre-2.2.1.egg-info /usr/lib/python3/dist-packages
-| 1582056231.6234083 .coverage /space/apsw
 | 1582056231.6234083 .style.yapf /space/apsw
+| 1582056231.8954034 setup.cfg /space/apsw
 </pre></div>
 </div>
 <div class="highlight-python notranslate" id="example-vfs"><div class="highlight"><pre><span></span><span class="c1">###</span>
@@ -558,10 +551,7 @@ so you can see what gets printed when you run the code.</p>
 
 <span class="k">def</span> <span class="nf">encryptme</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span> <span class="k">return</span> <span class="n">data</span>
-    <span class="k">if</span> <span class="n">py3</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">bytes</span><span class="p">([</span><span class="n">x</span><span class="o">^</span><span class="mh">0xa5</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="p">])</span>
-
-    <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">chr</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">^</span><span class="mh">0xa5</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="p">])</span>
+    <span class="k">return</span> <span class="nb">bytes</span><span class="p">([</span><span class="n">x</span><span class="o">^</span><span class="mh">0xa5</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="p">])</span>
 
 <span class="c1"># Inheriting from a base of &quot;&quot; means the default vfs</span>
 <span class="k">class</span> <span class="nc">ObfuscatedVFS</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">VFS</span><span class="p">):</span>
@@ -697,10 +687,7 @@ so you can see what gets printed when you run the code.</p>
 <span class="c1"># connection</span>
 
 <span class="c1"># Export to a StringIO</span>
-<span class="k">if</span> <span class="n">py3</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">io</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">StringIO</span> <span class="k">as</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">io</span>
 
 <span class="n">output</span><span class="o">=</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
 <span class="n">shell</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Shell</span><span class="p">(</span><span class="n">stdout</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="n">connection</span><span class="p">)</span>
@@ -729,7 +716,7 @@ so you can see what gets printed when you run the code.</p>
 <span class="nb">print</span> <span class="p">(</span><span class="s2">&quot;SQLite memory usage current </span><span class="si">%d</span><span class="s2"> max </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">apsw</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_STATUS_MEMORY_USED</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| SQLite memory usage current 361584 max 373456
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| SQLite memory usage current 314808 max 326752
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">###</span>
@@ -795,14 +782,14 @@ so you can see what gets printed when you run the code.</p>
         <li class="right" >
           <a href="tips.html" title="Tips"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.37.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.1-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Example</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
-        &#169; <a href="copyright.html">Copyright</a> 2004-2021, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jan 04, 2022.
+        &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Mar 22, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

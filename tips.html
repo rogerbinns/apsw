@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tips &#8212; APSW 3.37.0-r1 documentation</title>
+    <title>Tips &#8212; APSW 3.38.1-r1 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     
@@ -42,7 +42,7 @@
         <li class="right" >
           <a href="index.html" title="APSW documentation"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.37.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.1-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Tips</a></li> 
       </ul>
     </div>  
@@ -204,6 +204,41 @@ a table.:</p>
 </pre></div>
 </div>
 </div>
+<div class="section" id="managing-and-updating-your-schema">
+<h2>Managing and updating your schema<a class="headerlink" href="#managing-and-updating-your-schema" title="Permalink to this headline">¶</a></h2>
+<p>If your program uses SQLite for <a class="reference external" href="https://sqlite.org/appfileformat.html">data</a> then you’ll need to manage
+and update your schema.  The hard way of doing this is to test for the
+existence of tables and their columns, and doing that maintenance
+programmatically.  The easy way is to use <a class="reference external" href="https://sqlite.org/pragma.html#pragma_user_version">pragma user_version</a> as in this example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">user_version</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
+  <span class="k">return</span> <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;pragma user_version&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">ensure_schema</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
+  <span class="k">if</span> <span class="n">user_version</span><span class="p">(</span><span class="n">db</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">db</span><span class="p">:</span>
+      <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        CREATE TABLE IF NOT EXISTS foo(x,y,z);</span>
+<span class="s2">        CREATE TABLE IF NOT EXISTS bar(x,y,z);</span>
+<span class="s2">        PRAGMA user_version=1;&quot;&quot;&quot;</span><span class="p">)</span>
+
+  <span class="k">if</span> <span class="n">user_version</span><span class="p">(</span><span class="n">db</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">db</span><span class="p">:</span>
+      <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">      CREATE TABLE IF NOT EXISTS baz(x,y,z);</span>
+<span class="s2">      CREATE INDEX ....</span>
+<span class="s2">      PRAGMA user_version=2;&quot;&quot;&quot;</span><span class="p">)</span>
+
+  <span class="k">if</span> <span class="n">user_version</span><span class="p">(</span><span class="n">con</span><span class="p">)</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">db</span><span class="p">:</span>
+      <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">      ALTER TABLE .....</span>
+<span class="s2">      PRAGMA user_version=3;&quot;&quot;&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This approach will automatically upgrade the schema as you expect.
+You can also use <a class="reference external" href="https://sqlite.org/pragma.html#pragma_application_id">pragma application_id</a> to mark the
+database as made by your application.</p>
+</div>
 <div class="section" id="parsing-sql">
 <h2>Parsing SQL<a class="headerlink" href="#parsing-sql" title="Permalink to this headline">¶</a></h2>
 <p>Sometimes you want to know what a particular SQL statement does.  The
@@ -345,6 +380,7 @@ indirect call via Python.)</p>
 <li><a class="reference internal" href="#bindings">Bindings</a></li>
 <li><a class="reference internal" href="#unicode">Unicode</a></li>
 <li><a class="reference internal" href="#diagnostics">Diagnostics</a></li>
+<li><a class="reference internal" href="#managing-and-updating-your-schema">Managing and updating your schema</a></li>
 <li><a class="reference internal" href="#parsing-sql">Parsing SQL</a></li>
 <li><a class="reference internal" href="#unexpected-behaviour">Unexpected behaviour</a></li>
 <li><a class="reference internal" href="#customizing-cursors">Customizing cursors</a></li>
@@ -398,14 +434,14 @@ indirect call via Python.)</p>
         <li class="right" >
           <a href="index.html" title="APSW documentation"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.37.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.1-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Tips</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
-        &#169; <a href="copyright.html">Copyright</a> 2004-2021, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jan 04, 2022.
+        &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Mar 22, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

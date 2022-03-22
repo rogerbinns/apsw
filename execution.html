@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Execution and tracing &#8212; APSW 3.37.0-r1 documentation</title>
+    <title>Execution and tracing &#8212; APSW 3.38.1-r1 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     
@@ -42,7 +42,7 @@
         <li class="right" >
           <a href="types.html" title="Types"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.37.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.1-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Execution and tracing</a></li> 
       </ul>
     </div>  
@@ -116,18 +116,14 @@ query. You can however make new cursors and use those without
 issue. You may want to remember the Connection object when you set
 your trace or user defined functions.</p>
 </div>
-<div class="section" id="bit-hosts-python-2-5">
-<span id="x64bitpy25"></span><h2>64 bit hosts, Python 2.5+<a class="headerlink" href="#bit-hosts-python-2-5" title="Permalink to this headline">¶</a></h2>
-<p>Prior to Python 2.5, you were limited to 32 bit quantities for items
-in Python such as the length of strings, number of items in a sequence
-etc. Python 2.5 and above use 64 bit limits on 64 bit hosts.  APSW
-will work correctly with those items in Python 2.5 and above that use
-64 bits. Unfortunately SQLite is limited to 32 bit quantities for
-strings, blobs, number of columns etc even when compiled for 64
-bit. Consequently you will get a TooBig exception from APSW which
-checks if strings/buffers longer than 1GB or 2GB (depends on internal
-storage) are used. See <a class="reference external" href="https://sqlite.org/cvstrac/tktview?tn=2125">SQLite ticket #2125</a> and <a class="reference external" href="https://sqlite.org/cvstrac/tktview?tn=3246">SQLite ticket #3246</a> for
-more details.</p>
+<div class="section" id="bit-hosts">
+<span id="x64bitpy25"></span><h2>64 bit hosts<a class="headerlink" href="#bit-hosts" title="Permalink to this headline">¶</a></h2>
+<p>APSW is tested and works correctly on 32 and 64 bit hosts.
+Unfortunately SQLite is limited to 32 bit quantities for strings,
+blobs, number of columns etc even when compiled for 64 bit.
+Consequently you will get a TooBig exception from APSW which checks if
+strings/buffers longer than 1GB or 2GB (depends on internal storage)
+are used. See <a class="reference external" href="https://sqlite.org/cvstrac/tktview?tn=2125">SQLite ticket #2125</a> and <a class="reference external" href="https://sqlite.org/cvstrac/tktview?tn=3246">SQLite ticket #3246</a> for more details.</p>
 </div>
 <div class="section" id="statement-cache">
 <span id="statementcache"></span><h2>Statement Cache<a class="headerlink" href="#statement-cache" title="Permalink to this headline">¶</a></h2>
@@ -422,7 +418,7 @@ illustrates how time spent busy waiting is included.</p>
 <li><a class="reference internal" href="#">Execution and tracing</a><ul>
 <li><a class="reference internal" href="#execution-model">Execution model</a></li>
 <li><a class="reference internal" href="#multi-threading-and-re-entrancy">Multi-threading and re-entrancy</a></li>
-<li><a class="reference internal" href="#bit-hosts-python-2-5">64 bit hosts, Python 2.5+</a></li>
+<li><a class="reference internal" href="#bit-hosts">64 bit hosts</a></li>
 <li><a class="reference internal" href="#statement-cache">Statement Cache</a></li>
 <li><a class="reference internal" href="#tracing">Tracing</a><ul>
 <li><a class="reference internal" href="#execution-tracer">Execution Tracer</a></li>
@@ -476,14 +472,14 @@ illustrates how time spent busy waiting is included.</p>
         <li class="right" >
           <a href="types.html" title="Types"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.37.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.1-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Execution and tracing</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
-        &#169; <a href="copyright.html">Copyright</a> 2004-2021, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jan 04, 2022.
+        &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Mar 22, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

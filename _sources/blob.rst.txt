@@ -24,7 +24,7 @@ store the filename in the database.  Doing so loses the `ACID
 zeroblob class
 ==============
 
-.. class:: zeroblob(size)
+.. class:: zeroblob(size: int)
 
   If you want to insert a blob into a row, you previously needed to
   supply the entire blob in one go.  To read just one byte also
@@ -32,7 +32,7 @@ zeroblob class
   a 100MB file you would have done::
 
      largedata=open("largefile", "rb").read()
-     cur.execute("insert into foo values(?)", (buffer(largedata),))
+     cur.execute("insert into foo values(?)", (largedata,))
 
   SQLite 3.5 allowed for incremental Blob I/O so you can read and
   write blobs in small amounts.  You cannot change the size of a blob
@@ -53,10 +53,10 @@ zeroblob class
 
   Size of zero blob in bytes.
 
-blob class
+Blob class
 ==========
 
-.. class:: blob
+.. class:: Blob
 
   This object is created by :meth:`Connection.blobopen` and provides
   access to a blob in the database.  It behaves like a Python file.
@@ -72,7 +72,7 @@ blob class
 
   See the :ref:`example <example-blobio>`.
 
-.. method:: blob.__enter__() -> context
+.. method:: Blob.__enter__() -> Blob
 
   You can use a blob as a `context manager
   <http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
@@ -86,7 +86,7 @@ blob class
         blob.write("...")
         res=blob.read(1024)
 
-.. method:: blob.__exit__() -> False
+.. method:: Blob.__exit__() -> Literal[False]
 
   Implements context manager in conjunction with
   :meth:`~blob.__enter__`.  Any exception that happened in the
@@ -94,7 +94,7 @@ blob class
 
 .. index:: sqlite3_blob_close
 
-.. method:: blob.close([force=False])
+.. method:: Blob.close(force: bool = False) -> None
 
   Closes the blob.  Note that even if an error occurs the blob is
   still closed.
@@ -117,7 +117,7 @@ blob class
 
 .. index:: sqlite3_blob_bytes
 
-.. method:: blob.length() -> int
+.. method:: Blob.length() -> int
 
   Returns the size of the blob in bytes.
 
@@ -125,28 +125,26 @@ blob class
 
 .. index:: sqlite3_blob_read
 
-.. method:: blob.read([nbytes]) -> bytes
+.. method:: Blob.read(length: int = -1) -> bytes
 
   Reads amount of data requested, or till end of file, whichever is
-  earlier. Attempting to read beyond the end of the blob returns the
-  empty string/bytes, in the same manner as end of file on normal file
-  objects.
-
-  :rtype: (Python 2) string  (Python 3) bytes
+  earlier. Attempting to read beyond the end of the blob returns an
+  empty bytes in the same manner as end of file on normal file
+  objects.  Negative numbers read remaining data.
 
   Calls: `sqlite3_blob_read <https://sqlite.org/c3ref/blob_read.html>`__
 
 .. index:: sqlite3_blob_read
 
-.. method:: blob.readinto(buffer[, offset=0, length=remaining-buffer]) -> None
+.. method:: Blob.readinto(buffer, offset: int = 0, length: int = -1) -> None
 
   Reads from the blob into a buffer you have supplied.  This method is
   useful if you already have a buffer like object that data is being
   assembled in, and avoids allocating results in :meth:`blob.read` and
   then copying into buffer.
 
-  :param buffer: A writable buffer like object.  In Python 2.6 onwards
-                 there is a bytearray type that is very useful.
+  :param buffer: A writable buffer like object.
+                 There is a bytearray type that is very useful.
                  :class:`array.array` also works.
 
   :param offset: The position to start writing into the buffer
@@ -161,14 +159,14 @@ blob class
 
 .. index:: sqlite3_blob_reopen
 
-.. method:: blob.reopen(rowid)
+.. method:: Blob.reopen(rowid: int) -> None
 
   Change this blob object to point to a different row.  It can be
   faster than closing an existing blob an opening a new one.
 
   Calls: `sqlite3_blob_reopen <https://sqlite.org/c3ref/blob_reopen.html>`__
 
-.. method:: blob.seek(offset[, whence=0]) -> None
+.. method:: Blob.seek(offset: int, whence: int = 0) -> None
 
   Changes current position to *offset* biased by *whence*.
 
@@ -178,17 +176,17 @@ blob class
                  and 2 if *offset* is relative to the end of the blob.
   :raises ValueError: If the resulting offset is before the beginning (less than zero) or beyond the end of the blob.
 
-.. method:: blob.tell() -> int
+.. method:: Blob.tell() -> int
 
   Returns the current offset.
 
 .. index:: sqlite3_blob_write
 
-.. method:: blob.write(data) -> None
+.. method:: Blob.write(data: bytes) -> None
 
   Writes the data to the blob.
 
-  :param data: (Python 2) buffer or string. (Python 3) buffer or bytes.
+  :param data: bytes to write
 
   :raises TypeError: Wrong data type
 

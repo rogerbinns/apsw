@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Building &#8212; APSW 3.37.0-r1 documentation</title>
+    <title>Building &#8212; APSW 3.38.1-r1 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     
@@ -42,7 +42,7 @@
         <li class="right" >
           <a href="download.html" title="Download"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.37.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.1-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Building</a></li> 
       </ul>
     </div>  
@@ -83,20 +83,11 @@ site library directory and then runs the test suite.</p></td>
 <div class="line">python setup.py install <code class="xref std std-option docutils literal notranslate"><span class="pre">--user</span></code></div>
 </div>
 </td>
-<td><p>(Python 2.6+, 3). Compiles APSW with default Python
+<td><p>Compiles APSW with default Python
 compiler and installs it into a subdirectory of your home directory.
 See <span class="target" id="index-0"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-0370"><strong>PEP 370</strong></a> for more details.</p></td>
 </tr>
 <tr class="row-even"><td><div class="line-block">
-<div class="line">python setup.py build <code class="xref std std-option docutils literal notranslate"><span class="pre">--compile=mingw32</span></code> install</div>
-</div>
-</td>
-<td><p>On Windows this will use the
-<a class="reference external" href="http://www.gnu.org/philosophy/free-sw.html">free</a>
-<a class="reference external" href="http://mingw.org">MinGW compiler</a> instead of the
-Microsoft compilers.</p></td>
-</tr>
-<tr class="row-odd"><td><div class="line-block">
 <div class="line">python setup.py build_ext <code class="xref std std-option docutils literal notranslate"><span class="pre">--force</span></code>
 <code class="xref std std-option docutils literal notranslate"><span class="pre">--inplace</span></code> test</div>
 </div>
@@ -107,7 +98,7 @@ apsw.pyd (Windows). The test suite is then run. (Note on recent versions
 of CPython the extension filenames may be more complicated due to
 <span class="target" id="index-1"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-3149"><strong>PEP 3149</strong></a>.)</p></td>
 </tr>
-<tr class="row-even"><td><div class="line-block">
+<tr class="row-odd"><td><div class="line-block">
 <div class="line">python setup.py build <code class="xref std std-option docutils literal notranslate"><span class="pre">--debug</span></code> install</div>
 </div>
 </td>
@@ -154,9 +145,9 @@ re-fetching.</p>
 <div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--version=VERSION</span></code></div>
 </div>
 </td>
-<td><p>By default the <a class="reference external" href="https://sqlite.org/download.html">SQLite download page</a> is
-consulted to find the current SQLite version
-which you can override using this flag.</p>
+<td><p>By default the SQLite version corresponding to the APSW release is retrieved,  You
+can also ask for specific versions, or for <cite>latest</cite> which uses the SQLite download
+page to work out the most recent version.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>You can also specify <cite>fossil</cite> as the version
@@ -296,15 +287,6 @@ amalgamation then you need to separately ensure rtree is enabled in the SQLite
 install.</p></td>
 </tr>
 <tr class="row-odd"><td><div class="line-block">
-<div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--enable=json1</span></code></div>
-</div>
-</td>
-<td><p>Enables the <a class="reference internal" href="extensions.html#ext-json1"><span class="std std-ref">JSON1 extension</span></a>.
-This flag only helps when using the amalgamation. If not using the
-amalgamation then you need to separately ensure json1 is enabled in the SQLite
-install.</p></td>
-</tr>
-<tr class="row-even"><td><div class="line-block">
 <div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--enable=rbu</span></code></div>
 </div>
 </td>
@@ -313,7 +295,7 @@ This flag only helps when using the amalgamation. If not using the
 amalgamation then you need to separately ensure rbu is enabled in the SQLite
 install.</p></td>
 </tr>
-<tr class="row-odd"><td><div class="line-block">
+<tr class="row-even"><td><div class="line-block">
 <div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--enable=icu</span></code></div>
 </div>
 </td>
@@ -324,7 +306,7 @@ This flag only helps when using the amalgamation. If not using the
 amalgamation then you need to separately ensure ICU is enabled in the SQLite
 install.</p></td>
 </tr>
-<tr class="row-even"><td><div class="line-block">
+<tr class="row-odd"><td><div class="line-block">
 <div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--omit=ITEM</span></code></div>
 </div>
 </td>
@@ -374,9 +356,8 @@ the downloaded amalgamation.</p>
 </div></blockquote>
 <p>User directories</p>
 <blockquote>
-<div><p>If you are using Python 2.6+ or Python 3 and specified
-<code class="xref std std-option docutils literal notranslate"><span class="pre">--user</span></code> then your user directory is searched first. See
-<span class="target" id="index-2"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-0370"><strong>PEP 370</strong></a> for more details.</p>
+<div><p>If specifying <code class="xref std std-option docutils literal notranslate"><span class="pre">--user</span></code> then your user directory is
+searched first. See <span class="target" id="index-2"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-0370"><strong>PEP 370</strong></a> for more details.</p>
 </div></blockquote>
 <p>System directories</p>
 <blockquote>
@@ -402,8 +383,7 @@ instructions with your current directory being where you extracted the
 APSW source to.</p>
 <blockquote>
 <div><p>Windows:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  <span class="c1"># Leave out --compile=mingw32 flag if using Microsoft compiler</span>
-<span class="o">&gt;</span> <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">fetch</span> <span class="o">--</span><span class="nb">all</span> <span class="n">build</span> <span class="o">--</span><span class="n">enable</span><span class="o">-</span><span class="nb">all</span><span class="o">-</span><span class="n">extensions</span> <span class="o">--</span><span class="nb">compile</span><span class="o">=</span><span class="n">mingw32</span> <span class="n">install</span> <span class="n">test</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">fetch</span> <span class="o">--</span><span class="nb">all</span> <span class="n">build</span> <span class="o">--</span><span class="n">enable</span><span class="o">-</span><span class="nb">all</span><span class="o">-</span><span class="n">extensions</span> <span class="n">install</span> <span class="n">test</span>
 </pre></div>
 </div>
 <p>Mac/Linux etc:</p>
@@ -413,7 +393,7 @@ APSW source to.</p>
 </div></blockquote>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>There will be some warnings during the compilation step about
+<p>There may be some warnings during the compilation step about
 sqlite3.c, <a class="reference external" href="https://sqlite.org/faq.html#q17">but they are harmless</a></p>
 </div>
 <p>The extension just turns into a single file apsw.so (Linux/Mac) or
@@ -448,16 +428,18 @@ dedicated to testing than makes up the actual database functionality.</p>
 testing modules to verify correct operation. New code is developed
 alongside the tests. Reported issues also have test cases to ensure
 the issue doesn’t happen or doesn’t happen again.:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python setup.py test
-               Python /usr/bin/python (2, 6, 6, &#39;final&#39;, 0)
-Testing with APSW file /space/apsw/apsw.so
-          APSW version 3.7.4-r1
-    SQLite lib version 3.7.4
-SQLite headers version 3007004
-    Using amalgamation True
-............................................................................
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 setup.py test
+running test
+                Python  /usr/bin/python3 sys.version_info(major=3, minor=9, micro=7, releaselevel=&#39;final&#39;, serial=0)
+Testing with APSW file  /space/apsw/apsw.cpython-39-x86_64-linux-gnu.so
+          APSW version  3.38.0-r1
+    SQLite lib version  3.38.0
+SQLite headers version  3038000
+    Using amalgamation  True
+
+..............................................................................................
 ----------------------------------------------------------------------
-Ran 76 tests in 404.557s
+Ran 94 tests in 27.713s
 
 OK
 </pre></div>
@@ -472,12 +454,12 @@ coverage up to 99.6% of the code.</p>
 <p>A memory checker <a class="reference external" href="http://valgrind.org">Valgrind</a> is used while
 running the test suite. The test suite is run multiple times to make
 any memory leaks or similar issues stand out. A checking version of
-Python is also used.  See <a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/tools/valgrind.sh">tools/valgrind.sh</a> in the source.</p>
+Python is also used.  See <a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/tools/valgrind.sh">tools/valgrind.sh</a> in the source.
+The same testing is also done with the compiler’s sanitizer option.</p>
 <p>To ensure compatibility with the various Python versions, a script
-downloads and compiles all supported Python versions in both 2 byte
-and 4 byte Unicode character configurations against the APSW and
-SQLite supported versions running the tests. See
-<a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/tools/megatest.py">tools/megatest.py</a> in the source.</p>
+downloads and compiles all supported Python versions in both debug and
+release configurations against the APSW and SQLite supported versions
+running the tests. See <a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/tools/megatest.py">tools/megatest.py</a> in the source.</p>
 <p>In short both SQLite and APSW have a lot of testing!</p>
 </div>
 </div>
@@ -548,14 +530,14 @@ SQLite supported versions running the tests. See
         <li class="right" >
           <a href="download.html" title="Download"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.37.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.1-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Building</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
-        &#169; <a href="copyright.html">Copyright</a> 2004-2021, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jan 04, 2022.
+        &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Mar 22, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

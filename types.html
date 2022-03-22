@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Types &#8212; APSW 3.37.0-r1 documentation</title>
+    <title>Types &#8212; APSW 3.38.1-r1 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     
@@ -42,7 +42,7 @@
         <li class="right" >
           <a href="exceptions.html" title="Exceptions"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.37.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.1-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Types</a></li> 
       </ul>
     </div>  
@@ -64,16 +64,14 @@ Python/SQLite types (or a subclass).</p>
 <h2>Mapping<a class="headerlink" href="#mapping" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>None in Python is NULL in SQLite</p></li>
-<li><p>Python int or long is INTEGER in SQLite. The value represented must
-fit within a 64 bit signed quantity (long long at the C level) or an
+<li><p>Python int is INTEGER in SQLite. The value represented must fit
+within a 64 bit signed quantity (long long at the C level) or an
 overflow exception is generated.</p></li>
 <li><p>Python’s float type is used for REAL in SQLite. (At the C level they
 are both 8 byte quantities and there is no loss of precision).</p></li>
-<li><p>In Python 2, Python’s string or unicode is used for TEXT supplied to
-SQLite and all text returned from SQLite is unicode.  For Python 3
-only unicode is used.</p></li>
-<li><p>For Python 2 the buffer class is used for BLOB in SQLite. In Python
-3 the bytes type is used, although you can still supply buffers.</p></li>
+<li><p>The str (unicode) type is used.</p></li>
+<li><p>The bytes type is used, although you can use anything meeting the
+<a class="reference external" href="https://docs.python.org/3/c-api/buffer.html">buffer protocol</a></p></li>
 </ul>
 </div>
 <div class="section" id="unicode">
@@ -84,17 +82,14 @@ to SQLite which results in the binary string representation in your
 database defaulting to UTF8 as well. All this is totally transparent
 to your Python code.</p>
 <p>Everywhere strings are used (eg as database values, SQL statements,
-bindings names, user defined functions) you can use Unicode strings,
-and in Python 3 must use Unicode.  In Python 2, you can also use the
-bare Python string class, and ASPW will automatically call the unicode
-converter if any non-ascii characters are present.</p>
+bindings names, user defined functions) you use Unicode strings
+as the Python str type.</p>
 <p>When returning text values from SQLite, ASPW always uses the Python
 unicode class.</p>
 <p>If you don’t know much about Unicode then read <a class="reference external" href="http://www.joelonsoftware.com/articles/Unicode.html">Joel’s article</a>.  SQLite does
 not include conversion from random non-Unicode encodings to or from
 Unicode.  (It does include conversion between 8 bit and 16 bit Unicode
-encodings).  Python includes <a class="reference external" href="http://www.python.org/doc/2.5.2/lib/module-codecs.html">codecs</a> for
-conversion to or from many different character sets.</p>
+encodings).</p>
 <p>If you don’t want to use Unicode and instead want a simple bytes in
 are the same bytes out then you should only use blobs.</p>
 <p>If you want to do manipulation of unicode text such as upper/lower
@@ -179,14 +174,14 @@ output.</p>
         <li class="right" >
           <a href="exceptions.html" title="Exceptions"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.37.0-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.1-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Types</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
-        &#169; <a href="copyright.html">Copyright</a> 2004-2021, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jan 04, 2022.
+        &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Mar 22, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

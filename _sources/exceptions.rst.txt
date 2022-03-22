@@ -158,7 +158,9 @@ Internal Errors
 
 .. exception:: MisuseError
 
-  :const:`SQLITE_MISUSE`.  SQLite library used incorrectly.
+  :const:`SQLITE_MISUSE`.  SQLite library used incorrectly - typically similar to ValueError in Python.  Examples include not
+  having enough flags when opening a connection (eg not including a READ or WRITE flag), or out of spec such as registering
+  a function with more than 127 parameters.
 
 .. exception:: RangeError
 
@@ -338,7 +340,7 @@ information. You can print out the variables using `ASPN recipe 52215 <http://as
         tb = tb.tb_next
 
     traceback.print_exc()
-    print "Locals by frame, innermost last"
+    print ("Locals by frame, innermost last")
 
 
 Here is a far more complex example from some :ref:`virtual tables

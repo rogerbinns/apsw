@@ -74,9 +74,8 @@ exceptions the :class:`Connection` open or SQL query execute wanted to
 raise.)  Instead the :meth:`VFS.excepthook` or
 :meth:`VFSFile.excepthook` method is called with a tuple of exception
 type, exception value and exception traceback. The default
-implementation of ``excepthook`` calls ``sys.excepthook()`` which
-under Python 2 shows the stack trace and under Python 3 merely prints
-the exception value. (If ``sys.excepthook`` fails then
+implementation of ``excepthook`` calls ``sys.excepthook()`` under
+Python 3 merely prints the exception value. (If ``sys.excepthook`` fails then
 ``PyErr_Display()`` is called.)
 
 In normal VFS usage there will be no exceptions raised, or specific
@@ -125,7 +124,7 @@ VFS class
 
 .. index:: sqlite3_vfs_register, sqlite3_vfs_find
 
-.. class:: VFS(name[, base=None, makedefault=False, maxpathname=1024])
+.. class:: VFS(name: str, base: str = None, makedefault: bool = False, maxpathname: int = 1024)
 
     Provides operating system access.  You can get an overview in the
     `SQLite documentation <https://sqlite.org/c3ref/vfs.html>`_.  To
@@ -134,13 +133,16 @@ VFS class
     :param name: The name to register this vfs under.  If the name
         already exists then this vfs will replace the prior one of the
         same name.  Use :meth:`apsw.vfsnames` to get a list of
-        registered vfs names.  :param base: If you would like to
-        inherit behaviour from an already registered vfs then give
+        registered vfs names.
+
+    :param base: If you would like to inherit behaviour from an already registered vfs then give
         their name.  To inherit from the default vfs, use a zero
-        length string ``""`` as the name.  :param makedefault: If true
-        then this vfs will be registered as the default, and will be
-        used by any opens that don't specify a vfs.  :param
-        maxpathname: The maximum length of database name in bytes when
+        length string ``""`` as the name.
+
+    :param makedefault: If true then this vfs will be registered as the default, and will be
+        used by any opens that don't specify a vfs.
+
+    :param maxpathname: The maximum length of database name in bytes when
         represented in UTF-8.  If a pathname is passed in longer than
         this value then SQLite will not `be able to open it
         <https://sqlite.org/src/tktview/c060923a5422590b3734eb92eae0c94934895b68>`__.
@@ -152,21 +154,16 @@ VFS class
       * `sqlite3_vfs_register <https://sqlite.org/c3ref/vfs_find.html>`__
       * `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__
 
-.. method:: VFS.excepthook(etype, evalue, etraceback)
+.. method:: VFS.excepthook(*args) -> Any
 
     Called when there has been an exception in a :class:`VFS` routine.
-    The default implementation calls ``sys.excepthook`` and if that
+    The default implementation passes args to ``sys.excepthook`` and if that
     fails then ``PyErr_Display``.  The three arguments correspond to
     what ``sys.exc_info()`` would return.
 
-    :param etype: The exception type
-    :param evalue: The exception  value
-    :param etraceback: The exception traceback.  Note this
-      includes all frames all the way up to the thread being started.
-
 .. index:: sqlite3_vfs_unregister
 
-.. method:: VFS.unregister()
+.. method:: VFS.unregister() -> None
 
    Unregisters the VFS making it unavailable to future database
    opens. You do not need to call this as the VFS is automatically
@@ -177,7 +174,7 @@ VFS class
 
    Calls: `sqlite3_vfs_unregister <https://sqlite.org/c3ref/vfs_find.html>`__
 
-.. method:: VFS.xAccess(pathname, flags) -> bool
+.. method:: VFS.xAccess(pathname: str, flags: int) -> bool
 
     SQLite wants to check access permissions.  Return True or False
     accordingly.
@@ -193,23 +190,11 @@ VFS class
   is the time. Do not adjust for timezone (ie use `UTC
   <http://en.wikipedia.org/wiki/Universal_Time>`_).
 
-.. method:: VFS.xDelete(filename, syncdir)
+.. method:: VFS.xDelete(filename: str, syncdir: bool) -> None
 
-    Delete the named file.
-
-    .. note::
-
-       SQLite has 3 different behaviours depending on version for how to handle missing files.
-
-       +----------------------------------------+-------------------------------------------------+
-       | SQLite < 3.7.8                         |Raise an :exc:`IOError` if the file does not     |
-       |                                        |exist.                                           |
-       +----------------------------------------+-------------------------------------------------+
-       | SQLite >= 3.7.8 and SQLite < 3.7.15    |Do not raise an exception                        |
-       +----------------------------------------+-------------------------------------------------+
-       | SQLite >= 3.7.15                       |Raise an :exc:`IOError` exception with           |
-       |                                        |extendedresult :const:`SQLITE_IOERR_DELETE_NOENT`|
-       +----------------------------------------+-------------------------------------------------+
+    Delete the named file. If the file is missing then raise an
+    :exc:`IOError` exception with extendedresult
+    :const:`SQLITE_IOERR_DELETE_NOENT`
 
     :param filename: File to delete
 
@@ -218,7 +203,7 @@ VFS class
       platters.  ie if there was an immediate power failure after this
       call returns, on a reboot the file would still be deleted.
 
-.. method:: VFS.xDlClose(handle)
+.. method:: VFS.xDlClose(handle: int) -> None
 
     Close and unload the library corresponding to the handle you
     returned from :meth:`~VFS.xDlOpen`.  You can use ctypes to do
@@ -229,7 +214,7 @@ VFS class
          _ctypes.dlclose(handle)       # Linux/Mac/Unix
          _ctypes.FreeLibrary(handle)   # Windows
 
-.. method:: VFS.xDlError() -> string
+.. method:: VFS.xDlError() -> str
 
     Return an error string describing the last error of
     :meth:`~VFS.xDlOpen` or :meth:`~VFS.xDlSym` (ie they returned
@@ -240,7 +225,7 @@ VFS class
     an error in this routine or return None then SQLite's generic
     message will be used.
 
-.. method:: VFS.xDlOpen(filename) -> number
+.. method:: VFS.xDlOpen(filename: str) -> int
 
    Load the shared library. You should return a number which will be
    treated as a void pointer at the C level. On error you should
@@ -252,7 +237,7 @@ VFS class
      def xDlOpen(name):
         return ctypes.cdll.LoadLibrary(name)._handle
 
-.. method:: VFS.xDlSym(handle, symbol) -> address
+.. method:: VFS.xDlSym(handle: int, symbol: str) -> int
 
     Returns the address of the named symbol which will be called by
     SQLite. On error you should return 0 (NULL). You can use ctypes::
@@ -263,13 +248,12 @@ VFS class
 
     :param handle: The value returned from an earlier :meth:`~VFS.xDlOpen` call
     :param symbol: A string
-    :rtype: An int/long with the symbol address
 
-.. method:: VFS.xFullPathname(name) -> string
+.. method:: VFS.xFullPathname(name: str) -> str
 
   Return the absolute pathname for name.  You can use ``os.path.abspath`` to do this.
 
-.. method:: VFS.xGetLastError() -> (int, string or None)
+.. method:: VFS.xGetLastError() -> Tuple[int, str]
 
    This method is to return an integer error code and (optional) text describing
    the last error that happened in this thread.
@@ -277,12 +261,12 @@ VFS class
    .. note:: SQLite 3.12 changed the semantics in an incompatible way from
         earlier versions.  You will need to rewrite earlier implementations.
 
-.. method:: VFS.xGetSystemCall(name) -> int
+.. method:: VFS.xGetSystemCall(name: str) -> Optional[int]
 
     Returns a pointer for the current method implementing the named
     system call.  Return None if the call does not exist.
 
-.. method:: VFS.xNextSystemCall(name) -> String or None
+.. method:: VFS.xNextSystemCall(name: Optional[str]) -> Optional[str]
 
     This method is repeatedly called to iterate over all of the system
     calls in the vfs.  When called with None you should return the
@@ -297,7 +281,7 @@ VFS class
       should build up the list of call names once rather than
       repeatedly doing it.
 
-.. method:: VFS.xOpen(name, flags) -> VFSFile or similar object
+.. method:: VFS.xOpen(name: Optional[Union[str,URIFilename]], flags: List[int,int]) -> VFSFile
 
     This method should return a new file object based on name.  You
     can return a :class:`VFSFile` from a completely different VFS.
@@ -316,7 +300,7 @@ VFS class
       opened it read only then :const:`SQLITE_OPEN_READONLY` should be
       set.
 
-.. method:: VFS.xRandomness(numbytes) -> bytes
+.. method:: VFS.xRandomness(numbytes: int) -> bytes
 
   This method is called once when SQLite needs to seed the random
   number generator. It is called on the default VFS only. It is not
@@ -324,16 +308,14 @@ VFS class
   return less than the number of bytes requested including None. If
   you return more then the surplus is ignored.
 
-  :rtype: (Python 2) string, buffer (Python 3) bytes, buffer
-
-.. method:: VFS.xSetSystemCall(name, pointer) -> bool
+.. method:: VFS.xSetSystemCall(name: Optional[str], pointer: int) -> bool
 
     Change a system call used by the VFS.  This is useful for testing
     and some other scenarios such as sandboxing.
 
     :param name: The string name of the system call
 
-    :param pointer: A pointer provided as an int/long.  There is no
+    :param pointer: A pointer provided as an int.  There is no
       reference counting or other memory tracking of the pointer.  If
       you provide one you need to ensure it is around for the lifetime
       of this and any other related VFS.
@@ -341,10 +323,13 @@ VFS class
     Raise an exception to return an error.  If the system call does
     not exist then raise :exc:`NotFoundError`.
 
+    If `name` is None, then all systemcalls are reset to their defaults.  This
+    behaviour is not documented.
+
     :returns: True if the system call was set.  False if the system
       call is not known.
 
-.. method:: VFS.xSleep(microseconds) -> integer
+.. method:: VFS.xSleep(microseconds: int) -> int
 
     Pause execution of the thread for at least the specified number of
     microseconds (millionths of a second).  This routine is typically called from the busy handler.
@@ -358,7 +343,7 @@ VFS class
 VFSFile class
 =============
 
-.. class:: VFSFile(vfs, name, flags)
+.. class:: VFSFile(vfs: str, filename: Union[str,URIFilename], flags: List[int])
 
     Wraps access to a file.  You only need to derive from this class
     if you want the file object returned from :meth:`VFS.xOpen` to
@@ -372,7 +357,7 @@ VFSFile class
     :param vfs: The vfs you want to inherit behaviour from.  You can
        use an empty string ``""`` to inherit from the default vfs.
     :param name: The name of the file being opened.  May be an instance of :class:`URIFilename`.
-    :param flags: A two list ``[inflags, outflags]`` as detailed in :meth:`VFS.xOpen`.
+    :param flags: A two item list ``[inflags, outflags]`` as detailed in :meth:`VFS.xOpen`.
 
     :raises ValueError: If the named VFS is not registered.
 
@@ -398,13 +383,13 @@ VFSFile class
     :param etraceback: The exception traceback.  Note this
       includes all frames all the way up to the thread being started.
 
-.. method:: VFSFile.xCheckReservedLock()
+.. method:: VFSFile.xCheckReservedLock() -> bool
 
   Returns True if any database connection (in this or another process)
   has a lock other than `SQLITE_LOCK_NONE or SQLITE_LOCK_SHARED
   <https://sqlite.org/c3ref/c_lock_exclusive.html>`_.
 
-.. method:: VFSFile.xClose()
+.. method:: VFSFile.xClose() -> None
 
   Close the database. Note that even if you return an error you should
   still close the file.  It is safe to call this method mutliple
@@ -417,7 +402,7 @@ VFSFile class
   appropriate values). If you do not implement the function or have an
   error then 0 (the SQLite default) is returned.
 
-.. method:: VFSFile.xFileControl(op, ptr) -> bool
+.. method:: VFSFile.xFileControl(op: int, ptr: int) -> bool
 
    Receives `file control
    <https://sqlite.org/c3ref/file_control.html>`_ request typically
@@ -443,22 +428,22 @@ VFSFile class
                 else:
                     # this ensures superclass implementation is called
                     return super(MyFile, self).xFileControl(op, ptr)
-		# we understood the op
-	        return True
+    # we understood the op
+          return True
 
 .. method:: VFSFile.xFileSize() -> int
 
   Return the size of the file in bytes.  Remember that file sizes are
   64 bit quantities even on 32 bit operating systems.
 
-.. method:: VFSFile.xLock(level)
+.. method:: VFSFile.xLock(level: int) -> None
 
   Increase the lock to the level specified which is one of the
   `SQLITE_LOCK <https://sqlite.org/c3ref/c_lock_exclusive.html>`_
   family of constants. If you can't increase the lock level because
   someone else has locked it, then raise :exc:`BusyError`.
 
-.. method:: VFSFile.xRead(amount, offset) -> bytes
+.. method:: VFSFile.xRead(amount: int, offset: int) -> bytes
 
     Read the specified *amount* of data starting at *offset*. You
     should make every effort to read all the data requested, or return
@@ -471,8 +456,6 @@ VFSFile class
     :param amount: Number of bytes to read
     :param offset: Where to start reading. This number may be 64 bit once the database is larger than 2GB.
 
-    :rtype: (Python 2) string, buffer.  (Python 3) bytes, buffer
-
 .. method:: VFSFile.xSectorSize() -> int
 
     Return the native underlying sector size. SQLite uses the value
@@ -480,25 +463,25 @@ VFSFile class
     not implement the function or have an error then 4096 (the SQLite
     default) is returned.
 
-.. method:: VFSFile.xSync(flags)
+.. method:: VFSFile.xSync(flags: int) -> None
 
   Ensure data is on the disk platters (ie could survive a power
   failure immediately after the call returns) with the `sync flags
   <https://sqlite.org/c3ref/c_sync_dataonly.html>`_ detailing what
   needs to be synced.  You can sync more than what is requested.
 
-.. method:: VFSFile.xTruncate(newsize)
+.. method:: VFSFile.xTruncate(newsize: int) -> None
 
   Set the file length to *newsize* (which may be more or less than the
   current length).
 
-.. method:: VFSFile.xUnlock(level)
+.. method:: VFSFile.xUnlock(level: int) -> None
 
     Decrease the lock to the level specified which is one of the
     `SQLITE_LOCK <https://sqlite.org/c3ref/c_lock_exclusive.html>`_
     family of constants.
 
-.. method:: VFSFile.xWrite(data, offset)
+.. method:: VFSFile.xWrite(data: bytes, offset: int) -> None
 
   Write the *data* starting at absolute *offset*. You must write all the data
   requested, or return an error. If you have the file open for
@@ -507,7 +490,6 @@ VFSFile class
   write the remaining data.
 
   :param offset: Where to start writing. This number may be 64 bit once the database is larger than 2GB.
-  :param data: (Python 2) string, (Python 3) bytes
 
 URIFilename class
 =================
@@ -533,7 +515,7 @@ URIFilename class
 
 .. index:: sqlite3_uri_boolean
 
-.. method:: URIFilename.uri_boolean(name, default) -> bool
+.. method:: URIFilename.uri_boolean(name: str, default: bool) -> bool
 
     Returns the boolean value for parameter `name` or `default` if not
     present.
@@ -542,7 +524,7 @@ URIFilename class
 
 .. index:: sqlite3_uri_int64
 
-.. method:: URIFilename.uri_int(name, default) -> int
+.. method:: URIFilename.uri_int(name: str, default: int) -> int
 
     Returns the integer value for parameter `name` or `default` if not
     present.
@@ -551,7 +533,7 @@ URIFilename class
 
 .. index:: sqlite3_uri_parameter
 
-.. method:: URIFilename.uri_parameter(name) -> str
+.. method:: URIFilename.uri_parameter(name: str) -> Optional[str]
 
     Returns the value of parameter `name` or None.
 
