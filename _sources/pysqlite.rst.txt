@@ -178,7 +178,7 @@ module:
 What sqlite3 does better
 ========================
 
-* sqlite3 has an `adaptor system <https://docs.python.org/3/library/sqlite3.html?highlight=sqlite#converting-sqlite-values-to-custom-python-types>`__`
+* sqlite3 has an `adaptor system <https://docs.python.org/3/library/sqlite3.html?highlight=sqlite#converting-sqlite-values-to-custom-python-types>`__
   that lets you pretend SQLite stores and returns more types than it
   really supports.  Note that the database won't be useful in a
   non-sqlite3 context (eg PHP code looking at the same database isn't
