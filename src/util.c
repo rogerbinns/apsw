@@ -110,15 +110,29 @@ apsw_write_unraiseable(PyObject *hookobject)
   PyObject *err_type = NULL, *err_value = NULL, *err_traceback = NULL;
   PyObject *excepthook = NULL;
   PyObject *result = NULL;
-  PyFrameObject *frame = NULL;
 
   /* fill in the rest of the traceback */
-  frame = PyThreadState_GET()->frame;
+#ifdef PYPY_VERSION
+  /* do nothing */
+#else
+#if PY_VERSION_HEX < 0x03090000
+  PyFrameObject *frame = PyThreadState_GET()->frame;
   while (frame)
   {
     PyTraceBack_Here(frame);
     frame = frame->f_back;
   }
+#else
+  PyFrameObject *prev = NULL, *frame = PyThreadState_GetFrame(PyThreadState_GET());
+  while (frame)
+  {
+    PyTraceBack_Here(frame);
+    prev = PyFrame_GetBack(frame);
+    Py_DECREF(frame);
+    frame = prev;
+  }
+#endif
+#endif
 
   /* Get the exception details */
   PyErr_Fetch(&err_type, &err_value, &err_traceback);
@@ -304,4 +318,3 @@ static char *apsw_strdup(const char *source)
   }
   return res;
 }
-
