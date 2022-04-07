@@ -328,8 +328,8 @@ class APSW(unittest.TestCase):
         # read in contents, sort and compare
         lcontents = l.execute("select * from [" + left + "]").fetchall()
         rcontents = r.execute("select * from [" + right + "]").fetchall()
-        lcontents.sort()
-        rcontents.sort()
+        lcontents.sort(key=lambda x: repr(x))
+        rcontents.sort(key=lambda x: repr(x))
         self.assertEqual(lcontents, rcontents)
 
     def assertRaisesUnraisable(self, exc, func, *args, **kwargs):
