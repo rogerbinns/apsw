@@ -2200,7 +2200,6 @@ class APSW(unittest.TestCase):
 
     def testTracebacks(self):
         "Verify augmented tracebacks"
-        return
 
         def badfunc(*args):
             zebra = 3
