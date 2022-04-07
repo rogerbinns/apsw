@@ -431,7 +431,7 @@ apswvfs_xFullPathname(sqlite3_vfs *vfs, const char *zName, int nOut, char *zOut)
     if (!utf8)
     {
       result = SQLITE_ERROR;
-      AddTraceBackHere(__FILE__, __LINE__, "vfs.xFullPathname", "{s: s, s: O}", "zName", zName, "result_from_python", pyresult);
+      AddTraceBackHere(__FILE__, __LINE__, "vfs.xFullPathname", "{s: s, s: O}", "zName", zName, "result_from_python", OBJ(pyresult));
       goto finally;
     }
     /* nOut includes null terminator space (ie is mxPathname+1) */
@@ -439,7 +439,7 @@ apswvfs_xFullPathname(sqlite3_vfs *vfs, const char *zName, int nOut, char *zOut)
     {
       result = SQLITE_TOOBIG;
       SET_EXC(result, NULL);
-      AddTraceBackHere(__FILE__, __LINE__, "vfs.xFullPathname", "{s: s, s: O, s: i}", "zName", zName, "result_from_python", pyresult, "nOut", nOut);
+      AddTraceBackHere(__FILE__, __LINE__, "vfs.xFullPathname", "{s: s, s: O, s: i}", "zName", zName, "result_from_python", OBJ(pyresult), "nOut", nOut);
       goto finally;
     }
     memcpy(zOut, utf8, utf8len + 1); /* Python always null terminates hence +1 */
@@ -488,7 +488,7 @@ apswvfspy_xFullPathname(APSWVFS *self, PyObject *args, PyObject *kwds)
   if (res != SQLITE_OK)
   {
     SET_EXC(res, NULL);
-    AddTraceBackHere(__FILE__, __LINE__, "vfspy.xFullPathname", "{s: s, s: i, s: O}", "name", name, "res", res, "result", result ? result : Py_None);
+    AddTraceBackHere(__FILE__, __LINE__, "vfspy.xFullPathname", "{s: s, s: i, s: O}", "name", name, "res", res, "result", OBJ(result));
   }
 
   if (resbuf)
@@ -698,7 +698,7 @@ apswvfs_xDlOpen(sqlite3_vfs *vfs, const char *zName)
   if (PyErr_Occurred())
   {
     result = NULL;
-    AddTraceBackHere(__FILE__, __LINE__, "vfs.xDlOpen", "{s: s, s: O}", "zName", zName, "result", pyresult ? pyresult : Py_None);
+    AddTraceBackHere(__FILE__, __LINE__, "vfs.xDlOpen", "{s: s, s: O}", "zName", zName, "result", OBJ(pyresult));
   }
 
   Py_XDECREF(pyresult);
@@ -756,7 +756,7 @@ static void (*apswvfs_xDlSym(sqlite3_vfs *vfs, void *handle, const char *zName))
   if (PyErr_Occurred())
   {
     result = NULL;
-    AddTraceBackHere(__FILE__, __LINE__, "vfs.xDlSym", "{s: s, s: O}", "zName", zName, "result", pyresult ? pyresult : Py_None);
+    AddTraceBackHere(__FILE__, __LINE__, "vfs.xDlSym", "{s: s, s: O}", "zName", zName, "result", OBJ(pyresult));
   }
 
   Py_XDECREF(pyresult);
@@ -796,7 +796,7 @@ apswvfspy_xDlSym(APSWVFS *self, PyObject *args, PyObject *kwds)
 
   if (PyErr_Occurred())
   {
-    AddTraceBackHere(__FILE__, __LINE__, "vfspy.xDlSym", "{s: O}", "args", args);
+    AddTraceBackHere(__FILE__, __LINE__, "vfspy.xDlSym", "{s: O}", "args", OBJ(args));
     return NULL;
   }
 
@@ -977,7 +977,7 @@ apswvfs_xRandomness(sqlite3_vfs *vfs, int nByte, char *zOut)
   }
 
   if (PyErr_Occurred())
-    AddTraceBackHere(__FILE__, __LINE__, "vfs.xRandomness", "{s: i, s: O}", "nByte", nByte, "result", pyresult ? pyresult : Py_None);
+    AddTraceBackHere(__FILE__, __LINE__, "vfs.xRandomness", "{s: i, s: O}", "nByte", nByte, "result", OBJ(pyresult));
 
   Py_XDECREF(pyresult);
   VFSPOSTAMBLE;
@@ -1056,7 +1056,7 @@ apswvfs_xSleep(sqlite3_vfs *vfs, int microseconds)
   }
 
   if (PyErr_Occurred())
-    AddTraceBackHere(__FILE__, __LINE__, "vfs.xSleep", "{s: i, s: O}", "microseconds", microseconds, "result", pyresult ? pyresult : Py_None);
+    AddTraceBackHere(__FILE__, __LINE__, "vfs.xSleep", "{s: i, s: O}", "microseconds", microseconds, "result", OBJ(pyresult));
 
   Py_XDECREF(pyresult);
   VFSPOSTAMBLE;
@@ -1105,7 +1105,7 @@ apswvfs_xCurrentTime(sqlite3_vfs *vfs, double *julian)
 
   if (PyErr_Occurred())
   {
-    AddTraceBackHere(__FILE__, __LINE__, "vfs.xCurrentTime", "{s: O}", "result", pyresult ? pyresult : Py_None);
+    AddTraceBackHere(__FILE__, __LINE__, "vfs.xCurrentTime", "{s: O}", "result", OBJ(pyresult));
     result = 1;
   }
 
@@ -1305,7 +1305,7 @@ apswvfs_xSetSystemCall(sqlite3_vfs *vfs, const char *zName, sqlite3_syscall_ptr 
     PyErr_Clear();
 
   if (PyErr_Occurred())
-    AddTraceBackHere(__FILE__, __LINE__, "vfs.xSetSystemCall", "{s: O}", "pyresult", pyresult);
+    AddTraceBackHere(__FILE__, __LINE__, "vfs.xSetSystemCall", "{s: O}", "pyresult", OBJ(pyresult));
 
   Py_XDECREF(pyresult);
   VFSPOSTAMBLE;
@@ -1356,7 +1356,7 @@ apswvfspy_xSetSystemCall(APSWVFS *self, PyObject *args, PyObject *kwds)
 
   if (PyErr_Occurred())
   {
-    AddTraceBackHere(__FILE__, __LINE__, "vfspy.xSetSystemCall", "{s: O, s: i}", "args", args, "res", res);
+    AddTraceBackHere(__FILE__, __LINE__, "vfspy.xSetSystemCall", "{s: O, s: i}", "args", OBJ(args), "res", res);
     return NULL;
   }
 
@@ -1385,7 +1385,7 @@ apswvfs_xGetSystemCall(sqlite3_vfs *vfs, const char *zName)
     PyErr_Format(PyExc_TypeError, "Pointer must be int/long");
 
   if (PyErr_Occurred())
-    AddTraceBackHere(__FILE__, __LINE__, "vfs.xGetSystemCall", "{s:O}", "pyresult", pyresult);
+    AddTraceBackHere(__FILE__, __LINE__, "vfs.xGetSystemCall", "{s:O}", "pyresult", OBJ(pyresult));
 
 finally:
   Py_XDECREF(pyresult);
@@ -1442,7 +1442,7 @@ apswvfs_xNextSystemCall(sqlite3_vfs *vfs, const char *zName)
   }
 
   if (PyErr_Occurred())
-    AddTraceBackHere(__FILE__, __LINE__, "vfs.xNextSystemCall", "{s:O}", "pyresult", pyresult);
+    AddTraceBackHere(__FILE__, __LINE__, "vfs.xNextSystemCall", "{s:O}", "pyresult", OBJ(pyresult));
 
   Py_XDECREF(pyresult);
   VFSPOSTAMBLE;
@@ -1903,7 +1903,7 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
   if (flagsin != (int)flagsin)
   {
     PyErr_Format(PyExc_OverflowError, "flags[0] is too big!");
-    AddTraceBackHere(__FILE__, __LINE__, "VFSFile.__init__", "{s: O}", "flags", flags);
+    AddTraceBackHere(__FILE__, __LINE__, "VFSFile.__init__", "{s: O}", "flags", OBJ(flags));
   }
   if (PyErr_Occurred())
     goto finally;
@@ -1945,7 +1945,7 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
 finally:
   assert(res == 0 || PyErr_Occurred());
   if (PyErr_Occurred())
-    AddTraceBackHere(__FILE__, __LINE__, "vfsfile.init", "{s: O, s: O}", "args", args, "kwargs", kwds);
+    AddTraceBackHere(__FILE__, __LINE__, "vfsfile.init", "{s: O, s: O}", "args", OBJ(args), "kwargs", OBJ(kwds));
 
   Py_XDECREF(pyflagsin);
   Py_XDECREF(pyflagsout);
@@ -1999,7 +1999,7 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
 
 finally:
   if (PyErr_Occurred())
-    AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xRead", "{s: i, s: L, s: O}", "amount", amount, "offset", offset, "result", pybuf ? pybuf : Py_None);
+    AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xRead", "{s: i, s: L, s: O}", "amount", amount, "offset", offset, "result", OBJ(pybuf));
   if (asrb == 0)
     PyBuffer_Release(&py3buffer);
   Py_XDECREF(pybuf);
@@ -2088,7 +2088,7 @@ finally:
   if (PyErr_Occurred())
   {
     result = MakeSqliteMsgFromPyException(NULL);
-    AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xWrite", "{s: i, s: L, s: O}", "amount", amount, "offset", offset, "data", pybuf ? pybuf : Py_None);
+    AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xWrite", "{s: i, s: L, s: O}", "amount", amount, "offset", offset, "data", OBJ(pybuf));
   }
   Py_XDECREF(pybuf);
   Py_XDECREF(pyresult);
@@ -2414,7 +2414,7 @@ apswvfsfile_xDeviceCharacteristics(sqlite3_file *file)
   /* We can't return errors so use unraiseable */
   if (PyErr_Occurred())
   {
-    AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xDeviceCharacteristics", "{s: O}", "result", pyresult ? pyresult : Py_None);
+    AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xDeviceCharacteristics", "{s: O}", "result", OBJ(pyresult));
     result = 0; /* harmless value for error cases */
   }
 
@@ -2463,7 +2463,7 @@ apswvfsfile_xFileSize(sqlite3_file *file, sqlite3_int64 *pSize)
   if (PyErr_Occurred())
   {
     result = MakeSqliteMsgFromPyException(NULL);
-    AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xFileSize", "{s: O}", "result", pyresult ? pyresult : Py_None);
+    AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xFileSize", "{s: O}", "result", OBJ(pyresult));
   }
 
   Py_XDECREF(pyresult);
@@ -2514,7 +2514,7 @@ apswvfsfile_xCheckReservedLock(sqlite3_file *file, int *pResOut)
   if (PyErr_Occurred())
   {
     result = MakeSqliteMsgFromPyException(NULL);
-    AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xCheckReservedLock", "{s: O}", "result", pyresult ? pyresult : Py_None);
+    AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xCheckReservedLock", "{s: O}", "result", OBJ(pyresult));
   }
 
   Py_XDECREF(pyresult);

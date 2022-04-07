@@ -991,7 +991,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args, PyObject *kwds)
   {
     AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_execute.sqlite3_prepare", "{s: O, s: O}",
                      "Connection", self->connection,
-                     "statement", statements);
+                     "statement", OBJ(statements));
     return NULL;
   }
   assert(!PyErr_Occurred());
@@ -1110,7 +1110,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args, PyObject *kwds)
   {
     AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_executemany.sqlite3_prepare", "{s: O, s: O}",
                      "Connection", self->connection,
-                     "statements", statements);
+                     "statements", OBJ(statements));
     return NULL;
   }
   assert(!PyErr_Occurred());

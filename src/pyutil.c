@@ -1,8 +1,13 @@
 /*
-  Cross Python version compatibility code
+  Cross Python version compatibility and utility code
 
   See the accompanying LICENSE file.
 */
+
+/* used in calls to AddTraceBackHere where O format takes non-null but
+   we often have null so convert to None */
+#define OBJ(o) ((o)?(o):(Py_None))
+
 
 /* we clear weakref lists when close is called on a blob/cursor as
    well as when it is deallocated */
@@ -54,8 +59,8 @@ Call_PythonMethod(PyObject *obj, const char *methodname, int mandatory, PyObject
     AddTraceBackHere(__FILE__, __LINE__, "Call_PythonMethod", "{s: s, s: i, s: O, s: O}",
                      "methodname", methodname,
                      "mandatory", mandatory,
-                     "args", args,
-                     "method", method);
+                     "args", OBJ(args),
+                     "method", OBJ(method));
 
 finally:
   if (pyerralreadyoccurred)

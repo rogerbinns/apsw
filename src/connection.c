@@ -423,7 +423,7 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
   iterator = PyObject_GetIter(hooks);
   if (!iterator)
   {
-    AddTraceBackHere(__FILE__, __LINE__, "Connection.__init__", "{s: O}", "connection_hooks", hooks);
+    AddTraceBackHere(__FILE__, __LINE__, "Connection.__init__", "{s: O}", "connection_hooks", OBJ(hooks));
     goto pyexception;
   }
 
@@ -1234,7 +1234,7 @@ walhookcb(void *context, sqlite3 *db, const char *dbname, int npages)
                      "Connection", self,
                      "dbname", dbname,
                      "npages", npages,
-                     "retval", retval);
+                     "retval", OBJ(retval));
     goto finally;
   }
   code = (int)PyLong_AsLong(retval);
@@ -1537,8 +1537,8 @@ autovacuum_pages_cb(void *callable, const char *schema, unsigned int nPages, uns
   if (retval)
     PyErr_Format(PyExc_TypeError, "autovacuum_pages callback must return a number not %R", retval ? retval : Py_None);
   AddTraceBackHere(__FILE__, __LINE__, "autovacuum_pages_callback", AVPCB_TB,
-                   "callback", (PyObject *)callable, "schema", schema, "nPages", nPages, "nFreePages", nFreePages, "nBytesPerPage", nBytesPerPage,
-                   "result", retval);
+                   "callback", OBJ((PyObject *)callable), "schema", schema, "nPages", nPages, "nFreePages", nFreePages, "nBytesPerPage", nBytesPerPage,
+                   "result", OBJ(retval));
 
 finally:
   Py_XDECREF(retval);
@@ -2645,7 +2645,7 @@ collation_cb(void *context,
 
   if (!retval)
   {
-    AddTraceBackHere(__FILE__, __LINE__, "Collation_callback", "{s: O, s: O, s: O}", "callback", cbinfo, "stringone", pys1, "stringtwo", pys2);
+    AddTraceBackHere(__FILE__, __LINE__, "Collation_callback", "{s: O, s: O, s: O}", "callback", OBJ(cbinfo), "stringone", OBJ(pys1), "stringtwo", OBJ(pys2));
     goto finally; /* execution failed */
   }
 
@@ -2657,7 +2657,7 @@ collation_cb(void *context,
 
   PyErr_Format(PyExc_TypeError, "Collation callback must return a number");
   AddTraceBackHere(__FILE__, __LINE__, "collation callback", "{s: O, s: O}",
-                   "stringone", pys1, "stringtwo", pys2);
+                   "stringone", OBJ(pys1), "stringtwo", OBJ(pys2));
 
 haveval:
   if (PyErr_Occurred())

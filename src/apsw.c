@@ -320,7 +320,7 @@ apsw_logger(void *arg, int errcode, const char *message)
   {
     AddTraceBackHere(__FILE__, __LINE__, "Call_Logger",
                      "{s: O, s: i, s: s}",
-                     "logger", arg,
+                     "logger", OBJ(arg),
                      "errcode", errcode,
                      "message", message);
     apsw_write_unraiseable(NULL);
