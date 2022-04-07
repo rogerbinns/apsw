@@ -2,6 +2,10 @@ Change History
 **************
 .. currentmodule:: apsw
 
+next
+====
+
+Python 3.11 (:issue:`326`) now works.
 3.38.1-r1
 =========
 

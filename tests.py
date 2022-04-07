@@ -6,6 +6,7 @@ import apsw
 import sys
 import os
 import warnings
+import platform
 
 
 def print_version_info():
@@ -2202,19 +2203,33 @@ class APSW(unittest.TestCase):
         return
 
         def badfunc(*args):
+            zebra = 3
             1 / 0
 
         self.db.createscalarfunction("badfunc", badfunc)
         try:
             c = self.db.cursor()
-            c.execute("select badfunc()")
+            c.execute("select badfunc(1,'two',3.14)")
             self.fail("Exception should have occurred")
         except ZeroDivisionError:
             tb = sys.exc_info()[2]
-            traceback.print_tb(tb)
-            del tb
+            frames = []
+            while tb:
+                frames.append(tb.tb_frame)
+                tb=tb.tb_next
         except:
             self.fail("Wrong exception type")
+
+        frames.reverse()
+        frame = frames[1]  # frame[0] is badfunc above
+        self.assertTrue(frame.f_code.co_filename.endswith(".c"))
+        self.assertTrue(frame.f_lineno > 100)
+        self.assertTrue(frame.f_code.co_name.endswith("-badfunc"))
+        # check local variables
+        if platform.python_implementation()!="PyPy":
+            l = frame.f_locals
+            self.assertIn("NumberOfArguments", l)
+            self.assertEqual(l["NumberOfArguments"], 3)
 
     def testLoadExtension(self):
         "Check loading of extensions"
