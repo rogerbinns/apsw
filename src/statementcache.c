@@ -329,6 +329,7 @@ statementcache_init(sqlite3 *db, unsigned size)
   return res;
 }
 
+#ifdef APSW_TESTFIXTURES
 static void
 statementcache_fini(void)
 {
@@ -337,3 +338,4 @@ statementcache_fini(void)
     PyMem_Free(apsw_sc_recycle_bin[apsw_sc_recycle_bin_next--]);
 #endif
 }
+#endif
