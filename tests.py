@@ -4764,7 +4764,8 @@ class APSW(unittest.TestCase):
                 assert (type(handle) in (int, ))
                 assert (type(name) == type(u""))
                 res = super(TestVFS, self).xDlSym(handle, name)
-                if not iswindows and _ctypes:
+                # pypy doesn't have dlsym
+                if not iswindows and hasattr(_ctypes, "dlsym"):
                     assert (_ctypes.dlsym(handle, name) == res)
                 # windows has funky issues I don't want to deal with here
                 return res
