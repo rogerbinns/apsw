@@ -4446,6 +4446,8 @@ class APSW(unittest.TestCase):
         "Verify VFS functionality"
         global testtimeout
 
+        testdb = vfstestdb
+
         # Check basic functionality and inheritance - make an obfuscated provider
 
         # obfusvfs code
@@ -8198,11 +8200,11 @@ shell.write(shell.stdout, "hello world\\n")
 
         ## xCheckReservedLockFails
         apsw.faultdict["xCheckReservedLockFails"] = True
-        self.assertRaises(apsw.IOError, self.assertRaisesUnraisable, apsw.IOError, testdb, vfsname="faultvfs")
+        self.assertRaises(apsw.IOError, self.assertRaisesUnraisable, apsw.IOError, vfstestdb, vfsname="faultvfs")
 
         ## xCheckReservedLockIsTrue
         apsw.faultdict["xCheckReservedLockIsTrue"] = True
-        testdb(vfsname="faultvfs")
+        vfstestdb(vfsname="faultvfs")
 
         ## xCloseFails
         t = apsw.VFSFile("", os.path.abspath(TESTFILEPREFIX + "testfile"),
@@ -8453,7 +8455,7 @@ shell.write(shell.stdout, "hello world\\n")
 testtimeout = False  # timeout testing adds several seconds to each run
 
 
-def testdb(filename=TESTFILEPREFIX + "testdb2", vfsname="apswtest", closedb=True, mode=None, attachdb=None):
+def vfstestdb(filename=TESTFILEPREFIX + "testdb2", vfsname="apswtest", closedb=True, mode=None, attachdb=None):
     "This method causes all parts of a vfs to be executed"
     gc.collect()  # free any existing db handles
     for suf in "", "-journal", "x", "x-journal":
