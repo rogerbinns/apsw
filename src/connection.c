@@ -48,8 +48,7 @@ struct Connection
 
   struct StatementCache *stmtcache; /* prepared statement cache */
 
-  PyObject *dependents;       /* tracking cursors & blobs belonging to this connection */
-  PyObject *dependent_remove; /* dependents.remove for weak ref processing */
+  PyObject *dependents; /* tracking cursors & blobs etc as weakrefs belonging to this connection */
 
   /* registered hooks/handlers (NULL or callable) */
   PyObject *busyhandler;
@@ -281,7 +280,6 @@ Connection_dealloc(Connection *self)
      released before this destructor could be called */
   assert(PyList_GET_SIZE(self->dependents) == 0);
   Py_CLEAR(self->dependents);
-  Py_CLEAR(self->dependent_remove);
 
   Py_TYPE(self)->tp_free((PyObject *)self);
 }
@@ -312,7 +310,6 @@ Connection_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
     self->db = 0;
     self->inuse = 0;
     self->dependents = PyList_New(0);
-    self->dependent_remove = PyObject_GetAttrString(self->dependents, "remove");
     self->stmtcache = 0;
     self->busyhandler = 0;
     self->rollbackhook = 0;
@@ -518,7 +515,7 @@ Connection_blobopen(Connection *self, PyObject *args, PyObject *kwds)
   }
 
   APSWBlob_init(apswblob, self, blob);
-  weakref = PyWeakref_NewRef((PyObject *)apswblob, self->dependent_remove);
+  weakref = PyWeakref_NewRef((PyObject *)apswblob, NULL);
   PyList_Append(self->dependents, weakref);
   Py_DECREF(weakref);
   return (PyObject *)apswblob;
@@ -632,14 +629,14 @@ Connection_backup(Connection *self, PyObject *args, PyObject *kwds)
   backup = NULL;
 
   /* add to dependent lists */
-  APSW_FAULT_INJECT(BackupDependent1, weakref = PyWeakref_NewRef((PyObject *)apswbackup, self->dependent_remove), weakref = PyErr_NoMemory());
+  APSW_FAULT_INJECT(BackupDependent1, weakref = PyWeakref_NewRef((PyObject *)apswbackup, NULL), weakref = PyErr_NoMemory());
   if (!weakref)
     goto finally;
   APSW_FAULT_INJECT(BackupDependent2, res = PyList_Append(self->dependents, weakref), (PyErr_NoMemory(), res = -1));
   if (res)
     goto finally;
   Py_DECREF(weakref);
-  APSW_FAULT_INJECT(BackupDependent3, weakref = PyWeakref_NewRef((PyObject *)apswbackup, sourceconnection->dependent_remove), weakref = PyErr_NoMemory());
+  APSW_FAULT_INJECT(BackupDependent3, weakref = PyWeakref_NewRef((PyObject *)apswbackup, NULL), weakref = PyErr_NoMemory());
   if (!weakref)
     goto finally;
   APSW_FAULT_INJECT(BackupDependent4, res = PyList_Append(sourceconnection->dependents, weakref), (PyErr_NoMemory(), res = -1));
@@ -688,7 +685,7 @@ Connection_cursor(Connection *self)
   if (!cursor)
     return NULL;
 
-  weakref = PyWeakref_NewRef((PyObject *)cursor, self->dependent_remove);
+  weakref = PyWeakref_NewRef((PyObject *)cursor, NULL);
   PyList_Append(self->dependents, weakref);
   Py_DECREF(weakref);
 
@@ -3559,6 +3556,7 @@ Connection_tp_traverse(Connection *self, visitproc visit, void *arg)
   Py_VISIT(self->exectrace);
   Py_VISIT(self->rowtrace);
   Py_VISIT(self->vfs);
+  Py_VISIT(self->dependents);
   return 0;
 }
 

@@ -8295,9 +8295,6 @@ shell.write(shell.stdout, "hello world\\n")
         for i in range(1, 5):
             apsw.faultdict["BackupDependent" + str(i)] = True
             try:
-                # the weakref can be created, but then fail to be added to the list, which causes
-                # the weakref destructor (list.remove) to complain that the item is not in the list
-                # as an unraisable.  That is ok.
                 db = apsw.Connection(":memory:")
                 self.assertMayRaiseUnraisable(ValueError, db.backup, "main", apsw.Connection(":memory:"), "main")
                 1 / 0
