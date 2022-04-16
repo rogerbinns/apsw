@@ -8569,7 +8569,7 @@ def setup():
         del APSW.testLoadExtension
 
     forkcheck = False
-    if hasattr(apsw, "fork_checker") and hasattr(os, "fork"):
+    if hasattr(apsw, "fork_checker") and hasattr(os, "fork") and platform.python_implementation() != "PyPy":
         try:
             import multiprocessing
             if hasattr(multiprocessing, "get_start_method"):
