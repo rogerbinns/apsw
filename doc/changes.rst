@@ -6,6 +6,9 @@ next
 ====
 
 Python 3.11 (:issue:`326`) now works.
+
+PyPy3 compiles and mostly works (:issue:`323`).
+
 3.38.1-r1
 =========
 

@@ -1152,8 +1152,13 @@ formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value)
 
     if (simple)
     {
+#ifdef PYPY_VERSION
+      PyErr_Format(PyExc_NotImplementedError, "PyPy has not implemented PyUnicode_CopyCharacters");
+      return NULL;
+#else
       PyUnicode_CopyCharacters(strres, 1, value, 0, input_length);
       return strres;
+#endif
     }
 
     outpos = 1;

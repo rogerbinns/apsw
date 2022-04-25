@@ -137,8 +137,11 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   if (sc->maxentries && utf8size < SC_MAX_ITEM_SIZE)
   {
     unsigned i;
-
+#ifdef PYPY_VERSION
+    hash = utf8size;
+#else
     hash = _Py_HashBytes(utf8, utf8size);
+#endif
     for (i = 0; i <= sc->highest_used; i++)
     {
       if (sc->hashes[i] == hash && sc->caches[i]->utf8_size == utf8size && 0 == memcmp(utf8, sc->caches[i]->utf8, utf8size))

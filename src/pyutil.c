@@ -108,34 +108,3 @@ convertutf8string(const char *str)
 #else
 #define PyType_TRAILER  0, 0, 0
 #endif
-
-#ifdef PYPY_VERSION
-static Py_hash_t
-_Py_HashBytes(const void *src, Py_ssize_t len)
-{
-  /* this only has to return the same output for the same input and is
-     only used in statementcache, so it doesn't have to be deep and
-     meaningful */
-  return len;
-}
-
-/* For some bizarre reason this stable API is not present in pypy.  We
-   only use it in one place, and the length values passed in are
-   correct hence no further error checking */
-static Py_ssize_t
-PyUnicode_CopyCharacters(PyObject *to, Py_ssize_t to_start, PyObject *from, Py_ssize_t from_start, Py_ssize_t how_many)
-{
-  Py_ssize_t res = 0;
-  Py_UCS4 c;
-  while (how_many > 0)
-  {
-    c = PyUnicode_ReadChar(from, from_start);
-    PyUnicode_WriteChar(to, to_start, c);
-    from_start++;
-    to_start++;
-    how_many--;
-    res++;
-  }
-  return res;
-}
-#endif
