@@ -141,6 +141,29 @@ Connection_internal_cleanup(Connection *self)
   Py_CLEAR(self->open_vfs);
 }
 
+static void
+Connection_remove_dependent(Connection *self, PyObject *o)
+{
+  /* in addition to removing the dependent, we also remove any dead
+     weakrefs */
+  Py_ssize_t i;
+
+  for (i = 0; i < PyList_GET_SIZE(self->dependents);)
+  {
+    PyObject *wr = PyList_GET_ITEM(self->dependents, i);
+    PyObject *wo = PyWeakref_GetObject(wr);
+    if (wo == o || wo == Py_None)
+    {
+      PyList_SetSlice(self->dependents, i, i + 1, NULL);
+      if (wo == Py_None)
+        continue;
+      else
+        return;
+    }
+    i++;
+  }
+}
+
 static int
 Connection_close_internal(Connection *self, int force)
 {
@@ -151,18 +174,16 @@ Connection_close_internal(Connection *self, int force)
   if (force == 2)
     PyErr_Fetch(&etype, &eval, &etb);
 
-  /* Traverse dependents calling close.  We assume the list may be
-     perturbed by item we just called close on being removed from the
-     list. */
-  for (i = 0; i < PyList_GET_SIZE(self->dependents);)
+  /* close out dependents by repeatedly processing first item until
+     list is empty.  note that closing an item will cause the list to
+     be perturbed as a side effect */
+  while (PyList_GET_SIZE(self->dependents))
   {
-    PyObject *item, *closeres, *orig;
-
-    orig = PyList_GET_ITEM(self->dependents, i);
-    item = PyWeakref_GetObject(orig);
-    if (!item || item == Py_None)
+    PyObject *closeres, *item, *wr = PyList_GET_ITEM(self->dependents, 0);
+    item = PyWeakref_GetObject(wr);
+    if (item == Py_None)
     {
-      i++;
+      Connection_remove_dependent(self, item);
       continue;
     }
 
@@ -175,11 +196,6 @@ Connection_close_internal(Connection *self, int force)
         apsw_write_unraiseable(NULL);
       else
         return 1;
-    }
-    if (i < PyList_GET_SIZE(self->dependents) && orig == PyList_GET_ITEM(self->dependents, i))
-    {
-      /* list was not perturbed */
-      i++;
     }
   }
 
@@ -282,21 +298,6 @@ Connection_dealloc(Connection *self)
   Py_CLEAR(self->dependents);
 
   Py_TYPE(self)->tp_free((PyObject *)self);
-}
-
-static void
-Connection_remove_dependent(Connection *self, PyObject *o)
-{
-  Py_ssize_t i;
-
-  for (i = 0; i < PyList_GET_SIZE(self->dependents); i++)
-  {
-    if (PyWeakref_GetObject(PyList_GET_ITEM(self->dependents, i)) == o)
-    {
-      PyList_SetSlice(self->dependents, i, i + 1, NULL);
-      break;
-    }
-  }
 }
 
 static PyObject *
@@ -555,6 +556,9 @@ Connection_backup(Connection *self, PyObject *args, PyObject *kwds)
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
+
+  /* gc dependents removing dead items */
+  Connection_remove_dependent(self, NULL);
 
   /* self (destination) can't be used if there are outstanding blobs, cursors or backups */
   if (PyList_GET_SIZE(self->dependents))
