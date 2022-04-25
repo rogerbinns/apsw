@@ -167,7 +167,6 @@ Connection_remove_dependent(Connection *self, PyObject *o)
 static int
 Connection_close_internal(Connection *self, int force)
 {
-  Py_ssize_t i;
   int res;
   PyObject *etype, *eval, *etb;
 
