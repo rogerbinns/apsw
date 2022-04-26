@@ -840,7 +840,7 @@ if __name__ == '__main__':
         keywords=["database", "sqlite"],
         license="OSI Approved ::",
 
-        ext_modules=[Extension("apsw",
+        ext_modules=[Extension("apsw.__init__",
                                 ["src/apsw.c"],
                                 include_dirs=include_dirs,
                                 library_dirs=library_dirs,
@@ -848,7 +848,8 @@ if __name__ == '__main__':
                                 define_macros=define_macros,
                                 depends=depends)],
 
-        data_files=[("", ["apsw.pyi"])],
+        packages=["apsw"],
+        package_data={"apsw": ["__init__.pyi"]},
 
 
       cmdclass={'test': run_tests,
