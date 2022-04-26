@@ -822,9 +822,10 @@ if __name__ == '__main__':
         description="Another Python SQLite Wrapper",
         long_description=\
     """A Python wrapper for the SQLite embedded relational database engine.
-    In contrast to other wrappers such as pysqlite it focuses on being
-    a minimal layer over SQLite attempting just to translate the
-    complete SQLite API into Python.""",
+    APSW exposes SQLite as it really is, while the stdlib sqlite3
+    module makes SQLite look like other databases via DBAPI.
+    Everything you can do from the SQLite C API, you can do from APSW.
+    """,
         author="Roger Binns",
         author_email="rogerb@rogerbinns.com",
         url="https://github.com/rogerbinns/apsw/",
@@ -838,7 +839,8 @@ if __name__ == '__main__':
         "Topic :: Database :: Front-Ends",
         ],
         keywords=["database", "sqlite"],
-        license="OSI Approved ::",
+        license="OSI Approved",
+        platforms="any",
 
         ext_modules=[Extension("apsw",
                                 ["src/apsw.c"],
