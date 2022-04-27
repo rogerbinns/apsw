@@ -48,7 +48,8 @@ def write(*args):
 
 # ensure files are closed
 def read_whole_file(name, mode):
-    f = open(name, mode)
+    assert mode == "rt"
+    f = open(name, mode, encoding="utf8")
     try:
         return f.read()
     finally:
@@ -56,7 +57,8 @@ def read_whole_file(name, mode):
 
 
 def write_whole_file(name, mode, data):
-    f = open(name, mode)
+    assert mode == "wt"
+    f = open(name, mode, encoding="utf8")
     try:
         f.write(data)
     finally:
@@ -277,7 +279,7 @@ class fetch(Command):
                 # delete existing sqlite3 directory if it exists, but save sqlite3config.h if it exists
                 sqlite3config_h = None
                 if os.path.exists("sqlite3/sqlite3config.h"):
-                    sqlite3config_h = read_whole_file("sqlite3/sqlite3config.h", "rb")
+                    sqlite3config_h = read_whole_file("sqlite3/sqlite3config.h", "rt")
                 if os.path.exists('sqlite3'):
                     for dirpath, dirnames, filenames in os.walk('sqlite3', topdown=False):
                         for file in filenames:
