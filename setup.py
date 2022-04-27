@@ -13,8 +13,16 @@ import tarfile
 import subprocess
 import sysconfig
 
-from distutils.core import setup, Extension, Command
-from distutils.command import build_ext, build, sdist
+using_setuptools = False
+try:
+    from setuptools import setup, Extension, Command
+    from setuptools.command import build_ext, sdist
+    from distutils.command import build
+    using_setuptools = True
+except ImportError:
+    from distutils.core import setup, Extension, Command
+    from distutils.command import build_ext, build, sdist
+
 import distutils.ccompiler
 
 include_dirs = ['src']
