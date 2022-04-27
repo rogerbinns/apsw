@@ -34,9 +34,17 @@ def run(cmd):
 
 
 def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug):
-    run("set -e ; cd %s ; ( env LD_LIBRARY_PATH=%s %s setup.py fetch --version=%s --all build_test_extension build_ext --inplace --force --enable-all-extensions%stest -v ) >%s 2>&1"
-        % (workdir, pylib, pybin, sqlitever, " --debug " if debug else " ",
-           os.path.abspath(os.path.join(logdir, "buildruntests.txt"))))
+    pyflags = "-X warn_default_encoding  -X dev" if debug else ""
+    if "3.11" in pybin:
+        # this happens for setuptools dependency using sre_constants
+        # (fixed in alpha 8) and can't be ignored by putting in module
+        # name.
+        pyflags+=" -W ignore::DeprecationWarning"
+    extdebug = "--debug" if debug else ""
+    logf = os.path.abspath(os.path.join(logdir, "buildruntests.txt"))
+    run(f"""set -e ; cd { workdir } ; ( env LD_LIBRARY_PATH={ pylib } { pybin } -bb -Werror { pyflags } setup.py fetch \
+             --version={ sqlitever } --all build_test_extension build_ext --inplace --force --enable-all-extensions \
+             { extdebug } test -v ) >{ logf }  2>&1""")
 
 
 def runtest(workdir, pyver, bits, sqlitever, logdir, debug):
