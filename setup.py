@@ -826,7 +826,7 @@ if "bdist_msi" in sys.argv:
 
 if __name__ == '__main__':
     setup(name="apsw",
-        version=version,
+        version=version.replace("-r", ".post") if using_setuptools else version,
         description="Another Python SQLite Wrapper",
         long_description=\
     """A Python wrapper for the SQLite embedded relational database engine.
