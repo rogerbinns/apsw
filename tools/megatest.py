@@ -35,11 +35,14 @@ def run(cmd):
 
 def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug):
     pyflags = "-X warn_default_encoding  -X dev" if debug else ""
-    if "3.11" in pybin:
-        # this happens for setuptools dependency using sre_constants
-        # (fixed in alpha 8) and can't be ignored by putting in module
-        # name.
+    # bundled setuptools does deprecated stuff
+    pyflags += " -W ignore::DeprecationWarning:setuptools"
+    if "3.11" in pybin or "3.6" in pybin:
+        # sometimes the above doesn't work, so ignore all
         pyflags+=" -W ignore::DeprecationWarning"
+    if "3.10" in pybin or "3.11" in pybin:
+        # distutils -> configparser
+        pyflags+=" -W ignore::EncodingWarning"
     extdebug = "--debug" if debug else ""
     logf = os.path.abspath(os.path.join(logdir, "buildruntests.txt"))
     run(f"""set -e ; cd { workdir } ; ( env LD_LIBRARY_PATH={ pylib } { pybin } -bb -Werror { pyflags } setup.py fetch \
