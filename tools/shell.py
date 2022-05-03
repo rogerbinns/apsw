@@ -2089,7 +2089,7 @@ Enter SQL statements terminated with a ";"
             g = {}
             g.update({'apsw': apsw, 'shell': self})
             # compile step is needed to associate name with code
-            f=open(cmd[0])
+            f=open(cmd[0], "rb")
             try:
                 exec(compile(f.read(), cmd[0], 'exec'), g, g)
             finally:
