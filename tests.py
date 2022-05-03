@@ -7566,7 +7566,7 @@ shell.write(shell.stdout, "hello world\\n")
         except ImportError:
             coverage = None
 
-        import imp
+        import importlib.util
         # I had problems with the compiled bytecode being around
         for suff in "c", "o":
             try:
@@ -7574,14 +7574,17 @@ shell.write(shell.stdout, "hello world\\n")
             except:
                 pass
 
+        spec = importlib.util.spec_from_file_location("shell_coverage", "tools/shell.py")
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[module.__name__] = module
         if coverage: coverage.start()
-        covshell = imp.load_source("shell_coverage", "tools/shell.py")
+        spec.loader.exec_module(module)
         try:
-            self._originaltestShell(shellclass=covshell.Shell)
+            self._originaltestShell(shellclass=module.Shell)
         finally:
             if coverage:
                 coverage.stop()
-                coverage.annotate(morfs=[covshell])
+                coverage.annotate(morfs=[module])
                 os.rename("tools/shell.py,cover", "shell.py.gcov")
 
     # Note that faults fire only once, so there is no need to reset
