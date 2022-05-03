@@ -26,6 +26,8 @@ TESTFILEPREFIX = os.environ.get("APSWTESTPREFIX", "")
 
 
 def read_whole_file(name, mode, encoding=None):
+    if "t" in mode and not encoding:
+        encoding="utf8"
     if encoding:
         f = open(name, mode, encoding=encoding)
     else:
@@ -38,6 +40,8 @@ def read_whole_file(name, mode, encoding=None):
 
 # If two is present then one is encoding
 def write_whole_file(name, mode, data, *, encoding=None):
+    if "t" in mode and not encoding:
+        encoding="utf8"
     if encoding:
         f = open(name, mode, encoding=encoding)
     else:
@@ -3635,7 +3639,7 @@ class APSW(unittest.TestCase):
         # excepthook with error to check PyErr_Display is called
         xx = sys.excepthook
         yy = sys.stderr
-        sys.stderr = open(TESTFILEPREFIX + "errout.txt", "wt")
+        sys.stderr = open(TESTFILEPREFIX + "errout.txt", "wt", encoding="utf8")
 
         def ehook(blah):
             1 / 0
@@ -3643,7 +3647,7 @@ class APSW(unittest.TestCase):
         sys.excepthook = ehook
         unraise()
         sys.stderr.close()
-        v = open(TESTFILEPREFIX + "errout.txt", "rt").read()
+        v = open(TESTFILEPREFIX + "errout.txt", "rt", encoding="utf8").read()
         deletefile(TESTFILEPREFIX + "errout.txt")
         self.assertTrue(len(v))
         sys.excepthook = xx
@@ -3991,7 +3995,7 @@ class APSW(unittest.TestCase):
         "Make sure all fault injection is tested"
         faults = set()
         for filename in glob.glob("src/*.c"):
-            with open(filename, "rt") as f:
+            with open(filename, "rt", encoding="utf8") as f:
                 for line in f:
                     if "APSW_FAULT_INJECT" in line and "#define" not in line:
                         mo = re.match(r".*APSW_FAULT_INJECT\s*\(\s*(?P<name>\w+)\s*,.*", line)
@@ -7010,7 +7014,7 @@ insert into xxblah values(3);
         s.cmdloop()
         isempty(fh[2])
         isempty(fh[1])
-        self.assertTrue("?8?" in read_whole_file(TESTFILEPREFIX + "test-shell-1", "r", "cp437"))
+        self.assertTrue("?8?" in read_whole_file(TESTFILEPREFIX + "test-shell-1", "rt", "cp437"))
 
         ###
         ### Command - exceptions
@@ -7591,11 +7595,11 @@ shell.write(shell.stdout, "hello world\\n")
         # Verify we test all fault locations
         code = []
         for fn in glob.glob("*/*.c"):
-            with open(fn) as f:
+            with open(fn, encoding="utf8") as f:
                 code.append(f.read())
         code = "\n".join(code)
 
-        with open(__file__) as f:
+        with open(__file__, "rt", encoding="utf8") as f:
             test_code = f.read()
 
         seen = set()
