@@ -1,16 +1,11 @@
-debian-build
-debian/copyright
-debian/changelog
 src/shell.c
 *.orig
 testdb2
 apsw.pyd
-sqlite3genfkey.c
 TAGS
 sqlite3async.h
 sqlite3async.c
 callgrind.out.*
-tools/googlecode_upload.py
 :memory:
 doc/vfs.rst
 doc/example.rst
@@ -39,7 +34,6 @@ sqlite3ext.h
 MANIFEST
 MANIFEST.in.tmp
 megatestresults/
-work/
 coverage/
 testdb
 /.coverage
