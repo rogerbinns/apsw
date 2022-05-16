@@ -5,6 +5,8 @@ Change History
 next
 ====
 
+Shell exit for --version etc cleanly exits (:issue:`210`)
+
 Python 3.11 (:issue:`326`) now works.
 
 PyPy3 compiles and mostly works (:issue:`323`).

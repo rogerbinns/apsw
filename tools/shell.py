@@ -3001,6 +3001,8 @@ def main():
             s.cmdloop()
     except:
         v = sys.exc_info()[1]
+        if isinstance(v, SystemExit):
+            raise
         if getattr(v, "_handle_exception_saw_this", False):
             pass
         else:
