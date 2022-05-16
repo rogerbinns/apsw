@@ -601,7 +601,7 @@ from typing import Union, Tuple, List, Optional, Callable, Any, Dict, Iterator, 
             continue
         print(f"class { n }(Error): ...", file=out)
 
-    replace_if_different("apsw.pyi", out.getvalue())
+    replace_if_different("apsw/__init__.pyi", out.getvalue())
 
 
 def attribute_type(item: dict) -> str:

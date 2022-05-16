@@ -8,7 +8,8 @@ include src/apsw.docstrings
 include MANIFEST.in
 
 # other files
-include apsw.pyi
+include apsw/apsw.pyi
+include apsw/py.typed
 include LICENSE
 include checksums
 include setup.py
