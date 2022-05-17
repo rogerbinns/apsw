@@ -1,0 +1,67 @@
+name: Build & Publish TEST pypi
+
+on: workflow_dispatch
+
+jobs:
+
+  builds:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, windows-2019, macos-10.15]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+
+      - name: Install cibuildwheel
+        run: python -m pip install cibuildwheel==2.1.1
+
+      - name: Build wheels
+        run: python -m cibuildwheel --output-dir wheelhouse
+        env:
+          CIBW_BEFORE_BUILD: python setup.py fetch --all build --enable-all-extensions build_test_extension
+          CIBW_TEST_COMMAND: python {package}/tests.py
+          CIBW_SKIP: pp*
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: wheelhouse
+          path: ./wheelhouse/*.whl
+
+  upload:
+    needs: builds
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+
+    - name: Create source dist
+      run: python setup.py sdist
+
+    - name: Stage wheels
+      uses: actions/download-artifact@v2
+      with:
+        name: wheelhouse
+        path: wheelhouse
+    - run: |
+        mv -v wheelhouse/* dist/
+        ls -l dist/
+
+    - name: Publish package
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+       user: __token__
+       password: ${{ secrets.PYPI_API_TOKEN_TEST }}
+       repository_url: https://test.pypi.org/legacy/
+

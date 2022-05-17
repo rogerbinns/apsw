@@ -1,4 +1,4 @@
-name: build
+name: Build & Publish pypi
 
 on: workflow_dispatch
 
@@ -62,6 +62,5 @@ jobs:
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
        user: __token__
-       password: ${{ secrets.PYPI_API_TOKEN_TEST }}
-       repository_url: https://test.pypi.org/legacy/
+       password: ${{ secrets.PYPI_API_TOKEN }}
 
