@@ -1984,6 +1984,16 @@ add_shell(PyObject *apswmodule)
   Py_DECREF(res);
 }
 
+#ifdef _WIN32
+/* This exists because of issue #327 with the Windows compiler
+   looking to export this.  It isn't called in my testing */
+PyMODINIT_FUNC
+PyInit___init__(void)
+{
+  return PyInit_apsw();
+}
+#endif
+
 #ifdef APSW_TESTFIXTURES
 static int
 APSW_Should_Fault(const char *name)
