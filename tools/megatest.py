@@ -212,10 +212,6 @@ if __name__ == '__main__':
                         dest="sqlitevers",
                         help="Which SQLite versions to test against [%(default)s]",
                         default=",".join(SQLITEVERS))
-    parser.add_argument("--fossil",
-                        help="Also test current SQLite FOSSIL version [%(default)s]",
-                        default=False,
-                        action="store_true")
     parser.add_argument("--bits", default=",".join(str(b) for b in BITS), help="Bits [%(default)s]")
     parser.add_argument("--tasks",
                         type=int,
@@ -228,8 +224,6 @@ if __name__ == '__main__':
     pyvers = options.pyvers.split(",")
     sqlitevers = options.sqlitevers.split(",")
     bits = tuple(int(b.strip()) for b in options.bits.split(","))
-    if options.fossil:
-        sqlitevers.append("fossil")
     concurrency = options.concurrency
     sqlitevers = [x for x in sqlitevers if x]
     main(pyvers, sqlitevers, bits, concurrency)

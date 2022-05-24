@@ -216,47 +216,23 @@ class fetch(Command):
         # now get each selected component
         downloaded = 0
 
-        if not self.version.startswith("fossil"):
-            v = [int(x) for x in self.version.split(".")]
-            if len(v) < 4:
-                v.append(0)
-            self.webversion = "%d%02d%02d%02d" % tuple(v)
+        v = [int(x) for x in self.version.split(".")]
+        if len(v) < 4:
+            v.append(0)
+        self.webversion = "%d%02d%02d%02d" % tuple(v)
 
         ## The amalgamation
         if self.sqlite:
-            if self.version.startswith("fossil"):
-                write("  Getting code from fossil")
-            else:
-                write("  Getting the SQLite amalgamation")
+            write("  Getting the SQLite amalgamation")
 
-            if self.version.startswith("fossil"):
-                if self.version == "fossil":
-                    uuid = "trunk"
-                else:
-                    showmsg = False
-                    if not self.version.startswith("fossil-"):
-                        showmsg = True
-                    else:
-                        uuid = self.version.split("-", 1)[1]
-                        if not uuid:
-                            showmsg = True
-                    if showmsg:
-                        write("Use fossil-HASH to identify a particular commit", sys.stderr)
-                        write("eg  fossil-3a82c8e6", sys.stderr)
-                        sys.exit(18)
-
-                AURL = "https://sqlite.org/src/zip/sqlite3.zip?uuid=" + uuid
-                checksum = False
+            if sys.platform == "win32":
+                AURL = "https://sqlite.org/sqlite-amalgamation-%s.zip" % (self.webversion, )
             else:
-                if sys.platform == "win32":
-                    AURL = "https://sqlite.org/sqlite-amalgamation-%s.zip" % (self.webversion, )
-                else:
-                    AURL = "https://sqlite.org/sqlite-autoconf-%s.tar.gz" % (self.webversion, )
-                checksum = True
+                AURL = "https://sqlite.org/sqlite-autoconf-%s.tar.gz" % (self.webversion, )
 
             AURL = fixup_download_url(AURL)
 
-            data = self.download(AURL, checksum=checksum)
+            data = self.download(AURL, checksum=True)
 
             if AURL.endswith(".zip"):
                 zip = zipfile.ZipFile(data, "r")
@@ -287,60 +263,43 @@ class fetch(Command):
                         for dir in dirnames:
                             os.rmdir(os.path.join(dirpath, dir))
                     os.rmdir('sqlite3')
-                if self.version.startswith("fossil"):
-                    zip = zipfile.ZipFile(data, "r")
-                    for name in zip.namelist():
-                        # extract
-                        if name.endswith("/"):
-                            os.mkdir(name)
-                        else:
-                            open(name, "wb").write(zip.read(name))
-                    zip.close()
-                else:
-                    # if you get an exception here it is likely that you don't have the python zlib module
-                    import zlib
-                    tar = tarfile.open("nonexistentname to keep old python happy", 'r', data)
-                    configmember = None
-                    for member in tar.getmembers():
-                        tar.extract(member)
-                        # find first file named configure
-                        if not configmember and member.name.endswith("/configure"):
-                            configmember = member
-                    tar.close()
-                    # the directory name has changed a bit with each release so try to work out what it is
-                    if not configmember:
-                        write("Unable to determine directory it extracted to.", dest=sys.stderr)
-                        sys.exit(19)
-                    dirname = configmember.name.split('/')[0]
-                    os.rename(dirname, 'sqlite3')
+                # if you get an exception here it is likely that you don't have the python zlib module
+                import zlib
+                tar = tarfile.open("nonexistentname to keep old python happy", 'r', data)
+                configmember = None
+                for member in tar.getmembers():
+                    tar.extract(member)
+                    # find first file named configure
+                    if not configmember and member.name.endswith("/configure"):
+                        configmember = member
+                tar.close()
+                # the directory name has changed a bit with each release so try to work out what it is
+                if not configmember:
+                    write("Unable to determine directory it extracted to.", dest=sys.stderr)
+                    sys.exit(19)
+                dirname = configmember.name.split('/')[0]
+                os.rename(dirname, 'sqlite3')
                 os.chdir('sqlite3')
-                if self.version.startswith("fossil"):
-                    write("    Building amalgamation from fossil")
-                    res = os.system("make TOP=. -f Makefile.linux-gcc sqlite3.c && cp src/sqlite3ext.h .")
-                    defs = []
-                    if sqlite3config_h:
-                        open("sqlite3config.h", "wb").write(sqlite3config_h)
-                else:
-                    write("    Running configure to work out SQLite compilation flags")
-                    res = os.system("./configure >/dev/null")
-                    defline = None
-                    for line in read_whole_file("Makefile", "rt").split("\n"):
-                        if line.startswith("DEFS = "):
-                            defline = line
-                            break
-                    if not defline:
-                        write("Unable to determine compile flags.  Create sqlite3/sqlite3config.h to manually set.",
-                              sys.stderr)
-                        sys.exit(18)
-                    defs = []
-                    for part in shlex.split(defline):
-                        if part.startswith("-DHAVE"):
-                            part = part[2:]
-                            if '=' in part:
-                                part = part.split('=', 1)
-                            else:
-                                part = (part, )
-                            defs.append(part)
+                write("    Running configure to work out SQLite compilation flags")
+                res = os.system("./configure >/dev/null")
+                defline = None
+                for line in read_whole_file("Makefile", "rt").split("\n"):
+                    if line.startswith("DEFS = "):
+                        defline = line
+                        break
+                if not defline:
+                    write("Unable to determine compile flags.  Create sqlite3/sqlite3config.h to manually set.",
+                            sys.stderr)
+                    sys.exit(18)
+                defs = []
+                for part in shlex.split(defline):
+                    if part.startswith("-DHAVE"):
+                        part = part[2:]
+                        if '=' in part:
+                            part = part.split('=', 1)
+                        else:
+                            part = (part, )
+                        defs.append(part)
                 if res != 0:
                     raise ValueError("Command execution failed")
                 if defs:

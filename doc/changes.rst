@@ -5,6 +5,9 @@ Change History
 next
 ====
 
+Removed support for setup.py downloading the in-development (aka
+fossil) version of SQLite.
+
 Shell exit for --version etc cleanly exits (:issue:`210`)
 
 Python 3.11 (:issue:`326`) now works.

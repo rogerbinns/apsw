@@ -66,16 +66,6 @@ re-fetching.
 | | :option:`--version=VERSION`          | By default the SQLite version corresponding to the APSW release is retrieved,  You   |
 |                                        | can also ask for specific versions, or for `latest` which uses the SQLite download   |
 |                                        | page to work out the most recent version.                                            |
-|                                        |                                                                                      |
-|                                        | .. note::                                                                            |
-|                                        |                                                                                      |
-|                                        |    You can also specify `fossil` as the version                                      |
-|                                        |    and the current development version from `SQLite's source tracking system         |
-|                                        |    <https://sqlite.org/src/timeline>`__ will be used.  (The system is named          |
-|                                        |    `Fossil <http://www.fossil-scm.org>`__.) Note that checksums can't be checked     |
-|                                        |    for fossil. You will also need TCL and make installed for the amalgamation to     |
-|                                        |    build as well as several other common Unix tools.  (ie this is very unlikely to   |
-|                                        |    work on Windows.)                                                                 |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | | :option:`--missing-checksum-ok`      | Allows setup to continue if the :ref:`checksum <fetch_checksums>` is missing.        |
 +----------------------------------------+--------------------------------------------------------------------------------------+
@@ -141,10 +131,6 @@ re-fetching.
   with SQLite and noting the output.  The information is placed in
   :file:`sqlite3/sqlite3config.h`.  The build stage will automatically
   take note of this as needed.
-
-  If you get the fossil version then the configure script does not
-  work.  Instead the fetch will save and re-use any pre-existing
-  :file:`sqlite3/sqlite3config.h`.
 
 .. _setup_build_flags:
 
