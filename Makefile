@@ -113,8 +113,11 @@ WINBWHEEL=bdist_wheel
 
 compile-win:
 	-del /q apsw*.pyd
+	-del /q apsw\\*.pyd
 	-del /q dist\\*.egg
+	-del /q testextension.*
 	-cmd /c del /s /q __pycache__
+	-cmd /c del /s /q sqlite3
 	cmd /c del /s /q dist
 	cmd /c del /s /q build
 	cmd /c del /s /q apsw.egg-info

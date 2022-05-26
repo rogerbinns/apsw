@@ -10,22 +10,13 @@
 # more peace of mind because the SQLite releases are not signed in any
 # way.
 
-https://sqlite.org/2021/sqlite-amalgamation-3370000.zip 2502148 ef29da778e75a88d3f63f8f33987f89461c7b50f f513c654a1959793a6eb70c713d1c32d
 https://sqlite.org/2021/sqlite-autoconf-3370000.tar.gz 3001298 e757bce0babc656d289014b41e2473b55032a8e7 021c1d936c157bb68d6d0b158636ac7a
-https://sqlite.org/2022/sqlite-amalgamation-3370200.zip 2502722 a3e4928ee0f0b101408799b3b07af8e92875b278 8d9b74229cec934c4fcb61f57aa01ff8
 https://sqlite.org/2022/sqlite-autoconf-3370200.tar.gz 3001797 e56faacadfb4154f8fbd0f2a3f827d13706b70a1 683cc5312ee74e71079c14d24b7a6d27
-https://sqlite.org/2021/sqlite-amalgamation-3370100.zip 2502340 d196239c216afabded6b259256bfed9743c91db3 8739cd2c179ebffafb36dfaee0ec6259
 https://sqlite.org/2021/sqlite-autoconf-3370100.tar.gz 3001542 328bc8146e15b67752b5249b8ac688c13230c517 c76cc93da8622daacd936a1f13c05376
 
-https://sqlite.org/2022/sqlite-amalgamation-3380000.zip 2532507 26fff3f16de872a2257ef48b88788d4f500629dd 5946b135c6d2efc701479325f090ff0c
 https://sqlite.org/2022/sqlite-autoconf-3380000.tar.gz 3030934 c9a089d1e9f87b652698def57a2f01c1f4e37052 26dabf36c49b63d88d8ade506a8c9daf
-https://sqlite.org/2022/sqlite-amalgamation-3380100.zip 2533453 c758afed8d949dc106049a8f68068191846ba86e 6cf02aab6a988349b8f1f77b2d7856fe
 https://sqlite.org/2022/sqlite-autoconf-3380100.tar.gz 3031923 342e2f712bfc902be592de3de104be9c5fa16717 5af57892dc0993af596bef56931db23f
-https://sqlite.org/2022/sqlite-amalgamation-3380200.zip 2533936 3aff54f6e3760c3d9320520bfe7111079a1122d6 a905f1aac38ecd5b8d215eabd09b0432
 https://sqlite.org/2022/sqlite-autoconf-3380200.tar.gz 3032390 421109d748d729d3e5a2c67056bc703ae6c91e3f 6e5e4efd7e9d9ab67019712e0a0ccf90
-https://sqlite.org/2022/sqlite-amalgamation-3380500.zip 2534737 350fa5ccedc70f4979d7f954fba9525542809ba2 8c93293b0ecce0b9a3a7b10633f9dec6
 https://sqlite.org/2022/sqlite-autoconf-3380500.tar.gz 3033164 e37f9ea8ac088c6f0aa3462f8e1522ccc58de824 d7d14ef5e1cf2ce974bdd62a9cee347f
-https://sqlite.org/2022/sqlite-amalgamation-3380400.zip 2534661 88d6cc95462b2da5816b40eca8b7ef979de22013 1a4e8a5d1db3dbe5c4396b6a211bcb7f
 https://sqlite.org/2022/sqlite-autoconf-3380400.tar.gz 3033070 ea4313e8a5993afdccdb5c01e6e0b247ea06a537 34c0b92a0609ed4ce78582e8dc1ed45a
-https://sqlite.org/2022/sqlite-amalgamation-3380300.zip 2534531 ce672fe9fd2a44beb77eba775c1c142205008d54 6aaa8b5800df5b51fdaf9cd93138280a
 https://sqlite.org/2022/sqlite-autoconf-3380300.tar.gz 3032969 1f8ebed9dbe87513e97f7b7547e07a5e115f6569 71b4ac827467a0b4388e5bcfaf3c1047

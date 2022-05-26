@@ -52,16 +52,7 @@ def check(url, data):
 
 
 for v in sqlitevers:
-    # Windows amalgamation
-    AURL = "https://sqlite.org/sqlite-amalgamation-%s.zip" % (v, )
-    AURL = fixup_download_url(AURL)
-    try:
-        data = urllib.request.urlopen(AURL).read()
-    except:
-        print(AURL)
-        raise
-    check(AURL, data)
-    # All other platforms amalgamation
+    # All platforms amalgamation
     AURL = "https://sqlite.org/sqlite-autoconf-%s.tar.gz" % (v, )
     AURL = fixup_download_url(AURL)
     try:

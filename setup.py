@@ -225,60 +225,41 @@ class fetch(Command):
         if self.sqlite:
             write("  Getting the SQLite amalgamation")
 
-            if sys.platform == "win32":
-                AURL = "https://sqlite.org/sqlite-amalgamation-%s.zip" % (self.webversion, )
-            else:
-                AURL = "https://sqlite.org/sqlite-autoconf-%s.tar.gz" % (self.webversion, )
+            AURL = "https://sqlite.org/sqlite-autoconf-%s.tar.gz" % (self.webversion, )
 
             AURL = fixup_download_url(AURL)
 
             data = self.download(AURL, checksum=True)
 
-            if AURL.endswith(".zip"):
-                zip = zipfile.ZipFile(data, "r")
-                for name in "sqlite3.c", "sqlite3.h", "sqlite3ext.h":
-                    write("Extracting", name)
-                    f = [n for n in zip.namelist() if n.endswith(name)]
-                    if len(f) != 1:
-                        raise Exception("Can't find %s in zip.  Candidates are %s" % (name, f))
-                    # Work around SQLite 3.7.13 bug where a symbol was
-                    # declared SQLITE_API and extern
-                    data = zip.read(f[0])
-                    if name == "sqlite3.c":
-                        data = data.decode("utf8")
-                        data = data.replace("SQLITE_API extern", "SQLITE_API")
-                        data = data.encode("utf8")
-                    open(name, "wb").write(data)
-                zip.close()
-            else:
-                # we need to run configure to get various -DHAVE_foo flags on non-windows platforms
-                # delete existing sqlite3 directory if it exists, but save sqlite3config.h if it exists
-                sqlite3config_h = None
-                if os.path.exists("sqlite3/sqlite3config.h"):
-                    sqlite3config_h = read_whole_file("sqlite3/sqlite3config.h", "rt")
-                if os.path.exists('sqlite3'):
-                    for dirpath, dirnames, filenames in os.walk('sqlite3', topdown=False):
-                        for file in filenames:
-                            os.remove(os.path.join(dirpath, file))
-                        for dir in dirnames:
-                            os.rmdir(os.path.join(dirpath, dir))
-                    os.rmdir('sqlite3')
-                # if you get an exception here it is likely that you don't have the python zlib module
-                import zlib
-                tar = tarfile.open("nonexistentname to keep old python happy", 'r', data)
-                configmember = None
-                for member in tar.getmembers():
-                    tar.extract(member)
-                    # find first file named configure
-                    if not configmember and member.name.endswith("/configure"):
-                        configmember = member
-                tar.close()
-                # the directory name has changed a bit with each release so try to work out what it is
-                if not configmember:
-                    write("Unable to determine directory it extracted to.", dest=sys.stderr)
-                    sys.exit(19)
-                dirname = configmember.name.split('/')[0]
-                os.rename(dirname, 'sqlite3')
+            # we need to run configure to get various -DHAVE_foo flags on non-windows platforms
+            # delete existing sqlite3 directory if it exists, but save sqlite3config.h if it exists
+            sqlite3config_h = None
+            if os.path.exists("sqlite3/sqlite3config.h"):
+                sqlite3config_h = read_whole_file("sqlite3/sqlite3config.h", "rt")
+            if os.path.exists('sqlite3'):
+                for dirpath, dirnames, filenames in os.walk('sqlite3', topdown=False):
+                    for file in filenames:
+                        os.remove(os.path.join(dirpath, file))
+                    for dir in dirnames:
+                        os.rmdir(os.path.join(dirpath, dir))
+                os.rmdir('sqlite3')
+            # if you get an exception here it is likely that you don't have the python zlib module
+            import zlib
+            tar = tarfile.open("nonexistentname to keep old python happy", 'r', data)
+            configmember = None
+            for member in tar.getmembers():
+                tar.extract(member)
+                # find first file named configure
+                if not configmember and member.name.endswith("/configure"):
+                    configmember = member
+            tar.close()
+            # the directory name has changed a bit with each release so try to work out what it is
+            if not configmember:
+                write("Unable to determine directory it extracted to.", dest=sys.stderr)
+                sys.exit(19)
+            dirname = configmember.name.split('/')[0]
+            os.rename(dirname, 'sqlite3')
+            if sys.platform != "win32":
                 os.chdir('sqlite3')
                 write("    Running configure to work out SQLite compilation flags")
                 res = os.system("./configure >/dev/null")
@@ -305,10 +286,10 @@ class fetch(Command):
                 if defs:
                     op = open("sqlite3config.h", "wt", encoding="utf8")
                     op.write("""
-/* This file was generated by parsing how configure altered the Makefile
-   which isn't used when building python extensions.  It is specific to the
-   machine and developer components on which it was run. */
-   \n""")
+    /* This file was generated by parsing how configure altered the Makefile
+    which isn't used when building python extensions.  It is specific to the
+    machine and developer components on which it was run. */
+    \n""")
 
                     for define in defs:
                         op.write('#define %s %s\n' % tuple(define))
