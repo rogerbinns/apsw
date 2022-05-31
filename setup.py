@@ -743,27 +743,10 @@ for f in (findamalgamation(), ):
 # we produce a .c file from this
 depends.append("tools/shell.py")
 
-# msi can't use normal version numbers because distutils is retarded,
-# so mangle ours to suit it
+# msi is fussy about version numbers
 if "bdist_msi" in sys.argv:
-    if version.endswith("-r1"):
-        version = version[:-len("-r1")]
-    else:
-        assert False, "MSI version needs help"
     version = [int(v) for v in re.split(r"[^\d]+", version)]
-    # easy pad to 3 items long
-    while len(version) < 3:
-        version.append(0)
-    # 4 is our normal length (eg 3.7.3-r1) but sometimes it is more eg
-    # 3.7.16.1-r1 so combine last elements if longer than 4
-    while len(version) > 4:
-        version[-2] = 10 * version[-2] + version - 1
-        del version[-1]
-    # combine first two elements
-    if len(version) > 3:
-        version[0] = 100 * version[0] + version[1]
-        del version[1]
-
+    assert len(version) == 4
     version = ".".join([str(v) for v in version])
 
 if __name__ == '__main__':
