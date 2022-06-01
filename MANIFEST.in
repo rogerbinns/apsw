@@ -8,10 +8,11 @@ include src/apsw.docstrings
 include MANIFEST.in
 
 # other files
-include apsw/apsw.pyi
+include apsw/__init__.pyi
 include apsw/py.typed
 include LICENSE
 include checksums
+include setup.cfg
 include setup.py
 include tools/speedtest.py
 include tools/apswtrace.py
