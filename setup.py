@@ -764,11 +764,15 @@ for f in (findamalgamation(), ):
 # we produce a .c file from this
 depends.append("tools/shell.py")
 
-# msi is fussy about version numbers
+# msi is fussy about version numbers, but StrictVersion in
+# setuptools is even stricter.  msi allows 4 number components
+# while StrictVersion only allows 3 but does allow an additional
+# number preceded by a or b (intended for alpha or beta).  SQLite
+# now only uses 3 numbers (semver) so we map or -r suffix to a 'b'
 if "bdist_msi" in sys.argv:
     version = [int(v) for v in re.split(r"[^\d]+", version)]
     assert len(version) == 4
-    version = ".".join([str(v) for v in version])
+    version = ".".join([str(v) for v in version[:3]]) + f"b{ version[-1] }"
 
 if __name__ == '__main__':
     setup(name="apsw",
