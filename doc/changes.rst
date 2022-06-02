@@ -2,8 +2,15 @@ Change History
 **************
 .. currentmodule:: apsw
 
-next
-====
+3.38.5-r1
+=========
+
+APSW is now on PyPI, so you can::
+
+   pip install apsw
+
+(Thanks to several people behind the scenes who helped with the various pieces
+to make this happen.)
 
 Removed support for setup.py downloading the in-development (aka
 fossil) version of SQLite.
@@ -22,7 +29,7 @@ All items now have full docstrings including type information.
 functions and data (ie almost all of APSW) can't provide the same
 level of type information as regular Python code.
 
-apsw.pyi file is included which does provide all the typing
+A pyi file is included which does provide all the typing
 information in `type stub
 <https://typing.readthedocs.io/en/latest/source/stubs.html>`__ format,
 and shown by most IDEs.
@@ -324,7 +331,7 @@ Added SQLITE_DBSTATUS_CACHE_USED_SHARED and SQLITE_OK_LOAD_PERMANENTLY constants
 
 Added SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION constant.
 
-Added a :ref:`pip command line <really_want_pip>` in the :doc:`download` page.
+Added a pip command line in the :doc:`download` page.
 
 3.12.2-r1
 =========

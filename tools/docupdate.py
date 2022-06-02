@@ -12,15 +12,6 @@ version = sys.argv[1]
 url = "  <https://github.com/rogerbinns/apsw/releases/download/" + version + "/%s>`__"
 version_no_r = version.split("-r")[0]
 
-pip_template = """
-.. pip-begin
-
-Use this (all one command)::
-
-    pip install --user https://github.com/rogerbinns/apsw/releases/download/%s/apsw-%s.zip \\
-    --global-option=fetch --global-option=--all --global-option=build \\
-    --global-option=--enable-all-extensions
-""" % (version, version.split("-")[0])
 
 download = open("doc/download.rst", "rt").read()
 
@@ -83,11 +74,7 @@ for line in open("doc/download.rst", "rt"):
         op.append("  GPG signatures for all files")
         op.append("")
         continue
-    if line == ".. pip-begin":
-        op.extend(pip_template.split("\n")[1:])
-        incomment = True
-        continue
-    if line == ".. downloads-end" or line == ".. pip-end":
+    if line == ".. downloads-end":
         incomment = False
     if incomment:
         continue
