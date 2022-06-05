@@ -43,3 +43,4 @@ apsw.egg-info
 /System Volume Informationm/
 __pycache__/
 setup.cfg
+work/
