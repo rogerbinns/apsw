@@ -160,7 +160,7 @@ setup-wheel:
 
 
 source_nocheck: docs
-	env $(PYTHON) setup.py sdist --formats zip --add-doc
+	env APSW_USE_DISTUTILS=t $(PYTHON) setup.py sdist --formats zip --add-doc
 
 # Make the source and then check it builds and tests correctly.  This will catch missing files etc
 source: source_nocheck
@@ -171,7 +171,7 @@ source: source_nocheck
 	for f in doc/vfs.html doc/_sources/pysqlite.txt tools/apswtrace.py ; do test -f work/$(VERDIR)/$$f ; done
 	for f in sqlite3.c sqlite3/sqlite3.c debian/control ; do test ! -f work/$(VERDIR)/$$f ; done
 # Test code works
-	cd work/$(VERDIR) ; $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --enable-all-extensions build_test_extension test
+	cd work/$(VERDIR) ; env APSW_USE_DISTUTILS=t $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --enable-all-extensions build_test_extension test
 
 release:
 	test -f dist/$(VERDIR).zip

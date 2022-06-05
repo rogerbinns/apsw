@@ -16,10 +16,13 @@ import shutil
 
 using_setuptools = False
 try:
-    from setuptools import setup, Extension, Command
-    from setuptools.command import build_ext, sdist
-    from distutils.command import build
-    using_setuptools = True
+    if not os.getenv("APSW_USE_DISTUTILS"):
+        from setuptools import setup, Extension, Command
+        from setuptools.command import build_ext, sdist
+        from distutils.command import build
+        using_setuptools = True
+    else:
+        raise ImportError("use distutils")
 except ImportError:
     from distutils.core import setup, Extension, Command
     from distutils.command import build_ext, build, sdist
