@@ -29,10 +29,10 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
-   |       Using APSW file /space/apsw/apsw.cpython-39-x86_64-linux-gnu.so
-   |          APSW version 3.38.1-r1
-   |    SQLite lib version 3.38.1
-   | SQLite header version 3038001
+   |       Using APSW file /space/apsw/apsw/__init__.cpython-310-x86_64-linux-gnu.so
+   |          APSW version 3.38.5-r1
+   |    SQLite lib version 3.38.5
+   | SQLite header version 3038005
 
 .. code-block:: python
 
@@ -533,9 +533,9 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
-   | 42642856 f9cd58ee140be1597db0__mypyc.cpython-39-x86_64-linux-gnu.so /home/rogerb/.local/lib/python3.9/site-packages
-   | 7598536 apsw.cpython-39-x86_64-linux-gnu.so /space/apsw
-   | 3546224 qdldl.cpython-39-x86_64-linux-gnu.so /home/rogerb/.local/lib/python3.9/site-packages
+   | 44236656 d9e93640ccdc3fbe1e95__mypyc.cpython-310-x86_64-linux-gnu.so /home/rogerb/.local/lib/python3.10/site-packages
+   | 1246656 unicodedata2.cpython-310-x86_64-linux-gnu.so /usr/lib/python3/dist-packages
+   | 765704 _brotli.cpython-310-x86_64-linux-gnu.so /usr/lib/python3/dist-packages
 
 .. code-block:: python
 
@@ -545,9 +545,9 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
-   | 1581788581.6627443 menulibre-2.2.1.egg-info /usr/lib/python3/dist-packages
    | 1582056231.6234083 .style.yapf /space/apsw
-   | 1582056231.8954034 setup.cfg /space/apsw
+   | 1587233567.4374056 arandr-0.1.10.egg-info /usr/lib/python3/dist-packages
+   | 1604593216.8926702 pyparsing.py /usr/lib/python3/dist-packages
 
 .. _example-vfs:
 
@@ -749,7 +749,7 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
-   | SQLite memory usage current 314808 max 326752
+   | SQLite memory usage current 314832 max 326776
 
 .. code-block:: python
 

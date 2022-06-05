@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tips &#8212; APSW 3.38.1-r1 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Tips &#8212; APSW 3.38.5-r1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
@@ -42,7 +43,7 @@
         <li class="right" >
           <a href="index.html" title="APSW documentation"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.1-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.5-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Tips</a></li> 
       </ul>
     </div>  
@@ -52,11 +53,11 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="tips">
+  <section id="tips">
 <h1>Tips<a class="headerlink" href="#tips" title="Permalink to this headline">¶</a></h1>
 <p>These tips are based on mailing list postings, issues, and emails.
 You are recommended to read all the documentation as well.</p>
-<div class="section" id="about-python-apsw-and-sqlite-versions">
+<section id="about-python-apsw-and-sqlite-versions">
 <span id="version-stuff"></span><h2>About Python, APSW, and SQLite versions<a class="headerlink" href="#about-python-apsw-and-sqlite-versions" title="Permalink to this headline">¶</a></h2>
 <p>SQLite has approximately quarterly releases.  These include tweaks,
 bug fixes, and new functionality based on the billions of SQLite
@@ -76,14 +77,14 @@ constants.</p>
 so that you can update the SQLite version you use, access new
 constants and APIs (if desired), all without having to change your
 Python version.</p>
-</div>
-<div class="section" id="sqlite-is-different">
+</section>
+<section id="sqlite-is-different">
 <h2>SQLite is different<a class="headerlink" href="#sqlite-is-different" title="Permalink to this headline">¶</a></h2>
 <p>While SQLite provides a SQL database like many others out there, it is
 also unique in many ways.  Read about the unique features at the
 <a class="reference external" href="https://sqlite.org/different.html">SQLite website</a>.</p>
-</div>
-<div class="section" id="transactions">
+</section>
+<section id="transactions">
 <h2>Transactions<a class="headerlink" href="#transactions" title="Permalink to this headline">¶</a></h2>
 <p>Transactions are the changes applied to a database file as a whole.
 They either happen completely, or not at all.  SQLite notes all the changes
@@ -128,8 +129,8 @@ exceptions occur:</p>
 </div>
 <p>There are <a class="reference external" href="https://www.sqlite.org/lang_transaction.html">technical details</a>
 at the <a class="reference external" href="https://www.sqlite.org/docs.html">SQLite site</a>.</p>
-</div>
-<div class="section" id="cursors">
+</section>
+<section id="cursors">
 <h2>Cursors<a class="headerlink" href="#cursors" title="Permalink to this headline">¶</a></h2>
 <p>SQLite only calculates each result row as you request it.  For example
 if your query returns 10 million rows SQLite will not calculate all 10
@@ -145,8 +146,8 @@ each time.  If you don’t, code refactoring and nested loops can unintentially
 use the same cursor object which will not crash but will cause hard to
 diagnose behaviour in your program.</p>
 <p>Read more about <a class="reference internal" href="cursor.html#cursors"><span class="std std-ref">Cursors</span></a>.</p>
-</div>
-<div class="section" id="bindings">
+</section>
+<section id="bindings">
 <h2>Bindings<a class="headerlink" href="#bindings" title="Permalink to this headline">¶</a></h2>
 <p>When using a cursor, always use bindings.  <a class="reference external" href="http://docs.python.org/library/stdtypes.html#string-formatting-operations">String interpolation</a>
 may seem more convenient but you will encounter difficulties.  You may
@@ -158,8 +159,8 @@ injection attacks</a> in
 ways you never even thought possible.</p>
 <p>The <a class="reference internal" href="cursor.html#cursors"><span class="std std-ref">documentation</span></a> gives many examples of how to use
 various forms of bindings.</p>
-</div>
-<div class="section" id="unicode">
+</section>
+<section id="unicode">
 <h2>Unicode<a class="headerlink" href="#unicode" title="Permalink to this headline">¶</a></h2>
 <p>SQLite only stores text as Unicode.  However it relies on SQLite API
 users to provide valid UTF-8 and does not double check.  (APSW only
@@ -172,8 +173,8 @@ operator.  For example:</p>
 </div>
 <p>Then proceed to give the <a class="reference external" href="http://www.joelonsoftware.com/articles/Unicode.html">Joel Unicode article</a> to all people
 involved.</p>
-</div>
-<div class="section" id="diagnostics">
+</section>
+<section id="diagnostics">
 <span id="diagnostics-tips"></span><h2>Diagnostics<a class="headerlink" href="#diagnostics" title="Permalink to this headline">¶</a></h2>
 <p>Both SQLite and APSW provide detailed diagnostic information.  Errors
 will be signalled via an <a class="reference internal" href="exceptions.html"><span class="doc">exception</span></a>.</p>
@@ -203,8 +204,8 @@ a table.:</p>
 <span class="n">SQLITE_LOG</span><span class="p">:</span> <span class="n">statement</span> <span class="n">aborts</span> <span class="n">at</span> <span class="mi">38</span><span class="p">:</span> <span class="p">[</span><span class="n">create</span> <span class="n">table</span> <span class="n">foo</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">);]</span> <span class="n">unable</span> <span class="n">to</span> <span class="nb">open</span> <span class="n">database</span> <span class="n">file</span> <span class="p">(</span><span class="mi">14</span><span class="p">)</span> <span class="n">SQLITE_CANTOPEN</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="managing-and-updating-your-schema">
+</section>
+<section id="managing-and-updating-your-schema">
 <h2>Managing and updating your schema<a class="headerlink" href="#managing-and-updating-your-schema" title="Permalink to this headline">¶</a></h2>
 <p>If your program uses SQLite for <a class="reference external" href="https://sqlite.org/appfileformat.html">data</a> then you’ll need to manage
 and update your schema.  The hard way of doing this is to test for the
@@ -238,8 +239,8 @@ programmatically.  The easy way is to use <a class="reference external" href="ht
 <p>This approach will automatically upgrade the schema as you expect.
 You can also use <a class="reference external" href="https://sqlite.org/pragma.html#pragma_application_id">pragma application_id</a> to mark the
 database as made by your application.</p>
-</div>
-<div class="section" id="parsing-sql">
+</section>
+<section id="parsing-sql">
 <h2>Parsing SQL<a class="headerlink" href="#parsing-sql" title="Permalink to this headline">¶</a></h2>
 <p>Sometimes you want to know what a particular SQL statement does.  The
 SQLite query parser directly generates VDBE byte code and cannot be
@@ -253,8 +254,8 @@ query does including expanding views and triggers that fire.  Finally
 the execution tracer will fire.  If the query string had multiple
 statements then the execution tracer lets you know how long the first
 statement was.</p>
-</div>
-<div class="section" id="unexpected-behaviour">
+</section>
+<section id="unexpected-behaviour">
 <h2>Unexpected behaviour<a class="headerlink" href="#unexpected-behaviour" title="Permalink to this headline">¶</a></h2>
 <p>Occasionally you may get different results than you expected.  Before
 littering your code with <em>print</em>, try <a class="reference internal" href="execution.html#apswtrace"><span class="std std-ref">apswtrace</span></a>
@@ -274,8 +275,8 @@ named <code class="docutils literal notranslate"><span class="pre">a</span> <spa
 <p>If you use double quotes and happen to use a string whose contents are
 the same as a table, alias, column etc then unexpected results will
 occur.</p>
-</div>
-<div class="section" id="customizing-cursors">
+</section>
+<section id="customizing-cursors">
 <h2>Customizing cursors<a class="headerlink" href="#customizing-cursors" title="Permalink to this headline">¶</a></h2>
 <p>Some developers want to customize the behaviour of cursors.  An
 example would be wanting a <a class="reference internal" href="dbapi.html#rowcount"><span class="std std-ref">rowcount</span></a> or batching returned rows.
@@ -298,8 +299,8 @@ tuple:</p>
 <span class="n">connection</span><span class="o">.</span><span class="n">setrowtrace</span><span class="p">(</span><span class="n">row_factory</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="busy-handling">
+</section>
+<section id="busy-handling">
 <span id="busyhandling"></span><h2>Busy handling<a class="headerlink" href="#busy-handling" title="Permalink to this headline">¶</a></h2>
 <p>SQLite uses locks to coordinate access to the database by multiple
 connections (within the same process or in a different process).  The
@@ -309,15 +310,15 @@ short a time as possible.  See the <a class="reference external" href="https://s
 <p>By default you will get a <a class="reference internal" href="exceptions.html#apsw.BusyError" title="apsw.BusyError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">BusyError</span></code></a> if a lock cannot be
 acquired.  You can set a <a class="reference internal" href="connection.html#apsw.Connection.setbusytimeout" title="apsw.Connection.setbusytimeout"><code class="xref py py-meth docutils literal notranslate"><span class="pre">timeout</span></code></a>
 which will keep retrying or a <a class="reference internal" href="connection.html#apsw.Connection.setbusyhandler" title="apsw.Connection.setbusyhandler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">callback</span></code></a> where you decide what to do.</p>
-</div>
-<div class="section" id="database-schema">
+</section>
+<section id="database-schema">
 <h2>Database schema<a class="headerlink" href="#database-schema" title="Permalink to this headline">¶</a></h2>
 <p>When starting a new database, it can be quite difficult to decide what
 tables and fields to have and how to link them.  The technique used to
 design SQL schemas is called <a class="reference external" href="http://en.wikipedia.org/wiki/Database_normalization">normalization</a>.  The page
 also shows common pitfalls if you don’t normalize your schema.</p>
-</div>
-<div class="section" id="shared-cache-mode">
+</section>
+<section id="shared-cache-mode">
 <span id="sharedcache"></span><h2>Shared Cache Mode<a class="headerlink" href="#shared-cache-mode" title="Permalink to this headline">¶</a></h2>
 <p>SQLite supports a <a class="reference external" href="https://sqlite.org/sharedcache.html">shared cache mode</a> where multiple connections
 to the same database can share a cache instead of having their own.
@@ -335,8 +336,8 @@ connections to get the same performance.</p>
 <p>The shared cache mode is targeted at embedded systems where every
 byte of memory and I/O matters.  For example an MP3 player may only
 have kilobytes of memory available for SQLite.</p>
-</div>
-<div class="section" id="write-ahead-logging">
+</section>
+<section id="write-ahead-logging">
 <span id="wal"></span><h2>Write Ahead Logging<a class="headerlink" href="#write-ahead-logging" title="Permalink to this headline">¶</a></h2>
 <p>SQLite 3.7 introduces <a class="reference external" href="https://sqlite.org/wal.html">write ahead logging</a> which has several benefits, but
 also some drawbacks as the page documents.  WAL mode is off by
@@ -360,8 +361,8 @@ that are not in wal mode.</p>
 supports WAL will make your VFS support the extra WAL methods too.
 (Your VFS will point directly to the base methods - there is no
 indirect call via Python.)</p>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -409,7 +410,7 @@ indirect call via Python.)</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -434,15 +435,15 @@ indirect call via Python.)</p>
         <li class="right" >
           <a href="index.html" title="APSW documentation"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.1-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.5-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Tips</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 22, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Last updated on Jun 05, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

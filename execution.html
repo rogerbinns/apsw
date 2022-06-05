@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Execution and tracing &#8212; APSW 3.38.1-r1 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Execution and tracing &#8212; APSW 3.38.5-r1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
@@ -42,7 +43,7 @@
         <li class="right" >
           <a href="types.html" title="Types"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.1-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.5-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Execution and tracing</a></li> 
       </ul>
     </div>  
@@ -52,9 +53,9 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="execution-and-tracing">
+  <section id="execution-and-tracing">
 <h1>Execution and tracing<a class="headerlink" href="#execution-and-tracing" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="execution-model">
+<section id="execution-model">
 <span id="executionmodel"></span><h2>Execution model<a class="headerlink" href="#execution-model" title="Permalink to this headline">¶</a></h2>
 <p>This section only matters if you give multiple SQL statements in one go to <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-exc docutils literal notranslate"><span class="pre">Cursor.execute</span></code></a>.
 (Statements are separated by semi-colons.)</p>
@@ -84,8 +85,8 @@ example:</p>
 following create table command didn’t have a chance to get
 executed. On the next execute that condition is detected and an
 exception raised.</p>
-</div>
-<div class="section" id="multi-threading-and-re-entrancy">
+</section>
+<section id="multi-threading-and-re-entrancy">
 <h2>Multi-threading and re-entrancy<a class="headerlink" href="#multi-threading-and-re-entrancy" title="Permalink to this headline">¶</a></h2>
 <p>ASPW lets you use SQLite in multi-threaded programs and will let other
 threads execute while SQLite is working.  (Technically the <a class="reference external" href="http://www.python.org/doc/2.3.4/api/threads.html">GIL</a> is released when
@@ -115,8 +116,8 @@ function or collation since these are called while executing a
 query. You can however make new cursors and use those without
 issue. You may want to remember the Connection object when you set
 your trace or user defined functions.</p>
-</div>
-<div class="section" id="bit-hosts">
+</section>
+<section id="bit-hosts">
 <span id="x64bitpy25"></span><h2>64 bit hosts<a class="headerlink" href="#bit-hosts" title="Permalink to this headline">¶</a></h2>
 <p>APSW is tested and works correctly on 32 and 64 bit hosts.
 Unfortunately SQLite is limited to 32 bit quantities for strings,
@@ -124,8 +125,8 @@ blobs, number of columns etc even when compiled for 64 bit.
 Consequently you will get a TooBig exception from APSW which checks if
 strings/buffers longer than 1GB or 2GB (depends on internal storage)
 are used. See <a class="reference external" href="https://sqlite.org/cvstrac/tktview?tn=2125">SQLite ticket #2125</a> and <a class="reference external" href="https://sqlite.org/cvstrac/tktview?tn=3246">SQLite ticket #3246</a> for more details.</p>
-</div>
-<div class="section" id="statement-cache">
+</section>
+<section id="statement-cache">
 <span id="statementcache"></span><h2>Statement Cache<a class="headerlink" href="#statement-cache" title="Permalink to this headline">¶</a></h2>
 <p>Each <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> maintains a cache mapping SQL queries to a
 <a class="reference external" href="https://sqlite.org/c3ref/stmt.html">prepared statement</a> to avoid
@@ -144,8 +145,8 @@ statement cache.</p>
 you should disable the statement cache.  This is because the
 authorizer callback is only called while statements are being
 prepared.</p>
-</div>
-<div class="section" id="tracing">
+</section>
+<section id="tracing">
 <span id="id1"></span><h2>Tracing<a class="headerlink" href="#tracing" title="Permalink to this headline">¶</a></h2>
 <p>You can install tracers on <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">cursors</span></code></a> or
 <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">connections</span></code></a> as an easy way of seeing exactly
@@ -164,7 +165,7 @@ in the tracer then do them from a new cursor object.  For example:</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="execution-tracer">
+<section id="execution-tracer">
 <span id="executiontracer"></span><h3>Execution Tracer<a class="headerlink" href="#execution-tracer" title="Permalink to this headline">¶</a></h3>
 <p>The execution tracer is called after an SQL statement has been
 prepared. (ie syntax errors will have caused an exception during
@@ -193,8 +194,8 @@ and have a Connection execution tracer then your callback will also be
 called when APSW creates and releases/rollbacks savepoints.  Instead
 of the first argument being a cursor, it will be the connection itself
 since there is no cursor involved.</p>
-</div>
-<div class="section" id="row-tracer">
+</section>
+<section id="row-tracer">
 <span id="rowtracer"></span><h3>Row Tracer<a class="headerlink" href="#row-tracer" title="Permalink to this headline">¶</a></h3>
 <p>The row tracer is called before each row is returned. It is called with
 two arguments.</p>
@@ -213,9 +214,9 @@ whole row is skipped. See the <a class="reference internal" href="example.html#e
 <a class="reference internal" href="cursor.html#apsw.Cursor.setrowtrace" title="apsw.Cursor.setrowtrace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.setrowtrace()</span></code></a> or for all cursors by calling
 <a class="reference internal" href="connection.html#apsw.Connection.setrowtrace" title="apsw.Connection.setrowtrace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.setrowtrace()</span></code></a>, with the cursor tracer taking
 priority.</p>
-</div>
-</div>
-<div class="section" id="apsw-trace">
+</section>
+</section>
+<section id="apsw-trace">
 <span id="apswtrace"></span><h2>APSW Trace<a class="headerlink" href="#apsw-trace" title="Permalink to this headline">¶</a></h2>
 <p>APSW includes a tracing script as part of the <a class="reference internal" href="download.html#source-and-binaries"><span class="std std-ref">source
 distribution</span></a> named <code class="file docutils literal notranslate"><span class="pre">apswtrace.py</span></code>, or you
@@ -403,8 +404,8 @@ illustrates how time spent busy waiting is included.</p>
 </pre></div>
 </div>
 </div></blockquote>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -447,7 +448,7 @@ illustrates how time spent busy waiting is included.</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -472,15 +473,15 @@ illustrates how time spent busy waiting is included.</p>
         <li class="right" >
           <a href="types.html" title="Types"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.1-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.5-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Execution and tracing</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 22, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Last updated on Jun 05, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

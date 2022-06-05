@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Virtual Tables &#8212; APSW 3.38.1-r1 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Virtual Tables &#8212; APSW 3.38.5-r1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
@@ -42,7 +43,7 @@
         <li class="right" >
           <a href="backup.html" title="Backup"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.1-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.5-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Virtual Tables</a></li> 
       </ul>
     </div>  
@@ -52,7 +53,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="virtual-tables">
+  <section id="virtual-tables">
 <span id="virtualtables"></span><h1>Virtual Tables<a class="headerlink" href="#virtual-tables" title="Permalink to this headline">¶</a></h1>
 <p><a class="reference external" href="https://sqlite.org/vtab.html">Virtual Tables</a> are a feature
 introduced in SQLite 3.3.7. They let a developer provide an underlying
@@ -79,11 +80,11 @@ omitted in Python. You can return SQLite error codes (eg
 <code class="xref py py-const docutils literal notranslate"><span class="pre">SQLITE_READONLY</span></code>) by raising the appropriate exceptions (eg
 <a class="reference internal" href="exceptions.html#apsw.ReadOnlyError" title="apsw.ReadOnlyError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ReadOnlyError</span></code></a>).  <a class="reference internal" href="apsw.html#apsw.exceptionfor" title="apsw.exceptionfor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">exceptionfor()</span></code></a> is a useful helper
 function to do the mapping.</p>
-<div class="section" id="vtmodule-class">
+<section id="vtmodule-class">
 <h2>VTModule class<a class="headerlink" href="#vtmodule-class" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="apsw.VTModule">
-<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">VTModule</span></code><a class="headerlink" href="#apsw.VTModule" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apsw.VTModule">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VTModule</span></span><a class="headerlink" href="#apsw.VTModule" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <div class="admonition note">
@@ -109,8 +110,8 @@ a module object, you register it with a connection by calling
 Any number of tables referring to the same module can be made this
 way.  Note the (optional) arguments which are passed to the module.</p>
 <dl class="py method">
-<dt id="apsw.VTModule.Connect">
-<code class="sig-prename descclassname"><span class="pre">VTModule.</span></code><code class="sig-name descname"><span class="pre">Connect</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modulename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">databasename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tablename</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">[</span> <span class="pre">sql</span> <span class="pre">string,</span> <span class="pre">table</span> <span class="pre">object</span> <span class="pre">]</span><a class="headerlink" href="#apsw.VTModule.Connect" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apsw.VTModule.Connect">
+<span class="sig-prename descclassname"><span class="pre">VTModule.</span></span><span class="sig-name descname"><span class="pre">Connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modulename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">databasename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tablename</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">[</span> <span class="pre">sql</span> <span class="pre">string,</span> <span class="pre">table</span> <span class="pre">object</span> <span class="pre">]</span></span></span><a class="headerlink" href="#apsw.VTModule.Connect" title="Permalink to this definition">¶</a></dt>
 <dd><p>The parameters and return are identical to
 <a class="reference internal" href="#apsw.VTModule.Create" title="apsw.VTModule.Create"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Create()</span></code></a>.  This method is called
 when there are additional references to the table.  <a class="reference internal" href="#apsw.VTModule.Create" title="apsw.VTModule.Create"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Create()</span></code></a> will be called the first time and
@@ -132,8 +133,8 @@ set <a class="reference internal" href="#apsw.VTModule.Connect" title="apsw.VTMo
 </dd></dl>
 
 <dl class="py method">
-<dt id="apsw.VTModule.Create">
-<code class="sig-prename descclassname"><span class="pre">VTModule.</span></code><code class="sig-name descname"><span class="pre">Create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modulename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">databasename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tablename</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">[</span> <span class="pre">sql</span> <span class="pre">string,</span> <span class="pre">table</span> <span class="pre">object</span> <span class="pre">]</span><a class="headerlink" href="#apsw.VTModule.Create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apsw.VTModule.Create">
+<span class="sig-prename descclassname"><span class="pre">VTModule.</span></span><span class="sig-name descname"><span class="pre">Create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modulename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">databasename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tablename</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">[</span> <span class="pre">sql</span> <span class="pre">string,</span> <span class="pre">table</span> <span class="pre">object</span> <span class="pre">]</span></span></span><a class="headerlink" href="#apsw.VTModule.Create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called when a table is first created on a <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">connection</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -155,12 +156,12 @@ is an object that implements the <a class="reference internal" href="#apsw.VTTab
 <p>The corresponding call is <a class="reference internal" href="#apsw.VTTable.Destroy" title="apsw.VTTable.Destroy"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.Destroy()</span></code></a>.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="vttable-class">
+</section>
+<section id="vttable-class">
 <h2>VTTable class<a class="headerlink" href="#vttable-class" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="apsw.VTTable">
-<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">VTTable</span></code><a class="headerlink" href="#apsw.VTTable" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apsw.VTTable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VTTable</span></span><a class="headerlink" href="#apsw.VTTable" title="Permalink to this definition">¶</a></dt>
 <dd><div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>There is no actual <em>VTTable</em> class - it is just shown this way for
@@ -179,15 +180,15 @@ the <a class="reference internal" href="#apsw.VTTable" title="apsw.VTTable"><cod
 </dd></dl>
 
 <dl class="py method">
-<dt id="apsw.VTTable.Begin">
-<code class="sig-prename descclassname"><span class="pre">VTTable.</span></code><code class="sig-name descname"><span class="pre">Begin</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Begin" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apsw.VTTable.Begin">
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Begin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Begin" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function is used as part of transactions.  You do not have to
 provide the method.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="apsw.VTTable.BestIndex">
-<code class="sig-prename descclassname"><span class="pre">VTTable.</span></code><code class="sig-name descname"><span class="pre">BestIndex</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constraints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orderbys</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.BestIndex" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apsw.VTTable.BestIndex">
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">BestIndex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constraints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orderbys</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.BestIndex" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is a complex method. To get going initially, just return
 <code class="xref py py-const docutils literal notranslate"><span class="pre">None</span></code> and you will be fine. Implementing this method reduces
 the number of rows scanned in your table to satisfy queries, but
@@ -359,15 +360,15 @@ index on customer equality and price.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="apsw.VTTable.Commit">
-<code class="sig-prename descclassname"><span class="pre">VTTable.</span></code><code class="sig-name descname"><span class="pre">Commit</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Commit" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apsw.VTTable.Commit">
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Commit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Commit" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function is used as part of transactions.  You do not have to
 provide the method.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="apsw.VTTable.Destroy">
-<code class="sig-prename descclassname"><span class="pre">VTTable.</span></code><code class="sig-name descname"><span class="pre">Destroy</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Destroy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apsw.VTTable.Destroy">
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Destroy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Destroy" title="Permalink to this definition">¶</a></dt>
 <dd><p>The opposite of <a class="reference internal" href="#apsw.VTModule.Create" title="apsw.VTModule.Create"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTModule.Create()</span></code></a>.  This method is called when
 the table is no longer used.  Note that you must always release
 resources even if you intend to return an error, as it will not be
@@ -375,16 +376,16 @@ called again on error.  SQLite may also <a class="reference external" href="http
 </dd></dl>
 
 <dl class="py method">
-<dt id="apsw.VTTable.Disconnect">
-<code class="sig-prename descclassname"><span class="pre">VTTable.</span></code><code class="sig-name descname"><span class="pre">Disconnect</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Disconnect" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apsw.VTTable.Disconnect">
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Disconnect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Disconnect" title="Permalink to this definition">¶</a></dt>
 <dd><p>The opposite of <a class="reference internal" href="#apsw.VTModule.Connect" title="apsw.VTModule.Connect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTModule.Connect()</span></code></a>.  This method is called when
 a reference to a virtual table is no longer used, but <a class="reference internal" href="#apsw.VTTable.Destroy" title="apsw.VTTable.Destroy"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.Destroy()</span></code></a> will
 be called when the table is no longer used.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="apsw.VTTable.FindFunction">
-<code class="sig-prename descclassname"><span class="pre">VTTable.</span></code><code class="sig-name descname"><span class="pre">FindFunction</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.FindFunction" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apsw.VTTable.FindFunction">
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">FindFunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.FindFunction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called to find if the virtual table has its own implementation of a
 particular scalar function. You should return the function if you
 have it, else return None. You do not have to provide this method.</p>
@@ -410,14 +411,14 @@ to disable the <a class="reference internal" href="execution.html#statementcache
 </dd></dl>
 
 <dl class="py method">
-<dt id="apsw.VTTable.Open">
-<code class="sig-prename descclassname"><span class="pre">VTTable.</span></code><code class="sig-name descname"><span class="pre">Open</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Open" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apsw.VTTable.Open">
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Open</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Open" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a <a class="reference internal" href="#apsw.VTCursor" title="apsw.VTCursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">cursor</span></code></a> object.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="apsw.VTTable.Rename">
-<code class="sig-prename descclassname"><span class="pre">VTTable.</span></code><code class="sig-name descname"><span class="pre">Rename</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">newname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Rename" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apsw.VTTable.Rename">
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Rename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">newname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Rename" title="Permalink to this definition">¶</a></dt>
 <dd><p>Notification that the table will be given a new name. If you return
 without raising an exception, then SQLite renames the table (you
 don’t have to do anything). If you raise an exception then the
@@ -425,22 +426,22 @@ renaming is prevented.  You do not have to provide this method.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="apsw.VTTable.Rollback">
-<code class="sig-prename descclassname"><span class="pre">VTTable.</span></code><code class="sig-name descname"><span class="pre">Rollback</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Rollback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apsw.VTTable.Rollback">
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Rollback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Rollback" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function is used as part of transactions.  You do not have to
 provide the method.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="apsw.VTTable.Sync">
-<code class="sig-prename descclassname"><span class="pre">VTTable.</span></code><code class="sig-name descname"><span class="pre">Sync</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Sync" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apsw.VTTable.Sync">
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">Sync</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.Sync" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function is used as part of transactions.  You do not have to
 provide the method.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="apsw.VTTable.UpdateChangeRow">
-<code class="sig-prename descclassname"><span class="pre">VTTable.</span></code><code class="sig-name descname"><span class="pre">UpdateChangeRow</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">newrowid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.UpdateChangeRow" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apsw.VTTable.UpdateChangeRow">
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">UpdateChangeRow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">newrowid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.UpdateChangeRow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Change an existing row.  You may also need to change the rowid - for example if the query was
 <code class="docutils literal notranslate"><span class="pre">UPDATE</span> <span class="pre">table</span> <span class="pre">SET</span> <span class="pre">rowid=rowid+100</span> <span class="pre">WHERE</span> <span class="pre">...</span></code></p>
 <dl class="field-list simple">
@@ -455,8 +456,8 @@ provide the method.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="apsw.VTTable.UpdateDeleteRow">
-<code class="sig-prename descclassname"><span class="pre">VTTable.</span></code><code class="sig-name descname"><span class="pre">UpdateDeleteRow</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rowid</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.UpdateDeleteRow" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apsw.VTTable.UpdateDeleteRow">
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">UpdateDeleteRow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rowid</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTTable.UpdateDeleteRow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete the row with the specified <em>rowid</em>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -466,8 +467,8 @@ provide the method.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="apsw.VTTable.UpdateInsertRow">
-<code class="sig-prename descclassname"><span class="pre">VTTable.</span></code><code class="sig-name descname"><span class="pre">UpdateInsertRow</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rowid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">newrowid</span><a class="headerlink" href="#apsw.VTTable.UpdateInsertRow" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apsw.VTTable.UpdateInsertRow">
+<span class="sig-prename descclassname"><span class="pre">VTTable.</span></span><span class="sig-name descname"><span class="pre">UpdateInsertRow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rowid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">newrowid</span></span></span><a class="headerlink" href="#apsw.VTTable.UpdateInsertRow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Insert a row with the specified <em>rowid</em>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -484,12 +485,12 @@ is ignored.</p>
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="vtcursor-class">
+</section>
+<section id="vtcursor-class">
 <h2>VTCursor class<a class="headerlink" href="#vtcursor-class" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="apsw.VTCursor">
-<em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">VTCursor</span></code><a class="headerlink" href="#apsw.VTCursor" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apsw.VTCursor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VTCursor</span></span><a class="headerlink" href="#apsw.VTCursor" title="Permalink to this definition">¶</a></dt>
 <dd><div class="admonition note">
 <p class="admonition-title">Note</p>
 <blockquote>
@@ -508,16 +509,16 @@ track of where it is.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="apsw.VTCursor.Close">
-<code class="sig-prename descclassname"><span class="pre">VTCursor.</span></code><code class="sig-name descname"><span class="pre">Close</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTCursor.Close" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apsw.VTCursor.Close">
+<span class="sig-prename descclassname"><span class="pre">VTCursor.</span></span><span class="sig-name descname"><span class="pre">Close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTCursor.Close" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is the destructor for the cursor. Note that you must
 cleanup. The method will not be called again if you raise an
 exception.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="apsw.VTCursor.Column">
-<code class="sig-prename descclassname"><span class="pre">VTCursor.</span></code><code class="sig-name descname"><span class="pre">Column</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTCursor.Column" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apsw.VTCursor.Column">
+<span class="sig-prename descclassname"><span class="pre">VTCursor.</span></span><span class="sig-name descname"><span class="pre">Column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTCursor.Column" title="Permalink to this definition">¶</a></dt>
 <dd><p>Requests the value of the specified column <em>number</em> of the current
 row.  If <em>number</em> is -1 then return the rowid.</p>
 <dl class="field-list simple">
@@ -529,8 +530,8 @@ supported types</span></a></p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="apsw.VTCursor.Eof">
-<code class="sig-prename descclassname"><span class="pre">VTCursor.</span></code><code class="sig-name descname"><span class="pre">Eof</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#apsw.VTCursor.Eof" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apsw.VTCursor.Eof">
+<span class="sig-prename descclassname"><span class="pre">VTCursor.</span></span><span class="sig-name descname"><span class="pre">Eof</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#apsw.VTCursor.Eof" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called to ask if we are at the end of the table. It is called after each call to Filter and Next.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -546,8 +547,8 @@ True (no more data) will be returned to SQLite.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="apsw.VTCursor.Filter">
-<code class="sig-prename descclassname"><span class="pre">VTCursor.</span></code><code class="sig-name descname"><span class="pre">Filter</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indexnum</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indexname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraintargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTCursor.Filter" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apsw.VTCursor.Filter">
+<span class="sig-prename descclassname"><span class="pre">VTCursor.</span></span><span class="sig-name descname"><span class="pre">Filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indexnum</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indexname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraintargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTCursor.Filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method is always called first to initialize an iteration to the
 first row of the table. The arguments come from the
 <a class="reference internal" href="#apsw.VTTable.BestIndex" title="apsw.VTTable.BestIndex"><code class="xref py py-meth docutils literal notranslate"><span class="pre">BestIndex()</span></code></a> method in the <a class="reference internal" href="#apsw.VTTable" title="apsw.VTTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">table</span></code></a>
@@ -557,8 +558,8 @@ be zero, indexstring will be None and constraintargs will be empty).</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="apsw.VTCursor.Next">
-<code class="sig-prename descclassname"><span class="pre">VTCursor.</span></code><code class="sig-name descname"><span class="pre">Next</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTCursor.Next" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apsw.VTCursor.Next">
+<span class="sig-prename descclassname"><span class="pre">VTCursor.</span></span><span class="sig-name descname"><span class="pre">Next</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.VTCursor.Next" title="Permalink to this definition">¶</a></dt>
 <dd><p>Move the cursor to the next row.  Do not have an exception if there
 is no next row.  Instead return False when <a class="reference internal" href="#apsw.VTCursor.Eof" title="apsw.VTCursor.Eof"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Eof()</span></code></a> is
 subsequently called.</p>
@@ -569,13 +570,13 @@ appropriate indexed and constrained row.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="apsw.VTCursor.Rowid">
-<code class="sig-prename descclassname"><span class="pre">VTCursor.</span></code><code class="sig-name descname"><span class="pre">Rowid</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">64</span> <span class="pre">bit</span> <span class="pre">integer</span><a class="headerlink" href="#apsw.VTCursor.Rowid" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="apsw.VTCursor.Rowid">
+<span class="sig-prename descclassname"><span class="pre">VTCursor.</span></span><span class="sig-name descname"><span class="pre">Rowid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">64</span> <span class="pre">bit</span> <span class="pre">integer</span></span></span><a class="headerlink" href="#apsw.VTCursor.Rowid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the current rowid.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="troubleshooting-virtual-tables">
+</section>
+<section id="troubleshooting-virtual-tables">
 <h2>Troubleshooting virtual tables<a class="headerlink" href="#troubleshooting-virtual-tables" title="Permalink to this headline">¶</a></h2>
 <p>Virtual Tables are a relatively recent addition to SQLite and haven’t
 been widely used yet. They do work well if all your routines work
@@ -595,8 +596,8 @@ sense. For example in BestIndex, if you set multiple arguments to
 have the same constraintargs position then your Filter won’t
 receive any constraintargs at all.</p>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -633,7 +634,7 @@ receive any constraintargs at all.</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -658,15 +659,15 @@ receive any constraintargs at all.</p>
         <li class="right" >
           <a href="backup.html" title="Backup"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.1-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.5-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Virtual Tables</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 22, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Last updated on Jun 05, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

@@ -325,30 +325,34 @@ to examine the code. Also note how you are told that the call was in
 *But wait, there is more!!!* In order to further aid troubleshooting,
 the augmented stack traces make additional information available. Each
 frame in the traceback has local variables defined with more
-information. You can print out the variables using `ASPN recipe 52215 <http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/52215>`_
+information. You can print out the variables like this::
 
-  In the recipe, the initial code in :func:`print_exc_plus` is far
-  more complicated than need be, and also won't work correctly with
-  all tracebacks (it depends on :attr:`f_prev` being set which isn't always
-  the case). Change the function to start like this::
+    import sys
 
-    tb = sys.exc_info()[2]
-    stack = []
+    def print_exc_plus(tb = None):
+        tb = tb or sys.exc_info()[2]
 
-    while tb:
-        stack.append(tb.tb_frame)
-        tb = tb.tb_next
+        print ("Locals by frame (most recent call last)")
 
-    traceback.print_exc()
-    print ("Locals by frame, innermost last")
+        while tb:
+            frame = tb.tb_frame
+            print()
+            print(f"Frame { frame.f_code.co_name } in { frame.f_code.co_filename } at line { frame.f_lineno}")
+            for key, value in sorted(frame.f_locals.items()):
+                try:
+                    vstr = str(value)
+                except:
+                    vstr = "<Failed to stringify>"
+                print(f"   { key } = { vstr }")
+            tb = tb.tb_next
 
 
 Here is a far more complex example from some :ref:`virtual tables
 <Virtualtables>` code I was writing. The BestIndex method in my code
 had returned an incorrect value. The augmented traceback includes
-local variables using recipe 52215. I can see what was passed in to my
-method, what I returned and which item was erroneous. The original
-traceback is almost completely useless.
+local variables. I can see what was passed in to my method, what I
+returned and which item was erroneous. The original traceback is
+almost completely useless!
 
 Original traceback::
 

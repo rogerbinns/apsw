@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Building &#8212; APSW 3.38.1-r1 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Building &#8212; APSW 3.38.5-r1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
@@ -42,7 +43,7 @@
         <li class="right" >
           <a href="download.html" title="Download"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.1-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.5-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Building</a></li> 
       </ul>
     </div>  
@@ -52,11 +53,11 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="building">
+  <section id="building">
 <span id="id1"></span><h1>Building<a class="headerlink" href="#building" title="Permalink to this headline">¶</a></h1>
 <p>See <a class="reference internal" href="tips.html#version-stuff"><span class="std std-ref">version info</span></a> to understand the
 relationship between Python, APSW, and SQLite versions.</p>
-<div class="section" id="setup-py">
+<section id="setup-py">
 <h2>setup.py<a class="headerlink" href="#setup-py" title="Permalink to this headline">¶</a></h2>
 <p>Short story: You run <code class="file docutils literal notranslate"><span class="pre">setup.py</span></code> but you should ideally follow
 the <a class="reference internal" href="#recommended-build"><span class="std std-ref">recommended way</span></a> which will also fetch
@@ -109,11 +110,11 @@ that this will considerably slow down APSW and SQLite.</p></td>
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="additional-setup-py-flags">
+</section>
+<section id="additional-setup-py-flags">
 <span id="setup-py-flags"></span><h2>Additional <code class="file docutils literal notranslate"><span class="pre">setup.py</span></code> flags<a class="headerlink" href="#additional-setup-py-flags" title="Permalink to this headline">¶</a></h2>
 <p>There are a number of APSW specific flags to commands you can specify.</p>
-<div class="section" id="fetch">
+<section id="fetch">
 <h3>fetch<a class="headerlink" href="#fetch" title="Permalink to this headline">¶</a></h3>
 <p><code class="file docutils literal notranslate"><span class="pre">setup.py</span></code> can automatically fetch SQLite and other optional
 components.  You can set the environment variable <code class="xref py py-const docutils literal notranslate"><span class="pre">http_proxy</span></code>
@@ -147,17 +148,7 @@ re-fetching.</p>
 </td>
 <td><p>By default the SQLite version corresponding to the APSW release is retrieved,  You
 can also ask for specific versions, or for <cite>latest</cite> which uses the SQLite download
-page to work out the most recent version.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>You can also specify <cite>fossil</cite> as the version
-and the current development version from <a class="reference external" href="https://sqlite.org/src/timeline">SQLite’s source tracking system</a> will be used.  (The system is named
-<a class="reference external" href="http://www.fossil-scm.org">Fossil</a>.) Note that checksums can’t be checked
-for fossil. You will also need TCL and make installed for the amalgamation to
-build as well as several other common Unix tools.  (ie this is very unlikely to
-work on Windows.)</p>
-</div>
-</td>
+page to work out the most recent version.</p></td>
 </tr>
 <tr class="row-odd"><td><div class="line-block">
 <div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--missing-checksum-ok</span></code></div>
@@ -226,12 +217,9 @@ new APIs you have by running the <code class="file docutils literal notranslate"
 with SQLite and noting the output.  The information is placed in
 <code class="file docutils literal notranslate"><span class="pre">sqlite3/sqlite3config.h</span></code>.  The build stage will automatically
 take note of this as needed.</p>
-<p>If you get the fossil version then the configure script does not
-work.  Instead the fetch will save and re-use any pre-existing
-<code class="file docutils literal notranslate"><span class="pre">sqlite3/sqlite3config.h</span></code>.</p>
 </div>
-</div>
-<div class="section" id="build-build-ext">
+</section>
+<section id="build-build-ext">
 <span id="setup-build-flags"></span><h3>build/build_ext<a class="headerlink" href="#build-build-ext" title="Permalink to this headline">¶</a></h3>
 <p>You can enable or omit certain functionality by specifying flags to
 the build and/or build_ext commands of <code class="file docutils literal notranslate"><span class="pre">setup.py</span></code>.</p>
@@ -328,9 +316,9 @@ matches current practise.  Use <code class="xref std std-option docutils literal
 <code class="xref std std-option docutils literal notranslate"><span class="pre">--enable=load_extension</span></code> to explicity disable/enable the
 extension loading code.</p>
 </div>
-</div>
-</div>
-<div class="section" id="finding-sqlite-3">
+</section>
+</section>
+<section id="finding-sqlite-3">
 <h2>Finding SQLite 3<a class="headerlink" href="#finding-sqlite-3" title="Permalink to this headline">¶</a></h2>
 <p>SQLite 3 is needed during the build process. If you specify
 <code class="xref std std-option docutils literal notranslate"><span class="pre">fetch</span> <span class="pre">--sqlite</span></code> to the <code class="file docutils literal notranslate"><span class="pre">setup.py</span></code> command line
@@ -371,8 +359,8 @@ searched first. See <span class="target" id="index-2"></span><a class="pep refer
 the <code class="file docutils literal notranslate"><span class="pre">setup.py</span></code> command or file. For this example you could use
 <code class="xref std std-option docutils literal notranslate"><span class="pre">setup.py</span> <span class="pre">build</span> <span class="pre">--omit=load_extension</span></code> to add the same flags.</p>
 </div>
-</div>
-<div class="section" id="recommended">
+</section>
+<section id="recommended">
 <span id="recommended-build"></span><h2>Recommended<a class="headerlink" href="#recommended" title="Permalink to this headline">¶</a></h2>
 <p>These instructions show how to build automatically downloading and
 using the amalgamation plus other <a class="reference internal" href="extensions.html#extensions"><span class="std std-ref">Extensions</span></a>. Any existing SQLite on
@@ -405,8 +393,8 @@ the lines above. (Use <em>build_ext –inplace</em> to have the extension put
 in the main directory.)</p>
 <p>The test suite will be run. It will print the APSW file used, APSW and
 SQLite versions and then run lots of tests all of which should pass.</p>
-</div>
-<div class="section" id="source-distribution-advanced">
+</section>
+<section id="source-distribution-advanced">
 <h2>Source distribution (advanced)<a class="headerlink" href="#source-distribution-advanced" title="Permalink to this headline">¶</a></h2>
 <p>If you want to make a source distribution or a binary distribution
 that creates an intermediate source distribution such as <cite>bdist_rpm</cite>
@@ -419,8 +407,8 @@ components:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python setup.py fetch --all bdist_rpm
 </pre></div>
 </div>
-</div>
-<div class="section" id="testing">
+</section>
+<section id="testing">
 <h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
 <p>SQLite itself is <a class="reference external" href="https://sqlite.org/testing.html">extensively tested</a>. It has considerably more code
 dedicated to testing than makes up the actual database functionality.</p>
@@ -461,8 +449,8 @@ downloads and compiles all supported Python versions in both debug and
 release configurations against the APSW and SQLite supported versions
 running the tests. See <a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/tools/megatest.py">tools/megatest.py</a> in the source.</p>
 <p>In short both SQLite and APSW have a lot of testing!</p>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -505,7 +493,7 @@ running the tests. See <a class="reference external" href="https://github.com/ro
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -530,15 +518,15 @@ running the tests. See <a class="reference external" href="https://github.com/ro
         <li class="right" >
           <a href="download.html" title="Download"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.1-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.5-r1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Building</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Mar 22, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.4.
+      Last updated on Jun 05, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking
