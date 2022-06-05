@@ -102,12 +102,12 @@ for line in open("doc/benchmarking.rst", "rt"):
         op.append("")
         op.append(".. code-block:: text")
         op.append("")
-        op.append("    $ python speedtest.py --help")
+        op.append("    $ python3 speedtest.py --help")
         speedtest.parser.set_usage("Usage: speedtest.py [options]")
         for line in speedtest.parser.format_help().split("\n"):
             op.append("    " + line)
         op.append("")
-        op.append("    $ python speedtest.py --tests-detail")
+        op.append("    $ python3 speedtest.py --tests-detail")
         for line in speedtest.tests_detail.split("\n"):
             op.append("    " + line)
         op.append("")
