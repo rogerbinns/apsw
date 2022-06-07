@@ -891,7 +891,7 @@ APSWCursor_step(APSWCursor *self)
   return NULL;
 }
 
-/** .. method:: execute(statements: str, bindings: Optional[Union[Sequence,Dict]] = None) -> Iterator
+/** .. method:: execute(statements: str, bindings: Optional[Union[Sequence,Dict]] = None) -> Cursor
 
     Executes the statements using the supplied bindings.  Execution
     returns when the first row is available or all statements have
@@ -1026,7 +1026,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args, PyObject *kwds)
   return retval;
 }
 
-/** .. method:: executemany(statements: str, sequenceofbindings: Sequence[Union[Sequence,Dict]]) -> Iterator
+/** .. method:: executemany(statements: str, sequenceofbindings: Sequence[Union[Sequence,Dict]]) -> Cursor
 
   This method is for when you want to execute the same statements over
   a sequence of bindings.  Conceptually it does this::

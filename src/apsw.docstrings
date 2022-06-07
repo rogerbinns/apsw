@@ -1563,7 +1563,7 @@
 "same as :meth:`getdescription` but with 5 Nones appended.  See\n" \
 "also :issue:`131`.\n" 
 
-#define  Cursor_execute_DOC "execute($self,statements,bindings=None)\n--\n\nCursor.execute(statements: str, bindings: Optional[Union[Sequence,Dict]] = None) -> Iterator\n\n" \
+#define  Cursor_execute_DOC "execute($self,statements,bindings=None)\n--\n\nCursor.execute(statements: str, bindings: Optional[Union[Sequence,Dict]] = None) -> Cursor\n\n" \
 "Executes the statements using the supplied bindings.  Execution\n" \
 "returns when the first row is available or all statements have\n" \
 "completed.\n" \
@@ -1623,7 +1623,7 @@
 "  * `sqlite3_bind_blob <https://sqlite.org/c3ref/bind_blob.html>`__\n" \
 "  * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__\n" 
 
-#define Cursor_execute_USAGE "Cursor.execute(statements: str, bindings: Optional[Union[Sequence,Dict]] = None) -> Iterator"
+#define Cursor_execute_USAGE "Cursor.execute(statements: str, bindings: Optional[Union[Sequence,Dict]] = None) -> Cursor"
 
 #define Cursor_execute_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(statements), PyObject *)); \
@@ -1632,7 +1632,7 @@
 } while(0)
 
 
-#define  Cursor_executemany_DOC "executemany($self,statements,sequenceofbindings)\n--\n\nCursor.executemany(statements: str, sequenceofbindings: Sequence[Union[Sequence,Dict]]) -> Iterator\n\n" \
+#define  Cursor_executemany_DOC "executemany($self,statements,sequenceofbindings)\n--\n\nCursor.executemany(statements: str, sequenceofbindings: Sequence[Union[Sequence,Dict]]) -> Cursor\n\n" \
 "This method is for when you want to execute the same statements over\n" \
 "a sequence of bindings.  Conceptually it does this::\n" \
 "\n" \
@@ -1652,7 +1652,7 @@
 "statements can return data.  See :meth:`~Cursor.execute` for more\n" \
 "information.\n" 
 
-#define Cursor_executemany_USAGE "Cursor.executemany(statements: str, sequenceofbindings: Sequence[Union[Sequence,Dict]]) -> Iterator"
+#define Cursor_executemany_USAGE "Cursor.executemany(statements: str, sequenceofbindings: Sequence[Union[Sequence,Dict]]) -> Cursor"
 
 #define Cursor_executemany_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(statements), PyObject *)); \
