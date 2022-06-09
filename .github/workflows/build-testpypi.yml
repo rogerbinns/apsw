@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         # os: [ubuntu-20.04, windows-2019, macos-10.15]
-        os: [ubuntu-20.04]
+        os: [ubuntu-20.04, macos-10.15]
     steps:
       - uses: actions/checkout@v2
 
@@ -27,10 +27,12 @@ jobs:
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
-          CIBW_BEFORE_BUILD: python setup.py fetch --all build --enable-all-extensions build_test_extension
-          CIBW_TEST_COMMAND: python {package}/tests.py
           CIBW_SKIP: pp*
           CIBW_ARCHS_LINUX: auto aarch64 ppc64le s390x
+          CIBW_ARCHS_MACOS: x86_64 arm64 universal2
+          CIBW_BEFORE_BUILD: python setup.py fetch --all build --enable-all-extensions build_test_extension
+          CIBW_TEST_COMMAND: python {package}/tests.py
+          APSW_HEAVY_DURATION: 2
 
       - uses: actions/upload-artifact@v2
         with:
