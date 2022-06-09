@@ -3350,10 +3350,7 @@ class APSW(unittest.TestCase):
     def testIssue50(self):
         "Issue 50: Check Blob.read return value on eof"
         # first get what the system returns on eof
-        if iswindows:
-            f = open("nul", "rb")
-        else:
-            f = open("/dev/null", "rb")
+        f = open(os.devnull, "rb")
         try:
             # deliberately hit eof
             f.read()
