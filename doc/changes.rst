@@ -2,6 +2,13 @@ Change History
 **************
 .. currentmodule:: apsw
 
+next
+====
+
+Updated building for PyPI to include more compiled platforms,
+including aarch64 (Linux) and universal (MacOS).
+
+
 3.38.5-r1
 =========
 
