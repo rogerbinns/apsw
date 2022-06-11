@@ -40,6 +40,9 @@ API Reference
 
 /* SQLite amalgamation */
 #ifdef APSW_USE_SQLITE_AMALGAMATION
+#ifndef SQLITE_MAX_ATTACHED
+#define SQLITE_MAX_ATTACHED 125
+#endif
 #ifndef APSW_NO_NDEBUG
 /* See SQLite ticket 2554 */
 #define SQLITE_API static
