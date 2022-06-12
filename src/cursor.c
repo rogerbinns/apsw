@@ -1193,6 +1193,10 @@ APSWCursor_close(APSWCursor *self, PyObject *args, PyObject *kwds)
   Py_RETURN_NONE;
 }
 
+/** .. method:: __next__(self: Cursor) -> Any
+
+    Cursors are iterators
+*/
 static PyObject *
 APSWCursor_next(APSWCursor *self)
 {
@@ -1249,6 +1253,11 @@ error:
   Py_XDECREF(retval);
   return NULL;
 }
+
+/** .. method:: __iter__(self: Cursor) -> Cursor
+
+    Cursors are iterators
+*/
 
 static PyObject *
 APSWCursor_iter(APSWCursor *self)

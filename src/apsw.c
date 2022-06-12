@@ -283,7 +283,7 @@ sqliteshutdown(void)
   Py_RETURN_NONE;
 }
 
-/** .. method:: config(op: int, *args) -> None
+/** .. method:: config(op: int, *args: Any) -> None
 
   :param op: A `configuration operation <https://sqlite.org/c3ref/c_config_chunkalloc.html>`_
   :param args: Zero or more arguments as appropriate for *op*
@@ -1007,7 +1007,7 @@ fail:
 #endif
 
 /** .. attribute:: compile_options
-    :type: Tuple
+    :type: Tuple[str, ...]
 
     A tuple of the options used to compile SQLite.  For example it
     will be something like this::
@@ -1380,7 +1380,7 @@ PyInit_apsw(void)
   PyModule_AddObject(m, "URIFilename", (PyObject *)&APSWURIFilenameType);
 
   /** .. attribute:: connection_hooks
-       :type: List[Callable]
+       :type: List[Callable[[Connection], None]]
 
        The purpose of the hooks is to allow the easy registration of
        :meth:`functions <Connection.createscalarfunction>`,

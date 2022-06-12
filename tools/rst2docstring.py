@@ -89,7 +89,7 @@ def classify(doc: list) -> Union[dict, None]:
         name += ".__init__"
         if not signature:
             # this happens for the classes that can't be directly instantiated
-            signature = "()"
+            signature = "() -> None"
     elif "." not in name:
         name = "apsw." + name
 
@@ -639,7 +639,7 @@ if __name__ == '__main__':
             if any(param["name"] != "return"
                    for param in item["signature"]) and not any(param["name"].startswith("*")
                                                                for param in item["signature"]):
-                if item["name"] not in {"apsw.format_sql_value", "VFSFile.excepthook"}:
+                if item["name"] not in {"apsw.format_sql_value", "VFSFile.excepthook", "Cursor.__next__", "Cursor.__iter__"}:
                     missing.append(item["name"])
 
     outval = out.getvalue()

@@ -29,7 +29,7 @@
 } while(0)
 
 
-#define  Apsw_config_DOC "config($self,op,*args)\n--\n\napsw.config(op: int, *args) -> None\n\n" \
+#define  Apsw_config_DOC "config($self,op,*args)\n--\n\napsw.config(op: int, *args: Any) -> None\n\n" \
 ":param op: A `configuration operation <https://sqlite.org/c3ref/c_config_chunkalloc.html>`_\n" \
 ":param args: Zero or more arguments as appropriate for *op*\n" \
 "\n" \
@@ -304,7 +304,7 @@
 "\n" \
 "Calls: `sqlite3_backup_finish <https://sqlite.org/c3ref/backup_finish.html#sqlite3backupfinish>`__\n" 
 
-#define  Backup_init_DOC "__init__($self)\n--\n\nBackup.__init__()\n\n" \
+#define  Backup_init_DOC "__init__($self)\n--\n\nBackup.__init__() -> None\n\n" \
 "You create a backup instance by calling :meth:`Connection.backup`.\n" 
 
 #define  Backup_pagecount_DOC ":type: int\n" \
@@ -398,7 +398,7 @@
 ":meth:`~blob.__enter__`.  Any exception that happened in the\n" \
 "*with* block is raised after closing the blob.\n" 
 
-#define  Blob_init_DOC "__init__($self)\n--\n\nBlob.__init__()\n\n" \
+#define  Blob_init_DOC "__init__($self)\n--\n\nBlob.__init__() -> None\n\n" \
 "This object is created by :meth:`Connection.blobopen` and provides\n" \
 "access to a blob in the database.  It behaves like a Python file.\n" \
 "At the C level it wraps a `sqlite3_blob\n" \
@@ -1745,8 +1745,14 @@
 "\n" \
 "  * :ref:`tracing`\n" 
 
-#define  Cursor_init_DOC "__init__($self)\n--\n\nCursor.__init__()\n\n" \
+#define  Cursor_init_DOC "__init__($self)\n--\n\nCursor.__init__() -> None\n\n" \
 "You obtain cursors by calling :meth:`Connection.cursor`.\n" 
+
+#define  Cursor_iter_DOC "__iter__($self,self)\n--\n\nCursor.__iter__(self: Cursor) -> Cursor\n\n" \
+"Cursors are iterators\n" 
+
+#define  Cursor_next_DOC "__next__($self,self)\n--\n\nCursor.__next__(self: Cursor) -> Any\n\n" \
+"Cursors are iterators\n" 
 
 #define  Cursor_setexectrace_DOC "setexectrace($self,callable)\n--\n\nCursor.setexectrace(callable: Optional[Callable]) -> None\n\n" \
 "*callable* is called with the cursor, statement and bindings for\n" \
@@ -1793,7 +1799,7 @@
 #define  URIFilename_filename_DOC "filename($self)\n--\n\nURIFilename.filename() -> str\n\n" \
 "Returns the filename.\n" 
 
-#define  URIFilename_init_DOC "__init__($self)\n--\n\nURIFilename.__init__()\n\n" \
+#define  URIFilename_init_DOC "__init__($self)\n--\n\nURIFilename.__init__() -> None\n\n" \
 "SQLite uses a convoluted method of storing `uri parameters\n" \
 "<https://sqlite.org/uri.html>`__ after the filename binding the\n" \
 "C filename representation and parameters together.  This class\n" \
