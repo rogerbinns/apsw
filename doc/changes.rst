@@ -9,8 +9,10 @@ Updated building for PyPI to include more compiled platforms,
 including aarch64 (Linux) and universal (MacOS).
 
 When the amalgamation is included into APSW, `SQLITE_MAX_ATTACHED
-<https://www.sqlite.org/limits.html#max_attached>`__` is set to 125 if
+<https://www.sqlite.org/limits.html#max_attached>`__ is set to 125 if
 not defined, up from the default of 10.
+
+Updated typing information with more detail (:issue:`338`)
 
 3.38.5-r1
 =========
