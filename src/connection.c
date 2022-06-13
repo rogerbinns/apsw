@@ -234,7 +234,7 @@ Connection_close_internal(Connection *self, int force)
   return 0;
 }
 
-/** .. method:: close(force: bool = False)
+/** .. method:: close(force: bool = False) -> None
 
   Closes the database.  If there are any outstanding :class:`cursors
   <Cursor>`, :class:`blobs <blob>` or :class:`backups <backup>` then
@@ -1328,7 +1328,7 @@ finally:
   return ok;
 }
 
-/** .. method:: setprogresshandler(callable: Optional[Callable], nsteps: int = 20)
+/** .. method:: setprogresshandler(callable: Optional[Callable], nsteps: int = 20) -> None
 
   Sets a callable which is invoked every *nsteps* SQLite
   inststructions. The callable should return a non-zero value to abort
@@ -1549,7 +1549,7 @@ finally:
 #undef AVPCB_CAL
 #undef AVPCB_TB
 
-/** .. method:: autovacuum_pages(callable: Optional[Callable]) -> None
+/** .. method:: autovacuum_pages(callable: Optional[Callable[[str, int, int, int], int]]) -> None
 
   Calls `callable` to find out how many pages to autovacuum.  The callback has 4 parameters:
 
@@ -1626,7 +1626,7 @@ finally:
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: collationneeded(callable: Optional[Callable]) -> None
+/** .. method:: collationneeded(callable: Optional[Callable[[Connection, str], None]]) -> None
 
   *callable* will be called if a statement requires a `collation
   <http://en.wikipedia.org/wiki/Collation>`_ that hasn't been
@@ -1954,7 +1954,7 @@ Connection_enableloadextension(Connection *self, PyObject *args, PyObject *kwds)
   return NULL;
 }
 
-/** .. method:: loadextension(filename: str, entrypoint: str = None) -> None
+/** .. method:: loadextension(filename: str, entrypoint: Optional[str] = None) -> None
 
   Loads *filename* as an `extension <https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_
 
@@ -1985,7 +1985,7 @@ Connection_loadextension(Connection *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"filename", "entrypoint", NULL};
     Connection_loadextension_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|s:" Connection_loadextension_USAGE, kwlist, &filename, &entrypoint))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|z:" Connection_loadextension_USAGE, kwlist, &filename, &entrypoint))
       return NULL;
   }
   PYSQLITE_CON_CALL(res = sqlite3_load_extension(self->db, filename, entrypoint, &errmsg));
@@ -2519,7 +2519,7 @@ finally:
   Py_RETURN_NONE;
 }
 
-/** .. method:: createaggregatefunction(name: str, factory: Optional[Callable], numargs: int = -1)
+/** .. method:: createaggregatefunction(name: str, factory: Optional[Callable], numargs: int = -1) -> None
 
   Registers an aggregate function.  Aggregate functions operate on all
   the relevant rows such as counting how many there are.
@@ -2679,7 +2679,7 @@ collation_destroy(void *context)
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: createcollation(name: str, callback: Optional[Callable]) -> None
+/** .. method:: createcollation(name: str, callback: Optional[Callable[[str, str], int]]) -> None
 
   You can control how SQLite sorts (termed `collation
   <http://en.wikipedia.org/wiki/Collation>`_) when giving the
@@ -3478,7 +3478,7 @@ Connection_db_filename(Connection *self, PyObject *args, PyObject *kwds)
   return convertutf8string(res);
 }
 
-/** .. method:: txn_state(schema: str = None) -> int
+/** .. method:: txn_state(schema: Optional[str] = None) -> int
 
   Returns the current transaction state of the database, or a specific schema
   if provided.  ValueError is raised if schema is not None or a valid schema name.
@@ -3498,7 +3498,7 @@ Connection_txn_state(Connection *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"schema", NULL};
     Connection_txn_state_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|s:" Connection_txn_state_USAGE, kwlist, &schema))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|z:" Connection_txn_state_USAGE, kwlist, &schema))
       return NULL;
   }
   PYSQLITE_CON_CALL(res = sqlite3_txn_state(self->db, schema));

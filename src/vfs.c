@@ -1584,7 +1584,7 @@ APSWVFS_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSED(k
   return (PyObject *)self;
 }
 
-/** .. method:: __init__(name: str, base: str = None, makedefault: bool = False, maxpathname: int = 1024)
+/** .. method:: __init__(name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024)
 
     :param name: The name to register this vfs under.  If the name
         already exists then this vfs will replace the prior one of the
@@ -1617,7 +1617,7 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"name", "base", "makedefault", "maxpathname", NULL};
     VFS_init_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|sO&i:" VFS_init_USAGE, kwlist, &name, &base, argcheck_bool, &makedefault, &maxpathname))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|zO&i:" VFS_init_USAGE, kwlist, &name, &base, argcheck_bool, &makedefault, &maxpathname))
       return -1;
   }
 

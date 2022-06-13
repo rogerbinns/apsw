@@ -434,7 +434,7 @@
 } while(0)
 
 
-#define  Blob_readinto_DOC "readinto($self,buffer,offset=0,length=-1)\n--\n\nBlob.readinto(buffer, offset: int = 0, length: int = -1) -> None\n\n" \
+#define  Blob_readinto_DOC "readinto($self,buffer,offset=0,length=-1)\n--\n\nBlob.readinto(buffer: Union[bytearray, array[Any], memoryview], offset: int = 0, length: int = -1) -> None\n\n" \
 "Reads from the blob into a buffer you have supplied.  This method is\n" \
 "useful if you already have a buffer like object that data is being\n" \
 "assembled in, and avoids allocating results in :meth:`blob.read` and\n" \
@@ -454,7 +454,7 @@
 "\n" \
 "Calls: `sqlite3_blob_read <https://sqlite.org/c3ref/blob_read.html>`__\n" 
 
-#define Blob_readinto_USAGE "Blob.readinto(buffer, offset: int = 0, length: int = -1) -> None"
+#define Blob_readinto_USAGE "Blob.readinto(buffer: Union[bytearray, array[Any], memoryview], offset: int = 0, length: int = -1) -> None"
 
 #define Blob_readinto_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(buffer), PyObject *)); \
@@ -520,7 +520,7 @@
 } while(0)
 
 
-#define  Connection_autovacuum_pages_DOC "autovacuum_pages($self,callable)\n--\n\nConnection.autovacuum_pages(callable: Optional[Callable]) -> None\n\n" \
+#define  Connection_autovacuum_pages_DOC "autovacuum_pages($self,callable)\n--\n\nConnection.autovacuum_pages(callable: Optional[Callable[[str, int, int, int], int]]) -> None\n\n" \
 "Calls `callable` to find out how many pages to autovacuum.  The callback has 4 parameters:\n" \
 "\n" \
 "* Database name: str (eg \"main\")\n" \
@@ -536,7 +536,7 @@
 "\n" \
 "Calls: `sqlite3_autovacuum_pages <https://sqlite.org/c3ref/autovacuum_pages.html>`__\n" 
 
-#define Connection_autovacuum_pages_USAGE "Connection.autovacuum_pages(callable: Optional[Callable]) -> None"
+#define Connection_autovacuum_pages_USAGE "Connection.autovacuum_pages(callable: Optional[Callable[[str, int, int, int], int]]) -> None"
 
 #define Connection_autovacuum_pages_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
@@ -608,7 +608,7 @@
 "\n" \
 "Calls: `sqlite3_changes64 <https://sqlite.org/c3ref/changes.html>`__\n" 
 
-#define  Connection_close_DOC "close($self,force=False)\n--\n\nConnection.close(force: bool = False)\n\n" \
+#define  Connection_close_DOC "close($self,force=False)\n--\n\nConnection.close(force: bool = False) -> None\n\n" \
 "Closes the database.  If there are any outstanding :class:`cursors\n" \
 "<Cursor>`, :class:`blobs <blob>` or :class:`backups <backup>` then\n" \
 "they are closed too.  It is normally not necessary to call this\n" \
@@ -632,7 +632,7 @@
 "\n" \
 "Calls: `sqlite3_close <https://sqlite.org/c3ref/close.html>`__\n" 
 
-#define Connection_close_USAGE "Connection.close(force: bool = False)"
+#define Connection_close_USAGE "Connection.close(force: bool = False) -> None"
 
 #define Connection_close_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(force), int)); \
@@ -640,7 +640,7 @@
 } while(0)
 
 
-#define  Connection_collationneeded_DOC "collationneeded($self,callable)\n--\n\nConnection.collationneeded(callable: Optional[Callable]) -> None\n\n" \
+#define  Connection_collationneeded_DOC "collationneeded($self,callable)\n--\n\nConnection.collationneeded(callable: Optional[Callable[[Connection, str], None]]) -> None\n\n" \
 "*callable* will be called if a statement requires a `collation\n" \
 "<http://en.wikipedia.org/wiki/Collation>`_ that hasn't been\n" \
 "registered. Your callable will be passed two parameters. The first\n" \
@@ -662,7 +662,7 @@
 "\n" \
 "Calls: `sqlite3_collation_needed <https://sqlite.org/c3ref/collation_needed.html>`__\n" 
 
-#define Connection_collationneeded_USAGE "Connection.collationneeded(callable: Optional[Callable]) -> None"
+#define Connection_collationneeded_USAGE "Connection.collationneeded(callable: Optional[Callable[[Connection, str], None]]) -> None"
 
 #define Connection_collationneeded_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
@@ -678,7 +678,7 @@
 "\n" \
 "Calls: `sqlite3_db_config <https://sqlite.org/c3ref/db_config.html>`__\n" 
 
-#define  Connection_createaggregatefunction_DOC "createaggregatefunction($self,name,factory,numargs=-1)\n--\n\nConnection.createaggregatefunction(name: str, factory: Optional[Callable], numargs: int = -1)\n\n" \
+#define  Connection_createaggregatefunction_DOC "createaggregatefunction($self,name,factory,numargs=-1)\n--\n\nConnection.createaggregatefunction(name: str, factory: Optional[Callable], numargs: int = -1) -> None\n\n" \
 "Registers an aggregate function.  Aggregate functions operate on all\n" \
 "the relevant rows such as counting how many there are.\n" \
 "\n" \
@@ -716,7 +716,7 @@
 "\n" \
 "Calls: `sqlite3_create_function_v2 <https://sqlite.org/c3ref/create_function.html>`__\n" 
 
-#define Connection_createaggregatefunction_USAGE "Connection.createaggregatefunction(name: str, factory: Optional[Callable], numargs: int = -1)"
+#define Connection_createaggregatefunction_USAGE "Connection.createaggregatefunction(name: str, factory: Optional[Callable], numargs: int = -1) -> None"
 
 #define Connection_createaggregatefunction_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
@@ -726,7 +726,7 @@
 } while(0)
 
 
-#define  Connection_createcollation_DOC "createcollation($self,name,callback)\n--\n\nConnection.createcollation(name: str, callback: Optional[Callable]) -> None\n\n" \
+#define  Connection_createcollation_DOC "createcollation($self,name,callback)\n--\n\nConnection.createcollation(name: str, callback: Optional[Callable[[str, str], int]]) -> None\n\n" \
 "You can control how SQLite sorts (termed `collation\n" \
 "<http://en.wikipedia.org/wiki/Collation>`_) when giving the\n" \
 "``COLLATE`` term to a `SELECT\n" \
@@ -753,7 +753,7 @@
 "\n" \
 "Calls: `sqlite3_create_collation_v2 <https://sqlite.org/c3ref/create_collation.html>`__\n" 
 
-#define Connection_createcollation_USAGE "Connection.createcollation(name: str, callback: Optional[Callable]) -> None"
+#define Connection_createcollation_USAGE "Connection.createcollation(name: str, callback: Optional[Callable[[str, str], int]]) -> None"
 
 #define Connection_createcollation_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
@@ -1068,7 +1068,7 @@
 } while(0)
 
 
-#define  Connection_loadextension_DOC "loadextension($self,filename,entrypoint=None)\n--\n\nConnection.loadextension(filename: str, entrypoint: str = None) -> None\n\n" \
+#define  Connection_loadextension_DOC "loadextension($self,filename,entrypoint=None)\n--\n\nConnection.loadextension(filename: str, entrypoint: Optional[str] = None) -> None\n\n" \
 "Loads *filename* as an `extension <https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_\n" \
 "\n" \
 ":param filename: The file to load.  This must be Unicode or Unicode compatible\n" \
@@ -1086,7 +1086,7 @@
 "\n" \
 "Calls: `sqlite3_load_extension <https://sqlite.org/c3ref/load_extension.html>`__\n" 
 
-#define Connection_loadextension_USAGE "Connection.loadextension(filename: str, entrypoint: str = None) -> None"
+#define Connection_loadextension_USAGE "Connection.loadextension(filename: str, entrypoint: Optional[str] = None) -> None"
 
 #define Connection_loadextension_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(filename), const char *)); \
@@ -1323,7 +1323,7 @@
 } while(0)
 
 
-#define  Connection_setprogresshandler_DOC "setprogresshandler($self,callable,nsteps=20)\n--\n\nConnection.setprogresshandler(callable: Optional[Callable], nsteps: int = 20)\n\n" \
+#define  Connection_setprogresshandler_DOC "setprogresshandler($self,callable,nsteps=20)\n--\n\nConnection.setprogresshandler(callable: Optional[Callable], nsteps: int = 20) -> None\n\n" \
 "Sets a callable which is invoked every *nsteps* SQLite\n" \
 "inststructions. The callable should return a non-zero value to abort\n" \
 "or zero to continue. (If there is an error in your Python *callable*\n" \
@@ -1335,7 +1335,7 @@
 "\n" \
 "Calls: `sqlite3_progress_handler <https://sqlite.org/c3ref/progress_handler.html>`__\n" 
 
-#define Connection_setprogresshandler_USAGE "Connection.setprogresshandler(callable: Optional[Callable], nsteps: int = 20)"
+#define Connection_setprogresshandler_USAGE "Connection.setprogresshandler(callable: Optional[Callable], nsteps: int = 20) -> None"
 
 #define Connection_setprogresshandler_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
@@ -1475,14 +1475,14 @@
 "\n" \
 "Calls: `sqlite3_total_changes64 <https://sqlite.org/c3ref/total_changes.html>`__\n" 
 
-#define  Connection_txn_state_DOC "txn_state($self,schema=None)\n--\n\nConnection.txn_state(schema: str = None) -> int\n\n" \
+#define  Connection_txn_state_DOC "txn_state($self,schema=None)\n--\n\nConnection.txn_state(schema: Optional[str] = None) -> int\n\n" \
 "Returns the current transaction state of the database, or a specific schema\n" \
 "if provided.  ValueError is raised if schema is not None or a valid schema name.\n" \
 ":attr:`apsw.mapping_txn_state` contains the names and values returned.\n" \
 "\n" \
 "Calls: `sqlite3_txn_state <https://sqlite.org/c3ref/txn_state.html>`__\n" 
 
-#define Connection_txn_state_USAGE "Connection.txn_state(schema: str = None) -> int"
+#define Connection_txn_state_USAGE "Connection.txn_state(schema: Optional[str] = None) -> int"
 
 #define Connection_txn_state_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(schema), const char *)); \
@@ -1675,7 +1675,7 @@
 "    mycursor=cursor.getconnection().cursor()\n" \
 "    mycursor.execute(\"....\")\n" 
 
-#define  Cursor_getdescription_DOC "getdescription($self)\n--\n\nCursor.getdescription() -> tuple\n\n" \
+#define  Cursor_getdescription_DOC "getdescription($self)\n--\n\nCursor.getdescription() -> Tuple[Tuple[str, str], ...]\n\n" \
 "If you are trying to get information about a table or view,\n" \
 "then `pragma table_info <https://sqlite.org/pragma.html#pragma_table_info>`__\n" \
 "is better.\n" \
@@ -2057,7 +2057,7 @@
 "fails then ``PyErr_Display``.  The three arguments correspond to\n" \
 "what ``sys.exc_info()`` would return.\n" 
 
-#define  VFS_init_DOC "__init__($self,name,base=None,makedefault=False,maxpathname=1024)\n--\n\nVFS.__init__(name: str, base: str = None, makedefault: bool = False, maxpathname: int = 1024)\n\n" \
+#define  VFS_init_DOC "__init__($self,name,base=None,makedefault=False,maxpathname=1024)\n--\n\nVFS.__init__(name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024)\n\n" \
 "Provides operating system access.  You can get an overview in the\n" \
 "`SQLite documentation <https://sqlite.org/c3ref/vfs.html>`_.  To\n" \
 "create a VFS your Python class must inherit from :class:`VFS`.\n" \
@@ -2086,7 +2086,7 @@
 "  * `sqlite3_vfs_register <https://sqlite.org/c3ref/vfs_find.html>`__\n" \
 "  * `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__\n" 
 
-#define VFS_init_USAGE "VFS.__init__(name: str, base: str = None, makedefault: bool = False, maxpathname: int = 1024)"
+#define VFS_init_USAGE "VFS.__init__(name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024)"
 
 #define VFS_init_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \

@@ -413,7 +413,7 @@ error:
   return NULL;
 }
 
-/** .. method:: getdescription() -> tuple
+/** .. method:: getdescription() -> Tuple[Tuple[str, str], ...]
 
    If you are trying to get information about a table or view,
    then `pragma table_info <https://sqlite.org/pragma.html#pragma_table_info>`__
