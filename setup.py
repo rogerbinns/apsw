@@ -620,11 +620,15 @@ class apsw_build_ext(beparent):
                 write("ICU: Unable to determine includes/libraries for ICU using pkg-config or icu-config")
                 write("ICU: You will need to manually edit setup.py or setup.cfg to set them")
 
-        # shell
-        if not os.path.exists("src/shell.c") or \
-               os.path.getmtime("src/shell.c")<os.path.getmtime("tools/shell.py") or \
-               os.path.getmtime(__file__)>os.path.getmtime("src/shell.c"):
-            create_c_file("tools/shell.py", "src/shell.c")
+        # files included in c
+        for src, dest in (
+            ("tools/shell.py", "src/shell.c"),
+            ("src/types.py", "src/types.c"),
+        ):
+            if not os.path.exists(dest) or \
+                os.path.getmtime(dest)<os.path.getmtime(src) or \
+                os.path.getmtime(__file__)>os.path.getmtime(dest):
+                    create_c_file(src, dest)
 
         # done ...
         return v

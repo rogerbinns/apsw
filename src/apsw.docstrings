@@ -123,7 +123,7 @@
 "the program will later crash.  The recommended use is to use the fork\n" \
 "checking as part of your test suite.\n" 
 
-#define  Apsw_format_sql_value_DOC "format_sql_value($self,value)\n--\n\napsw.format_sql_value(value: Union[None, int, float, bytes, str]) -> str\n\n" \
+#define  Apsw_format_sql_value_DOC "format_sql_value($self,value)\n--\n\napsw.format_sql_value(value: SQLiteValue) -> str\n\n" \
 "Returns a Python string representing the supplied value in SQL syntax.\n" 
 
 #define  Apsw_initialize_DOC "initialize($self)\n--\n\napsw.initialize() -> None\n\n" \

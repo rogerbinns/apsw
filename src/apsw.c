@@ -1092,7 +1092,7 @@ fail:
   return NULL;
 }
 
-/** .. method:: format_sql_value(value: Union[None, int, float, bytes, str]) -> str
+/** .. method:: format_sql_value(value: SQLiteValue) -> str
 
   Returns a Python string representing the supplied value in SQL syntax.
 
@@ -1312,7 +1312,16 @@ static PyMethodDef module_methods[] = {
     {0, 0, 0, 0} /* Sentinel */
 };
 
-static void add_shell(PyObject *module);
+static void add_py_code_string(PyObject *module, const char *);
+
+static const char *apsw_shell_code =
+#include "shell.c"
+    ;
+
+static const char *apsw_types_code =
+#include "types.c"
+    ;
+
 
 static struct PyModuleDef apswmoduledef = {
     PyModuleDef_HEAD_INIT,
@@ -1949,7 +1958,8 @@ modules etc. For example::
     assert(thedict == NULL);
   }
 
-  add_shell(m);
+  add_py_code_string(m, apsw_types_code);
+  add_py_code_string(m, apsw_shell_code);
 
   PyModule_AddObject(m, "compile_options", get_compile_options());
   PyModule_AddObject(m, "keywords", get_keywords());
@@ -1964,11 +1974,9 @@ fail:
   return NULL;
 }
 
-static const char *apsw_shell_code =
-#include "shell.c"
-    ;
+
 static void
-add_shell(PyObject *apswmodule)
+add_py_code_string(PyObject *apswmodule, const char *code_string)
 {
   PyObject *res = NULL, *maindict = NULL, *apswdict = NULL;
 
@@ -1977,7 +1985,7 @@ add_shell(PyObject *apswmodule)
   PyDict_SetItemString(apswdict, "__builtins__", PyDict_GetItemString(maindict, "__builtins__"));
   PyDict_SetItemString(apswdict, "apsw", apswmodule);
 
-  res = PyRun_StringFlags(apsw_shell_code, Py_file_input, apswdict, apswdict, NULL);
+  res = PyRun_StringFlags(code_string, Py_file_input, apswdict, apswdict, NULL);
   if (!res)
   {
     PyErr_Print();

@@ -1,4 +1,5 @@
 src/shell.c
+src/types.c
 *.orig
 testdb2
 apsw.pyd
