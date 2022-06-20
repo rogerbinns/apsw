@@ -623,7 +623,6 @@ class apsw_build_ext(beparent):
         # files included in c
         for src, dest in (
             ("tools/shell.py", "src/shell.c"),
-            ("src/types.py", "src/types.c"),
         ):
             if not os.path.exists(dest) or \
                 os.path.getmtime(dest)<os.path.getmtime(src) or \

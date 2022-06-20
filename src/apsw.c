@@ -1318,11 +1318,6 @@ static const char *apsw_shell_code =
 #include "shell.c"
     ;
 
-static const char *apsw_types_code =
-#include "types.c"
-    ;
-
-
 static struct PyModuleDef apswmoduledef = {
     PyModuleDef_HEAD_INIT,
     "apsw",
@@ -1958,7 +1953,6 @@ modules etc. For example::
     assert(thedict == NULL);
   }
 
-  add_py_code_string(m, apsw_types_code);
   add_py_code_string(m, apsw_shell_code);
 
   PyModule_AddObject(m, "compile_options", get_compile_options());
