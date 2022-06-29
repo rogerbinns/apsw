@@ -473,7 +473,7 @@ static PyObject *APSWCursor_getdescription(APSWCursor *self)
 }
 
 /** .. attribute:: description
-    :type: tuple
+    :type: Tuple[Tuple[str, str, None, None, None, None, None], ...]
 
     Based on the `DB-API cursor property
     <http://www.python.org/dev/peps/pep-0249/>`__, this returns the
@@ -891,7 +891,7 @@ APSWCursor_step(APSWCursor *self)
   return NULL;
 }
 
-/** .. method:: execute(statements: str, bindings: Optional[Union[Sequence,Dict]] = None) -> Cursor
+/** .. method:: execute(statements: str, bindings: Optional[Bindings] = None) -> Cursor
 
     Executes the statements using the supplied bindings.  Execution
     returns when the first row is available or all statements have
@@ -967,7 +967,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"statements", "bindings", NULL};
     Cursor_execute_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O&:" Cursor_execute_USAGE, kwlist, &PyUnicode_Type, &statements, argcheck_Optional_Union_Sequence_Dict, &bindings))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O&:" Cursor_execute_USAGE, kwlist, &PyUnicode_Type, &statements, argcheck_Optional_Bindings, &bindings))
       return NULL;
   }
   self->bindings = bindings;
@@ -1026,7 +1026,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args, PyObject *kwds)
   return retval;
 }
 
-/** .. method:: executemany(statements: str, sequenceofbindings: Sequence[Union[Sequence,Dict]]) -> Cursor
+/** .. method:: executemany(statements: str, sequenceofbindings: Sequence[Bindings]) -> Cursor
 
   This method is for when you want to execute the same statements over
   a sequence of bindings.  Conceptually it does this::
@@ -1269,7 +1269,7 @@ APSWCursor_iter(APSWCursor *self)
   return (PyObject *)self;
 }
 
-/** .. method:: setexectrace(callable: Optional[Callable]) -> None
+/** .. method:: setexectrace(callable: Optional[ExecTracer]) -> None
 
   *callable* is called with the cursor, statement and bindings for
   each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
@@ -1306,7 +1306,7 @@ APSWCursor_setexectrace(APSWCursor *self, PyObject *args, PyObject *kwds)
   Py_RETURN_NONE;
 }
 
-/** .. method:: setrowtrace(callable: Optional[Callable]) -> None
+/** .. method:: setrowtrace(callable: Optional[RowTracer]) -> None
 
   *callable* is called with cursor and row being returned.  You can
   change the data that is returned or cause the row to be skipped
@@ -1343,7 +1343,7 @@ APSWCursor_setrowtrace(APSWCursor *self, PyObject *args, PyObject *kwds)
   Py_RETURN_NONE;
 }
 
-/** .. method:: getexectrace() -> Optional[Callable]
+/** .. method:: getexectrace() -> Optional[ExecTracer]
 
   Returns the currently installed (via :meth:`~Cursor.setexectrace`)
   execution tracer.
@@ -1365,7 +1365,7 @@ APSWCursor_getexectrace(APSWCursor *self)
   return ret;
 }
 
-/** .. method:: getrowtrace() -> Optional[Callable]
+/** .. method:: getrowtrace() -> Optional[RowTracer]
 
   Returns the currently installed (via :meth:`~Cursor.setrowtrace`)
   row tracer.
@@ -1406,7 +1406,7 @@ APSWCursor_getconnection(APSWCursor *self)
   return (PyObject *)self->connection;
 }
 
-/** .. method:: fetchall() -> list
+/** .. method:: fetchall() -> list[Tuple[SQLiteValue, ...]]
 
   Returns all remaining result rows as a list.  This method is defined
   in DBAPI.  It is a longer way of doing ``list(cursor)``.

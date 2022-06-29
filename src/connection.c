@@ -921,7 +921,7 @@ finally:
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: setupdatehook(callable: Optional[Callable]) -> None
+/** .. method:: setupdatehook(callable: Optional[Callable[[int, str, str, int], None]]) -> None
 
   Calls *callable* whenever a row is updated, deleted or inserted.  If
   *callable* is :const:`None` then any existing update hook is
@@ -1005,7 +1005,7 @@ finally:
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: setrollbackhook(callable: Optional[Callable]) -> None
+/** .. method:: setrollbackhook(callable: Optional[Callable[[], None]]) -> None
 
   Sets a callable which is invoked during a rollback.  If *callable*
   is :const:`None` then any existing rollback hook is unregistered.
@@ -1071,7 +1071,7 @@ finally:
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: setprofile(callable: Optional[Callable]) -> None
+/** .. method:: setprofile(callable: Optional[Callable[[str, int], None]]) -> None
 
   Sets a callable which is invoked at the end of execution of each
   statement and passed the statement string and how long it took to
@@ -1155,12 +1155,12 @@ finally:
   return ok;
 }
 
-/** .. method:: setcommithook(callable: Optional[Callable]) -> None
+/** .. method:: setcommithook(callable: Optional[Callable[[], None]]) -> None
 
   *callable* will be called just before a commit.  It should return
-  zero for the commit to go ahead and non-zero for it to be turned
+  False for the commit to go ahead and True for it to be turned
   into a rollback. In the case of an exception in your callable, a
-  non-zero (ie rollback) value is returned.  Pass None to unregister
+  True (ie rollback) value is returned.  Pass None to unregister
   the existing hook.
 
   .. seealso::
@@ -1245,7 +1245,7 @@ finally:
   return code;
 }
 
-/** .. method:: setwalhook(callable: Optional[Callable]) -> None
+/** .. method:: setwalhook(callable: Optional[Callable[[Connection, str, int], int]]) -> None
 
  *callable* will be called just after data is committed in :ref:`wal`
  mode.  It should return :const:`SQLITE_OK` or an error code.  The
@@ -1328,12 +1328,12 @@ finally:
   return ok;
 }
 
-/** .. method:: setprogresshandler(callable: Optional[Callable], nsteps: int = 20) -> None
+/** .. method:: setprogresshandler(callable: Optional[Callable[[], bool]], nsteps: int = 20) -> None
 
   Sets a callable which is invoked every *nsteps* SQLite
-  inststructions. The callable should return a non-zero value to abort
-  or zero to continue. (If there is an error in your Python *callable*
-  then non-zero will be returned).
+  inststructions. The callable should return True to abort
+  or False to continue. (If there is an error in your Python *callable*
+  then True/abort will be returned).
 
   .. seealso::
 
@@ -1424,7 +1424,7 @@ finally:
   return result;
 }
 
-/** .. method:: setauthorizer(callable: Optional[Callable]) -> None
+/** .. method:: setauthorizer(callable: Optional[Callable[[int, Optional[str], Optional[str], Optional[str], Optional[str]], int]]) -> None
 
   While `preparing <https://sqlite.org/c3ref/prepare.html>`_
   statements, SQLite will call any defined authorizer to see if a
@@ -1733,15 +1733,14 @@ finally:
   return result;
 }
 
-/** .. method:: setbusyhandler(callable: Optional[Callable]) -> None
+/** .. method:: setbusyhandler(callable: Optional[Callable[[int], bool]]) -> None
 
    Sets the busy handler to callable. callable will be called with one
    integer argument which is the number of prior calls to the busy
-   callback for the same lock. If the busy callback returns something
-   that evaluates to False, then SQLite returns :const:`SQLITE_BUSY` to the
-   calling code.. If the callback returns something that evaluates to
-   True, then SQLite tries to open the table again and the cycle
-   repeats.
+   callback for the same lock. If the busy callback returns False,
+   then SQLite returns :const:`SQLITE_BUSY` to the calling code. If
+   the callback returns True, then SQLite tries to open the table
+   again and the cycle repeats.
 
    If you previously called :meth:`~Connection.setbusytimeout` then
    calling this overrides that.
@@ -2429,7 +2428,7 @@ apsw_free_func(void *funcinfo)
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: createscalarfunction(name: str, callable: Optional[Callable], numargs: int = -1, deterministic: bool = False) -> None
+/** .. method:: createscalarfunction(name: str, callable: Optional[ScalarProtocol], numargs: int = -1, deterministic: bool = False) -> None
 
   Registers a scalar function.  Scalar functions operate on one set of parameters once.
 
@@ -2519,7 +2518,7 @@ finally:
   Py_RETURN_NONE;
 }
 
-/** .. method:: createaggregatefunction(name: str, factory: Optional[Callable], numargs: int = -1) -> None
+/** .. method:: createaggregatefunction(name: str, factory: Optional[AggregateFactory], numargs: int = -1) -> None
 
   Registers an aggregate function.  Aggregate functions operate on all
   the relevant rows such as counting how many there are.
@@ -3017,7 +3016,7 @@ Connection_overloadfunction(Connection *self, PyObject *args, PyObject *kwds)
   Py_RETURN_NONE;
 }
 
-/** .. method:: setexectrace(callable: Optional[Callable]) -> None
+/** .. method:: setexectrace(callable: Optional[ExecTracer]) -> None
 
   *callable* is called with the cursor, statement and bindings for
   each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
@@ -3056,7 +3055,7 @@ Connection_setexectrace(Connection *self, PyObject *args, PyObject *kwds)
   Py_RETURN_NONE;
 }
 
-/** .. method:: setrowtrace(callable: Optional[Callable]) -> None
+/** .. method:: setrowtrace(callable: Optional[RowTracer]) -> None
 
   *callable* is called with the cursor and row being returned for
   :class:`cursors <Cursor>` associated with this Connection, unless
@@ -3095,7 +3094,7 @@ Connection_setrowtrace(Connection *self, PyObject *args, PyObject *kwds)
   Py_RETURN_NONE;
 }
 
-/** .. method:: getexectrace() -> Optional[Callable]
+/** .. method:: getexectrace() -> Optional[ExecTracer]
 
   Returns the currently installed (via :meth:`~Connection.setexectrace`)
   execution tracer.
@@ -3117,7 +3116,7 @@ Connection_getexectrace(Connection *self)
   return ret;
 }
 
-/** .. method:: getrowtrace() -> Optional[Callable]
+/** .. method:: getrowtrace() -> Optional[RowTracer]
 
   Returns the currently installed (via :meth:`~Connection.setrowtrace`)
   row tracer.

@@ -111,7 +111,7 @@ argcheck_pointer(PyObject *object, void *result)
 }
 
 static int
-argcheck_Optional_Union_Sequence_Dict(PyObject *object, void *result)
+argcheck_Optional_Bindings(PyObject *object, void *result)
 {
     PyObject **output = (PyObject **)result;
     if (object == Py_None)
@@ -120,7 +120,8 @@ argcheck_Optional_Union_Sequence_Dict(PyObject *object, void *result)
         return 1;
     }
     /* PySequence_Check is too strict and rejects things that are
-        accepted by PySequence_Fast like sets and generators */
+        accepted by PySequence_Fast like sets and generators,
+        so everything is accepted */
     *output = object;
     return 1;
 }
