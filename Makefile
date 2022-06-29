@@ -62,7 +62,7 @@ doc/.static:
 $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
 	env PYTHONPATH=. $(PYTHON) tools/code2rst.py $(SQLITEVERSION) $< $@
 
-src/apsw.docstrings: $(GENDOCS) tools/rst2docstring.py
+src/apsw.docstrings: $(GENDOCS) tools/rst2docstring.py src/types.py
 	env PYTHONPATH=. $(PYTHON) tools/rst2docstring.py src/apsw.docstrings $(GENDOCS)
 
 build_ext:

@@ -73,7 +73,7 @@ def classify(doc: list) -> Union[dict, None]:
     kind = line.split()[1]
     assert kind.endswith("::")
     kind = kind.rstrip(":")
-    if kind in {"index", "currentmodule", "code-block", "note", "seealso", "module"}:
+    if kind in {"index", "currentmodule", "code-block", "note", "seealso", "module", "literalinclude"}:
         return None
 
     assert kind in ("class", "method", "attribute"), f"unknown kind { kind } in { line }"
@@ -332,11 +332,35 @@ type_overrides = {
 }
 
 
-def callable_erasure(f):
-    if "Callable" not in f:
+def callable_erasure(f, token="Callable"):
+    "Removes nested square brackets after token"
+    if token not in f:
         return f
-    mo = re.fullmatch(r"(?P<before>.*Callable)\s*\[\s*\[.*?].*?](?P<after>.*)", f)
-    return (mo.group("before") + mo.group("after")) if mo else f
+    res = ""
+    rest = f
+    while token in rest:
+        idx = rest.index(token)
+        res += rest[:idx + len(token)]
+        rest = rest[idx + len(token):]
+
+        c = rest[0]
+        if c == ']':  # no type to erase
+            continue
+        assert c == '[', f"expected [ at '{ rest }' processing '{ f }'"
+        nesting = 1
+        rest = rest[1:]
+        while nesting:
+            c = rest[0]
+            rest = rest[1:]
+            if c == '[':
+                nesting += 1
+            elif c == ']':
+                nesting -= 1
+                if not nesting:
+                    break
+
+    res += rest
+    return res
 
 
 def do_argparse(item):
@@ -423,7 +447,11 @@ def do_argparse(item):
             if param["default"]:
                 breakpoint()
                 pass
-        elif callable_erasure(param["type"]) == "Optional[Callable]":
+        elif callable_erasure(param["type"]) in {
+                "Optional[Callable]", "Optional[RowTracer]", "Optional[ExecTracer]", "Optional[ScalarProtocol]",
+                "Optional[AggregateFactory]"
+        }:
+            # the above are all callables and we don't check beyond that
             type = "PyObject *"
             kind = "O&"
             args = ["argcheck_Optional_Callable"] + args
@@ -437,10 +465,10 @@ def do_argparse(item):
             if param["default"]:
                 breakpoint()
                 pass
-        elif param["type"] == "Optional[Union[Sequence,Dict]]":
+        elif param["type"] == "Optional[Bindings]":
             type = "PyObject *"
             kind = "O&"
-            args = ["argcheck_Optional_Union_Sequence_Dict"] + args
+            args = ["argcheck_Optional_Bindings"] + args
             if param["default"]:
                 if param["default"] == "None":
                     default_check = f"{ pname } == NULL"
