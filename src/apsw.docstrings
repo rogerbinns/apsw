@@ -678,7 +678,7 @@
 "\n" \
 "Calls: `sqlite3_db_config <https://sqlite.org/c3ref/db_config.html>`__\n" 
 
-#define  Connection_createaggregatefunction_DOC "createaggregatefunction($self,name,factory,numargs=-1)\n--\n\nConnection.createaggregatefunction(name: str, factory: Optional[Callable], numargs: int = -1) -> None\n\n" \
+#define  Connection_createaggregatefunction_DOC "createaggregatefunction($self,name,factory,numargs=-1)\n--\n\nConnection.createaggregatefunction(name: str, factory: Optional[AggregateFactory], numargs: int = -1) -> None\n\n" \
 "Registers an aggregate function.  Aggregate functions operate on all\n" \
 "the relevant rows such as counting how many there are.\n" \
 "\n" \
@@ -716,7 +716,7 @@
 "\n" \
 "Calls: `sqlite3_create_function_v2 <https://sqlite.org/c3ref/create_function.html>`__\n" 
 
-#define Connection_createaggregatefunction_USAGE "Connection.createaggregatefunction(name: str, factory: Optional[Callable], numargs: int = -1) -> None"
+#define Connection_createaggregatefunction_USAGE "Connection.createaggregatefunction(name: str, factory: Optional[AggregateFactory], numargs: int = -1) -> None"
 
 #define Connection_createaggregatefunction_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
@@ -778,7 +778,7 @@
 } while(0)
 
 
-#define  Connection_createscalarfunction_DOC "createscalarfunction($self,name,callable,numargs=-1,deterministic=False)\n--\n\nConnection.createscalarfunction(name: str, callable: Optional[Callable], numargs: int = -1, deterministic: bool = False) -> None\n\n" \
+#define  Connection_createscalarfunction_DOC "createscalarfunction($self,name,callable,numargs=-1,deterministic=False)\n--\n\nConnection.createscalarfunction(name: str, callable: Optional[ScalarProtocol], numargs: int = -1, deterministic: bool = False) -> None\n\n" \
 "Registers a scalar function.  Scalar functions operate on one set of parameters once.\n" \
 "\n" \
 ":param name: The string name of the function.  It should be less than 255 characters\n" \
@@ -810,7 +810,7 @@
 "\n" \
 "Calls: `sqlite3_create_function_v2 <https://sqlite.org/c3ref/create_function.html>`__\n" 
 
-#define Connection_createscalarfunction_USAGE "Connection.createscalarfunction(name: str, callable: Optional[Callable], numargs: int = -1, deterministic: bool = False) -> None"
+#define Connection_createscalarfunction_USAGE "Connection.createscalarfunction(name: str, callable: Optional[ScalarProtocol], numargs: int = -1, deterministic: bool = False) -> None"
 
 #define Connection_createscalarfunction_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
@@ -978,7 +978,7 @@
 "\n" \
 "Calls: `sqlite3_get_autocommit <https://sqlite.org/c3ref/get_autocommit.html>`__\n" 
 
-#define  Connection_getexectrace_DOC "getexectrace($self)\n--\n\nConnection.getexectrace() -> Optional[Callable]\n\n" \
+#define  Connection_getexectrace_DOC "getexectrace($self)\n--\n\nConnection.getexectrace() -> Optional[ExecTracer]\n\n" \
 "Returns the currently installed (via :meth:`~Connection.setexectrace`)\n" \
 "execution tracer.\n" \
 "\n" \
@@ -986,7 +986,7 @@
 "\n" \
 "  * :ref:`tracing`\n" 
 
-#define  Connection_getrowtrace_DOC "getrowtrace($self)\n--\n\nConnection.getrowtrace() -> Optional[Callable]\n\n" \
+#define  Connection_getrowtrace_DOC "getrowtrace($self)\n--\n\nConnection.getrowtrace() -> Optional[RowTracer]\n\n" \
 "Returns the currently installed (via :meth:`~Connection.setrowtrace`)\n" \
 "row tracer.\n" \
 "\n" \
@@ -1172,7 +1172,7 @@
 } while(0)
 
 
-#define  Connection_setauthorizer_DOC "setauthorizer($self,callable)\n--\n\nConnection.setauthorizer(callable: Optional[Callable]) -> None\n\n" \
+#define  Connection_setauthorizer_DOC "setauthorizer($self,callable)\n--\n\nConnection.setauthorizer(callable: Optional[Callable[[int, Optional[str], Optional[str], Optional[str], Optional[str]], int]]) -> None\n\n" \
 "While `preparing <https://sqlite.org/c3ref/prepare.html>`_\n" \
 "statements, SQLite will call any defined authorizer to see if a\n" \
 "particular action is ok to be part of the statement.\n" \
@@ -1203,21 +1203,20 @@
 "\n" \
 "Calls: `sqlite3_set_authorizer <https://sqlite.org/c3ref/set_authorizer.html>`__\n" 
 
-#define Connection_setauthorizer_USAGE "Connection.setauthorizer(callable: Optional[Callable]) -> None"
+#define Connection_setauthorizer_USAGE "Connection.setauthorizer(callable: Optional[Callable[[int, Optional[str], Optional[str], Optional[str], Optional[str]], int]]) -> None"
 
 #define Connection_setauthorizer_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
 } while(0)
 
 
-#define  Connection_setbusyhandler_DOC "setbusyhandler($self,callable)\n--\n\nConnection.setbusyhandler(callable: Optional[Callable]) -> None\n\n" \
+#define  Connection_setbusyhandler_DOC "setbusyhandler($self,callable)\n--\n\nConnection.setbusyhandler(callable: Optional[Callable[[int], bool]]) -> None\n\n" \
 "Sets the busy handler to callable. callable will be called with one\n" \
 "integer argument which is the number of prior calls to the busy\n" \
-"callback for the same lock. If the busy callback returns something\n" \
-"that evaluates to False, then SQLite returns :const:`SQLITE_BUSY` to the\n" \
-"calling code.. If the callback returns something that evaluates to\n" \
-"True, then SQLite tries to open the table again and the cycle\n" \
-"repeats.\n" \
+"callback for the same lock. If the busy callback returns False,\n" \
+"then SQLite returns :const:`SQLITE_BUSY` to the calling code. If\n" \
+"the callback returns True, then SQLite tries to open the table\n" \
+"again and the cycle repeats.\n" \
 "\n" \
 "If you previously called :meth:`~Connection.setbusytimeout` then\n" \
 "calling this overrides that.\n" \
@@ -1231,7 +1230,7 @@
 "\n" \
 "Calls: `sqlite3_busy_handler <https://sqlite.org/c3ref/busy_handler.html>`__\n" 
 
-#define Connection_setbusyhandler_USAGE "Connection.setbusyhandler(callable: Optional[Callable]) -> None"
+#define Connection_setbusyhandler_USAGE "Connection.setbusyhandler(callable: Optional[Callable[[int], bool]]) -> None"
 
 #define Connection_setbusyhandler_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
@@ -1263,11 +1262,11 @@
 } while(0)
 
 
-#define  Connection_setcommithook_DOC "setcommithook($self,callable)\n--\n\nConnection.setcommithook(callable: Optional[Callable]) -> None\n\n" \
+#define  Connection_setcommithook_DOC "setcommithook($self,callable)\n--\n\nConnection.setcommithook(callable: Optional[Callable[[], None]]) -> None\n\n" \
 "*callable* will be called just before a commit.  It should return\n" \
-"zero for the commit to go ahead and non-zero for it to be turned\n" \
+"False for the commit to go ahead and True for it to be turned\n" \
 "into a rollback. In the case of an exception in your callable, a\n" \
-"non-zero (ie rollback) value is returned.  Pass None to unregister\n" \
+"True (ie rollback) value is returned.  Pass None to unregister\n" \
 "the existing hook.\n" \
 "\n" \
 ".. seealso::\n" \
@@ -1276,14 +1275,14 @@
 "\n" \
 "Calls: `sqlite3_commit_hook <https://sqlite.org/c3ref/commit_hook.html>`__\n" 
 
-#define Connection_setcommithook_USAGE "Connection.setcommithook(callable: Optional[Callable]) -> None"
+#define Connection_setcommithook_USAGE "Connection.setcommithook(callable: Optional[Callable[[], None]]) -> None"
 
 #define Connection_setcommithook_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
 } while(0)
 
 
-#define  Connection_setexectrace_DOC "setexectrace($self,callable)\n--\n\nConnection.setexectrace(callable: Optional[Callable]) -> None\n\n" \
+#define  Connection_setexectrace_DOC "setexectrace($self,callable)\n--\n\nConnection.setexectrace(callable: Optional[ExecTracer]) -> None\n\n" \
 "*callable* is called with the cursor, statement and bindings for\n" \
 "each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this\n" \
 "Connection, unless the :class:`Cursor` installed its own\n" \
@@ -1299,14 +1298,14 @@
 "  * :ref:`rowtracer`\n" \
 "  * :meth:`Cursor.setexectrace`\n" 
 
-#define Connection_setexectrace_USAGE "Connection.setexectrace(callable: Optional[Callable]) -> None"
+#define Connection_setexectrace_USAGE "Connection.setexectrace(callable: Optional[ExecTracer]) -> None"
 
 #define Connection_setexectrace_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
 } while(0)
 
 
-#define  Connection_setprofile_DOC "setprofile($self,callable)\n--\n\nConnection.setprofile(callable: Optional[Callable]) -> None\n\n" \
+#define  Connection_setprofile_DOC "setprofile($self,callable)\n--\n\nConnection.setprofile(callable: Optional[Callable[[str, int], None]]) -> None\n\n" \
 "Sets a callable which is invoked at the end of execution of each\n" \
 "statement and passed the statement string and how long it took to\n" \
 "execute. (The execution time is in nanoseconds.) Note that it is\n" \
@@ -1316,18 +1315,18 @@
 "\n" \
 "Calls: `sqlite3_profile <https://sqlite.org/c3ref/profile.html>`__\n" 
 
-#define Connection_setprofile_USAGE "Connection.setprofile(callable: Optional[Callable]) -> None"
+#define Connection_setprofile_USAGE "Connection.setprofile(callable: Optional[Callable[[str, int], None]]) -> None"
 
 #define Connection_setprofile_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
 } while(0)
 
 
-#define  Connection_setprogresshandler_DOC "setprogresshandler($self,callable,nsteps=20)\n--\n\nConnection.setprogresshandler(callable: Optional[Callable], nsteps: int = 20) -> None\n\n" \
+#define  Connection_setprogresshandler_DOC "setprogresshandler($self,callable,nsteps=20)\n--\n\nConnection.setprogresshandler(callable: Optional[Callable[[], bool]], nsteps: int = 20) -> None\n\n" \
 "Sets a callable which is invoked every *nsteps* SQLite\n" \
-"inststructions. The callable should return a non-zero value to abort\n" \
-"or zero to continue. (If there is an error in your Python *callable*\n" \
-"then non-zero will be returned).\n" \
+"inststructions. The callable should return True to abort\n" \
+"or False to continue. (If there is an error in your Python *callable*\n" \
+"then True/abort will be returned).\n" \
 "\n" \
 ".. seealso::\n" \
 "\n" \
@@ -1335,7 +1334,7 @@
 "\n" \
 "Calls: `sqlite3_progress_handler <https://sqlite.org/c3ref/progress_handler.html>`__\n" 
 
-#define Connection_setprogresshandler_USAGE "Connection.setprogresshandler(callable: Optional[Callable], nsteps: int = 20) -> None"
+#define Connection_setprogresshandler_USAGE "Connection.setprogresshandler(callable: Optional[Callable[[], bool]], nsteps: int = 20) -> None"
 
 #define Connection_setprogresshandler_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
@@ -1344,7 +1343,7 @@
 } while(0)
 
 
-#define  Connection_setrollbackhook_DOC "setrollbackhook($self,callable)\n--\n\nConnection.setrollbackhook(callable: Optional[Callable]) -> None\n\n" \
+#define  Connection_setrollbackhook_DOC "setrollbackhook($self,callable)\n--\n\nConnection.setrollbackhook(callable: Optional[Callable[[], None]]) -> None\n\n" \
 "Sets a callable which is invoked during a rollback.  If *callable*\n" \
 "is :const:`None` then any existing rollback hook is unregistered.\n" \
 "\n" \
@@ -1352,14 +1351,14 @@
 "\n" \
 "Calls: `sqlite3_rollback_hook <https://sqlite.org/c3ref/commit_hook.html>`__\n" 
 
-#define Connection_setrollbackhook_USAGE "Connection.setrollbackhook(callable: Optional[Callable]) -> None"
+#define Connection_setrollbackhook_USAGE "Connection.setrollbackhook(callable: Optional[Callable[[], None]]) -> None"
 
 #define Connection_setrollbackhook_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
 } while(0)
 
 
-#define  Connection_setrowtrace_DOC "setrowtrace($self,callable)\n--\n\nConnection.setrowtrace(callable: Optional[Callable]) -> None\n\n" \
+#define  Connection_setrowtrace_DOC "setrowtrace($self,callable)\n--\n\nConnection.setrowtrace(callable: Optional[RowTracer]) -> None\n\n" \
 "*callable* is called with the cursor and row being returned for\n" \
 ":class:`cursors <Cursor>` associated with this Connection, unless\n" \
 "the Cursor installed its own tracer.  You can change the data that\n" \
@@ -1374,14 +1373,14 @@
 "  * :ref:`rowtracer`\n" \
 "  * :meth:`Cursor.setexectrace`\n" 
 
-#define Connection_setrowtrace_USAGE "Connection.setrowtrace(callable: Optional[Callable]) -> None"
+#define Connection_setrowtrace_USAGE "Connection.setrowtrace(callable: Optional[RowTracer]) -> None"
 
 #define Connection_setrowtrace_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
 } while(0)
 
 
-#define  Connection_setupdatehook_DOC "setupdatehook($self,callable)\n--\n\nConnection.setupdatehook(callable: Optional[Callable]) -> None\n\n" \
+#define  Connection_setupdatehook_DOC "setupdatehook($self,callable)\n--\n\nConnection.setupdatehook(callable: Optional[Callable[[int, str, str, int], None]]) -> None\n\n" \
 "Calls *callable* whenever a row is updated, deleted or inserted.  If\n" \
 "*callable* is :const:`None` then any existing update hook is\n" \
 "unregistered.  The update hook cannot make changes to the database while\n" \
@@ -1406,14 +1405,14 @@
 "\n" \
 "Calls: `sqlite3_update_hook <https://sqlite.org/c3ref/update_hook.html>`__\n" 
 
-#define Connection_setupdatehook_USAGE "Connection.setupdatehook(callable: Optional[Callable]) -> None"
+#define Connection_setupdatehook_USAGE "Connection.setupdatehook(callable: Optional[Callable[[int, str, str, int], None]]) -> None"
 
 #define Connection_setupdatehook_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
 } while(0)
 
 
-#define  Connection_setwalhook_DOC "setwalhook($self,callable)\n--\n\nConnection.setwalhook(callable: Optional[Callable]) -> None\n\n" \
+#define  Connection_setwalhook_DOC "setwalhook($self,callable)\n--\n\nConnection.setwalhook(callable: Optional[Callable[[Connection, str, int], int]]) -> None\n\n" \
 "*callable* will be called just after data is committed in :ref:`wal`\n" \
 "mode.  It should return :const:`SQLITE_OK` or an error code.  The\n" \
 "callback is called with 3 parameters:\n" \
@@ -1426,7 +1425,7 @@
 "\n" \
 "Calls: `sqlite3_wal_hook <https://sqlite.org/c3ref/wal_hook.html>`__\n" 
 
-#define Connection_setwalhook_USAGE "Connection.setwalhook(callable: Optional[Callable]) -> None"
+#define Connection_setwalhook_USAGE "Connection.setwalhook(callable: Optional[Callable[[Connection, str, int], int]]) -> None"
 
 #define Connection_setwalhook_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
@@ -1556,14 +1555,14 @@
 } while(0)
 
 
-#define  Cursor_description_DOC ":type: tuple\n" \
+#define  Cursor_description_DOC ":type: Tuple[Tuple[str, str, None, None, None, None, None], ...]\n" \
 "\n" \
 "Based on the `DB-API cursor property\n" \
 "<http://www.python.org/dev/peps/pep-0249/>`__, this returns the\n" \
 "same as :meth:`getdescription` but with 5 Nones appended.  See\n" \
 "also :issue:`131`.\n" 
 
-#define  Cursor_execute_DOC "execute($self,statements,bindings=None)\n--\n\nCursor.execute(statements: str, bindings: Optional[Union[Sequence,Dict]] = None) -> Cursor\n\n" \
+#define  Cursor_execute_DOC "execute($self,statements,bindings=None)\n--\n\nCursor.execute(statements: str, bindings: Optional[Bindings] = None) -> Cursor\n\n" \
 "Executes the statements using the supplied bindings.  Execution\n" \
 "returns when the first row is available or all statements have\n" \
 "completed.\n" \
@@ -1623,7 +1622,7 @@
 "  * `sqlite3_bind_blob <https://sqlite.org/c3ref/bind_blob.html>`__\n" \
 "  * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__\n" 
 
-#define Cursor_execute_USAGE "Cursor.execute(statements: str, bindings: Optional[Union[Sequence,Dict]] = None) -> Cursor"
+#define Cursor_execute_USAGE "Cursor.execute(statements: str, bindings: Optional[Bindings] = None) -> Cursor"
 
 #define Cursor_execute_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(statements), PyObject *)); \
@@ -1632,7 +1631,7 @@
 } while(0)
 
 
-#define  Cursor_executemany_DOC "executemany($self,statements,sequenceofbindings)\n--\n\nCursor.executemany(statements: str, sequenceofbindings: Sequence[Union[Sequence,Dict]]) -> Cursor\n\n" \
+#define  Cursor_executemany_DOC "executemany($self,statements,sequenceofbindings)\n--\n\nCursor.executemany(statements: str, sequenceofbindings: Sequence[Bindings]) -> Cursor\n\n" \
 "This method is for when you want to execute the same statements over\n" \
 "a sequence of bindings.  Conceptually it does this::\n" \
 "\n" \
@@ -1652,7 +1651,7 @@
 "statements can return data.  See :meth:`~Cursor.execute` for more\n" \
 "information.\n" 
 
-#define Cursor_executemany_USAGE "Cursor.executemany(statements: str, sequenceofbindings: Sequence[Union[Sequence,Dict]]) -> Cursor"
+#define Cursor_executemany_USAGE "Cursor.executemany(statements: str, sequenceofbindings: Sequence[Bindings]) -> Cursor"
 
 #define Cursor_executemany_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(statements), PyObject *)); \
@@ -1660,7 +1659,7 @@
 } while(0)
 
 
-#define  Cursor_fetchall_DOC "fetchall($self)\n--\n\nCursor.fetchall() -> list\n\n" \
+#define  Cursor_fetchall_DOC "fetchall($self)\n--\n\nCursor.fetchall() -> list[Tuple[SQLiteValue, ...]]\n\n" \
 "Returns all remaining result rows as a list.  This method is defined\n" \
 "in DBAPI.  It is a longer way of doing ``list(cursor)``.\n" 
 
@@ -1729,7 +1728,7 @@
 "  * `sqlite3_column_name <https://sqlite.org/c3ref/column_name.html>`__\n" \
 "  * `sqlite3_column_decltype <https://sqlite.org/c3ref/column_decltype.html>`__\n" 
 
-#define  Cursor_getexectrace_DOC "getexectrace($self)\n--\n\nCursor.getexectrace() -> Optional[Callable]\n\n" \
+#define  Cursor_getexectrace_DOC "getexectrace($self)\n--\n\nCursor.getexectrace() -> Optional[ExecTracer]\n\n" \
 "Returns the currently installed (via :meth:`~Cursor.setexectrace`)\n" \
 "execution tracer.\n" \
 "\n" \
@@ -1737,7 +1736,7 @@
 "\n" \
 "  * :ref:`tracing`\n" 
 
-#define  Cursor_getrowtrace_DOC "getrowtrace($self)\n--\n\nCursor.getrowtrace() -> Optional[Callable]\n\n" \
+#define  Cursor_getrowtrace_DOC "getrowtrace($self)\n--\n\nCursor.getrowtrace() -> Optional[RowTracer]\n\n" \
 "Returns the currently installed (via :meth:`~Cursor.setrowtrace`)\n" \
 "row tracer.\n" \
 "\n" \
@@ -1754,7 +1753,7 @@
 #define  Cursor_next_DOC "__next__($self,self)\n--\n\nCursor.__next__(self: Cursor) -> Any\n\n" \
 "Cursors are iterators\n" 
 
-#define  Cursor_setexectrace_DOC "setexectrace($self,callable)\n--\n\nCursor.setexectrace(callable: Optional[Callable]) -> None\n\n" \
+#define  Cursor_setexectrace_DOC "setexectrace($self,callable)\n--\n\nCursor.setexectrace(callable: Optional[ExecTracer]) -> None\n\n" \
 "*callable* is called with the cursor, statement and bindings for\n" \
 "each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this\n" \
 "cursor.\n" \
@@ -1768,14 +1767,14 @@
 "  * :ref:`executiontracer`\n" \
 "  * :meth:`Connection.setexectrace`\n" 
 
-#define Cursor_setexectrace_USAGE "Cursor.setexectrace(callable: Optional[Callable]) -> None"
+#define Cursor_setexectrace_USAGE "Cursor.setexectrace(callable: Optional[ExecTracer]) -> None"
 
 #define Cursor_setexectrace_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
 } while(0)
 
 
-#define  Cursor_setrowtrace_DOC "setrowtrace($self,callable)\n--\n\nCursor.setrowtrace(callable: Optional[Callable]) -> None\n\n" \
+#define  Cursor_setrowtrace_DOC "setrowtrace($self,callable)\n--\n\nCursor.setrowtrace(callable: Optional[RowTracer]) -> None\n\n" \
 "*callable* is called with cursor and row being returned.  You can\n" \
 "change the data that is returned or cause the row to be skipped\n" \
 "altogether.\n" \
@@ -1789,7 +1788,7 @@
 "  * :ref:`rowtracer`\n" \
 "  * :meth:`Connection.setexectrace`\n" 
 
-#define Cursor_setrowtrace_USAGE "Cursor.setrowtrace(callable: Optional[Callable]) -> None"
+#define Cursor_setrowtrace_USAGE "Cursor.setrowtrace(callable: Optional[RowTracer]) -> None"
 
 #define Cursor_setrowtrace_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
