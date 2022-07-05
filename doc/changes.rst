@@ -14,6 +14,8 @@ not defined, up from the default of 10.
 
 Updated typing information with more detail (:issue:`338`)
 
+Corrected the tips log handler of extended result code (:issue:`342`)
+
 3.38.5-r1
 =========
 
