@@ -62,15 +62,14 @@ for name, obj in (
 
     for c in classes[name]:
         if not hasattr(obj, c):
-            # it is legit for these to be missing from code (currently because code is broken)
-            if (name + "." + c) in ("apsw.async_control", "apsw.async_initialize", "apsw.async_run",
-                                    "apsw.async_shutdown"):
-                continue
             retval = 1
             print("%s.%s in documentation but not object" % (name, c))
     for c in dir(obj):
         if c.startswith("__"): continue
         if name == "apsw":
+            # ignore imports
+            if getattr(getattr(apsw, c), "__module__", name) != name:
+                continue
             # ignore constants and modules
             if type(getattr(apsw, c)) in (type(3), type(sys)):
                 continue
@@ -87,8 +86,7 @@ for name, obj in (
             if c.startswith("mapping_"):
                 continue
         if c not in classes[name]:
-            if "%s.%s" % (name, c) not in ("Cursor.next", ):
-                retval = 1
-                print("%s.%s on object but not in documentation" % (name, c))
+            retval = 1
+            print("%s.%s on object but not in documentation" % (name, c))
 
 sys.exit(retval)
