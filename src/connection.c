@@ -3317,7 +3317,7 @@ Connection_exit(Connection *self, PyObject *args)
   Py_RETURN_FALSE;
 }
 
-/** .. method:: config(op: int, *args) -> int
+/** .. method:: config(op: int, *args: int) -> int
 
     :param op: A `configuration operation
       <https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__

@@ -256,7 +256,7 @@ typedef struct
 
 */
 
-/** .. method:: excepthook(*args) -> Any
+/** .. method:: excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[TracebackType]) -> Any
 
     Called when there has been an exception in a :class:`VFS` routine.
     The default implementation passes args to ``sys.excepthook`` and if that
@@ -1784,7 +1784,7 @@ static PyTypeObject APSWVFSType =
        operating systems.
 */
 
-/** .. method:: excepthook(etype, evalue, etraceback)
+/** .. method:: excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[TracebackType]) ->None
 
     Called when there has been an exception in a :class:`VFSFile`
     routine.  The default implementation calls ``sys.excepthook`` and

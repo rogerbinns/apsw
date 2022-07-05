@@ -2,6 +2,7 @@
 from typing import Union, Tuple, List, Optional, Callable, Any, Dict, \
         Iterator, Sequence, Literal, Set, Protocol
 from array import array
+from types import TracebackType
 
 SQLiteValue = Union[None, int, float, bytes, str]
 """SQLite supports 5 types - None (NULL), 64 bit signed int, 64 bit
@@ -20,9 +21,8 @@ class AggregateProtocol(Protocol):
         "Called to get a final result value"
         ...
 
-def AggregateFactory() -> AggregateProtocol:
-        "Called each time for the start of a new calculation using an aggregate function"
-        ...
+AggregateFactory = Callable[[], AggregateProtocol]
+"Called each time for the start of a new calculation using an aggregate function"
 
 ScalarProtocol = Union[
         Callable[[], SQLiteValue],
@@ -44,3 +44,4 @@ whatever is returned is returned as a result row for the query"""
 ExecTracer = Callable[[Cursor, str, Union[Dict[str, SQLiteValue], Tuple[SQLiteValue,...], None]], bool]
 """Execution tracers are called with the cursor, sql query text, and the bindings
 used.  Return False/None to abort execution, or True to continue"""
+

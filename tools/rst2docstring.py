@@ -22,7 +22,7 @@ import os
 import io
 import textwrap
 import glob
-import re
+import inspect
 
 from typing import Union, List
 
@@ -83,8 +83,18 @@ def classify(doc: list) -> Union[dict, None]:
         signature = "(" + signature
     else:
         name, signature = rest, ""
+
     name = name.strip()
     signature = signature.strip()
+
+    if name == "main":  # from shell, so get its spec
+        import apsw
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            # these inspect methods are deprecated, but the signature based ones
+            # mess up formatting - eg saying '<class TextIO>' instead of 'TextIO'
+            signature = inspect.formatargspec(*inspect.getfullargspec(apsw.main))
 
     if kind == "class":
         name += ".__init__"
@@ -674,7 +684,11 @@ if __name__ == '__main__':
                    for param in item["signature"]) and not any(param["name"].startswith("*")
                                                                for param in item["signature"]):
                 if item["name"] not in {
-                        "apsw.format_sql_value", "VFSFile.excepthook", "Cursor.__next__", "Cursor.__iter__"
+                        "apsw.format_sql_value",
+                        "VFSFile.excepthook",
+                        "Cursor.__next__",
+                        "Cursor.__iter__",
+                        "VFS.excepthook",
                 }:
                     missing.append(item["name"])
 

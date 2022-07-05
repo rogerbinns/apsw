@@ -11,6 +11,8 @@ import time
 import codecs
 import base64
 
+from typing import TextIO
+
 if sys.platform == "win32":
     _win_colour = False
     try:
@@ -70,6 +72,7 @@ class Shell:
     threads.  ie it doesn't care what thread calls methods as long as
     you don't call more than one concurrently.
     """
+
     class Error(Exception):
         """Class raised on errors.  The expectation is that the error
         will be displayed by the shell as text so there are no
@@ -77,7 +80,7 @@ class Shell:
         types of errors doesn't matter."""
         pass
 
-    def __init__(self, stdin=None, stdout=None, stderr=None, encoding="utf8", args=None, db=None):
+    def __init__(self, stdin: TextIO = None, stdout=None, stderr=None, encoding: str = "utf8", args=None, db=None):
         """Create instance, set defaults and do argument processing."""
         # The parameter doc has to be in main class doc as sphinx
         # ignores any described here
@@ -2089,7 +2092,7 @@ Enter SQL statements terminated with a ";"
             g = {}
             g.update({'apsw': apsw, 'shell': self})
             # compile step is needed to associate name with code
-            f=open(cmd[0], "rb")
+            f = open(cmd[0], "rb")
             try:
                 exec(compile(f.read(), cmd[0], 'exec'), g, g)
             finally:
@@ -2897,6 +2900,7 @@ Enter SQL statements terminated with a ";"
     # so that it doesn't matter if a colour scheme leaves something
     # out.
     class _colourscheme:
+
         def __init__(self, **kwargs):
             for k, v in kwargs.items():
                 setattr(self, k, v)
@@ -2987,7 +2991,7 @@ Enter SQL statements terminated with a ";"
         pass
 
 
-def main():
+def main() -> None:
     # Docstring must start on second line so dedenting works correctly
     """
     Call this to run the :ref:`interactive shell <shell>`.  It
