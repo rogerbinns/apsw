@@ -669,7 +669,7 @@
 } while(0)
 
 
-#define  Connection_config_DOC "config($self,op,*args)\n--\n\nConnection.config(op: int, *args) -> int\n\n" \
+#define  Connection_config_DOC "config($self,op,*args)\n--\n\nConnection.config(op: int, *args: int) -> int\n\n" \
 ":param op: A `configuration operation\n" \
 "  <https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__\n" \
 ":param args: Zero or more arguments as appropriate for *op*\n" \
@@ -1852,7 +1852,7 @@
 } while(0)
 
 
-#define  VFSFile_excepthook_DOC "excepthook($self,etype,evalue,etraceback)\n--\n\nVFSFile.excepthook(etype, evalue, etraceback)\n\n" \
+#define  VFSFile_excepthook_DOC "excepthook($self,etype,evalue,etraceback)\n--\n\nVFSFile.excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[TracebackType]) ->None\n\n" \
 "Called when there has been an exception in a :class:`VFSFile`\n" \
 "routine.  The default implementation calls ``sys.excepthook`` and\n" \
 "if that fails then ``PyErr_Display``.  The three arguments\n" \
@@ -2050,7 +2050,7 @@
 } while(0)
 
 
-#define  VFS_excepthook_DOC "excepthook($self,*args)\n--\n\nVFS.excepthook(*args) -> Any\n\n" \
+#define  VFS_excepthook_DOC "excepthook($self,etype,evalue,etraceback)\n--\n\nVFS.excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[TracebackType]) -> Any\n\n" \
 "Called when there has been an exception in a :class:`VFS` routine.\n" \
 "The default implementation passes args to ``sys.excepthook`` and if that\n" \
 "fails then ``PyErr_Display``.  The three arguments correspond to\n" \
