@@ -40,7 +40,7 @@ between sqlite3 and APSW.  The underlying queries are based on
 
 .. code-block:: text
 
-    $ python speedtest.py --help
+    $ python3 speedtest.py --help
     Usage: speedtest.py [options]
     
     Options:
@@ -71,7 +71,7 @@ between sqlite3 and APSW.  The underlying queries are based on
                            speedtest]
     
 
-    $ python speedtest.py --tests-detail
+    $ python3 speedtest.py --tests-detail
     bigstmt:
     
       Supplies the SQL as a single string consisting of multiple
