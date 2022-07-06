@@ -72,6 +72,9 @@ def write_whole_file(name, mode, data):
 # work out version number
 version = read_whole_file(os.path.join("src", "apswversion.h"), "rt").split()[2].strip('"')
 
+def sqliteversion(v):
+    assert len(v.split(".")) == 4
+    return v.rsplit(".", 1)[0]
 
 # They keep messing with where files are in URI
 def fixup_download_url(url):
@@ -178,7 +181,7 @@ fetch_parts = []
 class fetch(Command):
     description = "Automatically downloads SQLite and components"
     user_options = [
-        ("version=", None, f"Which version of SQLite/components to get (default { version.split('-')[0] })"),
+        ("version=", None, f"Which version of SQLite/components to get (default { sqliteversion(version) })"),
         ("missing-checksum-ok", None, "Continue on a missing checksum (default abort)"),
         ("sqlite", None, "Download SQLite amalgamation"),
         ("all", None, "Download all downloadable components"),
@@ -195,7 +198,7 @@ class fetch(Command):
     def finalize_options(self):
         global fetch_parts
         if self.version in ("self", None):
-            self.version = version.split("-")[0]
+            self.version = sqliteversion(version)
         if self.all:
             for i in self.fetch_options:
                 setattr(self, i, True)
@@ -210,8 +213,8 @@ class fetch(Command):
             match = re.search(r'sqlite-amalgamation-3([0-9][0-9])([0-9][0-9])([0-9][0-9])\.zip', page)
             if match:
                 self.version = "3.%d.%d.%d" % tuple([int(match.group(n)) for n in range(1, 4)])
-                if self.version.endswith(".0"):
-                    self.version = self.version[:-len(".0")]
+                assert self.version.endswith(".0") # sqlite doesn't use last component so we do now
+                self.version = sqliteversion(self.version)
             else:
                 write("Unable to determine latest SQLite version.  Use --version=VERSION", sys.stderr)
                 write("to set version - eg setup.py fetch --version=3.6.18", sys.stderr)
@@ -221,8 +224,8 @@ class fetch(Command):
         downloaded = 0
 
         v = [int(x) for x in self.version.split(".")]
-        if len(v) < 4:
-            v.append(0)
+        assert len(v) == 3
+        v.append(0)
         self.webversion = "%d%02d%02d%02d" % tuple(v)
 
         ## The amalgamation
@@ -770,19 +773,9 @@ for f in (findamalgamation(), ):
 # we produce a .c file from this
 depends.append("tools/shell.py")
 
-# msi is fussy about version numbers, but StrictVersion in
-# setuptools is even stricter.  msi allows 4 number components
-# while StrictVersion only allows 3 but does allow an additional
-# number preceded by a or b (intended for alpha or beta).  SQLite
-# now only uses 3 numbers (semver) so we map or -r suffix to a 'b'
-if "bdist_msi" in sys.argv:
-    version = [int(v) for v in re.split(r"[^\d]+", version)]
-    assert len(version) == 4
-    version = ".".join([str(v) for v in version[:3]]) + f"b{ version[-1] }"
-
 if __name__ == '__main__':
     setup(name="apsw",
-        version=version.replace("-r", ".post") if using_setuptools else version,
+        version=version,
         description="Another Python SQLite Wrapper",
         long_description=\
     """A Python wrapper for the SQLite embedded relational database engine.
