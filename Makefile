@@ -105,7 +105,7 @@ showsymbols:
 	set +e; nm --extern-only --defined-only apsw`$(PYTHON) -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"` | egrep -v ' (__bss_start|_edata|_end|_fini|_init|initapsw|PyInit_apsw)$$' ; test $$? -eq 1 || false
 
 # Windows compilation
-WINBPREFIX=fetch --version=$(SQLITEVERSION) --all build --enable-all-extensions
+WINBPREFIX=fetch --version=$(SQLITEVERSION) --all build_ext --enable-all-extensions --inplace build
 WINBSUFFIX=build_test_extension test
 WINBINST=bdist_wininst
 WINBMSI=bdist_msi
