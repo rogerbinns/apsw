@@ -106,13 +106,12 @@ showsymbols:
 
 # Windows compilation
 WINBPREFIX=fetch --version=$(SQLITEVERSION) --all build --enable-all-extensions
-WINBSUFFIX=install build_test_extension test
+WINBSUFFIX=build_test_extension test
 WINBINST=bdist_wininst
 WINBMSI=bdist_msi
 WINBWHEEL=bdist_wheel
 
 compile-win:
-	-del /q apsw*.pyd
 	-del /q apsw\\*.pyd
 	-del /q dist\\*.egg
 	-del /q testextension.*
@@ -120,7 +119,6 @@ compile-win:
 	-cmd /c del /s /q sqlite3
 	cmd /c del /s /q dist
 	cmd /c del /s /q build
-	cmd /c del /s /q apsw.egg-info
 	-cmd /c md dist
 	-cmd /c del /s /q c:\\python310-32\\lib\\site-packages\\*apsw*
 	c:/python310-32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBMSI) $(WINBWHEEL)
