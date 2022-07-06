@@ -120,21 +120,13 @@ compile-win:
 	cmd /c del /s /q dist
 	cmd /c del /s /q build
 	-cmd /c md dist
-	-cmd /c del /s /q c:\\python310-32\\lib\\site-packages\\*apsw*
 	c:/python310-32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBMSI) $(WINBWHEEL)
-	-cmd /c del /s /q c:\\python310\\lib\\site-packages\\*apsw*
 	c:/python310/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBMSI) $(WINBWHEEL)
-	-cmd /c del /s /q c:\\python39-32\\lib\\site-packages\\*apsw*
 	c:/python39-32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
-	-cmd /c del /s /q c:\\python39\\lib\\site-packages\\*apsw*
 	c:/python39/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
-	-cmd /c del /s /q c:\\python38\\lib\\site-packages\\*apsw*
 	c:/python38/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
-	-cmd /c del /s /q c:\\python38-64\\lib\\site-packages\\*apsw*
 	c:/python38-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
-	-cmd /c del /s /q c:\\python37\\lib\\site-packages\\*apsw*
 	c:/python37/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI) $(WINBWHEEL)
-	-cmd /c del /s /q c:\\python37-64\\lib\\site-packages\\*apsw*
 	c:/python37-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBINST) $(WINBMSI)  $(WINBWHEEL)
 	del dist\\*.egg
 
