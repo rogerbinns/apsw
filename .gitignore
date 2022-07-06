@@ -1,7 +1,7 @@
 src/shell.c
 *.orig
 testdb2
-apsw.pyd
+apsw/*.pyd
 TAGS
 sqlite3async.h
 sqlite3async.c
