@@ -16,33 +16,6 @@ version_no_r = version.split("-r")[0]
 download = open("doc/download.rst", "rt").read()
 
 
-def get_downloads(pyver, bit):
-    assert bit in {32, 64}
-    res = []
-    usever = version_no_r
-    whlver = pyver.replace(".", "")
-
-    if bit == 32:
-        if pyver in ("3.7",):
-            res.append(("wheel", url % ("apsw-%s-cp%s-cp%sm-win32.whl" % (usever, whlver, whlver))))
-        if pyver in ("3.8", "3.9", "3.10"):
-            # they removed the m
-            res.append(("wheel", url % ("apsw-%s-cp%s-cp%s-win32.whl" % (usever, whlver, whlver))))
-        if pyver not in ("3.10",):
-            res.append(("exe", url % ("apsw-%s.win32-py%s.exe" % (usever, pyver))))
-
-    if bit == 64:
-        if pyver in ("3.7",):
-            res.append(("wheel", url % ("apsw-%s-cp%s-cp%sm-win_amd64.whl" % (usever, whlver, whlver))))
-        if pyver in ("3.8", "3.9", "3.10"):
-            # they removed the m
-            res.append(("wheel", url % ("apsw-%s-cp%s-cp%s-win_amd64.whl" % (usever, whlver, whlver))))
-        if pyver not in ("3.10",):
-            res.append(("exe", url % ("apsw-%s.win-amd64-py%s.exe" % (usever, pyver))))
-
-    return res
-
-
 op = []
 incomment = False
 for line in open("doc/download.rst", "rt"):
@@ -55,18 +28,6 @@ for line in open("doc/download.rst", "rt"):
         op.append(url % ("apsw-%s.zip" % version))
         op.append("  (Source, includes this HTML Help)")
         op.append("")
-        for pyver in reversed(
-            ("3.7", "3.8", "3.9", "3.10")):
-            op.append("* Windows Python %s" % (pyver, ))
-            for bit in (64, 32):
-                dl = get_downloads(pyver, bit)
-                if not dl:
-                    continue
-                sb = "  ➥ %d bit " % bit
-                for desc, link in dl:
-                    sb += " `%s %s" % (desc, link)
-                op.append(sb)
-            op.append("")
         op.append("* `apsw-%s-sigs.zip " % (version, ))
         op.append(url % ("apsw-%s-sigs.zip" % version))
         op.append("  GPG signatures for all files")

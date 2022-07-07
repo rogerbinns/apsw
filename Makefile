@@ -164,20 +164,6 @@ source: source_nocheck
 
 release:
 	test -f dist/$(VERDIR).zip
-	test -f dist/$(VERWIN).win32-py3.7.exe
-	test -f dist/$(VERWIN)-cp37-cp37m-win32.whl
-	test -f dist/$(VERWIN).win-amd64-py3.7.exe
-	test -f dist/$(VERWIN)-cp37-cp37m-win_amd64.whl
-	test -f dist/$(VERWIN).win32-py3.8.exe
-	test -f dist/$(VERWIN)-cp38-cp38-win32.whl
-	test -f dist/$(VERWIN).win-amd64-py3.8.exe
-	test -f dist/$(VERWIN)-cp38-cp38-win_amd64.whl
-	test -f dist/$(VERWIN).win32-py3.9.exe
-	test -f dist/$(VERWIN)-cp39-cp39-win32.whl
-	test -f dist/$(VERWIN).win-amd64-py3.9.exe
-	test -f dist/$(VERWIN)-cp39-cp39-win_amd64.whl
-	test -f dist/$(VERWIN)-cp310-cp310-win32.whl
-	test -f dist/$(VERWIN)-cp310-cp310-win_amd64.whl
 	-rm -f dist/$(VERDIR)-sigs.zip dist/*.asc
 	for f in dist/* ; do gpg --use-agent --armor --detach-sig "$$f" ; done
 	cd dist ; zip -m $(VERDIR)-sigs.zip *.asc

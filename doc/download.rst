@@ -1,8 +1,8 @@
 Download
 ********
 
-pip from PyPI
-=============
+PyPI/pip
+========
 
 APSW is `available <https://pypi.org/project/apsw/>`__ at PyPI.
 
@@ -22,8 +22,12 @@ The PyPi release is made using `this github workflow
 
 .. _source_and_binaries:
 
-Source and Windows binaries
-===========================
+Source
+======
+
+You can get the source from `PyPI <https://pypi.org/project/apsw/>`__ which is
+preconfigured to fetch the corresponding SQLite version, and enables all extensions.
+Delete the included :file:`setup.cfg` to remove that.
 
 Use the source form if:
 
@@ -36,30 +40,11 @@ Use the source form if:
 See the :ref:`recommended <recommended_build>` way to build or all the
 :ref:`options available <building>`.
 
-Other binary formats for Windows such as executable installers
-are also available.
-
 .. downloads-begin
 
 * `apsw-3.39.0.0.zip
   <https://github.com/rogerbinns/apsw/releases/download/3.39.0.0/apsw-3.39.0.0.zip>`__
   (Source, includes this HTML Help)
-
-* Windows Python 3.10
-  ➥ 64 bit  `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.39.0.0/apsw-3.39.0.0-cp310-cp310-win_amd64.whl>`__
-  ➥ 32 bit  `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.39.0.0/apsw-3.39.0.0-cp310-cp310-win32.whl>`__
-
-* Windows Python 3.9
-  ➥ 64 bit  `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.39.0.0/apsw-3.39.0.0-cp39-cp39-win_amd64.whl>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.39.0.0/apsw-3.39.0.0.win-amd64-py3.9.exe>`__
-  ➥ 32 bit  `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.39.0.0/apsw-3.39.0.0-cp39-cp39-win32.whl>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.39.0.0/apsw-3.39.0.0.win32-py3.9.exe>`__
-
-* Windows Python 3.8
-  ➥ 64 bit  `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.39.0.0/apsw-3.39.0.0-cp38-cp38-win_amd64.whl>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.39.0.0/apsw-3.39.0.0.win-amd64-py3.8.exe>`__
-  ➥ 32 bit  `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.39.0.0/apsw-3.39.0.0-cp38-cp38-win32.whl>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.39.0.0/apsw-3.39.0.0.win32-py3.8.exe>`__
-
-* Windows Python 3.7
-  ➥ 64 bit  `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.39.0.0/apsw-3.39.0.0-cp37-cp37m-win_amd64.whl>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.39.0.0/apsw-3.39.0.0.win-amd64-py3.7.exe>`__
-  ➥ 32 bit  `wheel   <https://github.com/rogerbinns/apsw/releases/download/3.39.0.0/apsw-3.39.0.0-cp37-cp37m-win32.whl>`__ `exe   <https://github.com/rogerbinns/apsw/releases/download/3.39.0.0/apsw-3.39.0.0.win32-py3.7.exe>`__
 
 * `apsw-3.39.0.0-sigs.zip 
   <https://github.com/rogerbinns/apsw/releases/download/3.39.0.0/apsw-3.39.0.0-sigs.zip>`__
@@ -73,17 +58,17 @@ RPMs and DEB packages from the source, although this involves setting
 up package management tools and various dependencies on your build
 machine.
 
-+-------------------+----------------------------------------------------------------------------------+
-| Debian            | Install `python3-apsw <http://packages.debian.org/python3-apsw>`__               |
-+-------------------+----------------------------------------------------------------------------------+
-| Fedora            | Install ``python3-apsw``                                                         |
-+-------------------+----------------------------------------------------------------------------------+
-| Ubuntu            | Install ``python3-apsw``                                                         |
-+-------------------+----------------------------------------------------------------------------------+
-| Gentoo            | Install `dev-python/apsw <http://packages.gentoo.org/package/dev-python/apsw>`_  |
-+-------------------+----------------------------------------------------------------------------------+
-| Arch Linux        | Install `python-apsw <https://www.archlinux.org/packages/?q=apsw>`__             |
-+-------------------+----------------------------------------------------------------------------------+
++-------------------+------------------------------------------------------------------------------------------------------+
+| Debian            | Install `python3-apsw <http://packages.debian.org/python3-apsw>`__                                   |
++-------------------+------------------------------------------------------------------------------------------------------+
+| Fedora            | Install `python3-apsw <https://packages.fedoraproject.org/pkgs/python-apsw/>`__                      |
++-------------------+------------------------------------------------------------------------------------------------------+
+| Ubuntu            | Install `python3-apsw <https://packages.ubuntu.com/search?suite=all&searchon=names&keywords=apsw>`__ |
++-------------------+------------------------------------------------------------------------------------------------------+
+| Gentoo            | Install `dev-python/apsw <http://packages.gentoo.org/package/dev-python/apsw>`_                      |
++-------------------+------------------------------------------------------------------------------------------------------+
+| Arch Linux        | Install `python-apsw <https://www.archlinux.org/packages/?q=apsw>`__                                 |
++-------------------+------------------------------------------------------------------------------------------------------+
 
 .. _verifydownload:
 

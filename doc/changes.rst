@@ -6,7 +6,8 @@ next
 ====
 
 Updated building for PyPI to include more compiled platforms,
-including aarch64 (Linux) and universal (MacOS).
+including aarch64 (Linux) and universal (MacOS).  Windows binaries are
+no longer separately provided since PyPI has them.
 
 When the amalgamation is included into APSW, `SQLITE_MAX_ATTACHED
 <https://www.sqlite.org/limits.html#max_attached>`__ is set to 125 if
