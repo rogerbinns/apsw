@@ -5,6 +5,9 @@ Change History
 next
 ====
 
+**Version numbering scheme change:** Instead of a *-r1* style suffix,
+there is *.0* style suffix (:issue:`340`)
+
 Updated building for PyPI to include more compiled platforms,
 including aarch64 (Linux) and universal (MacOS).  Windows binaries are
 no longer separately provided since PyPI has them.
