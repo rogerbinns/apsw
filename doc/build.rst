@@ -23,11 +23,8 @@ needed components for you.
 |                                                             | compiler and installs it into a subdirectory of your home directory.    |
 |                                                             | See :pep:`370` for more details.                                        |
 +-------------------------------------------------------------+-------------------------------------------------------------------------+
-| | python setup.py build_ext :option:`--force`               | Compiles the extension but doesn't install it. The resulting file       |
-|   :option:`--inplace` test                                  | will be in the current directory named apsw.so (Unix/Mac) or            |
-|                                                             | apsw.pyd (Windows). The test suite is then run. (Note on recent versions|
-|                                                             | of CPython the extension filenames may be more complicated due to       |
-|                                                             | :pep:`3149`.)                                                           |
+| | python setup.py build_ext :option:`--force`               | Compiles the extension but doesn't install it.  The test suite is then  |
+|   :option:`--inplace` test                                  | run.                                                                    |
 +-------------------------------------------------------------+-------------------------------------------------------------------------+
 | | python setup.py build :option:`--debug` install           | Compiles APSW with debug information.  This also turns on `assertions   |
 |                                                             | <http://en.wikipedia.org/wiki/Assert.h>`_                               |
