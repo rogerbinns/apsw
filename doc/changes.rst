@@ -21,6 +21,8 @@ Updated typing information with more detail (:issue:`338`)
 Corrected the :ref:`tips <diagnostics_tips>` log handler of extended
 result code (:issue:`342`)
 
+Added :func:`Connection.db_names` (:issue:`343`)
+
 3.38.5-r1
 =========
 

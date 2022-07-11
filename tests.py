@@ -444,6 +444,31 @@ class APSW(unittest.TestCase):
             self.assertEqual(1, self.db.config(i, -1))
             self.assertEqual(0, self.db.config(i, 0))
 
+    def testConnectionNames(self):
+        "Test Connection.db_names"
+        self.assertRaises(TypeError, self.db.db_names, 3)
+        expected = ["main", "temp"]
+        self.assertEqual(expected, self.db.db_names())
+        for t in "", APSW.wikipedia_text:
+            self.db.cursor().execute(f"attach '{ self.db.db_filename('main') }' as '{ t }'")
+            expected.append(t)
+        self.assertEqual(expected, self.db.db_names())
+        while True:
+            t = f"{ expected[-1] }-{ len(expected) }"
+            try:
+                self.db.cursor().execute(f"attach '{ self.db.db_filename('main') }' as '{ t }'")
+            except apsw.SQLError:
+                # SQLError: too many attached databases - max ....
+                break
+            expected.append(t)
+        self.assertEqual(expected, self.db.db_names())
+        while len(expected)>2:
+            i =random.randint(2, len(expected)-1)
+            self.db.cursor().execute(f"detach '{ expected[i] }'")
+            del expected[i]
+            self.assertEqual(expected, self.db.db_names())
+
+
     def testMemoryLeaks(self):
         "MemoryLeaks: Run with a memory profiler such as valgrind and debug Python"
         # make and toss away a bunch of db objects, cursors, functions etc - if you use memory profiling then
@@ -3754,7 +3779,7 @@ class APSW(unittest.TestCase):
            # is already held by enclosing sqlite3_step and the
            # methods will only be called from that same thread so it
            # isn't a problem.
-                        'skipcalls': re.compile("^sqlite3_(blob_bytes|column_count|bind_parameter_count|data_count|vfs_.+|changes64|total_changes64|get_autocommit|last_insert_rowid|complete|interrupt|limit|malloc64|free|threadsafe|value_.+|libversion|enable_shared_cache|initialize|shutdown|config|memory_.+|soft_heap_limit(64)?|randomness|db_readonly|db_filename|release_memory|status64|result_.+|user_data|mprintf|aggregate_context|declare_vtab|backup_remaining|backup_pagecount|sourceid|uri_.+)$"),
+                        'skipcalls': re.compile("^sqlite3_(blob_bytes|column_count|bind_parameter_count|data_count|vfs_.+|changes64|total_changes64|get_autocommit|last_insert_rowid|complete|interrupt|limit|malloc64|free|threadsafe|value_.+|libversion|enable_shared_cache|initialize|shutdown|config|memory_.+|soft_heap_limit(64)?|randomness|db_readonly|db_filename|release_memory|status64|result_.+|user_data|mprintf|aggregate_context|declare_vtab|backup_remaining|backup_pagecount|mutex_enter|mutex_leave|sourceid|uri_.+)$"),
                         # error message
                         'desc': "sqlite3_ calls must wrap with PYSQLITE_CALL",
                         },
@@ -8361,6 +8386,15 @@ shell.write(shell.stdout, "hello world\\n")
             1 / 0
         except apsw.FullError:
             pass
+
+        # Connection.db_names
+        apsw.faultdict["dbnamesnolist"] = True
+        self.assertRaises(MemoryError, self.db.db_names)
+        apsw.faultdict["dbnamestrfail"] = True
+        self.assertRaises(MemoryError, self.db.db_names)
+        apsw.faultdict["dbnamesappendfail"] = True
+        self.assertRaises(MemoryError, self.db.db_names)
+
 
     # This test is run last by deliberate name choice.  If it did
     # uncover any bugs there isn't much that can be done to turn the

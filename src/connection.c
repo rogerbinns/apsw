@@ -800,6 +800,56 @@ Connection_getautocommit(Connection *self)
   Py_RETURN_FALSE;
 }
 
+/** .. method:: db_names() -> List[str]
+
+ Returns the list of database names.  For example the first database
+ is named 'main', the next 'temp', and the rest with the name provided
+ in `ATTACH <https://www.sqlite.org/lang_attach.html>`__
+
+ -* sqlite3_db_name
+*/
+static PyObject *
+Connection_db_names(Connection *self)
+{
+  PyObject *res = NULL, *str = NULL;
+  int i;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  sqlite3_mutex_enter(sqlite3_db_mutex(self->db));
+
+  APSW_FAULT_INJECT(dbnamesnolist, res = PyList_New(0), res = PyErr_NoMemory());
+  if (!res)
+    goto error;
+
+  for (i = 0; i < APSW_INT32_MAX; i++)
+  {
+    int appendres;
+
+    const char *s = sqlite3_db_name(self->db, i); /* Doesn't need PYSQLITE_CALL */
+    if (!s)
+      break;
+    APSW_FAULT_INJECT(dbnamestrfail, str = convertutf8string(s), str = PyErr_NoMemory());
+    if (!str)
+      goto error;
+    APSW_FAULT_INJECT(dbnamesappendfail, appendres = PyList_Append(res, str), (PyErr_NoMemory(), appendres = -1));
+    if (0 != appendres)
+      goto error;
+    Py_CLEAR(str);
+  }
+
+  sqlite3_mutex_leave(sqlite3_db_mutex(self->db));
+  return res;
+error:
+  sqlite3_mutex_leave(sqlite3_db_mutex(self->db));
+  assert(PyErr_Occurred());
+  Py_XDECREF(res);
+  Py_XDECREF(str);
+
+  return NULL;
+}
+
 /** .. method:: last_insert_rowid() -> int
 
   Returns the integer key of the most recent insert in the database.
@@ -3663,6 +3713,8 @@ static PyMethodDef Connection_methods[] = {
      Connection_deserialize_DOC},
     {"autovacuum_pages", (PyCFunction)Connection_autovacuum_pages, METH_VARARGS | METH_KEYWORDS,
      Connection_autovacuum_pages_DOC},
+    {"db_names", (PyCFunction)Connection_db_names, METH_NOARGS,
+     Connection_db_names_DOC},
     {0, 0, 0, 0} /* Sentinel */
 };
 
