@@ -1546,7 +1546,7 @@ Enter SQL statements terminated with a ";"
 
           https://sqlite.org/datatype3.html
 
-        Another alternative is to create a tempory table, insert the
+        Another alternative is to create a temporary table, insert the
         values into that and then use casting.
 
           CREATE TEMPORARY TABLE import(a,b,c);
