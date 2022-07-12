@@ -1501,7 +1501,7 @@ apswvfspy_xNextSystemCall(APSWVFS *self, PyObject *args, PyObject *kwds)
    Unregisters the VFS making it unavailable to future database
    opens. You do not need to call this as the VFS is automatically
    unregistered by when the VFS has no more references or open
-   datatabases using it. It is however useful to call if you have made
+   databases using it. It is however useful to call if you have made
    your VFS be the default and wish to immediately make it be
    unavailable. It is safe to call this routine multiple times.
 
