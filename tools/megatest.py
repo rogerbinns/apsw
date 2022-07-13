@@ -61,7 +61,7 @@ def main(PYVERS, SQLITEVERS, BITS, concurrency):
     except KeyError:
         pass
     print("Test starting")
-    os.system("rm -rf apsw.*so megatestresults 2>/dev/null ; mkdir megatestresults")
+    os.system("rm -rf apsw/.*so megatestresults 2>/dev/null ; mkdir megatestresults")
     print("  ... removing old work directory")
     topworkdir = os.path.abspath("../apsw-test")
     os.system(f"rm -rf { topworkdir }/* 2>/dev/null ; mkdir -p { topworkdir }")
