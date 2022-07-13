@@ -36,7 +36,7 @@ jobs:
           APSW_HEAVY_DURATION: 2
           APSW_TEST_FSYNC_OFF: set
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: wheelhouse
           path: ./wheelhouse/*.whl
