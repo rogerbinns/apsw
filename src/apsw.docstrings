@@ -2109,7 +2109,7 @@
 "Unregisters the VFS making it unavailable to future database\n" \
 "opens. You do not need to call this as the VFS is automatically\n" \
 "unregistered by when the VFS has no more references or open\n" \
-"datatabases using it. It is however useful to call if you have made\n" \
+"databases using it. It is however useful to call if you have made\n" \
 "your VFS be the default and wish to immediately make it be\n" \
 "unavailable. It is safe to call this routine multiple times.\n" \
 "\n" \

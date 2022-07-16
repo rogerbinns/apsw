@@ -48,30 +48,227 @@ used.  Return False/None to abort execution, or True to continue"""
 
 
 SQLITE_VERSION_NUMBER: int
-def apswversion() -> str: ...
+def apswversion() -> str: 
+    """Returns the APSW version."""
+    ...
+
 compile_options: Tuple[str, ...]
-def complete(statement: str) -> bool: ...
-def config(op: int, *args: Any) -> None: ...
+def complete(statement: str) -> bool: 
+    """Returns True if the input string comprises one or more complete SQL
+    statements by looking for an unquoted trailing semi-colon.
+    
+    An example use would be if you were prompting the user for SQL
+    statements and needed to know if you had a whole statement, or
+    needed to ask for another line::
+    
+      statement = input("SQL> ")
+      while not apsw.complete(statement):
+         more = input("  .. ")
+         statement = statement + "\\n" + more
+    
+    Calls: `sqlite3_complete <https://sqlite.org/c3ref/complete.html>`__"""
+    ...
+
+def config(op: int, *args: Any) -> None: 
+    """:param op: A `configuration operation <https://sqlite.org/c3ref/c_config_chunkalloc.html>`_
+    :param args: Zero or more arguments as appropriate for *op*
+    
+    Many operations don't make sense from a Python program.  The
+    following configuration operations are supported: SQLITE_CONFIG_LOG,
+    SQLITE_CONFIG_SINGLETHREAD, SQLITE_CONFIG_MULTITHREAD,
+    SQLITE_CONFIG_SERIALIZED, SQLITE_CONFIG_URI, SQLITE_CONFIG_MEMSTATUS,
+    SQLITE_CONFIG_COVERING_INDEX_SCAN, SQLITE_CONFIG_PCACHE_HDRSZ,
+    SQLITE_CONFIG_PMASZ, and SQLITE_CONFIG_STMTJRNL_SPILL.
+    
+    See :ref:`tips <diagnostics_tips>` for an example of how to receive
+    log messages (SQLITE_CONFIG_LOG)
+    
+    Calls: `sqlite3_config <https://sqlite.org/c3ref/config.html>`__"""
+    ...
+
 connection_hooks: List[Callable[[Connection], None]]
-def enablesharedcache(enable: bool) -> None: ...
-def exceptionfor(code: int) -> Exception: ...
-def fork_checker() -> None: ...
-def format_sql_value(value: SQLiteValue) -> str: ...
-def initialize() -> None: ...
+def enablesharedcache(enable: bool) -> None: 
+    """If you use the same :class:`Connection` across threads or use
+    multiple :class:`connections <Connection>` accessing the same file,
+    then SQLite can `share the cache between them
+    <https://sqlite.org/sharedcache.html>`_.  It is :ref:`not
+    recommended <sharedcache>` that you use this.
+    
+    Calls: `sqlite3_enable_shared_cache <https://sqlite.org/c3ref/enable_shared_cache.html>`__"""
+    ...
+
+def exceptionfor(code: int) -> Exception: 
+    """If you would like to raise an exception that corresponds to a
+    particular SQLite `error code
+    <https://sqlite.org/c3ref/c_abort.html>`_ then call this function.
+    It also understands `extended error codes
+    <https://sqlite.org/c3ref/c_ioerr_access.html>`_.
+    
+    For example to raise `SQLITE_IOERR_ACCESS <https://sqlite.org/c3ref/c_ioerr_access.html>`_::
+    
+      raise apsw.exceptionfor(apsw.SQLITE_IOERR_ACCESS)"""
+    ...
+
+def fork_checker() -> None: 
+    """**Note** This method is not available on Windows as it does not
+    support the fork system call.
+    
+    SQLite does not allow the use of database connections across `forked
+    <http://en.wikipedia.org/wiki/Fork_(operating_system)>`__ processes
+    (see the `SQLite FAQ Q6 <https://sqlite.org/faq.html#q6>`__).
+    (Forking creates a child process that is a duplicate of the parent
+    including the state of all data structures in the program.  If you
+    do this to SQLite then parent and child would both consider
+    themselves owners of open databases and silently corrupt each
+    other's work and interfere with each other's locks.)
+    
+    One example of how you may end up using fork is if you use the
+    `multiprocessing module
+    <http://docs.python.org/library/multiprocessing.html>`__ which uses
+    fork to make child processes.
+    
+    If you do use fork or multiprocessing on a platform that supports
+    fork then you **must** ensure database connections and their objects
+    (cursors, backup, blobs etc) are not used in the parent process, or
+    are all closed before calling fork or starting a `Process
+    <http://docs.python.org/library/multiprocessing.html#process-and-exceptions>`__.
+    (Note you must call close to ensure the underlying SQLite objects
+    are closed.  It is also a good idea to call `gc.collect(2)
+    <http://docs.python.org/library/gc.html#gc.collect>`__ to ensure
+    anything you may have missed is also deallocated.)
+    
+    Once you run this method, extra checking code is inserted into
+    SQLite's mutex operations (at a very small performance penalty) that
+    verifies objects are not used across processes.  You will get a
+    :exc:`ForkingViolationError` if you do so.  Note that due to the way
+    Python's internals work, the exception will be delivered to
+    `sys.excepthook` in addition to the normal exception mechanisms and
+    may be reported by Python after the line where the issue actually
+    arose.  (Destructors of objects you didn't close also run between
+    lines.)
+    
+    You should only call this method as the first line after importing
+    APSW, as it has to shutdown and re-initialize SQLite.  If you have
+    any SQLite objects already allocated when calling the method then
+    the program will later crash.  The recommended use is to use the fork
+    checking as part of your test suite."""
+    ...
+
+def format_sql_value(value: SQLiteValue) -> str: 
+    """Returns a Python string representing the supplied value in SQL syntax."""
+    ...
+
+def initialize() -> None: 
+    """It is unlikely you will want to call this method as SQLite automatically initializes.
+    
+    Calls: `sqlite3_initialize <https://sqlite.org/c3ref/initialize.html>`__"""
+    ...
+
 keywords: Set[str]
-def log(errorcode: int, message: str) -> None: ...
-def main() -> None: ...
-def memoryhighwater(reset: bool = False) -> int: ...
-def memoryused() -> int: ...
-def randomness(amount: int)  -> bytes: ...
-def releasememory(amount: int) -> int: ...
-def shutdown() -> None: ...
-def softheaplimit(limit: int) -> int: ...
-def sqlite3_sourceid() -> str: ...
-def sqlitelibversion() -> str: ...
-def status(op: int, reset: bool = False) -> Tuple[int, int]: ...
+def log(errorcode: int, message: str) -> None: 
+    """Calls the SQLite logging interface.  Note that you must format the
+    message before passing it to this method::
+    
+        apsw.log(apsw.SQLITE_NOMEM, f"Need { needed } bytes of memory")
+    
+    See :ref:`tips <diagnostics_tips>` for an example of how to
+    receive log messages.
+    
+    Calls: `sqlite3_log <https://sqlite.org/c3ref/log.html>`__"""
+    ...
+
+def main() -> None: 
+    """Call this to run the :ref:`interactive shell <shell>`.  It
+    automatically passes in sys.argv[1:] and exits Python when done."""
+    ...
+
+def memoryhighwater(reset: bool = False) -> int: 
+    """Returns the maximum amount of memory SQLite has used.  If *reset* is
+    True then the high water mark is reset to the current value.
+    
+    .. seealso::
+    
+      :meth:`status`
+    
+    Calls: `sqlite3_memory_highwater <https://sqlite.org/c3ref/memory_highwater.html>`__"""
+    ...
+
+def memoryused() -> int: 
+    """Returns the amount of memory SQLite is currently using.
+    
+    .. seealso::
+      :meth:`status`
+    
+    Calls: `sqlite3_memory_used <https://sqlite.org/c3ref/memory_highwater.html>`__"""
+    ...
+
+def randomness(amount: int)  -> bytes: 
+    """Gets random data from SQLite's random number generator.
+    
+    :param amount: How many bytes to return
+    
+    Calls: `sqlite3_randomness <https://sqlite.org/c3ref/randomness.html>`__"""
+    ...
+
+def releasememory(amount: int) -> int: 
+    """Requests SQLite try to free *amount* bytes of memory.  Returns how
+    many bytes were freed.
+    
+    Calls: `sqlite3_release_memory <https://sqlite.org/c3ref/release_memory.html>`__"""
+    ...
+
+def shutdown() -> None: 
+    """It is unlikely you will want to call this method and there is no
+    need to do so.  It is a **really** bad idea to call it unless you
+    are absolutely sure all :class:`connections <Connection>`,
+    :class:`blobs <blob>`, :class:`cursors <Cursor>`, :class:`vfs <VFS>`
+    etc have been closed, deleted and garbage collected.
+    
+    Calls: `sqlite3_shutdown <https://sqlite.org/c3ref/initialize.html>`__"""
+    ...
+
+def softheaplimit(limit: int) -> int: 
+    """Requests SQLite try to keep memory usage below *amount* bytes and
+    returns the previous limit.
+    
+    Calls: `sqlite3_soft_heap_limit64 <https://sqlite.org/c3ref/hard_heap_limit64.html>`__"""
+    ...
+
+def sqlite3_sourceid() -> str: 
+    """Returns the exact checkin information for the SQLite 3 source
+    being used.
+    
+    Calls: `sqlite3_sourceid <https://sqlite.org/c3ref/libversion.html>`__"""
+    ...
+
+def sqlitelibversion() -> str: 
+    """Returns the version of the SQLite library.  This value is queried at
+    run time from the library so if you use shared libraries it will be
+    the version in the shared library.
+    
+    Calls: `sqlite3_libversion <https://sqlite.org/c3ref/libversion.html>`__"""
+    ...
+
+def status(op: int, reset: bool = False) -> Tuple[int, int]: 
+    """Returns current and highwater measurements.
+    
+    :param op: A `status parameter <https://sqlite.org/c3ref/c_status_malloc_size.html>`_
+    :param reset: If *True* then the highwater is set to the current value
+    :returns: A tuple of current value and highwater value
+    
+    .. seealso::
+    
+      * :ref:`Status example <example-status>`
+    
+    Calls: `sqlite3_status64 <https://sqlite.org/c3ref/status.html>`__"""
+    ...
+
 using_amalgamation: bool
-def vfsnames() -> List[str]: ...
+def vfsnames() -> List[str]: 
+    """Returns a list of the currently installed :ref:`vfs <vfs>`.  The first
+    item in the list is the default vfs."""
+    ...
+
 
 class Backup:
     def __init__(self, ) -> None: ...
