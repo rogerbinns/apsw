@@ -42,7 +42,7 @@ def process_file(name: str) -> list:
     items = []
     current: List[str] = []
 
-    def do_current():
+    def do_current() -> None:
         nonlocal current
         if current:
             while not current[-1].strip():
@@ -66,7 +66,7 @@ def process_file(name: str) -> list:
     return items
 
 
-def classify(doc: list) -> Union[dict, None]:
+def classify(doc: list[str]) -> Union[dict, None]:
     "Process docstring and ignore or update details"
     line = doc[0]
     assert line.startswith(".. ")
@@ -137,7 +137,7 @@ def make_symbol(n: str) -> str:
 
 def cppsafe(lines: List[str], eol: str) -> str:
 
-    def backslash(l):
+    def backslash(l: str) -> str:
         return l.replace('"', '\\"').replace("\n", "\\n")
 
     res = "\n".join(f'''"{ backslash(line) }"{ eol }''' for line in lines)
@@ -573,8 +573,10 @@ def get_class_signature(klass: str, items: List[dict]) -> str:
             return "(self)"
     raise KeyError(f"class { klass } not found")
 
+def fmt_docstring(doc: list[str], indent: str):
+    return  indent + '"""' + indent.join(doc).rstrip() + '"""'
 
-def generate_typestubs(items):
+def generate_typestubs(items: list[dict]):
     try:
         import apsw
     except ImportError:
@@ -598,7 +600,9 @@ def generate_typestubs(items):
             name = item["name"][len("apsw."):]
             if item["kind"] == "method":
                 assert signature.startswith("(")
-                print(f"def { name }{ signature }: ...", file=out)
+                print(f"def { name }{ signature }: ", file=out)
+                print(fmt_docstring(item["doc"], indent="    "), file=out)
+                print("    ...\n", file=out)
             else:
                 assert item["kind"] == "attribute"
                 print(f"{ name }: { attribute_type(item) }", file=out)
