@@ -7,7 +7,7 @@ import apsw
 
 # Note: this code uses Python's optional typing annotations.  You can
 # ignore them and do not need to use them
-from typing import Union
+from typing import Union, Optional
 
 ###
 ### Check we have the expected version of apsw and sqlite
@@ -83,7 +83,7 @@ cursor.execute("insert into foo values(:alpha, :beta, :gamma)", {'alpha': 1, 'be
 ###
 
 
-def mytrace(cursor: apsw.Cursor, statement: str, bindings: tuple[Union[int, str, bytes, None], ...]) -> bool:
+def mytrace(cursor: apsw.Cursor, statement: str, bindings: Optional[apsw.Bindings]) -> bool:
     "Called just before executing each statement"
     print("SQL:", statement)
     if bindings:
@@ -101,7 +101,7 @@ cursor.execute("drop table bar ; create table bar(x,y,z); select * from foo wher
 ###
 
 
-def rowtrace(cursor, row):
+def rowtrace(cursor: apsw.Cursor, row: apsw.SQLiteValues) -> apsw.SQLiteValues:
     """Called with each row of results before they are handed off.  You can return None to
     cause the row to be skipped or a different set of values to return"""
     print("Row:", row)
@@ -135,7 +135,7 @@ for row in cursor.executemany("select * from foo where x=?", ([1], [2], [3])):
 ###
 
 
-def ilove7(*args):
+def ilove7(*args: apsw.SQLiteValue) -> int:
     "a scalar function"
     print("ilove7 got", args, "but I love 7")
     return 7
