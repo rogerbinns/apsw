@@ -19,8 +19,6 @@ def docapture(filename):
     counter = 0
     for line in open(filename, "rt"):
         line = line[:-1]  # strip off newline
-        if line.split() == "from __future__ import print_function".split():
-            continue
         if line.lstrip().startswith("#@@CAPTURE"):
             code.append(indentof(line) + "opto('.tmpop-%s-%d')" % (filename, counter))
             counter += 1
@@ -33,7 +31,7 @@ def docapture(filename):
 
 
 outputredirector = """
-from __future__ import print_function
+from __future__ import annotations
 import sys
 origsysstdout=None
 def opto(fname):
