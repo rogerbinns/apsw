@@ -5544,15 +5544,20 @@ class APSW(unittest.TestCase):
         testdb()
 
         ## xSync
-        self.assertRaises(TypeError, t.xSync, "three")
-        self.assertRaises(OverflowError, t.xSync, 0xffffffffeeeeeeee0)
-        TestFile.xSync = TestFile.xSync1
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
-        TestFile.xSync = TestFile.xSync2
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
-        TestFile.xSync = TestFile.xSync99
-        testdb()
-
+        saved = apsw.connection_hooks
+        apsw.connection_hooks = []
+        try:
+            self.assertRaises(TypeError, t.xSync, "three")
+            self.assertRaises(OverflowError, t.xSync, 0xffffffffeeeeeeee0)
+            TestFile.xSync = TestFile.xSync1
+            self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, testdb)
+            TestFile.xSync = TestFile.xSync2
+            self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, testdb)
+            TestFile.xSync = TestFile.xSync99
+            testdb()
+        finally:
+            apsw.connection_hooks = saved
+            
         ## xSectorSize
         self.assertRaises(TypeError, t.xSectorSize, 3)
         TestFile.xSectorSize = TestFile.xSectorSize1
