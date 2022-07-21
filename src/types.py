@@ -1,6 +1,6 @@
 
 from typing import Union, Tuple, List, Optional, Callable, Any, Dict, \
-        Iterator, Sequence, Literal, Set, Protocol
+        Iterator, Sequence, Literal, Set
 from array import array
 from types import TracebackType
 
@@ -16,24 +16,26 @@ Bindings = Union[Sequence[Union[SQLiteValue, zeroblob]], Dict[str, Union[SQLiteV
 to SQLiteValues"""
 
 # Neither TypeVar nor ParamSpec work, when either should
-AggT = Any
+AggregateT = Any
 "An object called as first parameter of step and final"
 
-AggStep = Union[
-        Callable[[AggT], None],
-        Callable[[AggT, SQLiteValue], None],
-        Callable[[AggT, SQLiteValue, SQLiteValue], None],
-        Callable[[AggT, SQLiteValue, SQLiteValue, SQLiteValue], None],
-        Callable[[AggT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None],
-        Callable[[AggT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None],
-        Callable[[AggT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None],
+AggregateStep = Union[
+        Callable[[AggregateT], None],
+        Callable[[AggregateT, SQLiteValue], None],
+        Callable[[AggregateT, SQLiteValue, SQLiteValue], None],
+        Callable[[AggregateT, SQLiteValue, SQLiteValue, SQLiteValue], None],
+        Callable[[AggregateT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None],
+        Callable[[AggregateT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None],
+        Callable[[AggregateT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None],
 ]
 "Step is called on each matching row with the function values"
 
-AggFinal= Callable[[AggT], SQLiteValue]
+AggregateFinal= Callable[[AggregateT], SQLiteValue]
 "Final is called after all matching rows have been processed by step"
 
-AggregateFactory = Callable[[], Tuple[AggT, AggStep, AggFinal]]
+AggregateCallbacks = Tuple[AggregateT, AggregateStep, AggregateFinal]
+
+AggregateFactory = Callable[[], AggregateCallbacks]
 "Called each time for the start of a new calculation using an aggregate function"
 
 ScalarProtocol = Union[

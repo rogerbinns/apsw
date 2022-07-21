@@ -157,19 +157,19 @@ for row in cursor.execute("select seven(x,y) from foo"):
 
 class longest:
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.longest = ""
 
-    def step(self, *args):
+    def step(self, *args: apsw.SQLiteValue) -> None:
         for arg in args:
             if len(str(arg)) > len(self.longest):
                 self.longest = str(arg)
 
-    def final(self):
+    def final(self) -> str:
         return self.longest
 
     @classmethod
-    def factory(cls):
+    def factory(cls) -> apsw.AggregateCallbacks:
         return cls(), cls.step, cls.final
 
 
