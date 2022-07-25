@@ -291,9 +291,18 @@
 "as defined in :pep:`0343`.  The :meth:`~backup.__exit__` method ensures that backup\n" \
 "is :meth:`finished <backup.finish>`.\n" 
 
-#define  Backup_exit_DOC "__exit__($self)\n--\n\nBackup.__exit__() -> Literal[False]\n\n" \
+#define  Backup_exit_DOC "__exit__($self,etype,evalue,etraceback)\n--\n\nBackup.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Literal[False]\n\n" \
 "Implements context manager in conjunction with :meth:`~backup.__enter__` ensuring\n" \
 "that the copy is :meth:`finished <backup.finish>`.\n" 
+
+#define Backup_exit_USAGE "Backup.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Literal[False]"
+
+#define Backup_exit_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(etype), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(evalue), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(etraceback), PyObject *)); \
+} while(0)
+
 
 #define  Backup_finish_DOC "finish($self)\n--\n\nBackup.finish() -> None\n\n" \
 "Completes the copy process.  If all pages have been copied then the\n" \

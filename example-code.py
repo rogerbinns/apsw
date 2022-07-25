@@ -7,7 +7,7 @@ import apsw
 
 # Note: this code uses Python's optional typing annotations.  You can
 # ignore them and do not need to use them
-from typing import Union, Optional
+from typing import Optional, Iterator, Tuple
 
 ###
 ### Check we have the expected version of apsw and sqlite
@@ -195,20 +195,21 @@ for row in cursor.execute("select * from s order by str"):
 #@@ENDCAPTURE
 
 
-def strnumcollate(s1, s2):
+def strnumcollate(s1: apsw.SQLiteValue, s2: apsw.SQLiteValue) -> int:
     # return -1 if s1<s2, +1 if s1>s2 else 0
 
     # split values into two parts - the head and the numeric tail
-    values = [s1, s2]
+    values: list[tuple[str, int]] = [(str(s1), 0), (str(s2), 0)]
     for vn, v in enumerate(values):
-        for i in range(len(v), 0, -1):
-            if v[i - 1] not in "01234567890":
+        i = len(v[0])
+        for i in range(len(v[0]), 0, -1):
+            if v[0][i - 1] not in "01234567890":
                 break
         try:
-            v = (v[:i], int(v[i:]))
+            v = (v[0][:i], int(v[0][i:]))
+            values[vn] = v
         except ValueError:
-            v = (v[:i], None)
-        values[vn] = v
+            pass
     # compare
     if values[0] < values[1]:
         return -1
@@ -229,12 +230,12 @@ for row in cursor.execute("select * from s order by str collate strnum"):
 ###
 
 
-def authorizer(operation, paramone, paramtwo, databasename, triggerorview):
+def authorizer(operation: int, paramone: Optional[str], paramtwo: Optional[str], databasename: Optional[str], triggerorview: Optional[str]) -> int:
     """Called when each operation is prepared.  We can return SQLITE_OK, SQLITE_DENY or
     SQLITE_IGNORE"""
     # find the operation name
     print(apsw.mapping_authorizer_function[operation], paramone, paramtwo, databasename, triggerorview)
-    if operation == apsw.SQLITE_CREATE_TABLE and paramone.startswith("private"):
+    if operation == apsw.SQLITE_CREATE_TABLE and paramone and paramone.startswith("private"):
         return apsw.SQLITE_DENY  # not allowed to create tables whose names start with private
 
     return apsw.SQLITE_OK  # always allow
@@ -257,7 +258,7 @@ connection.setauthorizer(None)
 import random
 
 
-def randomintegers(howmany):
+def randomintegers(howmany: int) -> Iterator[Tuple[int]]:
     for i in range(howmany):
         yield (random.randint(0, 9999999999), )
 
@@ -272,7 +273,7 @@ _phcount = 0
 _phspinner = "|/-\\"
 
 
-def progresshandler():
+def progresshandler() -> int:
     global _phcount
     sys.stdout.write(_phspinner[_phcount % len(_phspinner)] + chr(8))  # chr(8) is backspace
     sys.stdout.flush()
@@ -297,7 +298,7 @@ connection.setprogresshandler(None)
 ###
 
 
-def mycommithook():
+def mycommithook() -> int:
     print("in commit hook")
     hour = time.localtime()[3]
     if hour < 8 or hour > 17:
@@ -322,7 +323,7 @@ connection.setcommithook(None)
 ###
 
 
-def myupdatehook(type, databasename, tablename, rowid):
+def myupdatehook(type: int, databasename: str, tablename: str, rowid: int) -> None:
     print("Updated: %s database %s, table %s, row %d" %
           (apsw.mapping_authorizer_function[type], databasename, tablename, rowid))
 
@@ -346,7 +347,7 @@ cursor.execute("insert into blobby values(1,zeroblob(10000))")
 cursor.execute("insert into blobby values(2,?)", (apsw.zeroblob(20000), ))
 # Open a blob for writing.  We need to know the rowid
 rowid = next(cursor.execute("select ROWID from blobby where x=1"))[0]
-blob = connection.blobopen("main", "blobby", "y", rowid, 1)  # 1 is for read/write
+blob = connection.blobopen("main", "blobby", "y", rowid, True)
 blob.write(b"hello world")
 blob.seek(2000)
 blob.write(b"hello world, again")

@@ -445,7 +445,7 @@ def do_argparse(item):
             if param["default"]:
                 breakpoint()
                 pass
-        elif param["type"] in {"PyObject", "Any"}:
+        elif param["type"] in {"PyObject", "Any", "Optional[type[BaseException]]", "Optional[BaseException]", "Optional[TracebackType]"}:
             type = "PyObject *"
             kind = "O"
             if param["default"]:

@@ -328,22 +328,24 @@ APSWBackup_enter(APSWBackup *self)
   return (PyObject *)self;
 }
 
-/** .. method:: __exit__() -> Literal[False]
+/** .. method:: __exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Literal[False]
 
   Implements context manager in conjunction with :meth:`~backup.__enter__` ensuring
   that the copy is :meth:`finished <backup.finish>`.
 */
 static PyObject *
-APSWBackup_exit(APSWBackup *self, PyObject *args)
+APSWBackup_exit(APSWBackup *self, PyObject *args, PyObject *kwds)
 {
-  PyObject *etype, *evalue, *etb;
+  PyObject *etype, *evalue, *etraceback;
   int setexc;
 
   CHECK_USE(NULL);
-
-  if (!PyArg_ParseTuple(args, "OOO", &etype, &evalue, &etb))
-    return NULL;
-
+  {
+    static char *kwlist[] = {"etype", "evalue", "etraceback", NULL};
+    Backup_exit_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OOO:" Backup_exit_USAGE, kwlist, &etype, &evalue, &etraceback))
+      return NULL;
+  }
   /* If already closed then we are fine - CHECK_BACKUP_CLOSED not needed*/
   if (!self->backup)
     Py_RETURN_FALSE;
@@ -353,7 +355,7 @@ APSWBackup_exit(APSWBackup *self, PyObject *args)
      close exception has more detail.  At the time of writing this
      code the step method only set an error code but not an error
      message */
-  setexc = APSWBackup_close_internal(self, etype != Py_None || evalue != Py_None || etb != Py_None);
+  setexc = APSWBackup_close_internal(self, etype != Py_None || evalue != Py_None || etraceback != Py_None);
 
   if (setexc)
   {
@@ -383,7 +385,7 @@ static PyGetSetDef backup_getset[] = {
 static PyMethodDef backup_methods[] = {
     {"__enter__", (PyCFunction)APSWBackup_enter, METH_NOARGS,
      Backup_enter_DOC},
-    {"__exit__", (PyCFunction)APSWBackup_exit, METH_VARARGS,
+    {"__exit__", (PyCFunction)APSWBackup_exit, METH_VARARGS | METH_KEYWORDS,
      Backup_exit_DOC},
     {"step", (PyCFunction)APSWBackup_step, METH_VARARGS | METH_KEYWORDS,
      Backup_step_DOC},
