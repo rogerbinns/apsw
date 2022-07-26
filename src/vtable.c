@@ -209,7 +209,7 @@ finally: /* cleanup */
     find and reuse that on the subsequent :meth:`~VTModule.Connect`
     calls.
 
-    The corresponding call is :meth:`VTTable.Disconnect`.  If you have a simple virtual table implemtation, then just
+    The corresponding call is :meth:`VTTable.Disconnect`.  If you have a simple virtual table implementation, then just
     set :meth:`~VTModule.Connect` to be the same as :meth:`~VTModule.Create`::
 
       class MyModule:
@@ -426,7 +426,7 @@ apswvtabDisconnect(sqlite3_vtab *pVTab)
 
   **constraints**
 
-  You will be passed the contraints as a sequence of tuples containing two
+  You will be passed the constraints as a sequence of tuples containing two
   items. The first item is the column number and the second item is
   the operation.
 

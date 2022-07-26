@@ -681,7 +681,7 @@ Updated setup.py to work with changed SQLite download page formatting
 when detecting latest version.
 
 Due to a `Python 3.3.0 regression bug
-<http://bugs.python.org/issue16145>`__ using the csv ouput mode in the
+<http://bugs.python.org/issue16145>`__ using the csv output mode in the
 shell can result in bad data or Python crashing.  The bug has been
 fixed for Python 3.3.1 which is due in November 2012.
 

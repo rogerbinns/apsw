@@ -472,7 +472,7 @@ class ObfuscatedVFS(apsw.VFS):
         self.basevfs = basevfs
         apsw.VFS.__init__(self, self.vfsname, self.basevfs)
 
-    # We want to return our own file implmentation, but also
+    # We want to return our own file implementation, but also
     # want it to inherit
     def xOpen(self, name, flags):
         # We can look at uri parameters

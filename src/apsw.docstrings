@@ -1922,7 +1922,7 @@
 
 #define  VFSFile_xClose_DOC "xClose($self)\n--\n\nVFSFile.xClose() -> None\n\n" \
 "Close the database. Note that even if you return an error you should\n" \
-"still close the file.  It is safe to call this method mutliple\n" \
+"still close the file.  It is safe to call this method multiple\n" \
 "times.\n" 
 
 #define  VFSFile_xDeviceCharacteristics_DOC "xDeviceCharacteristics($self)\n--\n\nVFSFile.xDeviceCharacteristics() -> int\n\n" \

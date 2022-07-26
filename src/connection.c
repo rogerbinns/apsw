@@ -14,7 +14,7 @@ Connections to a database
 A :class:`Connection` encapsulates access to a database.  You then use
 :class:`cursors <Cursor>` to issue queries against the database.
 
-You can have multple :class:`Connections <Connection>` open against
+You can have multiple :class:`Connections <Connection>` open against
 the same database in the same process, across threads and in other
 processes.
 
@@ -1189,7 +1189,7 @@ commithookcb(void *context)
   retval = PyObject_CallObject(self->commithook, NULL);
 
   if (!retval)
-    goto finally; /* abort hook due to exeception */
+    goto finally; /* abort hook due to exception */
 
   ok = PyObject_IsTrue(retval);
   assert(ok == -1 || ok == 0 || ok == 1);
@@ -1360,7 +1360,7 @@ progresshandlercb(void *context)
   retval = PyObject_CallObject(self->progresshandler, NULL);
 
   if (!retval)
-    goto finally; /* abort due to exeception */
+    goto finally; /* abort due to exception */
 
   ok = PyObject_IsTrue(retval);
 
@@ -1450,7 +1450,7 @@ authorizercb(void *context, int operation, const char *paramone, const char *par
                                  convertutf8string, triggerview);
 
   if (!retval)
-    goto finally; /* abort due to exeception */
+    goto finally; /* abort due to exception */
 
   if (PyLong_Check(retval))
   {
@@ -1766,7 +1766,7 @@ busyhandlercb(void *context, int ncall)
   retval = PyObject_CallFunction(self->busyhandler, "i", ncall);
 
   if (!retval)
-    goto finally; /* abort due to exeception */
+    goto finally; /* abort due to exception */
 
   result = PyObject_IsTrue(retval);
   assert(result == -1 || result == 0 || result == 1);

@@ -80,7 +80,7 @@ transaction, so that additional work on the same connection doesn't see the
 partial data.
 
 If you use :meth:`with Connection <Connection.__enter__>` then the transaction
-will be automatically started, and commited on success or rolled back if
+will be automatically started, and committed on success or rolled back if
 exceptions occur::
 
    # this will be one transaction with automatic commit and rollback
@@ -107,7 +107,7 @@ you start transactions.  Connections are isolated from each other.
 
 Cursor objects are obtained by :meth:`Connection.cursor` and are very
 cheap.  It is best practise to not re-use them, and instead get a new one
-each time.  If you don't, code refactoring and nested loops can unintentially
+each time.  If you don't, code refactoring and nested loops can unintentionally
 use the same cursor object which will not crash but will cause hard to
 diagnose behaviour in your program.
 

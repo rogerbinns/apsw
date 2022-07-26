@@ -16,7 +16,7 @@ static PyObject *ExcExtensionLoading;    /* error loading extension */
 static PyObject *ExcConnectionNotClosed; /* connection wasn't closed when destructor called */
 static PyObject *ExcCursorClosed;        /* cursor object was closed when function called */
 static PyObject *ExcConnectionClosed;    /* connection was closed when function called */
-static PyObject *ExcVFSNotImplemented;   /* base vfs doesn't implment function */
+static PyObject *ExcVFSNotImplemented;   /* base vfs doesn't implement function */
 static PyObject *ExcVFSFileClosed;       /* attempted operation on closed file */
 static PyObject *ExcForkingViolation;    /* used object across a fork */
 

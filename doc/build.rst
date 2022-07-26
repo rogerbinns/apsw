@@ -189,7 +189,7 @@ need to give the flag once and giving a comma separated list.  For example:
   Extension loading is enabled by default when using the amalgamation
   and disabled when using existing libraries as this most closely
   matches current practise.  Use :option:`--omit=load_extension` or
-  :option:`--enable=load_extension` to explicity disable/enable the
+  :option:`--enable=load_extension` to explicitly disable/enable the
   extension loading code.
 
 Finding SQLite 3

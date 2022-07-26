@@ -2661,7 +2661,7 @@ apswvfsfile_xClose(sqlite3_file *file)
 /** .. method:: xClose() -> None
 
   Close the database. Note that even if you return an error you should
-  still close the file.  It is safe to call this method mutliple
+  still close the file.  It is safe to call this method multiple
   times.
 */
 static PyObject *
