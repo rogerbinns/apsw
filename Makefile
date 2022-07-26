@@ -108,6 +108,8 @@ showsymbols:
 WINBPREFIX=fetch --version=$(SQLITEVERSION) --all build_ext --enable-all-extensions --inplace build
 WINBSUFFIX=build_test_extension test
 WINBWHEEL=bdist_wheel
+# config used in CI
+WINCICONFIG=set APSW_TEST_FSYNC_OFF=set &
 
 compile-win:
 	-del /q apsw\\*.pyd
@@ -119,26 +121,25 @@ compile-win:
 	cmd /c del /s /q build
 	-cmd /c md dist
 	c:/python310-32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	set APSW_TEST_FSYNC_OFF=set & c:/python310-32/python tests.py
+	$(WINCICONFIG) c:/python310-32/python tests.py
 	c:/python310/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	set APSW_TEST_FSYNC_OFF=set & c:/python310/python tests.py
+	$(WINCICONFIG) c:/python310/python tests.py
 	c:/python39-32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	set APSW_TEST_FSYNC_OFF=set & c:/python39-32/python tests.py
+	$(WINCICONFIG) c:/python39-32/python tests.py
 	c:/python39/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	set APSW_TEST_FSYNC_OFF=set & c:/python39/python tests.py
+	$(WINCICONFIG) c:/python39/python tests.py
 	c:/python38/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	set APSW_TEST_FSYNC_OFF=set & c:/python38/python tests.py
+	$(WINCICONFIG) c:/python38/python tests.py
 	c:/python38-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	set APSW_TEST_FSYNC_OFF=set & c:/python38-64/python tests.py
+	$(WINCICONFIG) c:/python38-64/python tests.py
 	c:/python37/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	set APSW_TEST_FSYNC_OFF=set & c:/python37/python tests.py
+	$(WINCICONFIG) c:/python37/python tests.py
 	c:/python37-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	set APSW_TEST_FSYNC_OFF=set & c:/python37-64/python tests.py
+	$(WINCICONFIG) c:/python37-64/python tests.py
 	c:/python36/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	set APSW_TEST_FSYNC_OFF=set & c:/python36/python tests.py
+	$(WINCICONFIG) c:/python36/python tests.py
 	c:/python36-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	set APSW_TEST_FSYNC_OFF=set & c:/python36-64/python tests.py
-	del dist\\*.egg
+	$(WINCICONFIG) c:/python36-64/python tests.py
 
 setup-wheel:
 	c:/python310/python -m ensurepip
