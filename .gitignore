@@ -15,6 +15,7 @@ doc/blob.rst
 doc/backup.rst
 doc/apsw.rst
 doc/vtable.rst
+doc/typing.rstgen
 *.pyc
 testextension.*
 testdbx-journal
