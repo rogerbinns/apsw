@@ -30,7 +30,7 @@ GENDOCS = \
 
 .PHONY : all docs doc header linkcheck publish showsymbols compile-win source source_nocheck release tags clean ppa dpkg dpkg-bin coverage valgrind valgrind1 tagpush pydebug test fulltest test_debug
 
-all: header docs
+all: header src/apsw.docstrings apsw/__init__.pyi test docs
 
 tagpush:
 	git tag -af $(SQLITEVERSION)$(APSWSUFFIX)
@@ -66,7 +66,7 @@ doc/.static:
 $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
 	env PYTHONPATH=. $(PYTHON) tools/code2rst.py $(SQLITEVERSION) $< $@
 
-src/apsw.docstrings: $(GENDOCS) tools/rst2docstring.py src/types.py
+apsw/__init__.pyi src/apsw.docstrings: $(GENDOCS) tools/rst2docstring.py src/types.py
 	env PYTHONPATH=. $(PYTHON) tools/rst2docstring.py src/apsw.docstrings $(GENDOCS)
 
 build_ext:
@@ -194,7 +194,7 @@ tags:
 
 # building a python debug interpreter
 
-PYDEBUG_VER=3.10.2
+PYDEBUG_VER=3.10.5
 PYDEBUG_DIR=/space/pydebug
 PYVALGRIND_VER=$(PYDEBUG_VER)
 PYVALGRIND_DIR=/space/pyvalgrind
