@@ -42,7 +42,7 @@ clean:
 	mkdir dist
 	for i in 'vgcore.*' '.coverage' '*.pyc' '*.pyo' '*~' '*.o' '*.so' '*.dll' '*.pyd' '*.gcov' '*.gcda' '*.gcno' '*.orig' '*.tmp' 'testdb*' 'testextension.sqlext' ; do \
 		find . -type f -name "$$i" -print0 | xargs -0t --no-run-if-empty rm -f ; done
-	rm -f doc/typing.rstgen src/shell.c $(GENDOCS)
+	rm -f doc/typing.rstgen doc/example.rst src/shell.c $(GENDOCS)
 
 doc: docs
 
