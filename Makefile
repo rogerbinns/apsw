@@ -45,7 +45,7 @@ clean:
 
 doc: docs
 
-docs: build_ext $(GENDOCS) doc/example.rst doc/.static
+docs: build_ext $(GENDOCS) doc/example.rst doc/.static doc/typing.rstgen
 	env PYTHONPATH=. $(PYTHON) tools/docmissing.py
 	env PYTHONPATH=. $(PYTHON) tools/docupdate.py $(VERSION)
 	make PYTHONPATH="`pwd`" VERSION=$(VERSION) RELEASEDATE=$(RELEASEDATE) -C doc clean html
@@ -54,6 +54,9 @@ docs: build_ext $(GENDOCS) doc/example.rst doc/.static
 doc/example.rst: example-code.py tools/example2rst.py src/apswversion.h
 	rm -f dbfile
 	env PYTHONPATH=. $(PYTHON) tools/example2rst.py
+
+doc/typing.rstgen: src/types.py
+	$(PYTHON) tools/types2rst.py
 
 doc/.static:
 	mkdir -p doc/.static
