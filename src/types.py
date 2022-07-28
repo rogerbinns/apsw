@@ -13,11 +13,11 @@ SQLiteValues = Union[Tuple[()], Tuple[SQLiteValue, ...]]
 
 Bindings = Union[Sequence[Union[SQLiteValue, zeroblob]], Dict[str, Union[SQLiteValue, zeroblob]]]
 """Query bindings are either a sequence of SQLiteValue, or a dict mapping names
-to SQLiteValues"""
+to SQLiteValues.  You can also provide zeroblob in Bindings."""
 
 # Neither TypeVar nor ParamSpec work, when either should
 AggregateT = Any
-"An object called as first parameter of step and final"
+"An object provided as first parameter of step and final aggregate functions"
 
 AggregateStep = Union[
         Callable[[AggregateT], None],
@@ -28,15 +28,14 @@ AggregateStep = Union[
         Callable[[AggregateT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None],
         Callable[[AggregateT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None],
 ]
-"Step is called on each matching row with the function values"
+"AggregateStep is called on each matching row with the relevant number of SQLiteValue"
 
 AggregateFinal= Callable[[AggregateT], SQLiteValue]
-"Final is called after all matching rows have been processed by step"
+"Final is called after all matching rows have been processed by step, and returns a SQLiteValue"
 
-AggregateCallbacks = Tuple[AggregateT, AggregateStep, AggregateFinal]
-
-AggregateFactory = Callable[[], AggregateCallbacks]
-"Called each time for the start of a new calculation using an aggregate function"
+AggregateFactory = Callable[[], Tuple[AggregateT, AggregateStep, AggregateFinal]]
+"""Called each time for the start of a new calculation using an aggregate function,
+returning an object, a step function and a final function"""
 
 ScalarProtocol = Union[
         Callable[[], SQLiteValue],
