@@ -16,7 +16,9 @@ When the amalgamation is included into APSW, `SQLITE_MAX_ATTACHED
 <https://www.sqlite.org/limits.html#max_attached>`__ is set to 125 if
 not defined, up from the default of 10.
 
-Updated typing information with more detail (:issue:`338`)
+Updated typing information stubs with more detail and include docstrings.
+This is still ongoing, but core functionality is well covered.
+(:issue:`338`) (:issue:`381`)
 
 Corrected the :ref:`tips <diagnostics_tips>` log handler of extended
 result code (:issue:`342`)
