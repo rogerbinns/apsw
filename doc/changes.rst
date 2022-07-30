@@ -2,8 +2,8 @@ Change History
 **************
 .. currentmodule:: apsw
 
-next
-====
+3.39.2.0
+========
 
 **Version numbering scheme change:** Instead of a *-r1* style suffix,
 there is *.0* style suffix (:issue:`340`)
