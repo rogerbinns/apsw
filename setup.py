@@ -14,19 +14,11 @@ import subprocess
 import sysconfig
 import shutil
 
-using_setuptools = False
-try:
-    if not os.getenv("APSW_USE_DISTUTILS"):
-        from setuptools import setup, Extension, Command
-        from setuptools.command import build_ext, sdist
-        from distutils.command import build
-        using_setuptools = True
-    else:
-        raise ImportError("use distutils")
-except ImportError:
-    from distutils.core import setup, Extension, Command
-    from distutils.command import build_ext, build, sdist
+from setuptools import setup, Extension, Command
+from setuptools.command import build_ext, sdist
+from distutils.command import build
 
+# This is used to find the compiler for building the test extension
 import distutils.ccompiler
 
 include_dirs = ['src']
