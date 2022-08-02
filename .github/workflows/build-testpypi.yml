@@ -24,11 +24,8 @@ jobs:
         with:
           platforms: all
 
-      - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.8.1
-
       - name: Build wheels
-        run: python -m cibuildwheel --output-dir wheelhouse
+        uses: pypa/cibuildwheel@v2.8.1
         env:
           CIBW_SKIP: pp*
           CIBW_ARCHS_LINUX: auto aarch64
