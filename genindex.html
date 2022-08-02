@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; APSW 3.38.5-r1 documentation</title>
+    <title>Index &#8212; APSW 3.39.2.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -34,7 +34,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.5-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Index</a></li> 
       </ul>
     </div>  
@@ -85,8 +85,6 @@
         <li><a href="connection.html#apsw.Connection.__enter__">(Connection method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="backup.html#apsw.Backup.__exit__">__exit__() (Backup method)</a>
 
       <ul>
@@ -95,6 +93,12 @@
         <li><a href="connection.html#apsw.Connection.__exit__">(Connection method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="cursor.html#apsw.Cursor.__iter__">__iter__() (Cursor method)</a>
+</li>
+      <li><a href="cursor.html#apsw.Cursor.__next__">__next__() (Cursor method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -232,12 +236,14 @@
 </li>
       <li><a href="connection.html#apsw.Connection.db_filename">db_filename() (Connection method)</a>
 </li>
-      <li><a href="cursor.html#apsw.Cursor.description">description (Cursor attribute)</a>
+      <li><a href="connection.html#apsw.Connection.db_names">db_names() (Connection method)</a>
 </li>
-      <li><a href="connection.html#apsw.Connection.deserialize">deserialize() (Connection method)</a>
+      <li><a href="cursor.html#apsw.Cursor.description">description (Cursor attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="connection.html#apsw.Connection.deserialize">deserialize() (Connection method)</a>
+</li>
       <li><a href="vtable.html#apsw.VTTable.Destroy">Destroy() (VTTable method)</a>
 </li>
       <li><a href="vtable.html#apsw.VTTable.Disconnect">Disconnect() (VTTable method)</a>
@@ -522,9 +528,9 @@
 </li>
         <li><a href="dbapi.html#index-0">PEP 249</a>, <a href="index.html#index-0">[1]</a>
 </li>
-        <li><a href="build.html#index-1">PEP 3149</a>, <a href="build.html#index-3">[1]</a>, <a href="pysqlite.html#index-0">[2]</a>
+        <li><a href="build.html#index-2">PEP 3149</a>, <a href="pysqlite.html#index-0">[1]</a>
 </li>
-        <li><a href="build.html#index-0">PEP 370</a>, <a href="build.html#index-2">[1]</a>
+        <li><a href="build.html#index-0">PEP 370</a>, <a href="build.html#index-1">[1]</a>
 </li>
       </ul></li>
       <li><a href="execution.html#index-0">PYTHONPATH</a>
@@ -655,9 +661,9 @@
 </li>
       <li><a href="blob.html#index-6">sqlite3_blob_write</a>
 </li>
-      <li><a href="connection.html#index-28">sqlite3_busy_handler</a>
+      <li><a href="connection.html#index-29">sqlite3_busy_handler</a>
 </li>
-      <li><a href="connection.html#index-29">sqlite3_busy_timeout</a>
+      <li><a href="connection.html#index-30">sqlite3_busy_timeout</a>
 </li>
       <li><a href="connection.html#index-5">sqlite3_changes64</a>
 </li>
@@ -669,7 +675,7 @@
 </li>
       <li><a href="cursor.html#index-1">sqlite3_column_name</a>
 </li>
-      <li><a href="connection.html#index-30">sqlite3_commit_hook</a>
+      <li><a href="connection.html#index-31">sqlite3_commit_hook</a>
 </li>
       <li><a href="apsw.html#index-0">sqlite3_compileoption_get</a>
 </li>
@@ -683,41 +689,43 @@
 </li>
       <li><a href="connection.html#index-11">sqlite3_create_module_v2</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="connection.html#index-8">sqlite3_db_config</a>
 </li>
-      <li><a href="connection.html#index-13">sqlite3_db_filename</a>, <a href="connection.html#index-17">[1]</a>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="connection.html#index-13">sqlite3_db_filename</a>, <a href="connection.html#index-18">[1]</a>
 </li>
-      <li><a href="connection.html#index-24">sqlite3_db_readonly</a>
+      <li><a href="connection.html#index-14">sqlite3_db_name</a>
 </li>
-      <li><a href="connection.html#index-36">sqlite3_db_status</a>
+      <li><a href="connection.html#index-25">sqlite3_db_readonly</a>
 </li>
-      <li><a href="connection.html#index-14">sqlite3_deserialize</a>
+      <li><a href="connection.html#index-37">sqlite3_db_status</a>
 </li>
-      <li><a href="connection.html#index-15">sqlite3_enable_load_extension</a>
+      <li><a href="connection.html#index-15">sqlite3_deserialize</a>
+</li>
+      <li><a href="connection.html#index-16">sqlite3_enable_load_extension</a>
 </li>
       <li><a href="apsw.html#index-3">sqlite3_enable_shared_cache</a>
 </li>
-      <li><a href="connection.html#index-16">sqlite3_file_control</a>
+      <li><a href="connection.html#index-17">sqlite3_file_control</a>
 </li>
-      <li><a href="connection.html#index-18">sqlite3_get_autocommit</a>
+      <li><a href="connection.html#index-19">sqlite3_get_autocommit</a>
 </li>
       <li><a href="apsw.html#index-4">sqlite3_initialize</a>
 </li>
-      <li><a href="connection.html#index-19">sqlite3_interrupt</a>
+      <li><a href="connection.html#index-20">sqlite3_interrupt</a>
 </li>
       <li><a href="apsw.html#index-5">sqlite3_keyword_count</a>
 </li>
       <li><a href="apsw.html#index-5">sqlite3_keyword_name</a>
 </li>
-      <li><a href="connection.html#index-20">sqlite3_last_insert_rowid</a>
+      <li><a href="connection.html#index-21">sqlite3_last_insert_rowid</a>
 </li>
       <li><a href="apsw.html#index-14">sqlite3_libversion</a>
 </li>
-      <li><a href="connection.html#index-21">sqlite3_limit</a>
+      <li><a href="connection.html#index-22">sqlite3_limit</a>
 </li>
-      <li><a href="connection.html#index-22">sqlite3_load_extension</a>
+      <li><a href="connection.html#index-23">sqlite3_load_extension</a>
 </li>
       <li><a href="apsw.html#index-6">sqlite3_log</a>
 </li>
@@ -727,25 +735,25 @@
 </li>
       <li><a href="connection.html#index-0">sqlite3_open_v2</a>
 </li>
-      <li><a href="connection.html#index-23">sqlite3_overload_function</a>
+      <li><a href="connection.html#index-24">sqlite3_overload_function</a>
 </li>
       <li><a href="cursor.html#index-0">sqlite3_prepare_v2</a>
 </li>
-      <li><a href="connection.html#index-31">sqlite3_profile</a>
+      <li><a href="connection.html#index-32">sqlite3_profile</a>
 </li>
-      <li><a href="connection.html#index-32">sqlite3_progress_handler</a>
+      <li><a href="connection.html#index-33">sqlite3_progress_handler</a>
 </li>
       <li><a href="apsw.html#index-9">sqlite3_randomness</a>
 </li>
       <li><a href="apsw.html#index-10">sqlite3_release_memory</a>
 </li>
-      <li><a href="connection.html#index-33">sqlite3_rollback_hook</a>
+      <li><a href="connection.html#index-34">sqlite3_rollback_hook</a>
 </li>
-      <li><a href="connection.html#index-25">sqlite3_serialize</a>
+      <li><a href="connection.html#index-26">sqlite3_serialize</a>
 </li>
-      <li><a href="connection.html#index-27">sqlite3_set_authorizer</a>
+      <li><a href="connection.html#index-28">sqlite3_set_authorizer</a>
 </li>
-      <li><a href="connection.html#index-26">sqlite3_set_last_insert_rowid</a>
+      <li><a href="connection.html#index-27">sqlite3_set_last_insert_rowid</a>
 </li>
       <li><a href="apsw.html#index-11">sqlite3_shutdown</a>
 </li>
@@ -759,11 +767,11 @@
 </li>
       <li><a href="cursor.html#index-0">sqlite3_step</a>
 </li>
-      <li><a href="connection.html#index-37">sqlite3_total_changes64</a>
+      <li><a href="connection.html#index-38">sqlite3_total_changes64</a>
 </li>
-      <li><a href="connection.html#index-38">sqlite3_txn_state</a>
+      <li><a href="connection.html#index-39">sqlite3_txn_state</a>
 </li>
-      <li><a href="connection.html#index-34">sqlite3_update_hook</a>
+      <li><a href="connection.html#index-35">sqlite3_update_hook</a>
 </li>
       <li><a href="vfs.html#index-2">sqlite3_uri_boolean</a>
 </li>
@@ -777,11 +785,11 @@
 </li>
       <li><a href="vfs.html#index-1">sqlite3_vfs_unregister</a>
 </li>
-      <li><a href="connection.html#index-39">sqlite3_wal_autocheckpoint</a>
+      <li><a href="connection.html#index-40">sqlite3_wal_autocheckpoint</a>
 </li>
-      <li><a href="connection.html#index-40">sqlite3_wal_checkpoint_v2</a>
+      <li><a href="connection.html#index-41">sqlite3_wal_checkpoint_v2</a>
 </li>
-      <li><a href="connection.html#index-35">sqlite3_wal_hook</a>
+      <li><a href="connection.html#index-36">sqlite3_wal_hook</a>
 </li>
       <li><a href="connection.html#apsw.Connection.sqlite3pointer">sqlite3pointer() (Connection method)</a>
 </li>
@@ -991,14 +999,14 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.5-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Index</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jun 05, 2022.
+      Last updated on Aug 02, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

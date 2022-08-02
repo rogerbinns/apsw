@@ -136,7 +136,7 @@ Blob class
 
 .. index:: sqlite3_blob_read
 
-.. method:: Blob.readinto(buffer, offset: int = 0, length: int = -1) -> None
+.. method:: Blob.readinto(buffer: Union[bytearray, array[Any], memoryview], offset: int = 0, length: int = -1) -> None
 
   Reads from the blob into a buffer you have supplied.  This method is
   useful if you already have a buffer like object that data is being

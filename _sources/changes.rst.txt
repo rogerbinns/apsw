@@ -2,6 +2,39 @@ Change History
 **************
 .. currentmodule:: apsw
 
+next
+====
+
+You can now run the :ref:`shell` with::
+
+  python3 -m apsw [options]
+
+On Windows the native console support for colour is now used
+(previously a third party module was supported).
+
+3.39.2.0
+========
+
+**Version numbering scheme change:** Instead of a *-r1* style suffix,
+there is *.0* style suffix (:issue:`340`)
+
+Updated building for PyPI to include more compiled platforms,
+including aarch64 (Linux) and universal (MacOS).  Windows binaries are
+no longer separately provided since PyPI has them.
+
+When the amalgamation is included into APSW, `SQLITE_MAX_ATTACHED
+<https://www.sqlite.org/limits.html#max_attached>`__ is set to 125 if
+not defined, up from the default of 10.
+
+Updated typing information stubs with more detail and include docstrings.
+This is still ongoing, but core functionality is well covered.
+(:issue:`338`) (:issue:`381`)
+
+Corrected the :ref:`tips <diagnostics_tips>` log handler of extended
+result code (:issue:`342`)
+
+Added :func:`Connection.db_names` (:issue:`343`)
+
 3.38.5-r1
 =========
 
@@ -660,7 +693,7 @@ Updated setup.py to work with changed SQLite download page formatting
 when detecting latest version.
 
 Due to a `Python 3.3.0 regression bug
-<http://bugs.python.org/issue16145>`__ using the csv ouput mode in the
+<http://bugs.python.org/issue16145>`__ using the csv output mode in the
 shell can result in bad data or Python crashing.  The bug has been
 fixed for Python 3.3.1 which is due in November 2012.
 

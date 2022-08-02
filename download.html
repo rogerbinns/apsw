@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Download &#8212; APSW 3.38.5-r1 documentation</title>
+    <title>Download &#8212; APSW 3.39.2.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="example.html" title="Example"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.5-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Download</a></li> 
       </ul>
     </div>  
@@ -55,8 +55,8 @@
             
   <section id="download">
 <h1>Download<a class="headerlink" href="#download" title="Permalink to this headline">¶</a></h1>
-<section id="pip-from-pypi">
-<h2>pip from PyPI<a class="headerlink" href="#pip-from-pypi" title="Permalink to this headline">¶</a></h2>
+<section id="pypi-pip">
+<h2>PyPI/pip<a class="headerlink" href="#pypi-pip" title="Permalink to this headline">¶</a></h2>
 <p>APSW is <a class="reference external" href="https://pypi.org/project/apsw/">available</a> at PyPI.</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python3 -m pip install apsw
 </pre></div>
@@ -68,8 +68,11 @@ outside of it.  All <a class="reference internal" href="extensions.html"><span c
 require a C compiler to produce one.</p>
 <p>The PyPi release is made using <a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/.github/workflows/build-pypi.yml">this github workflow</a>.</p>
 </section>
-<section id="source-and-windows-binaries">
-<span id="source-and-binaries"></span><h2>Source and Windows binaries<a class="headerlink" href="#source-and-windows-binaries" title="Permalink to this headline">¶</a></h2>
+<section id="source">
+<span id="source-and-binaries"></span><h2>Source<a class="headerlink" href="#source" title="Permalink to this headline">¶</a></h2>
+<p>You can get the source from <a class="reference external" href="https://pypi.org/project/apsw/">PyPI</a> which is
+preconfigured to fetch the corresponding SQLite version, and enables all extensions.
+Delete the included <code class="file docutils literal notranslate"><span class="pre">setup.cfg</span></code> to remove that.</p>
 <p>Use the source form if:</p>
 <blockquote>
 <div><ul class="simple">
@@ -82,24 +85,10 @@ on your platform</p></li>
 </div></blockquote>
 <p>See the <a class="reference internal" href="build.html#recommended-build"><span class="std std-ref">recommended</span></a> way to build or all the
 <a class="reference internal" href="build.html#building"><span class="std std-ref">options available</span></a>.</p>
-<p>Other binary formats for Windows such as MSI or executable installers
-are also available.</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.38.5-r1/apsw-3.38.5-r1.zip">apsw-3.38.5-r1.zip</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.39.2.0/apsw-3.39.2.0.zip">apsw-3.39.2.0.zip</a>
 (Source, includes this HTML Help)</p></li>
-<li><p>Windows Python 3.10
-➥ 64 bit  <a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.38.5-r1/apsw-3.38.5.win-amd64-py3.10.msi">msi</a> <a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.38.5-r1/apsw-3.38.5-cp310-cp310-win_amd64.whl">wheel</a>
-➥ 32 bit  <a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.38.5-r1/apsw-3.38.5.win32-py3.10.msi">msi</a> <a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.38.5-r1/apsw-3.38.5-cp310-cp310-win32.whl">wheel</a></p></li>
-<li><p>Windows Python 3.9
-➥ 64 bit  <a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.38.5-r1/apsw-3.38.5.win-amd64-py3.9.msi">msi</a> <a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.38.5-r1/apsw-3.38.5-cp39-cp39-win_amd64.whl">wheel</a> <a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.38.5-r1/apsw-3.38.5.win-amd64-py3.9.exe">exe</a>
-➥ 32 bit  <a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.38.5-r1/apsw-3.38.5.win32-py3.9.msi">msi</a> <a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.38.5-r1/apsw-3.38.5-cp39-cp39-win32.whl">wheel</a> <a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.38.5-r1/apsw-3.38.5.win32-py3.9.exe">exe</a></p></li>
-<li><p>Windows Python 3.8
-➥ 64 bit  <a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.38.5-r1/apsw-3.38.5.win-amd64-py3.8.msi">msi</a> <a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.38.5-r1/apsw-3.38.5-cp38-cp38-win_amd64.whl">wheel</a> <a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.38.5-r1/apsw-3.38.5.win-amd64-py3.8.exe">exe</a>
-➥ 32 bit  <a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.38.5-r1/apsw-3.38.5.win32-py3.8.msi">msi</a> <a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.38.5-r1/apsw-3.38.5-cp38-cp38-win32.whl">wheel</a> <a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.38.5-r1/apsw-3.38.5.win32-py3.8.exe">exe</a></p></li>
-<li><p>Windows Python 3.7
-➥ 64 bit  <a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.38.5-r1/apsw-3.38.5.win-amd64-py3.7.msi">msi</a> <a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.38.5-r1/apsw-3.38.5-cp37-cp37m-win_amd64.whl">wheel</a> <a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.38.5-r1/apsw-3.38.5.win-amd64-py3.7.exe">exe</a>
-➥ 32 bit  <a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.38.5-r1/apsw-3.38.5.win32-py3.7.msi">msi</a> <a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.38.5-r1/apsw-3.38.5-cp37-cp37m-win32.whl">wheel</a> <a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.38.5-r1/apsw-3.38.5.win32-py3.7.exe">exe</a></p></li>
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.38.5-r1/apsw-3.38.5-r1-sigs.zip">apsw-3.38.5-r1-sigs.zip</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.39.2.0/apsw-3.39.2.0-sigs.zip">apsw-3.39.2.0-sigs.zip</a>
 GPG signatures for all files</p></li>
 </ul>
 <p>Some Linux distributions also have packages which may trail the SQLite
@@ -109,18 +98,18 @@ up package management tools and various dependencies on your build
 machine.</p>
 <table class="docutils align-default">
 <colgroup>
-<col style="width: 19%" />
-<col style="width: 81%" />
+<col style="width: 16%" />
+<col style="width: 84%" />
 </colgroup>
 <tbody>
 <tr class="row-odd"><td><p>Debian</p></td>
 <td><p>Install <a class="reference external" href="http://packages.debian.org/python3-apsw">python3-apsw</a></p></td>
 </tr>
 <tr class="row-even"><td><p>Fedora</p></td>
-<td><p>Install <code class="docutils literal notranslate"><span class="pre">python3-apsw</span></code></p></td>
+<td><p>Install <a class="reference external" href="https://packages.fedoraproject.org/pkgs/python-apsw/">python3-apsw</a></p></td>
 </tr>
 <tr class="row-odd"><td><p>Ubuntu</p></td>
-<td><p>Install <code class="docutils literal notranslate"><span class="pre">python3-apsw</span></code></p></td>
+<td><p>Install <a class="reference external" href="https://packages.ubuntu.com/search?suite=all&amp;searchon=names&amp;keywords=apsw">python3-apsw</a></p></td>
 </tr>
 <tr class="row-even"><td><p>Gentoo</p></td>
 <td><p>Install <a class="reference external" href="http://packages.gentoo.org/package/dev-python/apsw">dev-python/apsw</a></p></td>
@@ -141,7 +130,7 @@ Unix/Linux platforms and can be downloaded for Windows.)</p>
 <blockquote>
 <div><p>To verify a file just use –verify specifying the corresponding
 <code class="docutils literal notranslate"><span class="pre">.asc</span></code> filename.  This example verifies the source:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ gpg --verify apsw-3.38.5-r1.zip.asc
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ gpg --verify apsw-3.39.2.0.zip.asc
 gpg: Signature made ... date ... using DSA key ID 0DFBD904
 gpg: Good signature from &quot;Roger Binns &lt;rogerb@rogerbinns.com&gt;&quot;
 </pre></div>
@@ -185,8 +174,8 @@ gpg:               imported: 1
   <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Download</a><ul>
-<li><a class="reference internal" href="#pip-from-pypi">pip from PyPI</a></li>
-<li><a class="reference internal" href="#source-and-windows-binaries">Source and Windows binaries</a></li>
+<li><a class="reference internal" href="#pypi-pip">PyPI/pip</a></li>
+<li><a class="reference internal" href="#source">Source</a></li>
 <li><a class="reference internal" href="#verifying-your-download">Verifying your download</a></li>
 <li><a class="reference internal" href="#source-code-control">Source code control</a></li>
 </ul>
@@ -235,14 +224,14 @@ gpg:               imported: 1
         <li class="right" >
           <a href="example.html" title="Example"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.5-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Download</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jun 05, 2022.
+      Last updated on Aug 02, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

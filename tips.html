@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Tips &#8212; APSW 3.38.5-r1 documentation</title>
+    <title>Tips &#8212; APSW 3.39.2.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="index.html" title="APSW documentation"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.5-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Tips</a></li> 
       </ul>
     </div>  
@@ -118,7 +118,7 @@ if the second INSERT failed then you likely want to ROLLBACK the incomplete
 transaction, so that additional work on the same connection doesn’t see the
 partial data.</p>
 <p>If you use <a class="reference internal" href="connection.html#apsw.Connection.__enter__" title="apsw.Connection.__enter__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with</span> <span class="pre">Connection</span></code></a> then the transaction
-will be automatically started, and commited on success or rolled back if
+will be automatically started, and committed on success or rolled back if
 exceptions occur:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># this will be one transaction with automatic commit and rollback</span>
 <span class="k">with</span> <span class="n">db</span><span class="p">:</span>
@@ -142,7 +142,7 @@ to all other Cursors on the same connection.  This still applies if
 you start transactions.  Connections are isolated from each other.</p>
 <p>Cursor objects are obtained by <a class="reference internal" href="connection.html#apsw.Connection.cursor" title="apsw.Connection.cursor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.cursor()</span></code></a> and are very
 cheap.  It is best practise to not re-use them, and instead get a new one
-each time.  If you don’t, code refactoring and nested loops can unintentially
+each time.  If you don’t, code refactoring and nested loops can unintentionally
 use the same cursor object which will not crash but will cause hard to
 diagnose behaviour in your program.</p>
 <p>Read more about <a class="reference internal" href="cursor.html#cursors"><span class="std std-ref">Cursors</span></a>.</p>
@@ -183,8 +183,7 @@ APSW/SQLite was operating on.</p>
 <p>SQLite has a <a class="reference external" href="http://www.sqlite.org/errlog.html">warning/error logging facility</a>.  To set your own logger use:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">errcode</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
     <span class="n">errstr</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">mapping_result_codes</span><span class="p">[</span><span class="n">errcode</span> <span class="o">&amp;</span> <span class="mi">255</span><span class="p">]</span>
-    <span class="n">extended</span><span class="o">=</span><span class="n">errcode</span> <span class="o">&amp;</span> <span class="o">~</span> <span class="mi">255</span>
-    <span class="nb">print</span> <span class="p">(</span><span class="s2">&quot;SQLITE_LOG: </span><span class="si">%s</span><span class="s2"> (</span><span class="si">%d</span><span class="s2">) </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">errcode</span><span class="p">,</span> <span class="n">errstr</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_extended_result_codes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">extended</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)))</span>
+    <span class="nb">print</span> <span class="p">(</span><span class="s2">&quot;SQLITE_LOG: </span><span class="si">%s</span><span class="s2"> (</span><span class="si">%d</span><span class="s2">) </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">errcode</span><span class="p">,</span> <span class="n">errstr</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_extended_result_codes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">errcode</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)))</span>
 
 <span class="n">apsw</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CONFIG_LOG</span><span class="p">,</span> <span class="n">handler</span><span class="p">)</span>
 </pre></div>
@@ -435,14 +434,14 @@ indirect call via Python.)</p>
         <li class="right" >
           <a href="index.html" title="APSW documentation"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.5-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Tips</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jun 05, 2022.
+      Last updated on Aug 02, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

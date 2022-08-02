@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>APSW Module &#8212; APSW 3.38.5-r1 documentation</title>
+    <title>APSW Module &#8212; APSW 3.39.2.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="extensions.html" title="Extensions"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.5-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">APSW Module</a></li> 
       </ul>
     </div>  
@@ -56,9 +56,109 @@
   <span class="target" id="module-apsw"></span><section id="apsw-module">
 <h1>APSW Module<a class="headerlink" href="#apsw-module" title="Permalink to this headline">¶</a></h1>
 <p>The module is the main interface to SQLite.  Methods and data on the
-module have process wide effects.  You can instantiate the
-<a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> and <a class="reference internal" href="blob.html#apsw.zeroblob" title="apsw.zeroblob"><code class="xref py py-class docutils literal notranslate"><span class="pre">zeroblob</span></code></a> objects using
-<a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection()</span></code></a> and <a class="reference internal" href="blob.html#apsw.zeroblob" title="apsw.zeroblob"><code class="xref py py-meth docutils literal notranslate"><span class="pre">zeroblob()</span></code></a> respectively.</p>
+module have process wide effects.</p>
+<section id="type-annotations">
+<h2>Type Annotations<a class="headerlink" href="#type-annotations" title="Permalink to this headline">¶</a></h2>
+<p>Comprehensive <a class="reference external" href="https://docs.python.org/3/library/typing.html">type annotations</a> are included, and
+your code using apsw can be checked using tools like <a class="reference external" href="http://mypy-lang.org/">mypy</a>.  You can refer to the types below for
+your annotations (eg as <code class="code docutils literal notranslate"><span class="pre">apsw.SQLiteValue</span></code>)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+.. class:: SQLiteValue
+
+    | `Union &lt;https://docs.python.org/3/library/typing.html#typing.Union&gt;`__ [None, int, float, bytes, str]
+
+    SQLite supports 5 types - None (NULL), 64 bit signed int, 64 bit
+    float, bytes, and unicode text
+
+
+.. class:: SQLiteValues
+
+    | `Union &lt;https://docs.python.org/3/library/typing.html#typing.Union&gt;`__ [`Tuple &lt;https://docs.python.org/3/library/typing.html#typing.Tuple&gt;`__ [()], `Tuple &lt;https://docs.python.org/3/library/typing.html#typing.Tuple&gt;`__ [:class:`SQLiteValue`, ...]]
+
+    A sequence of zero or more :class:`SQLiteValue`
+
+
+.. class:: Bindings
+
+    | `Union &lt;https://docs.python.org/3/library/typing.html#typing.Union&gt;`__ [`Sequence &lt;https://docs.python.org/3/library/typing.html#typing.Sequence&gt;`__ [`Union &lt;https://docs.python.org/3/library/typing.html#typing.Union&gt;`__ [:class:`SQLiteValue`, :class:`zeroblob`]], `Dict &lt;https://docs.python.org/3/library/typing.html#typing.Dict&gt;`__ [str, `Union &lt;https://docs.python.org/3/library/typing.html#typing.Union&gt;`__ [:class:`SQLiteValue`, :class:`zeroblob`]]]
+
+    Query bindings are either a sequence of :class:`SQLiteValue`, or a dict mapping names
+    to :class:`SQLiteValues`.  You can also provide :class:`zeroblob` in :class:`Bindings`.
+
+
+.. class:: AggregateT
+
+    | `Any &lt;https://docs.python.org/3/library/typing.html#typing.Any&gt;`__ 
+
+    An object provided as first parameter of step and final aggregate functions
+
+
+.. class:: AggregateStep
+
+    | `Union &lt;https://docs.python.org/3/library/typing.html#typing.Union&gt;`__ [
+    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`AggregateT`], None],
+    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`AggregateT`, :class:`SQLiteValue`], None],
+    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`AggregateT`, :class:`SQLiteValue`, :class:`SQLiteValue`], None],
+    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`AggregateT`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`], None],
+    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`AggregateT`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`], None],
+    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`AggregateT`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`], None],
+    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`AggregateT`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`], None],
+    | ]
+
+    :class:`AggregateStep` is called on each matching row with the relevant number of :class:`SQLiteValue`
+
+
+.. class:: AggregateFinal
+
+    | `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`AggregateT`], :class:`SQLiteValue`]
+
+    Final is called after all matching rows have been processed by step, and returns a :class:`SQLiteValue`
+
+
+.. class:: AggregateFactory
+
+    | `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[], `Tuple &lt;https://docs.python.org/3/library/typing.html#typing.Tuple&gt;`__ [:class:`AggregateT`, :class:`AggregateStep`, :class:`AggregateFinal`]]
+
+    Called each time for the start of a new calculation using an aggregate function,
+    returning an object, a step function and a final function
+
+
+.. class:: ScalarProtocol
+
+    | `Union &lt;https://docs.python.org/3/library/typing.html#typing.Union&gt;`__ [
+    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[], :class:`SQLiteValue`],
+    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`SQLiteValue`], :class:`SQLiteValue`],
+    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`SQLiteValue`, :class:`SQLiteValue`], :class:`SQLiteValue`],
+    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`], :class:`SQLiteValue`],
+    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`], :class:`SQLiteValue`],
+    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`], :class:`SQLiteValue`],
+    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`], :class:`SQLiteValue`],
+    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`], :class:`SQLiteValue`]
+    | ]
+
+    Scalar callbacks take zero or more :class:`SQLiteValues`, and return a :class:`SQLiteValue`
+
+
+.. class:: RowTracer
+
+    | `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`Cursor`, :class:`SQLiteValues`], `Any &lt;https://docs.python.org/3/library/typing.html#typing.Any&gt;`__ ]
+
+    Row tracers are called with the :class:`Cursor`, and the row that would
+    be returned.  If you return None, then no row is returned, otherwise
+    whatever is returned is returned as a result row for the query
+
+
+.. class:: ExecTracer
+
+    | `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`Cursor`, str, `Optional &lt;https://docs.python.org/3/library/typing.html#typing.Optional&gt;`__ [:class:`Bindings`]], bool]
+
+    Execution tracers are called with the cursor, sql query text, and the bindings
+    used.  Return False/None to abort execution, or True to continue
+
+
+</pre></div>
+</div>
+</section>
 <section id="api-reference">
 <h2>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h2>
 <dl class="py attribute">
@@ -79,7 +179,7 @@ library is shared and has been updated.  Call
 
 <span class="target" id="index-0"></span><dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.compile_options">
-<span class="sig-name descname"><span class="pre">compile_options</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span></em><a class="headerlink" href="#apsw.compile_options" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">compile_options</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apsw.compile_options" title="Permalink to this definition">¶</a></dt>
 <dd><p>A tuple of the options used to compile SQLite.  For example it
 will be something like this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="s1">&#39;ENABLE_LOCKING_STYLE=0&#39;</span><span class="p">,</span> <span class="s1">&#39;TEMP_STORE=1&#39;</span><span class="p">,</span> <span class="s1">&#39;THREADSAFE=1&#39;</span><span class="p">)</span>
@@ -107,7 +207,7 @@ needed to ask for another line:</p>
 
 <span class="target" id="index-2"></span><dl class="py method">
 <dt class="sig sig-object py" id="apsw.config">
-<span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#apsw.config" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#apsw.config" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -129,7 +229,7 @@ log messages (SQLITE_CONFIG_LOG)</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.connection_hooks">
-<span class="sig-name descname"><span class="pre">connection_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apsw.connection_hooks" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">connection_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apsw.connection_hooks" title="Permalink to this definition">¶</a></dt>
 <dd><p>The purpose of the hooks is to allow the easy registration of
 <a class="reference internal" href="connection.html#apsw.Connection.createscalarfunction" title="apsw.Connection.createscalarfunction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">functions</span></code></a>,
 <a class="reference internal" href="vtable.html#virtualtables"><span class="std std-ref">virtual tables</span></a> or similar items with
@@ -206,7 +306,7 @@ checking as part of your test suite.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.format_sql_value">
-<span class="sig-name descname"><span class="pre">format_sql_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bytes</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#apsw.format_sql_value" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">format_sql_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SQLiteValue</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#apsw.format_sql_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a Python string representing the supplied value in SQL syntax.</p>
 </dd></dl>
 
@@ -487,6 +587,7 @@ modules etc. For example:</p>
   <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">APSW Module</a><ul>
+<li><a class="reference internal" href="#type-annotations">Type Annotations</a></li>
 <li><a class="reference internal" href="#api-reference">API Reference</a></li>
 <li><a class="reference internal" href="#sqlite-constants">SQLite constants</a></li>
 </ul>
@@ -535,14 +636,14 @@ modules etc. For example:</p>
         <li class="right" >
           <a href="extensions.html" title="Extensions"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.5-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">APSW Module</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jun 05, 2022.
+      Last updated on Aug 02, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

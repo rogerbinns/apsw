@@ -3,15 +3,24 @@
    Edit src/apsw.c not this file!
 
 .. module:: apsw
-   :synopsis: Python access to SQLite database library
+  :synopsis: Python access to SQLite database library
 
 APSW Module
 ***********
 
 The module is the main interface to SQLite.  Methods and data on the
-module have process wide effects.  You can instantiate the
-:class:`Connection` and :class:`zeroblob` objects using
-:meth:`Connection` and :meth:`zeroblob` respectively.
+module have process wide effects.
+
+Type Annotations
+================
+
+Comprehensive `type annotations
+<https://docs.python.org/3/library/typing.html>`__ are included, and
+your code using apsw can be checked using tools like `mypy
+<http://mypy-lang.org/>`__.  You can refer to the types below for
+your annotations (eg as :code:`apsw.SQLiteValue`)
+
+.. literalinclude:: ../doc/typing.rstgen
 
 API Reference
 =============
@@ -32,7 +41,7 @@ API Reference
 .. index:: sqlite3_compileoption_get
 
 .. attribute:: compile_options
-    :type: Tuple
+    :type: Tuple[str, ...]
 
     A tuple of the options used to compile SQLite.  For example it
     will be something like this::
@@ -61,7 +70,7 @@ API Reference
 
 .. index:: sqlite3_config
 
-.. method:: config(op: int, *args) -> None
+.. method:: config(op: int, *args: Any) -> None
 
   :param op: A `configuration operation <https://sqlite.org/c3ref/c_config_chunkalloc.html>`_
   :param args: Zero or more arguments as appropriate for *op*
@@ -79,7 +88,7 @@ API Reference
   Calls: `sqlite3_config <https://sqlite.org/c3ref/config.html>`__
 
 .. attribute:: connection_hooks
-       :type: List[Callable]
+       :type: List[Callable[[Connection], None]]
 
        The purpose of the hooks is to allow the easy registration of
        :meth:`functions <Connection.createscalarfunction>`,
@@ -164,7 +173,7 @@ API Reference
   the program will later crash.  The recommended use is to use the fork
   checking as part of your test suite.
 
-.. method:: format_sql_value(value: Union[None, int, float, bytes, str]) -> str
+.. method:: format_sql_value(value: SQLiteValue) -> str
 
   Returns a Python string representing the supplied value in SQL syntax.
 

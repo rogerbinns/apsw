@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Virtual Tables &#8212; APSW 3.38.5-r1 documentation</title>
+    <title>Virtual Tables &#8212; APSW 3.39.2.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="backup.html" title="Backup"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.5-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Virtual Tables</a></li> 
       </ul>
     </div>  
@@ -120,7 +120,7 @@ when there are additional references to the table.  <a class="reference internal
 heavyweight processing on <a class="reference internal" href="#apsw.VTModule.Create" title="apsw.VTModule.Create"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Create()</span></code></a> calls and then
 find and reuse that on the subsequent <a class="reference internal" href="#apsw.VTModule.Connect" title="apsw.VTModule.Connect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connect()</span></code></a>
 calls.</p>
-<p>The corresponding call is <a class="reference internal" href="#apsw.VTTable.Disconnect" title="apsw.VTTable.Disconnect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.Disconnect()</span></code></a>.  If you have a simple virtual table implemtation, then just
+<p>The corresponding call is <a class="reference internal" href="#apsw.VTTable.Disconnect" title="apsw.VTTable.Disconnect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.Disconnect()</span></code></a>.  If you have a simple virtual table implementation, then just
 set <a class="reference internal" href="#apsw.VTModule.Connect" title="apsw.VTModule.Connect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connect()</span></code></a> to be the same as <a class="reference internal" href="#apsw.VTModule.Create" title="apsw.VTModule.Create"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Create()</span></code></a>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyModule</span><span class="p">:</span>
 
@@ -215,7 +215,7 @@ BestIndex will also be passed to the <a class="reference internal" href="#apsw.V
 object. Note that SQLite may call this method multiple times trying
 to find the most efficient way of answering a complex query.</p>
 <p><strong>constraints</strong></p>
-<p>You will be passed the contraints as a sequence of tuples containing two
+<p>You will be passed the constraints as a sequence of tuples containing two
 items. The first item is the column number and the second item is
 the operation.</p>
 <blockquote>
@@ -659,14 +659,14 @@ receive any constraintargs at all.</p>
         <li class="right" >
           <a href="backup.html" title="Backup"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.5-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Virtual Tables</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jun 05, 2022.
+      Last updated on Aug 02, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

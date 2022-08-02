@@ -12,7 +12,7 @@ Connections to a database
 A :class:`Connection` encapsulates access to a database.  You then use
 :class:`cursors <Cursor>` to issue queries against the database.
 
-You can have multple :class:`Connections <Connection>` open against
+You can have multiple :class:`Connections <Connection>` open against
 the same database in the same process, across threads and in other
 processes.
 
@@ -77,7 +77,7 @@ Connection class
 
 .. index:: sqlite3_autovacuum_pages
 
-.. method:: Connection.autovacuum_pages(callable: Optional[Callable]) -> None
+.. method:: Connection.autovacuum_pages(callable: Optional[Callable[[str, int, int, int], int]]) -> None
 
   Calls `callable` to find out how many pages to autovacuum.  The callback has 4 parameters:
 
@@ -150,7 +150,7 @@ Connection class
 
 .. index:: sqlite3_close
 
-.. method:: Connection.close(force: bool = False)
+.. method:: Connection.close(force: bool = False) -> None
 
   Closes the database.  If there are any outstanding :class:`cursors
   <Cursor>`, :class:`blobs <blob>` or :class:`backups <backup>` then
@@ -177,7 +177,7 @@ Connection class
 
 .. index:: sqlite3_collation_needed
 
-.. method:: Connection.collationneeded(callable: Optional[Callable]) -> None
+.. method:: Connection.collationneeded(callable: Optional[Callable[[Connection, str], None]]) -> None
 
   *callable* will be called if a statement requires a `collation
   <http://en.wikipedia.org/wiki/Collation>`_ that hasn't been
@@ -202,7 +202,7 @@ Connection class
 
 .. index:: sqlite3_db_config
 
-.. method:: Connection.config(op: int, *args) -> int
+.. method:: Connection.config(op: int, *args: int) -> int
 
     :param op: A `configuration operation
       <https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__
@@ -214,7 +214,7 @@ Connection class
 
 .. index:: sqlite3_create_function_v2
 
-.. method:: Connection.createaggregatefunction(name: str, factory: Optional[Callable], numargs: int = -1)
+.. method:: Connection.createaggregatefunction(name: str, factory: Optional[AggregateFactory], numargs: int = -1) -> None
 
   Registers an aggregate function.  Aggregate functions operate on all
   the relevant rows such as counting how many there are.
@@ -255,7 +255,7 @@ Connection class
 
 .. index:: sqlite3_create_collation_v2
 
-.. method:: Connection.createcollation(name: str, callback: Optional[Callable]) -> None
+.. method:: Connection.createcollation(name: str, callback: Optional[Callable[[str, str], int]]) -> None
 
   You can control how SQLite sorts (termed `collation
   <http://en.wikipedia.org/wiki/Collation>`_) when giving the
@@ -297,7 +297,7 @@ Connection class
 
 .. index:: sqlite3_create_function_v2
 
-.. method:: Connection.createscalarfunction(name: str, callable: Optional[Callable], numargs: int = -1, deterministic: bool = False) -> None
+.. method:: Connection.createscalarfunction(name: str, callable: Optional[ScalarProtocol], numargs: int = -1, deterministic: bool = False) -> None
 
   Registers a scalar function.  Scalar functions operate on one set of parameters once.
 
@@ -344,6 +344,16 @@ Connection class
   main database is named "main".
 
   Calls: `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__
+
+.. index:: sqlite3_db_name
+
+.. method:: Connection.db_names() -> List[str]
+
+ Returns the list of database names.  For example the first database
+ is named 'main', the next 'temp', and the rest with the name provided
+ in `ATTACH <https://www.sqlite.org/lang_attach.html>`__
+
+ Calls: `sqlite3_db_name <https://sqlite.org/c3ref/db_name.html>`__
 
 .. index:: sqlite3_deserialize
 
@@ -446,7 +456,7 @@ Connection class
 
   Calls: `sqlite3_get_autocommit <https://sqlite.org/c3ref/get_autocommit.html>`__
 
-.. method:: Connection.getexectrace() -> Optional[Callable]
+.. method:: Connection.getexectrace() -> Optional[ExecTracer]
 
   Returns the currently installed (via :meth:`~Connection.setexectrace`)
   execution tracer.
@@ -455,7 +465,7 @@ Connection class
 
     * :ref:`tracing`
 
-.. method:: Connection.getrowtrace() -> Optional[Callable]
+.. method:: Connection.getrowtrace() -> Optional[RowTracer]
 
   Returns the currently installed (via :meth:`~Connection.setrowtrace`)
   row tracer.
@@ -504,7 +514,7 @@ Connection class
 
 .. index:: sqlite3_load_extension
 
-.. method:: Connection.loadextension(filename: str, entrypoint: str = None) -> None
+.. method:: Connection.loadextension(filename: str, entrypoint: Optional[str] = None) -> None
 
   Loads *filename* as an `extension <https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_
 
@@ -587,7 +597,7 @@ Connection class
 
 .. index:: sqlite3_set_authorizer
 
-.. method:: Connection.setauthorizer(callable: Optional[Callable]) -> None
+.. method:: Connection.setauthorizer(callable: Optional[Callable[[int, Optional[str], Optional[str], Optional[str], Optional[str]], int]]) -> None
 
   While `preparing <https://sqlite.org/c3ref/prepare.html>`_
   statements, SQLite will call any defined authorizer to see if a
@@ -621,15 +631,14 @@ Connection class
 
 .. index:: sqlite3_busy_handler
 
-.. method:: Connection.setbusyhandler(callable: Optional[Callable]) -> None
+.. method:: Connection.setbusyhandler(callable: Optional[Callable[[int], bool]]) -> None
 
    Sets the busy handler to callable. callable will be called with one
    integer argument which is the number of prior calls to the busy
-   callback for the same lock. If the busy callback returns something
-   that evaluates to False, then SQLite returns :const:`SQLITE_BUSY` to the
-   calling code.. If the callback returns something that evaluates to
-   True, then SQLite tries to open the table again and the cycle
-   repeats.
+   callback for the same lock. If the busy callback returns False,
+   then SQLite returns :const:`SQLITE_BUSY` to the calling code. If
+   the callback returns True, then SQLite tries to open the table
+   again and the cycle repeats.
 
    If you previously called :meth:`~Connection.setbusytimeout` then
    calling this overrides that.
@@ -666,12 +675,12 @@ Connection class
 
 .. index:: sqlite3_commit_hook
 
-.. method:: Connection.setcommithook(callable: Optional[Callable]) -> None
+.. method:: Connection.setcommithook(callable: Optional[Callable[[], None]]) -> None
 
   *callable* will be called just before a commit.  It should return
-  zero for the commit to go ahead and non-zero for it to be turned
+  False for the commit to go ahead and True for it to be turned
   into a rollback. In the case of an exception in your callable, a
-  non-zero (ie rollback) value is returned.  Pass None to unregister
+  True (ie rollback) value is returned.  Pass None to unregister
   the existing hook.
 
   .. seealso::
@@ -680,7 +689,7 @@ Connection class
 
   Calls: `sqlite3_commit_hook <https://sqlite.org/c3ref/commit_hook.html>`__
 
-.. method:: Connection.setexectrace(callable: Optional[Callable]) -> None
+.. method:: Connection.setexectrace(callable: Optional[ExecTracer]) -> None
 
   *callable* is called with the cursor, statement and bindings for
   each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
@@ -699,7 +708,7 @@ Connection class
 
 .. index:: sqlite3_profile
 
-.. method:: Connection.setprofile(callable: Optional[Callable]) -> None
+.. method:: Connection.setprofile(callable: Optional[Callable[[str, int], None]]) -> None
 
   Sets a callable which is invoked at the end of execution of each
   statement and passed the statement string and how long it took to
@@ -712,12 +721,12 @@ Connection class
 
 .. index:: sqlite3_progress_handler
 
-.. method:: Connection.setprogresshandler(callable: Optional[Callable], nsteps: int = 20)
+.. method:: Connection.setprogresshandler(callable: Optional[Callable[[], bool]], nsteps: int = 20) -> None
 
   Sets a callable which is invoked every *nsteps* SQLite
-  inststructions. The callable should return a non-zero value to abort
-  or zero to continue. (If there is an error in your Python *callable*
-  then non-zero will be returned).
+  inststructions. The callable should return True to abort
+  or False to continue. (If there is an error in your Python *callable*
+  then True/abort will be returned).
 
   .. seealso::
 
@@ -727,7 +736,7 @@ Connection class
 
 .. index:: sqlite3_rollback_hook
 
-.. method:: Connection.setrollbackhook(callable: Optional[Callable]) -> None
+.. method:: Connection.setrollbackhook(callable: Optional[Callable[[], None]]) -> None
 
   Sets a callable which is invoked during a rollback.  If *callable*
   is :const:`None` then any existing rollback hook is unregistered.
@@ -736,7 +745,7 @@ Connection class
 
   Calls: `sqlite3_rollback_hook <https://sqlite.org/c3ref/commit_hook.html>`__
 
-.. method:: Connection.setrowtrace(callable: Optional[Callable]) -> None
+.. method:: Connection.setrowtrace(callable: Optional[RowTracer]) -> None
 
   *callable* is called with the cursor and row being returned for
   :class:`cursors <Cursor>` associated with this Connection, unless
@@ -754,7 +763,7 @@ Connection class
 
 .. index:: sqlite3_update_hook
 
-.. method:: Connection.setupdatehook(callable: Optional[Callable]) -> None
+.. method:: Connection.setupdatehook(callable: Optional[Callable[[int, str, str, int], None]]) -> None
 
   Calls *callable* whenever a row is updated, deleted or inserted.  If
   *callable* is :const:`None` then any existing update hook is
@@ -782,7 +791,7 @@ Connection class
 
 .. index:: sqlite3_wal_hook
 
-.. method:: Connection.setwalhook(callable: Optional[Callable]) -> None
+.. method:: Connection.setwalhook(callable: Optional[Callable[[Connection, str, int], int]]) -> None
 
  *callable* will be called just after data is committed in :ref:`wal`
  mode.  It should return :const:`SQLITE_OK` or an error code.  The
@@ -838,7 +847,7 @@ Connection class
 
 .. index:: sqlite3_txn_state
 
-.. method:: Connection.txn_state(schema: str = None) -> int
+.. method:: Connection.txn_state(schema: Optional[str] = None) -> int
 
   Returns the current transaction state of the database, or a specific schema
   if provided.  ValueError is raised if schema is not None or a valid schema name.

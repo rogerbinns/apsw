@@ -124,7 +124,7 @@ VFS class
 
 .. index:: sqlite3_vfs_register, sqlite3_vfs_find
 
-.. class:: VFS(name: str, base: str = None, makedefault: bool = False, maxpathname: int = 1024)
+.. class:: VFS(name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024)
 
     Provides operating system access.  You can get an overview in the
     `SQLite documentation <https://sqlite.org/c3ref/vfs.html>`_.  To
@@ -154,7 +154,7 @@ VFS class
       * `sqlite3_vfs_register <https://sqlite.org/c3ref/vfs_find.html>`__
       * `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__
 
-.. method:: VFS.excepthook(*args) -> Any
+.. method:: VFS.excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[TracebackType]) -> Any
 
     Called when there has been an exception in a :class:`VFS` routine.
     The default implementation passes args to ``sys.excepthook`` and if that
@@ -168,7 +168,7 @@ VFS class
    Unregisters the VFS making it unavailable to future database
    opens. You do not need to call this as the VFS is automatically
    unregistered by when the VFS has no more references or open
-   datatabases using it. It is however useful to call if you have made
+   databases using it. It is however useful to call if you have made
    your VFS be the default and wish to immediately make it be
    unavailable. It is safe to call this routine multiple times.
 
@@ -371,7 +371,7 @@ VFSFile class
 
       :meth:`VFS.xOpen`
 
-.. method:: VFSFile.excepthook(etype, evalue, etraceback)
+.. method:: VFSFile.excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[TracebackType]) ->None
 
     Called when there has been an exception in a :class:`VFSFile`
     routine.  The default implementation calls ``sys.excepthook`` and
@@ -392,7 +392,7 @@ VFSFile class
 .. method:: VFSFile.xClose() -> None
 
   Close the database. Note that even if you return an error you should
-  still close the file.  It is safe to call this method mutliple
+  still close the file.  It is safe to call this method multiple
   times.
 
 .. method:: VFSFile.xDeviceCharacteristics() -> int

@@ -3,7 +3,7 @@ APSW documentation
 
 .. centered:: APSW |version| released |today|
 
-Use with SQLite 3.38 or later, CPython 3.7 and later:
+Use with SQLite 3.39 or later, CPython 3.6 and later:
 
   Version `3.37.0-r1 <https://github.com/rogerbinns/apsw/releases/tag/3.37.0-r1>`__
   from January 2022 supports all CPython versions back to 2.3.  The

@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Building &#8212; APSW 3.38.5-r1 documentation</title>
+    <title>Building &#8212; APSW 3.39.2.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="download.html" title="Download"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.5-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Building</a></li> 
       </ul>
     </div>  
@@ -93,11 +93,8 @@ See <span class="target" id="index-0"></span><a class="pep reference external" h
 <code class="xref std std-option docutils literal notranslate"><span class="pre">--inplace</span></code> test</div>
 </div>
 </td>
-<td><p>Compiles the extension but doesn’t install it. The resulting file
-will be in the current directory named apsw.so (Unix/Mac) or
-apsw.pyd (Windows). The test suite is then run. (Note on recent versions
-of CPython the extension filenames may be more complicated due to
-<span class="target" id="index-1"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-3149"><strong>PEP 3149</strong></a>.)</p></td>
+<td><p>Compiles the extension but doesn’t install it.  The test suite is then
+run.</p></td>
 </tr>
 <tr class="row-odd"><td><div class="line-block">
 <div class="line">python setup.py build <code class="xref std std-option docutils literal notranslate"><span class="pre">--debug</span></code> install</div>
@@ -313,7 +310,7 @@ parser. See <a class="reference external" href="https://sqlite.org/compile.html#
 <p>Extension loading is enabled by default when using the amalgamation
 and disabled when using existing libraries as this most closely
 matches current practise.  Use <code class="xref std std-option docutils literal notranslate"><span class="pre">--omit=load_extension</span></code> or
-<code class="xref std std-option docutils literal notranslate"><span class="pre">--enable=load_extension</span></code> to explicity disable/enable the
+<code class="xref std std-option docutils literal notranslate"><span class="pre">--enable=load_extension</span></code> to explicitly disable/enable the
 extension loading code.</p>
 </div>
 </section>
@@ -345,7 +342,7 @@ the downloaded amalgamation.</p>
 <p>User directories</p>
 <blockquote>
 <div><p>If specifying <code class="xref std std-option docutils literal notranslate"><span class="pre">--user</span></code> then your user directory is
-searched first. See <span class="target" id="index-2"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-0370"><strong>PEP 370</strong></a> for more details.</p>
+searched first. See <span class="target" id="index-1"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-0370"><strong>PEP 370</strong></a> for more details.</p>
 </div></blockquote>
 <p>System directories</p>
 <blockquote>
@@ -386,7 +383,7 @@ sqlite3.c, <a class="reference external" href="https://sqlite.org/faq.html#q17">
 </div>
 <p>The extension just turns into a single file apsw.so (Linux/Mac) or
 apsw.pyd (Windows). (More complicated name on Pythons implementing
-<span class="target" id="index-3"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-3149"><strong>PEP 3149</strong></a>). You don’t need to install it and can drop it into any
+<span class="target" id="index-2"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-3149"><strong>PEP 3149</strong></a>). You don’t need to install it and can drop it into any
 directory that is more convenient for you and that your code can
 reach. To just do the build and not install, leave out <em>install</em> from
 the lines above. (Use <em>build_ext –inplace</em> to have the extension put
@@ -518,14 +515,14 @@ running the tests. See <a class="reference external" href="https://github.com/ro
         <li class="right" >
           <a href="download.html" title="Download"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.38.5-r1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Building</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Jun 05, 2022.
+      Last updated on Aug 02, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

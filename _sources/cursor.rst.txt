@@ -118,6 +118,14 @@ Cursor class
 
   You obtain cursors by calling :meth:`Connection.cursor`.
 
+.. method:: Cursor.__iter__(self: Cursor) -> Cursor
+
+    Cursors are iterators
+
+.. method:: Cursor.__next__(self: Cursor) -> Any
+
+    Cursors are iterators
+
 .. method:: Cursor.close(force: bool = False) -> None
 
   It is very unlikely you will need to call this method.  It exists
@@ -139,7 +147,7 @@ Cursor class
    silently discarded.
 
 .. attribute:: Cursor.description
-    :type: tuple
+    :type: Tuple[Tuple[str, str, None, None, None, None, None], ...]
 
     Based on the `DB-API cursor property
     <http://www.python.org/dev/peps/pep-0249/>`__, this returns the
@@ -148,7 +156,7 @@ Cursor class
 
 .. index:: sqlite3_prepare_v2, sqlite3_step, sqlite3_bind_int64, sqlite3_bind_null, sqlite3_bind_text, sqlite3_bind_double, sqlite3_bind_blob, sqlite3_bind_zeroblob
 
-.. method:: Cursor.execute(statements: str, bindings: Optional[Union[Sequence,Dict]] = None) -> Iterator
+.. method:: Cursor.execute(statements: str, bindings: Optional[Bindings] = None) -> Cursor
 
     Executes the statements using the supplied bindings.  Execution
     returns when the first row is available or all statements have
@@ -209,7 +217,7 @@ Cursor class
       * `sqlite3_bind_blob <https://sqlite.org/c3ref/bind_blob.html>`__
       * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__
 
-.. method:: Cursor.executemany(statements: str, sequenceofbindings: Sequence[Union[Sequence,Dict]]) -> Iterator
+.. method:: Cursor.executemany(statements: str, sequenceofbindings: Sequence[Bindings]) -> Cursor
 
   This method is for when you want to execute the same statements over
   a sequence of bindings.  Conceptually it does this::
@@ -230,7 +238,7 @@ Cursor class
   statements can return data.  See :meth:`~Cursor.execute` for more
   information.
 
-.. method:: Cursor.fetchall() -> list
+.. method:: Cursor.fetchall() -> list[Tuple[SQLiteValue, ...]]
 
   Returns all remaining result rows as a list.  This method is defined
   in DBAPI.  It is a longer way of doing ``list(cursor)``.
@@ -250,7 +258,7 @@ Cursor class
 
 .. index:: sqlite3_column_name, sqlite3_column_decltype
 
-.. method:: Cursor.getdescription() -> tuple
+.. method:: Cursor.getdescription() -> Tuple[Tuple[str, str], ...]
 
    If you are trying to get information about a table or view,
    then `pragma table_info <https://sqlite.org/pragma.html#pragma_table_info>`__
@@ -305,7 +313,7 @@ Cursor class
      * `sqlite3_column_name <https://sqlite.org/c3ref/column_name.html>`__
      * `sqlite3_column_decltype <https://sqlite.org/c3ref/column_decltype.html>`__
 
-.. method:: Cursor.getexectrace() -> Optional[Callable]
+.. method:: Cursor.getexectrace() -> Optional[ExecTracer]
 
   Returns the currently installed (via :meth:`~Cursor.setexectrace`)
   execution tracer.
@@ -314,7 +322,7 @@ Cursor class
 
     * :ref:`tracing`
 
-.. method:: Cursor.getrowtrace() -> Optional[Callable]
+.. method:: Cursor.getrowtrace() -> Optional[RowTracer]
 
   Returns the currently installed (via :meth:`~Cursor.setrowtrace`)
   row tracer.
@@ -323,7 +331,7 @@ Cursor class
 
     * :ref:`tracing`
 
-.. method:: Cursor.setexectrace(callable: Optional[Callable]) -> None
+.. method:: Cursor.setexectrace(callable: Optional[ExecTracer]) -> None
 
   *callable* is called with the cursor, statement and bindings for
   each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
@@ -338,7 +346,7 @@ Cursor class
     * :ref:`executiontracer`
     * :meth:`Connection.setexectrace`
 
-.. method:: Cursor.setrowtrace(callable: Optional[Callable]) -> None
+.. method:: Cursor.setrowtrace(callable: Optional[RowTracer]) -> None
 
   *callable* is called with cursor and row being returned.  You can
   change the data that is returned or cause the row to be skipped

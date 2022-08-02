@@ -23,11 +23,8 @@ needed components for you.
 |                                                             | compiler and installs it into a subdirectory of your home directory.    |
 |                                                             | See :pep:`370` for more details.                                        |
 +-------------------------------------------------------------+-------------------------------------------------------------------------+
-| | python setup.py build_ext :option:`--force`               | Compiles the extension but doesn't install it. The resulting file       |
-|   :option:`--inplace` test                                  | will be in the current directory named apsw.so (Unix/Mac) or            |
-|                                                             | apsw.pyd (Windows). The test suite is then run. (Note on recent versions|
-|                                                             | of CPython the extension filenames may be more complicated due to       |
-|                                                             | :pep:`3149`.)                                                           |
+| | python setup.py build_ext :option:`--force`               | Compiles the extension but doesn't install it.  The test suite is then  |
+|   :option:`--inplace` test                                  | run.                                                                    |
 +-------------------------------------------------------------+-------------------------------------------------------------------------+
 | | python setup.py build :option:`--debug` install           | Compiles APSW with debug information.  This also turns on `assertions   |
 |                                                             | <http://en.wikipedia.org/wiki/Assert.h>`_                               |
@@ -192,7 +189,7 @@ need to give the flag once and giving a comma separated list.  For example:
   Extension loading is enabled by default when using the amalgamation
   and disabled when using existing libraries as this most closely
   matches current practise.  Use :option:`--omit=load_extension` or
-  :option:`--enable=load_extension` to explicity disable/enable the
+  :option:`--enable=load_extension` to explicitly disable/enable the
   extension loading code.
 
 Finding SQLite 3

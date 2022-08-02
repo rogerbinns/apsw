@@ -60,7 +60,7 @@ Backup class
   as defined in :pep:`0343`.  The :meth:`~backup.__exit__` method ensures that backup
   is :meth:`finished <backup.finish>`.
 
-.. method:: Backup.__exit__() -> Literal[False]
+.. method:: Backup.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Literal[False]
 
   Implements context manager in conjunction with :meth:`~backup.__enter__` ensuring
   that the copy is :meth:`finished <backup.finish>`.
