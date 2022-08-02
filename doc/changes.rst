@@ -9,6 +9,9 @@ You can now run the :ref:`shell` with::
 
   python3 -m apsw [options]
 
+On Windows the native console support for colour is now used
+(previously a third party module was supported).
+
 3.39.2.0
 ========
 

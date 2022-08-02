@@ -13,17 +13,6 @@ import base64
 
 from typing import TextIO
 
-if sys.platform == "win32":
-    _win_colour = False
-    try:
-        import colorama
-        colorama.init()
-        del colorama
-        _win_colour = True
-    except:  # there are several failure reasons, ignore them all
-        pass
-
-
 class Shell:
     """Implements a SQLite shell
 
@@ -2444,7 +2433,7 @@ Enter SQL statements terminated with a ";"
             if self.interactive:
                 if self.stdin is sys.stdin:
                     c = self.colour.prompt, self.colour.prompt_
-                    if self._using_readline and sys.platform != "win32":
+                    if self._using_readline:
                         # these are needed so that readline knows they are non-printing characters
                         c = "\x01" + c[0] + "\x02", "\x01" + c[1] + "\x02",
                     line = self._raw_input(c[0] + prompt + c[1]) + "\n"  # raw_input excludes newline
@@ -2966,8 +2955,8 @@ Enter SQL statements terminated with a ";"
                                         intro_=d.bold_ + d.fg_,
                                         summary=d.fg_blue + d.bold,
                                         summary_=d.bold_ + d.fg_,
-                                        header=sys.platform == "win32" and d.inverse or d.underline,
-                                        header_=sys.platform == "win32" and d.inverse_ or d.underline_,
+                                        header=d.underline,
+                                        header_=d.underline_,
                                         vnull=d.fg_red,
                                         vnull_=d.fg_,
                                         vstring=d.fg_yellow,
@@ -2976,10 +2965,6 @@ Enter SQL statements terminated with a ";"
                                         vblob_=d.fg_,
                                         vnumber=d.fg_magenta,
                                         vnumber_=d.fg_)
-    if sys.platform == "win32":
-        if not _win_colour:
-            for k in _colours:
-                _colours[k] = _colours["off"]
     # unpollute namespace
     del d
     del _colourscheme

@@ -128,13 +128,14 @@ Control-Break then the program will be instantly aborted.)
 
 For Windows users you won't have command line editing and completion
 unless you install a `readline module
-<http://docs.python.org/library/readline.html>`__.  Fortunately there
-is one at https://ipython.org/pyreadline.html which works.
-However if this :class:`Shell` offers no completions it will start
-matching filenames even if they make no sense in the context.
+<http://docs.python.org/library/readline.html>`__. You can pip install
+`pyreadline3 <https://pypi.org/project/pyreadline3/>`__ to get full
+functionality.
 
-For Windows users you won't get colour output unless you install
-`colorama <http://pypi.python.org/pypi/colorama>`__
+For Windows users, the builtin console support for colour is used.  It
+is enabled by default in current versions of Windows, and a registry
+key enables for older versions `(details)
+<https://github.com/kiedtl/winfetch/wiki/ANSI-Colors>`__.
 
 Example
 =======
@@ -166,14 +167,8 @@ Unicode.)
 
 If the shell reads data that is not valid for the input encoding or
 cannot convert Unicode to the output encoding then you will get an
-error.
-
-When the shell starts, Python automatically detects the encodings to
-use for console input and output.  (For example on Unix like systems
-the LC_CTYPE environment variable is sometimes used.  On Windows it
-can find out the `code page
-<http://en.wikipedia.org/wiki/Code_page>`__.)  You can override this
-autodetection by setting the PYTHONIOENCODING environment variable.
+error.  When the shell starts, Python automatically detects the
+encodings to use for console input and output.
 
 There is also a .encoding command.  This sets what encoding is used
 for any subsequent .read, .import and .output commands but does not
