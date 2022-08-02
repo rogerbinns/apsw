@@ -86,7 +86,7 @@ Command Line Usage
 You can use the shell directly from the command line.  Invoke it like
 this::
 
-  $ python -c "import apsw;apsw.main()"  [options and arguments]
+  $ python3 -m apsw  [options and arguments]
 
 The following command line options are accepted:
 

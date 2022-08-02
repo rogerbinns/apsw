@@ -2,6 +2,13 @@ Change History
 **************
 .. currentmodule:: apsw
 
+next
+====
+
+You can now run the :ref:`shell` with::
+
+  python3 -m apsw [options]
+
 3.39.2.0
 ========
 
