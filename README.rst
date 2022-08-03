@@ -4,13 +4,13 @@ About
 =====
 
 APSW is a Python wrapper for the `SQLite <https://sqlite.org/>`__
-embedded relational database engine.  It focuses on being a minimal
-layer over SQLite attempting to translate the complete SQLite C API
-into Python.  It is recommended to use the builtin `sqlite3 module
+embedded relational database engine.  It focuses translating between
+the complete SQLite C API and Python's C API.  It is recommended to
+use the builtin `sqlite3 module
 <https://docs.python.org/3/library/sqlite3.html>`__, unless you want
 SQLite specific functionality. The `documentation
 <https://rogerbinns.github.io/apsw/pysqlite.html>`__ has a section on
-the differences between APSW and sqlite3.  APSW supports CPython 3.7
+the differences between APSW and sqlite3.  APSW supports CPython 3.6
 onwards:
 
   A `release
@@ -19,14 +19,18 @@ onwards:
   `tips <https://rogerbinns.github.io/apsw/tips.html>`__ include more
   information about versions.
 
-Changes
-=======
+Releases and Changes
+====================
+
+Releases are made to `PyPI <https://pypi.org/project/apsw/>`__
+(install using pip) and `Github
+<https://github.com/rogerbinns/apsw/releases>`__
+
+New releases are sent to the `Python SQLite discussion group
+<http://groups.google.com/group/python-sqlite>`__ and there is an `RSS
+feed from PyPI <https://pypi.org/rss/project/apsw/releases.xml>`__.`
 
 `Full detailed list of changes <http://rogerbinns.github.io/apsw/changes.html>`__
-
-Releases since 3.8.2-r1 are in `releases
-<https://github.com/rogerbinns/apsw/releases>`__ (`downloads
-<http://rogerbinns.github.io/apsw/download.html>`__)
 
 Help/Documentation
 ==================
@@ -46,14 +50,6 @@ Bugs
 You can find existing and fixed bugs by clicking on `Issues
 <https://github.com/rogerbinns/apsw/issues>`__ and using "New Issue"
 to report previously unknown issues.
-
-Downloads
-=========
-
-The `download documentation
-<http://rogerbinns.github.io/apsw/download.html>`__ contains a list of
-binaries, source and further details including how to verify the
-downloads, and packages available for other operating systems.
 
 License
 =======
