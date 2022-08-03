@@ -125,25 +125,25 @@ compile-win:
 	cmd /c del /s /q build
 	-cmd /c md dist
 	c:/python310-32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python310-32/python apsw/tests.py
+	$(WINCICONFIG) c:/python310-32/python -m apsw.tests
 	c:/python310/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python310/python apsw/tests.py
+	$(WINCICONFIG) c:/python310/python -m apsw.tests
 	c:/python39-32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python39-32/python apsw/tests.py
+	$(WINCICONFIG) c:/python39-32/python -m apsw.tests
 	c:/python39/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python39/python apsw/tests.py
+	$(WINCICONFIG) c:/python39/python -m apsw.tests
 	c:/python38/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python38/python apsw/tests.py
+	$(WINCICONFIG) c:/python38/python -m apsw.tests
 	c:/python38-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python38-64/python apsw/tests.py
+	$(WINCICONFIG) c:/python38-64/python -m apsw.tests
 	c:/python37/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python37/python apsw/tests.py
+	$(WINCICONFIG) c:/python37/python -m apsw.tests
 	c:/python37-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python37-64/python apsw/tests.py
+	$(WINCICONFIG) c:/python37-64/python -m apsw.tests
 	c:/python36/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python36/python apsw/tests.py
+	$(WINCICONFIG) c:/python36/python -m apsw.tests
 	c:/python36-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python36-64/python apsw/tests.py
+	$(WINCICONFIG) c:/python36-64/python -m apsw.tests
 
 setup-wheel:
 	c:/python310/python -m ensurepip
