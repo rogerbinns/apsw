@@ -107,9 +107,9 @@ class run_tests(Command):
 
     def run(self):
         import unittest
-        import tests
-        tests.setup()
-        suite = unittest.TestLoader().loadTestsFromModule(tests)
+        import apsw.tests
+        apsw.tests.setup()
+        suite = unittest.TestLoader().loadTestsFromModule(apsw.tests)
         # verbosity of zero doesn't print anything, one prints a dot
         # per test and two prints each test name
         result = unittest.TextTestRunner(verbosity=self.show_tests + 1).run(suite)
