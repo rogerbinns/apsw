@@ -1,4 +1,4 @@
-src/shell.c
+src/apswshell.c
 *.orig
 testdb2
 apsw/*.pyd

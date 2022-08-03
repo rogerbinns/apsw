@@ -1324,7 +1324,7 @@ static PyMethodDef module_methods[] = {
 static void add_py_code_string(PyObject *module, const char *);
 
 static const char *apsw_shell_code =
-#include "shell.c"
+#include "apswshell.c"
     ;
 
 static struct PyModuleDef apswmoduledef = {
