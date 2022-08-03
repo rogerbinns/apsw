@@ -79,11 +79,11 @@ coverage:
 	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all && env APSW_PY_COVERAGE=t tools/coverage.sh
 
 test: build_ext
-	env PYTHONHASHSEED=random $(PYTHON) tests.py
+	env PYTHONHASHSEED=random $(PYTHON) apsw/tests.py
 
 test_debug: $(PYDEBUG_DIR)/bin/python3
 	$(MAKE) build_ext_debug PYTHON=$(PYDEBUG_DIR)/bin/python3
-	env PYTHONHASHSEED=random APSWTESTPREFIX=$(PYDEBUG_WORKDIR) $(PYDEBUG_DIR)/bin/python3 tests.py -v
+	env PYTHONHASHSEED=random APSWTESTPREFIX=$(PYDEBUG_WORKDIR) $(PYDEBUG_DIR)/bin/python3 apsw/tests.py -v
 
 fulltest: test test_debug
 
@@ -125,25 +125,25 @@ compile-win:
 	cmd /c del /s /q build
 	-cmd /c md dist
 	c:/python310-32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python310-32/python tests.py
+	$(WINCICONFIG) c:/python310-32/python apsw/tests.py
 	c:/python310/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python310/python tests.py
+	$(WINCICONFIG) c:/python310/python apsw/tests.py
 	c:/python39-32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python39-32/python tests.py
+	$(WINCICONFIG) c:/python39-32/python apsw/tests.py
 	c:/python39/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python39/python tests.py
+	$(WINCICONFIG) c:/python39/python apsw/tests.py
 	c:/python38/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python38/python tests.py
+	$(WINCICONFIG) c:/python38/python apsw/tests.py
 	c:/python38-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python38-64/python tests.py
+	$(WINCICONFIG) c:/python38-64/python apsw/tests.py
 	c:/python37/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python37/python tests.py
+	$(WINCICONFIG) c:/python37/python apsw/tests.py
 	c:/python37-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python37-64/python tests.py
+	$(WINCICONFIG) c:/python37-64/python apsw/tests.py
 	c:/python36/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python36/python tests.py
+	$(WINCICONFIG) c:/python36/python apsw/tests.py
 	c:/python36-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
-	$(WINCICONFIG) c:/python36-64/python tests.py
+	$(WINCICONFIG) c:/python36-64/python apsw/tests.py
 
 setup-wheel:
 	c:/python310/python -m ensurepip

@@ -5,7 +5,7 @@ set -e
 
 if [ $# = 0 ]
 then
-  args="tests.py"
+  args="apsw/tests.py"
 else
   args="$@"
 fi

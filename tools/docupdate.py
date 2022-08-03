@@ -47,7 +47,7 @@ if op != download:
 
 # put usage and description for speedtest into benchmark
 
-import speedtest
+import apsw.speedtest
 
 benchmark = open("doc/benchmarking.rst", "rt").read()
 
@@ -61,13 +61,13 @@ for line in open("doc/benchmarking.rst", "rt"):
         op.append("")
         op.append(".. code-block:: text")
         op.append("")
-        op.append("    $ python3 speedtest.py --help")
-        speedtest.parser.set_usage("Usage: speedtest.py [options]")
-        for line in speedtest.parser.format_help().split("\n"):
+        op.append("    $ python3 -m apsw.speedtest --help")
+        apsw.speedtest.parser.set_usage("Usage: apsw.speedtest [options]")
+        for line in apsw.speedtest.parser.format_help().split("\n"):
             op.append("    " + line)
         op.append("")
-        op.append("    $ python3 speedtest.py --tests-detail")
-        for line in speedtest.tests_detail.split("\n"):
+        op.append("    $ python3 -m apsw.speedtest --tests-detail")
+        for line in apsw.speedtest.tests_detail.split("\n"):
             op.append("    " + line)
         op.append("")
         continue

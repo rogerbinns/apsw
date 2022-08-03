@@ -13,35 +13,27 @@ Some access layers try to interpret your SQL and manage transactions
 behind your back, which may or may not work well with SQLite also
 doing its own transactions. You should always manage your transactions
 yourself.  For example to insert 1,000 rows wrap it in a single
-transaction else you will have 1,000 transactions. The best clue that
-you have one transaction per statement is having a maximum of 60
-statements per second. You need two drive rotations to do a
-transaction - the data has to be committed to the main file and the
-journal - and 7200 RPM drives do 120 rotations a second. On the other
-hand if you don't put in the transaction boundaries yourself and get
-more than 60 statements a second, then your access mechanism is
-silently starting transactions for you. This topic also comes up
-fairly frequently in the SQLite mailing list archives.
+transaction, otherwise you will have 1,000 transactions, one per row.
+A spinning hard drive can't do more than 60 transactions per second.
+
 
 .. _speedtest:
 
 speedtest
 ---------
 
-APSW includes a speed testing script as part of the :ref:`source
-distribution <source_and_binaries>`.  You can use the script to
-compare SQLite performance across different versions of SQLite,
-different host systems (hard drives and controllers matter) as well as
-between sqlite3 and APSW.  The underlying queries are based on
-`SQLite's speed test
-<https://sqlite.org/src/finfo?name=tool/mkspeedsql.tcl>`_.
+APSW includes a speed tester to compare SQLite performance across
+different versions of SQLite, different host systems (hard drives and
+controllers matter) as well as between sqlite3 and APSW.  The
+underlying queries are based on `SQLite's speed test
+<https://sqlite.org/src/file?name=tool/mkspeedsql.tcl>`_.
 
 .. speedtest-begin
 
 .. code-block:: text
 
-    $ python3 speedtest.py --help
-    Usage: speedtest.py [options]
+    $ python3 -m apsw.speedtest --help
+    Usage: apsw.speedtest [options]
     
     Options:
       -h, --help           show this help message and exit
@@ -71,7 +63,7 @@ between sqlite3 and APSW.  The underlying queries are based on
                            speedtest]
     
 
-    $ python3 speedtest.py --tests-detail
+    $ python3 -m apsw.speedtest --tests-detail
     bigstmt:
     
       Supplies the SQL as a single string consisting of multiple

@@ -5,11 +5,25 @@ Change History
 next
 ====
 
-You can now run the :ref:`shell` with::
+Instead of using scripts, you can now run several tools directly:
+
+* Tests
+
+  python3 -m apsw.tests [options]
+
+* :ref:`tracer <apswtrace>`::
+
+  python3 -m apsw.trace [options]
+
+* :ref:`speed tester <speedtest>`::
+
+  python3 -m apsw.speedtest [options]
+
+* :ref:`shell <shell>`::
 
   python3 -m apsw [options]
 
-On Windows the native console support for colour is now used
+:ref:`shell`: On Windows the native console support for colour is now used
 (previously a third party module was supported).
 
 3.39.2.0

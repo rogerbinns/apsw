@@ -200,25 +200,16 @@ priority.
 APSW Trace
 ==========
 
-APSW includes a tracing script as part of the :ref:`source
-distribution <source_and_binaries>` named :file:`apswtrace.py`, or you
-can get a copy directly from :source:`source control
-<tools/apswtrace.py>` (choose "Raw File").  This script lets you
-easily trace SQL execution as well as providing a summary report
-without modifying your code.  If it is installed anywhere on your
-:envvar:`PYTHONPATH` then you can invoke it with ``-m``::
+APSW includes a tracer that lets you easily trace SQL execution as
+well as providing a summary report without modifying your code.
 
-  $ python -m apswtrace [apswtrace options] yourscript.py [your options]
-
-You can also invoke it directly::
-
-  $ python /path/to/apswtrace.py [apswtrace options] yourscript.py [your options]
+  $ python3 -m apsw.trace [apswtrace options] yourscript.py [your options]
 
 All output is UTF-8 encoded.  The following options are available:
 
 .. code-block:: text
 
-  $ python apswtrace.py --help
+  $ python3 -m apsw.trace --help
   Usage: apswtrace.py [options] pythonscript.py [pythonscriptoptions]
 
   This script runs a Python program that uses APSW and reports on SQL queries
