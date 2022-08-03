@@ -5,7 +5,7 @@
 
 if [ $# = 0 ]
 then
-  args="apsw/tests.py"
+  args="-m apsw.tests"
 else
   args="$@"
 fi
@@ -46,5 +46,5 @@ rm -f apsw.o apsw.*.so apsw.so
 set -ex
 
 $CC $CFLAGS $MOREFLAGS $opt $cflags $DEFS -Isqlite3/ -I$INCLUDEDIR -Isrc -I. -c src/apsw.c
-$LINKER -g $opt apsw.o -o apsw$SOSUFFIX
+$LINKER -g $opt apsw.o -o apsw/__init__$SOSUFFIX
 time env $apswopt valgrind $options $PYTHON $args

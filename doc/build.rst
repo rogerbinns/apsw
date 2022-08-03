@@ -295,23 +295,21 @@ SQLite itself is `extensively tested
 <https://sqlite.org/testing.html>`__. It has considerably more code
 dedicated to testing than makes up the actual database functionality.
 
-APSW includes a :file:`tests.py` file which uses the standard Python
-testing modules to verify correct operation. New code is developed
-alongside the tests. Reported issues also have test cases to ensure
-the issue doesn't happen or doesn't happen again.::
+APSW includes tests which use the standard Python testing modules to
+verify correct operation. New code is developed alongside the tests.
+Reported issues also have test cases to ensure the issue doesn't
+happen or doesn't happen again.::
 
-  $ python3 setup.py test
-  running test
-                  Python  /usr/bin/python3 sys.version_info(major=3, minor=9, micro=7, releaselevel='final', serial=0)
-  Testing with APSW file  /space/apsw/apsw.cpython-39-x86_64-linux-gnu.so
-            APSW version  3.38.0-r1
-      SQLite lib version  3.38.0
-  SQLite headers version  3038000
+  $ python3 -m apsw.tests
+                  Python  /usr/bin/python3 sys.version_info(major=3, minor=10, micro=4, releaselevel='final', serial=0)
+  Testing with APSW file  /space/apsw/apsw/__init__.cpython-310-x86_64-linux-gnu.so
+            APSW version  3.39.2.0
+      SQLite lib version  3.39.2
+  SQLite headers version  3039002
       Using amalgamation  True
-
-  ..............................................................................................
+  ...............................................................................................
   ----------------------------------------------------------------------
-  Ran 94 tests in 27.713s
+  Ran 95 tests in 25.990s
 
   OK
 
@@ -327,11 +325,13 @@ A memory checker `Valgrind <http://valgrind.org>`_ is used while
 running the test suite. The test suite is run multiple times to make
 any memory leaks or similar issues stand out. A checking version of
 Python is also used.  See :source:`tools/valgrind.sh` in the source.
-The same testing is also done with the compiler's sanitizer option.
+The same testing is also done with the `compiler's sanitizer option
+<https://en.wikipedia.org/wiki/AddressSanitizer>`__.
 
 To ensure compatibility with the various Python versions, a script
 downloads and compiles all supported Python versions in both debug and
-release configurations against the APSW and SQLite supported versions
-running the tests. See :source:`tools/megatest.py` in the source.
+release configurations (and 32 and 64 bit) against the APSW and SQLite
+supported versions running the tests. See :source:`tools/megatest.py`
+in the source.
 
 In short both SQLite and APSW have a lot of testing!
