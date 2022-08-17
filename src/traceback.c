@@ -35,10 +35,8 @@ static void AddTraceBackHere(const char *filename, int lineno, const char *funct
   /* this will only happen due to error in Py_BuildValue, usually
      because NULL was passed to O (PyObject*) format */
   assert(!PyErr_Occurred());
-  if (localsformat)
-    assert(localsformat[0] == '{');
-  if (localargs)
-    assert(PyDict_Check(localargs));
+  assert(!localsformat || localsformat[0] == '{');
+  assert(!localargs || PyDict_Check(localargs));
 
   /* make the dummy code object */
   code = PyCode_NewEmpty(filename, functionname, lineno);
