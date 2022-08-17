@@ -577,6 +577,8 @@ for row in memcon.cursor().execute("select * from s"):
 ### Shell  @@ example-shell
 ###
 
+import apsw.shell
+
 # Here we use the shell to do a csv export providing the existing db
 # connection
 
@@ -584,7 +586,7 @@ for row in memcon.cursor().execute("select * from s"):
 import io
 
 output = io.StringIO()
-shell = apsw.Shell(stdout=output, db=connection)
+shell = apsw.shell.Shell(stdout=output, db=connection)
 # How to execute a dot command
 shell.process_command(".mode csv")
 shell.process_command(".headers on")

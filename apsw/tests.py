@@ -3,6 +3,7 @@
 # See the accompanying LICENSE file.
 
 import apsw
+import apsw.shell
 import sys
 import os
 import warnings
@@ -3479,7 +3480,7 @@ class APSW(unittest.TestCase):
             rows = (["correct"], ["horse"], ["battery"], ["staple"])
             self.db.cursor().execute("create table foo(x)")
             self.db.cursor().executemany("insert into foo values(?)", rows)
-            shell = apsw.Shell(db=self.db, **kwargs)
+            shell = apsw.shell.Shell(db=self.db, **kwargs)
             shell.command_dump([])
 
             fh[1].seek(0)
@@ -5557,7 +5558,7 @@ class APSW(unittest.TestCase):
             testdb()
         finally:
             apsw.connection_hooks = saved
-            
+
         ## xSectorSize
         self.assertRaises(TypeError, t.xSectorSize, 3)
         TestFile.xSectorSize = TestFile.xSectorSize1
@@ -6033,7 +6034,7 @@ class APSW(unittest.TestCase):
     def testShell(self, shellclass=None):
         "Check Shell functionality"
         if shellclass is None:
-            shellclass = apsw.Shell
+            shellclass = apsw.shell.Shell
 
         fh = [open(TESTFILEPREFIX + "test-shell-" + t, "w+", encoding="utf8") for t in ("in", "out", "err")]
         kwargs = {"stdin": fh[0], "stdout": fh[1], "stderr": fh[2]}

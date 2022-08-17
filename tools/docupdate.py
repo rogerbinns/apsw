@@ -83,8 +83,8 @@ if op != benchmark:
 
 # shell stuff
 
-import apsw, io
-shell = apsw.Shell()
+import apsw, io, apsw.shell
+shell = apsw.shell.Shell()
 incomment = False
 op = []
 for line in open("doc/shell.rst", "rt"):

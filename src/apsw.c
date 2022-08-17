@@ -1321,12 +1321,6 @@ static PyMethodDef module_methods[] = {
     {0, 0, 0, 0} /* Sentinel */
 };
 
-static void add_py_code_string(PyObject *module, const char *);
-
-static const char *apsw_shell_code =
-#include "apswshell.c"
-    ;
-
 static struct PyModuleDef apswmoduledef = {
     PyModuleDef_HEAD_INIT,
     "apsw",
@@ -1962,8 +1956,6 @@ modules etc. For example::
     assert(thedict == NULL);
   }
 
-  add_py_code_string(m, apsw_shell_code);
-
   PyModule_AddObject(m, "compile_options", get_compile_options());
   PyModule_AddObject(m, "keywords", get_keywords());
 
@@ -1975,27 +1967,6 @@ modules etc. For example::
 fail:
   Py_XDECREF(m);
   return NULL;
-}
-
-
-static void
-add_py_code_string(PyObject *apswmodule, const char *code_string)
-{
-  PyObject *res = NULL, *maindict = NULL, *apswdict = NULL;
-
-  maindict = PyModule_GetDict(PyImport_AddModule("__main__"));
-  apswdict = PyModule_GetDict(apswmodule);
-  PyDict_SetItemString(apswdict, "__builtins__", PyDict_GetItemString(maindict, "__builtins__"));
-  PyDict_SetItemString(apswdict, "apsw", apswmodule);
-
-  res = PyRun_StringFlags(code_string, Py_file_input, apswdict, apswdict, NULL);
-  if (!res)
-  {
-    PyErr_Print();
-    return;
-  }
-
-  Py_DECREF(res);
 }
 
 #ifdef _WIN32

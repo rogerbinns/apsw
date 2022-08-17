@@ -23,6 +23,8 @@ Instead of using scripts, you can now run several tools directly:
 
   python3 -m apsw [options]
 
+The shell class has moved from apsw.Shell to apsw.shell.Shell (:issue:`356`)
+
 :ref:`shell`: On Windows the native console support for colour is now used
 (previously a third party module was supported).
 
