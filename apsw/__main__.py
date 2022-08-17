@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
 
-import apsw
+import apsw.shell
 
-apsw.main()
+apsw.shell.main()

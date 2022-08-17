@@ -11,6 +11,7 @@ include MANIFEST.in
 # other files
 include apsw/__init__.pyi
 include apsw/py.typed
+include apsw/shell.py
 include apsw/speedtest.py
 include apsw/trace.py
 include apsw/tests.py
@@ -18,5 +19,3 @@ include LICENSE
 include checksums
 include setup.cfg
 include setup.py
-# shell is not needed at runtime - we compile it into the C source
-include tools/shell.py

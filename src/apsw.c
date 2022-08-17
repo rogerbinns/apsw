@@ -1235,12 +1235,6 @@ formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value)
   return PyErr_Format(PyExc_TypeError, "Unsupported type");
 }
 
-/** .. automethod:: main()
-
-  Sphinx automethod is too stupid, so this text is replaced by
-  my code with the actual docstring from tools.py:main().
-*/
-
 /** .. method:: log(errorcode: int, message: str) -> None
 
     Calls the SQLite logging interface.  Note that you must format the

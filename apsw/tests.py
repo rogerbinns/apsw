@@ -7598,11 +7598,11 @@ shell.write(shell.stdout, "hello world\\n")
         # I had problems with the compiled bytecode being around
         for suff in "c", "o":
             try:
-                os.remove("tools/shell.py" + suff)
+                os.remove("apsw/shell.py" + suff)
             except:
                 pass
 
-        spec = importlib.util.spec_from_file_location("shell_coverage", "tools/shell.py")
+        spec = importlib.util.spec_from_file_location("shell_coverage", "apsw/shell.py")
         module = importlib.util.module_from_spec(spec)
         sys.modules[module.__name__] = module
         if coverage: coverage.start()
@@ -7613,7 +7613,7 @@ shell.write(shell.stdout, "hello world\\n")
             if coverage:
                 coverage.stop()
                 coverage.annotate(morfs=[module])
-                os.rename("tools/shell.py,cover", "shell.py.gcov")
+                os.rename("apsw/shell.py,cover", "shell.py.gcov")
 
     # Note that faults fire only once, so there is no need to reset
     # them.  The testing for objects bigger than 2GB is done in
