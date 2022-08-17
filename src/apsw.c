@@ -43,6 +43,8 @@ API Reference
 #endif
 #endif
 
+#define SQLITE_OMIT_UTF16
+
 #ifdef APSW_USE_SQLITE_CONFIG
 #include "sqlite3config.h"
 #endif
