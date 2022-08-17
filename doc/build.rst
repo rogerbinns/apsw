@@ -288,6 +288,8 @@ components::
 
   $ python setup.py fetch --all bdist_rpm
 
+.. _testing:
+
 Testing
 =======
 
