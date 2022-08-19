@@ -37,10 +37,10 @@ def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug):
     pyflags = "-X warn_default_encoding  -X dev" if debug else ""
     # bundled setuptools does deprecated stuff
     pyflags += " -W ignore::DeprecationWarning:setuptools"
-    if "3.11" in pybin or "3.6" in pybin:
+    if "3.6" in pybin:
         # sometimes the above doesn't work, so ignore all
         pyflags+=" -W ignore::DeprecationWarning"
-    if "3.10" in pybin or "3.11" in pybin:
+    if "3.10" in pybin:
         # distutils -> configparser
         pyflags+=" -W ignore::EncodingWarning"
     extdebug = "--debug" if debug else ""
