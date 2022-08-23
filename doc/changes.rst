@@ -21,6 +21,10 @@ The shell class has moved from apsw.Shell to
 :ref:`shell`: On Windows the native console support for colour is now used
 (previously a third party module was supported).
 
+You :ref:`can use --definevalues in setup.py build_ext
+<setup_build_flags>` to provide compiler defines used for configuring
+SQLite. (:issue:`357`)
+
 3.39.2.0
 ========
 
