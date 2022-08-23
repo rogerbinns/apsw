@@ -45,11 +45,7 @@ fetch
 
 :file:`setup.py` can automatically fetch SQLite and other optional
 components.  You can set the environment variable :const:`http_proxy`
-to control proxy usage for the download. **Note** the files downloaded
-are modified from their originals to ensure various names do not
-clash, adjust them to the download platform and to graft them cleanly
-into the APSW module.  You should not commit them to source code
-control systems (download separately if you need clean files).
+to control proxy usage for the download.
 
 If any files are downloaded then the build step will automatically use
 them.  This still applies when you do later builds without
