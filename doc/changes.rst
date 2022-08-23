@@ -7,21 +7,13 @@ next
 
 Instead of using scripts, you can now run several tools directly:
 
-* :ref:`Tests <testing>`
+* :ref:`tests <testing>`:  python3 **-m apsw.tests** *[options]*
 
-  python3 -m apsw.tests *[options]*
+* :ref:`tracer <apswtrace>`:  python3 **-m apsw.trace** *[options]*
 
-* :ref:`tracer <apswtrace>`:
+* :ref:`speed tester <speedtest>`:  python3 **-m apsw.speedtest** *[options]*
 
-  python3 -m apsw.trace *[options]*
-
-* :ref:`speed tester <speedtest>`:
-
-  python3 -m apsw.speedtest *[options]*
-
-* :ref:`shell <shell>`:
-
-  python3 -m apsw *[options]*
+* :ref:`shell <shell>`:  python3 **-m apsw** *[options]*
 
 The shell class has moved from apsw.Shell to
 :class:`apsw.shell.Shell` (:issue:`356`)
