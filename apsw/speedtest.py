@@ -467,7 +467,7 @@ parser.add_option("--unicode",
                   dest="unicode",
                   type="int",
                   default=0,
-                  help="Percentage of text that is unicode characters [Default %default]")
+                  help="Percentage of text that is non-ascii unicode characters [Default %default]")
 parser.add_option(
     "--data-size",
     dest="size",
