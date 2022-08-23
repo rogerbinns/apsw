@@ -457,6 +457,7 @@ class apsw_build_ext(beparent):
                   [ ("enable=", None, "Enable SQLite options (comma separated list)"),
                     ("omit=", None, "Omit SQLite functionality (comma separated list)"),
                     ("enable-all-extensions", None, "Enable all SQLite extensions"),
+                    ("definevalues=", None, "Additional defines eg --definevalues SQLITE_MAX_ATTACHED=37,SQLITE_EXTRA_INIT=mycore_init")
                     ]
     boolean_options = beparent.boolean_options + ["enable-all-extensions"]
 
@@ -465,6 +466,7 @@ class apsw_build_ext(beparent):
         self.enable = build_enable
         self.omit = build_omit
         self.enable_all_extensions = build_enable_all_extensions
+        self.definevalues = None
         return v
 
     def finalize_options(self):
@@ -492,6 +494,13 @@ class apsw_build_ext(beparent):
         if not ext.include_dirs: ext.include_dirs = []
         if not ext.library_dirs: ext.library_dirs = []
         if not ext.libraries: ext.libraries = []
+
+        if self.definevalues:
+            for define in self.definevalues.split(","):
+                define = define.split("=", 1)
+                if len(define) != 2:
+                    define.append("1")
+                ext.define_macros.append(tuple(define))
 
         # Fixup debug setting
         if self.debug:

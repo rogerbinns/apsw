@@ -131,14 +131,22 @@ build/build_ext
 ---------------
 
 You can enable or omit certain functionality by specifying flags to
-the build and/or build_ext commands of :file:`setup.py`.
+the build and/or build_ext commands of :file:`setup.py`::
 
-  | python setup.py build *options*
+  python setup.py build *options*
 
 Note that the options do not accumulate.  If you want to specify multiple enables or omits then you
-need to give the flag once and giving a comma separated list.  For example:
+need to give the flag once and giving a comma separated list.  For example::
 
-  | python setup.py build :option:`--enable=fts3,fts3_parenthesis,rtree,icu`
+  python setup.py build :option:`--enable=fts3,fts3_parenthesis,rtree,icu`
+
+SQLite includes `many options defined to the C compiler
+<https://www.sqlite.org/compile.html>`__.  If you want to change
+compiled in default values, or provide defines like
+SQLITE_CUSTOM_INCLUDE then you can use :option:`definevalues` using
+`=` and comma separating.  For example::
+
+  python setup.py build_ext --definevalues SQLITE_DEFAULT_FILE_FORMAT=1,SQLITE_CUSTOM_INCLUDE=config.h
 
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | build/build_ext flag                   | Result                                                                               |
