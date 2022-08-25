@@ -191,11 +191,6 @@ def log(errorcode: int, message: str) -> None:
     Calls: `sqlite3_log <https://sqlite.org/c3ref/log.html>`__"""
     ...
 
-def main() -> None: 
-    """Call this to run the :ref:`interactive shell <shell>`.  It
-    automatically passes in sys.argv[1:] and exits Python when done."""
-    ...
-
 def memoryhighwater(reset: bool = False) -> int: 
     """Returns the maximum amount of memory SQLite has used.  If *reset* is
     True then the high water mark is reset to the current value.

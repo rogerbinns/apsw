@@ -79,7 +79,7 @@ coverage:
 	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all && env APSW_PY_COVERAGE=t tools/coverage.sh
 
 test: build_ext
-	env PYTHONHASHSEED=random $(PYTHON) apsw/tests.py
+	env PYTHONHASHSEED=random $(PYTHON) -m apsw.tests
 
 test_debug: $(PYDEBUG_DIR)/bin/python3
 	$(MAKE) build_ext_debug PYTHON=$(PYDEBUG_DIR)/bin/python3
