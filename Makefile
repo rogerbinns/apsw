@@ -70,7 +70,7 @@ apsw/__init__.pyi src/apsw.docstrings: $(GENDOCS) tools/rst2docstring.py src/typ
 	env PYTHONPATH=. $(PYTHON) tools/rst2docstring.py src/apsw.docstrings $(GENDOCS)
 
 build_ext:
-	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --force --enable-all-extensions
+	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext -DSQLITE_ENABLE_COLUMN_METADATA --inplace --force --enable-all-extensions
 
 build_ext_debug:
 	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --force --enable-all-extensions --debug

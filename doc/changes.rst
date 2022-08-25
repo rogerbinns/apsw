@@ -25,6 +25,10 @@ You :ref:`can use --definevalues in setup.py build_ext
 <setup_build_flags>` to provide compiler defines used for configuring
 SQLite. (:issue:`357`)
 
+If SQLITE_ENABLE_COLUMN_METADATA is enabled then
+:attr:`Cursor.description_full` is available providing all the column
+metadata available. (:issue:`354`)
+
 3.39.2.0
 ========
 

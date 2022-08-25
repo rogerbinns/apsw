@@ -1578,6 +1578,22 @@
 "same as :meth:`getdescription` but with 5 Nones appended.  See\n" \
 "also :issue:`131`.\n" 
 
+#define  Cursor_description_full_DOC ":type: Tuple[Tuple[str, str, str, str, str], ...]\n" \
+"\n" \
+"Only present if SQLITE_ENABLE_COLUMN_METADATA was defined at\n" \
+"compile time.\n" \
+"\n" \
+"Returns all information about the query result columns. In\n" \
+"addition to the name and declared type, you also get the database\n" \
+"name, table name, and origin name.\n" \
+"\n" \
+"Calls:\n" \
+"  * `sqlite3_column_name <https://sqlite.org/c3ref/column_name.html>`__\n" \
+"  * `sqlite3_column_decltype <https://sqlite.org/c3ref/column_decltype.html>`__\n" \
+"  * `sqlite3_column_database_name <https://sqlite.org/c3ref/column_database_name.html>`__\n" \
+"  * `sqlite3_column_table_name <https://sqlite.org/c3ref/column_database_name.html>`__\n" \
+"  * `sqlite3_column_origin_name <https://sqlite.org/c3ref/column_database_name.html>`__\n" 
+
 #define  Cursor_execute_DOC "execute($self,statements,bindings=None)\n--\n\nCursor.execute(statements: str, bindings: Optional[Bindings] = None) -> Cursor\n\n" \
 "Executes the statements using the supplied bindings.  Execution\n" \
 "returns when the first row is available or all statements have\n" \

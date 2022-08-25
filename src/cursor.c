@@ -153,7 +153,7 @@ struct APSWCursor
   /* weak reference support */
   PyObject *weakreflist;
 
-  PyObject *description_cache[2];
+  PyObject *description_cache[3];
 };
 
 typedef struct APSWCursor APSWCursor;
@@ -177,6 +177,7 @@ resetcursor(APSWCursor *self, int force)
 
   Py_CLEAR(self->description_cache[0]);
   Py_CLEAR(self->description_cache[1]);
+  Py_CLEAR(self->description_cache[2]);
 
   if (force)
     PyErr_Fetch(&etype, &eval, &etb);
@@ -274,6 +275,7 @@ APSWCursor_close_internal(APSWCursor *self, int force)
 
   Py_CLEAR(self->description_cache[0]);
   Py_CLEAR(self->description_cache[1]);
+  Py_CLEAR(self->description_cache[2]);
 
   return 0;
 }
@@ -309,6 +311,7 @@ APSWCursor_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
     self->weakreflist = NULL;
     self->description_cache[0] = 0;
     self->description_cache[1] = 0;
+    self->description_cache[2] = 0;
   }
 
   return (PyObject *)self;
@@ -346,7 +349,8 @@ APSWCursor_tp_traverse(APSWCursor *self, visitproc visit, void *arg)
 
 static const char *description_formats[] = {
     "(O&O&)",
-    "(O&O&OOOOO)"};
+    "(O&O&OOOOO)",
+    "(O&O&O&O&O&)"};
 
 static PyObject *
 APSWCursor_internal_getdescription(APSWCursor *self, int fmtnum)
@@ -364,6 +368,7 @@ APSWCursor_internal_getdescription(APSWCursor *self, int fmtnum)
   {
     assert(self->description_cache[0] == 0);
     assert(self->description_cache[1] == 0);
+    assert(self->description_cache[2] == 0);
     return PyErr_Format(ExcComplete, "Can't get description for statements that have completed execution");
   }
 
@@ -380,21 +385,31 @@ APSWCursor_internal_getdescription(APSWCursor *self, int fmtnum)
 
   for (i = 0; i < ncols; i++)
   {
-    const char *colname;
-    const char *coldesc;
-
-    PYSQLITE_VOID_CALL((colname = sqlite3_column_name(self->statement->vdbestatement, i), coldesc = sqlite3_column_decltype(self->statement->vdbestatement, i)));
-    APSW_FAULT_INJECT(GetDescriptionFail,
-                      column = Py_BuildValue(description_formats[fmtnum],
-                                             convertutf8string, colname,
-                                             convertutf8string, coldesc,
-                                             Py_None,
-                                             Py_None,
-                                             Py_None,
-                                             Py_None,
-                                             Py_None),
-                      column = PyErr_NoMemory());
-
+#define INDEX self->statement->vdbestatement, i
+    INUSE_CALL(
+        APSW_FAULT_INJECT(GetDescriptionFail,
+                          column = (fmtnum < 2) ? Py_BuildValue(description_formats[fmtnum],
+                                                                convertutf8string, sqlite3_column_name(INDEX),
+                                                                convertutf8string, sqlite3_column_decltype(INDEX),
+                                                                Py_None,
+                                                                Py_None,
+                                                                Py_None,
+                                                                Py_None,
+                                                                Py_None)
+                                                :
+#ifdef SQLITE_ENABLE_COLUMN_METADATA
+                                                Py_BuildValue(description_formats[fmtnum],
+                                                              convertutf8string, sqlite3_column_name(INDEX),
+                                                              convertutf8string, sqlite3_column_decltype(INDEX),
+                                                              convertutf8string, sqlite3_column_database_name(INDEX),
+                                                              convertutf8string, sqlite3_column_table_name(INDEX),
+                                                              convertutf8string, sqlite3_column_origin_name(INDEX))
+#else
+                                                NULL
+#endif
+                              ,
+                          column = PyErr_NoMemory()));
+#undef INDEX
     if (!column)
       goto error;
 
@@ -485,6 +500,26 @@ static PyObject *APSWCursor_getdescription_dbapi(APSWCursor *self)
 {
   return APSWCursor_internal_getdescription(self, 1);
 }
+
+/** .. attribute:: description_full
+  :type: Tuple[Tuple[str, str, str, str, str], ...]
+
+Only present if SQLITE_ENABLE_COLUMN_METADATA was defined at
+compile time.
+
+Returns all information about the query result columns. In
+addition to the name and declared type, you also get the database
+name, table name, and origin name.
+
+-* sqlite3_column_name sqlite3_column_decltype sqlite3_column_database_name sqlite3_column_table_name sqlite3_column_origin_name
+
+*/
+#ifdef SQLITE_ENABLE_COLUMN_METADATA
+static PyObject *APSWCursor_getdescription_full(APSWCursor *self)
+{
+  return APSWCursor_internal_getdescription(self, 2);
+}
+#endif
 
 /* internal function - returns SQLite error code (ie SQLITE_OK if all is well) */
 static int
@@ -866,6 +901,7 @@ APSWCursor_step(APSWCursor *self)
 
     Py_CLEAR(self->description_cache[0]);
     Py_CLEAR(self->description_cache[1]);
+    Py_CLEAR(self->description_cache[2]);
 
     if (APSWCursor_dobindings(self))
     {
@@ -1469,6 +1505,9 @@ static PyMethodDef APSWCursor_methods[] = {
 
 static PyGetSetDef APSWCursor_getset[] = {
     {"description", (getter)APSWCursor_getdescription_dbapi, NULL, Cursor_description_DOC, NULL},
+#ifdef SQLITE_ENABLE_COLUMN_METADATA
+    {"description_full", (getter)APSWCursor_getdescription_full, NULL, Cursor_description_full_DOC, NULL},
+#endif
     {NULL, NULL, NULL, NULL, NULL}};
 
 static PyTypeObject APSWCursorType = {

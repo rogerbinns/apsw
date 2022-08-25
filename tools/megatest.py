@@ -45,9 +45,12 @@ def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug):
         pyflags+=" -W ignore::EncodingWarning"
     extdebug = "--debug" if debug else ""
     logf = os.path.abspath(os.path.join(logdir, "buildruntests.txt"))
+    # this is used to alternate support for full metadata and test --definevalues flags
+    build_ext_flags="--definevalues SQLITE_ENABLE_COLUMN_METADATA,SQLITE_DEFAULT_CACHE_SIZE=-1" if random.choice((False, True)) else ""
+
     run(f"""set -e ; cd { workdir } ; ( env LD_LIBRARY_PATH={ pylib } { pybin } -bb -Werror { pyflags } setup.py fetch \
              --version={ sqlitever } --all build_test_extension build_ext --inplace --force --enable-all-extensions \
-             { extdebug } test -v ) >{ logf }  2>&1""")
+             { extdebug } { build_ext_flags } test -v ) >{ logf }  2>&1""")
 
 
 def runtest(workdir, pyver, bits, sqlitever, logdir, debug):
