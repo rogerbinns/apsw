@@ -87,15 +87,6 @@ def classify(doc: list[str]) -> Union[dict, None]:
     name = name.strip()
     signature = signature.strip()
 
-    if name == "main":  # from shell, so get its spec
-        import apsw
-        import warnings
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            # these inspect methods are deprecated, but the signature based ones
-            # mess up formatting - eg saying '<class TextIO>' instead of 'TextIO'
-            signature = inspect.formatargspec(*inspect.getfullargspec(apsw.main))
-
     if kind == "class":
         name += ".__init__"
         if not signature:
@@ -573,8 +564,17 @@ def get_class_signature(klass: str, items: List[dict]) -> str:
             return "(self)"
     raise KeyError(f"class { klass } not found")
 
-def fmt_docstring(doc: list[str], indent: str):
+def fmt_docstring(doc: list[str], indent: str) -> str:
     return  indent + '"""' + indent.join(doc).rstrip() + '"""'
+
+def attr_docstring(doc: list[str]) -> list[str]:
+    ds=doc[:]
+    if ds[0].startswith(":type:"):
+        ds.pop(0)
+    while not ds[0].strip():
+        ds.pop(0)
+    return ds
+
 
 def generate_typestubs(items: list[dict]):
     try:
@@ -594,6 +594,7 @@ def generate_typestubs(items: list[dict]):
         if item["kind"] == "class":
             # these end up in an unhelpful place in the sort order
             continue
+
         klass, name = item['name'].split(".", 1)
         signature = item["signature_original"]
         if klass == "apsw":
@@ -606,12 +607,17 @@ def generate_typestubs(items: list[dict]):
             else:
                 assert item["kind"] == "attribute"
                 print(f"{ name }: { attribute_type(item) }", file=out)
+                print(fmt_docstring(attr_docstring(item["doc"]), indent=""), file=out)
+                print("", file=out)
         else:
             if klass != lastclass:
                 lastclass = klass
                 klass_signature = get_class_signature(klass, items)
                 print(f"\nclass { klass }:", file=out)
-                print(f"    def __init__{ klass_signature }: ...", file=out)
+                if klass in {"Connection", "zeroblob"}:
+                    print(f"    def __init__{ klass_signature }:", file=out)
+                    print(fmt_docstring(item["doc"], indent="        "), file=out)
+                    print("        ...\n", file=out)
 
             if item["kind"] == "method":
                 for find, replace in (
@@ -621,10 +627,15 @@ def generate_typestubs(items: list[dict]):
                     signature = signature.replace(find, replace)
                 if not signature.startswith("(self"):
                     signature = "(self" + (", " if signature[1] != ")" else "") + signature[1:]
-                print(f"    def { name }{ signature }: ...", file=out)
+                print(f"    def { name }{ signature }:", file=out)
+                print(fmt_docstring(item["doc"], indent="        "), file=out)
+                print("        ...\n", file=out)
+
             else:
                 assert item["kind"] == "attribute"
                 print(f"    { name }: { attribute_type(item) }", file=out)
+                print(fmt_docstring(attr_docstring(item["doc"]), indent="    "), file=out)
+                print("", file=out)
 
     # constants
     print("\n", file=out)
