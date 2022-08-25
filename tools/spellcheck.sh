@@ -4,7 +4,7 @@
 
 WRONG="paramaters|paramater|partifular|seperately|desribes|seperate|seperated|begining|targetted|libary|interpretter|entireity|publically"
 WRONG="$WRONG|noone|commiting|statment|statments|simulataneous|exection|wierd|valueable|tempory|datatabases|mutliple|implment|contraints"
-WRONG="$WRONG|exeception|implemtation|multple|exeception|implment|implmentation|commited|unintentially|explicity|ouput"
+WRONG="$WRONG|exeception|implemtation|multple|exeception|implment|implmentation|commited|unintentially|explicity|ouput|overal"
 
 git grep --color -Eniw "($WRONG)" | grep -v tools/spellcheck.sh
 

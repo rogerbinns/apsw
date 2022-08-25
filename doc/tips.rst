@@ -22,7 +22,9 @@ compatibility with the `file format
 APSW wraps the `SQLite C API
 <https://www.sqlite.org/c3ref/intro.html>`__.  That means when SQLite
 adds new constant or API, then so does APSW.  You can think of APSW as
-the Python expression of SQLite's C API.
+the Python expression of SQLite's C API.  You can `lookup
+<genindex.html#S>`__ SQLite APIs to find which APSW functions and
+attributes call them.
 
 Consequently the APSW version mirrors the SQLite version.  You can use
 APSW with the corresponding version of SQLite, or any newer version of
@@ -336,7 +338,7 @@ ticket
 :issue:`59`)
 
 The amount of memory and I/O saved is trivial compared to Python's
-overal memory and I/O consumption.  You may also need to tune the
+overall memory and I/O consumption.  You may also need to tune the
 shared cache's memory back up to what it would have been with separate
 connections to get the same performance.
 
