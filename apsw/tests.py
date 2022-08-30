@@ -500,6 +500,10 @@ class APSW(unittest.TestCase):
         self.db.cursor_factory = inherits
         self.assertEqual(self.db.execute("select 3").fetchall(), self.db.cursor().execute("select 3").fetchall())
         self.assertEqual(self.db.executemany("select ?", seqbindings).fetchall(), self.db.cursor().executemany("select ?", seqbindings).fetchall())
+        # kwargs
+        self.assertEqual(self.db.execute(bindings=tuple(), statements="select 3").fetchall(), self.db.cursor().execute(bindings=None, statements="select 3").fetchall())
+        self.assertEqual(self.db.executemany(sequenceofbindings=seqbindings, statements="select ?").fetchall(), self.db.cursor().executemany(statements="select ?", sequenceofbindings=seqbindings).fetchall())
+
 
         # check cursor_factory across closes
         class big:
