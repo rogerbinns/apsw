@@ -18,6 +18,9 @@ def docapture(filename):
     code.append(outputredirector)
     counter = 0
     for line in open(filename, "rt"):
+        if line.strip() == "from __future__ import annotations":
+            # only allowed at start and we have outputredirector header
+            continue
         line = line[:-1]  # strip off newline
         if line.lstrip().startswith("#@@CAPTURE"):
             code.append(indentof(line) + "opto('.tmpop-%s-%d')" % (filename, counter))
