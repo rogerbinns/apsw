@@ -987,7 +987,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args, PyObject *kwds)
   int res;
   int savedbindingsoffset = -1;
   PyObject *retval = NULL;
-  PyObject *statements, *bindings=NULL;
+  PyObject *statements, *bindings = NULL;
 
   CHECK_USE(NULL);
   CHECK_CURSOR_CLOSED(NULL);
@@ -1556,5 +1556,4 @@ static PyTypeObject APSWCursorType = {
     0,                                                                                           /* tp_subclasses */
     0,                                                                                           /* tp_weaklist */
     0,                                                                                           /* tp_del */
-    PyType_TRAILER
-};
+    PyType_TRAILER};
