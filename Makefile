@@ -150,6 +150,10 @@ compile-win:
 	$(WINCICONFIG) c:/python36-64/python -m apsw.tests
 
 setup-wheel:
+	c:/python311/python -m ensurepip
+	c:/python311/python -m pip install --upgrade wheel setuptools
+	c:/python311-32/python -m ensurepip
+	c:/python311-32/python -m pip install --upgrade wheel setuptools
 	c:/python310/python -m ensurepip
 	c:/python310/python -m pip install --upgrade wheel setuptools
 	c:/python310-32/python -m ensurepip
