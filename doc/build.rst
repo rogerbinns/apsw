@@ -143,7 +143,7 @@ need to give the flag once and giving a comma separated list.  For example::
 SQLite includes `many options defined to the C compiler
 <https://www.sqlite.org/compile.html>`__.  If you want to change
 compiled in default values, or provide defines like
-SQLITE_CUSTOM_INCLUDE then you can use :option:`definevalues` using
+SQLITE_CUSTOM_INCLUDE then you can use :option:`--definevalues` using
 `=` and comma separating.  For example::
 
   python setup.py build_ext --definevalues SQLITE_DEFAULT_FILE_FORMAT=1,SQLITE_CUSTOM_INCLUDE=config.h
