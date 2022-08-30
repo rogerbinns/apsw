@@ -124,6 +124,10 @@ compile-win:
 	cmd /c del /s /q dist
 	cmd /c del /s /q build
 	-cmd /c md dist
+	c:/python311-32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
+	$(WINCICONFIG) c:/python311-32/python -m apsw.tests
+	c:/python311/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
+	$(WINCICONFIG) c:/python311/python -m apsw.tests
 	c:/python310-32/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
 	$(WINCICONFIG) c:/python310-32/python -m apsw.tests
 	c:/python310/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
