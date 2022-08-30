@@ -73,7 +73,7 @@ def classify(doc: list[str]) -> Union[dict, None]:
     kind = line.split()[1]
     assert kind.endswith("::")
     kind = kind.rstrip(":")
-    if kind in {"index", "currentmodule", "code-block", "note", "seealso", "module", "literalinclude"}:
+    if kind in {"index", "currentmodule", "code-block", "note", "seealso", "module", "include"}:
         return None
 
     assert kind in ("class", "method", "attribute"), f"unknown kind { kind } in { line }"
