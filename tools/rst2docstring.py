@@ -105,6 +105,12 @@ def classify(doc: list[str]) -> Union[dict, None]:
     if name.split(".")[0] in {"VTCursor", "VTModule", "VTTable"}:
         return None
 
+    # sometimes the next doc section starts with a title and then a line of ====
+    if all(c == "=" for c in doc[-1].strip()) and len(doc[-1].strip()) == len(doc[-2].strip()):
+        doc = doc[:-2]
+        while not doc[-1].strip():
+            doc = doc[:-1]
+
     doc = [f"{ line }\n" for line in textwrap.dedent("".join(doc)).strip().split("\n")]
 
     symbol = make_symbol(name)
@@ -436,7 +442,9 @@ def do_argparse(item):
             if param["default"]:
                 breakpoint()
                 pass
-        elif param["type"] in {"PyObject", "Any", "Optional[type[BaseException]]", "Optional[BaseException]", "Optional[TracebackType]"}:
+        elif param["type"] in {
+                "PyObject", "Any", "Optional[type[BaseException]]", "Optional[BaseException]", "Optional[TracebackType]"
+        }:
             type = "PyObject *"
             kind = "O"
             if param["default"]:
@@ -564,11 +572,23 @@ def get_class_signature(klass: str, items: List[dict]) -> str:
             return "(self)"
     raise KeyError(f"class { klass } not found")
 
+
 def fmt_docstring(doc: list[str], indent: str) -> str:
-    return  indent + '"""' + indent.join(doc).rstrip() + '"""'
+    res = indent + '"""'
+    for i, line in enumerate(doc):
+        if i == 0:
+            res += line
+        elif line.strip():
+            res += indent + line
+        else:
+            res += "\n"
+    res = res.rstrip()
+    res += '"""'
+    return res
+
 
 def attr_docstring(doc: list[str]) -> list[str]:
-    ds=doc[:]
+    ds = doc[:]
     if ds[0].startswith(":type:"):
         ds.pop(0)
     while not ds[0].strip():
@@ -601,7 +621,7 @@ def generate_typestubs(items: list[dict]):
             name = item["name"][len("apsw."):]
             if item["kind"] == "method":
                 assert signature.startswith("(")
-                print(f"def { name }{ signature }: ", file=out)
+                print(f"def { name }{ signature }:", file=out)
                 print(fmt_docstring(item["doc"], indent="    "), file=out)
                 print("    ...\n", file=out)
             else:
