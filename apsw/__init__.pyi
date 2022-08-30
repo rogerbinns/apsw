@@ -763,6 +763,18 @@ class Connection:
         :rtype: :class:`Cursor`"""
         ...
 
+    cursor_factory: Callable[[Connection], Any]
+    """Defaults to :class:`Cursor`
+
+    Called with a :class:`Connection` as the only parameter when a cursor
+    is needed such as by the :meth:`cursor` method, or
+    :meth:`Connection.execute`.
+
+    Note that whatever is returned doesn't have to be an actual
+    :class:`Cursor` instance, and just needs to have the methods present
+    that are actually called.  These are likely to be `execute`,
+    `executemany`, `close` etc."""
+
     def db_filename(self, name: str) -> str:
         """Returns the full filename of the named (attached) database.  The
         main database is named "main".
@@ -828,6 +840,22 @@ class Connection:
         Behind the scenes the `savepoint
         <https://sqlite.org/lang_savepoint.html>`_ functionality introduced in
         SQLite 3.6.8 is used to provide nested transactions."""
+        ...
+
+    def execute(self, statements: str, bindings: Optional[Bindings] = None) -> Cursor:
+        """Executes the statements using the supplied bindings.  Execution
+        returns when the first row is available or all statements have
+        completed.  (A cursor is automatically obtained).
+
+        See :meth:`Cursor.execute` for more details."""
+        ...
+
+    def executemany(self, statements: str, sequenceofbindings:Sequence[Bindings]) -> Cursor:
+        """This method is for when you want to execute the same statements over a
+        sequence of bindings, such as inserting into a database.  (A cursor is
+        automatically obtained).
+
+        See :meth:`Cursor.executemany` for more details."""
         ...
 
     def __exit__(self) -> Literal[False]:
