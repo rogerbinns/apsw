@@ -919,15 +919,15 @@
 "transaction is rolled back, otherwise it is committed.  For example::\n" \
 "\n" \
 "  with connection:\n" \
-"      connection.cursor().execute(\"....\")\n" \
+"      connection.execute(\"....\")\n" \
 "      with connection:\n" \
 "          # nested is supported\n" \
 "          call_function(connection)\n" \
-"          connection.cursor().execute(\"...\")\n" \
+"          connection.execute(\"...\")\n" \
 "          with connection as db:\n" \
 "              # You can also use 'as'\n" \
 "              call_function2(db)\n" \
-"              db.cursor().execute(\"...\")\n" \
+"              db.execute(\"...\")\n" \
 "\n" \
 "Behind the scenes the `savepoint\n" \
 "<https://sqlite.org/lang_savepoint.html>`_ functionality introduced in\n" \
@@ -2091,15 +2091,12 @@
 
 #define  VFSFile_xWrite_DOC "xWrite($self,data,offset)\n--\n\nVFSFile.xWrite(data: bytes, offset: int) -> None\n\n" \
 "Write the *data* starting at absolute *offset*. You must write all the data\n" \
-"  requested, or return an error. If you have the file open for\n" \
-"  non-blocking I/O or if signals happen then it is possible for the\n" \
-"  underlying operating system to do a partial write. You will need to\n" \
-"  write the remaining data.\n" \
+"requested, or return an error. If you have the file open for\n" \
+"non-blocking I/O or if signals happen then it is possible for the\n" \
+"underlying operating system to do a partial write. You will need to\n" \
+"write the remaining data.\n" \
 "\n" \
-"  :param offset: Where to start writing. This number may be 64 bit once the database is larger than 2GB.\n" \
-"\n" \
-"URIFilename class\n" \
-"=================\n" 
+":param offset: Where to start writing. This number may be 64 bit once the database is larger than 2GB.\n" 
 
 #define VFSFile_xWrite_USAGE "VFSFile.xWrite(data: bytes, offset: int) -> None"
 
@@ -2392,16 +2389,13 @@
 
 #define  VFS_xSleep_DOC "xSleep($self,microseconds)\n--\n\nVFS.xSleep(microseconds: int) -> int\n\n" \
 "Pause execution of the thread for at least the specified number of\n" \
-"    microseconds (millionths of a second).  This routine is typically called from the busy handler.\n" \
+"microseconds (millionths of a second).  This routine is typically called from the busy handler.\n" \
 "\n" \
-"    :returns: How many microseconds you actually requested the\n" \
-"      operating system to sleep for. For example if your operating\n" \
-"      system sleep call only takes seconds then you would have to have\n" \
-"      rounded the microseconds number up to the nearest second and\n" \
-"      should return that rounded up value.\n" \
-"\n" \
-"VFSFile class\n" \
-"=============\n" 
+":returns: How many microseconds you actually requested the\n" \
+"  operating system to sleep for. For example if your operating\n" \
+"  system sleep call only takes seconds then you would have to have\n" \
+"  rounded the microseconds number up to the nearest second and\n" \
+"  should return that rounded up value.\n" 
 
 #define VFS_xSleep_USAGE "VFS.xSleep(microseconds: int) -> int"
 
@@ -2442,8 +2436,5 @@
 
 
 #define  Zeroblob_length_DOC "length($self)\n--\n\nzeroblob.length() -> int\n\n" \
-"Size of zero blob in bytes.\n" \
-"\n" \
-"Blob class\n" \
-"==========\n" 
+"Size of zero blob in bytes.\n" 
 

@@ -827,15 +827,15 @@ class Connection:
         transaction is rolled back, otherwise it is committed.  For example::
 
           with connection:
-              connection.cursor().execute("....")
+              connection.execute("....")
               with connection:
                   # nested is supported
                   call_function(connection)
-                  connection.cursor().execute("...")
+                  connection.execute("...")
                   with connection as db:
                       # You can also use 'as'
                       call_function2(db)
-                      db.cursor().execute("...")
+                      db.execute("...")
 
         Behind the scenes the `savepoint
         <https://sqlite.org/lang_savepoint.html>`_ functionality introduced in
@@ -1698,15 +1698,12 @@ class VFSFile:
 
     def xWrite(self, data: bytes, offset: int) -> None:
         """Write the *data* starting at absolute *offset*. You must write all the data
-          requested, or return an error. If you have the file open for
-          non-blocking I/O or if signals happen then it is possible for the
-          underlying operating system to do a partial write. You will need to
-          write the remaining data.
+        requested, or return an error. If you have the file open for
+        non-blocking I/O or if signals happen then it is possible for the
+        underlying operating system to do a partial write. You will need to
+        write the remaining data.
 
-          :param offset: Where to start writing. This number may be 64 bit once the database is larger than 2GB.
-
-        URIFilename class
-        ================="""
+        :param offset: Where to start writing. This number may be 64 bit once the database is larger than 2GB."""
         ...
 
 
@@ -1886,16 +1883,13 @@ class VFS:
 
     def xSleep(self, microseconds: int) -> int:
         """Pause execution of the thread for at least the specified number of
-            microseconds (millionths of a second).  This routine is typically called from the busy handler.
+        microseconds (millionths of a second).  This routine is typically called from the busy handler.
 
-            :returns: How many microseconds you actually requested the
-              operating system to sleep for. For example if your operating
-              system sleep call only takes seconds then you would have to have
-              rounded the microseconds number up to the nearest second and
-              should return that rounded up value.
-
-        VFSFile class
-        ============="""
+        :returns: How many microseconds you actually requested the
+          operating system to sleep for. For example if your operating
+          system sleep call only takes seconds then you would have to have
+          rounded the microseconds number up to the nearest second and
+          should return that rounded up value."""
         ...
 
 
@@ -1905,7 +1899,7 @@ class zeroblob:
         ...
 
     def length(self) -> int:
-        """Returns size of zero blob in bytes."""
+        """Size of zero blob in bytes."""
         ...
 
 
