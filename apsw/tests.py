@@ -8748,11 +8748,11 @@ if __name__ == '__main__':
         def set_wal_mode(c):
             # Note that WAL won't be on for memory databases.  This
             # execution returns the active mode
-            c.cursor().execute("PRAGMA journal_mode=WAL").fetchall()
+            c.execute("PRAGMA journal_mode=WAL").fetchall()
 
         def fsync_off(c):
             try:
-                c.cursor().execute("PRAGMA synchronous=OFF ; PRAGMA fullfsync=OFF; PRAGMA checkpoint_fullfsync=OFF")
+                c.execute("PRAGMA synchronous=OFF ; PRAGMA fullfsync=OFF; PRAGMA checkpoint_fullfsync=OFF")
             except apsw.BusyError:
                 pass
 

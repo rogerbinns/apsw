@@ -359,7 +359,7 @@ def doit():
     def apsw_bigstmt(con):
         "APSW big statement"
         try:
-            for row in con.cursor().execute(text):
+            for row in con.execute(text):
                 pass
         except:
             import pdb

@@ -41,7 +41,7 @@ with tempfile.NamedTemporaryFile() as f:
     consts = collections.defaultdict(lambda: copy.deepcopy({"vars": []}))
     const2page = {}
 
-    for name, type, title, uri in db.cursor().execute("select name, type, title, uri from toc"):
+    for name, type, title, uri in db.execute("select name, type, title, uri from toc"):
         if type == "function":
             funclist[name] = basesqurl + uri
         elif type == "constant":

@@ -3212,15 +3212,15 @@ Connection_getrowtrace(Connection *self)
   transaction is rolled back, otherwise it is committed.  For example::
 
     with connection:
-        connection.cursor().execute("....")
+        connection.execute("....")
         with connection:
             # nested is supported
             call_function(connection)
-            connection.cursor().execute("...")
+            connection.execute("...")
             with connection as db:
                 # You can also use 'as'
                 call_function2(db)
-                db.cursor().execute("...")
+                db.execute("...")
 
   Behind the scenes the `savepoint
   <https://sqlite.org/lang_savepoint.html>`_ functionality introduced in

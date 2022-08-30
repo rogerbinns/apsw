@@ -65,7 +65,7 @@ a module object, you register it with a connection by calling
   con.createmodule("modulename", mymod)
 
   # tell SQLite about the table
-  con.cursor().execute("create VIRTUAL table tablename USING modulename('arg1', 2)")
+  con.execute("create VIRTUAL table tablename USING modulename('arg1', 2)")
 
 The create step is to tell SQLite about the existence of the table.
 Any number of tables referring to the same module can be made this

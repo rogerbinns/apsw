@@ -63,18 +63,18 @@ transactions <https://www.sqlite.org/faq.html#q19>`__.
 If you do nothing, then each statement is a single transaction::
 
    # this will be 3 separate transactions
-   db.cursor().execute("INSERT ...")
-   db.cursor().execute("INSERT ...")
-   db.cursor().execute("INSERT ...")
+   db.execute("INSERT ...")
+   db.execute("INSERT ...")
+   db.execute("INSERT ...")
 
 You can use BEGIN/END to set the transaction boundary::
 
    # this will be one transaction
-   db.cursor().execute("BEGIN")
-   db.cursor().execute("INSERT ...")
-   db.cursor().execute("INSERT ...")
-   db.cursor().execute("INSERT ...")
-   db.cursor().execute("COMMIT")
+   db.execute("BEGIN")
+   db.execute("INSERT ...")
+   db.execute("INSERT ...")
+   db.execute("INSERT ...")
+   db.execute("COMMIT")
 
 However that is extra effort, and also requires error handling.  For example
 if the second INSERT failed then you likely want to ROLLBACK the incomplete
@@ -87,9 +87,9 @@ exceptions occur::
 
    # this will be one transaction with automatic commit and rollback
    with db:
-       db.cursor().execute("INSERT ...")
-       db.cursor().execute("INSERT ...")
-       db.cursor().execute("INSERT ...")
+       db.execute("INSERT ...")
+       db.execute("INSERT ...")
+       db.execute("INSERT ...")
 
 There are `technical details <https://www.sqlite.org/lang_transaction.html>`__
 at the `SQLite site <https://www.sqlite.org/docs.html>`__.
@@ -194,26 +194,26 @@ programmatically.  The easy way is to use `pragma user_version
 <https://sqlite.org/pragma.html#pragma_user_version>`__ as in this example::
 
   def user_version(db):
-    return db.cursor().execute("pragma user_version").fetchall()[0][0]
+    return db.execute("pragma user_version").fetchall()[0][0]
 
   def ensure_schema(db):
     if user_version(db)==0:
       with db:
-        db.cursor().execute("""
+        db.execute("""
           CREATE TABLE IF NOT EXISTS foo(x,y,z);
           CREATE TABLE IF NOT EXISTS bar(x,y,z);
           PRAGMA user_version=1;""")
 
     if user_version(db)==1:
       with db:
-        db.cursor().execute("""
+        db.execute("""
         CREATE TABLE IF NOT EXISTS baz(x,y,z);
         CREATE INDEX ....
         PRAGMA user_version=2;""")
 
     if user_version(con)==2:
       with db:
-        db.cursor().execute("""
+        db.execute("""
         ALTER TABLE .....
         PRAGMA user_version=3;""")
 
@@ -372,7 +372,7 @@ have kilobytes of memory available for SQLite.
 Write Ahead Logging
 ===================
 
-SQLite 3.7 introduces `write ahead logging
+SQLite 3.7 introduced `write ahead logging
 <https://sqlite.org/wal.html>`__ which has several benefits, but
 also some drawbacks as the page documents.  WAL mode is off by
 default.  In addition to turning it on manually for each database, you
@@ -380,7 +380,7 @@ can also turn it on for all opened databases by using
 :attr:`connection_hooks`::
 
   def setwal(db):
-      db.cursor().execute("pragma journal_mode=wal")
+      db.execute("pragma journal_mode=wal")
       # custom auto checkpoint interval (use zero to disable)
       db.wal_autocheckpoint(10)
 

@@ -1034,7 +1034,7 @@ Enter SQL statements terminated with a ";"
 
             tables = []
             for pattern in cmd:
-                for name, sql in self.db.cursor().execute(
+                for name, sql in self.db.execute(
                         "SELECT name,sql FROM sqlite_master "
                         "WHERE sql NOT NULL AND type IN ('table','view') "
                         "AND tbl_name LIKE ?1", (pattern, )):
@@ -1046,11 +1046,11 @@ Enter SQL statements terminated with a ";"
 
             # will we need to analyze anything later?
             analyze_needed = []
-            for stat in self.db.cursor().execute(
+            for stat in self.db.execute(
                     "select name from sqlite_master where sql not null and type='table' and tbl_name like 'sqlite_stat%'"
             ):
                 for name in tables:
-                    if len(self.db.cursor().execute(
+                    if len(self.db.execute(
                             "select * from " + self._fmt_sql_identifier(stat[0]) + " WHERE tbl=?",
                         (name, )).fetchall()):
                         if name not in analyze_needed:
@@ -1080,12 +1080,12 @@ Enter SQL statements terminated with a ";"
 
             comment("The values of various per-database settings")
             self.write(self.stdout,
-                       "PRAGMA page_size=" + str(self.db.cursor().execute("pragma page_size").fetchall()[0][0]) + ";\n")
-            comment("PRAGMA encoding='" + self.db.cursor().execute("pragma encoding").fetchall()[0][0] + "';\n")
+                       "PRAGMA page_size=" + str(self.db.execute("pragma page_size").fetchall()[0][0]) + ";\n")
+            comment("PRAGMA encoding='" + self.db.execute("pragma encoding").fetchall()[0][0] + "';\n")
             vac = {0: "NONE", 1: "FULL", 2: "INCREMENTAL"}
-            vacvalue = self.db.cursor().execute("pragma auto_vacuum").fetchall()[0][0]
+            vacvalue = self.db.execute("pragma auto_vacuum").fetchall()[0][0]
             comment("PRAGMA auto_vacuum=" + vac.get(vacvalue, str(vacvalue)) + ";\n")
-            comment("PRAGMA max_page_count=" + str(self.db.cursor().execute("pragma max_page_count").fetchall()[0][0]) +
+            comment("PRAGMA max_page_count=" + str(self.db.execute("pragma max_page_count").fetchall()[0][0]) +
                     ";\n")
             blank()
 
@@ -1131,7 +1131,7 @@ Enter SQL statements terminated with a ";"
                 self.output = self.output_insert
                 # Dump the table
                 for table in tables:
-                    for sql in self.db.cursor().execute("SELECT sql FROM sqlite_master WHERE name=?1 AND type='table'",
+                    for sql in self.db.execute("SELECT sql FROM sqlite_master WHERE name=?1 AND type='table'",
                                                         (table, )):
                         comment("Table  " + table)
                         # Special treatment for virtual tables - they
@@ -1154,7 +1154,7 @@ Enter SQL statements terminated with a ";"
                             self.process_sql("select * from " + self._fmt_sql_identifier(table), internal=True)
                         # Now any indices or triggers
                         first = True
-                        for name, sql in self.db.cursor().execute(
+                        for name, sql in self.db.execute(
                                 "SELECT name,sql FROM sqlite_master "
                                 "WHERE sql NOT NULL AND type IN ('index', 'trigger') "
                                 "AND tbl_name=?1 AND name NOT LIKE 'sqlite_%' "
@@ -1167,7 +1167,7 @@ Enter SQL statements terminated with a ";"
                 # Views done last.  They have to be done in the same order as they are in sqlite_master
                 # as they could refer to each other
                 first = True
-                for name, sql in self.db.cursor().execute("SELECT name,sql FROM sqlite_master "
+                for name, sql in self.db.execute("SELECT name,sql FROM sqlite_master "
                                                           "WHERE sql NOT NULL AND type='view' "
                                                           "AND name IN ( " +
                                                           ",".join([apsw.format_sql_value(i)
@@ -1182,10 +1182,10 @@ Enter SQL statements terminated with a ";"
 
                 # sqlite sequence
                 # does it exist
-                if len(self.db.cursor().execute("select * from sqlite_master where name='sqlite_sequence'").fetchall()):
+                if len(self.db.execute("select * from sqlite_master where name='sqlite_sequence'").fetchall()):
                     first = True
                     for t in tables:
-                        v = self.db.cursor().execute("select seq from main.sqlite_sequence where name=?1",
+                        v = self.db.execute("select seq from main.sqlite_sequence where name=?1",
                                                      (t, )).fetchall()
                         if len(v):
                             assert len(v) == 1
@@ -1213,7 +1213,7 @@ Enter SQL statements terminated with a ";"
                 blank()
 
             # user version pragma
-            uv = self.db.cursor().execute("pragma user_version").fetchall()[0][0]
+            uv = self.db.execute("pragma user_version").fetchall()[0][0]
             if uv:
                 comment(
                     "Your database may need this.  It is sometimes used to keep track of the schema version (eg Firefox does this)."
@@ -1392,12 +1392,12 @@ Enter SQL statements terminated with a ";"
         except ValueError:
             pass
         querytemplate = " OR ".join(querytemplate)
-        for (table, ) in self.db.cursor().execute("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE ?1",
+        for (table, ) in self.db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE ?1",
                                                   (tablefilter, )):
             t = self._fmt_sql_identifier(table)
             query = "SELECT * from %s WHERE " % (t, )
             colq = []
-            for _, column, _, _, _, _ in self.db.cursor().execute("pragma table_info(%s)" % (t, )):
+            for _, column, _, _, _, _ in self.db.execute("pragma table_info(%s)" % (t, )):
                 colq.append(querytemplate % ((self._fmt_sql_identifier(column), ) * len(queryparams)))
             query = query + " OR ".join(colq)
             self.process_sql(query, queryparams, internal=True, summary=("Table " + table + "\n", "\n"))
@@ -1559,11 +1559,11 @@ Enter SQL statements terminated with a ";"
             final = None
             # start transaction so database can't be changed
             # underneath us
-            self.db.cursor().execute("BEGIN IMMEDIATE")
+            self.db.execute("BEGIN IMMEDIATE")
             final = "ROLLBACK"
 
             # how many columns?
-            ncols = len(self.db.cursor().execute("pragma table_info(" + self._fmt_sql_identifier(cmd[1]) +
+            ncols = len(self.db.execute("pragma table_info(" + self._fmt_sql_identifier(cmd[1]) +
                                                  ")").fetchall())
             if ncols < 1:
                 raise self.Error("No such table '%s'" % (cmd[1], ))
@@ -1591,11 +1591,11 @@ Enter SQL statements terminated with a ";"
                     self.write(self.stderr, "Error inserting row %d" % (row, ))
                     raise
                 row += 1
-            self.db.cursor().execute("COMMIT")
+            self.db.execute("COMMIT")
 
         except:
             if final:
-                self.db.cursor().execute(final)
+                self.db.execute(final)
             raise
 
     def _csvin_wrapper(self, filename, dialect):
@@ -1801,7 +1801,7 @@ Enter SQL statements terminated with a ";"
             self.write(self.stdout, "Auto-import into table \"%s\" complete\n" % (tablename, ))
         except:
             if final:
-                self.db.cursor().execute(final)
+                self.db.execute(final)
             raise
 
     def _getdate(self, v):
