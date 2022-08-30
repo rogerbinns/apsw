@@ -27,21 +27,21 @@ print("SQLite header version", apsw.SQLITE_VERSION_NUMBER)  # from the sqlite he
 ###
 
 connection = apsw.Connection("dbfile")
+
+###
+### simple statement with a cursor  @@ example-cursor
+###
+
 cursor = connection.cursor()
-
-###
-### simple statement  @@ example-cursor
-###
-
 cursor.execute("create table foo(x,y,z)")
 
 ###
 ### using different types
 ###
 
-cursor.execute("insert into foo values(?,?,?)", (1, 1.1, None))  # integer, float/real, Null
-cursor.execute("insert into foo(x) values(?)", ("abc", ))  # string (note trailing comma to ensure tuple!)
-cursor.execute(
+connection.execute("insert into foo values(?,?,?)", (1, 1.1, None))  # integer, float/real, Null
+connection.execute("insert into foo(x) values(?)", ("abc", ))  # string (note trailing comma to ensure tuple!)
+connection.execute(
     "insert into foo(x) values(?)",  # a blob (binary data)
     (b"abc\xff\xfe", ))
 
@@ -49,11 +49,11 @@ cursor.execute(
 ### multiple statements
 ###
 
-cursor.execute(
+connection.execute(
     "delete from foo; insert into foo values(1,2,3); create table bar(a,b,c) ; insert into foo values(4, 'five', 6.0)")
 
 ###
-### iterator
+### iterator using cursor
 ###
 
 for x, y, z in cursor.execute("select x,y,z from foo"):
@@ -64,21 +64,21 @@ for x, y, z in cursor.execute("select x,y,z from foo"):
 ### iterator - multiple statements
 ###
 
-for m, n, o in cursor.execute("select x,y,z from foo ; select a,b,c from bar"):
+for m, n, o in connection.execute("select x,y,z from foo ; select a,b,c from bar"):
     print(m, n, o)
 
 ###
 ### bindings - sequence
 ###
 
-cursor.execute("insert into foo values(?,?,?)", (7, 'eight', False))
-cursor.execute("insert into foo values(?,?,?1)", ('one', 'two'))  # nb sqlite does the numbers from 1
+connection.execute("insert into foo values(?,?,?)", (7, 'eight', False))
+connection.execute("insert into foo values(?,?,?1)", ('one', 'two'))  # nb sqlite does the numbers from 1
 
 ###
 ### bindings - dictionary
 ###
 
-cursor.execute("insert into foo values(:alpha, :beta, :gamma)", {'alpha': 1, 'beta': 2, 'gamma': 'three'})
+connection.execute("insert into foo values(:alpha, :beta, :gamma)", {'alpha': 1, 'beta': 2, 'gamma': 'three'})
 
 ###
 ### tracing execution @@ example-exectrace
@@ -126,10 +126,10 @@ cursor.setexectrace(None)
 
 # (This will work correctly with multiple statements, as well as statements that
 # return data.  The second argument can be anything that is iterable.)
-cursor.executemany("insert into foo (x) values(?)", ([1], [2], [3]))
+connection.executemany("insert into foo (x) values(?)", ([1], [2], [3]))
 
 # You can also use it for statements that return data
-for row in cursor.executemany("select * from foo where x=?", ([1], [2], [3])):
+for row in connection.executemany("select * from foo where x=?", ([1], [2], [3])):
     print(row)
 
 ###
@@ -146,7 +146,7 @@ def ilove7(*args: apsw.SQLiteValue) -> int:
 connection.createscalarfunction("seven", ilove7)
 
 #@@CAPTURE
-for row in cursor.execute("select seven(x,y) from foo"):
+for row in connection.execute("select seven(x,y) from foo"):
     print(row)
 #@@ENDCAPTURE
 
@@ -177,7 +177,7 @@ class longest:
 
 #@@CAPTURE
 connection.createaggregatefunction("longest", longest.factory)
-for row in cursor.execute("select longest(x,y) from foo"):
+for row in connection.execute("select longest(x,y) from foo"):
     print(row)
 #@@ENDCAPTURE
 
@@ -188,11 +188,11 @@ for row in cursor.execute("select longest(x,y) from foo"):
 # The default sorting mechanisms don't understand numbers at the end of strings
 # so here we define a collation that does
 
-cursor.execute("create table s(str)")
-cursor.executemany("insert into s values(?)", (["file1"], ["file7"], ["file17"], ["file20"], ["file3"]))
+connection.execute("create table s(str)")
+connection.executemany("insert into s values(?)", (["file1"], ["file7"], ["file17"], ["file20"], ["file3"]))
 
 #@@CAPTURE
-for row in cursor.execute("select * from s order by str"):
+for row in connection.execute("select * from s order by str"):
     print(row)
 #@@ENDCAPTURE
 
@@ -223,7 +223,7 @@ def strnumcollate(s1: apsw.SQLiteValue, s2: apsw.SQLiteValue) -> int:
 connection.createcollation("strnum", strnumcollate)
 
 #@@CAPTURE
-for row in cursor.execute("select * from s order by str collate strnum"):
+for row in connection.execute("select * from s order by str collate strnum"):
     print(row)
 #@@ENDCAPTURE
 
@@ -245,8 +245,8 @@ def authorizer(operation: int, paramone: Optional[str], paramtwo: Optional[str],
 
 connection.setauthorizer(authorizer)
 #@@CAPTURE
-cursor.execute("insert into s values('foo')")
-cursor.execute("select str from s limit 1")
+connection.execute("insert into s values('foo')")
+connection.execute("select str from s limit 1")
 #@@ENDCAPTURE
 
 # Cancel authorizer
@@ -266,9 +266,9 @@ def randomintegers(howmany: int) -> Iterator[Tuple[int]]:
 
 
 # create a table with 100 random numbers
-cursor.execute("begin ; create table bigone(x)")
-cursor.executemany("insert into bigone values(?)", randomintegers(100))
-cursor.execute("commit")
+with connection:
+    connection.execute("create table bigone(x)")
+    connection.executemany("insert into bigone values(?)", randomintegers(100))
 
 # display an ascii spinner
 _phcount = 0
@@ -289,14 +289,14 @@ connection.setprogresshandler(progresshandler, 20)
 
 # see it in action - sorting 100 numbers to find the biggest takes a while
 print("spinny thing -> ", end="")
-for i in cursor.execute("select max(x) from bigone"):
+for i in connection.execute("select max(x) from bigone"):
     print("\n", i, sep="", end="")
     sys.stdout.flush()
 
 connection.setprogresshandler(None)
 
 ###
-### commit hook (SQLite3 experimental feature) @@ example-commithook
+### commit hook @@ example-commithook
 ###
 
 
@@ -313,7 +313,8 @@ def mycommithook() -> int:
 #@@CAPTURE
 connection.setcommithook(mycommithook)
 try:
-    cursor.execute("begin; create table example(x,y,z); insert into example values (3,4,5) ; commit")
+    with connection:
+        connection.execute("create table example(x,y,z); insert into example values (3,4,5)")
 except apsw.ConstraintError:
     print("commit was not allowed")
 
@@ -342,13 +343,13 @@ connection.setupdatehook(None)
 ### Blob I/O    @@ example-blobio
 ###
 
-cursor.execute("create table blobby(x,y)")
+connection.execute("create table blobby(x,y)")
 # Add a blob we will fill in later
-cursor.execute("insert into blobby values(1,zeroblob(10000))")
+connection.execute("insert into blobby values(1,zeroblob(10000))")
 # Or as a binding
-cursor.execute("insert into blobby values(2,?)", (apsw.zeroblob(20000), ))
+connection.execute("insert into blobby values(2,?)", (apsw.zeroblob(20000), ))
 # Open a blob for writing.  We need to know the rowid
-rowid = next(cursor.execute("select ROWID from blobby where x=1"))[0]
+rowid = connection.execute("select ROWID from blobby where x=1").fetchall()[0][0]
 blob = connection.blobopen("main", "blobby", "y", rowid, True)
 blob.write(b"hello world")
 blob.seek(2000)
@@ -439,18 +440,18 @@ connection.createmodule("filesource", Source())
 
 # Arguments to module - all directories in sys.path
 sysdirs = ",".join(["'%s'" % (x, ) for x in sys.path[1:] if len(x) and os.path.isdir(x)])
-cursor.execute("create virtual table sysfiles using filesource(" + sysdirs + ")")
+connection.execute("create virtual table sysfiles using filesource(" + sysdirs + ")")
 
 #@@CAPTURE
 # Which 3 files are the biggest?
-for size, directory, file in cursor.execute(
+for size, directory, file in connection.execute(
         "select st_size,directory,name from sysfiles order by st_size desc limit 3"):
     print(size, file, directory)
 #@@ENDCAPTURE
 
 # Which 3 files are the oldest?
 #@@CAPTURE
-for ctime, directory, file in cursor.execute("select st_ctime,directory,name from sysfiles order by st_ctime limit 3"):
+for ctime, directory, file in connection.execute("select st_ctime,directory,name from sysfiles order by st_ctime limit 3"):
     print(ctime, file, directory)
 #@@ENDCAPTURE
 
@@ -514,7 +515,7 @@ obfudb = apsw.Connection("file:myobfudb?fast=speed&level=7&warp=on",
                          flags=apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_URI,
                          vfs=obfuvfs.vfsname)
 # Check it works
-obfudb.cursor().execute("create table foo(x,y); insert into foo values(1,2)")
+obfudb.execute("create table foo(x,y); insert into foo values(1,2)")
 
 # Check it really is obfuscated on disk
 #@@CAPTURE
@@ -547,11 +548,11 @@ for limit in ("LENGTH", "COLUMN", "ATTACHED"):
     print(maxname, max)
 
 # Set limit for size of a string
-cursor.execute("create table testlimit(s)")
-cursor.execute("insert into testlimit values(?)", ("x" * 1024, ))  # 1024 char string
+connection.execute("create table testlimit(s)")
+connection.execute("insert into testlimit values(?)", ("x" * 1024, ))  # 1024 char string
 connection.limit(apsw.SQLITE_LIMIT_LENGTH, 1023)  # limit is now 1023
 try:
-    cursor.execute("insert into testlimit values(?)", ("y" * 1024, ))
+    connection.execute("insert into testlimit values(?)", ("y" * 1024, ))
     print("string exceeding limit was inserted")
 except apsw.TooBigError:
     print("Caught toobig exception")
@@ -572,7 +573,7 @@ with memcon.backup("main", connection, "main") as backup:
     backup.step()  # copy whole database in one go
 
 # There will be no disk accesses for this query
-for row in memcon.cursor().execute("select * from s"):
+for row in memcon.execute("select * from s"):
     pass
 
 ###
