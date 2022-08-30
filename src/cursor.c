@@ -386,6 +386,17 @@ APSWCursor_internal_getdescription(APSWCursor *self, int fmtnum)
   for (i = 0; i < ncols; i++)
   {
 #define INDEX self->statement->vdbestatement, i
+/* this is needed because msvc chokes with the ifdef inside */
+#ifdef SQLITE_ENABLE_COLUMN_METADATA
+#define DESCFMT2 Py_BuildValue(description_formats[fmtnum],                            \
+                               convertutf8string, sqlite3_column_name(INDEX),          \
+                               convertutf8string, sqlite3_column_decltype(INDEX),      \
+                               convertutf8string, sqlite3_column_database_name(INDEX), \
+                               convertutf8string, sqlite3_column_table_name(INDEX),    \
+                               convertutf8string, sqlite3_column_origin_name(INDEX))
+#else
+#define DESCFMT2 NULL
+#endif
     INUSE_CALL(
         APSW_FAULT_INJECT(GetDescriptionFail,
                           column = (fmtnum < 2) ? Py_BuildValue(description_formats[fmtnum],
@@ -396,18 +407,7 @@ APSWCursor_internal_getdescription(APSWCursor *self, int fmtnum)
                                                                 Py_None,
                                                                 Py_None,
                                                                 Py_None)
-                                                :
-#ifdef SQLITE_ENABLE_COLUMN_METADATA
-                                                Py_BuildValue(description_formats[fmtnum],
-                                                              convertutf8string, sqlite3_column_name(INDEX),
-                                                              convertutf8string, sqlite3_column_decltype(INDEX),
-                                                              convertutf8string, sqlite3_column_database_name(INDEX),
-                                                              convertutf8string, sqlite3_column_table_name(INDEX),
-                                                              convertutf8string, sqlite3_column_origin_name(INDEX))
-#else
-                                                NULL
-#endif
-                              ,
+                                                : DESCFMT2,
                           column = PyErr_NoMemory()));
 #undef INDEX
     if (!column)
