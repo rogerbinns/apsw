@@ -265,32 +265,53 @@ If you use double quotes and happen to use a string whose contents are
 the same as a table, alias, column etc then unexpected results will
 occur.
 
-Customizing cursors
+.. _customizing_connection_cursor:
+
+Customizing Connections
+=======================
+
+:attr:`apsw.connection_hooks` is a list of callbacks for when
+each :class:`Connection` is created.  They are called in turn, with
+the new connection as the only parameter.
+
+For example if you wanted to add an `executescript` method to
+Connections that is like :meth:`Connection.execute` but ignores all
+returned rows::
+
+  def executescript(self, sql, bindings=None):
+    for _ in self.execute(sql, bindings):
+      pass
+
+  def my_hook(connection):
+    connection.executescript = executescript
+
+  apsw.connection_hooks.append(my_hook)
+
+Customizing Cursors
 ===================
 
-Some developers want to customize the behaviour of cursors.  An
-example would be wanting a :ref:`rowcount <rowcount>` or batching returned rows.
+You can customize the behaviour of cursors.  An example would be
+wanting a :ref:`rowcount <rowcount>` or batching returned rows.
 (These don't make any sense with SQLite but the desire may be to make
 the code source compatible with other database drivers).
 
-APSW does not provide a way to subclass the cursor class or any other
-form of factory.  Consequently you will have to subclass the
-:class:`Connection` and provide an alternate implementation of
-:meth:`Connection.cursor`.  You should encapsulate the APSW cursor -
-ie store it as a member of your cursor class and forward calls as
-appropriate.  The cursor only has two important methods -
-:meth:`Cursor.execute` and :meth:`Cursor.executemany`.
+Set :attr:`Connection.cursor_factory` to any callable, which will be
+called with the connection as the only parameter, and return the
+object to use as a cursor.
 
-If you want to change the rows returned then use a :ref:`row tracer
-<rowtracer>`.  For example you could call
-:meth:`Cursor.getdescription` and return a dictionary instead of a
-tuple::
+For example instead of returning rows as tuples, we can return them as
+dictionaries using a :ref:`row tracer <rowtracer>` with
+:meth:`Cursor.getdescription`::
 
-  def row_factory(cursor, row):
-      return {k[0]: row[i] for i, k in enumerate(cursor.getdescription())}
+  def dict_row(cursor, row):
+    return {k[0]: row[i] for i, k in enumerate(cursor.getdescription())}
 
-  # You can also set this on just a cursor
-  connection.setrowtrace(row_factory)
+  def my_factory(connection):
+    cursor = apsw.Cursor(connection)
+    cursor.setrowtrace(dict_row)
+    return cursor
+
+  connection.cursor_factory = my_factory
 
 
 .. _busyhandling:

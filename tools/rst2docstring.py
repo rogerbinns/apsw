@@ -704,6 +704,8 @@ if __name__ == '__main__':
                         "Cursor.__next__",
                         "Cursor.__iter__",
                         "VFS.excepthook",
+                        "Connection.execute",
+                        "Connection.executemany",
                 }:
                     missing.append(item["name"])
 

@@ -29,6 +29,13 @@ If SQLITE_ENABLE_COLUMN_METADATA is enabled then
 :attr:`Cursor.description_full` is available providing all the column
 metadata available. (:issue:`354`)
 
+:attr:`Connection.cursor_factory` attribute is now present and is used
+when :meth:`Connection.cursor` is called.  Added
+:meth:`Connection.execute` and :meth:`Connection.executemany` which
+automatically obtain the underlying cursor.  See :ref:`customizing
+connections and cursors <customizing_connection_cursor>` in the
+:doc:`tips`.  (:issue:`361`)
+
 3.39.2.0
 ========
 

@@ -836,6 +836,19 @@
 "\n" \
 ":rtype: :class:`Cursor`\n" 
 
+#define  Connection_cursor_factory_DOC ":type: Callable[[Connection], Any]\n" \
+"\n" \
+"Defaults to :class:`Cursor`\n" \
+"\n" \
+"Called with a :class:`Connection` as the only parameter when a cursor\n" \
+"is needed such as by the :meth:`cursor` method, or\n" \
+":meth:`Connection.execute`.\n" \
+"\n" \
+"Note that whatever is returned doesn't have to be an actual\n" \
+":class:`Cursor` instance, and just needs to have the methods present\n" \
+"that are actually called.  These are likely to be `execute`,\n" \
+"`executemany`, `close` etc.\n" 
+
 #define  Connection_db_filename_DOC "db_filename($self,name)\n--\n\nConnection.db_filename(name: str) -> str\n\n" \
 "Returns the full filename of the named (attached) database.  The\n" \
 "main database is named \"main\".\n" \
@@ -919,6 +932,20 @@
 "Behind the scenes the `savepoint\n" \
 "<https://sqlite.org/lang_savepoint.html>`_ functionality introduced in\n" \
 "SQLite 3.6.8 is used to provide nested transactions.\n" 
+
+#define  Connection_execute_DOC "execute($self,statements,bindings=None)\n--\n\nConnection.execute(statements: str, bindings: Optional[Bindings] = None) -> Cursor\n\n" \
+"Executes the statements using the supplied bindings.  Execution\n" \
+"returns when the first row is available or all statements have\n" \
+"completed.  (A cursor is automatically obtained).\n" \
+"\n" \
+"See :meth:`Cursor.execute` for more details.\n" 
+
+#define  Connection_executemany_DOC "executemany($self,statements,sequenceofbindings)\n--\n\nConnection.executemany(statements: str, sequenceofbindings:Sequence[Bindings]) -> Cursor\n\n" \
+"This method is for when you want to execute the same statements over a\n" \
+"sequence of bindings, such as inserting into a database.  (A cursor is\n" \
+"automatically obtained).\n" \
+"\n" \
+"See :meth:`Cursor.executemany` for more details.\n" 
 
 #define  Connection_exit_DOC "__exit__($self)\n--\n\nConnection.__exit__() -> Literal[False]\n\n" \
 "Implements context manager in conjunction with\n" \

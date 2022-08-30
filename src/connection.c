@@ -50,6 +50,8 @@ struct Connection
 
   PyObject *dependents; /* tracking cursors & blobs etc as weakrefs belonging to this connection */
 
+  PyObject *cursor_factory;
+
   /* registered hooks/handlers (NULL or callable) */
   PyObject *busyhandler;
   PyObject *rollbackhook;
@@ -125,6 +127,7 @@ FunctionCBInfo_dealloc(FunctionCBInfo *self)
 static void
 Connection_internal_cleanup(Connection *self)
 {
+  Py_CLEAR(self->cursor_factory);
   Py_CLEAR(self->busyhandler);
   Py_CLEAR(self->rollbackhook);
   Py_CLEAR(self->profile);
@@ -308,6 +311,8 @@ Connection_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
   if (self != NULL)
   {
     self->db = 0;
+    self->cursor_factory = (PyObject *)&APSWCursorType;
+    Py_INCREF(self->cursor_factory);
     self->inuse = 0;
     self->dependents = PyList_New(0);
     self->stmtcache = 0;
@@ -678,17 +683,27 @@ finally:
 static PyObject *
 Connection_cursor(Connection *self)
 {
-  struct APSWCursor *cursor = NULL;
+  PyObject *cursor = NULL;
   PyObject *weakref;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  APSW_FAULT_INJECT(CursorAllocFails, cursor = (struct APSWCursor *)PyObject_CallFunction((PyObject *)&APSWCursorType, "O", self), cursor = (struct APSWCursor *)PyErr_NoMemory());
+  APSW_FAULT_INJECT(CursorAllocFails, cursor = PyObject_CallFunction(self->cursor_factory, "O", self), cursor = PyErr_NoMemory());
   if (!cursor)
+  {
+    AddTraceBackHere(__FILE__, __LINE__, "Connection.cursor", "{s: O}", "cursor_factory", OBJ(self->cursor_factory));
     return NULL;
+  }
 
   weakref = PyWeakref_NewRef((PyObject *)cursor, NULL);
+  if (!weakref)
+  {
+    assert(PyErr_Occurred());
+    AddTraceBackHere(__FILE__, __LINE__, "Connection.cursor", "{s: O}", "cursor", OBJ(cursor));
+    Py_DECREF(cursor);
+    return NULL;
+  }
   PyList_Append(self->dependents, weakref);
   Py_DECREF(weakref);
 
@@ -3558,6 +3573,78 @@ Connection_txn_state(Connection *self, PyObject *args, PyObject *kwds)
   return PyErr_Format(PyExc_ValueError, "unknown schema");
 }
 
+/** .. method:: execute(statements: str, bindings: Optional[Bindings] = None) -> Cursor
+
+    Executes the statements using the supplied bindings.  Execution
+    returns when the first row is available or all statements have
+    completed.  (A cursor is automatically obtained).
+
+    See :meth:`Cursor.execute` for more details.
+*/
+static PyObject *
+Connection_execute(Connection *self, PyObject *args, PyObject *kwds)
+{
+  PyObject *cursor = NULL, *method = NULL, *res = NULL;
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  cursor = PyObject_CallMethod((PyObject *)self, "cursor", NULL);
+  if (!cursor)
+  {
+    AddTraceBackHere(__FILE__, __LINE__, "Connection.execute", "{s: O}", "cursor_factory", OBJ(self->cursor_factory));
+    goto fail;
+  }
+  method = PyObject_GetAttrString(cursor, "execute");
+  if (!method)
+  {
+    assert(PyErr_Occurred());
+    AddTraceBackHere(__FILE__, __LINE__, "Connection.execute", "{s: O}", "cursor", OBJ(cursor));
+    goto fail;
+  }
+  res = PyObject_Call(method, args, kwds);
+
+fail:
+  Py_XDECREF(cursor);
+  Py_XDECREF(method);
+  return res;
+}
+
+/** .. method:: executemany(statements: str, sequenceofbindings:Sequence[Bindings]) -> Cursor
+
+This method is for when you want to execute the same statements over a
+sequence of bindings, such as inserting into a database.  (A cursor is
+automatically obtained).
+
+See :meth:`Cursor.executemany` for more details.
+*/
+static PyObject *
+Connection_executemany(Connection *self, PyObject *args, PyObject *kwds)
+{
+  PyObject *cursor = NULL, *method = NULL, *res = NULL;
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  cursor = PyObject_CallMethod((PyObject *)self, "cursor", NULL);
+  if (!cursor)
+  {
+    AddTraceBackHere(__FILE__, __LINE__, "Connection.executemany", "{s: O}", "cursor_factory", OBJ(self->cursor_factory));
+    goto fail;
+  }
+  method = PyObject_GetAttrString(cursor, "executemany");
+  if (!method)
+  {
+    assert(PyErr_Occurred());
+    AddTraceBackHere(__FILE__, __LINE__, "Connection.executemany ", "{s: O}", "cursor", OBJ(cursor));
+    goto fail;
+  }
+  res = PyObject_Call(method, args, kwds);
+
+fail:
+  Py_XDECREF(cursor);
+  Py_XDECREF(method);
+  return res;
+}
+
 /** .. attribute:: filename
   :type: str
 
@@ -3573,13 +3660,57 @@ Connection_getmainfilename(Connection *self)
   return convertutf8string(sqlite3_db_filename(self->db, "main"));
 }
 
+/** .. attribute:: cursor_factory
+  :type: Callable[[Connection], Any]
+
+  Defaults to :class:`Cursor`
+
+  Called with a :class:`Connection` as the only parameter when a cursor
+  is needed such as by the :meth:`cursor` method, or
+  :meth:`Connection.execute`.
+
+  Note that whatever is returned doesn't have to be an actual
+  :class:`Cursor` instance, and just needs to have the methods present
+  that are actually called.  These are likely to be `execute`,
+  `executemany`, `close` etc.
+*/
+
+static PyObject *
+Connection_get_cursor_factory(Connection *self)
+{
+  /* The cursor factory will be NULL if the Connection has been closed.
+     That also helps with garbage collection and reference cycles.  In
+     that case we return None */
+  if(!self->cursor_factory)
+    Py_RETURN_NONE;
+  Py_INCREF(self->cursor_factory);
+  return self->cursor_factory;
+}
+
+static int
+Connection_set_cursor_factory(Connection *self, PyObject *value)
+{
+  if (!PyCallable_Check(value))
+  {
+    PyErr_Format(PyExc_TypeError, "cursor_factory expected a Callable");
+    return -1;
+  }
+  Py_CLEAR(self->cursor_factory);
+  Py_INCREF(value);
+  self->cursor_factory = value;
+  return 0;
+}
+
 static PyGetSetDef Connection_getseters[] = {
     /* name getter setter doc closure */
     {"filename",
      (getter)Connection_getmainfilename, NULL,
      Connection_filename_DOC, NULL},
+    {"cursor_factory", (getter)Connection_get_cursor_factory,
+     (setter)Connection_set_cursor_factory, Connection_cursor_factory_DOC, NULL},
     /* Sentinel */
-    {NULL, NULL, NULL, NULL, NULL}};
+    {
+        NULL, NULL, NULL, NULL, NULL}};
 
 /** .. attribute:: open_flags
   :type: int
@@ -3609,6 +3740,7 @@ Connection_tp_traverse(Connection *self, visitproc visit, void *arg)
   Py_VISIT(self->rowtrace);
   Py_VISIT(self->vfs);
   Py_VISIT(self->dependents);
+  Py_VISIT(self->cursor_factory);
   return 0;
 }
 
@@ -3715,6 +3847,10 @@ static PyMethodDef Connection_methods[] = {
      Connection_autovacuum_pages_DOC},
     {"db_names", (PyCFunction)Connection_db_names, METH_NOARGS,
      Connection_db_names_DOC},
+    {"execute", (PyCFunction)Connection_execute, METH_VARARGS | METH_KEYWORDS,
+     Connection_execute_DOC},
+    {"executemany", (PyCFunction)Connection_executemany, METH_VARARGS | METH_KEYWORDS,
+     Connection_executemany_DOC},
     {0, 0, 0, 0} /* Sentinel */
 };
 

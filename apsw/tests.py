@@ -470,6 +470,53 @@ class APSW(unittest.TestCase):
             self.assertEqual(expected, self.db.db_names())
 
 
+    def testCursorFactory(self):
+        "Test Connection.cursor_factory"
+        seqbindings=((3,),)*3
+        self.assertEqual(self.db.cursor_factory, apsw.Cursor)
+        for not_callable in (None, apsw, 3):
+            try:
+                self.db.cursor_factory = not_callable
+                1/0
+            except TypeError:
+                pass
+        def error():
+            1/0
+        self.db.cursor_factory = error
+        self.assertRaises(TypeError, self.db.execute, "select 3")
+        self.assertRaises(TypeError, self.db.executemany, "select 3", seqbindings)
+        def error(_):
+            return 3
+        self.db.cursor_factory = error
+        self.assertRaises(TypeError, self.db.execute, "select 3")
+        self.assertRaises(TypeError, self.db.executemany, "select 3")
+        class error:
+            def __init__(self, _):
+                pass
+        self.db.cursor_factory = error
+        self.assertRaises(AttributeError, self.db.execute, "select 3")
+        self.assertRaises(AttributeError, self.db.executemany, "select ?", seqbindings)
+        class inherits(apsw.Cursor): pass
+        self.db.cursor_factory = inherits
+        self.assertEqual(self.db.execute("select 3").fetchall(), self.db.cursor().execute("select 3").fetchall())
+        self.assertEqual(self.db.executemany("select ?", seqbindings).fetchall(), self.db.cursor().executemany("select ?", seqbindings).fetchall())
+
+        # check cursor_factory across closes
+        class big:
+            # make the class consume some memory
+            memory=b"12345678" * 4096
+
+        db2=apsw.Connection("")
+        self.assertEqual(db2.cursor_factory, apsw.Cursor)
+        db2.cursor_factory = big
+        self.assertEqual(db2.cursor_factory, big)
+        db2.close()
+        # factory becomes None when closing
+        self.assertIsNone(db2.cursor_factory)
+        # if this leaks it will show up in memory reports
+        db2.cursor_factory = big
+        del big
+
     def testMemoryLeaks(self):
         "MemoryLeaks: Run with a memory profiler such as valgrind and debug Python"
         # make and toss away a bunch of db objects, cursors, functions etc - if you use memory profiling then
@@ -3841,7 +3888,8 @@ class APSW(unittest.TestCase):
             "Connection": {
                 "skip":
                 ("internal_cleanup", "dealloc", "init", "close", "interrupt", "close_internal", "remove_dependent",
-                 "readonly", "getmainfilename", "db_filename", "traverse", "clear", "tp_traverse"),
+                 "readonly", "getmainfilename", "db_filename", "traverse", "clear", "tp_traverse", "get_cursor_factory",
+                 "set_cursor_factory"),
                 "req": {
                     "use": "CHECK_USE",
                     "closed": "CHECK_CLOSED",
