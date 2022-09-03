@@ -26,9 +26,10 @@ Releases are made to `PyPI <https://pypi.org/project/apsw/>`__
 (install using pip) and `Github
 <https://github.com/rogerbinns/apsw/releases>`__
 
-New releases are sent to the `Python SQLite discussion group
-<http://groups.google.com/group/python-sqlite>`__ and there is an `RSS
-feed from PyPI <https://pypi.org/rss/project/apsw/releases.xml>`__.`
+New release announcements are sent to the `Python SQLite discussion
+group <http://groups.google.com/group/python-sqlite>`__ and there is
+an `RSS feed from PyPI
+<https://pypi.org/rss/project/apsw/releases.xml>`__.`
 
 `Full detailed list of changes <http://rogerbinns.github.io/apsw/changes.html>`__
 
