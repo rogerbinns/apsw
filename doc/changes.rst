@@ -2,8 +2,10 @@ Change History
 **************
 .. currentmodule:: apsw
 
-next
-====
+3.39.2.1
+========
+
+PyPI now includes Python 3.11 builds.
 
 Instead of using scripts, you can now run several tools directly:
 
@@ -36,6 +38,8 @@ when :meth:`Connection.cursor` is called.  Added
 automatically obtain the underlying cursor.  See :ref:`customizing
 connections and cursors <customizing_connection_cursor>` in the
 :doc:`tips`.  (:issue:`361`)
+
+
 
 3.39.2.0
 ========
