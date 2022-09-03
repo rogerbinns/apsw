@@ -470,6 +470,13 @@ class APSW(unittest.TestCase):
             self.assertEqual(expected, self.db.db_names())
 
 
+    def testBackwardsCompatibility(self):
+        "Verifies changed names etc are still accessible through the old ones"
+        # depends on pep562 which is python 3.7 onwards
+        if sys.version_info>=(3, 7):
+            self.assertIs(apsw.main, apsw.shell.main)
+            self.assertIs(apsw.Shell, apsw.shell.Shell)
+
     def testCursorFactory(self):
         "Test Connection.cursor_factory"
         seqbindings=((3,),)*3

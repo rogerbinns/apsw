@@ -1263,6 +1263,22 @@ apsw_log(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   Py_RETURN_NONE;
 }
 
+static PyObject *
+apsw_getattr(PyObject *module, PyObject *name)
+{
+  PyObject *shellmodule = NULL, *res = NULL;
+  const char *cname = PyUnicode_AsUTF8(name);
+
+  if (strcmp(cname, "Shell") && strcmp(cname, "main"))
+    return PyErr_Format(PyExc_AttributeError, "Unknown apsw attribute %R", name);
+
+  shellmodule = PyImport_ImportModule("apsw.shell");
+  if (shellmodule)
+    res = PyObject_GetAttrString(shellmodule, cname);
+  Py_XDECREF(shellmodule);
+  return res;
+}
+
 static PyMethodDef module_methods[] = {
     {"sqlite3_sourceid", (PyCFunction)get_sqlite3_sourceid, METH_NOARGS,
      Apsw_sqlite3_sourceid_DOC},
@@ -1312,7 +1328,8 @@ static PyMethodDef module_methods[] = {
     {"fork_checker", (PyCFunction)apsw_fork_checker, METH_NOARGS,
      Apsw_fork_checker_DOC},
 #endif
-    {0, 0, 0, 0} /* Sentinel */
+    {"__getattr__", (PyCFunction)apsw_getattr, METH_O, "foo"},
+    {  0, 0, 0, 0} /* Sentinel */
 };
 
 static struct PyModuleDef apswmoduledef = {
