@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; APSW 3.39.2.0 documentation</title>
+    <title>Index &#8212; APSW 3.39.2.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -34,7 +34,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Index</a></li> 
       </ul>
     </div>  
@@ -107,6 +107,14 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="exceptions.html#apsw.AbortError">AbortError</a>
 </li>
+      <li><a href="apsw.html#apsw.AggregateFactory">AggregateFactory (class in apsw)</a>
+</li>
+      <li><a href="apsw.html#apsw.AggregateFinal">AggregateFinal (class in apsw)</a>
+</li>
+      <li><a href="apsw.html#apsw.AggregateStep">AggregateStep (class in apsw)</a>
+</li>
+      <li><a href="apsw.html#apsw.AggregateT">AggregateT (class in apsw)</a>
+</li>
       <li>
     apsw
 
@@ -116,6 +124,13 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    apsw.shell
+
+      <ul>
+        <li><a href="shell.html#module-apsw.shell">module</a>
+</li>
+      </ul></li>
       <li><a href="apsw.html#apsw.apswversion">apswversion() (in module apsw)</a>
 </li>
       <li><a href="exceptions.html#apsw.AuthError">AuthError</a>
@@ -138,6 +153,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apsw.html#apsw.Bindings">Bindings (class in apsw)</a>
+</li>
       <li><a href="exceptions.html#apsw.BindingsError">BindingsError</a>
 </li>
       <li><a href="blob.html#apsw.Blob">Blob (class in apsw)</a>
@@ -168,7 +185,7 @@
       </ul></li>
       <li><a href="vtable.html#apsw.VTCursor.Close">Close() (VTCursor method)</a>
 </li>
-      <li><a href="shell.html#apsw.Shell.cmdloop">cmdloop() (Shell method)</a>
+      <li><a href="shell.html#apsw.shell.Shell.cmdloop">cmdloop() (Shell method)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.collationneeded">collationneeded() (Connection method)</a>
 </li>
@@ -181,21 +198,21 @@
       <li><a href="apsw.html#apsw.complete">complete() (in module apsw)</a>
 
       <ul>
-        <li><a href="shell.html#apsw.Shell.complete">(Shell method)</a>
+        <li><a href="shell.html#apsw.shell.Shell.complete">(Shell method)</a>
 </li>
       </ul></li>
-      <li><a href="shell.html#apsw.Shell.complete_command">complete_command() (Shell method)</a>
+      <li><a href="shell.html#apsw.shell.Shell.complete_command">complete_command() (Shell method)</a>
 </li>
-      <li><a href="shell.html#apsw.Shell.complete_sql">complete_sql() (Shell method)</a>
+      <li><a href="shell.html#apsw.shell.Shell.complete_sql">complete_sql() (Shell method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="connection.html#apsw.Connection.config">config() (Connection method)</a>
 
       <ul>
         <li><a href="apsw.html#apsw.config">(in module apsw)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="vtable.html#apsw.VTModule.Connect">Connect() (VTModule method)</a>
 </li>
       <li><a href="connection.html#apsw.Connection">Connection (class in apsw)</a>
@@ -224,6 +241,8 @@
 </li>
       <li><a href="connection.html#apsw.Connection.cursor">cursor() (Connection method)</a>
 </li>
+      <li><a href="connection.html#apsw.Connection.cursor_factory">cursor_factory (Connection attribute)</a>
+</li>
       <li><a href="exceptions.html#apsw.CursorClosedError">CursorClosedError</a>
 </li>
   </ul></td>
@@ -232,13 +251,15 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="shell.html#apsw.Shell.db">db (Shell property)</a>
+      <li><a href="shell.html#apsw.shell.Shell.db">db (Shell property)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.db_filename">db_filename() (Connection method)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.db_names">db_names() (Connection method)</a>
 </li>
       <li><a href="cursor.html#apsw.Cursor.description">description (Cursor attribute)</a>
+</li>
+      <li><a href="cursor.html#apsw.Cursor.description_full">description_full (Cursor attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -248,7 +269,7 @@
 </li>
       <li><a href="vtable.html#apsw.VTTable.Disconnect">Disconnect() (VTTable method)</a>
 </li>
-      <li><a href="shell.html#apsw.Shell.display_timing">display_timing() (Shell method)</a>
+      <li><a href="shell.html#apsw.shell.Shell.display_timing">display_timing() (Shell method)</a>
 </li>
       <li><a href="backup.html#apsw.Backup.done">done (Backup attribute)</a>
 </li>
@@ -264,13 +285,6 @@
 </li>
       <li><a href="apsw.html#apsw.enablesharedcache">enablesharedcache() (in module apsw)</a>
 </li>
-      <li>
-    environment variable
-
-      <ul>
-        <li><a href="execution.html#index-0">PYTHONPATH</a>
-</li>
-      </ul></li>
       <li><a href="vtable.html#apsw.VTCursor.Eof">Eof() (VTCursor method)</a>
 </li>
       <li><a href="exceptions.html#apsw.Error">Error</a>
@@ -281,16 +295,26 @@
         <li><a href="vfs.html#apsw.VFSFile.excepthook">(VFSFile method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#apsw.exceptionfor">exceptionfor() (in module apsw)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="exceptions.html#apsw.ExecTraceAbort">ExecTraceAbort</a>
 </li>
-      <li><a href="cursor.html#apsw.Cursor.execute">execute() (Cursor method)</a>
+      <li><a href="apsw.html#apsw.ExecTracer">ExecTracer (class in apsw)</a>
 </li>
-      <li><a href="cursor.html#apsw.Cursor.executemany">executemany() (Cursor method)</a>
+      <li><a href="connection.html#apsw.Connection.execute">execute() (Connection method)</a>
+
+      <ul>
+        <li><a href="cursor.html#apsw.Cursor.execute">(Cursor method)</a>
 </li>
+      </ul></li>
+      <li><a href="connection.html#apsw.Connection.executemany">executemany() (Connection method)</a>
+
+      <ul>
+        <li><a href="cursor.html#apsw.Cursor.executemany">(Cursor method)</a>
+</li>
+      </ul></li>
       <li><a href="exceptions.html#apsw.ExecutionCompleteError">ExecutionCompleteError</a>
 </li>
       <li><a href="exceptions.html#apsw.Error.extendedresult">extendedresult (Error attribute)</a>
@@ -321,7 +345,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="backup.html#apsw.Backup.finish">finish() (Backup method)</a>
 </li>
-      <li><a href="shell.html#apsw.Shell.fixup_backslashes">fixup_backslashes() (Shell method)</a>
+      <li><a href="shell.html#apsw.shell.Shell.fixup_backslashes">fixup_backslashes() (Shell method)</a>
 </li>
       <li><a href="apsw.html#apsw.fork_checker">fork_checker() (in module apsw)</a>
 </li>
@@ -339,11 +363,11 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="shell.html#apsw.Shell.get_resource_usage">get_resource_usage() (Shell method)</a>
+      <li><a href="shell.html#apsw.shell.Shell.get_resource_usage">get_resource_usage() (Shell method)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.getautocommit">getautocommit() (Connection method)</a>
 </li>
-      <li><a href="shell.html#apsw.Shell.getcompleteline">getcompleteline() (Shell method)</a>
+      <li><a href="shell.html#apsw.shell.Shell.getcompleteline">getcompleteline() (Shell method)</a>
 </li>
       <li><a href="cursor.html#apsw.Cursor.getconnection">getconnection() (Cursor method)</a>
 </li>
@@ -357,7 +381,7 @@
         <li><a href="cursor.html#apsw.Cursor.getexectrace">(Cursor method)</a>
 </li>
       </ul></li>
-      <li><a href="shell.html#apsw.Shell.getline">getline() (Shell method)</a>
+      <li><a href="shell.html#apsw.shell.Shell.getline">getline() (Shell method)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.getrowtrace">getrowtrace() (Connection method)</a>
 
@@ -371,11 +395,11 @@
 <h2 id="H">H</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="shell.html#apsw.Shell.handle_exception">handle_exception() (Shell method)</a>
+      <li><a href="shell.html#apsw.shell.Shell.handle_exception">handle_exception() (Shell method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="shell.html#apsw.Shell.handle_interrupt">handle_interrupt() (Shell method)</a>
+      <li><a href="shell.html#apsw.shell.Shell.handle_interrupt">handle_interrupt() (Shell method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -435,16 +459,16 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="apsw.html#apsw.main">main() (in module apsw)</a>
+      <li><a href="shell.html#apsw.shell.main">main() (in module apsw.shell)</a>
 </li>
       <li><a href="apsw.html#apsw.memoryhighwater">memoryhighwater() (in module apsw)</a>
 </li>
       <li><a href="apsw.html#apsw.memoryused">memoryused() (in module apsw)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="exceptions.html#apsw.MismatchError">MismatchError</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="exceptions.html#apsw.MisuseError">MisuseError</a>
 </li>
       <li>
@@ -452,6 +476,8 @@
 
       <ul>
         <li><a href="apsw.html#module-apsw">apsw</a>
+</li>
+        <li><a href="shell.html#module-apsw.shell">apsw.shell</a>
 </li>
       </ul></li>
   </ul></td>
@@ -498,27 +524,27 @@
 </li>
       <li><a href="exceptions.html#apsw.PermissionsError">PermissionsError</a>
 </li>
-      <li><a href="shell.html#apsw.Shell.pop_input">pop_input() (Shell method)</a>
+      <li><a href="shell.html#apsw.shell.Shell.pop_input">pop_input() (Shell method)</a>
 </li>
-      <li><a href="shell.html#apsw.Shell.pop_output">pop_output() (Shell method)</a>
+      <li><a href="shell.html#apsw.shell.Shell.pop_output">pop_output() (Shell method)</a>
 </li>
-      <li><a href="shell.html#apsw.Shell.process_args">process_args() (Shell method)</a>
+      <li><a href="shell.html#apsw.shell.Shell.process_args">process_args() (Shell method)</a>
 </li>
-      <li><a href="shell.html#apsw.Shell.process_command">process_command() (Shell method)</a>
+      <li><a href="shell.html#apsw.shell.Shell.process_command">process_command() (Shell method)</a>
 </li>
-      <li><a href="shell.html#apsw.Shell.process_complete_line">process_complete_line() (Shell method)</a>
+      <li><a href="shell.html#apsw.shell.Shell.process_complete_line">process_complete_line() (Shell method)</a>
 </li>
-      <li><a href="shell.html#apsw.Shell.process_sql">process_sql() (Shell method)</a>
-</li>
-      <li><a href="shell.html#apsw.Shell.process_unknown_args">process_unknown_args() (Shell method)</a>
+      <li><a href="shell.html#apsw.shell.Shell.process_sql">process_sql() (Shell method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="shell.html#apsw.shell.Shell.process_unknown_args">process_unknown_args() (Shell method)</a>
+</li>
       <li><a href="exceptions.html#apsw.ProtocolError">ProtocolError</a>
 </li>
-      <li><a href="shell.html#apsw.Shell.push_input">push_input() (Shell method)</a>
+      <li><a href="shell.html#apsw.shell.Shell.push_input">push_input() (Shell method)</a>
 </li>
-      <li><a href="shell.html#apsw.Shell.push_output">push_output() (Shell method)</a>
+      <li><a href="shell.html#apsw.shell.Shell.push_output">push_output() (Shell method)</a>
 </li>
       <li>
     Python Enhancement Proposals
@@ -533,8 +559,6 @@
         <li><a href="build.html#index-0">PEP 370</a>, <a href="build.html#index-1">[1]</a>
 </li>
       </ul></li>
-      <li><a href="execution.html#index-0">PYTHONPATH</a>
-</li>
   </ul></td>
 </tr></table>
 
@@ -553,10 +577,10 @@
 </li>
       <li><a href="exceptions.html#apsw.ReadOnlyError">ReadOnlyError</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#apsw.releasememory">releasememory() (in module apsw)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="backup.html#apsw.Backup.remaining">remaining (Backup attribute)</a>
 </li>
       <li><a href="vtable.html#apsw.VTTable.Rename">Rename() (VTTable method)</a>
@@ -569,19 +593,23 @@
 </li>
       <li><a href="vtable.html#apsw.VTCursor.Rowid">Rowid() (VTCursor method)</a>
 </li>
+      <li><a href="apsw.html#apsw.RowTracer">RowTracer (class in apsw)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apsw.html#apsw.ScalarProtocol">ScalarProtocol (class in apsw)</a>
+</li>
       <li><a href="exceptions.html#apsw.SchemaChangeError">SchemaChangeError</a>
 </li>
       <li><a href="blob.html#apsw.Blob.seek">seek() (Blob method)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.serialize">serialize() (Connection method)</a>
 </li>
-      <li><a href="shell.html#apsw.Shell.set_encoding">set_encoding() (Shell method)</a>
+      <li><a href="shell.html#apsw.shell.Shell.set_encoding">set_encoding() (Shell method)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.set_last_insert_rowid">set_last_insert_rowid() (Connection method)</a>
 </li>
@@ -615,9 +643,9 @@
 </li>
       <li><a href="connection.html#apsw.Connection.setwalhook">setwalhook() (Connection method)</a>
 </li>
-      <li><a href="shell.html#apsw.Shell">Shell (class in apsw)</a>
+      <li><a href="shell.html#apsw.shell.Shell">Shell (class in apsw.shell)</a>
 </li>
-      <li><a href="shell.html#apsw.Shell.Error">Shell.Error</a>
+      <li><a href="shell.html#apsw.shell.Shell.Error">Shell.Error</a>
 </li>
       <li><a href="apsw.html#apsw.shutdown">shutdown() (in module apsw)</a>
 </li>
@@ -637,17 +665,17 @@
 </li>
       <li><a href="backup.html#index-4">sqlite3_backup_step</a>
 </li>
-      <li><a href="cursor.html#index-0">sqlite3_bind_blob</a>
+      <li><a href="cursor.html#index-1">sqlite3_bind_blob</a>
 </li>
-      <li><a href="cursor.html#index-0">sqlite3_bind_double</a>
+      <li><a href="cursor.html#index-1">sqlite3_bind_double</a>
 </li>
-      <li><a href="cursor.html#index-0">sqlite3_bind_int64</a>
+      <li><a href="cursor.html#index-1">sqlite3_bind_int64</a>
 </li>
-      <li><a href="cursor.html#index-0">sqlite3_bind_null</a>
+      <li><a href="cursor.html#index-1">sqlite3_bind_null</a>
 </li>
-      <li><a href="cursor.html#index-0">sqlite3_bind_text</a>
+      <li><a href="cursor.html#index-1">sqlite3_bind_text</a>
 </li>
-      <li><a href="cursor.html#index-0">sqlite3_bind_zeroblob</a>
+      <li><a href="cursor.html#index-1">sqlite3_bind_zeroblob</a>
 </li>
       <li><a href="blob.html#index-2">sqlite3_blob_bytes</a>
 </li>
@@ -671,9 +699,15 @@
 </li>
       <li><a href="connection.html#index-7">sqlite3_collation_needed</a>
 </li>
-      <li><a href="cursor.html#index-1">sqlite3_column_decltype</a>
+      <li><a href="cursor.html#index-0">sqlite3_column_database_name</a>
 </li>
-      <li><a href="cursor.html#index-1">sqlite3_column_name</a>
+      <li><a href="cursor.html#index-0">sqlite3_column_decltype</a>, <a href="cursor.html#index-2">[1]</a>
+</li>
+      <li><a href="cursor.html#index-0">sqlite3_column_name</a>, <a href="cursor.html#index-2">[1]</a>
+</li>
+      <li><a href="cursor.html#index-0">sqlite3_column_origin_name</a>
+</li>
+      <li><a href="cursor.html#index-0">sqlite3_column_table_name</a>
 </li>
       <li><a href="connection.html#index-31">sqlite3_commit_hook</a>
 </li>
@@ -689,10 +723,10 @@
 </li>
       <li><a href="connection.html#index-11">sqlite3_create_module_v2</a>
 </li>
-      <li><a href="connection.html#index-8">sqlite3_db_config</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="connection.html#index-8">sqlite3_db_config</a>
+</li>
       <li><a href="connection.html#index-13">sqlite3_db_filename</a>, <a href="connection.html#index-18">[1]</a>
 </li>
       <li><a href="connection.html#index-14">sqlite3_db_name</a>
@@ -737,7 +771,7 @@
 </li>
       <li><a href="connection.html#index-24">sqlite3_overload_function</a>
 </li>
-      <li><a href="cursor.html#index-0">sqlite3_prepare_v2</a>
+      <li><a href="cursor.html#index-1">sqlite3_prepare_v2</a>
 </li>
       <li><a href="connection.html#index-32">sqlite3_profile</a>
 </li>
@@ -765,7 +799,7 @@
 </li>
       <li><a href="apsw.html#index-15">sqlite3_status64</a>
 </li>
-      <li><a href="cursor.html#index-0">sqlite3_step</a>
+      <li><a href="cursor.html#index-1">sqlite3_step</a>
 </li>
       <li><a href="connection.html#index-38">sqlite3_total_changes64</a>
 </li>
@@ -796,6 +830,10 @@
       <li><a href="apsw.html#apsw.SQLITE_VERSION_NUMBER">SQLITE_VERSION_NUMBER (in module apsw)</a>
 </li>
       <li><a href="apsw.html#apsw.sqlitelibversion">sqlitelibversion() (in module apsw)</a>
+</li>
+      <li><a href="apsw.html#apsw.SQLiteValue">SQLiteValue (class in apsw)</a>
+</li>
+      <li><a href="apsw.html#apsw.SQLiteValues">SQLiteValues (class in apsw)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.status">status() (Connection method)</a>
 
@@ -849,7 +887,7 @@
 </li>
       <li><a href="vfs.html#apsw.URIFilename">URIFilename (class in apsw)</a>
 </li>
-      <li><a href="shell.html#apsw.Shell.usage">usage() (Shell method)</a>
+      <li><a href="shell.html#apsw.shell.Shell.usage">usage() (Shell method)</a>
 </li>
       <li><a href="apsw.html#apsw.using_amalgamation">using_amalgamation (in module apsw)</a>
 </li>
@@ -892,7 +930,7 @@
       <li><a href="blob.html#apsw.Blob.write">write() (Blob method)</a>
 
       <ul>
-        <li><a href="shell.html#apsw.Shell.write">(Shell method)</a>
+        <li><a href="shell.html#apsw.shell.Shell.write">(Shell method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -999,14 +1037,14 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Index</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Aug 03, 2022.
+      Last updated on Sep 04, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

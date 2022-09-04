@@ -2,6 +2,45 @@ Change History
 **************
 .. currentmodule:: apsw
 
+3.39.2.1
+========
+
+PyPI now includes Python 3.11 builds.
+
+Instead of using scripts, you can now run several tools directly:
+
+* :ref:`tests <testing>`:  python3 **-m apsw.tests** *[options]*
+
+* :ref:`tracer <apswtrace>`:  python3 **-m apsw.trace** *[options]*
+
+* :ref:`speed tester <speedtest>`:  python3 **-m apsw.speedtest** *[options]*
+
+* :ref:`shell <shell>`:  python3 **-m apsw** *[options]*
+
+The shell class has moved from apsw.Shell to :class:`apsw.shell.Shell`
+(:issue:`356`).  You can still reference it via the old name (ie
+existing code will not break, except on Python 3.6).
+
+:ref:`shell`: On Windows the native console support for colour is now used
+(previously a third party module was supported).
+
+You :ref:`can use --definevalues in setup.py build_ext
+<setup_build_flags>` to provide compiler defines used for configuring
+SQLite. (:issue:`357`)
+
+If SQLITE_ENABLE_COLUMN_METADATA is enabled then
+:attr:`Cursor.description_full` is available providing all the column
+metadata available. (:issue:`354`)
+
+:attr:`Connection.cursor_factory` attribute is now present and is used
+when :meth:`Connection.cursor` is called.  Added
+:meth:`Connection.execute` and :meth:`Connection.executemany` which
+automatically obtain the underlying cursor.  See :ref:`customizing
+connections and cursors <customizing_connection_cursor>` in the
+:doc:`tips`.  (:issue:`361`)
+
+
+
 3.39.2.0
 ========
 

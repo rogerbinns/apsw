@@ -54,15 +54,15 @@ Connection class
   transaction is rolled back, otherwise it is committed.  For example::
 
     with connection:
-        connection.cursor().execute("....")
+        connection.execute("....")
         with connection:
             # nested is supported
             call_function(connection)
-            connection.cursor().execute("...")
+            connection.execute("...")
             with connection as db:
                 # You can also use 'as'
                 call_function2(db)
-                db.cursor().execute("...")
+                db.execute("...")
 
   Behind the scenes the `savepoint
   <https://sqlite.org/lang_savepoint.html>`_ functionality introduced in
@@ -336,6 +336,20 @@ Connection class
 
   :rtype: :class:`Cursor`
 
+.. attribute:: Connection.cursor_factory
+  :type: Callable[[Connection], Any]
+
+  Defaults to :class:`Cursor`
+
+  Called with a :class:`Connection` as the only parameter when a cursor
+  is needed such as by the :meth:`cursor` method, or
+  :meth:`Connection.execute`.
+
+  Note that whatever is returned doesn't have to be an actual
+  :class:`Cursor` instance, and just needs to have the methods present
+  that are actually called.  These are likely to be `execute`,
+  `executemany`, `close` etc.
+
 .. index:: sqlite3_db_filename
 
 .. method:: Connection.db_filename(name: str) -> str
@@ -387,6 +401,22 @@ Connection class
     * :meth:`~Connection.loadextension`
 
   Calls: `sqlite3_enable_load_extension <https://sqlite.org/c3ref/enable_load_extension.html>`__
+
+.. method:: Connection.execute(statements: str, bindings: Optional[Bindings] = None) -> Cursor
+
+    Executes the statements using the supplied bindings.  Execution
+    returns when the first row is available or all statements have
+    completed.  (A cursor is automatically obtained).
+
+    See :meth:`Cursor.execute` for more details.
+
+.. method:: Connection.executemany(statements: str, sequenceofbindings:Sequence[Bindings]) -> Cursor
+
+This method is for when you want to execute the same statements over a
+sequence of bindings, such as inserting into a database.  (A cursor is
+automatically obtained).
+
+See :meth:`Cursor.executemany` for more details.
 
 .. index:: sqlite3_file_control
 

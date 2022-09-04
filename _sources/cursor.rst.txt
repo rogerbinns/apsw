@@ -154,6 +154,25 @@ Cursor class
     same as :meth:`getdescription` but with 5 Nones appended.  See
     also :issue:`131`.
 
+.. index:: sqlite3_column_name, sqlite3_column_decltype, sqlite3_column_database_name, sqlite3_column_table_name, sqlite3_column_origin_name
+
+.. attribute:: Cursor.description_full
+  :type: Tuple[Tuple[str, str, str, str, str], ...]
+
+Only present if SQLITE_ENABLE_COLUMN_METADATA was defined at
+compile time.
+
+Returns all information about the query result columns. In
+addition to the name and declared type, you also get the database
+name, table name, and origin name.
+
+Calls:
+  * `sqlite3_column_name <https://sqlite.org/c3ref/column_name.html>`__
+  * `sqlite3_column_decltype <https://sqlite.org/c3ref/column_decltype.html>`__
+  * `sqlite3_column_database_name <https://sqlite.org/c3ref/column_database_name.html>`__
+  * `sqlite3_column_table_name <https://sqlite.org/c3ref/column_database_name.html>`__
+  * `sqlite3_column_origin_name <https://sqlite.org/c3ref/column_database_name.html>`__
+
 .. index:: sqlite3_prepare_v2, sqlite3_step, sqlite3_bind_int64, sqlite3_bind_null, sqlite3_bind_text, sqlite3_bind_double, sqlite3_bind_blob, sqlite3_bind_zeroblob
 
 .. method:: Cursor.execute(statements: str, bindings: Optional[Bindings] = None) -> Cursor

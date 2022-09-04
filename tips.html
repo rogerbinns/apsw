@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Tips &#8212; APSW 3.39.2.0 documentation</title>
+    <title>Tips &#8212; APSW 3.39.2.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="index.html" title="APSW documentation"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Tips</a></li> 
       </ul>
     </div>  
@@ -67,7 +67,8 @@ OS).  Despite these changes, SQLite retains backwards and forwards
 compatibility with the <a class="reference external" href="https://www.sqlite.org/onefile.html">file format</a> and APIs.</p>
 <p>APSW wraps the <a class="reference external" href="https://www.sqlite.org/c3ref/intro.html">SQLite C API</a>.  That means when SQLite
 adds new constant or API, then so does APSW.  You can think of APSW as
-the Python expression of SQLite’s C API.</p>
+the Python expression of SQLite’s C API.  You can <a class="reference external" href="genindex.html#S">lookup</a> SQLite APIs to find which APSW functions and
+attributes call them.</p>
 <p>Consequently the APSW version mirrors the SQLite version.  You can use
 APSW with the corresponding version of SQLite, or any newer version of
 SQLite.  You could use the original 2004 release of APSW with today’s
@@ -99,18 +100,18 @@ survive a power cycle.  This will <a class="reference external" href="https://ww
 transactions</a>.</p>
 <p>If you do nothing, then each statement is a single transaction:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># this will be 3 separate transactions</span>
-<span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
-<span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
-<span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
+<span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
+<span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
+<span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>You can use BEGIN/END to set the transaction boundary:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># this will be one transaction</span>
-<span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;BEGIN&quot;</span><span class="p">)</span>
-<span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
-<span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
-<span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
-<span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;COMMIT&quot;</span><span class="p">)</span>
+<span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;BEGIN&quot;</span><span class="p">)</span>
+<span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
+<span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
+<span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
+<span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;COMMIT&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>However that is extra effort, and also requires error handling.  For example
@@ -122,9 +123,9 @@ will be automatically started, and committed on success or rolled back if
 exceptions occur:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># this will be one transaction with automatic commit and rollback</span>
 <span class="k">with</span> <span class="n">db</span><span class="p">:</span>
-    <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
-    <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
-    <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT ...&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>There are <a class="reference external" href="https://www.sqlite.org/lang_transaction.html">technical details</a>
@@ -211,26 +212,26 @@ and update your schema.  The hard way of doing this is to test for the
 existence of tables and their columns, and doing that maintenance
 programmatically.  The easy way is to use <a class="reference external" href="https://sqlite.org/pragma.html#pragma_user_version">pragma user_version</a> as in this example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">user_version</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
-  <span class="k">return</span> <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;pragma user_version&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+  <span class="k">return</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;pragma user_version&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
 
 <span class="k">def</span> <span class="nf">ensure_schema</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
   <span class="k">if</span> <span class="n">user_version</span><span class="p">(</span><span class="n">db</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
     <span class="k">with</span> <span class="n">db</span><span class="p">:</span>
-      <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+      <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">        CREATE TABLE IF NOT EXISTS foo(x,y,z);</span>
 <span class="s2">        CREATE TABLE IF NOT EXISTS bar(x,y,z);</span>
 <span class="s2">        PRAGMA user_version=1;&quot;&quot;&quot;</span><span class="p">)</span>
 
   <span class="k">if</span> <span class="n">user_version</span><span class="p">(</span><span class="n">db</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
     <span class="k">with</span> <span class="n">db</span><span class="p">:</span>
-      <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+      <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">      CREATE TABLE IF NOT EXISTS baz(x,y,z);</span>
 <span class="s2">      CREATE INDEX ....</span>
 <span class="s2">      PRAGMA user_version=2;&quot;&quot;&quot;</span><span class="p">)</span>
 
   <span class="k">if</span> <span class="n">user_version</span><span class="p">(</span><span class="n">con</span><span class="p">)</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
     <span class="k">with</span> <span class="n">db</span><span class="p">:</span>
-      <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+      <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">      ALTER TABLE .....</span>
 <span class="s2">      PRAGMA user_version=3;&quot;&quot;&quot;</span><span class="p">)</span>
 </pre></div>
@@ -275,27 +276,46 @@ named <code class="docutils literal notranslate"><span class="pre">a</span> <spa
 the same as a table, alias, column etc then unexpected results will
 occur.</p>
 </section>
+<section id="customizing-connections">
+<span id="customizing-connection-cursor"></span><h2>Customizing Connections<a class="headerlink" href="#customizing-connections" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="apsw.html#apsw.connection_hooks" title="apsw.connection_hooks"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.connection_hooks</span></code></a> is a list of callbacks for when
+each <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> is created.  They are called in turn, with
+the new connection as the only parameter.</p>
+<p>For example if you wanted to add an <cite>executescript</cite> method to
+Connections that is like <a class="reference internal" href="connection.html#apsw.Connection.execute" title="apsw.Connection.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.execute()</span></code></a> but ignores all
+returned rows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">executescript</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">bindings</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+  <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">bindings</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="k">def</span> <span class="nf">my_hook</span><span class="p">(</span><span class="n">connection</span><span class="p">):</span>
+  <span class="n">connection</span><span class="o">.</span><span class="n">executescript</span> <span class="o">=</span> <span class="n">executescript</span>
+
+<span class="n">apsw</span><span class="o">.</span><span class="n">connection_hooks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">my_hook</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 <section id="customizing-cursors">
-<h2>Customizing cursors<a class="headerlink" href="#customizing-cursors" title="Permalink to this headline">¶</a></h2>
-<p>Some developers want to customize the behaviour of cursors.  An
-example would be wanting a <a class="reference internal" href="dbapi.html#rowcount"><span class="std std-ref">rowcount</span></a> or batching returned rows.
+<h2>Customizing Cursors<a class="headerlink" href="#customizing-cursors" title="Permalink to this headline">¶</a></h2>
+<p>You can customize the behaviour of cursors.  An example would be
+wanting a <a class="reference internal" href="dbapi.html#rowcount"><span class="std std-ref">rowcount</span></a> or batching returned rows.
 (These don’t make any sense with SQLite but the desire may be to make
 the code source compatible with other database drivers).</p>
-<p>APSW does not provide a way to subclass the cursor class or any other
-form of factory.  Consequently you will have to subclass the
-<a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> and provide an alternate implementation of
-<a class="reference internal" href="connection.html#apsw.Connection.cursor" title="apsw.Connection.cursor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.cursor()</span></code></a>.  You should encapsulate the APSW cursor -
-ie store it as a member of your cursor class and forward calls as
-appropriate.  The cursor only has two important methods -
-<a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> and <a class="reference internal" href="cursor.html#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.executemany()</span></code></a>.</p>
-<p>If you want to change the rows returned then use a <a class="reference internal" href="execution.html#rowtracer"><span class="std std-ref">row tracer</span></a>.  For example you could call
-<a class="reference internal" href="cursor.html#apsw.Cursor.getdescription" title="apsw.Cursor.getdescription"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.getdescription()</span></code></a> and return a dictionary instead of a
-tuple:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">row_factory</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">row</span><span class="p">):</span>
-    <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">getdescription</span><span class="p">())}</span>
+<p>Set <a class="reference internal" href="connection.html#apsw.Connection.cursor_factory" title="apsw.Connection.cursor_factory"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Connection.cursor_factory</span></code></a> to any callable, which will be
+called with the connection as the only parameter, and return the
+object to use as a cursor.</p>
+<p>For example instead of returning rows as tuples, we can return them as
+dictionaries using a <a class="reference internal" href="execution.html#rowtracer"><span class="std std-ref">row tracer</span></a> with
+<a class="reference internal" href="cursor.html#apsw.Cursor.getdescription" title="apsw.Cursor.getdescription"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.getdescription()</span></code></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">dict_row</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">row</span><span class="p">):</span>
+  <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">getdescription</span><span class="p">())}</span>
 
-<span class="c1"># You can also set this on just a cursor</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">setrowtrace</span><span class="p">(</span><span class="n">row_factory</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">my_factory</span><span class="p">(</span><span class="n">connection</span><span class="p">):</span>
+  <span class="n">cursor</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">(</span><span class="n">connection</span><span class="p">)</span>
+  <span class="n">cursor</span><span class="o">.</span><span class="n">setrowtrace</span><span class="p">(</span><span class="n">dict_row</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">cursor</span>
+
+<span class="n">connection</span><span class="o">.</span><span class="n">cursor_factory</span> <span class="o">=</span> <span class="n">my_factory</span>
 </pre></div>
 </div>
 </section>
@@ -329,7 +349,7 @@ Consequently you will have to do your own busy handling.  (<a class="reference e
 ticket</a>,
 <a class="reference external" href="https://github.com/rogerbinns/apsw/issues/59">APSW issue 59</a>)</p>
 <p>The amount of memory and I/O saved is trivial compared to Python’s
-overal memory and I/O consumption.  You may also need to tune the
+overall memory and I/O consumption.  You may also need to tune the
 shared cache’s memory back up to what it would have been with separate
 connections to get the same performance.</p>
 <p>The shared cache mode is targeted at embedded systems where every
@@ -338,13 +358,13 @@ have kilobytes of memory available for SQLite.</p>
 </section>
 <section id="write-ahead-logging">
 <span id="wal"></span><h2>Write Ahead Logging<a class="headerlink" href="#write-ahead-logging" title="Permalink to this headline">¶</a></h2>
-<p>SQLite 3.7 introduces <a class="reference external" href="https://sqlite.org/wal.html">write ahead logging</a> which has several benefits, but
+<p>SQLite 3.7 introduced <a class="reference external" href="https://sqlite.org/wal.html">write ahead logging</a> which has several benefits, but
 also some drawbacks as the page documents.  WAL mode is off by
 default.  In addition to turning it on manually for each database, you
 can also turn it on for all opened databases by using
 <a class="reference internal" href="apsw.html#apsw.connection_hooks" title="apsw.connection_hooks"><code class="xref py py-attr docutils literal notranslate"><span class="pre">connection_hooks</span></code></a>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">setwal</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
-    <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;pragma journal_mode=wal&quot;</span><span class="p">)</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;pragma journal_mode=wal&quot;</span><span class="p">)</span>
     <span class="c1"># custom auto checkpoint interval (use zero to disable)</span>
     <span class="n">db</span><span class="o">.</span><span class="n">wal_autocheckpoint</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 
@@ -383,7 +403,8 @@ indirect call via Python.)</p>
 <li><a class="reference internal" href="#managing-and-updating-your-schema">Managing and updating your schema</a></li>
 <li><a class="reference internal" href="#parsing-sql">Parsing SQL</a></li>
 <li><a class="reference internal" href="#unexpected-behaviour">Unexpected behaviour</a></li>
-<li><a class="reference internal" href="#customizing-cursors">Customizing cursors</a></li>
+<li><a class="reference internal" href="#customizing-connections">Customizing Connections</a></li>
+<li><a class="reference internal" href="#customizing-cursors">Customizing Cursors</a></li>
 <li><a class="reference internal" href="#busy-handling">Busy handling</a></li>
 <li><a class="reference internal" href="#database-schema">Database schema</a></li>
 <li><a class="reference internal" href="#shared-cache-mode">Shared Cache Mode</a></li>
@@ -434,14 +455,14 @@ indirect call via Python.)</p>
         <li class="right" >
           <a href="index.html" title="APSW documentation"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Tips</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Aug 03, 2022.
+      Last updated on Sep 04, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

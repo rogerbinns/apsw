@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Example &#8212; APSW 3.39.2.0 documentation</title>
+    <title>Example &#8212; APSW 3.39.2.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="tips.html" title="Tips"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Example</a></li> 
       </ul>
     </div>  
@@ -59,6 +59,8 @@
 overview of all the things that can be done.  Also included is output
 so you can see what gets printed when you run the code.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
@@ -80,7 +82,7 @@ so you can see what gets printed when you run the code.</p>
 </pre></div>
 </div>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>|       Using APSW file /space/apsw/apsw/__init__.cpython-310-x86_64-linux-gnu.so
-|          APSW version 3.39.2.0
+|          APSW version 3.39.2.1
 |    SQLite lib version 3.39.2
 | SQLite header version 3039002
 </pre></div>
@@ -90,22 +92,22 @@ so you can see what gets printed when you run the code.</p>
 <span class="c1">###</span>
 
 <span class="n">connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;dbfile&quot;</span><span class="p">)</span>
-<span class="n">cursor</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
 </pre></div>
 </div>
 <div class="highlight-python notranslate" id="example-cursor"><div class="highlight"><pre><span></span><span class="c1">###</span>
-<span class="c1">### simple statement</span>
+<span class="c1">### simple statement with a cursor</span>
 <span class="c1">###</span>
 
+<span class="n">cursor</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
 <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table foo(x,y,z)&quot;</span><span class="p">)</span>
 
 <span class="c1">###</span>
 <span class="c1">### using different types</span>
 <span class="c1">###</span>
 
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo values(?,?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>  <span class="c1"># integer, float/real, Null</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo(x) values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;abc&quot;</span><span class="p">,</span> <span class="p">))</span>  <span class="c1"># string (note trailing comma to ensure tuple!)</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo values(?,?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>  <span class="c1"># integer, float/real, Null</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo(x) values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;abc&quot;</span><span class="p">,</span> <span class="p">))</span>  <span class="c1"># string (note trailing comma to ensure tuple!)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
     <span class="s2">&quot;insert into foo(x) values(?)&quot;</span><span class="p">,</span>  <span class="c1"># a blob (binary data)</span>
     <span class="p">(</span><span class="sa">b</span><span class="s2">&quot;abc</span><span class="se">\xff\xfe</span><span class="s2">&quot;</span><span class="p">,</span> <span class="p">))</span>
 
@@ -113,11 +115,11 @@ so you can see what gets printed when you run the code.</p>
 <span class="c1">### multiple statements</span>
 <span class="c1">###</span>
 
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
     <span class="s2">&quot;delete from foo; insert into foo values(1,2,3); create table bar(a,b,c) ; insert into foo values(4, &#39;five&#39;, 6.0)&quot;</span><span class="p">)</span>
 
 <span class="c1">###</span>
-<span class="c1">### iterator</span>
+<span class="c1">### iterator using cursor</span>
 <span class="c1">###</span>
 
 <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select x,y,z from foo&quot;</span><span class="p">):</span>
@@ -128,21 +130,21 @@ so you can see what gets printed when you run the code.</p>
 <span class="c1">### iterator - multiple statements</span>
 <span class="c1">###</span>
 
-<span class="k">for</span> <span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select x,y,z from foo ; select a,b,c from bar&quot;</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select x,y,z from foo ; select a,b,c from bar&quot;</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">o</span><span class="p">)</span>
 
 <span class="c1">###</span>
 <span class="c1">### bindings - sequence</span>
 <span class="c1">###</span>
 
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo values(?,?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="s1">&#39;eight&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo values(?,?,?1)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;one&#39;</span><span class="p">,</span> <span class="s1">&#39;two&#39;</span><span class="p">))</span>  <span class="c1"># nb sqlite does the numbers from 1</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo values(?,?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="s1">&#39;eight&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo values(?,?,?1)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;one&#39;</span><span class="p">,</span> <span class="s1">&#39;two&#39;</span><span class="p">))</span>  <span class="c1"># nb sqlite does the numbers from 1</span>
 
 <span class="c1">###</span>
 <span class="c1">### bindings - dictionary</span>
 <span class="c1">###</span>
 
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo values(:alpha, :beta, :gamma)&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;beta&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;gamma&#39;</span><span class="p">:</span> <span class="s1">&#39;three&#39;</span><span class="p">})</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo values(:alpha, :beta, :gamma)&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;beta&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;gamma&#39;</span><span class="p">:</span> <span class="s1">&#39;three&#39;</span><span class="p">})</span>
 </pre></div>
 </div>
 <div class="highlight-python notranslate" id="example-exectrace"><div class="highlight"><pre><span></span><span class="c1">###</span>
@@ -197,10 +199,10 @@ so you can see what gets printed when you run the code.</p>
 
 <span class="c1"># (This will work correctly with multiple statements, as well as statements that</span>
 <span class="c1"># return data.  The second argument can be anything that is iterable.)</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;insert into foo (x) values(?)&quot;</span><span class="p">,</span> <span class="p">([</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;insert into foo (x) values(?)&quot;</span><span class="p">,</span> <span class="p">([</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
 
 <span class="c1"># You can also use it for statements that return data</span>
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;select * from foo where x=?&quot;</span><span class="p">,</span> <span class="p">([</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">])):</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;select * from foo where x=?&quot;</span><span class="p">,</span> <span class="p">([</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">])):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -215,7 +217,7 @@ so you can see what gets printed when you run the code.</p>
 
 <span class="n">connection</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s2">&quot;seven&quot;</span><span class="p">,</span> <span class="n">ilove7</span><span class="p">)</span>
 
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select seven(x,y) from foo&quot;</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select seven(x,y) from foo&quot;</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -261,7 +263,7 @@ so you can see what gets printed when you run the code.</p>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(),</span> <span class="bp">cls</span><span class="o">.</span><span class="n">step</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">final</span>
 
 <span class="n">connection</span><span class="o">.</span><span class="n">createaggregatefunction</span><span class="p">(</span><span class="s2">&quot;longest&quot;</span><span class="p">,</span> <span class="n">longest</span><span class="o">.</span><span class="n">factory</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select longest(x,y) from foo&quot;</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select longest(x,y) from foo&quot;</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -275,10 +277,10 @@ so you can see what gets printed when you run the code.</p>
 <span class="c1"># The default sorting mechanisms don&#39;t understand numbers at the end of strings</span>
 <span class="c1"># so here we define a collation that does</span>
 
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table s(str)&quot;</span><span class="p">)</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;insert into s values(?)&quot;</span><span class="p">,</span> <span class="p">([</span><span class="s2">&quot;file1&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;file7&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;file17&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;file20&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;file3&quot;</span><span class="p">]))</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table s(str)&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;insert into s values(?)&quot;</span><span class="p">,</span> <span class="p">([</span><span class="s2">&quot;file1&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;file7&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;file17&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;file20&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;file3&quot;</span><span class="p">]))</span>
 
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from s order by str&quot;</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from s order by str&quot;</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -313,7 +315,7 @@ so you can see what gets printed when you run the code.</p>
 
 <span class="n">connection</span><span class="o">.</span><span class="n">createcollation</span><span class="p">(</span><span class="s2">&quot;strnum&quot;</span><span class="p">,</span> <span class="n">strnumcollate</span><span class="p">)</span>
 
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from s order by str collate strnum&quot;</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from s order by str collate strnum&quot;</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -339,8 +341,8 @@ so you can see what gets printed when you run the code.</p>
     <span class="k">return</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OK</span>  <span class="c1"># always allow</span>
 
 <span class="n">connection</span><span class="o">.</span><span class="n">setauthorizer</span><span class="p">(</span><span class="n">authorizer</span><span class="p">)</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into s values(&#39;foo&#39;)&quot;</span><span class="p">)</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select str from s limit 1&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into s values(&#39;foo&#39;)&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select str from s limit 1&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| SQLITE_INSERT s None main None
@@ -364,9 +366,9 @@ so you can see what gets printed when you run the code.</p>
         <span class="k">yield</span> <span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">9999999999</span><span class="p">),</span> <span class="p">)</span>
 
 <span class="c1"># create a table with 100 random numbers</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;begin ; create table bigone(x)&quot;</span><span class="p">)</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;insert into bigone values(?)&quot;</span><span class="p">,</span> <span class="n">randomintegers</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;commit&quot;</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table bigone(x)&quot;</span><span class="p">)</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;insert into bigone values(?)&quot;</span><span class="p">,</span> <span class="n">randomintegers</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
 
 <span class="c1"># display an ascii spinner</span>
 <span class="n">_phcount</span> <span class="o">=</span> <span class="mi">0</span>
@@ -385,7 +387,7 @@ so you can see what gets printed when you run the code.</p>
 
 <span class="c1"># see it in action - sorting 100 numbers to find the biggest takes a while</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;spinny thing -&gt; &quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select max(x) from bigone&quot;</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select max(x) from bigone&quot;</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 
@@ -393,7 +395,7 @@ so you can see what gets printed when you run the code.</p>
 </pre></div>
 </div>
 <div class="highlight-python notranslate" id="example-commithook"><div class="highlight"><pre><span></span><span class="c1">###</span>
-<span class="c1">### commit hook (SQLite3 experimental feature)</span>
+<span class="c1">### commit hook</span>
 <span class="c1">###</span>
 
 <span class="k">def</span> <span class="nf">mycommithook</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -407,7 +409,8 @@ so you can see what gets printed when you run the code.</p>
 
 <span class="n">connection</span><span class="o">.</span><span class="n">setcommithook</span><span class="p">(</span><span class="n">mycommithook</span><span class="p">)</span>
 <span class="k">try</span><span class="p">:</span>
-    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;begin; create table example(x,y,z); insert into example values (3,4,5) ; commit&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table example(x,y,z); insert into example values (3,4,5)&quot;</span><span class="p">)</span>
 <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ConstraintError</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;commit was not allowed&quot;</span><span class="p">)</span>
 
@@ -442,13 +445,13 @@ so you can see what gets printed when you run the code.</p>
 <span class="c1">### Blob I/O</span>
 <span class="c1">###</span>
 
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table blobby(x,y)&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table blobby(x,y)&quot;</span><span class="p">)</span>
 <span class="c1"># Add a blob we will fill in later</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into blobby values(1,zeroblob(10000))&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into blobby values(1,zeroblob(10000))&quot;</span><span class="p">)</span>
 <span class="c1"># Or as a binding</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into blobby values(2,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">zeroblob</span><span class="p">(</span><span class="mi">20000</span><span class="p">),</span> <span class="p">))</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into blobby values(2,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">zeroblob</span><span class="p">(</span><span class="mi">20000</span><span class="p">),</span> <span class="p">))</span>
 <span class="c1"># Open a blob for writing.  We need to know the rowid</span>
-<span class="n">rowid</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select ROWID from blobby where x=1&quot;</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">rowid</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select ROWID from blobby where x=1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">blob</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">blobopen</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="s2">&quot;blobby&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">rowid</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 <span class="n">blob</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;hello world&quot;</span><span class="p">)</span>
 <span class="n">blob</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">2000</span><span class="p">)</span>
@@ -535,21 +538,21 @@ so you can see what gets printed when you run the code.</p>
 
 <span class="c1"># Arguments to module - all directories in sys.path</span>
 <span class="n">sysdirs</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">x</span><span class="p">)])</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create virtual table sysfiles using filesource(&quot;</span> <span class="o">+</span> <span class="n">sysdirs</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create virtual table sysfiles using filesource(&quot;</span> <span class="o">+</span> <span class="n">sysdirs</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">)</span>
 
 <span class="c1"># Which 3 files are the biggest?</span>
-<span class="k">for</span> <span class="n">size</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="k">for</span> <span class="n">size</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
         <span class="s2">&quot;select st_size,directory,name from sysfiles order by st_size desc limit 3&quot;</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| 46928312 d9e93640ccdc3fbe1e95__mypyc.cpython-310-x86_64-linux-gnu.so /home/rogerb/.local/lib/python3.10/site-packages
-| 1246656 unicodedata2.cpython-310-x86_64-linux-gnu.so /usr/lib/python3/dist-packages
-| 765704 _brotli.cpython-310-x86_64-linux-gnu.so /usr/lib/python3/dist-packages
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| 55177216 core.2860171 /space/apsw
+| 45790632 f4771e8a540c98c8e0df__mypyc.cpython-310-x86_64-linux-gnu.so /home/rogerb/.local/lib/python3.10/site-packages
+| 11063296 core.2872184 /space/apsw
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Which 3 files are the oldest?</span>
-<span class="k">for</span> <span class="n">ctime</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select st_ctime,directory,name from sysfiles order by st_ctime limit 3&quot;</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">ctime</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select st_ctime,directory,name from sysfiles order by st_ctime limit 3&quot;</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">ctime</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -622,7 +625,7 @@ so you can see what gets printed when you run the code.</p>
                          <span class="n">flags</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_READWRITE</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_CREATE</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_URI</span><span class="p">,</span>
                          <span class="n">vfs</span><span class="o">=</span><span class="n">obfuvfs</span><span class="o">.</span><span class="n">vfsname</span><span class="p">)</span>
 <span class="c1"># Check it works</span>
-<span class="n">obfudb</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table foo(x,y); insert into foo values(1,2)&quot;</span><span class="p">)</span>
+<span class="n">obfudb</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table foo(x,y); insert into foo values(1,2)&quot;</span><span class="p">)</span>
 
 <span class="c1"># Check it really is obfuscated on disk</span>
 <span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;myobfudb&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()[:</span><span class="mi">20</span><span class="p">]))</span>
@@ -659,11 +662,11 @@ so you can see what gets printed when you run the code.</p>
     <span class="nb">print</span><span class="p">(</span><span class="n">maxname</span><span class="p">,</span> <span class="nb">max</span><span class="p">)</span>
 
 <span class="c1"># Set limit for size of a string</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table testlimit(s)&quot;</span><span class="p">)</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into testlimit values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;x&quot;</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,</span> <span class="p">))</span>  <span class="c1"># 1024 char string</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table testlimit(s)&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into testlimit values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;x&quot;</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,</span> <span class="p">))</span>  <span class="c1"># 1024 char string</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_LIMIT_LENGTH</span><span class="p">,</span> <span class="mi">1023</span><span class="p">)</span>  <span class="c1"># limit is now 1023</span>
 <span class="k">try</span><span class="p">:</span>
-    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into testlimit values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;y&quot;</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,</span> <span class="p">))</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into testlimit values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;y&quot;</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,</span> <span class="p">))</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;string exceeding limit was inserted&quot;</span><span class="p">)</span>
 <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">TooBigError</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Caught toobig exception&quot;</span><span class="p">)</span>
@@ -692,13 +695,15 @@ so you can see what gets printed when you run the code.</p>
     <span class="n">backup</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>  <span class="c1"># copy whole database in one go</span>
 
 <span class="c1"># There will be no disk accesses for this query</span>
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">memcon</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from s&quot;</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">memcon</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from s&quot;</span><span class="p">):</span>
     <span class="k">pass</span>
 </pre></div>
 </div>
 <div class="highlight-python notranslate" id="example-shell"><div class="highlight"><pre><span></span><span class="c1">###</span>
 <span class="c1">### Shell</span>
 <span class="c1">###</span>
+
+<span class="kn">import</span> <span class="nn">apsw.shell</span>
 
 <span class="c1"># Here we use the shell to do a csv export providing the existing db</span>
 <span class="c1"># connection</span>
@@ -707,7 +712,7 @@ so you can see what gets printed when you run the code.</p>
 <span class="kn">import</span> <span class="nn">io</span>
 
 <span class="n">output</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
-<span class="n">shell</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Shell</span><span class="p">(</span><span class="n">stdout</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="n">connection</span><span class="p">)</span>
+<span class="n">shell</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">Shell</span><span class="p">(</span><span class="n">stdout</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="n">connection</span><span class="p">)</span>
 <span class="c1"># How to execute a dot command</span>
 <span class="n">shell</span><span class="o">.</span><span class="n">process_command</span><span class="p">(</span><span class="s2">&quot;.mode csv&quot;</span><span class="p">)</span>
 <span class="n">shell</span><span class="o">.</span><span class="n">process_command</span><span class="p">(</span><span class="s2">&quot;.headers on&quot;</span><span class="p">)</span>
@@ -734,7 +739,7 @@ so you can see what gets printed when you run the code.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;SQLite memory usage current </span><span class="si">%d</span><span class="s2"> max </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">apsw</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_STATUS_MEMORY_USED</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| SQLite memory usage current 315008 max 326872
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| SQLite memory usage current 312832 max 328424
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">###</span>
@@ -800,14 +805,14 @@ so you can see what gets printed when you run the code.</p>
         <li class="right" >
           <a href="tips.html" title="Tips"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Example</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Aug 03, 2022.
+      Last updated on Sep 04, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

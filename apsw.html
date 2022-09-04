@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>APSW Module &#8212; APSW 3.39.2.0 documentation</title>
+    <title>APSW Module &#8212; APSW 3.39.2.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="extensions.html" title="Extensions"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">APSW Module</a></li> 
       </ul>
     </div>  
@@ -62,102 +62,123 @@ module have process wide effects.</p>
 <p>Comprehensive <a class="reference external" href="https://docs.python.org/3/library/typing.html">type annotations</a> are included, and
 your code using apsw can be checked using tools like <a class="reference external" href="http://mypy-lang.org/">mypy</a>.  You can refer to the types below for
 your annotations (eg as <code class="code docutils literal notranslate"><span class="pre">apsw.SQLiteValue</span></code>)</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
-.. class:: SQLiteValue
-
-    | `Union &lt;https://docs.python.org/3/library/typing.html#typing.Union&gt;`__ [None, int, float, bytes, str]
-
-    SQLite supports 5 types - None (NULL), 64 bit signed int, 64 bit
-    float, bytes, and unicode text
-
-
-.. class:: SQLiteValues
-
-    | `Union &lt;https://docs.python.org/3/library/typing.html#typing.Union&gt;`__ [`Tuple &lt;https://docs.python.org/3/library/typing.html#typing.Tuple&gt;`__ [()], `Tuple &lt;https://docs.python.org/3/library/typing.html#typing.Tuple&gt;`__ [:class:`SQLiteValue`, ...]]
-
-    A sequence of zero or more :class:`SQLiteValue`
-
-
-.. class:: Bindings
-
-    | `Union &lt;https://docs.python.org/3/library/typing.html#typing.Union&gt;`__ [`Sequence &lt;https://docs.python.org/3/library/typing.html#typing.Sequence&gt;`__ [`Union &lt;https://docs.python.org/3/library/typing.html#typing.Union&gt;`__ [:class:`SQLiteValue`, :class:`zeroblob`]], `Dict &lt;https://docs.python.org/3/library/typing.html#typing.Dict&gt;`__ [str, `Union &lt;https://docs.python.org/3/library/typing.html#typing.Union&gt;`__ [:class:`SQLiteValue`, :class:`zeroblob`]]]
-
-    Query bindings are either a sequence of :class:`SQLiteValue`, or a dict mapping names
-    to :class:`SQLiteValues`.  You can also provide :class:`zeroblob` in :class:`Bindings`.
-
-
-.. class:: AggregateT
-
-    | `Any &lt;https://docs.python.org/3/library/typing.html#typing.Any&gt;`__ 
-
-    An object provided as first parameter of step and final aggregate functions
-
-
-.. class:: AggregateStep
-
-    | `Union &lt;https://docs.python.org/3/library/typing.html#typing.Union&gt;`__ [
-    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`AggregateT`], None],
-    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`AggregateT`, :class:`SQLiteValue`], None],
-    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`AggregateT`, :class:`SQLiteValue`, :class:`SQLiteValue`], None],
-    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`AggregateT`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`], None],
-    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`AggregateT`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`], None],
-    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`AggregateT`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`], None],
-    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`AggregateT`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`], None],
-    | ]
-
-    :class:`AggregateStep` is called on each matching row with the relevant number of :class:`SQLiteValue`
-
-
-.. class:: AggregateFinal
-
-    | `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`AggregateT`], :class:`SQLiteValue`]
-
-    Final is called after all matching rows have been processed by step, and returns a :class:`SQLiteValue`
-
-
-.. class:: AggregateFactory
-
-    | `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[], `Tuple &lt;https://docs.python.org/3/library/typing.html#typing.Tuple&gt;`__ [:class:`AggregateT`, :class:`AggregateStep`, :class:`AggregateFinal`]]
-
-    Called each time for the start of a new calculation using an aggregate function,
-    returning an object, a step function and a final function
-
-
-.. class:: ScalarProtocol
-
-    | `Union &lt;https://docs.python.org/3/library/typing.html#typing.Union&gt;`__ [
-    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[], :class:`SQLiteValue`],
-    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`SQLiteValue`], :class:`SQLiteValue`],
-    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`SQLiteValue`, :class:`SQLiteValue`], :class:`SQLiteValue`],
-    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`], :class:`SQLiteValue`],
-    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`], :class:`SQLiteValue`],
-    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`], :class:`SQLiteValue`],
-    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`], :class:`SQLiteValue`],
-    |         `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`, :class:`SQLiteValue`], :class:`SQLiteValue`]
-    | ]
-
-    Scalar callbacks take zero or more :class:`SQLiteValues`, and return a :class:`SQLiteValue`
-
-
-.. class:: RowTracer
-
-    | `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`Cursor`, :class:`SQLiteValues`], `Any &lt;https://docs.python.org/3/library/typing.html#typing.Any&gt;`__ ]
-
-    Row tracers are called with the :class:`Cursor`, and the row that would
-    be returned.  If you return None, then no row is returned, otherwise
-    whatever is returned is returned as a result row for the query
-
-
-.. class:: ExecTracer
-
-    | `Callable &lt;https://docs.python.org/3/library/typing.html#typing.Callable&gt;`__ [[:class:`Cursor`, str, `Optional &lt;https://docs.python.org/3/library/typing.html#typing.Optional&gt;`__ [:class:`Bindings`]], bool]
-
-    Execution tracers are called with the cursor, sql query text, and the bindings
-    used.  Return False/None to abort execution, or True to continue
-
-
-</pre></div>
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.SQLiteValue">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SQLiteValue</span></span><a class="headerlink" href="#apsw.SQLiteValue" title="Permalink to this definition">¶</a></dt>
+<dd><div class="line-block">
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union">Union</a> [None, int, float, bytes, str]</div>
 </div>
+<p>SQLite supports 5 types - None (NULL), 64 bit signed int, 64 bit
+float, bytes, and unicode text</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.SQLiteValues">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SQLiteValues</span></span><a class="headerlink" href="#apsw.SQLiteValues" title="Permalink to this definition">¶</a></dt>
+<dd><div class="line-block">
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union">Union</a> [<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple">Tuple</a> [()], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple">Tuple</a> [<a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, …]]</div>
+</div>
+<p>A sequence of zero or more <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.Bindings">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Bindings</span></span><a class="headerlink" href="#apsw.Bindings" title="Permalink to this definition">¶</a></dt>
+<dd><div class="line-block">
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union">Union</a> [<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence">Sequence</a> [<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union">Union</a> [<a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="blob.html#apsw.zeroblob" title="apsw.zeroblob"><code class="xref py py-class docutils literal notranslate"><span class="pre">zeroblob</span></code></a>]], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict">Dict</a> [str, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union">Union</a> [<a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="blob.html#apsw.zeroblob" title="apsw.zeroblob"><code class="xref py py-class docutils literal notranslate"><span class="pre">zeroblob</span></code></a>]]]</div>
+</div>
+<p>Query bindings are either a sequence of <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, or a dict mapping names
+to <a class="reference internal" href="#apsw.SQLiteValues" title="apsw.SQLiteValues"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValues</span></code></a>.  You can also provide <a class="reference internal" href="blob.html#apsw.zeroblob" title="apsw.zeroblob"><code class="xref py py-class docutils literal notranslate"><span class="pre">zeroblob</span></code></a> in <a class="reference internal" href="#apsw.Bindings" title="apsw.Bindings"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bindings</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.AggregateT">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AggregateT</span></span><a class="headerlink" href="#apsw.AggregateT" title="Permalink to this definition">¶</a></dt>
+<dd><div class="line-block">
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></div>
+</div>
+<p>An object provided as first parameter of step and final aggregate functions</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.AggregateStep">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AggregateStep</span></span><a class="headerlink" href="#apsw.AggregateStep" title="Permalink to this definition">¶</a></dt>
+<dd><div class="line-block">
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union">Union</a> [</div>
+<div class="line-block">
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a> [[<a class="reference internal" href="#apsw.AggregateT" title="apsw.AggregateT"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateT</span></code></a>], None],</div>
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a> [[<a class="reference internal" href="#apsw.AggregateT" title="apsw.AggregateT"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateT</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>], None],</div>
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a> [[<a class="reference internal" href="#apsw.AggregateT" title="apsw.AggregateT"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateT</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>], None],</div>
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a> [[<a class="reference internal" href="#apsw.AggregateT" title="apsw.AggregateT"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateT</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>], None],</div>
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a> [[<a class="reference internal" href="#apsw.AggregateT" title="apsw.AggregateT"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateT</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>], None],</div>
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a> [[<a class="reference internal" href="#apsw.AggregateT" title="apsw.AggregateT"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateT</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>], None],</div>
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a> [[<a class="reference internal" href="#apsw.AggregateT" title="apsw.AggregateT"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateT</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>], None],</div>
+</div>
+<div class="line">]</div>
+</div>
+<p><a class="reference internal" href="#apsw.AggregateStep" title="apsw.AggregateStep"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateStep</span></code></a> is called on each matching row with the relevant number of <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.AggregateFinal">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AggregateFinal</span></span><a class="headerlink" href="#apsw.AggregateFinal" title="Permalink to this definition">¶</a></dt>
+<dd><div class="line-block">
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a> [[<a class="reference internal" href="#apsw.AggregateT" title="apsw.AggregateT"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateT</span></code></a>], <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>]</div>
+</div>
+<p>Final is called after all matching rows have been processed by step, and returns a <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.AggregateFactory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AggregateFactory</span></span><a class="headerlink" href="#apsw.AggregateFactory" title="Permalink to this definition">¶</a></dt>
+<dd><div class="line-block">
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a> [[], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple">Tuple</a> [<a class="reference internal" href="#apsw.AggregateT" title="apsw.AggregateT"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateT</span></code></a>, <a class="reference internal" href="#apsw.AggregateStep" title="apsw.AggregateStep"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateStep</span></code></a>, <a class="reference internal" href="#apsw.AggregateFinal" title="apsw.AggregateFinal"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateFinal</span></code></a>]]</div>
+</div>
+<p>Called each time for the start of a new calculation using an aggregate function,
+returning an object, a step function and a final function</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.ScalarProtocol">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ScalarProtocol</span></span><a class="headerlink" href="#apsw.ScalarProtocol" title="Permalink to this definition">¶</a></dt>
+<dd><div class="line-block">
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union">Union</a> [</div>
+<div class="line-block">
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a> [[], <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>],</div>
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a> [[<a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>], <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>],</div>
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a> [[<a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>], <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>],</div>
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a> [[<a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>], <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>],</div>
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a> [[<a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>], <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>],</div>
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a> [[<a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>], <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>],</div>
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a> [[<a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>], <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>],</div>
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a> [[<a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>], <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a>]</div>
+</div>
+<div class="line">]</div>
+</div>
+<p>Scalar callbacks take zero or more <a class="reference internal" href="#apsw.SQLiteValues" title="apsw.SQLiteValues"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValues</span></code></a>, and return a <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValue</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.RowTracer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RowTracer</span></span><a class="headerlink" href="#apsw.RowTracer" title="Permalink to this definition">¶</a></dt>
+<dd><div class="line-block">
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a> [[<a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a>, <a class="reference internal" href="#apsw.SQLiteValues" title="apsw.SQLiteValues"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteValues</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a> ]</div>
+</div>
+<p>Row tracers are called with the <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a>, and the row that would
+be returned.  If you return None, then no row is returned, otherwise
+whatever is returned is returned as a result row for the query</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.ExecTracer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ExecTracer</span></span><a class="headerlink" href="#apsw.ExecTracer" title="Permalink to this definition">¶</a></dt>
+<dd><div class="line-block">
+<div class="line"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable">Callable</a> [[<a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a>, str, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a> [<a class="reference internal" href="#apsw.Bindings" title="apsw.Bindings"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bindings</span></code></a>]], bool]</div>
+</div>
+<p>Execution tracers are called with the cursor, sql query text, and the bindings
+used.  Return False/None to abort execution, or True to continue</p>
+</dd></dl>
+
 </section>
 <section id="api-reference">
 <h2>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h2>
@@ -306,7 +327,7 @@ checking as part of your test suite.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.format_sql_value">
-<span class="sig-name descname"><span class="pre">format_sql_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SQLiteValue</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#apsw.format_sql_value" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">format_sql_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">SQLiteValue</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#apsw.format_sql_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a Python string representing the supplied value in SQL syntax.</p>
 </dd></dl>
 
@@ -341,13 +362,6 @@ message before passing it to this method:</p>
 <p>See <a class="reference internal" href="tips.html#diagnostics-tips"><span class="std std-ref">tips</span></a> for an example of how to
 receive log messages.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/log.html">sqlite3_log</a></p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="apsw.main">
-<span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apsw.main" title="Permalink to this definition">¶</a></dt>
-<dd><p>Call this to run the <a class="reference internal" href="shell.html#shell"><span class="std std-ref">interactive shell</span></a>.  It
-automatically passes in sys.argv[1:] and exits Python when done.</p>
 </dd></dl>
 
 <span class="target" id="index-7"></span><dl class="py method">
@@ -636,14 +650,14 @@ modules etc. For example:</p>
         <li class="right" >
           <a href="extensions.html" title="Extensions"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">APSW Module</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Aug 03, 2022.
+      Last updated on Sep 04, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

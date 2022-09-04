@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Building &#8212; APSW 3.39.2.0 documentation</title>
+    <title>Building &#8212; APSW 3.39.2.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="download.html" title="Download"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Building</a></li> 
       </ul>
     </div>  
@@ -115,11 +115,7 @@ that this will considerably slow down APSW and SQLite.</p></td>
 <h3>fetch<a class="headerlink" href="#fetch" title="Permalink to this headline">¶</a></h3>
 <p><code class="file docutils literal notranslate"><span class="pre">setup.py</span></code> can automatically fetch SQLite and other optional
 components.  You can set the environment variable <code class="xref py py-const docutils literal notranslate"><span class="pre">http_proxy</span></code>
-to control proxy usage for the download. <strong>Note</strong> the files downloaded
-are modified from their originals to ensure various names do not
-clash, adjust them to the download platform and to graft them cleanly
-into the APSW module.  You should not commit them to source code
-control systems (download separately if you need clean files).</p>
+to control proxy usage for the download.</p>
 <p>If any files are downloaded then the build step will automatically use
 them.  This still applies when you do later builds without
 re-fetching.</p>
@@ -219,19 +215,22 @@ take note of this as needed.</p>
 <section id="build-build-ext">
 <span id="setup-build-flags"></span><h3>build/build_ext<a class="headerlink" href="#build-build-ext" title="Permalink to this headline">¶</a></h3>
 <p>You can enable or omit certain functionality by specifying flags to
-the build and/or build_ext commands of <code class="file docutils literal notranslate"><span class="pre">setup.py</span></code>.</p>
-<blockquote>
-<div><div class="line-block">
-<div class="line">python setup.py build <em>options</em></div>
+the build and/or build_ext commands of <code class="file docutils literal notranslate"><span class="pre">setup.py</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">build</span> <span class="o">*</span><span class="n">options</span><span class="o">*</span>
+</pre></div>
 </div>
-</div></blockquote>
 <p>Note that the options do not accumulate.  If you want to specify multiple enables or omits then you
 need to give the flag once and giving a comma separated list.  For example:</p>
-<blockquote>
-<div><div class="line-block">
-<div class="line">python setup.py build <code class="xref std std-option docutils literal notranslate"><span class="pre">--enable=fts3,fts3_parenthesis,rtree,icu</span></code></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>python setup.py build :option:`--enable=fts3,fts3_parenthesis,rtree,icu`
+</pre></div>
 </div>
-</div></blockquote>
+<p>SQLite includes <a class="reference external" href="https://www.sqlite.org/compile.html">many options defined to the C compiler</a>.  If you want to change
+compiled in default values, or provide defines like
+SQLITE_CUSTOM_INCLUDE then you can use <code class="xref std std-option docutils literal notranslate"><span class="pre">--definevalues</span></code> using
+<cite>=</cite> and comma separating.  For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">build_ext</span> <span class="o">--</span><span class="n">definevalues</span> <span class="n">SQLITE_DEFAULT_FILE_FORMAT</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">SQLITE_CUSTOM_INCLUDE</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">h</span>
+</pre></div>
+</div>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 32%" />
@@ -406,25 +405,23 @@ components:</p>
 </div>
 </section>
 <section id="testing">
-<h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
+<span id="id2"></span><h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
 <p>SQLite itself is <a class="reference external" href="https://sqlite.org/testing.html">extensively tested</a>. It has considerably more code
 dedicated to testing than makes up the actual database functionality.</p>
-<p>APSW includes a <code class="file docutils literal notranslate"><span class="pre">tests.py</span></code> file which uses the standard Python
-testing modules to verify correct operation. New code is developed
-alongside the tests. Reported issues also have test cases to ensure
-the issue doesn’t happen or doesn’t happen again.:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 setup.py test
-running test
-                Python  /usr/bin/python3 sys.version_info(major=3, minor=9, micro=7, releaselevel=&#39;final&#39;, serial=0)
-Testing with APSW file  /space/apsw/apsw.cpython-39-x86_64-linux-gnu.so
-          APSW version  3.38.0-r1
-    SQLite lib version  3.38.0
-SQLite headers version  3038000
+<p>APSW includes tests which use the standard Python testing modules to
+verify correct operation. New code is developed alongside the tests.
+Reported issues also have test cases to ensure the issue doesn’t
+happen or doesn’t happen again.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 -m apsw.tests
+                Python  /usr/bin/python3 sys.version_info(major=3, minor=10, micro=4, releaselevel=&#39;final&#39;, serial=0)
+Testing with APSW file  /space/apsw/apsw/__init__.cpython-310-x86_64-linux-gnu.so
+          APSW version  3.39.2.0
+    SQLite lib version  3.39.2
+SQLite headers version  3039002
     Using amalgamation  True
-
-..............................................................................................
+...............................................................................................
 ----------------------------------------------------------------------
-Ran 94 tests in 27.713s
+Ran 95 tests in 25.990s
 
 OK
 </pre></div>
@@ -440,11 +437,12 @@ coverage up to 99.6% of the code.</p>
 running the test suite. The test suite is run multiple times to make
 any memory leaks or similar issues stand out. A checking version of
 Python is also used.  See <a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/tools/valgrind.sh">tools/valgrind.sh</a> in the source.
-The same testing is also done with the compiler’s sanitizer option.</p>
+The same testing is also done with the <a class="reference external" href="https://en.wikipedia.org/wiki/AddressSanitizer">compiler’s sanitizer option</a>.</p>
 <p>To ensure compatibility with the various Python versions, a script
 downloads and compiles all supported Python versions in both debug and
-release configurations against the APSW and SQLite supported versions
-running the tests. See <a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/tools/megatest.py">tools/megatest.py</a> in the source.</p>
+release configurations (and 32 and 64 bit) against the APSW and SQLite
+supported versions running the tests. See <a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/tools/megatest.py">tools/megatest.py</a>
+in the source.</p>
 <p>In short both SQLite and APSW have a lot of testing!</p>
 </section>
 </section>
@@ -515,14 +513,14 @@ running the tests. See <a class="reference external" href="https://github.com/ro
         <li class="right" >
           <a href="download.html" title="Download"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Building</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Aug 03, 2022.
+      Last updated on Sep 04, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
