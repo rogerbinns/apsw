@@ -2,6 +2,14 @@ Change History
 **************
 .. currentmodule:: apsw
 
+next
+====
+
+Test no longer fails if APSW was compiled without
+SQLITE_ENABLE_COLUMN_METADATA but sqlite3 was separately compiled with
+it.  APSW should be compiled with the same flags as sqlite3 to match
+functionality and APIs. (:issue:`363`)
+
 3.39.2.1
 ========
 

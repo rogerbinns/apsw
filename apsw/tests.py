@@ -772,7 +772,7 @@ class APSW(unittest.TestCase):
         c.execute("drop table foo; create table foo (%s)" % (", ".join(["[%s] %s" % (n, t) for n, t in cols]), ))
         c.execute("insert into foo([x a space]) values(1)")
         c.execute("create temp table two(fred banana); insert into two values(7); create temp view three as select fred as [a space] from two")
-        has_full=any(o=="ENABLE_COLUMN_METADATA" or o.startswith("ENABLE_COLUMN_METADATA=") for o in apsw.compile_options)
+        has_full=any(o=="ENABLE_COLUMN_METADATA" or o.startswith("ENABLE_COLUMN_METADATA=") for o in apsw.compile_options) if apsw.using_amalgamation else hasattr(c, "description_full")
         for row in c.execute("select * from foo"):
             self.assertEqual(cols, c.getdescription())
             self.assertEqual(has_full, hasattr(c, "description_full"))
