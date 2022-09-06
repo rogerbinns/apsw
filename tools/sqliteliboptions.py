@@ -1,13 +1,23 @@
 #!/usr/bin/env python3
 
-import sys
-import os
+import argparse
 import ctypes
+import ctypes.util
 
-if len(sys.argv) != 2 or not os.path.isfile(sys.argv[1]):
-    sys.exit("Expected filename of sqlite3 shared library/dll")
 
-lib = ctypes.cdll.LoadLibrary(sys.argv[1])
+argp = argparse.ArgumentParser()
+argp.add_argument("library",
+                  help="Path or filename to sqlite3 shared library/dll "
+                       "(as accepted by ctypes.cdll.LoadLibrary(), default: "
+                       "use find_library())",
+                  nargs="?")
+args = argp.parse_args()
+
+if args.library is None:
+    args.library = ctypes.util.find_library("sqlite3")
+    if args.library is None:
+        argp.error("sqlite3 library not found, please pass library name/path")
+lib = ctypes.cdll.LoadLibrary(args.library)
 
 func = lib.sqlite3_compileoption_get
 func.argtypes = [ctypes.c_int]
