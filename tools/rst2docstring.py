@@ -31,7 +31,6 @@ docstrings_skip = {
     "apsw.compile_options",
     "apsw.connection_hooks",
     "apsw.keywords",
-    "apsw.main",
     "apsw.using_amalgamation",
     "apsw.SQLITE_VERSION_NUMBER",
 }
@@ -376,7 +375,7 @@ def do_argparse(item):
             param["type"] = type_overrides[item['name']][param["name"]]
         except KeyError:
             pass
-        if not param["type"]:
+        if param["name"] != "*" and not param["type"]:
             sys.exit(f"{ item['name'] } param { param } has no type from { item['signature_original'] }")
     res = [f"#define { item['symbol'] }_CHECK do {{ \\"]
 
@@ -387,14 +386,23 @@ def do_argparse(item):
     # what is passed at C level
     parse_args = []
 
+    seen_star=False
     for param in item["signature"]:
         if param["name"] == "return":
+            continue
+        if param["name"] == "*":
+            seen_star = True
+            if "|" not in fstr:
+                fstr += "|"
+            fstr += "$"
             continue
         pname = param["name"]
         if pname in {"default"}:
             pname += "_"
         args = ["&" + pname]
         default_check = None
+        if seen_star and not param["default"]:
+            sys.exit(f'param { param } comes after * and must have default value in { item["name"] } { item["signature_original"] }')
         if param["type"] == "str":
             type = "const char *"
             kind = "s"
