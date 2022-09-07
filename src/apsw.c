@@ -1925,7 +1925,15 @@ modules etc. For example::
         ADDINT(SQLITE_TXN_NONE),
         ADDINT(SQLITE_TXN_READ),
         ADDINT(SQLITE_TXN_WRITE),
-        END};
+        END,
+
+        DICT("mapping_prepare_flags"),
+        ADDINT(SQLITE_PREPARE_PERSISTENT),
+        ADDINT(SQLITE_PREPARE_NORMALIZE),
+        ADDINT(SQLITE_PREPARE_NO_VTAB),
+        END
+
+        };
 
     for (i = 0; i < sizeof(integers) / sizeof(integers[0]); i++)
     {
