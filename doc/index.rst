@@ -29,7 +29,8 @@ control SQLite's configuration (primarily done at `compile time
 <https://www.sqlite.org/fts5.html>`__)
 
 APSW is hosted at https://github.com/rogerbinns/apsw and can be
-:doc:`downloaded <download>` from PyPI
+:doc:`downloaded <download>` from `PyPI
+<https://pypi.org/project/apsw/>`__
 
 Contents:
 
