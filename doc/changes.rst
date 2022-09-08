@@ -10,6 +10,9 @@ SQLITE_ENABLE_COLUMN_METADATA but sqlite3 was separately compiled with
 it.  APSW should be compiled with the same flags as sqlite3 to match
 functionality and APIs. (:issue:`363`)
 
+`--use-system-sqlite-config` setup.py `build_ext` option added to
+allow :ref:`matching_sqlite_options`. (:issue:`364`)
+
 3.39.2.1
 ========
 

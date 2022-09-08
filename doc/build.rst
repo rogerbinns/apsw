@@ -138,7 +138,7 @@ the build and/or build_ext commands of :file:`setup.py`::
 Note that the options do not accumulate.  If you want to specify multiple enables or omits then you
 need to give the flag once and giving a comma separated list.  For example::
 
-  python setup.py build :option:`--enable=fts3,fts3_parenthesis,rtree,icu`
+  python setup.py build --enable=fts3,fts3_parenthesis,rtree,icu
 
 SQLite includes `many options defined to the C compiler
 <https://www.sqlite.org/compile.html>`__.  If you want to change
@@ -188,13 +188,33 @@ SQLITE_CUSTOM_INCLUDE then you can use :option:`--definevalues` using
 |                                        | <https://sqlite.org/compile.html#omitfeatures>`_.                                    |
 +----------------------------------------+--------------------------------------------------------------------------------------+
 
-.. note::
 
-  Extension loading is enabled by default when using the amalgamation
-  and disabled when using existing libraries as this most closely
-  matches current practise.  Use :option:`--omit=load_extension` or
-  :option:`--enable=load_extension` to explicitly disable/enable the
-  extension loading code.
+.. _matching_sqlite_options:
+
+Matching APSW and SQLite options
+================================
+
+APSW needs to see the same options as SQLite to correctly match it.
+For example if SQLite is compiled without loadable extensions, then
+APSW also needs to know that at compile time because the APIs won't be
+present.  Another example is :meth:`Cursor.description_full` needs to
+know if `SQLITE_ENABLE_COLUMN_METADATA` was defined when building
+SQLite for the same reason.
+
+If you use the amalgamation (recommended configuration) then APSW and
+SQLite will see the same options and will be correctly in sync.
+
+If you are using the system provided SQLite then specify
+`--use-system-sqlite-config` to `build_ext`, and the configuration
+will be automatically obtained (using `ctypes find_library
+<https://docs.python.org/3/library/ctypes.html?highlight=find_library#ctypes.util.find_library>`__)
+
+You can use the amalgamation and `--use-system-sqlite-config`
+simultaneously in which case the amalgamation will have an identical
+configuration to the system one.  This is useful if you are using a
+newer SQLite version in the amalgamation, but still want to match the
+system.
+
 
 Finding SQLite 3
 ================
