@@ -11,8 +11,12 @@
 Cursors (executing SQL)
 ***********************
 
-A cursor encapsulates a SQL query and returning results.  To make a
-new cursor you should call :meth:`~Connection.cursor` on your
+A cursor encapsulates a SQL query and returning results.  You only need an
+explicit cursor if you want more information or control over execution.  Using
+:meth:`Connection.execute` or :meth:`Connection.executemany` will automatically
+obtain a cursor behind the scenes.
+
+If you need a cursor you should call :meth:`~Connection.cursor` on your
 database::
 
   db=apsw.Connection("databasefilename")
@@ -142,9 +146,10 @@ struct APSWCursor
   PyObject *bindings;        /* dict or sequence */
   Py_ssize_t bindingsoffset; /* for sequence tracks how far along we are when dealing with multiple statements */
 
-  /* iterator for executemany, original query string */
+  /* iterator for executemany, original query string, prepare options */
   PyObject *emiter;
   PyObject *emoriginalquery;
+  APSWStatementOptions emoptions;
 
   /* tracing functions */
   PyObject *exectrace;
@@ -877,7 +882,7 @@ APSWCursor_step(APSWCursor *self)
     {
       /* we are going again in executemany mode */
       assert(self->emiter);
-      INUSE_CALL(self->statement = statementcache_prepare(self->connection->stmtcache, self->emoriginalquery));
+      INUSE_CALL(self->statement = statementcache_prepare(self->connection->stmtcache, self->emoriginalquery, &self->emoptions));
       res = (self->statement) ? SQLITE_OK : SQLITE_ERROR;
     }
     else
@@ -927,7 +932,7 @@ APSWCursor_step(APSWCursor *self)
   return NULL;
 }
 
-/** .. method:: execute(statements: str, bindings: Optional[Bindings] = None) -> Cursor
+/** .. method:: execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor
 
     Executes the statements using the supplied bindings.  Execution
     returns when the first row is available or all statements have
@@ -986,8 +991,11 @@ APSWCursor_execute(APSWCursor *self, PyObject *args, PyObject *kwds)
 {
   int res;
   int savedbindingsoffset = -1;
+  int prepare_flags = 0;
+  int can_cache = 1;
   PyObject *retval = NULL;
   PyObject *statements, *bindings = NULL;
+  APSWStatementOptions options;
 
   CHECK_USE(NULL);
   CHECK_CURSOR_CLOSED(NULL);
@@ -1001,12 +1009,15 @@ APSWCursor_execute(APSWCursor *self, PyObject *args, PyObject *kwds)
 
   assert(!self->bindings);
   {
-    static char *kwlist[] = {"statements", "bindings", NULL};
+    static char *kwlist[] = {"statements", "bindings", "can_cache", "prepare_flags", NULL};
     Cursor_execute_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O&:" Cursor_execute_USAGE, kwlist, &PyUnicode_Type, &statements, argcheck_Optional_Bindings, &bindings))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O&$O&i:" Cursor_execute_USAGE, kwlist, &PyUnicode_Type, &statements, argcheck_Optional_Bindings, &bindings, argcheck_bool, &can_cache, &prepare_flags))
       return NULL;
   }
   self->bindings = bindings;
+
+  options.can_cache = can_cache;
+  options.prepare_flags = prepare_flags;
 
   if (self->bindings)
   {
@@ -1022,7 +1033,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args, PyObject *kwds)
 
   assert(!self->statement);
   assert(!PyErr_Occurred());
-  INUSE_CALL(self->statement = statementcache_prepare(self->connection->stmtcache, statements));
+  INUSE_CALL(self->statement = statementcache_prepare(self->connection->stmtcache, statements, &options));
   if (!self->statement)
   {
     AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_execute.sqlite3_prepare", "{s: O, s: O}",
@@ -1062,7 +1073,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args, PyObject *kwds)
   return retval;
 }
 
-/** .. method:: executemany(statements: str, sequenceofbindings: Sequence[Bindings]) -> Cursor
+/** .. method:: executemany(statements: str, sequenceofbindings: Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor
 
   This method is for when you want to execute the same statements over
   a sequence of bindings.  Conceptually it does this::
@@ -1093,6 +1104,8 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args, PyObject *kwds)
   PyObject *next = NULL;
   PyObject *statements = NULL;
   int savedbindingsoffset = -1;
+  int can_cache = 1;
+  int prepare_flags = 0;
 
   CHECK_USE(NULL);
   CHECK_CURSOR_CLOSED(NULL);
@@ -1109,9 +1122,9 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args, PyObject *kwds)
   assert(!self->emoriginalquery);
   assert(self->status == C_DONE);
   {
-    static char *kwlist[] = {"statements", "sequenceofbindings", NULL};
+    static char *kwlist[] = {"statements", "sequenceofbindings", "can_cache", "prepare_flags", NULL};
     Cursor_executemany_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!O:" Cursor_executemany_USAGE, kwlist, &PyUnicode_Type, &statements, &sequenceofbindings))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!O|$|O&i:" Cursor_executemany_USAGE, kwlist, &PyUnicode_Type, &statements, &sequenceofbindings, argcheck_bool, &can_cache, &prepare_flags))
       return NULL;
   }
   self->emiter = PyObject_GetIter(sequenceofbindings);
@@ -1138,10 +1151,13 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args, PyObject *kwds)
       return NULL;
   }
 
+  self->emoptions.can_cache = can_cache;
+  self->emoptions.prepare_flags = prepare_flags;
+
   assert(!self->statement);
   assert(!PyErr_Occurred());
   assert(!self->statement);
-  INUSE_CALL(self->statement = statementcache_prepare(self->connection->stmtcache, statements));
+  INUSE_CALL(self->statement = statementcache_prepare(self->connection->stmtcache, statements, &self->emoptions));
   if (!self->statement)
   {
     AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_executemany.sqlite3_prepare", "{s: O, s: O}",

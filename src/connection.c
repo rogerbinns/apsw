@@ -3573,7 +3573,7 @@ Connection_txn_state(Connection *self, PyObject *args, PyObject *kwds)
   return PyErr_Format(PyExc_ValueError, "unknown schema");
 }
 
-/** .. method:: execute(statements: str, bindings: Optional[Bindings] = None) -> Cursor
+/** .. method:: execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor
 
     Executes the statements using the supplied bindings.  Execution
     returns when the first row is available or all statements have
@@ -3609,7 +3609,7 @@ fail:
   return res;
 }
 
-/** .. method:: executemany(statements: str, sequenceofbindings:Sequence[Bindings]) -> Cursor
+/** .. method:: executemany(statements: str, sequenceofbindings:Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor
 
 This method is for when you want to execute the same statements over a
 sequence of bindings, such as inserting into a database.  (A cursor is
@@ -3643,6 +3643,68 @@ fail:
   Py_XDECREF(cursor);
   Py_XDECREF(method);
   return res;
+}
+
+/** .. method:: cache_stats(include_entries: bool = False) -> Dict[str, int]
+
+Returns information about the statement cache as dict.
+
+.. list-table::
+  :header-rows: 1
+
+  * - Key
+    - Explanation
+  * - size
+    - Number of entries in the cache
+  * - highest_used
+    - Largest entry number that was ever used.  If this is less than
+      size then the cache was never full.
+  * - evictions
+    - How many entries were removed (expired) to make space for a new
+      entry
+  * - no_cache
+    - Queries that had can_cache parameter set to False
+  * - hits
+    - A match was found in the cache
+  * - misses
+    - No match was found in the cache
+  * - entries
+    - A list of the cache entries
+
+.. note::
+
+  Calling execute with "select a; select b; insert into c ..." will
+  result in 3 cache entries corresponding to each of the 3 queries
+  present.
+
+.. list-table:: Cache entry
+  :header-rows: 1
+
+  * - Key
+    - Explanation
+  * - query
+    - Text of the query itself
+  * - prepare_flags
+    - Flags passed to sqlite3_prepare_v3 for this query
+  * - uses
+    - How many times this entry has been (re)used
+
+*/
+static PyObject *
+Connection_cache_stats(Connection *self, PyObject *args, PyObject *kwds)
+{
+  int include_entries = 0;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  {
+    static char *kwlist[] = {"include_entries", NULL};
+    Connection_cache_stats_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&:" Connection_cache_stats_USAGE, kwlist, argcheck_bool, &include_entries))
+      return NULL;
+  }
+  return statementcache_stats(self->stmtcache, include_entries);
 }
 
 /** .. attribute:: filename
@@ -3681,7 +3743,7 @@ Connection_get_cursor_factory(Connection *self)
   /* The cursor factory will be NULL if the Connection has been closed.
      That also helps with garbage collection and reference cycles.  In
      that case we return None */
-  if(!self->cursor_factory)
+  if (!self->cursor_factory)
     Py_RETURN_NONE;
   Py_INCREF(self->cursor_factory);
   return self->cursor_factory;
@@ -3851,6 +3913,7 @@ static PyMethodDef Connection_methods[] = {
      Connection_execute_DOC},
     {"executemany", (PyCFunction)Connection_executemany, METH_VARARGS | METH_KEYWORDS,
      Connection_executemany_DOC},
+    {"cache_stats", (PyCFunction)Connection_cache_stats, METH_VARARGS | METH_KEYWORDS, Connection_cache_stats_DOC},
     {0, 0, 0, 0} /* Sentinel */
 };
 
