@@ -2,8 +2,8 @@ Change History
 **************
 .. currentmodule:: apsw
 
-next
-====
+3.39.3.0
+========
 
 Test no longer fails if APSW was compiled without
 SQLITE_ENABLE_COLUMN_METADATA but sqlite3 was separately compiled with
