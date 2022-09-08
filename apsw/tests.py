@@ -2330,6 +2330,9 @@ class APSW(unittest.TestCase):
         "Check loading of extensions"
         # unicode issues
         # they need to be enabled first (off by default)
+        if self.db.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, -1):
+            # someone wanted extension loading on by default!  Turn it back off
+            self.db.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, 0)
         self.assertRaises(apsw.ExtensionLoadingError, self.db.loadextension, LOADEXTENSIONFILENAME)
         self.assertEqual(self.db.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, -1), 0)
         self.db.enableloadextension(False)
