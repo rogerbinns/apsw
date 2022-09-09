@@ -48,6 +48,8 @@ def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug):
     logf = os.path.abspath(os.path.join(logdir, "buildruntests.txt"))
     # this is used to alternate support for full metadata and test --definevalues flags
     build_ext_flags="--definevalues SQLITE_ENABLE_COLUMN_METADATA,SQLITE_DEFAULT_CACHE_SIZE=-1" if random.choice((False, True)) else ""
+    if pyver == "system":
+        build_ext_flags += " --use-system-sqlite-config"
 
     run(f"""set -e ; cd { workdir } ; ( env LD_LIBRARY_PATH={ pylib } { pybin } -bb -Werror { pyflags } setup.py fetch \
              --version={ sqlitever } --all build_test_extension build_ext --inplace --force --enable-all-extensions \
