@@ -36,9 +36,9 @@ so you can see what gets printed when you run the code.
 .. code-block:: text
 
    |       Using APSW file /space/apsw/apsw/__init__.cpython-310-x86_64-linux-gnu.so
-   |          APSW version 3.39.2.1
-   |    SQLite lib version 3.39.2
-   | SQLite header version 3039002
+   |          APSW version 3.39.3.0
+   |    SQLite lib version 3.39.3
+   | SQLite header version 3039003
 
 .. code-block:: python
 
@@ -550,9 +550,9 @@ so you can see what gets printed when you run the code.
 
 .. code-block:: text
 
-   | 55177216 core.2860171 /space/apsw
    | 45790632 f4771e8a540c98c8e0df__mypyc.cpython-310-x86_64-linux-gnu.so /home/rogerb/.local/lib/python3.10/site-packages
-   | 11063296 core.2872184 /space/apsw
+   | 24821760 testdb /space/apsw
+   | 5633992 apsw.o /space/apsw
 
 .. code-block:: python
 

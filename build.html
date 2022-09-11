@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Building &#8212; APSW 3.39.2.1 documentation</title>
+    <title>Building &#8212; APSW 3.39.3.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="download.html" title="Download"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.3.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Building</a></li> 
       </ul>
     </div>  
@@ -221,7 +221,7 @@ the build and/or build_ext commands of <code class="file docutils literal notran
 </div>
 <p>Note that the options do not accumulate.  If you want to specify multiple enables or omits then you
 need to give the flag once and giving a comma separated list.  For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>python setup.py build :option:`--enable=fts3,fts3_parenthesis,rtree,icu`
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">build</span> <span class="o">--</span><span class="n">enable</span><span class="o">=</span><span class="n">fts3</span><span class="p">,</span><span class="n">fts3_parenthesis</span><span class="p">,</span><span class="n">rtree</span><span class="p">,</span><span class="n">icu</span>
 </pre></div>
 </div>
 <p>SQLite includes <a class="reference external" href="https://www.sqlite.org/compile.html">many options defined to the C compiler</a>.  If you want to change
@@ -304,15 +304,26 @@ parser. See <a class="reference external" href="https://sqlite.org/compile.html#
 </tr>
 </tbody>
 </table>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Extension loading is enabled by default when using the amalgamation
-and disabled when using existing libraries as this most closely
-matches current practise.  Use <code class="xref std std-option docutils literal notranslate"><span class="pre">--omit=load_extension</span></code> or
-<code class="xref std std-option docutils literal notranslate"><span class="pre">--enable=load_extension</span></code> to explicitly disable/enable the
-extension loading code.</p>
-</div>
 </section>
+</section>
+<section id="matching-apsw-and-sqlite-options">
+<span id="matching-sqlite-options"></span><h2>Matching APSW and SQLite options<a class="headerlink" href="#matching-apsw-and-sqlite-options" title="Permalink to this headline">¶</a></h2>
+<p>APSW needs to see the same options as SQLite to correctly match it.
+For example if SQLite is compiled without loadable extensions, then
+APSW also needs to know that at compile time because the APIs won’t be
+present.  Another example is <code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.description_full()</span></code> needs to
+know if <cite>SQLITE_ENABLE_COLUMN_METADATA</cite> was defined when building
+SQLite for the same reason.</p>
+<p>If you use the amalgamation (recommended configuration) then APSW and
+SQLite will see the same options and will be correctly in sync.</p>
+<p>If you are using the system provided SQLite then specify
+<cite>–use-system-sqlite-config</cite> to <cite>build_ext</cite>, and the configuration
+will be automatically obtained (using <a class="reference external" href="https://docs.python.org/3/library/ctypes.html?highlight=find_library#ctypes.util.find_library">ctypes find_library</a>)</p>
+<p>You can use the amalgamation and <cite>–use-system-sqlite-config</cite>
+simultaneously in which case the amalgamation will have an identical
+configuration to the system one.  This is useful if you are using a
+newer SQLite version in the amalgamation, but still want to match the
+system.</p>
 </section>
 <section id="finding-sqlite-3">
 <h2>Finding SQLite 3<a class="headerlink" href="#finding-sqlite-3" title="Permalink to this headline">¶</a></h2>
@@ -463,6 +474,7 @@ in the source.</p>
 <li><a class="reference internal" href="#build-build-ext">build/build_ext</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#matching-apsw-and-sqlite-options">Matching APSW and SQLite options</a></li>
 <li><a class="reference internal" href="#finding-sqlite-3">Finding SQLite 3</a></li>
 <li><a class="reference internal" href="#recommended">Recommended</a></li>
 <li><a class="reference internal" href="#source-distribution-advanced">Source distribution (advanced)</a></li>
@@ -513,14 +525,14 @@ in the source.</p>
         <li class="right" >
           <a href="download.html" title="Download"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.2.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.3.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Building</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Sep 04, 2022.
+      Last updated on Sep 11, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
