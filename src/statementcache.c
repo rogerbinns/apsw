@@ -65,6 +65,7 @@ typedef struct StatementCache
   unsigned no_cache;  /* can cache was false */
   unsigned hits;      /* found in cache */
   unsigned misses;    /* not found in cache */
+  unsigned no_vdbe;   /* no bytecode emitted */
 } StatementCache;
 
 /* we don't bother caching larger than this many bytes */
@@ -231,6 +232,7 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   statement->vdbestatement = vdbestatement;
   statement->query_size = tail - utf8;
   statement->utf8_size = utf8size;
+  statement->uses = 1;
   memcpy(&statement->options, options, sizeof(APSWStatementOptions));
 
   if (!statementcache_hasmore(statement))
@@ -247,6 +249,7 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
     Py_INCREF(query);
   }
   *statement_out = statement;
+  if(!vdbestatement) sc->no_vdbe++;
   return SQLITE_OK;
 }
 
@@ -360,6 +363,7 @@ statementcache_stats(StatementCache *sc, int include_entries)
                       "evictions", sc->evictions,
                       "no_cache", sc->no_cache,
                       "hits", sc->hits,
+                      "no_vdbe", sc->no_vdbe,
                       "misses", sc->misses);
   if (res && include_entries)
   {

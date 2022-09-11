@@ -610,6 +610,17 @@
 } while(0)
 
 
+#define  Connection_cache_stats_DOC "cache_stats($self,include_entries=False)\n--\n\nConnection.cache_stats(include_entries: bool = False) -> Dict[str, int]\n\n" \
+"Returns information about the statement cache as dict.\n" 
+
+#define Connection_cache_stats_USAGE "Connection.cache_stats(include_entries: bool = False) -> Dict[str, int]"
+
+#define Connection_cache_stats_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(include_entries), int)); \
+  assert(include_entries == 0); \
+} while(0)
+
+
 #define  Connection_changes_DOC "changes($self)\n--\n\nConnection.changes() -> int\n\n" \
 "Returns the number of database rows that were changed (or inserted\n" \
 "or deleted) by the most recently completed INSERT, UPDATE, or DELETE\n" \
@@ -933,14 +944,14 @@
 "<https://sqlite.org/lang_savepoint.html>`_ functionality introduced in\n" \
 "SQLite 3.6.8 is used to provide nested transactions.\n" 
 
-#define  Connection_execute_DOC "execute($self,statements,bindings=None)\n--\n\nConnection.execute(statements: str, bindings: Optional[Bindings] = None) -> Cursor\n\n" \
+#define  Connection_execute_DOC "execute($self,statements,bindings=None,*,can_cache=True,prepare_flags=0)\n--\n\nConnection.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor\n\n" \
 "Executes the statements using the supplied bindings.  Execution\n" \
 "returns when the first row is available or all statements have\n" \
 "completed.  (A cursor is automatically obtained).\n" \
 "\n" \
 "See :meth:`Cursor.execute` for more details.\n" 
 
-#define  Connection_executemany_DOC "executemany($self,statements,sequenceofbindings)\n--\n\nConnection.executemany(statements: str, sequenceofbindings:Sequence[Bindings]) -> Cursor\n\n" \
+#define  Connection_executemany_DOC "executemany($self,statements,sequenceofbindings,*,can_cache=True,prepare_flags=0)\n--\n\nConnection.executemany(statements: str, sequenceofbindings:Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor\n\n" \
 "This method is for when you want to execute the same statements over a\n" \
 "sequence of bindings, such as inserting into a database.  (A cursor is\n" \
 "automatically obtained).\n" \
@@ -1621,7 +1632,7 @@
 "  * `sqlite3_column_table_name <https://sqlite.org/c3ref/column_database_name.html>`__\n" \
 "  * `sqlite3_column_origin_name <https://sqlite.org/c3ref/column_database_name.html>`__\n" 
 
-#define  Cursor_execute_DOC "execute($self,statements,bindings=None)\n--\n\nCursor.execute(statements: str, bindings: Optional[Bindings] = None) -> Cursor\n\n" \
+#define  Cursor_execute_DOC "execute($self,statements,bindings=None,*,can_cache=True,prepare_flags=0)\n--\n\nCursor.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor\n\n" \
 "Executes the statements using the supplied bindings.  Execution\n" \
 "returns when the first row is available or all statements have\n" \
 "completed.\n" \
@@ -1681,16 +1692,20 @@
 "  * `sqlite3_bind_blob <https://sqlite.org/c3ref/bind_blob.html>`__\n" \
 "  * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__\n" 
 
-#define Cursor_execute_USAGE "Cursor.execute(statements: str, bindings: Optional[Bindings] = None) -> Cursor"
+#define Cursor_execute_USAGE "Cursor.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor"
 
 #define Cursor_execute_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(statements), PyObject *)); \
   assert(__builtin_types_compatible_p(typeof(bindings), PyObject *)); \
   assert(bindings == NULL); \
+  assert(__builtin_types_compatible_p(typeof(can_cache), int)); \
+  assert(can_cache == 1); \
+  assert(__builtin_types_compatible_p(typeof(prepare_flags), int)); \
+  assert(prepare_flags == (0)); \
 } while(0)
 
 
-#define  Cursor_executemany_DOC "executemany($self,statements,sequenceofbindings)\n--\n\nCursor.executemany(statements: str, sequenceofbindings: Sequence[Bindings]) -> Cursor\n\n" \
+#define  Cursor_executemany_DOC "executemany($self,statements,sequenceofbindings,*,can_cache=True,prepare_flags=0)\n--\n\nCursor.executemany(statements: str, sequenceofbindings: Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor\n\n" \
 "This method is for when you want to execute the same statements over\n" \
 "a sequence of bindings.  Conceptually it does this::\n" \
 "\n" \
@@ -1710,11 +1725,15 @@
 "statements can return data.  See :meth:`~Cursor.execute` for more\n" \
 "information.\n" 
 
-#define Cursor_executemany_USAGE "Cursor.executemany(statements: str, sequenceofbindings: Sequence[Bindings]) -> Cursor"
+#define Cursor_executemany_USAGE "Cursor.executemany(statements: str, sequenceofbindings: Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor"
 
 #define Cursor_executemany_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(statements), PyObject *)); \
   assert(__builtin_types_compatible_p(typeof(sequenceofbindings), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(can_cache), int)); \
+  assert(can_cache == 1); \
+  assert(__builtin_types_compatible_p(typeof(prepare_flags), int)); \
+  assert(prepare_flags == (0)); \
 } while(0)
 
 

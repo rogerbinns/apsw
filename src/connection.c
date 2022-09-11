@@ -3649,6 +3649,14 @@ fail:
 
 Returns information about the statement cache as dict.
 
+.. note::
+
+  Calling execute with "select a; select b; insert into c ..." will
+  result in 3 cache entries corresponding to each of the 3 queries
+  present.
+
+The returned dictionary has the following information.
+
 .. list-table::
   :header-rows: 1
 
@@ -3668,14 +3676,13 @@ Returns information about the statement cache as dict.
     - A match was found in the cache
   * - misses
     - No match was found in the cache
+  * - no_vdbe
+    - The statement was empty (eg a comment) or SQLite took action
+      during parsing (eg some pragmas).  These are not cached.
   * - entries
-    - A list of the cache entries
+    - (Only present if `include_entries` is True) A list of the cache entries
 
-.. note::
-
-  Calling execute with "select a; select b; insert into c ..." will
-  result in 3 cache entries corresponding to each of the 3 queries
-  present.
+If `entries` is present, then each list entry is a dict with the following information.
 
 .. list-table:: Cache entry
   :header-rows: 1

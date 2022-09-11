@@ -581,6 +581,10 @@ class Connection:
         Calls: `sqlite3_blob_open <https://sqlite.org/c3ref/blob_open.html>`__"""
         ...
 
+    def cache_stats(self, include_entries: bool = False) -> Dict[str, int]:
+        """Returns information about the statement cache as dict."""
+        ...
+
     def changes(self) -> int:
         """Returns the number of database rows that were changed (or inserted
         or deleted) by the most recently completed INSERT, UPDATE, or DELETE
@@ -842,7 +846,7 @@ class Connection:
         SQLite 3.6.8 is used to provide nested transactions."""
         ...
 
-    def execute(self, statements: str, bindings: Optional[Bindings] = None) -> Cursor:
+    def execute(self, statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor:
         """Executes the statements using the supplied bindings.  Execution
         returns when the first row is available or all statements have
         completed.  (A cursor is automatically obtained).
@@ -850,7 +854,7 @@ class Connection:
         See :meth:`Cursor.execute` for more details."""
         ...
 
-    def executemany(self, statements: str, sequenceofbindings:Sequence[Bindings]) -> Cursor:
+    def executemany(self, statements: str, sequenceofbindings:Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor:
         """This method is for when you want to execute the same statements over a
         sequence of bindings, such as inserting into a database.  (A cursor is
         automatically obtained).
@@ -1347,7 +1351,7 @@ class Cursor:
       * `sqlite3_column_table_name <https://sqlite.org/c3ref/column_database_name.html>`__
       * `sqlite3_column_origin_name <https://sqlite.org/c3ref/column_database_name.html>`__"""
 
-    def execute(self, statements: str, bindings: Optional[Bindings] = None) -> Cursor:
+    def execute(self, statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor:
         """Executes the statements using the supplied bindings.  Execution
         returns when the first row is available or all statements have
         completed.
@@ -1408,7 +1412,7 @@ class Cursor:
           * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__"""
         ...
 
-    def executemany(self, statements: str, sequenceofbindings: Sequence[Bindings]) -> Cursor:
+    def executemany(self, statements: str, sequenceofbindings: Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor:
         """This method is for when you want to execute the same statements over
         a sequence of bindings.  Conceptually it does this::
 
