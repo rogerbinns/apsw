@@ -28,7 +28,7 @@ Comprehensive `type annotations
 <https://docs.python.org/3/library/typing.html>`__ are included, and
 your code using apsw can be checked using tools like `mypy
 <http://mypy-lang.org/>`__.  You can refer to the types below for
-your annotations (eg as :code:`apsw.SQLiteValue`)
+your annotations (eg as :class:`apsw.SQLiteValue`)
 
 .. include:: ../doc/typing.rstgen
 
