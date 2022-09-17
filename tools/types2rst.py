@@ -25,7 +25,8 @@ def process(module: ast.Module, source: str) -> List[Tuple[str, str, str]]:
 
 
 # stuff defined in standard library
-std = {"Union", "Callable", "Tuple", "Dict", "List", "Optional", "Any", "Sequence"}
+std_typing = {"Union", "Callable", "Tuple", "Dict", "List", "Optional", "Any", "Sequence"}
+std_other = {"None", "int", "float", "bytes", "str", "dict", "tuple"}
 
 # from apsw
 apswmod = {"zeroblob", "Cursor", "Connection"}
@@ -33,8 +34,10 @@ apswmod = {"zeroblob", "Cursor", "Connection"}
 
 def sub(m: re.Match) -> str:
     text = m.group(0)
-    if text in std:
+    if text in std_typing:
         return f"`{ text } <https://docs.python.org/3/library/typing.html#typing.{ text }>`__ "
+    if text in std_other:
+        return f"`{ text } <https://docs.python.org/3/library/stdtypes.html#{ text }>`__"
     return f":class:`{ text }`"
 
 
@@ -44,7 +47,7 @@ def output(doc: List[Tuple[str, str, str]]) -> str:
     for name, _, _ in doc:
         indoc.add(name)
     indoc.update(apswmod)
-    pattern = "\\b(" + "|".join(std.union(indoc)) + ")\\b"
+    pattern = "\\b(" + "|".join(std_other.union(std_typing.union(indoc))) + ")\\b"
 
     res = ""
     for name, value, descr in doc:
