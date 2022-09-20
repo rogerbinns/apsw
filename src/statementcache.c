@@ -66,6 +66,7 @@ typedef struct StatementCache
   unsigned hits;      /* found in cache */
   unsigned misses;    /* not found in cache */
   unsigned no_vdbe;   /* no bytecode emitted */
+  unsigned too_big;    /* query was bigger than SC_MAX_ITEM_SIZE */
 } StatementCache;
 
 /* we don't bother caching larger than this many bytes */
@@ -128,7 +129,10 @@ statementcache_finalize(StatementCache *sc, APSWStatement *statement)
     if (sc->next_eviction == sc->maxentries)
       sc->next_eviction = 0;
     if (evictee)
+    {
       statementcache_free_statement(sc, evictee);
+      sc->evictions++;
+    }
   }
   else
   {
@@ -228,6 +232,12 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
     }
   }
 
+  sc->misses++;
+  if (!options->can_cache)
+    sc->no_cache++;
+  else if (utf8size >= SC_MAX_ITEM_SIZE)
+    sc->too_big++;
+
   statement->hash = hash;
   statement->vdbestatement = vdbestatement;
   statement->query_size = tail - utf8;
@@ -249,7 +259,8 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
     Py_INCREF(query);
   }
   *statement_out = statement;
-  if(!vdbestatement) sc->no_vdbe++;
+  if (!vdbestatement)
+    sc->no_vdbe++;
   return SQLITE_OK;
 }
 
@@ -357,14 +368,16 @@ statementcache_stats(StatementCache *sc, int include_entries)
      update this */
   PyObject *res = NULL, *entries = NULL, *entry = NULL;
 
-  res = Py_BuildValue("{s: I, s: I, s: I, s: I, s: I, s: I}",
+  res = Py_BuildValue("{s: I, s: I, s: I, s: I, s: I, s: I, s: I, s: I, s: I}",
                       "size", sc->maxentries,
-                      "highest_used", sc->highest_used,
                       "evictions", sc->evictions,
                       "no_cache", sc->no_cache,
                       "hits", sc->hits,
                       "no_vdbe", sc->no_vdbe,
-                      "misses", sc->misses);
+                      "misses", sc->misses,
+                      "too_big", sc->too_big,
+                      "no_cache", sc->no_cache,
+                      "max_cacheable_bytes", SC_MAX_ITEM_SIZE);
   if (res && include_entries)
   {
     entries = PyList_New(0);
@@ -372,13 +385,14 @@ statementcache_stats(StatementCache *sc, int include_entries)
       goto fail;
 
     unsigned i;
-    for (i = 0; i <= sc->highest_used; i++)
+    for (i = 0; sc->hashes && i <= sc->highest_used; i++)
     {
       if (sc->hashes[i] != SC_SENTINEL_HASH)
       {
         APSWStatement *stmt = sc->caches[i];
-        entry = Py_BuildValue("{s: s#, s: i, s: I}",
-                              "query", stmt->utf8, stmt->utf8_size,
+        entry = Py_BuildValue("{s: s#, s: O, s: i, s: I}",
+                              "query", stmt->utf8, stmt->query_size,
+                              "has_more", (stmt->query_size == stmt->utf8_size) ? Py_False : Py_True,
                               "prepare_flags", stmt->options.prepare_flags,
                               "uses", stmt->uses);
         if (PyList_Append(entries, entry))

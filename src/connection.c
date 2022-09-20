@@ -3663,38 +3663,45 @@ The returned dictionary has the following information.
   * - Key
     - Explanation
   * - size
-    - Number of entries in the cache
-  * - highest_used
-    - Largest entry number that was ever used.  If this is less than
-      size then the cache was never full.
+    - Maximum number of entries in the cache
   * - evictions
-    - How many entries were removed (expired) to make space for a new
+    - How many entries were removed (expired) to make space for a newer
       entry
   * - no_cache
     - Queries that had can_cache parameter set to False
   * - hits
     - A match was found in the cache
   * - misses
-    - No match was found in the cache
+    - No match was found in the cache, or the cache couldn't be used
   * - no_vdbe
     - The statement was empty (eg a comment) or SQLite took action
-      during parsing (eg some pragmas).  These are not cached.
+      during parsing (eg some pragmas).  These are not cached and also
+      included in the misses count
+  * - too_big
+    - UTF8 query size was larger than considered for caching.  These are also included
+      in the misses count.
+  * - max_cacheable_bytes
+    - Maximum size of query (in bytes of utf8) that will be considered for caching
   * - entries
     - (Only present if `include_entries` is True) A list of the cache entries
 
 If `entries` is present, then each list entry is a dict with the following information.
 
-.. list-table:: Cache entry
+.. list-table::
   :header-rows: 1
 
   * - Key
     - Explanation
   * - query
-    - Text of the query itself
+    - Text of the query itself (first statement only)
   * - prepare_flags
-    - Flags passed to sqlite3_prepare_v3 for this query
+    - Flags passed to `sqlite3_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__
+      for this query
   * - uses
     - How many times this entry has been (re)used
+  * - has_more
+    - Boolean indicating if there was more query text than
+      the first statement
 
 */
 static PyObject *
