@@ -8266,6 +8266,13 @@ shell.write(shell.stdout, "hello world\\n")
         except apsw.NoMemError:
             pass
 
+        ### statement cache stuff
+        for key in ("SCStatsBuildFail", "SCStatsListFail", "SCStatsEntryBuildFail", "SCStatsAppendFail", "SCStatsEntriesSetFail"):
+            # this ensures stuff is in statement cache
+            self.db.execute("Select ?", (key,)).fetchall()
+            apsw.faultdict[key] = True
+            self.assertRaises(MemoryError, self.db.cache_stats, True)
+
         ### vfs routines
 
         class FaultVFS(apsw.VFS):

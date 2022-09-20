@@ -66,7 +66,7 @@ typedef struct StatementCache
   unsigned hits;      /* found in cache */
   unsigned misses;    /* not found in cache */
   unsigned no_vdbe;   /* no bytecode emitted */
-  unsigned too_big;    /* query was bigger than SC_MAX_ITEM_SIZE */
+  unsigned too_big;   /* query was bigger than SC_MAX_ITEM_SIZE */
 } StatementCache;
 
 /* we don't bother caching larger than this many bytes */
@@ -368,19 +368,22 @@ statementcache_stats(StatementCache *sc, int include_entries)
      update this */
   PyObject *res = NULL, *entries = NULL, *entry = NULL;
 
-  res = Py_BuildValue("{s: I, s: I, s: I, s: I, s: I, s: I, s: I, s: I, s: I}",
-                      "size", sc->maxentries,
-                      "evictions", sc->evictions,
-                      "no_cache", sc->no_cache,
-                      "hits", sc->hits,
-                      "no_vdbe", sc->no_vdbe,
-                      "misses", sc->misses,
-                      "too_big", sc->too_big,
-                      "no_cache", sc->no_cache,
-                      "max_cacheable_bytes", SC_MAX_ITEM_SIZE);
+  APSW_FAULT_INJECT(SCStatsBuildFail,
+                    res = Py_BuildValue("{s: I, s: I, s: I, s: I, s: I, s: I, s: I, s: I, s: I}",
+                                        "size", sc->maxentries,
+                                        "evictions", sc->evictions,
+                                        "no_cache", sc->no_cache,
+                                        "hits", sc->hits,
+                                        "no_vdbe", sc->no_vdbe,
+                                        "misses", sc->misses,
+                                        "too_big", sc->too_big,
+                                        "no_cache", sc->no_cache,
+                                        "max_cacheable_bytes", SC_MAX_ITEM_SIZE),
+                    PyErr_NoMemory());
   if (res && include_entries)
   {
-    entries = PyList_New(0);
+    int pycres;
+    APSW_FAULT_INJECT(SCStatsListFail, entries = PyList_New(0), entries = PyErr_NoMemory());
     if (!entries)
       goto fail;
 
@@ -390,17 +393,23 @@ statementcache_stats(StatementCache *sc, int include_entries)
       if (sc->hashes[i] != SC_SENTINEL_HASH)
       {
         APSWStatement *stmt = sc->caches[i];
-        entry = Py_BuildValue("{s: s#, s: O, s: i, s: I}",
-                              "query", stmt->utf8, stmt->query_size,
-                              "has_more", (stmt->query_size == stmt->utf8_size) ? Py_False : Py_True,
-                              "prepare_flags", stmt->options.prepare_flags,
-                              "uses", stmt->uses);
-        if (PyList_Append(entries, entry))
+        APSW_FAULT_INJECT(SCStatsEntryBuildFail,
+                          entry = Py_BuildValue("{s: s#, s: O, s: i, s: I}",
+                                                "query", stmt->utf8, stmt->query_size,
+                                                "has_more", (stmt->query_size == stmt->utf8_size) ? Py_False : Py_True,
+                                                "prepare_flags", stmt->options.prepare_flags,
+                                                "uses", stmt->uses),
+                          entry = PyErr_NoMemory());
+        if (!entry)
+          goto fail;
+        APSW_FAULT_INJECT(SCStatsAppendFail, pycres = PyList_Append(entries, entry), (PyErr_NoMemory(), pycres = -1));
+        if (pycres)
           goto fail;
         Py_CLEAR(entry);
       }
     }
-    if (PyDict_SetItemString(res, "entries", entries))
+    APSW_FAULT_INJECT(SCStatsEntriesSetFail, pycres = PyDict_SetItemString(res, "entries", entries), (PyErr_NoMemory(), pycres = -1));
+    if (pycres)
       goto fail;
     Py_DECREF(entries);
   }
