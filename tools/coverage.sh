@@ -13,7 +13,7 @@ fi
 # Measure code coverage
 GCOVOPTS="-b -c"
 GCOVOPTS=""
-rm -f *.gcda *.gcov *.gcno sqlite3/*.gcov apsw.so apsw.*.so
+rm -f *.gcda *.gcov *.gcno sqlite3/*.gcov apsw/*.so
 # find python
 PYTHON=${PYTHON:-python3} # use whatever is in the path
 INCLUDEDIR=`$PYTHON -c "import sysconfig; print(sysconfig.get_path('include'))"`
