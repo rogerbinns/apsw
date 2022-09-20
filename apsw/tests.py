@@ -28,7 +28,7 @@ TESTFILEPREFIX = os.environ.get("APSWTESTPREFIX", "")
 
 def read_whole_file(name, mode, encoding=None):
     if "t" in mode and not encoding:
-        encoding="utf8"
+        encoding = "utf8"
     if encoding:
         f = open(name, mode, encoding=encoding)
     else:
@@ -42,7 +42,7 @@ def read_whole_file(name, mode, encoding=None):
 # If two is present then one is encoding
 def write_whole_file(name, mode, data, *, encoding=None):
     if "t" in mode and not encoding:
-        encoding="utf8"
+        encoding = "utf8"
     if encoding:
         f = open(name, mode, encoding=encoding)
     else:
@@ -128,12 +128,14 @@ def randomstring(length):
 # An instance of this class is used to get the -1 return value to the
 # C api PyObject_IsTrue
 class BadIsTrue(int):
+
     def __bool__(self):
         1 / 0
 
 
 # helper class - runs code in a separate thread
 class ThreadRunner(threading.Thread):
+
     def __init__(self, callable, *args, **kwargs):
         threading.Thread.__init__(self)
         self.daemon - True
@@ -463,61 +465,75 @@ class APSW(unittest.TestCase):
                 break
             expected.append(t)
         self.assertEqual(expected, self.db.db_names())
-        while len(expected)>2:
-            i =random.randint(2, len(expected)-1)
+        while len(expected) > 2:
+            i = random.randint(2, len(expected) - 1)
             self.db.cursor().execute(f"detach '{ expected[i] }'")
             del expected[i]
             self.assertEqual(expected, self.db.db_names())
 
-
     def testBackwardsCompatibility(self):
         "Verifies changed names etc are still accessible through the old ones"
         # depends on pep562 which is python 3.7 onwards
-        if sys.version_info>=(3, 7):
+        if sys.version_info >= (3, 7):
             self.assertIs(apsw.main, apsw.shell.main)
             self.assertIs(apsw.Shell, apsw.shell.Shell)
 
     def testCursorFactory(self):
         "Test Connection.cursor_factory"
-        seqbindings=((3,),)*3
+        seqbindings = ((3, ), ) * 3
         self.assertEqual(self.db.cursor_factory, apsw.Cursor)
         for not_callable in (None, apsw, 3):
             try:
                 self.db.cursor_factory = not_callable
-                1/0
+                1 / 0
             except TypeError:
                 pass
+
         def error():
-            1/0
+            1 / 0
+
         self.db.cursor_factory = error
         self.assertRaises(TypeError, self.db.execute, "select 3")
         self.assertRaises(TypeError, self.db.executemany, "select 3", seqbindings)
+
         def error(_):
             return 3
+
         self.db.cursor_factory = error
         self.assertRaises(TypeError, self.db.execute, "select 3")
         self.assertRaises(TypeError, self.db.executemany, "select 3")
+
         class error:
+
             def __init__(self, _):
                 pass
+
         self.db.cursor_factory = error
         self.assertRaises(AttributeError, self.db.execute, "select 3")
         self.assertRaises(AttributeError, self.db.executemany, "select ?", seqbindings)
-        class inherits(apsw.Cursor): pass
+
+        class inherits(apsw.Cursor):
+            pass
+
         self.db.cursor_factory = inherits
         self.assertEqual(self.db.execute("select 3").fetchall(), self.db.cursor().execute("select 3").fetchall())
-        self.assertEqual(self.db.executemany("select ?", seqbindings).fetchall(), self.db.cursor().executemany("select ?", seqbindings).fetchall())
+        self.assertEqual(
+            self.db.executemany("select ?", seqbindings).fetchall(),
+            self.db.cursor().executemany("select ?", seqbindings).fetchall())
         # kwargs
-        self.assertEqual(self.db.execute(bindings=tuple(), statements="select 3").fetchall(), self.db.cursor().execute(bindings=None, statements="select 3").fetchall())
-        self.assertEqual(self.db.executemany(sequenceofbindings=seqbindings, statements="select ?").fetchall(), self.db.cursor().executemany(statements="select ?", sequenceofbindings=seqbindings).fetchall())
-
+        self.assertEqual(
+            self.db.execute(bindings=tuple(), statements="select 3").fetchall(),
+            self.db.cursor().execute(bindings=None, statements="select 3").fetchall())
+        self.assertEqual(
+            self.db.executemany(sequenceofbindings=seqbindings, statements="select ?").fetchall(),
+            self.db.cursor().executemany(statements="select ?", sequenceofbindings=seqbindings).fetchall())
 
         # check cursor_factory across closes
         class big:
             # make the class consume some memory
-            memory=b"12345678" * 4096
+            memory = b"12345678" * 4096
 
-        db2=apsw.Connection("")
+        db2 = apsw.Connection("")
         self.assertEqual(db2.cursor_factory, apsw.Cursor)
         db2.cursor_factory = big
         self.assertEqual(db2.cursor_factory, big)
@@ -771,8 +787,11 @@ class APSW(unittest.TestCase):
         )
         c.execute("drop table foo; create table foo (%s)" % (", ".join(["[%s] %s" % (n, t) for n, t in cols]), ))
         c.execute("insert into foo([x a space]) values(1)")
-        c.execute("create temp table two(fred banana); insert into two values(7); create temp view three as select fred as [a space] from two")
-        has_full=any(o=="ENABLE_COLUMN_METADATA" or o.startswith("ENABLE_COLUMN_METADATA=") for o in apsw.compile_options) if apsw.using_amalgamation else hasattr(c, "description_full")
+        c.execute(
+            "create temp table two(fred banana); insert into two values(7); create temp view three as select fred as [a space] from two"
+        )
+        has_full = any(o == "ENABLE_COLUMN_METADATA" or o.startswith("ENABLE_COLUMN_METADATA=")
+                       for o in apsw.compile_options) if apsw.using_amalgamation else hasattr(c, "description_full")
         for row in c.execute("select * from foo"):
             self.assertEqual(cols, c.getdescription())
             self.assertEqual(has_full, hasattr(c, "description_full"))
@@ -781,7 +800,11 @@ class APSW(unittest.TestCase):
             self.assertEqual(list(map(len, c.description)), [7] * len(cols))
         if has_full:
             for row in c.execute("select * from foo join three"):
-                self.assertEqual(c.description_full, (('x a space', 'INTEGER', 'main', 'foo', 'x a space'), ('y', 'TEXT', 'main', 'foo', 'y'), ('z', 'foo', 'main', 'foo', 'z'), ('a', 'char', 'main', 'foo', 'a'), ('êã', 'öû', 'main', 'foo', 'êã'), ('a space', 'banana', 'temp', 'two', 'fred')))
+                self.assertEqual(c.description_full,
+                                 (('x a space', 'INTEGER', 'main', 'foo', 'x a space'),
+                                  ('y', 'TEXT', 'main', 'foo', 'y'), ('z', 'foo', 'main', 'foo', 'z'),
+                                  ('a', 'char', 'main', 'foo', 'a'), ('êã', 'öû', 'main', 'foo', 'êã'),
+                                  ('a space', 'banana', 'temp', 'two', 'fred')))
         # check description caching isn't broken
         cols2 = cols[1:4]
         for row in c.execute("select y,z,a from foo"):
@@ -1346,6 +1369,7 @@ class APSW(unittest.TestCase):
 
         # aggregate function
         class longest:
+
             def __init__(self):
                 self.result = ""
 
@@ -1395,6 +1419,7 @@ class APSW(unittest.TestCase):
 
         # SQLite doesn't allow step functions to return an error, so we have to defer to the final
         def badfactory():
+
             def badfunc(*args):
                 1 / 0
 
@@ -1409,6 +1434,7 @@ class APSW(unittest.TestCase):
 
         # error in final
         def badfactory():
+
             def badfunc(*args):
                 pass
 
@@ -1422,6 +1448,7 @@ class APSW(unittest.TestCase):
 
         # error in step and final
         def badfactory():
+
             def badfunc(*args):
                 1 / 0
 
@@ -1435,6 +1462,7 @@ class APSW(unittest.TestCase):
 
         # bad return from factory
         def badfactory():
+
             def badfunc(*args):
                 pass
 
@@ -1448,6 +1476,7 @@ class APSW(unittest.TestCase):
 
         # incorrect number of items returned
         def badfactory():
+
             def badfunc(*args):
                 pass
 
@@ -1461,6 +1490,7 @@ class APSW(unittest.TestCase):
 
         # step not callable
         def badfactory():
+
             def badfunc(*args):
                 pass
 
@@ -1474,6 +1504,7 @@ class APSW(unittest.TestCase):
 
         # final not callable
         def badfactory():
+
             def badfunc(*args):
                 pass
 
@@ -2311,7 +2342,7 @@ class APSW(unittest.TestCase):
             frames = []
             while tb:
                 frames.append(tb.tb_frame)
-                tb=tb.tb_next
+                tb = tb.tb_next
         except:
             self.fail("Wrong exception type")
 
@@ -2321,7 +2352,7 @@ class APSW(unittest.TestCase):
         self.assertTrue(frame.f_lineno > 100)
         self.assertTrue(frame.f_code.co_name.endswith("-badfunc"))
         # check local variables
-        if platform.python_implementation()!="PyPy":
+        if platform.python_implementation() != "PyPy":
             l = frame.f_locals
             self.assertIn("NumberOfArguments", l)
             self.assertEqual(l["NumberOfArguments"], 3)
@@ -2363,6 +2394,7 @@ class APSW(unittest.TestCase):
         "Test C function that converts exception into SQLite error code"
 
         class Source:
+
             def Create1(self, *args):
                 e = apsw.IOError()
                 e.extendedresult = apsw.SQLITE_IOERR_ACCESS
@@ -2434,6 +2466,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(AttributeError, cur.execute, "create virtual table xyzzy using testmod(x,y,z)")
 
         class Source:
+
             def __init__(self, *expectargs):
                 self.expectargs = expectargs
 
@@ -2463,7 +2496,9 @@ class APSW(unittest.TestCase):
                 return "way", "too", "many", "items", 3
 
             def CreateBadSequence(self, *args):
+
                 class badseq(object):
+
                     def __getitem__(self, which):
                         if which != 0:
                             1 / 0
@@ -2498,6 +2533,7 @@ class APSW(unittest.TestCase):
 
         # a good version of Source
         class Source:
+
             def Create(self, *args):
                 return dataschema, VTable(list(data))
 
@@ -3064,6 +3100,7 @@ class APSW(unittest.TestCase):
             return columns, data
 
         class Source:
+
             def Create(self, db, modulename, dbname, tablename, *args):
                 columns, data = getfiledata([eval(a) for a in args])  # eval strips off layer of quotes
                 schema = "create table foo(" + ','.join(["'%s'" % (x, ) for x in columns[1:]]) + ")"
@@ -3072,6 +3109,7 @@ class APSW(unittest.TestCase):
             Connect = Create
 
         class Table:
+
             def __init__(self, columns, data):
                 self.columns = columns
                 self.data = data
@@ -3088,6 +3126,7 @@ class APSW(unittest.TestCase):
             Destroy = Disconnect
 
         class Cursor:
+
             def __init__(self, table):
                 self.table = table
 
@@ -3509,6 +3548,7 @@ class APSW(unittest.TestCase):
         "Issue 103: Error handling when sqlite3_declare_vtab fails"
 
         class Source:
+
             def Create(self, *args):
                 return "create table x(delete)", None
 
@@ -3646,6 +3686,7 @@ class APSW(unittest.TestCase):
         "Indirect descendents of VFS should support WAL (in addition to direct subclasses)"
 
         class vfswrapped(apsw.VFS):
+
             def __init__(self):
                 self.myname = "testIssue311"
                 self.base = ""
@@ -3655,6 +3696,7 @@ class APSW(unittest.TestCase):
                 return vfsfilewrap(self.base, name, flags)
 
         class vfsfilewrap(apsw.VFSFile):
+
             def __init__(self, parent, name, flags):
                 apsw.VFSFile.__init__(self, parent, name, flags)
 
@@ -3677,6 +3719,7 @@ class APSW(unittest.TestCase):
         cleared = []
 
         class SelfReferencer:
+
             def __del__(self):
                 cleared.append(id(self))
 
@@ -3915,10 +3958,9 @@ class APSW(unittest.TestCase):
                 "order": ("use", "closed")
             },
             "Connection": {
-                "skip":
-                ("internal_cleanup", "dealloc", "init", "close", "interrupt", "close_internal", "remove_dependent",
-                 "readonly", "getmainfilename", "db_filename", "traverse", "clear", "tp_traverse", "get_cursor_factory",
-                 "set_cursor_factory"),
+                "skip": ("internal_cleanup", "dealloc", "init", "close", "interrupt", "close_internal",
+                         "remove_dependent", "readonly", "getmainfilename", "db_filename", "traverse", "clear",
+                         "tp_traverse", "get_cursor_factory", "set_cursor_factory"),
                 "req": {
                     "use": "CHECK_USE",
                     "closed": "CHECK_CLOSED",
@@ -4274,10 +4316,12 @@ class APSW(unittest.TestCase):
 
         # Make sure inheritance works
         class multi:
+
             def __init__(self, *args):
                 self.foo = 3
 
         class derived(apsw.zeroblob):
+
             def __init__(self, num):
                 #multi.__init__(self)
                 apsw.zeroblob.__init__(self, num)
@@ -4513,6 +4557,7 @@ class APSW(unittest.TestCase):
         assertEqual = self.assertEqual
 
         class TVFS(apsw.VFS):
+
             def __init__(self):
                 apsw.VFS.__init__(self, "uritest", "")
 
@@ -4574,6 +4619,7 @@ class APSW(unittest.TestCase):
             return bytes([x ^ 0xa5 for x in data])
 
         class ObfuscatedVFSFile(apsw.VFSFile):
+
             def __init__(self, inheritfromvfsname, filename, flags):
                 apsw.VFSFile.__init__(self, inheritfromvfsname, filename, flags)
 
@@ -4584,6 +4630,7 @@ class APSW(unittest.TestCase):
                 super(ObfuscatedVFSFile, self).xWrite(encryptme(data), offset)
 
         class ObfuscatedVFS(apsw.VFS):
+
             def __init__(self, vfsname="obfu", basevfs=""):
                 self.vfsname = vfsname
                 self.basevfs = basevfs
@@ -4667,6 +4714,7 @@ class APSW(unittest.TestCase):
             next(db.cursor().execute("select randomblob(10)"))
 
         class RandomVFSUpper(apsw.VFS):
+
             def __init__(self):
                 apsw.VFS.__init__(self, "randomupper", defvfs)
 
@@ -4674,6 +4722,7 @@ class APSW(unittest.TestCase):
                 return b"\xaa\xbb"
 
         class RandomVFS(apsw.VFS):
+
             def __init__(self):
                 apsw.VFS.__init__(self, "random", "randomupper", makedefault=True)
 
@@ -4738,6 +4787,7 @@ class APSW(unittest.TestCase):
                 raise apsw.exceptionfor(apsw.SQLITE_IOERR)
 
         class TestVFS(apsw.VFS):
+
             def init1(self):
                 super(TestVFS, self).__init__("apswtest")
 
@@ -4986,7 +5036,9 @@ class APSW(unittest.TestCase):
                 return -0x7fffffff - 200, None
 
             def xGetLastError7(self):
+
                 class te(tuple):
+
                     def __getitem__(self, n):
                         if n == 0:
                             return 23
@@ -5049,6 +5101,7 @@ class APSW(unittest.TestCase):
                 return super(TestVFS, self).xSetSystemCall(name, ptr)
 
         class TestFile(apsw.VFSFile):
+
             def init1(self, name, flags):
                 super(TestFile, self).__init__("bogus", "arguments")
 
@@ -5077,7 +5130,9 @@ class APSW(unittest.TestCase):
                 super(TestFile, self).__init__("", name, (6, "six"))
 
             def init10(self, name, flags):
+
                 class badlist(list):  # doesn't allows setting an element
+
                     def __init__(self, *args):
                         super(badlist, self).__init__(args)
 
@@ -5461,6 +5516,7 @@ class APSW(unittest.TestCase):
         if "unix" in apsw.vfsnames() and "APSW_NO_MEMLEAK" not in os.environ:
 
             class VFS2(apsw.VFS):
+
                 def __init__(self):
                     apsw.VFS.__init__(self, "apswtest2", "apswtest")
 
@@ -5728,6 +5784,7 @@ class APSW(unittest.TestCase):
             testdb(closedb=False).filecontrol("main", 1028, ctypes.addressof(objwrap))
         # for coverage
         class VFSx(apsw.VFS):
+
             def __init__(self):
                 apsw.VFS.__init__(self, "filecontrol", "apswtest")
 
@@ -6108,6 +6165,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.SQLError, self.db.readonly, "sdfsd")
 
         class foo:
+
             def __str__(self):
                 1 / 0
 
@@ -6315,6 +6373,7 @@ class APSW(unittest.TestCase):
         reset()
 
         class s2(shellclass):
+
             def process_unknown_args(self, args):
                 1 / 0
 
@@ -6323,6 +6382,7 @@ class APSW(unittest.TestCase):
         self.assertTrue("division" in get(fh[2]))  # py2 says "integer division", py3 says "int division"
 
         class s3(shellclass):
+
             def process_unknown_args(_, args):
                 self.assertEqual(args[0:2], ["myoption", "myvalue"])
                 return args[2:]
@@ -8014,12 +8074,14 @@ shell.write(shell.stdout, "hello world\\n")
 
         ## Virtual table code
         class Source:
+
             def Create(self, *args):
                 return "create table foo(x,y)", Table()
 
             Connect = Create
 
         class Table:
+
             def __init__(self):
                 self.data = [  #("rowid", "x", "y"),
                     [0, 1, 2], [3, 4, 5]
@@ -8040,6 +8102,7 @@ shell.write(shell.stdout, "hello world\\n")
                 return lambda *args: 1
 
         class Cursor:
+
             def __init__(self, table):
                 self.table = table
                 self.row = 0
@@ -8206,6 +8269,7 @@ shell.write(shell.stdout, "hello world\\n")
         ### vfs routines
 
         class FaultVFS(apsw.VFS):
+
             def __init__(self, name="faultvfs", inherit="", makedefault=False):
                 super(FaultVFS, self).__init__(name, inherit, makedefault=makedefault)
 
@@ -8216,6 +8280,7 @@ shell.write(shell.stdout, "hello world\\n")
                 return FaultVFSFile(name, flags)
 
         class FaultVFSFile(apsw.VFSFile):
+
             def __init__(self, name, flags):
                 super(FaultVFSFile, self).__init__("", name, flags)
 
@@ -8490,7 +8555,6 @@ shell.write(shell.stdout, "hello world\\n")
         self.assertRaises(MemoryError, self.db.db_names)
         apsw.faultdict["dbnamesappendfail"] = True
         self.assertRaises(MemoryError, self.db.db_names)
-
 
     # This test is run last by deliberate name choice.  If it did
     # uncover any bugs there isn't much that can be done to turn the
@@ -8774,6 +8838,7 @@ if __name__ == '__main__':
     setup()
 
     def runtests():
+
         def set_wal_mode(c):
             # Note that WAL won't be on for memory databases.  This
             # execution returns the active mode
