@@ -2,6 +2,22 @@ Change History
 **************
 .. currentmodule:: apsw
 
+next
+====
+
+Added :meth:`Connection.cache_stats` to provide more information about
+the statement cache.
+
+:meth:`Cursor.execute` now uses `sqlite_prepare_v3
+<https://sqlite.org/c3ref/prepare.html>`__ which allows supplying
+`flags <https://sqlite.org/c3ref/c_prepare_normalize.htm>`__.
+
+:meth:`Cursor.execute` has a new `can_cache` parameter to
+control whether the query can use the statement cache.  One example
+use is with :meth:`authorizers <Connection.setauthorizer>` because
+they only run during prepare, which doesn't happen with cached
+statements.
+
 3.39.3.0
 ========
 
