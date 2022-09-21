@@ -137,7 +137,7 @@ code.
   in the tracer then do them from a new cursor object.  For example::
 
     def exectracer(cursor, sql, bindings):
-      cursor.getconnection().cursor("insert into log values(?,?)", (sql,str(bindings)))
+      cursor.getconnection().cursor().execute("insert into log values(?,?)", (sql,str(bindings)))
       return True
 
 .. _executiontracer:
