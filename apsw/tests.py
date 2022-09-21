@@ -845,6 +845,23 @@ class APSW(unittest.TestCase):
         # fetchall
         self.assertEqual(c.fetchall(), [])
         self.assertEqual(c.execute("select 3; select 4").fetchall(), [(3, ), (4, )])
+        # readonly & explain
+        res = None
+        def tracer(cur, query, bindings):
+            nonlocal res
+            res = {"cursor": cur, "query": query, "bindings": bindings, "readonly": cur.is_readonly(), "explain": cur.is_explain()}
+            return True
+        c.setexectrace(tracer)
+        c.execute("pragma user_version")
+        self.assertIs(res["cursor"], c)
+        self.assertTrue(res["readonly"])
+        self.assertEqual(res["explain"], 0)
+        c.execute("explain pragma user_version")
+        self.assertEqual(res["explain"], 1)
+        c.execute("explain query plan select 3")
+        self.assertEqual(res["explain"], 2)
+        c.execute("pragma user_version=42")
+        self.assertFalse(res["readonly"])
 
     def testTypes(self):
         "Check type information is maintained"
@@ -3952,7 +3969,8 @@ class APSW(unittest.TestCase):
                                                 "|libversion|enable_shared_cache|initialize|shutdown|config|memory_.+|soft_heap_limit(64)?"
                                                 "|randomness|db_readonly|db_filename|release_memory|status64|result_.+|user_data|mprintf|aggregate_context"
                                                 "|declare_vtab|backup_remaining|backup_pagecount|mutex_enter|mutex_leave|sourceid|uri_.+"
-                                                "|column_name|column_decltype|column_database_name|column_table_name|column_origin_name)$"),
+                                                "|column_name|column_decltype|column_database_name|column_table_name|column_origin_name"
+                                                "|stmt_isexplain|stmt_readonly)$"),
                         # error message
                         'desc': "sqlite3_ calls must wrap with PYSQLITE_CALL",
                         },

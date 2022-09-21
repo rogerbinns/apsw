@@ -1497,6 +1497,41 @@ APSWCursor_fetchone(APSWCursor *self)
   return res;
 }
 
+/** .. method:: is_explain() -> int
+
+  Returns 0 if executing a normal query, 1 if it is an EXPLAIN query,
+  and 2 if an EXPLAIN QUERY PLAN query.
+
+  -* sqlite3_stmt_isexplain
+*/
+static PyObject *
+APSWCursor_is_explain(APSWCursor *self)
+{
+  CHECK_USE(NULL);
+  CHECK_CURSOR_CLOSED(NULL);
+
+  return PyLong_FromLong(sqlite3_stmt_isexplain(self->statement->vdbestatement));
+}
+
+/** .. method:: is_readonly() -> bool
+
+  Returns True if the current query does not change the database.
+
+  Note that called functions, virtual tables could make changes though.
+
+  -* sqlite3_stmt_readonly
+*/
+static PyObject *
+APSWCursor_is_readonly(APSWCursor *self)
+{
+  CHECK_USE(NULL);
+  CHECK_CURSOR_CLOSED(NULL);
+
+  if (sqlite3_stmt_readonly(self->statement->vdbestatement))
+    Py_RETURN_TRUE;
+  Py_RETURN_FALSE;
+}
+
 static PyMethodDef APSWCursor_methods[] = {
     {"execute", (PyCFunction)APSWCursor_execute, METH_VARARGS | METH_KEYWORDS,
      Cursor_execute_DOC},
@@ -1520,6 +1555,8 @@ static PyMethodDef APSWCursor_methods[] = {
      Cursor_fetchall_DOC},
     {"fetchone", (PyCFunction)APSWCursor_fetchone, METH_NOARGS,
      Cursor_fetchone_DOC},
+    {"is_explain", (PyCFunction)APSWCursor_is_explain, METH_NOARGS, Cursor_is_explain_DOC},
+    {"is_readonly", (PyCFunction)APSWCursor_is_readonly, METH_NOARGS, Cursor_is_readonly_DOC},
     {0, 0, 0, 0} /* Sentinel */
 };
 
