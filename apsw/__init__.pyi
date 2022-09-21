@@ -7,7 +7,7 @@ from types import TracebackType
 
 SQLiteValue = Union[None, int, float, bytes, str]
 """SQLite supports 5 types - None (NULL), 64 bit signed int, 64 bit
-float, bytes, and unicode text"""
+float, bytes, and str (unicode text)"""
 
 SQLiteValues = Union[Tuple[()], Tuple[SQLiteValue, ...]]
 "A sequence of zero or more SQLiteValue"
@@ -20,7 +20,7 @@ to SQLiteValues.  You can also provide zeroblob in Bindings."""
 AggregateT = Any
 "An object provided as first parameter of step and final aggregate functions"
 
-AggregateStep = Union[
+AggregateStep = Union [
         Callable[[AggregateT], None],
         Callable[[AggregateT, SQLiteValue], None],
         Callable[[AggregateT, SQLiteValue, SQLiteValue], None],
@@ -38,7 +38,7 @@ AggregateFactory = Callable[[], Tuple[AggregateT, AggregateStep, AggregateFinal]
 """Called each time for the start of a new calculation using an aggregate function,
 returning an object, a step function and a final function"""
 
-ScalarProtocol = Union[
+ScalarProtocol = Union [
         Callable[[], SQLiteValue],
         Callable[[SQLiteValue], SQLiteValue],
         Callable[[SQLiteValue, SQLiteValue], SQLiteValue],
@@ -1360,6 +1360,10 @@ class Cursor:
           from books`` or ``begin; insert into books ...; select
           last_insert_rowid(); end``.
         :param bindings: If supplied should either be a sequence or a dictionary.  Each item must be one of the :ref:`supported types <types>`
+        :param can_cache: If False then the statement cache will not be used to find an already prepared query, nor will it be
+          placed in the cache after execution
+        :param prepare_flags: `flags <https://sqlite.org/c3ref/c_prepare_normalize.htm>`__ passed to
+          `sqlite_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__
 
         If you use numbered bindings in the query then supply a sequence.
         Any sequence will work including lists and iterators.  For
@@ -1402,7 +1406,7 @@ class Cursor:
            * :ref:`Example <example-cursor>`
 
         Calls:
-          * `sqlite3_prepare_v2 <https://sqlite.org/c3ref/prepare.html>`__
+          * `sqlite3_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__
           * `sqlite3_step <https://sqlite.org/c3ref/step.html>`__
           * `sqlite3_bind_int64 <https://sqlite.org/c3ref/bind_blob.html>`__
           * `sqlite3_bind_null <https://sqlite.org/c3ref/bind_blob.html>`__
@@ -1522,6 +1526,21 @@ class Cursor:
         .. seealso::
 
           * :ref:`tracing`"""
+        ...
+
+    def is_explain(self) -> int:
+        """Returns 0 if executing a normal query, 1 if it is an EXPLAIN query,
+        and 2 if an EXPLAIN QUERY PLAN query.
+
+        Calls: `sqlite3_stmt_isexplain <https://sqlite.org/c3ref/stmt_isexplain.html>`__"""
+        ...
+
+    def is_readonly(self) -> bool:
+        """Returns True if the current query does not change the database.
+
+        Note that called functions, virtual tables could make changes though.
+
+        Calls: `sqlite3_stmt_readonly <https://sqlite.org/c3ref/stmt_readonly.html>`__"""
         ...
 
     def __iter__(self: Cursor) -> Cursor:
@@ -2210,6 +2229,9 @@ SQLITE_OPEN_URI: int
 SQLITE_OPEN_WAL: int
 SQLITE_PERM: int
 SQLITE_PRAGMA: int
+SQLITE_PREPARE_NORMALIZE: int
+SQLITE_PREPARE_NO_VTAB: int
+SQLITE_PREPARE_PERSISTENT: int
 SQLITE_PROTOCOL: int
 SQLITE_RANGE: int
 SQLITE_READ: int
@@ -2272,6 +2294,7 @@ mapping_file_control: Dict[Union[str,int],Union[int,str]]
 mapping_limits: Dict[Union[str,int],Union[int,str]]
 mapping_locking_level: Dict[Union[str,int],Union[int,str]]
 mapping_open_flags: Dict[Union[str,int],Union[int,str]]
+mapping_prepare_flags: Dict[Union[str,int],Union[int,str]]
 mapping_result_codes: Dict[Union[str,int],Union[int,str]]
 mapping_status: Dict[Union[str,int],Union[int,str]]
 mapping_sync: Dict[Union[str,int],Union[int,str]]
