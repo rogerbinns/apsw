@@ -18,6 +18,11 @@ use is with :meth:`authorizers <Connection.setauthorizer>` because
 they only run during prepare, which doesn't happen with cached
 statements.
 
+(The :meth:`Cursor.execute` additional parameters are keyword only and
+also present in :meth:`Cursor.executemany`, and the corresponding
+:meth:`Connection.execute` and :meth:`Connection.executemany`
+methods.)
+
 3.39.3.0
 ========
 
