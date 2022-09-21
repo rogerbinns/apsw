@@ -3864,6 +3864,46 @@ class APSW(unittest.TestCase):
         self.db.execute("select 997", can_cache=True).fetchall()
         self.assertEqual(s["misses"] + 2 + (1 if not scsize else 0), self.db.cache_stats().pop("misses"))
 
+        # prepare_flags
+        class VTModule:
+            def Create(self, *args):
+                return ("create table dontcare(x int)", VTTable())
+            Connect = Create
+
+        class VTTable:
+            def Open(self):
+                return VTCursor()
+            def BestIndex(self, *args):
+                return None
+
+        class VTCursor:
+            rows=[[99], [100]]
+            def __init__(self):
+                self.pos=0
+            def Filter(self, *args):
+                self.pos=0
+            def Eof(self):
+                return self.pos>=len(self.rows)
+            def Column(self, num):
+                if num<0:
+                    return self.pos+1_000_000
+                return self.rows[self.pos][num]
+            def Next(self):
+                self.pos+=1
+            def Close(self):
+                pass
+
+
+        vt=VTModule()
+        self.db.createmodule("fortestingonly", vt)
+        # no_vtab doesn't block creating a vtab
+        self.db.execute("create VIRTUAL table fred USING fortestingonly()", prepare_flags=apsw.SQLITE_PREPARE_NO_VTAB)
+        # make sure query using vtab is identical so cache would be hit
+        query = "select * from fred"
+        self.assertEqual(self.db.execute(query).fetchall(), [(99,), (100,)])
+        # this should fail (sqlite pretends the vtabs don't exist rather than giving specific error)
+        self.assertRaises(apsw.SQLError,  self.db.execute, "select * from fred", prepare_flags=apsw.SQLITE_PREPARE_NO_VTAB)
+
     def testStatementCacheZeroSize(self):
         "Rerun statement cache tests with a zero sized/disabled cache"
         self.db = apsw.Connection(TESTFILEPREFIX + "testdb", statementcachesize=-1)

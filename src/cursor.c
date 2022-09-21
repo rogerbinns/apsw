@@ -942,6 +942,10 @@ APSWCursor_step(APSWCursor *self)
       from books`` or ``begin; insert into books ...; select
       last_insert_rowid(); end``.
     :param bindings: If supplied should either be a sequence or a dictionary.  Each item must be one of the :ref:`supported types <types>`
+    :param can_cache: If False then the statement cache will not be used to find an already prepared query, nor will it be
+      placed in the cache after execution
+    :param prepare_flags: `flags <https://sqlite.org/c3ref/c_prepare_normalize.htm>`__ passed to
+      `sqlite_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__
 
     If you use numbered bindings in the query then supply a sequence.
     Any sequence will work including lists and iterators.  For
@@ -978,7 +982,7 @@ APSWCursor_step(APSWCursor *self)
     :raises BindingsError: You supplied too many or too few bindings for the statements
     :raises IncompleteExecutionError: There are remaining unexecuted queries from your last execute
 
-    -* sqlite3_prepare_v2 sqlite3_step sqlite3_bind_int64 sqlite3_bind_null sqlite3_bind_text sqlite3_bind_double sqlite3_bind_blob sqlite3_bind_zeroblob
+    -* sqlite3_prepare_v3 sqlite3_step sqlite3_bind_int64 sqlite3_bind_null sqlite3_bind_text sqlite3_bind_double sqlite3_bind_blob sqlite3_bind_zeroblob
 
     .. seealso::
 
