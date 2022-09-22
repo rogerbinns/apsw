@@ -16,7 +16,7 @@ import argparse
 import subprocess
 import re
 import shutil
-import subprocess
+import time
 import concurrent.futures
 import random
 
@@ -105,7 +105,8 @@ def main(PYVERS, SQLITEVERS, BITS, concurrency):
                             job.info = f"py { pyver } sqlite { sqlitever } debug { debug } bits { bits } sysconfig { sysconfig }"
                             jobs.append(job)
 
-        print(f"\nAll builds started, now waiting for them to finish ({ concurrency } concurrency)\n")
+        print(f"\nAll { len(jobs) } builds started, now waiting for them to finish ({ concurrency } concurrency)\n")
+        start= time.time()
         for job in concurrent.futures.as_completed(jobs):
             print(job.info, "-> ", end="", flush=True)
             try:
@@ -114,7 +115,7 @@ def main(PYVERS, SQLITEVERS, BITS, concurrency):
             except Exception as e:
                 print("\t FAIL", e, flush=True)
 
-        print("\nFinished")
+        print(f"\nFinished in { int(time.time() - start) } seconds")
 
 
 def copy_git_files(destdir):
