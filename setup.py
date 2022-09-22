@@ -761,7 +761,7 @@ def set_config_from_system(outputfilename: str):
 
     # write out the results
     os.makedirs(os.path.dirname(outputfilename), exist_ok=True)
-    with open(outputfilename, "wt") as f:
+    with open(outputfilename, "wt", encoding="utf8") as f:
         for c, v in sorted(configs.items()):
             print(f"#undef  { c }", file=f)
             print(f"#define { c } { v }", file=f)
