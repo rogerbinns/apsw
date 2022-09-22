@@ -790,6 +790,7 @@ class APSW(unittest.TestCase):
         c.execute(
             "create temp table two(fred banana); insert into two values(7); create temp view three as select fred as [a space] from two"
         )
+        c.execute("select 3") # see issue #370
         has_full = any(o == "ENABLE_COLUMN_METADATA" or o.startswith("ENABLE_COLUMN_METADATA=")
                        for o in apsw.compile_options) if apsw.using_amalgamation else hasattr(c, "description_full")
         for row in c.execute("select * from foo"):
