@@ -864,6 +864,7 @@ class APSW(unittest.TestCase):
         c.execute("pragma user_version=42")
         self.assertFalse(res["readonly"])
 
+
     def testTypes(self):
         "Check type information is maintained"
         c = self.db.cursor()
@@ -3198,7 +3199,7 @@ class APSW(unittest.TestCase):
         self.assertEqual(oldestmanual, oldestsql)
 
     def testClosingChecks(self):
-        "Check closed connection is correctly detected"
+        "Check closed connection/blob/cursor is correctly detected"
         cur = self.db.cursor()
         rowid = next(
             cur.execute("create table foo(x blob); insert into foo values(zeroblob(98765)); select rowid from foo"))[0]
@@ -3209,7 +3210,7 @@ class APSW(unittest.TestCase):
             args = ("one", "two", "three")[:nargs.get(func, 0)]
             try:
                 getattr(blob, func)(*args)
-                self.fail("blob method " + func + " didn't notice that the connection is closed")
+                self.fail(f"blob method/attribute { func } didn't notice that the connection is closed")
             except ValueError:  # we issue ValueError to be consistent with file objects
                 pass
 
@@ -3225,7 +3226,7 @@ class APSW(unittest.TestCase):
                 func = getattr(self.db, func)
                 if func:
                     func(*args)
-                    self.fail("connection method " + str(func) + " didn't notice that the connection is closed")
+                    self.fail(f"connection method/attribute { func } didn't notice that the connection is closed")
             except apsw.ConnectionClosedError:
                 pass
         self.assertTrue(tested > len(nargs))
@@ -3238,7 +3239,7 @@ class APSW(unittest.TestCase):
             args = ("one", "two", "three")[:nargs.get(func, 0)]
             try:
                 getattr(cur, func)(*args)
-                self.fail("cursor method " + func + " didn't notice that the connection is closed")
+                self.fail(f"cursor method/attribute { func } didn't notice that the connection is closed")
             except apsw.CursorClosedError:
                 pass
         self.assertTrue(tested >= len(nargs))
