@@ -1741,6 +1741,21 @@
 } while(0)
 
 
+#define  Cursor_expanded_sql_DOC ":type: str\n" \
+"\n" \
+"The SQL text with bound parameters expanded.  For example::\n" \
+"\n" \
+"   execute(\"select ?, ?\", (3, \"three\"))\n" \
+"\n" \
+"would return::\n" \
+"\n" \
+"   select 3, 'three'\n" \
+"\n" \
+"Note that while SQLite supports nulls in strings, their implementation\n" \
+"of sqlite3_expanded_sql stops at the first null.\n" \
+"\n" \
+"Calls: `sqlite3_expanded_sql <https://sqlite.org/c3ref/expanded_sql.html>`__\n" 
+
 #define  Cursor_fetchall_DOC "fetchall($self)\n--\n\nCursor.fetchall() -> list[Tuple[SQLiteValue, ...]]\n\n" \
 "Returns all remaining result rows as a list.  This method is defined\n" \
 "in DBAPI.  It is a longer way of doing ``list(cursor)``.\n" 
@@ -1829,16 +1844,18 @@
 #define  Cursor_init_DOC "__init__($self)\n--\n\nCursor.__init__() -> None\n\n" \
 "You obtain cursors by calling :meth:`Connection.cursor`.\n" 
 
-#define  Cursor_is_explain_DOC "is_explain($self)\n--\n\nCursor.is_explain() -> int\n\n" \
+#define  Cursor_is_explain_DOC ":type: int\n" \
+"\n" \
 "Returns 0 if executing a normal query, 1 if it is an EXPLAIN query,\n" \
 "and 2 if an EXPLAIN QUERY PLAN query.\n" \
 "\n" \
 "Calls: `sqlite3_stmt_isexplain <https://sqlite.org/c3ref/stmt_isexplain.html>`__\n" 
 
-#define  Cursor_is_readonly_DOC "is_readonly($self)\n--\n\nCursor.is_readonly() -> bool\n\n" \
+#define  Cursor_is_readonly_DOC ":type: bool\n" \
+"\n" \
 "Returns True if the current query does not change the database.\n" \
 "\n" \
-"Note that called functions, virtual tables could make changes though.\n" \
+"Note that called functions, virtual tables etc could make changes though.\n" \
 "\n" \
 "Calls: `sqlite3_stmt_readonly <https://sqlite.org/c3ref/stmt_readonly.html>`__\n" 
 

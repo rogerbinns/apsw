@@ -1437,6 +1437,20 @@ class Cursor:
         information."""
         ...
 
+    expanded_sql: str
+    """The SQL text with bound parameters expanded.  For example::
+
+       execute("select ?, ?", (3, "three"))
+
+    would return::
+
+       select 3, 'three'
+
+    Note that while SQLite supports nulls in strings, their implementation
+    of sqlite3_expanded_sql stops at the first null.
+
+    Calls: `sqlite3_expanded_sql <https://sqlite.org/c3ref/expanded_sql.html>`__"""
+
     def fetchall(self) -> list[Tuple[SQLiteValue, ...]]:
         """Returns all remaining result rows as a list.  This method is defined
         in DBAPI.  It is a longer way of doing ``list(cursor)``."""
@@ -1528,20 +1542,18 @@ class Cursor:
           * :ref:`tracing`"""
         ...
 
-    def is_explain(self) -> int:
-        """Returns 0 if executing a normal query, 1 if it is an EXPLAIN query,
-        and 2 if an EXPLAIN QUERY PLAN query.
+    is_explain: int
+    """Returns 0 if executing a normal query, 1 if it is an EXPLAIN query,
+    and 2 if an EXPLAIN QUERY PLAN query.
 
-        Calls: `sqlite3_stmt_isexplain <https://sqlite.org/c3ref/stmt_isexplain.html>`__"""
-        ...
+    Calls: `sqlite3_stmt_isexplain <https://sqlite.org/c3ref/stmt_isexplain.html>`__"""
 
-    def is_readonly(self) -> bool:
-        """Returns True if the current query does not change the database.
+    is_readonly: bool
+    """Returns True if the current query does not change the database.
 
-        Note that called functions, virtual tables could make changes though.
+    Note that called functions, virtual tables etc could make changes though.
 
-        Calls: `sqlite3_stmt_readonly <https://sqlite.org/c3ref/stmt_readonly.html>`__"""
-        ...
+    Calls: `sqlite3_stmt_readonly <https://sqlite.org/c3ref/stmt_readonly.html>`__"""
 
     def __iter__(self: Cursor) -> Cursor:
         """Cursors are iterators"""
