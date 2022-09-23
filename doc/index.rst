@@ -51,6 +51,7 @@ Contents:
    vtable
    vfs
    shell
+   ext
 
    exceptions
    types
