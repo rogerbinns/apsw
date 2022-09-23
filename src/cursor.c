@@ -1497,7 +1497,8 @@ APSWCursor_fetchone(APSWCursor *self)
   return res;
 }
 
-/** .. method:: is_explain() -> int
+/** .. attribute:: is_explain
+    :type: int
 
   Returns 0 if executing a normal query, 1 if it is an EXPLAIN query,
   and 2 if an EXPLAIN QUERY PLAN query.
@@ -1513,11 +1514,12 @@ APSWCursor_is_explain(APSWCursor *self)
   return PyLong_FromLong(sqlite3_stmt_isexplain(self->statement->vdbestatement));
 }
 
-/** .. method:: is_readonly() -> bool
+/** .. attribute:: is_readonly
+    :type: bool
 
   Returns True if the current query does not change the database.
 
-  Note that called functions, virtual tables could make changes though.
+  Note that called functions, virtual tables etc could make changes though.
 
   -* sqlite3_stmt_readonly
 */
@@ -1555,8 +1557,6 @@ static PyMethodDef APSWCursor_methods[] = {
      Cursor_fetchall_DOC},
     {"fetchone", (PyCFunction)APSWCursor_fetchone, METH_NOARGS,
      Cursor_fetchone_DOC},
-    {"is_explain", (PyCFunction)APSWCursor_is_explain, METH_NOARGS, Cursor_is_explain_DOC},
-    {"is_readonly", (PyCFunction)APSWCursor_is_readonly, METH_NOARGS, Cursor_is_readonly_DOC},
     {0, 0, 0, 0} /* Sentinel */
 };
 
@@ -1565,6 +1565,8 @@ static PyGetSetDef APSWCursor_getset[] = {
 #ifdef SQLITE_ENABLE_COLUMN_METADATA
     {"description_full", (getter)APSWCursor_getdescription_full, NULL, Cursor_description_full_DOC, NULL},
 #endif
+    {"is_explain", (getter)APSWCursor_is_explain, NULL, Cursor_is_explain_DOC, NULL},
+    {"is_readonly", (getter)APSWCursor_is_readonly, NULL, Cursor_is_readonly_DOC, NULL},
     {NULL, NULL, NULL, NULL, NULL}};
 
 static PyTypeObject APSWCursorType = {

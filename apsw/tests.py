@@ -850,7 +850,7 @@ class APSW(unittest.TestCase):
         res = None
         def tracer(cur, query, bindings):
             nonlocal res
-            res = {"cursor": cur, "query": query, "bindings": bindings, "readonly": cur.is_readonly(), "explain": cur.is_explain()}
+            res = {"cursor": cur, "query": query, "bindings": bindings, "readonly": cur.is_readonly, "explain": cur.is_explain}
             return True
         c.setexectrace(tracer)
         c.execute("pragma user_version")
