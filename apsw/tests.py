@@ -846,7 +846,7 @@ class APSW(unittest.TestCase):
         # fetchall
         self.assertEqual(c.fetchall(), [])
         self.assertEqual(c.execute("select 3; select 4").fetchall(), [(3, ), (4, )])
-        # readonly & explain
+        # readonly, explain & expanded_sql attributes
         res = None
         def tracer(cur, query, bindings):
             nonlocal res
@@ -863,6 +863,15 @@ class APSW(unittest.TestCase):
         self.assertEqual(res["explain"], 2)
         c.execute("pragma user_version=42")
         self.assertFalse(res["readonly"])
+        biggy="9" * 24 * 1024
+        ran = False
+        for row in c.execute("select ?,?", (biggy, biggy)):
+            ran = True
+            self.assertEqual(f"select '{ biggy }','{ biggy }'", c.expanded_sql)
+            existing = self.db.limit(apsw.SQLITE_LIMIT_LENGTH, 25 * 1024)
+            self.assertIsNone(c.expanded_sql)
+            self.db.limit(apsw.SQLITE_LIMIT_LENGTH, existing)
+        self.assertTrue(ran)
 
 
     def testTypes(self):

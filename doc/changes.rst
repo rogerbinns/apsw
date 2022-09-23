@@ -23,7 +23,8 @@ also present in :meth:`Cursor.executemany`, and the corresponding
 :meth:`Connection.execute` and :meth:`Connection.executemany`
 methods.)
 
-Added :attr:`Cursor.is_readonly` and :attr:`Cursor.is_explain`.
+Added :attr:`Cursor.is_readonly`, :attr:`Cursor.is_explain`, and
+:attr:`Cursor.expanded_sql`.
 
 3.39.3.0
 ========

@@ -1534,6 +1534,37 @@ APSWCursor_is_readonly(APSWCursor *self)
   Py_RETURN_FALSE;
 }
 
+/** .. attribute:: expanded_sql
+    :type: str
+
+  The SQL text with bound parameters expanded.  For example::
+
+     execute("select ?, ?", (3, "three"))
+
+  would return::
+
+     select 3, 'three'
+
+  Note that while SQLite supports nulls in strings, their implementation
+  of sqlite3_expanded_sql stops at the first null.
+
+  -* sqlite3_expanded_sql
+*/
+static PyObject *
+APSWCursor_expanded_sql(APSWCursor *self)
+{
+  PyObject *res;
+  const char *es;
+  CHECK_USE(NULL);
+  CHECK_CURSOR_CLOSED(NULL);
+
+  PYSQLITE_VOID_CALL(es = sqlite3_expanded_sql(self->statement->vdbestatement));
+
+  res=convertutf8string(es);
+  sqlite3_free(es);
+  return res;
+}
+
 static PyMethodDef APSWCursor_methods[] = {
     {"execute", (PyCFunction)APSWCursor_execute, METH_VARARGS | METH_KEYWORDS,
      Cursor_execute_DOC},
@@ -1567,6 +1598,7 @@ static PyGetSetDef APSWCursor_getset[] = {
 #endif
     {"is_explain", (getter)APSWCursor_is_explain, NULL, Cursor_is_explain_DOC, NULL},
     {"is_readonly", (getter)APSWCursor_is_readonly, NULL, Cursor_is_readonly_DOC, NULL},
+    {"expanded_sql", (getter)APSWCursor_expanded_sql, NULL, Cursor_expanded_sql_DOC, NULL},
     {NULL, NULL, NULL, NULL, NULL}};
 
 static PyTypeObject APSWCursorType = {
