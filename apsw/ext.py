@@ -5,18 +5,103 @@ from __future__ import annotations
 import sys
 
 try:
-    from dataclasses import dataclass
-except ImportError:
-    raise ImportError("You need a Python version that has dataclasses (Python 3.7+")
+    from dataclasses import dataclass, make_dataclass
+except ImportError as e:
+    raise ImportError("You need a Python version that has dataclasses (Python 3.7+), PyPI for Python 3.6") from e
+
+
+from typing import Optional, Tuple, Union, List, Any, Dict
+import functools
 
 import apsw
 
-from typing import Optional, Tuple, List
+try:
+    from keyword import iskeyword
+except ImportError:
+    # From https://docs.python.org/3/reference/lexical_analysis.html#keywords
+    _keywords=set("""
+    False      await      else       import     pass
+    None       break      except     in         raise
+    True       class      finally    is         return
+    and        continue   for        lambda     try
+    as         def        from       nonlocal   while
+    assert     del        global     not        with
+    async      elif       if         or         yield
+    """.split())
+    def iskeyword(s: str) -> bool:
+        return s in _keywords
 
-"""
-This modules provides various interesting and useful bits of functionality.
-"""
+class DataClassRowFactory:
+    """Returns each row as a :mod:`dataclass <dataclasses>`
 
+    Each row returned will now be accessible by column name.
+
+    To use set an instance as :meth:`Connection.setrowtrace
+    <apsw.Connection.setrowtrace>` to affect all :class:`cursors
+    <apsw.Cursor>`, or on a specific cursor::
+
+        connection.setrowtrace(apsw.ext.DataClassRowFactory())
+        for row in connection.execute("SELECT title, sum(orders) as total, ..."):
+            # You can now access by name
+            print (row.title, row.total)
+
+    """
+    def __init__(self, *, rename: bool = True, dataclass_kwargs: Optional[Dict[str, Any]] = None):
+        """
+        :param rename:     Column names could be duplicated, or not
+            valid in Python (eg a column named `continue`).
+            If `rename` is True, then invalid/duplicate names are replaced
+            with `_` and their position starting at zero.  For example `title,
+            total, title, continue` would become `title, total, _2, _3`.  If
+            `rename` is False then problem column names will result in
+            :exc:`TypeError` raised by :meth:`dataclasses.make_dataclass`
+
+        """
+        self.dataclass_kwargs = dataclass_kwargs or {}
+        self.rename = rename
+
+    @functools.lru_cache(maxsize=16)
+    def get_dataclass(self, description: Tuple[Tuple[str,str], ...]) -> Tuple[Any, Tuple[str, ...]]:
+        names = [d[0] for d in description]
+        if self.rename:
+            newnames = []
+            for i, n in enumerate(names):
+                if n.isidentifier() and not iskeyword(n) and n not in newnames:
+                    newnames.append(n)
+                else:
+                    newnames.append(f"_{ i }")
+            names = newnames
+        types = [self.get_type(d[1]) for d in description]
+
+        kwargs = self.dataclass_kwargs.copy()
+        if "namespace" not in kwargs:
+            kwargs["namespace"] = {}
+        kwargs["namespace"]["__description__"] = description
+
+        # some magic to make the reported classnames different
+        suffix = (".%06X" % hash(repr(description)))[:7]
+
+        return make_dataclass(f"{ self.__class__.__name__ }{ suffix }",
+            zip(names, types), **kwargs), tuple(names)
+
+    def get_type(self, t: Optional[str]) -> Any:
+        if not t:
+            return Any
+        # From 3.1 https://www.sqlite.org/datatype3.html
+        t=t.upper()
+        if "INT" in t:
+            return int
+        if "CHAR" in t or "CLOB" in t or "TEXT" in t:
+            return str
+        if "BLOB" in t:
+            return bytes
+        if "REAL" in t or "FLOA" in t or "DOUB" in t:
+            return float
+        return Union[float, int]
+
+    def __call__(self, cursor: apsw.Cursor, row: apsw.SQLiteValues) -> Any:
+        dc, colnames = self.get_dataclass(cursor.getdescription())
+        return dc(**dict(zip(colnames, row)))
 
 
 def query_info(db: apsw.Connection,
@@ -31,7 +116,7 @@ def query_info(db: apsw.Connection,
     """Returns information about the query, but does not run it.
 
     Set the various parameters to `True` if you also want the
-    actions, expanded_sql, explain, query_plan etc.
+    actions, expanded_sql, explain, query_plan etc filled in.
     """
     res = None
 
@@ -50,8 +135,7 @@ def query_info(db: apsw.Connection,
 
         assert query == firstquery or query.startswith(firstquery)
         res["query_remaining"] = query[len(firstquery):] if len(query) > len(firstquery) else None
-        if expanded_sql:
-            res["expanded_sql"] = cursor.expanded_sql
+        res["expanded_sql"] = cursor.expanded_sql if expanded_sql else None
         return False
 
     actions_taken = []
@@ -152,7 +236,7 @@ def query_info(db: apsw.Connection,
 
         res["query_plan"] = QueryPlan(**flatten(byid[0]))
 
-    return res
+    return QueryDetails(**res)
 
 @dataclass
 class QueryDetails:
