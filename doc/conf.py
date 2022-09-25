@@ -13,6 +13,11 @@
 
 import sys, os
 
+import sphinx
+if sphinx.version_info < (5, 2):
+    import warnings
+    warnings.warn("You should use sphinx 5.2+")
+
 # If your extensions are in another directory, add it here. If the directory
 # is relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
@@ -24,7 +29,7 @@ import sys, os
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.extlinks', 'sphinx.ext.intersphinx',
-    "sphinx.ext.viewcode"]
+    "sphinx.ext.viewcode", "sphinx.ext.autosummary"]
 
 
 extlinks={
@@ -39,6 +44,12 @@ extlinks={
 
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
 
+autodoc_type_aliases = {
+    "Optional": "typing.Optional",
+    "Tuple": "typing.Tuple",
+    "Any": "typing.Any",
+    "List": "typing.List",
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
