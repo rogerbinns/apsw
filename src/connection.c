@@ -3659,6 +3659,7 @@ The returned dictionary has the following information.
 
 .. list-table::
   :header-rows: 1
+  :widths: auto
 
   * - Key
     - Explanation
@@ -3689,6 +3690,7 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. list-table::
   :header-rows: 1
+  :widths: auto
 
   * - Key
     - Explanation
