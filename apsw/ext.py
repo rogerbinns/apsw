@@ -32,45 +32,54 @@ except ImportError:
         return s in _keywords
 
 class DataClassRowFactory:
-    """Returns each row as a :mod:`dataclass <dataclasses>`
-
-    Each row returned will now be accessible by column name.
+    """Returns each row as a :mod:`dataclass <dataclasses>`, accessible by column name.
 
     To use set an instance as :meth:`Connection.setrowtrace
     <apsw.Connection.setrowtrace>` to affect all :class:`cursors
     <apsw.Cursor>`, or on a specific cursor::
 
         connection.setrowtrace(apsw.ext.DataClassRowFactory())
-        for row in connection.execute("SELECT title, sum(orders) as total, ..."):
+        for row in connection.execute("SELECT title, sum(orders) AS total, ..."):
             # You can now access by name
             print (row.title, row.total)
 
+
+    :param rename:     Column names could be duplicated, or not
+        valid in Python (eg a column named `continue`).
+        If `rename` is True, then invalid/duplicate names are replaced
+        with `_` and their position starting at zero.  For example `title,
+        total, title, continue` would become `title, total, _2, _3`.  If
+        `rename` is False then problem column names will result in
+        :exc:`TypeError` raised by :func:`dataclasses.make_dataclass`
+
+    :param dataclass_kwargs: Additional parameters when creating the dataclass
+       as described in :func:`dataclasses.dataclass`.  For example you may
+       want `frozen = True` to make the dataclass read-only, or `slots = True`
+       to reduce memory consumption.
+
     """
     def __init__(self, *, rename: bool = True, dataclass_kwargs: Optional[Dict[str, Any]] = None):
-        """
-        :param rename:     Column names could be duplicated, or not
-            valid in Python (eg a column named `continue`).
-            If `rename` is True, then invalid/duplicate names are replaced
-            with `_` and their position starting at zero.  For example `title,
-            total, title, continue` would become `title, total, _2, _3`.  If
-            `rename` is False then problem column names will result in
-            :exc:`TypeError` raised by :meth:`dataclasses.make_dataclass`
-
-        """
         self.dataclass_kwargs = dataclass_kwargs or {}
         self.rename = rename
 
     @functools.lru_cache(maxsize=16)
     def get_dataclass(self, description: Tuple[Tuple[str,str], ...]) -> Tuple[Any, Tuple[str, ...]]:
+        """Returns dataclass and tuple of (potentially renamed) column names
+
+        The dataclass is what is returned for each row with that
+        :meth:`description <apsw.Cursor.getdescription>`
+
+        This method caches it results.
+        """
         names = [d[0] for d in description]
         if self.rename:
-            newnames = []
+            new_names : List[str] = []
             for i, n in enumerate(names):
-                if n.isidentifier() and not iskeyword(n) and n not in newnames:
-                    newnames.append(n)
+                if n.isidentifier() and not iskeyword(n) and n not in new_names:
+                    new_names.append(n)
                 else:
-                    newnames.append(f"_{ i }")
-            names = newnames
+                    new_names.append(f"_{ i }")
+            names = new_names
         types = [self.get_type(d[1]) for d in description]
 
         kwargs = self.dataclass_kwargs.copy()
@@ -85,6 +94,14 @@ class DataClassRowFactory:
             zip(names, types), **kwargs), tuple(names)
 
     def get_type(self, t: Optional[str]) -> Any:
+        """Returns the `type hint <https://docs.python.org/3/library/typing.html>`__ to use in the dataclass based on the type in the :meth:`description <apsw.Cursor.getdescription>`
+
+        `SQLite's affinity rules  <https://www.sqlite.org/datatype3.html#affname>`__ are followed.
+
+        The values have no effect on how your program runs, but can be used by tools like
+        mypy.  Column information like whether `null` is allowed is not present, so
+        this is just a hint.
+        """
         if not t:
             return Any
         # From 3.1 https://www.sqlite.org/datatype3.html
@@ -100,8 +117,13 @@ class DataClassRowFactory:
         return Union[float, int]
 
     def __call__(self, cursor: apsw.Cursor, row: apsw.SQLiteValues) -> Any:
-        dc, colnames = self.get_dataclass(cursor.getdescription())
-        return dc(**dict(zip(colnames, row)))
+        """What the row tracer calls
+
+        This :meth:`looks up <get_dataclass>` the dataclass and column
+        names, and then returns an instance of the dataclass.
+        """
+        dc, column_names = self.get_dataclass(cursor.getdescription())
+        return dc(**dict(zip(column_names, row)))
 
 
 def query_info(db: apsw.Connection,

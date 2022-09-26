@@ -60,3 +60,4 @@ API Reference
     :undoc-members:
     :member-order: bysource
     :exclude-members: iskeyword
+    :special-members: __call__
