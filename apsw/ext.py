@@ -2,24 +2,22 @@
 
 from __future__ import annotations
 
-import sys
-
 try:
     from dataclasses import dataclass, make_dataclass
 except ImportError as e:
     raise ImportError("You need a Python version that has dataclasses (Python 3.7+), PyPI for Python 3.6") from e
 
-
-from typing import Optional, Tuple, Union, List, Any, Dict
+from typing import Optional, Tuple, Union, List, Any, Dict, Callable
 import functools
+import abc
 
 import apsw
 
 try:
-    from keyword import iskeyword
+    from keyword import iskeyword as _iskeyword
 except ImportError:
     # From https://docs.python.org/3/reference/lexical_analysis.html#keywords
-    _keywords=set("""
+    _keywords = set("""
     False      await      else       import     pass
     None       break      except     in         raise
     True       class      finally    is         return
@@ -28,8 +26,10 @@ except ImportError:
     assert     del        global     not        with
     async      elif       if         or         yield
     """.split())
-    def iskeyword(s: str) -> bool:
+
+    def _iskeyword(s: str) -> bool:
         return s in _keywords
+
 
 class DataClassRowFactory:
     """Returns each row as a :mod:`dataclass <dataclasses>`, accessible by column name.
@@ -43,6 +43,8 @@ class DataClassRowFactory:
             # You can now access by name
             print (row.title, row.total)
 
+    You can use as many instances of this class as you want, each across as many
+    :class:`connections <apsw.Connection>` as you want.
 
     :param rename:     Column names could be duplicated, or not
         valid in Python (eg a column named `continue`).
@@ -58,12 +60,13 @@ class DataClassRowFactory:
        to reduce memory consumption.
 
     """
+
     def __init__(self, *, rename: bool = True, dataclass_kwargs: Optional[Dict[str, Any]] = None):
         self.dataclass_kwargs = dataclass_kwargs or {}
         self.rename = rename
 
     @functools.lru_cache(maxsize=16)
-    def get_dataclass(self, description: Tuple[Tuple[str,str], ...]) -> Tuple[Any, Tuple[str, ...]]:
+    def get_dataclass(self, description: Tuple[Tuple[str, str], ...]) -> Tuple[Any, Tuple[str, ...]]:
         """Returns dataclass and tuple of (potentially renamed) column names
 
         The dataclass is what is returned for each row with that
@@ -73,9 +76,9 @@ class DataClassRowFactory:
         """
         names = [d[0] for d in description]
         if self.rename:
-            new_names : List[str] = []
+            new_names: List[str] = []
             for i, n in enumerate(names):
-                if n.isidentifier() and not iskeyword(n) and n not in new_names:
+                if n.isidentifier() and not _iskeyword(n) and n not in new_names:
                     new_names.append(n)
                 else:
                     new_names.append(f"_{ i }")
@@ -90,8 +93,7 @@ class DataClassRowFactory:
         # some magic to make the reported classnames different
         suffix = (".%06X" % hash(repr(description)))[:7]
 
-        return make_dataclass(f"{ self.__class__.__name__ }{ suffix }",
-            zip(names, types), **kwargs), tuple(names)
+        return make_dataclass(f"{ self.__class__.__name__ }{ suffix }", zip(names, types), **kwargs), tuple(names)
 
     def get_type(self, t: Optional[str]) -> Any:
         """Returns the `type hint <https://docs.python.org/3/library/typing.html>`__ to use in the dataclass based on the type in the :meth:`description <apsw.Cursor.getdescription>`
@@ -105,7 +107,7 @@ class DataClassRowFactory:
         if not t:
             return Any
         # From 3.1 https://www.sqlite.org/datatype3.html
-        t=t.upper()
+        t = t.upper()
         if "INT" in t:
             return int
         if "CHAR" in t or "CLOB" in t or "TEXT" in t:
@@ -124,6 +126,66 @@ class DataClassRowFactory:
         """
         dc, column_names = self.get_dataclass(cursor.getdescription())
         return dc(**dict(zip(column_names, row)))
+
+
+class SQLiteTypeAdapter(abc.ABC):
+    """A metaclass to indicate conversion to SQLite types is supported
+
+    This is one way to indicate your type supports conversion to a
+    value supported by SQLite.  You can either inherit from this class,
+    or call the register method::
+
+       apsw.ext.SQLiteTypeAdapter.register(YourClassHere)
+
+    Doing either is entirely sufficient and there is no need to
+    register with :class:`TypesConverterCursorFactory`
+    """
+
+    @abc.abstractmethod
+    def to_sqlite_value(self) -> apsw.SQLiteValue:
+        "Return a SQLite compatible value for this object"
+        raise NotImplementedError
+
+
+class TypesConverterCursorFactory:
+    """Provides cursors that can convert objects into one of the types supported by SQLite. or back from SQLite
+
+    :param metaclass: Which metaclass to consider as conversion capable
+    """
+
+    def __init__(self, metaclass: abc.ABC = SQLiteTypeAdapter):
+        self.metaclass = metaclass
+        # to sqlite value
+        self.adapters: Dict[type, Callable[[Any], apsw.SQLiteValue]] = {}
+        # from sqlite value
+        self.converters: Dict[str, Callable[[apsw.SQLiteValue], Any]] = {}
+
+    def register_adapter(self, klass: type, callable: Callable[[Any], apsw.SQLiteValue]) -> None:
+        self.adapters[klass] = callable
+
+    def register_converter(self, name: str, callable: Callable[[apsw.SQLiteValue], Any]) -> None:
+        self.converters[name] = callable
+
+    def __call__(self, connection: apsw.Connection) -> TypeConverterCursor:
+        return TypesConverterCursorFactory.TypeConverterCursor(connection, self)
+
+    class TypeConverterCursor(apsw.Cursor):
+
+        def __init__(self, connection: apsw.Connection, factory: TypesConverterCursorFactory):
+            super().__init__(connection)
+            self.factory = factory
+            self.setrowtrace(self._rowtracer)
+
+        def _rowtracer(self, cursor: apsw.Cursor, values: apsw.SQLiteValues) -> Tuple[Any, ...]:
+            breakpoint()
+
+        def execute(self,
+                    statements: str,
+                    bindings: Optional[Bindings] = None,
+                    *,
+                    can_cache: bool = True,
+                    prepare_flags: int = 0) -> apsw.Cursor:
+            breakpoint()
 
 
 def query_info(db: apsw.Connection,
@@ -233,7 +295,8 @@ def query_info(db: apsw.Connection,
     if explain and not res["is_explain"]:
         vdbe = []
         for row in cur.execute("EXPLAIN " + res["firstquery"], bindings):
-            vdbe.append(VDBEInstruction(**dict((v[0][0], v[1]) for v in zip(cur.getdescription(), row) if v[1] is not None)))
+            vdbe.append(
+                VDBEInstruction(**dict((v[0][0], v[1]) for v in zip(cur.getdescription(), row) if v[1] is not None)))
         res["explain"] = vdbe
 
     if explain_query_plan and not res["is_explain"]:
@@ -242,7 +305,7 @@ def query_info(db: apsw.Connection,
 
         for row in cur.execute("EXPLAIN QUERY PLAN " + res["firstquery"], bindings):
             node = dict((v[0][0], v[1]) for v in zip(cur.getdescription(), row) if v[0][0] != "notused")
-            assert len(node) == 3 # catch changes in returned format
+            assert len(node) == 3  # catch changes in returned format
             parent = byid[node["parent"]]
             if subn not in parent:
                 parent[subn] = [node]
@@ -259,6 +322,7 @@ def query_info(db: apsw.Connection,
         res["query_plan"] = QueryPlan(**flatten(byid[0]))
 
     return QueryDetails(**res)
+
 
 @dataclass
 class QueryDetails:
@@ -290,6 +354,7 @@ class QueryDetails:
     query_plan: Optional[QueryPlan]
     """The steps taken against tables and indices `described here <https://sqlite.org/eqp.html>`__"""
 
+
 @dataclass
 class QueryAction:
     """A :mod:`dataclass <dataclasses>` that provides information about one action taken by a query
@@ -318,13 +383,15 @@ class QueryAction:
     directly expressed in the query itself"""
     view_name: Optional[str] = None
 
+
 @dataclass
 class QueryPlan:
     "A :mod:`dataclass <dataclasses>` for one step of a query plan"
     detail: str
-    "Description of this stage"
+    "Description of this step"
     sub: Optional[List[QueryPlan]] = None
-    "Stages that run within this one"
+    "Steps that run within this one"
+
 
 @dataclass
 class VDBEInstruction:

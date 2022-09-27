@@ -1,4 +1,4 @@
-.. currentmodule:: apsw
+.. currentmodule:: apsw.ext
 
 Various interesting and useful bits of functionality
 ====================================================
@@ -33,6 +33,9 @@ can use :class:`apsw.ext.DataClassRowFactory` like this::
     for row in con.execute("SELECT * from books"):
         print(row.title, row.author)
 
+Converting types into and out of SQLite
+---------------------------------------
+
 
 Detailed Query Information
 --------------------------
@@ -59,5 +62,4 @@ API Reference
     :members:
     :undoc-members:
     :member-order: bysource
-    :exclude-members: iskeyword
     :special-members: __call__
