@@ -1560,8 +1560,8 @@ APSWCursor_expanded_sql(APSWCursor *self)
 
   PYSQLITE_VOID_CALL(es = sqlite3_expanded_sql(self->statement->vdbestatement));
 
-  res=convertutf8string(es);
-  sqlite3_free(es);
+  res = convertutf8string(es);
+  sqlite3_free((void *)es);
   return res;
 }
 
