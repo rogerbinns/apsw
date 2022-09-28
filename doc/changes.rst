@@ -26,6 +26,11 @@ methods.)
 Added :attr:`Cursor.is_readonly`, :attr:`Cursor.is_explain`, and
 :attr:`Cursor.expanded_sql`.
 
+Updated processing named bindings so that types registered with
+:class:`collections.abc.Mapping` (such as
+:class:`collections.UserDict`) will also be treated as dictionaries.
+(:issue:`373`)
+
 3.39.3.0
 ========
 

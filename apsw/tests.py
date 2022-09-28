@@ -873,6 +873,70 @@ class APSW(unittest.TestCase):
             self.db.limit(apsw.SQLITE_LIMIT_LENGTH, existing)
         self.assertTrue(ran)
 
+    def testIssue373(self):
+        "issue 373: dict type checking in bindings"
+        import collections.abc
+
+        class not_a_dict:
+            pass
+
+        class dict_lookalike(collections.abc.Mapping):
+            def __getitem__(self, _):
+                return 99
+
+            def __iter__(*args):
+                raise NotImplementedError
+
+            def __len__(*args):
+                raise NotImplementedError
+
+        class errors_be_here:
+            def __instancecheck__(self, _):
+                1/0
+            def __subclasscheck__(self, _):
+                1/0
+
+        class dict_with_error:
+            def __getitem__(self, _):
+                1/0
+
+        collections.abc.Mapping.register(dict_with_error)
+
+        class coerced_to_list:
+            # this is not registered as dict, and instead PySequence_Fast will
+            # turn it into a list calling the method for each key
+            def __getitem__(self, key):
+                if key < 10:
+                    return key
+                1/0
+
+        class dict_subclass(dict):
+            pass
+
+        self.assertRaises(TypeError, self.db.execute, "select :name", not_a_dict())
+        self.assertEqual([(99,)], self.db.execute("select :name", dict_lookalike()).fetchall())
+        # make sure these aren't detected as dict
+        for thing in (1,), {1}, [1]:
+            self.assertRaises(TypeError, self.db.execute("select :name", thing))
+
+        self.assertRaises(TypeError, self.db.execute, "select :name", errors_be_here())
+        self.assertRaises(ZeroDivisionError, self.db.execute, "select :name", dict_with_error())
+        self.assertEqual([(None,)], self.db.execute("select :name", {}).fetchall())
+        self.assertEqual([(None,)], self.db.execute("select :name", dict_subclass()).fetchall())
+        self.assertRaises(ZeroDivisionError, self.db.execute, "select ?", coerced_to_list())
+
+        # same tests with executemany
+        self.assertRaises(TypeError, self.db.executemany, "select :name", (not_a_dict(),))
+        self.assertEqual([(99,)], self.db.executemany("select :name", [dict_lookalike()]).fetchall())
+        # make sure these aren't detected as dict
+        for thing in (1,), {1}, [1]:
+            self.assertRaises(TypeError, self.db.executemany("select :name", [thing]))
+
+        self.assertRaises(TypeError, self.db.executemany, "select :name", errors_be_here())
+        self.assertRaises(ZeroDivisionError, self.db.executemany, "select :name", dict_with_error())
+        self.assertEqual([(None,)], self.db.executemany("select :name", ({},)).fetchall())
+        self.assertEqual([(None,)], self.db.executemany("select :name", [dict_subclass()]).fetchall())
+        self.assertRaises(ZeroDivisionError, self.db.executemany, "select ?", (coerced_to_list(),))
 
     def testTypes(self):
         "Check type information is maintained"

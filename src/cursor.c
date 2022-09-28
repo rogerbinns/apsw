@@ -164,6 +164,8 @@ struct APSWCursor
 typedef struct APSWCursor APSWCursor;
 static PyTypeObject APSWCursorType;
 
+static PyObject *collections_abc_Mapping;
+
 /* CURSOR CODE */
 
 /* Macro for getting a tracer.  If our tracer is NULL then return connection tracer */
@@ -526,6 +528,31 @@ static PyObject *APSWCursor_getdescription_full(APSWCursor *self)
 }
 #endif
 
+static int
+APSWCursor_is_dict_binding(PyObject *obj)
+{
+  /* See https://github.com/rogerbinns/apsw/issues/373 for why this function exists */
+  assert(obj);
+
+  /* check the most common cases first */
+  if (PyDict_CheckExact(obj))
+    return 1;
+  if (PyList_CheckExact(obj) || PyTuple_CheckExact(obj))
+    return 0;
+
+  /* possible but less likely */
+  if (PyDict_Check(obj))
+    return 1;
+  if (PyList_Check(obj) || PyTuple_Check(obj))
+    return 0;
+
+  /* abstract base classes final answer */
+  if (PyObject_IsInstance(obj, collections_abc_Mapping) == 1)
+    return 1;
+
+  return 0;
+}
+
 /* internal function - returns SQLite error code (ie SQLITE_OK if all is well) */
 static int
 APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
@@ -630,11 +657,10 @@ APSWCursor_dobindings(APSWCursor *self)
   }
 
   /* a dictionary? */
-  if (self->bindings && PyDict_Check(self->bindings))
+  if (self->bindings && APSWCursor_is_dict_binding(self->bindings))
   {
     for (arg = 1; arg <= nargs; arg++)
     {
-      PyObject *keyo = NULL;
       const char *key;
 
       PYSQLITE_CUR_CALL(key = sqlite3_bind_parameter_name(self->statement->vdbestatement, arg));
@@ -648,13 +674,18 @@ APSWCursor_dobindings(APSWCursor *self)
       assert(*key == ':' || *key == '$');
       key++; /* first char is a colon or dollar which we skip */
 
-      keyo = PyUnicode_DecodeUTF8(key, strlen(key), NULL);
-      if (!keyo)
+      /*
+      Here be dragons: PyDict_GetItemString swallows exceptions if
+      the item doesn't exist (or any other reason) and apsw has therefore
+      always had the behaviour that missing dict keys get bound as
+      None/null.  PyMapping_GetItemString does throw exceptions.  So to
+      preserve existing behaviour, missing keys from dict are treated as
+      None, while missing keys from other types will throw an exception.
+      */
+
+      obj = PyDict_Check(self->bindings) ? PyDict_GetItemString(self->bindings, key) : PyMapping_GetItemString(self->bindings, key);
+      if (PyErr_Occurred())
         return -1;
-
-      obj = PyDict_GetItem(self->bindings, keyo);
-      Py_DECREF(keyo);
-
       if (!obj)
         /* this is where we could error on missing keys */
         continue;
@@ -727,7 +758,7 @@ APSWCursor_doexectrace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
   /* now deal with the bindings */
   if (self->bindings)
   {
-    if (PyDict_Check(self->bindings))
+    if (APSWCursor_is_dict_binding(self->bindings))
     {
       bindings = self->bindings;
       Py_INCREF(self->bindings);
@@ -864,7 +895,7 @@ APSWCursor_step(APSWCursor *self)
       Py_CLEAR(self->bindings);
       self->bindingsoffset = 0;
       /* verify type of next before putting in bindings */
-      if (PyDict_Check(next))
+      if (APSWCursor_is_dict_binding(next))
         self->bindings = next;
       else
       {
@@ -1025,7 +1056,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *args, PyObject *kwds)
 
   if (self->bindings)
   {
-    if (PyDict_Check(self->bindings))
+    if (APSWCursor_is_dict_binding(self->bindings))
       Py_INCREF(self->bindings);
     else
     {
@@ -1145,7 +1176,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args, PyObject *kwds)
     return (PyObject *)self;
   }
 
-  if (PyDict_Check(next))
+  if (APSWCursor_is_dict_binding(next))
     self->bindings = next;
   else
   {

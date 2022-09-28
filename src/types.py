@@ -13,7 +13,9 @@ SQLiteValues = Union[Tuple[()], Tuple[SQLiteValue, ...]]
 
 Bindings = Union[Sequence[Union[SQLiteValue, zeroblob]], Dict[str, Union[SQLiteValue, zeroblob]]]
 """Query bindings are either a sequence of SQLiteValue, or a dict mapping names
-to SQLiteValues.  You can also provide zeroblob in Bindings."""
+to SQLiteValues.  You can also provide zeroblob in Bindings. You can use
+dict subclasses or any type registered with :class:`collections.abc.Mapping`
+for named bindings"""
 
 # Neither TypeVar nor ParamSpec work, when either should
 AggregateT = Any

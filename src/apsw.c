@@ -1978,6 +1978,16 @@ modules etc. For example::
   PyModule_AddObject(m, "compile_options", get_compile_options());
   PyModule_AddObject(m, "keywords", get_keywords());
 
+  {
+    PyObject *mod = PyImport_ImportModule("collections.abc");
+    if(mod)
+    {
+      collections_abc_Mapping = PyObject_GetAttrString(mod, "Mapping");
+      Py_DECREF(mod);
+    }
+    assert(collections_abc_Mapping);
+  }
+
   if (!PyErr_Occurred())
   {
     return m;
