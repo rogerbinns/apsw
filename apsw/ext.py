@@ -1,6 +1,8 @@
 # Provides various useful routines
 
 from __future__ import annotations
+import collections, collections.abc
+from types import NoneType
 
 try:
     from dataclasses import dataclass, make_dataclass
@@ -153,39 +155,84 @@ class TypesConverterCursorFactory:
     :param metaclass: Which metaclass to consider as conversion capable
     """
 
-    def __init__(self, metaclass: abc.ABC = SQLiteTypeAdapter):
-        self.metaclass = metaclass
+    def __init__(self, abstract_base_class: abc.ABCMeta = SQLiteTypeAdapter):
+        self.abstract_base_class = abstract_base_class
         # to sqlite value
         self.adapters: Dict[type, Callable[[Any], apsw.SQLiteValue]] = {}
         # from sqlite value
         self.converters: Dict[str, Callable[[apsw.SQLiteValue], Any]] = {}
 
     def register_adapter(self, klass: type, callable: Callable[[Any], apsw.SQLiteValue]) -> None:
+        """Registers a callable that converts from `klass` to one of the supported SQLite types"""
         self.adapters[klass] = callable
 
     def register_converter(self, name: str, callable: Callable[[apsw.SQLiteValue], Any]) -> None:
+        """Registers a callable that converts from a SQLite value"""
         self.converters[name] = callable
 
     def __call__(self, connection: apsw.Connection) -> TypeConverterCursor:
+        "Returns a new :class:`cursor <apsw.Cursor>` for the `connection`"
         return TypesConverterCursorFactory.TypeConverterCursor(connection, self)
 
-    class TypeConverterCursor(apsw.Cursor):
+    def adapt_value(self, value: Any) -> apsw.SQLiteValue:
+        "Returns SQLite representation of `value`"
+        if isinstance(value, (int, bytes, str, NoneType, float)):
+            return value
+        if isinstance(value, self.abstract_base_class):
+            return value.to_sqlite_value()
+        adapter = self.adapters.get(type(value))
+        if not adapter:
+            raise ValueError(f"No adapter registered for type { type(value) }")
+        return adapter(value)
 
+    def convert_value(self, schematype: str, value: apsw.SQLiteValue) -> Any:
+        "Returns Python object from schema type and SQLite value"
+        converter = self.converters.get(schematype)
+        if not converter:
+            raise ValueError("No converter registered for type { schematype }")
+        return converter(value)
+
+    def wrap_bindings(self, bindings: Optional[apsw.Bindings]) -> Optional[apsw.Bindings]:
+        "Wraps bindings that are supplied to underlying execute"
+        if bindings is None:
+            return None
+        if isinstance(bindings, (dict, collections.abc.Mapping)):
+            return TypesConverterCursorFactory.DictAdapter(self, bindings)
+        # turn into a list since PySequence_Fast does that anyway
+        return [self.adapt_value(v) for v in bindings]
+
+    class DictAdapter(collections.abc.Mapping):
+        "Used to wrap dictionaries supplied as bindings"
+        def __init__(self, factory: TypesConverterCursorFactory, data: collections.abc.Mapping[str, apsw.SQLiteValue]):
+            self.data = data
+            self.factory = factory
+
+        def __getitem__(self, key: str) -> apsw.SQLiteValue:
+            return self.factory.adapt_value(self.data[key])
+
+    class TypeConverterCursor(apsw.Cursor):
+        "Cursor used to do conversions"
         def __init__(self, connection: apsw.Connection, factory: TypesConverterCursorFactory):
             super().__init__(connection)
             self.factory = factory
             self.setrowtrace(self._rowtracer)
 
         def _rowtracer(self, cursor: apsw.Cursor, values: apsw.SQLiteValues) -> Tuple[Any, ...]:
-            breakpoint()
+            return tuple(self.factory.convert_value(d[1], v) for d, v in zip(cursor.getdescription(), values))
 
         def execute(self,
                     statements: str,
-                    bindings: Optional[Bindings] = None,
+                    bindings: Optional[apsw.Bindings] = None,
                     *,
                     can_cache: bool = True,
                     prepare_flags: int = 0) -> apsw.Cursor:
-            breakpoint()
+            """Executes the statements doing conversions on supplied and returned values
+
+            See :meth:`apsw.Cursor.execute` for parameter details"""
+            return super().execute(statements,
+                                   self.factory.wrap_bindings(bindings),
+                                   can_cache=can_cache,
+                                   prepare_flags=prepare_flags)
 
 
 def query_info(db: apsw.Connection,
@@ -202,12 +249,12 @@ def query_info(db: apsw.Connection,
     Set the various parameters to `True` if you also want the
     actions, expanded_sql, explain, query_plan etc filled in.
     """
-    res = None
+    res: dict[str, Any] = {}
 
-    def tracer(cursor, firstquery, bindings):
+    def tracer(cursor: apsw.Cursor, first_query: str, bindings: Optional[apsw.Bindings]):
         nonlocal res
         res = {
-            "firstquery": firstquery,
+            "first_query": first_query,
             "query": query,
             "bindings": bindings,
             "is_explain": cursor.is_explain,
@@ -217,8 +264,8 @@ def query_info(db: apsw.Connection,
         if hasattr(cursor, "description_full"):
             res["description_full"] = cursor.description_full
 
-        assert query == firstquery or query.startswith(firstquery)
-        res["query_remaining"] = query[len(firstquery):] if len(query) > len(firstquery) else None
+        assert query == first_query or query.startswith(first_query)
+        res["query_remaining"] = query[len(first_query):] if len(query) > len(first_query) else None
         res["expanded_sql"] = cursor.expanded_sql if expanded_sql else None
         return False
 
@@ -294,7 +341,7 @@ def query_info(db: apsw.Connection,
 
     if explain and not res["is_explain"]:
         vdbe = []
-        for row in cur.execute("EXPLAIN " + res["firstquery"], bindings):
+        for row in cur.execute("EXPLAIN " + res["first_query"], bindings):
             vdbe.append(
                 VDBEInstruction(**dict((v[0][0], v[1]) for v in zip(cur.getdescription(), row) if v[1] is not None)))
         res["explain"] = vdbe
@@ -303,7 +350,7 @@ def query_info(db: apsw.Connection,
         subn = "sub"
         byid = {0: {"detail": "QUERY PLAN"}}
 
-        for row in cur.execute("EXPLAIN QUERY PLAN " + res["firstquery"], bindings):
+        for row in cur.execute("EXPLAIN QUERY PLAN " + res["first_query"], bindings):
             node = dict((v[0][0], v[1]) for v in zip(cur.getdescription(), row) if v[0][0] != "notused")
             assert len(node) == 3  # catch changes in returned format
             parent = byid[node["parent"]]
@@ -331,7 +378,7 @@ class QueryDetails:
     "Original query provided"
     bindings: Optional[apsw.Bindings]
     "Bindings provided"
-    firstquery: str
+    first_query: str
     "The first statement present in query"
     query_remaining: Optional[str]
     "Query text after the first one if multiple were in query, else None"

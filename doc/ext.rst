@@ -36,6 +36,51 @@ can use :class:`apsw.ext.DataClassRowFactory` like this::
 Converting types into and out of SQLite
 ---------------------------------------
 
+SQLite only stores and returns 5 types:
+
+* None
+* int
+* float
+* str
+* bytes
+
+Sometimes it is handy to pretend it stores more types and have them
+automagically converted.  Use :class:`TypesConverterCursorFactory` to
+do this::
+
+    t = apsw.ext.TypesConverterCursorFactory()
+    connection.cursor_factory = t
+
+To convert Python types to SQLite types, you can inherit from :class:`SQLiteTypeAdapter`
+and define `to_sqlite_value`::
+
+    class Point(apsw.ext.SQLiteTypeAdapter):
+        def __init__(self, x, y):
+            self.x = x
+            self.y = y
+
+        def to_sqlite_value(self):
+            # this is called to do the conversion
+            return f"{ self.x };{ self.y }"
+
+You can also register a converter::
+
+    def complex_to_sqlite_value(c):
+        return f"{ c.real };{ c.imag }"
+
+    t.register_converter(complex, complex_to_sqlite_value)
+
+To adapt SQLite types back to Python types, you need to set the type in SQLite:: sql
+
+    CREATE TABLE example(number INT, other COMPLEX);
+
+Then register an adapter, giving the type from your SQL schema.  It must be an
+exact match (`COMPLEX` in this example)::
+
+    def sqlite_to_complex(v):
+        return complex(**(float(part) for part in v.split(";")))
+
+    t.register_adapter("COMPLEX", sqlite_to_complex)
 
 Detailed Query Information
 --------------------------
