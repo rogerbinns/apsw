@@ -189,7 +189,7 @@ class TypesConverterCursorFactory:
         "Returns Python object from schema type and SQLite value"
         converter = self.converters.get(schematype)
         if not converter:
-            raise ValueError("No converter registered for type { schematype }")
+            return value
         return converter(value)
 
     def wrap_bindings(self, bindings: Optional[apsw.Bindings]) -> Optional[apsw.Bindings]:
@@ -203,6 +203,7 @@ class TypesConverterCursorFactory:
 
     class DictAdapter(collections.abc.Mapping):
         "Used to wrap dictionaries supplied as bindings"
+
         def __init__(self, factory: TypesConverterCursorFactory, data: collections.abc.Mapping[str, apsw.SQLiteValue]):
             self.data = data
             self.factory = factory
@@ -210,8 +211,21 @@ class TypesConverterCursorFactory:
         def __getitem__(self, key: str) -> apsw.SQLiteValue:
             return self.factory.adapt_value(self.data[key])
 
+        def __iter__(self):
+            "Required by mapping, but not used"
+            raise NotImplementedError
+
+        def __len__(self):
+            "Required by mapping, but not used"
+            raise NotImplementedError
+
+    def wrap_sequence_bindings(self, sequenceofbindings: Sequence[apsw.Bindings]):
+        for binding in sequenceofbindings:
+            yield wrap_bindings(bindings)
+
     class TypeConverterCursor(apsw.Cursor):
         "Cursor used to do conversions"
+
         def __init__(self, connection: apsw.Connection, factory: TypesConverterCursorFactory):
             super().__init__(connection)
             self.factory = factory
@@ -233,6 +247,14 @@ class TypesConverterCursorFactory:
                                    self.factory.wrap_bindings(bindings),
                                    can_cache=can_cache,
                                    prepare_flags=prepare_flags)
+
+        def executemany(self,
+                        statements: str,
+                        sequenceofbindings: Sequence[apsw.Bindings],
+                        *,
+                        can_cache: bool = True,
+                        prepare_flags: int = 0) -> apsw.Cursor:
+            return super().executemany(statements, sequenceofbindings, can_cache=can_cache, prepare_flags=prepare_flags)
 
 
 def query_info(db: apsw.Connection,
