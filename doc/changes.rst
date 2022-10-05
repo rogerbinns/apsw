@@ -2,8 +2,8 @@ Change History
 **************
 .. currentmodule:: apsw
 
-next
-====
+3.39.4.0
+========
 
 Added :meth:`Connection.cache_stats` to provide more information about
 the statement cache.
