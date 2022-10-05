@@ -392,6 +392,7 @@ def do_argparse(item):
             continue
         if param["name"] == "*":
             seen_star = True
+            optional = True
             if "|" not in fstr:
                 fstr += "|"
             fstr += "$"
