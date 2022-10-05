@@ -1529,7 +1529,7 @@ APSWCursor_fetchone(APSWCursor *self)
 }
 
 /** .. attribute:: is_explain
-    :type: int
+  :type: int
 
   Returns 0 if executing a normal query, 1 if it is an EXPLAIN query,
   and 2 if an EXPLAIN QUERY PLAN query.
@@ -1546,7 +1546,7 @@ APSWCursor_is_explain(APSWCursor *self)
 }
 
 /** .. attribute:: is_readonly
-    :type: bool
+  :type: bool
 
   Returns True if the current query does not change the database.
 
@@ -1566,7 +1566,7 @@ APSWCursor_is_readonly(APSWCursor *self)
 }
 
 /** .. attribute:: expanded_sql
-    :type: str
+  :type: str
 
   The SQL text with bound parameters expanded.  For example::
 
