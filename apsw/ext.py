@@ -44,6 +44,8 @@ class DataClassRowFactory:
         for row in connection.execute("SELECT title, sum(orders) AS total, ..."):
             # You can now access by name
             print (row.title, row.total)
+            # you can get the underlying description
+            print (row.__description__)
 
     You can use as many instances of this class as you want, each across as many
     :class:`connections <apsw.Connection>` as you want.
@@ -254,6 +256,9 @@ class TypesConverterCursorFactory:
                         *,
                         can_cache: bool = True,
                         prepare_flags: int = 0) -> apsw.Cursor:
+            """Executes the statements against each item in sequenceofbindings, doing conversions on supplied and returned values
+
+            See :meth:`apsw.Cursor.executemany` for parameter details"""
             return super().executemany(statements, sequenceofbindings, can_cache=can_cache, prepare_flags=prepare_flags)
 
 

@@ -33,6 +33,9 @@ can use :class:`apsw.ext.DataClassRowFactory` like this::
     for row in con.execute("SELECT * from books"):
         print(row.title, row.author)
 
+See the :class:`API reference <apsw.ext.DataClassRowFactory>` for more
+details on usage and configuration.
+
 Converting types into and out of SQLite
 ---------------------------------------
 
@@ -70,12 +73,15 @@ You can also register a converter::
 
     t.register_converter(complex, complex_to_sqlite_value)
 
-To adapt SQLite types back to Python types, you need to set the type in SQLite:: sql
+To adapt SQLite types back to Python types, you need to set the type
+in SQLite when creating the table.
+
+.. code-block:: SQL
 
     CREATE TABLE example(number INT, other COMPLEX);
 
 Then register an adapter, giving the type from your SQL schema.  It must be an
-exact match (`COMPLEX` in this example)::
+exact match including case (`COMPLEX` in this example)::
 
     def sqlite_to_complex(v):
         return complex(**(float(part) for part in v.split(";")))
