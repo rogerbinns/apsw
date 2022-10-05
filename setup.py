@@ -13,6 +13,7 @@ import tarfile
 import subprocess
 import sysconfig
 import shutil
+import pathlib
 
 from setuptools import setup, Extension, Command
 from setuptools.command import build_ext, sdist
@@ -818,12 +819,7 @@ if __name__ == '__main__':
     setup(name="apsw",
         version=version,
         description="Another Python SQLite Wrapper",
-        long_description=\
-    """A Python wrapper for the SQLite embedded relational database engine.
-    APSW exposes SQLite as it really is, while the stdlib sqlite3
-    module makes SQLite look like other databases via DBAPI.
-    Everything you can do from the SQLite C API, you can do from APSW.
-    """,
+        long_description=pathlib.Path("README.rst").read_text(encoding="utf8"),
         author="Roger Binns",
         author_email="rogerb@rogerbinns.com",
         url="https://github.com/rogerbinns/apsw/",
