@@ -19,3 +19,6 @@ include LICENSE
 include checksums
 include setup.cfg
 include setup.py
+
+# Long description comes from this
+README.rst

@@ -2,19 +2,22 @@
 
 from typing import Union, Tuple, List, Optional, Callable, Any, Dict, \
         Iterator, Sequence, Literal, Set
+from collections.abc import Mapping
 from array import array
 from types import TracebackType
 
-SQLiteValue = Union[None, int, float, bytes, str]
+SQLiteValue = Union[NoneType, int, float, bytes, str]
 """SQLite supports 5 types - None (NULL), 64 bit signed int, 64 bit
 float, bytes, and str (unicode text)"""
 
 SQLiteValues = Union[Tuple[()], Tuple[SQLiteValue, ...]]
 "A sequence of zero or more SQLiteValue"
 
-Bindings = Union[Sequence[Union[SQLiteValue, zeroblob]], Dict[str, Union[SQLiteValue, zeroblob]]]
+Bindings = Union[Sequence[Union[SQLiteValue, zeroblob]], Mapping[str, Union[SQLiteValue, zeroblob]]]
 """Query bindings are either a sequence of SQLiteValue, or a dict mapping names
-to SQLiteValues.  You can also provide zeroblob in Bindings."""
+to SQLiteValues.  You can also provide zeroblob in Bindings. You can use
+dict subclasses or any type registered with :class:`collections.abc.Mapping`
+for named bindings"""
 
 # Neither TypeVar nor ParamSpec work, when either should
 AggregateT = Any

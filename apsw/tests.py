@@ -872,6 +872,9 @@ class APSW(unittest.TestCase):
             self.assertIsNone(c.expanded_sql)
             self.db.limit(apsw.SQLITE_LIMIT_LENGTH, existing)
         self.assertTrue(ran)
+        # keyword args
+        c.execute("pragma user_version=73", bindings=None, can_cache=False, prepare_flags=0).fetchall()
+        c.executemany(statements="select ?", sequenceofbindings=((1,), (2,)), can_cache=False, prepare_flags=0).fetchall()
 
     def testIssue373(self):
         "issue 373: dict type checking in bindings"
