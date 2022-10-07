@@ -91,17 +91,10 @@ class APSWTracer(object):
     def formatseq(self, obj, paren):
         return self.u+paren[0]+", ".join([self.format(v) for v in obj])+paren[1]
 
-    def formatbinarypy2(self, obj):
-        if len(obj)<self.options.length:
-            return "X'"+"".join(["%x" % ord(obj[i]) for i in range(len(obj))])+"'"
-        return "(%d) X'"%(len(obj),)+"".join(["%x" % ord(obj[i]) for i in range(self.options.length)])+"..'"
-
-    def formatbinarypy3(self, obj):
+    def formatbinary(self, obj):
         if len(obj)<self.options.length:
             return "X'"+"".join(["%x" % obj[i] for i in range(len(obj))])+"'"
         return "(%d) X'"%(len(obj),)+"".join(["%x" % obj[i] for i in range(self.options.length)])+"..'"
-
-    formatbinary=formatbinarypy3
 
     def sanitizesql(self, sql):
         sql=sql.strip("; \t\r\n")
