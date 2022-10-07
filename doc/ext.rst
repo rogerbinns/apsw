@@ -54,7 +54,7 @@ do this::
     t = apsw.ext.TypesConverterCursorFactory()
     connection.cursor_factory = t
 
-To convert Python types to SQLite types, you can inherit from :class:`SQLiteTypeAdapter`
+To adapt Python types to SQLite types, you can inherit from :class:`SQLiteTypeAdapter`
 and define `to_sqlite_value`::
 
     class Point(apsw.ext.SQLiteTypeAdapter):
@@ -66,14 +66,14 @@ and define `to_sqlite_value`::
             # this is called to do the conversion
             return f"{ self.x };{ self.y }"
 
-You can also register a converter::
+You can also register an adapter::
 
     def complex_to_sqlite_value(c):
         return f"{ c.real };{ c.imag }"
 
-    t.register_converter(complex, complex_to_sqlite_value)
+    t.register_adapter(complex, complex_to_sqlite_value)
 
-To adapt SQLite types back to Python types, you need to set the type
+To convert SQLite types back to Python types, you need to set the type
 in SQLite when creating the table.
 
 .. code-block:: SQL
@@ -84,9 +84,9 @@ Then register an adapter, giving the type from your SQL schema.  It must be an
 exact match including case (`COMPLEX` in this example)::
 
     def sqlite_to_complex(v):
-        return complex(**(float(part) for part in v.split(";")))
+        return complex(*(float(part) for part in v.split(";")))
 
-    t.register_adapter("COMPLEX", sqlite_to_complex)
+    t.register_converter("COMPLEX", sqlite_to_complex)
 
 Detailed Query Information
 --------------------------

@@ -184,7 +184,7 @@ class TypesConverterCursorFactory:
             return value.to_sqlite_value()
         adapter = self.adapters.get(type(value))
         if not adapter:
-            raise ValueError(f"No adapter registered for type { type(value) }")
+            raise TypeError(f"No adapter registered for type { type(value) }")
         return adapter(value)
 
     def convert_value(self, schematype: str, value: apsw.SQLiteValue) -> Any:

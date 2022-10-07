@@ -8,6 +8,7 @@ import sys
 import os
 import warnings
 import platform
+import typing
 
 
 def print_version_info():
