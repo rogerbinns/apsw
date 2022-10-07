@@ -202,7 +202,7 @@ tags:
 
 # building a python debug interpreter
 
-PYDEBUG_VER=3.10.5
+PYDEBUG_VER=3.10.7
 PYDEBUG_DIR=/space/pydebug
 PYVALGRIND_VER=$(PYDEBUG_VER)
 PYVALGRIND_DIR=/space/pyvalgrind
