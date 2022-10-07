@@ -3699,7 +3699,7 @@ class APSW(unittest.TestCase):
         finally:
             for f in fh:
                 f.close()
-            time.strftim = orig_strftime
+            time.strftime = orig_strftime
             getpass.getuser = orig_getuser
 
     def testIssue186(self):
