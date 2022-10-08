@@ -229,18 +229,15 @@ Sometimes you want to know what a particular SQL statement does.  The
 SQLite query parser directly generates VDBE byte code and cannot be
 hooked into.  There is however an easier way.
 
-Make a new :class:`Connection` object making sure the statement cache
-is disabled (size zero).  Install an :ref:`execution tracer
-<executiontracer>` that returns ``apsw.SQLITE_DENY`` which will
-prevent any queries from running.  Install an :meth:`authorizer
-<Connection.setauthorizer>`.
+Install an :ref:`execution tracer <executiontracer>` that returns
+``apsw.SQLITE_DENY`` which will prevent any queries from running.
+Install an :meth:`authorizer <Connection.setauthorizer>`.
 
-Then call :meth:`Cursor.execute` on your query.  Your authorizer will
-then be called (multiple times if necessary) with details of what the
-query does including expanding views and triggers that fire.  Finally
-the execution tracer will fire.  If the query string had multiple
-statements then the execution tracer lets you know how long the first
-statement was.
+Then call :meth:`Cursor.execute` on your query with `can_cache =
+False`.  Your authorizer will then be called (multiple times if
+necessary) with details of what the query does including expanding
+views and triggers that fire.  Finally the execution tracer will fire,
+which prevents execution.
 
 Unexpected behaviour
 ====================

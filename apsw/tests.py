@@ -3700,7 +3700,7 @@ class APSW(unittest.TestCase):
         finally:
             for f in fh:
                 f.close()
-            time.strftim = orig_strftime
+            time.strftime = orig_strftime
             getpass.getuser = orig_getuser
 
     def testIssue186(self):
@@ -8902,9 +8902,15 @@ def setup():
     information."""
 
     print_version_info()
-
-    if hasattr(apsw, "config"):
+    try:
         apsw.config(apsw.SQLITE_CONFIG_MEMSTATUS, True)  # ensure memory tracking is on
+    except apsw.MisuseError:
+        # if using amalgamation then something went wrong
+        if apsw.using_amalgamation:
+            raise
+        # coverage uses sqlite and so the config call is too
+        # late
+        pass
     apsw.initialize()  # manual call for coverage
     memdb = apsw.Connection(":memory:")
     if not getattr(memdb, "enableloadextension", None):

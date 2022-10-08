@@ -1977,6 +1977,7 @@ Connection_deserialize(Connection *self, PyObject *args, PyObject *kwds)
 }
 #endif /* SQLITE_OMIT_DESERIALZE */
 
+#ifndef SQLITE_OMIT_LOAD_EXTENSION
 /** .. method:: enableloadextension(enable: bool) -> None
 
   Enables/disables `extension loading
@@ -2064,6 +2065,7 @@ Connection_loadextension(Connection *self, PyObject *args, PyObject *kwds)
   }
   Py_RETURN_NONE;
 }
+#endif
 
 /* USER DEFINED FUNCTION CODE.*/
 static PyTypeObject FunctionCBInfoType =
@@ -3875,7 +3877,7 @@ static PyMethodDef Connection_methods[] = {
      Connection_limit_DOC},
     {"setprofile", (PyCFunction)Connection_setprofile, METH_VARARGS | METH_KEYWORDS,
      Connection_setprofile_DOC},
-#if !defined(SQLITE_OMIT_LOAD_EXTENSION)
+#ifndef SQLITE_OMIT_LOAD_EXTENSION
     {"enableloadextension", (PyCFunction)Connection_enableloadextension, METH_VARARGS | METH_KEYWORDS,
      Connection_enableloadextension_DOC},
     {"loadextension", (PyCFunction)Connection_loadextension, METH_VARARGS | METH_KEYWORDS,
