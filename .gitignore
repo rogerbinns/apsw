@@ -34,9 +34,9 @@ sqlite3ext.h
 MANIFEST
 MANIFEST.in.tmp
 megatestresults/
-coverage/
 testdb
 /.coverage
+/htmlcov/
 apsw.egg-info
 /.ropeproject/
 /.mypy_cache/
