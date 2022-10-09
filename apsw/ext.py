@@ -203,6 +203,10 @@ class TypesConverterCursorFactory:
         # turn into a list since PySequence_Fast does that anyway
         return [self.adapt_value(v) for v in bindings]
 
+    def wrap_sequence_bindings(self, sequenceofbindings: Sequence[apsw.Bindings]):
+        for binding in sequenceofbindings:
+            yield self.wrap_bindings(binding)
+
     class DictAdapter(collections.abc.Mapping):
         "Used to wrap dictionaries supplied as bindings"
 
@@ -220,10 +224,6 @@ class TypesConverterCursorFactory:
         def __len__(self):
             "Required by mapping, but not used"
             raise NotImplementedError
-
-    def wrap_sequence_bindings(self, sequenceofbindings: Sequence[apsw.Bindings]):
-        for binding in sequenceofbindings:
-            yield wrap_bindings(bindings)
 
     class TypeConverterCursor(apsw.Cursor):
         "Cursor used to do conversions"
@@ -259,7 +259,10 @@ class TypesConverterCursorFactory:
             """Executes the statements against each item in sequenceofbindings, doing conversions on supplied and returned values
 
             See :meth:`apsw.Cursor.executemany` for parameter details"""
-            return super().executemany(statements, sequenceofbindings, can_cache=can_cache, prepare_flags=prepare_flags)
+            return super().executemany(statements,
+                                       self.factory.wrap_sequence_bindings(sequenceofbindings),
+                                       can_cache=can_cache,
+                                       prepare_flags=prepare_flags)
 
 
 def query_info(db: apsw.Connection,
