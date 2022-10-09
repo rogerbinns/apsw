@@ -1,19 +1,21 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Example &#8212; APSW 3.39.3.0 documentation</title>
+    <title>Example &#8212; APSW 3.39.4.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -43,7 +45,7 @@
         <li class="right" >
           <a href="tips.html" title="Tips"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Example</a></li> 
       </ul>
     </div>  
@@ -54,7 +56,7 @@
           <div class="body" role="main">
             
   <section id="example">
-<h1>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h1>
+<h1>Example<a class="headerlink" href="#example" title="Permalink to this heading">¶</a></h1>
 <p>This code demonstrates usage of the APSW api.  It gives you a good
 overview of all the things that can be done.  Also included is output
 so you can see what gets printed when you run the code.</p>
@@ -82,9 +84,9 @@ so you can see what gets printed when you run the code.</p>
 </pre></div>
 </div>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>|       Using APSW file /space/apsw/apsw/__init__.cpython-310-x86_64-linux-gnu.so
-|          APSW version 3.39.3.0
-|    SQLite lib version 3.39.3
-| SQLite header version 3039003
+|          APSW version 3.39.4.0
+|    SQLite lib version 3.39.4
+| SQLite header version 3039004
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">###</span>
@@ -547,8 +549,8 @@ so you can see what gets printed when you run the code.</p>
 </pre></div>
 </div>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| 45790632 f4771e8a540c98c8e0df__mypyc.cpython-310-x86_64-linux-gnu.so /home/rogerb/.local/lib/python3.10/site-packages
-| 24821760 testdb /space/apsw
-| 5633992 apsw.o /space/apsw
+| 5750784 test.db /space/apsw
+| 5704024 apsw.o /space/apsw
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Which 3 files are the oldest?</span>
@@ -558,7 +560,7 @@ so you can see what gets printed when you run the code.</p>
 </div>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| 1582056231.6234083 .style.yapf /space/apsw
 | 1587233567.4374056 arandr-0.1.10.egg-info /usr/lib/python3/dist-packages
-| 1604593216.8926702 pyparsing.py /usr/lib/python3/dist-packages
+| 1620398970.437021 zope.event-4.4-nspkg.pth /usr/lib/python3/dist-packages
 </pre></div>
 </div>
 <div class="highlight-python notranslate" id="example-vfs"><div class="highlight"><pre><span></span><span class="c1">###</span>
@@ -763,12 +765,16 @@ so you can see what gets printed when you run the code.</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="tips.html"
-                        title="previous chapter">Tips</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="download.html"
-                        title="next chapter">Download</a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="tips.html"
+                          title="previous chapter">Tips</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="download.html"
+                          title="next chapter">Download</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -785,7 +791,7 @@ so you can see what gets printed when you run the code.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -805,15 +811,15 @@ so you can see what gets printed when you run the code.</p>
         <li class="right" >
           <a href="tips.html" title="Tips"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Example</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Sep 11, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+      Last updated on Oct 09, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

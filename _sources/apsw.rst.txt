@@ -18,7 +18,7 @@ Comprehensive `type annotations
 <https://docs.python.org/3/library/typing.html>`__ are included, and
 your code using apsw can be checked using tools like `mypy
 <http://mypy-lang.org/>`__.  You can refer to the types below for
-your annotations (eg as :code:`apsw.SQLiteValue`)
+your annotations (eg as :class:`apsw.SQLiteValue`)
 
 .. include:: ../doc/typing.rstgen
 
@@ -399,6 +399,10 @@ mapping_locking_level `File Locking Levels <https://sqlite.org/c3ref/c_lock_excl
 mapping_open_flags `Flags For File Open Operations <https://sqlite.org/c3ref/c_open_autoproxy.html>`__
 
     `SQLITE_OPEN_AUTOPROXY <https://sqlite.org/c3ref/c_open_autoproxy.html>`__, `SQLITE_OPEN_CREATE <https://sqlite.org/c3ref/c_open_autoproxy.html>`__, `SQLITE_OPEN_DELETEONCLOSE <https://sqlite.org/c3ref/c_open_autoproxy.html>`__, `SQLITE_OPEN_EXCLUSIVE <https://sqlite.org/c3ref/c_open_autoproxy.html>`__, `SQLITE_OPEN_EXRESCODE <https://sqlite.org/c3ref/c_open_autoproxy.html>`__, `SQLITE_OPEN_FULLMUTEX <https://sqlite.org/c3ref/c_open_autoproxy.html>`__, `SQLITE_OPEN_MAIN_DB <https://sqlite.org/c3ref/c_open_autoproxy.html>`__, `SQLITE_OPEN_MAIN_JOURNAL <https://sqlite.org/c3ref/c_open_autoproxy.html>`__, `SQLITE_OPEN_MEMORY <https://sqlite.org/c3ref/c_open_autoproxy.html>`__, `SQLITE_OPEN_NOFOLLOW <https://sqlite.org/c3ref/c_open_autoproxy.html>`__, `SQLITE_OPEN_NOMUTEX <https://sqlite.org/c3ref/c_open_autoproxy.html>`__, `SQLITE_OPEN_PRIVATECACHE <https://sqlite.org/c3ref/c_open_autoproxy.html>`__, `SQLITE_OPEN_READONLY <https://sqlite.org/c3ref/c_open_autoproxy.html>`__, `SQLITE_OPEN_READWRITE <https://sqlite.org/c3ref/c_open_autoproxy.html>`__, `SQLITE_OPEN_SHAREDCACHE <https://sqlite.org/c3ref/c_open_autoproxy.html>`__, `SQLITE_OPEN_SUBJOURNAL <https://sqlite.org/c3ref/c_open_autoproxy.html>`__, `SQLITE_OPEN_SUPER_JOURNAL <https://sqlite.org/c3ref/c_open_autoproxy.html>`__, `SQLITE_OPEN_TEMP_DB <https://sqlite.org/c3ref/c_open_autoproxy.html>`__, `SQLITE_OPEN_TEMP_JOURNAL <https://sqlite.org/c3ref/c_open_autoproxy.html>`__, `SQLITE_OPEN_TRANSIENT_DB <https://sqlite.org/c3ref/c_open_autoproxy.html>`__, `SQLITE_OPEN_URI <https://sqlite.org/c3ref/c_open_autoproxy.html>`__, `SQLITE_OPEN_WAL <https://sqlite.org/c3ref/c_open_autoproxy.html>`__
+
+mapping_prepare_flags `Prepare Flags <https://sqlite.org/c3ref/c_prepare_normalize.html>`__
+
+    `SQLITE_PREPARE_NORMALIZE <https://sqlite.org/c3ref/c_prepare_normalize.html#sqlitepreparenormalize>`__, `SQLITE_PREPARE_NO_VTAB <https://sqlite.org/c3ref/c_prepare_normalize.html#sqlitepreparenovtab>`__, `SQLITE_PREPARE_PERSISTENT <https://sqlite.org/c3ref/c_prepare_normalize.html#sqlitepreparepersistent>`__
 
 mapping_result_codes `Result Codes <https://sqlite.org/rescode.html>`__
 

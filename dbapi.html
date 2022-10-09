@@ -1,19 +1,21 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>DBAPI notes &#8212; APSW 3.39.3.0 documentation</title>
+    <title>DBAPI notes &#8212; APSW 3.39.4.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -43,7 +45,7 @@
         <li class="right" >
           <a href="execution.html" title="Execution and tracing"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">DBAPI notes</a></li> 
       </ul>
     </div>  
@@ -54,10 +56,10 @@
           <div class="body" role="main">
             
   <section id="dbapi-notes">
-<span id="dbapinotes"></span><h1>DBAPI notes<a class="headerlink" href="#dbapi-notes" title="Permalink to this headline">¶</a></h1>
-<p>DBAPI is defined in <span class="target" id="index-0"></span><a class="pep reference external" href="https://www.python.org/dev/peps/pep-0249"><strong>PEP 249</strong></a>. This section describes how APSW complies or differs from it.</p>
+<span id="dbapinotes"></span><h1>DBAPI notes<a class="headerlink" href="#dbapi-notes" title="Permalink to this heading">¶</a></h1>
+<p>DBAPI is defined in <span class="target" id="index-0"></span><a class="pep reference external" href="https://peps.python.org/pep-0249/"><strong>PEP 249</strong></a>. This section describes how APSW complies or differs from it.</p>
 <section id="module-interface">
-<h2>Module Interface<a class="headerlink" href="#module-interface" title="Permalink to this headline">¶</a></h2>
+<h2>Module Interface<a class="headerlink" href="#module-interface" title="Permalink to this heading">¶</a></h2>
 <p>There is no connect method. Use the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> constructor instead.</p>
 <p>The Connection object and any cursors can be used in any thread.  As
 an extreme example, you could call <code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.next()</span></code> in separate
@@ -94,7 +96,7 @@ parameter numbers from one not zero when using <em>qmark/numeric</em> style.</p>
 used correspond to specific SQLite error codes.</p>
 </section>
 <section id="connection-objects">
-<h2>Connection Objects<a class="headerlink" href="#connection-objects" title="Permalink to this headline">¶</a></h2>
+<h2>Connection Objects<a class="headerlink" href="#connection-objects" title="Permalink to this heading">¶</a></h2>
 <p>There are no commit or rollback methods. You should use
 <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> with <cite>BEGIN</cite> and <cite>COMMIT</cite> or <cite>ROLLBACK</cite> as
 appropriate. The <a class="reference external" href="https://sqlite.org/lockingv3.html">SQLite documentation</a> has more details.  In particular
@@ -108,7 +110,7 @@ to the same Connection object does update their values, and this makes
 you aware of that.</p>
 </section>
 <section id="cursor-objects">
-<h2>Cursor Objects<a class="headerlink" href="#cursor-objects" title="Permalink to this headline">¶</a></h2>
+<h2>Cursor Objects<a class="headerlink" href="#cursor-objects" title="Permalink to this heading">¶</a></h2>
 <p>Use <a class="reference internal" href="cursor.html#apsw.Cursor.getdescription" title="apsw.Cursor.getdescription"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.getdescription()</span></code></a> instead of description. This
 information is only obtained on request.</p>
 <p id="rowcount">There is no rowcount.  Row counts don’t make sense in SQLite any way.
@@ -130,7 +132,7 @@ remaining results.</p>
 <p>Neither setinputsizes or setoutputsize are applicable or implemented.</p>
 </section>
 <section id="type-objects">
-<h2>Type objects<a class="headerlink" href="#type-objects" title="Permalink to this headline">¶</a></h2>
+<h2>Type objects<a class="headerlink" href="#type-objects" title="Permalink to this heading">¶</a></h2>
 <p>None of the date or time methods are available since SQLite 3 does not
 have a native date or time type.  There are <a class="reference external" href="https://sqlite.org/lang_datefunc.html">functions</a> for
 manipulating dates and time which are represented as strings or
@@ -139,7 +141,7 @@ point number).</p>
 <p>Use the standard bytes type for blobs.</p>
 </section>
 <section id="optional-db-api-extensions">
-<h2>Optional DB API Extensions<a class="headerlink" href="#optional-db-api-extensions" title="Permalink to this headline">¶</a></h2>
+<h2>Optional DB API Extensions<a class="headerlink" href="#optional-db-api-extensions" title="Permalink to this heading">¶</a></h2>
 <p>rownumber is not available.</p>
 <p>Exception classes are not available as attributes of Connection but
 instead are on the <a class="reference internal" href="apsw.html#module-apsw" title="apsw: Python access to SQLite database library"><code class="xref py py-mod docutils literal notranslate"><span class="pre">apsw</span></code></a> module.  See <a class="reference internal" href="exceptions.html#exceptions"><span class="std std-ref">Exceptions</span></a> for
@@ -169,8 +171,9 @@ statements:</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">DBAPI notes</a><ul>
 <li><a class="reference internal" href="#module-interface">Module Interface</a></li>
 <li><a class="reference internal" href="#connection-objects">Connection Objects</a></li>
@@ -181,12 +184,17 @@ statements:</p>
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="execution.html"
-                        title="previous chapter">Execution and tracing</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="pysqlite.html"
-                        title="next chapter">pysqlite differences</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="execution.html"
+                          title="previous chapter">Execution and tracing</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="pysqlite.html"
+                          title="next chapter">pysqlite differences</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -203,7 +211,7 @@ statements:</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -223,15 +231,15 @@ statements:</p>
         <li class="right" >
           <a href="execution.html" title="Execution and tracing"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">DBAPI notes</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Sep 11, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+      Last updated on Oct 09, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

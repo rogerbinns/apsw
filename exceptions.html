@@ -1,19 +1,21 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Exceptions &#8212; APSW 3.39.3.0 documentation</title>
+    <title>Exceptions &#8212; APSW 3.39.4.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -43,7 +45,7 @@
         <li class="right" >
           <a href="shell.html" title="Shell"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Exceptions</a></li> 
       </ul>
     </div>  
@@ -54,7 +56,7 @@
           <div class="body" role="main">
             
   <section id="exceptions">
-<span id="id1"></span><h1>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h1>
+<span id="id1"></span><h1>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this heading">¶</a></h1>
 <p><a class="reference internal" href="#apsw.Error" title="apsw.Error"><code class="xref py py-exc docutils literal notranslate"><span class="pre">apsw.Error</span></code></a> is the base for APSW exceptions.</p>
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.Error">
@@ -80,7 +82,7 @@ less data than expected then <a class="reference internal" href="#apsw.Error.res
 <code class="xref py py-const docutils literal notranslate"><span class="pre">SQLITE_IOERR</span></code> while <a class="reference internal" href="#apsw.Error.extendedresult" title="apsw.Error.extendedresult"><code class="xref py py-attr docutils literal notranslate"><span class="pre">extendedresult</span></code></a> would have
 the value <code class="xref py py-const docutils literal notranslate"><span class="pre">SQLITE_IOERR_SHORT_READ</span></code>.</p>
 <section id="apsw-specific-exceptions">
-<h2>APSW specific exceptions<a class="headerlink" href="#apsw-specific-exceptions" title="Permalink to this headline">¶</a></h2>
+<h2>APSW specific exceptions<a class="headerlink" href="#apsw-specific-exceptions" title="Permalink to this heading">¶</a></h2>
 <p>The following exceptions happen when APSW detects various problems.</p>
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.ThreadingViolationError">
@@ -189,11 +191,11 @@ does not implement the method.</p>
 
 </section>
 <section id="sqlite-exceptions">
-<h2>SQLite Exceptions<a class="headerlink" href="#sqlite-exceptions" title="Permalink to this headline">¶</a></h2>
+<h2>SQLite Exceptions<a class="headerlink" href="#sqlite-exceptions" title="Permalink to this heading">¶</a></h2>
 <p>The following lists which Exception classes correspond to which <a class="reference external" href="https://sqlite.org/c3ref/c_abort.html">SQLite
 error codes</a>.</p>
 <section id="general-errors">
-<h3>General Errors<a class="headerlink" href="#general-errors" title="Permalink to this headline">¶</a></h3>
+<h3>General Errors<a class="headerlink" href="#general-errors" title="Permalink to this heading">¶</a></h3>
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.SQLError">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SQLError</span></span><a class="headerlink" href="#apsw.SQLError" title="Permalink to this definition">¶</a></dt>
@@ -220,7 +222,7 @@ controls.</p>
 
 </section>
 <section id="internal-errors">
-<h3>Internal Errors<a class="headerlink" href="#internal-errors" title="Permalink to this headline">¶</a></h3>
+<h3>Internal Errors<a class="headerlink" href="#internal-errors" title="Permalink to this heading">¶</a></h3>
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.InternalError">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">InternalError</span></span><a class="headerlink" href="#apsw.InternalError" title="Permalink to this definition">¶</a></dt>
@@ -249,7 +251,7 @@ a function with more than 127 parameters.</p>
 
 </section>
 <section id="permissions-etc">
-<h3>Permissions Etc<a class="headerlink" href="#permissions-etc" title="Permalink to this headline">¶</a></h3>
+<h3>Permissions Etc<a class="headerlink" href="#permissions-etc" title="Permalink to this heading">¶</a></h3>
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.PermissionsError">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PermissionsError</span></span><a class="headerlink" href="#apsw.PermissionsError" title="Permalink to this definition">¶</a></dt>
@@ -276,7 +278,7 @@ a function with more than 127 parameters.</p>
 
 </section>
 <section id="abort-busy-etc">
-<h3>Abort/Busy Etc<a class="headerlink" href="#abort-busy-etc" title="Permalink to this headline">¶</a></h3>
+<h3>Abort/Busy Etc<a class="headerlink" href="#abort-busy-etc" title="Permalink to this heading">¶</a></h3>
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.AbortError">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AbortError</span></span><a class="headerlink" href="#apsw.AbortError" title="Permalink to this definition">¶</a></dt>
@@ -328,7 +330,7 @@ which one was the cause.</p>
 
 </section>
 <section id="memory-disk">
-<h3>Memory/Disk<a class="headerlink" href="#memory-disk" title="Permalink to this headline">¶</a></h3>
+<h3>Memory/Disk<a class="headerlink" href="#memory-disk" title="Permalink to this heading">¶</a></h3>
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.NoMemError">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">NoMemError</span></span><a class="headerlink" href="#apsw.NoMemError" title="Permalink to this definition">¶</a></dt>
@@ -392,7 +394,7 @@ SQLite databases.</p>
 </section>
 </section>
 <section id="augmented-stack-traces">
-<span id="augmentedstacktraces"></span><h2>Augmented stack traces<a class="headerlink" href="#augmented-stack-traces" title="Permalink to this headline">¶</a></h2>
+<span id="augmentedstacktraces"></span><h2>Augmented stack traces<a class="headerlink" href="#augmented-stack-traces" title="Permalink to this heading">¶</a></h2>
 <p>When an exception occurs, Python does not include frames from
 non-Python code (ie the C code called from Python).  This can make it
 more difficult to work out what was going on when an exception
@@ -527,16 +529,72 @@ almost completely useless!</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">Exceptions</a><ul>
-<li><a class="reference internal" href="#apsw-specific-exceptions">APSW specific exceptions</a></li>
+<li><a class="reference internal" href="#apsw.Error"><code class="docutils literal notranslate"><span class="pre">Error</span></code></a><ul>
+<li><a class="reference internal" href="#apsw.Error.result"><code class="docutils literal notranslate"><span class="pre">Error.result</span></code></a></li>
+<li><a class="reference internal" href="#apsw.Error.extendedresult"><code class="docutils literal notranslate"><span class="pre">Error.extendedresult</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#apsw-specific-exceptions">APSW specific exceptions</a><ul>
+<li><a class="reference internal" href="#apsw.ThreadingViolationError"><code class="docutils literal notranslate"><span class="pre">ThreadingViolationError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ForkingViolationError"><code class="docutils literal notranslate"><span class="pre">ForkingViolationError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.IncompleteExecutionError"><code class="docutils literal notranslate"><span class="pre">IncompleteExecutionError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ConnectionNotClosedError"><code class="docutils literal notranslate"><span class="pre">ConnectionNotClosedError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ConnectionClosedError"><code class="docutils literal notranslate"><span class="pre">ConnectionClosedError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.CursorClosedError"><code class="docutils literal notranslate"><span class="pre">CursorClosedError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.BindingsError"><code class="docutils literal notranslate"><span class="pre">BindingsError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ExecutionCompleteError"><code class="docutils literal notranslate"><span class="pre">ExecutionCompleteError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ExecTraceAbort"><code class="docutils literal notranslate"><span class="pre">ExecTraceAbort</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ExtensionLoadingError"><code class="docutils literal notranslate"><span class="pre">ExtensionLoadingError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.VFSNotImplementedError"><code class="docutils literal notranslate"><span class="pre">VFSNotImplementedError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.VFSFileClosedError"><code class="docutils literal notranslate"><span class="pre">VFSFileClosedError</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#sqlite-exceptions">SQLite Exceptions</a><ul>
-<li><a class="reference internal" href="#general-errors">General Errors</a></li>
-<li><a class="reference internal" href="#internal-errors">Internal Errors</a></li>
-<li><a class="reference internal" href="#permissions-etc">Permissions Etc</a></li>
-<li><a class="reference internal" href="#abort-busy-etc">Abort/Busy Etc</a></li>
-<li><a class="reference internal" href="#memory-disk">Memory/Disk</a></li>
+<li><a class="reference internal" href="#general-errors">General Errors</a><ul>
+<li><a class="reference internal" href="#apsw.SQLError"><code class="docutils literal notranslate"><span class="pre">SQLError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.MismatchError"><code class="docutils literal notranslate"><span class="pre">MismatchError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.NotFoundError"><code class="docutils literal notranslate"><span class="pre">NotFoundError</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#internal-errors">Internal Errors</a><ul>
+<li><a class="reference internal" href="#apsw.InternalError"><code class="docutils literal notranslate"><span class="pre">InternalError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ProtocolError"><code class="docutils literal notranslate"><span class="pre">ProtocolError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.MisuseError"><code class="docutils literal notranslate"><span class="pre">MisuseError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.RangeError"><code class="docutils literal notranslate"><span class="pre">RangeError</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#permissions-etc">Permissions Etc</a><ul>
+<li><a class="reference internal" href="#apsw.PermissionsError"><code class="docutils literal notranslate"><span class="pre">PermissionsError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ReadOnlyError"><code class="docutils literal notranslate"><span class="pre">ReadOnlyError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.CantOpenError"><code class="docutils literal notranslate"><span class="pre">CantOpenError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.AuthError"><code class="docutils literal notranslate"><span class="pre">AuthError</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#abort-busy-etc">Abort/Busy Etc</a><ul>
+<li><a class="reference internal" href="#apsw.AbortError"><code class="docutils literal notranslate"><span class="pre">AbortError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.BusyError"><code class="docutils literal notranslate"><span class="pre">BusyError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.LockedError"><code class="docutils literal notranslate"><span class="pre">LockedError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.InterruptError"><code class="docutils literal notranslate"><span class="pre">InterruptError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.SchemaChangeError"><code class="docutils literal notranslate"><span class="pre">SchemaChangeError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ConstraintError"><code class="docutils literal notranslate"><span class="pre">ConstraintError</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#memory-disk">Memory/Disk</a><ul>
+<li><a class="reference internal" href="#apsw.NoMemError"><code class="docutils literal notranslate"><span class="pre">NoMemError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.IOError"><code class="docutils literal notranslate"><span class="pre">IOError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.CorruptError"><code class="docutils literal notranslate"><span class="pre">CorruptError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.FullError"><code class="docutils literal notranslate"><span class="pre">FullError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.TooBigError"><code class="docutils literal notranslate"><span class="pre">TooBigError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.NoLFSError"><code class="docutils literal notranslate"><span class="pre">NoLFSError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.EmptyError"><code class="docutils literal notranslate"><span class="pre">EmptyError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.FormatError"><code class="docutils literal notranslate"><span class="pre">FormatError</span></code></a></li>
+<li><a class="reference internal" href="#apsw.NotADBError"><code class="docutils literal notranslate"><span class="pre">NotADBError</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#augmented-stack-traces">Augmented stack traces</a></li>
@@ -544,12 +602,17 @@ almost completely useless!</p>
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="shell.html"
-                        title="previous chapter">Shell</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="types.html"
-                        title="next chapter">Types</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="shell.html"
+                          title="previous chapter">Shell</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="types.html"
+                          title="next chapter">Types</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -566,7 +629,7 @@ almost completely useless!</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -586,15 +649,15 @@ almost completely useless!</p>
         <li class="right" >
           <a href="shell.html" title="Shell"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Exceptions</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Sep 11, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+      Last updated on Oct 09, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

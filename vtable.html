@@ -1,19 +1,21 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Virtual Tables &#8212; APSW 3.39.3.0 documentation</title>
+    <title>Virtual Tables &#8212; APSW 3.39.4.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -43,7 +45,7 @@
         <li class="right" >
           <a href="backup.html" title="Backup"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Virtual Tables</a></li> 
       </ul>
     </div>  
@@ -54,7 +56,7 @@
           <div class="body" role="main">
             
   <section id="virtual-tables">
-<span id="virtualtables"></span><h1>Virtual Tables<a class="headerlink" href="#virtual-tables" title="Permalink to this headline">¶</a></h1>
+<span id="virtualtables"></span><h1>Virtual Tables<a class="headerlink" href="#virtual-tables" title="Permalink to this heading">¶</a></h1>
 <p><a class="reference external" href="https://sqlite.org/vtab.html">Virtual Tables</a> are a feature
 introduced in SQLite 3.3.7. They let a developer provide an underlying
 table implementations, while still presenting a normal SQL interface
@@ -81,7 +83,7 @@ omitted in Python. You can return SQLite error codes (eg
 <a class="reference internal" href="exceptions.html#apsw.ReadOnlyError" title="apsw.ReadOnlyError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ReadOnlyError</span></code></a>).  <a class="reference internal" href="apsw.html#apsw.exceptionfor" title="apsw.exceptionfor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">exceptionfor()</span></code></a> is a useful helper
 function to do the mapping.</p>
 <section id="vtmodule-class">
-<h2>VTModule class<a class="headerlink" href="#vtmodule-class" title="Permalink to this headline">¶</a></h2>
+<h2>VTModule class<a class="headerlink" href="#vtmodule-class" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.VTModule">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VTModule</span></span><a class="headerlink" href="#apsw.VTModule" title="Permalink to this definition">¶</a></dt>
@@ -158,7 +160,7 @@ is an object that implements the <a class="reference internal" href="#apsw.VTTab
 
 </section>
 <section id="vttable-class">
-<h2>VTTable class<a class="headerlink" href="#vttable-class" title="Permalink to this headline">¶</a></h2>
+<h2>VTTable class<a class="headerlink" href="#vttable-class" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.VTTable">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VTTable</span></span><a class="headerlink" href="#apsw.VTTable" title="Permalink to this definition">¶</a></dt>
@@ -487,7 +489,7 @@ is ignored.</p>
 
 </section>
 <section id="vtcursor-class">
-<h2>VTCursor class<a class="headerlink" href="#vtcursor-class" title="Permalink to this headline">¶</a></h2>
+<h2>VTCursor class<a class="headerlink" href="#vtcursor-class" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.VTCursor">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VTCursor</span></span><a class="headerlink" href="#apsw.VTCursor" title="Permalink to this definition">¶</a></dt>
@@ -531,7 +533,7 @@ supported types</span></a></p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.VTCursor.Eof">
-<span class="sig-prename descclassname"><span class="pre">VTCursor.</span></span><span class="sig-name descname"><span class="pre">Eof</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#apsw.VTCursor.Eof" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">VTCursor.</span></span><span class="sig-name descname"><span class="pre">Eof</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.VTCursor.Eof" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called to ask if we are at the end of the table. It is called after each call to Filter and Next.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -577,7 +579,7 @@ appropriate indexed and constrained row.</p>
 
 </section>
 <section id="troubleshooting-virtual-tables">
-<h2>Troubleshooting virtual tables<a class="headerlink" href="#troubleshooting-virtual-tables" title="Permalink to this headline">¶</a></h2>
+<h2>Troubleshooting virtual tables<a class="headerlink" href="#troubleshooting-virtual-tables" title="Permalink to this heading">¶</a></h2>
 <p>Virtual Tables are a relatively recent addition to SQLite and haven’t
 been widely used yet. They do work well if all your routines work
 perfectly.</p>
@@ -606,23 +608,65 @@ receive any constraintargs at all.</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">Virtual Tables</a><ul>
-<li><a class="reference internal" href="#vtmodule-class">VTModule class</a></li>
-<li><a class="reference internal" href="#vttable-class">VTTable class</a></li>
-<li><a class="reference internal" href="#vtcursor-class">VTCursor class</a></li>
+<li><a class="reference internal" href="#vtmodule-class">VTModule class</a><ul>
+<li><a class="reference internal" href="#apsw.VTModule"><code class="docutils literal notranslate"><span class="pre">VTModule</span></code></a><ul>
+<li><a class="reference internal" href="#apsw.VTModule.Connect"><code class="docutils literal notranslate"><span class="pre">VTModule.Connect()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.VTModule.Create"><code class="docutils literal notranslate"><span class="pre">VTModule.Create()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#vttable-class">VTTable class</a><ul>
+<li><a class="reference internal" href="#apsw.VTTable"><code class="docutils literal notranslate"><span class="pre">VTTable</span></code></a><ul>
+<li><a class="reference internal" href="#apsw.VTTable.Begin"><code class="docutils literal notranslate"><span class="pre">VTTable.Begin()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.VTTable.BestIndex"><code class="docutils literal notranslate"><span class="pre">VTTable.BestIndex()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.VTTable.Commit"><code class="docutils literal notranslate"><span class="pre">VTTable.Commit()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.VTTable.Destroy"><code class="docutils literal notranslate"><span class="pre">VTTable.Destroy()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.VTTable.Disconnect"><code class="docutils literal notranslate"><span class="pre">VTTable.Disconnect()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.VTTable.FindFunction"><code class="docutils literal notranslate"><span class="pre">VTTable.FindFunction()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.VTTable.Open"><code class="docutils literal notranslate"><span class="pre">VTTable.Open()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.VTTable.Rename"><code class="docutils literal notranslate"><span class="pre">VTTable.Rename()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.VTTable.Rollback"><code class="docutils literal notranslate"><span class="pre">VTTable.Rollback()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.VTTable.Sync"><code class="docutils literal notranslate"><span class="pre">VTTable.Sync()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.VTTable.UpdateChangeRow"><code class="docutils literal notranslate"><span class="pre">VTTable.UpdateChangeRow()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.VTTable.UpdateDeleteRow"><code class="docutils literal notranslate"><span class="pre">VTTable.UpdateDeleteRow()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.VTTable.UpdateInsertRow"><code class="docutils literal notranslate"><span class="pre">VTTable.UpdateInsertRow()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#vtcursor-class">VTCursor class</a><ul>
+<li><a class="reference internal" href="#apsw.VTCursor"><code class="docutils literal notranslate"><span class="pre">VTCursor</span></code></a><ul>
+<li><a class="reference internal" href="#apsw.VTCursor.Close"><code class="docutils literal notranslate"><span class="pre">VTCursor.Close()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.VTCursor.Column"><code class="docutils literal notranslate"><span class="pre">VTCursor.Column()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.VTCursor.Eof"><code class="docutils literal notranslate"><span class="pre">VTCursor.Eof()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.VTCursor.Filter"><code class="docutils literal notranslate"><span class="pre">VTCursor.Filter()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.VTCursor.Next"><code class="docutils literal notranslate"><span class="pre">VTCursor.Next()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.VTCursor.Rowid"><code class="docutils literal notranslate"><span class="pre">VTCursor.Rowid()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a class="reference internal" href="#troubleshooting-virtual-tables">Troubleshooting virtual tables</a></li>
 </ul>
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="backup.html"
-                        title="previous chapter">Backup</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="vfs.html"
-                        title="next chapter">Virtual File System (VFS)</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="backup.html"
+                          title="previous chapter">Backup</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="vfs.html"
+                          title="next chapter">Virtual File System (VFS)</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -639,7 +683,7 @@ receive any constraintargs at all.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -659,15 +703,15 @@ receive any constraintargs at all.</p>
         <li class="right" >
           <a href="backup.html" title="Backup"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Virtual Tables</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Sep 11, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+      Last updated on Oct 09, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

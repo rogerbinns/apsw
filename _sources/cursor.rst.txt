@@ -9,8 +9,12 @@
 Cursors (executing SQL)
 ***********************
 
-A cursor encapsulates a SQL query and returning results.  To make a
-new cursor you should call :meth:`~Connection.cursor` on your
+A cursor encapsulates a SQL query and returning results.  You only need an
+explicit cursor if you want more information or control over execution.  Using
+:meth:`Connection.execute` or :meth:`Connection.executemany` will automatically
+obtain a cursor behind the scenes.
+
+If you need a cursor you should call :meth:`~Connection.cursor` on your
 database::
 
   db=apsw.Connection("databasefilename")
@@ -173,9 +177,9 @@ Calls:
   * `sqlite3_column_table_name <https://sqlite.org/c3ref/column_database_name.html>`__
   * `sqlite3_column_origin_name <https://sqlite.org/c3ref/column_database_name.html>`__
 
-.. index:: sqlite3_prepare_v2, sqlite3_step, sqlite3_bind_int64, sqlite3_bind_null, sqlite3_bind_text, sqlite3_bind_double, sqlite3_bind_blob, sqlite3_bind_zeroblob
+.. index:: sqlite3_prepare_v3, sqlite3_step, sqlite3_bind_int64, sqlite3_bind_null, sqlite3_bind_text, sqlite3_bind_double, sqlite3_bind_blob, sqlite3_bind_zeroblob
 
-.. method:: Cursor.execute(statements: str, bindings: Optional[Bindings] = None) -> Cursor
+.. method:: Cursor.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor
 
     Executes the statements using the supplied bindings.  Execution
     returns when the first row is available or all statements have
@@ -185,6 +189,10 @@ Calls:
       from books`` or ``begin; insert into books ...; select
       last_insert_rowid(); end``.
     :param bindings: If supplied should either be a sequence or a dictionary.  Each item must be one of the :ref:`supported types <types>`
+    :param can_cache: If False then the statement cache will not be used to find an already prepared query, nor will it be
+      placed in the cache after execution
+    :param prepare_flags: `flags <https://sqlite.org/c3ref/c_prepare_normalize.htm>`__ passed to
+      `sqlite_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__
 
     If you use numbered bindings in the query then supply a sequence.
     Any sequence will work including lists and iterators.  For
@@ -227,7 +235,7 @@ Calls:
        * :ref:`Example <example-cursor>`
 
     Calls:
-      * `sqlite3_prepare_v2 <https://sqlite.org/c3ref/prepare.html>`__
+      * `sqlite3_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__
       * `sqlite3_step <https://sqlite.org/c3ref/step.html>`__
       * `sqlite3_bind_int64 <https://sqlite.org/c3ref/bind_blob.html>`__
       * `sqlite3_bind_null <https://sqlite.org/c3ref/bind_blob.html>`__
@@ -236,7 +244,7 @@ Calls:
       * `sqlite3_bind_blob <https://sqlite.org/c3ref/bind_blob.html>`__
       * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__
 
-.. method:: Cursor.executemany(statements: str, sequenceofbindings: Sequence[Bindings]) -> Cursor
+.. method:: Cursor.executemany(statements: str, sequenceofbindings: Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor
 
   This method is for when you want to execute the same statements over
   a sequence of bindings.  Conceptually it does this::
@@ -256,6 +264,24 @@ Calls:
   The return is the cursor itself which acts as an iterator.  Your
   statements can return data.  See :meth:`~Cursor.execute` for more
   information.
+
+.. index:: sqlite3_expanded_sql
+
+.. attribute:: Cursor.expanded_sql
+  :type: str
+
+  The SQL text with bound parameters expanded.  For example::
+
+     execute("select ?, ?", (3, "three"))
+
+  would return::
+
+     select 3, 'three'
+
+  Note that while SQLite supports nulls in strings, their implementation
+  of sqlite3_expanded_sql stops at the first null.
+
+  Calls: `sqlite3_expanded_sql <https://sqlite.org/c3ref/expanded_sql.html>`__
 
 .. method:: Cursor.fetchall() -> list[Tuple[SQLiteValue, ...]]
 
@@ -349,6 +375,27 @@ Calls:
   .. seealso::
 
     * :ref:`tracing`
+
+.. index:: sqlite3_stmt_isexplain
+
+.. attribute:: Cursor.is_explain
+  :type: int
+
+  Returns 0 if executing a normal query, 1 if it is an EXPLAIN query,
+  and 2 if an EXPLAIN QUERY PLAN query.
+
+  Calls: `sqlite3_stmt_isexplain <https://sqlite.org/c3ref/stmt_isexplain.html>`__
+
+.. index:: sqlite3_stmt_readonly
+
+.. attribute:: Cursor.is_readonly
+  :type: bool
+
+  Returns True if the current query does not change the database.
+
+  Note that called functions, virtual tables etc could make changes though.
+
+  Calls: `sqlite3_stmt_readonly <https://sqlite.org/c3ref/stmt_readonly.html>`__
 
 .. method:: Cursor.setexectrace(callable: Optional[ExecTracer]) -> None
 

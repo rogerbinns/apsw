@@ -36,9 +36,9 @@ so you can see what gets printed when you run the code.
 .. code-block:: text
 
    |       Using APSW file /space/apsw/apsw/__init__.cpython-310-x86_64-linux-gnu.so
-   |          APSW version 3.39.3.0
-   |    SQLite lib version 3.39.3
-   | SQLite header version 3039003
+   |          APSW version 3.39.4.0
+   |    SQLite lib version 3.39.4
+   | SQLite header version 3039004
 
 .. code-block:: python
 
@@ -551,8 +551,8 @@ so you can see what gets printed when you run the code.
 .. code-block:: text
 
    | 45790632 f4771e8a540c98c8e0df__mypyc.cpython-310-x86_64-linux-gnu.so /home/rogerb/.local/lib/python3.10/site-packages
-   | 24821760 testdb /space/apsw
-   | 5633992 apsw.o /space/apsw
+   | 5750784 test.db /space/apsw
+   | 5704024 apsw.o /space/apsw
 
 .. code-block:: python
 
@@ -564,7 +564,7 @@ so you can see what gets printed when you run the code.
 
    | 1582056231.6234083 .style.yapf /space/apsw
    | 1587233567.4374056 arandr-0.1.10.egg-info /usr/lib/python3/dist-packages
-   | 1604593216.8926702 pyparsing.py /usr/lib/python3/dist-packages
+   | 1620398970.437021 zope.event-4.4-nspkg.pth /usr/lib/python3/dist-packages
 
 .. _example-vfs:
 

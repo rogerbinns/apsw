@@ -1,18 +1,20 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; APSW 3.39.3.0 documentation</title>
+    <title>Index &#8212; APSW 3.39.4.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" />
@@ -34,7 +36,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Index</a></li> 
       </ul>
     </div>  
@@ -169,6 +171,8 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="connection.html#apsw.Connection.cache_stats">cache_stats() (Connection method)</a>
+</li>
       <li><a href="exceptions.html#apsw.CantOpenError">CantOpenError</a>
 </li>
       <li><a href="connection.html#apsw.Connection.changes">changes() (Connection method)</a>
@@ -205,14 +209,14 @@
 </li>
       <li><a href="shell.html#apsw.shell.Shell.complete_sql">complete_sql() (Shell method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="connection.html#apsw.Connection.config">config() (Connection method)</a>
 
       <ul>
         <li><a href="apsw.html#apsw.config">(in module apsw)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="vtable.html#apsw.VTModule.Connect">Connect() (VTModule method)</a>
 </li>
       <li><a href="connection.html#apsw.Connection">Connection (class in apsw)</a>
@@ -297,10 +301,10 @@
       </ul></li>
       <li><a href="apsw.html#apsw.exceptionfor">exceptionfor() (in module apsw)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="exceptions.html#apsw.ExecTraceAbort">ExecTraceAbort</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#apsw.ExecTracer">ExecTracer (class in apsw)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.execute">execute() (Connection method)</a>
@@ -316,6 +320,8 @@
 </li>
       </ul></li>
       <li><a href="exceptions.html#apsw.ExecutionCompleteError">ExecutionCompleteError</a>
+</li>
+      <li><a href="cursor.html#apsw.Cursor.expanded_sql">expanded_sql (Cursor attribute)</a>
 </li>
       <li><a href="exceptions.html#apsw.Error.extendedresult">extendedresult (Error attribute)</a>
 </li>
@@ -413,13 +419,17 @@
 </li>
       <li><a href="exceptions.html#apsw.InternalError">InternalError</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="connection.html#apsw.Connection.interrupt">interrupt() (Connection method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="exceptions.html#apsw.InterruptError">InterruptError</a>
 </li>
       <li><a href="exceptions.html#apsw.IOError">IOError</a>
+</li>
+      <li><a href="cursor.html#apsw.Cursor.is_explain">is_explain (Cursor attribute)</a>
+</li>
+      <li><a href="cursor.html#apsw.Cursor.is_readonly">is_readonly (Cursor attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -701,9 +711,9 @@
 </li>
       <li><a href="cursor.html#index-0">sqlite3_column_database_name</a>
 </li>
-      <li><a href="cursor.html#index-0">sqlite3_column_decltype</a>, <a href="cursor.html#index-2">[1]</a>
+      <li><a href="cursor.html#index-0">sqlite3_column_decltype</a>, <a href="cursor.html#index-3">[1]</a>
 </li>
-      <li><a href="cursor.html#index-0">sqlite3_column_name</a>, <a href="cursor.html#index-2">[1]</a>
+      <li><a href="cursor.html#index-0">sqlite3_column_name</a>, <a href="cursor.html#index-3">[1]</a>
 </li>
       <li><a href="cursor.html#index-0">sqlite3_column_origin_name</a>
 </li>
@@ -723,10 +733,10 @@
 </li>
       <li><a href="connection.html#index-11">sqlite3_create_module_v2</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="connection.html#index-8">sqlite3_db_config</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="connection.html#index-13">sqlite3_db_filename</a>, <a href="connection.html#index-18">[1]</a>
 </li>
       <li><a href="connection.html#index-14">sqlite3_db_name</a>
@@ -740,6 +750,8 @@
       <li><a href="connection.html#index-16">sqlite3_enable_load_extension</a>
 </li>
       <li><a href="apsw.html#index-3">sqlite3_enable_shared_cache</a>
+</li>
+      <li><a href="cursor.html#index-2">sqlite3_expanded_sql</a>
 </li>
       <li><a href="connection.html#index-17">sqlite3_file_control</a>
 </li>
@@ -771,7 +783,7 @@
 </li>
       <li><a href="connection.html#index-24">sqlite3_overload_function</a>
 </li>
-      <li><a href="cursor.html#index-1">sqlite3_prepare_v2</a>
+      <li><a href="cursor.html#index-1">sqlite3_prepare_v3</a>
 </li>
       <li><a href="connection.html#index-32">sqlite3_profile</a>
 </li>
@@ -800,6 +812,10 @@
       <li><a href="apsw.html#index-15">sqlite3_status64</a>
 </li>
       <li><a href="cursor.html#index-1">sqlite3_step</a>
+</li>
+      <li><a href="cursor.html#index-4">sqlite3_stmt_isexplain</a>
+</li>
+      <li><a href="cursor.html#index-5">sqlite3_stmt_readonly</a>
 </li>
       <li><a href="connection.html#index-38">sqlite3_total_changes64</a>
 </li>
@@ -1023,7 +1039,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -1037,15 +1053,15 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Index</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Sep 11, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+      Last updated on Oct 09, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

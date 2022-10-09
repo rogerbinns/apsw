@@ -197,7 +197,7 @@ Matching APSW and SQLite options
 APSW needs to see the same options as SQLite to correctly match it.
 For example if SQLite is compiled without loadable extensions, then
 APSW also needs to know that at compile time because the APIs won't be
-present.  Another example is :meth:`Cursor.description_full` needs to
+present.  Another example is :attr:`Cursor.description_full` needs to
 know if `SQLITE_ENABLE_COLUMN_METADATA` was defined when building
 SQLite for the same reason.
 

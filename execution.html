@@ -1,19 +1,21 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Execution and tracing &#8212; APSW 3.39.3.0 documentation</title>
+    <title>Execution and tracing &#8212; APSW 3.39.4.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -43,7 +45,7 @@
         <li class="right" >
           <a href="types.html" title="Types"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Execution and tracing</a></li> 
       </ul>
     </div>  
@@ -54,9 +56,9 @@
           <div class="body" role="main">
             
   <section id="execution-and-tracing">
-<h1>Execution and tracing<a class="headerlink" href="#execution-and-tracing" title="Permalink to this headline">¶</a></h1>
+<h1>Execution and tracing<a class="headerlink" href="#execution-and-tracing" title="Permalink to this heading">¶</a></h1>
 <section id="execution-model">
-<span id="executionmodel"></span><h2>Execution model<a class="headerlink" href="#execution-model" title="Permalink to this headline">¶</a></h2>
+<span id="executionmodel"></span><h2>Execution model<a class="headerlink" href="#execution-model" title="Permalink to this heading">¶</a></h2>
 <p>This section only matters if you give multiple SQL statements in one go to <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-exc docutils literal notranslate"><span class="pre">Cursor.execute</span></code></a>.
 (Statements are separated by semi-colons.)</p>
 <p>SQLite does execution in two steps. First a statement is prepared,
@@ -87,7 +89,7 @@ executed. On the next execute that condition is detected and an
 exception raised.</p>
 </section>
 <section id="multi-threading-and-re-entrancy">
-<h2>Multi-threading and re-entrancy<a class="headerlink" href="#multi-threading-and-re-entrancy" title="Permalink to this headline">¶</a></h2>
+<h2>Multi-threading and re-entrancy<a class="headerlink" href="#multi-threading-and-re-entrancy" title="Permalink to this heading">¶</a></h2>
 <p>ASPW lets you use SQLite in multi-threaded programs and will let other
 threads execute while SQLite is working.  (Technically the <a class="reference external" href="http://www.python.org/doc/2.3.4/api/threads.html">GIL</a> is released when
 <a class="reference external" href="https://sqlite.org/c3ref/prepare.html">sqlite3_prepare_v2</a>,
@@ -118,7 +120,7 @@ issue. You may want to remember the Connection object when you set
 your trace or user defined functions.</p>
 </section>
 <section id="bit-hosts">
-<span id="x64bitpy25"></span><h2>64 bit hosts<a class="headerlink" href="#bit-hosts" title="Permalink to this headline">¶</a></h2>
+<span id="x64bitpy25"></span><h2>64 bit hosts<a class="headerlink" href="#bit-hosts" title="Permalink to this heading">¶</a></h2>
 <p>APSW is tested and works correctly on 32 and 64 bit hosts.
 Unfortunately SQLite is limited to 32 bit quantities for strings,
 blobs, number of columns etc even when compiled for 64 bit.
@@ -127,7 +129,7 @@ strings/buffers longer than 1GB or 2GB (depends on internal storage)
 are used. See <a class="reference external" href="https://sqlite.org/cvstrac/tktview?tn=2125">SQLite ticket #2125</a> and <a class="reference external" href="https://sqlite.org/cvstrac/tktview?tn=3246">SQLite ticket #3246</a> for more details.</p>
 </section>
 <section id="statement-cache">
-<span id="statementcache"></span><h2>Statement Cache<a class="headerlink" href="#statement-cache" title="Permalink to this headline">¶</a></h2>
+<span id="statementcache"></span><h2>Statement Cache<a class="headerlink" href="#statement-cache" title="Permalink to this heading">¶</a></h2>
 <p>Each <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> maintains a cache mapping SQL queries to a
 <a class="reference external" href="https://sqlite.org/c3ref/stmt.html">prepared statement</a> to avoid
 the overhead of <a class="reference external" href="https://sqlite.org/c3ref/prepare.html">repreparing</a> queries that are executed
@@ -147,7 +149,7 @@ authorizer callback is only called while statements are being
 prepared.</p>
 </section>
 <section id="tracing">
-<span id="id1"></span><h2>Tracing<a class="headerlink" href="#tracing" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2>Tracing<a class="headerlink" href="#tracing" title="Permalink to this heading">¶</a></h2>
 <p>You can install tracers on <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">cursors</span></code></a> or
 <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">connections</span></code></a> as an easy way of seeing exactly
 what gets executed and what is returned. The tracers can also abort
@@ -160,13 +162,13 @@ code.</p>
 your tracer was called from. If you would like to make more queries
 in the tracer then do them from a new cursor object.  For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">exectracer</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">bindings</span><span class="p">):</span>
-  <span class="n">cursor</span><span class="o">.</span><span class="n">getconnection</span><span class="p">()</span><span class="o">.</span><span class="n">cursor</span><span class="p">(</span><span class="s2">&quot;insert into log values(?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">sql</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">bindings</span><span class="p">)))</span>
+  <span class="n">cursor</span><span class="o">.</span><span class="n">getconnection</span><span class="p">()</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into log values(?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">sql</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">bindings</span><span class="p">)))</span>
   <span class="k">return</span> <span class="kc">True</span>
 </pre></div>
 </div>
 </div>
 <section id="execution-tracer">
-<span id="executiontracer"></span><h3>Execution Tracer<a class="headerlink" href="#execution-tracer" title="Permalink to this headline">¶</a></h3>
+<span id="executiontracer"></span><h3>Execution Tracer<a class="headerlink" href="#execution-tracer" title="Permalink to this heading">¶</a></h3>
 <p>The execution tracer is called after an SQL statement has been
 prepared. (ie syntax errors will have caused an exception during
 preparation so you won’t see them with a tracer). It is called with
@@ -196,7 +198,7 @@ of the first argument being a cursor, it will be the connection itself
 since there is no cursor involved.</p>
 </section>
 <section id="row-tracer">
-<span id="rowtracer"></span><h3>Row Tracer<a class="headerlink" href="#row-tracer" title="Permalink to this headline">¶</a></h3>
+<span id="rowtracer"></span><h3>Row Tracer<a class="headerlink" href="#row-tracer" title="Permalink to this heading">¶</a></h3>
 <p>The row tracer is called before each row is returned. It is called with
 two arguments.</p>
 <blockquote>
@@ -217,7 +219,7 @@ priority.</p>
 </section>
 </section>
 <section id="apsw-trace">
-<span id="apswtrace"></span><h2>APSW Trace<a class="headerlink" href="#apsw-trace" title="Permalink to this headline">¶</a></h2>
+<span id="apswtrace"></span><h2>APSW Trace<a class="headerlink" href="#apsw-trace" title="Permalink to this heading">¶</a></h2>
 <p>APSW includes a tracer that lets you easily trace SQL execution as
 well as providing a summary report without modifying your code.</p>
 <blockquote>
@@ -406,8 +408,9 @@ illustrates how time spent busy waiting is included.</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">Execution and tracing</a><ul>
 <li><a class="reference internal" href="#execution-model">Execution model</a></li>
 <li><a class="reference internal" href="#multi-threading-and-re-entrancy">Multi-threading and re-entrancy</a></li>
@@ -423,12 +426,17 @@ illustrates how time spent busy waiting is included.</p>
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="types.html"
-                        title="previous chapter">Types</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="dbapi.html"
-                        title="next chapter">DBAPI notes</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="types.html"
+                          title="previous chapter">Types</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="dbapi.html"
+                          title="next chapter">DBAPI notes</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -445,7 +453,7 @@ illustrates how time spent busy waiting is included.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -465,15 +473,15 @@ illustrates how time spent busy waiting is included.</p>
         <li class="right" >
           <a href="types.html" title="Types"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Execution and tracing</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Sep 11, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+      Last updated on Oct 09, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

@@ -1,19 +1,21 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Extensions &#8212; APSW 3.39.3.0 documentation</title>
+    <title>Extensions &#8212; APSW 3.39.4.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -43,7 +45,7 @@
         <li class="right" >
           <a href="build.html" title="Building"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Extensions</a></li> 
       </ul>
     </div>  
@@ -54,13 +56,13 @@
           <div class="body" role="main">
             
   <section id="extensions">
-<span id="id1"></span><h1>Extensions<a class="headerlink" href="#extensions" title="Permalink to this headline">¶</a></h1>
+<span id="id1"></span><h1>Extensions<a class="headerlink" href="#extensions" title="Permalink to this heading">¶</a></h1>
 <p>SQLite includes a number of extensions providing additional
 functionality.  All extensions are disabled by default and you need to
 <a class="reference internal" href="build.html#setup-build-flags"><span class="std std-ref">take steps</span></a> to have them available at compilation
 time, to enable them and then to use them.</p>
 <section id="fts3-4-5">
-<span id="ext-fts3"></span><h2>FTS3/4/5<a class="headerlink" href="#fts3-4-5" title="Permalink to this headline">¶</a></h2>
+<span id="ext-fts3"></span><h2>FTS3/4/5<a class="headerlink" href="#fts3-4-5" title="Permalink to this heading">¶</a></h2>
 <p>FTS3 is the third version of the <a class="reference external" href="https://sqlite.org/fts3.html">full text search</a> extension.  It
 makes it easy to find words in multi-word text fields.  You must
 enable the extension via <a class="reference internal" href="build.html#setup-build-flags"><span class="std std-ref">setup.py build flags</span></a> before it will work.  There are no additional
@@ -72,23 +74,23 @@ FTS versions by <a class="reference external" href="https://www.sqlite.org/fts5.
 compatibility.</p>
 </section>
 <section id="icu">
-<span id="ext-icu"></span><h2>ICU<a class="headerlink" href="#icu" title="Permalink to this headline">¶</a></h2>
+<span id="ext-icu"></span><h2>ICU<a class="headerlink" href="#icu" title="Permalink to this heading">¶</a></h2>
 <p>The ICU extension provides an <a class="reference external" href="http://en.wikipedia.org/wiki/International_Components_for_Unicode">International Components for Unicode</a>
 interface, in particular enabling you do sorting and regular
 expressions in a locale aware way.  The <a class="reference external" href="https://sqlite.org/src/finfo?name=ext/icu/README.txt">documentation</a>
 shows how to use it.</p>
 </section>
 <section id="json1">
-<span id="ext-json1"></span><h2>JSON1<a class="headerlink" href="#json1" title="Permalink to this headline">¶</a></h2>
+<span id="ext-json1"></span><h2>JSON1<a class="headerlink" href="#json1" title="Permalink to this heading">¶</a></h2>
 <p><a class="reference external" href="https://www.sqlite.org/json1.html">Provides functions</a> for managing <a class="reference external" href="https://en.wikipedia.org/wiki/JSON">JSON</a> data stored in SQLite.</p>
 </section>
 <section id="rbu">
-<span id="ext-rbu"></span><h2>RBU<a class="headerlink" href="#rbu" title="Permalink to this headline">¶</a></h2>
+<span id="ext-rbu"></span><h2>RBU<a class="headerlink" href="#rbu" title="Permalink to this heading">¶</a></h2>
 <p>Provides <a class="reference external" href="https://www.sqlite.org/rbu.html">resumable bulk update</a> intended for
 use with large SQLite databases on low power devices at the edge of a network.</p>
 </section>
 <section id="rtree">
-<span id="ext-rtree"></span><h2>RTree<a class="headerlink" href="#rtree" title="Permalink to this headline">¶</a></h2>
+<span id="ext-rtree"></span><h2>RTree<a class="headerlink" href="#rtree" title="Permalink to this heading">¶</a></h2>
 <p>The RTree extension provides a <a class="reference external" href="http://en.wikipedia.org/wiki/R-tree">spatial table</a> - see the <a class="reference external" href="https://sqlite.org/rtree.html">documentation</a>.
 You must enable the extension via <a class="reference internal" href="build.html#setup-build-flags"><span class="std std-ref">setup.py build flags</span></a> before it will work.  There are no additional
 APIs and the <a class="reference external" href="https://sqlite.org/rtree.html">documented SQL</a>
@@ -103,8 +105,9 @@ works as is.</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">Extensions</a><ul>
 <li><a class="reference internal" href="#fts3-4-5">FTS3/4/5</a></li>
 <li><a class="reference internal" href="#icu">ICU</a></li>
@@ -115,12 +118,17 @@ works as is.</p>
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="build.html"
-                        title="previous chapter">Building</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="apsw.html"
-                        title="next chapter">APSW Module</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="build.html"
+                          title="previous chapter">Building</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="apsw.html"
+                          title="next chapter">APSW Module</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -137,7 +145,7 @@ works as is.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -157,15 +165,15 @@ works as is.</p>
         <li class="right" >
           <a href="build.html" title="Building"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Extensions</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Sep 11, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+      Last updated on Oct 09, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking

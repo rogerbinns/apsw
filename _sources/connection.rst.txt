@@ -138,6 +138,64 @@ Connection class
 
    Calls: `sqlite3_blob_open <https://sqlite.org/c3ref/blob_open.html>`__
 
+.. method:: Connection.cache_stats(include_entries: bool = False) -> Dict[str, int]
+
+Returns information about the statement cache as dict.
+
+.. note::
+
+  Calling execute with "select a; select b; insert into c ..." will
+  result in 3 cache entries corresponding to each of the 3 queries
+  present.
+
+The returned dictionary has the following information.
+
+.. list-table::
+  :header-rows: 1
+
+  * - Key
+    - Explanation
+  * - size
+    - Maximum number of entries in the cache
+  * - evictions
+    - How many entries were removed (expired) to make space for a newer
+      entry
+  * - no_cache
+    - Queries that had can_cache parameter set to False
+  * - hits
+    - A match was found in the cache
+  * - misses
+    - No match was found in the cache, or the cache couldn't be used
+  * - no_vdbe
+    - The statement was empty (eg a comment) or SQLite took action
+      during parsing (eg some pragmas).  These are not cached and also
+      included in the misses count
+  * - too_big
+    - UTF8 query size was larger than considered for caching.  These are also included
+      in the misses count.
+  * - max_cacheable_bytes
+    - Maximum size of query (in bytes of utf8) that will be considered for caching
+  * - entries
+    - (Only present if `include_entries` is True) A list of the cache entries
+
+If `entries` is present, then each list entry is a dict with the following information.
+
+.. list-table::
+  :header-rows: 1
+
+  * - Key
+    - Explanation
+  * - query
+    - Text of the query itself (first statement only)
+  * - prepare_flags
+    - Flags passed to `sqlite3_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__
+      for this query
+  * - uses
+    - How many times this entry has been (re)used
+  * - has_more
+    - Boolean indicating if there was more query text than
+      the first statement
+
 .. index:: sqlite3_changes64
 
 .. method:: Connection.changes() -> int
@@ -402,7 +460,7 @@ Connection class
 
   Calls: `sqlite3_enable_load_extension <https://sqlite.org/c3ref/enable_load_extension.html>`__
 
-.. method:: Connection.execute(statements: str, bindings: Optional[Bindings] = None) -> Cursor
+.. method:: Connection.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor
 
     Executes the statements using the supplied bindings.  Execution
     returns when the first row is available or all statements have
@@ -410,7 +468,7 @@ Connection class
 
     See :meth:`Cursor.execute` for more details.
 
-.. method:: Connection.executemany(statements: str, sequenceofbindings:Sequence[Bindings]) -> Cursor
+.. method:: Connection.executemany(statements: str, sequenceofbindings:Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor
 
 This method is for when you want to execute the same statements over a
 sequence of bindings, such as inserting into a database.  (A cursor is

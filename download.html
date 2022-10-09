@@ -1,19 +1,21 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Download &#8212; APSW 3.39.3.0 documentation</title>
+    <title>Download &#8212; APSW 3.39.4.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -43,7 +45,7 @@
         <li class="right" >
           <a href="example.html" title="Example"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Download</a></li> 
       </ul>
     </div>  
@@ -54,9 +56,9 @@
           <div class="body" role="main">
             
   <section id="download">
-<h1>Download<a class="headerlink" href="#download" title="Permalink to this headline">¶</a></h1>
+<h1>Download<a class="headerlink" href="#download" title="Permalink to this heading">¶</a></h1>
 <section id="pypi-pip">
-<h2>PyPI/pip<a class="headerlink" href="#pypi-pip" title="Permalink to this headline">¶</a></h2>
+<h2>PyPI/pip<a class="headerlink" href="#pypi-pip" title="Permalink to this heading">¶</a></h2>
 <p>APSW is <a class="reference external" href="https://pypi.org/project/apsw/">available</a> at PyPI.</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python3 -m pip install apsw
 </pre></div>
@@ -69,7 +71,7 @@ require a C compiler to produce one.</p>
 <p>The PyPi release is made using <a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/.github/workflows/build-pypi.yml">this github workflow</a>.</p>
 </section>
 <section id="source">
-<span id="source-and-binaries"></span><h2>Source<a class="headerlink" href="#source" title="Permalink to this headline">¶</a></h2>
+<span id="source-and-binaries"></span><h2>Source<a class="headerlink" href="#source" title="Permalink to this heading">¶</a></h2>
 <p>You can get the source from <a class="reference external" href="https://pypi.org/project/apsw/">PyPI</a> which is
 preconfigured to fetch the corresponding SQLite version, and enables all extensions.
 Delete the included <code class="file docutils literal notranslate"><span class="pre">setup.cfg</span></code> to remove that.</p>
@@ -86,9 +88,9 @@ on your platform</p></li>
 <p>See the <a class="reference internal" href="build.html#recommended-build"><span class="std std-ref">recommended</span></a> way to build or all the
 <a class="reference internal" href="build.html#building"><span class="std std-ref">options available</span></a>.</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.39.3.0/apsw-3.39.3.0.zip">apsw-3.39.3.0.zip</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.39.4.0/apsw-3.39.4.0.zip">apsw-3.39.4.0.zip</a>
 (Source, includes this HTML Help)</p></li>
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.39.3.0/apsw-3.39.3.0-sigs.zip">apsw-3.39.3.0-sigs.zip</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.39.4.0/apsw-3.39.4.0-sigs.zip">apsw-3.39.4.0-sigs.zip</a>
 GPG signatures for all files</p></li>
 </ul>
 <p>Some Linux distributions also have packages which may trail the SQLite
@@ -121,7 +123,7 @@ machine.</p>
 </table>
 </section>
 <section id="verifying-your-download">
-<span id="verifydownload"></span><h2>Verifying your download<a class="headerlink" href="#verifying-your-download" title="Permalink to this headline">¶</a></h2>
+<span id="verifydownload"></span><h2>Verifying your download<a class="headerlink" href="#verifying-your-download" title="Permalink to this heading">¶</a></h2>
 <p>Downloads are digitally signed so you can verify they have not been
 tampered with.  Download and extract the zip file of signatures listed
 above.  These instructions are for <a class="reference external" href="http://www.gnupg.org/">GNU Privacy Guard</a>.  (GPG is installed as standard on most
@@ -130,7 +132,7 @@ Unix/Linux platforms and can be downloaded for Windows.)</p>
 <blockquote>
 <div><p>To verify a file just use –verify specifying the corresponding
 <code class="docutils literal notranslate"><span class="pre">.asc</span></code> filename.  This example verifies the source:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ gpg --verify apsw-3.39.3.0.zip.asc
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ gpg --verify apsw-3.39.4.0.zip.asc
 gpg: Signature made ... date ... using DSA key ID 0DFBD904
 gpg: Good signature from &quot;Roger Binns &lt;rogerb@rogerbinns.com&gt;&quot;
 </pre></div>
@@ -158,7 +160,7 @@ gpg:               imported: 1
 </div></blockquote>
 </section>
 <section id="source-code-control">
-<h2>Source code control<a class="headerlink" href="#source-code-control" title="Permalink to this headline">¶</a></h2>
+<h2>Source code control<a class="headerlink" href="#source-code-control" title="Permalink to this heading">¶</a></h2>
 <p>The source is controlled by Git - start at
 <a class="reference external" href="https://github.com/rogerbinns/apsw">https://github.com/rogerbinns/apsw</a></p>
 </section>
@@ -171,8 +173,9 @@ gpg:               imported: 1
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">Download</a><ul>
 <li><a class="reference internal" href="#pypi-pip">PyPI/pip</a></li>
 <li><a class="reference internal" href="#source">Source</a></li>
@@ -182,12 +185,17 @@ gpg:               imported: 1
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="example.html"
-                        title="previous chapter">Example</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="build.html"
-                        title="next chapter">Building</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="example.html"
+                          title="previous chapter">Example</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="build.html"
+                          title="next chapter">Building</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -204,7 +212,7 @@ gpg:               imported: 1
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -224,15 +232,15 @@ gpg:               imported: 1
         <li class="right" >
           <a href="example.html" title="Example"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.3.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Download</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Sep 11, 2022.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+      Last updated on Oct 09, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
 Google Analytics</a> to collect statistics. You can disable it by blocking
