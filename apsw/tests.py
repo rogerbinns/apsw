@@ -8700,6 +8700,167 @@ shell.write(shell.stdout, "hello world\\n")
         apsw.faultdict["dbnamesappendfail"] = True
         self.assertRaises(MemoryError, self.db.db_names)
 
+
+    def testExtDataClassRowFactory(self) -> None:
+        "apsw.ext.DataClassRowFactory"
+        import apsw.ext
+        dcrf = apsw.ext.DataClassRowFactory()
+        self.db.setrowtrace(dcrf)
+        # sanity check
+        for row in self.db.execute("select 3 as three, 'four' as four"):
+            self.assertEqual(row.three, 3)
+            self.assertEqual(row.four, 'four')
+            row.four = "five"  # not frozen
+        # rename check
+        for row in self.db.execute("select 3 as three, 'four' as [4]"):
+            self.assertEqual(row.three, 3)
+            self.assertEqual(row._1, 'four')
+        # no rename, kwargs
+        dcrf2 = apsw.ext.DataClassRowFactory(rename=False, dataclass_kwargs={"frozen": True})
+        self.db.setrowtrace(dcrf2)
+        self.assertRaises(TypeError, self.db.execute("select 4 as [4]").fetchall)
+        for row in self.db.execute("select 3 as three"):
+            try:
+                import dataclasses
+                row.three = 4
+            except dataclasses.FrozenInstanceError:
+                pass
+        db = apsw.Connection("")
+        db.setrowtrace(dcrf)
+        for row in db.execute(
+                "create table foo([x y] some random typename here); insert into foo values(3); select * from foo"):
+            self.assertEqual(row.__description__, (('x y', 'some random typename here'), ))
+        # type annotations
+        self.db.setrowtrace(dcrf)
+        self.db.execute(
+            "create table foo(one [], two [an integer], three VARCHAR(17), four cblob, five doUBl, six [none of those]); insert into foo values(1,2,3,4,5,6)"
+        )
+        self.assertEqual(dcrf.get_type("an integer"), int)
+        for row in self.db.execute("select * from foo"):
+            a = row.__annotations__
+            self.assertEqual(a["one"], typing.Any)
+            self.assertEqual(a["two"], int)
+            self.assertEqual(a["three"], str)
+            self.assertEqual(a["four"], bytes)
+            self.assertEqual(a["five"], float)
+            self.assertEqual(a["six"], typing.Union[float, int])
+
+    def testExtTypesConverter(self) -> None:
+        "apsw.ext.TypesConverterCursorFactory"
+        import apsw.ext
+
+        tccf = apsw.ext.TypesConverterCursorFactory()
+
+        class Point(apsw.ext.SQLiteTypeAdapter):
+
+            def to_sqlite_value(self):
+                return 3
+
+        tccf.register_adapter(complex, lambda c: f"{ c.real };{ c.imag }")
+        tccf.register_converter("COMPLEX", lambda v: complex(*(float(part) for part in v.split(";"))))
+        self.db.cursor_factory = tccf
+        self.db.execute("create table foo(a POINT, b COMPLEX)")
+        self.db.execute("insert into foo values(?,?);", (Point(), 3 + 4j))
+        self.db.execute(" insert into foo values(:one, :two)", {"one": Point(), "two": 3 + 4j})
+
+        def datas():
+            for _ in range(10):
+                yield (Point(), 3 + 4j)
+
+        self.db.executemany("insert into foo values(?,?)", datas())
+        for row in self.db.execute("select * from foo"):
+            self.assertEqual(row[0], 3)
+            self.assertEqual(row[1], 3 + 4j)
+
+        self.assertRaises(TypeError, tccf.adapt_value, {})
+        self.assertEqual(tccf.convert_value("zebra", "zebra"), "zebra")
+
+        def builtin_types():
+            yield (None, )
+            yield (3, )
+            yield (b"aabbccddee", )
+            yield ("hello world", )
+            yield (3.1415, )
+
+        self.assertEqual(self.db.executemany("select ?", builtin_types()).fetchall(), list(builtin_types()))
+
+        class NotImplemented(apsw.ext.SQLiteTypeAdapter):
+            pass
+
+        self.assertRaises(TypeError, NotImplemented)
+
+    def testExtQueryInfo(self) -> None:
+        "apsw.ext.query_info"
+        import apsw.ext
+
+        qd = apsw.ext.query_info(self.db, "select 3; a syntax error")
+        self.assertEqual(qd.query, "select 3; a syntax error")
+        self.assertEqual(qd.bindings, None)
+        self.assertEqual(qd.first_query, "select 3;")
+        self.assertEqual(qd.query_remaining, " a syntax error")
+        self.assertEqual(qd.is_explain, 0)
+        self.assertEqual(qd.is_readonly, True)
+        self.assertEqual(qd.description, (('3', None), ))
+
+        self.assertEqual(1, apsw.ext.query_info(self.db, "explain select 3").is_explain)
+        self.assertEqual(2, apsw.ext.query_info(self.db, "explain query plan select 3").is_explain)
+
+        self.db.execute(
+            "create table one(x up); create table two(x down); insert into one values(3); insert into two values(3)")
+        self.assertFalse(apsw.ext.query_info(self.db, "insert into two values(7)").is_readonly)
+
+        # actions
+        query = "select * from one join two"
+        self.assertIsNone(apsw.ext.query_info(self.db, query).actions)
+        qd = apsw.ext.query_info(self.db, query, actions=True)
+        self.assertTrue(
+            any(a.action_name == "SQLITE_READ" and a.table_name == "one" for a in qd.actions)
+            and any(a.action_name == "SQLITE_READ" and a.table_name == "two" for a in qd.actions))
+
+        # expanded_sql
+        self.assertEqual("select 3, 'three'",
+                         apsw.ext.query_info(self.db, "select ?, ?", (3, "three"), expanded_sql=True).expanded_sql)
+
+        # explain / explain query_plan
+        # from https://sqlite.org/lang_with.html
+        query = """
+WITH RECURSIVE
+  xaxis(x) AS (VALUES(-2.0) UNION ALL SELECT x+0.05 FROM xaxis WHERE x<1.2),
+  yaxis(y) AS (VALUES(-1.0) UNION ALL SELECT y+0.1 FROM yaxis WHERE y<1.0),
+  m(iter, cx, cy, x, y) AS (
+    SELECT 0, x, y, 0.0, 0.0 FROM xaxis, yaxis
+    UNION ALL
+    SELECT iter+1, cx, cy, x*x-y*y + cx, 2.0*x*y + cy FROM m
+     WHERE (x*x + y*y) < 4.0 AND iter<28
+  ),
+  m2(iter, cx, cy) AS (
+    SELECT max(iter), cx, cy FROM m GROUP BY cx, cy
+  ),
+  a(t) AS (
+    SELECT group_concat( substr(' .+*#', 1+min(iter/7,4), 1), '')
+    FROM m2 GROUP BY cy
+  )
+SELECT group_concat(rtrim(t),x'0a') FROM a;
+        """
+        self.assertIsNone(apsw.ext.query_info(self.db, query).explain)
+        qd = apsw.ext.query_info(self.db, query, explain=True)
+        self.assertTrue(all(isinstance(e, apsw.ext.VDBEInstruction) for e in qd.explain))
+        # at time of writing it was 233 steps, so use ~10% of that
+        self.assertGreater(len(qd.explain), 25)
+        self.assertIsNone(apsw.ext.query_info(self.db, query).query_plan)
+        qd = apsw.ext.query_info(self.db, query, explain_query_plan=True)
+
+        def check_instance(node: apsw.ext.QueryPlan):
+            return isinstance(node, apsw.ext.QueryPlan) and all(check_instance(s) for s in (node.sub or []))
+
+        self.assertTrue(check_instance(qd.query_plan))
+
+        def count(node: apsw.ext.QueryPlan):
+            return 1 + sum(count(s) for s in (node.sub or []))
+
+        # at time of writing it was 24 nodes
+        self.assertGreater(count(qd.query_plan), 10)
+
     # This test is run last by deliberate name choice.  If it did
     # uncover any bugs there isn't much that can be done to turn the
     # checker off.

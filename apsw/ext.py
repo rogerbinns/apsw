@@ -279,18 +279,19 @@ def query_info(db: apsw.Connection,
     Set the various parameters to `True` if you also want the
     actions, expanded_sql, explain, query_plan etc filled in.
     """
-    res: dict[str, Any] = {}
+    res: dict[str, Any] = {"actions": None, "query_plan": None, "explain": None}
 
     def tracer(cursor: apsw.Cursor, first_query: str, bindings: Optional[apsw.Bindings]):
         nonlocal res
-        res = {
+        res.update({
             "first_query": first_query,
             "query": query,
             "bindings": bindings,
             "is_explain": cursor.is_explain,
             "is_readonly": cursor.is_readonly,
-            "description": cursor.getdescription()
-        }
+            "description": cursor.getdescription(),
+            "description_full": None,
+        })
         if hasattr(cursor, "description_full"):
             res["description_full"] = cursor.description_full
 

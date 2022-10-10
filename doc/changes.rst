@@ -2,6 +2,11 @@ Change History
 **************
 .. currentmodule:: apsw
 
+next
+====
+
+Added :doc:`ext` (:issue:`369`)
+
 3.39.4.0
 ========
 
