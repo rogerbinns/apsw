@@ -4,10 +4,7 @@ from __future__ import annotations
 import collections, collections.abc
 from types import NoneType
 
-try:
-    from dataclasses import dataclass, make_dataclass
-except ImportError as e:
-    raise ImportError("You need a Python version that has dataclasses (Python 3.7+), PyPI for Python 3.6") from e
+from dataclasses import dataclass, make_dataclass
 
 from typing import Optional, Tuple, Union, List, Any, Dict, Callable
 import functools

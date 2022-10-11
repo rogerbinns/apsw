@@ -4,8 +4,7 @@ Various interesting and useful bits of functionality
 ====================================================
 
 You need to import `apsw.ext` to use this module. :mod:`dataclasses`
-are used, available in the standard library (Python 3.7+) or via `PyPi
-<https://pypi.org/project/dataclasses/>`__ for Python 3.6.
+are used, and only Python 3.7+ is supported.
 
 You can use these as is, or as the basis for your own needs.
 

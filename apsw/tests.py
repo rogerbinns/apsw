@@ -9077,6 +9077,12 @@ def setup():
     if not getattr(memdb, "enableloadextension", None):
         del APSW.testLoadExtension
 
+    # py 3.6 can't load apsw.ext
+    if sys.version_info < (3, 7):
+        for name in list(dir(APSW)):
+            if name.startswith("testExt"):
+                delattr(APSW, name)
+
     forkcheck = False
     if hasattr(apsw, "fork_checker") and hasattr(os, "fork") and platform.python_implementation() != "PyPy":
         try:

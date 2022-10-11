@@ -5,6 +5,10 @@ from typing import Union, Tuple, List, Optional, Callable, Any, Dict, \
 from collections.abc import Mapping
 from array import array
 from types import TracebackType
+try:
+        from types import NoneType
+except ImportError:
+        NoneType = type(None)
 
 SQLiteValue = Union[NoneType, int, float, bytes, str]
 """SQLite supports 5 types - None (NULL), 64 bit signed int, 64 bit
