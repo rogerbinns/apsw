@@ -33,13 +33,10 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.extlinks', 'sphinx.ext.intersphi
 
 
 extlinks={
-    'cvstrac': ('https://sqlite.org/cvstrac/tktview?tn=%s',
-                'SQLite ticket #'),
-    'sqliteapi': ('https://sqlite.org/c3ref/%s.html', 'XXYouShouldNotSeeThisXX'),
     'issue': ('https://github.com/rogerbinns/apsw/issues/%s',
-              'APSW issue '),
+              'APSW issue %s'),
     'source': ('https://github.com/rogerbinns/apsw/blob/master/%s',
-               ''),
+               '%s'),
     }
 
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}

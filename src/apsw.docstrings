@@ -1164,7 +1164,7 @@
 ":param name: Function name\n" \
 ":param nargs: How many arguments the function takes\n" \
 "\n" \
-"Due to :cvstrac:`3507` underlying errors will not be returned.\n" \
+"Due to cvstrac 3507 underlying errors will not be returned.\n" \
 "\n" \
 "Calls: `sqlite3_overload_function <https://sqlite.org/c3ref/overload_function.html>`__\n" 
 

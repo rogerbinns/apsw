@@ -3053,7 +3053,7 @@ Connection_createmodule(Connection *self, PyObject *args, PyObject *kwds)
   :param name: Function name
   :param nargs: How many arguments the function takes
 
-  Due to :cvstrac:`3507` underlying errors will not be returned.
+  Due to cvstrac 3507 underlying errors will not be returned.
 
   -* sqlite3_overload_function
 */

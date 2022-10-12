@@ -1256,7 +1256,7 @@ APSW has migrated from Subversion to `Mercurial
 Hosting remains at `Google Code <https://code.google.com/p/apsw/>`_
 
 Updated a test due to VFS xUnlock errors now being ignored sometimes
-by SQLite (:cvstrac:`3946`).
+by SQLite (cvstrac 3946).
 
 The downloads page in the help didn't mention the Windows Python 3.1
 installer.
@@ -1297,7 +1297,7 @@ output CURSORFROM if SQL tracing is on.
 
 Updated test code because SQLite 3.6.15 returns a different error code
 on trying to register a function with too many arguments (see
-:cvstrac:`3875`).
+cvstrac 3875).
 
 3.6.14.1-r1
 ===========
@@ -1429,7 +1429,7 @@ Added a :ref:`apswtrace <apswtrace>` script to allow easy SQL tracing
 without having to modify your code.
 
 Revert to using older SQLite APIs in order to work around
-:cvstrac:`2158`.  (This also saves a little bit of SQLite memory
+cvstrac 2158.  (This also saves a little bit of SQLite memory
 usage).  The user visible effect was that you could get different
 exceptions and error text depending on whether a query was already in
 the :ref:`statement cache <statementcache>` or if you were

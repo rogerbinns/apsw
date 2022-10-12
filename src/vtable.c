@@ -371,8 +371,8 @@ finally:
   The opposite of :meth:`VTModule.Create`.  This method is called when
   the table is no longer used.  Note that you must always release
   resources even if you intend to return an error, as it will not be
-  called again on error.  SQLite may also :cvstrac:`leak memory
-  <2099>` if you return an error.
+  called again on error.  SQLite may also leak memory
+  if you return an error.
 */
 
 static int
