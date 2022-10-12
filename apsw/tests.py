@@ -4404,6 +4404,7 @@ class APSW(unittest.TestCase):
                 self.assertRaises(apsw.ConnectionClosedError, db.db_filename, "main")
                 self.assertRaises(apsw.ConnectionClosedError, db.cursor)
                 self.assertRaises(apsw.ConnectionClosedError, db.getautocommit)
+                self.assertRaises(apsw.ConnectionClosedError, db.in_transaction)
 
     def testStatus(self):
         "Verify status function"
@@ -5950,14 +5951,17 @@ class APSW(unittest.TestCase):
         # Does it work?
         # the autocommit tests are to make sure we are not in a transaction
         self.assertEqual(True, self.db.getautocommit())
+        self.assertEqual(False, self.db.in_transaction)
         self.assertTableNotExists("foo1")
         with self.db as db:
             db.cursor().execute('create table foo1(x)')
         self.assertTableExists("foo1")
         self.assertEqual(True, self.db.getautocommit())
+        self.assertEqual(False, self.db.in_transaction)
 
         # with an error
         self.assertEqual(True, self.db.getautocommit())
+        self.assertEqual(False, self.db.in_transaction)
         self.assertTableNotExists("foo2")
         try:
             with self.db as db:
@@ -5971,6 +5975,7 @@ class APSW(unittest.TestCase):
         # nested - simple - success
         with self.db as db:
             self.assertEqual(False, self.db.getautocommit())
+            self.assertEqual(True, self.db.in_transaction)
             db.cursor().execute('create table foo2(x)')
             with db as db2:
                 self.assertEqual(False, self.db.getautocommit())

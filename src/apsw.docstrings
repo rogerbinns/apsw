@@ -1048,6 +1048,12 @@
 "\n" \
 "  * :ref:`tracing`\n" 
 
+#define  Connection_in_transaction_DOC ":type: bool\n" \
+"\n" \
+"True if currently in a transaction, else False\n" \
+"\n" \
+"Calls: `sqlite3_get_autocommit <https://sqlite.org/c3ref/get_autocommit.html>`__\n" 
+
 #define  Connection_init_DOC "__init__($self,filename,flags=SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,vfs=None,statementcachesize=100)\n--\n\nConnection.__init__(filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: Optional[str] = None, statementcachesize: int = 100)\n\n" \
 "This object wraps a `sqlite3 pointer\n" \
 "<https://sqlite.org/c3ref/sqlite3.html>`_.\n" \

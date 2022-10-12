@@ -954,6 +954,11 @@ class Connection:
           * :ref:`tracing`"""
         ...
 
+    in_transaction: bool
+    """True if currently in a transaction, else False
+
+    Calls: `sqlite3_get_autocommit <https://sqlite.org/c3ref/get_autocommit.html>`__"""
+
     def interrupt(self) -> None:
         """Causes any pending operations on the database to abort at the
         earliest opportunity. You can call this from any thread.  For

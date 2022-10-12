@@ -194,6 +194,7 @@ convert_value_to_pyobject(sqlite3_value *value)
     return PyFloat_FromDouble(sqlite3_value_double(value));
 
   case SQLITE_TEXT:
+    assert(sqlite3_value_text(value));
     return PyUnicode_FromStringAndSize((const char *)sqlite3_value_text(value), sqlite3_value_bytes(value));
 
   case SQLITE_NULL:

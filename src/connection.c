@@ -3781,6 +3781,23 @@ Connection_set_cursor_factory(Connection *self, PyObject *value)
   return 0;
 }
 
+/** .. attribute:: in_transaction
+  :type: bool
+
+  True if currently in a transaction, else False
+
+  -* sqlite3_get_autocommit
+*/
+static PyObject *
+Connection_get_in_transaction(Connection *self)
+{
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+  if(!sqlite3_get_autocommit(self->db))
+    Py_RETURN_TRUE;
+  Py_RETURN_FALSE;
+}
+
 static PyGetSetDef Connection_getseters[] = {
     /* name getter setter doc closure */
     {"filename",
@@ -3788,6 +3805,8 @@ static PyGetSetDef Connection_getseters[] = {
      Connection_filename_DOC, NULL},
     {"cursor_factory", (getter)Connection_get_cursor_factory,
      (setter)Connection_set_cursor_factory, Connection_cursor_factory_DOC, NULL},
+    {"in_transaction", (getter)Connection_get_in_transaction,
+     NULL, Connection_in_transaction_DOC},
     /* Sentinel */
     {
         NULL, NULL, NULL, NULL, NULL}};
