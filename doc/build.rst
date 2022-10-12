@@ -287,13 +287,12 @@ APSW source to.
   sqlite3.c, `but they are harmless <https://sqlite.org/faq.html#q17>`_
 
 
-The extension just turns into a single file apsw.so (Linux/Mac) or
-apsw.pyd (Windows). (More complicated name on Pythons implementing
-:pep:`3149`). You don't need to install it and can drop it into any
-directory that is more convenient for you and that your code can
-reach. To just do the build and not install, leave out *install* from
-the lines above. (Use *build_ext --inplace* to have the extension put
-in the main directory.)
+The extension just turns into a single directory `apsw`. You don't
+need to install it and can drop it into any directory that is more
+convenient for you and that your code can reach. To just do the build
+and not install, leave out *install* from the lines above. (Use
+*build_ext --inplace* to have the extension put in the main
+directory.)
 
 The test suite will be run. It will print the APSW file used, APSW and
 SQLite versions and then run lots of tests all of which should pass.
