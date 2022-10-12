@@ -19,14 +19,14 @@ needed components for you.
 | | python setup.py install test                              | Compiles APSW with default Python compiler, installs it into Python     |
 |                                                             | site library directory and then runs the test suite.                    |
 +-------------------------------------------------------------+-------------------------------------------------------------------------+
-| | python setup.py install :option:`--user`                  | Compiles APSW with default Python                                       |
+| | python setup.py install **--user**                        | Compiles APSW with default Python                                       |
 |                                                             | compiler and installs it into a subdirectory of your home directory.    |
 |                                                             | See :pep:`370` for more details.                                        |
 +-------------------------------------------------------------+-------------------------------------------------------------------------+
-| | python setup.py build_ext :option:`--force`               | Compiles the extension but doesn't install it.  The test suite is then  |
-|   :option:`--inplace` test                                  | run.                                                                    |
+| | python setup.py build_ext **--force**                     | Compiles the extension but doesn't install it.  The test suite is then  |
+|   **--inplace** test                                        | run.                                                                    |
 +-------------------------------------------------------------+-------------------------------------------------------------------------+
-| | python setup.py build :option:`--debug` install           | Compiles APSW with debug information.  This also turns on `assertions   |
+| | python setup.py build **--debug** install                 | Compiles APSW with debug information.  This also turns on `assertions   |
 |                                                             | <http://en.wikipedia.org/wiki/Assert.h>`_                               |
 |                                                             | in APSW that double check the code assumptions.  If you are using the   |
 |                                                             | SQLite amalgamation then assertions are turned on in that too.  Note    |
@@ -56,20 +56,20 @@ re-fetching.
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | fetch flag                             |  Result                                                                              |
 +========================================+======================================================================================+
-| | :option:`--version=VERSION`          | By default the SQLite version corresponding to the APSW release is retrieved,  You   |
+| | **--version=VERSION**                | By default the SQLite version corresponding to the APSW release is retrieved,  You   |
 |                                        | can also ask for specific versions, or for `latest` which uses the SQLite download   |
 |                                        | page to work out the most recent version.                                            |
 +----------------------------------------+--------------------------------------------------------------------------------------+
-| | :option:`--missing-checksum-ok`      | Allows setup to continue if the :ref:`checksum <fetch_checksums>` is missing.        |
+| | **--missing-checksum-ok**            | Allows setup to continue if the :ref:`checksum <fetch_checksums>` is missing.        |
 +----------------------------------------+--------------------------------------------------------------------------------------+
-| | :option:`--all`                      | Gets all components listed below.                                                    |
+| | **--all**                            | Gets all components listed below.                                                    |
 +----------------------------------------+--------------------------------------------------------------------------------------+
-| | :option:`--sqlite`                   | Automatically downloads the `SQLite amalgamation                                     |
+| | **--sqlite**                         | Automatically downloads the `SQLite amalgamation                                     |
 |                                        | <https://sqlite.org/amalgamation.html>`__. The amalgamation is the                   |
 |                                        | preferred way to use SQLite as you have total control over what components are       |
 |                                        | included or excluded (see below) and have no dependencies on any existing            |
 |                                        | libraries on your developer or deployment machines. The amalgamation includes the    |
-|                                        | fts3/4/5, rtree, json1 and icu extensions. On non-Windows platforms, any existing    |
+|                                        | fts3/4/5, rtree, json1 and icu extensions. Nny existing                              |
 |                                        | :file:`sqlite3/` directory will be erased and the downloaded code placed in a newly  |
 |                                        | created :file:`sqlite3/` directory.                                                  |
 +----------------------------------------+--------------------------------------------------------------------------------------+
@@ -94,7 +94,7 @@ re-fetching.
   the SQLite download site URL is hard coded.)
 
   If the URL is not listed in the checksums file then setup aborts.
-  You can use :option:`--missing-checksum-ok` to continue.  You are
+  You can use **--missing-checksum-ok** to continue.  You are
   recommended instead to update the checksums file with the
   correct information.
 
@@ -143,7 +143,7 @@ need to give the flag once and giving a comma separated list.  For example::
 SQLite includes `many options defined to the C compiler
 <https://www.sqlite.org/compile.html>`__.  If you want to change
 compiled in default values, or provide defines like
-SQLITE_CUSTOM_INCLUDE then you can use :option:`--definevalues` using
+SQLITE_CUSTOM_INCLUDE then you can use **--definevalues** using
 `=` and comma separating.  For example::
 
   python setup.py build_ext --definevalues SQLITE_DEFAULT_FILE_FORMAT=1,SQLITE_CUSTOM_INCLUDE=config.h
@@ -151,35 +151,35 @@ SQLITE_CUSTOM_INCLUDE then you can use :option:`--definevalues` using
 +----------------------------------------+--------------------------------------------------------------------------------------+
 | build/build_ext flag                   | Result                                                                               |
 +========================================+======================================================================================+
-| | :option:`--enable-all-extensions`    | Enables the STAT4, FTS3/4/5, RTree, JSON1, RBU, and ICU extensions if *icu-config*   |
+| | **--enable-all-extensions**          | Enables the STAT4, FTS3/4/5, RTree, JSON1, RBU, and ICU extensions if *icu-config*   |
 |                                        | is on your path                                                                      |
 +----------------------------------------+--------------------------------------------------------------------------------------+
-| | :option:`--enable=fts3`              | Enables the :ref:`full text search extension <ext-fts3>`.                            |
-| | :option:`--enable=fts4`              | This flag only helps when using the amalgamation. If not using the                   |
-| | :option:`--enable=fts5`              | amalgamation then you need to separately ensure fts3/4/5 is enabled in the SQLite    |
+| | **--enable=fts3**                    | Enables the :ref:`full text search extension <ext-fts3>`.                            |
+| | **--enable=fts4**                    | This flag only helps when using the amalgamation. If not using the                   |
+| | **--enable=fts5**                    | amalgamation then you need to separately ensure fts3/4/5 is enabled in the SQLite    |
 |                                        | install. You are likely to want the `parenthesis option                              |
 |                                        | <https://sqlite.org/compile.html#enable_fts3_parenthesis>`__ on unless you have      |
 |                                        | legacy code (`--enable-all-extensions` turns it on).                                 |
 +----------------------------------------+--------------------------------------------------------------------------------------+
-| | :option:`--enable=rtree`             | Enables the :ref:`spatial table extension <ext-rtree>`.                              |
+| | **--enable=rtree**                   | Enables the :ref:`spatial table extension <ext-rtree>`.                              |
 |                                        | This flag only helps when using the amalgamation. If not using the                   |
 |                                        | amalgamation then you need to separately ensure rtree is enabled in the SQLite       |
 |                                        | install.                                                                             |
 +----------------------------------------+--------------------------------------------------------------------------------------+
-| | :option:`--enable=rbu`               | Enables the :ref:`reumable bulk update extension <ext-rbu>`.                         |
+| | **--enable=rbu**                     | Enables the :ref:`reumable bulk update extension <ext-rbu>`.                         |
 |                                        | This flag only helps when using the amalgamation. If not using the                   |
 |                                        | amalgamation then you need to separately ensure rbu is enabled in the SQLite         |
 |                                        | install.                                                                             |
 +----------------------------------------+--------------------------------------------------------------------------------------+
-| | :option:`--enable=icu`               | Enables the :ref:`International Components for Unicode extension <ext-icu>`.         |
+| | **--enable=icu**                     | Enables the :ref:`International Components for Unicode extension <ext-icu>`.         |
 |                                        | Note that you must have the ICU libraries on your machine which setup will           |
 |                                        | automatically try to find using :file:`icu-config`.                                  |
 |                                        | This flag only helps when using the amalgamation. If not using the                   |
 |                                        | amalgamation then you need to separately ensure ICU is enabled in the SQLite         |
 |                                        | install.                                                                             |
 +----------------------------------------+--------------------------------------------------------------------------------------+
-| | :option:`--omit=ITEM`                | Causes various functionality to be omitted. For example                              |
-|                                        | :option:`--omit=load_extension` will omit code to do with loading extensions. If     |
+| | **--omit=ITEM**                      | Causes various functionality to be omitted. For example                              |
+|                                        | `--omit=load_extension` will omit code to do with loading extensions. If             |
 |                                        | using the amalgamation then this will omit the functionality from APSW and           |
 |                                        | SQLite, otherwise the functionality will only be omitted from APSW (ie the code      |
 |                                        | will still be in SQLite, APSW just won't call it). In almost all cases you will need |
@@ -220,12 +220,12 @@ Finding SQLite 3
 ================
 
 SQLite 3 is needed during the build process. If you specify
-:option:`fetch --sqlite` to the :file:`setup.py` command line
+**fetch --sqlite** to the :file:`setup.py` command line
 then it will automatically fetch the current version of the SQLite
 amalgamation. (The current version is determined by parsing the
 `SQLite download page <https://sqlite.org/download.html>`_). You
 can manually specify the version, for example
-:option:`fetch --sqlite --version=3.7.4`.
+**fetch --sqlite --version=3.39.4**.
 
 These methods are tried in order:
 
@@ -235,7 +235,7 @@ These methods are tried in order:
       looked for. The SQLite code is then statically compiled into the
       APSW extension and is invisible to the rest of the
       process. There are no runtime library dependencies on SQLite as
-      a result.  When you use :option:`fetch` this is where it places
+      a result.  When you use **fetch** this is where it places
       the downloaded amalgamation.
 
   Local build
@@ -245,7 +245,7 @@ These methods are tried in order:
 
   User directories
 
-    If specifying :option:`--user` then your user directory is
+    If specifying **--user** then your user directory is
     searched first. See :pep:`370` for more details.
 
   System directories
@@ -258,7 +258,7 @@ These methods are tried in order:
   If you compiled SQLite with any OMIT flags (eg
   :const:`SQLITE_OMIT_LOAD_EXTENSION`) then you must include them in
   the :file:`setup.py` command or file. For this example you could use
-  :option:`setup.py build --omit=load_extension` to add the same flags.
+  **setup.py build --omit=load_extension** to add the same flags.
 
 .. _recommended_build:
 

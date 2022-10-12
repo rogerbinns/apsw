@@ -1038,7 +1038,7 @@ out the problem and providing test data.
 
 The shell now does colour highlighting making it easy to visually
 distinguish prompts, errors, headers and value types when outputting
-to a terminal.  See the :option:`--no-colour` argument and **.colour**
+to a terminal.  See the `--no-colour` argument and **.colour**
 command.  Those of you in the two countries that have not adopted the
 metric system may also omit the 'u'.  For Windows users you won't get
 colour output unless you install `colorama
@@ -1202,7 +1202,7 @@ The :file:`setup.py` file now has the various options available made
 applicable to appropriate commands only.  Read the :ref:`updated
 documentation <setup_py_flags>`.
 
-You can now specify :option:`build --enable=stat2` to :file:`setup.py`
+You can now specify `build --enable=stat2` to :file:`setup.py`
 to enable `advanced statistics gathering
 <https://sqlite.org/compile.html#enable_stat2>`__ for query
 planning.
@@ -1221,7 +1221,7 @@ is possible on Unix like operating systems, especially if you use the
 Extension loading is now compiled in by default when using the
 amalgamation and compiled out when using existing libraries.  This is
 more likely to match your machine.  You can use
-:option:`--omit=load_extension` or :option:`--enable=load_extension`
+`--omit=load_extension` or `--enable=load_extension`
 to the build/build_ext commands to explicitly disable/enable extension
 loading.  :issue:`67`
 
@@ -1230,7 +1230,7 @@ checksum.  See :ref:`more information <fetch_checksums>` on checksums.
 
 :ref:`setup.py <setup_py_flags>` can also fetch the version of SQLite
 currently under development before a release.  Use
-:option:`--version=fossil`.
+`--version=fossil`.
 
 Updated which code uses `experimental SQLite APIs
 <https://sqlite.org/c3ref/experimental.html>`__ based on changes in
@@ -1494,7 +1494,7 @@ of behaviour without having to code everything else. See the
 :ref:`example <example-vfs>` where database files are obfuscated by
 XORing their contents.
 
-:file:`setup.py` now takes an optional :option:`--fetch-sqlite[=ver]`
+:file:`setup.py` now takes an optional `--fetch-sqlite[=ver]`
 argument to automatically download and use the latest SQLite
 amalgamation (or a specified version). On non-Windows platforms it
 will also work out what compile flags SQLite needs (for example

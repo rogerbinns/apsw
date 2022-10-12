@@ -236,8 +236,8 @@ All output is UTF-8 encoded.  The following options are available:
     --reports=REPORTS     Which reports to show
                           [summary,popular,aggregate,individual]
 
-This is sample output with the following options: :option:`--sql`,
-:option:`--rows`, :option:`--timestamps`, :option:`--thread`
+This is sample output with the following options: **--sql**,
+**--rows**, **--timestamps**, **--thread**
 
 .. code-block:: text
 
