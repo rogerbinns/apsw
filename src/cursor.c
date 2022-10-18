@@ -1358,20 +1358,8 @@ APSWCursor_iter(APSWCursor *self)
 
 /** .. method:: setexectrace(callable: Optional[ExecTracer]) -> None
 
-  *callable* is called with the cursor, statement and bindings for
-  each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
-  cursor.
-
-  If *callable* is :const:`None` then any existing execution tracer is
-  unregistered.
-
-  .. seealso::
-
-    * :ref:`tracing`
-    * :ref:`executiontracer`
-    * :meth:`Connection.setexectrace`
+  Sets the :attr:`execution tracer <Cursor.exectrace>`
 */
-
 static PyObject *
 APSWCursor_setexectrace(APSWCursor *self, PyObject *args, PyObject *kwds)
 {
@@ -1395,18 +1383,7 @@ APSWCursor_setexectrace(APSWCursor *self, PyObject *args, PyObject *kwds)
 
 /** .. method:: setrowtrace(callable: Optional[RowTracer]) -> None
 
-  *callable* is called with cursor and row being returned.  You can
-  change the data that is returned or cause the row to be skipped
-  altogether.
-
-  If *callable* is :const:`None` then any existing row tracer is
-  unregistered.
-
-  .. seealso::
-
-    * :ref:`tracing`
-    * :ref:`rowtracer`
-    * :meth:`Connection.setexectrace`
+  Sets the :attr:`row tracer <Cursor.rowtrace>`
 */
 
 static PyObject *
@@ -1432,8 +1409,8 @@ APSWCursor_setrowtrace(APSWCursor *self, PyObject *args, PyObject *kwds)
 
 /** .. method:: getexectrace() -> Optional[ExecTracer]
 
-  Returns the currently installed (via :meth:`~Cursor.setexectrace`)
-  execution tracer.
+  Returns the currently installed :attr:`execution tracer
+  <Cursor.exectrace>`
 
   .. seealso::
 
@@ -1526,6 +1503,108 @@ APSWCursor_fetchone(APSWCursor *self)
     Py_RETURN_NONE;
 
   return res;
+}
+
+/** .. attribute:: exectrace
+  :type: Optional[ExecTracer]
+
+  Called with the cursor, statement and bindings for
+  each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
+  cursor.
+
+  If *callable* is :const:`None` then any existing execution tracer is
+  unregistered.
+
+  .. seealso::
+
+    * :ref:`tracing`
+    * :ref:`executiontracer`
+    * :attr:`Connection.exectrace`
+
+*/
+static PyObject *
+APSWCursor_get_exectrace_attr(APSWCursor *self)
+{
+  CHECK_USE(NULL);
+  CHECK_CURSOR_CLOSED(NULL);
+
+  if (self->exectrace)
+  {
+    Py_INCREF(self->exectrace);
+    return self->exectrace;
+  }
+  Py_RETURN_NONE;
+}
+
+static int
+APSWCursor_set_exectrace_attr(APSWCursor *self, PyObject *value)
+{
+  CHECK_USE(-1);
+  CHECK_CURSOR_CLOSED(-1);
+
+  if (value != Py_None && !PyCallable_Check(value))
+  {
+    PyErr_Format(PyExc_TypeError, "exectrace expected a Callable");
+    return -1;
+  }
+  Py_CLEAR(self->exectrace);
+  if (value != Py_None)
+  {
+    Py_INCREF(value);
+    self->exectrace = value;
+  }
+  return 0;
+}
+
+/** .. attribute:: rowtrace
+  :type: Optional[RowTracer]
+
+  Called with cursor and row being returned.  You can
+  change the data that is returned or cause the row to be skipped
+  altogether.
+
+  If *callable* is :const:`None` then any existing row tracer is
+  unregistered.
+
+  .. seealso::
+
+    * :ref:`tracing`
+    * :ref:`rowtracer`
+    * :attr:`Connection.rowtrace`
+
+*/
+static PyObject *
+APSWCursor_get_rowtrace_attr(APSWCursor *self)
+{
+  CHECK_USE(NULL);
+  CHECK_CURSOR_CLOSED(NULL);
+
+  if (self->rowtrace)
+  {
+    Py_INCREF(self->rowtrace);
+    return self->rowtrace;
+  }
+  Py_RETURN_NONE;
+}
+
+static int
+APSWCursor_set_rowtrace_attr(APSWCursor *self, PyObject *value)
+{
+  CHECK_USE(-1);
+  CHECK_CURSOR_CLOSED(-1);
+
+  if (value != Py_None && !PyCallable_Check(value))
+  {
+    PyErr_Format(PyExc_TypeError, "rowtrace expected a Callable");
+    return -1;
+  }
+  Py_CLEAR(self->rowtrace);
+  if (value != Py_None)
+  {
+    Py_INCREF(value);
+    self->rowtrace = value;
+  }
+  return 0;
 }
 
 /** .. attribute:: is_explain
@@ -1630,6 +1709,8 @@ static PyGetSetDef APSWCursor_getset[] = {
     {"is_explain", (getter)APSWCursor_is_explain, NULL, Cursor_is_explain_DOC, NULL},
     {"is_readonly", (getter)APSWCursor_is_readonly, NULL, Cursor_is_readonly_DOC, NULL},
     {"expanded_sql", (getter)APSWCursor_expanded_sql, NULL, Cursor_expanded_sql_DOC, NULL},
+    {"exectrace", (getter)APSWCursor_get_exectrace_attr, (setter)APSWCursor_set_exectrace_attr, Cursor_exectrace_DOC},
+    {"rowtrace", (getter)APSWCursor_get_rowtrace_attr, (setter)APSWCursor_set_rowtrace_attr, Cursor_rowtrace_DOC},
     {NULL, NULL, NULL, NULL, NULL}};
 
 static PyTypeObject APSWCursorType = {

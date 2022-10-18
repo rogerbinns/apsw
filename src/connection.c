@@ -3085,22 +3085,8 @@ Connection_overloadfunction(Connection *self, PyObject *args, PyObject *kwds)
 
 /** .. method:: setexectrace(callable: Optional[ExecTracer]) -> None
 
-  *callable* is called with the cursor, statement and bindings for
-  each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
-  Connection, unless the :class:`Cursor` installed its own
-  tracer. Your execution tracer can also abort execution of a
-  statement.
-
-  If *callable* is :const:`None` then any existing execution tracer is
-  removed.
-
-  .. seealso::
-
-    * :ref:`tracing`
-    * :ref:`rowtracer`
-    * :meth:`Cursor.setexectrace`
+   Method to set :attr:`Connection.exectrace`
 */
-
 static PyObject *
 Connection_setexectrace(Connection *self, PyObject *args, PyObject *kwds)
 {
@@ -3124,19 +3110,7 @@ Connection_setexectrace(Connection *self, PyObject *args, PyObject *kwds)
 
 /** .. method:: setrowtrace(callable: Optional[RowTracer]) -> None
 
-  *callable* is called with the cursor and row being returned for
-  :class:`cursors <Cursor>` associated with this Connection, unless
-  the Cursor installed its own tracer.  You can change the data that
-  is returned or cause the row to be skipped altogether.
-
-  If *callable* is :const:`None` then any existing row tracer is
-  unregistered.
-
-  .. seealso::
-
-    * :ref:`tracing`
-    * :ref:`rowtracer`
-    * :meth:`Cursor.setexectrace`
+  Method to set :attr:`Connection.rowtrace`
 */
 
 static PyObject *
@@ -3163,12 +3137,9 @@ Connection_setrowtrace(Connection *self, PyObject *args, PyObject *kwds)
 
 /** .. method:: getexectrace() -> Optional[ExecTracer]
 
-  Returns the currently installed (via :meth:`~Connection.setexectrace`)
-  execution tracer.
+  Returns the currently installed :attr:`execution tracer
+  <Connection.exectrace>`
 
-  .. seealso::
-
-    * :ref:`tracing`
 */
 static PyObject *
 Connection_getexectrace(Connection *self)
@@ -3185,12 +3156,9 @@ Connection_getexectrace(Connection *self)
 
 /** .. method:: getrowtrace() -> Optional[RowTracer]
 
-  Returns the currently installed (via :meth:`~Connection.setrowtrace`)
-  row tracer.
+  Returns the currently installed :attr:`row tracer
+  <Connection.rowtrace>`
 
-  .. seealso::
-
-    * :ref:`tracing`
 */
 static PyObject *
 Connection_getrowtrace(Connection *self)
@@ -3793,9 +3761,114 @@ Connection_get_in_transaction(Connection *self)
 {
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
-  if(!sqlite3_get_autocommit(self->db))
+  if (!sqlite3_get_autocommit(self->db))
     Py_RETURN_TRUE;
   Py_RETURN_FALSE;
+}
+
+/** .. attribute:: exectrace
+  :type: Optional[ExecTracer]
+
+  Called with the cursor, statement and bindings for
+  each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
+  Connection, unless the :class:`Cursor` installed its own
+  tracer. Your execution tracer can also abort execution of a
+  statement.
+
+  If *callable* is :const:`None` then any existing execution tracer is
+  removed.
+
+  .. seealso::
+
+    * :ref:`tracing`
+    * :ref:`rowtracer`
+    * :attr:`Cursor.exectrace`
+
+*/
+static PyObject *
+Connection_get_exectrace_attr(Connection *self)
+{
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  if (self->exectrace)
+  {
+    Py_INCREF(self->exectrace);
+    return self->exectrace;
+  }
+  Py_RETURN_NONE;
+}
+
+static int
+Connection_set_exectrace_attr(Connection *self, PyObject *value)
+{
+  CHECK_USE(-1);
+  CHECK_CLOSED(self, -1);
+
+  if (value != Py_None && !PyCallable_Check(value))
+  {
+    PyErr_Format(PyExc_TypeError, "exectrace expected a Callable");
+    return -1;
+  }
+  Py_CLEAR(self->exectrace);
+  if (value != Py_None)
+  {
+    Py_INCREF(value);
+    self->exectrace = value;
+  }
+  return 0;
+}
+
+/** .. attribute:: rowtrace
+  :type: Optional[RowTracer]
+
+  Called with the cursor and row being returned for
+  :class:`cursors <Cursor>` associated with this Connection, unless
+  the Cursor installed its own tracer.  You can change the data that
+  is returned or cause the row to be skipped altogether.
+
+  If *callable* is :const:`None` then any existing row tracer is
+  removed.
+
+  .. seealso::
+
+    * :ref:`tracing`
+    * :ref:`rowtracer`
+    * :attr:`Cursor.exectrace`
+
+*/
+static PyObject *
+Connection_get_rowtrace_attr(Connection *self)
+{
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  if (self->rowtrace)
+  {
+    Py_INCREF(self->rowtrace);
+    return self->rowtrace;
+  }
+  Py_RETURN_NONE;
+}
+
+static int
+Connection_set_rowtrace_attr(Connection *self, PyObject *value)
+{
+  CHECK_USE(-1);
+  CHECK_CLOSED(self, -1);
+
+  if (value != Py_None && !PyCallable_Check(value))
+  {
+    PyErr_Format(PyExc_TypeError, "rowtrace expected a Callable");
+    return -1;
+  }
+  Py_CLEAR(self->rowtrace);
+  if (value != Py_None)
+  {
+    Py_INCREF(value);
+    self->rowtrace = value;
+  }
+  return 0;
 }
 
 static PyGetSetDef Connection_getseters[] = {
@@ -3807,6 +3880,8 @@ static PyGetSetDef Connection_getseters[] = {
      (setter)Connection_set_cursor_factory, Connection_cursor_factory_DOC, NULL},
     {"in_transaction", (getter)Connection_get_in_transaction,
      NULL, Connection_in_transaction_DOC},
+    {"exectrace", (getter)Connection_get_exectrace_attr, (setter)Connection_set_exectrace_attr, Connection_exectrace_DOC},
+    {"rowtrace", (getter)Connection_get_rowtrace_attr, (setter)Connection_set_rowtrace_attr, Connection_rowtrace_DOC},
     /* Sentinel */
     {
         NULL, NULL, NULL, NULL, NULL}};

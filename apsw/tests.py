@@ -853,7 +853,9 @@ class APSW(unittest.TestCase):
             nonlocal res
             res = {"cursor": cur, "query": query, "bindings": bindings, "readonly": cur.is_readonly, "explain": cur.is_explain}
             return True
+        self.assertIsNone(c.exectrace)
         c.setexectrace(tracer)
+        self.assertIs(c.exectrace, tracer)
         c.execute("pragma user_version")
         self.assertIs(res["cursor"], c)
         self.assertTrue(res["readonly"])
@@ -1130,6 +1132,9 @@ class APSW(unittest.TestCase):
     def testExecTracing(self):
         "Verify tracing of executed statements and bindings"
         self.db.setexectrace(None)
+        self.assertIsNone(self.db.exectrace)
+        self.db.exectrace = None
+        self.assertIsNone(self.db.exectrace)
         c = self.db.cursor()
         cmds = []  # this is maniulated in tracefunc
 
@@ -1142,6 +1147,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, c.setexectrace, 12)  # must be callable
         self.assertRaises(TypeError, self.db.setexectrace, 12)  # must be callable
         c.setexectrace(tracefunc)
+        self.assertIs(c.exectrace, tracefunc)
         statements = [
             ("insert into one values(?,?,?)", (1, 2, 3)),
             ("insert into one values(:a,$b,$c)", {
@@ -1154,7 +1160,7 @@ class APSW(unittest.TestCase):
             c.execute(cmd, values)
         self.assertEqual(cmds, statements)
         self.assertTrue(c.getexectrace() is tracefunc)
-        c.setexectrace(None)
+        c.exectrace = None
         self.assertTrue(c.getexectrace() is None)
         c.execute("create table bar(x,y,z)")
         # cmds should be unchanged

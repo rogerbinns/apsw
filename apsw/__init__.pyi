@@ -853,6 +853,22 @@ class Connection:
         SQLite 3.6.8 is used to provide nested transactions."""
         ...
 
+    exectrace: Optional[ExecTracer]
+    """Called with the cursor, statement and bindings for
+    each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
+    Connection, unless the :class:`Cursor` installed its own
+    tracer. Your execution tracer can also abort execution of a
+    statement.
+
+    If *callable* is :const:`None` then any existing execution tracer is
+    removed.
+
+    .. seealso::
+
+      * :ref:`tracing`
+      * :ref:`rowtracer`
+      * :attr:`Cursor.exectrace`"""
+
     def execute(self, statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor:
         """Executes the statements using the supplied bindings.  Execution
         returns when the first row is available or all statements have
@@ -937,21 +953,13 @@ class Connection:
         ...
 
     def getexectrace(self) -> Optional[ExecTracer]:
-        """Returns the currently installed (via :meth:`~Connection.setexectrace`)
-        execution tracer.
-
-        .. seealso::
-
-          * :ref:`tracing`"""
+        """Returns the currently installed :attr:`execution tracer
+        <Connection.exectrace>`"""
         ...
 
     def getrowtrace(self) -> Optional[RowTracer]:
-        """Returns the currently installed (via :meth:`~Connection.setrowtrace`)
-        row tracer.
-
-        .. seealso::
-
-          * :ref:`tracing`"""
+        """Returns the currently installed :attr:`row tracer
+        <Connection.rowtrace>`"""
         ...
 
     in_transaction: bool
@@ -1036,6 +1044,21 @@ class Connection:
 
         Calls: `sqlite3_db_readonly <https://sqlite.org/c3ref/db_readonly.html>`__"""
         ...
+
+    rowtrace: Optional[RowTracer]
+    """Called with the cursor and row being returned for
+    :class:`cursors <Cursor>` associated with this Connection, unless
+    the Cursor installed its own tracer.  You can change the data that
+    is returned or cause the row to be skipped altogether.
+
+    If *callable* is :const:`None` then any existing row tracer is
+    removed.
+
+    .. seealso::
+
+      * :ref:`tracing`
+      * :ref:`rowtracer`
+      * :attr:`Cursor.exectrace`"""
 
     def serialize(self, name: str) -> bytes:
         """Returns a memory copy of the database. *name* is **"main"** for the
@@ -1147,20 +1170,7 @@ class Connection:
         ...
 
     def setexectrace(self, callable: Optional[ExecTracer]) -> None:
-        """*callable* is called with the cursor, statement and bindings for
-        each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
-        Connection, unless the :class:`Cursor` installed its own
-        tracer. Your execution tracer can also abort execution of a
-        statement.
-
-        If *callable* is :const:`None` then any existing execution tracer is
-        removed.
-
-        .. seealso::
-
-          * :ref:`tracing`
-          * :ref:`rowtracer`
-          * :meth:`Cursor.setexectrace`"""
+        """Method to set :attr:`exectrace`"""
         ...
 
     def setprofile(self, callable: Optional[Callable[[str, int], None]]) -> None:
@@ -1197,19 +1207,7 @@ class Connection:
         ...
 
     def setrowtrace(self, callable: Optional[RowTracer]) -> None:
-        """*callable* is called with the cursor and row being returned for
-        :class:`cursors <Cursor>` associated with this Connection, unless
-        the Cursor installed its own tracer.  You can change the data that
-        is returned or cause the row to be skipped altogether.
-
-        If *callable* is :const:`None` then any existing row tracer is
-        unregistered.
-
-        .. seealso::
-
-          * :ref:`tracing`
-          * :ref:`rowtracer`
-          * :meth:`Cursor.setexectrace`"""
+        """Method to set :attr:`rowtrace`"""
         ...
 
     def setupdatehook(self, callable: Optional[Callable[[int, str, str, int], None]]) -> None:
@@ -1362,6 +1360,20 @@ class Cursor:
       * `sqlite3_column_database_name <https://sqlite.org/c3ref/column_database_name.html>`__
       * `sqlite3_column_table_name <https://sqlite.org/c3ref/column_database_name.html>`__
       * `sqlite3_column_origin_name <https://sqlite.org/c3ref/column_database_name.html>`__"""
+
+    exectrace: Optional[ExecTracer]
+    """Called with the cursor, statement and bindings for
+    each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
+    cursor.
+
+    If *callable* is :const:`None` then any existing execution tracer is
+    unregistered.
+
+    .. seealso::
+
+      * :ref:`tracing`
+      * :ref:`executiontracer`
+      * :attr:`Connection.exectrace`"""
 
     def execute(self, statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor:
         """Executes the statements using the supplied bindings.  Execution
@@ -1537,8 +1549,8 @@ class Cursor:
         ...
 
     def getexectrace(self) -> Optional[ExecTracer]:
-        """Returns the currently installed (via :meth:`~Cursor.setexectrace`)
-        execution tracer.
+        """Returns the currently installed :attr:`execution tracer
+        <Cursor.exectrace>`
 
         .. seealso::
 
@@ -1575,34 +1587,26 @@ class Cursor:
         """Cursors are iterators"""
         ...
 
+    rowtrace: Optional[RowTracer]
+    """Called with cursor and row being returned.  You can
+    change the data that is returned or cause the row to be skipped
+    altogether.
+
+    If *callable* is :const:`None` then any existing row tracer is
+    unregistered.
+
+    .. seealso::
+
+      * :ref:`tracing`
+      * :ref:`rowtracer`
+      * :attr:`Connection.rowtrace`"""
+
     def setexectrace(self, callable: Optional[ExecTracer]) -> None:
-        """*callable* is called with the cursor, statement and bindings for
-        each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
-        cursor.
-
-        If *callable* is :const:`None` then any existing execution tracer is
-        unregistered.
-
-        .. seealso::
-
-          * :ref:`tracing`
-          * :ref:`executiontracer`
-          * :meth:`Connection.setexectrace`"""
+        """Sets the :attr:`execution tracer <Cursor.exectrace>`"""
         ...
 
     def setrowtrace(self, callable: Optional[RowTracer]) -> None:
-        """*callable* is called with cursor and row being returned.  You can
-        change the data that is returned or cause the row to be skipped
-        altogether.
-
-        If *callable* is :const:`None` then any existing row tracer is
-        unregistered.
-
-        .. seealso::
-
-          * :ref:`tracing`
-          * :ref:`rowtracer`
-          * :meth:`Connection.setexectrace`"""
+        """Sets the :attr:`row tracer <Cursor.rowtrace>`"""
         ...
 
 
