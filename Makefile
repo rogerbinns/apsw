@@ -214,7 +214,7 @@ tags:
 
 # building a python debug interpreter
 
-PYDEBUG_VER=3.10.7
+PYDEBUG_VER=3.10.8
 PYDEBUG_DIR=/space/pydebug
 PYVALGRIND_VER=$(PYDEBUG_VER)
 PYVALGRIND_DIR=/space/pyvalgrind
@@ -226,7 +226,7 @@ pydebug:
 	set -x && cd "$(PYDEBUG_DIR)" && find . -delete && \
 	curl https://www.python.org/ftp/python/$(PYDEBUG_VER)/Python-$(PYDEBUG_VER).tar.xz | tar xfJ - && \
 	cd Python-$(PYDEBUG_VER) && \
-	./configure --with-address-sanitizer --without-pymalloc --prefix="$(PYDEBUG_DIR)" \
+	./configure --with-address-sanitizer --with-undefined-behavior-sanitizer --without-pymalloc --prefix="$(PYDEBUG_DIR)" \
 	CPPFLAGS="-DPyDict_MAXFREELIST=0 -DPyFloat_MAXFREELIST=0 -DPyTuple_MAXFREELIST=0 -DPyList_MAXFREELIST=0" && \
 	env PATH="/usr/lib/ccache:$$PATH" ASAN_OPTIONS=detect_leaks=false make -j install
 
