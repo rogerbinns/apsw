@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 import collections, collections.abc
-from types import NoneType
+try:
+    from types import NoneType
+except ImportError:
+    NoneType = type(None)
 
 from dataclasses import dataclass, make_dataclass
 
