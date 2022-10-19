@@ -944,6 +944,21 @@ class APSW(unittest.TestCase):
         self.assertEqual([(None,)], self.db.executemany("select :name", [dict_subclass()]).fetchall())
         self.assertRaises(ZeroDivisionError, self.db.executemany, "select ?", (coerced_to_list(),))
 
+    def testIssue376(self):
+        "Whitespace treated as incomplete execution"
+        c = self.db.cursor()
+        for statement in (
+            "select 3",
+            "select 3;",
+            "select 3; ",
+            "select 3; ;\t\r\n; ",
+        ):
+            c.execute(statement)
+            # should not throw incomplete
+            c.execute("select 4")
+            self.assertEqual([(3,), (4,)], c.execute(statement + "; select 4").fetchall())
+
+
     def testTypes(self):
         "Check type information is maintained"
         c = self.db.cursor()

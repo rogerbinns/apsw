@@ -148,6 +148,7 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   Py_hash_t hash = SC_SENTINEL_HASH;
   APSWStatement *statement = NULL;
   const char *tail = NULL;
+  const char *orig_tail = NULL;
   sqlite3_stmt *vdbestatement = NULL;
   int res = SQLITE_OK;
 
@@ -211,6 +212,12 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
     return res ? res : SQLITE_ERROR;
   }
 
+  orig_tail = tail;
+
+  /* skip whitespace and semis in tail */
+  while (*tail && (*tail == ' ' || *tail == '\t' || *tail == ';' || *tail == '\r' || *tail == '\n'))
+    tail++;
+
   /* comments and some pragmas result in no vdbe, which we shouldn't
      cache either */
   if (!vdbestatement)
@@ -245,9 +252,10 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   statement->uses = 1;
   memcpy(&statement->options, options, sizeof(APSWStatementOptions));
 
-  if (!statementcache_hasmore(statement))
+  if (tail == orig_tail && !statementcache_hasmore(statement))
   {
-    /* no subsequent queries, so use sqlite's copy of the utf8 */
+    /* no subsequent queries, so use sqlite's copy of the utf8
+       providing we didn't grab additional whitespace */
     statement->utf8 = sqlite3_sql(vdbestatement); /* No PYSQLITE_CALL needed as the function does not take a mutex */
     statement->query = NULL;
   }
