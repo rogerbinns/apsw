@@ -830,7 +830,7 @@ Enter SQL statements terminated with a ";"
                 state['timing'] = self.get_resource_usage()
             return True
 
-        cur.setexectrace(et)
+        cur.exectrace = et
         # processing loop
         try:
             for row in cur.execute(sql, bindings):

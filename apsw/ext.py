@@ -357,7 +357,7 @@ def query_info(db: apsw.Connection,
         return apsw.SQLITE_OK
 
     cur = db.cursor()
-    cur.setexectrace(tracer)
+    cur.exectrace = tracer
     if actions:
         db.setauthorizer(auther)
     try:
@@ -366,7 +366,7 @@ def query_info(db: apsw.Connection,
         pass
     finally:
         db.setauthorizer(None)
-    cur.setexectrace(None)
+    cur.exectrace = None
     if actions:
         res["actions"] = actions_taken
 

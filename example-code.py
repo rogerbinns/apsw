@@ -94,7 +94,7 @@ def mytrace(cursor: apsw.Cursor, statement: str, bindings: Optional[apsw.Binding
 
 
 #@@CAPTURE
-cursor.setexectrace(mytrace)
+cursor.exectrace = mytrace
 cursor.execute("drop table bar ; create table bar(x,y,z); select * from foo where x=?", (3, ))
 #@@ENDCAPTURE
 
@@ -111,14 +111,14 @@ def rowtrace(cursor: apsw.Cursor, row: apsw.SQLiteValues) -> apsw.SQLiteValues:
 
 
 #@@CAPTURE
-cursor.setrowtrace(rowtrace)
+cursor.rowtrace = rowtrace
 for row in cursor.execute("select x,y from foo where x>3"):
     pass
 #@@ENDCAPTURE
 
 # Clear tracers
-cursor.setrowtrace(None)
-cursor.setexectrace(None)
+cursor.rowtrace = None
+cursor.exectrace = None
 
 ###
 ### executemany
