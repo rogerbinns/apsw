@@ -1451,13 +1451,7 @@ APSWCursor_getrowtrace(APSWCursor *self)
 
 /** .. method:: getconnection() -> Connection
 
-  Returns the :class:`Connection` this cursor belongs to.  An example usage is to get another cursor::
-
-    def func(cursor):
-      # I don't want to alter existing cursor, so make a new one
-      mycursor=cursor.getconnection().cursor()
-      mycursor.execute("....")
-
+  Returns the :attr:`connection` this cursor is using
 */
 
 static PyObject *
@@ -1607,6 +1601,21 @@ APSWCursor_set_rowtrace_attr(APSWCursor *self, PyObject *value)
   return 0;
 }
 
+/** .. attribute:: connection
+  :type: Connection
+
+  :class:`Connection` this cursor is using
+*/
+static PyObject *
+APSWCursor_getconnection_attr(APSWCursor *self)
+{
+  CHECK_USE(NULL);
+  CHECK_CURSOR_CLOSED(NULL);
+
+  Py_INCREF(self->connection);
+  return (PyObject *)self->connection;
+}
+
 /** .. attribute:: is_explain
   :type: int
 
@@ -1711,6 +1720,7 @@ static PyGetSetDef APSWCursor_getset[] = {
     {"expanded_sql", (getter)APSWCursor_expanded_sql, NULL, Cursor_expanded_sql_DOC, NULL},
     {"exectrace", (getter)APSWCursor_get_exectrace_attr, (setter)APSWCursor_set_exectrace_attr, Cursor_exectrace_DOC},
     {"rowtrace", (getter)APSWCursor_get_rowtrace_attr, (setter)APSWCursor_set_rowtrace_attr, Cursor_rowtrace_DOC},
+    {"connection", (getter)APSWCursor_getconnection_attr, NULL, Cursor_connection_DOC},
     {NULL, NULL, NULL, NULL, NULL}};
 
 static PyTypeObject APSWCursorType = {

@@ -776,7 +776,9 @@ class APSW(unittest.TestCase):
             self.assertEqual(values, (1, 2, 3))
         self.assertEqual(entry, 9, "There should have been ten rows")
         # does getconnection return the right object
-        self.assertTrue(c.getconnection() is self.db)
+        self.assertIs(c.getconnection(), self.db)
+        self.assertIs(c.connection, self.db)
+        self.assertIs(c.connection, c.getconnection())
         # check getdescription - note column with space in name and [] syntax to quote it
         cols = (
             ("x a space", "INTEGER"),
