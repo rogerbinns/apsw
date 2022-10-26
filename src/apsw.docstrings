@@ -1368,7 +1368,7 @@
 
 
 #define  Connection_setexectrace_DOC "setexectrace($self,callable)\n--\n\nConnection.setexectrace(callable: Optional[ExecTracer]) -> None\n\n" \
-"Method to set :attr:`exectrace`\n" 
+"Method to set :attr:`Connection.exectrace`\n" 
 
 #define Connection_setexectrace_USAGE "Connection.setexectrace(callable: Optional[ExecTracer]) -> None"
 
@@ -1431,7 +1431,7 @@
 
 
 #define  Connection_setrowtrace_DOC "setrowtrace($self,callable)\n--\n\nConnection.setrowtrace(callable: Optional[RowTracer]) -> None\n\n" \
-"Method to set :attr:`rowtrace`\n" 
+"Method to set :attr:`Connection.rowtrace`\n" 
 
 #define Connection_setrowtrace_USAGE "Connection.setrowtrace(callable: Optional[RowTracer]) -> None"
 
@@ -1615,6 +1615,10 @@
 } while(0)
 
 
+#define  Cursor_connection_DOC ":type: Connection\n" \
+"\n" \
+":class:`Connection` this cursor is using\n" 
+
 #define  Cursor_description_DOC ":type: Tuple[Tuple[str, str, None, None, None, None, None], ...]\n" \
 "\n" \
 "Based on the `DB-API cursor property\n" \
@@ -1785,12 +1789,7 @@
 "Returns the next row of data or None if there are no more rows.\n" 
 
 #define  Cursor_getconnection_DOC "getconnection($self)\n--\n\nCursor.getconnection() -> Connection\n\n" \
-"Returns the :class:`Connection` this cursor belongs to.  An example usage is to get another cursor::\n" \
-"\n" \
-"  def func(cursor):\n" \
-"    # I don't want to alter existing cursor, so make a new one\n" \
-"    mycursor=cursor.getconnection().cursor()\n" \
-"    mycursor.execute(\"....\")\n" 
+"Returns the :attr:`connection` this cursor is using\n" 
 
 #define  Cursor_getdescription_DOC "getdescription($self)\n--\n\nCursor.getdescription() -> Tuple[Tuple[str, str], ...]\n\n" \
 "If you are trying to get information about a table or view,\n" \

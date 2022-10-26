@@ -1170,7 +1170,7 @@ class Connection:
         ...
 
     def setexectrace(self, callable: Optional[ExecTracer]) -> None:
-        """Method to set :attr:`exectrace`"""
+        """Method to set :attr:`Connection.exectrace`"""
         ...
 
     def setprofile(self, callable: Optional[Callable[[str, int], None]]) -> None:
@@ -1207,7 +1207,7 @@ class Connection:
         ...
 
     def setrowtrace(self, callable: Optional[RowTracer]) -> None:
-        """Method to set :attr:`rowtrace`"""
+        """Method to set :attr:`Connection.rowtrace`"""
         ...
 
     def setupdatehook(self, callable: Optional[Callable[[int, str, str, int], None]]) -> None:
@@ -1339,6 +1339,9 @@ class Cursor:
          force is True then all remaining work and state information will be
          silently discarded."""
         ...
+
+    connection: Connection
+    """:class:`Connection` this cursor is using"""
 
     description: Tuple[Tuple[str, str, None, None, None, None, None], ...]
     """Based on the `DB-API cursor property
@@ -1485,12 +1488,7 @@ class Cursor:
         ...
 
     def getconnection(self) -> Connection:
-        """Returns the :class:`Connection` this cursor belongs to.  An example usage is to get another cursor::
-
-          def func(cursor):
-            # I don't want to alter existing cursor, so make a new one
-            mycursor=cursor.getconnection().cursor()
-            mycursor.execute("....")"""
+        """Returns the :attr:`connection` this cursor is using"""
         ...
 
     def getdescription(self) -> Tuple[Tuple[str, str], ...]:
