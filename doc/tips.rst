@@ -305,7 +305,7 @@ dictionaries using a :ref:`row tracer <rowtracer>` with
 
   def my_factory(connection):
     cursor = apsw.Cursor(connection)
-    cursor.setrowtrace(dict_row)
+    cursor.rowtrace = dict_row
     return cursor
 
   connection.cursor_factory = my_factory

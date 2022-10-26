@@ -27,7 +27,7 @@ values for a row::
 It can be more convenient to access them by name.  To achieve this you
 can use :class:`apsw.ext.DataClassRowFactory` like this::
 
-    con.setrowtrace(apsw.ext.DataClassRowFactory())
+    con.rowtrace = apsw.ext.DataClassRowFactory()
 
     for row in con.execute("SELECT * from books"):
         print(row.title, row.author)

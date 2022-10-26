@@ -129,8 +129,8 @@ class APSWTracer(object):
                 self.newcursor[wr]=True
                 self.numcursors+=1
                 if self.options.sql:
-                    self.log(id(cursor), "CURSORFROM:", "%x" % (id(cursor.getconnection()),),
-                             "DB:", self.formatstring(cursor.getconnection().filename, checkmaxlen=False))
+                    self.log(id(cursor), "CURSORFROM:", "%x" % (id(cursor.connection),),
+                             "DB:", self.formatstring(cursor.connection.filename, checkmaxlen=False))
         if self.options.sql:
             args=[id(cursor), "SQL:", self.formatstring(sql, '', False)]
             if bindings:

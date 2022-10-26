@@ -109,7 +109,7 @@ Exception classes are not available as attributes of Connection but
 instead are on the :mod:`apsw` module.  See :ref:`exceptions` for
 more details.
 
-Use :meth:`Cursor.getconnection` to get the associated Connection
+Use :attr:`Cursor.connection` to get the associated Connection
 object from a cursor.
 
 scroll and messages are not available.

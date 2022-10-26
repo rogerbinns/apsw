@@ -36,11 +36,11 @@ except ImportError:
 class DataClassRowFactory:
     """Returns each row as a :mod:`dataclass <dataclasses>`, accessible by column name.
 
-    To use set an instance as :meth:`Connection.setrowtrace
-    <apsw.Connection.setrowtrace>` to affect all :class:`cursors
+    To use set an instance as :attr:`Connection.rowtrace
+    <apsw.Connection.rowtrace>` to affect all :class:`cursors
     <apsw.Cursor>`, or on a specific cursor::
 
-        connection.setrowtrace(apsw.ext.DataClassRowFactory())
+        connection.rowtrace = apsw.ext.DataClassRowFactory()
         for row in connection.execute("SELECT title, sum(orders) AS total, ..."):
             # You can now access by name
             print (row.title, row.total)
@@ -231,7 +231,7 @@ class TypesConverterCursorFactory:
         def __init__(self, connection: apsw.Connection, factory: TypesConverterCursorFactory):
             super().__init__(connection)
             self.factory = factory
-            self.setrowtrace(self._rowtracer)
+            self.rowtrace = self._rowtracer
 
         def _rowtracer(self, cursor: apsw.Cursor, values: apsw.SQLiteValues) -> Tuple[Any, ...]:
             return tuple(self.factory.convert_value(d[1], v) for d, v in zip(cursor.getdescription(), values))
