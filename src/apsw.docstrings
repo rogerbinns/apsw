@@ -529,6 +529,36 @@
 } while(0)
 
 
+#define  Connection_authorizer_DOC ":type: Optional[Authorizer]\n" \
+"\n" \
+"While `preparing <https://sqlite.org/c3ref/prepare.html>`_\n" \
+"statements, SQLite will call any defined authorizer to see if a\n" \
+"particular action is ok to be part of the statement.\n" \
+"\n" \
+"Typical usage would be if you are running user supplied SQL and want\n" \
+"to prevent harmful operations.  You should also\n" \
+"set the :class:`statementcachesize <Connection>` to zero.\n" \
+"\n" \
+"The authorizer callback has 5 parameters:\n" \
+"\n" \
+"  * An `operation code <https://sqlite.org/c3ref/c_alter_table.html>`_\n" \
+"  * A string (or None) dependent on the operation `(listed as 3rd) <https://sqlite.org/c3ref/c_alter_table.html>`_\n" \
+"  * A string (or None) dependent on the operation `(listed as 4th) <https://sqlite.org/c3ref/c_alter_table.html>`_\n" \
+"  * A string name of the database (or None)\n" \
+"  * Name of the innermost trigger or view doing the access (or None)\n" \
+"\n" \
+"The authorizer callback should return one of :const:`SQLITE_OK`,\n" \
+":const:`SQLITE_DENY` or :const:`SQLITE_IGNORE`.\n" \
+"(:const:`SQLITE_DENY` is returned if there is an error in your\n" \
+"Python code).\n" \
+"\n" \
+".. seealso::\n" \
+"\n" \
+"  * :ref:`Example <authorizer-example>`\n" \
+"  * :ref:`statementcache`\n" \
+"\n" \
+"Calls: `sqlite3_set_authorizer <https://sqlite.org/c3ref/set_authorizer.html>`__\n" 
+
 #define  Connection_autovacuum_pages_DOC "autovacuum_pages($self,callable)\n--\n\nConnection.autovacuum_pages(callable: Optional[Callable[[str, int, int, int], int]]) -> None\n\n" \
 "Calls `callable` to find out how many pages to autovacuum.  The callback has 4 parameters:\n" \
 "\n" \
@@ -1257,38 +1287,10 @@
 } while(0)
 
 
-#define  Connection_setauthorizer_DOC "setauthorizer($self,callable)\n--\n\nConnection.setauthorizer(callable: Optional[Callable[[int, Optional[str], Optional[str], Optional[str], Optional[str]], int]]) -> None\n\n" \
-"While `preparing <https://sqlite.org/c3ref/prepare.html>`_\n" \
-"statements, SQLite will call any defined authorizer to see if a\n" \
-"particular action is ok to be part of the statement.\n" \
-"\n" \
-"Typical usage would be if you are running user supplied SQL and want\n" \
-"to prevent harmful operations.  You should also\n" \
-"set the :class:`statementcachesize <Connection>` to zero.\n" \
-"\n" \
-"The authorizer callback has 5 parameters:\n" \
-"\n" \
-"  * An `operation code <https://sqlite.org/c3ref/c_alter_table.html>`_\n" \
-"  * A string (or None) dependent on the operation `(listed as 3rd) <https://sqlite.org/c3ref/c_alter_table.html>`_\n" \
-"  * A string (or None) dependent on the operation `(listed as 4th) <https://sqlite.org/c3ref/c_alter_table.html>`_\n" \
-"  * A string name of the database (or None)\n" \
-"  * Name of the innermost trigger or view doing the access (or None)\n" \
-"\n" \
-"The authorizer callback should return one of :const:`SQLITE_OK`,\n" \
-":const:`SQLITE_DENY` or :const:`SQLITE_IGNORE`.\n" \
-"(:const:`SQLITE_DENY` is returned if there is an error in your\n" \
-"Python code).\n" \
-"\n" \
-"Passing None unregisters the existing authorizer.\n" \
-"\n" \
-".. seealso::\n" \
-"\n" \
-"  * :ref:`Example <authorizer-example>`\n" \
-"  * :ref:`statementcache`\n" \
-"\n" \
-"Calls: `sqlite3_set_authorizer <https://sqlite.org/c3ref/set_authorizer.html>`__\n" 
+#define  Connection_setauthorizer_DOC "setauthorizer($self,callable)\n--\n\nConnection.setauthorizer(callable: Optional[Authorizer]) -> None\n\n" \
+"Sets the :attr:`authorizer`\n" 
 
-#define Connection_setauthorizer_USAGE "Connection.setauthorizer(callable: Optional[Callable[[int, Optional[str], Optional[str], Optional[str], Optional[str]], int]]) -> None"
+#define Connection_setauthorizer_USAGE "Connection.setauthorizer(callable: Optional[Authorizer]) -> None"
 
 #define Connection_setauthorizer_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \

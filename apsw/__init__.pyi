@@ -67,7 +67,7 @@ ExecTracer = Callable[[Cursor, str, Optional[Bindings]], bool]
 """Execution tracers are called with the cursor, sql query text, and the bindings
 used.  Return False/None to abort execution, or True to continue"""
 
-
+Authorizer = Callable[[int, Optional[str], Optional[str], Optional[str], Optional[str]], int]
 SQLITE_VERSION_NUMBER: int
 """The integer version number of SQLite that APSW was compiled
 against.  For example SQLite 3.6.4 will have the value *3006004*.
@@ -515,21 +515,65 @@ class Blob:
 
 class Connection:
     def __init__(self, filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: Optional[str] = None, statementcachesize: int = 100):
-        """Calls `callable` to find out how many pages to autovacuum.  The callback has 4 parameters:
+        """:type: Optional[Authorizer]
 
-        * Database name: str (eg "main")
-        * Database pages: int (how many pages make up the database now)
-        * Free pages: int (how many pages could be freed)
-        * Page size: int (page size in bytes)
+        While `preparing <https://sqlite.org/c3ref/prepare.html>`_
+        statements, SQLite will call any defined authorizer to see if a
+        particular action is ok to be part of the statement.
 
-        Return how many pages should be freed.  Values less than zero or more than the free pages are
-        treated as zero or free page count.  On error zero is returned.
+        Typical usage would be if you are running user supplied SQL and want
+        to prevent harmful operations.  You should also
+        set the :class:`statementcachesize <Connection>` to zero.
 
-        READ THE NOTE IN THE SQLITE DOCUMENTATION.  Calling into SQLite can result in crashes, corrupt
-        databases or worse.
+        The authorizer callback has 5 parameters:
 
-        Calls: `sqlite3_autovacuum_pages <https://sqlite.org/c3ref/autovacuum_pages.html>`__"""
+          * An `operation code <https://sqlite.org/c3ref/c_alter_table.html>`_
+          * A string (or None) dependent on the operation `(listed as 3rd) <https://sqlite.org/c3ref/c_alter_table.html>`_
+          * A string (or None) dependent on the operation `(listed as 4th) <https://sqlite.org/c3ref/c_alter_table.html>`_
+          * A string name of the database (or None)
+          * Name of the innermost trigger or view doing the access (or None)
+
+        The authorizer callback should return one of :const:`SQLITE_OK`,
+        :const:`SQLITE_DENY` or :const:`SQLITE_IGNORE`.
+        (:const:`SQLITE_DENY` is returned if there is an error in your
+        Python code).
+
+        .. seealso::
+
+          * :ref:`Example <authorizer-example>`
+          * :ref:`statementcache`
+
+        Calls: `sqlite3_set_authorizer <https://sqlite.org/c3ref/set_authorizer.html>`__"""
         ...
+
+    authorizer: Optional[Authorizer]
+    """While `preparing <https://sqlite.org/c3ref/prepare.html>`_
+    statements, SQLite will call any defined authorizer to see if a
+    particular action is ok to be part of the statement.
+
+    Typical usage would be if you are running user supplied SQL and want
+    to prevent harmful operations.  You should also
+    set the :class:`statementcachesize <Connection>` to zero.
+
+    The authorizer callback has 5 parameters:
+
+      * An `operation code <https://sqlite.org/c3ref/c_alter_table.html>`_
+      * A string (or None) dependent on the operation `(listed as 3rd) <https://sqlite.org/c3ref/c_alter_table.html>`_
+      * A string (or None) dependent on the operation `(listed as 4th) <https://sqlite.org/c3ref/c_alter_table.html>`_
+      * A string name of the database (or None)
+      * Name of the innermost trigger or view doing the access (or None)
+
+    The authorizer callback should return one of :const:`SQLITE_OK`,
+    :const:`SQLITE_DENY` or :const:`SQLITE_IGNORE`.
+    (:const:`SQLITE_DENY` is returned if there is an error in your
+    Python code).
+
+    .. seealso::
+
+      * :ref:`Example <authorizer-example>`
+      * :ref:`statementcache`
+
+    Calls: `sqlite3_set_authorizer <https://sqlite.org/c3ref/set_authorizer.html>`__"""
 
     def autovacuum_pages(self, callable: Optional[Callable[[str, int, int, int], int]]) -> None:
         """Calls `callable` to find out how many pages to autovacuum.  The callback has 4 parameters:
@@ -1083,36 +1127,8 @@ class Connection:
         Calls: `sqlite3_set_last_insert_rowid <https://sqlite.org/c3ref/set_last_insert_rowid.html>`__"""
         ...
 
-    def setauthorizer(self, callable: Optional[Callable[[int, Optional[str], Optional[str], Optional[str], Optional[str]], int]]) -> None:
-        """While `preparing <https://sqlite.org/c3ref/prepare.html>`_
-        statements, SQLite will call any defined authorizer to see if a
-        particular action is ok to be part of the statement.
-
-        Typical usage would be if you are running user supplied SQL and want
-        to prevent harmful operations.  You should also
-        set the :class:`statementcachesize <Connection>` to zero.
-
-        The authorizer callback has 5 parameters:
-
-          * An `operation code <https://sqlite.org/c3ref/c_alter_table.html>`_
-          * A string (or None) dependent on the operation `(listed as 3rd) <https://sqlite.org/c3ref/c_alter_table.html>`_
-          * A string (or None) dependent on the operation `(listed as 4th) <https://sqlite.org/c3ref/c_alter_table.html>`_
-          * A string name of the database (or None)
-          * Name of the innermost trigger or view doing the access (or None)
-
-        The authorizer callback should return one of :const:`SQLITE_OK`,
-        :const:`SQLITE_DENY` or :const:`SQLITE_IGNORE`.
-        (:const:`SQLITE_DENY` is returned if there is an error in your
-        Python code).
-
-        Passing None unregisters the existing authorizer.
-
-        .. seealso::
-
-          * :ref:`Example <authorizer-example>`
-          * :ref:`statementcache`
-
-        Calls: `sqlite3_set_authorizer <https://sqlite.org/c3ref/set_authorizer.html>`__"""
+    def setauthorizer(self, callable: Optional[Authorizer]) -> None:
+        """Sets the :attr:`authorizer`"""
         ...
 
     def setbusyhandler(self, callable: Optional[Callable[[int], bool]]) -> None:
