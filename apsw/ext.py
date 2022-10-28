@@ -359,13 +359,15 @@ def query_info(db: apsw.Connection,
     cur = db.cursor()
     cur.exectrace = tracer
     if actions:
-        db.setauthorizer(auther)
+        orig_authorizer = db.authorizer
+        db.authorizer = auther
     try:
         cur.execute(query, bindings, can_cache=False, prepare_flags=prepare_flags)
     except apsw.ExecTraceAbort:
         pass
     finally:
-        db.setauthorizer(None)
+        if actions:
+            db.authorizer = orig_authorizer
     cur.exectrace = None
     if actions:
         res["actions"] = actions_taken
@@ -425,7 +427,7 @@ class QueryDetails:
     ":attr:`Cursor.expanded_sql <apsw.Cursor.expanded_sql>`"
     actions: Optional[List[QueryAction]]
     """A list of the actions taken by the query, as discovered via
-    :meth:`Connection.setauthorizer <apsw.Connection.setauthorizer>`"""
+    :attr:`Connection.authorizer <apsw.Connection.authorizer>`"""
     explain: Optional[List[VDBEInstruction]]
     """A list of instructions of the `internal code <https://sqlite.org/opcode.html>`__
     used by SQLite to execute the query"""

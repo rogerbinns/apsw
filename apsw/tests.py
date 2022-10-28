@@ -1107,7 +1107,9 @@ class APSW(unittest.TestCase):
         c.execute("create table privateone(x)")
         # this should fail
         self.assertRaises(TypeError, self.db.setauthorizer, 12)  # must be callable
+        self.assertRaises(TypeError, setattr, self.db, "authorizer", 12)
         self.db.setauthorizer(authorizer)
+        self.assertIs(self.db.authorizer, authorizer)
         for val in apsw.SQLITE_DENY, apsw.SQLITE_DENY, 0x800276889000212112:
             retval = val
             if val < 100:
@@ -1116,6 +1118,7 @@ class APSW(unittest.TestCase):
                 self.assertRaises(OverflowError, c.execute, "create table privatetwo(x)")
         # this should succeed
         self.db.setauthorizer(None)
+        self.assertIsNone(self.db.authorizer)
         c.execute("create table privatethree(x)")
 
         self.assertTableExists("privateone")
@@ -1128,7 +1131,7 @@ class APSW(unittest.TestCase):
                 1 / 0
             return apsw.SQLITE_OK
 
-        self.db.setauthorizer(authorizer)
+        self.db.authorizer = authorizer
         self.assertRaises(ZeroDivisionError, c.execute, "create table shouldfail(x)")
         self.assertTableNotExists("shouldfail")
 
@@ -1138,11 +1141,11 @@ class APSW(unittest.TestCase):
 
         self.db.setauthorizer(authorizer)
         self.assertRaises(TypeError, c.execute, "create table shouldfail(x); select 3+5")
-        self.db.setauthorizer(None)  # otherwise next line will fail!
+        self.db.authorizer = None  # otherwise next line will fail!
         self.assertTableNotExists("shouldfail")
 
         # back to normal
-        self.db.setauthorizer(None)
+        self.db.authorizer = None
         c.execute("create table shouldsucceed(x)")
         self.assertTableExists("shouldsucceed")
 
@@ -8062,21 +8065,19 @@ shell.write(shell.stdout, "hello world\\n")
         except MemoryError:
             pass
 
-        ## SetAuthorizerNullFail
-        apsw.faultdict["SetAuthorizerNullFail"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.setauthorizer(None)
-            1 / 0
-        except apsw.IOError:
-            klass, value = sys.exc_info()[:2]
-            self.assertTrue(klass is apsw.IOError)
-
         ## SetAuthorizerFail
         apsw.faultdict["SetAuthorizerFail"] = True
         try:
             db = apsw.Connection(":memory:")
             db.setauthorizer(dummy)
+            1 / 0
+        except:
+            pass
+
+        apsw.faultdict["SetAuthorizerFail"] = True
+        try:
+            db = apsw.Connection(":memory:")
+            db.authorizer = None
             1 / 0
         except:
             pass

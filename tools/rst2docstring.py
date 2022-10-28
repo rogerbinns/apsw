@@ -467,7 +467,7 @@ def do_argparse(item):
                 pass
         elif callable_erasure(param["type"]) in {
                 "Optional[Callable]", "Optional[RowTracer]", "Optional[ExecTracer]", "Optional[ScalarProtocol]",
-                "Optional[AggregateFactory]"
+                "Optional[AggregateFactory]", "Optional[Authorizer]"
         }:
             # the above are all callables and we don't check beyond that
             type = "PyObject *"

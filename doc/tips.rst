@@ -225,19 +225,9 @@ database as made by your application.
 Parsing SQL
 ===========
 
-Sometimes you want to know what a particular SQL statement does.  The
-SQLite query parser directly generates VDBE byte code and cannot be
-hooked into.  There is however an easier way.
-
-Install an :ref:`execution tracer <executiontracer>` that returns
-``apsw.SQLITE_DENY`` which will prevent any queries from running.
-Install an :meth:`authorizer <Connection.setauthorizer>`.
-
-Then call :meth:`Cursor.execute` on your query with `can_cache =
-False`.  Your authorizer will then be called (multiple times if
-necessary) with details of what the query does including expanding
-views and triggers that fire.  Finally the execution tracer will fire,
-which prevents execution.
+Sometimes you want to know what a particular SQL statement does.  Use
+:func:`apsw.ext.query_info` which will provide as much detail as you
+need.
 
 Unexpected behaviour
 ====================

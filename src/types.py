@@ -66,3 +66,4 @@ ExecTracer = Callable[[Cursor, str, Optional[Bindings]], bool]
 """Execution tracers are called with the cursor, sql query text, and the bindings
 used.  Return False/None to abort execution, or True to continue"""
 
+Authorizer = Callable[[int, Optional[str], Optional[str], Optional[str], Optional[str]], int]

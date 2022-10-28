@@ -183,7 +183,7 @@ Permissions Etc
 
 .. exception:: AuthError
 
-  :const:`SQLITE_AUTH`.  :meth:`Authorization <Connection.setauthorizer>` denied.
+  :const:`SQLITE_AUTH`.  :attr:`Authorization <Connection.authorizer>` denied.
 
 Abort/Busy Etc
 ^^^^^^^^^^^^^^

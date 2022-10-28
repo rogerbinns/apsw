@@ -243,14 +243,14 @@ def authorizer(operation: int, paramone: Optional[str], paramtwo: Optional[str],
     return apsw.SQLITE_OK  # always allow
 
 
-connection.setauthorizer(authorizer)
+connection.authorizer = authorizer
 #@@CAPTURE
 connection.execute("insert into s values('foo')")
 connection.execute("select str from s limit 1")
 #@@ENDCAPTURE
 
-# Cancel authorizer
-connection.setauthorizer(None)
+# Clear authorizer
+connection.authorizer = None
 
 ###
 ### progress handler (SQLite 3 experimental feature) @@ example-progress-handler

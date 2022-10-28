@@ -98,7 +98,7 @@ Each :class:`Connection` maintains a cache mapping SQL queries to a
 `prepared statement <https://sqlite.org/c3ref/stmt.html>`_ to avoid
 the overhead of `repreparing
 <https://sqlite.org/c3ref/prepare.html>`_ queries that are executed
-multiple times.  This is a classic tradeoff using more memory to
+multiple times.  This is a classic trade off using more memory to
 reduce CPU consumption.
 
 By default there are up to 100 entries in the cache.  Once the cache
@@ -109,14 +109,12 @@ You should pick a larger cache size if you have more than 100 unique
 queries that you run.  For example if you have 101 different queries
 you run in order then the cache will not help.
 
-You can also :class:`specify zero <Connection>` which will disable the
-statement cache.
 
-If you are using :meth:`authorizers <Connection.setauthorizer>` then
-you should disable the statement cache.  This is because the
-authorizer callback is only called while statements are being
-prepared.
-
+If you are using :attr:`authorizers <Connection.authorizer>` then be
+aware authorizer callback is only called while statements are being
+prepared.  You can :class:`specify zero <Connection>` which will
+disable the statement cache completely, use use `can_cache = False`
+flag to `execute`/`executemany`.
 
 .. _tracing:
 
