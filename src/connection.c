@@ -1489,43 +1489,41 @@ finally:
   return result;
 }
 
-/** .. method:: setauthorizer(callable: Optional[Callable[[int, Optional[str], Optional[str], Optional[str], Optional[str]], int]]) -> None
+static int
+Connection_internal_set_authorizer(Connection *self, PyObject *callable)
+{
+  /* CHECK_USE and CHECK_CLOSED not needed because caller does them */
+  int res = SQLITE_OK;
 
-  While `preparing <https://sqlite.org/c3ref/prepare.html>`_
-  statements, SQLite will call any defined authorizer to see if a
-  particular action is ok to be part of the statement.
+  assert(callable != Py_None);
 
-  Typical usage would be if you are running user supplied SQL and want
-  to prevent harmful operations.  You should also
-  set the :class:`statementcachesize <Connection>` to zero.
+  APSW_FAULT_INJECT(SetAuthorizerFail,
+                    PYSQLITE_CON_CALL(res = sqlite3_set_authorizer(self->db, callable ? authorizercb : NULL, callable ? self : NULL)),
+                    res = SQLITE_IOERR);
+  if (res != SQLITE_OK)
+  {
+    SET_EXC(res, self->db);
+    return -1;
+  }
 
-  The authorizer callback has 5 parameters:
+  Py_CLEAR(self->authorizer);
+  if (callable)
+  {
+    Py_INCREF(callable);
+    self->authorizer = callable;
+  }
 
-    * An `operation code <https://sqlite.org/c3ref/c_alter_table.html>`_
-    * A string (or None) dependent on the operation `(listed as 3rd) <https://sqlite.org/c3ref/c_alter_table.html>`_
-    * A string (or None) dependent on the operation `(listed as 4th) <https://sqlite.org/c3ref/c_alter_table.html>`_
-    * A string name of the database (or None)
-    * Name of the innermost trigger or view doing the access (or None)
+  return 0;
+}
 
-  The authorizer callback should return one of :const:`SQLITE_OK`,
-  :const:`SQLITE_DENY` or :const:`SQLITE_IGNORE`.
-  (:const:`SQLITE_DENY` is returned if there is an error in your
-  Python code).
+/** .. method:: setauthorizer(callable: Optional[Authorizer]) -> None
 
-  Passing None unregisters the existing authorizer.
-
-  .. seealso::
-
-    * :ref:`Example <authorizer-example>`
-    * :ref:`statementcache`
-
-  -* sqlite3_set_authorizer
+  Sets the :attr:`authorizer`
 */
 
 static PyObject *
 Connection_setauthorizer(Connection *self, PyObject *args, PyObject *kwds)
 {
-  int res;
   PyObject *callable;
 
   CHECK_USE(NULL);
@@ -1538,35 +1536,8 @@ Connection_setauthorizer(Connection *self, PyObject *args, PyObject *kwds)
       return NULL;
   }
 
-  if (!callable)
-  {
-    APSW_FAULT_INJECT(SetAuthorizerNullFail,
-                      PYSQLITE_CON_CALL(res = sqlite3_set_authorizer(self->db, NULL, NULL)),
-                      res = SQLITE_IOERR);
-    if (res != SQLITE_OK)
-    {
-      SET_EXC(res, self->db);
-      return NULL;
-    }
-    goto finally;
-  }
-
-  APSW_FAULT_INJECT(SetAuthorizerFail,
-                    PYSQLITE_CON_CALL(res = sqlite3_set_authorizer(self->db, authorizercb, self)),
-                    res = SQLITE_IOERR);
-
-  if (res != SQLITE_OK)
-  {
-    SET_EXC(res, self->db);
+  if(Connection_internal_set_authorizer(self, callable))
     return NULL;
-  }
-
-  Py_INCREF(callable);
-
-finally:
-  Py_XDECREF(self->authorizer);
-  self->authorizer = callable;
-
   Py_RETURN_NONE;
 }
 
@@ -3871,6 +3842,65 @@ Connection_set_rowtrace_attr(Connection *self, PyObject *value)
   return 0;
 }
 
+/** .. attribute:: authorizer
+  :type: Optional[Authorizer]
+
+  While `preparing <https://sqlite.org/c3ref/prepare.html>`_
+  statements, SQLite will call any defined authorizer to see if a
+  particular action is ok to be part of the statement.
+
+  Typical usage would be if you are running user supplied SQL and want
+  to prevent harmful operations.  You should also
+  set the :class:`statementcachesize <Connection>` to zero.
+
+  The authorizer callback has 5 parameters:
+
+    * An `operation code <https://sqlite.org/c3ref/c_alter_table.html>`_
+    * A string (or None) dependent on the operation `(listed as 3rd) <https://sqlite.org/c3ref/c_alter_table.html>`_
+    * A string (or None) dependent on the operation `(listed as 4th) <https://sqlite.org/c3ref/c_alter_table.html>`_
+    * A string name of the database (or None)
+    * Name of the innermost trigger or view doing the access (or None)
+
+  The authorizer callback should return one of :const:`SQLITE_OK`,
+  :const:`SQLITE_DENY` or :const:`SQLITE_IGNORE`.
+  (:const:`SQLITE_DENY` is returned if there is an error in your
+  Python code).
+
+  .. seealso::
+
+    * :ref:`Example <authorizer-example>`
+    * :ref:`statementcache`
+
+  -* sqlite3_set_authorizer
+*/
+static PyObject *
+Connection_get_authorizer_attr(Connection *self)
+{
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  if (self->authorizer)
+  {
+    Py_INCREF(self->authorizer);
+    return self->authorizer;
+  }
+  Py_RETURN_NONE;
+}
+
+static int
+Connection_set_authorizer_attr(Connection *self, PyObject *value)
+{
+  CHECK_USE(-1);
+  CHECK_CLOSED(self, -1);
+
+  if (value != Py_None && !PyCallable_Check(value))
+  {
+    PyErr_Format(PyExc_TypeError, "authorizer expected a Callable or None");
+    return -1;
+  }
+  return Connection_internal_set_authorizer(self, (value != Py_None) ? value : NULL);
+}
+
 static PyGetSetDef Connection_getseters[] = {
     /* name getter setter doc closure */
     {"filename",
@@ -3882,6 +3912,7 @@ static PyGetSetDef Connection_getseters[] = {
      NULL, Connection_in_transaction_DOC},
     {"exectrace", (getter)Connection_get_exectrace_attr, (setter)Connection_set_exectrace_attr, Connection_exectrace_DOC},
     {"rowtrace", (getter)Connection_get_rowtrace_attr, (setter)Connection_set_rowtrace_attr, Connection_rowtrace_DOC},
+    {"authorizer", (getter)Connection_get_authorizer_attr, (setter)Connection_set_authorizer_attr, Connection_authorizer_DOC},
     /* Sentinel */
     {
         NULL, NULL, NULL, NULL, NULL}};
