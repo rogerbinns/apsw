@@ -57,6 +57,7 @@ doc/example.rst: example-code.py tools/example2rst.py src/apswversion.h
 	env PYTHONPATH=. $(PYTHON) tools/example2rst.py
 
 doc/typing.rstgen: src/types.py
+	-rm -f doc/typing.rstgen
 	$(PYTHON) tools/types2rst.py
 
 doc/.static:
