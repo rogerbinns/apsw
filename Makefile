@@ -66,8 +66,8 @@ doc/.static:
 $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
 	env PYTHONPATH=. $(PYTHON) tools/code2rst.py $(SQLITEVERSION) doc/docdb.json $< $@
 
-apsw/__init__.pyi src/apsw.docstrings: $(GENDOCS) tools/rst2docstring.py src/types.py
-	env PYTHONPATH=. $(PYTHON) tools/rst2docstring.py src/apsw.docstrings $(GENDOCS)
+apsw/__init__.pyi src/apsw.docstrings: $(GENDOCS) tools/gendocstrings.py src/types.py
+	env PYTHONPATH=. $(PYTHON) tools/gendocstrings.py doc/docdb.json src/apsw.docstrings
 
 build_ext:
 	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext -DSQLITE_ENABLE_COLUMN_METADATA --inplace --force --enable-all-extensions

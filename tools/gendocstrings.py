@@ -22,7 +22,11 @@ import os
 import io
 import textwrap
 import glob
-import inspect
+import tempfile
+import apsw
+import urllib.request
+import collections
+import copy
 
 from typing import Union, List
 
@@ -36,33 +40,41 @@ docstrings_skip = {
 }
 
 
-def process_file(name: str) -> list:
-    "Read one rst file and extract docstrings"
-    items = []
-    current: List[str] = []
+def sqlite_links():
+    global funclist, consts
 
-    def do_current() -> None:
-        nonlocal current
-        if current:
-            while not current[-1].strip():
-                current.pop()
-            item = classify(current)
-            if item:
-                items.append(item)
-        current = []
+    basesqurl = "https://sqlite.org/"
+    with tempfile.NamedTemporaryFile() as f:
+        f.write(urllib.request.urlopen(basesqurl + "toc.db").read())
+        f.flush()
 
-    for line in open(name):
-        if line.startswith(".. "):
-            do_current()
-            kind = line.split()[1]
-            if kind.endswith("::"):
-                current.append(line)
-                continue
-        if current:
-            current.append(line)
+        db = apsw.Connection(f.name)
 
-    do_current()
-    return items
+        funclist = {}
+        consts = collections.defaultdict(lambda: copy.deepcopy({"vars": []}))
+        const2page = {}
+
+        for name, type, title, uri in db.execute("select name, type, title, uri from toc"):
+            if type == "function":
+                funclist[name] = basesqurl + uri
+            elif type == "constant":
+                const2page[name] = basesqurl + uri
+                consts[title]["vars"].append(name)
+                consts[title]["page"] = basesqurl + uri.split("#")[0]
+
+
+def process_docdb(data: dict) -> list:
+    res = []
+    for klass, members in data.items():
+        for name, docstring in members.items():
+            assert docstring[0].startswith(".. ")
+            assert name in docstring[0]
+            docstring[0] = docstring[0].replace(name, f"{ klass }.{ name }", 1)
+
+            c = classify([f"{ line }\n" for line in docstring])
+            if c:
+                res.append(c)
+    return res
 
 
 def classify(doc: list[str]) -> Union[dict, None]:
@@ -72,10 +84,8 @@ def classify(doc: list[str]) -> Union[dict, None]:
     kind = line.split()[1]
     assert kind.endswith("::")
     kind = kind.rstrip(":")
-    if kind in {"index", "currentmodule", "code-block", "note", "seealso", "module", "include", "list-table"}:
-        return None
 
-    assert kind in ("class", "method", "attribute"), f"unknown kind { kind } in { line }"
+    assert kind in ("method", "attribute"), f"unknown kind { kind } in { line }"
     rest = line.split("::", 1)[1].strip()
     if "(" in rest:
         name, signature = rest.split("(", 1)
@@ -86,31 +96,35 @@ def classify(doc: list[str]) -> Union[dict, None]:
     name = name.strip()
     signature = signature.strip()
 
-    if kind == "class":
-        name += ".__init__"
-        if not signature:
-            # this happens for the classes that can't be directly instantiated
-            signature = "() -> None"
-    elif "." not in name:
-        name = "apsw." + name
-
+    # strip leading and trailing blank lines
     doc = doc[1:]
     while doc and not doc[0].strip():
         doc = doc[1:]
+    while not doc[-1].strip():
+        doc = doc[:-1]
 
     if not doc:
         return None
-    # These aren't real classes
+    # These are protocols
     if name.split(".")[0] in {"VTCursor", "VTModule", "VTTable"}:
         return None
 
-    # sometimes the next doc section starts with a title and then a line of ====
-    if all(c == "=" for c in doc[-1].strip()) and len(doc[-1].strip()) == len(doc[-2].strip()):
-        doc = doc[:-2]
-        while not doc[-1].strip():
-            doc = doc[:-1]
+    doc = [f"{ line }\n" for line in textwrap.dedent("".join(doc) + "\n").strip().split("\n")]
 
-    doc = [f"{ line }\n" for line in textwrap.dedent("".join(doc)).strip().split("\n")]
+    n = 0
+    while n < len(doc):
+        if doc[n].strip().startswith("-* "):
+            calls = doc[n].split()[1:]
+            indent = " " * doc[n].find("-*")
+
+            if len(calls) > 1:
+                lines = [f"{ indent }Calls:\n"]
+                for call in calls:
+                    lines.append(f"{ indent }  * `{ call } <{ funclist[call] }>`__\n")
+            else:
+                lines = [f"{ indent }Calls: `{ calls[0] } <{ funclist[calls[0]] }>`__\n"]
+            doc[n:n + len(lines)] = lines
+        n += 1
 
     symbol = make_symbol(name)
     return {
@@ -386,7 +400,7 @@ def do_argparse(item):
     # what is passed at C level
     parse_args = []
 
-    seen_star=False
+    seen_star = False
     for param in item["signature"]:
         if param["name"] == "return":
             continue
@@ -403,7 +417,9 @@ def do_argparse(item):
         args = ["&" + pname]
         default_check = None
         if seen_star and not param["default"]:
-            sys.exit(f'param { param } comes after * and must have default value in { item["name"] } { item["signature_original"] }')
+            sys.exit(
+                f'param { param } comes after * and must have default value in { item["name"] } { item["signature_original"] }'
+            )
         if param["type"] == "str":
             type = "const char *"
             kind = "s"
@@ -571,7 +587,7 @@ def is_sequence(s):
 
 def get_class_signature(klass: str, items: List[dict]) -> str:
     for item in items:
-        if item["kind"] == "class" and item["name"] == f"{ klass }.__init__":
+        if item["name"] == f"{ klass }.__init__":
             sig = item["signature_original"]
             if not sig:
                 return "(self)"
@@ -579,7 +595,7 @@ def get_class_signature(klass: str, items: List[dict]) -> str:
             if sig != "()":
                 return "(self, " + sig[1:]
             return "(self)"
-    raise KeyError(f"class { klass } not found")
+    return "(self)"
 
 
 def fmt_docstring(doc: list[str], indent: str) -> str:
@@ -600,8 +616,11 @@ def attr_docstring(doc: list[str]) -> list[str]:
     ds = doc[:]
     if ds[0].startswith(":type:"):
         ds.pop(0)
-    while not ds[0].strip():
-        ds.pop(0)
+    try:
+        while not ds[0].strip():
+            ds.pop(0)
+    except:
+        breakpoint()
     return ds
 
 
@@ -700,9 +719,12 @@ def attribute_type(item: dict) -> str:
 
 
 if __name__ == '__main__':
-    items = []
-    for fname in sys.argv[2:]:
-        items.extend(process_file(fname))
+    import json
+    docdb = json.load(open(sys.argv[1]))
+
+    sqlite_links()
+
+    items = process_docdb(docdb)
 
     allcode = "\n".join(open(fn).read() for fn in glob.glob("src/*.c"))
 
@@ -739,7 +761,7 @@ if __name__ == '__main__':
                     missing.append(item["name"])
 
     outval = out.getvalue()
-    replace_if_different(sys.argv[1], outval)
+    replace_if_different(sys.argv[2], outval)
 
     symbols = sorted([item["symbol"] for item in items if not item["skip_docstring"]])
 
