@@ -63,3 +63,5 @@ ExecTracer = Callable[[Cursor, str, Optional[Bindings]], bool]
 used.  Return False/None to abort execution, or True to continue"""
 
 Authorizer = Callable[[int, Optional[str], Optional[str], Optional[str], Optional[str]], int]
+"""Authorizers are called with an operation code and 4 strings (which could be None) depending
+on the operatation.  Return SQLITE_OK, SQLITE_DENY, or SQLITE_IGNORE"""
