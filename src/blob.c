@@ -26,7 +26,7 @@ store the filename in the database.  Doing so loses the `ACID
 
 /* ZEROBLOB CODE */
 
-/** .. class:: zeroblob(size: int)
+/** .. class:: zeroblob
 
   If you want to insert a blob into a row, you previously needed to
   supply the entire blob in one go.  To read just one byte also
@@ -67,6 +67,10 @@ ZeroBlobBind_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNU
   return (PyObject *)self;
 }
 
+/** .. method:: __init__(size: int)
+
+  :param size: Number of zeroed bytes to create
+*/
 static int
 ZeroBlobBind_init(ZeroBlobBind *self, PyObject *args, PyObject *kwds)
 {

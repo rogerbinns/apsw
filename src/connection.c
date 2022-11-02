@@ -260,7 +260,7 @@ Connection_close_internal(Connection *self, int force)
 
   If *force* is *True* then any exceptions are ignored.
 
-   -* sqlite3_close
+  -* sqlite3_close
 */
 
 /* Closes cursors and blobs belonging to this connection */
