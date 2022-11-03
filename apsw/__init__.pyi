@@ -5,12 +5,8 @@ from typing import Union, Tuple, List, Optional, Callable, Any, Dict, \
 from collections.abc import Mapping
 from array import array
 from types import TracebackType
-try:
-        from types import NoneType
-except ImportError:
-        NoneType = type(None)
 
-SQLiteValue = Union[NoneType, int, float, bytes, str]
+SQLiteValue = Union[None, int, float, bytes, str]
 """SQLite supports 5 types - None (NULL), 64 bit signed int, 64 bit
 float, bytes, and str (unicode text)"""
 
@@ -68,6 +64,8 @@ ExecTracer = Callable[[Cursor, str, Optional[Bindings]], bool]
 used.  Return False/None to abort execution, or True to continue"""
 
 Authorizer = Callable[[int, Optional[str], Optional[str], Optional[str], Optional[str]], int]
+"""Authorizers are called with an operation code and 4 strings (which could be None) depending
+on the operatation.  Return SQLITE_OK, SQLITE_DENY, or SQLITE_IGNORE"""
 SQLITE_VERSION_NUMBER: int
 """The integer version number of SQLite that APSW was compiled
 against.  For example SQLite 3.6.4 will have the value *3006004*.
@@ -248,6 +246,7 @@ def memoryused() -> int:
     .. seealso::
       :meth:`status`
 
+
     Calls: `sqlite3_memory_used <https://sqlite.org/c3ref/memory_highwater.html>`__"""
     ...
 
@@ -326,6 +325,8 @@ def vfsnames() -> List[str]:
 
 
 class Backup:
+    """You create a backup instance by calling :meth:`Connection.backup`."""
+
     def close(self, force: bool = False) -> None:
         """Does the same thing as :meth:`~backup.finish`.  This extra api is
         provided to give the same api as other APSW objects such as
@@ -399,6 +400,20 @@ class Backup:
 
 
 class Blob:
+    """This object is created by :meth:`Connection.blobopen` and provides
+    access to a blob in the database.  It behaves like a Python file.
+    At the C level it wraps a `sqlite3_blob
+    <https://sqlite.org/c3ref/blob.html>`_.
+
+    .. note::
+
+      You cannot change the size of a blob using this object. You should
+      create it with the correct size in advance either by using
+      :class:`zeroblob` or the `zeroblob()
+      <https://sqlite.org/lang_corefunc.html>`_ function.
+
+    See the :ref:`example <example-blobio>`."""
+
     def close(self, force: bool = False) -> None:
         """Closes the blob.  Note that even if an error occurs the blob is
         still closed.
@@ -514,37 +529,8 @@ class Blob:
 
 
 class Connection:
-    def __init__(self, filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: Optional[str] = None, statementcachesize: int = 100):
-        """:type: Optional[Authorizer]
-
-        While `preparing <https://sqlite.org/c3ref/prepare.html>`_
-        statements, SQLite will call any defined authorizer to see if a
-        particular action is ok to be part of the statement.
-
-        Typical usage would be if you are running user supplied SQL and want
-        to prevent harmful operations.  You should also
-        set the :class:`statementcachesize <Connection>` to zero.
-
-        The authorizer callback has 5 parameters:
-
-          * An `operation code <https://sqlite.org/c3ref/c_alter_table.html>`_
-          * A string (or None) dependent on the operation `(listed as 3rd) <https://sqlite.org/c3ref/c_alter_table.html>`_
-          * A string (or None) dependent on the operation `(listed as 4th) <https://sqlite.org/c3ref/c_alter_table.html>`_
-          * A string name of the database (or None)
-          * Name of the innermost trigger or view doing the access (or None)
-
-        The authorizer callback should return one of :const:`SQLITE_OK`,
-        :const:`SQLITE_DENY` or :const:`SQLITE_IGNORE`.
-        (:const:`SQLITE_DENY` is returned if there is an error in your
-        Python code).
-
-        .. seealso::
-
-          * :ref:`Example <authorizer-example>`
-          * :ref:`statementcache`
-
-        Calls: `sqlite3_set_authorizer <https://sqlite.org/c3ref/set_authorizer.html>`__"""
-        ...
+    """This object wraps a `sqlite3 pointer
+    <https://sqlite.org/c3ref/sqlite3.html>`_."""
 
     authorizer: Optional[Authorizer]
     """While `preparing <https://sqlite.org/c3ref/prepare.html>`_
@@ -633,7 +619,63 @@ class Connection:
         ...
 
     def cache_stats(self, include_entries: bool = False) -> Dict[str, int]:
-        """Returns information about the statement cache as dict."""
+        """Returns information about the statement cache as dict.
+
+        .. note::
+
+          Calling execute with "select a; select b; insert into c ..." will
+          result in 3 cache entries corresponding to each of the 3 queries
+          present.
+
+        The returned dictionary has the following information.
+
+        .. list-table::
+          :header-rows: 1
+          :widths: auto
+
+          * - Key
+            - Explanation
+          * - size
+            - Maximum number of entries in the cache
+          * - evictions
+            - How many entries were removed (expired) to make space for a newer
+              entry
+          * - no_cache
+            - Queries that had can_cache parameter set to False
+          * - hits
+            - A match was found in the cache
+          * - misses
+            - No match was found in the cache, or the cache couldn't be used
+          * - no_vdbe
+            - The statement was empty (eg a comment) or SQLite took action
+              during parsing (eg some pragmas).  These are not cached and also
+              included in the misses count
+          * - too_big
+            - UTF8 query size was larger than considered for caching.  These are also included
+              in the misses count.
+          * - max_cacheable_bytes
+            - Maximum size of query (in bytes of utf8) that will be considered for caching
+          * - entries
+            - (Only present if `include_entries` is True) A list of the cache entries
+
+        If `entries` is present, then each list entry is a dict with the following information.
+
+        .. list-table::
+          :header-rows: 1
+          :widths: auto
+
+          * - Key
+            - Explanation
+          * - query
+            - Text of the query itself (first statement only)
+          * - prepare_flags
+            - Flags passed to `sqlite3_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__
+              for this query
+          * - uses
+            - How many times this entry has been (re)used
+          * - has_more
+            - Boolean indicating if there was more query text than
+              the first statement"""
         ...
 
     def changes(self) -> int:
@@ -867,11 +909,11 @@ class Connection:
 
         :param enable: If True then extension loading is enabled, else it is disabled.
 
+        Calls: `sqlite3_enable_load_extension <https://sqlite.org/c3ref/enable_load_extension.html>`__
+
         .. seealso::
 
-          * :meth:`~Connection.loadextension`
-
-        Calls: `sqlite3_enable_load_extension <https://sqlite.org/c3ref/enable_load_extension.html>`__"""
+          * :meth:`~Connection.loadextension`"""
         ...
 
     def __enter__(self) -> Connection:
@@ -1011,6 +1053,27 @@ class Connection:
 
     Calls: `sqlite3_get_autocommit <https://sqlite.org/c3ref/get_autocommit.html>`__"""
 
+    def __init__(self, filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: Optional[str] = None, statementcachesize: int = 100):
+        """Opens the named database.  You can use ``:memory:`` to get a private temporary
+        in-memory database that is not shared with any other connections.
+
+        :param flags: One or more of the `open flags <https://sqlite.org/c3ref/c_open_autoproxy.html>`_ orred together
+        :param vfs: The name of the `vfs <https://sqlite.org/c3ref/vfs.html>`_ to use.  If :const:`None` then the default
+           vfs will be used.
+
+        :param statementcachesize: Use zero to disable the statement cache,
+          or a number larger than the total distinct SQL statements you
+          execute frequently.
+
+        Calls: `sqlite3_open_v2 <https://sqlite.org/c3ref/open.html>`__
+
+        .. seealso::
+
+          * :attr:`apsw.connection_hooks`
+          * :ref:`statementcache`
+          * :ref:`vfs`"""
+        ...
+
     def interrupt(self) -> None:
         """Causes any pending operations on the database to abort at the
         earliest opportunity. You can call this from any thread.  For
@@ -1031,16 +1094,17 @@ class Connection:
         """If called with one parameter then the current limit for that *id* is
         returned.  If called with two then the limit is set to *newval*.
 
+
         :param id: One of the `runtime limit ids <https://sqlite.org/c3ref/c_limit_attached.html>`_
         :param newval: The new limit.  This is a 32 bit signed integer even on 64 bit platforms.
 
         :returns: The limit in place on entry to the call.
 
+        Calls: `sqlite3_limit <https://sqlite.org/c3ref/limit.html>`__
+
         .. seealso::
 
-          * :ref:`Example <example-limit>`
-
-        Calls: `sqlite3_limit <https://sqlite.org/c3ref/limit.html>`__"""
+          * :ref:`Example <example-limit>`"""
         ...
 
     def loadextension(self, filename: str, entrypoint: Optional[str] = None) -> None:
@@ -1055,11 +1119,11 @@ class Connection:
         :raises ExtensionLoadingError: If the extension could not be
           loaded.  The exception string includes more details.
 
+        Calls: `sqlite3_load_extension <https://sqlite.org/c3ref/load_extension.html>`__
+
         .. seealso::
 
-          * :meth:`~Connection.enableloadextension`
-
-        Calls: `sqlite3_load_extension <https://sqlite.org/c3ref/load_extension.html>`__"""
+          * :meth:`~Connection.enableloadextension`"""
         ...
 
     open_flags: int
@@ -1118,7 +1182,7 @@ class Connection:
 
            * :meth:`Connection.deserialize`
 
-        Calls: `sqlite3_serialize <https://sqlite.org/c3ref/serialize.html>`__"""
+         Calls: `sqlite3_serialize <https://sqlite.org/c3ref/serialize.html>`__"""
         ...
 
     def set_last_insert_rowid(self, rowid: int) -> None:
@@ -1313,8 +1377,8 @@ class Connection:
     def wal_autocheckpoint(self, n: int) -> None:
         """Sets how often the :ref:`wal` checkpointing is run.
 
-        :param n: A number representing the checkpointing interval or
-          zero/negative to disable auto checkpointing.
+         :param n: A number representing the checkpointing interval or
+           zero/negative to disable auto checkpointing.
 
         Calls: `sqlite3_wal_autocheckpoint <https://sqlite.org/c3ref/wal_autocheckpoint.html>`__"""
         ...
@@ -1322,20 +1386,22 @@ class Connection:
     def wal_checkpoint(self, dbname: Optional[str] = None, mode: int = SQLITE_CHECKPOINT_PASSIVE) -> Tuple[int, int]:
         """Does a WAL checkpoint.  Has no effect if the database(s) are not in WAL mode.
 
-        :param dbname:  The name of the database or all databases if None
+          :param dbname:  The name of the database or all databases if None
 
-        :param mode: One of the `checkpoint modes <https://sqlite.org/c3ref/wal_checkpoint_v2.html>`__.
+          :param mode: One of the `checkpoint modes <https://sqlite.org/c3ref/wal_checkpoint_v2.html>`__.
 
-        :return: A tuple of the size of the WAL log in frames and the
-           number of frames checkpointed as described in the
-           `documentation
-           <https://sqlite.org/c3ref/wal_checkpoint_v2.html>`__.
+          :return: A tuple of the size of the WAL log in frames and the
+             number of frames checkpointed as described in the
+             `documentation
+             <https://sqlite.org/c3ref/wal_checkpoint_v2.html>`__.
 
         Calls: `sqlite3_wal_checkpoint_v2 <https://sqlite.org/c3ref/wal_checkpoint_v2.html>`__"""
         ...
 
 
 class Cursor:
+    """You obtain cursors by calling :meth:`Connection.cursor`."""
+
     def close(self, force: bool = False) -> None:
         """It is very unlikely you will need to call this method.  It exists
         because older versions of SQLite required all Connection/Cursor
@@ -1442,11 +1508,6 @@ class Cursor:
         :raises TypeError: The bindings supplied were neither a dict nor a sequence
         :raises BindingsError: You supplied too many or too few bindings for the statements
         :raises IncompleteExecutionError: There are remaining unexecuted queries from your last execute
-
-        .. seealso::
-
-           * :ref:`executionmodel`
-           * :ref:`Example <example-cursor>`
 
         Calls:
           * `sqlite3_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__
@@ -1625,6 +1686,19 @@ class Cursor:
 
 
 class URIFilename:
+    """SQLite uses a convoluted method of storing `uri parameters
+    <https://sqlite.org/uri.html>`__ after the filename binding the
+    C filename representation and parameters together.  This class
+    encapsulates that binding.  The :ref:`example <example-vfs>` shows
+    usage of this class.
+
+    Your :meth:`VFS.xOpen` method will generally be passed one of
+    these instead of a string as the filename if the URI flag was used
+    or the main database flag is set.
+
+    You can safely pass it on to the :class:`VFSFile` constructor
+    which knows how to get the name back out."""
+
     def filename(self) -> str:
         """Returns the filename."""
         ...
@@ -1651,6 +1725,15 @@ class URIFilename:
 
 
 class VFSFile:
+    """Wraps access to a file.  You only need to derive from this class
+    if you want the file object returned from :meth:`VFS.xOpen` to
+    inherit from an existing VFS implementation.
+
+    .. note::
+
+       All file sizes and offsets are 64 bit quantities even on 32 bit
+       operating systems."""
+
     def excepthook(self, etype: type[BaseException], evalue: BaseException, etraceback: Optional[TracebackType]) ->None:
         """Called when there has been an exception in a :class:`VFSFile`
         routine.  The default implementation calls ``sys.excepthook`` and
@@ -1661,6 +1744,25 @@ class VFSFile:
         :param evalue: The exception  value
         :param etraceback: The exception traceback.  Note this
           includes all frames all the way up to the thread being started."""
+        ...
+
+    def __init__(self, vfs: str, filename: Union[str,URIFilename], flags: List[int]):
+        """:param vfs: The vfs you want to inherit behaviour from.  You can
+           use an empty string ``""`` to inherit from the default vfs.
+        :param name: The name of the file being opened.  May be an instance of :class:`URIFilename`.
+        :param flags: A two item list ``[inflags, outflags]`` as detailed in :meth:`VFS.xOpen`.
+
+        :raises ValueError: If the named VFS is not registered.
+
+        .. note::
+
+          If the VFS that you inherit from supports :ref:`write ahead
+          logging <wal>` then your :class:`VFSFile` will also support the
+          xShm methods necessary to implement wal.
+
+        .. seealso::
+
+          :meth:`VFS.xOpen`"""
         ...
 
     def xCheckReservedLock(self) -> bool:
@@ -1773,11 +1875,41 @@ class VFSFile:
 
 
 class VFS:
+    """Provides operating system access.  You can get an overview in the
+    `SQLite documentation <https://sqlite.org/c3ref/vfs.html>`_.  To
+    create a VFS your Python class must inherit from :class:`VFS`."""
+
     def excepthook(self, etype: type[BaseException], evalue: BaseException, etraceback: Optional[TracebackType]) -> Any:
         """Called when there has been an exception in a :class:`VFS` routine.
         The default implementation passes args to ``sys.excepthook`` and if that
         fails then ``PyErr_Display``.  The three arguments correspond to
         what ``sys.exc_info()`` would return."""
+        ...
+
+    def __init__(self, name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024):
+        """:param name: The name to register this vfs under.  If the name
+            already exists then this vfs will replace the prior one of the
+            same name.  Use :meth:`apsw.vfsnames` to get a list of
+            registered vfs names.
+
+        :param base: If you would like to inherit behaviour from an already registered vfs then give
+            their name.  To inherit from the default vfs, use a zero
+            length string ``""`` as the name.
+
+        :param makedefault: If true then this vfs will be registered as the default, and will be
+            used by any opens that don't specify a vfs.
+
+        :param maxpathname: The maximum length of database name in bytes when
+            represented in UTF-8.  If a pathname is passed in longer than
+            this value then SQLite will not `be able to open it
+            <https://sqlite.org/src/tktview/c060923a5422590b3734eb92eae0c94934895b68>`__.
+
+        :raises ValueError: If *base* is not :const:`None` and the named vfs is not
+          currently registered.
+
+        Calls:
+          * `sqlite3_vfs_register <https://sqlite.org/c3ref/vfs_find.html>`__
+          * `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__"""
         ...
 
     def unregister(self) -> None:
@@ -1959,8 +2091,31 @@ class VFS:
 
 
 class zeroblob:
+    """If you want to insert a blob into a row, you previously needed to
+    supply the entire blob in one go.  To read just one byte also
+    required retrieving the blob in its entirety. For example to insert
+    a 100MB file you would have done::
+
+       largedata=open("largefile", "rb").read()
+       cur.execute("insert into foo values(?)", (largedata,))
+
+    SQLite 3.5 allowed for incremental Blob I/O so you can read and
+    write blobs in small amounts.  You cannot change the size of a blob
+    so you need to reserve space which you do through zeroblob which
+    creates a blob of the specified size but full of zero bytes.  For
+    example you would reserve space for your 100MB one of these two
+    ways::
+
+      cur.execute("insert into foo values(zeroblob(100000000))")
+      cur.execute("insert into foo values(?),
+                   (apsw.zeroblob(100000000),))
+
+    This class is used for the second way.  Once a blob exists in the
+    database, you then use the :class:`blob` class to read and write its
+    contents."""
+
     def __init__(self, size: int):
-        """Size of zero blob in bytes."""
+        """:param size: Number of zeroed bytes to create"""
         ...
 
     def length(self) -> int:
