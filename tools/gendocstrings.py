@@ -68,8 +68,11 @@ def process_docdb(data: dict) -> list:
     for klass, members in data.items():
         for name, docstring in members.items():
             assert docstring[0].startswith(".. ")
-            assert name in docstring[0]
-            docstring[0] = docstring[0].replace(name, f"{ klass }.{ name }", 1)
+            if name.endswith(".<class>"):
+                pass
+            else:
+                assert name in docstring[0]
+                docstring[0] = docstring[0].replace(name, f"{ klass }.{ name }", 1)
 
             c = classify([f"{ line }\n" for line in docstring])
             if c:
@@ -85,7 +88,7 @@ def classify(doc: list[str]) -> Union[dict, None]:
     assert kind.endswith("::")
     kind = kind.rstrip(":")
 
-    assert kind in ("method", "attribute"), f"unknown kind { kind } in { line }"
+    assert kind in ("method", "attribute", "class"), f"unknown kind { kind } in { line }"
     rest = line.split("::", 1)[1].strip()
     if "(" in rest:
         name, signature = rest.split("(", 1)
@@ -126,7 +129,7 @@ def classify(doc: list[str]) -> Union[dict, None]:
             doc[n:n + len(lines)] = lines
         n += 1
 
-    symbol = make_symbol(name)
+    symbol = make_symbol(f"{ name }.class" if kind == "class" else name)
     return {
         "kind": kind,
         "name": name,
@@ -585,18 +588,11 @@ def is_sequence(s):
     return isinstance(s, (list, tuple))
 
 
-def get_class_signature(klass: str, items: List[dict]) -> str:
+def get_class_doc(klass: str, items: List[dict]) -> str:
     for item in items:
-        if item["name"] == f"{ klass }.__init__":
-            sig = item["signature_original"]
-            if not sig:
-                return "(self)"
-            assert sig[0] == "("
-            if sig != "()":
-                return "(self, " + sig[1:]
-            return "(self)"
-    return "(self)"
-
+        if item["name"] == klass:
+            return item["doc"]
+    raise ValueError(f"{ klass } doc not found")
 
 def fmt_docstring(doc: list[str], indent: str) -> str:
     res = indent + '"""'
@@ -660,12 +656,10 @@ def generate_typestubs(items: list[dict]):
         else:
             if klass != lastclass:
                 lastclass = klass
-                klass_signature = get_class_signature(klass, items)
+                doc = get_class_doc(klass, items)
                 print(f"\nclass { klass }:", file=out)
-                if klass in {"Connection", "zeroblob"}:
-                    print(f"    def __init__{ klass_signature }:", file=out)
-                    print(fmt_docstring(item["doc"], indent="        "), file=out)
-                    print("        ...\n", file=out)
+                print(fmt_docstring(doc, indent="    "), file=out)
+                print("", file=out)
 
             if item["kind"] == "method":
                 for find, replace in (

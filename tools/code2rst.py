@@ -264,7 +264,7 @@ for line in open(infilename, "rt"):
             if t == "class::":
                 if methods:
                     do_methods()
-                    methods = {}
+                    methods = {f"{ line.split()[-1] }.<class>": curop}
                 curclass = line.split()[2].split("(")[0]
         curop.append(line)
         continue
@@ -279,6 +279,7 @@ for line in open(infilename, "rt"):
                 name = line.split()[2].split("(")[0]
                 methods[name] = curop
             elif t == "class::":
+                methods = {f"{ line.split()[-1] }.<class>": curop}
                 op.append("")
                 op.append(curclass + " class")
                 op.append("=" * len(op[-1]))
