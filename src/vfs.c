@@ -1743,7 +1743,7 @@ static PyTypeObject APSWVFSType =
         0,                                                                      /*tp_setattro*/
         0,                                                                      /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG, /*tp_flags*/
-        VFS_init_DOC,                                                           /* tp_doc */
+        VFS_class_DOC,                                                          /* tp_doc */
         0,                                                                      /* tp_traverse */
         0,                                                                      /* tp_clear */
         0,                                                                      /* tp_richcompare */
@@ -2803,7 +2803,7 @@ static PyTypeObject APSWVFSFileType =
         0,                                                                      /*tp_setattro*/
         0,                                                                      /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG, /*tp_flags*/
-        VFSFile_init_DOC,                                                       /* tp_doc */
+        VFSFile_class_DOC,                                                      /* tp_doc */
         0,                                                                      /* tp_traverse */
         0,                                                                      /* tp_clear */
         0,                                                                      /* tp_richcompare */
@@ -2958,7 +2958,7 @@ static PyTypeObject APSWURIFilenameType =
         0,                                                                      /*tp_setattro*/
         0,                                                                      /*tp_as_buffer*/
         Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VERSION_TAG, /*tp_flags*/
-        URIFilename_init_DOC,                                                   /* tp_doc */
+        URIFilename_class_DOC,                                                  /* tp_doc */
         0,                                                                      /* tp_traverse */
         0,                                                                      /* tp_clear */
         0,                                                                      /* tp_richcompare */
