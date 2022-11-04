@@ -84,6 +84,24 @@ def get_mapping_info(name: str) -> dict:
     f = found_in[-1]
     return {"title": f[1], "url": f[2]["page"], "members": f[2]["vars"]}
 
+def get_exc_doc(name: str) -> list[str]:
+    capture = None
+    for line in open("doc/exceptions.rst", "rt"):
+        if capture is None and line.startswith(f".. exception:: { name }"):
+            capture = []
+            continue
+        if capture is not None:
+            # look for non-indented line
+            if line.strip() and line.lstrip() == line:
+                break
+            capture.append(line.rstrip())
+    if capture is None:
+        raise ValueError(f"exception { name } not found")
+    while not capture[0].strip():
+        capture.pop(0)
+    while not capture[-1].strip():
+        capture.pop()
+    return [f"{ line }\n" for line in textwrap.dedent("\n".join(capture)).split("\n")]
 
 def process_docdb(data: dict) -> list:
     res = []
@@ -731,11 +749,15 @@ Doc at { mi["url"] }
 
     # exceptions
     print("\n", file=out)
-    print("class Error(Exception): ...", file=out)
+    print("class Error(Exception):", file=out)
+    print(fmt_docstring(get_exc_doc("Error"), indent="    "), file=out)
+    print("", file=out)
     for n in dir(apsw):
         if n != "ExecTraceAbort" and (not n.endswith("Error") or n == "Error"):
             continue
-        print(f"class { n }(Error): ...", file=out)
+        print(f"class { n }(Error):", file=out)
+        print(fmt_docstring(get_exc_doc(n), indent="    "), file=out)
+        print("", file=out)
 
     replace_if_different("apsw/__init__.pyi", out.getvalue())
 

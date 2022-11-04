@@ -5,9 +5,9 @@ Exceptions
 .. currentmodule:: apsw
 
 
-:exc:`apsw.Error` is the base for APSW exceptions.
-
 .. exception:: Error
+
+  This is the base for APSW exceptions.
 
 .. attribute:: Error.result
 
