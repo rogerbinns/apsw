@@ -63,6 +63,28 @@ def sqlite_links():
                 consts[title]["page"] = basesqurl + uri.split("#")[0]
 
 
+def get_sqlite_constant_info(name: str) -> dict:
+    for title, details in consts.items():
+        if name in details["vars"]:
+            return {"title": title, "url": details["page"], "value": getattr(apsw, name)}
+    raise ValueError(f"constant { name } not found")
+
+
+def get_mapping_info(name: str) -> dict:
+    # work out which mapping in consts this corresponds to
+    symbols = set(k for k in getattr(apsw, name) if isinstance(k, str))
+    found_in = []
+    for title, details in consts.items():
+        i = symbols.intersection(details["vars"])
+        if i:
+            found_in.append((len(i), title, details))
+    found_in.sort()
+    if not found_in:
+        raise ValueError(f"Couldn't figure out { name }")
+    f = found_in[-1]
+    return {"title": f[1], "url": f[2]["page"], "members": f[2]["vars"]}
+
+
 def process_docdb(data: dict) -> list:
     res = []
     for klass, members in data.items():
@@ -594,6 +616,7 @@ def get_class_doc(klass: str, items: List[dict]) -> str:
             return item["doc"]
     raise ValueError(f"{ klass } doc not found")
 
+
 def fmt_docstring(doc: list[str], indent: str) -> str:
     res = indent + '"""'
     for i, line in enumerate(doc):
@@ -685,14 +708,26 @@ def generate_typestubs(items: list[dict]):
         if not n.startswith("SQLITE_") or n == "SQLITE_VERSION_NUMBER":
             continue
         assert isinstance(getattr(apsw, n), int)
-        print(f"{ n }: int", file=out)
+        ci = get_sqlite_constant_info(n)
+        print(f"""{ n }: int = { ci["value"] }""", file=out)
+        print(f'''"""For `{ ci["title"] } <{ ci["url"] }>'__"""''', file=out)
 
     # mappings
+    def wrapvals(vals):
+        return "\n".join(textwrap.wrap(" ".join(sorted(vals))))
+
     print("\n", file=out)
     for n in dir(apsw):
         if not n.startswith("mapping_"):
             continue
+        mi = get_mapping_info(n)
         print(f"{ n }: Dict[Union[str,int],Union[int,str]]", file=out)
+        print(f'''"""{ mi["title"] } mapping names to int and int to names.
+Doc at { mi["url"] }
+
+{ wrapvals(mi["members"]) }"""''',
+              file=out)
+        print("", file=out)
 
     # exceptions
     print("\n", file=out)
