@@ -3089,42 +3089,184 @@ SQLITE_SHM_UNLOCK"""
 
 
 
-class Error(Exception): ...
-class AbortError(Error): ...
-class AuthError(Error): ...
-class BindingsError(Error): ...
-class BusyError(Error): ...
-class CantOpenError(Error): ...
-class ConnectionClosedError(Error): ...
-class ConnectionNotClosedError(Error): ...
-class ConstraintError(Error): ...
-class CorruptError(Error): ...
-class CursorClosedError(Error): ...
-class EmptyError(Error): ...
-class ExecTraceAbort(Error): ...
-class ExecutionCompleteError(Error): ...
-class ExtensionLoadingError(Error): ...
-class ForkingViolationError(Error): ...
-class FormatError(Error): ...
-class FullError(Error): ...
-class IOError(Error): ...
-class IncompleteExecutionError(Error): ...
-class InternalError(Error): ...
-class InterruptError(Error): ...
-class LockedError(Error): ...
-class MismatchError(Error): ...
-class MisuseError(Error): ...
-class NoLFSError(Error): ...
-class NoMemError(Error): ...
-class NotADBError(Error): ...
-class NotFoundError(Error): ...
-class PermissionsError(Error): ...
-class ProtocolError(Error): ...
-class RangeError(Error): ...
-class ReadOnlyError(Error): ...
-class SQLError(Error): ...
-class SchemaChangeError(Error): ...
-class ThreadingViolationError(Error): ...
-class TooBigError(Error): ...
-class VFSFileClosedError(Error): ...
-class VFSNotImplementedError(Error): ...
+class Error(Exception):
+    """This is the base for APSW exceptions."""
+
+class AbortError(Error):
+    """:const:`SQLITE_ABORT`. Callback routine requested an abort."""
+
+class AuthError(Error):
+    """:const:`SQLITE_AUTH`.  :attr:`Authorization <Connection.authorizer>` denied."""
+
+class BindingsError(Error):
+    """There are several causes for this exception.  When using tuples, an incorrect number of bindings where supplied::
+
+       cursor.execute("select ?,?,?", (1,2))     # too few bindings
+       cursor.execute("select ?,?,?", (1,2,3,4)) # too many bindings
+
+    You are using named bindings, but not all bindings are named.  You should either use entirely the
+    named style or entirely numeric (unnamed) style::
+
+       cursor.execute("select * from foo where x=:name and y=?")
+
+    .. note::
+
+       It is not considered an error to have missing keys in a dictionary. For example this is perfectly valid::
+
+            cursor.execute("insert into foo values($a,:b,$c)", {'a': 1})
+
+       *b* and *c* are not in the dict.  For missing keys, None/NULL
+       will be used. This is so you don't have to add lots of spurious
+       values to the supplied dict. If your schema requires every column
+       have a value, then SQLite will generate an error due to some
+       values being None/NULL so that case will be caught."""
+
+class BusyError(Error):
+    """:const:`SQLITE_BUSY`.  The database file is locked.  Use
+    :meth:`Connection.setbusytimeout` to change how long SQLite waits
+    for the database to be unlocked or :meth:`Connection.setbusyhandler`
+    to use your own handler."""
+
+class CantOpenError(Error):
+    """:const:`SQLITE_CANTOPEN`.  Unable to open the database file."""
+
+class ConnectionClosedError(Error):
+    """You have called :meth:`Connection.close` and then continued to use
+    the :class:`Connection` or associated :class:`cursors <Cursor>`."""
+
+class ConnectionNotClosedError(Error):
+    """This exception is no longer generated.  It was required in earlier
+    releases due to constraints in threading usage with SQLite."""
+
+class ConstraintError(Error):
+    """:const:`SQLITE_CONSTRAINT`. Abort due to `constraint
+    <https://sqlite.org/lang_createtable.html>`_ violation.  This
+    would happen if the schema required a column to be within a specific
+    range.  If you have multiple constraints, you `can't tell
+    <https://sqlite.org/src/tktview/23b212820161c6599cbf414aa99bf8a5bfa5e7a3>`__
+    which one was the cause."""
+
+class CorruptError(Error):
+    """:const:`SQLITE_CORRUPT`.  The database disk image appears to be a
+    SQLite database but the values inside are inconsistent."""
+
+class CursorClosedError(Error):
+    """You have called :meth:`Cursor.close` and then tried to use the cursor."""
+
+class EmptyError(Error):
+    """:const:`SQLITE_EMPTY`. Database is completely empty."""
+
+class ExecTraceAbort(Error):
+    """The :ref:`execution tracer <executiontracer>` returned False so
+    execution was aborted."""
+
+class ExecutionCompleteError(Error):
+    """A statement is complete but you try to run it more anyway!"""
+
+class ExtensionLoadingError(Error):
+    """An error happened loading an `extension
+    <https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_."""
+
+class ForkingViolationError(Error):
+    """See :meth:`apsw.fork_checker`."""
+
+class FormatError(Error):
+    """:const:`SQLITE_FORMAT`. (No longer used) `Auxiliary database <https://sqlite.org/lang_attach.html>`_ format error."""
+
+class FullError(Error):
+    """:const:`SQLITE_FULL`.  The disk appears to be full."""
+
+class IOError(Error):
+    """:const:`SQLITE_IOERR`.  Some kind of disk I/O error occurred.  The
+    :ref:`extended error code <exceptions>` will give more detail."""
+
+class IncompleteExecutionError(Error):
+    """You have tried to start a new SQL execute call before executing all
+    the previous ones. See the :ref:`execution model <executionmodel>`
+    for more details."""
+
+class InternalError(Error):
+    """:const:`SQLITE_INTERNAL`. (No longer used) Internal logic error in SQLite."""
+
+class InterruptError(Error):
+    """:const:`SQLITE_INTERRUPT`.  Operation terminated by
+    `sqlite3_interrupt <https://sqlite.org/c3ref/interrupt.html>`_ -
+    use :meth:`Connection.interrupt`."""
+
+class LockedError(Error):
+    """:const:`SQLITE_LOCKED`.  A table in the database is locked."""
+
+class MismatchError(Error):
+    """:const:`SQLITE_MISMATCH`. Data type mismatch.  For example a rowid
+    or integer primary key must be an integer."""
+
+class MisuseError(Error):
+    """:const:`SQLITE_MISUSE`.  SQLite library used incorrectly - typically similar to ValueError in Python.  Examples include not
+    having enough flags when opening a connection (eg not including a READ or WRITE flag), or out of spec such as registering
+    a function with more than 127 parameters."""
+
+class NoLFSError(Error):
+    """:const:`SQLITE_NOLFS`.  SQLite has attempted to use a feature not
+    supported by the operating system such as `large file support
+    <http://en.wikipedia.org/wiki/Large_file_support>`_."""
+
+class NoMemError(Error):
+    """:const:`SQLITE_NOMEM`.  A memory allocation failed."""
+
+class NotADBError(Error):
+    """:const:`SQLITE_NOTADB`.  File opened that is not a database file.
+    SQLite has a header on database files to verify they are indeed
+    SQLite databases."""
+
+class NotFoundError(Error):
+    """:const:`SQLITE_NOTFOUND`. Returned when various internal items were
+    not found such as requests for non-existent system calls or file
+    controls."""
+
+class PermissionsError(Error):
+    """:const:`SQLITE_PERM`. Access permission denied by the operating system, or parts of the database are readonly such as a cursor."""
+
+class ProtocolError(Error):
+    """:const:`SQLITE_PROTOCOL`. (No longer used) Database lock protocol error."""
+
+class RangeError(Error):
+    """:const:`SQLITE_RANGE`.  (Cannot be generated using APSW).  2nd parameter to `sqlite3_bind <https://sqlite.org/c3ref/bind_blob.html>`_ out of range"""
+
+class ReadOnlyError(Error):
+    """:const:`SQLITE_READONLY`. Attempt to write to a readonly database."""
+
+class SQLError(Error):
+    """:const:`SQLITE_ERROR`.  This error is documented as a bad SQL query
+    or missing database, but is also returned for a lot of other
+    situations.  It is the default error code unless there is a more
+    specific one."""
+
+class SchemaChangeError(Error):
+    """:const:`SQLITE_SCHEMA`.  The database schema changed.  A
+    :meth:`prepared statement <Cursor.execute>` becomes invalid
+    if the database schema was changed.  Behind the scenes SQLite
+    reprepares the statement.  Another or the same :class:`Connection`
+    may change the schema again before the statement runs.  SQLite will
+    attempt up to 5 times before giving up and returning this error."""
+
+class ThreadingViolationError(Error):
+    """You have used an object concurrently in two threads. For example you
+    may try to use the same cursor in two different threads at the same
+    time, or tried to close the same connection in two threads at the
+    same time.
+
+    You can also get this exception by using a cursor as an argument to
+    itself (eg as the input data for :meth:`Cursor.executemany`).
+    Cursors can only be used for one thing at a time."""
+
+class TooBigError(Error):
+    """:const:`SQLITE_TOOBIG`.  String or BLOB exceeds size limit.  You can
+    change the limits using :meth:`Connection.limit`."""
+
+class VFSFileClosedError(Error):
+    """The VFS file is closed so the operation cannot be performed."""
+
+class VFSNotImplementedError(Error):
+    """A call cannot be made to an inherited :ref:`VFS` method as the VFS
+    does not implement the method."""
+
