@@ -2557,3 +2557,145 @@
 #define  Zeroblob_length_DOC "length($self)\n--\n\nzeroblob.length() -> int\n\n" \
 "Size of zero blob in bytes.\n" 
 
+#define  AbortError_exc_DOC ":const:`SQLITE_ABORT`. Callback routine requested an abort.\n" 
+
+#define  AuthError_exc_DOC ":const:`SQLITE_AUTH`.  :attr:`Authorization <Connection.authorizer>` denied.\n" 
+
+#define  BindingsError_exc_DOC "There are several causes for this exception.  When using tuples, an incorrect number of bindings where supplied::\n" \
+"\n" \
+"   cursor.execute(\"select ?,?,?\", (1,2))     # too few bindings\n" \
+"   cursor.execute(\"select ?,?,?\", (1,2,3,4)) # too many bindings\n" \
+"\n" \
+"You are using named bindings, but not all bindings are named.  You should either use entirely the\n" \
+"named style or entirely numeric (unnamed) style::\n" \
+"\n" \
+"   cursor.execute(\"select * from foo where x=:name and y=?\")\n" \
+"\n" \
+".. note::\n" \
+"\n" \
+"   It is not considered an error to have missing keys in a dictionary. For example this is perfectly valid::\n" \
+"\n" \
+"        cursor.execute(\"insert into foo values($a,:b,$c)\", {'a': 1})\n" \
+"\n" \
+"   *b* and *c* are not in the dict.  For missing keys, None/NULL\n" \
+"   will be used. This is so you don't have to add lots of spurious\n" \
+"   values to the supplied dict. If your schema requires every column\n" \
+"   have a value, then SQLite will generate an error due to some\n" \
+"   values being None/NULL so that case will be caught.\n" 
+
+#define  BusyError_exc_DOC ":const:`SQLITE_BUSY`.  The database file is locked.  Use\n" \
+":meth:`Connection.setbusytimeout` to change how long SQLite waits\n" \
+"for the database to be unlocked or :meth:`Connection.setbusyhandler`\n" \
+"to use your own handler.\n" 
+
+#define  CantOpenError_exc_DOC ":const:`SQLITE_CANTOPEN`.  Unable to open the database file.\n" 
+
+#define  ConnectionClosedError_exc_DOC "You have called :meth:`Connection.close` and then continued to use\n" \
+"the :class:`Connection` or associated :class:`cursors <Cursor>`.\n" 
+
+#define  ConnectionNotClosedError_exc_DOC "This exception is no longer generated.  It was required in earlier\n" \
+"releases due to constraints in threading usage with SQLite.\n" 
+
+#define  ConstraintError_exc_DOC ":const:`SQLITE_CONSTRAINT`. Abort due to `constraint\n" \
+"<https://sqlite.org/lang_createtable.html>`_ violation.  This\n" \
+"would happen if the schema required a column to be within a specific\n" \
+"range.  If you have multiple constraints, you `can't tell\n" \
+"<https://sqlite.org/src/tktview/23b212820161c6599cbf414aa99bf8a5bfa5e7a3>`__\n" \
+"which one was the cause.\n" 
+
+#define  CorruptError_exc_DOC ":const:`SQLITE_CORRUPT`.  The database disk image appears to be a\n" \
+"SQLite database but the values inside are inconsistent.\n" 
+
+#define  CursorClosedError_exc_DOC "You have called :meth:`Cursor.close` and then tried to use the cursor.\n" 
+
+#define  EmptyError_exc_DOC ":const:`SQLITE_EMPTY`. Database is completely empty.\n" 
+
+#define  Error_exc_DOC "This is the base for APSW exceptions.\n" 
+
+#define  ExecTraceAbort_exc_DOC "The :ref:`execution tracer <executiontracer>` returned False so\n" \
+"execution was aborted.\n" 
+
+#define  ExecutionCompleteError_exc_DOC "A statement is complete but you try to run it more anyway!\n" 
+
+#define  ExtensionLoadingError_exc_DOC "An error happened loading an `extension\n" \
+"<https://sqlite.org/cvstrac/wiki/wiki?p=LoadableExtensions>`_.\n" 
+
+#define  ForkingViolationError_exc_DOC "See :meth:`apsw.fork_checker`.\n" 
+
+#define  FormatError_exc_DOC ":const:`SQLITE_FORMAT`. (No longer used) `Auxiliary database <https://sqlite.org/lang_attach.html>`_ format error.\n" 
+
+#define  FullError_exc_DOC ":const:`SQLITE_FULL`.  The disk appears to be full.\n" 
+
+#define  IOError_exc_DOC ":const:`SQLITE_IOERR`.  Some kind of disk I/O error occurred.  The\n" \
+":ref:`extended error code <exceptions>` will give more detail.\n" 
+
+#define  IncompleteExecutionError_exc_DOC "You have tried to start a new SQL execute call before executing all\n" \
+"the previous ones. See the :ref:`execution model <executionmodel>`\n" \
+"for more details.\n" 
+
+#define  InternalError_exc_DOC ":const:`SQLITE_INTERNAL`. (No longer used) Internal logic error in SQLite.\n" 
+
+#define  InterruptError_exc_DOC ":const:`SQLITE_INTERRUPT`.  Operation terminated by\n" \
+"`sqlite3_interrupt <https://sqlite.org/c3ref/interrupt.html>`_ -\n" \
+"use :meth:`Connection.interrupt`.\n" 
+
+#define  LockedError_exc_DOC ":const:`SQLITE_LOCKED`.  A table in the database is locked.\n" 
+
+#define  MismatchError_exc_DOC ":const:`SQLITE_MISMATCH`. Data type mismatch.  For example a rowid\n" \
+"or integer primary key must be an integer.\n" 
+
+#define  MisuseError_exc_DOC ":const:`SQLITE_MISUSE`.  SQLite library used incorrectly - typically similar to ValueError in Python.  Examples include not\n" \
+"having enough flags when opening a connection (eg not including a READ or WRITE flag), or out of spec such as registering\n" \
+"a function with more than 127 parameters.\n" 
+
+#define  NoLFSError_exc_DOC ":const:`SQLITE_NOLFS`.  SQLite has attempted to use a feature not\n" \
+"supported by the operating system such as `large file support\n" \
+"<http://en.wikipedia.org/wiki/Large_file_support>`_.\n" 
+
+#define  NoMemError_exc_DOC ":const:`SQLITE_NOMEM`.  A memory allocation failed.\n" 
+
+#define  NotADBError_exc_DOC ":const:`SQLITE_NOTADB`.  File opened that is not a database file.\n" \
+"SQLite has a header on database files to verify they are indeed\n" \
+"SQLite databases.\n" 
+
+#define  NotFoundError_exc_DOC ":const:`SQLITE_NOTFOUND`. Returned when various internal items were\n" \
+"not found such as requests for non-existent system calls or file\n" \
+"controls.\n" 
+
+#define  PermissionsError_exc_DOC ":const:`SQLITE_PERM`. Access permission denied by the operating system, or parts of the database are readonly such as a cursor.\n" 
+
+#define  ProtocolError_exc_DOC ":const:`SQLITE_PROTOCOL`. (No longer used) Database lock protocol error.\n" 
+
+#define  RangeError_exc_DOC ":const:`SQLITE_RANGE`.  (Cannot be generated using APSW).  2nd parameter to `sqlite3_bind <https://sqlite.org/c3ref/bind_blob.html>`_ out of range\n" 
+
+#define  ReadOnlyError_exc_DOC ":const:`SQLITE_READONLY`. Attempt to write to a readonly database.\n" 
+
+#define  SQLError_exc_DOC ":const:`SQLITE_ERROR`.  This error is documented as a bad SQL query\n" \
+"or missing database, but is also returned for a lot of other\n" \
+"situations.  It is the default error code unless there is a more\n" \
+"specific one.\n" 
+
+#define  SchemaChangeError_exc_DOC ":const:`SQLITE_SCHEMA`.  The database schema changed.  A\n" \
+":meth:`prepared statement <Cursor.execute>` becomes invalid\n" \
+"if the database schema was changed.  Behind the scenes SQLite\n" \
+"reprepares the statement.  Another or the same :class:`Connection`\n" \
+"may change the schema again before the statement runs.  SQLite will\n" \
+"attempt up to 5 times before giving up and returning this error.\n" 
+
+#define  ThreadingViolationError_exc_DOC "You have used an object concurrently in two threads. For example you\n" \
+"may try to use the same cursor in two different threads at the same\n" \
+"time, or tried to close the same connection in two threads at the\n" \
+"same time.\n" \
+"\n" \
+"You can also get this exception by using a cursor as an argument to\n" \
+"itself (eg as the input data for :meth:`Cursor.executemany`).\n" \
+"Cursors can only be used for one thing at a time.\n" 
+
+#define  TooBigError_exc_DOC ":const:`SQLITE_TOOBIG`.  String or BLOB exceeds size limit.  You can\n" \
+"change the limits using :meth:`Connection.limit`.\n" 
+
+#define  VFSFileClosedError_exc_DOC "The VFS file is closed so the operation cannot be performed.\n" 
+
+#define  VFSNotImplementedError_exc_DOC "A call cannot be made to an inherited :ref:`VFS` method as the VFS\n" \
+"does not implement the method.\n" 
+

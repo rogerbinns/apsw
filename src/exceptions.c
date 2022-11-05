@@ -101,43 +101,44 @@ static struct
   int code;
   const char *name;
   PyObject *cls;
+  const char *doc;
 } exc_descriptors[] =
     {
         /* Generic Errors */
-        {SQLITE_ERROR, "SQL", NULL},
-        {SQLITE_MISMATCH, "Mismatch", NULL},
-        {SQLITE_NOTFOUND, "NotFound", NULL},
+        {SQLITE_ERROR, "SQL", NULL, SQLError_exc_DOC},
+        {SQLITE_MISMATCH, "Mismatch", NULL, MismatchError_exc_DOC},
+        {SQLITE_NOTFOUND, "NotFound", NULL, NotFoundError_exc_DOC},
 
         /* Internal Errors */
-        {SQLITE_INTERNAL, "Internal", NULL}, /* NOT USED */
-        {SQLITE_PROTOCOL, "Protocol", NULL},
-        {SQLITE_MISUSE, "Misuse", NULL},
-        {SQLITE_RANGE, "Range", NULL},
+        {SQLITE_INTERNAL, "Internal", NULL, InternalError_exc_DOC}, /* NOT USED */
+        {SQLITE_PROTOCOL, "Protocol", NULL, ProtocolError_exc_DOC},
+        {SQLITE_MISUSE, "Misuse", NULL, MisuseError_exc_DOC},
+        {SQLITE_RANGE, "Range", NULL, RangeError_exc_DOC},
 
         /* permissions etc */
-        {SQLITE_PERM, "Permissions", NULL},
-        {SQLITE_READONLY, "ReadOnly", NULL},
-        {SQLITE_CANTOPEN, "CantOpen", NULL},
-        {SQLITE_AUTH, "Auth", NULL},
+        {SQLITE_PERM, "Permissions", NULL, PermissionsError_exc_DOC},
+        {SQLITE_READONLY, "ReadOnly", NULL, ReadOnlyError_exc_DOC},
+        {SQLITE_CANTOPEN, "CantOpen", NULL, CantOpenError_exc_DOC},
+        {SQLITE_AUTH, "Auth", NULL, AuthError_exc_DOC},
 
         /* abort/busy/etc */
-        {SQLITE_ABORT, "Abort", NULL},
-        {SQLITE_BUSY, "Busy", NULL},
-        {SQLITE_LOCKED, "Locked", NULL},
-        {SQLITE_INTERRUPT, "Interrupt", NULL},
-        {SQLITE_SCHEMA, "SchemaChange", NULL},
-        {SQLITE_CONSTRAINT, "Constraint", NULL},
+        {SQLITE_ABORT, "Abort", NULL, AbortError_exc_DOC},
+        {SQLITE_BUSY, "Busy", NULL, BusyError_exc_DOC},
+        {SQLITE_LOCKED, "Locked", NULL, LockedError_exc_DOC},
+        {SQLITE_INTERRUPT, "Interrupt", NULL, InterruptError_exc_DOC},
+        {SQLITE_SCHEMA, "SchemaChange", NULL, SchemaChangeError_exc_DOC},
+        {SQLITE_CONSTRAINT, "Constraint", NULL, ConstraintError_exc_DOC},
 
         /* memory/disk/corrupt etc */
-        {SQLITE_NOMEM, "NoMem", NULL},
-        {SQLITE_IOERR, "IO", NULL},
-        {SQLITE_CORRUPT, "Corrupt", NULL},
-        {SQLITE_FULL, "Full", NULL},
-        {SQLITE_TOOBIG, "TooBig", NULL},
-        {SQLITE_NOLFS, "NoLFS", NULL},
-        {SQLITE_EMPTY, "Empty", NULL},
-        {SQLITE_FORMAT, "Format", NULL},
-        {SQLITE_NOTADB, "NotADB", NULL},
+        {SQLITE_NOMEM, "NoMem", NULL, NoMemError_exc_DOC},
+        {SQLITE_IOERR, "IO", NULL, IOError_exc_DOC},
+        {SQLITE_CORRUPT, "Corrupt", NULL, CorruptError_exc_DOC},
+        {SQLITE_FULL, "Full", NULL, FullError_exc_DOC},
+        {SQLITE_TOOBIG, "TooBig", NULL, TooBigError_exc_DOC},
+        {SQLITE_NOLFS, "NoLFS", NULL, NoLFSError_exc_DOC},
+        {SQLITE_EMPTY, "Empty", NULL, EmptyError_exc_DOC},
+        {SQLITE_FORMAT, "Format", NULL, FormatError_exc_DOC},
+        {SQLITE_NOTADB, "NotADB", NULL, NotADBError_exc_DOC},
 
         {-1, 0, 0}};
 
@@ -149,6 +150,7 @@ typedef struct
 {
   PyObject **var;
   const char *name;
+  const char *doc;
 } APSWExceptionMapping;
 
 static int init_exceptions(PyObject *m)
@@ -158,25 +160,25 @@ static int init_exceptions(PyObject *m)
   PyObject *obj;
 
   APSWExceptionMapping apswexceptions[] = {
-      {&ExcThreadingViolation, "ThreadingViolationError"},
-      {&ExcIncomplete, "IncompleteExecutionError"},
-      {&ExcBindings, "BindingsError"},
-      {&ExcComplete, "ExecutionCompleteError"},
-      {&ExcTraceAbort, "ExecTraceAbort"},
-      {&ExcExtensionLoading, "ExtensionLoadingError"},
-      {&ExcConnectionNotClosed, "ConnectionNotClosedError"},
-      {&ExcConnectionClosed, "ConnectionClosedError"},
-      {&ExcCursorClosed, "CursorClosedError"},
-      {&ExcVFSNotImplemented, "VFSNotImplementedError"},
-      {&ExcVFSFileClosed, "VFSFileClosedError"},
-      {&ExcForkingViolation, "ForkingViolationError"}};
+      {&ExcThreadingViolation, "ThreadingViolationError", ThreadingViolationError_exc_DOC},
+      {&ExcIncomplete, "IncompleteExecutionError", IncompleteExecutionError_exc_DOC},
+      {&ExcBindings, "BindingsError", BindingsError_exc_DOC},
+      {&ExcComplete, "ExecutionCompleteError", ExecutionCompleteError_exc_DOC},
+      {&ExcTraceAbort, "ExecTraceAbort", ExecTraceAbort_exc_DOC},
+      {&ExcExtensionLoading, "ExtensionLoadingError", ExtensionLoadingError_exc_DOC},
+      {&ExcConnectionNotClosed, "ConnectionNotClosedError", ConnectionNotClosedError_exc_DOC},
+      {&ExcConnectionClosed, "ConnectionClosedError", ConnectionClosedError_exc_DOC},
+      {&ExcCursorClosed, "CursorClosedError", CursorClosedError_exc_DOC},
+      {&ExcVFSNotImplemented, "VFSNotImplementedError", VFSNotImplementedError_exc_DOC},
+      {&ExcVFSFileClosed, "VFSFileClosedError", VFSFileClosedError_exc_DOC},
+      {&ExcForkingViolation, "ForkingViolationError", ForkingViolationError_exc_DOC}};
 
   /* PyModule_AddObject uses borrowed reference so we incref whatever
      we give to it, so we still have a copy to use */
 
   /* custom ones first */
 
-  APSWException = PyErr_NewException("apsw.Error", NULL, NULL);
+  APSWException = PyErr_NewExceptionWithDoc("apsw.Error", Error_exc_DOC, NULL, NULL);
   if (!APSWException)
     return -1;
   Py_INCREF(APSWException);
@@ -186,7 +188,7 @@ static int init_exceptions(PyObject *m)
   for (i = 0; i < sizeof(apswexceptions) / sizeof(apswexceptions[0]); i++)
   {
     PyOS_snprintf(buffy, sizeof(buffy), "apsw.%s", apswexceptions[i].name);
-    *apswexceptions[i].var = PyErr_NewException(buffy, APSWException, NULL);
+    *apswexceptions[i].var = PyErr_NewExceptionWithDoc(buffy, apswexceptions[i].doc, APSWException, NULL);
     if (!*apswexceptions[i].var)
       return -1;
     /* PyModule_AddObject steals the ref, but we don't add a ref for
@@ -200,7 +202,7 @@ static int init_exceptions(PyObject *m)
   for (i = 0; exc_descriptors[i].name; i++)
   {
     PyOS_snprintf(buffy, sizeof(buffy), "apsw.%sError", exc_descriptors[i].name);
-    obj = PyErr_NewException(buffy, APSWException, NULL);
+    obj = PyErr_NewExceptionWithDoc(buffy, exc_descriptors[i].doc, APSWException, NULL);
     if (!obj)
       return -1;
     exc_descriptors[i].cls = obj;
