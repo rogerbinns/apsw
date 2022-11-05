@@ -84,24 +84,44 @@ def get_mapping_info(name: str) -> dict:
     f = found_in[-1]
     return {"title": f[1], "url": f[2]["page"], "members": f[2]["vars"]}
 
-def get_exc_doc(name: str) -> list[str]:
+
+all_exc_doc = {}
+
+
+def get_all_exc_doc() -> None:
     capture = None
+
+    def proc():
+        nonlocal capture
+        if capture is None:
+            return
+        while not capture[0].strip():
+            capture.pop(0)
+        while not capture[-1].strip():
+            capture.pop()
+        doc = [f"{ line }\n" for line in textwrap.dedent("\n".join(capture)).split("\n")]
+        all_exc_doc[cur_name] = doc
+        capture = None
+
+
     for line in open("doc/exceptions.rst", "rt"):
-        if capture is None and line.startswith(f".. exception:: { name }"):
+        if line.startswith(f".. exception::"):
+            proc()
             capture = []
+            cur_name = line.split()[-1]
             continue
         if capture is not None:
             # look for non-indented line
             if line.strip() and line.lstrip() == line:
-                break
+                proc()
+                continue
             capture.append(line.rstrip())
-    if capture is None:
-        raise ValueError(f"exception { name } not found")
-    while not capture[0].strip():
-        capture.pop(0)
-    while not capture[-1].strip():
-        capture.pop()
-    return [f"{ line }\n" for line in textwrap.dedent("\n".join(capture)).split("\n")]
+    proc()
+
+
+def get_exc_doc(name: str) -> list[str]:
+    return all_exc_doc[name]
+
 
 def process_docdb(data: dict) -> list:
     res = []
@@ -776,6 +796,7 @@ if __name__ == '__main__':
     sqlite_links()
 
     items = process_docdb(docdb)
+    get_all_exc_doc()
 
     allcode = "\n".join(open(fn).read() for fn in glob.glob("src/*.c"))
 
@@ -810,6 +831,8 @@ if __name__ == '__main__':
                         "Connection.executemany",
                 }:
                     missing.append(item["name"])
+    for name, doc in sorted(all_exc_doc.items()):
+        print(f"""{ method } { name }_exc_DOC{ mid }{ cppsafe(doc, eol) } { end }\n""", file=out)
 
     outval = out.getvalue()
     replace_if_different(sys.argv[2], outval)
