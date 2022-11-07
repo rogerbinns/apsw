@@ -44,6 +44,16 @@ While SQLite provides a SQL database like many others out there, it is
 also unique in many ways.  Read about the unique features at the
 `SQLite website <https://sqlite.org/different.html>`__.
 
+.. note::
+
+  SQLite 3 has been available for two decades, improving and adding
+  features over time.  Because of strong compatibility guarantees, you
+  may need to opt-in to some like `foreign key enforcement
+  <https://www.sqlite.org/foreignkeys.html>`__.  It is a good idea to
+  review the `pragmas <https://www.sqlite.org/pragma.html#toc>`__ and
+  consider using :attr:`apsw.connection_hooks` to configure each
+  :class:`Connection`.
+
 Transactions
 ============
 
