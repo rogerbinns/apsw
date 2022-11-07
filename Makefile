@@ -56,7 +56,7 @@ doc/example.rst: example-code.py tools/example2rst.py src/apswversion.h
 	rm -f dbfile
 	env PYTHONPATH=. $(PYTHON) tools/example2rst.py
 
-doc/typing.rstgen: src/types.py
+doc/typing.rstgen: src/types.py tools/types2rst.py
 	-rm -f doc/typing.rstgen
 	$(PYTHON) tools/types2rst.py
 
