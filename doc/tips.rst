@@ -141,22 +141,6 @@ ways you never even thought possible.
 The :ref:`documentation <cursors>` gives many examples of how to use
 various forms of bindings.
 
-Unicode
-=======
-
-SQLite only stores text as Unicode.  However it relies on SQLite API
-users to provide valid UTF-8 and does not double check.  (APSW only
-provides valid UTF-8).  It is possible using other wrappers and tools
-to cause invalid UTF-8 to appear in the database which will then cause
-retrieval errors.  You can work around this by using the SQL *CAST*
-operator.  For example::
-
-  SELECT id, CAST(label AS blob) from table
-
-Then proceed to give the `Joel Unicode article
-<http://www.joelonsoftware.com/articles/Unicode.html>`_ to all people
-involved.
-
 .. _diagnostics_tips:
 
 Diagnostics
