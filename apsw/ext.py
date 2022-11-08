@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 import collections, collections.abc
-try:
+import sys
+if sys.version_info >= (3, 10):
     from types import NoneType
-except ImportError:
+else:
     NoneType = type(None)
 
 from dataclasses import dataclass, make_dataclass
