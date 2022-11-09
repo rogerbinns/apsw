@@ -50,9 +50,10 @@ function to do the mapping.
 
 .. note::
 
-  There is no actual *VTModule* class - it is just shown this way
-  for documentation convenience.  Your module instance should implement
-  all the methods documented here.
+  There is no actual *VTModule* class - it is shown this way for
+  documentation convenience and is present as a `typing protocol
+  <https://docs.python.org/3/library/typing.html#typing.Protocol>`__.
+  Your module instance should implement all the methods documented here.
 
 A module instance is used to create the virtual tables.  Once you have
 a module object, you register it with a connection by calling
@@ -197,7 +198,7 @@ finally: /* cleanup */
   return res;
 }
 
-/** .. method:: Connect(connection, modulename, databasename, tablename, *args)  -> [ sql string, table object ]
+/** .. method:: Connect(connection: Connection, modulename: str, databasename: str, tablename: str, *args: Tuple[SQLiteValue, ...])  -> Tuple[str, VTTable]
 
     The parameters and return are identical to
     :meth:`~VTModule.Create`.  This method is called
@@ -232,7 +233,7 @@ apswvtabCreate(sqlite3 *db,
   return apswvtabCreateOrConnect(db, pAux, argc, argv, pVTab, errmsg, 0);
 }
 
-/** .. method:: Create(connection, modulename, databasename, tablename, *args)  -> [ sql string, table object ]
+/** .. method:: Create(connection: Connection, modulename: str, databasename: str, tablename: str, *args: Tuple[SQLiteValue, ...])  -> Tuple[str, VTTable]
 
    Called when a table is first created on a :class:`connection
    <Connection>`.
@@ -266,10 +267,10 @@ apswvtabConnect(sqlite3 *db,
 
   .. note::
 
-    There is no actual *VTTable* class - it is just shown this way for
-    documentation convenience.  Your table instance should implement
-    the methods documented here.
-
+    There is no actual *VTTable* class - it is shown this way for
+    documentation convenience and is present as a `typing protocol
+    <https://docs.python.org/3/library/typing.html#typing.Protocol>`__.
+    Your table instance should implement the methods documented here.
 
   The :class:`VTTable` object contains knowledge of the indices, makes
   cursors and can perform transactions.
@@ -366,7 +367,7 @@ finally:
   return sqliteres;
 }
 
-/** .. method:: Destroy()
+/** .. method:: Destroy() -> None
 
   The opposite of :meth:`VTModule.Create`.  This method is called when
   the table is no longer used.  Note that you must always release
@@ -381,7 +382,7 @@ apswvtabDestroy(sqlite3_vtab *pVTab)
   return apswvtabDestroyOrDisconnect(pVTab, 0);
 }
 
-/** .. method:: Disconnect()
+/** .. method:: Disconnect() -> None
 
   The opposite of :meth:`VTModule.Connect`.  This method is called when
   a reference to a virtual table is no longer used, but :meth:`VTTable.Destroy` will
@@ -394,7 +395,7 @@ apswvtabDisconnect(sqlite3_vtab *pVTab)
   return apswvtabDestroyOrDisconnect(pVTab, 1);
 }
 
-/** .. method:: BestIndex(constraints, orderbys)
+/** .. method:: BestIndex(constraints: Sequence[Tuple[int, int], ...], orderbys: Sequence[Tuple[int, int], ...]) -> Any
 
   This is a complex method. To get going initially, just return
   :const:`None` and you will be fine. Implementing this method reduces
@@ -823,25 +824,25 @@ finally:
   return sqliteres;
 }
 
-/** .. method:: Begin()
+/** .. method:: Begin() -> None
 
   This function is used as part of transactions.  You do not have to
   provide the method.
 */
 
-/** .. method:: Sync()
+/** .. method:: Sync() -> None
 
   This function is used as part of transactions.  You do not have to
   provide the method.
 */
 
-/** .. method:: Commit()
+/** .. method:: Commit() -> None
 
   This function is used as part of transactions.  You do not have to
   provide the method.
 */
 
-/** .. method:: Rollback()
+/** .. method:: Rollback() -> None
 
   This function is used as part of transactions.  You do not have to
   provide the method.
@@ -913,7 +914,7 @@ apswvtabRollback(sqlite3_vtab *pVtab)
   return apswvtabTransactionMethod(pVtab, 3);
 }
 
-/** .. method:: Open()
+/** .. method:: Open() -> VTCursor
 
   Returns a :class:`cursor <VTCursor>` object.
 */
@@ -959,13 +960,13 @@ finally:
   return sqliteres;
 }
 
-/** .. method:: UpdateDeleteRow(rowid)
+/** .. method:: UpdateDeleteRow(rowid: int)
 
   Delete the row with the specified *rowid*.
 
   :param rowid: 64 bit integer
 */
-/** .. method:: UpdateInsertRow(rowid, fields)  -> newrowid
+/** .. method:: UpdateInsertRow(rowid: Optional[int], fields: Tuple[SQLiteValue, ...])  -> Optional[int]
 
   Insert a row with the specified *rowid*.
 
@@ -976,7 +977,7 @@ finally:
     to the row.  If *rowid* was not :const:`None` then the return value
     is ignored.
 */
-/** .. method:: UpdateChangeRow(row, newrowid, fields)
+/** .. method:: UpdateChangeRow(row: int, newrowid: int, fields: Tuple[SQLiteValue, ...])
 
   Change an existing row.  You may also need to change the rowid - for example if the query was
   ``UPDATE table SET rowid=rowid+100 WHERE ...``
@@ -1107,7 +1108,7 @@ finally:
   return sqliteres;
 }
 
-/** .. method:: FindFunction(name, nargs)
+/** .. method:: FindFunction(name: str, nargs: int)
 
   Called to find if the virtual table has its own implementation of a
   particular scalar function. You should return the function if you
@@ -1184,7 +1185,7 @@ error:
   return sqliteres;
 }
 
-/** .. method:: Rename(newname)
+/** .. method:: Rename(newname: str) -> None
 
   Notification that the table will be given a new name. If you return
   without raising an exception, then SQLite renames the table (you
@@ -1224,24 +1225,27 @@ finally:
 
 /** .. class:: VTCursor
 
+.. note::
 
- .. note::
+  There is no actual *VTCursor* class - it is shown this way for
+  documentation convenience and is present as a `typing protocol
+  <https://docs.python.org/3/library/typing.html#typing.Protocol>`__.
+  Your cursor instance should implement all the methods documented
+  here.
 
-    There is no actual *VTCursor* class - it is just shown this
-    way for documentation convenience.  Your cursor instance should
-    implement all the methods documented here.
 
+The :class:`VTCursor` object is used for iterating over a table.
+There may be many cursors simultaneously so each one needs to keep
+track of where      :ref:`Virtual table structure <vtablestructure>`
+it is.
 
-  The :class:`VTCursor` object is used for iterating over a table.
-  There may be many cursors simultaneously so each one needs to keep
-  track of where it is.
-
-  .. seealso::
+.. seealso::
 
      :ref:`Virtual table structure <vtablestructure>`
+
 */
 
-/** .. method:: Filter(indexnum, indexname, constraintargs)
+/** .. method:: Filter(indexnum: int, indexname: str, constraintargs: Optional[Tuple]) -> None
 
   This method is always called first to initialize an iteration to the
   first row of the table. The arguments come from the
@@ -1339,7 +1343,7 @@ finally:
   return sqliteres;
 }
 
-/** .. method:: Column(number)
+/** .. method:: Column(number: int) -> SQLiteValue
 
   Requests the value of the specified column *number* of the current
   row.  If *number* is -1 then return the rowid.
@@ -1381,7 +1385,7 @@ finally:
   return sqliteres;
 }
 
-/** .. method:: Next()
+/** .. method:: Next() -> None
 
   Move the cursor to the next row.  Do not have an exception if there
   is no next row.  Instead return False when :meth:`~VTCursor.Eof` is
@@ -1419,7 +1423,7 @@ finally:
   return sqliteres;
 }
 
-/** .. method:: Close()
+/** .. method:: Close() -> None
 
   This is the destructor for the cursor. Note that you must
   cleanup. The method will not be called again if you raise an
@@ -1455,7 +1459,7 @@ finally:
   return sqliteres;
 }
 
-/** .. method:: Rowid() -> 64 bit integer
+/** .. method:: Rowid() -> int
 
   Return the current rowid.
 */
@@ -1523,10 +1527,6 @@ static struct sqlite3_module apsw_vtable_module =
 
 Troubleshooting virtual tables
 ==============================
-
-Virtual Tables are a relatively recent addition to SQLite and haven't
-been widely used yet. They do work well if all your routines work
-perfectly.
 
 A big help is using the local variables recipe as described in
 :ref:`augmented stack traces <augmentedstacktraces>` which will give
