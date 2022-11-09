@@ -1,9 +1,14 @@
 
+import sys
+
 from typing import Union, Tuple, List, Optional, Callable, Any, Dict, \
         Iterator, Sequence, Literal, Set
 from collections.abc import Mapping
 from array import array
 from types import TracebackType
+
+if sys.version_info >= (3, 8):
+        from typing import Protocol
 
 SQLiteValue = Union[None, int, float, bytes, str]
 """SQLite supports 5 types - None (NULL), 64 bit signed int, 64 bit
