@@ -17,6 +17,17 @@ setters, including :attr:`Connection.in_transaction`,
 :attr:`Cursor.exectrace`, :attr:`Cursor.rowtrace`,
 :attr:`Cursor.connection` (:issue:`371`)
 
+Completed: To the extent permitted by CPython APIs every item has the
+same docstring as this documentation.  Every API can use named
+parameters.  The `type stubs
+<https://github.com/rogerbinns/apsw/blob/master/apsw/__init__.pyi>`__
+cover everything including constants.  The type stubs also include
+documentation for everything, which for example Visual Studio Code
+displays as you type or hover.  There is a single source of
+documentation in the source code, which is then automatically
+extracted to make this documentation, docstrings, and docstrings in
+the type stubs.
+
 3.39.4.0
 ========
 
