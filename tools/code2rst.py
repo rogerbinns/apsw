@@ -184,6 +184,8 @@ def do_methods():
     keys = sorted(methods.keys())
 
     for k in keys:
+        if k.endswith(".<class>"):
+            continue
         op.append("")
         d = methods[k]
         dec = d[0]

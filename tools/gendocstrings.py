@@ -39,6 +39,7 @@ docstrings_skip = {
     "apsw.SQLITE_VERSION_NUMBER",
 }
 
+virtual_table_classes = {"VTCursor", "VTModule", "VTTable"}
 
 def sqlite_links():
     global funclist, consts
@@ -168,9 +169,6 @@ def classify(doc: list[str]) -> Union[dict, None]:
 
     if not doc:
         return None
-    # These are protocols
-    if name.split(".")[0] in {"VTCursor", "VTModule", "VTTable"}:
-        return None
 
     doc = [f"{ line }\n" for line in textwrap.dedent("".join(doc) + "\n").strip().split("\n")]
 
@@ -197,7 +195,7 @@ def classify(doc: list[str]) -> Union[dict, None]:
         "signature_original": signature,
         "signature": analyze_signature(signature) if signature else [],
         "doc": doc,
-        "skip_docstring": name in docstrings_skip
+        "skip_docstring": name in docstrings_skip or name.split(".")[0] in virtual_table_classes
     }
 
 
@@ -695,6 +693,8 @@ def generate_typestubs(items: list[dict]):
 
     lastclass = ""
 
+    baseindent=""
+
     for item in sorted(items, key=lambda x: x["symbol"]):
         if item["kind"] == "class":
             # these end up in an unhelpful place in the sort order
@@ -706,20 +706,27 @@ def generate_typestubs(items: list[dict]):
             name = item["name"][len("apsw."):]
             if item["kind"] == "method":
                 assert signature.startswith("(")
-                print(f"def { name }{ signature }:", file=out)
-                print(fmt_docstring(item["doc"], indent="    "), file=out)
-                print("    ...\n", file=out)
+                print(f"{ baseindent }def { name }{ signature }:", file=out)
+                print(fmt_docstring(item["doc"], indent=f"{ baseindent }    "), file=out)
+                print(f"{ baseindent }    ...\n", file=out)
             else:
                 assert item["kind"] == "attribute"
-                print(f"{ name }: { attribute_type(item) }", file=out)
-                print(fmt_docstring(attr_docstring(item["doc"]), indent=""), file=out)
+                print(f"{ baseindent }{ name }: { attribute_type(item) }", file=out)
+                print(fmt_docstring(attr_docstring(item["doc"]), indent=baseindent), file=out)
                 print("", file=out)
         else:
             if klass != lastclass:
                 lastclass = klass
                 doc = get_class_doc(klass, items)
-                print(f"\nclass { klass }:", file=out)
-                print(fmt_docstring(doc, indent="    "), file=out)
+
+                if klass in virtual_table_classes:
+                    baseindent = "    "
+                    print("\nif sys.version_info >= (3, 8):", file=out)
+                    print(f"\n{ baseindent }class { klass }(Protocol):", file=out)
+                else:
+                    baseindent = ""
+                    print(f"\n{ baseindent }class { klass }:", file=out)
+                print(fmt_docstring(doc, indent=f"{ baseindent }    "), file=out)
                 print("", file=out)
 
             if item["kind"] == "method":
@@ -730,14 +737,14 @@ def generate_typestubs(items: list[dict]):
                     signature = signature.replace(find, replace)
                 if not signature.startswith("(self"):
                     signature = "(self" + (", " if signature[1] != ")" else "") + signature[1:]
-                print(f"    def { name }{ signature }:", file=out)
-                print(fmt_docstring(item["doc"], indent="        "), file=out)
-                print("        ...\n", file=out)
+                print(f"{ baseindent }    def { name }{ signature }:", file=out)
+                print(fmt_docstring(item["doc"], indent=f"{ baseindent }        "), file=out)
+                print(f"{ baseindent }        ...\n", file=out)
 
             else:
                 assert item["kind"] == "attribute"
-                print(f"    { name }: { attribute_type(item) }", file=out)
-                print(fmt_docstring(attr_docstring(item["doc"]), indent="    "), file=out)
+                print(f"{ baseindent }    { name }: { attribute_type(item) }", file=out)
+                print(fmt_docstring(attr_docstring(item["doc"]), indent=f"{ baseindent }    "), file=out)
                 print("", file=out)
 
     # constants
