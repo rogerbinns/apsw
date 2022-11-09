@@ -25,7 +25,7 @@ jobs:
           platforms: all
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.11.1
+        uses: pypa/cibuildwheel@v2.11.2
         env:
           CIBW_SKIP: pp*
           CIBW_ARCHS_LINUX: auto aarch64
