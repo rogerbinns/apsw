@@ -232,7 +232,8 @@ for row in connection.execute("select * from s order by str collate strnum"):
 ###
 
 
-def authorizer(operation: int, paramone: Optional[str], paramtwo: Optional[str], databasename: Optional[str], triggerorview: Optional[str]) -> int:
+def authorizer(operation: int, paramone: Optional[str], paramtwo: Optional[str], databasename: Optional[str],
+               triggerorview: Optional[str]) -> int:
     """Called when each operation is prepared.  We can return SQLITE_OK, SQLITE_DENY or
     SQLITE_IGNORE"""
     # find the operation name
@@ -451,7 +452,8 @@ for size, directory, file in connection.execute(
 
 # Which 3 files are the oldest?
 #@@CAPTURE
-for ctime, directory, file in connection.execute("select st_ctime,directory,name from sysfiles order by st_ctime limit 3"):
+for ctime, directory, file in connection.execute(
+        "select st_ctime,directory,name from sysfiles order by st_ctime limit 3"):
     print(ctime, file, directory)
 #@@ENDCAPTURE
 
