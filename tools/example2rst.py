@@ -57,9 +57,9 @@ def rstout(filename):
 Example
 =======
 
-This code demonstrates usage of the APSW api.  It gives you a good
-overview of all the things that can be done.  Also included is output
-so you can see what gets printed when you run the code.
+This code demonstrates usage of APSW.  It gives you a good overview of
+all the things that can be done.  Also included is output so you can
+see what gets printed when you run the code.
 
 .. code-block:: python
 """.split("\n"))
@@ -85,11 +85,11 @@ so you can see what gets printed when you run the code.
             op.append(prefix + line)
             continue
         op.append("")
-        op.append(".. code-block:: text")
+        op.append(".. code-block:: output")
         op.append("")
         for line in open(".tmpop-%s-%d" % (filename, counter), "rt"):
             line = line.rstrip()
-            op.append("   | " + re.sub("u'([^']*)'", r"'\1'", line))
+            op.append("   " + line)
         op.append("")
         op.append(".. code-block:: python")
         op.append("")
