@@ -4872,7 +4872,7 @@ class APSW(unittest.TestCase):
 
         def testrand():
             gc.collect()
-            apsw.test_reset_rng()
+            apsw.randomness(0)
             vfs = RandomVFS()
             db = apsw.Connection(TESTFILEPREFIX + "testdb")
             next(db.cursor().execute("select randomblob(10)"))
@@ -4914,33 +4914,32 @@ class APSW(unittest.TestCase):
             def xRandomness99(self, n):
                 return super(RandomVFS, self).xRandomness(n + 2049)
 
-        if hasattr(apsw, 'test_reset_rng'):
-            vfsupper = RandomVFSUpper()
-            vfs = RandomVFS()
-            self.assertRaises(TypeError, vfs.xRandomness, "jksdhfsd")
-            self.assertRaises(TypeError, vfs.xRandomness, 3, 3)
-            self.assertRaises(ValueError, vfs.xRandomness, -88)
+        vfsupper = RandomVFSUpper()
+        vfs = RandomVFS()
+        self.assertRaises(TypeError, vfs.xRandomness, "jksdhfsd")
+        self.assertRaises(TypeError, vfs.xRandomness, 3, 3)
+        self.assertRaises(ValueError, vfs.xRandomness, -88)
 
-            RandomVFS.xRandomness = RandomVFS.xRandomness1
-            self.assertRaisesUnraisable(TypeError, testrand)
-            RandomVFS.xRandomness = RandomVFS.xRandomness2
-            self.assertRaisesUnraisable(ZeroDivisionError, testrand)
-            RandomVFS.xRandomness = RandomVFS.xRandomness3
-            testrand()  # shouldn't have problems
-            RandomVFS.xRandomness = RandomVFS.xRandomness4
-            self.assertRaisesUnraisable(TypeError, testrand)
-            RandomVFS.xRandomness = RandomVFS.xRandomness5
-            testrand()  # shouldn't have problems
-            RandomVFS.xRandomness = RandomVFS.xRandomness6
-            testrand()  # shouldn't have problems
-            RandomVFS.xRandomness = RandomVFS.xRandomness7
-            self.assertRaisesUnraisable(TypeError, testrand)
-            RandomVFS.xRandomness = RandomVFS.xRandomness99
-            testrand()  # shouldn't have problems
-            vfsupper.xRandomness = vfsupper.xRandomness1
-            testrand()  # coverage
-            vfsupper.unregister()
-            vfs.unregister()
+        RandomVFS.xRandomness = RandomVFS.xRandomness1
+        self.assertRaisesUnraisable(TypeError, testrand)
+        RandomVFS.xRandomness = RandomVFS.xRandomness2
+        self.assertRaisesUnraisable(ZeroDivisionError, testrand)
+        RandomVFS.xRandomness = RandomVFS.xRandomness3
+        testrand()  # shouldn't have problems
+        RandomVFS.xRandomness = RandomVFS.xRandomness4
+        self.assertRaisesUnraisable(TypeError, testrand)
+        RandomVFS.xRandomness = RandomVFS.xRandomness5
+        testrand()  # shouldn't have problems
+        RandomVFS.xRandomness = RandomVFS.xRandomness6
+        testrand()  # shouldn't have problems
+        RandomVFS.xRandomness = RandomVFS.xRandomness7
+        self.assertRaisesUnraisable(TypeError, testrand)
+        RandomVFS.xRandomness = RandomVFS.xRandomness99
+        testrand()  # shouldn't have problems
+        vfsupper.xRandomness = vfsupper.xRandomness1
+        testrand()  # coverage
+        vfsupper.unregister()
+        vfs.unregister()
 
         class ErrorVFS(apsw.VFS):
             # A vfs that returns errors for all methods
@@ -8483,16 +8482,15 @@ shell.write(shell.stdout, "hello world\\n")
         del db
         gc.collect()
         ## xRandomnessAllocFail
-        if hasattr(apsw, 'test_reset_rng'):
-            # we need to be default vfs
-            vfs2 = FaultVFS("faultvfs2", apsw.vfsnames()[0], makedefault=True)
-            apsw.test_reset_rng()
-            apsw.faultdict["xRandomnessAllocFail"] = True
-            # doesn't matter which vfs opens the file
-            self.assertRaisesUnraisable(MemoryError,
-                                        apsw.Connection(":memory:").cursor().execute, "select randomblob(10)")
-            del vfs2
-            gc.collect()
+        # we need to be default vfs
+        vfs2 = FaultVFS("faultvfs2", apsw.vfsnames()[0], makedefault=True)
+        apsw.randomness(0)
+        apsw.faultdict["xRandomnessAllocFail"] = True
+        # doesn't matter which vfs opens the file
+        self.assertRaisesUnraisable(MemoryError,
+                                    apsw.Connection(":memory:").cursor().execute, "select randomblob(10)")
+        del vfs2
+        gc.collect()
 
         ## xCurrentTimeFail
         apsw.faultdict["xCurrentTimeFail"] = True

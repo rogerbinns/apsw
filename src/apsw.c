@@ -706,17 +706,6 @@ apswcomplete(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   Py_RETURN_FALSE;
 }
 
-#if defined(APSW_TESTFIXTURES) && defined(APSW_USE_SQLITE_AMALGAMATION)
-/* a routine to reset the random number generator so that we can test xRandomness */
-static PyObject *
-apsw_test_reset_rng(PyObject *Py_UNUSED(self))
-{
-  /* See sqlite3PrngResetState in sqlite's random.c */
-  GLOBAL(struct sqlite3PrngType, sqlite3Prng).isInit = 0;
-
-  Py_RETURN_NONE;
-}
-#endif
 
 #ifdef APSW_TESTFIXTURES
 static PyObject *
@@ -1316,10 +1305,6 @@ static PyMethodDef module_methods[] = {
      Apsw_exceptionfor_DOC},
     {"complete", (PyCFunction)apswcomplete, METH_VARARGS | METH_KEYWORDS,
      Apsw_complete_DOC},
-#if defined(APSW_TESTFIXTURES) && defined(APSW_USE_SQLITE_AMALGAMATION)
-    {"test_reset_rng", (PyCFunction)apsw_test_reset_rng, METH_NOARGS,
-     "Resets random number generator so we can test vfs xRandomness"},
-#endif
 #ifdef APSW_TESTFIXTURES
     {"_fini", (PyCFunction)apsw_fini, METH_NOARGS,
      "Frees all caches and recycle lists"},
