@@ -44,7 +44,7 @@ syntax.  Additionally this is how `SQL injection attacks
   sql="insert into example values(?, ?)"
   cursor.execute(sql, ("string", 8390823904))
 
-  # You can also use dictionaries
+  # You can also use dictionaries (with colon, $, or @ before names)
   sql="insert into example values(:title, :isbn)"
   cursor.execute(sql, {"title": "string", "isbn": 8390823904})
 
@@ -671,8 +671,8 @@ APSWCursor_dobindings(APSWCursor *self)
         return -1;
       }
 
-      assert(*key == ':' || *key == '$');
-      key++; /* first char is a colon or dollar which we skip */
+      assert(*key == ':' || *key == '$' || *key == '@');
+      key++; /* first char is a colon / dollar / at which we skip */
 
       /*
       Here be dragons: PyDict_GetItemString swallows exceptions if

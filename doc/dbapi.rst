@@ -30,7 +30,8 @@ parameter numbers from one not zero when using *qmark/numeric* style.
 | numeric         | ``... WHERE name=?4``           |
 +-----------------+---------------------------------+
 | named           | | ``... WHERE name=:name``  or  |
-|                 | | ``... WHERE name=$name``      |
+|                 | | ``... WHERE name=$name``  or  |
+|                 | | ``... WHERE name=@name``      |
 +-----------------+---------------------------------+
 
 The DBAPI exceptions are not used.  The :ref:`exceptions <exceptions>`
