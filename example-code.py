@@ -11,65 +11,90 @@ import apsw
 # ignore them and do not need to use them
 from typing import Optional, Iterator, Tuple
 
-###
-### Check we have the expected version of apsw and sqlite
-###
+### version_check: Checking APSW and SQLite versions
 
-#@@CAPTURE
-print("      Using APSW file", apsw.__file__)  # from the extension module
-print("         APSW version", apsw.apswversion())  # from the extension module
-print("   SQLite lib version", apsw.sqlitelibversion())  # from the sqlite library code
-print("SQLite header version", apsw.SQLITE_VERSION_NUMBER)  # from the sqlite header file at compile time
-#@@ENDCAPTURE
+# Where the extension module is on the filesystem
+print("      Using APSW file", apsw.__file__)
+# From the extension
+print("         APSW version", apsw.apswversion())
+# From the sqlite header file at APSW compile time
+print("SQLite header version", apsw.SQLITE_VERSION_NUMBER)
+# The SQLite code running
+print("   SQLite lib version", apsw.sqlitelibversion())
+# If True then SQLite is incorporated into the extension.
+# If False then a shared library is being used, or static linking
+print("   Using amalgamation", apsw.using_amalgamation)
 
-###
-### Opening/creating database
-###
+### open_db:  Opening the database
 
+# Default will create the database if it doesn't exist
 connection = apsw.Connection("dbfile")
+# Open existing read-only
+connection = apsw.Connection("dbfile", flags = apsw.SQLITE_OPEN_READONLY)
+# Open existing read-write (exception if it doesn't exist)
+connection = apsw.Connection("dbfile", flags = apsw.SQLITE_OPEN_READWRITE)
 
-###
-### simple statement with a cursor  @@ example-cursor
-###
+### executing_sql: Executing SQL
 
-cursor = connection.cursor()
-cursor.execute("create table foo(x,y,z)")
+connection.execute("create table point(x,y,z)")
+connection.execute("insert into point values(1, 2, 3)")
+# You can use multiple ; separated statements
+connection.execute("""
+    insert into point values(4, 5, 6);
+    create table log(timestamp, event);
+    create table foo(a, b, c);
+    create table important(secret, data);
+""")
 
-###
-### using different types
-###
+# read rows
+for row in connection.execute("select * from point"):
+    print(row)
 
-connection.execute("insert into foo values(?,?,?)", (1, 1.1, None))  # integer, float/real, Null
-connection.execute("insert into foo(x) values(?)", ("abc", ))  # string (note trailing comma to ensure tuple!)
+### why_bindings: Why you use bindings
+
+event = "system started"
+# DO NOT DO THIS
+query = "insert into log values(0, '" + event + "')"
+print("query:", query)
+# BECAUSE ...
+event = "bad guy here') ; drop table important; -- "
+query = "insert into log values(0, '" + event + "')"
+print("bad guy:", query)
+
+### bindings_sequence: Bindings (sequence)
+
+# Use ? and provide values in a tuple (or list etc)
+query = "insert into log values(?, ?)"
+data = (7, event)
+connection.execute(query, data)
+
+for row in connection.execute("select * from log"):
+    print(row)
+
+# You can also use numbers
+query = "insert into point values(?1, ?3, ?2)"
+data = ("one", "two", "three")
+connection.execute(query, data)
+
+### bindings_dict: Bindings (dict)
+
+# You can use :NAME, @NAME or $NAME and a dict
+query = "insert into point values(:x, @y, $z)"
+data = {"x": 7, "y": 8, "z": 9}
+connection.execute(query, data)
+
+### types: Using different types
+
+connection.execute("insert into point values(?,?,?)", (1, 1.1, None))  # integer, float/real, Null
+connection.execute("insert into point(x) values(?)", ("abc", ))  # string (note trailing comma to ensure tuple!)
 connection.execute(
-    "insert into foo(x) values(?)",  # a blob (binary data)
+    "insert into point(x) values(?)",  # a blob (binary data)
     (b"abc\xff\xfe", ))
 
-###
-### multiple statements
-###
+#for x, y, z in cursor.execute("select x,y,z from foo"):
+#    print(cursor.getdescription())  # shows column names and declared types
+#    print(x, y, z)
 
-connection.execute(
-    "delete from foo; insert into foo values(1,2,3); create table bar(a,b,c) ; insert into foo values(4, 'five', 6.0)")
-
-###
-### iterator using cursor
-###
-
-for x, y, z in cursor.execute("select x,y,z from foo"):
-    print(cursor.getdescription())  # shows column names and declared types
-    print(x, y, z)
-
-###
-### iterator - multiple statements
-###
-
-for m, n, o in connection.execute("select x,y,z from foo ; select a,b,c from bar"):
-    print(m, n, o)
-
-###
-### bindings - sequence
-###
 
 connection.execute("insert into foo values(?,?,?)", (7, 'eight', False))
 connection.execute("insert into foo values(?,?,?1)", ('one', 'two'))  # nb sqlite does the numbers from 1
@@ -79,6 +104,10 @@ connection.execute("insert into foo values(?,?,?1)", ('one', 'two'))  # nb sqlit
 ###
 
 connection.execute("insert into foo values(:alpha, :beta, :gamma)", {'alpha': 1, 'beta': 2, 'gamma': 'three'})
+
+
+### transaction: Transactions
+
 
 ###
 ### tracing execution @@ example-exectrace
@@ -93,10 +122,8 @@ def mytrace(cursor: apsw.Cursor, statement: str, bindings: Optional[apsw.Binding
     return True  # if you return False then execution is aborted
 
 
-#@@CAPTURE
-cursor.exectrace = mytrace
-cursor.execute("drop table bar ; create table bar(x,y,z); select * from foo where x=?", (3, ))
-#@@ENDCAPTURE
+connection.exectrace = mytrace
+connection.execute("drop table if exists bar ; create table bar(x,y,z); select * from point where x=?", (3, ))
 
 ###
 ### tracing results @@ example-rowtrace
@@ -111,14 +138,14 @@ def rowtrace(cursor: apsw.Cursor, row: apsw.SQLiteValues) -> apsw.SQLiteValues:
 
 
 #@@CAPTURE
-cursor.rowtrace = rowtrace
-for row in cursor.execute("select x,y from foo where x>3"):
+connection.rowtrace = rowtrace
+for row in connection.execute("select x,y from point where x>3"):
     pass
 #@@ENDCAPTURE
 
 # Clear tracers
-cursor.rowtrace = None
-cursor.exectrace = None
+connection.rowtrace = None
+connection.exectrace = None
 
 ###
 ### executemany
@@ -126,10 +153,10 @@ cursor.exectrace = None
 
 # (This will work correctly with multiple statements, as well as statements that
 # return data.  The second argument can be anything that is iterable.)
-connection.executemany("insert into foo (x) values(?)", ([1], [2], [3]))
+connection.executemany("insert into point (x) values(?)", ([1], [2], [3]))
 
 # You can also use it for statements that return data
-for row in connection.executemany("select * from foo where x=?", ([1], [2], [3])):
+for row in connection.executemany("select * from point where x=?", ([1], [2], [3])):
     print(row)
 
 ###
@@ -146,7 +173,7 @@ def ilove7(*args: apsw.SQLiteValue) -> int:
 connection.createscalarfunction("seven", ilove7)
 
 #@@CAPTURE
-for row in connection.execute("select seven(x,y) from foo"):
+for row in connection.execute("select seven(x,y) from point"):
     print(row)
 #@@ENDCAPTURE
 
@@ -177,7 +204,7 @@ class longest:
 
 #@@CAPTURE
 connection.createaggregatefunction("longest", longest.factory)
-for row in connection.execute("select longest(x,y) from foo"):
+for row in connection.execute("select longest(x,y) from point"):
     print(row)
 #@@ENDCAPTURE
 
@@ -273,26 +300,21 @@ with connection:
 
 # display an ascii spinner
 _phcount = 0
-_phspinner = "|/-\\"
 
 
-def progresshandler() -> int:
+def progresshandler() -> bool:
     global _phcount
-    sys.stdout.write(_phspinner[_phcount % len(_phspinner)] + chr(8))  # chr(8) is backspace
-    sys.stdout.flush()
+    print(f"progress handler { _phcount }")
     _phcount += 1
-    time.sleep(0.1)  # deliberate delay so we can see the spinner (SQLite is too fast otherwise!)
-    return 0  # returning non-zero aborts
+    return False  # returning True aborts
 
 
 # register progresshandler every 20 instructions
 connection.setprogresshandler(progresshandler, 20)
 
 # see it in action - sorting 100 numbers to find the biggest takes a while
-print("spinny thing -> ", end="")
 for i in connection.execute("select max(x) from bigone"):
-    print("\n", i, sep="", end="")
-    sys.stdout.flush()
+    pass
 
 connection.setprogresshandler(None)
 
@@ -334,9 +356,9 @@ def myupdatehook(type: int, databasename: str, tablename: str, rowid: int) -> No
 
 #@@CAPTURE
 connection.setupdatehook(myupdatehook)
-cursor.execute("insert into s values(?)", ("file93", ))
-cursor.execute("update s set str=? where str=?", ("file94", "file93"))
-cursor.execute("delete from s where str=?", ("file94", ))
+connection.execute("insert into s values(?)", ("file93", ))
+connection.execute("update s set str=? where str=?", ("file94", "file93"))
+connection.execute("delete from s where str=?", ("file94", ))
 connection.setupdatehook(None)
 #@@ENDCAPTURE
 
