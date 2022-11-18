@@ -1220,7 +1220,7 @@ finally:
   return ok;
 }
 
-/** .. method:: setcommithook(callable: Optional[Callable[[], None]]) -> None
+/** .. method:: setcommithook(callable: Optional[CommitHook]) -> None
 
   *callable* will be called just before a commit.  It should return
   False for the commit to go ahead and True for it to be turned
