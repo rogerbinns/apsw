@@ -29,25 +29,25 @@ std_typing = {"Union", "Callable", "Tuple", "Dict", "List", "Optional", "Any", "
 std_other = {"None", "int", "float", "bytes", "str", "dict", "tuple"}
 
 # from apsw
-apswmod = {"zeroblob", "Cursor", "Connection"}
+apsw_mod = {"zeroblob", "Cursor", "Connection"}
 
 
 def sub(m: re.Match) -> str:
-    text = m.group(0)
+    text = m.group("name")
     if text in std_typing:
-        return f"`{ text } <https://docs.python.org/3/library/typing.html#typing.{ text }>`__ "
+        return f" `{ text } <https://docs.python.org/3/library/typing.html#typing.{ text }>`__ "
     if text in std_other:
-        return f"`{ text } <https://docs.python.org/3/library/stdtypes.html#{ text }>`__"
-    return f":class:`{ text }`"
+        return f" `{ text } <https://docs.python.org/3/library/stdtypes.html#{ text }>`__"
+    return f" :class:`{ text }`"
 
 
 def output(doc: List[Tuple[str, str, str]]) -> str:
-    indoc: set[str] = set()
+    in_doc: set[str] = set()
     # build a mapping of known names
     for name, _, _ in doc:
-        indoc.add(name)
-    indoc.update(apswmod)
-    pattern = "\\b(" + "|".join(std_other.union(std_typing.union(indoc))) + ")\\b"
+        in_doc.add(name)
+    in_doc.update(apsw_mod)
+    pattern = r"\s\b(?P<name>" + "|".join(std_other.union(std_typing.union(in_doc))) + ")\\b"
 
     res = ""
     for name, value, descr in doc:
