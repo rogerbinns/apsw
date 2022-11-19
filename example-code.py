@@ -6,6 +6,7 @@ import os
 import sys
 import time
 import apsw
+import random
 
 # Note: this code uses Python's optional typing annotations.  You can
 # ignore them and do not need to use them
@@ -15,26 +16,34 @@ from typing import Optional, Iterator, Tuple
 
 # Where the extension module is on the filesystem
 print("      Using APSW file", apsw.__file__)
+
 # From the extension
 print("         APSW version", apsw.apswversion())
+
 # From the sqlite header file at APSW compile time
 print("SQLite header version", apsw.SQLITE_VERSION_NUMBER)
+
 # The SQLite code running
 print("   SQLite lib version", apsw.sqlitelibversion())
+
 # If True then SQLite is incorporated into the extension.
 # If False then a shared library is being used, or static linking
 print("   Using amalgamation", apsw.using_amalgamation)
 
 ### open_db:  Opening the database
+# You open the database by using :class:`Connection`
 
 # Default will create the database if it doesn't exist
 connection = apsw.Connection("dbfile")
+
 # Open existing read-only
-connection = apsw.Connection("dbfile", flags = apsw.SQLITE_OPEN_READONLY)
+connection = apsw.Connection("dbfile", flags=apsw.SQLITE_OPEN_READONLY)
+
 # Open existing read-write (exception if it doesn't exist)
-connection = apsw.Connection("dbfile", flags = apsw.SQLITE_OPEN_READWRITE)
+connection = apsw.Connection("dbfile", flags=apsw.SQLITE_OPEN_READWRITE)
 
 ### executing_sql: Executing SQL
+# Use :meth:`Connection.execute` to execute SQL
 
 connection.execute("create table point(x,y,z)")
 connection.execute("insert into point values(1, 2, 3)")
@@ -50,84 +59,142 @@ connection.execute("""
 for row in connection.execute("select * from point"):
     print(row)
 
-### why_bindings: Why you use bindings
+### why_bindings: Why you use bindings to provide values
+# It is tempting to compose strings with the values in
+# them, but it is easy to mangle the query especially
+# if values.  It is known as `SQL injection <https://en.wikipedia.org/wiki/SQL_injection>`__
+# Bindings are the correct way to supply values to queries.
 
+# a simple value
 event = "system started"
 # DO NOT DO THIS
 query = "insert into log values(0, '" + event + "')"
 print("query:", query)
-# BECAUSE ...
+
+# BECAUSE ... a bad guy could provide a value like this
 event = "bad guy here') ; drop table important; -- "
+# which has effects like this
 query = "insert into log values(0, '" + event + "')"
 print("bad guy:", query)
 
 ### bindings_sequence: Bindings (sequence)
+# Bindings can be provided as a sequence such as with
+# a tuple or list.  Use **?** to show where the values go.
 
-# Use ? and provide values in a tuple (or list etc)
 query = "insert into log values(?, ?)"
-data = (7, event)
+data = (7, "restart")
 connection.execute(query, data)
 
-for row in connection.execute("select * from log"):
+# You can also use numbers after the ? to select
+# values from the sequence.  Note that numbering
+# starts at 1
+query = "select ?1, ?3, ?2"
+data = ("alpha", "beta", "gamma")
+for row in connection.execute(query, data):
     print(row)
 
-# You can also use numbers
-query = "insert into point values(?1, ?3, ?2)"
-data = ("one", "two", "three")
-connection.execute(query, data)
-
 ### bindings_dict: Bindings (dict)
+# You can also supply bindings with a dictionary.  Use :NAME, @NAME,
+# or $NAME, to provide the key name in the query.
 
-# You can use :NAME, @NAME or $NAME and a dict
 query = "insert into point values(:x, @y, $z)"
 data = {"x": 7, "y": 8, "z": 9}
 connection.execute(query, data)
 
 ### types: Using different types
+# SQLite supports None, int, float, str, bytes (binary data) If a
+# table declaration gives a type then SQLite attempts conversion.
+# `Read more <https://www.sqlite.org/flextypegood.html>`__.
 
-connection.execute("insert into point values(?,?,?)", (1, 1.1, None))  # integer, float/real, Null
-connection.execute("insert into point(x) values(?)", ("abc", ))  # string (note trailing comma to ensure tuple!)
-connection.execute(
-    "insert into point(x) values(?)",  # a blob (binary data)
-    (b"abc\xff\xfe", ))
+connection.execute("""
+    create table types1(a,b,c,d,e);
+    create table types2(a INTEGER, b REAL, c TEXT, d, e BLOB);
+    """)
 
-#for x, y, z in cursor.execute("select x,y,z from foo"):
-#    print(cursor.getdescription())  # shows column names and declared types
-#    print(x, y, z)
+data = ("12", 3, 4, 5.5, b"deadbeef")
+connection.execute("insert into types1 values(?,?,?,?,?)", data)
+connection.execute("insert into types2 values(?,?,?,?,?)", data)
 
+for row in connection.execute("select * from types1"):
+    print("types1", repr(row))
 
-connection.execute("insert into foo values(?,?,?)", (7, 'eight', False))
-connection.execute("insert into foo values(?,?,?1)", ('one', 'two'))  # nb sqlite does the numbers from 1
-
-###
-### bindings - dictionary
-###
-
-connection.execute("insert into foo values(:alpha, :beta, :gamma)", {'alpha': 1, 'beta': 2, 'gamma': 'three'})
-
+for row in connection.execute("select * from types2"):
+    print("types2", repr(row))
 
 ### transaction: Transactions
+# By default each statement is its own transaction (3 in the
+# example below).  A transaction finishes by flushing data to
+# storage and waiting for the operating system to confirm it is
+# permanently there (will survive a power failure).
 
+connection.execute("insert into point values(2, 2, 2)")
+connection.execute("insert into point values(3, 3, 3)")
+connection.execute("insert into point values(4, 4, 4)")
 
-###
-### tracing execution @@ example-exectrace
-###
+# You can use BEGIN / END to manually make a transaction
+connection.execute("BEGIN")
+connection.execute("insert into point values(2, 2, 2)")
+connection.execute("insert into point values(3, 3, 3)")
+connection.execute("insert into point values(4, 4, 4)")
+connection.execute("END")
+
+# Or use `with`` that does it automatically
+with connection:
+    connection.execute("insert into point values(2, 2, 2)")
+    connection.execute("insert into point values(3, 3, 3)")
+    connection.execute("insert into point values(4, 4, 4)")
+
+# Nested transactions are supported
+with connection:
+    connection.execute("insert into point values(2, 2, 2)")
+    with connection:
+        connection.execute("insert into point values(3, 3, 3)")
+        connection.execute("insert into point values(4, 4, 4)")
+
+### executemany: executemany
+# You can execute the same SQL against a sequence using
+# :meth:`Connection.executemany`
+
+data = (
+    (1, 1, 1),
+    (2, 2, 2),
+    (3, 3, 3),
+    (4, 4, 4),
+    (5, 5, 5),
+)
+query = "insert into point values(?,?,?)"
+
+# we do it in a transaction
+with connection:
+    # the query is run for each item in data
+    connection.executemany(query, data)
+
+### exectrace: Tracing execution
 
 
 def mytrace(cursor: apsw.Cursor, statement: str, bindings: Optional[apsw.Bindings]) -> bool:
     "Called just before executing each statement"
-    print("SQL:", statement)
-    if bindings:
-        print("Bindings:", bindings)
+    print("SQL:", statement.strip())
+    print("Bindings:", bindings)
     return True  # if you return False then execution is aborted
 
 
-connection.exectrace = mytrace
-connection.execute("drop table if exists bar ; create table bar(x,y,z); select * from point where x=?", (3, ))
+# you can trace a single cursor
+cursor = connection.cursor()
+cursor.exectrace = mytrace
+cursor.execute(
+    """
+        drop table if exists bar;
+        create table bar(x,y,z);
+        select * from point where x=?;
+        """, (3, ))
 
-###
-### tracing results @@ example-rowtrace
-###
+# if set on a connection then all uses are traced
+connection.exectrace = mytrace
+# and clearing it
+connection.exectrace = None
+
+### rowtrace: Tracing returned rows
 
 
 def rowtrace(cursor: apsw.Cursor, row: apsw.SQLiteValues) -> apsw.SQLiteValues:
@@ -137,64 +204,54 @@ def rowtrace(cursor: apsw.Cursor, row: apsw.SQLiteValues) -> apsw.SQLiteValues:
     return row
 
 
-#@@CAPTURE
-connection.rowtrace = rowtrace
-for row in connection.execute("select x,y from point where x>3"):
+# you can trace a single cursor
+cursor = connection.cursor()
+cursor.rowtrace = rowtrace
+for row in cursor.execute("select x,y from point where x>4"):
     pass
-#@@ENDCAPTURE
 
-# Clear tracers
+# if set on a connection then all uses are traced
+connection.rowtrace = rowtrace
+# and clearing it
 connection.rowtrace = None
-connection.exectrace = None
 
-###
-### executemany
-###
-
-# (This will work correctly with multiple statements, as well as statements that
-# return data.  The second argument can be anything that is iterable.)
-connection.executemany("insert into point (x) values(?)", ([1], [2], [3]))
-
-# You can also use it for statements that return data
-for row in connection.executemany("select * from point where x=?", ([1], [2], [3])):
-    print(row)
-
-###
-### defining your own functions  @@ scalar-example
-###
+### scalar: Defining your own functions
 
 
 def ilove7(*args: apsw.SQLiteValue) -> int:
-    "a scalar function"
-    print("ilove7 got", args, "but I love 7")
+    "A scalar function"
+    print(f"ilove7 got { args } but I love 7")
     return 7
 
 
 connection.createscalarfunction("seven", ilove7)
 
-#@@CAPTURE
-for row in connection.execute("select seven(x,y) from point"):
-    print(row)
-#@@ENDCAPTURE
+for row in connection.execute("select seven(x,y) from point where x>4"):
+    print("row", row)
 
-###
-### aggregate functions are more complex @@ aggregate-example
-###
+### aggregate: Defining aggregate functions
+
+# Aggregate functions are called multiple times with matching rows,
+# and then provide a final value.  An example is calculating an
+# average
 
 # Here we return the longest item when represented as a string.
 
 
 class longest:
+    # A class is used to hold the current longest value
 
     def __init__(self) -> None:
         self.longest = ""
 
     def step(self, *args: apsw.SQLiteValue) -> None:
+        # Called with each matching row
         for arg in args:
             if len(str(arg)) > len(self.longest):
                 self.longest = str(arg)
 
     def final(self) -> str:
+        # Called at the very end
         return self.longest
 
     @classmethod
@@ -202,173 +259,116 @@ class longest:
         return cls(), cls.step, cls.final
 
 
-#@@CAPTURE
 connection.createaggregatefunction("longest", longest.factory)
 for row in connection.execute("select longest(x,y) from point"):
     print(row)
-#@@ENDCAPTURE
 
-###
-### Defining collations.  @@ collation-example
-###
+### collations: Defining collations (sorting)
 
 # The default sorting mechanisms don't understand numbers at the end of strings
 # so here we define a collation that does
 
 connection.execute("create table s(str)")
-connection.executemany("insert into s values(?)", (["file1"], ["file7"], ["file17"], ["file20"], ["file3"]))
+connection.executemany("insert into s values(?)", (
+    ("file1", ),
+    ("file7", ),
+    ("file17", ),
+    ("file20", ),
+    ("file3", ),
+))
 
-#@@CAPTURE
+print("Standard sorting")
 for row in connection.execute("select * from s order by str"):
     print(row)
-#@@ENDCAPTURE
 
 
 def strnumcollate(s1: apsw.SQLiteValue, s2: apsw.SQLiteValue) -> int:
     # return -1 if s1<s2, +1 if s1>s2 else 0
 
-    # split values into two parts - the head and the numeric tail
-    values: list[tuple[str, int]] = [(str(s1), 0), (str(s2), 0)]
-    for vn, v in enumerate(values):
-        i = len(v[0])
-        for i in range(len(v[0]), 0, -1):
-            if v[0][i - 1] not in "01234567890":
-                break
-        try:
-            v = (v[0][:i], int(v[0][i:]))
-            values[vn] = v
-        except ValueError:
-            pass
+    def parts(v):
+        num = ""
+        while v and v[-1].isdigit():
+            num = v[-1] + num
+            v = v[:-1]
+        return v, int(num) if num else 0
+
+    ps1 = parts(str(s1))
+    ps2 = parts(str(s2))
+
     # compare
-    if values[0] < values[1]:
+    if ps1 < ps2:
         return -1
-    if values[0] > values[1]:
+    if ps1 > ps2:
         return 1
     return 0
 
 
 connection.createcollation("strnum", strnumcollate)
 
-#@@CAPTURE
+print("Using strnum")
 for row in connection.execute("select * from s order by str collate strnum"):
     print(row)
-#@@ENDCAPTURE
 
-###
-### Authorizer (eg if you want to control what user supplied SQL can do) @@ authorizer-example
-###
+### authorizer: Authorizer (control what SQL can do)
 
 
-def authorizer(operation: int, paramone: Optional[str], paramtwo: Optional[str], databasename: Optional[str],
-               triggerorview: Optional[str]) -> int:
+def auth(operation: int, p1: Optional[str], p2: Optional[str], db_name: Optional[str],
+         trigger_or_view: Optional[str]) -> int:
     """Called when each operation is prepared.  We can return SQLITE_OK, SQLITE_DENY or
     SQLITE_IGNORE"""
     # find the operation name
-    print(apsw.mapping_authorizer_function[operation], paramone, paramtwo, databasename, triggerorview)
-    if operation == apsw.SQLITE_CREATE_TABLE and paramone and paramone.startswith("private"):
+    print(apsw.mapping_authorizer_function[operation], p1, p2, db_name, trigger_or_view)
+    if operation == apsw.SQLITE_CREATE_TABLE and p1 and p1.startswith("private"):
         return apsw.SQLITE_DENY  # not allowed to create tables whose names start with private
 
     return apsw.SQLITE_OK  # always allow
 
 
-connection.authorizer = authorizer
-#@@CAPTURE
+connection.authorizer = auth
 connection.execute("insert into s values('foo')")
 connection.execute("select str from s limit 1")
-#@@ENDCAPTURE
+try:
+    connection.execute("create table private_stuff(secret)")
+    print("Created secret table!")
+except Exception as e:
+    print(e)
 
 # Clear authorizer
 connection.authorizer = None
 
-###
-### progress handler (SQLite 3 experimental feature) @@ example-progress-handler
-###
-
-# something to give us large numbers of random numbers
-import random
+### progress_handler: Progress handler
 
 
-def randomintegers(howmany: int) -> Iterator[Tuple[int]]:
-    for i in range(howmany):
+def some_numbers(how_many: int) -> Iterator[Tuple[int]]:
+    for _ in range(how_many):
         yield (random.randint(0, 9999999999), )
 
 
-# create a table with 100 random numbers
+# create a table with random numbers
 with connection:
-    connection.execute("create table bigone(x)")
-    connection.executemany("insert into bigone values(?)", randomintegers(100))
-
-# display an ascii spinner
-_phcount = 0
+    connection.execute("create table numbers(x)")
+    connection.executemany("insert into numbers values(?)", some_numbers(100))
 
 
-def progresshandler() -> bool:
-    global _phcount
-    print(f"progress handler { _phcount }")
-    _phcount += 1
+def progress_handler() -> bool:
+    print("progress handler called")
     return False  # returning True aborts
 
 
-# register progresshandler every 20 instructions
-connection.setprogresshandler(progresshandler, 20)
+# register handler every 50 vdbe instructions
+connection.setprogresshandler(progress_handler, 50)
 
-# see it in action - sorting 100 numbers to find the biggest takes a while
-for i in connection.execute("select max(x) from bigone"):
-    pass
+# Sorting the numbers to find the biggest
+for max_num in connection.execute("select max(x) from numbers"):
+    print(max_num)
 
 connection.setprogresshandler(None)
 
-###
-### commit hook @@ example-commithook
-###
-
-
-def mycommithook() -> int:
-    print("in commit hook")
-    hour = time.localtime()[3]
-    if hour < 8 or hour > 17:
-        print("no commits out of hours")
-        return 1  # abort commits outside of 8am through 6pm
-    print("commits okay at this time")
-    return 0  # let commit go ahead
-
-
-#@@CAPTURE
-connection.setcommithook(mycommithook)
-try:
-    with connection:
-        connection.execute("create table example(x,y,z); insert into example values (3,4,5)")
-except apsw.ConstraintError:
-    print("commit was not allowed")
-
-connection.setcommithook(None)
-#@@ENDCAPTURE
-
-###
-### update hook @@ example-updatehook
-###
-
-
-def myupdatehook(type: int, databasename: str, tablename: str, rowid: int) -> None:
-    print("Updated: %s database %s, table %s, row %d" %
-          (apsw.mapping_authorizer_function[type], databasename, tablename, rowid))
-
-
-#@@CAPTURE
-connection.setupdatehook(myupdatehook)
-connection.execute("insert into s values(?)", ("file93", ))
-connection.execute("update s set str=? where str=?", ("file94", "file93"))
-connection.execute("delete from s where str=?", ("file94", ))
-connection.setupdatehook(None)
-#@@ENDCAPTURE
-
-###
-### Blob I/O    @@ example-blobio
-###
+### blob_io: Blob I/O
 
 connection.execute("create table blobby(x,y)")
 # Add a blob we will fill in later
-connection.execute("insert into blobby values(1,zeroblob(10000))")
+connection.execute("insert into blobby values(1, zeroblob(10000))")
 # Or as a binding
 connection.execute("insert into blobby values(2,?)", (apsw.zeroblob(20000), ))
 # Open a blob for writing.  We need to know the rowid
@@ -379,9 +379,42 @@ blob.seek(2000)
 blob.write(b"hello world, again")
 blob.close()
 
-###
-### Virtual tables  @@ example-vtable
-###
+### commit_hook: Commit hook
+
+
+def my_commit_hook() -> bool:
+    print("in commit hook")
+    hour = time.localtime()[3]
+    if hour < 8 or hour > 17:
+        print("no commits out of hours")
+        return True  # abort commits outside of 8am through 6pm
+    print("commits okay at this time")
+    return False  # let commit go ahead
+
+
+connection.setcommithook(my_commit_hook)
+try:
+    connection.execute("create table example(x,y,z); insert into example values (3,4,5)")
+except apsw.ConstraintError:
+    print("commit was not allowed")
+
+connection.setcommithook(None)
+
+### update_hook: Update hook
+
+
+def my_update_hook(type: int, db_name: str, table_name: str, rowid: int) -> None:
+    op: str = apsw.mapping_authorizer_function[type]
+    print(f"Updated: { op } db { db_name }, table { table_name }, rowid { rowid }")
+
+
+connection.setupdatehook(my_update_hook)
+connection.execute("insert into s values(?)", ("file93", ))
+connection.execute("update s set str=? where str=?", ("file94", "file93"))
+connection.execute("delete from s where str=?", ("file94", ))
+connection.setupdatehook(None)
+
+### virtual_tables: Virtual tables
 
 # This virtual table stores information about files in a set of
 # directories so you can execute SQL queries
