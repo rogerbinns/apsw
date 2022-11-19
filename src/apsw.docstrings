@@ -1405,7 +1405,7 @@
 } while(0)
 
 
-#define  Connection_setcommithook_DOC "setcommithook($self,callable)\n--\n\nConnection.setcommithook(callable: Optional[Callable[[], None]]) -> None\n\n" \
+#define  Connection_setcommithook_DOC "setcommithook($self,callable)\n--\n\nConnection.setcommithook(callable: Optional[CommitHook]) -> None\n\n" \
 "*callable* will be called just before a commit.  It should return\n" \
 "False for the commit to go ahead and True for it to be turned\n" \
 "into a rollback. In the case of an exception in your callable, a\n" \
@@ -1418,7 +1418,7 @@
 "\n" \
 "Calls: `sqlite3_commit_hook <https://sqlite.org/c3ref/commit_hook.html>`__\n" 
 
-#define Connection_setcommithook_USAGE "Connection.setcommithook(callable: Optional[Callable[[], None]]) -> None"
+#define Connection_setcommithook_USAGE "Connection.setcommithook(callable: Optional[CommitHook]) -> None"
 
 #define Connection_setcommithook_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \

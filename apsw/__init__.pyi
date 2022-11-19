@@ -71,6 +71,11 @@ used.  Return False/None to abort execution, or True to continue"""
 Authorizer = Callable[[int, Optional[str], Optional[str], Optional[str], Optional[str]], int]
 """Authorizers are called with an operation code and 4 strings (which could be None) depending
 on the operatation.  Return SQLITE_OK, SQLITE_DENY, or SQLITE_IGNORE"""
+
+CommitHook = Callable[[], bool]
+"""Commit hook is called with no arguments and should return True to abort the commit and False
+to let it continue"""
+
 SQLITE_VERSION_NUMBER: int
 """The integer version number of SQLite that APSW was compiled
 against.  For example SQLite 3.6.4 will have the value *3006004*.
@@ -1240,7 +1245,7 @@ class Connection:
         Calls: `sqlite3_busy_timeout <https://sqlite.org/c3ref/busy_timeout.html>`__"""
         ...
 
-    def setcommithook(self, callable: Optional[Callable[[], None]]) -> None:
+    def setcommithook(self, callable: Optional[CommitHook]) -> None:
         """*callable* will be called just before a commit.  It should return
         False for the commit to go ahead and True for it to be turned
         into a rollback. In the case of an exception in your callable, a
