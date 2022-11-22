@@ -836,6 +836,7 @@ if __name__ == '__main__':
                         "VFS.excepthook",
                         "Connection.execute",
                         "Connection.executemany",
+                        "Blob.__exit__",
                 }:
                     missing.append(item["name"])
     for name, doc in sorted(all_exc_doc.items()):
