@@ -459,7 +459,7 @@ class Blob:
               res=blob.read(1024)"""
         ...
 
-    def __exit__(self, etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType) -> Optional[bool]:
+    def __exit__(self, etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Optional[bool]:
         """Implements context manager in conjunction with
         :meth:`~blob.__enter__`.  Any exception that happened in the
         *with* block is raised after closing the blob."""

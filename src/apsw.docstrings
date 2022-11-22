@@ -416,7 +416,7 @@
 "      blob.write(\"...\")\n" \
 "      res=blob.read(1024)\n" 
 
-#define  Blob_exit_DOC "__exit__($self,etype,evalue,etraceback)\n--\n\nBlob.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType) -> Optional[bool]\n\n" \
+#define  Blob_exit_DOC "__exit__($self,etype,evalue,etraceback)\n--\n\nBlob.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Optional[bool]\n\n" \
 "Implements context manager in conjunction with\n" \
 ":meth:`~blob.__enter__`.  Any exception that happened in the\n" \
 "*with* block is raised after closing the blob.\n" 
