@@ -3221,7 +3221,7 @@ error:
   return NULL;
 }
 
-/** .. method:: __exit__() -> Literal[False]
+/** .. method:: __exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Optional[bool]
 
   Implements context manager in conjunction with
   :meth:`~Connection.__enter__`.  Any exception that happened in the
@@ -3272,9 +3272,9 @@ static int connection_trace_and_exec(Connection *self, int release, int sp, int 
 }
 
 static PyObject *
-Connection_exit(Connection *self, PyObject *args)
+Connection_exit(Connection *self, PyObject *args, PyObject *kwds)
 {
-  PyObject *etype, *evalue, *etb;
+  PyObject *etype, *evalue, *etraceback;
   long sp;
   int res;
   int return_null = 0;
@@ -3293,12 +3293,16 @@ Connection_exit(Connection *self, PyObject *args)
     self->savepointlevel--;
   sp = self->savepointlevel;
 
-  if (!PyArg_ParseTuple(args, "OOO", &etype, &evalue, &etb))
-    return NULL;
+  {
+    static char *kwlist[] = {"etype", "evalue", "etraceback", NULL};
+    Connection_exit_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OOO:" Connection_exit_USAGE, kwlist, &etype, &evalue, &etraceback))
+      return NULL;
+  }
 
   /* try the commit first because it may fail in which case we'll need
      to roll it back - see issue 98 */
-  if (etype == Py_None && evalue == Py_None && etb == Py_None)
+  if (etype == Py_None && evalue == Py_None && etraceback == Py_None)
   {
     res = connection_trace_and_exec(self, 1, sp, 0);
     if (res == -1)
@@ -4028,7 +4032,7 @@ static PyMethodDef Connection_methods[] = {
      Connection_getrowtrace_DOC},
     {"__enter__", (PyCFunction)Connection_enter, METH_NOARGS,
      Connection_enter_DOC},
-    {"__exit__", (PyCFunction)Connection_exit, METH_VARARGS,
+    {"__exit__", (PyCFunction)Connection_exit, METH_VARARGS | METH_KEYWORDS,
      Connection_exit_DOC},
     {"wal_autocheckpoint", (PyCFunction)Connection_wal_autocheckpoint, METH_VARARGS | METH_KEYWORDS,
      Connection_wal_autocheckpoint_DOC},

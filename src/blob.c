@@ -640,7 +640,7 @@ APSWBlob_enter(APSWBlob *self)
   return (PyObject *)self;
 }
 
-/** .. method:: __exit__() -> Literal[False]
+/** .. method:: __exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType) -> Optional[bool]
 
   Implements context manager in conjunction with
   :meth:`~blob.__enter__`.  Any exception that happened in the
