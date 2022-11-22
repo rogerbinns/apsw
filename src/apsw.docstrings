@@ -294,11 +294,11 @@
 "as defined in :pep:`0343`.  The :meth:`~backup.__exit__` method ensures that backup\n" \
 "is :meth:`finished <backup.finish>`.\n" 
 
-#define  Backup_exit_DOC "__exit__($self,etype,evalue,etraceback)\n--\n\nBackup.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Literal[False]\n\n" \
+#define  Backup_exit_DOC "__exit__($self,etype,evalue,etraceback)\n--\n\nBackup.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Optional[bool]\n\n" \
 "Implements context manager in conjunction with :meth:`~backup.__enter__` ensuring\n" \
 "that the copy is :meth:`finished <backup.finish>`.\n" 
 
-#define Backup_exit_USAGE "Backup.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Literal[False]"
+#define Backup_exit_USAGE "Backup.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Optional[bool]"
 
 #define Backup_exit_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(etype), PyObject *)); \
@@ -416,7 +416,7 @@
 "      blob.write(\"...\")\n" \
 "      res=blob.read(1024)\n" 
 
-#define  Blob_exit_DOC "__exit__($self)\n--\n\nBlob.__exit__() -> Literal[False]\n\n" \
+#define  Blob_exit_DOC "__exit__($self,etype,evalue,etraceback)\n--\n\nBlob.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType) -> Optional[bool]\n\n" \
 "Implements context manager in conjunction with\n" \
 ":meth:`~blob.__enter__`.  Any exception that happened in the\n" \
 "*with* block is raised after closing the blob.\n" 
@@ -1063,11 +1063,20 @@
 "\n" \
 "See :meth:`Cursor.executemany` for more details.\n" 
 
-#define  Connection_exit_DOC "__exit__($self)\n--\n\nConnection.__exit__() -> Literal[False]\n\n" \
+#define  Connection_exit_DOC "__exit__($self,etype,evalue,etraceback)\n--\n\nConnection.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Optional[bool]\n\n" \
 "Implements context manager in conjunction with\n" \
 ":meth:`~Connection.__enter__`.  Any exception that happened in the\n" \
 "*with* block is raised after committing or rolling back the\n" \
 "savepoint.\n" 
+
+#define Connection_exit_USAGE "Connection.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Optional[bool]"
+
+#define Connection_exit_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(etype), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(evalue), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(etraceback), PyObject *)); \
+} while(0)
+
 
 #define  Connection_filecontrol_DOC "filecontrol($self,dbname,op,pointer)\n--\n\nConnection.filecontrol(dbname: str, op: int, pointer: int) -> bool\n\n" \
 "Calls the :meth:`~VFSFile.xFileControl` method on the :ref:`VFS`\n" \

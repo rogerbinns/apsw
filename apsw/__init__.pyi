@@ -357,7 +357,7 @@ class Backup:
         is :meth:`finished <backup.finish>`."""
         ...
 
-    def __exit__(self, etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Literal[False]:
+    def __exit__(self, etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Optional[bool]:
         """Implements context manager in conjunction with :meth:`~backup.__enter__` ensuring
         that the copy is :meth:`finished <backup.finish>`."""
         ...
@@ -459,7 +459,7 @@ class Blob:
               res=blob.read(1024)"""
         ...
 
-    def __exit__(self) -> Literal[False]:
+    def __exit__(self, etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType) -> Optional[bool]:
         """Implements context manager in conjunction with
         :meth:`~blob.__enter__`.  Any exception that happened in the
         *with* block is raised after closing the blob."""
@@ -981,7 +981,7 @@ class Connection:
         See :meth:`Cursor.executemany` for more details."""
         ...
 
-    def __exit__(self) -> Literal[False]:
+    def __exit__(self, etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Optional[bool]:
         """Implements context manager in conjunction with
         :meth:`~Connection.__enter__`.  Any exception that happened in the
         *with* block is raised after committing or rolling back the
