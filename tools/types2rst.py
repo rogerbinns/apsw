@@ -1,7 +1,7 @@
 #!/usr/bin/env/python3
 
 import ast, re
-from typing import List, Tuple
+from typing import List, Tuple, Any
 
 
 def process(module: ast.Module, source: str) -> List[Tuple[str, str, str]]:
@@ -26,7 +26,7 @@ def process(module: ast.Module, source: str) -> List[Tuple[str, str, str]]:
 
 # stuff defined in standard library
 std_typing = {"Union", "Callable", "Tuple", "Dict", "List", "Optional", "Any", "Sequence", "Mapping"}
-std_other = {"None", "int", "float", "bytes", "str", "dict", "tuple"}
+std_other = {"None", "int", "float", "bytes", "str", "dict", "tuple", "bool"}
 
 # from apsw
 apsw_mod = {"zeroblob", "Cursor", "Connection"}
@@ -35,11 +35,20 @@ apsw_mod = {"zeroblob", "Cursor", "Connection"}
 def sub(m: re.Match) -> str:
     text = m.group("name")
     if text in std_typing:
-        return f" `{ text } <https://docs.python.org/3/library/typing.html#typing.{ text }>`__ "
+        return f"`{ text } <https://docs.python.org/3/library/typing.html#typing.{ text }>`__ "
     if text in std_other:
-        return f" `{ text } <https://docs.python.org/3/library/stdtypes.html#{ text }>`__"
+        return f"`{ text } <https://docs.python.org/3/library/stdtypes.html#{ text }>`__"
     return f" :class:`{ text }`"
 
+def nomunge(pattern: str, replacement: Any, value: str) -> str:
+    # re causes problems with Mapping so quick hack
+    hack = "abc.Mapping" in value
+    if hack:
+        value = value.replace("abc.Mapping", "Xabc.XMapping")
+    value = re.sub(pattern, replacement, value)
+    if hack:
+        value = value.replace("Xabc.XMapping", "abc.Mapping")
+    return value
 
 def output(doc: List[Tuple[str, str, str]]) -> str:
     in_doc: set[str] = set()
@@ -47,12 +56,12 @@ def output(doc: List[Tuple[str, str, str]]) -> str:
     for name, _, _ in doc:
         in_doc.add(name)
     in_doc.update(apsw_mod)
-    pattern = r"\s\b(?P<name>" + "|".join(std_other.union(std_typing.union(in_doc))) + ")\\b"
+    pattern = r"\b(?P<name>" + "|".join(std_other.union(std_typing.union(in_doc))) + ")\\b"
 
     res = ""
     for name, value, descr in doc:
-        value = re.sub(pattern, sub, value)
-        descr = re.sub(pattern, sub, descr)
+        value = nomunge(pattern, sub, value)
+        descr = nomunge(pattern, sub, descr)
         res += f"""
 .. class:: { name }
 
