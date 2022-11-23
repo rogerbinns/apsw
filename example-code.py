@@ -60,10 +60,11 @@ for row in connection.execute("select * from point"):
     print(row)
 
 ### why_bindings: Why you use bindings to provide values
-# It is tempting to compose strings with the values in
-# them, but it is easy to mangle the query especially
-# if values.  It is known as `SQL injection <https://en.wikipedia.org/wiki/SQL_injection>`__
-# Bindings are the correct way to supply values to queries.
+# It is tempting to compose strings with the values in them, but it is
+# easy to mangle the query especially if values contain punctuation
+# and unicode.  It is known as `SQL injection
+# <https://en.wikipedia.org/wiki/SQL_injection>`__. Bindings are the
+# correct way to supply values to queries.
 
 # a simple value
 event = "system started"
@@ -94,24 +95,25 @@ for row in connection.execute(query, data):
     print(row)
 
 ### bindings_dict: Bindings (dict)
-# You can also supply bindings with a dictionary.  Use :NAME, @NAME,
-# or $NAME, to provide the key name in the query.
+# You can also supply bindings with a dictionary.  Use **:NAME**,
+# **@NAME**, or **$NAME**, to provide the key name in the query.
+# Names are case sensitive.
 
-query = "insert into point values(:x, @y, $z)"
-data = {"x": 7, "y": 8, "z": 9}
+query = "insert into point values(:x, @Y, $z)"
+data = {"x": 7, "Y": 8, "z": 9}
 connection.execute(query, data)
 
 ### types: Using different types
-# SQLite supports None, int, float, str, bytes (binary data) If a
+# SQLite supports None, int, float, str, bytes (binary data). If a
 # table declaration gives a type then SQLite attempts conversion.
 # `Read more <https://www.sqlite.org/flextypegood.html>`__.
 
 connection.execute("""
-    create table types1(a,b,c,d,e);
+    create table types1(a, b, c, d, e);
     create table types2(a INTEGER, b REAL, c TEXT, d, e BLOB);
     """)
 
-data = ("12", 3, 4, 5.5, b"deadbeef")
+data = ("12", 3, 4, 5.5, b"\x03\x72\xf4\x00\x9e")
 connection.execute("insert into types1 values(?,?,?,?,?)", data)
 connection.execute("insert into types2 values(?,?,?,?,?)", data)
 
@@ -125,7 +127,8 @@ for row in connection.execute("select * from types2"):
 # By default each statement is its own transaction (3 in the
 # example below).  A transaction finishes by flushing data to
 # storage and waiting for the operating system to confirm it is
-# permanently there (will survive a power failure).
+# permanently there (ie will survive a power failure) which takes
+# a while.
 
 connection.execute("insert into point values(2, 2, 2)")
 connection.execute("insert into point values(3, 3, 3)")
@@ -170,9 +173,11 @@ with connection:
     connection.executemany(query, data)
 
 ### exectrace: Tracing execution
+# You can trace execution of SQL statements.  See :ref:`more about
+# tracing <tracing>`.
 
 
-def mytrace(cursor: apsw.Cursor, statement: str, bindings: Optional[apsw.Bindings]) -> bool:
+def my_tracer(cursor: apsw.Cursor, statement: str, bindings: Optional[apsw.Bindings]) -> bool:
     "Called just before executing each statement"
     print("SQL:", statement.strip())
     print("Bindings:", bindings)
@@ -181,7 +186,7 @@ def mytrace(cursor: apsw.Cursor, statement: str, bindings: Optional[apsw.Binding
 
 # you can trace a single cursor
 cursor = connection.cursor()
-cursor.exectrace = mytrace
+cursor.exectrace = my_tracer
 cursor.execute(
     """
         drop table if exists bar;
@@ -189,15 +194,17 @@ cursor.execute(
         select * from point where x=?;
         """, (3, ))
 
-# if set on a connection then all uses are traced
-connection.exectrace = mytrace
+# if set on a connection then all cursors are traced
+connection.exectrace = my_tracer
 # and clearing it
 connection.exectrace = None
 
 ### rowtrace: Tracing returned rows
+# You can trace returned rows, including modifying what is returned or
+# skipping it completely.  See :ref:`more about tracing <tracing>`.
 
 
-def rowtrace(cursor: apsw.Cursor, row: apsw.SQLiteValues) -> apsw.SQLiteValues:
+def row_tracer(cursor: apsw.Cursor, row: apsw.SQLiteValues) -> apsw.SQLiteValues:
     """Called with each row of results before they are handed off.  You can return None to
     cause the row to be skipped or a different set of values to return"""
     print("Row:", row)
@@ -206,16 +213,18 @@ def rowtrace(cursor: apsw.Cursor, row: apsw.SQLiteValues) -> apsw.SQLiteValues:
 
 # you can trace a single cursor
 cursor = connection.cursor()
-cursor.rowtrace = rowtrace
+cursor.rowtrace = row_tracer
 for row in cursor.execute("select x,y from point where x>4"):
     pass
 
-# if set on a connection then all uses are traced
-connection.rowtrace = rowtrace
+# if set on a connection then all cursors are traced
+connection.rowtrace = row_tracer
 # and clearing it
 connection.rowtrace = None
 
 ### scalar: Defining your own functions
+# Scalar functions take one or more values and return one value.  They
+# are registered by calling :meth:`Connection.createscalarfunction`.
 
 
 def ilove7(*args: apsw.SQLiteValue) -> int:
@@ -230,16 +239,15 @@ for row in connection.execute("select seven(x,y) from point where x>4"):
     print("row", row)
 
 ### aggregate: Defining aggregate functions
-
 # Aggregate functions are called multiple times with matching rows,
 # and then provide a final value.  An example is calculating an
-# average
-
-# Here we return the longest item when represented as a string.
+# average.  They are registered by calling
+# :meth:`Connection.createaggregatefunction`.
 
 
 class longest:
-    # A class is used to hold the current longest value
+    # Find which value when represented as a string is
+    # the longest
 
     def __init__(self) -> None:
         self.longest = ""
@@ -260,16 +268,18 @@ class longest:
 
 
 connection.createaggregatefunction("longest", longest.factory)
-for row in connection.execute("select longest(x,y) from point"):
+for row in connection.execute("select longest(event) from log"):
     print(row)
 
 ### collations: Defining collations (sorting)
+# How you sort can depend on the languages or values involved.  You
+# register a collation by calling :meth:`Connection.createcollation`.
 
-# The default sorting mechanisms don't understand numbers at the end of strings
-# so here we define a collation that does
+# This example sorting mechanisms understands some text followed by a
+# number and ensures the number portion gets sorted correctly
 
-connection.execute("create table s(str)")
-connection.executemany("insert into s values(?)", (
+connection.execute("create table names(name)")
+connection.executemany("insert into names values(?)", (
     ("file1", ),
     ("file7", ),
     ("file17", ),
@@ -278,14 +288,14 @@ connection.executemany("insert into s values(?)", (
 ))
 
 print("Standard sorting")
-for row in connection.execute("select * from s order by str"):
+for row in connection.execute("select * from names order by name"):
     print(row)
 
 
-def strnumcollate(s1: apsw.SQLiteValue, s2: apsw.SQLiteValue) -> int:
+def str_num_collate(s1: apsw.SQLiteValue, s2: apsw.SQLiteValue) -> int:
     # return -1 if s1<s2, +1 if s1>s2 else 0
 
-    def parts(v):
+    def parts(v: str) -> tuple[str, int]:
         num = ""
         while v and v[-1].isdigit():
             num = v[-1] + num
@@ -303,13 +313,16 @@ def strnumcollate(s1: apsw.SQLiteValue, s2: apsw.SQLiteValue) -> int:
     return 0
 
 
-connection.createcollation("strnum", strnumcollate)
+connection.createcollation("strnum", str_num_collate)
 
+print()
 print("Using strnum")
-for row in connection.execute("select * from s order by str collate strnum"):
+for row in connection.execute("select * from names order by name collate strnum"):
     print(row)
 
 ### authorizer: Authorizer (control what SQL can do)
+# You can allow, deny, or ignore what SQL does.  Use
+# :attr:`Connection.authorizer` to set an authorizer.
 
 
 def auth(operation: int, p1: Optional[str], p2: Optional[str], db_name: Optional[str],
@@ -325,8 +338,8 @@ def auth(operation: int, p1: Optional[str], p2: Optional[str], db_name: Optional
 
 
 connection.authorizer = auth
-connection.execute("insert into s values('foo')")
-connection.execute("select str from s limit 1")
+connection.execute("insert into names values('foo')")
+connection.execute("select name from names limit 1")
 try:
     connection.execute("create table private_stuff(secret)")
     print("Created secret table!")
@@ -337,6 +350,10 @@ except Exception as e:
 connection.authorizer = None
 
 ### progress_handler: Progress handler
+# Some operations (eg joins, sorting) can take many operations to
+# complete.  Register a progress handler callback with
+# :meth:`Connection.setprogresshandler` which lets you provide
+# feedback and allows cancelling.
 
 
 def some_numbers(how_many: int) -> Iterator[Tuple[int]]:
@@ -362,15 +379,21 @@ connection.setprogresshandler(progress_handler, 50)
 for max_num in connection.execute("select max(x) from numbers"):
     print(max_num)
 
+# Clear handler
 connection.setprogresshandler(None)
 
 ### blob_io: Blob I/O
+# BLOBS (binary large objects) are supported by SQLite.  Note that you
+# cannot change the size of one, but you can allocate one filled with
+# zeroes, and then later open it and read / write the contents similar
+# to a file, without having the entire blob in memory.  Use
+# :meth:`Connection.blobopen` to open a blob.
 
 connection.execute("create table blobby(x,y)")
 # Add a blob we will fill in later
 connection.execute("insert into blobby values(1, zeroblob(10000))")
 # Or as a binding
-connection.execute("insert into blobby values(2,?)", (apsw.zeroblob(20000), ))
+connection.execute("insert into blobby values(2, ?)", (apsw.zeroblob(20000), ))
 # Open a blob for writing.  We need to know the rowid
 rowid = connection.execute("select ROWID from blobby where x=1").fetchall()[0][0]
 blob = connection.blobopen("main", "blobby", "y", rowid, True)
@@ -380,6 +403,8 @@ blob.write(b"hello world, again")
 blob.close()
 
 ### commit_hook: Commit hook
+# A commit hook can allow or veto commits.  Register a commit hook
+# with  :meth:`Connection.setcommithook`.
 
 
 def my_commit_hook() -> bool:
@@ -394,13 +419,18 @@ def my_commit_hook() -> bool:
 
 connection.setcommithook(my_commit_hook)
 try:
-    connection.execute("create table example(x,y,z); insert into example values (3,4,5)")
+    with connection:
+        connection.execute("create table example(x,y,z); insert into example values (3,4,5)")
 except apsw.ConstraintError:
     print("commit was not allowed")
 
 connection.setcommithook(None)
 
 ### update_hook: Update hook
+# Update hooks let you know that data has been added, changed, or
+# removed.  For example you could use this to discard cached
+# information.  Register a hook using
+# :meth:`Connection.setupdatehook`.
 
 
 def my_update_hook(type: int, db_name: str, table_name: str, rowid: int) -> None:
@@ -409,18 +439,29 @@ def my_update_hook(type: int, db_name: str, table_name: str, rowid: int) -> None
 
 
 connection.setupdatehook(my_update_hook)
-connection.execute("insert into s values(?)", ("file93", ))
-connection.execute("update s set str=? where str=?", ("file94", "file93"))
-connection.execute("delete from s where str=?", ("file94", ))
+connection.execute("insert into names values(?)", ("file93", ))
+connection.execute("update names set name=? where name=?", ("file94", "file93"))
+connection.execute("delete from names where name=?", ("file94", ))
+
+# Clear the hook
 connection.setupdatehook(None)
 
 ### virtual_tables: Virtual tables
+# Virtual tables let you provide data on demand as a SQLite table so
+# you can use SQL queries against that data. :ref:`Read more about
+# virtual tables <virtualtables>`.
 
-# This virtual table stores information about files in a set of
-# directories so you can execute SQL queries
+# This example provides information about all the files in Python's
+# path.  The minimum amount of code needed is shown, and lets SQLite
+# do all the heavy lifting.  A more advanced table would use indices
+# and filters to reduce the number of rows shown to SQLite.
+
+# these first columns are used by our virtual table
+vtcolumns = ["rowid", "name", "directory"]
 
 
-def getfiledata(directories):
+def get_file_data(directories):
+    "Returns a list of column names, and a list of all the files with their attributes"
     columns = None
     data = []
     counter = 1
@@ -431,7 +472,8 @@ def getfiledata(directories):
             counter += 1
             st = os.stat(os.path.join(directory, f))
             if columns is None:
-                columns = ["rowid", "name", "directory"] + [x for x in dir(st) if x.startswith("st_")]
+                # we add on all the fields from os.stat
+                columns = vtcolumns + [x for x in dir(st) if x.startswith("st_")]
             data.append([counter, f, directory] + [getattr(st, x) for x in columns[3:]])
     return columns, data
 
@@ -440,7 +482,8 @@ def getfiledata(directories):
 class Source:
 
     def Create(self, db, modulename, dbname, tablename, *args):
-        columns, data = getfiledata([eval(a.replace("\\", "\\\\")) for a in args])  # eval strips off layer of quotes
+        # the eval strips off layer of quotes
+        columns, data = get_file_data([eval(a.replace("\\", "\\\\")) for a in args])
         schema = "create table foo(" + ','.join(["'%s'" % (x, ) for x in columns[1:]]) + ")"
         return schema, Table(columns, data)
 
@@ -498,28 +541,28 @@ connection.createmodule("filesource", Source())
 sysdirs = ",".join(["'%s'" % (x, ) for x in sys.path[1:] if len(x) and os.path.isdir(x)])
 connection.execute("create virtual table sysfiles using filesource(" + sysdirs + ")")
 
-#@@CAPTURE
-# Which 3 files are the biggest?
+print("3 biggest files")
 for size, directory, file in connection.execute(
         "select st_size,directory,name from sysfiles order by st_size desc limit 3"):
     print(size, file, directory)
-#@@ENDCAPTURE
 
-# Which 3 files are the oldest?
-#@@CAPTURE
+print()
+print("3 oldest files")
 for ctime, directory, file in connection.execute(
         "select st_ctime,directory,name from sysfiles order by st_ctime limit 3"):
     print(ctime, file, directory)
-#@@ENDCAPTURE
 
-### @@ example-vfs
-### A VFS that "obfuscates" the database file contents.  The scheme
-### used is to xor all bytes with 0xa5.  This scheme honours that used
-### for MAPI and SQL Server.
-###
+### vfs: VFS - Virtual File System
+# VFS lets you control access to the filesystem from SQLite.  APSW
+# makes it easy to "inherit" from an existing VFS and monitor or alter
+# data as it flows through.  Read more about :ref:`VFS <vfs>`.
+
+# This example VFS "obfuscates" the database file contents by xor all
+# bytes with 0xa5.  URI parameters are also shown as a way you can
+# pass additional information for files.
 
 
-def encryptme(data):
+def obfuscate(data):
     if not data: return data
     return bytes([x ^ 0xa5 for x in data])
 
@@ -527,22 +570,23 @@ def encryptme(data):
 # Inheriting from a base of "" means the default vfs
 class ObfuscatedVFS(apsw.VFS):
 
-    def __init__(self, vfsname="obfu", basevfs=""):
+    def __init__(self, vfsname="obfuscated", basevfs=""):
         self.vfsname = vfsname
         self.basevfs = basevfs
         apsw.VFS.__init__(self, self.vfsname, self.basevfs)
 
     # We want to return our own file implementation, but also
     # want it to inherit
-    def xOpen(self, name, flags):
-        # We can look at uri parameters
+    def xOpen(self, name, flags: int):
         if isinstance(name, apsw.URIFilename):
-            #@@CAPTURE
+            print("xOpen of", name.filename())
+            # We can look at uri parameters
             print("fast is", name.uri_parameter("fast"))
             print("level is", name.uri_int("level", 3))
             print("warp is", name.uri_boolean("warp", False))
             print("notpresent is", name.uri_parameter("notpresent"))
-            #@@ENDCAPTURE
+        else:
+            print("xOpen of", name)
         return ObfuscatedVFSFile(self.basevfs, name, flags)
 
 
@@ -554,45 +598,45 @@ class ObfuscatedVFSFile(apsw.VFSFile):
         apsw.VFSFile.__init__(self, inheritfromvfsname, filename, flags)
 
     def xRead(self, amount, offset):
-        return encryptme(super(ObfuscatedVFSFile, self).xRead(amount, offset))
+        return obfuscate(super().xRead(amount, offset))
 
     def xWrite(self, data, offset):
-        super(ObfuscatedVFSFile, self).xWrite(encryptme(data), offset)
+        super().xWrite(obfuscate(data), offset)
 
 
 # To register the VFS we just instantiate it
 obfuvfs = ObfuscatedVFS()
+
 # Lets see what vfs are now available?
-#@@CAPTURE
-print(apsw.vfsnames())
-#@@ENDCAPTURE
+print("VFS available", apsw.vfsnames())
 
 # Make an obfuscated db, passing in some URI parameters
+# default open flags
+open_flags = apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE
+# add in using URI parameters
+open_flags |= apsw.SQLITE_OPEN_URI
+
 obfudb = apsw.Connection("file:myobfudb?fast=speed&level=7&warp=on",
-                         flags=apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_URI,
+                         flags=open_flags,
                          vfs=obfuvfs.vfsname)
+
 # Check it works
 obfudb.execute("create table foo(x,y); insert into foo values(1,2)")
 
 # Check it really is obfuscated on disk
-#@@CAPTURE
-print(repr(open("myobfudb", "rb").read()[:20]))
-#@@ENDCAPTURE
+print("What is on disk", repr(open("myobfudb", "rb").read()[:20]))
 
 # And unobfuscating it
-#@@CAPTURE
-print(repr(encryptme(open("myobfudb", "rb").read()[:20])))
-#@@ENDCAPTURE
+print("Unobfuscated disk", repr(obfuscate(open("myobfudb", "rb").read()[:20])))
 
 # Tidy up
 obfudb.close()
 os.remove("myobfudb")
 
-###
-### Limits @@example-limit
-###
+### limits: Limits
 
-#@@CAPTURE
+
+
 # Print some limits
 for limit in ("LENGTH", "COLUMN", "ATTACHED"):
     name = "SQLITE_LIMIT_" + limit
@@ -615,11 +659,8 @@ except apsw.TooBigError:
     print("Caught toobig exception")
 connection.limit(apsw.SQLITE_LIMIT_LENGTH, 0x7fffffff)
 
-#@@ENDCAPTURE
 
-###
-### Backup to memory @@example-backup
-###
+### backup: Backup opened database
 
 # We will copy the disk database into a memory database
 
@@ -630,7 +671,7 @@ with memcon.backup("main", connection, "main") as backup:
     backup.step()  # copy whole database in one go
 
 # There will be no disk accesses for this query
-for row in memcon.execute("select * from s"):
+for row in memcon.execute("select * from names"):
     pass
 
 ###
