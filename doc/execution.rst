@@ -156,7 +156,7 @@ three arguments.
     The bindings being used.  This may be :const:`None`, a dictionary or
     a tuple.
 
-If the tracer return value evaluates to False/None then execution is
+If the tracer return value is False then execution is
 aborted with an :exc:`ExecTraceAbort` exception.  See the
 :ref:`example <example-exectrace>`.
 
