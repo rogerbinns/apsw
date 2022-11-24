@@ -20,10 +20,8 @@ or the statement is complete.
 
 The :meth:`Cursor.execute` method automatically does the preparing and
 starts execution. If none of the statements return rows then execution
-will go to the end. If a row is returned then you need to call
-:meth:`Cursor.next` to get the row values or use the cursor as an
-iterator. Execution will resume as necessary to satisfy
-:meth:`~Cursor.next` calls.
+will go to the end. If a row is returned then you use the cursor as an
+iterator. Execution will resume as necessary to return each result row.
 
 However this means that if you don't read the rows returned then the
 rest of your statements won't be executed.  APSW will detect
@@ -57,7 +55,7 @@ defined functions, collations and the various hooks/handlers run.)
 Note that you cannot use the same cursor object in multiple threads
 concurrently to execute statements. APSW will detect this and throw an
 exception. It is safe to use the object serially (eg calling
-:meth:`Cursor.execute` in one thread and :meth:`Cursor.next` in
+:meth:`Cursor.execute` in one thread and iterator in
 another. You also can't do things like try to
 :meth:`~Connection.close` a Connection concurrently in two threads.
 
@@ -153,7 +151,7 @@ three arguments.
   sql
     The SQL text being executed
   bindings
-    The bindings being used.  This may be :const:`None`, a dictionary or
+    The bindings being used.  This may be *`None*, a dictionary or
     a tuple.
 
 If the tracer return value is False then execution is

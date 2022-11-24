@@ -12,14 +12,12 @@ Module Interface
 
 There is no connect method. Use the :class:`Connection` constructor instead.
 
-The Connection object and any cursors can be used in any thread.  As
-an extreme example, you could call :meth:`Cursor.next` in separate
-threads each thread getting the next row.  You cannot use the cursor
-concurrently in multiple threads for example calling
-:meth:`Cursor.execute` at the same time.  If you attempt to do so then
-an :exc:`exception <ThreadingViolationError>` will be raised. The
-Python Global Interpreter Lock (GIL) is released during all SQLite API
-calls allowing for maximum concurrency.
+The Connection object and any cursors can be used in any thread.  You
+cannot use the cursor concurrently in multiple threads for example
+calling :meth:`Cursor.execute` at the same time.  If you attempt to do
+so then an :exc:`exception <ThreadingViolationError>` will be raised.
+The Python Global Interpreter Lock (GIL) is released during all SQLite
+API calls allowing for maximum concurrency.
 
 Three different paramstyles are supported. Note that SQLite starts
 parameter numbers from one not zero when using *qmark/numeric* style.
@@ -78,7 +76,9 @@ as an iterator to get the results (if any).
 it as an iterator to get the results (if any).
 
 fetchone is not available. Use the cursor as an iterator, or call
-:meth:`~Cursor.next` to get the next row.
+Python's `next function
+<https://docs.python.org/3/library/functions.html?highlight=next#next>`__
+to get the next row.
 
 fetchmany is not available. Use :meth:`~Cursor.fetchall` to get all
 remaining results.
