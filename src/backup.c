@@ -15,13 +15,13 @@ Backup
 
 A backup object encapsulates copying one database to another.  You
 call :meth:`Connection.backup` on the destination database to get the
-backup object.  Call :meth:`~backup.step` to copy some pages
+Backup object.  Call :meth:`~Backup.step` to copy some pages
 repeatedly dealing with errors as appropriate.  Finally
-:meth:`~backup.finish` cleans up committing or rolling back and
+:meth:`~Backup.finish` cleans up committing or rolling back and
 releasing locks.
 
 Here is an example usage using the **with** statement to ensure
-:meth:`~backup.finish` is called::
+:meth:`~Backup.finish` is called::
 
   # copies source.main into db
   with db.backup("main", source, "main") as b:
@@ -30,7 +30,7 @@ Here is an example usage using the **with** statement to ensure
           print(b.remaining, b.pagecount, "\r", flush = True)
 
 If you are not using **with** then you'll need to ensure
-:meth:`~backup.finish` is called::
+:meth:`~Backup.finish` is called::
 
   # copies source.main into db
   b=db.backup("main", source, "main")
