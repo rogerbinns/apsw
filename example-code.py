@@ -509,7 +509,7 @@ class Table:
     Destroy = Disconnect
 
 
-# Represents a cursor
+# Represents a cursor used during SQL query processing
 class Cursor:
 
     def __init__(self, table):
@@ -571,9 +571,9 @@ def obfuscate(data):
 class ObfuscatedVFS(apsw.VFS):
 
     def __init__(self, vfsname="obfuscated", basevfs=""):
-        self.vfsname = vfsname
-        self.basevfs = basevfs
-        apsw.VFS.__init__(self, self.vfsname, self.basevfs)
+        self.vfs_name = vfsname
+        self.base_vfs = basevfs
+        apsw.VFS.__init__(self, self.vfs_name, self.base_vfs)
 
     # We want to return our own file implementation, but also
     # want it to inherit
@@ -587,7 +587,7 @@ class ObfuscatedVFS(apsw.VFS):
             print("notpresent is", name.uri_parameter("notpresent"))
         else:
             print("xOpen of", name)
-        return ObfuscatedVFSFile(self.basevfs, name, flags)
+        return ObfuscatedVFSFile(self.base_vfs, name, flags)
 
 
 # The file implementation where we override xRead and xWrite to call our
@@ -616,9 +616,9 @@ open_flags = apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE
 # add in using URI parameters
 open_flags |= apsw.SQLITE_OPEN_URI
 
-obfudb = apsw.Connection("file:myobfudb?fast=speed&level=7&warp=on",
+obfudb = apsw.Connection("file:myobfudb?fast=speed&level=7&warp=on&another=true",
                          flags=open_flags,
-                         vfs=obfuvfs.vfsname)
+                         vfs=obfuvfs.vfs_name)
 
 # Check it works
 obfudb.execute("create table foo(x,y); insert into foo values(1,2)")
@@ -634,19 +634,19 @@ obfudb.close()
 os.remove("myobfudb")
 
 ### limits: Limits
-
-
+# SQLite lets you see and update various limits via
+# :meth:`Connection.limit`
 
 # Print some limits
 for limit in ("LENGTH", "COLUMN", "ATTACHED"):
     name = "SQLITE_LIMIT_" + limit
-    maxname = "SQLITE_MAX_" + limit  # compile time
+    max_name = "SQLITE_MAX_" + limit  # compile time limit
     orig = connection.limit(getattr(apsw, name))
     print(name, orig)
     # To get the maximum, set to 0x7fffffff and then read value back
     connection.limit(getattr(apsw, name), 0x7fffffff)
     max = connection.limit(getattr(apsw, name))
-    print(maxname, max)
+    print(max_name, " ", max)
 
 # Set limit for size of a string
 connection.execute("create table testlimit(s)")
@@ -657,66 +657,84 @@ try:
     print("string exceeding limit was inserted")
 except apsw.TooBigError:
     print("Caught toobig exception")
+
+# reset back to largest value
 connection.limit(apsw.SQLITE_LIMIT_LENGTH, 0x7fffffff)
 
+### backup: Backup an open database
+# You can backup a database that is open.  The pages are copied in
+# batches of your choosing and allow continued use of the database.
+# :ref:`Read more <backup>`.
 
-### backup: Backup opened database
-
-# We will copy the disk database into a memory database
-
+# We will copy a disk database into a memory database
 memcon = apsw.Connection(":memory:")
 
 # Copy into memory
 with memcon.backup("main", connection, "main") as backup:
-    backup.step()  # copy whole database in one go
+    backup.step(10)  # copy 10 pages in each batch
 
-# There will be no disk accesses for this query
-for row in memcon.execute("select * from names"):
-    pass
-
-###
-### Shell  @@ example-shell
-###
+### shell: Shell
+# APSW includes a :ref:`shell <shell>`  like the one in `SQLite
+# <https://sqlite.org/cli.html>`__, and is also extensible from
+# Python.
 
 import apsw.shell
 
-# Here we use the shell to do a csv export providing the existing db
-# connection
+# Here we use the shell to do a csv export and then dump part of the
+# database
 
 # Export to a StringIO
 import io
 
 output = io.StringIO()
 shell = apsw.shell.Shell(stdout=output, db=connection)
+
 # How to execute a dot command
 shell.process_command(".mode csv")
 shell.process_command(".headers on")
+
 # How to execute SQL
-shell.process_sql(
-    "create table csvtest(col1,col2); insert into csvtest values(3,4); insert into csvtest values('a b', NULL)")
-# Let the shell figure out SQL vs dot command
+shell.process_sql("""
+    create table csvtest(column1, column2 INTEGER);
+    create index faster on csvtest(column1);
+    insert into csvtest values(3, 4);
+    insert into csvtest values('a b', NULL);
+""")
+
+# Or let the shell figure out SQL vs dot command
 shell.process_complete_line("select * from csvtest")
 
-# Verify output
-#@@CAPTURE
+# see the result
 print(output.getvalue())
-#@@ENDCAPTURE
 
-###
-### Statistics @@example-status
-###
+# reset output
+output.seek(0)
 
-#@@CAPTURE
-print("SQLite memory usage current %d max %d" % apsw.status(apsw.SQLITE_STATUS_MEMORY_USED))
-#@@ENDCAPTURE
+# make a dump of the same table
+shell.process_command(".dump csvtest%")
 
-###
-### Cleanup
-###
+# see the result
+print("\nDump output\n")
+print(output.getvalue())
 
-# We can close connections manually (useful if you want to catch exceptions)
-# but you don't have to
-connection.close(True)  # force it since we want to exit
+### status: Statistics
+# SQLite provides statistics by :meth:`status`
 
-# Delete database - we don't need it any more
+current_usage, max_usage = apsw.status(apsw.SQLITE_STATUS_MEMORY_USED)
+print(f"SQLite memory usage { current_usage } max { max_usage }")
+
+### cleanup:  Cleanup
+# As a general rule you do not need to do any cleanup.  Standard
+# Python garbage collection will take of everything.  Even if the
+# process crashes with a connection in the middle of a transaction,
+# the next time SQLite opens that database it will automatically
+# rollback the partial data.
+
+# You close connections manually (useful if you want to catch exceptions)
+connection.close()
+#  You can call close multiple times, and also indicate to ignore exceptions
+connection.close(True)
+
+# Deleting the database file. Note that there can be additional files
+# with suffixes like -wal, -shm, and -journal.
 os.remove("dbfile")
