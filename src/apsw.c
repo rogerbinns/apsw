@@ -265,7 +265,7 @@ initialize(void)
   It is unlikely you will want to call this method and there is no
   need to do so.  It is a **really** bad idea to call it unless you
   are absolutely sure all :class:`connections <Connection>`,
-  :class:`blobs <blob>`, :class:`cursors <Cursor>`, :class:`vfs <VFS>`
+  :class:`blobs <Blob>`, :class:`cursors <Cursor>`, :class:`vfs <VFS>`
   etc have been closed, deleted and garbage collected.
 
   -* sqlite3_shutdown
@@ -1444,11 +1444,11 @@ SQLite constants
 
 SQLite has `many constants
 <https://sqlite.org/c3ref/constlist.html>`_ used in various
-interfaces.  To use a constant such as :const:`SQLITE_OK`, just
+interfaces.  To use a constant such as *SQLITE_OK*, just
 use ``apsw.SQLITE_OK``.
 
 The same values can be used in different contexts. For example
-:const:`SQLITE_OK` and :const:`SQLITE_CREATE_INDEX` both have a value
+*SQLITE_OK* and *SQLITE_CREATE_INDEX* both have a value
 of zero. For each group of constants there is also a mapping (dict)
 available that you can supply a string to and get the corresponding
 numeric value, or supply a numeric value and get the corresponding

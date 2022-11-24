@@ -240,7 +240,7 @@ Connection_close_internal(Connection *self, int force)
 /** .. method:: close(force: bool = False) -> None
 
   Closes the database.  If there are any outstanding :class:`cursors
-  <Cursor>`, :class:`blobs <blob>` or :class:`backups <backup>` then
+  <Cursor>`, :class:`blobs <Blob>` or :class:`backups <Backup>` then
   they are closed too.  It is normally not necessary to call this
   method as the database is automatically closed when there are no
   more references.  It is ok to call the method multiple times.
@@ -343,7 +343,7 @@ Connection_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
   in-memory database that is not shared with any other connections.
 
   :param flags: One or more of the `open flags <https://sqlite.org/c3ref/c_open_autoproxy.html>`_ orred together
-  :param vfs: The name of the `vfs <https://sqlite.org/c3ref/vfs.html>`_ to use.  If :const:`None` then the default
+  :param vfs: The name of the `vfs <https://sqlite.org/c3ref/vfs.html>`_ to use.  If *None* then the default
      vfs will be used.
 
   :param statementcachesize: Use zero to disable the statement cache,
@@ -477,7 +477,7 @@ finally:
    :param rowid: The id that uniquely identifies the row.
    :param writeable: If True then you can read and write the blob.  If False then you can only read it.
 
-   :rtype: :class:`blob`
+   :rtype: :class:`Blob`
 
    .. seealso::
 
@@ -989,7 +989,7 @@ finally:
 /** .. method:: setupdatehook(callable: Optional[Callable[[int, str, str, int], None]]) -> None
 
   Calls *callable* whenever a row is updated, deleted or inserted.  If
-  *callable* is :const:`None` then any existing update hook is
+  *callable* is *None* then any existing update hook is
   unregistered.  The update hook cannot make changes to the database while
   the query is still executing, but can record them for later use or
   apply them in a different connection.
@@ -997,7 +997,7 @@ finally:
   The update hook is called with 4 parameters:
 
     type (int)
-      :const:`SQLITE_INSERT`, :const:`SQLITE_DELETE` or :const:`SQLITE_UPDATE`
+      *SQLITE_INSERT*, *SQLITE_DELETE* or *SQLITE_UPDATE*
     database name (string)
       This is ``main`` for the database or the name specified in
       `ATTACH <https://sqlite.org/lang_attach.html>`_
@@ -1073,7 +1073,7 @@ finally:
 /** .. method:: setrollbackhook(callable: Optional[Callable[[], None]]) -> None
 
   Sets a callable which is invoked during a rollback.  If *callable*
-  is :const:`None` then any existing rollback hook is unregistered.
+  is *None* then any existing rollback hook is unregistered.
 
   The *callable* is called with no parameters and the return value is ignored.
 
@@ -1313,7 +1313,7 @@ finally:
 /** .. method:: setwalhook(callable: Optional[Callable[[Connection, str, int], int]]) -> None
 
  *callable* will be called just after data is committed in :ref:`wal`
- mode.  It should return :const:`SQLITE_OK` or an error code.  The
+ mode.  It should return *SQLITE_OK* or an error code.  The
  callback is called with 3 parameters:
 
    * The Connection
@@ -1774,7 +1774,7 @@ finally:
    Sets the busy handler to callable. callable will be called with one
    integer argument which is the number of prior calls to the busy
    callback for the same lock. If the busy callback returns False,
-   then SQLite returns :const:`SQLITE_BUSY` to the calling code. If
+   then SQLite returns *SQLITE_BUSY* to the calling code. If
    the callback returns True, then SQLite tries to open the table
    again and the cycle repeats.
 
@@ -2864,16 +2864,17 @@ Connection_filecontrol(Connection *self, PyObject *args, PyObject *kwds)
 
 /** .. method:: sqlite3pointer() -> int
 
-  Returns the underlying `sqlite3 *
-  <https://sqlite.org/c3ref/sqlite3.html>`_ for the connection. This
-  method is useful if there are other C level libraries in the same
-  process and you want them to use the APSW connection handle. The
-  value is returned as a number using :meth:`PyLong_FromVoidPtr` under the
-  hood. You should also ensure that you increment the reference count on
-  the :class:`Connection` for as long as the other libraries are using
-  the pointer.  It is also a very good idea to call
-  :meth:`sqlitelibversion` and ensure it is the same as the other
-  libraries.
+Returns the underlying `sqlite3 *
+<https://sqlite.org/c3ref/sqlite3.html>`_ for the connection. This
+method is useful if there are other C level libraries in the same
+process and you want them to use the APSW connection handle. The value
+is returned as a number using `PyLong_FromVoidPtr
+<https://docs.python.org/3/c-api/long.html?highlight=pylong_fromvoidptr#c.PyLong_FromVoidPtr>`__
+under the hood. You should also ensure that you increment the
+reference count on the :class:`Connection` for as long as the other
+libraries are using the pointer.  It is also a very good idea to call
+:meth:`sqlitelibversion` and ensure it is the same as the other
+libraries.
 
 */
 static PyObject *
@@ -3221,7 +3222,7 @@ error:
   return NULL;
 }
 
-/** .. method:: __exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Optional[bool]
+/** .. method:: __exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]
 
   Implements context manager in conjunction with
   :meth:`~Connection.__enter__`.  Any exception that happened in the
@@ -3750,7 +3751,7 @@ Connection_get_in_transaction(Connection *self)
   tracer. Your execution tracer can also abort execution of a
   statement.
 
-  If *callable* is :const:`None` then any existing execution tracer is
+  If *callable* is *None* then any existing execution tracer is
   removed.
 
   .. seealso::
@@ -3802,7 +3803,7 @@ Connection_set_exectrace_attr(Connection *self, PyObject *value)
   the Cursor installed its own tracer.  You can change the data that
   is returned or cause the row to be skipped altogether.
 
-  If *callable* is :const:`None` then any existing row tracer is
+  If *callable* is *None* then any existing row tracer is
   removed.
 
   .. seealso::
@@ -3865,9 +3866,9 @@ Connection_set_rowtrace_attr(Connection *self, PyObject *value)
     * A string name of the database (or None)
     * Name of the innermost trigger or view doing the access (or None)
 
-  The authorizer callback should return one of :const:`SQLITE_OK`,
-  :const:`SQLITE_DENY` or :const:`SQLITE_IGNORE`.
-  (:const:`SQLITE_DENY` is returned if there is an error in your
+  The authorizer callback should return one of *SQLITE_OK*,
+  *SQLITE_DENY* or *SQLITE_IGNORE*.
+  (*SQLITE_DENY* is returned if there is an error in your
   Python code).
 
   .. seealso::

@@ -162,7 +162,7 @@ APSWBackup_dealloc(APSWBackup *self)
 
   Copies *npages* pages from the source to destination database.  The source database is locked during the copy so
   using smaller values allows other access to the source database.  The destination database is always locked until the
-  backup object is :meth:`finished <backup.finish>`.
+  backup object is :meth:`finished <Backup.finish>`.
 
   :param npages: How many pages to copy. If the parameter is omitted
      or negative then all remaining pages are copied. The default page
@@ -174,7 +174,7 @@ APSWBackup_dealloc(APSWBackup *self)
   unable to lock the source database.  You can catch those and try
   again.
 
-  :returns: True if this copied the last remaining outstanding pages, else false.  This is the same value as :attr:`~backup.done`
+  :returns: True if this copied the last remaining outstanding pages, else false.  This is the same value as :attr:`~Backup.done`
 
   -* sqlite3_backup_step
 */
@@ -246,9 +246,9 @@ APSWBackup_finish(APSWBackup *self)
 
 /** .. method:: close(force: bool = False) -> None
 
-  Does the same thing as :meth:`~backup.finish`.  This extra api is
+  Does the same thing as :meth:`~Backup.finish`.  This extra api is
   provided to give the same api as other APSW objects such as
-  :meth:`Connection.close`, :meth:`blob.close` and
+  :meth:`Connection.close`, :meth:`Blob.close` and
   :meth:`Cursor.close`.  It is safe to call this method multiple
   times.
 
@@ -281,8 +281,8 @@ APSWBackup_close(APSWBackup *self, PyObject *args, PyObject *kwds)
   :type: int
 
   Read only. How many pages were remaining to be copied after the last
-  step.  If you haven't called :meth:`~backup.step` or the backup
-  object has been :meth:`finished <backup.finish>` then zero is
+  step.  If you haven't called :meth:`~Backup.step` or the backup
+  object has been :meth:`finished <Backup.finish>` then zero is
   returned.
 
   -* sqlite3_backup_remaining
@@ -298,8 +298,8 @@ APSWBackup_get_remaining(APSWBackup *self, void *Py_UNUSED(ignored))
   :type: int
 
   Read only. How many pages were in the source database after the last
-  step.  If you haven't called :meth:`~backup.step` or the backup
-  object has been :meth:`finished <backup.finish>` then zero is
+  step.  If you haven't called :meth:`~Backup.step` or the backup
+  object has been :meth:`finished <Backup.finish>` then zero is
   returned.
 
   -* sqlite3_backup_pagecount
@@ -315,8 +315,8 @@ APSWBackup_get_pagecount(APSWBackup *self, void *Py_UNUSED(ignored))
 
   You can use the backup object as a `context manager
   <http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
-  as defined in :pep:`0343`.  The :meth:`~backup.__exit__` method ensures that backup
-  is :meth:`finished <backup.finish>`.
+  as defined in :pep:`0343`.  The :meth:`~Backup.__exit__` method ensures that backup
+  is :meth:`finished <Backup.finish>`.
 */
 static PyObject *
 APSWBackup_enter(APSWBackup *self)
@@ -328,10 +328,10 @@ APSWBackup_enter(APSWBackup *self)
   return (PyObject *)self;
 }
 
-/** .. method:: __exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Optional[bool]
+/** .. method:: __exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]
 
-  Implements context manager in conjunction with :meth:`~backup.__enter__` ensuring
-  that the copy is :meth:`finished <backup.finish>`.
+  Implements context manager in conjunction with :meth:`~Backup.__enter__` ensuring
+  that the copy is :meth:`finished <Backup.finish>`.
 */
 static PyObject *
 APSWBackup_exit(APSWBackup *self, PyObject *args, PyObject *kwds)
@@ -369,7 +369,7 @@ APSWBackup_exit(APSWBackup *self, PyObject *args, PyObject *kwds)
 /** .. attribute:: done
   :type: bool
 
-  A boolean that is True if the copy completed in the last call to :meth:`~backup.step`.
+  A boolean that is True if the copy completed in the last call to :meth:`~Backup.step`.
 */
 static PyMemberDef backup_members[] = {
     /* name type offset flags doc */

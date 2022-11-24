@@ -529,7 +529,7 @@ def do_argparse(item):
                 breakpoint()
                 pass
         elif param["type"] in {
-                "PyObject", "Any", "Optional[type[BaseException]]", "Optional[BaseException]", "Optional[TracebackType]"
+                "PyObject", "Any", "Optional[type[BaseException]]", "Optional[BaseException]", "Optional[types.TracebackType]"
         }:
             type = "PyObject *"
             kind = "O"

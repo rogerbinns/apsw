@@ -6,6 +6,8 @@ Building
 See :ref:`version info <version_stuff>` to understand the
 relationship between Python, APSW, and SQLite versions.
 
+.. currentmodule:: apsw
+
 setup.py
 ========
 
@@ -44,7 +46,7 @@ fetch
 -----
 
 :file:`setup.py` can automatically fetch SQLite and other optional
-components.  You can set the environment variable :const:`http_proxy`
+components.  You can set the environment variable *http_proxy*
 to control proxy usage for the download.
 
 If any files are downloaded then the build step will automatically use
@@ -256,7 +258,7 @@ These methods are tried in order:
 .. note::
 
   If you compiled SQLite with any OMIT flags (eg
-  :const:`SQLITE_OMIT_LOAD_EXTENSION`) then you must include them in
+  *SQLITE_OMIT_LOAD_EXTENSION*) then you must include them in
   the :file:`setup.py` command or file. For this example you could use
   **setup.py build --omit=load_extension** to add the same flags.
 

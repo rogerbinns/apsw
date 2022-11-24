@@ -48,7 +48,7 @@ store the filename in the database.  Doing so loses the `ACID
                  (apsw.zeroblob(100000000),))
 
   This class is used for the second way.  Once a blob exists in the
-  database, you then use the :class:`blob` class to read and write its
+  database, you then use the :class:`Blob` class to read and write its
   contents.
 */
 
@@ -351,16 +351,16 @@ APSWBlob_read(APSWBlob *self, PyObject *args, PyObject *kwds)
   return buffy;
 }
 
-/** .. method:: readinto(buffer: Union[bytearray, array[Any], memoryview], offset: int = 0, length: int = -1) -> None
+/** .. method:: readinto(buffer: Union[bytearray, array.array[Any], memoryview], offset: int = 0, length: int = -1) -> None
 
   Reads from the blob into a buffer you have supplied.  This method is
   useful if you already have a buffer like object that data is being
-  assembled in, and avoids allocating results in :meth:`blob.read` and
+  assembled in, and avoids allocating results in :meth:`Blob.read` and
   then copying into buffer.
 
   :param buffer: A writable buffer like object.
                  There is a bytearray type that is very useful.
-                 :class:`array.array` also works.
+                 `arrays <https://docs.python.org/3/library/array.html>`__ also work.
 
   :param offset: The position to start writing into the buffer
                  defaulting to the beginning.
@@ -368,7 +368,7 @@ APSWBlob_read(APSWBlob *self, PyObject *args, PyObject *kwds)
   :param length: How much of the blob to read.  The default is the
                  remaining space left in the buffer.  Note that if
                  there is more space available than blob left then you
-                 will get a :exc:`ValueError` exception.
+                 will get a *ValueError* exception.
 
   -* sqlite3_blob_read
 */
@@ -578,14 +578,14 @@ finally:
   .. note::
 
      In some cases errors that technically occurred in the
-     :meth:`~blob.read` and :meth:`~blob.write` routines may not be
+     :meth:`~Blob.read` and :meth:`~Blob.write` routines may not be
      reported until close is called.  Similarly errors that occurred
-     in those methods (eg calling :meth:`~blob.write` on a read-only
-     blob) may also be re-reported in :meth:`~blob.close`.  (This
+     in those methods (eg calling :meth:`~Blob.write` on a read-only
+     blob) may also be re-reported in :meth:`~Blob.close`.  (This
      behaviour is what the underlying SQLite APIs do - it is not APSW
      doing it.)
 
-  It is okay to call :meth:`~blob.close` multiple times.
+  It is okay to call :meth:`~Blob.close` multiple times.
 
   :param force: Ignores any errors during close.
 
@@ -619,7 +619,7 @@ APSWBlob_close(APSWBlob *self, PyObject *args, PyObject *kwds)
   You can use a blob as a `context manager
   <http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
   as defined in :pep:`0343`.  When you use *with* statement,
-  the blob is always :meth:`closed <~blob.close>` on exit from the block, even if an
+  the blob is always :meth:`closed <Blob.close>` on exit from the block, even if an
   exception occurred in the block.
 
   For example::
@@ -640,10 +640,10 @@ APSWBlob_enter(APSWBlob *self)
   return (PyObject *)self;
 }
 
-/** .. method:: __exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Optional[bool]
+/** .. method:: __exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]
 
   Implements context manager in conjunction with
-  :meth:`~blob.__enter__`.  Any exception that happened in the
+  :meth:`~Blob.__enter__`.  Any exception that happened in the
   *with* block is raised after closing the blob.
 */
 
