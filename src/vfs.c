@@ -36,7 +36,7 @@ that inherits from the default vfs.  Then override methods you want to
 change behaviour of.  If you want to just change how file operations
 are done then you have to override :meth:`VFS.xOpen` to return a file
 instance that has your overridden :class:`VFSFile` methods.  The
-:ref:`example <example-vfs>` demonstrates obfuscating the database
+:ref:`example <example_vfs>` demonstrates obfuscating the database
 file contents.
 
 .. note::
@@ -2837,7 +2837,7 @@ static PyTypeObject APSWVFSFileType =
     SQLite uses a convoluted method of storing `uri parameters
     <https://sqlite.org/uri.html>`__ after the filename binding the
     C filename representation and parameters together.  This class
-    encapsulates that binding.  The :ref:`example <example-vfs>` shows
+    encapsulates that binding.  The :ref:`example <example_vfs>` shows
     usage of this class.
 
     Your :meth:`VFS.xOpen` method will generally be passed one of

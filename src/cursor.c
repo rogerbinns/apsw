@@ -1018,7 +1018,6 @@ APSWCursor_step(APSWCursor *self)
     .. seealso::
 
        * :ref:`executionmodel`
-       * :ref:`Example <example-cursor>`
 
 */
 static PyObject *

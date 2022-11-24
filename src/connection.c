@@ -481,7 +481,7 @@ finally:
 
    .. seealso::
 
-     * :ref:`Blob I/O example <example-blobio>`
+     * :ref:`Blob I/O example <example_blob_io>`
      * `SQLite row ids <https://sqlite.org/autoinc.html>`_
 
    -* sqlite3_blob_open
@@ -940,7 +940,7 @@ Connection_interrupt(Connection *self)
 
   .. seealso::
 
-    * :ref:`Example <example-limit>`
+    * :ref:`Example <example_limits>`
 
 */
 static PyObject *
@@ -1008,7 +1008,7 @@ finally:
 
   .. seealso::
 
-      * :ref:`Example <example-updatehook>`
+      * :ref:`Example <example_update_hook>`
 
   -* sqlite3_update_hook
 */
@@ -1230,7 +1230,7 @@ finally:
 
   .. seealso::
 
-    * :ref:`Example <example-commithook>`
+    * :ref:`Example <example_commit_hook>`
 
   -* sqlite3_commit_hook
 
@@ -1402,7 +1402,7 @@ finally:
 
   .. seealso::
 
-     * :ref:`Example <example-progress-handler>`
+     * :ref:`Example <example_progress_handler>`
 
   -* sqlite3_progress_handler
 */
@@ -2494,7 +2494,7 @@ apsw_free_func(void *funcinfo)
 
   .. seealso::
 
-     * :ref:`Example <scalar-example>`
+     * :ref:`Example <example_scalar>`
      * :meth:`~Connection.createaggregatefunction`
 
   -* sqlite3_create_function_v2
@@ -2590,7 +2590,7 @@ finally:
 
   .. seealso::
 
-     * :ref:`Example <aggregate-example>`
+     * :ref:`Example <example_aggregate>`
      * :meth:`~Connection.createscalarfunction`
 
   -* sqlite3_create_function_v2
@@ -2740,7 +2740,7 @@ collation_destroy(void *context)
 
   .. seealso::
 
-    * :ref:`Example <collation-example>`
+    * :ref:`Example <example_collation>`
 
   -* sqlite3_create_collation_v2
 */
@@ -2973,7 +2973,7 @@ static void apswvtabFree(void *context);
 
     .. seealso::
 
-       * :ref:`Example <example-vtable>`
+       * :ref:`Example <example_virtual_tables>`
 
     -* sqlite3_create_module_v2
 */
@@ -3400,7 +3400,7 @@ Connection_config(Connection *self, PyObject *args)
 
     The :func:`status` example which works in exactly the same way.
 
-    * :ref:`Status example <example-status>`
+    * :ref:`Status example <example_status>`
 
   -* sqlite3_db_status
 
@@ -3872,7 +3872,7 @@ Connection_set_rowtrace_attr(Connection *self, PyObject *value)
 
   .. seealso::
 
-    * :ref:`Example <authorizer-example>`
+    * :ref:`Example <example_authorizer>`
     * :ref:`statementcache`
 
   -* sqlite3_set_authorizer

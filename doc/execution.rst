@@ -158,7 +158,7 @@ three arguments.
 
 If the tracer return value is False then execution is
 aborted with an :exc:`ExecTraceAbort` exception.  See the
-:ref:`example <example-exectrace>`.
+:ref:`example <example_exectrace>`.
 
 Execution tracers can be installed on a specific cursor by setting
 :attr:`Cursor.exectrace` or for all cursors by setting
@@ -186,7 +186,7 @@ two arguments.
 
 Whatever you return from the tracer is what is actually returned to
 the caller of :meth:`~Cursor.execute`. If you return None then the
-whole row is skipped. See the :ref:`example <example-rowtrace>`.
+whole row is skipped. See the :ref:`example <example_rowtrace>`.
 
 Row tracers can be installed on a specific cursor by setting
 :attr:`Cursor.rowtrace` or for all cursors by setting

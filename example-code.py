@@ -271,7 +271,7 @@ connection.createaggregatefunction("longest", longest.factory)
 for row in connection.execute("select longest(event) from log"):
     print(row)
 
-### collations: Defining collations (sorting)
+### collation: Defining collations (sorting)
 # How you sort can depend on the languages or values involved.  You
 # register a collation by calling :meth:`Connection.createcollation`.
 

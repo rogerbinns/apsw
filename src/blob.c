@@ -187,7 +187,7 @@ static PyTypeObject APSWBlobType;
     :class:`zeroblob` or the `zeroblob()
     <https://sqlite.org/lang_corefunc.html>`_ function.
 
-  See the :ref:`example <example-blobio>`.
+  See the :ref:`example <example_blob_io>`.
 */
 
 static void

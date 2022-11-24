@@ -45,7 +45,7 @@ autoimport`) to get more detailed information.
 
 .. code-block:: text
 
-  
+
   .autoimport FILENAME ?TABLE?  Imports filename creating a table and
                                 automatically working out separators and data
                                 types (alternative to .import command)
@@ -92,8 +92,8 @@ autoimport`) to get more detailed information.
   .timer ON|OFF                 Control printing of time and resource usage after
                                 each query
   .width NUM NUM ...            Set the column widths for "column" mode
-  
-  
+
+
 
 .. help-end:
 
@@ -133,7 +133,7 @@ The following command line options are accepted:
      -encoding 'name'     the encoding to use for files
                           opened via .import, .read & .output
      -nocolour            disables colour output to screen
-  
+
 
 .. usage-end:
 
@@ -147,7 +147,7 @@ that help with debugging and introspecting SQLite itself.)
 
 You can also use the shell programmatically (or even interactively and
 programmatically at the same time).  See the :ref:`example
-<example-shell>` for using the API.
+<example_shell>` for using the API.
 
 Unicode
 =======

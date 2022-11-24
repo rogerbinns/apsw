@@ -1098,7 +1098,7 @@ StringIO bug/incompatibility with other Python versions).
 Simplified access to the shell's :attr:`database <Shell.db>` from the
 API.
 
-Added a shell :ref:`example <example-shell>`.
+Added a shell :ref:`example <example_shell>`.
 
 
 3.6.23-r1
@@ -1509,7 +1509,7 @@ documentation easier.
 You can now write your own :ref:`VFS` in Python. You can also inherit
 from an existing VFS making it easy to augment or override small bits
 of behaviour without having to code everything else. See the
-:ref:`example <example-vfs>` where database files are obfuscated by
+:ref:`example <example_vfs>` where database files are obfuscated by
 XORing their contents.
 
 :file:`setup.py` now takes an optional `--fetch-sqlite[=ver]`

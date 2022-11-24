@@ -564,7 +564,7 @@ releasememory(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
 
   .. seealso::
 
-    * :ref:`Status example <example-status>`
+    * :ref:`Status example <example_status>`
 
   -* sqlite3_status64
 
