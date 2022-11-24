@@ -40,7 +40,7 @@ C method documentation <https://sqlite.org/vtab.html>`__.  At the C
 level, they are just one set of methods. At the Python/APSW level,
 they are split over the 3 types of object. The leading **x** is
 omitted in Python. You can return SQLite error codes (eg
-:const:`SQLITE_READONLY`) by raising the appropriate exceptions (eg
+*SQLITE_READONLY*) by raising the appropriate exceptions (eg
 :exc:`ReadOnlyError`).  :meth:`exceptionfor` is a useful helper
 function to do the mapping.
 
@@ -398,7 +398,7 @@ apswvtabDisconnect(sqlite3_vtab *pVTab)
 /** .. method:: BestIndex(constraints: Sequence[Tuple[int, int], ...], orderbys: Sequence[Tuple[int, int], ...]) -> Any
 
   This is a complex method. To get going initially, just return
-  :const:`None` and you will be fine. Implementing this method reduces
+  *None* and you will be fine. Implementing this method reduces
   the number of rows scanned in your table to satisfy queries, but
   only if you have an index or index like mechanism available.
 
@@ -970,11 +970,11 @@ finally:
 
   Insert a row with the specified *rowid*.
 
-  :param rowid: :const:`None` if you should choose the rowid yourself, else a 64 bit integer
+  :param rowid: *None* if you should choose the rowid yourself, else a 64 bit integer
   :param fields: A tuple of values the same length and order as columns in your table
 
-  :returns: If *rowid* was :const:`None` then return the id you assigned
-    to the row.  If *rowid* was not :const:`None` then the return value
+  :returns: If *rowid* was *None* then return the id you assigned
+    to the row.  If *rowid* was not *None* then the return value
     is ignored.
 */
 /** .. method:: UpdateChangeRow(row: int, newrowid: int, fields: Tuple[SQLiteValue, ...])

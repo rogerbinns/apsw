@@ -51,7 +51,7 @@ To return an error from any routine you should raise an exception. The
 exception will be translated into the appropriate SQLite error code
 for SQLite. To return a specific SQLite error code use
 :meth:`exceptionfor`.  If the exception does not map to any specific
-error code then :const:`SQLITE_ERROR` which corresponds to
+error code then *SQLITE_ERROR* which corresponds to
 :exc:`SQLError` is returned to SQLite.
 
 The SQLite code that deals with VFS errors behaves in varying
@@ -106,7 +106,7 @@ across.
 |                                              |                                | :meth:`VFSFile.excepthook` is called with   |
 |                                              |                                | ZeroDivision exception                      |
 +----------------------------------------------+--------------------------------+---------------------------------------------+
-|                                              | :const:`SQLITE_ERROR` (closest |                                             |
+|                                              | *SQLITE_ERROR* (closest        |                                             |
 |                                              | matching SQLite error code) is |                                             |
 |                                              | returned to SQLite by APSW     |                                             |
 +----------------------------------------------+--------------------------------+---------------------------------------------+
@@ -116,7 +116,7 @@ across.
 |                                              |                                | them.                                       |
 +----------------------------------------------+--------------------------------+---------------------------------------------+
 |                                              | SQLite returns                 |                                             |
-|                                              | :const:`SQLITE_FULL` to APSW   |                                             |
+|                                              | *SQLITE_FULL* to APSW          |                                             |
 +----------------------------------------------+--------------------------------+---------------------------------------------+
 | APSW returns :class:`apsw.FullError`         |                                |                                             |
 +----------------------------------------------+--------------------------------+---------------------------------------------+
@@ -256,7 +256,7 @@ typedef struct
 
 */
 
-/** .. method:: excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[TracebackType]) -> Any
+/** .. method:: excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) -> Any
 
     Called when there has been an exception in a :class:`VFS` routine.
     The default implementation passes args to ``sys.excepthook`` and if that
@@ -307,7 +307,7 @@ apswvfs_xDelete(sqlite3_vfs *vfs, const char *zName, int syncDir)
 
     Delete the named file. If the file is missing then raise an
     :exc:`IOError` exception with extendedresult
-    :const:`SQLITE_IOERR_DELETE_NOENT`
+    *SQLITE_IOERR_DELETE_NOENT*
 
     :param filename: File to delete
 
@@ -582,7 +582,7 @@ finally:
     This method should return a new file object based on name.  You
     can return a :class:`VFSFile` from a completely different VFS.
 
-    :param name: File to open.  Note that *name* may be :const:`None` in which
+    :param name: File to open.  Note that *name* may be *None* in which
         case you should open a temporary file with a name of your
         choosing.  May be an instance of :class:`URIFilename`.
 
@@ -590,10 +590,10 @@ finally:
       outputflags]``.  Each integer is one or more of the `open flags
       <https://sqlite.org/c3ref/c_open_autoproxy.html>`_ binary orred
       together.  The ``inputflags`` tells you what SQLite wants.  For
-      example :const:`SQLITE_OPEN_DELETEONCLOSE` means the file should
+      example *SQLITE_OPEN_DELETEONCLOSE* means the file should
       be automatically deleted when closed.  The ``outputflags``
       describes how you actually did open the file.  For example if you
-      opened it read only then :const:`SQLITE_OPEN_READONLY` should be
+      opened it read only then *SQLITE_OPEN_READONLY* should be
       set.
 
 
@@ -1603,7 +1603,7 @@ APSWVFS_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSED(k
         this value then SQLite will not `be able to open it
         <https://sqlite.org/src/tktview/c060923a5422590b3734eb92eae0c94934895b68>`__.
 
-    :raises ValueError: If *base* is not :const:`None` and the named vfs is not
+    :raises ValueError: If *base* is not *None* and the named vfs is not
       currently registered.
 
     -* sqlite3_vfs_register sqlite3_vfs_find
@@ -1784,7 +1784,7 @@ static PyTypeObject APSWVFSType =
        operating systems.
 */
 
-/** .. method:: excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[TracebackType]) ->None
+/** .. method:: excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) ->None
 
     Called when there has been an exception in a :class:`VFSFile`
     routine.  The default implementation calls ``sys.excepthook`` and

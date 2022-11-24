@@ -86,7 +86,7 @@ module:
 
 * :meth:`Cursor.executemany` also works with statements that return
   data such as selects, and you can have multiple statements.
-  sqlite3's :meth:`executescript` method doesn't allow any form of
+  sqlite3's *executescript* method doesn't allow any form of
   data being returned (it silently ignores any returned data).
 
 * sqlite3 swallows exceptions in your callbacks making it far harder

@@ -27,7 +27,7 @@ class Shell:
       program name.  You can also pass in None and then call
       :meth:`process_args` if you want to catch any errors
       in handling the arguments yourself.
-    :param db: A existing :class:`Connection` you wish to use
+    :param db: A existing :class:`~apsw.Connection` you wish to use
 
     The commands and behaviour are modelled after the `interactive
     shell <https://sqlite.org/sqlite.html>`__ that is part of
@@ -150,7 +150,7 @@ class Shell:
         self._db = db
         self.dbfilename = dbfilename
 
-    db = property(_ensure_db, _set_db, None, "The current :class:`Connection`")
+    db = property(_ensure_db, _set_db, None, "The current :class:`~apsw.Connection`")
 
     def process_args(self, args):
         """Process command line options specified in args.  It is safe to
@@ -2488,7 +2488,7 @@ Enter SQL statements terminated with a ";"
 
     def handle_interrupt(self):
         """Deal with keyboard interrupt (typically Control-C).  It
-        will :meth:`~Connection.interrupt` the database and print"^C" if interactive."""
+        will :meth:`~apsw.Connection.interrupt` the database and print"^C" if interactive."""
         self.db.interrupt()
         if not self.bail and self.interactive:
             self.write(self.stderr, "^C\n")
