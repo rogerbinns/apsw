@@ -54,7 +54,7 @@ def get_output(filename: str) -> dict[str, list[str]]:
             print("SECTION", cur_section)
         else:
             assert cur_section is not None
-            output[cur_section].append(s)
+            output[cur_section].extend(s.split("\n"))
             print(s)
 
     exec(compile("\n".join(code), "example-code.py", "exec"), {"print": my_print})
