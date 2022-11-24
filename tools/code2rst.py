@@ -87,7 +87,10 @@ def do_mappings():
         if shouldexit:
             sys.exit(1)
 
-        op.append(map + " `" + desc + " <" + consts[desc]["page"] + ">`__")
+        op.append(f".. data:: { map }")
+        op.append("    :type: typing.Dict[typing.Union[str, int], typing.Union[int, str]]")
+        op.append("")
+        op.append("    `" + desc + " <" + consts[desc]["page"] + ">`__ constants")
         op.append("")
 
         vals = m[:]
