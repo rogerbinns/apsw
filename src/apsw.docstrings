@@ -208,7 +208,7 @@
 "It is unlikely you will want to call this method and there is no\n" \
 "need to do so.  It is a **really** bad idea to call it unless you\n" \
 "are absolutely sure all :class:`connections <Connection>`,\n" \
-":class:`blobs <blob>`, :class:`cursors <Cursor>`, :class:`vfs <VFS>`\n" \
+":class:`blobs <Blob>`, :class:`cursors <Cursor>`, :class:`vfs <VFS>`\n" \
 "etc have been closed, deleted and garbage collected.\n" \
 "\n" \
 "Calls: `sqlite3_shutdown <https://sqlite.org/c3ref/initialize.html>`__\n" 
@@ -268,9 +268,9 @@
 #define  Backup_class_DOC "You create a backup instance by calling :meth:`Connection.backup`.\n" 
 
 #define  Backup_close_DOC "close($self,force=False)\n--\n\nBackup.close(force: bool = False) -> None\n\n" \
-"Does the same thing as :meth:`~backup.finish`.  This extra api is\n" \
+"Does the same thing as :meth:`~Backup.finish`.  This extra api is\n" \
 "provided to give the same api as other APSW objects such as\n" \
-":meth:`Connection.close`, :meth:`blob.close` and\n" \
+":meth:`Connection.close`, :meth:`Blob.close` and\n" \
 ":meth:`Cursor.close`.  It is safe to call this method multiple\n" \
 "times.\n" \
 "\n" \
@@ -286,19 +286,19 @@
 
 #define  Backup_done_DOC ":type: bool\n" \
 "\n" \
-"A boolean that is True if the copy completed in the last call to :meth:`~backup.step`.\n" 
+"A boolean that is True if the copy completed in the last call to :meth:`~Backup.step`.\n" 
 
 #define  Backup_enter_DOC "__enter__($self)\n--\n\nBackup.__enter__() -> Backup\n\n" \
 "You can use the backup object as a `context manager\n" \
 "<http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_\n" \
-"as defined in :pep:`0343`.  The :meth:`~backup.__exit__` method ensures that backup\n" \
-"is :meth:`finished <backup.finish>`.\n" 
+"as defined in :pep:`0343`.  The :meth:`~Backup.__exit__` method ensures that backup\n" \
+"is :meth:`finished <Backup.finish>`.\n" 
 
-#define  Backup_exit_DOC "__exit__($self,etype,evalue,etraceback)\n--\n\nBackup.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Optional[bool]\n\n" \
-"Implements context manager in conjunction with :meth:`~backup.__enter__` ensuring\n" \
-"that the copy is :meth:`finished <backup.finish>`.\n" 
+#define  Backup_exit_DOC "__exit__($self,etype,evalue,etraceback)\n--\n\nBackup.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]\n\n" \
+"Implements context manager in conjunction with :meth:`~Backup.__enter__` ensuring\n" \
+"that the copy is :meth:`finished <Backup.finish>`.\n" 
 
-#define Backup_exit_USAGE "Backup.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Optional[bool]"
+#define Backup_exit_USAGE "Backup.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]"
 
 #define Backup_exit_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(etype), PyObject *)); \
@@ -319,8 +319,8 @@
 #define  Backup_pagecount_DOC ":type: int\n" \
 "\n" \
 "Read only. How many pages were in the source database after the last\n" \
-"step.  If you haven't called :meth:`~backup.step` or the backup\n" \
-"object has been :meth:`finished <backup.finish>` then zero is\n" \
+"step.  If you haven't called :meth:`~Backup.step` or the backup\n" \
+"object has been :meth:`finished <Backup.finish>` then zero is\n" \
 "returned.\n" \
 "\n" \
 "Calls: `sqlite3_backup_pagecount <https://sqlite.org/c3ref/backup_finish.html#sqlite3backuppagecount>`__\n" 
@@ -328,8 +328,8 @@
 #define  Backup_remaining_DOC ":type: int\n" \
 "\n" \
 "Read only. How many pages were remaining to be copied after the last\n" \
-"step.  If you haven't called :meth:`~backup.step` or the backup\n" \
-"object has been :meth:`finished <backup.finish>` then zero is\n" \
+"step.  If you haven't called :meth:`~Backup.step` or the backup\n" \
+"object has been :meth:`finished <Backup.finish>` then zero is\n" \
 "returned.\n" \
 "\n" \
 "Calls: `sqlite3_backup_remaining <https://sqlite.org/c3ref/backup_finish.html#sqlite3backupremaining>`__\n" 
@@ -337,7 +337,7 @@
 #define  Backup_step_DOC "step($self,npages=-1)\n--\n\nBackup.step(npages: int = -1) -> bool\n\n" \
 "Copies *npages* pages from the source to destination database.  The source database is locked during the copy so\n" \
 "using smaller values allows other access to the source database.  The destination database is always locked until the\n" \
-"backup object is :meth:`finished <backup.finish>`.\n" \
+"backup object is :meth:`finished <Backup.finish>`.\n" \
 "\n" \
 ":param npages: How many pages to copy. If the parameter is omitted\n" \
 "   or negative then all remaining pages are copied. The default page\n" \
@@ -349,7 +349,7 @@
 "unable to lock the source database.  You can catch those and try\n" \
 "again.\n" \
 "\n" \
-":returns: True if this copied the last remaining outstanding pages, else false.  This is the same value as :attr:`~backup.done`\n" \
+":returns: True if this copied the last remaining outstanding pages, else false.  This is the same value as :attr:`~Backup.done`\n" \
 "\n" \
 "Calls: `sqlite3_backup_step <https://sqlite.org/c3ref/backup_finish.html#sqlite3backupstep>`__\n" 
 
@@ -382,14 +382,14 @@
 ".. note::\n" \
 "\n" \
 "   In some cases errors that technically occurred in the\n" \
-"   :meth:`~blob.read` and :meth:`~blob.write` routines may not be\n" \
+"   :meth:`~Blob.read` and :meth:`~Blob.write` routines may not be\n" \
 "   reported until close is called.  Similarly errors that occurred\n" \
-"   in those methods (eg calling :meth:`~blob.write` on a read-only\n" \
-"   blob) may also be re-reported in :meth:`~blob.close`.  (This\n" \
+"   in those methods (eg calling :meth:`~Blob.write` on a read-only\n" \
+"   blob) may also be re-reported in :meth:`~Blob.close`.  (This\n" \
 "   behaviour is what the underlying SQLite APIs do - it is not APSW\n" \
 "   doing it.)\n" \
 "\n" \
-"It is okay to call :meth:`~blob.close` multiple times.\n" \
+"It is okay to call :meth:`~Blob.close` multiple times.\n" \
 "\n" \
 ":param force: Ignores any errors during close.\n" \
 "\n" \
@@ -407,7 +407,7 @@
 "You can use a blob as a `context manager\n" \
 "<http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_\n" \
 "as defined in :pep:`0343`.  When you use *with* statement,\n" \
-"the blob is always :meth:`closed <~blob.close>` on exit from the block, even if an\n" \
+"the blob is always :meth:`closed <Blob.close>` on exit from the block, even if an\n" \
 "exception occurred in the block.\n" \
 "\n" \
 "For example::\n" \
@@ -416,9 +416,9 @@
 "      blob.write(\"...\")\n" \
 "      res=blob.read(1024)\n" 
 
-#define  Blob_exit_DOC "__exit__($self,etype,evalue,etraceback)\n--\n\nBlob.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Optional[bool]\n\n" \
+#define  Blob_exit_DOC "__exit__($self,etype,evalue,etraceback)\n--\n\nBlob.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]\n\n" \
 "Implements context manager in conjunction with\n" \
-":meth:`~blob.__enter__`.  Any exception that happened in the\n" \
+":meth:`~Blob.__enter__`.  Any exception that happened in the\n" \
 "*with* block is raised after closing the blob.\n" 
 
 #define  Blob_length_DOC "length($self)\n--\n\nBlob.length() -> int\n\n" \
@@ -442,15 +442,15 @@
 } while(0)
 
 
-#define  Blob_readinto_DOC "readinto($self,buffer,offset=0,length=-1)\n--\n\nBlob.readinto(buffer: Union[bytearray, array[Any], memoryview], offset: int = 0, length: int = -1) -> None\n\n" \
+#define  Blob_readinto_DOC "readinto($self,buffer,offset=0,length=-1)\n--\n\nBlob.readinto(buffer: Union[bytearray, array.array[Any], memoryview], offset: int = 0, length: int = -1) -> None\n\n" \
 "Reads from the blob into a buffer you have supplied.  This method is\n" \
 "useful if you already have a buffer like object that data is being\n" \
-"assembled in, and avoids allocating results in :meth:`blob.read` and\n" \
+"assembled in, and avoids allocating results in :meth:`Blob.read` and\n" \
 "then copying into buffer.\n" \
 "\n" \
 ":param buffer: A writable buffer like object.\n" \
 "               There is a bytearray type that is very useful.\n" \
-"               :class:`array.array` also works.\n" \
+"               `arrays <https://docs.python.org/3/library/array.html>`__ also work.\n" \
 "\n" \
 ":param offset: The position to start writing into the buffer\n" \
 "               defaulting to the beginning.\n" \
@@ -458,11 +458,11 @@
 ":param length: How much of the blob to read.  The default is the\n" \
 "               remaining space left in the buffer.  Note that if\n" \
 "               there is more space available than blob left then you\n" \
-"               will get a :exc:`ValueError` exception.\n" \
+"               will get a *ValueError* exception.\n" \
 "\n" \
 "Calls: `sqlite3_blob_read <https://sqlite.org/c3ref/blob_read.html>`__\n" 
 
-#define Blob_readinto_USAGE "Blob.readinto(buffer: Union[bytearray, array[Any], memoryview], offset: int = 0, length: int = -1) -> None"
+#define Blob_readinto_USAGE "Blob.readinto(buffer: Union[bytearray, array.array[Any], memoryview], offset: int = 0, length: int = -1) -> None"
 
 #define Blob_readinto_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(buffer), PyObject *)); \
@@ -546,9 +546,9 @@
 "  * A string name of the database (or None)\n" \
 "  * Name of the innermost trigger or view doing the access (or None)\n" \
 "\n" \
-"The authorizer callback should return one of :const:`SQLITE_OK`,\n" \
-":const:`SQLITE_DENY` or :const:`SQLITE_IGNORE`.\n" \
-"(:const:`SQLITE_DENY` is returned if there is an error in your\n" \
+"The authorizer callback should return one of *SQLITE_OK*,\n" \
+"*SQLITE_DENY* or *SQLITE_IGNORE*.\n" \
+"(*SQLITE_DENY* is returned if there is an error in your\n" \
 "Python code).\n" \
 "\n" \
 ".. seealso::\n" \
@@ -619,7 +619,7 @@
 ":param rowid: The id that uniquely identifies the row.\n" \
 ":param writeable: If True then you can read and write the blob.  If False then you can only read it.\n" \
 "\n" \
-":rtype: :class:`blob`\n" \
+":rtype: :class:`Blob`\n" \
 "\n" \
 ".. seealso::\n" \
 "\n" \
@@ -718,7 +718,7 @@
 
 #define  Connection_close_DOC "close($self,force=False)\n--\n\nConnection.close(force: bool = False) -> None\n\n" \
 "Closes the database.  If there are any outstanding :class:`cursors\n" \
-"<Cursor>`, :class:`blobs <blob>` or :class:`backups <backup>` then\n" \
+"<Cursor>`, :class:`blobs <Blob>` or :class:`backups <Backup>` then\n" \
 "they are closed too.  It is normally not necessary to call this\n" \
 "method as the database is automatically closed when there are no\n" \
 "more references.  It is ok to call the method multiple times.\n" \
@@ -1040,7 +1040,7 @@
 "tracer. Your execution tracer can also abort execution of a\n" \
 "statement.\n" \
 "\n" \
-"If *callable* is :const:`None` then any existing execution tracer is\n" \
+"If *callable* is *None* then any existing execution tracer is\n" \
 "removed.\n" \
 "\n" \
 ".. seealso::\n" \
@@ -1063,13 +1063,13 @@
 "\n" \
 "See :meth:`Cursor.executemany` for more details.\n" 
 
-#define  Connection_exit_DOC "__exit__($self,etype,evalue,etraceback)\n--\n\nConnection.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Optional[bool]\n\n" \
+#define  Connection_exit_DOC "__exit__($self,etype,evalue,etraceback)\n--\n\nConnection.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]\n\n" \
 "Implements context manager in conjunction with\n" \
 ":meth:`~Connection.__enter__`.  Any exception that happened in the\n" \
 "*with* block is raised after committing or rolling back the\n" \
 "savepoint.\n" 
 
-#define Connection_exit_USAGE "Connection.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Optional[bool]"
+#define Connection_exit_USAGE "Connection.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]"
 
 #define Connection_exit_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(etype), PyObject *)); \
@@ -1165,7 +1165,7 @@
 "in-memory database that is not shared with any other connections.\n" \
 "\n" \
 ":param flags: One or more of the `open flags <https://sqlite.org/c3ref/c_open_autoproxy.html>`_ orred together\n" \
-":param vfs: The name of the `vfs <https://sqlite.org/c3ref/vfs.html>`_ to use.  If :const:`None` then the default\n" \
+":param vfs: The name of the `vfs <https://sqlite.org/c3ref/vfs.html>`_ to use.  If *None* then the default\n" \
 "   vfs will be used.\n" \
 "\n" \
 ":param statementcachesize: Use zero to disable the statement cache,\n" \
@@ -1308,7 +1308,7 @@
 "the Cursor installed its own tracer.  You can change the data that\n" \
 "is returned or cause the row to be skipped altogether.\n" \
 "\n" \
-"If *callable* is :const:`None` then any existing row tracer is\n" \
+"If *callable* is *None* then any existing row tracer is\n" \
 "removed.\n" \
 "\n" \
 ".. seealso::\n" \
@@ -1366,7 +1366,7 @@
 "Sets the busy handler to callable. callable will be called with one\n" \
 "integer argument which is the number of prior calls to the busy\n" \
 "callback for the same lock. If the busy callback returns False,\n" \
-"then SQLite returns :const:`SQLITE_BUSY` to the calling code. If\n" \
+"then SQLite returns *SQLITE_BUSY* to the calling code. If\n" \
 "the callback returns True, then SQLite tries to open the table\n" \
 "again and the cycle repeats.\n" \
 "\n" \
@@ -1484,7 +1484,7 @@
 
 #define  Connection_setrollbackhook_DOC "setrollbackhook($self,callable)\n--\n\nConnection.setrollbackhook(callable: Optional[Callable[[], None]]) -> None\n\n" \
 "Sets a callable which is invoked during a rollback.  If *callable*\n" \
-"is :const:`None` then any existing rollback hook is unregistered.\n" \
+"is *None* then any existing rollback hook is unregistered.\n" \
 "\n" \
 "The *callable* is called with no parameters and the return value is ignored.\n" \
 "\n" \
@@ -1509,7 +1509,7 @@
 
 #define  Connection_setupdatehook_DOC "setupdatehook($self,callable)\n--\n\nConnection.setupdatehook(callable: Optional[Callable[[int, str, str, int], None]]) -> None\n\n" \
 "Calls *callable* whenever a row is updated, deleted or inserted.  If\n" \
-"*callable* is :const:`None` then any existing update hook is\n" \
+"*callable* is *None* then any existing update hook is\n" \
 "unregistered.  The update hook cannot make changes to the database while\n" \
 "the query is still executing, but can record them for later use or\n" \
 "apply them in a different connection.\n" \
@@ -1517,7 +1517,7 @@
 "The update hook is called with 4 parameters:\n" \
 "\n" \
 "  type (int)\n" \
-"    :const:`SQLITE_INSERT`, :const:`SQLITE_DELETE` or :const:`SQLITE_UPDATE`\n" \
+"    *SQLITE_INSERT*, *SQLITE_DELETE* or *SQLITE_UPDATE*\n" \
 "  database name (string)\n" \
 "    This is ``main`` for the database or the name specified in\n" \
 "    `ATTACH <https://sqlite.org/lang_attach.html>`_\n" \
@@ -1541,7 +1541,7 @@
 
 #define  Connection_setwalhook_DOC "setwalhook($self,callable)\n--\n\nConnection.setwalhook(callable: Optional[Callable[[Connection, str, int], int]]) -> None\n\n" \
 "*callable* will be called just after data is committed in :ref:`wal`\n" \
-"mode.  It should return :const:`SQLITE_OK` or an error code.  The\n" \
+"mode.  It should return *SQLITE_OK* or an error code.  The\n" \
 "callback is called with 3 parameters:\n" \
 "\n" \
 "  * The Connection\n" \
@@ -1563,11 +1563,12 @@
 "Returns the underlying `sqlite3 *\n" \
 "<https://sqlite.org/c3ref/sqlite3.html>`_ for the connection. This\n" \
 "method is useful if there are other C level libraries in the same\n" \
-"process and you want them to use the APSW connection handle. The\n" \
-"value is returned as a number using :meth:`PyLong_FromVoidPtr` under the\n" \
-"hood. You should also ensure that you increment the reference count on\n" \
-"the :class:`Connection` for as long as the other libraries are using\n" \
-"the pointer.  It is also a very good idea to call\n" \
+"process and you want them to use the APSW connection handle. The value\n" \
+"is returned as a number using `PyLong_FromVoidPtr\n" \
+"<https://docs.python.org/3/c-api/long.html?highlight=pylong_fromvoidptr#c.PyLong_FromVoidPtr>`__\n" \
+"under the hood. You should also ensure that you increment the\n" \
+"reference count on the :class:`Connection` for as long as the other\n" \
+"libraries are using the pointer.  It is also a very good idea to call\n" \
 ":meth:`sqlitelibversion` and ensure it is the same as the other\n" \
 "libraries.\n" 
 
@@ -1717,7 +1718,7 @@
 "each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this\n" \
 "cursor.\n" \
 "\n" \
-"If *callable* is :const:`None` then any existing execution tracer is\n" \
+"If *callable* is *None* then any existing execution tracer is\n" \
 "unregistered.\n" \
 "\n" \
 ".. seealso::\n" \
@@ -1952,7 +1953,7 @@
 "change the data that is returned or cause the row to be skipped\n" \
 "altogether.\n" \
 "\n" \
-"If *callable* is :const:`None` then any existing row tracer is\n" \
+"If *callable* is *None* then any existing row tracer is\n" \
 "unregistered.\n" \
 "\n" \
 ".. seealso::\n" \
@@ -2046,7 +2047,7 @@
 "   All file sizes and offsets are 64 bit quantities even on 32 bit\n" \
 "   operating systems.\n" 
 
-#define  VFSFile_excepthook_DOC "excepthook($self,etype,evalue,etraceback)\n--\n\nVFSFile.excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[TracebackType]) ->None\n\n" \
+#define  VFSFile_excepthook_DOC "excepthook($self,etype,evalue,etraceback)\n--\n\nVFSFile.excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) ->None\n\n" \
 "Called when there has been an exception in a :class:`VFSFile`\n" \
 "routine.  The default implementation calls ``sys.excepthook`` and\n" \
 "if that fails then ``PyErr_Display``.  The three arguments\n" \
@@ -2236,7 +2237,7 @@
 "`SQLite documentation <https://sqlite.org/c3ref/vfs.html>`_.  To\n" \
 "create a VFS your Python class must inherit from :class:`VFS`.\n" 
 
-#define  VFS_excepthook_DOC "excepthook($self,etype,evalue,etraceback)\n--\n\nVFS.excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[TracebackType]) -> Any\n\n" \
+#define  VFS_excepthook_DOC "excepthook($self,etype,evalue,etraceback)\n--\n\nVFS.excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) -> Any\n\n" \
 "Called when there has been an exception in a :class:`VFS` routine.\n" \
 "The default implementation passes args to ``sys.excepthook`` and if that\n" \
 "fails then ``PyErr_Display``.  The three arguments correspond to\n" \
@@ -2260,7 +2261,7 @@
 "    this value then SQLite will not `be able to open it\n" \
 "    <https://sqlite.org/src/tktview/c060923a5422590b3734eb92eae0c94934895b68>`__.\n" \
 "\n" \
-":raises ValueError: If *base* is not :const:`None` and the named vfs is not\n" \
+":raises ValueError: If *base* is not *None* and the named vfs is not\n" \
 "  currently registered.\n" \
 "\n" \
 "Calls:\n" \
@@ -2315,7 +2316,7 @@
 #define  VFS_xDelete_DOC "xDelete($self,filename,syncdir)\n--\n\nVFS.xDelete(filename: str, syncdir: bool) -> None\n\n" \
 "Delete the named file. If the file is missing then raise an\n" \
 ":exc:`IOError` exception with extendedresult\n" \
-":const:`SQLITE_IOERR_DELETE_NOENT`\n" \
+"*SQLITE_IOERR_DELETE_NOENT*\n" \
 "\n" \
 ":param filename: File to delete\n" \
 "\n" \
@@ -2449,7 +2450,7 @@
 "This method should return a new file object based on name.  You\n" \
 "can return a :class:`VFSFile` from a completely different VFS.\n" \
 "\n" \
-":param name: File to open.  Note that *name* may be :const:`None` in which\n" \
+":param name: File to open.  Note that *name* may be *None* in which\n" \
 "    case you should open a temporary file with a name of your\n" \
 "    choosing.  May be an instance of :class:`URIFilename`.\n" \
 "\n" \
@@ -2457,10 +2458,10 @@
 "  outputflags]``.  Each integer is one or more of the `open flags\n" \
 "  <https://sqlite.org/c3ref/c_open_autoproxy.html>`_ binary orred\n" \
 "  together.  The ``inputflags`` tells you what SQLite wants.  For\n" \
-"  example :const:`SQLITE_OPEN_DELETEONCLOSE` means the file should\n" \
+"  example *SQLITE_OPEN_DELETEONCLOSE* means the file should\n" \
 "  be automatically deleted when closed.  The ``outputflags``\n" \
 "  describes how you actually did open the file.  For example if you\n" \
-"  opened it read only then :const:`SQLITE_OPEN_READONLY` should be\n" \
+"  opened it read only then *SQLITE_OPEN_READONLY* should be\n" \
 "  set.\n" 
 
 #define VFS_xOpen_USAGE "VFS.xOpen(name: Optional[Union[str,URIFilename]], flags: List[int,int]) -> VFSFile"
@@ -2550,7 +2551,7 @@
 "               (apsw.zeroblob(100000000),))\n" \
 "\n" \
 "This class is used for the second way.  Once a blob exists in the\n" \
-"database, you then use the :class:`blob` class to read and write its\n" \
+"database, you then use the :class:`Blob` class to read and write its\n" \
 "contents.\n" 
 
 #define  Zeroblob_init_DOC "__init__($self,size)\n--\n\nzeroblob.__init__(size: int)\n\n" \
@@ -2566,9 +2567,9 @@
 #define  Zeroblob_length_DOC "length($self)\n--\n\nzeroblob.length() -> int\n\n" \
 "Size of zero blob in bytes.\n" 
 
-#define  AbortError_exc_DOC ":const:`SQLITE_ABORT`. Callback routine requested an abort.\n" 
+#define  AbortError_exc_DOC "*SQLITE_ABORT*. Callback routine requested an abort.\n" 
 
-#define  AuthError_exc_DOC ":const:`SQLITE_AUTH`.  :attr:`Authorization <Connection.authorizer>` denied.\n" 
+#define  AuthError_exc_DOC "*SQLITE_AUTH*.  :attr:`Authorization <Connection.authorizer>` denied.\n" 
 
 #define  BindingsError_exc_DOC "There are several causes for this exception.  When using tuples, an incorrect number of bindings where supplied::\n" \
 "\n" \
@@ -2592,12 +2593,12 @@
 "   have a value, then SQLite will generate an error due to some\n" \
 "   values being None/NULL so that case will be caught.\n" 
 
-#define  BusyError_exc_DOC ":const:`SQLITE_BUSY`.  The database file is locked.  Use\n" \
+#define  BusyError_exc_DOC "*SQLITE_BUSY*.  The database file is locked.  Use\n" \
 ":meth:`Connection.setbusytimeout` to change how long SQLite waits\n" \
 "for the database to be unlocked or :meth:`Connection.setbusyhandler`\n" \
 "to use your own handler.\n" 
 
-#define  CantOpenError_exc_DOC ":const:`SQLITE_CANTOPEN`.  Unable to open the database file.\n" 
+#define  CantOpenError_exc_DOC "*SQLITE_CANTOPEN*.  Unable to open the database file.\n" 
 
 #define  ConnectionClosedError_exc_DOC "You have called :meth:`Connection.close` and then continued to use\n" \
 "the :class:`Connection` or associated :class:`cursors <Cursor>`.\n" 
@@ -2605,19 +2606,19 @@
 #define  ConnectionNotClosedError_exc_DOC "This exception is no longer generated.  It was required in earlier\n" \
 "releases due to constraints in threading usage with SQLite.\n" 
 
-#define  ConstraintError_exc_DOC ":const:`SQLITE_CONSTRAINT`. Abort due to `constraint\n" \
+#define  ConstraintError_exc_DOC "*SQLITE_CONSTRAINT*. Abort due to `constraint\n" \
 "<https://sqlite.org/lang_createtable.html>`_ violation.  This\n" \
 "would happen if the schema required a column to be within a specific\n" \
 "range.  If you have multiple constraints, you `can't tell\n" \
 "<https://sqlite.org/src/tktview/23b212820161c6599cbf414aa99bf8a5bfa5e7a3>`__\n" \
 "which one was the cause.\n" 
 
-#define  CorruptError_exc_DOC ":const:`SQLITE_CORRUPT`.  The database disk image appears to be a\n" \
+#define  CorruptError_exc_DOC "*SQLITE_CORRUPT*.  The database disk image appears to be a\n" \
 "SQLite database but the values inside are inconsistent.\n" 
 
 #define  CursorClosedError_exc_DOC "You have called :meth:`Cursor.close` and then tried to use the cursor.\n" 
 
-#define  EmptyError_exc_DOC ":const:`SQLITE_EMPTY`. Database is completely empty.\n" 
+#define  EmptyError_exc_DOC "*SQLITE_EMPTY*. Database is completely empty.\n" 
 
 #define  Error_exc_DOC "This is the base for APSW exceptions.\n" 
 
@@ -2631,60 +2632,60 @@
 
 #define  ForkingViolationError_exc_DOC "See :meth:`apsw.fork_checker`.\n" 
 
-#define  FormatError_exc_DOC ":const:`SQLITE_FORMAT`. (No longer used) `Auxiliary database <https://sqlite.org/lang_attach.html>`_ format error.\n" 
+#define  FormatError_exc_DOC "*SQLITE_FORMAT*. (No longer used) `Auxiliary database <https://sqlite.org/lang_attach.html>`_ format error.\n" 
 
-#define  FullError_exc_DOC ":const:`SQLITE_FULL`.  The disk appears to be full.\n" 
+#define  FullError_exc_DOC "*SQLITE_FULL*.  The disk appears to be full.\n" 
 
-#define  IOError_exc_DOC ":const:`SQLITE_IOERR`.  Some kind of disk I/O error occurred.  The\n" \
+#define  IOError_exc_DOC "*SQLITE_IOERR*.  Some kind of disk I/O error occurred.  The\n" \
 ":ref:`extended error code <exceptions>` will give more detail.\n" 
 
 #define  IncompleteExecutionError_exc_DOC "You have tried to start a new SQL execute call before executing all\n" \
 "the previous ones. See the :ref:`execution model <executionmodel>`\n" \
 "for more details.\n" 
 
-#define  InternalError_exc_DOC ":const:`SQLITE_INTERNAL`. (No longer used) Internal logic error in SQLite.\n" 
+#define  InternalError_exc_DOC "*SQLITE_INTERNAL*. (No longer used) Internal logic error in SQLite.\n" 
 
-#define  InterruptError_exc_DOC ":const:`SQLITE_INTERRUPT`.  Operation terminated by\n" \
+#define  InterruptError_exc_DOC "*SQLITE_INTERRUPT*.  Operation terminated by\n" \
 "`sqlite3_interrupt <https://sqlite.org/c3ref/interrupt.html>`_ -\n" \
 "use :meth:`Connection.interrupt`.\n" 
 
-#define  LockedError_exc_DOC ":const:`SQLITE_LOCKED`.  A table in the database is locked.\n" 
+#define  LockedError_exc_DOC "*SQLITE_LOCKED*.  A table in the database is locked.\n" 
 
-#define  MismatchError_exc_DOC ":const:`SQLITE_MISMATCH`. Data type mismatch.  For example a rowid\n" \
+#define  MismatchError_exc_DOC "*SQLITE_MISMATCH*. Data type mismatch.  For example a rowid\n" \
 "or integer primary key must be an integer.\n" 
 
-#define  MisuseError_exc_DOC ":const:`SQLITE_MISUSE`.  SQLite library used incorrectly - typically similar to ValueError in Python.  Examples include not\n" \
+#define  MisuseError_exc_DOC "*SQLITE_MISUSE*.  SQLite library used incorrectly - typically similar to *ValueError* in Python.  Examples include not\n" \
 "having enough flags when opening a connection (eg not including a READ or WRITE flag), or out of spec such as registering\n" \
 "a function with more than 127 parameters.\n" 
 
-#define  NoLFSError_exc_DOC ":const:`SQLITE_NOLFS`.  SQLite has attempted to use a feature not\n" \
+#define  NoLFSError_exc_DOC "*SQLITE_NOLFS*.  SQLite has attempted to use a feature not\n" \
 "supported by the operating system such as `large file support\n" \
 "<http://en.wikipedia.org/wiki/Large_file_support>`_.\n" 
 
-#define  NoMemError_exc_DOC ":const:`SQLITE_NOMEM`.  A memory allocation failed.\n" 
+#define  NoMemError_exc_DOC "*SQLITE_NOMEM*.  A memory allocation failed.\n" 
 
-#define  NotADBError_exc_DOC ":const:`SQLITE_NOTADB`.  File opened that is not a database file.\n" \
+#define  NotADBError_exc_DOC "*SQLITE_NOTADB*.  File opened that is not a database file.\n" \
 "SQLite has a header on database files to verify they are indeed\n" \
 "SQLite databases.\n" 
 
-#define  NotFoundError_exc_DOC ":const:`SQLITE_NOTFOUND`. Returned when various internal items were\n" \
+#define  NotFoundError_exc_DOC "*SQLITE_NOTFOUND*. Returned when various internal items were\n" \
 "not found such as requests for non-existent system calls or file\n" \
 "controls.\n" 
 
-#define  PermissionsError_exc_DOC ":const:`SQLITE_PERM`. Access permission denied by the operating system, or parts of the database are readonly such as a cursor.\n" 
+#define  PermissionsError_exc_DOC "*SQLITE_PERM*. Access permission denied by the operating system, or parts of the database are readonly such as a cursor.\n" 
 
-#define  ProtocolError_exc_DOC ":const:`SQLITE_PROTOCOL`. (No longer used) Database lock protocol error.\n" 
+#define  ProtocolError_exc_DOC "*SQLITE_PROTOCOL*. (No longer used) Database lock protocol error.\n" 
 
-#define  RangeError_exc_DOC ":const:`SQLITE_RANGE`.  (Cannot be generated using APSW).  2nd parameter to `sqlite3_bind <https://sqlite.org/c3ref/bind_blob.html>`_ out of range\n" 
+#define  RangeError_exc_DOC "*SQLITE_RANGE*.  (Cannot be generated using APSW).  2nd parameter to `sqlite3_bind <https://sqlite.org/c3ref/bind_blob.html>`_ out of range\n" 
 
-#define  ReadOnlyError_exc_DOC ":const:`SQLITE_READONLY`. Attempt to write to a readonly database.\n" 
+#define  ReadOnlyError_exc_DOC "*SQLITE_READONLY*. Attempt to write to a readonly database.\n" 
 
-#define  SQLError_exc_DOC ":const:`SQLITE_ERROR`.  This error is documented as a bad SQL query\n" \
+#define  SQLError_exc_DOC "*SQLITE_ERROR*.  This error is documented as a bad SQL query\n" \
 "or missing database, but is also returned for a lot of other\n" \
 "situations.  It is the default error code unless there is a more\n" \
 "specific one.\n" 
 
-#define  SchemaChangeError_exc_DOC ":const:`SQLITE_SCHEMA`.  The database schema changed.  A\n" \
+#define  SchemaChangeError_exc_DOC "*SQLITE_SCHEMA*.  The database schema changed.  A\n" \
 ":meth:`prepared statement <Cursor.execute>` becomes invalid\n" \
 "if the database schema was changed.  Behind the scenes SQLite\n" \
 "reprepares the statement.  Another or the same :class:`Connection`\n" \
@@ -2700,7 +2701,7 @@
 "itself (eg as the input data for :meth:`Cursor.executemany`).\n" \
 "Cursors can only be used for one thing at a time.\n" 
 
-#define  TooBigError_exc_DOC ":const:`SQLITE_TOOBIG`.  String or BLOB exceeds size limit.  You can\n" \
+#define  TooBigError_exc_DOC "*SQLITE_TOOBIG*.  String or BLOB exceeds size limit.  You can\n" \
 "change the limits using :meth:`Connection.limit`.\n" 
 
 #define  VFSFileClosedError_exc_DOC "The VFS file is closed so the operation cannot be performed.\n" 

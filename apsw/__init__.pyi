@@ -279,7 +279,7 @@ def shutdown() -> None:
     """It is unlikely you will want to call this method and there is no
     need to do so.  It is a **really** bad idea to call it unless you
     are absolutely sure all :class:`connections <Connection>`,
-    :class:`blobs <blob>`, :class:`cursors <Cursor>`, :class:`vfs <VFS>`
+    :class:`blobs <Blob>`, :class:`cursors <Cursor>`, :class:`vfs <VFS>`
     etc have been closed, deleted and garbage collected.
 
     Calls: `sqlite3_shutdown <https://sqlite.org/c3ref/initialize.html>`__"""
@@ -338,9 +338,9 @@ class Backup:
     """You create a backup instance by calling :meth:`Connection.backup`."""
 
     def close(self, force: bool = False) -> None:
-        """Does the same thing as :meth:`~backup.finish`.  This extra api is
+        """Does the same thing as :meth:`~Backup.finish`.  This extra api is
         provided to give the same api as other APSW objects such as
-        :meth:`Connection.close`, :meth:`blob.close` and
+        :meth:`Connection.close`, :meth:`Blob.close` and
         :meth:`Cursor.close`.  It is safe to call this method multiple
         times.
 
@@ -348,18 +348,18 @@ class Backup:
         ...
 
     done: bool
-    """A boolean that is True if the copy completed in the last call to :meth:`~backup.step`."""
+    """A boolean that is True if the copy completed in the last call to :meth:`~Backup.step`."""
 
     def __enter__(self) -> Backup:
         """You can use the backup object as a `context manager
         <http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
-        as defined in :pep:`0343`.  The :meth:`~backup.__exit__` method ensures that backup
-        is :meth:`finished <backup.finish>`."""
+        as defined in :pep:`0343`.  The :meth:`~Backup.__exit__` method ensures that backup
+        is :meth:`finished <Backup.finish>`."""
         ...
 
-    def __exit__(self, etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Optional[bool]:
-        """Implements context manager in conjunction with :meth:`~backup.__enter__` ensuring
-        that the copy is :meth:`finished <backup.finish>`."""
+    def __exit__(self, etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]:
+        """Implements context manager in conjunction with :meth:`~Backup.__enter__` ensuring
+        that the copy is :meth:`finished <Backup.finish>`."""
         ...
 
     def finish(self) -> None:
@@ -374,16 +374,16 @@ class Backup:
 
     pagecount: int
     """Read only. How many pages were in the source database after the last
-    step.  If you haven't called :meth:`~backup.step` or the backup
-    object has been :meth:`finished <backup.finish>` then zero is
+    step.  If you haven't called :meth:`~Backup.step` or the backup
+    object has been :meth:`finished <Backup.finish>` then zero is
     returned.
 
     Calls: `sqlite3_backup_pagecount <https://sqlite.org/c3ref/backup_finish.html#sqlite3backuppagecount>`__"""
 
     remaining: int
     """Read only. How many pages were remaining to be copied after the last
-    step.  If you haven't called :meth:`~backup.step` or the backup
-    object has been :meth:`finished <backup.finish>` then zero is
+    step.  If you haven't called :meth:`~Backup.step` or the backup
+    object has been :meth:`finished <Backup.finish>` then zero is
     returned.
 
     Calls: `sqlite3_backup_remaining <https://sqlite.org/c3ref/backup_finish.html#sqlite3backupremaining>`__"""
@@ -391,7 +391,7 @@ class Backup:
     def step(self, npages: int = -1) -> bool:
         """Copies *npages* pages from the source to destination database.  The source database is locked during the copy so
         using smaller values allows other access to the source database.  The destination database is always locked until the
-        backup object is :meth:`finished <backup.finish>`.
+        backup object is :meth:`finished <Backup.finish>`.
 
         :param npages: How many pages to copy. If the parameter is omitted
            or negative then all remaining pages are copied. The default page
@@ -403,7 +403,7 @@ class Backup:
         unable to lock the source database.  You can catch those and try
         again.
 
-        :returns: True if this copied the last remaining outstanding pages, else false.  This is the same value as :attr:`~backup.done`
+        :returns: True if this copied the last remaining outstanding pages, else false.  This is the same value as :attr:`~Backup.done`
 
         Calls: `sqlite3_backup_step <https://sqlite.org/c3ref/backup_finish.html#sqlite3backupstep>`__"""
         ...
@@ -431,14 +431,14 @@ class Blob:
         .. note::
 
            In some cases errors that technically occurred in the
-           :meth:`~blob.read` and :meth:`~blob.write` routines may not be
+           :meth:`~Blob.read` and :meth:`~Blob.write` routines may not be
            reported until close is called.  Similarly errors that occurred
-           in those methods (eg calling :meth:`~blob.write` on a read-only
-           blob) may also be re-reported in :meth:`~blob.close`.  (This
+           in those methods (eg calling :meth:`~Blob.write` on a read-only
+           blob) may also be re-reported in :meth:`~Blob.close`.  (This
            behaviour is what the underlying SQLite APIs do - it is not APSW
            doing it.)
 
-        It is okay to call :meth:`~blob.close` multiple times.
+        It is okay to call :meth:`~Blob.close` multiple times.
 
         :param force: Ignores any errors during close.
 
@@ -449,7 +449,7 @@ class Blob:
         """You can use a blob as a `context manager
         <http://docs.python.org/reference/datamodel.html#with-statement-context-managers>`_
         as defined in :pep:`0343`.  When you use *with* statement,
-        the blob is always :meth:`closed <~blob.close>` on exit from the block, even if an
+        the blob is always :meth:`closed <Blob.close>` on exit from the block, even if an
         exception occurred in the block.
 
         For example::
@@ -459,9 +459,9 @@ class Blob:
               res=blob.read(1024)"""
         ...
 
-    def __exit__(self, etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Optional[bool]:
+    def __exit__(self, etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]:
         """Implements context manager in conjunction with
-        :meth:`~blob.__enter__`.  Any exception that happened in the
+        :meth:`~Blob.__enter__`.  Any exception that happened in the
         *with* block is raised after closing the blob."""
         ...
 
@@ -480,15 +480,15 @@ class Blob:
         Calls: `sqlite3_blob_read <https://sqlite.org/c3ref/blob_read.html>`__"""
         ...
 
-    def readinto(self, buffer: Union[bytearray, array[Any], memoryview], offset: int = 0, length: int = -1) -> None:
+    def readinto(self, buffer: Union[bytearray, array.array[Any], memoryview], offset: int = 0, length: int = -1) -> None:
         """Reads from the blob into a buffer you have supplied.  This method is
         useful if you already have a buffer like object that data is being
-        assembled in, and avoids allocating results in :meth:`blob.read` and
+        assembled in, and avoids allocating results in :meth:`Blob.read` and
         then copying into buffer.
 
         :param buffer: A writable buffer like object.
                        There is a bytearray type that is very useful.
-                       :class:`array.array` also works.
+                       `arrays <https://docs.python.org/3/library/array.html>`__ also work.
 
         :param offset: The position to start writing into the buffer
                        defaulting to the beginning.
@@ -496,7 +496,7 @@ class Blob:
         :param length: How much of the blob to read.  The default is the
                        remaining space left in the buffer.  Note that if
                        there is more space available than blob left then you
-                       will get a :exc:`ValueError` exception.
+                       will get a *ValueError* exception.
 
         Calls: `sqlite3_blob_read <https://sqlite.org/c3ref/blob_read.html>`__"""
         ...
@@ -559,9 +559,9 @@ class Connection:
       * A string name of the database (or None)
       * Name of the innermost trigger or view doing the access (or None)
 
-    The authorizer callback should return one of :const:`SQLITE_OK`,
-    :const:`SQLITE_DENY` or :const:`SQLITE_IGNORE`.
-    (:const:`SQLITE_DENY` is returned if there is an error in your
+    The authorizer callback should return one of *SQLITE_OK*,
+    *SQLITE_DENY* or *SQLITE_IGNORE*.
+    (*SQLITE_DENY* is returned if there is an error in your
     Python code).
 
     .. seealso::
@@ -618,7 +618,7 @@ class Connection:
         :param rowid: The id that uniquely identifies the row.
         :param writeable: If True then you can read and write the blob.  If False then you can only read it.
 
-        :rtype: :class:`blob`
+        :rtype: :class:`Blob`
 
         .. seealso::
 
@@ -698,7 +698,7 @@ class Connection:
 
     def close(self, force: bool = False) -> None:
         """Closes the database.  If there are any outstanding :class:`cursors
-        <Cursor>`, :class:`blobs <blob>` or :class:`backups <backup>` then
+        <Cursor>`, :class:`blobs <Blob>` or :class:`backups <Backup>` then
         they are closed too.  It is normally not necessary to call this
         method as the database is automatically closed when there are no
         more references.  It is ok to call the method multiple times.
@@ -956,7 +956,7 @@ class Connection:
     tracer. Your execution tracer can also abort execution of a
     statement.
 
-    If *callable* is :const:`None` then any existing execution tracer is
+    If *callable* is *None* then any existing execution tracer is
     removed.
 
     .. seealso::
@@ -981,7 +981,7 @@ class Connection:
         See :meth:`Cursor.executemany` for more details."""
         ...
 
-    def __exit__(self, etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[TracebackType]) -> Optional[bool]:
+    def __exit__(self, etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]:
         """Implements context manager in conjunction with
         :meth:`~Connection.__enter__`.  Any exception that happened in the
         *with* block is raised after committing or rolling back the
@@ -1068,7 +1068,7 @@ class Connection:
         in-memory database that is not shared with any other connections.
 
         :param flags: One or more of the `open flags <https://sqlite.org/c3ref/c_open_autoproxy.html>`_ orred together
-        :param vfs: The name of the `vfs <https://sqlite.org/c3ref/vfs.html>`_ to use.  If :const:`None` then the default
+        :param vfs: The name of the `vfs <https://sqlite.org/c3ref/vfs.html>`_ to use.  If *None* then the default
            vfs will be used.
 
         :param statementcachesize: Use zero to disable the statement cache,
@@ -1169,7 +1169,7 @@ class Connection:
     the Cursor installed its own tracer.  You can change the data that
     is returned or cause the row to be skipped altogether.
 
-    If *callable* is :const:`None` then any existing row tracer is
+    If *callable* is *None* then any existing row tracer is
     removed.
 
     .. seealso::
@@ -1209,7 +1209,7 @@ class Connection:
         """Sets the busy handler to callable. callable will be called with one
         integer argument which is the number of prior calls to the busy
         callback for the same lock. If the busy callback returns False,
-        then SQLite returns :const:`SQLITE_BUSY` to the calling code. If
+        then SQLite returns *SQLITE_BUSY* to the calling code. If
         the callback returns True, then SQLite tries to open the table
         again and the cycle repeats.
 
@@ -1289,7 +1289,7 @@ class Connection:
 
     def setrollbackhook(self, callable: Optional[Callable[[], None]]) -> None:
         """Sets a callable which is invoked during a rollback.  If *callable*
-        is :const:`None` then any existing rollback hook is unregistered.
+        is *None* then any existing rollback hook is unregistered.
 
         The *callable* is called with no parameters and the return value is ignored.
 
@@ -1302,7 +1302,7 @@ class Connection:
 
     def setupdatehook(self, callable: Optional[Callable[[int, str, str, int], None]]) -> None:
         """Calls *callable* whenever a row is updated, deleted or inserted.  If
-        *callable* is :const:`None` then any existing update hook is
+        *callable* is *None* then any existing update hook is
         unregistered.  The update hook cannot make changes to the database while
         the query is still executing, but can record them for later use or
         apply them in a different connection.
@@ -1310,7 +1310,7 @@ class Connection:
         The update hook is called with 4 parameters:
 
           type (int)
-            :const:`SQLITE_INSERT`, :const:`SQLITE_DELETE` or :const:`SQLITE_UPDATE`
+            *SQLITE_INSERT*, *SQLITE_DELETE* or *SQLITE_UPDATE*
           database name (string)
             This is ``main`` for the database or the name specified in
             `ATTACH <https://sqlite.org/lang_attach.html>`_
@@ -1328,7 +1328,7 @@ class Connection:
 
     def setwalhook(self, callable: Optional[Callable[[Connection, str, int], int]]) -> None:
         """*callable* will be called just after data is committed in :ref:`wal`
-        mode.  It should return :const:`SQLITE_OK` or an error code.  The
+        mode.  It should return *SQLITE_OK* or an error code.  The
         callback is called with 3 parameters:
 
           * The Connection
@@ -1344,11 +1344,12 @@ class Connection:
         """Returns the underlying `sqlite3 *
         <https://sqlite.org/c3ref/sqlite3.html>`_ for the connection. This
         method is useful if there are other C level libraries in the same
-        process and you want them to use the APSW connection handle. The
-        value is returned as a number using :meth:`PyLong_FromVoidPtr` under the
-        hood. You should also ensure that you increment the reference count on
-        the :class:`Connection` for as long as the other libraries are using
-        the pointer.  It is also a very good idea to call
+        process and you want them to use the APSW connection handle. The value
+        is returned as a number using `PyLong_FromVoidPtr
+        <https://docs.python.org/3/c-api/long.html?highlight=pylong_fromvoidptr#c.PyLong_FromVoidPtr>`__
+        under the hood. You should also ensure that you increment the
+        reference count on the :class:`Connection` for as long as the other
+        libraries are using the pointer.  It is also a very good idea to call
         :meth:`sqlitelibversion` and ensure it is the same as the other
         libraries."""
         ...
@@ -1461,7 +1462,7 @@ class Cursor:
     each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
     cursor.
 
-    If *callable* is :const:`None` then any existing execution tracer is
+    If *callable* is *None* then any existing execution tracer is
     unregistered.
 
     .. seealso::
@@ -1677,7 +1678,7 @@ class Cursor:
     change the data that is returned or cause the row to be skipped
     altogether.
 
-    If *callable* is :const:`None` then any existing row tracer is
+    If *callable* is *None* then any existing row tracer is
     unregistered.
 
     .. seealso::
@@ -1744,7 +1745,7 @@ class VFSFile:
        All file sizes and offsets are 64 bit quantities even on 32 bit
        operating systems."""
 
-    def excepthook(self, etype: type[BaseException], evalue: BaseException, etraceback: Optional[TracebackType]) ->None:
+    def excepthook(self, etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) ->None:
         """Called when there has been an exception in a :class:`VFSFile`
         routine.  The default implementation calls ``sys.excepthook`` and
         if that fails then ``PyErr_Display``.  The three arguments
@@ -1889,7 +1890,7 @@ class VFS:
     `SQLite documentation <https://sqlite.org/c3ref/vfs.html>`_.  To
     create a VFS your Python class must inherit from :class:`VFS`."""
 
-    def excepthook(self, etype: type[BaseException], evalue: BaseException, etraceback: Optional[TracebackType]) -> Any:
+    def excepthook(self, etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) -> Any:
         """Called when there has been an exception in a :class:`VFS` routine.
         The default implementation passes args to ``sys.excepthook`` and if that
         fails then ``PyErr_Display``.  The three arguments correspond to
@@ -1914,7 +1915,7 @@ class VFS:
             this value then SQLite will not `be able to open it
             <https://sqlite.org/src/tktview/c060923a5422590b3734eb92eae0c94934895b68>`__.
 
-        :raises ValueError: If *base* is not :const:`None` and the named vfs is not
+        :raises ValueError: If *base* is not *None* and the named vfs is not
           currently registered.
 
         Calls:
@@ -1952,7 +1953,7 @@ class VFS:
     def xDelete(self, filename: str, syncdir: bool) -> None:
         """Delete the named file. If the file is missing then raise an
         :exc:`IOError` exception with extendedresult
-        :const:`SQLITE_IOERR_DELETE_NOENT`
+        *SQLITE_IOERR_DELETE_NOENT*
 
         :param filename: File to delete
 
@@ -2044,7 +2045,7 @@ class VFS:
         """This method should return a new file object based on name.  You
         can return a :class:`VFSFile` from a completely different VFS.
 
-        :param name: File to open.  Note that *name* may be :const:`None` in which
+        :param name: File to open.  Note that *name* may be *None* in which
             case you should open a temporary file with a name of your
             choosing.  May be an instance of :class:`URIFilename`.
 
@@ -2052,10 +2053,10 @@ class VFS:
           outputflags]``.  Each integer is one or more of the `open flags
           <https://sqlite.org/c3ref/c_open_autoproxy.html>`_ binary orred
           together.  The ``inputflags`` tells you what SQLite wants.  For
-          example :const:`SQLITE_OPEN_DELETEONCLOSE` means the file should
+          example *SQLITE_OPEN_DELETEONCLOSE* means the file should
           be automatically deleted when closed.  The ``outputflags``
           describes how you actually did open the file.  For example if you
-          opened it read only then :const:`SQLITE_OPEN_READONLY` should be
+          opened it read only then *SQLITE_OPEN_READONLY* should be
           set."""
         ...
 
@@ -2275,7 +2276,7 @@ if sys.version_info >= (3, 8):
 
         def BestIndex(self, constraints: Sequence[Tuple[int, int], ...], orderbys: Sequence[Tuple[int, int], ...]) -> Any:
             """This is a complex method. To get going initially, just return
-            :const:`None` and you will be fine. Implementing this method reduces
+            *None* and you will be fine. Implementing this method reduces
             the number of rows scanned in your table to satisfy queries, but
             only if you have an index or index like mechanism available.
 
@@ -2526,11 +2527,11 @@ if sys.version_info >= (3, 8):
         def UpdateInsertRow(self, rowid: Optional[int], fields: Tuple[SQLiteValue, ...])  -> Optional[int]:
             """Insert a row with the specified *rowid*.
 
-            :param rowid: :const:`None` if you should choose the rowid yourself, else a 64 bit integer
+            :param rowid: *None* if you should choose the rowid yourself, else a 64 bit integer
             :param fields: A tuple of values the same length and order as columns in your table
 
-            :returns: If *rowid* was :const:`None` then return the id you assigned
-              to the row.  If *rowid* was not :const:`None` then the return value
+            :returns: If *rowid* was *None* then return the id you assigned
+              to the row.  If *rowid* was not *None* then the return value
               is ignored."""
             ...
 
@@ -2556,7 +2557,7 @@ class zeroblob:
                    (apsw.zeroblob(100000000),))
 
     This class is used for the second way.  Once a blob exists in the
-    database, you then use the :class:`blob` class to read and write its
+    database, you then use the :class:`Blob` class to read and write its
     contents."""
 
     def __init__(self, size: int):
@@ -3538,10 +3539,10 @@ class Error(Exception):
     """This is the base for APSW exceptions."""
 
 class AbortError(Error):
-    """:const:`SQLITE_ABORT`. Callback routine requested an abort."""
+    """*SQLITE_ABORT*. Callback routine requested an abort."""
 
 class AuthError(Error):
-    """:const:`SQLITE_AUTH`.  :attr:`Authorization <Connection.authorizer>` denied."""
+    """*SQLITE_AUTH*.  :attr:`Authorization <Connection.authorizer>` denied."""
 
 class BindingsError(Error):
     """There are several causes for this exception.  When using tuples, an incorrect number of bindings where supplied::
@@ -3567,13 +3568,13 @@ class BindingsError(Error):
        values being None/NULL so that case will be caught."""
 
 class BusyError(Error):
-    """:const:`SQLITE_BUSY`.  The database file is locked.  Use
+    """*SQLITE_BUSY*.  The database file is locked.  Use
     :meth:`Connection.setbusytimeout` to change how long SQLite waits
     for the database to be unlocked or :meth:`Connection.setbusyhandler`
     to use your own handler."""
 
 class CantOpenError(Error):
-    """:const:`SQLITE_CANTOPEN`.  Unable to open the database file."""
+    """*SQLITE_CANTOPEN*.  Unable to open the database file."""
 
 class ConnectionClosedError(Error):
     """You have called :meth:`Connection.close` and then continued to use
@@ -3584,7 +3585,7 @@ class ConnectionNotClosedError(Error):
     releases due to constraints in threading usage with SQLite."""
 
 class ConstraintError(Error):
-    """:const:`SQLITE_CONSTRAINT`. Abort due to `constraint
+    """*SQLITE_CONSTRAINT*. Abort due to `constraint
     <https://sqlite.org/lang_createtable.html>`_ violation.  This
     would happen if the schema required a column to be within a specific
     range.  If you have multiple constraints, you `can't tell
@@ -3592,14 +3593,14 @@ class ConstraintError(Error):
     which one was the cause."""
 
 class CorruptError(Error):
-    """:const:`SQLITE_CORRUPT`.  The database disk image appears to be a
+    """*SQLITE_CORRUPT*.  The database disk image appears to be a
     SQLite database but the values inside are inconsistent."""
 
 class CursorClosedError(Error):
     """You have called :meth:`Cursor.close` and then tried to use the cursor."""
 
 class EmptyError(Error):
-    """:const:`SQLITE_EMPTY`. Database is completely empty."""
+    """*SQLITE_EMPTY*. Database is completely empty."""
 
 class ExecTraceAbort(Error):
     """The :ref:`execution tracer <executiontracer>` returned False so
@@ -3616,13 +3617,13 @@ class ForkingViolationError(Error):
     """See :meth:`apsw.fork_checker`."""
 
 class FormatError(Error):
-    """:const:`SQLITE_FORMAT`. (No longer used) `Auxiliary database <https://sqlite.org/lang_attach.html>`_ format error."""
+    """*SQLITE_FORMAT*. (No longer used) `Auxiliary database <https://sqlite.org/lang_attach.html>`_ format error."""
 
 class FullError(Error):
-    """:const:`SQLITE_FULL`.  The disk appears to be full."""
+    """*SQLITE_FULL*.  The disk appears to be full."""
 
 class IOError(Error):
-    """:const:`SQLITE_IOERR`.  Some kind of disk I/O error occurred.  The
+    """*SQLITE_IOERR*.  Some kind of disk I/O error occurred.  The
     :ref:`extended error code <exceptions>` will give more detail."""
 
 class IncompleteExecutionError(Error):
@@ -3631,63 +3632,63 @@ class IncompleteExecutionError(Error):
     for more details."""
 
 class InternalError(Error):
-    """:const:`SQLITE_INTERNAL`. (No longer used) Internal logic error in SQLite."""
+    """*SQLITE_INTERNAL*. (No longer used) Internal logic error in SQLite."""
 
 class InterruptError(Error):
-    """:const:`SQLITE_INTERRUPT`.  Operation terminated by
+    """*SQLITE_INTERRUPT*.  Operation terminated by
     `sqlite3_interrupt <https://sqlite.org/c3ref/interrupt.html>`_ -
     use :meth:`Connection.interrupt`."""
 
 class LockedError(Error):
-    """:const:`SQLITE_LOCKED`.  A table in the database is locked."""
+    """*SQLITE_LOCKED*.  A table in the database is locked."""
 
 class MismatchError(Error):
-    """:const:`SQLITE_MISMATCH`. Data type mismatch.  For example a rowid
+    """*SQLITE_MISMATCH*. Data type mismatch.  For example a rowid
     or integer primary key must be an integer."""
 
 class MisuseError(Error):
-    """:const:`SQLITE_MISUSE`.  SQLite library used incorrectly - typically similar to ValueError in Python.  Examples include not
+    """*SQLITE_MISUSE*.  SQLite library used incorrectly - typically similar to *ValueError* in Python.  Examples include not
     having enough flags when opening a connection (eg not including a READ or WRITE flag), or out of spec such as registering
     a function with more than 127 parameters."""
 
 class NoLFSError(Error):
-    """:const:`SQLITE_NOLFS`.  SQLite has attempted to use a feature not
+    """*SQLITE_NOLFS*.  SQLite has attempted to use a feature not
     supported by the operating system such as `large file support
     <http://en.wikipedia.org/wiki/Large_file_support>`_."""
 
 class NoMemError(Error):
-    """:const:`SQLITE_NOMEM`.  A memory allocation failed."""
+    """*SQLITE_NOMEM*.  A memory allocation failed."""
 
 class NotADBError(Error):
-    """:const:`SQLITE_NOTADB`.  File opened that is not a database file.
+    """*SQLITE_NOTADB*.  File opened that is not a database file.
     SQLite has a header on database files to verify they are indeed
     SQLite databases."""
 
 class NotFoundError(Error):
-    """:const:`SQLITE_NOTFOUND`. Returned when various internal items were
+    """*SQLITE_NOTFOUND*. Returned when various internal items were
     not found such as requests for non-existent system calls or file
     controls."""
 
 class PermissionsError(Error):
-    """:const:`SQLITE_PERM`. Access permission denied by the operating system, or parts of the database are readonly such as a cursor."""
+    """*SQLITE_PERM*. Access permission denied by the operating system, or parts of the database are readonly such as a cursor."""
 
 class ProtocolError(Error):
-    """:const:`SQLITE_PROTOCOL`. (No longer used) Database lock protocol error."""
+    """*SQLITE_PROTOCOL*. (No longer used) Database lock protocol error."""
 
 class RangeError(Error):
-    """:const:`SQLITE_RANGE`.  (Cannot be generated using APSW).  2nd parameter to `sqlite3_bind <https://sqlite.org/c3ref/bind_blob.html>`_ out of range"""
+    """*SQLITE_RANGE*.  (Cannot be generated using APSW).  2nd parameter to `sqlite3_bind <https://sqlite.org/c3ref/bind_blob.html>`_ out of range"""
 
 class ReadOnlyError(Error):
-    """:const:`SQLITE_READONLY`. Attempt to write to a readonly database."""
+    """*SQLITE_READONLY*. Attempt to write to a readonly database."""
 
 class SQLError(Error):
-    """:const:`SQLITE_ERROR`.  This error is documented as a bad SQL query
+    """*SQLITE_ERROR*.  This error is documented as a bad SQL query
     or missing database, but is also returned for a lot of other
     situations.  It is the default error code unless there is a more
     specific one."""
 
 class SchemaChangeError(Error):
-    """:const:`SQLITE_SCHEMA`.  The database schema changed.  A
+    """*SQLITE_SCHEMA*.  The database schema changed.  A
     :meth:`prepared statement <Cursor.execute>` becomes invalid
     if the database schema was changed.  Behind the scenes SQLite
     reprepares the statement.  Another or the same :class:`Connection`
@@ -3705,7 +3706,7 @@ class ThreadingViolationError(Error):
     Cursors can only be used for one thing at a time."""
 
 class TooBigError(Error):
-    """:const:`SQLITE_TOOBIG`.  String or BLOB exceeds size limit.  You can
+    """*SQLITE_TOOBIG*.  String or BLOB exceeds size limit.  You can
     change the limits using :meth:`Connection.limit`."""
 
 class VFSFileClosedError(Error):
