@@ -248,7 +248,7 @@
 "\n" \
 ".. seealso::\n" \
 "\n" \
-"  * :ref:`Status example <example-status>`\n" \
+"  * :ref:`Status example <example_status>`\n" \
 "\n" \
 "Calls: `sqlite3_status64 <https://sqlite.org/c3ref/status.html>`__\n" 
 
@@ -373,7 +373,7 @@
 "  :class:`zeroblob` or the `zeroblob()\n" \
 "  <https://sqlite.org/lang_corefunc.html>`_ function.\n" \
 "\n" \
-"See the :ref:`example <example-blobio>`.\n" 
+"See the :ref:`example <example_blob_io>`.\n" 
 
 #define  Blob_close_DOC "close($self,force=False)\n--\n\nBlob.close(force: bool = False) -> None\n\n" \
 "Closes the blob.  Note that even if an error occurs the blob is\n" \
@@ -553,7 +553,7 @@
 "\n" \
 ".. seealso::\n" \
 "\n" \
-"  * :ref:`Example <authorizer-example>`\n" \
+"  * :ref:`Example <example_authorizer>`\n" \
 "  * :ref:`statementcache`\n" \
 "\n" \
 "Calls: `sqlite3_set_authorizer <https://sqlite.org/c3ref/set_authorizer.html>`__\n" 
@@ -623,7 +623,7 @@
 "\n" \
 ".. seealso::\n" \
 "\n" \
-"  * :ref:`Blob I/O example <example-blobio>`\n" \
+"  * :ref:`Blob I/O example <example_blob_io>`\n" \
 "  * `SQLite row ids <https://sqlite.org/autoinc.html>`_\n" \
 "\n" \
 "Calls: `sqlite3_blob_open <https://sqlite.org/c3ref/blob_open.html>`__\n" 
@@ -819,7 +819,7 @@
 "\n" \
 ".. seealso::\n" \
 "\n" \
-"   * :ref:`Example <aggregate-example>`\n" \
+"   * :ref:`Example <example_aggregate>`\n" \
 "   * :meth:`~Connection.createscalarfunction`\n" \
 "\n" \
 "Calls: `sqlite3_create_function_v2 <https://sqlite.org/c3ref/create_function.html>`__\n" 
@@ -857,7 +857,7 @@
 "\n" \
 ".. seealso::\n" \
 "\n" \
-"  * :ref:`Example <collation-example>`\n" \
+"  * :ref:`Example <example_collation>`\n" \
 "\n" \
 "Calls: `sqlite3_create_collation_v2 <https://sqlite.org/c3ref/create_collation.html>`__\n" 
 
@@ -874,7 +874,7 @@
 "\n" \
 ".. seealso::\n" \
 "\n" \
-"   * :ref:`Example <example-vtable>`\n" \
+"   * :ref:`Example <example_virtual_tables>`\n" \
 "\n" \
 "Calls: `sqlite3_create_module_v2 <https://sqlite.org/c3ref/create_module.html>`__\n" 
 
@@ -913,7 +913,7 @@
 "\n" \
 ".. seealso::\n" \
 "\n" \
-"   * :ref:`Example <scalar-example>`\n" \
+"   * :ref:`Example <example_scalar>`\n" \
 "   * :meth:`~Connection.createaggregatefunction`\n" \
 "\n" \
 "Calls: `sqlite3_create_function_v2 <https://sqlite.org/c3ref/create_function.html>`__\n" 
@@ -1221,7 +1221,7 @@
 "\n" \
 ".. seealso::\n" \
 "\n" \
-"  * :ref:`Example <example-limit>`\n" 
+"  * :ref:`Example <example_limits>`\n" 
 
 #define Connection_limit_USAGE "Connection.limit(id: int, newval: int = -1) -> int"
 
@@ -1423,7 +1423,7 @@
 "\n" \
 ".. seealso::\n" \
 "\n" \
-"  * :ref:`Example <example-commithook>`\n" \
+"  * :ref:`Example <example_commit_hook>`\n" \
 "\n" \
 "Calls: `sqlite3_commit_hook <https://sqlite.org/c3ref/commit_hook.html>`__\n" 
 
@@ -1469,7 +1469,7 @@
 "\n" \
 ".. seealso::\n" \
 "\n" \
-"   * :ref:`Example <example-progress-handler>`\n" \
+"   * :ref:`Example <example_progress_handler>`\n" \
 "\n" \
 "Calls: `sqlite3_progress_handler <https://sqlite.org/c3ref/progress_handler.html>`__\n" 
 
@@ -1528,7 +1528,7 @@
 "\n" \
 ".. seealso::\n" \
 "\n" \
-"    * :ref:`Example <example-updatehook>`\n" \
+"    * :ref:`Example <example_update_hook>`\n" \
 "\n" \
 "Calls: `sqlite3_update_hook <https://sqlite.org/c3ref/update_hook.html>`__\n" 
 
@@ -1582,7 +1582,7 @@
 "\n" \
 "  The :func:`status` example which works in exactly the same way.\n" \
 "\n" \
-"  * :ref:`Status example <example-status>`\n" \
+"  * :ref:`Status example <example_status>`\n" \
 "\n" \
 "Calls: `sqlite3_db_status <https://sqlite.org/c3ref/db_status.html>`__\n" 
 
@@ -1984,7 +1984,7 @@
 #define  URIFilename_class_DOC "SQLite uses a convoluted method of storing `uri parameters\n" \
 "<https://sqlite.org/uri.html>`__ after the filename binding the\n" \
 "C filename representation and parameters together.  This class\n" \
-"encapsulates that binding.  The :ref:`example <example-vfs>` shows\n" \
+"encapsulates that binding.  The :ref:`example <example_vfs>` shows\n" \
 "usage of this class.\n" \
 "\n" \
 "Your :meth:`VFS.xOpen` method will generally be passed one of\n" \

@@ -316,7 +316,7 @@ def status(op: int, reset: bool = False) -> Tuple[int, int]:
 
     .. seealso::
 
-      * :ref:`Status example <example-status>`
+      * :ref:`Status example <example_status>`
 
     Calls: `sqlite3_status64 <https://sqlite.org/c3ref/status.html>`__"""
     ...
@@ -422,7 +422,7 @@ class Blob:
       :class:`zeroblob` or the `zeroblob()
       <https://sqlite.org/lang_corefunc.html>`_ function.
 
-    See the :ref:`example <example-blobio>`."""
+    See the :ref:`example <example_blob_io>`."""
 
     def close(self, force: bool = False) -> None:
         """Closes the blob.  Note that even if an error occurs the blob is
@@ -566,7 +566,7 @@ class Connection:
 
     .. seealso::
 
-      * :ref:`Example <authorizer-example>`
+      * :ref:`Example <example_authorizer>`
       * :ref:`statementcache`
 
     Calls: `sqlite3_set_authorizer <https://sqlite.org/c3ref/set_authorizer.html>`__"""
@@ -622,7 +622,7 @@ class Connection:
 
         .. seealso::
 
-          * :ref:`Blob I/O example <example-blobio>`
+          * :ref:`Blob I/O example <example_blob_io>`
           * `SQLite row ids <https://sqlite.org/autoinc.html>`_
 
         Calls: `sqlite3_blob_open <https://sqlite.org/c3ref/blob_open.html>`__"""
@@ -787,7 +787,7 @@ class Connection:
 
         .. seealso::
 
-           * :ref:`Example <aggregate-example>`
+           * :ref:`Example <example_aggregate>`
            * :meth:`~Connection.createscalarfunction`
 
         Calls: `sqlite3_create_function_v2 <https://sqlite.org/c3ref/create_function.html>`__"""
@@ -816,7 +816,7 @@ class Connection:
 
         .. seealso::
 
-          * :ref:`Example <collation-example>`
+          * :ref:`Example <example_collation>`
 
         Calls: `sqlite3_create_collation_v2 <https://sqlite.org/c3ref/create_collation.html>`__"""
         ...
@@ -826,7 +826,7 @@ class Connection:
 
         .. seealso::
 
-           * :ref:`Example <example-vtable>`
+           * :ref:`Example <example_virtual_tables>`
 
         Calls: `sqlite3_create_module_v2 <https://sqlite.org/c3ref/create_module.html>`__"""
         ...
@@ -858,7 +858,7 @@ class Connection:
 
         .. seealso::
 
-           * :ref:`Example <scalar-example>`
+           * :ref:`Example <example_scalar>`
            * :meth:`~Connection.createaggregatefunction`
 
         Calls: `sqlite3_create_function_v2 <https://sqlite.org/c3ref/create_function.html>`__"""
@@ -1114,7 +1114,7 @@ class Connection:
 
         .. seealso::
 
-          * :ref:`Example <example-limit>`"""
+          * :ref:`Example <example_limits>`"""
         ...
 
     def loadextension(self, filename: str, entrypoint: Optional[str] = None) -> None:
@@ -1254,7 +1254,7 @@ class Connection:
 
         .. seealso::
 
-          * :ref:`Example <example-commithook>`
+          * :ref:`Example <example_commit_hook>`
 
         Calls: `sqlite3_commit_hook <https://sqlite.org/c3ref/commit_hook.html>`__"""
         ...
@@ -1282,7 +1282,7 @@ class Connection:
 
         .. seealso::
 
-           * :ref:`Example <example-progress-handler>`
+           * :ref:`Example <example_progress_handler>`
 
         Calls: `sqlite3_progress_handler <https://sqlite.org/c3ref/progress_handler.html>`__"""
         ...
@@ -1321,7 +1321,7 @@ class Connection:
 
         .. seealso::
 
-            * :ref:`Example <example-updatehook>`
+            * :ref:`Example <example_update_hook>`
 
         Calls: `sqlite3_update_hook <https://sqlite.org/c3ref/update_hook.html>`__"""
         ...
@@ -1364,7 +1364,7 @@ class Connection:
 
           The :func:`status` example which works in exactly the same way.
 
-          * :ref:`Status example <example-status>`
+          * :ref:`Status example <example_status>`
 
         Calls: `sqlite3_db_status <https://sqlite.org/c3ref/db_status.html>`__"""
         ...
@@ -1699,7 +1699,7 @@ class URIFilename:
     """SQLite uses a convoluted method of storing `uri parameters
     <https://sqlite.org/uri.html>`__ after the filename binding the
     C filename representation and parameters together.  This class
-    encapsulates that binding.  The :ref:`example <example-vfs>` shows
+    encapsulates that binding.  The :ref:`example <example_vfs>` shows
     usage of this class.
 
     Your :meth:`VFS.xOpen` method will generally be passed one of
