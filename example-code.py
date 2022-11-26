@@ -320,6 +320,191 @@ print("Using strnum")
 for row in connection.execute("select * from names order by name collate strnum"):
     print(row)
 
+### colnames: Accessing results by column name
+# You can access results by column name using :mod:`dataclasses`.
+# APSW provides :class:`apsw.ext.DataClassRowFactory` for names
+# instead
+
+import apsw.ext
+
+connection.execute("""
+    create table books(id, title, author, year);
+    insert into books values(7, "Animal Farm", "George Orwell", 1945);
+    insert into books values(37, "The Picture of Dorian Gray", "Oscar Wilde", 1890);
+    """)
+
+# Normally you use column numbers
+for row in connection.execute("select title, id, year from books where author=?", ("Oscar Wilde", )):
+    # this is very fragile
+    print("title", row[0])
+    print("id", row[1])
+    print("year", row[2])
+
+# Turn on dataclasses - frozen makes them read-only
+connection.rowtrace = apsw.ext.DataClassRowFactory(dataclass_kwargs={"frozen": True})
+
+print("\nNow with dataclasses\n")
+
+# Same query - note using AS to set column name
+for row in connection.execute(
+        """SELECT title,
+           id AS book_id,
+           year AS book_year
+           FROM books WHERE author = ?""", ("Oscar Wilde", )):
+    print("title", row.title)
+    print("id", row.book_id)
+    print("year", row.book_year)
+
+# clear
+connection.rowtrace = None
+
+### type_conversion: Type conversion into/out of database
+# You can use :class:`apsw.ext.TypesConverterCursorFactory` to do
+# conversion, both for types you define and for other types.
+
+import apsw.ext
+
+registrar = apsw.ext.TypesConverterCursorFactory()
+connection.cursor_factory = registrar
+
+
+# A type we define - deriving from SQLiteTypeAdapter automatically registers conversion
+# to a SQLite value
+class Point(apsw.ext.SQLiteTypeAdapter):
+
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __repr__(self) -> str:
+        return f"Point({ self.x }, { self.y })"
+
+    def __eq__(self, other: Point) -> bool:
+        return isinstance(other, Point) and self.x == other.x and self.y == other.y
+
+    def to_sqlite_value(self) -> str:
+        # called to convert Point into something SQLite supports
+        return f"{ self.x };{ self.y }"
+
+    # This converter will be registered
+    @staticmethod
+    def convert_from_sqlite(value: str) -> Point:
+        return Point(*(float(part) for part in value.split(";")))
+
+
+# An existing type
+def complex_to_sqlite_value(c: complex) -> str:
+    return f"{ c.real }+{ c.imag }"
+
+
+# ... requires manual registration
+registrar.register_adapter(complex, complex_to_sqlite_value)
+
+# conversion from a SQLite value requires registration
+registrar.register_converter("POINT", Point.convert_from_sqlite)
+
+
+# ... and for complex
+def sqlite_to_complex(v: str) -> complex:
+    return complex(*(float(part) for part in v.split("+")))
+
+
+registrar.register_converter("COMPLEX", sqlite_to_complex)
+
+# note that the type names are case sensitive and must match the
+# registration
+connection.execute("create table conversion(p POINT, c COMPLEX)")
+
+# convert going into database
+test_data = (Point(5.2, 7.6), 3 + 4j)
+connection.execute("insert into conversion values(?, ?)", test_data)
+print("inserted", test_data)
+
+# and coming back out
+for row in connection.execute("select * from conversion"):
+    print("back out", row)
+    print("equal", row == test_data)
+
+# clear registrar
+connection.cursor_factory = apsw.Cursor
+
+### query_details: Query details
+# :meth:`apsw.ext.query_info` can provide a lot of information about a
+# query (without running it)
+
+import apsw.ext
+
+# test tables
+connection.execute("""
+    create table customers(
+        id INTEGER PRIMARY KEY,
+        name CHAR,
+        address CHAR);
+    create table orders(
+        id INTEGER PRIMARY KEY,
+        customer_id INTEGER,
+        item MY_OWN_TYPE);
+    create index cust_addr on customers(address);
+""")
+
+query = """
+    SELECT * FROM orders
+    JOIN customers ON orders.customer_id=customers.id
+    WHERE address = ?;
+    SELECT 7;"""
+bindings = ("123 Main Street", )
+
+# ask for all information available
+qd = apsw.ext.query_info(
+    connection,
+    query,
+    bindings=bindings,
+    actions=True,  # which tables/views etc and how they are accessed
+    expanded_sql=True,  # expands bindings into query string
+    explain=True,  # shows low level VDBE
+    explain_query_plan=True,  # how SQLite solves the query
+)
+
+# help with formatting
+import pprint
+
+
+print("query", qd.query)
+print("\nbindings", qd.bindings)
+print("\nexpanded_sql", qd.expanded_sql)
+print("\nfirst_query", qd.first_query)
+print("\nquery_remaining", qd.query_remaining)
+print("\nis_explain", qd.is_explain)
+print("\nis_readonly", qd.is_readonly)
+print("\ndescription\n", pprint.pformat(qd.description))
+if hasattr(qd, "description_full"):
+    print("\ndescription_full\n", pprint.pformat(qd.description_full))
+
+
+print("\nquery_plan\n", pprint.pformat(qd.query_plan))
+print("\nFirst 5 actions\n", pprint.pformat(qd.actions[:5]))
+print("\nFirst 5 explain\n", pprint.pformat(qd.explain[:5]))
+
+### blob_io: Blob I/O
+# BLOBS (binary large objects) are supported by SQLite.  Note that you
+# cannot change the size of one, but you can allocate one filled with
+# zeroes, and then later open it and read / write the contents similar
+# to a file, without having the entire blob in memory.  Use
+# :meth:`Connection.blobopen` to open a blob.
+
+connection.execute("create table blobby(x,y)")
+# Add a blob we will fill in later
+connection.execute("insert into blobby values(1, zeroblob(10000))")
+# Or as a binding
+connection.execute("insert into blobby values(2, ?)", (apsw.zeroblob(20000), ))
+# Open a blob for writing.  We need to know the rowid
+rowid = connection.execute("select ROWID from blobby where x=1").fetchall()[0][0]
+blob = connection.blobopen("main", "blobby", "y", rowid, True)
+blob.write(b"hello world")
+blob.seek(2000)
+blob.write(b"hello world, again")
+blob.close()
+
 ### authorizer: Authorizer (control what SQL can do)
 # You can allow, deny, or ignore what SQL does.  Use
 # :attr:`Connection.authorizer` to set an authorizer.
@@ -381,26 +566,6 @@ for max_num in connection.execute("select max(x) from numbers"):
 
 # Clear handler
 connection.setprogresshandler(None)
-
-### blob_io: Blob I/O
-# BLOBS (binary large objects) are supported by SQLite.  Note that you
-# cannot change the size of one, but you can allocate one filled with
-# zeroes, and then later open it and read / write the contents similar
-# to a file, without having the entire blob in memory.  Use
-# :meth:`Connection.blobopen` to open a blob.
-
-connection.execute("create table blobby(x,y)")
-# Add a blob we will fill in later
-connection.execute("insert into blobby values(1, zeroblob(10000))")
-# Or as a binding
-connection.execute("insert into blobby values(2, ?)", (apsw.zeroblob(20000), ))
-# Open a blob for writing.  We need to know the rowid
-rowid = connection.execute("select ROWID from blobby where x=1").fetchall()[0][0]
-blob = connection.blobopen("main", "blobby", "y", rowid, True)
-blob.write(b"hello world")
-blob.seek(2000)
-blob.write(b"hello world, again")
-blob.close()
 
 ### commit_hook: Commit hook
 # A commit hook can allow or veto commits.  Register a commit hook

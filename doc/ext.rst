@@ -6,34 +6,15 @@ Various interesting and useful bits of functionality
 You need to import `apsw.ext` to use this module. :mod:`dataclasses`
 are used, and only Python 3.7+ is supported.
 
-You can use these as is, or as the basis for your own needs.
-
 Accessing result rows by column name
 ------------------------------------
 
-By default :class:`cursors <apsw.Cursor>` return a :class:`tuple` of the
-values for a row::
+See :ref:`the example <example_colnames>`.
 
-    con.execute("create table books(id, title, author, year")
+Use :class:`apsw.ext.DataClassRowFactory` as a
+:attr:`apsw.Connection.rowtrace` for an entire connection, or
+:attr:`apsw.Cursor.rowtrace` for a specific cursor.
 
-    # tuple
-    for row in con.execute("SELECT * from books"):
-        # if the column order changes or the query is more complex
-        # these can easily get out of sync
-        title = row[1]
-        author = row[2]
-
-
-It can be more convenient to access them by name.  To achieve this you
-can use :class:`apsw.ext.DataClassRowFactory` like this::
-
-    con.rowtrace = apsw.ext.DataClassRowFactory()
-
-    for row in con.execute("SELECT * from books"):
-        print(row.title, row.author)
-
-See the :class:`API reference <apsw.ext.DataClassRowFactory>` for more
-details on usage and configuration.
 
 Converting types into and out of SQLite
 ---------------------------------------
@@ -46,46 +27,23 @@ SQLite only stores and returns 5 types:
 * str
 * bytes
 
-Sometimes it is handy to pretend it stores more types and have them
-automagically converted.  Use :class:`TypesConverterCursorFactory` to
-do this::
+Use :class:`TypesConverterCursorFactory` as
+:attr:`apsw.Connection.cursor_factory` to adapt values going into
+SQLite, and convert them coming out.  See :ref:`the example
+<example_type_conversion>`.
 
-    t = apsw.ext.TypesConverterCursorFactory()
-    connection.cursor_factory = t
+To convert values going into SQLite, do either of:
 
-To adapt Python types to SQLite types, you can inherit from :class:`SQLiteTypeAdapter`
-and define `to_sqlite_value`::
+* Inherit from :class:`apsw.ext.SQLiteTypeAdapter` and define a
+  *to_sqlite_value* method on the class
 
-    class Point(apsw.ext.SQLiteTypeAdapter):
-        def __init__(self, x, y):
-            self.x = x
-            self.y = y
+* Call :meth:`TypesConverterCursorFactory.register_adapter` with the
+  type and a adapter function
 
-        def to_sqlite_value(self):
-            # this is called to do the conversion
-            return f"{ self.x };{ self.y }"
+To adapt values coming out of SQLite:
 
-You can also register an adapter::
-
-    def complex_to_sqlite_value(c):
-        return f"{ c.real };{ c.imag }"
-
-    t.register_adapter(complex, complex_to_sqlite_value)
-
-To convert SQLite types back to Python types, you need to set the type
-in SQLite when creating the table.
-
-.. code-block:: SQL
-
-    CREATE TABLE example(number INT, other COMPLEX);
-
-Then register an adapter, giving the type from your SQL schema.  It must be an
-exact match including case (`COMPLEX` in this example)::
-
-    def sqlite_to_complex(v):
-        return complex(*(float(part) for part in v.split(";")))
-
-    t.register_converter("COMPLEX", sqlite_to_complex)
+* Call :meth:`TypesConverterCursorFactory.register_converter` with the
+  exact type string in the table and a converter function
 
 Detailed Query Information
 --------------------------
@@ -104,6 +62,7 @@ for you.  This includes:
 * **explain** for the low level steps taken inside SQLite - see
   `SQLite bytecode <https://sqlite.org/opcode.html>`__
 
+See :ref:`the example <example_query_details>`.
 
 API Reference
 -------------
