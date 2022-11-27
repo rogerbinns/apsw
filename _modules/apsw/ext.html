@@ -1,0 +1,605 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>apsw.ext &#8212; APSW 3.40.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css" />
+    
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" />
+ 
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-26815066-1']);
+  _gaq.push(['_trackPageview']);
+</script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">APSW 3.40.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../apsw.html" accesskey="U">apsw</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">apsw.ext</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for apsw.ext</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Provides various useful routines</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">import</span> <span class="nn">collections</span><span class="o">,</span> <span class="nn">collections.abc</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">NoneType</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">NoneType</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">make_dataclass</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">abc</span>
+
+<span class="kn">import</span> <span class="nn">apsw</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">keyword</span> <span class="kn">import</span> <span class="n">iskeyword</span> <span class="k">as</span> <span class="n">_iskeyword</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="c1"># From https://docs.python.org/3/reference/lexical_analysis.html#keywords</span>
+    <span class="n">_keywords</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    False      await      else       import     pass</span>
+<span class="s2">    None       break      except     in         raise</span>
+<span class="s2">    True       class      finally    is         return</span>
+<span class="s2">    and        continue   for        lambda     try</span>
+<span class="s2">    as         def        from       nonlocal   while</span>
+<span class="s2">    assert     del        global     not        with</span>
+<span class="s2">    async      elif       if         or         yield</span>
+<span class="s2">    &quot;&quot;&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">_iskeyword</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">_keywords</span>
+
+
+<div class="viewcode-block" id="DataClassRowFactory"><a class="viewcode-back" href="../../ext.html#apsw.ext.DataClassRowFactory">[docs]</a><span class="k">class</span> <span class="nc">DataClassRowFactory</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Returns each row as a :mod:`dataclass &lt;dataclasses&gt;`, accessible by column name.</span>
+
+<span class="sd">    To use set an instance as :attr:`Connection.rowtrace</span>
+<span class="sd">    &lt;apsw.Connection.rowtrace&gt;` to affect all :class:`cursors</span>
+<span class="sd">    &lt;apsw.Cursor&gt;`, or on a specific cursor::</span>
+
+<span class="sd">        connection.rowtrace = apsw.ext.DataClassRowFactory()</span>
+<span class="sd">        for row in connection.execute(&quot;SELECT title, sum(orders) AS total, ...&quot;):</span>
+<span class="sd">            # You can now access by name</span>
+<span class="sd">            print (row.title, row.total)</span>
+<span class="sd">            # you can get the underlying description</span>
+<span class="sd">            print (row.__description__)</span>
+
+<span class="sd">    You can use as many instances of this class as you want, each across as many</span>
+<span class="sd">    :class:`connections &lt;apsw.Connection&gt;` as you want.</span>
+
+<span class="sd">    :param rename:     Column names could be duplicated, or not</span>
+<span class="sd">        valid in Python (eg a column named `continue`).</span>
+<span class="sd">        If `rename` is True, then invalid/duplicate names are replaced</span>
+<span class="sd">        with `_` and their position starting at zero.  For example `title,</span>
+<span class="sd">        total, title, continue` would become `title, total, _2, _3`.  If</span>
+<span class="sd">        `rename` is False then problem column names will result in</span>
+<span class="sd">        :exc:`TypeError` raised by :func:`dataclasses.make_dataclass`</span>
+
+<span class="sd">    :param dataclass_kwargs: Additional parameters when creating the dataclass</span>
+<span class="sd">       as described in :func:`dataclasses.dataclass`.  For example you may</span>
+<span class="sd">       want `frozen = True` to make the dataclass read-only, or `slots = True`</span>
+<span class="sd">       to reduce memory consumption.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">rename</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">dataclass_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataclass_kwargs</span> <span class="o">=</span> <span class="n">dataclass_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rename</span> <span class="o">=</span> <span class="n">rename</span>
+
+<div class="viewcode-block" id="DataClassRowFactory.get_dataclass"><a class="viewcode-back" href="../../ext.html#apsw.ext.DataClassRowFactory.get_dataclass">[docs]</a>    <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get_dataclass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">description</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;Returns dataclass and tuple of (potentially renamed) column names</span>
+
+<span class="sd">        The dataclass is what is returned for each row with that</span>
+<span class="sd">        :meth:`description &lt;apsw.Cursor.getdescription&gt;`</span>
+
+<span class="sd">        This method caches it results.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">description</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rename</span><span class="p">:</span>
+            <span class="n">new_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">names</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">isidentifier</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_iskeyword</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="ow">and</span> <span class="n">n</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">new_names</span><span class="p">:</span>
+                    <span class="n">new_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">new_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span> <span class="n">i</span> <span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="n">new_names</span>
+        <span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_type</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">description</span><span class="p">]</span>
+
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataclass_kwargs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s2">&quot;namespace&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;namespace&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;namespace&quot;</span><span class="p">][</span><span class="s2">&quot;__description__&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">description</span>
+
+        <span class="c1"># some magic to make the reported classnames different</span>
+        <span class="n">suffix</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;.</span><span class="si">%06X</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">description</span><span class="p">)))[:</span><span class="mi">7</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">make_dataclass</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="si">}{</span> <span class="n">suffix</span> <span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">types</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">names</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataClassRowFactory.get_type"><a class="viewcode-back" href="../../ext.html#apsw.ext.DataClassRowFactory.get_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns the `type hint &lt;https://docs.python.org/3/library/typing.html&gt;`__ to use in the dataclass based on the type in the :meth:`description &lt;apsw.Cursor.getdescription&gt;`</span>
+
+<span class="sd">        `SQLite&#39;s affinity rules  &lt;https://www.sqlite.org/datatype3.html#affname&gt;`__ are followed.</span>
+
+<span class="sd">        The values have no effect on how your program runs, but can be used by tools like</span>
+<span class="sd">        mypy.  Column information like whether `null` is allowed is not present, so</span>
+<span class="sd">        this is just a hint.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">t</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Any</span>
+        <span class="c1"># From 3.1 https://www.sqlite.org/datatype3.html</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s2">&quot;INT&quot;</span> <span class="ow">in</span> <span class="n">t</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">int</span>
+        <span class="k">if</span> <span class="s2">&quot;CHAR&quot;</span> <span class="ow">in</span> <span class="n">t</span> <span class="ow">or</span> <span class="s2">&quot;CLOB&quot;</span> <span class="ow">in</span> <span class="n">t</span> <span class="ow">or</span> <span class="s2">&quot;TEXT&quot;</span> <span class="ow">in</span> <span class="n">t</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">str</span>
+        <span class="k">if</span> <span class="s2">&quot;BLOB&quot;</span> <span class="ow">in</span> <span class="n">t</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">bytes</span>
+        <span class="k">if</span> <span class="s2">&quot;REAL&quot;</span> <span class="ow">in</span> <span class="n">t</span> <span class="ow">or</span> <span class="s2">&quot;FLOA&quot;</span> <span class="ow">in</span> <span class="n">t</span> <span class="ow">or</span> <span class="s2">&quot;DOUB&quot;</span> <span class="ow">in</span> <span class="n">t</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">float</span>
+        <span class="k">return</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="DataClassRowFactory.__call__"><a class="viewcode-back" href="../../ext.html#apsw.ext.DataClassRowFactory.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;What the row tracer calls</span>
+
+<span class="sd">        This :meth:`looks up &lt;get_dataclass&gt;` the dataclass and column</span>
+<span class="sd">        names, and then returns an instance of the dataclass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dc</span><span class="p">,</span> <span class="n">column_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dataclass</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">getdescription</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">dc</span><span class="p">(</span><span class="o">**</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">column_names</span><span class="p">,</span> <span class="n">row</span><span class="p">)))</span></div></div>
+
+
+<div class="viewcode-block" id="SQLiteTypeAdapter"><a class="viewcode-back" href="../../ext.html#apsw.ext.SQLiteTypeAdapter">[docs]</a><span class="k">class</span> <span class="nc">SQLiteTypeAdapter</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A metaclass to indicate conversion to SQLite types is supported</span>
+
+<span class="sd">    This is one way to indicate your type supports conversion to a</span>
+<span class="sd">    value supported by SQLite.  You can either inherit from this class,</span>
+<span class="sd">    or call the register method::</span>
+
+<span class="sd">       apsw.ext.SQLiteTypeAdapter.register(YourClassHere)</span>
+
+<span class="sd">    Doing either is entirely sufficient and there is no need to</span>
+<span class="sd">    register with :class:`TypesConverterCursorFactory`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SQLiteTypeAdapter.to_sqlite_value"><a class="viewcode-back" href="../../ext.html#apsw.ext.SQLiteTypeAdapter.to_sqlite_value">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">to_sqlite_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
+        <span class="s2">&quot;Return a SQLite compatible value for this object&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
+
+
+<div class="viewcode-block" id="TypesConverterCursorFactory"><a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory">[docs]</a><span class="k">class</span> <span class="nc">TypesConverterCursorFactory</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Provides cursors that can convert objects into one of the types supported by SQLite. or back from SQLite</span>
+
+<span class="sd">    :param metaclass: Which metaclass to consider as conversion capable</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">abstract_base_class</span><span class="p">:</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span> <span class="o">=</span> <span class="n">SQLiteTypeAdapter</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">abstract_base_class</span> <span class="o">=</span> <span class="n">abstract_base_class</span>
+        <span class="c1"># to sqlite value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adapters</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">type</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># from sqlite value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">converters</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">],</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="TypesConverterCursorFactory.register_adapter"><a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.register_adapter">[docs]</a>    <span class="k">def</span> <span class="nf">register_adapter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">klass</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="n">callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Registers a callable that converts from `klass` to one of the supported SQLite types&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adapters</span><span class="p">[</span><span class="n">klass</span><span class="p">]</span> <span class="o">=</span> <span class="n">callable</span></div>
+
+<div class="viewcode-block" id="TypesConverterCursorFactory.register_converter"><a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.register_converter">[docs]</a>    <span class="k">def</span> <span class="nf">register_converter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Registers a callable that converts from a SQLite value&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">converters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">callable</span></div>
+
+<div class="viewcode-block" id="TypesConverterCursorFactory.__call__"><a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TypeConverterCursor</span><span class="p">:</span>
+        <span class="s2">&quot;Returns a new :class:`cursor &lt;apsw.Cursor&gt;` for the `connection`&quot;</span>
+        <span class="k">return</span> <span class="n">TypesConverterCursorFactory</span><span class="o">.</span><span class="n">TypeConverterCursor</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TypesConverterCursorFactory.adapt_value"><a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.adapt_value">[docs]</a>    <span class="k">def</span> <span class="nf">adapt_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
+        <span class="s2">&quot;Returns SQLite representation of `value`&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">NoneType</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">abstract_base_class</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">to_sqlite_value</span><span class="p">()</span>
+        <span class="n">adapter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adapters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">adapter</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No adapter registered for type </span><span class="si">{</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">adapter</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TypesConverterCursorFactory.convert_value"><a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.convert_value">[docs]</a>    <span class="k">def</span> <span class="nf">convert_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schematype</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="s2">&quot;Returns Python object from schema type and SQLite value&quot;</span>
+        <span class="n">converter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">converters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">schematype</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">converter</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="n">converter</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TypesConverterCursorFactory.wrap_bindings"><a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.wrap_bindings">[docs]</a>    <span class="k">def</span> <span class="nf">wrap_bindings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bindings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">]:</span>
+        <span class="s2">&quot;Wraps bindings that are supplied to underlying execute&quot;</span>
+        <span class="k">if</span> <span class="n">bindings</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bindings</span><span class="p">,</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Mapping</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">TypesConverterCursorFactory</span><span class="o">.</span><span class="n">DictAdapter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bindings</span><span class="p">)</span>
+        <span class="c1"># turn into a list since PySequence_Fast does that anyway</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">adapt_value</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">bindings</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="TypesConverterCursorFactory.wrap_sequence_bindings"><a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.wrap_sequence_bindings">[docs]</a>    <span class="k">def</span> <span class="nf">wrap_sequence_bindings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequenceofbindings</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">]):</span>
+        <span class="k">for</span> <span class="n">binding</span> <span class="ow">in</span> <span class="n">sequenceofbindings</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrap_bindings</span><span class="p">(</span><span class="n">binding</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TypesConverterCursorFactory.DictAdapter"><a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.DictAdapter">[docs]</a>    <span class="k">class</span> <span class="nc">DictAdapter</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Mapping</span><span class="p">):</span>
+        <span class="s2">&quot;Used to wrap dictionaries supplied as bindings&quot;</span>
+
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">TypesConverterCursorFactory</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">]):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">factory</span> <span class="o">=</span> <span class="n">factory</span>
+
+        <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">adapt_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+
+        <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="s2">&quot;Required by mapping, but not used&quot;</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+        <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="s2">&quot;Required by mapping, but not used&quot;</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="TypesConverterCursorFactory.TypeConverterCursor"><a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.TypeConverterCursor">[docs]</a>    <span class="k">class</span> <span class="nc">TypeConverterCursor</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">):</span>
+        <span class="s2">&quot;Cursor used to do conversions&quot;</span>
+
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">TypesConverterCursorFactory</span><span class="p">):</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">connection</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">factory</span> <span class="o">=</span> <span class="n">factory</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rowtrace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rowtracer</span>
+
+        <span class="k">def</span> <span class="nf">_rowtracer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">convert_value</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">getdescription</span><span class="p">(),</span> <span class="n">values</span><span class="p">))</span>
+
+<div class="viewcode-block" id="TypesConverterCursorFactory.TypeConverterCursor.execute"><a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.TypeConverterCursor.execute">[docs]</a>        <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                    <span class="n">statements</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                    <span class="n">bindings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="o">*</span><span class="p">,</span>
+                    <span class="n">can_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                    <span class="n">prepare_flags</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">:</span>
+            <span class="sd">&quot;&quot;&quot;Executes the statements doing conversions on supplied and returned values</span>
+
+<span class="sd">            See :meth:`apsw.Cursor.execute` for parameter details&quot;&quot;&quot;</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">statements</span><span class="p">,</span>
+                                   <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">wrap_bindings</span><span class="p">(</span><span class="n">bindings</span><span class="p">),</span>
+                                   <span class="n">can_cache</span><span class="o">=</span><span class="n">can_cache</span><span class="p">,</span>
+                                   <span class="n">prepare_flags</span><span class="o">=</span><span class="n">prepare_flags</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TypesConverterCursorFactory.TypeConverterCursor.executemany"><a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.TypeConverterCursor.executemany">[docs]</a>        <span class="k">def</span> <span class="nf">executemany</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                        <span class="n">statements</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                        <span class="n">sequenceofbindings</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">],</span>
+                        <span class="o">*</span><span class="p">,</span>
+                        <span class="n">can_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                        <span class="n">prepare_flags</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">:</span>
+            <span class="sd">&quot;&quot;&quot;Executes the statements against each item in sequenceofbindings, doing conversions on supplied and returned values</span>
+
+<span class="sd">            See :meth:`apsw.Cursor.executemany` for parameter details&quot;&quot;&quot;</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="n">statements</span><span class="p">,</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">wrap_sequence_bindings</span><span class="p">(</span><span class="n">sequenceofbindings</span><span class="p">),</span>
+                                       <span class="n">can_cache</span><span class="o">=</span><span class="n">can_cache</span><span class="p">,</span>
+                                       <span class="n">prepare_flags</span><span class="o">=</span><span class="n">prepare_flags</span><span class="p">)</span></div></div></div>
+
+
+<div class="viewcode-block" id="query_info"><a class="viewcode-back" href="../../ext.html#apsw.ext.query_info">[docs]</a><span class="k">def</span> <span class="nf">query_info</span><span class="p">(</span><span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span>
+               <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+               <span class="n">bindings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+               <span class="o">*</span><span class="p">,</span>
+               <span class="n">prepare_flags</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+               <span class="n">actions</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+               <span class="n">expanded_sql</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+               <span class="n">explain</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+               <span class="n">explain_query_plan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QueryDetails</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Returns information about the query, but does not run it.</span>
+
+<span class="sd">    Set the various parameters to `True` if you also want the</span>
+<span class="sd">    actions, expanded_sql, explain, query_plan etc filled in.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">res</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;query_plan&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;explain&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">tracer</span><span class="p">(</span><span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">first_query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">bindings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">]):</span>
+        <span class="k">nonlocal</span> <span class="n">res</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+            <span class="s2">&quot;first_query&quot;</span><span class="p">:</span> <span class="n">first_query</span><span class="p">,</span>
+            <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">query</span><span class="p">,</span>
+            <span class="s2">&quot;bindings&quot;</span><span class="p">:</span> <span class="n">bindings</span><span class="p">,</span>
+            <span class="s2">&quot;is_explain&quot;</span><span class="p">:</span> <span class="n">cursor</span><span class="o">.</span><span class="n">is_explain</span><span class="p">,</span>
+            <span class="s2">&quot;is_readonly&quot;</span><span class="p">:</span> <span class="n">cursor</span><span class="o">.</span><span class="n">is_readonly</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">cursor</span><span class="o">.</span><span class="n">getdescription</span><span class="p">(),</span>
+            <span class="s2">&quot;description_full&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">})</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="s2">&quot;description_full&quot;</span><span class="p">):</span>
+            <span class="n">res</span><span class="p">[</span><span class="s2">&quot;description_full&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">description_full</span>
+
+        <span class="k">assert</span> <span class="n">query</span> <span class="o">==</span> <span class="n">first_query</span> <span class="ow">or</span> <span class="n">query</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">first_query</span><span class="p">)</span>
+        <span class="n">res</span><span class="p">[</span><span class="s2">&quot;query_remaining&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">query</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">first_query</span><span class="p">):]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">query</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">first_query</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">res</span><span class="p">[</span><span class="s2">&quot;expanded_sql&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">expanded_sql</span> <span class="k">if</span> <span class="n">expanded_sql</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="n">actions_taken</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">auther</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">third</span><span class="p">,</span> <span class="n">fourth</span><span class="p">,</span> <span class="n">dbname</span><span class="p">,</span> <span class="n">trigview</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span> <span class="s2">&quot;action_name&quot;</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_authorizer_function</span><span class="p">[</span><span class="n">code</span><span class="p">]}</span>
+        <span class="k">if</span> <span class="n">dbname</span><span class="p">:</span>
+            <span class="n">a</span><span class="p">[</span><span class="s2">&quot;database_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dbname</span>
+        <span class="k">if</span> <span class="n">trigview</span><span class="p">:</span>
+            <span class="n">a</span><span class="p">[</span><span class="s2">&quot;trigger_or_view&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trigview</span>
+
+        <span class="c1"># this block corresponds to the table at https://sqlite.org/c3ref/c_alter_table.html</span>
+        <span class="k">for</span> <span class="n">op</span><span class="p">,</span> <span class="n">thirdname</span><span class="p">,</span> <span class="n">fourthname</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CREATE_INDEX</span><span class="p">,</span> <span class="s2">&quot;index_name&quot;</span><span class="p">,</span> <span class="s2">&quot;table_name&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CREATE_TABLE</span><span class="p">,</span> <span class="s2">&quot;table_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CREATE_TEMP_INDEX</span><span class="p">,</span> <span class="s2">&quot;index_name&quot;</span><span class="p">,</span> <span class="s2">&quot;table_name&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CREATE_TEMP_TABLE</span><span class="p">,</span> <span class="s2">&quot;table_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CREATE_TEMP_TRIGGER</span><span class="p">,</span> <span class="s2">&quot;trigger_name&quot;</span><span class="p">,</span> <span class="s2">&quot;table_name&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CREATE_TEMP_VIEW</span><span class="p">,</span> <span class="s2">&quot;view_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CREATE_TRIGGER</span><span class="p">,</span> <span class="s2">&quot;trigger_name&quot;</span><span class="p">,</span> <span class="s2">&quot;table_name&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CREATE_VIEW</span><span class="p">,</span> <span class="s2">&quot;view_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DELETE</span><span class="p">,</span> <span class="s2">&quot;table_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DROP_INDEX</span><span class="p">,</span> <span class="s2">&quot;index_name&quot;</span><span class="p">,</span> <span class="s2">&quot;table_name&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DROP_TABLE</span><span class="p">,</span> <span class="s2">&quot;table_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DROP_TEMP_INDEX</span><span class="p">,</span> <span class="s2">&quot;index_name&quot;</span><span class="p">,</span> <span class="s2">&quot;table_name&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DROP_TEMP_TABLE</span><span class="p">,</span> <span class="s2">&quot;table_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DROP_TEMP_TRIGGER</span><span class="p">,</span> <span class="s2">&quot;trigger_name&quot;</span><span class="p">,</span> <span class="s2">&quot;table_name&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DROP_TEMP_VIEW</span><span class="p">,</span> <span class="s2">&quot;view_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DROP_TRIGGER</span><span class="p">,</span> <span class="s2">&quot;trigger_name&quot;</span><span class="p">,</span> <span class="s2">&quot;table_name&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DROP_VIEW</span><span class="p">,</span> <span class="s2">&quot;view_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INSERT</span><span class="p">,</span> <span class="s2">&quot;table_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_PRAGMA</span><span class="p">,</span> <span class="s2">&quot;pragma_name&quot;</span><span class="p">,</span> <span class="s2">&quot;pragma_value&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_READ</span><span class="p">,</span> <span class="s2">&quot;table_name&quot;</span><span class="p">,</span> <span class="s2">&quot;column_name&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_SELECT</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRANSACTION</span><span class="p">,</span> <span class="s2">&quot;operation&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_UPDATE</span><span class="p">,</span> <span class="s2">&quot;table_name&quot;</span><span class="p">,</span> <span class="s2">&quot;column_name&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_ATTACH</span><span class="p">,</span> <span class="s2">&quot;file_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DETACH</span><span class="p">,</span> <span class="s2">&quot;database_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_ALTER_TABLE</span><span class="p">,</span> <span class="s2">&quot;database_name&quot;</span><span class="p">,</span> <span class="s2">&quot;table_name&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_REINDEX</span><span class="p">,</span> <span class="s2">&quot;index_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_ANALYZE</span><span class="p">,</span> <span class="s2">&quot;table_name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CREATE_VTABLE</span><span class="p">,</span> <span class="s2">&quot;table_name&quot;</span><span class="p">,</span> <span class="s2">&quot;module_name&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DROP_VTABLE</span><span class="p">,</span> <span class="s2">&quot;table_name&quot;</span><span class="p">,</span> <span class="s2">&quot;module_name&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_FUNCTION</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;function_name&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_SAVEPOINT</span><span class="p">,</span> <span class="s2">&quot;operation&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_RECURSIVE</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="n">code</span> <span class="o">==</span> <span class="n">op</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">thirdname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">a</span><span class="p">[</span><span class="n">thirdname</span><span class="p">]</span> <span class="o">=</span> <span class="n">third</span>
+                <span class="k">if</span> <span class="n">fourthname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">a</span><span class="p">[</span><span class="n">fourthname</span><span class="p">]</span> <span class="o">=</span> <span class="n">fourth</span>
+                <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown authorizer code </span><span class="si">{</span> <span class="n">code</span> <span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">actions_taken</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">QueryAction</span><span class="p">(</span><span class="o">**</span><span class="n">a</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OK</span>
+
+    <span class="n">cur</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+    <span class="n">cur</span><span class="o">.</span><span class="n">exectrace</span> <span class="o">=</span> <span class="n">tracer</span>
+    <span class="k">if</span> <span class="n">actions</span><span class="p">:</span>
+        <span class="n">orig_authorizer</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">authorizer</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">authorizer</span> <span class="o">=</span> <span class="n">auther</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">bindings</span><span class="p">,</span> <span class="n">can_cache</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">prepare_flags</span><span class="o">=</span><span class="n">prepare_flags</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ExecTraceAbort</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">actions</span><span class="p">:</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">authorizer</span> <span class="o">=</span> <span class="n">orig_authorizer</span>
+    <span class="n">cur</span><span class="o">.</span><span class="n">exectrace</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">actions</span><span class="p">:</span>
+        <span class="n">res</span><span class="p">[</span><span class="s2">&quot;actions&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">actions_taken</span>
+
+    <span class="k">if</span> <span class="n">explain</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;is_explain&quot;</span><span class="p">]:</span>
+        <span class="n">vdbe</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;EXPLAIN &quot;</span> <span class="o">+</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;first_query&quot;</span><span class="p">],</span> <span class="n">bindings</span><span class="p">):</span>
+            <span class="n">vdbe</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">VDBEInstruction</span><span class="p">(</span><span class="o">**</span><span class="nb">dict</span><span class="p">((</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cur</span><span class="o">.</span><span class="n">getdescription</span><span class="p">(),</span> <span class="n">row</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)))</span>
+        <span class="n">res</span><span class="p">[</span><span class="s2">&quot;explain&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vdbe</span>
+
+    <span class="k">if</span> <span class="n">explain_query_plan</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;is_explain&quot;</span><span class="p">]:</span>
+        <span class="n">subn</span> <span class="o">=</span> <span class="s2">&quot;sub&quot;</span>
+        <span class="n">byid</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;QUERY PLAN&quot;</span><span class="p">}}</span>
+
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;EXPLAIN QUERY PLAN &quot;</span> <span class="o">+</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;first_query&quot;</span><span class="p">],</span> <span class="n">bindings</span><span class="p">):</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cur</span><span class="o">.</span><span class="n">getdescription</span><span class="p">(),</span> <span class="n">row</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;notused&quot;</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>  <span class="c1"># catch changes in returned format</span>
+            <span class="n">parent</span> <span class="o">=</span> <span class="n">byid</span><span class="p">[</span><span class="n">node</span><span class="p">[</span><span class="s2">&quot;parent&quot;</span><span class="p">]]</span>
+            <span class="k">if</span> <span class="n">subn</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">parent</span><span class="p">:</span>
+                <span class="n">parent</span><span class="p">[</span><span class="n">subn</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">node</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">parent</span><span class="p">[</span><span class="n">subn</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+            <span class="n">byid</span><span class="p">[</span><span class="n">node</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">node</span>
+
+        <span class="k">def</span> <span class="nf">flatten</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;detail&quot;</span><span class="p">]}</span>
+            <span class="k">if</span> <span class="n">subn</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
+                <span class="n">res</span><span class="p">[</span><span class="n">subn</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">QueryPlan</span><span class="p">(</span><span class="o">**</span><span class="n">flatten</span><span class="p">(</span><span class="n">child</span><span class="p">))</span> <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="p">[</span><span class="n">subn</span><span class="p">]]</span>
+            <span class="k">return</span> <span class="n">res</span>
+
+        <span class="n">res</span><span class="p">[</span><span class="s2">&quot;query_plan&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">QueryPlan</span><span class="p">(</span><span class="o">**</span><span class="n">flatten</span><span class="p">(</span><span class="n">byid</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+    <span class="k">return</span> <span class="n">QueryDetails</span><span class="p">(</span><span class="o">**</span><span class="n">res</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="QueryDetails"><a class="viewcode-back" href="../../ext.html#apsw.ext.QueryDetails">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">QueryDetails</span><span class="p">:</span>
+    <span class="s2">&quot;A :mod:`dataclass &lt;dataclasses&gt;` that provides detailed information about a query, returned by :func:`query_info`&quot;</span>
+    <span class="n">query</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="s2">&quot;Original query provided&quot;</span>
+    <span class="n">bindings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">]</span>
+    <span class="s2">&quot;Bindings provided&quot;</span>
+    <span class="n">first_query</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="s2">&quot;The first statement present in query&quot;</span>
+    <span class="n">query_remaining</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="s2">&quot;Query text after the first one if multiple were in query, else None&quot;</span>
+    <span class="n">is_explain</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;:attr:`Cursor.is_explain &lt;apsw.Cursor.is_explain&gt;`&quot;</span>
+    <span class="n">is_readonly</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="s2">&quot;:attr:`Cursor.is_readonly &lt;apsw.Cursor.is_readonly&gt;`&quot;</span>
+    <span class="n">description</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span>
+    <span class="s2">&quot;:meth:`Cursor.getdescription &lt;apsw.Cursor.getdescription&gt;`&quot;</span>
+    <span class="n">description_full</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">]]</span>
+    <span class="s2">&quot;:attr:`Cursor.description_full &lt;apsw.Cursor.description_full&gt;`&quot;</span>
+    <span class="n">expanded_sql</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="s2">&quot;:attr:`Cursor.expanded_sql &lt;apsw.Cursor.expanded_sql&gt;`&quot;</span>
+    <span class="n">actions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">QueryAction</span><span class="p">]]</span>
+    <span class="sd">&quot;&quot;&quot;A list of the actions taken by the query, as discovered via</span>
+<span class="sd">    :attr:`Connection.authorizer &lt;apsw.Connection.authorizer&gt;`&quot;&quot;&quot;</span>
+    <span class="n">explain</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">VDBEInstruction</span><span class="p">]]</span>
+    <span class="sd">&quot;&quot;&quot;A list of instructions of the `internal code &lt;https://sqlite.org/opcode.html&gt;`__</span>
+<span class="sd">    used by SQLite to execute the query&quot;&quot;&quot;</span>
+    <span class="n">query_plan</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">QueryPlan</span><span class="p">]</span>
+    <span class="sd">&quot;&quot;&quot;The steps taken against tables and indices `described here &lt;https://sqlite.org/eqp.html&gt;`__&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="QueryAction"><a class="viewcode-back" href="../../ext.html#apsw.ext.QueryAction">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">QueryAction</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A :mod:`dataclass &lt;dataclasses&gt;` that provides information about one action taken by a query</span>
+
+<span class="sd">    Depending on the action, only a subset of the fields will have non-None values&quot;&quot;&quot;</span>
+    <span class="n">action</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="sd">&quot;&quot;&quot;`Authorizer code &lt;https://sqlite.org/c3ref/c_alter_table.html&gt;`__ (also present</span>
+<span class="sd">    in :attr:`apsw.mapping_authorizer_function`)&quot;&quot;&quot;</span>
+    <span class="n">action_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="sd">&quot;&quot;&quot;The string corresponding to the action.  For example `action` could be `21` in which</span>
+<span class="sd">    case `action_name` will be `SQLITE_SELECT`&quot;&quot;&quot;</span>
+
+    <span class="n">column_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">database_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="s2">&quot;eg `main`, `temp`, the name in `ATTACH &lt;https://sqlite.org/lang_attach.html&gt;`__&quot;</span>
+    <span class="n">file_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">function_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">module_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">operation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">pragma_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">pragma_value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">table_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">trigger_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">trigger_or_view</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="sd">&quot;&quot;&quot;This action is happening due to a trigger or view, and not</span>
+<span class="sd">    directly expressed in the query itself&quot;&quot;&quot;</span>
+    <span class="n">view_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="QueryPlan"><a class="viewcode-back" href="../../ext.html#apsw.ext.QueryPlan">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">QueryPlan</span><span class="p">:</span>
+    <span class="s2">&quot;A :mod:`dataclass &lt;dataclasses&gt;` for one step of a query plan&quot;</span>
+    <span class="n">detail</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="s2">&quot;Description of this step&quot;</span>
+    <span class="n">sub</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">QueryPlan</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="s2">&quot;Steps that run within this one&quot;</span></div>
+
+
+<div class="viewcode-block" id="VDBEInstruction"><a class="viewcode-back" href="../../ext.html#apsw.ext.VDBEInstruction">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">VDBEInstruction</span><span class="p">:</span>
+    <span class="s2">&quot;A :mod:`dataclass &lt;dataclasses&gt;` representing one instruction and its parameters&quot;</span>
+    <span class="n">addr</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;Address of this opcode.  It will be the target of goto, loops etc&quot;</span>
+    <span class="n">opcode</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="s2">&quot;The instruction&quot;</span>
+    <span class="n">comment</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="s2">&quot;Additional human readable information&quot;</span>
+    <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="s2">&quot;First opcode parameter&quot;</span>
+    <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="s2">&quot;Second opcode parameter&quot;</span>
+    <span class="n">p3</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="s2">&quot;Third opcode parameter&quot;</span>
+    <span class="n">p4</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="s2">&quot;Fourth opcode parameter&quot;</span>
+    <span class="n">p5</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="s2">&quot;Fifth opcode parameter&quot;</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">APSW 3.40.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../apsw.html" >apsw</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">apsw.ext</a></li> 
+      </ul>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; <a href="../../copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Nov 27, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
+    </div>
+<div class="footer">This page uses <a href="http://analytics.google.com/">
+Google Analytics</a> to collect statistics. You can disable it by blocking
+the JavaScript coming from www.google-analytics.com.
+<script type="text/javascript">
+  (function() {
+    var ga = document.createElement('script');
+    ga.src = ('https:' == document.location.protocol ?
+              'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    ga.setAttribute('async', 'true');
+    document.documentElement.firstChild.appendChild(ga);
+  })();
+</script>
+</div>
+
+  </body>
+</html>

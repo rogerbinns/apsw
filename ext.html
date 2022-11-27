@@ -1,0 +1,688 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Various interesting and useful bits of functionality &#8212; APSW 3.40.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="copyright" title="Copyright" href="copyright.html" />
+    <link rel="next" title="Exceptions" href="exceptions.html" />
+    <link rel="prev" title="Shell" href="shell.html" />
+ 
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-26815066-1']);
+  _gaq.push(['_trackPageview']);
+</script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="exceptions.html" title="Exceptions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="shell.html" title="Shell"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Various interesting and useful bits of functionality</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="various-interesting-and-useful-bits-of-functionality">
+<h1>Various interesting and useful bits of functionality<a class="headerlink" href="#various-interesting-and-useful-bits-of-functionality" title="Permalink to this heading">¶</a></h1>
+<p>You need to import <cite>apsw.ext</cite> to use this module. <a class="reference external" href="https://docs.python.org/3/library/dataclasses.html#module-dataclasses" title="(in Python v3.11)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataclasses</span></code></a>
+are used, and only Python 3.7+ is supported.</p>
+<section id="accessing-result-rows-by-column-name">
+<h2>Accessing result rows by column name<a class="headerlink" href="#accessing-result-rows-by-column-name" title="Permalink to this heading">¶</a></h2>
+<p>See <a class="reference internal" href="example.html#example-colnames"><span class="std std-ref">the example</span></a>.</p>
+<p>Use <a class="reference internal" href="#apsw.ext.DataClassRowFactory" title="apsw.ext.DataClassRowFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">apsw.ext.DataClassRowFactory</span></code></a> as a
+<a class="reference internal" href="connection.html#apsw.Connection.rowtrace" title="apsw.Connection.rowtrace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.Connection.rowtrace</span></code></a> for an entire connection, or
+<a class="reference internal" href="cursor.html#apsw.Cursor.rowtrace" title="apsw.Cursor.rowtrace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.Cursor.rowtrace</span></code></a> for a specific cursor.</p>
+</section>
+<section id="converting-types-into-and-out-of-sqlite">
+<h2>Converting types into and out of SQLite<a class="headerlink" href="#converting-types-into-and-out-of-sqlite" title="Permalink to this heading">¶</a></h2>
+<p>SQLite only stores and returns 5 types:</p>
+<ul class="simple">
+<li><p>None</p></li>
+<li><p>int</p></li>
+<li><p>float</p></li>
+<li><p>str</p></li>
+<li><p>bytes</p></li>
+</ul>
+<p>Use <a class="reference internal" href="#apsw.ext.TypesConverterCursorFactory" title="apsw.ext.TypesConverterCursorFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypesConverterCursorFactory</span></code></a> as
+<a class="reference internal" href="connection.html#apsw.Connection.cursor_factory" title="apsw.Connection.cursor_factory"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.Connection.cursor_factory</span></code></a> to adapt values going into
+SQLite, and convert them coming out.  See <a class="reference internal" href="example.html#example-type-conversion"><span class="std std-ref">the example</span></a>.</p>
+<p>To convert values going into SQLite, do either of:</p>
+<ul class="simple">
+<li><p>Inherit from <a class="reference internal" href="#apsw.ext.SQLiteTypeAdapter" title="apsw.ext.SQLiteTypeAdapter"><code class="xref py py-class docutils literal notranslate"><span class="pre">apsw.ext.SQLiteTypeAdapter</span></code></a> and define a
+<em>to_sqlite_value</em> method on the class</p></li>
+<li><p>Call <a class="reference internal" href="#apsw.ext.TypesConverterCursorFactory.register_adapter" title="apsw.ext.TypesConverterCursorFactory.register_adapter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">TypesConverterCursorFactory.register_adapter()</span></code></a> with the
+type and a adapter function</p></li>
+</ul>
+<p>To adapt values coming out of SQLite:</p>
+<ul class="simple">
+<li><p>Call <a class="reference internal" href="#apsw.ext.TypesConverterCursorFactory.register_converter" title="apsw.ext.TypesConverterCursorFactory.register_converter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">TypesConverterCursorFactory.register_converter()</span></code></a> with the
+exact type string in the table and a converter function</p></li>
+</ul>
+</section>
+<section id="detailed-query-information">
+<h2>Detailed Query Information<a class="headerlink" href="#detailed-query-information" title="Permalink to this heading">¶</a></h2>
+<p>SQLite can provide lots of information about queries.  The
+<a class="reference internal" href="#apsw.ext.query_info" title="apsw.ext.query_info"><code class="xref py py-meth docutils literal notranslate"><span class="pre">query_info</span></code></a> function can gather them up
+for you.  This includes:</p>
+<ul class="simple">
+<li><p><strong>readonly</strong> if the query makes no direct changes</p></li>
+<li><p><strong>first_query</strong> if multiple queries are provided</p></li>
+<li><p><strong>actions</strong> which databases, tables, columns, functions, views etc
+are referenced - see <a class="reference external" href="https://sqlite.org/c3ref/c_alter_table.html">actions</a></p></li>
+<li><p><strong>query_plan</strong> which indices, tables scans etc are used to find the
+query results - see <a class="reference external" href="https://sqlite.org/eqp.html">query plans</a></p></li>
+<li><p><strong>explain</strong> for the low level steps taken inside SQLite - see
+<a class="reference external" href="https://sqlite.org/opcode.html">SQLite bytecode</a></p></li>
+</ul>
+<p>See <a class="reference internal" href="example.html#example-query-details"><span class="std std-ref">the example</span></a>.</p>
+</section>
+<section id="module-apsw.ext">
+<span id="api-reference"></span><h2>API Reference<a class="headerlink" href="#module-apsw.ext" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.ext.DataClassRowFactory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DataClassRowFactory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataclass_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/ext.html#DataClassRowFactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.DataClassRowFactory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns each row as a <a class="reference external" href="https://docs.python.org/3/library/dataclasses.html#module-dataclasses" title="(in Python v3.11)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataclass</span></code></a>, accessible by column name.</p>
+<p>To use set an instance as <a class="reference internal" href="connection.html#apsw.Connection.rowtrace" title="apsw.Connection.rowtrace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Connection.rowtrace</span></code></a> to affect all <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">cursors</span></code></a>, or on a specific cursor:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">connection</span><span class="o">.</span><span class="n">rowtrace</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">DataClassRowFactory</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT title, sum(orders) AS total, ...&quot;</span><span class="p">):</span>
+    <span class="c1"># You can now access by name</span>
+    <span class="nb">print</span> <span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">row</span><span class="o">.</span><span class="n">total</span><span class="p">)</span>
+    <span class="c1"># you can get the underlying description</span>
+    <span class="nb">print</span> <span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">__description__</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can use as many instances of this class as you want, each across as many
+<a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">connections</span></code></a> as you want.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rename</strong> – Column names could be duplicated, or not
+valid in Python (eg a column named <cite>continue</cite>).
+If <cite>rename</cite> is True, then invalid/duplicate names are replaced
+with <cite>_</cite> and their position starting at zero.  For example <cite>title,
+total, title, continue</cite> would become <cite>title, total, _2, _3</cite>.  If
+<cite>rename</cite> is False then problem column names will result in
+<a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.11)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">TypeError</span></code></a> raised by <a class="reference external" href="https://docs.python.org/3/library/dataclasses.html#dataclasses.make_dataclass" title="(in Python v3.11)"><code class="xref py py-func docutils literal notranslate"><span class="pre">dataclasses.make_dataclass()</span></code></a></p></li>
+<li><p><strong>dataclass_kwargs</strong> – Additional parameters when creating the dataclass
+as described in <a class="reference external" href="https://docs.python.org/3/library/dataclasses.html#dataclasses.dataclass" title="(in Python v3.11)"><code class="xref py py-func docutils literal notranslate"><span class="pre">dataclasses.dataclass()</span></code></a>.  For example you may
+want <cite>frozen = True</cite> to make the dataclass read-only, or <cite>slots = True</cite>
+to reduce memory consumption.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.ext.DataClassRowFactory.get_dataclass">
+<span class="sig-name descname"><span class="pre">get_dataclass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/apsw/ext.html#DataClassRowFactory.get_dataclass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.DataClassRowFactory.get_dataclass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns dataclass and tuple of (potentially renamed) column names</p>
+<p>The dataclass is what is returned for each row with that
+<a class="reference internal" href="cursor.html#apsw.Cursor.getdescription" title="apsw.Cursor.getdescription"><code class="xref py py-meth docutils literal notranslate"><span class="pre">description</span></code></a></p>
+<p>This method caches it results.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.ext.DataClassRowFactory.get_type">
+<span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/apsw/ext.html#DataClassRowFactory.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.DataClassRowFactory.get_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the <a class="reference external" href="https://docs.python.org/3/library/typing.html">type hint</a> to use in the dataclass based on the type in the <a class="reference internal" href="cursor.html#apsw.Cursor.getdescription" title="apsw.Cursor.getdescription"><code class="xref py py-meth docutils literal notranslate"><span class="pre">description</span></code></a></p>
+<p><a class="reference external" href="https://www.sqlite.org/datatype3.html#affname">SQLite’s affinity rules</a> are followed.</p>
+<p>The values have no effect on how your program runs, but can be used by tools like
+mypy.  Column information like whether <cite>null</cite> is allowed is not present, so
+this is just a hint.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.ext.DataClassRowFactory.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cursor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><span class="pre">apsw.Cursor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">row</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.SQLiteValues" title="apsw.SQLiteValues"><span class="pre">apsw.SQLiteValues</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/apsw/ext.html#DataClassRowFactory.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.DataClassRowFactory.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>What the row tracer calls</p>
+<p>This <a class="reference internal" href="#apsw.ext.DataClassRowFactory.get_dataclass" title="apsw.ext.DataClassRowFactory.get_dataclass"><code class="xref py py-meth docutils literal notranslate"><span class="pre">looks</span> <span class="pre">up</span></code></a> the dataclass and column
+names, and then returns an instance of the dataclass.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.ext.SQLiteTypeAdapter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SQLiteTypeAdapter</span></span><a class="reference internal" href="_modules/apsw/ext.html#SQLiteTypeAdapter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.SQLiteTypeAdapter" title="Permalink to this definition">¶</a></dt>
+<dd><p>A metaclass to indicate conversion to SQLite types is supported</p>
+<p>This is one way to indicate your type supports conversion to a
+value supported by SQLite.  You can either inherit from this class,
+or call the register method:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">SQLiteTypeAdapter</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">YourClassHere</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Doing either is entirely sufficient and there is no need to
+register with <a class="reference internal" href="#apsw.ext.TypesConverterCursorFactory" title="apsw.ext.TypesConverterCursorFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypesConverterCursorFactory</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.ext.SQLiteTypeAdapter.to_sqlite_value">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_sqlite_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">apsw.SQLiteValue</span></a></span></span><a class="reference internal" href="_modules/apsw/ext.html#SQLiteTypeAdapter.to_sqlite_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.SQLiteTypeAdapter.to_sqlite_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a SQLite compatible value for this object</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.ext.TypesConverterCursorFactory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TypesConverterCursorFactory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">abstract_base_class:</span> <span class="pre">~abc.ABCMeta</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'apsw.ext.SQLiteTypeAdapter'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/ext.html#TypesConverterCursorFactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.TypesConverterCursorFactory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides cursors that can convert objects into one of the types supported by SQLite. or back from SQLite</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>metaclass</strong> – Which metaclass to consider as conversion capable</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.ext.TypesConverterCursorFactory.register_adapter">
+<span class="sig-name descname"><span class="pre">register_adapter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">klass</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.11)"><span class="pre">type</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">apsw.SQLiteValue</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/ext.html#TypesConverterCursorFactory.register_adapter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.TypesConverterCursorFactory.register_adapter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a callable that converts from <cite>klass</cite> to one of the supported SQLite types</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.ext.TypesConverterCursorFactory.register_converter">
+<span class="sig-name descname"><span class="pre">register_converter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">apsw.SQLiteValue</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/ext.html#TypesConverterCursorFactory.register_converter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.TypesConverterCursorFactory.register_converter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a callable that converts from a SQLite value</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.ext.TypesConverterCursorFactory.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">apsw.Connection</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#apsw.ext.TypesConverterCursorFactory.TypeConverterCursor" title="apsw.ext.TypesConverterCursorFactory.TypeConverterCursor"><span class="pre">TypeConverterCursor</span></a></span></span><a class="reference internal" href="_modules/apsw/ext.html#TypesConverterCursorFactory.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.TypesConverterCursorFactory.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">cursor</span></code></a> for the <cite>connection</cite></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.ext.TypesConverterCursorFactory.adapt_value">
+<span class="sig-name descname"><span class="pre">adapt_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">apsw.SQLiteValue</span></a></span></span><a class="reference internal" href="_modules/apsw/ext.html#TypesConverterCursorFactory.adapt_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.TypesConverterCursorFactory.adapt_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns SQLite representation of <cite>value</cite></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.ext.TypesConverterCursorFactory.convert_value">
+<span class="sig-name descname"><span class="pre">convert_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schematype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">apsw.SQLiteValue</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/apsw/ext.html#TypesConverterCursorFactory.convert_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.TypesConverterCursorFactory.convert_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns Python object from schema type and SQLite value</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.ext.TypesConverterCursorFactory.wrap_bindings">
+<span class="sig-name descname"><span class="pre">wrap_bindings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bindings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.Bindings" title="apsw.Bindings"><span class="pre">apsw.Bindings</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.Bindings" title="apsw.Bindings"><span class="pre">apsw.Bindings</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/apsw/ext.html#TypesConverterCursorFactory.wrap_bindings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.TypesConverterCursorFactory.wrap_bindings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wraps bindings that are supplied to underlying execute</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.ext.TypesConverterCursorFactory.wrap_sequence_bindings">
+<span class="sig-name descname"><span class="pre">wrap_sequence_bindings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequenceofbindings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.Bindings" title="apsw.Bindings"><span class="pre">apsw.Bindings</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/ext.html#TypesConverterCursorFactory.wrap_sequence_bindings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.TypesConverterCursorFactory.wrap_sequence_bindings" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.ext.TypesConverterCursorFactory.DictAdapter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DictAdapter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">factory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#apsw.ext.TypesConverterCursorFactory" title="apsw.ext.TypesConverterCursorFactory"><span class="pre">TypesConverterCursorFactory</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.11)"><span class="pre">collections.abc.Mapping</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">apsw.SQLiteValue</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/ext.html#TypesConverterCursorFactory.DictAdapter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.TypesConverterCursorFactory.DictAdapter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used to wrap dictionaries supplied as bindings</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.ext.TypesConverterCursorFactory.TypeConverterCursor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TypeConverterCursor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">factory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#apsw.ext.TypesConverterCursorFactory" title="apsw.ext.TypesConverterCursorFactory"><span class="pre">TypesConverterCursorFactory</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/ext.html#TypesConverterCursorFactory.TypeConverterCursor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.TypesConverterCursorFactory.TypeConverterCursor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cursor used to do conversions</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.ext.TypesConverterCursorFactory.TypeConverterCursor.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">statements</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bindings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.Bindings" title="apsw.Bindings"><span class="pre">apsw.Bindings</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">can_cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prepare_flags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><span class="pre">apsw.Cursor</span></a></span></span><a class="reference internal" href="_modules/apsw/ext.html#TypesConverterCursorFactory.TypeConverterCursor.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.TypesConverterCursorFactory.TypeConverterCursor.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes the statements doing conversions on supplied and returned values</p>
+<p>See <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.Cursor.execute()</span></code></a> for parameter details</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.ext.TypesConverterCursorFactory.TypeConverterCursor.executemany">
+<span class="sig-name descname"><span class="pre">executemany</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">statements</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequenceofbindings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.Bindings" title="apsw.Bindings"><span class="pre">apsw.Bindings</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">can_cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prepare_flags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><span class="pre">apsw.Cursor</span></a></span></span><a class="reference internal" href="_modules/apsw/ext.html#TypesConverterCursorFactory.TypeConverterCursor.executemany"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.TypesConverterCursorFactory.TypeConverterCursor.executemany" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes the statements against each item in sequenceofbindings, doing conversions on supplied and returned values</p>
+<p>See <a class="reference internal" href="cursor.html#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.Cursor.executemany()</span></code></a> for parameter details</p>
+</dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.ext.query_info">
+<span class="sig-name descname"><span class="pre">query_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">apsw.Connection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bindings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.Bindings" title="apsw.Bindings"><span class="pre">apsw.Bindings</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prepare_flags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expanded_sql</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">explain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">explain_query_plan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#apsw.ext.QueryDetails" title="apsw.ext.QueryDetails"><span class="pre">QueryDetails</span></a></span></span><a class="reference internal" href="_modules/apsw/ext.html#query_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.query_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns information about the query, but does not run it.</p>
+<p>Set the various parameters to <cite>True</cite> if you also want the
+actions, expanded_sql, explain, query_plan etc filled in.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.ext.QueryDetails">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">QueryDetails</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bindings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.Bindings" title="apsw.Bindings"><span class="pre">apsw.Bindings</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_remaining</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_explain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_readonly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description_full</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expanded_sql</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apsw.ext.QueryAction" title="apsw.ext.QueryAction"><span class="pre">QueryAction</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">explain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apsw.ext.VDBEInstruction" title="apsw.ext.VDBEInstruction"><span class="pre">VDBEInstruction</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_plan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apsw.ext.QueryPlan" title="apsw.ext.QueryPlan"><span class="pre">QueryPlan</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/ext.html#QueryDetails"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.QueryDetails" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <a class="reference external" href="https://docs.python.org/3/library/dataclasses.html#module-dataclasses" title="(in Python v3.11)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataclass</span></code></a> that provides detailed information about a query, returned by <a class="reference internal" href="#apsw.ext.query_info" title="apsw.ext.query_info"><code class="xref py py-func docutils literal notranslate"><span class="pre">query_info()</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryDetails.query">
+<span class="sig-name descname"><span class="pre">query</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></em><a class="headerlink" href="#apsw.ext.QueryDetails.query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Original query provided</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryDetails.bindings">
+<span class="sig-name descname"><span class="pre">bindings</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.Bindings" title="apsw.Bindings"><span class="pre">apsw.Bindings</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apsw.ext.QueryDetails.bindings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bindings provided</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryDetails.first_query">
+<span class="sig-name descname"><span class="pre">first_query</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></em><a class="headerlink" href="#apsw.ext.QueryDetails.first_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>The first statement present in query</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryDetails.query_remaining">
+<span class="sig-name descname"><span class="pre">query_remaining</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apsw.ext.QueryDetails.query_remaining" title="Permalink to this definition">¶</a></dt>
+<dd><p>Query text after the first one if multiple were in query, else None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryDetails.is_explain">
+<span class="sig-name descname"><span class="pre">is_explain</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.QueryDetails.is_explain" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="cursor.html#apsw.Cursor.is_explain" title="apsw.Cursor.is_explain"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Cursor.is_explain</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryDetails.is_readonly">
+<span class="sig-name descname"><span class="pre">is_readonly</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.11)"><span class="pre">bool</span></a></em><a class="headerlink" href="#apsw.ext.QueryDetails.is_readonly" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="cursor.html#apsw.Cursor.is_readonly" title="apsw.Cursor.is_readonly"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Cursor.is_readonly</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryDetails.description">
+<span class="sig-name descname"><span class="pre">description</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apsw.ext.QueryDetails.description" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="cursor.html#apsw.Cursor.getdescription" title="apsw.Cursor.getdescription"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.getdescription</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryDetails.description_full">
+<span class="sig-name descname"><span class="pre">description_full</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apsw.ext.QueryDetails.description_full" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="cursor.html#apsw.Cursor.description_full" title="apsw.Cursor.description_full"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Cursor.description_full</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryDetails.expanded_sql">
+<span class="sig-name descname"><span class="pre">expanded_sql</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apsw.ext.QueryDetails.expanded_sql" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="cursor.html#apsw.Cursor.expanded_sql" title="apsw.Cursor.expanded_sql"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Cursor.expanded_sql</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryDetails.actions">
+<span class="sig-name descname"><span class="pre">actions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apsw.ext.QueryAction" title="apsw.ext.QueryAction"><span class="pre">QueryAction</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apsw.ext.QueryDetails.actions" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of the actions taken by the query, as discovered via
+<a class="reference internal" href="connection.html#apsw.Connection.authorizer" title="apsw.Connection.authorizer"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Connection.authorizer</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryDetails.explain">
+<span class="sig-name descname"><span class="pre">explain</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apsw.ext.VDBEInstruction" title="apsw.ext.VDBEInstruction"><span class="pre">VDBEInstruction</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apsw.ext.QueryDetails.explain" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of instructions of the <a class="reference external" href="https://sqlite.org/opcode.html">internal code</a>
+used by SQLite to execute the query</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryDetails.query_plan">
+<span class="sig-name descname"><span class="pre">query_plan</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apsw.ext.QueryPlan" title="apsw.ext.QueryPlan"><span class="pre">QueryPlan</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apsw.ext.QueryDetails.query_plan" title="Permalink to this definition">¶</a></dt>
+<dd><p>The steps taken against tables and indices <a class="reference external" href="https://sqlite.org/eqp.html">described here</a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.ext.QueryAction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">QueryAction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">action_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">function_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">operation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pragma_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pragma_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trigger_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trigger_or_view</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">view_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/ext.html#QueryAction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.QueryAction" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <a class="reference external" href="https://docs.python.org/3/library/dataclasses.html#module-dataclasses" title="(in Python v3.11)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataclass</span></code></a> that provides information about one action taken by a query</p>
+<p>Depending on the action, only a subset of the fields will have non-None values</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryAction.action">
+<span class="sig-name descname"><span class="pre">action</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.QueryAction.action" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="https://sqlite.org/c3ref/c_alter_table.html">Authorizer code</a> (also present
+in <a class="reference internal" href="apsw.html#apsw.mapping_authorizer_function" title="apsw.mapping_authorizer_function"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.mapping_authorizer_function</span></code></a>)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryAction.action_name">
+<span class="sig-name descname"><span class="pre">action_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></em><a class="headerlink" href="#apsw.ext.QueryAction.action_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The string corresponding to the action.  For example <cite>action</cite> could be <cite>21</cite> in which
+case <cite>action_name</cite> will be <cite>SQLITE_SELECT</cite></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryAction.column_name">
+<span class="sig-name descname"><span class="pre">column_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#apsw.ext.QueryAction.column_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryAction.database_name">
+<span class="sig-name descname"><span class="pre">database_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#apsw.ext.QueryAction.database_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>eg <cite>main</cite>, <cite>temp</cite>, the name in <a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryAction.file_name">
+<span class="sig-name descname"><span class="pre">file_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#apsw.ext.QueryAction.file_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryAction.function_name">
+<span class="sig-name descname"><span class="pre">function_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#apsw.ext.QueryAction.function_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryAction.module_name">
+<span class="sig-name descname"><span class="pre">module_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#apsw.ext.QueryAction.module_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryAction.operation">
+<span class="sig-name descname"><span class="pre">operation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#apsw.ext.QueryAction.operation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryAction.pragma_name">
+<span class="sig-name descname"><span class="pre">pragma_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#apsw.ext.QueryAction.pragma_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryAction.pragma_value">
+<span class="sig-name descname"><span class="pre">pragma_value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#apsw.ext.QueryAction.pragma_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryAction.table_name">
+<span class="sig-name descname"><span class="pre">table_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#apsw.ext.QueryAction.table_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryAction.trigger_name">
+<span class="sig-name descname"><span class="pre">trigger_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#apsw.ext.QueryAction.trigger_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryAction.trigger_or_view">
+<span class="sig-name descname"><span class="pre">trigger_or_view</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#apsw.ext.QueryAction.trigger_or_view" title="Permalink to this definition">¶</a></dt>
+<dd><p>This action is happening due to a trigger or view, and not
+directly expressed in the query itself</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryAction.view_name">
+<span class="sig-name descname"><span class="pre">view_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#apsw.ext.QueryAction.view_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.ext.QueryPlan">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">QueryPlan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detail</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apsw.ext.QueryPlan" title="apsw.ext.QueryPlan"><span class="pre">QueryPlan</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/ext.html#QueryPlan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.QueryPlan" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <a class="reference external" href="https://docs.python.org/3/library/dataclasses.html#module-dataclasses" title="(in Python v3.11)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataclass</span></code></a> for one step of a query plan</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryPlan.detail">
+<span class="sig-name descname"><span class="pre">detail</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></em><a class="headerlink" href="#apsw.ext.QueryPlan.detail" title="Permalink to this definition">¶</a></dt>
+<dd><p>Description of this step</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.QueryPlan.sub">
+<span class="sig-name descname"><span class="pre">sub</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apsw.ext.QueryPlan" title="apsw.ext.QueryPlan"><span class="pre">QueryPlan</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#apsw.ext.QueryPlan.sub" title="Permalink to this definition">¶</a></dt>
+<dd><p>Steps that run within this one</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.ext.VDBEInstruction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VDBEInstruction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">addr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">opcode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p4</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p5</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/ext.html#VDBEInstruction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.VDBEInstruction" title="Permalink to this definition">¶</a></dt>
+<dd><p>A <a class="reference external" href="https://docs.python.org/3/library/dataclasses.html#module-dataclasses" title="(in Python v3.11)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataclass</span></code></a> representing one instruction and its parameters</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.VDBEInstruction.addr">
+<span class="sig-name descname"><span class="pre">addr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.VDBEInstruction.addr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Address of this opcode.  It will be the target of goto, loops etc</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.VDBEInstruction.opcode">
+<span class="sig-name descname"><span class="pre">opcode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></em><a class="headerlink" href="#apsw.ext.VDBEInstruction.opcode" title="Permalink to this definition">¶</a></dt>
+<dd><p>The instruction</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.VDBEInstruction.comment">
+<span class="sig-name descname"><span class="pre">comment</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#apsw.ext.VDBEInstruction.comment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Additional human readable information</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.VDBEInstruction.p1">
+<span class="sig-name descname"><span class="pre">p1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#apsw.ext.VDBEInstruction.p1" title="Permalink to this definition">¶</a></dt>
+<dd><p>First opcode parameter</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.VDBEInstruction.p2">
+<span class="sig-name descname"><span class="pre">p2</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#apsw.ext.VDBEInstruction.p2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Second opcode parameter</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.VDBEInstruction.p3">
+<span class="sig-name descname"><span class="pre">p3</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#apsw.ext.VDBEInstruction.p3" title="Permalink to this definition">¶</a></dt>
+<dd><p>Third opcode parameter</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.VDBEInstruction.p4">
+<span class="sig-name descname"><span class="pre">p4</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#apsw.ext.VDBEInstruction.p4" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fourth opcode parameter</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.VDBEInstruction.p5">
+<span class="sig-name descname"><span class="pre">p5</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#apsw.ext.VDBEInstruction.p5" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fifth opcode parameter</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Various interesting and useful bits of functionality</a><ul>
+<li><a class="reference internal" href="#accessing-result-rows-by-column-name">Accessing result rows by column name</a></li>
+<li><a class="reference internal" href="#converting-types-into-and-out-of-sqlite">Converting types into and out of SQLite</a></li>
+<li><a class="reference internal" href="#detailed-query-information">Detailed Query Information</a></li>
+<li><a class="reference internal" href="#module-apsw.ext">API Reference</a><ul>
+<li><a class="reference internal" href="#apsw.ext.DataClassRowFactory"><code class="docutils literal notranslate"><span class="pre">DataClassRowFactory</span></code></a><ul>
+<li><a class="reference internal" href="#apsw.ext.DataClassRowFactory.get_dataclass"><code class="docutils literal notranslate"><span class="pre">DataClassRowFactory.get_dataclass()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.DataClassRowFactory.get_type"><code class="docutils literal notranslate"><span class="pre">DataClassRowFactory.get_type()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.DataClassRowFactory.__call__"><code class="docutils literal notranslate"><span class="pre">DataClassRowFactory.__call__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#apsw.ext.SQLiteTypeAdapter"><code class="docutils literal notranslate"><span class="pre">SQLiteTypeAdapter</span></code></a><ul>
+<li><a class="reference internal" href="#apsw.ext.SQLiteTypeAdapter.to_sqlite_value"><code class="docutils literal notranslate"><span class="pre">SQLiteTypeAdapter.to_sqlite_value()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#apsw.ext.TypesConverterCursorFactory"><code class="docutils literal notranslate"><span class="pre">TypesConverterCursorFactory</span></code></a><ul>
+<li><a class="reference internal" href="#apsw.ext.TypesConverterCursorFactory.register_adapter"><code class="docutils literal notranslate"><span class="pre">TypesConverterCursorFactory.register_adapter()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.TypesConverterCursorFactory.register_converter"><code class="docutils literal notranslate"><span class="pre">TypesConverterCursorFactory.register_converter()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.TypesConverterCursorFactory.__call__"><code class="docutils literal notranslate"><span class="pre">TypesConverterCursorFactory.__call__()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.TypesConverterCursorFactory.adapt_value"><code class="docutils literal notranslate"><span class="pre">TypesConverterCursorFactory.adapt_value()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.TypesConverterCursorFactory.convert_value"><code class="docutils literal notranslate"><span class="pre">TypesConverterCursorFactory.convert_value()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.TypesConverterCursorFactory.wrap_bindings"><code class="docutils literal notranslate"><span class="pre">TypesConverterCursorFactory.wrap_bindings()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.TypesConverterCursorFactory.wrap_sequence_bindings"><code class="docutils literal notranslate"><span class="pre">TypesConverterCursorFactory.wrap_sequence_bindings()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.TypesConverterCursorFactory.DictAdapter"><code class="docutils literal notranslate"><span class="pre">TypesConverterCursorFactory.DictAdapter</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.TypesConverterCursorFactory.TypeConverterCursor"><code class="docutils literal notranslate"><span class="pre">TypesConverterCursorFactory.TypeConverterCursor</span></code></a><ul>
+<li><a class="reference internal" href="#apsw.ext.TypesConverterCursorFactory.TypeConverterCursor.execute"><code class="docutils literal notranslate"><span class="pre">TypesConverterCursorFactory.TypeConverterCursor.execute()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.TypesConverterCursorFactory.TypeConverterCursor.executemany"><code class="docutils literal notranslate"><span class="pre">TypesConverterCursorFactory.TypeConverterCursor.executemany()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#apsw.ext.query_info"><code class="docutils literal notranslate"><span class="pre">query_info()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryDetails"><code class="docutils literal notranslate"><span class="pre">QueryDetails</span></code></a><ul>
+<li><a class="reference internal" href="#apsw.ext.QueryDetails.query"><code class="docutils literal notranslate"><span class="pre">QueryDetails.query</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryDetails.bindings"><code class="docutils literal notranslate"><span class="pre">QueryDetails.bindings</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryDetails.first_query"><code class="docutils literal notranslate"><span class="pre">QueryDetails.first_query</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryDetails.query_remaining"><code class="docutils literal notranslate"><span class="pre">QueryDetails.query_remaining</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryDetails.is_explain"><code class="docutils literal notranslate"><span class="pre">QueryDetails.is_explain</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryDetails.is_readonly"><code class="docutils literal notranslate"><span class="pre">QueryDetails.is_readonly</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryDetails.description"><code class="docutils literal notranslate"><span class="pre">QueryDetails.description</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryDetails.description_full"><code class="docutils literal notranslate"><span class="pre">QueryDetails.description_full</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryDetails.expanded_sql"><code class="docutils literal notranslate"><span class="pre">QueryDetails.expanded_sql</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryDetails.actions"><code class="docutils literal notranslate"><span class="pre">QueryDetails.actions</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryDetails.explain"><code class="docutils literal notranslate"><span class="pre">QueryDetails.explain</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryDetails.query_plan"><code class="docutils literal notranslate"><span class="pre">QueryDetails.query_plan</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#apsw.ext.QueryAction"><code class="docutils literal notranslate"><span class="pre">QueryAction</span></code></a><ul>
+<li><a class="reference internal" href="#apsw.ext.QueryAction.action"><code class="docutils literal notranslate"><span class="pre">QueryAction.action</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryAction.action_name"><code class="docutils literal notranslate"><span class="pre">QueryAction.action_name</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryAction.column_name"><code class="docutils literal notranslate"><span class="pre">QueryAction.column_name</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryAction.database_name"><code class="docutils literal notranslate"><span class="pre">QueryAction.database_name</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryAction.file_name"><code class="docutils literal notranslate"><span class="pre">QueryAction.file_name</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryAction.function_name"><code class="docutils literal notranslate"><span class="pre">QueryAction.function_name</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryAction.module_name"><code class="docutils literal notranslate"><span class="pre">QueryAction.module_name</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryAction.operation"><code class="docutils literal notranslate"><span class="pre">QueryAction.operation</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryAction.pragma_name"><code class="docutils literal notranslate"><span class="pre">QueryAction.pragma_name</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryAction.pragma_value"><code class="docutils literal notranslate"><span class="pre">QueryAction.pragma_value</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryAction.table_name"><code class="docutils literal notranslate"><span class="pre">QueryAction.table_name</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryAction.trigger_name"><code class="docutils literal notranslate"><span class="pre">QueryAction.trigger_name</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryAction.trigger_or_view"><code class="docutils literal notranslate"><span class="pre">QueryAction.trigger_or_view</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryAction.view_name"><code class="docutils literal notranslate"><span class="pre">QueryAction.view_name</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#apsw.ext.QueryPlan"><code class="docutils literal notranslate"><span class="pre">QueryPlan</span></code></a><ul>
+<li><a class="reference internal" href="#apsw.ext.QueryPlan.detail"><code class="docutils literal notranslate"><span class="pre">QueryPlan.detail</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.QueryPlan.sub"><code class="docutils literal notranslate"><span class="pre">QueryPlan.sub</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#apsw.ext.VDBEInstruction"><code class="docutils literal notranslate"><span class="pre">VDBEInstruction</span></code></a><ul>
+<li><a class="reference internal" href="#apsw.ext.VDBEInstruction.addr"><code class="docutils literal notranslate"><span class="pre">VDBEInstruction.addr</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.VDBEInstruction.opcode"><code class="docutils literal notranslate"><span class="pre">VDBEInstruction.opcode</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.VDBEInstruction.comment"><code class="docutils literal notranslate"><span class="pre">VDBEInstruction.comment</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.VDBEInstruction.p1"><code class="docutils literal notranslate"><span class="pre">VDBEInstruction.p1</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.VDBEInstruction.p2"><code class="docutils literal notranslate"><span class="pre">VDBEInstruction.p2</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.VDBEInstruction.p3"><code class="docutils literal notranslate"><span class="pre">VDBEInstruction.p3</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.VDBEInstruction.p4"><code class="docutils literal notranslate"><span class="pre">VDBEInstruction.p4</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.VDBEInstruction.p5"><code class="docutils literal notranslate"><span class="pre">VDBEInstruction.p5</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="shell.html"
+                          title="previous chapter">Shell</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="exceptions.html"
+                          title="next chapter">Exceptions</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/ext.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="exceptions.html" title="Exceptions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="shell.html" title="Shell"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Various interesting and useful bits of functionality</a></li> 
+      </ul>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Nov 27, 2022.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
+    </div>
+<div class="footer">This page uses <a href="http://analytics.google.com/">
+Google Analytics</a> to collect statistics. You can disable it by blocking
+the JavaScript coming from www.google-analytics.com.
+<script type="text/javascript">
+  (function() {
+    var ga = document.createElement('script');
+    ga.src = ('https:' == document.location.protocol ?
+              'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    ga.setAttribute('async', 'true');
+    document.documentElement.firstChild.appendChild(ga);
+  })();
+</script>
+</div>
+
+  </body>
+</html>
