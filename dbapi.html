@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>DBAPI notes &#8212; APSW 3.39.4.0 documentation</title>
+    <title>DBAPI notes &#8212; APSW 3.40.0.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -20,7 +20,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="next" title="pysqlite differences" href="pysqlite.html" />
+    <link rel="next" title="sqlite3 module differences" href="pysqlite.html" />
     <link rel="prev" title="Execution and tracing" href="execution.html" />
  
 <script type="text/javascript">
@@ -40,12 +40,12 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="pysqlite.html" title="pysqlite differences"
+          <a href="pysqlite.html" title="sqlite3 module differences"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="execution.html" title="Execution and tracing"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">DBAPI notes</a></li> 
       </ul>
     </div>  
@@ -61,14 +61,12 @@
 <section id="module-interface">
 <h2>Module Interface<a class="headerlink" href="#module-interface" title="Permalink to this heading">¶</a></h2>
 <p>There is no connect method. Use the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> constructor instead.</p>
-<p>The Connection object and any cursors can be used in any thread.  As
-an extreme example, you could call <code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.next()</span></code> in separate
-threads each thread getting the next row.  You cannot use the cursor
-concurrently in multiple threads for example calling
-<a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> at the same time.  If you attempt to do so then
-an <a class="reference internal" href="exceptions.html#apsw.ThreadingViolationError" title="apsw.ThreadingViolationError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">exception</span></code></a> will be raised. The
-Python Global Interpreter Lock (GIL) is released during all SQLite API
-calls allowing for maximum concurrency.</p>
+<p>The Connection object and any cursors can be used in any thread.  You
+cannot use the cursor concurrently in multiple threads for example
+calling <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> at the same time.  If you attempt to do
+so then an <a class="reference internal" href="exceptions.html#apsw.ThreadingViolationError" title="apsw.ThreadingViolationError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">exception</span></code></a> will be raised.
+The Python Global Interpreter Lock (GIL) is released during all SQLite
+API calls allowing for maximum concurrency.</p>
 <p>Three different paramstyles are supported. Note that SQLite starts
 parameter numbers from one not zero when using <em>qmark/numeric</em> style.</p>
 <table class="docutils align-default">
@@ -86,7 +84,8 @@ parameter numbers from one not zero when using <em>qmark/numeric</em> style.</p>
 <tr class="row-odd"><td><p>named</p></td>
 <td><div class="line-block">
 <div class="line"><code class="docutils literal notranslate"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">name=:name</span></code>  or</div>
-<div class="line"><code class="docutils literal notranslate"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">name=$name</span></code></div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">name=$name</span></code>  or</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">...</span> <span class="pre">WHERE</span> <span class="pre">name=&#64;name</span></code></div>
 </div>
 </td>
 </tr>
@@ -124,7 +123,8 @@ as an iterator to get the results (if any).</p>
 <p><a class="reference internal" href="cursor.html#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">executemany()</span></code></a> returns the Cursor object and you can use
 it as an iterator to get the results (if any).</p>
 <p>fetchone is not available. Use the cursor as an iterator, or call
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">next()</span></code> to get the next row.</p>
+Python’s <a class="reference external" href="https://docs.python.org/3/library/functions.html?highlight=next#next">next function</a>
+to get the next row.</p>
 <p>fetchmany is not available. Use <a class="reference internal" href="cursor.html#apsw.Cursor.fetchall" title="apsw.Cursor.fetchall"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fetchall()</span></code></a> to get all
 remaining results.</p>
 <p>nextset is not applicable or implemented.</p>
@@ -146,7 +146,7 @@ point number).</p>
 <p>Exception classes are not available as attributes of Connection but
 instead are on the <a class="reference internal" href="apsw.html#module-apsw" title="apsw: Python access to SQLite database library"><code class="xref py py-mod docutils literal notranslate"><span class="pre">apsw</span></code></a> module.  See <a class="reference internal" href="exceptions.html#exceptions"><span class="std std-ref">Exceptions</span></a> for
 more details.</p>
-<p>Use <a class="reference internal" href="cursor.html#apsw.Cursor.getconnection" title="apsw.Cursor.getconnection"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.getconnection()</span></code></a> to get the associated Connection
+<p>Use <a class="reference internal" href="cursor.html#apsw.Cursor.connection" title="apsw.Cursor.connection"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Cursor.connection</span></code></a> to get the associated Connection
 object from a cursor.</p>
 <p>scroll and messages are not available.</p>
 <p>The Cursor object supports the iterator protocol and this is the only
@@ -193,7 +193,7 @@ statements:</p>
   <div>
     <h4>Next topic</h4>
     <p class="topless"><a href="pysqlite.html"
-                          title="next chapter">pysqlite differences</a></p>
+                          title="next chapter">sqlite3 module differences</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -226,19 +226,19 @@ statements:</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="pysqlite.html" title="pysqlite differences"
+          <a href="pysqlite.html" title="sqlite3 module differences"
              >next</a> |</li>
         <li class="right" >
           <a href="execution.html" title="Execution and tracing"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">DBAPI notes</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Oct 09, 2022.
+      Last updated on Nov 27, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

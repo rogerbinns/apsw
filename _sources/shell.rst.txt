@@ -8,7 +8,7 @@ Shell
 The shell provides a convenient way for you to interact with SQLite,
 perform administration and supply SQL for execution.  It is modelled
 after the `shell that comes with SQLite
-<https://sqlite.org/sqlite.html>`__ which requires separate
+<https://sqlite.org/cli.html>`__ which requires separate
 compilation and installation.
 
 A number of the quirks and bugs in the SQLite shell are also
@@ -147,7 +147,7 @@ that help with debugging and introspecting SQLite itself.)
 
 You can also use the shell programmatically (or even interactively and
 programmatically at the same time).  See the :ref:`example
-<example-shell>` for using the API.
+<example_shell>` for using the API.
 
 Unicode
 =======

@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Shell &#8212; APSW 3.39.4.0 documentation</title>
+    <title>Shell &#8212; APSW 3.40.0.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -20,7 +20,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="next" title="Exceptions" href="exceptions.html" />
+    <link rel="next" title="Various interesting and useful bits of functionality" href="ext.html" />
     <link rel="prev" title="Virtual File System (VFS)" href="vfs.html" />
  
 <script type="text/javascript">
@@ -40,12 +40,12 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="exceptions.html" title="Exceptions"
+          <a href="ext.html" title="Various interesting and useful bits of functionality"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="vfs.html" title="Virtual File System (VFS)"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Shell</a></li> 
       </ul>
     </div>  
@@ -59,7 +59,7 @@
 <span id="id1"></span><h1>Shell<a class="headerlink" href="#shell" title="Permalink to this heading">¶</a></h1>
 <p>The shell provides a convenient way for you to interact with SQLite,
 perform administration and supply SQL for execution.  It is modelled
-after the <a class="reference external" href="https://sqlite.org/sqlite.html">shell that comes with SQLite</a> which requires separate
+after the <a class="reference external" href="https://sqlite.org/cli.html">shell that comes with SQLite</a> which requires separate
 compilation and installation.</p>
 <p>A number of the quirks and bugs in the SQLite shell are also
 addressed.  It provides command line editing and completion.  You can
@@ -225,7 +225,7 @@ can then <a class="reference external" href="http://en.wikipedia.org/wiki/Monkey
 the shell as needed.</p>
 <span class="target" id="module-apsw.shell"></span><dl class="py class">
 <dt class="sig sig-object py" id="apsw.shell.Shell">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Shell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stdin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TextIO" title="(in Python v3.10)"><span class="pre">TextIO</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stdout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stderr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'utf8'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Shell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stdin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.11)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TextIO" title="(in Python v3.11)"><span class="pre">TextIO</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stdout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stderr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'utf8'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements a SQLite shell</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -241,7 +241,7 @@ passing in sys.argv do not include sys.argv[0] which is the
 program name.  You can also pass in None and then call
 <a class="reference internal" href="#apsw.shell.Shell.process_args" title="apsw.shell.Shell.process_args"><code class="xref py py-meth docutils literal notranslate"><span class="pre">process_args()</span></code></a> if you want to catch any errors
 in handling the arguments yourself.</p></li>
-<li><p><strong>db</strong> – A existing <code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code> you wish to use</p></li>
+<li><p><strong>db</strong> – A existing <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> you wish to use</p></li>
 </ul>
 </dd>
 </dl>
@@ -346,7 +346,7 @@ subsequent calls.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="apsw.shell.Shell.db">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">db</span></span><a class="headerlink" href="#apsw.shell.Shell.db" title="Permalink to this definition">¶</a></dt>
-<dd><p>The current <code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></p>
+<dd><p>The current <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -402,7 +402,7 @@ It will reraise the exception if necessary (eg if bail is true)</p>
 <dt class="sig sig-object py" id="apsw.shell.Shell.handle_interrupt">
 <span class="sig-name descname"><span class="pre">handle_interrupt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.handle_interrupt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.handle_interrupt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Deal with keyboard interrupt (typically Control-C).  It
-will <code class="xref py py-meth docutils literal notranslate"><span class="pre">interrupt()</span></code> the database and print”^C” if interactive.</p>
+will <a class="reference internal" href="connection.html#apsw.Connection.interrupt" title="apsw.Connection.interrupt"><code class="xref py py-meth docutils literal notranslate"><span class="pre">interrupt()</span></code></a> the database and print”^C” if interactive.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -554,7 +554,7 @@ handling - eg ‘cp437:replace’</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="apsw.shell.main">
-<span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/shell.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.main" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/shell.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.main" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call this to run the <a class="reference internal" href="#shell"><span class="std std-ref">interactive shell</span></a>.  It
 automatically passes in sys.argv[1:] and exits Python when done.</p>
 </dd></dl>
@@ -622,8 +622,8 @@ automatically passes in sys.argv[1:] and exits Python when done.</p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="exceptions.html"
-                          title="next chapter">Exceptions</a></p>
+    <p class="topless"><a href="ext.html"
+                          title="next chapter">Various interesting and useful bits of functionality</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -656,19 +656,19 @@ automatically passes in sys.argv[1:] and exits Python when done.</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="exceptions.html" title="Exceptions"
+          <a href="ext.html" title="Various interesting and useful bits of functionality"
              >next</a> |</li>
         <li class="right" >
           <a href="vfs.html" title="Virtual File System (VFS)"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Shell</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Oct 09, 2022.
+      Last updated on Nov 27, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

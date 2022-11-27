@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Building &#8212; APSW 3.39.4.0 documentation</title>
+    <title>Building &#8212; APSW 3.40.0.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -45,7 +45,7 @@
         <li class="right" >
           <a href="download.html" title="Download"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Building</a></li> 
       </ul>
     </div>  
@@ -83,7 +83,7 @@ needed components for you.</p>
 site library directory and then runs the test suite.</p></td>
 </tr>
 <tr class="row-odd"><td><div class="line-block">
-<div class="line">python setup.py install <code class="xref std std-option docutils literal notranslate"><span class="pre">--user</span></code></div>
+<div class="line">python setup.py install <strong>–user</strong></div>
 </div>
 </td>
 <td><p>Compiles APSW with default Python
@@ -91,15 +91,15 @@ compiler and installs it into a subdirectory of your home directory.
 See <span class="target" id="index-0"></span><a class="pep reference external" href="https://peps.python.org/pep-0370/"><strong>PEP 370</strong></a> for more details.</p></td>
 </tr>
 <tr class="row-even"><td><div class="line-block">
-<div class="line">python setup.py build_ext <code class="xref std std-option docutils literal notranslate"><span class="pre">--force</span></code>
-<code class="xref std std-option docutils literal notranslate"><span class="pre">--inplace</span></code> test</div>
+<div class="line">python setup.py build_ext <strong>–force</strong>
+<strong>–inplace</strong> test</div>
 </div>
 </td>
 <td><p>Compiles the extension but doesn’t install it.  The test suite is then
 run.</p></td>
 </tr>
 <tr class="row-odd"><td><div class="line-block">
-<div class="line">python setup.py build <code class="xref std std-option docutils literal notranslate"><span class="pre">--debug</span></code> install</div>
+<div class="line">python setup.py build <strong>–debug</strong> install</div>
 </div>
 </td>
 <td><p>Compiles APSW with debug information.  This also turns on <a class="reference external" href="http://en.wikipedia.org/wiki/Assert.h">assertions</a>
@@ -116,7 +116,7 @@ that this will considerably slow down APSW and SQLite.</p></td>
 <section id="fetch">
 <h3>fetch<a class="headerlink" href="#fetch" title="Permalink to this heading">¶</a></h3>
 <p><code class="file docutils literal notranslate"><span class="pre">setup.py</span></code> can automatically fetch SQLite and other optional
-components.  You can set the environment variable <code class="xref py py-const docutils literal notranslate"><span class="pre">http_proxy</span></code>
+components.  You can set the environment variable <em>http_proxy</em>
 to control proxy usage for the download.</p>
 <p>If any files are downloaded then the build step will automatically use
 them.  This still applies when you do later builds without
@@ -138,7 +138,7 @@ re-fetching.</p>
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="line-block">
-<div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--version=VERSION</span></code></div>
+<div class="line"><strong>–version=VERSION</strong></div>
 </div>
 </td>
 <td><p>By default the SQLite version corresponding to the APSW release is retrieved,  You
@@ -146,26 +146,26 @@ can also ask for specific versions, or for <cite>latest</cite> which uses the SQ
 page to work out the most recent version.</p></td>
 </tr>
 <tr class="row-odd"><td><div class="line-block">
-<div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--missing-checksum-ok</span></code></div>
+<div class="line"><strong>–missing-checksum-ok</strong></div>
 </div>
 </td>
 <td><p>Allows setup to continue if the <a class="reference internal" href="#fetch-checksums"><span class="std std-ref">checksum</span></a> is missing.</p></td>
 </tr>
 <tr class="row-even"><td><div class="line-block">
-<div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--all</span></code></div>
+<div class="line"><strong>–all</strong></div>
 </div>
 </td>
 <td><p>Gets all components listed below.</p></td>
 </tr>
 <tr class="row-odd"><td><div class="line-block">
-<div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--sqlite</span></code></div>
+<div class="line"><strong>–sqlite</strong></div>
 </div>
 </td>
 <td><p>Automatically downloads the <a class="reference external" href="https://sqlite.org/amalgamation.html">SQLite amalgamation</a>. The amalgamation is the
 preferred way to use SQLite as you have total control over what components are
 included or excluded (see below) and have no dependencies on any existing
 libraries on your developer or deployment machines. The amalgamation includes the
-fts3/4/5, rtree, json1 and icu extensions. On non-Windows platforms, any existing
+fts3/4/5, rtree, json1 and icu extensions. Nny existing
 <code class="file docutils literal notranslate"><span class="pre">sqlite3/</span></code> directory will be erased and the downloaded code placed in a newly
 created <code class="file docutils literal notranslate"><span class="pre">sqlite3/</span></code> directory.</p></td>
 </tr>
@@ -185,7 +185,7 @@ could modify it to point at a malicious download version instead.
 (setup only uses the page to determine the current version number -
 the SQLite download site URL is hard coded.)</p>
 <p>If the URL is not listed in the checksums file then setup aborts.
-You can use <code class="xref std std-option docutils literal notranslate"><span class="pre">--missing-checksum-ok</span></code> to continue.  You are
+You can use <strong>–missing-checksum-ok</strong> to continue.  You are
 recommended instead to update the checksums file with the
 correct information.</p>
 </div>
@@ -228,7 +228,7 @@ need to give the flag once and giving a comma separated list.  For example:</p>
 </div>
 <p>SQLite includes <a class="reference external" href="https://www.sqlite.org/compile.html">many options defined to the C compiler</a>.  If you want to change
 compiled in default values, or provide defines like
-SQLITE_CUSTOM_INCLUDE then you can use <code class="xref std std-option docutils literal notranslate"><span class="pre">--definevalues</span></code> using
+SQLITE_CUSTOM_INCLUDE then you can use <strong>–definevalues</strong> using
 <cite>=</cite> and comma separating.  For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">build_ext</span> <span class="o">--</span><span class="n">definevalues</span> <span class="n">SQLITE_DEFAULT_FILE_FORMAT</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">SQLITE_CUSTOM_INCLUDE</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">h</span>
 </pre></div>
@@ -245,16 +245,16 @@ SQLITE_CUSTOM_INCLUDE then you can use <code class="xref std std-option docutils
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="line-block">
-<div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--enable-all-extensions</span></code></div>
+<div class="line"><strong>–enable-all-extensions</strong></div>
 </div>
 </td>
 <td><p>Enables the STAT4, FTS3/4/5, RTree, JSON1, RBU, and ICU extensions if <em>icu-config</em>
 is on your path</p></td>
 </tr>
 <tr class="row-odd"><td><div class="line-block">
-<div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--enable=fts3</span></code></div>
-<div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--enable=fts4</span></code></div>
-<div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--enable=fts5</span></code></div>
+<div class="line"><strong>–enable=fts3</strong></div>
+<div class="line"><strong>–enable=fts4</strong></div>
+<div class="line"><strong>–enable=fts5</strong></div>
 </div>
 </td>
 <td><p>Enables the <a class="reference internal" href="extensions.html#ext-fts3"><span class="std std-ref">full text search extension</span></a>.
@@ -264,7 +264,7 @@ install. You are likely to want the <a class="reference external" href="https://
 legacy code (<cite>–enable-all-extensions</cite> turns it on).</p></td>
 </tr>
 <tr class="row-even"><td><div class="line-block">
-<div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--enable=rtree</span></code></div>
+<div class="line"><strong>–enable=rtree</strong></div>
 </div>
 </td>
 <td><p>Enables the <a class="reference internal" href="extensions.html#ext-rtree"><span class="std std-ref">spatial table extension</span></a>.
@@ -273,7 +273,7 @@ amalgamation then you need to separately ensure rtree is enabled in the SQLite
 install.</p></td>
 </tr>
 <tr class="row-odd"><td><div class="line-block">
-<div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--enable=rbu</span></code></div>
+<div class="line"><strong>–enable=rbu</strong></div>
 </div>
 </td>
 <td><p>Enables the <a class="reference internal" href="extensions.html#ext-rbu"><span class="std std-ref">reumable bulk update extension</span></a>.
@@ -282,7 +282,7 @@ amalgamation then you need to separately ensure rbu is enabled in the SQLite
 install.</p></td>
 </tr>
 <tr class="row-even"><td><div class="line-block">
-<div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--enable=icu</span></code></div>
+<div class="line"><strong>–enable=icu</strong></div>
 </div>
 </td>
 <td><p>Enables the <a class="reference internal" href="extensions.html#ext-icu"><span class="std std-ref">International Components for Unicode extension</span></a>.
@@ -293,11 +293,11 @@ amalgamation then you need to separately ensure ICU is enabled in the SQLite
 install.</p></td>
 </tr>
 <tr class="row-odd"><td><div class="line-block">
-<div class="line"><code class="xref std std-option docutils literal notranslate"><span class="pre">--omit=ITEM</span></code></div>
+<div class="line"><strong>–omit=ITEM</strong></div>
 </div>
 </td>
 <td><p>Causes various functionality to be omitted. For example
-<code class="xref std std-option docutils literal notranslate"><span class="pre">--omit=load_extension</span></code> will omit code to do with loading extensions. If
+<cite>–omit=load_extension</cite> will omit code to do with loading extensions. If
 using the amalgamation then this will omit the functionality from APSW and
 SQLite, otherwise the functionality will only be omitted from APSW (ie the code
 will still be in SQLite, APSW just won’t call it). In almost all cases you will need
@@ -313,7 +313,7 @@ parser. See <a class="reference external" href="https://sqlite.org/compile.html#
 <p>APSW needs to see the same options as SQLite to correctly match it.
 For example if SQLite is compiled without loadable extensions, then
 APSW also needs to know that at compile time because the APIs won’t be
-present.  Another example is <code class="xref py py-attr docutils literal notranslate"><span class="pre">Cursor.description_full</span></code> needs to
+present.  Another example is <a class="reference internal" href="cursor.html#apsw.Cursor.description_full" title="apsw.Cursor.description_full"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Cursor.description_full</span></code></a> needs to
 know if <cite>SQLITE_ENABLE_COLUMN_METADATA</cite> was defined when building
 SQLite for the same reason.</p>
 <p>If you use the amalgamation (recommended configuration) then APSW and
@@ -330,12 +330,12 @@ system.</p>
 <section id="finding-sqlite-3">
 <h2>Finding SQLite 3<a class="headerlink" href="#finding-sqlite-3" title="Permalink to this heading">¶</a></h2>
 <p>SQLite 3 is needed during the build process. If you specify
-<code class="xref std std-option docutils literal notranslate"><span class="pre">fetch</span> <span class="pre">--sqlite</span></code> to the <code class="file docutils literal notranslate"><span class="pre">setup.py</span></code> command line
+<strong>fetch –sqlite</strong> to the <code class="file docutils literal notranslate"><span class="pre">setup.py</span></code> command line
 then it will automatically fetch the current version of the SQLite
 amalgamation. (The current version is determined by parsing the
 <a class="reference external" href="https://sqlite.org/download.html">SQLite download page</a>). You
 can manually specify the version, for example
-<code class="xref std std-option docutils literal notranslate"><span class="pre">fetch</span> <span class="pre">--sqlite</span> <span class="pre">--version=3.7.4</span></code>.</p>
+<strong>fetch –sqlite –version=3.39.4</strong>.</p>
 <p>These methods are tried in order:</p>
 <blockquote>
 <div><p><a class="reference external" href="https://sqlite.org/amalgamation.html">Amalgamation</a></p>
@@ -344,7 +344,7 @@ can manually specify the version, for example
 looked for. The SQLite code is then statically compiled into the
 APSW extension and is invisible to the rest of the
 process. There are no runtime library dependencies on SQLite as
-a result.  When you use <code class="xref std std-option docutils literal notranslate"><span class="pre">fetch</span></code> this is where it places
+a result.  When you use <strong>fetch</strong> this is where it places
 the downloaded amalgamation.</p>
 </div></blockquote>
 <p>Local build</p>
@@ -353,7 +353,7 @@ the downloaded amalgamation.</p>
 </div></blockquote>
 <p>User directories</p>
 <blockquote>
-<div><p>If specifying <code class="xref std std-option docutils literal notranslate"><span class="pre">--user</span></code> then your user directory is
+<div><p>If specifying <strong>–user</strong> then your user directory is
 searched first. See <span class="target" id="index-1"></span><a class="pep reference external" href="https://peps.python.org/pep-0370/"><strong>PEP 370</strong></a> for more details.</p>
 </div></blockquote>
 <p>System directories</p>
@@ -364,9 +364,9 @@ searched first. See <span class="target" id="index-1"></span><a class="pep refer
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>If you compiled SQLite with any OMIT flags (eg
-<code class="xref py py-const docutils literal notranslate"><span class="pre">SQLITE_OMIT_LOAD_EXTENSION</span></code>) then you must include them in
+<em>SQLITE_OMIT_LOAD_EXTENSION</em>) then you must include them in
 the <code class="file docutils literal notranslate"><span class="pre">setup.py</span></code> command or file. For this example you could use
-<code class="xref std std-option docutils literal notranslate"><span class="pre">setup.py</span> <span class="pre">build</span> <span class="pre">--omit=load_extension</span></code> to add the same flags.</p>
+<strong>setup.py build –omit=load_extension</strong> to add the same flags.</p>
 </div>
 </section>
 <section id="recommended">
@@ -393,13 +393,12 @@ APSW source to.</p>
 <p>There may be some warnings during the compilation step about
 sqlite3.c, <a class="reference external" href="https://sqlite.org/faq.html#q17">but they are harmless</a></p>
 </div>
-<p>The extension just turns into a single file apsw.so (Linux/Mac) or
-apsw.pyd (Windows). (More complicated name on Pythons implementing
-<span class="target" id="index-2"></span><a class="pep reference external" href="https://peps.python.org/pep-3149/"><strong>PEP 3149</strong></a>). You don’t need to install it and can drop it into any
-directory that is more convenient for you and that your code can
-reach. To just do the build and not install, leave out <em>install</em> from
-the lines above. (Use <em>build_ext –inplace</em> to have the extension put
-in the main directory.)</p>
+<p>The extension just turns into a single directory <cite>apsw</cite>. You don’t
+need to install it and can drop it into any directory that is more
+convenient for you and that your code can reach. To just do the build
+and not install, leave out <em>install</em> from the lines above. (Use
+<em>build_ext –inplace</em> to have the extension put in the main
+directory.)</p>
 <p>The test suite will be run. It will print the APSW file used, APSW and
 SQLite versions and then run lots of tests all of which should pass.</p>
 </section>
@@ -533,14 +532,14 @@ in the source.</p>
         <li class="right" >
           <a href="download.html" title="Download"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Building</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Oct 09, 2022.
+      Last updated on Nov 27, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

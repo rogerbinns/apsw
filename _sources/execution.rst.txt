@@ -20,10 +20,8 @@ or the statement is complete.
 
 The :meth:`Cursor.execute` method automatically does the preparing and
 starts execution. If none of the statements return rows then execution
-will go to the end. If a row is returned then you need to call
-:meth:`Cursor.next` to get the row values or use the cursor as an
-iterator. Execution will resume as necessary to satisfy
-:meth:`~Cursor.next` calls.
+will go to the end. If a row is returned then you use the cursor as an
+iterator. Execution will resume as necessary to return each result row.
 
 However this means that if you don't read the rows returned then the
 rest of your statements won't be executed.  APSW will detect
@@ -57,7 +55,7 @@ defined functions, collations and the various hooks/handlers run.)
 Note that you cannot use the same cursor object in multiple threads
 concurrently to execute statements. APSW will detect this and throw an
 exception. It is safe to use the object serially (eg calling
-:meth:`Cursor.execute` in one thread and :meth:`Cursor.next` in
+:meth:`Cursor.execute` in one thread and iterator in
 another. You also can't do things like try to
 :meth:`~Connection.close` a Connection concurrently in two threads.
 
@@ -87,7 +85,7 @@ Unfortunately SQLite is limited to 32 bit quantities for strings,
 blobs, number of columns etc even when compiled for 64 bit.
 Consequently you will get a TooBig exception from APSW which checks if
 strings/buffers longer than 1GB or 2GB (depends on internal storage)
-are used. See :cvstrac:`2125` and :cvstrac:`3246` for more details.
+are used. cvstrac 2125 and 3246 had more details.
 
 .. _statementcache:
 
@@ -98,7 +96,7 @@ Each :class:`Connection` maintains a cache mapping SQL queries to a
 `prepared statement <https://sqlite.org/c3ref/stmt.html>`_ to avoid
 the overhead of `repreparing
 <https://sqlite.org/c3ref/prepare.html>`_ queries that are executed
-multiple times.  This is a classic tradeoff using more memory to
+multiple times.  This is a classic trade off using more memory to
 reduce CPU consumption.
 
 By default there are up to 100 entries in the cache.  Once the cache
@@ -109,14 +107,12 @@ You should pick a larger cache size if you have more than 100 unique
 queries that you run.  For example if you have 101 different queries
 you run in order then the cache will not help.
 
-You can also :class:`specify zero <Connection>` which will disable the
-statement cache.
 
-If you are using :meth:`authorizers <Connection.setauthorizer>` then
-you should disable the statement cache.  This is because the
-authorizer callback is only called while statements are being
-prepared.
-
+If you are using :attr:`authorizers <Connection.authorizer>` then be
+aware authorizer callback is only called while statements are being
+prepared.  You can :class:`specify zero <Connection>` which will
+disable the statement cache completely, use use `can_cache = False`
+flag to `execute`/`executemany`.
 
 .. _tracing:
 
@@ -137,7 +133,7 @@ code.
   in the tracer then do them from a new cursor object.  For example::
 
     def exectracer(cursor, sql, bindings):
-      cursor.getconnection().cursor().execute("insert into log values(?,?)", (sql,str(bindings)))
+      cursor.connection.cursor().execute("insert into log values(?,?)", (sql,str(bindings)))
       return True
 
 .. _executiontracer:
@@ -155,16 +151,16 @@ three arguments.
   sql
     The SQL text being executed
   bindings
-    The bindings being used.  This may be :const:`None`, a dictionary or
+    The bindings being used.  This may be *`None*, a dictionary or
     a tuple.
 
-If the tracer return value evaluates to False/None then execution is
+If the tracer return value is False then execution is
 aborted with an :exc:`ExecTraceAbort` exception.  See the
-:ref:`example <example-exectrace>`.
+:ref:`example <example_exectrace>`.
 
-Execution tracers can be installed on a specific cursor by calling
-:meth:`Cursor.setexectrace` or for all cursors by calling
-:meth:`Connection.setexectrace`, with the cursor tracer taking
+Execution tracers can be installed on a specific cursor by setting
+:attr:`Cursor.exectrace` or for all cursors by setting
+:attr:`Connection.exectrace`, with the cursor tracer taking
 priority.
 
 If you use the Connection :meth:`with <Connection.__enter__>` statement
@@ -188,11 +184,11 @@ two arguments.
 
 Whatever you return from the tracer is what is actually returned to
 the caller of :meth:`~Cursor.execute`. If you return None then the
-whole row is skipped. See the :ref:`example <example-rowtrace>`.
+whole row is skipped. See the :ref:`example <example_rowtrace>`.
 
-Row tracers can be installed on a specific cursor by calling
-:meth:`Cursor.setrowtrace` or for all cursors by calling
-:meth:`Connection.setrowtrace`, with the cursor tracer taking
+Row tracers can be installed on a specific cursor by setting
+:attr:`Cursor.rowtrace` or for all cursors by setting
+:attr:`Connection.rowtrace`, with the cursor tracer taking
 priority.
 
 .. _apswtrace:
@@ -236,8 +232,8 @@ All output is UTF-8 encoded.  The following options are available:
     --reports=REPORTS     Which reports to show
                           [summary,popular,aggregate,individual]
 
-This is sample output with the following options: :option:`--sql`,
-:option:`--rows`, :option:`--timestamps`, :option:`--thread`
+This is sample output with the following options: **--sql**,
+**--rows**, **--timestamps**, **--thread**
 
 .. code-block:: text
 

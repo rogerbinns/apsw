@@ -1,6 +1,35 @@
 Change History
 **************
+
 .. currentmodule:: apsw
+
+3.40.0.0
+========
+
+Fixed regression in statement cache update (version 3.38.1-r1) where
+trailing whitespace in queries would be incorrectly treated as
+incomplete execution (:issue:`376`)
+
+Added :doc:`ext` (:issue:`369`)
+
+Added more Pythonic attributes as an alternative to getters and
+setters, including :attr:`Connection.in_transaction`,
+:attr:`Connection.exectrace`, :attr:`Connection.rowtrace`,
+:attr:`Cursor.exectrace`, :attr:`Cursor.rowtrace`,
+:attr:`Cursor.connection` (:issue:`371`)
+
+Completed: To the extent permitted by CPython APIs every item has the
+same docstring as this documentation.  Every API can use named
+parameters.  The `type stubs
+<https://github.com/rogerbinns/apsw/blob/master/apsw/__init__.pyi>`__
+cover everything including constants.  The type stubs also include
+documentation for everything, which for example Visual Studio Code
+displays as you type or hover.  There is a single source of
+documentation in the source code, which is then automatically
+extracted to make this documentation, docstrings, and docstrings in
+the type stubs.
+
+:doc:`example` updated and appearance improved (:issue:`367`).
 
 3.39.4.0
 ========
@@ -904,7 +933,7 @@ instead of Python long type.
 3.7.6.3-r1
 ==========
 
-When invoking the shell by calling :func:`apsw.main` it will not
+When invoking the shell by calling :func:`apsw.shell.main` it will not
 become interactive if you supply SQL commands as command line
 arguments.  This is to have the same behaviour as the SQLite shell
 (:issue:`115`).
@@ -964,7 +993,7 @@ previous value instead of None.
 
 Improve getting shell timer information for 64 bit Windows.
 
-:meth:`blob.reopen` is implemented.
+:meth:`Blob.reopen` is implemented.
 
 FTS4 is enabled and in the binary builds.  Note that it is an
 augmentation of FTS3 rather than totally separate code and described
@@ -975,8 +1004,8 @@ in the `SQLite documentation
 ========
 
 You can read blobs into pre-existing buffers using
-:meth:`blob.readinto`.  (This is more efficient than allocating new
-buffers as :meth:`blob.read` does and then copying.)  (:issue:`109`).
+:meth:`Blob.readinto`.  (This is more efficient than allocating new
+buffers as :meth:`Blob.read` does and then copying.)  (:issue:`109`).
 
 Fixed bug with unicode output in CSV mode in the shell.
 
@@ -1030,7 +1059,7 @@ out the problem and providing test data.
 
 The shell now does colour highlighting making it easy to visually
 distinguish prompts, errors, headers and value types when outputting
-to a terminal.  See the :option:`--no-colour` argument and **.colour**
+to a terminal.  See the `--no-colour` argument and **.colour**
 command.  Those of you in the two countries that have not adopted the
 metric system may also omit the 'u'.  For Windows users you won't get
 colour output unless you install `colorama
@@ -1069,10 +1098,10 @@ result in a crash if any hooks executed SQL code.
 Shell CSV output under Python 3.1 is corrected (work around Python 3.1
 StringIO bug/incompatibility with other Python versions).
 
-Simplified access to the shell's :attr:`database <Shell.db>` from the
+Simplified access to the shell's :attr:`database <shell.Shell.db>` from the
 API.
 
-Added a shell :ref:`example <example-shell>`.
+Added a shell :ref:`example <example_shell>`.
 
 
 3.6.23-r1
@@ -1176,7 +1205,7 @@ been all along.  You should now call :meth:`apsw.complete` instead.  (It
 even had an example showing it to be part of the module and not a
 specific connection!)
 
-There is now an :class:`interactive shell <Shell>` very similar to
+There is now an :class:`interactive shell <shell.Shell>` very similar to
 that `provided by SQLite <https://sqlite.org/sqlite.html>`__.  You
 can embed it in your own program, inherit from it to provide more
 commands and output modes, or just run it like this::
@@ -1194,15 +1223,14 @@ The :file:`setup.py` file now has the various options available made
 applicable to appropriate commands only.  Read the :ref:`updated
 documentation <setup_py_flags>`.
 
-You can now specify :option:`build --enable=stat2` to :file:`setup.py`
+You can now specify `build --enable=stat2` to :file:`setup.py`
 to enable `advanced statistics gathering
 <https://sqlite.org/compile.html#enable_stat2>`__ for query
 planning.
 
 :file:`setup.py` can automatically fetch the asyncvfs
 extension for you.  If the source is present when APSW is built then
-it will be automatically included and the :meth:`API
-<async_initialize>` provided.
+it will be automatically included and *async_initialize* called.
 
 A :meth:`fork_checker` is available which turns on detection when you
 have used SQLite objects across a fork (a **very** bad thing).  This
@@ -1213,7 +1241,7 @@ is possible on Unix like operating systems, especially if you use the
 Extension loading is now compiled in by default when using the
 amalgamation and compiled out when using existing libraries.  This is
 more likely to match your machine.  You can use
-:option:`--omit=load_extension` or :option:`--enable=load_extension`
+`--omit=load_extension` or `--enable=load_extension`
 to the build/build_ext commands to explicitly disable/enable extension
 loading.  :issue:`67`
 
@@ -1222,7 +1250,7 @@ checksum.  See :ref:`more information <fetch_checksums>` on checksums.
 
 :ref:`setup.py <setup_py_flags>` can also fetch the version of SQLite
 currently under development before a release.  Use
-:option:`--version=fossil`.
+`--version=fossil`.
 
 Updated which code uses `experimental SQLite APIs
 <https://sqlite.org/c3ref/experimental.html>`__ based on changes in
@@ -1251,7 +1279,7 @@ APSW has migrated from Subversion to `Mercurial
 Hosting remains at `Google Code <https://code.google.com/p/apsw/>`_
 
 Updated a test due to VFS xUnlock errors now being ignored sometimes
-by SQLite (:cvstrac:`3946`).
+by SQLite (cvstrac 3946).
 
 The downloads page in the help didn't mention the Windows Python 3.1
 installer.
@@ -1280,7 +1308,7 @@ Trivial tweaks to keep MSVC happy.
 3.6.15-r1
 =========
 
-Fixed :issue:`50` where :meth:`blob.read` was returning :const:`None`
+Fixed :issue:`50` where :meth:`Blob.read` was returning *None*
 on end of file instead of the documented (and correct) empty
 string/bytes.
 
@@ -1292,7 +1320,7 @@ output CURSORFROM if SQL tracing is on.
 
 Updated test code because SQLite 3.6.15 returns a different error code
 on trying to register a function with too many arguments (see
-:cvstrac:`3875`).
+cvstrac 3875).
 
 3.6.14.1-r1
 ===========
@@ -1356,9 +1384,9 @@ blocks can be nested.  If you use Connection level :ref:`execution
 tracers <executiontracer>` then they will be called with the savepoint
 SQL statements.
 
-You can also use :class:`blobs <blob>` as a context manager which
+You can also use :class:`blobs <Blob>` as a context manager which
 ensures it is always closed when finished using it.  See
-:meth:`blob.__enter__` for an example.
+:meth:`Blob.__enter__` for an example.
 
 Added :ref:`constants <sqliteconstants>`:
 
@@ -1400,7 +1428,7 @@ compatible with XP.  Thanks to Rudolf Gaertner for assistance in
 detecting and diagnosing this issue.
 
 :class:`Connections <Connection>`, :class:`cursors <Cursor>` and
-:class:`blobs <blob>` can be used by `weak references
+:class:`blobs <Blob>` can be used by `weak references
 <http://docs.python.org/library/weakref.html>`_.
 
 You can now install :class:`Connection` wide :meth:`execution
@@ -1424,17 +1452,17 @@ Added a :ref:`apswtrace <apswtrace>` script to allow easy SQL tracing
 without having to modify your code.
 
 Revert to using older SQLite APIs in order to work around
-:cvstrac:`2158`.  (This also saves a little bit of SQLite memory
+cvstrac 2158.  (This also saves a little bit of SQLite memory
 usage).  The user visible effect was that you could get different
 exceptions and error text depending on whether a query was already in
 the :ref:`statement cache <statementcache>` or if you were
 multi-threading.  As an example, if you have a query that used an
 unknown collation then SQLite's `prepare
 <https://sqlite.org/c3ref/prepare.html>`_ returns
-:const:`SQLITE_ERROR` with error text about the bad collation.  If a
+*SQLITE_ERROR* with error text about the bad collation.  If a
 query had already been prepared, the collation removed and then `run
 <https://sqlite.org/c3ref/step.html>`_ the new SQLite routines are
-returning :const:`SQLITE_SCHEMA` and generic ``schema changed`` error
+returning *SQLITE_SCHEMA* and generic ``schema changed`` error
 text.  Changing user defined functions could also cause a previously
 correct query to become invalid.
 
@@ -1483,14 +1511,14 @@ documentation easier.
 You can now write your own :ref:`VFS` in Python. You can also inherit
 from an existing VFS making it easy to augment or override small bits
 of behaviour without having to code everything else. See the
-:ref:`example <example-vfs>` where database files are obfuscated by
+:ref:`example <example_vfs>` where database files are obfuscated by
 XORing their contents.
 
-:file:`setup.py` now takes an optional :option:`--fetch-sqlite[=ver]`
+:file:`setup.py` now takes an optional `--fetch-sqlite[=ver]`
 argument to automatically download and use the latest SQLite
 amalgamation (or a specified version). On non-Windows platforms it
 will also work out what compile flags SQLite needs (for example
-:const:`HAVE_USLEEP`, :const:`HAVE_LOCALTIME_R`). Several other
+*HAVE_USLEEP*, *HAVE_LOCALTIME_R*). Several other
 options to :file:`setup.py` are also available to control
 enabling/omitting certains features and functionality. See
 :ref:`building <Building>` for further details.
@@ -1499,9 +1527,9 @@ APSW checks that SQLite was compiled to be `threadsafe <https://sqlite.org/c3ref
 
 Added new constants:
 
-* :const:`SQLITE_IOERR_ACCESS`, :const:`SQLITE_IOERR_CHECKRESERVEDLOCK` and :const:`SQLITE_IOERR_LOCK` extended result codes
-* :const:`SQLITE_OPEN_NOMUTEX` and :const:`SQLITE_OPEN_FULLMUTEX` open flags
-* Several new :const:`SQLITE_CONFIG` and :const:`SQLITE_STATUS` codes
+* *SQLITE_IOERR_ACCESS*, *SQLITE_IOERR_CHECKRESERVEDLOCK* and *SQLITE_IOERR_LOCK* extended result codes
+* *SQLITE_OPEN_NOMUTEX* and *SQLITE_OPEN_FULLMUTEX* open flags
+* Several new *SQLITE_CONFIG* and *SQLITE_STATUS* codes
 
 Wrapped several new SQLite apis:
 
@@ -1525,7 +1553,7 @@ for numbers fitting in signed 32 bit. This only affects Python 2 as
 Python 3 uses long exclusively. Thanks to Joe Pham for reporting this
 as :issue:`24`
 
-Added :meth:`Connection.getsqlite3pointer` method to help with
+Added :meth:`Connection.sqlite3pointer` method to help with
 :issue:`26`
 
 3.5.9-r2
@@ -1534,7 +1562,7 @@ Added :meth:`Connection.getsqlite3pointer` method to help with
 APSW now works with Python 3 (you need 3.0b1 or later).
 
 (:issue:`17`)
-Removed the :const:`SQLITE_MAX_*` constants since they could be
+Removed the *SQLITE_MAX_* constants since they could be
 unreliable (eg APSW can't tell what a shared library was compiled
 with). A workaround is documented in :func:`Connection.limit`.
 
@@ -1550,11 +1578,11 @@ SQLite now provides the source all `amalgamated
 which improves performance and makes compilation and linking of SQLite
 far easier. The build instructions are updated.
 
-:const:`SQLITE_COPY` authorizer code and :const:`SQLITE_PROTOCOL`
+*SQLITE_COPY* authorizer code and *SQLITE_PROTOCOL*
 error code are no longer used by SQLite, but the values are left in
 apsw for backwards compatibility
 
-:const:`SQLITE_IOERR_DELETE`, :const:`SQLITE_IOERR_BLOCKED` and :const:`SQLITE_IOERR_NOMEM`
+*SQLITE_IOERR_DELETE*, *SQLITE_IOERR_BLOCKED* and *SQLITE_IOERR_NOMEM*
 
 :func:`Connection.interrupt` can be called from any thread
 
@@ -1632,7 +1660,7 @@ Thanks to Ed Pasma for highlighting these issues:
   <https://sqlite.org/c3ref/step.html>`_ didn't like being passed the
   NULL pointer).
 
-* Changed special handling of :const:`SQLITE_BUSY` error to be the same
+* Changed special handling of *SQLITE_BUSY* error to be the same
   as other errors. The special handling previously let you restart on
   receiving busy, but also hung onto statements which could result in
   other statements getting busy errors.
@@ -1671,27 +1699,28 @@ necessary.
 
 All strings are returned as unicode.
 
-:func:`PyErr_WriteUnraisable` was used for errors in
-destructors. Unfortunately it is almost completely useless, merely
-printing :func:`str` of the object and exception. This doesn't help in
-finding where in your code the issue arose so you could fix it. An
-internal APSW implementation generates a traceback and calls
-:func:`sys.excepthook`, the default implementation of which prints the
-exception and the traceback to sys.stderr.
+`PyErr_WriteUnraisable
+<https://docs.python.org/3/c-api/exceptions.html?highlight=pyerr_writeunraisable#c.PyErr_WriteUnraisable>`__
+was used for errors in destructors. Unfortunately it is almost
+completely useless, merely printing *str* of the object and exception.
+This doesn't help in finding where in your code the issue arose so you
+could fix it. An internal APSW implementation generates a traceback
+and calls :func:`sys.excepthook`, the default implementation of which
+prints the exception and the traceback to sys.stderr.
 
   .. Note:: The line number reported in the traceback is often off by
             1. This is because the destructors run "between" lines of
             code and so the following line is reported as the current
             location.
 
-Authorizer codes :const:`SQLITE_CREATE_VTABLE`,
-:const:`SQLITE_DROP_VTABLE` and :const:`SQLITE_FUNCTION` added.
+Authorizer codes *SQLITE_CREATE_VTABLE*,
+*SQLITE_DROP_VTABLE* and *SQLITE_FUNCTION* added.
 
 SQLite `extended result codes
 <https://sqlite.org/cvstrac/wiki?p=ExtendedResultCodes>`_ are
 available - see :ref:`exceptions` for more detail.
 
-:data:`Connection.hooks` added so you can easily register functions,
+:data:`apsw.connection_hooks` added so you can easily register functions,
 virtual tables or similar items with each Connection as it is created.
 
 Added :ref:`mapping dicts <sqliteconstants>` which makes it easy to
@@ -1725,15 +1754,16 @@ APSW had the following changes:
 You can use this release against any release of SQLite 3 from 3.3.5
 onwards. A bug was also fixed when reporting an error during the
 cleanup of an aggregate function if there had also been an error in
-the step function.  (:func:`PyErr_WriteUnraisable(NULL)` crashed on
-some versions of Python but not others.)
+the step function.  (`PyErr_WriteUnraisable(NULL)
+<https://docs.python.org/3/c-api/exceptions.html?highlight=pyerr_writeunraisable#c.PyErr_WriteUnraisable>`__
+crashed on some versions of Python but not others.)
 
 SQLite added several functions for returning metadata about result
 column sets. You have to compile SQLite with
-:const:`SQLITE_ENABLE_COLUMN_METADATA` to get them. This is not the
+*SQLITE_ENABLE_COLUMN_METADATA* to get them. This is not the
 default for SQLite. I don't believe these are generally useful except
 in some corner cases and so they aren't wrapped. However please shout
-if you do need them.  Note that :func:`Cursor.getdescription` will
+if you do need them.  Note that :meth:`Cursor.getdescription` will
 already give you generally useful information. (Also see the `pragmas
 <https://sqlite.org/pragma.html>`_)
 
@@ -1763,14 +1793,14 @@ module:
 You can use this release against any release of SQLite 3.
 
 SQLite 3.2.7 has several bug fixes. The undocumented experimental
-function :func:`sqlite3_profile` was added, but it not present in apsw
+function *sqlite3_profile* was added, but it not present in apsw
 yet.
 
 The author of pysqlite has improved it considerably since APSW was
 originally written. The differences section has been updated to
 reflect those improvements in pysqlite.
 
-:const:`SQLITE_INTERNAL` and :const:`SQLITE_NOTFOUND` error codes are
+*SQLITE_INTERNAL* and *SQLITE_NOTFOUND* error codes are
 not used according to 3.2.7 header file. They are still present in
 APSW for backwards compatibility.
 
@@ -1789,7 +1819,7 @@ reported due to limitations in SQLite.
 
 You can use this release against any release of SQLite 3.
 
-SQLite 3.2.2 API removed :func:`sqlite3_global_recover`. That function
+SQLite 3.2.2 API removed *sqlite3_global_recover*. That function
 was not wrapped in APSW. Note that SQLite 3.2.2 contains a bug fix
 that applies when you use 64 bit integer primary keys (32 bit ints are
 fine).
@@ -1803,7 +1833,7 @@ There are no changes in APSW except to correct an error in the example
 code (collations are registered against the connection not the cursor)
 
 SQLite 3.2.1 had one addition in the stable C API, which was a new
-function named :func:`sqlite3_global_recover`. That function is not
+function named *sqlite3_global_recover*. That function is not
 applicable for wrapping in APSW.
 
 3.1.3-r1
@@ -1817,12 +1847,12 @@ purely cosmetic and helps make clear what the class is. (The old
 string was what the original class name was in an earlier version of
 the code.)
 
-Added :const:`SQLITE_ALTER_TABLE` and :const:`SQLITE_REINDEX`
+Added *SQLITE_ALTER_TABLE* and *SQLITE_REINDEX*
 constants for the authorizer function.  (These constants were
 introduced in SQLite 3.1.3).
 
 Changed various C++-isms into standard C (eg // comments and the
-placing of some :c:macro:`CHECK_THREAD` macro calls).
+placing of some *CHECK_THREAD* macro calls).
 
 Added module level function :meth:`~apsw.apswversion` which returns
 the version of APSW.
@@ -1833,14 +1863,14 @@ which are not currently documented on the SQLite website, which are
 not wrapped by APSW.  Please contact me if you believe they will
 remain in SQLite and you would like them wrapped:
 
-* :c:func:`sqlite3_sleep` An alternative function which sleeps for a
+* *sqlite3_sleep* An alternative function which sleeps for a
   specified number of milliseconds can be provided. By default SQLite
   just uses the standard operating system call.
-* :c:func:`sqlite3_expired` This function is internal to statement
+* *sqlite3_expired* This function is internal to statement
   execution. It would apply to the implementation of
   :meth:`Cursor.executemany` and could in theory provide a marginal
   improvement in performance.
-* A global variable :c:data:`sqlite3_temp_directory` can be used before
+* A global variable *sqlite3_temp_directory* can be used before
   any databases are opened to set where temporary files are created. By
   default SQLite just uses the standard operating system mechanisms.
 

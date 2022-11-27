@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Example &#8212; APSW 3.39.4.0 documentation</title>
+    <title>Example/Tour &#8212; APSW 3.40.0.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -45,8 +45,8 @@
         <li class="right" >
           <a href="tips.html" title="Tips"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Example</a></li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Example/Tour</a></li> 
       </ul>
     </div>  
 
@@ -55,11 +55,11 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="example">
-<h1>Example<a class="headerlink" href="#example" title="Permalink to this heading">¶</a></h1>
-<p>This code demonstrates usage of the APSW api.  It gives you a good
-overview of all the things that can be done.  Also included is output
-so you can see what gets printed when you run the code.</p>
+  <section id="example-tour">
+<h1>Example/Tour<a class="headerlink" href="#example-tour" title="Permalink to this heading">¶</a></h1>
+<p>This code demonstrates usage of APSW.  It gives you a good overview of
+all the things that can be done.  Also included is output so you can
+see what gets printed when you run the code.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
@@ -68,390 +68,764 @@ so you can see what gets printed when you run the code.</p>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">apsw</span>
+<span class="kn">import</span> <span class="nn">random</span>
 
 <span class="c1"># Note: this code uses Python&#39;s optional typing annotations.  You can</span>
 <span class="c1"># ignore them and do not need to use them</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Tuple</span>
-
-<span class="c1">###</span>
-<span class="c1">### Check we have the expected version of apsw and sqlite</span>
-<span class="c1">###</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;      Using APSW file&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span>  <span class="c1"># from the extension module</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;         APSW version&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">apswversion</span><span class="p">())</span>  <span class="c1"># from the extension module</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   SQLite lib version&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">sqlitelibversion</span><span class="p">())</span>  <span class="c1"># from the sqlite library code</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;SQLite header version&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_VERSION_NUMBER</span><span class="p">)</span>  <span class="c1"># from the sqlite header file at compile time</span>
 </pre></div>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>|       Using APSW file /space/apsw/apsw/__init__.cpython-310-x86_64-linux-gnu.so
-|          APSW version 3.39.4.0
-|    SQLite lib version 3.39.4
-| SQLite header version 3039004
+<section id="checking-apsw-and-sqlite-versions">
+<span id="example-version-check"></span><span id="index-0"></span><h2>Checking APSW and SQLite versions<a class="headerlink" href="#checking-apsw-and-sqlite-versions" title="Permalink to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Where the extension module is on the filesystem</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;      Using APSW file&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span>
+
+<span class="c1"># From the extension</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;         APSW version&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">apswversion</span><span class="p">())</span>
+
+<span class="c1"># From the sqlite header file at APSW compile time</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;SQLite header version&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_VERSION_NUMBER</span><span class="p">)</span>
+
+<span class="c1"># The SQLite code running</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   SQLite lib version&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">sqlitelibversion</span><span class="p">())</span>
+
+<span class="c1"># If True then SQLite is incorporated into the extension.</span>
+<span class="c1"># If False then a shared library is being used, or static linking</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   Using amalgamation&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">using_amalgamation</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">###</span>
-<span class="c1">### Opening/creating database</span>
-<span class="c1">###</span>
-
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw/./apsw/__init__.cpython-310-x86_64-linux-gnu.so</span>
+<span class="go">         APSW version 3.40.0.0</span>
+<span class="go">SQLite header version 3040000</span>
+<span class="go">   SQLite lib version 3.40.0</span>
+<span class="go">   Using amalgamation True</span>
+</pre></div>
+</div>
+</section>
+<section id="opening-the-database">
+<span id="example-open-db"></span><span id="index-1"></span><h2>Opening the database<a class="headerlink" href="#opening-the-database" title="Permalink to this heading">¶</a></h2>
+<p>You open the database by using <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Default will create the database if it doesn&#39;t exist</span>
 <span class="n">connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;dbfile&quot;</span><span class="p">)</span>
+
+<span class="c1"># Open existing read-only</span>
+<span class="n">connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;dbfile&quot;</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_READONLY</span><span class="p">)</span>
+
+<span class="c1"># Open existing read-write (exception if it doesn&#39;t exist)</span>
+<span class="n">connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;dbfile&quot;</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_READWRITE</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate" id="example-cursor"><div class="highlight"><pre><span></span><span class="c1">###</span>
-<span class="c1">### simple statement with a cursor</span>
-<span class="c1">###</span>
+</section>
+<section id="executing-sql">
+<span id="example-executing-sql"></span><span id="index-2"></span><h2>Executing SQL<a class="headerlink" href="#executing-sql" title="Permalink to this heading">¶</a></h2>
+<p>Use <a class="reference internal" href="connection.html#apsw.Connection.execute" title="apsw.Connection.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.execute()</span></code></a> to execute SQL</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table point(x,y,z)&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into point values(1, 2, 3)&quot;</span><span class="p">)</span>
+<span class="c1"># You can use multiple ; separated statements</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    insert into point values(4, 5, 6);</span>
+<span class="s2">    create table log(timestamp, event);</span>
+<span class="s2">    create table foo(a, b, c);</span>
+<span class="s2">    create table important(secret, data);</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
 
-<span class="n">cursor</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table foo(x,y,z)&quot;</span><span class="p">)</span>
-
-<span class="c1">###</span>
-<span class="c1">### using different types</span>
-<span class="c1">###</span>
-
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo values(?,?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>  <span class="c1"># integer, float/real, Null</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo(x) values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;abc&quot;</span><span class="p">,</span> <span class="p">))</span>  <span class="c1"># string (note trailing comma to ensure tuple!)</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-    <span class="s2">&quot;insert into foo(x) values(?)&quot;</span><span class="p">,</span>  <span class="c1"># a blob (binary data)</span>
-    <span class="p">(</span><span class="sa">b</span><span class="s2">&quot;abc</span><span class="se">\xff\xfe</span><span class="s2">&quot;</span><span class="p">,</span> <span class="p">))</span>
-
-<span class="c1">###</span>
-<span class="c1">### multiple statements</span>
-<span class="c1">###</span>
-
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-    <span class="s2">&quot;delete from foo; insert into foo values(1,2,3); create table bar(a,b,c) ; insert into foo values(4, &#39;five&#39;, 6.0)&quot;</span><span class="p">)</span>
-
-<span class="c1">###</span>
-<span class="c1">### iterator using cursor</span>
-<span class="c1">###</span>
-
-<span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select x,y,z from foo&quot;</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">getdescription</span><span class="p">())</span>  <span class="c1"># shows column names and declared types</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
-
-<span class="c1">###</span>
-<span class="c1">### iterator - multiple statements</span>
-<span class="c1">###</span>
-
-<span class="k">for</span> <span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select x,y,z from foo ; select a,b,c from bar&quot;</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">o</span><span class="p">)</span>
-
-<span class="c1">###</span>
-<span class="c1">### bindings - sequence</span>
-<span class="c1">###</span>
-
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo values(?,?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="s1">&#39;eight&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo values(?,?,?1)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;one&#39;</span><span class="p">,</span> <span class="s1">&#39;two&#39;</span><span class="p">))</span>  <span class="c1"># nb sqlite does the numbers from 1</span>
-
-<span class="c1">###</span>
-<span class="c1">### bindings - dictionary</span>
-<span class="c1">###</span>
-
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into foo values(:alpha, :beta, :gamma)&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;beta&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;gamma&#39;</span><span class="p">:</span> <span class="s1">&#39;three&#39;</span><span class="p">})</span>
+<span class="c1"># read rows</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from point&quot;</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate" id="example-exectrace"><div class="highlight"><pre><span></span><span class="c1">###</span>
-<span class="c1">### tracing execution</span>
-<span class="c1">###</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">(1, 2, 3)</span>
+<span class="go">(4, 5, 6)</span>
+</pre></div>
+</div>
+</section>
+<section id="why-you-use-bindings-to-provide-values">
+<span id="example-why-bindings"></span><span id="index-3"></span><h2>Why you use bindings to provide values<a class="headerlink" href="#why-you-use-bindings-to-provide-values" title="Permalink to this heading">¶</a></h2>
+<p>It is tempting to compose strings with the values in them, but it is
+easy to mangle the query especially if values contain punctuation
+and unicode.  It is known as <a class="reference external" href="https://en.wikipedia.org/wiki/SQL_injection">SQL injection</a>. Bindings are the
+correct way to supply values to queries.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># a simple value</span>
+<span class="n">event</span> <span class="o">=</span> <span class="s2">&quot;system started&quot;</span>
+<span class="c1"># DO NOT DO THIS</span>
+<span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;insert into log values(0, &#39;&quot;</span> <span class="o">+</span> <span class="n">event</span> <span class="o">+</span> <span class="s2">&quot;&#39;)&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;query:&quot;</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">mytrace</span><span class="p">(</span><span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">statement</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">bindings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="c1"># BECAUSE ... a bad guy could provide a value like this</span>
+<span class="n">event</span> <span class="o">=</span> <span class="s2">&quot;bad guy here&#39;) ; drop table important; -- &quot;</span>
+<span class="c1"># which has effects like this</span>
+<span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;insert into log values(0, &#39;&quot;</span> <span class="o">+</span> <span class="n">event</span> <span class="o">+</span> <span class="s2">&quot;&#39;)&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;bad guy:&quot;</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">query: insert into log values(0, &#39;system started&#39;)</span>
+<span class="go">bad guy: insert into log values(0, &#39;bad guy here&#39;) ; drop table important; -- &#39;)</span>
+</pre></div>
+</div>
+</section>
+<section id="bindings-sequence">
+<span id="example-bindings-sequence"></span><span id="index-4"></span><h2>Bindings (sequence)<a class="headerlink" href="#bindings-sequence" title="Permalink to this heading">¶</a></h2>
+<p>Bindings can be provided as a sequence such as with
+a tuple or list.  Use <strong>?</strong> to show where the values go.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;insert into log values(?, ?)&quot;</span>
+<span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="s2">&quot;restart&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+<span class="c1"># You can also use numbers after the ? to select</span>
+<span class="c1"># values from the sequence.  Note that numbering</span>
+<span class="c1"># starts at 1</span>
+<span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;select ?1, ?3, ?2&quot;</span>
+<span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;alpha&quot;</span><span class="p">,</span> <span class="s2">&quot;beta&quot;</span><span class="p">,</span> <span class="s2">&quot;gamma&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">(&#39;alpha&#39;, &#39;gamma&#39;, &#39;beta&#39;)</span>
+</pre></div>
+</div>
+</section>
+<section id="bindings-dict">
+<span id="example-bindings-dict"></span><span id="index-5"></span><h2>Bindings (dict)<a class="headerlink" href="#bindings-dict" title="Permalink to this heading">¶</a></h2>
+<p>You can also supply bindings with a dictionary.  Use <strong>:NAME</strong>,
+<strong>&#64;NAME</strong>, or <strong>$NAME</strong>, to provide the key name in the query.
+Names are case sensitive.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;insert into point values(:x, @Y, $z)&quot;</span>
+<span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="mi">9</span><span class="p">}</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="using-different-types">
+<span id="example-types"></span><span id="index-6"></span><h2>Using different types<a class="headerlink" href="#using-different-types" title="Permalink to this heading">¶</a></h2>
+<p>SQLite supports None, int, float, str, bytes (binary data). If a
+table declaration gives a type then SQLite attempts conversion.
+<a class="reference external" href="https://www.sqlite.org/flextypegood.html">Read more</a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    create table types1(a, b, c, d, e);</span>
+<span class="s2">    create table types2(a INTEGER, b REAL, c TEXT, d, e BLOB);</span>
+<span class="s2">    &quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;12&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mf">5.5</span><span class="p">,</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x03\x72\xf4\x00\x9e</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into types1 values(?,?,?,?,?)&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into types2 values(?,?,?,?,?)&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from types1&quot;</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;types1&quot;</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">row</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from types2&quot;</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;types2&quot;</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">row</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">types1 (&#39;12&#39;, 3, 4, 5.5, b&#39;\x03r\xf4\x00\x9e&#39;)</span>
+<span class="go">types2 (12, 3.0, &#39;4&#39;, 5.5, b&#39;\x03r\xf4\x00\x9e&#39;)</span>
+</pre></div>
+</div>
+</section>
+<section id="transactions">
+<span id="example-transaction"></span><span id="index-7"></span><h2>Transactions<a class="headerlink" href="#transactions" title="Permalink to this heading">¶</a></h2>
+<p>By default each statement is its own transaction (3 in the
+example below).  A transaction finishes by flushing data to
+storage and waiting for the operating system to confirm it is
+permanently there (ie will survive a power failure) which takes
+a while.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into point values(2, 2, 2)&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into point values(3, 3, 3)&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into point values(4, 4, 4)&quot;</span><span class="p">)</span>
+
+<span class="c1"># You can use BEGIN / END to manually make a transaction</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;BEGIN&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into point values(2, 2, 2)&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into point values(3, 3, 3)&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into point values(4, 4, 4)&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;END&quot;</span><span class="p">)</span>
+
+<span class="c1"># Or use `with`` that does it automatically</span>
+<span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into point values(2, 2, 2)&quot;</span><span class="p">)</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into point values(3, 3, 3)&quot;</span><span class="p">)</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into point values(4, 4, 4)&quot;</span><span class="p">)</span>
+
+<span class="c1"># Nested transactions are supported</span>
+<span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into point values(2, 2, 2)&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into point values(3, 3, 3)&quot;</span><span class="p">)</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into point values(4, 4, 4)&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="executemany">
+<span id="example-executemany"></span><span id="index-8"></span><h2>executemany<a class="headerlink" href="#executemany" title="Permalink to this heading">¶</a></h2>
+<p>You can execute the same SQL against a sequence using
+<a class="reference internal" href="connection.html#apsw.Connection.executemany" title="apsw.Connection.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.executemany()</span></code></a></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;insert into point values(?,?,?)&quot;</span>
+
+<span class="c1"># we do it in a transaction</span>
+<span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
+    <span class="c1"># the query is run for each item in data</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="tracing-execution">
+<span id="example-exectrace"></span><span id="index-9"></span><h2>Tracing execution<a class="headerlink" href="#tracing-execution" title="Permalink to this heading">¶</a></h2>
+<p>You can trace execution of SQL statements.  See <a class="reference internal" href="execution.html#tracing"><span class="std std-ref">more about
+tracing</span></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">my_tracer</span><span class="p">(</span><span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">statement</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">bindings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="s2">&quot;Called just before executing each statement&quot;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;SQL:&quot;</span><span class="p">,</span> <span class="n">statement</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">bindings</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Bindings:&quot;</span><span class="p">,</span> <span class="n">bindings</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;SQL:&quot;</span><span class="p">,</span> <span class="n">statement</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Bindings:&quot;</span><span class="p">,</span> <span class="n">bindings</span><span class="p">)</span>
     <span class="k">return</span> <span class="kc">True</span>  <span class="c1"># if you return False then execution is aborted</span>
 
-<span class="n">cursor</span><span class="o">.</span><span class="n">setexectrace</span><span class="p">(</span><span class="n">mytrace</span><span class="p">)</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;drop table bar ; create table bar(x,y,z); select * from foo where x=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="p">))</span>
-</pre></div>
-</div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| SQL: drop table bar ;
-| SQL:  create table bar(x,y,z);
-| SQL:  select * from foo where x=?
-| Bindings: (3,)
-</pre></div>
-</div>
-<div class="highlight-python notranslate" id="example-rowtrace"><div class="highlight"><pre><span></span><span class="c1">###</span>
-<span class="c1">### tracing results</span>
-<span class="c1">###</span>
 
-<span class="k">def</span> <span class="nf">rowtrace</span><span class="p">(</span><span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">:</span>
+<span class="c1"># you can trace a single cursor</span>
+<span class="n">cursor</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">exectrace</span> <span class="o">=</span> <span class="n">my_tracer</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        drop table if exists bar;</span>
+<span class="sd">        create table bar(x,y,z);</span>
+<span class="sd">        select * from point where x=?;</span>
+<span class="sd">        &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="p">))</span>
+
+<span class="c1"># if set on a connection then all cursors are traced</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">exectrace</span> <span class="o">=</span> <span class="n">my_tracer</span>
+<span class="c1"># and clearing it</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">exectrace</span> <span class="o">=</span> <span class="kc">None</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQL: drop table if exists bar;</span>
+<span class="go">Bindings: ()</span>
+<span class="go">SQL: create table bar(x,y,z);</span>
+<span class="go">Bindings: ()</span>
+<span class="go">SQL: select * from point where x=?;</span>
+<span class="go">Bindings: (3,)</span>
+</pre></div>
+</div>
+</section>
+<section id="tracing-returned-rows">
+<span id="example-rowtrace"></span><span id="index-10"></span><h2>Tracing returned rows<a class="headerlink" href="#tracing-returned-rows" title="Permalink to this heading">¶</a></h2>
+<p>You can trace returned rows, including modifying what is returned or
+skipping it completely.  See <a class="reference internal" href="execution.html#tracing"><span class="std std-ref">more about tracing</span></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">row_tracer</span><span class="p">(</span><span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Called with each row of results before they are handed off.  You can return None to</span>
 <span class="sd">    cause the row to be skipped or a different set of values to return&quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Row:&quot;</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">row</span>
 
-<span class="n">cursor</span><span class="o">.</span><span class="n">setrowtrace</span><span class="p">(</span><span class="n">rowtrace</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select x,y from foo where x&gt;3&quot;</span><span class="p">):</span>
+
+<span class="c1"># you can trace a single cursor</span>
+<span class="n">cursor</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">rowtrace</span> <span class="o">=</span> <span class="n">row_tracer</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select x,y from point where x&gt;4&quot;</span><span class="p">):</span>
     <span class="k">pass</span>
+
+<span class="c1"># if set on a connection then all cursors are traced</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">rowtrace</span> <span class="o">=</span> <span class="n">row_tracer</span>
+<span class="c1"># and clearing it</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">rowtrace</span> <span class="o">=</span> <span class="kc">None</span>
 </pre></div>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| SQL: select x,y from foo where x&gt;3
-| Row: (4, &#39;five&#39;)
-| Row: (7, &#39;eight&#39;)
-| Row: (&#39;one&#39;, &#39;two&#39;)
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Row: (7, 8)</span>
+<span class="go">Row: (5, 5)</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Clear tracers</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">setrowtrace</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">setexectrace</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-
-<span class="c1">###</span>
-<span class="c1">### executemany</span>
-<span class="c1">###</span>
-
-<span class="c1"># (This will work correctly with multiple statements, as well as statements that</span>
-<span class="c1"># return data.  The second argument can be anything that is iterable.)</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;insert into foo (x) values(?)&quot;</span><span class="p">,</span> <span class="p">([</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
-
-<span class="c1"># You can also use it for statements that return data</span>
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;select * from foo where x=?&quot;</span><span class="p">,</span> <span class="p">([</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">])):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate" id="scalar-example"><div class="highlight"><pre><span></span><span class="c1">###</span>
-<span class="c1">### defining your own functions</span>
-<span class="c1">###</span>
-
-<span class="k">def</span> <span class="nf">ilove7</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-    <span class="s2">&quot;a scalar function&quot;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ilove7 got&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="s2">&quot;but I love 7&quot;</span><span class="p">)</span>
+</section>
+<section id="defining-your-own-functions">
+<span id="example-scalar"></span><span id="index-11"></span><h2>Defining your own functions<a class="headerlink" href="#defining-your-own-functions" title="Permalink to this heading">¶</a></h2>
+<p>Scalar functions take one or more values and return one value.  They
+are registered by calling <a class="reference internal" href="connection.html#apsw.Connection.createscalarfunction" title="apsw.Connection.createscalarfunction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.createscalarfunction()</span></code></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">ilove7</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="s2">&quot;A scalar function&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ilove7 got </span><span class="si">{</span> <span class="n">args</span> <span class="si">}</span><span class="s2"> but I love 7&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="mi">7</span>
+
 
 <span class="n">connection</span><span class="o">.</span><span class="n">createscalarfunction</span><span class="p">(</span><span class="s2">&quot;seven&quot;</span><span class="p">,</span> <span class="n">ilove7</span><span class="p">)</span>
 
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select seven(x,y) from foo&quot;</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select seven(x,y) from point where x&gt;4&quot;</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;row&quot;</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| ilove7 got (1, 2) but I love 7
-| (7,)
-| ilove7 got (4, &#39;five&#39;) but I love 7
-| (7,)
-| ilove7 got (7, &#39;eight&#39;) but I love 7
-| (7,)
-| ilove7 got (&#39;one&#39;, &#39;two&#39;) but I love 7
-| (7,)
-| ilove7 got (1, 2) but I love 7
-| (7,)
-| ilove7 got (1, None) but I love 7
-| (7,)
-| ilove7 got (2, None) but I love 7
-| (7,)
-| ilove7 got (3, None) but I love 7
-| (7,)
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">ilove7 got (7, 8) but I love 7</span>
+<span class="go">row (7,)</span>
+<span class="go">ilove7 got (5, 5) but I love 7</span>
+<span class="go">row (7,)</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate" id="aggregate-example"><div class="highlight"><pre><span></span><span class="c1">###</span>
-<span class="c1">### aggregate functions are more complex</span>
-<span class="c1">###</span>
-
-<span class="c1"># Here we return the longest item when represented as a string.</span>
-
-<span class="k">class</span> <span class="nc">longest</span><span class="p">:</span>
+</section>
+<section id="defining-aggregate-functions">
+<span id="example-aggregate"></span><span id="index-12"></span><h2>Defining aggregate functions<a class="headerlink" href="#defining-aggregate-functions" title="Permalink to this heading">¶</a></h2>
+<p>Aggregate functions are called multiple times with matching rows,
+and then provide a final value.  An example is calculating an
+average.  They are registered by calling
+<a class="reference internal" href="connection.html#apsw.Connection.createaggregatefunction" title="apsw.Connection.createaggregatefunction"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.createaggregatefunction()</span></code></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">longest</span><span class="p">:</span>
+    <span class="c1"># Find which value when represented as a string is</span>
+    <span class="c1"># the longest</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">longest</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Called with each matching row</span>
         <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">arg</span><span class="p">))</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">longest</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">longest</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">final</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="c1"># Called at the very end</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">longest</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">factory</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">AggregateCallbacks</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(),</span> <span class="bp">cls</span><span class="o">.</span><span class="n">step</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">final</span>
 
+
 <span class="n">connection</span><span class="o">.</span><span class="n">createaggregatefunction</span><span class="p">(</span><span class="s2">&quot;longest&quot;</span><span class="p">,</span> <span class="n">longest</span><span class="o">.</span><span class="n">factory</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select longest(x,y) from foo&quot;</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select longest(event) from log&quot;</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| (&#39;eight&#39;,)
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">(&#39;restart&#39;,)</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate" id="collation-example"><div class="highlight"><pre><span></span><span class="c1">###</span>
-<span class="c1">### Defining collations.</span>
-<span class="c1">###</span>
+</section>
+<section id="defining-collations-sorting">
+<span id="example-collation"></span><span id="index-13"></span><h2>Defining collations (sorting)<a class="headerlink" href="#defining-collations-sorting" title="Permalink to this heading">¶</a></h2>
+<p>How you sort can depend on the languages or values involved.  You
+register a collation by calling <a class="reference internal" href="connection.html#apsw.Connection.createcollation" title="apsw.Connection.createcollation"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.createcollation()</span></code></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># This example sorting mechanisms understands some text followed by a</span>
+<span class="c1"># number and ensures the number portion gets sorted correctly</span>
 
-<span class="c1"># The default sorting mechanisms don&#39;t understand numbers at the end of strings</span>
-<span class="c1"># so here we define a collation that does</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table names(name)&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;insert into names values(?)&quot;</span><span class="p">,</span> <span class="p">(</span>
+    <span class="p">(</span><span class="s2">&quot;file1&quot;</span><span class="p">,</span> <span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;file7&quot;</span><span class="p">,</span> <span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;file17&quot;</span><span class="p">,</span> <span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;file20&quot;</span><span class="p">,</span> <span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;file3&quot;</span><span class="p">,</span> <span class="p">),</span>
+<span class="p">))</span>
 
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table s(str)&quot;</span><span class="p">)</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;insert into s values(?)&quot;</span><span class="p">,</span> <span class="p">([</span><span class="s2">&quot;file1&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;file7&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;file17&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;file20&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;file3&quot;</span><span class="p">]))</span>
-
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from s order by str&quot;</span><span class="p">):</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Standard sorting&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from names order by name&quot;</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| (&#39;file1&#39;,)
-| (&#39;file17&#39;,)
-| (&#39;file20&#39;,)
-| (&#39;file3&#39;,)
-| (&#39;file7&#39;,)
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">strnumcollate</span><span class="p">(</span><span class="n">s1</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">,</span> <span class="n">s2</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+
+
+<span class="k">def</span> <span class="nf">str_num_collate</span><span class="p">(</span><span class="n">s1</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">,</span> <span class="n">s2</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="c1"># return -1 if s1&lt;s2, +1 if s1&gt;s2 else 0</span>
 
-    <span class="c1"># split values into two parts - the head and the numeric tail</span>
-    <span class="n">values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[(</span><span class="nb">str</span><span class="p">(</span><span class="n">s1</span><span class="p">),</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">s2</span><span class="p">),</span> <span class="mi">0</span><span class="p">)]</span>
-    <span class="k">for</span> <span class="n">vn</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
-        <span class="n">i</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="s2">&quot;01234567890&quot;</span><span class="p">:</span>
-                <span class="k">break</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">v</span> <span class="o">=</span> <span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="n">i</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">:]))</span>
-            <span class="n">values</span><span class="p">[</span><span class="n">vn</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
-        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="k">pass</span>
+    <span class="k">def</span> <span class="nf">parts</span><span class="p">(</span><span class="n">v</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+        <span class="n">num</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">while</span> <span class="n">v</span> <span class="ow">and</span> <span class="n">v</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+            <span class="n">num</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">num</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">v</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">num</span><span class="p">)</span> <span class="k">if</span> <span class="n">num</span> <span class="k">else</span> <span class="mi">0</span>
+
+    <span class="n">ps1</span> <span class="o">=</span> <span class="n">parts</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">s1</span><span class="p">))</span>
+    <span class="n">ps2</span> <span class="o">=</span> <span class="n">parts</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">s2</span><span class="p">))</span>
+
     <span class="c1"># compare</span>
-    <span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">ps1</span> <span class="o">&lt;</span> <span class="n">ps2</span><span class="p">:</span>
         <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
-    <span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">ps1</span> <span class="o">&gt;</span> <span class="n">ps2</span><span class="p">:</span>
         <span class="k">return</span> <span class="mi">1</span>
     <span class="k">return</span> <span class="mi">0</span>
 
-<span class="n">connection</span><span class="o">.</span><span class="n">createcollation</span><span class="p">(</span><span class="s2">&quot;strnum&quot;</span><span class="p">,</span> <span class="n">strnumcollate</span><span class="p">)</span>
 
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from s order by str collate strnum&quot;</span><span class="p">):</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">createcollation</span><span class="p">(</span><span class="s2">&quot;strnum&quot;</span><span class="p">,</span> <span class="n">str_num_collate</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Using strnum&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from names order by name collate strnum&quot;</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| (&#39;file1&#39;,)
-| (&#39;file3&#39;,)
-| (&#39;file7&#39;,)
-| (&#39;file17&#39;,)
-| (&#39;file20&#39;,)
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Standard sorting</span>
+<span class="go">(&#39;file1&#39;,)</span>
+<span class="go">(&#39;file17&#39;,)</span>
+<span class="go">(&#39;file20&#39;,)</span>
+<span class="go">(&#39;file3&#39;,)</span>
+<span class="go">(&#39;file7&#39;,)</span>
+
+<span class="go">Using strnum</span>
+<span class="go">(&#39;file1&#39;,)</span>
+<span class="go">(&#39;file3&#39;,)</span>
+<span class="go">(&#39;file7&#39;,)</span>
+<span class="go">(&#39;file17&#39;,)</span>
+<span class="go">(&#39;file20&#39;,)</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate" id="authorizer-example"><div class="highlight"><pre><span></span><span class="c1">###</span>
-<span class="c1">### Authorizer (eg if you want to control what user supplied SQL can do)</span>
-<span class="c1">###</span>
+</section>
+<section id="accessing-results-by-column-name">
+<span id="example-colnames"></span><span id="index-14"></span><h2>Accessing results by column name<a class="headerlink" href="#accessing-results-by-column-name" title="Permalink to this heading">¶</a></h2>
+<p>You can access results by column name using <a class="reference external" href="https://docs.python.org/3/library/dataclasses.html#module-dataclasses" title="(in Python v3.11)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataclasses</span></code></a>.
+APSW provides <a class="reference internal" href="ext.html#apsw.ext.DataClassRowFactory" title="apsw.ext.DataClassRowFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">apsw.ext.DataClassRowFactory</span></code></a> for names
+instead</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">apsw.ext</span>
 
-<span class="k">def</span> <span class="nf">authorizer</span><span class="p">(</span><span class="n">operation</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">paramone</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">paramtwo</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">databasename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">triggerorview</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Called when each operation is prepared.  We can return SQLITE_OK, SQLITE_DENY or</span>
-<span class="sd">    SQLITE_IGNORE&quot;&quot;&quot;</span>
-    <span class="c1"># find the operation name</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">mapping_authorizer_function</span><span class="p">[</span><span class="n">operation</span><span class="p">],</span> <span class="n">paramone</span><span class="p">,</span> <span class="n">paramtwo</span><span class="p">,</span> <span class="n">databasename</span><span class="p">,</span> <span class="n">triggerorview</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">operation</span> <span class="o">==</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CREATE_TABLE</span> <span class="ow">and</span> <span class="n">paramone</span> <span class="ow">and</span> <span class="n">paramone</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;private&quot;</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DENY</span>  <span class="c1"># not allowed to create tables whose names start with private</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    create table books(id, title, author, year);</span>
+<span class="s2">    insert into books values(7, &quot;Animal Farm&quot;, &quot;George Orwell&quot;, 1945);</span>
+<span class="s2">    insert into books values(37, &quot;The Picture of Dorian Gray&quot;, &quot;Oscar Wilde&quot;, 1890);</span>
+<span class="s2">    &quot;&quot;&quot;</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OK</span>  <span class="c1"># always allow</span>
+<span class="c1"># Normally you use column numbers</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select title, id, year from books where author=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;Oscar Wilde&quot;</span><span class="p">,</span> <span class="p">)):</span>
+    <span class="c1"># this is very fragile</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;year&quot;</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
 
-<span class="n">connection</span><span class="o">.</span><span class="n">setauthorizer</span><span class="p">(</span><span class="n">authorizer</span><span class="p">)</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into s values(&#39;foo&#39;)&quot;</span><span class="p">)</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select str from s limit 1&quot;</span><span class="p">)</span>
+<span class="c1"># Turn on dataclasses - frozen makes them read-only</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">rowtrace</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">DataClassRowFactory</span><span class="p">(</span><span class="n">dataclass_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;frozen&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Now with dataclasses</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Same query - note using AS to set column name</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+        <span class="sd">&quot;&quot;&quot;SELECT title,</span>
+<span class="sd">           id AS book_id,</span>
+<span class="sd">           year AS book_year</span>
+<span class="sd">           FROM books WHERE author = ?&quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;Oscar Wilde&quot;</span><span class="p">,</span> <span class="p">)):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="n">row</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">row</span><span class="o">.</span><span class="n">book_id</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;year&quot;</span><span class="p">,</span> <span class="n">row</span><span class="o">.</span><span class="n">book_year</span><span class="p">)</span>
+
+<span class="c1"># clear</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">rowtrace</span> <span class="o">=</span> <span class="kc">None</span>
 </pre></div>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| SQLITE_INSERT s None main None
-| SQLITE_SELECT None None None None
-| SQLITE_READ s str main None
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">title The Picture of Dorian Gray</span>
+<span class="go">id 37</span>
+<span class="go">year 1890</span>
+
+<span class="go">Now with dataclasses</span>
+
+<span class="go">title The Picture of Dorian Gray</span>
+<span class="go">id 37</span>
+<span class="go">year 1890</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Cancel authorizer</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">setauthorizer</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+</section>
+<section id="type-conversion-into-out-of-database">
+<span id="example-type-conversion"></span><span id="index-15"></span><h2>Type conversion into/out of database<a class="headerlink" href="#type-conversion-into-out-of-database" title="Permalink to this heading">¶</a></h2>
+<p>You can use <a class="reference internal" href="ext.html#apsw.ext.TypesConverterCursorFactory" title="apsw.ext.TypesConverterCursorFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">apsw.ext.TypesConverterCursorFactory</span></code></a> to do
+conversion, both for types you define and for other types.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">apsw.ext</span>
+
+<span class="n">registrar</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">TypesConverterCursorFactory</span><span class="p">()</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">cursor_factory</span> <span class="o">=</span> <span class="n">registrar</span>
+
+
+<span class="c1"># A type we define - deriving from SQLiteTypeAdapter automatically registers conversion</span>
+<span class="c1"># to a SQLite value</span>
+<span class="k">class</span> <span class="nc">Point</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">SQLiteTypeAdapter</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Point(</span><span class="si">{</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="si">}</span><span class="s2">, </span><span class="si">{</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="si">}</span><span class="s2">)&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Point</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Point</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">x</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">y</span>
+
+    <span class="k">def</span> <span class="nf">to_sqlite_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="c1"># called to convert Point into something SQLite supports</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="si">}</span><span class="s2">;</span><span class="si">{</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="c1"># This converter will be registered</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">convert_from_sqlite</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Point</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Point</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">part</span><span class="p">)</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">)))</span>
+
+
+<span class="c1"># An existing type</span>
+<span class="k">def</span> <span class="nf">complex_to_sqlite_value</span><span class="p">(</span><span class="n">c</span><span class="p">:</span> <span class="nb">complex</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span> <span class="n">c</span><span class="o">.</span><span class="n">real</span> <span class="si">}</span><span class="s2">+</span><span class="si">{</span> <span class="n">c</span><span class="o">.</span><span class="n">imag</span> <span class="si">}</span><span class="s2">&quot;</span>
+
+
+<span class="c1"># ... requires manual registration</span>
+<span class="n">registrar</span><span class="o">.</span><span class="n">register_adapter</span><span class="p">(</span><span class="nb">complex</span><span class="p">,</span> <span class="n">complex_to_sqlite_value</span><span class="p">)</span>
+
+<span class="c1"># conversion from a SQLite value requires registration</span>
+<span class="n">registrar</span><span class="o">.</span><span class="n">register_converter</span><span class="p">(</span><span class="s2">&quot;POINT&quot;</span><span class="p">,</span> <span class="n">Point</span><span class="o">.</span><span class="n">convert_from_sqlite</span><span class="p">)</span>
+
+
+<span class="c1"># ... and for complex</span>
+<span class="k">def</span> <span class="nf">sqlite_to_complex</span><span class="p">(</span><span class="n">v</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
+    <span class="k">return</span> <span class="nb">complex</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">part</span><span class="p">)</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;+&quot;</span><span class="p">)))</span>
+
+
+<span class="n">registrar</span><span class="o">.</span><span class="n">register_converter</span><span class="p">(</span><span class="s2">&quot;COMPLEX&quot;</span><span class="p">,</span> <span class="n">sqlite_to_complex</span><span class="p">)</span>
+
+<span class="c1"># note that the type names are case sensitive and must match the</span>
+<span class="c1"># registration</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table conversion(p POINT, c COMPLEX)&quot;</span><span class="p">)</span>
+
+<span class="c1"># convert going into database</span>
+<span class="n">test_data</span> <span class="o">=</span> <span class="p">(</span><span class="n">Point</span><span class="p">(</span><span class="mf">5.2</span><span class="p">,</span> <span class="mf">7.6</span><span class="p">),</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">4</span><span class="n">j</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into conversion values(?, ?)&quot;</span><span class="p">,</span> <span class="n">test_data</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;inserted&quot;</span><span class="p">,</span> <span class="n">test_data</span><span class="p">)</span>
+
+<span class="c1"># and coming back out</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from conversion&quot;</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;back out&quot;</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;equal&quot;</span><span class="p">,</span> <span class="n">row</span> <span class="o">==</span> <span class="n">test_data</span><span class="p">)</span>
+
+<span class="c1"># clear registrar</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">cursor_factory</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate" id="example-progress-handler"><div class="highlight"><pre><span></span><span class="c1">###</span>
-<span class="c1">### progress handler (SQLite 3 experimental feature)</span>
-<span class="c1">###</span>
-
-<span class="c1"># something to give us large numbers of random numbers</span>
-<span class="kn">import</span> <span class="nn">random</span>
-
-<span class="k">def</span> <span class="nf">randomintegers</span><span class="p">(</span><span class="n">howmany</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">howmany</span><span class="p">):</span>
-        <span class="k">yield</span> <span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">9999999999</span><span class="p">),</span> <span class="p">)</span>
-
-<span class="c1"># create a table with 100 random numbers</span>
-<span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
-    <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table bigone(x)&quot;</span><span class="p">)</span>
-    <span class="n">connection</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;insert into bigone values(?)&quot;</span><span class="p">,</span> <span class="n">randomintegers</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
-
-<span class="c1"># display an ascii spinner</span>
-<span class="n">_phcount</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">_phspinner</span> <span class="o">=</span> <span class="s2">&quot;|/-</span><span class="se">\\</span><span class="s2">&quot;</span>
-
-<span class="k">def</span> <span class="nf">progresshandler</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-    <span class="k">global</span> <span class="n">_phcount</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">_phspinner</span><span class="p">[</span><span class="n">_phcount</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">_phspinner</span><span class="p">)]</span> <span class="o">+</span> <span class="nb">chr</span><span class="p">(</span><span class="mi">8</span><span class="p">))</span>  <span class="c1"># chr(8) is backspace</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
-    <span class="n">_phcount</span> <span class="o">+=</span> <span class="mi">1</span>
-    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>  <span class="c1"># deliberate delay so we can see the spinner (SQLite is too fast otherwise!)</span>
-    <span class="k">return</span> <span class="mi">0</span>  <span class="c1"># returning non-zero aborts</span>
-
-<span class="c1"># register progresshandler every 20 instructions</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">setprogresshandler</span><span class="p">(</span><span class="n">progresshandler</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
-
-<span class="c1"># see it in action - sorting 100 numbers to find the biggest takes a while</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;spinny thing -&gt; &quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select max(x) from bigone&quot;</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
-
-<span class="n">connection</span><span class="o">.</span><span class="n">setprogresshandler</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">inserted (Point(5.2, 7.6), (3+4j))</span>
+<span class="go">back out (Point(5.2, 7.6), (3+4j))</span>
+<span class="go">equal True</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate" id="example-commithook"><div class="highlight"><pre><span></span><span class="c1">###</span>
-<span class="c1">### commit hook</span>
-<span class="c1">###</span>
+</section>
+<section id="query-details">
+<span id="example-query-details"></span><span id="index-16"></span><h2>Query details<a class="headerlink" href="#query-details" title="Permalink to this heading">¶</a></h2>
+<p><a class="reference internal" href="ext.html#apsw.ext.query_info" title="apsw.ext.query_info"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.query_info()</span></code></a> can provide a lot of information about a
+query (without running it)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">apsw.ext</span>
 
-<span class="k">def</span> <span class="nf">mycommithook</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;in commit hook&quot;</span><span class="p">)</span>
-    <span class="n">hour</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">localtime</span><span class="p">()[</span><span class="mi">3</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">hour</span> <span class="o">&lt;</span> <span class="mi">8</span> <span class="ow">or</span> <span class="n">hour</span> <span class="o">&gt;</span> <span class="mi">17</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;no commits out of hours&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="mi">1</span>  <span class="c1"># abort commits outside of 8am through 6pm</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;commits okay at this time&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="mi">0</span>  <span class="c1"># let commit go ahead</span>
+<span class="c1"># test tables</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    create table customers(</span>
+<span class="s2">        id INTEGER PRIMARY KEY,</span>
+<span class="s2">        name CHAR,</span>
+<span class="s2">        address CHAR);</span>
+<span class="s2">    create table orders(</span>
+<span class="s2">        id INTEGER PRIMARY KEY,</span>
+<span class="s2">        customer_id INTEGER,</span>
+<span class="s2">        item MY_OWN_TYPE);</span>
+<span class="s2">    create index cust_addr on customers(address);</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
 
-<span class="n">connection</span><span class="o">.</span><span class="n">setcommithook</span><span class="p">(</span><span class="n">mycommithook</span><span class="p">)</span>
-<span class="k">try</span><span class="p">:</span>
-    <span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
-        <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table example(x,y,z); insert into example values (3,4,5)&quot;</span><span class="p">)</span>
-<span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ConstraintError</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;commit was not allowed&quot;</span><span class="p">)</span>
+<span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    SELECT * FROM orders</span>
+<span class="s2">    JOIN customers ON orders.customer_id=customers.id</span>
+<span class="s2">    WHERE address = ?;</span>
+<span class="s2">    SELECT 7;&quot;&quot;&quot;</span>
+<span class="n">bindings</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;123 Main Street&quot;</span><span class="p">,</span> <span class="p">)</span>
 
-<span class="n">connection</span><span class="o">.</span><span class="n">setcommithook</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+<span class="c1"># ask for all information available</span>
+<span class="n">qd</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">query_info</span><span class="p">(</span>
+    <span class="n">connection</span><span class="p">,</span>
+    <span class="n">query</span><span class="p">,</span>
+    <span class="n">bindings</span><span class="o">=</span><span class="n">bindings</span><span class="p">,</span>
+    <span class="n">actions</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># which tables/views etc and how they are accessed</span>
+    <span class="n">expanded_sql</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># expands bindings into query string</span>
+    <span class="n">explain</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># shows low level VDBE</span>
+    <span class="n">explain_query_plan</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># how SQLite solves the query</span>
+<span class="p">)</span>
+
+<span class="c1"># help with formatting</span>
+<span class="kn">import</span> <span class="nn">pprint</span>
+
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;query&quot;</span><span class="p">,</span> <span class="n">qd</span><span class="o">.</span><span class="n">query</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">bindings&quot;</span><span class="p">,</span> <span class="n">qd</span><span class="o">.</span><span class="n">bindings</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">expanded_sql&quot;</span><span class="p">,</span> <span class="n">qd</span><span class="o">.</span><span class="n">expanded_sql</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">first_query&quot;</span><span class="p">,</span> <span class="n">qd</span><span class="o">.</span><span class="n">first_query</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">query_remaining&quot;</span><span class="p">,</span> <span class="n">qd</span><span class="o">.</span><span class="n">query_remaining</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">is_explain&quot;</span><span class="p">,</span> <span class="n">qd</span><span class="o">.</span><span class="n">is_explain</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">is_readonly&quot;</span><span class="p">,</span> <span class="n">qd</span><span class="o">.</span><span class="n">is_readonly</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">description</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">qd</span><span class="o">.</span><span class="n">description</span><span class="p">))</span>
+<span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">qd</span><span class="p">,</span> <span class="s2">&quot;description_full&quot;</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">description_full</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">qd</span><span class="o">.</span><span class="n">description_full</span><span class="p">))</span>
+
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">query_plan</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">qd</span><span class="o">.</span><span class="n">query_plan</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">First 5 actions</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">qd</span><span class="o">.</span><span class="n">actions</span><span class="p">[:</span><span class="mi">5</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">First 5 explain</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">qd</span><span class="o">.</span><span class="n">explain</span><span class="p">[:</span><span class="mi">5</span><span class="p">]))</span>
 </pre></div>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| in commit hook
-| commits okay at this time
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">query</span>
+<span class="go">    SELECT * FROM orders</span>
+<span class="go">    JOIN customers ON orders.customer_id=customers.id</span>
+<span class="go">    WHERE address = ?;</span>
+<span class="go">    SELECT 7;</span>
+
+<span class="go">bindings (&#39;123 Main Street&#39;,)</span>
+
+<span class="go">expanded_sql</span>
+<span class="go">    SELECT * FROM orders</span>
+<span class="go">    JOIN customers ON orders.customer_id=customers.id</span>
+<span class="go">    WHERE address = &#39;123 Main Street&#39;;</span>
+
+<span class="go">first_query</span>
+<span class="go">    SELECT * FROM orders</span>
+<span class="go">    JOIN customers ON orders.customer_id=customers.id</span>
+<span class="go">    WHERE address = ?;</span>
+
+
+<span class="go">query_remaining SELECT 7;</span>
+
+<span class="go">is_explain 0</span>
+
+<span class="go">is_readonly True</span>
+
+<span class="go">description</span>
+<span class="go"> ((&#39;id&#39;, &#39;INTEGER&#39;),</span>
+<span class="go"> (&#39;customer_id&#39;, &#39;INTEGER&#39;),</span>
+<span class="go"> (&#39;item&#39;, &#39;MY_OWN_TYPE&#39;),</span>
+<span class="go"> (&#39;id&#39;, &#39;INTEGER&#39;),</span>
+<span class="go"> (&#39;name&#39;, &#39;CHAR&#39;),</span>
+<span class="go"> (&#39;address&#39;, &#39;CHAR&#39;))</span>
+
+<span class="go">description_full</span>
+<span class="go"> ((&#39;id&#39;, &#39;INTEGER&#39;, &#39;main&#39;, &#39;orders&#39;, &#39;id&#39;),</span>
+<span class="go"> (&#39;customer_id&#39;, &#39;INTEGER&#39;, &#39;main&#39;, &#39;orders&#39;, &#39;customer_id&#39;),</span>
+<span class="go"> (&#39;item&#39;, &#39;MY_OWN_TYPE&#39;, &#39;main&#39;, &#39;orders&#39;, &#39;item&#39;),</span>
+<span class="go"> (&#39;id&#39;, &#39;INTEGER&#39;, &#39;main&#39;, &#39;customers&#39;, &#39;id&#39;),</span>
+<span class="go"> (&#39;name&#39;, &#39;CHAR&#39;, &#39;main&#39;, &#39;customers&#39;, &#39;name&#39;),</span>
+<span class="go"> (&#39;address&#39;, &#39;CHAR&#39;, &#39;main&#39;, &#39;customers&#39;, &#39;address&#39;))</span>
+
+<span class="go">query_plan</span>
+<span class="go"> QueryPlan(detail=&#39;QUERY PLAN&#39;,</span>
+<span class="go">          sub=[QueryPlan(detail=&#39;SCAN orders&#39;, sub=None),</span>
+<span class="go">               QueryPlan(detail=&#39;SEARCH customers USING INTEGER PRIMARY KEY &#39;</span>
+<span class="go">                                &#39;(rowid=?)&#39;,</span>
+<span class="go">                         sub=None)])</span>
+
+<span class="go">First 5 actions</span>
+<span class="go"> [QueryAction(action=21,</span>
+<span class="go">             action_name=&#39;SQLITE_SELECT&#39;,</span>
+<span class="go">             column_name=None,</span>
+<span class="go">             database_name=None,</span>
+<span class="go">             file_name=None,</span>
+<span class="go">             function_name=None,</span>
+<span class="go">             module_name=None,</span>
+<span class="go">             operation=None,</span>
+<span class="go">             pragma_name=None,</span>
+<span class="go">             pragma_value=None,</span>
+<span class="go">             table_name=None,</span>
+<span class="go">             trigger_name=None,</span>
+<span class="go">             trigger_or_view=None,</span>
+<span class="go">             view_name=None),</span>
+<span class="go"> QueryAction(action=20,</span>
+<span class="go">             action_name=&#39;SQLITE_READ&#39;,</span>
+<span class="go">             column_name=&#39;id&#39;,</span>
+<span class="go">             database_name=&#39;main&#39;,</span>
+<span class="go">             file_name=None,</span>
+<span class="go">             function_name=None,</span>
+<span class="go">             module_name=None,</span>
+<span class="go">             operation=None,</span>
+<span class="go">             pragma_name=None,</span>
+<span class="go">             pragma_value=None,</span>
+<span class="go">             table_name=&#39;orders&#39;,</span>
+<span class="go">             trigger_name=None,</span>
+<span class="go">             trigger_or_view=None,</span>
+<span class="go">             view_name=None),</span>
+<span class="go"> QueryAction(action=20,</span>
+<span class="go">             action_name=&#39;SQLITE_READ&#39;,</span>
+<span class="go">             column_name=&#39;customer_id&#39;,</span>
+<span class="go">             database_name=&#39;main&#39;,</span>
+<span class="go">             file_name=None,</span>
+<span class="go">             function_name=None,</span>
+<span class="go">             module_name=None,</span>
+<span class="go">             operation=None,</span>
+<span class="go">             pragma_name=None,</span>
+<span class="go">             pragma_value=None,</span>
+<span class="go">             table_name=&#39;orders&#39;,</span>
+<span class="go">             trigger_name=None,</span>
+<span class="go">             trigger_or_view=None,</span>
+<span class="go">             view_name=None),</span>
+<span class="go"> QueryAction(action=20,</span>
+<span class="go">             action_name=&#39;SQLITE_READ&#39;,</span>
+<span class="go">             column_name=&#39;item&#39;,</span>
+<span class="go">             database_name=&#39;main&#39;,</span>
+<span class="go">             file_name=None,</span>
+<span class="go">             function_name=None,</span>
+<span class="go">             module_name=None,</span>
+<span class="go">             operation=None,</span>
+<span class="go">             pragma_name=None,</span>
+<span class="go">             pragma_value=None,</span>
+<span class="go">             table_name=&#39;orders&#39;,</span>
+<span class="go">             trigger_name=None,</span>
+<span class="go">             trigger_or_view=None,</span>
+<span class="go">             view_name=None),</span>
+<span class="go"> QueryAction(action=20,</span>
+<span class="go">             action_name=&#39;SQLITE_READ&#39;,</span>
+<span class="go">             column_name=&#39;id&#39;,</span>
+<span class="go">             database_name=&#39;main&#39;,</span>
+<span class="go">             file_name=None,</span>
+<span class="go">             function_name=None,</span>
+<span class="go">             module_name=None,</span>
+<span class="go">             operation=None,</span>
+<span class="go">             pragma_name=None,</span>
+<span class="go">             pragma_value=None,</span>
+<span class="go">             table_name=&#39;customers&#39;,</span>
+<span class="go">             trigger_name=None,</span>
+<span class="go">             trigger_or_view=None,</span>
+<span class="go">             view_name=None)]</span>
+
+<span class="go">First 5 explain</span>
+<span class="go"> [VDBEInstruction(addr=0,</span>
+<span class="go">                 opcode=&#39;Init&#39;,</span>
+<span class="go">                 comment=None,</span>
+<span class="go">                 p1=0,</span>
+<span class="go">                 p2=17,</span>
+<span class="go">                 p3=0,</span>
+<span class="go">                 p4=None,</span>
+<span class="go">                 p5=0),</span>
+<span class="go"> VDBEInstruction(addr=1,</span>
+<span class="go">                 opcode=&#39;OpenRead&#39;,</span>
+<span class="go">                 comment=None,</span>
+<span class="go">                 p1=0,</span>
+<span class="go">                 p2=13,</span>
+<span class="go">                 p3=0,</span>
+<span class="go">                 p4=&#39;3&#39;,</span>
+<span class="go">                 p5=0),</span>
+<span class="go"> VDBEInstruction(addr=2,</span>
+<span class="go">                 opcode=&#39;OpenRead&#39;,</span>
+<span class="go">                 comment=None,</span>
+<span class="go">                 p1=1,</span>
+<span class="go">                 p2=12,</span>
+<span class="go">                 p3=0,</span>
+<span class="go">                 p4=&#39;3&#39;,</span>
+<span class="go">                 p5=0),</span>
+<span class="go"> VDBEInstruction(addr=3,</span>
+<span class="go">                 opcode=&#39;Rewind&#39;,</span>
+<span class="go">                 comment=None,</span>
+<span class="go">                 p1=0,</span>
+<span class="go">                 p2=16,</span>
+<span class="go">                 p3=0,</span>
+<span class="go">                 p4=None,</span>
+<span class="go">                 p5=0),</span>
+<span class="go"> VDBEInstruction(addr=4,</span>
+<span class="go">                 opcode=&#39;Column&#39;,</span>
+<span class="go">                 comment=None,</span>
+<span class="go">                 p1=0,</span>
+<span class="go">                 p2=1,</span>
+<span class="go">                 p3=1,</span>
+<span class="go">                 p4=None,</span>
+<span class="go">                 p5=0)]</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate" id="example-updatehook"><div class="highlight"><pre><span></span><span class="c1">###</span>
-<span class="c1">### update hook</span>
-<span class="c1">###</span>
-
-<span class="k">def</span> <span class="nf">myupdatehook</span><span class="p">(</span><span class="nb">type</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">databasename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tablename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">rowid</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Updated: </span><span class="si">%s</span><span class="s2"> database </span><span class="si">%s</span><span class="s2">, table </span><span class="si">%s</span><span class="s2">, row </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span>
-          <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">mapping_authorizer_function</span><span class="p">[</span><span class="nb">type</span><span class="p">],</span> <span class="n">databasename</span><span class="p">,</span> <span class="n">tablename</span><span class="p">,</span> <span class="n">rowid</span><span class="p">))</span>
-
-<span class="n">connection</span><span class="o">.</span><span class="n">setupdatehook</span><span class="p">(</span><span class="n">myupdatehook</span><span class="p">)</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into s values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;file93&quot;</span><span class="p">,</span> <span class="p">))</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;update s set str=? where str=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;file94&quot;</span><span class="p">,</span> <span class="s2">&quot;file93&quot;</span><span class="p">))</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;delete from s where str=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;file94&quot;</span><span class="p">,</span> <span class="p">))</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">setupdatehook</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| Updated: SQLITE_INSERT database main, table s, row 7
-| Updated: SQLITE_UPDATE database main, table s, row 7
-| Updated: SQLITE_DELETE database main, table s, row 7
-</pre></div>
-</div>
-<div class="highlight-python notranslate" id="example-blobio"><div class="highlight"><pre><span></span><span class="c1">###</span>
-<span class="c1">### Blob I/O</span>
-<span class="c1">###</span>
-
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table blobby(x,y)&quot;</span><span class="p">)</span>
+</section>
+<section id="blob-i-o">
+<span id="example-blob-io"></span><span id="index-17"></span><h2>Blob I/O<a class="headerlink" href="#blob-i-o" title="Permalink to this heading">¶</a></h2>
+<p>BLOBS (binary large objects) are supported by SQLite.  Note that you
+cannot change the size of one, but you can allocate one filled with
+zeroes, and then later open it and read / write the contents similar
+to a file, without having the entire blob in memory.  Use
+<a class="reference internal" href="connection.html#apsw.Connection.blobopen" title="apsw.Connection.blobopen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.blobopen()</span></code></a> to open a blob.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table blobby(x,y)&quot;</span><span class="p">)</span>
 <span class="c1"># Add a blob we will fill in later</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into blobby values(1,zeroblob(10000))&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into blobby values(1, zeroblob(10000))&quot;</span><span class="p">)</span>
 <span class="c1"># Or as a binding</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into blobby values(2,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">zeroblob</span><span class="p">(</span><span class="mi">20000</span><span class="p">),</span> <span class="p">))</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into blobby values(2, ?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">zeroblob</span><span class="p">(</span><span class="mi">20000</span><span class="p">),</span> <span class="p">))</span>
 <span class="c1"># Open a blob for writing.  We need to know the rowid</span>
 <span class="n">rowid</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select ROWID from blobby where x=1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">blob</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">blobopen</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="s2">&quot;blobby&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">rowid</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
@@ -461,14 +835,162 @@ so you can see what gets printed when you run the code.</p>
 <span class="n">blob</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate" id="example-vtable"><div class="highlight"><pre><span></span><span class="c1">###</span>
-<span class="c1">### Virtual tables</span>
-<span class="c1">###</span>
+</section>
+<section id="authorizer-control-what-sql-can-do">
+<span id="example-authorizer"></span><span id="index-18"></span><h2>Authorizer (control what SQL can do)<a class="headerlink" href="#authorizer-control-what-sql-can-do" title="Permalink to this heading">¶</a></h2>
+<p>You can allow, deny, or ignore what SQL does.  Use
+<a class="reference internal" href="connection.html#apsw.Connection.authorizer" title="apsw.Connection.authorizer"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Connection.authorizer</span></code></a> to set an authorizer.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">auth</span><span class="p">(</span><span class="n">operation</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">db_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+         <span class="n">trigger_or_view</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Called when each operation is prepared.  We can return SQLITE_OK, SQLITE_DENY or</span>
+<span class="sd">    SQLITE_IGNORE&quot;&quot;&quot;</span>
+    <span class="c1"># find the operation name</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">mapping_authorizer_function</span><span class="p">[</span><span class="n">operation</span><span class="p">],</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">trigger_or_view</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">operation</span> <span class="o">==</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CREATE_TABLE</span> <span class="ow">and</span> <span class="n">p1</span> <span class="ow">and</span> <span class="n">p1</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;private&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DENY</span>  <span class="c1"># not allowed to create tables whose names start with private</span>
 
-<span class="c1"># This virtual table stores information about files in a set of</span>
-<span class="c1"># directories so you can execute SQL queries</span>
+    <span class="k">return</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OK</span>  <span class="c1"># always allow</span>
 
-<span class="k">def</span> <span class="nf">getfiledata</span><span class="p">(</span><span class="n">directories</span><span class="p">):</span>
+
+<span class="n">connection</span><span class="o">.</span><span class="n">authorizer</span> <span class="o">=</span> <span class="n">auth</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into names values(&#39;foo&#39;)&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select name from names limit 1&quot;</span><span class="p">)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table private_stuff(secret)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Created secret table!&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+<span class="c1"># Clear authorizer</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">authorizer</span> <span class="o">=</span> <span class="kc">None</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLITE_INSERT names None main None</span>
+<span class="go">SQLITE_SELECT None None None None</span>
+<span class="go">SQLITE_READ names name main None</span>
+<span class="go">SQLITE_INSERT sqlite_master None main None</span>
+<span class="go">SQLITE_CREATE_TABLE private_stuff None main None</span>
+<span class="go">AuthError: not authorized</span>
+</pre></div>
+</div>
+</section>
+<section id="progress-handler">
+<span id="example-progress-handler"></span><span id="index-19"></span><h2>Progress handler<a class="headerlink" href="#progress-handler" title="Permalink to this heading">¶</a></h2>
+<p>Some operations (eg joins, sorting) can take many operations to
+complete.  Register a progress handler callback with
+<a class="reference internal" href="connection.html#apsw.Connection.setprogresshandler" title="apsw.Connection.setprogresshandler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.setprogresshandler()</span></code></a> which lets you provide
+feedback and allows cancelling.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">some_numbers</span><span class="p">(</span><span class="n">how_many</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">how_many</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">9999999999</span><span class="p">),</span> <span class="p">)</span>
+
+
+<span class="c1"># create a table with random numbers</span>
+<span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table numbers(x)&quot;</span><span class="p">)</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;insert into numbers values(?)&quot;</span><span class="p">,</span> <span class="n">some_numbers</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">progress_handler</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;progress handler called&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># returning True aborts</span>
+
+
+<span class="c1"># register handler every 50 vdbe instructions</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">setprogresshandler</span><span class="p">(</span><span class="n">progress_handler</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+
+<span class="c1"># Sorting the numbers to find the biggest</span>
+<span class="k">for</span> <span class="n">max_num</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select max(x) from numbers&quot;</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">max_num</span><span class="p">)</span>
+
+<span class="c1"># Clear handler</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">setprogresshandler</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">progress handler called</span>
+<span class="go">progress handler called</span>
+<span class="go">progress handler called</span>
+<span class="go">progress handler called</span>
+<span class="go">progress handler called</span>
+<span class="go">progress handler called</span>
+<span class="go">progress handler called</span>
+<span class="go">progress handler called</span>
+<span class="go">(9996980943,)</span>
+</pre></div>
+</div>
+</section>
+<section id="commit-hook">
+<span id="example-commit-hook"></span><span id="index-20"></span><h2>Commit hook<a class="headerlink" href="#commit-hook" title="Permalink to this heading">¶</a></h2>
+<p>A commit hook can allow or veto commits.  Register a commit hook
+with  <a class="reference internal" href="connection.html#apsw.Connection.setcommithook" title="apsw.Connection.setcommithook"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.setcommithook()</span></code></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">my_commit_hook</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;in commit hook&quot;</span><span class="p">)</span>
+    <span class="n">hour</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">localtime</span><span class="p">()[</span><span class="mi">3</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">hour</span> <span class="o">&lt;</span> <span class="mi">8</span> <span class="ow">or</span> <span class="n">hour</span> <span class="o">&gt;</span> <span class="mi">17</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;no commits out of hours&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>  <span class="c1"># abort commits outside of 8am through 6pm</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;commits okay at this time&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># let commit go ahead</span>
+
+
+<span class="n">connection</span><span class="o">.</span><span class="n">setcommithook</span><span class="p">(</span><span class="n">my_commit_hook</span><span class="p">)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table example(x,y,z); insert into example values (3,4,5)&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ConstraintError</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;commit was not allowed&quot;</span><span class="p">)</span>
+
+<span class="n">connection</span><span class="o">.</span><span class="n">setcommithook</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">in commit hook</span>
+<span class="go">no commits out of hours</span>
+<span class="go">commit was not allowed</span>
+</pre></div>
+</div>
+</section>
+<section id="update-hook">
+<span id="example-update-hook"></span><span id="index-21"></span><h2>Update hook<a class="headerlink" href="#update-hook" title="Permalink to this heading">¶</a></h2>
+<p>Update hooks let you know that data has been added, changed, or
+removed.  For example you could use this to discard cached
+information.  Register a hook using
+<a class="reference internal" href="connection.html#apsw.Connection.setupdatehook" title="apsw.Connection.setupdatehook"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.setupdatehook()</span></code></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">my_update_hook</span><span class="p">(</span><span class="nb">type</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">db_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">rowid</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">op</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_authorizer_function</span><span class="p">[</span><span class="nb">type</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Updated: </span><span class="si">{</span> <span class="n">op</span> <span class="si">}</span><span class="s2"> db </span><span class="si">{</span> <span class="n">db_name</span> <span class="si">}</span><span class="s2">, table </span><span class="si">{</span> <span class="n">table_name</span> <span class="si">}</span><span class="s2">, rowid </span><span class="si">{</span> <span class="n">rowid</span> <span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="n">connection</span><span class="o">.</span><span class="n">setupdatehook</span><span class="p">(</span><span class="n">my_update_hook</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into names values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;file93&quot;</span><span class="p">,</span> <span class="p">))</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;update names set name=? where name=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;file94&quot;</span><span class="p">,</span> <span class="s2">&quot;file93&quot;</span><span class="p">))</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;delete from names where name=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;file94&quot;</span><span class="p">,</span> <span class="p">))</span>
+
+<span class="c1"># Clear the hook</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">setupdatehook</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Updated: SQLITE_INSERT db main, table names, rowid 7</span>
+<span class="go">Updated: SQLITE_UPDATE db main, table names, rowid 7</span>
+<span class="go">Updated: SQLITE_DELETE db main, table names, rowid 7</span>
+</pre></div>
+</div>
+</section>
+<section id="virtual-tables">
+<span id="example-virtual-tables"></span><span id="index-22"></span><h2>Virtual tables<a class="headerlink" href="#virtual-tables" title="Permalink to this heading">¶</a></h2>
+<p>Virtual tables let you provide data on demand as a SQLite table so
+you can use SQL queries against that data. <a class="reference internal" href="vtable.html#virtualtables"><span class="std std-ref">Read more about
+virtual tables</span></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># This example provides information about all the files in Python&#39;s</span>
+<span class="c1"># path.  The minimum amount of code needed is shown, and lets SQLite</span>
+<span class="c1"># do all the heavy lifting.  A more advanced table would use indices</span>
+<span class="c1"># and filters to reduce the number of rows shown to SQLite.</span>
+
+<span class="c1"># these first columns are used by our virtual table</span>
+<span class="n">vtcolumns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;rowid&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;directory&quot;</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">get_file_data</span><span class="p">(</span><span class="n">directories</span><span class="p">):</span>
+    <span class="s2">&quot;Returns a list of column names, and a list of all the files with their attributes&quot;</span>
     <span class="n">columns</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">counter</span> <span class="o">=</span> <span class="mi">1</span>
@@ -479,19 +1001,23 @@ so you can see what gets printed when you run the code.</p>
             <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">st</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span>
             <span class="k">if</span> <span class="n">columns</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;rowid&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;directory&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">st</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;st_&quot;</span><span class="p">)]</span>
+                <span class="c1"># we add on all the fields from os.stat</span>
+                <span class="n">columns</span> <span class="o">=</span> <span class="n">vtcolumns</span> <span class="o">+</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">st</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;st_&quot;</span><span class="p">)]</span>
             <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">counter</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">directory</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">[</span><span class="mi">3</span><span class="p">:]])</span>
     <span class="k">return</span> <span class="n">columns</span><span class="p">,</span> <span class="n">data</span>
+
 
 <span class="c1"># This gets registered with the Connection</span>
 <span class="k">class</span> <span class="nc">Source</span><span class="p">:</span>
 
     <span class="k">def</span> <span class="nf">Create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">modulename</span><span class="p">,</span> <span class="n">dbname</span><span class="p">,</span> <span class="n">tablename</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
-        <span class="n">columns</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">getfiledata</span><span class="p">([</span><span class="nb">eval</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\\\\</span><span class="s2">&quot;</span><span class="p">))</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">])</span>  <span class="c1"># eval strips off layer of quotes</span>
+        <span class="c1"># the eval strips off layer of quotes</span>
+        <span class="n">columns</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">get_file_data</span><span class="p">([</span><span class="nb">eval</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\\\\</span><span class="s2">&quot;</span><span class="p">))</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">])</span>
         <span class="n">schema</span> <span class="o">=</span> <span class="s2">&quot;create table foo(&quot;</span> <span class="o">+</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">[</span><span class="mi">1</span><span class="p">:]])</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
         <span class="k">return</span> <span class="n">schema</span><span class="p">,</span> <span class="n">Table</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 
     <span class="n">Connect</span> <span class="o">=</span> <span class="n">Create</span>
+
 
 <span class="c1"># Represents a table</span>
 <span class="k">class</span> <span class="nc">Table</span><span class="p">:</span>
@@ -511,7 +1037,8 @@ so you can see what gets printed when you run the code.</p>
 
     <span class="n">Destroy</span> <span class="o">=</span> <span class="n">Disconnect</span>
 
-<span class="c1"># Represents a cursor</span>
+
+<span class="c1"># Represents a cursor used during SQL query processing</span>
 <span class="k">class</span> <span class="nc">Cursor</span><span class="p">:</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
@@ -535,6 +1062,7 @@ so you can see what gets printed when you run the code.</p>
     <span class="k">def</span> <span class="nf">Close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span>
 
+
 <span class="c1"># Register the module as filesource</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">createmodule</span><span class="p">(</span><span class="s2">&quot;filesource&quot;</span><span class="p">,</span> <span class="n">Source</span><span class="p">())</span>
 
@@ -542,63 +1070,67 @@ so you can see what gets printed when you run the code.</p>
 <span class="n">sysdirs</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">x</span><span class="p">)])</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create virtual table sysfiles using filesource(&quot;</span> <span class="o">+</span> <span class="n">sysdirs</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span><span class="p">)</span>
 
-<span class="c1"># Which 3 files are the biggest?</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;3 biggest files&quot;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">size</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
         <span class="s2">&quot;select st_size,directory,name from sysfiles order by st_size desc limit 3&quot;</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| 45790632 f4771e8a540c98c8e0df__mypyc.cpython-310-x86_64-linux-gnu.so /home/rogerb/.local/lib/python3.10/site-packages
-| 5750784 test.db /space/apsw
-| 5704024 apsw.o /space/apsw
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Which 3 files are the oldest?</span>
-<span class="k">for</span> <span class="n">ctime</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select st_ctime,directory,name from sysfiles order by st_ctime limit 3&quot;</span><span class="p">):</span>
+
+<span class="nb">print</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;3 oldest files&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">ctime</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+        <span class="s2">&quot;select st_ctime,directory,name from sysfiles order by st_ctime limit 3&quot;</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">ctime</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">directory</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| 1582056231.6234083 .style.yapf /space/apsw
-| 1587233567.4374056 arandr-0.1.10.egg-info /usr/lib/python3/dist-packages
-| 1620398970.437021 zope.event-4.4-nspkg.pth /usr/lib/python3/dist-packages
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">3 biggest files</span>
+<span class="go">546696 _ctypes.cpython-310d-x86_64-linux-gnu.so /usr/lib/python3.10/lib-dynload</span>
+<span class="go">511328 _ssl.cpython-310d-x86_64-linux-gnu.so /usr/lib/python3.10/lib-dynload</span>
+<span class="go">450008 _testcapi.cpython-310d-x86_64-linux-gnu.so /usr/lib/python3.10/lib-dynload</span>
+
+<span class="go">3 oldest files</span>
+<span class="go">1641597423.5541885 sitecustomize.py /usr/lib/python3.10</span>
+<span class="go">1664920933.397524 _gdbm.cpython-310-x86_64-linux-gnu.so /usr/lib/python3.10/lib-dynload</span>
+<span class="go">1664921015.6046188 _tkinter.cpython-310-x86_64-linux-gnu.so /usr/lib/python3.10/lib-dynload</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate" id="example-vfs"><div class="highlight"><pre><span></span><span class="c1">###</span>
-<span class="c1">### A VFS that &quot;obfuscates&quot; the database file contents.  The scheme</span>
-<span class="c1">### used is to xor all bytes with 0xa5.  This scheme honours that used</span>
-<span class="c1">### for MAPI and SQL Server.</span>
-<span class="c1">###</span>
+</section>
+<section id="vfs-virtual-file-system">
+<span id="example-vfs"></span><span id="index-23"></span><h2>VFS - Virtual File System<a class="headerlink" href="#vfs-virtual-file-system" title="Permalink to this heading">¶</a></h2>
+<p>VFS lets you control access to the filesystem from SQLite.  APSW
+makes it easy to “inherit” from an existing VFS and monitor or alter
+data as it flows through.  Read more about <a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">VFS</span></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># This example VFS &quot;obfuscates&quot; the database file contents by xor all</span>
+<span class="c1"># bytes with 0xa5.  URI parameters are also shown as a way you can</span>
+<span class="c1"># pass additional information for files.</span>
 
-<span class="k">def</span> <span class="nf">encryptme</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+
+<span class="k">def</span> <span class="nf">obfuscate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span> <span class="k">return</span> <span class="n">data</span>
     <span class="k">return</span> <span class="nb">bytes</span><span class="p">([</span><span class="n">x</span> <span class="o">^</span> <span class="mh">0xa5</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="p">])</span>
+
 
 <span class="c1"># Inheriting from a base of &quot;&quot; means the default vfs</span>
 <span class="k">class</span> <span class="nc">ObfuscatedVFS</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">VFS</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vfsname</span><span class="o">=</span><span class="s2">&quot;obfu&quot;</span><span class="p">,</span> <span class="n">basevfs</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">vfsname</span> <span class="o">=</span> <span class="n">vfsname</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">basevfs</span> <span class="o">=</span> <span class="n">basevfs</span>
-        <span class="n">apsw</span><span class="o">.</span><span class="n">VFS</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vfsname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basevfs</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vfsname</span><span class="o">=</span><span class="s2">&quot;obfuscated&quot;</span><span class="p">,</span> <span class="n">basevfs</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vfs_name</span> <span class="o">=</span> <span class="n">vfsname</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_vfs</span> <span class="o">=</span> <span class="n">basevfs</span>
+        <span class="n">apsw</span><span class="o">.</span><span class="n">VFS</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vfs_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_vfs</span><span class="p">)</span>
 
     <span class="c1"># We want to return our own file implementation, but also</span>
     <span class="c1"># want it to inherit</span>
-    <span class="k">def</span> <span class="nf">xOpen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">flags</span><span class="p">):</span>
-        <span class="c1"># We can look at uri parameters</span>
+    <span class="k">def</span> <span class="nf">xOpen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">URIFilename</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;xOpen of&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">filename</span><span class="p">())</span>
+            <span class="c1"># We can look at uri parameters</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;fast is&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">uri_parameter</span><span class="p">(</span><span class="s2">&quot;fast&quot;</span><span class="p">))</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;level is&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">uri_int</span><span class="p">(</span><span class="s2">&quot;level&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;warp is&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">uri_boolean</span><span class="p">(</span><span class="s2">&quot;warp&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;notpresent is&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">uri_parameter</span><span class="p">(</span><span class="s2">&quot;notpresent&quot;</span><span class="p">))</span>
-</pre></div>
-</div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| fast is speed
-| level is 7
-| warp is True
-| notpresent is None
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>        <span class="k">return</span> <span class="n">ObfuscatedVFSFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">basevfs</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">flags</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;xOpen of&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ObfuscatedVFSFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_vfs</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">flags</span><span class="p">)</span>
+
 
 <span class="c1"># The file implementation where we override xRead and xWrite to call our</span>
 <span class="c1"># encryption routine</span>
@@ -608,60 +1140,69 @@ so you can see what gets printed when you run the code.</p>
         <span class="n">apsw</span><span class="o">.</span><span class="n">VFSFile</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inheritfromvfsname</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">flags</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">xRead</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">amount</span><span class="p">,</span> <span class="n">offset</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">encryptme</span><span class="p">(</span><span class="nb">super</span><span class="p">(</span><span class="n">ObfuscatedVFSFile</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">xRead</span><span class="p">(</span><span class="n">amount</span><span class="p">,</span> <span class="n">offset</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">obfuscate</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">xRead</span><span class="p">(</span><span class="n">amount</span><span class="p">,</span> <span class="n">offset</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">xWrite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">offset</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ObfuscatedVFSFile</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">xWrite</span><span class="p">(</span><span class="n">encryptme</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">offset</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">xWrite</span><span class="p">(</span><span class="n">obfuscate</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">offset</span><span class="p">)</span>
+
 
 <span class="c1"># To register the VFS we just instantiate it</span>
 <span class="n">obfuvfs</span> <span class="o">=</span> <span class="n">ObfuscatedVFS</span><span class="p">()</span>
+
 <span class="c1"># Lets see what vfs are now available?</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">vfsnames</span><span class="p">())</span>
-</pre></div>
-</div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| [&#39;unix&#39;, &#39;obf&#39;, &#39;memdb&#39;, &#39;unix-excl&#39;, &#39;unix-dotfile&#39;, &#39;unix-none&#39;]
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make an obfuscated db, passing in some URI parameters</span>
-<span class="n">obfudb</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;file:myobfudb?fast=speed&amp;level=7&amp;warp=on&quot;</span><span class="p">,</span>
-                         <span class="n">flags</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_READWRITE</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_CREATE</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_URI</span><span class="p">,</span>
-                         <span class="n">vfs</span><span class="o">=</span><span class="n">obfuvfs</span><span class="o">.</span><span class="n">vfsname</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;VFS available&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">vfsnames</span><span class="p">())</span>
+
+<span class="c1"># Make an obfuscated db, passing in some URI parameters</span>
+<span class="c1"># default open flags</span>
+<span class="n">open_flags</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_READWRITE</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_CREATE</span>
+<span class="c1"># add in using URI parameters</span>
+<span class="n">open_flags</span> <span class="o">|=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_URI</span>
+
+<span class="n">obfudb</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;file:myobfudb?fast=speed&amp;level=7&amp;warp=on&amp;another=true&quot;</span><span class="p">,</span>
+                         <span class="n">flags</span><span class="o">=</span><span class="n">open_flags</span><span class="p">,</span>
+                         <span class="n">vfs</span><span class="o">=</span><span class="n">obfuvfs</span><span class="o">.</span><span class="n">vfs_name</span><span class="p">)</span>
+
 <span class="c1"># Check it works</span>
 <span class="n">obfudb</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table foo(x,y); insert into foo values(1,2)&quot;</span><span class="p">)</span>
 
 <span class="c1"># Check it really is obfuscated on disk</span>
-<span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;myobfudb&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()[:</span><span class="mi">20</span><span class="p">]))</span>
-</pre></div>
-</div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| b&#39;\xf6\xf4\xe9\xcc\xd1\xc0\x85\xc3\xca\xd7\xc8\xc4\xd1\x85\x96\xa5\xb5\xa5\xa4\xa4&#39;
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># And unobfuscating it</span>
-<span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">encryptme</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;myobfudb&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()[:</span><span class="mi">20</span><span class="p">])))</span>
-</pre></div>
-</div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| b&#39;SQLite format 3\x00\x10\x00\x01\x01&#39;
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Tidy up</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;What is on disk&quot;</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;myobfudb&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()[:</span><span class="mi">20</span><span class="p">]))</span>
+
+<span class="c1"># And unobfuscating it</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Unobfuscated disk&quot;</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">obfuscate</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;myobfudb&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()[:</span><span class="mi">20</span><span class="p">])))</span>
+
+<span class="c1"># Tidy up</span>
 <span class="n">obfudb</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;myobfudb&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate" id="example-limit"><div class="highlight"><pre><span></span><span class="c1">###</span>
-<span class="c1">### Limits</span>
-<span class="c1">###</span>
-
-<span class="c1"># Print some limits</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">VFS available [&#39;unix&#39;, &#39;obfuscated&#39;, &#39;memdb&#39;, &#39;unix-excl&#39;, &#39;unix-dotfile&#39;, &#39;unix-none&#39;]</span>
+<span class="go">xOpen of /space/apsw/myobfudb</span>
+<span class="go">fast is speed</span>
+<span class="go">level is 7</span>
+<span class="go">warp is True</span>
+<span class="go">notpresent is None</span>
+<span class="go">xOpen of /space/apsw/myobfudb-journal</span>
+<span class="go">xOpen of /space/apsw/myobfudb-journal</span>
+<span class="go">What is on disk b&#39;\xf6\xf4\xe9\xcc\xd1\xc0\x85\xc3\xca\xd7\xc8\xc4\xd1\x85\x96\xa5\xb5\xa5\xa4\xa4&#39;</span>
+<span class="go">Unobfuscated disk b&#39;SQLite format 3\x00\x10\x00\x01\x01&#39;</span>
+</pre></div>
+</div>
+</section>
+<section id="limits">
+<span id="example-limits"></span><span id="index-24"></span><h2>Limits<a class="headerlink" href="#limits" title="Permalink to this heading">¶</a></h2>
+<p>SQLite lets you see and update various limits via
+<a class="reference internal" href="connection.html#apsw.Connection.limit" title="apsw.Connection.limit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.limit()</span></code></a></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Print some limits</span>
 <span class="k">for</span> <span class="n">limit</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;LENGTH&quot;</span><span class="p">,</span> <span class="s2">&quot;COLUMN&quot;</span><span class="p">,</span> <span class="s2">&quot;ATTACHED&quot;</span><span class="p">):</span>
     <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;SQLITE_LIMIT_&quot;</span> <span class="o">+</span> <span class="n">limit</span>
-    <span class="n">maxname</span> <span class="o">=</span> <span class="s2">&quot;SQLITE_MAX_&quot;</span> <span class="o">+</span> <span class="n">limit</span>  <span class="c1"># compile time</span>
+    <span class="n">max_name</span> <span class="o">=</span> <span class="s2">&quot;SQLITE_MAX_&quot;</span> <span class="o">+</span> <span class="n">limit</span>  <span class="c1"># compile time limit</span>
     <span class="n">orig</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">apsw</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">orig</span><span class="p">)</span>
     <span class="c1"># To get the maximum, set to 0x7fffffff and then read value back</span>
     <span class="n">connection</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">apsw</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="mh">0x7fffffff</span><span class="p">)</span>
     <span class="nb">max</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">apsw</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">maxname</span><span class="p">,</span> <span class="nb">max</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">max_name</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="nb">max</span><span class="p">)</span>
 
 <span class="c1"># Set limit for size of a string</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table testlimit(s)&quot;</span><span class="p">)</span>
@@ -672,90 +1213,142 @@ so you can see what gets printed when you run the code.</p>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;string exceeding limit was inserted&quot;</span><span class="p">)</span>
 <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">TooBigError</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Caught toobig exception&quot;</span><span class="p">)</span>
+
+<span class="c1"># reset back to largest value</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_LIMIT_LENGTH</span><span class="p">,</span> <span class="mh">0x7fffffff</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| SQLITE_LIMIT_LENGTH 1000000000
-| SQLITE_MAX_LENGTH 1000000000
-| SQLITE_LIMIT_COLUMN 2000
-| SQLITE_MAX_COLUMN 2000
-| SQLITE_LIMIT_ATTACHED 125
-| SQLITE_MAX_ATTACHED 125
-| Caught toobig exception
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLITE_LIMIT_LENGTH 1000000000</span>
+<span class="go">SQLITE_MAX_LENGTH   1000000000</span>
+<span class="go">SQLITE_LIMIT_COLUMN 2000</span>
+<span class="go">SQLITE_MAX_COLUMN   2000</span>
+<span class="go">SQLITE_LIMIT_ATTACHED 125</span>
+<span class="go">SQLITE_MAX_ATTACHED   125</span>
+<span class="go">Caught toobig exception</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate" id="example-backup"><div class="highlight"><pre><span></span><span class="c1">###</span>
-<span class="c1">### Backup to memory</span>
-<span class="c1">###</span>
-
-<span class="c1"># We will copy the disk database into a memory database</span>
-
+</section>
+<section id="backup-an-open-database">
+<span id="example-backup"></span><span id="index-25"></span><h2>Backup an open database<a class="headerlink" href="#backup-an-open-database" title="Permalink to this heading">¶</a></h2>
+<p>You can backup a database that is open.  The pages are copied in
+batches of your choosing and allow continued use of the database.
+<a class="reference internal" href="backup.html#backup"><span class="std std-ref">Read more</span></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># We will copy a disk database into a memory database</span>
 <span class="n">memcon</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
 
 <span class="c1"># Copy into memory</span>
 <span class="k">with</span> <span class="n">memcon</span><span class="o">.</span><span class="n">backup</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">backup</span><span class="p">:</span>
-    <span class="n">backup</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>  <span class="c1"># copy whole database in one go</span>
-
-<span class="c1"># There will be no disk accesses for this query</span>
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">memcon</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from s&quot;</span><span class="p">):</span>
-    <span class="k">pass</span>
+    <span class="n">backup</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>  <span class="c1"># copy 10 pages in each batch</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate" id="example-shell"><div class="highlight"><pre><span></span><span class="c1">###</span>
-<span class="c1">### Shell</span>
-<span class="c1">###</span>
+</section>
+<section id="shell">
+<span id="example-shell"></span><span id="index-26"></span><h2>Shell<a class="headerlink" href="#shell" title="Permalink to this heading">¶</a></h2>
+<p>APSW includes a <a class="reference internal" href="shell.html#shell"><span class="std std-ref">shell</span></a>  like the one in <a class="reference external" href="https://sqlite.org/cli.html">SQLite</a>, and is also extensible from
+Python.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">apsw.shell</span>
 
-<span class="kn">import</span> <span class="nn">apsw.shell</span>
-
-<span class="c1"># Here we use the shell to do a csv export providing the existing db</span>
-<span class="c1"># connection</span>
+<span class="c1"># Here we use the shell to do a csv export and then dump part of the</span>
+<span class="c1"># database</span>
 
 <span class="c1"># Export to a StringIO</span>
 <span class="kn">import</span> <span class="nn">io</span>
 
 <span class="n">output</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
 <span class="n">shell</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">Shell</span><span class="p">(</span><span class="n">stdout</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="n">connection</span><span class="p">)</span>
+
 <span class="c1"># How to execute a dot command</span>
 <span class="n">shell</span><span class="o">.</span><span class="n">process_command</span><span class="p">(</span><span class="s2">&quot;.mode csv&quot;</span><span class="p">)</span>
 <span class="n">shell</span><span class="o">.</span><span class="n">process_command</span><span class="p">(</span><span class="s2">&quot;.headers on&quot;</span><span class="p">)</span>
+
 <span class="c1"># How to execute SQL</span>
-<span class="n">shell</span><span class="o">.</span><span class="n">process_sql</span><span class="p">(</span>
-    <span class="s2">&quot;create table csvtest(col1,col2); insert into csvtest values(3,4); insert into csvtest values(&#39;a b&#39;, NULL)&quot;</span><span class="p">)</span>
-<span class="c1"># Let the shell figure out SQL vs dot command</span>
+<span class="n">shell</span><span class="o">.</span><span class="n">process_sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    create table csvtest(column1, column2 INTEGER);</span>
+<span class="s2">    create index faster on csvtest(column1);</span>
+<span class="s2">    insert into csvtest values(3, 4);</span>
+<span class="s2">    insert into csvtest values(&#39;a b&#39;, NULL);</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="c1"># Or let the shell figure out SQL vs dot command</span>
 <span class="n">shell</span><span class="o">.</span><span class="n">process_complete_line</span><span class="p">(</span><span class="s2">&quot;select * from csvtest&quot;</span><span class="p">)</span>
 
-<span class="c1"># Verify output</span>
+<span class="c1"># see the result</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>
+
+<span class="c1"># reset output</span>
+<span class="n">output</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># make a dump of the same table</span>
+<span class="n">shell</span><span class="o">.</span><span class="n">process_command</span><span class="p">(</span><span class="s2">&quot;.dump csvtest%&quot;</span><span class="p">)</span>
+
+<span class="c1"># see the result</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Dump output</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>
 </pre></div>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| col1,col2
-| 3,4
-| a b,
-|
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">column1,column2</span>
+<span class="go">3,4</span>
+<span class="go">a b,</span>
+
+
+<span class="go">Dump output</span>
+
+<span class="go">-- SQLite dump (by APSW 3.40.0.0)</span>
+<span class="go">-- SQLite version 3.40.0</span>
+<span class="go">-- Date: Sun Nov 27 07:17:16 2022</span>
+<span class="go">-- Tables like: csvtest%</span>
+<span class="go">-- Database: /space/apsw/dbfile</span>
+<span class="go">-- User: rogerb @ clamps</span>
+
+<span class="go">-- The values of various per-database settings</span>
+<span class="go">PRAGMA page_size=4096;</span>
+<span class="go">-- PRAGMA encoding=&#39;UTF-8&#39;;</span>
+<span class="go">-- PRAGMA auto_vacuum=NONE;</span>
+<span class="go">-- PRAGMA max_page_count=1073741823;</span>
+
+<span class="go">BEGIN TRANSACTION;</span>
+
+<span class="go">-- Table  csvtest</span>
+<span class="go">DROP TABLE IF EXISTS csvtest;</span>
+<span class="go">CREATE TABLE csvtest(column1, column2 INTEGER);</span>
+<span class="go">INSERT INTO csvtest VALUES(3,4);</span>
+<span class="go">INSERT INTO csvtest VALUES(&#39;a b&#39;,NULL);</span>
+<span class="go">-- Triggers and indices on  csvtest</span>
+<span class="go">CREATE INDEX faster on csvtest(column1);</span>
+
+<span class="go">COMMIT TRANSACTION;</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate" id="example-status"><div class="highlight"><pre><span></span><span class="c1">###</span>
-<span class="c1">### Statistics</span>
-<span class="c1">###</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;SQLite memory usage current </span><span class="si">%d</span><span class="s2"> max </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">apsw</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_STATUS_MEMORY_USED</span><span class="p">))</span>
+</section>
+<section id="statistics">
+<span id="example-status"></span><span id="index-27"></span><h2>Statistics<a class="headerlink" href="#statistics" title="Permalink to this heading">¶</a></h2>
+<p>SQLite provides statistics by <a class="reference internal" href="apsw.html#apsw.status" title="apsw.status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">status()</span></code></a></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">current_usage</span><span class="p">,</span> <span class="n">max_usage</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_STATUS_MEMORY_USED</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SQLite memory usage </span><span class="si">{</span> <span class="n">current_usage</span> <span class="si">}</span><span class="s2"> max </span><span class="si">{</span> <span class="n">max_usage</span> <span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>| SQLite memory usage current 312832 max 328424
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 298832 max 345560</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">###</span>
-<span class="c1">### Cleanup</span>
-<span class="c1">###</span>
+</section>
+<section id="cleanup">
+<span id="example-cleanup"></span><span id="index-28"></span><h2>Cleanup<a class="headerlink" href="#cleanup" title="Permalink to this heading">¶</a></h2>
+<p>As a general rule you do not need to do any cleanup.  Standard
+Python garbage collection will take of everything.  Even if the
+process crashes with a connection in the middle of a transaction,
+the next time SQLite opens that database it will automatically
+rollback the partial data.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># You close connections manually (useful if you want to catch exceptions)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="c1">#  You can call close multiple times, and also indicate to ignore exceptions</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
 
-<span class="c1"># We can close connections manually (useful if you want to catch exceptions)</span>
-<span class="c1"># but you don&#39;t have to</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># force it since we want to exit</span>
-
-<span class="c1"># Delete database - we don&#39;t need it any more</span>
+<span class="c1"># Deleting the database file. Note that there can be additional files</span>
+<span class="c1"># with suffixes like -wal, -shm, and -journal.</span>
 <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;dbfile&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+</section>
 </section>
 
 
@@ -765,6 +1358,44 @@ so you can see what gets printed when you run the code.</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Example/Tour</a><ul>
+<li><a class="reference internal" href="#checking-apsw-and-sqlite-versions">Checking APSW and SQLite versions</a></li>
+<li><a class="reference internal" href="#opening-the-database">Opening the database</a></li>
+<li><a class="reference internal" href="#executing-sql">Executing SQL</a></li>
+<li><a class="reference internal" href="#why-you-use-bindings-to-provide-values">Why you use bindings to provide values</a></li>
+<li><a class="reference internal" href="#bindings-sequence">Bindings (sequence)</a></li>
+<li><a class="reference internal" href="#bindings-dict">Bindings (dict)</a></li>
+<li><a class="reference internal" href="#using-different-types">Using different types</a></li>
+<li><a class="reference internal" href="#transactions">Transactions</a></li>
+<li><a class="reference internal" href="#executemany">executemany</a></li>
+<li><a class="reference internal" href="#tracing-execution">Tracing execution</a></li>
+<li><a class="reference internal" href="#tracing-returned-rows">Tracing returned rows</a></li>
+<li><a class="reference internal" href="#defining-your-own-functions">Defining your own functions</a></li>
+<li><a class="reference internal" href="#defining-aggregate-functions">Defining aggregate functions</a></li>
+<li><a class="reference internal" href="#defining-collations-sorting">Defining collations (sorting)</a></li>
+<li><a class="reference internal" href="#accessing-results-by-column-name">Accessing results by column name</a></li>
+<li><a class="reference internal" href="#type-conversion-into-out-of-database">Type conversion into/out of database</a></li>
+<li><a class="reference internal" href="#query-details">Query details</a></li>
+<li><a class="reference internal" href="#blob-i-o">Blob I/O</a></li>
+<li><a class="reference internal" href="#authorizer-control-what-sql-can-do">Authorizer (control what SQL can do)</a></li>
+<li><a class="reference internal" href="#progress-handler">Progress handler</a></li>
+<li><a class="reference internal" href="#commit-hook">Commit hook</a></li>
+<li><a class="reference internal" href="#update-hook">Update hook</a></li>
+<li><a class="reference internal" href="#virtual-tables">Virtual tables</a></li>
+<li><a class="reference internal" href="#vfs-virtual-file-system">VFS - Virtual File System</a></li>
+<li><a class="reference internal" href="#limits">Limits</a></li>
+<li><a class="reference internal" href="#backup-an-open-database">Backup an open database</a></li>
+<li><a class="reference internal" href="#shell">Shell</a></li>
+<li><a class="reference internal" href="#statistics">Statistics</a></li>
+<li><a class="reference internal" href="#cleanup">Cleanup</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
   <div>
     <h4>Previous topic</h4>
     <p class="topless"><a href="tips.html"
@@ -811,14 +1442,14 @@ so you can see what gets printed when you run the code.</p>
         <li class="right" >
           <a href="tips.html" title="Tips"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Example</a></li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Example/Tour</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Oct 09, 2022.
+      Last updated on Nov 27, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

@@ -5,9 +5,9 @@ Exceptions
 .. currentmodule:: apsw
 
 
-:exc:`apsw.Error` is the base for APSW exceptions.
-
 .. exception:: Error
+
+  This is the base for APSW exceptions.
 
 .. attribute:: Error.result
 
@@ -23,8 +23,8 @@ Exceptions
 
 As an example, if SQLite issued a read request and the system returned
 less data than expected then :attr:`~Error.result` would have the value
-:const:`SQLITE_IOERR` while :attr:`~Error.extendedresult` would have
-the value :const:`SQLITE_IOERR_SHORT_READ`.
+*SQLITE_IOERR* while :attr:`~Error.extendedresult` would have
+the value *SQLITE_IOERR_SHORT_READ*.
 
 
 APSW specific exceptions
@@ -129,19 +129,19 @@ General Errors
 
 .. exception:: SQLError
 
-  :const:`SQLITE_ERROR`.  This error is documented as a bad SQL query
+  *SQLITE_ERROR*.  This error is documented as a bad SQL query
   or missing database, but is also returned for a lot of other
   situations.  It is the default error code unless there is a more
   specific one.
 
 .. exception:: MismatchError
 
-  :const:`SQLITE_MISMATCH`. Data type mismatch.  For example a rowid
+  *SQLITE_MISMATCH*. Data type mismatch.  For example a rowid
   or integer primary key must be an integer.
 
 .. exception:: NotFoundError
 
-  :const:`SQLITE_NOTFOUND`. Returned when various internal items were
+  *SQLITE_NOTFOUND*. Returned when various internal items were
   not found such as requests for non-existent system calls or file
   controls.
 
@@ -150,68 +150,68 @@ Internal Errors
 
 .. exception:: InternalError
 
-  :const:`SQLITE_INTERNAL`. (No longer used) Internal logic error in SQLite.
+  *SQLITE_INTERNAL*. (No longer used) Internal logic error in SQLite.
 
 .. exception:: ProtocolError
 
-  :const:`SQLITE_PROTOCOL`. (No longer used) Database lock protocol error.
+  *SQLITE_PROTOCOL*. (No longer used) Database lock protocol error.
 
 .. exception:: MisuseError
 
-  :const:`SQLITE_MISUSE`.  SQLite library used incorrectly - typically similar to ValueError in Python.  Examples include not
+  *SQLITE_MISUSE*.  SQLite library used incorrectly - typically similar to *ValueError* in Python.  Examples include not
   having enough flags when opening a connection (eg not including a READ or WRITE flag), or out of spec such as registering
   a function with more than 127 parameters.
 
 .. exception:: RangeError
 
-  :const:`SQLITE_RANGE`.  (Cannot be generated using APSW).  2nd parameter to `sqlite3_bind <https://sqlite.org/c3ref/bind_blob.html>`_ out of range
+  *SQLITE_RANGE*.  (Cannot be generated using APSW).  2nd parameter to `sqlite3_bind <https://sqlite.org/c3ref/bind_blob.html>`_ out of range
 
 Permissions Etc
 ^^^^^^^^^^^^^^^
 
 .. exception:: PermissionsError
 
-  :const:`SQLITE_PERM`. Access permission denied by the operating system, or parts of the database are readonly such as a cursor.
+  *SQLITE_PERM*. Access permission denied by the operating system, or parts of the database are readonly such as a cursor.
 
 .. exception:: ReadOnlyError
 
-  :const:`SQLITE_READONLY`. Attempt to write to a readonly database.
+  *SQLITE_READONLY*. Attempt to write to a readonly database.
 
 .. exception:: CantOpenError
 
-  :const:`SQLITE_CANTOPEN`.  Unable to open the database file.
+  *SQLITE_CANTOPEN*.  Unable to open the database file.
 
 .. exception:: AuthError
 
-  :const:`SQLITE_AUTH`.  :meth:`Authorization <Connection.setauthorizer>` denied.
+  *SQLITE_AUTH*.  :attr:`Authorization <Connection.authorizer>` denied.
 
 Abort/Busy Etc
 ^^^^^^^^^^^^^^
 
 .. exception:: AbortError
 
-  :const:`SQLITE_ABORT`. Callback routine requested an abort.
+  *SQLITE_ABORT*. Callback routine requested an abort.
 
 .. exception:: BusyError
 
-  :const:`SQLITE_BUSY`.  The database file is locked.  Use
+  *SQLITE_BUSY*.  The database file is locked.  Use
   :meth:`Connection.setbusytimeout` to change how long SQLite waits
   for the database to be unlocked or :meth:`Connection.setbusyhandler`
   to use your own handler.
 
 .. exception:: LockedError
 
-  :const:`SQLITE_LOCKED`.  A table in the database is locked.
+  *SQLITE_LOCKED*.  A table in the database is locked.
 
 .. exception:: InterruptError
 
-  :const:`SQLITE_INTERRUPT`.  Operation terminated by
+  *SQLITE_INTERRUPT*.  Operation terminated by
   `sqlite3_interrupt <https://sqlite.org/c3ref/interrupt.html>`_ -
   use :meth:`Connection.interrupt`.
 
 .. exception:: SchemaChangeError
 
-  :const:`SQLITE_SCHEMA`.  The database schema changed.  A
+  *SQLITE_SCHEMA*.  The database schema changed.  A
   :meth:`prepared statement <Cursor.execute>` becomes invalid
   if the database schema was changed.  Behind the scenes SQLite
   reprepares the statement.  Another or the same :class:`Connection`
@@ -220,7 +220,7 @@ Abort/Busy Etc
 
 .. exception:: ConstraintError
 
-  :const:`SQLITE_CONSTRAINT`. Abort due to `constraint
+  *SQLITE_CONSTRAINT*. Abort due to `constraint
   <https://sqlite.org/lang_createtable.html>`_ violation.  This
   would happen if the schema required a column to be within a specific
   range.  If you have multiple constraints, you `can't tell
@@ -232,44 +232,44 @@ Memory/Disk
 
 .. exception:: NoMemError
 
-  :const:`SQLITE_NOMEM`.  A memory allocation failed.
+  *SQLITE_NOMEM*.  A memory allocation failed.
 
 .. exception:: IOError
 
-  :const:`SQLITE_IOERR`.  Some kind of disk I/O error occurred.  The
+  *SQLITE_IOERR*.  Some kind of disk I/O error occurred.  The
   :ref:`extended error code <exceptions>` will give more detail.
 
 .. exception:: CorruptError
 
-  :const:`SQLITE_CORRUPT`.  The database disk image appears to be a
+  *SQLITE_CORRUPT*.  The database disk image appears to be a
   SQLite database but the values inside are inconsistent.
 
 .. exception:: FullError
 
-  :const:`SQLITE_FULL`.  The disk appears to be full.
+  *SQLITE_FULL*.  The disk appears to be full.
 
 .. exception:: TooBigError
 
-  :const:`SQLITE_TOOBIG`.  String or BLOB exceeds size limit.  You can
+  *SQLITE_TOOBIG*.  String or BLOB exceeds size limit.  You can
   change the limits using :meth:`Connection.limit`.
 
 .. exception:: NoLFSError
 
-  :const:`SQLITE_NOLFS`.  SQLite has attempted to use a feature not
+  *SQLITE_NOLFS*.  SQLite has attempted to use a feature not
   supported by the operating system such as `large file support
   <http://en.wikipedia.org/wiki/Large_file_support>`_.
 
 .. exception:: EmptyError
 
-  :const:`SQLITE_EMPTY`. Database is completely empty.
+  *SQLITE_EMPTY*. Database is completely empty.
 
 .. exception:: FormatError
 
-  :const:`SQLITE_FORMAT`. (No longer used) `Auxiliary database <https://sqlite.org/lang_attach.html>`_ format error.
+  *SQLITE_FORMAT*. (No longer used) `Auxiliary database <https://sqlite.org/lang_attach.html>`_ format error.
 
 .. exception:: NotADBError
 
-  :const:`SQLITE_NOTADB`.  File opened that is not a database file.
+  *SQLITE_NOTADB*.  File opened that is not a database file.
   SQLite has a header on database files to verify they are indeed
   SQLite databases.
 

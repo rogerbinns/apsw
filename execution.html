@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Execution and tracing &#8212; APSW 3.39.4.0 documentation</title>
+    <title>Execution and tracing &#8212; APSW 3.40.0.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -45,7 +45,7 @@
         <li class="right" >
           <a href="types.html" title="Types"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Execution and tracing</a></li> 
       </ul>
     </div>  
@@ -68,10 +68,8 @@ then run. Execution stops when a row is available, there is an error
 or the statement is complete.</p>
 <p>The <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> method automatically does the preparing and
 starts execution. If none of the statements return rows then execution
-will go to the end. If a row is returned then you need to call
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.next()</span></code> to get the row values or use the cursor as an
-iterator. Execution will resume as necessary to satisfy
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">next()</span></code> calls.</p>
+will go to the end. If a row is returned then you use the cursor as an
+iterator. Execution will resume as necessary to return each result row.</p>
 <p>However this means that if you don’t read the rows returned then the
 rest of your statements won’t be executed.  APSW will detect
 unexecuted previous statements and generate an exception. For
@@ -101,7 +99,7 @@ defined functions, collations and the various hooks/handlers run.)</p>
 <p>Note that you cannot use the same cursor object in multiple threads
 concurrently to execute statements. APSW will detect this and throw an
 exception. It is safe to use the object serially (eg calling
-<a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> in one thread and <code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.next()</span></code> in
+<a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> in one thread and iterator in
 another. You also can’t do things like try to
 <a class="reference internal" href="connection.html#apsw.Connection.close" title="apsw.Connection.close"><code class="xref py py-meth docutils literal notranslate"><span class="pre">close()</span></code></a> a Connection concurrently in two threads.</p>
 <p>If you have multiple threads and/or multiple programs accessing the
@@ -126,14 +124,14 @@ Unfortunately SQLite is limited to 32 bit quantities for strings,
 blobs, number of columns etc even when compiled for 64 bit.
 Consequently you will get a TooBig exception from APSW which checks if
 strings/buffers longer than 1GB or 2GB (depends on internal storage)
-are used. See <a class="reference external" href="https://sqlite.org/cvstrac/tktview?tn=2125">SQLite ticket #2125</a> and <a class="reference external" href="https://sqlite.org/cvstrac/tktview?tn=3246">SQLite ticket #3246</a> for more details.</p>
+are used. cvstrac 2125 and 3246 had more details.</p>
 </section>
 <section id="statement-cache">
 <span id="statementcache"></span><h2>Statement Cache<a class="headerlink" href="#statement-cache" title="Permalink to this heading">¶</a></h2>
 <p>Each <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> maintains a cache mapping SQL queries to a
 <a class="reference external" href="https://sqlite.org/c3ref/stmt.html">prepared statement</a> to avoid
 the overhead of <a class="reference external" href="https://sqlite.org/c3ref/prepare.html">repreparing</a> queries that are executed
-multiple times.  This is a classic tradeoff using more memory to
+multiple times.  This is a classic trade off using more memory to
 reduce CPU consumption.</p>
 <p>By default there are up to 100 entries in the cache.  Once the cache
 is full, the least recently used item is discarded to make space for
@@ -141,12 +139,11 @@ new items.</p>
 <p>You should pick a larger cache size if you have more than 100 unique
 queries that you run.  For example if you have 101 different queries
 you run in order then the cache will not help.</p>
-<p>You can also <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">specify</span> <span class="pre">zero</span></code></a> which will disable the
-statement cache.</p>
-<p>If you are using <a class="reference internal" href="connection.html#apsw.Connection.setauthorizer" title="apsw.Connection.setauthorizer"><code class="xref py py-meth docutils literal notranslate"><span class="pre">authorizers</span></code></a> then
-you should disable the statement cache.  This is because the
-authorizer callback is only called while statements are being
-prepared.</p>
+<p>If you are using <a class="reference internal" href="connection.html#apsw.Connection.authorizer" title="apsw.Connection.authorizer"><code class="xref py py-attr docutils literal notranslate"><span class="pre">authorizers</span></code></a> then be
+aware authorizer callback is only called while statements are being
+prepared.  You can <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">specify</span> <span class="pre">zero</span></code></a> which will
+disable the statement cache completely, use use <cite>can_cache = False</cite>
+flag to <cite>execute</cite>/<cite>executemany</cite>.</p>
 </section>
 <section id="tracing">
 <span id="id1"></span><h2>Tracing<a class="headerlink" href="#tracing" title="Permalink to this heading">¶</a></h2>
@@ -162,7 +159,7 @@ code.</p>
 your tracer was called from. If you would like to make more queries
 in the tracer then do them from a new cursor object.  For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">exectracer</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">bindings</span><span class="p">):</span>
-  <span class="n">cursor</span><span class="o">.</span><span class="n">getconnection</span><span class="p">()</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into log values(?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">sql</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">bindings</span><span class="p">)))</span>
+  <span class="n">cursor</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into log values(?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">sql</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">bindings</span><span class="p">)))</span>
   <span class="k">return</span> <span class="kc">True</span>
 </pre></div>
 </div>
@@ -179,17 +176,17 @@ three arguments.</p>
 </dd>
 <dt>sql</dt><dd><p>The SQL text being executed</p>
 </dd>
-<dt>bindings</dt><dd><p>The bindings being used.  This may be <code class="xref py py-const docutils literal notranslate"><span class="pre">None</span></code>, a dictionary or
+<dt>bindings</dt><dd><p>The bindings being used.  This may be <em>`None</em>, a dictionary or
 a tuple.</p>
 </dd>
 </dl>
 </div></blockquote>
-<p>If the tracer return value evaluates to False/None then execution is
+<p>If the tracer return value is False then execution is
 aborted with an <a class="reference internal" href="exceptions.html#apsw.ExecTraceAbort" title="apsw.ExecTraceAbort"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ExecTraceAbort</span></code></a> exception.  See the
 <a class="reference internal" href="example.html#example-exectrace"><span class="std std-ref">example</span></a>.</p>
-<p>Execution tracers can be installed on a specific cursor by calling
-<a class="reference internal" href="cursor.html#apsw.Cursor.setexectrace" title="apsw.Cursor.setexectrace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.setexectrace()</span></code></a> or for all cursors by calling
-<a class="reference internal" href="connection.html#apsw.Connection.setexectrace" title="apsw.Connection.setexectrace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.setexectrace()</span></code></a>, with the cursor tracer taking
+<p>Execution tracers can be installed on a specific cursor by setting
+<a class="reference internal" href="cursor.html#apsw.Cursor.exectrace" title="apsw.Cursor.exectrace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Cursor.exectrace</span></code></a> or for all cursors by setting
+<a class="reference internal" href="connection.html#apsw.Connection.exectrace" title="apsw.Connection.exectrace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Connection.exectrace</span></code></a>, with the cursor tracer taking
 priority.</p>
 <p>If you use the Connection <a class="reference internal" href="connection.html#apsw.Connection.__enter__" title="apsw.Connection.__enter__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">with</span></code></a> statement
 and have a Connection execution tracer then your callback will also be
@@ -212,9 +209,9 @@ two arguments.</p>
 <p>Whatever you return from the tracer is what is actually returned to
 the caller of <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">execute()</span></code></a>. If you return None then the
 whole row is skipped. See the <a class="reference internal" href="example.html#example-rowtrace"><span class="std std-ref">example</span></a>.</p>
-<p>Row tracers can be installed on a specific cursor by calling
-<a class="reference internal" href="cursor.html#apsw.Cursor.setrowtrace" title="apsw.Cursor.setrowtrace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.setrowtrace()</span></code></a> or for all cursors by calling
-<a class="reference internal" href="connection.html#apsw.Connection.setrowtrace" title="apsw.Connection.setrowtrace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.setrowtrace()</span></code></a>, with the cursor tracer taking
+<p>Row tracers can be installed on a specific cursor by setting
+<a class="reference internal" href="cursor.html#apsw.Cursor.rowtrace" title="apsw.Cursor.rowtrace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Cursor.rowtrace</span></code></a> or for all cursors by setting
+<a class="reference internal" href="connection.html#apsw.Connection.rowtrace" title="apsw.Connection.rowtrace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Connection.rowtrace</span></code></a>, with the cursor tracer taking
 priority.</p>
 </section>
 </section>
@@ -254,8 +251,8 @@ Options:
                         [summary,popular,aggregate,individual]
 </pre></div>
 </div>
-<p>This is sample output with the following options: <code class="xref std std-option docutils literal notranslate"><span class="pre">--sql</span></code>,
-<code class="xref std std-option docutils literal notranslate"><span class="pre">--rows</span></code>, <code class="xref std std-option docutils literal notranslate"><span class="pre">--timestamps</span></code>, <code class="xref std std-option docutils literal notranslate"><span class="pre">--thread</span></code></p>
+<p>This is sample output with the following options: <strong>–sql</strong>,
+<strong>–rows</strong>, <strong>–timestamps</strong>, <strong>–thread</strong></p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>1e0e5a0 0.152 7fccea8456e0 OPEN: &quot;:memory:&quot; unix READWRITE|CREATE
 1f72ac0 0.161 7fccea8456e0 OPEN: &quot;testdb&quot; unix READWRITE|CREATE
 1f6b8d0 0.162 7fccea8456e0 CURSORFROM: 1f72ac0 DB: &quot;testdb&quot;
@@ -292,7 +289,7 @@ find out what happened on a specific cursor or connection.</p>
 <dt>OPEN: “dbname” vfs open_flags</dt><dd><p>A <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> has been opened.  The <em>dbname</em> is the
 filename exactly as given in the call to
 <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a>. <em>vfs</em> is the name of the <a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">VFS</span></a>
-used to open the database. <em>open_flags</em> is the set of <code class="xref py py-data docutils literal notranslate"><span class="pre">flags</span></code> supplied with the leading <em>SQLITE_OPEN</em>
+used to open the database. <em>open_flags</em> is the set of <a class="reference internal" href="apsw.html#apsw.mapping_open_flags" title="apsw.mapping_open_flags"><code class="xref py py-data docutils literal notranslate"><span class="pre">flags</span></code></a> supplied with the leading <em>SQLITE_OPEN</em>
 prefix omitted.</p>
 </dd>
 <dt>CURSORFROM: connectionid DB: “dbname”</dt><dd><p>A cursor has been allocated.  The <em>id</em> at the beginning of this row
@@ -473,14 +470,14 @@ illustrates how time spent busy waiting is included.</p>
         <li class="right" >
           <a href="types.html" title="Types"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.39.4.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.0.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Execution and tracing</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
         &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Oct 09, 2022.
+      Last updated on Nov 27, 2022.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">

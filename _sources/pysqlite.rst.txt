@@ -1,7 +1,7 @@
 .. _pysqlitediffs:
 
-pysqlite differences
-********************
+sqlite3 module differences
+**************************
 
 .. currentmodule:: apsw
 
@@ -46,11 +46,9 @@ module:
   you are very careful with your own mutexes you will have a crash or
   a deadlock.
 
-* APSW is a single file for the extension, :file:`apsw.pyd` on Windows
-  and :file:`apsw.so` on Unix/Mac (Note :pep:`3149`). There are no
-  other files needed and the :ref:`build instructions <building>` show
-  you how to include SQLite statically in this file. You can put this
-  file anywhere your Python session can reach.
+* APSW :ref:`build instructions <building>` show you how to include
+  SQLite statically in the extension, avoiding a dependency on system
+  SQLite.
 
 * **Nothing** happens behind your back. By default sqlite3 tries to
   manage transactions (for DBAPI compliance) by parsing your SQL for
@@ -86,7 +84,7 @@ module:
 
 * :meth:`Cursor.executemany` also works with statements that return
   data such as selects, and you can have multiple statements.
-  sqlite3's :meth:`executescript` method doesn't allow any form of
+  sqlite3's *executescript* method doesn't allow any form of
   data being returned (it silently ignores any returned data).
 
 * sqlite3 swallows exceptions in your callbacks making it far harder
@@ -143,14 +141,9 @@ module:
   available than just what is printed out when exceptions happen like
   above. See :ref:`augmented stack traces <augmentedstacktraces>`
 
-* APSW has :ref:`execution and row tracers <tracing>`.  sqlite3 has no
-  equivalent to :ref:`execution tracers <executiontracer>` and does
-  have data adaptors which aren't the same thing as a :ref:`row tracer
-  <rowtracer>` (for example you can't skip rows or add a new column to
-  each row returned).  sqlite3 does have a `row factory
-  <https://docs.python.org/3/library/sqlite3.html?highlight=sqlite#accessing-columns-by-name-instead-of-by-index>`__
-  but you can easily emulate that with the row tracer and
-  :meth:`Cursor.getdescription`.
+* APSW has better :ref:`execution and row tracing <tracing>`.
+  :doc:`ext` provides accessing rows by column name, type conversion,
+  getting query details etc.
 
 * APSW has an :ref:`apswtrace <apswtrace>` utility script that traces
   execution and results in your code without having to modify it in
@@ -178,11 +171,5 @@ module:
 What sqlite3 does better
 ========================
 
-* sqlite3 has an `adaptor system <https://docs.python.org/3/library/sqlite3.html?highlight=sqlite#converting-sqlite-values-to-custom-python-types>`__
-  that lets you pretend SQLite stores and returns more types than it
-  really supports.  Note that the database won't be useful in a
-  non-sqlite3 context (eg PHP code looking at the same database isn't
-  going to recognise your Point class).  You can implement something
-  similar in APSW by intercepting :meth:`Cursor.execute` calls that
-  suitably mangles the bindings going to SQLite and does something
-  similar to the rows the iterator returns.
+* sqlite3 is part of the standard library, and is widely supported by
+  libraries that abstract away the database layer
