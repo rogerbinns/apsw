@@ -10,7 +10,7 @@ else:
 
 from dataclasses import dataclass, make_dataclass
 
-from typing import Optional, Tuple, Union, List, Any, Dict, Callable
+from typing import Optional, Tuple, Union, List, Any, Dict, Callable, Sequence
 import functools
 import abc
 
@@ -420,9 +420,9 @@ class QueryDetails:
     ":attr:`Cursor.is_explain <apsw.Cursor.is_explain>`"
     is_readonly: bool
     ":attr:`Cursor.is_readonly <apsw.Cursor.is_readonly>`"
-    description: Tuple[[str, str], ...]
+    description: Tuple[Tuple[str, str], ...]
     ":meth:`Cursor.getdescription <apsw.Cursor.getdescription>`"
-    description_full: Optional[Tuple[[str, str, str, str, str], ...]]
+    description_full: Optional[Tuple[Tuple[str, str, str, str, str], ...]]
     ":attr:`Cursor.description_full <apsw.Cursor.description_full>`"
     expanded_sql: Optional[str]
     ":attr:`Cursor.expanded_sql <apsw.Cursor.expanded_sql>`"
