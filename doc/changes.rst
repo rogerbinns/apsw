@@ -3,8 +3,8 @@ Change History
 
 .. currentmodule:: apsw
 
-next
-====
+3.40.0.0
+========
 
 Fixed regression in statement cache update (version 3.38.1-r1) where
 trailing whitespace in queries would be incorrectly treated as
