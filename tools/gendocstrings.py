@@ -302,7 +302,7 @@ def analyze_signature(s: str) -> List[dict]:
             after_name = ""
             continue
 
-        if c.isidentifier() or (not name and c in "/*"):
+        if c.isidentifier() or (name and c.isdigit()) or (not name and c in "/*"):
             name += c
 
     if name:
