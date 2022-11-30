@@ -487,7 +487,10 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, apsw.strlike, None, "3", 3)
         self.assertEqual(0, apsw.strlike("%c", "abc"))
         self.assertNotEqual(0, apsw.strlike("q%c", "abc"))
-
+        self.assertRaises(TypeError, apsw.strglob, 1, 2)
+        self.assertRaises(TypeError, apsw.strglob, None, None)
+        self.assertEqual(0, apsw.strglob("*.*", "abc.txt"))
+        self.assertNotEqual(0, apsw.strglob("b*.*", "abc.txt"))
 
     def testCursorFactory(self):
         "Test Connection.cursor_factory"

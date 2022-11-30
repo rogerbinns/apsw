@@ -1276,6 +1276,30 @@ apsw_strlike(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   return PyLong_FromLong(res);
 }
 
+/** .. method:: strglob(glob: str, string: str) -> int
+
+  Does string GLOB matching.  Note that zero is returned on on a match.
+
+  -* sqlite3_strglob
+*/
+static PyObject *
+apsw_strglob(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
+{
+  const char *glob = NULL, *string = NULL;
+  int res;
+
+  {
+    static char *kwlist[] = {"glob", "string", NULL};
+    Apsw_strglob_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss:" Apsw_strglob_USAGE, kwlist, &glob, &string))
+      return NULL;
+  }
+
+  res = sqlite3_strglob(glob, string); /* PYSQLITE_CALL not needed */
+
+  return PyLong_FromLong(res);
+}
+
 static PyObject *
 apsw_getattr(PyObject *module, PyObject *name)
 {
@@ -1330,6 +1354,7 @@ static PyMethodDef module_methods[] = {
     {"complete", (PyCFunction)apswcomplete, METH_VARARGS | METH_KEYWORDS,
      Apsw_complete_DOC},
     {"strlike", (PyCFunction)apsw_strlike, METH_VARARGS | METH_KEYWORDS, Apsw_strlike_DOC},
+    {"strglob", (PyCFunction)apsw_strglob, METH_VARARGS | METH_KEYWORDS, Apsw_strglob_DOC},
 #ifdef APSW_TESTFIXTURES
     {"_fini", (PyCFunction)apsw_fini, METH_NOARGS,
      "Frees all caches and recycle lists"},

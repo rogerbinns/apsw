@@ -6,8 +6,8 @@ Change History
 next
 ====
 
-Added :attr:`Connection.system_errno`, :meth:`apsw.strlike`
-(:issue:`382`)
+Added :attr:`Connection.system_errno`, :meth:`apsw.strlike`,
+:meth:`apsw.strglob` (:issue:`382`)
 
 3.40.0.0
 ========
