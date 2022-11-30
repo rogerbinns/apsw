@@ -1300,6 +1300,56 @@ apsw_strglob(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   return PyLong_FromLong(res);
 }
 
+/** .. method:: stricmp(string1: str, string2: str) -> int
+
+  Does string case-insensitive comparison.  Note that zero is returned
+  on on a match.
+
+  -* sqlite3_stricmp
+*/
+static PyObject *
+apsw_stricmp(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
+{
+  const char *string1 = NULL, *string2 = NULL;
+  int res;
+
+  {
+    static char *kwlist[] = {"string1", "string2", NULL};
+    Apsw_stricmp_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss:" Apsw_stricmp_USAGE, kwlist, &string1, &string2))
+      return NULL;
+  }
+
+  res = sqlite3_stricmp(string1, string2); /* PYSQLITE_CALL not needed */
+
+  return PyLong_FromLong(res);
+}
+
+/** .. method:: strnicmp(string1: str, string2: str, count: int) -> int
+
+  Does string case-insensitive comparison.  Note that zero is returned
+  on on a match.
+
+  -* sqlite3_strnicmp
+*/
+static PyObject *
+apsw_strnicmp(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
+{
+  const char *string1 = NULL, *string2 = NULL;
+  int count, res;
+
+  {
+    static char *kwlist[] = {"string1", "string2", "count", NULL};
+    Apsw_strnicmp_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ssi:" Apsw_strnicmp_USAGE, kwlist, &string1, &string2, &count))
+      return NULL;
+  }
+
+  res = sqlite3_strnicmp(string1, string2, count); /* PYSQLITE_CALL not needed */
+
+  return PyLong_FromLong(res);
+}
+
 static PyObject *
 apsw_getattr(PyObject *module, PyObject *name)
 {
@@ -1355,6 +1405,8 @@ static PyMethodDef module_methods[] = {
      Apsw_complete_DOC},
     {"strlike", (PyCFunction)apsw_strlike, METH_VARARGS | METH_KEYWORDS, Apsw_strlike_DOC},
     {"strglob", (PyCFunction)apsw_strglob, METH_VARARGS | METH_KEYWORDS, Apsw_strglob_DOC},
+    {"stricmp", (PyCFunction)apsw_stricmp, METH_VARARGS | METH_KEYWORDS, Apsw_stricmp_DOC},
+    {"strnicmp", (PyCFunction)apsw_strnicmp, METH_VARARGS | METH_KEYWORDS, Apsw_strnicmp_DOC},
 #ifdef APSW_TESTFIXTURES
     {"_fini", (PyCFunction)apsw_fini, METH_NOARGS,
      "Frees all caches and recycle lists"},

@@ -7,7 +7,8 @@ next
 ====
 
 Added :attr:`Connection.system_errno`, :meth:`apsw.strlike`,
-:meth:`apsw.strglob` (:issue:`382`)
+:meth:`apsw.strglob`, :meth:`apsw.stricmp`, :meth:`apsw.strnicmp`
+(:issue:`382`)
 
 3.40.0.0
 ========
