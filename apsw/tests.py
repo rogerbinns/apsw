@@ -481,6 +481,14 @@ class APSW(unittest.TestCase):
             self.assertIs(apsw.main, apsw.shell.main)
             self.assertIs(apsw.Shell, apsw.shell.Shell)
 
+    def testModuleStringFunctions(self):
+        "Tests various string comparison/matching functions"
+        self.assertRaises(TypeError, apsw.strlike, 1, 2, 3)
+        self.assertRaises(TypeError, apsw.strlike, None, "3", 3)
+        self.assertEqual(0, apsw.strlike("%c", "abc"))
+        self.assertNotEqual(0, apsw.strlike("q%c", "abc"))
+
+
     def testCursorFactory(self):
         "Test Connection.cursor_factory"
         seqbindings = ((3, ), ) * 3

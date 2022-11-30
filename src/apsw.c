@@ -1251,6 +1251,31 @@ apsw_log(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   Py_RETURN_NONE;
 }
 
+/** .. method:: strlike(glob: str, string: str, escape: int = 0) -> int
+
+  Does string LIKE matching.  Note that zero is returned on on a match.
+
+  -* sqlite3_strlike
+*/
+static PyObject *
+apsw_strlike(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
+{
+  const char *glob = NULL, *string = NULL;
+  int escape = 0;
+  int res;
+
+  {
+    static char *kwlist[] = {"glob", "string", "escape", NULL};
+    Apsw_strlike_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ss|i:" Apsw_strlike_USAGE, kwlist, &glob, &string, &escape))
+      return NULL;
+  }
+
+  res = sqlite3_strlike(glob, string, escape); /* PYSQLITE_CALL not needed */
+
+  return PyLong_FromLong(res);
+}
+
 static PyObject *
 apsw_getattr(PyObject *module, PyObject *name)
 {
@@ -1304,6 +1329,7 @@ static PyMethodDef module_methods[] = {
      Apsw_exceptionfor_DOC},
     {"complete", (PyCFunction)apswcomplete, METH_VARARGS | METH_KEYWORDS,
      Apsw_complete_DOC},
+    {"strlike", (PyCFunction)apsw_strlike, METH_VARARGS | METH_KEYWORDS, Apsw_strlike_DOC},
 #ifdef APSW_TESTFIXTURES
     {"_fini", (PyCFunction)apsw_fini, METH_NOARGS,
      "Frees all caches and recycle lists"},
