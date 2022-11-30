@@ -3672,7 +3672,7 @@ Connection_cache_stats(Connection *self, PyObject *args, PyObject *kwds)
 /** .. attribute:: filename
   :type: str
 
-  The filename of the  database.
+  The filename of the database.
 
   -* sqlite3_db_filename
 */
@@ -3680,8 +3680,39 @@ Connection_cache_stats(Connection *self, PyObject *args, PyObject *kwds)
 static PyObject *
 Connection_getmainfilename(Connection *self)
 {
+  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
   return convertutf8string(sqlite3_db_filename(self->db, "main"));
+}
+
+/** .. attribute:: filename_journal
+  :type: str
+
+  The journal filename of the database,
+
+  -* sqlite3_filename_journal
+*/
+static PyObject *
+Connection_getjournalfilename(Connection *self)
+{
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+  return convertutf8string(sqlite3_filename_journal(sqlite3_db_filename(self->db, "main")));
+}
+
+/** .. attribute:: filename_wal
+  :type: str
+
+  The WAL filename of the database,
+
+  -* sqlite3_filename_wal
+*/
+static PyObject *
+Connection_getwalfilename(Connection *self)
+{
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+  return convertutf8string(sqlite3_filename_wal(sqlite3_db_filename(self->db, "main")));
 }
 
 /** .. attribute:: cursor_factory
@@ -3927,6 +3958,8 @@ static PyGetSetDef Connection_getseters[] = {
     {"filename",
      (getter)Connection_getmainfilename, NULL,
      Connection_filename_DOC, NULL},
+    {"filename_journal", (getter)Connection_getjournalfilename, NULL, Connection_filename_journal_DOC, NULL},
+    {"filename_wal", (getter)Connection_getwalfilename, NULL, Connection_filename_wal_DOC, NULL},
     {"cursor_factory", (getter)Connection_get_cursor_factory,
      (setter)Connection_set_cursor_factory, Connection_cursor_factory_DOC, NULL},
     {"in_transaction", (getter)Connection_get_in_transaction,

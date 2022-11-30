@@ -4095,7 +4095,7 @@ class APSW(unittest.TestCase):
                                                 "|randomness|db_readonly|db_filename|release_memory|status64|result_.+|user_data|mprintf|aggregate_context"
                                                 "|declare_vtab|backup_remaining|backup_pagecount|mutex_enter|mutex_leave|sourceid|uri_.+"
                                                 "|column_name|column_decltype|column_database_name|column_table_name|column_origin_name"
-                                                "|stmt_isexplain|stmt_readonly)$"),
+                                                "|stmt_isexplain|stmt_readonly|filename_journal|filename_wal)$"),
                         # error message
                         'desc': "sqlite3_ calls must wrap with PYSQLITE_CALL",
                         },
@@ -6365,6 +6365,11 @@ class APSW(unittest.TestCase):
         self.assertEqual(self.db.filename, self.db.db_filename("main"))
         self.db.cursor().execute("attach '%s' as foo" % (TESTFILEPREFIX + "testdb2", ))
         self.assertEqual(self.db.filename + "2", self.db.db_filename("foo"))
+        self.assert_(self.db.filename_wal.startswith(self.db.filename))
+        self.assert_(self.db.filename_journal.startswith(self.db.filename))
+        xdb=apsw.Connection("")
+        # these all end up empty string
+        self.assert_(xdb.filename == xdb.filename_wal and xdb.filename_wal == xdb.filename_journal)
 
     def testShell(self, shellclass=None):
         "Check Shell functionality"
