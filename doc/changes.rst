@@ -3,6 +3,11 @@ Change History
 
 .. currentmodule:: apsw
 
+next
+====
+
+Added :attr:`Connection.system_errno` (:issue:`382`)
+
 3.40.0.0
 ========
 

@@ -3906,6 +3906,22 @@ Connection_set_authorizer_attr(Connection *self, PyObject *value)
   return Connection_internal_set_authorizer(self, (value != Py_None) ? value : NULL);
 }
 
+/** .. attribute:: system_errno
+ :type: int
+
+ The underlying system error code for the most recent I/O errors or failing to open files.
+
+ -* sqlite3_system_errno
+*/
+static PyObject *
+Connection_get_system_errno(Connection *self)
+{
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  return PyLong_FromLong(sqlite3_system_errno(self->db)); /* PYSQLITE_CON_CALL not needed - no mutex taken */
+}
+
 static PyGetSetDef Connection_getseters[] = {
     /* name getter setter doc closure */
     {"filename",
@@ -3918,6 +3934,7 @@ static PyGetSetDef Connection_getseters[] = {
     {"exectrace", (getter)Connection_get_exectrace_attr, (setter)Connection_set_exectrace_attr, Connection_exectrace_DOC},
     {"rowtrace", (getter)Connection_get_rowtrace_attr, (setter)Connection_set_rowtrace_attr, Connection_rowtrace_DOC},
     {"authorizer", (getter)Connection_get_authorizer_attr, (setter)Connection_set_authorizer_attr, Connection_authorizer_DOC},
+    {"system_errno", (getter)Connection_get_system_errno, NULL, Connection_system_errno_DOC},
     /* Sentinel */
     {
         NULL, NULL, NULL, NULL, NULL}};

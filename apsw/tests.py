@@ -427,6 +427,8 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, apsw.Connection, "foo", vfs=3, flags=-1)
         self.assertRaises(apsw.SQLError, apsw.Connection, "foo", vfs="jhjkds")
 
+        self.assertIsInstance(self.db.system_errno, int)
+
     def testConnectionFileControl(self):
         "Verify sqlite3_file_control"
         # Note that testVFS deals with success cases and the actual vfs backend
