@@ -706,7 +706,6 @@ apswcomplete(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   Py_RETURN_FALSE;
 }
 
-
 #ifdef APSW_TESTFIXTURES
 static PyObject *
 apsw_fini(PyObject *Py_UNUSED(self))
@@ -1314,7 +1313,7 @@ static PyMethodDef module_methods[] = {
      Apsw_fork_checker_DOC},
 #endif
     {"__getattr__", (PyCFunction)apsw_getattr, METH_O, "foo"},
-    {  0, 0, 0, 0} /* Sentinel */
+    {0, 0, 0, 0} /* Sentinel */
 };
 
 static struct PyModuleDef apswmoduledef = {
@@ -1918,7 +1917,7 @@ modules etc. For example::
         ADDINT(SQLITE_PREPARE_NO_VTAB),
         END
 
-        };
+    };
 
     for (i = 0; i < sizeof(integers) / sizeof(integers[0]); i++)
     {
@@ -1965,7 +1964,7 @@ modules etc. For example::
 
   {
     PyObject *mod = PyImport_ImportModule("collections.abc");
-    if(mod)
+    if (mod)
     {
       collections_abc_Mapping = PyObject_GetAttrString(mod, "Mapping");
       Py_DECREF(mod);

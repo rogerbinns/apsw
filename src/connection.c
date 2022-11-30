@@ -1536,7 +1536,7 @@ Connection_setauthorizer(Connection *self, PyObject *args, PyObject *kwds)
       return NULL;
   }
 
-  if(Connection_internal_set_authorizer(self, callable))
+  if (Connection_internal_set_authorizer(self, callable))
     return NULL;
   Py_RETURN_NONE;
 }
