@@ -261,6 +261,63 @@
 } while(0)
 
 
+#define  Apsw_strglob_DOC "strglob($self,glob,string)\n--\n\napsw.strglob(glob: str, string: str) -> int\n\n" \
+"Does string GLOB matching.  Note that zero is returned on on a match.\n" \
+"\n" \
+"Calls: `sqlite3_strglob <https://sqlite.org/c3ref/strglob.html>`__\n" 
+
+#define Apsw_strglob_USAGE "apsw.strglob(glob: str, string: str) -> int"
+
+#define Apsw_strglob_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(glob), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(string), const char *)); \
+} while(0)
+
+
+#define  Apsw_stricmp_DOC "stricmp($self,string1,string2)\n--\n\napsw.stricmp(string1: str, string2: str) -> int\n\n" \
+"Does string case-insensitive comparison.  Note that zero is returned\n" \
+"on on a match.\n" \
+"\n" \
+"Calls: `sqlite3_stricmp <https://sqlite.org/c3ref/stricmp.html>`__\n" 
+
+#define Apsw_stricmp_USAGE "apsw.stricmp(string1: str, string2: str) -> int"
+
+#define Apsw_stricmp_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(string1), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(string2), const char *)); \
+} while(0)
+
+
+#define  Apsw_strlike_DOC "strlike($self,glob,string,escape=0)\n--\n\napsw.strlike(glob: str, string: str, escape: int = 0) -> int\n\n" \
+"Does string LIKE matching.  Note that zero is returned on on a match.\n" \
+"\n" \
+"Calls: `sqlite3_strlike <https://sqlite.org/c3ref/strlike.html>`__\n" 
+
+#define Apsw_strlike_USAGE "apsw.strlike(glob: str, string: str, escape: int = 0) -> int"
+
+#define Apsw_strlike_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(glob), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(string), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(escape), int)); \
+  assert(escape == (0)); \
+} while(0)
+
+
+#define  Apsw_strnicmp_DOC "strnicmp($self,string1,string2,count)\n--\n\napsw.strnicmp(string1: str, string2: str, count: int) -> int\n\n" \
+"Does string case-insensitive comparison.  Note that zero is returned\n" \
+"on on a match.\n" \
+"\n" \
+"Calls: `sqlite3_strnicmp <https://sqlite.org/c3ref/stricmp.html>`__\n" 
+
+#define Apsw_strnicmp_USAGE "apsw.strnicmp(string1: str, string2: str, count: int) -> int"
+
+#define Apsw_strnicmp_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(string1), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(string2), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(count), int)); \
+} while(0)
+
+
 #define  Apsw_vfsnames_DOC "vfsnames($self)\n--\n\napsw.vfsnames() -> List[str]\n\n" \
 "Returns a list of the currently installed :ref:`vfs <vfs>`.  The first\n" \
 "item in the list is the default vfs.\n" 
@@ -777,6 +834,33 @@
 } while(0)
 
 
+#define  Connection_column_metadata_DOC "column_metadata($self,dbname,table_name,column_name)\n--\n\nConnection.column_metadata(dbname: Optional[str], table_name: str, column_name: str) -> Tuple[str, str, bool, bool, bool]\n\n" \
+"`dbname` is the specific database (eg \"main\", \"temp\") or None to search\n" \
+"all databases.\n" \
+"\n" \
+"The returned :class:`tuple` has these fields:\n" \
+"\n" \
+"0: str - declared data type\n" \
+"\n" \
+"1: str - name of default collation sequence\n" \
+"\n" \
+"2: bool - True if not null constraint\n" \
+"\n" \
+"3: bool - True if part of primary key\n" \
+"\n" \
+"4: bool - True if column is `autoincrement <https://www.sqlite.org/autoinc.html>`__\n" \
+"\n" \
+"Calls: `sqlite3_table_column_metadata <https://sqlite.org/c3ref/table_column_metadata.html>`__\n" 
+
+#define Connection_column_metadata_USAGE "Connection.column_metadata(dbname: Optional[str], table_name: str, column_name: str) -> Tuple[str, str, bool, bool, bool]"
+
+#define Connection_column_metadata_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(dbname), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(table_name), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(column_name), const char *)); \
+} while(0)
+
+
 #define  Connection_config_DOC "config($self,op,*args)\n--\n\nConnection.config(op: int, *args: int) -> int\n\n" \
 ":param op: A `configuration operation\n" \
 "  <https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__\n" \
@@ -869,7 +953,7 @@
 } while(0)
 
 
-#define  Connection_createmodule_DOC "createmodule($self,name,datasource)\n--\n\nConnection.createmodule(name: str, datasource: Any) -> None\n\n" \
+#define  Connection_createmodule_DOC "createmodule($self,name,datasource)\n--\n\nConnection.createmodule(name: str, datasource: VTModule) -> None\n\n" \
 "Registers a virtual table.  See :ref:`virtualtables` for details.\n" \
 "\n" \
 ".. seealso::\n" \
@@ -878,7 +962,7 @@
 "\n" \
 "Calls: `sqlite3_create_module_v2 <https://sqlite.org/c3ref/create_module.html>`__\n" 
 
-#define Connection_createmodule_USAGE "Connection.createmodule(name: str, datasource: Any) -> None"
+#define Connection_createmodule_USAGE "Connection.createmodule(name: str, datasource: VTModule) -> None"
 
 #define Connection_createmodule_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
@@ -1137,9 +1221,21 @@
 
 #define  Connection_filename_DOC ":type: str\n" \
 "\n" \
-"The filename of the  database.\n" \
+"The filename of the database.\n" \
 "\n" \
 "Calls: `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__\n" 
+
+#define  Connection_filename_journal_DOC ":type: str\n" \
+"\n" \
+"The journal filename of the database,\n" \
+"\n" \
+"Calls: `sqlite3_filename_journal <https://sqlite.org/c3ref/filename_database.html>`__\n" 
+
+#define  Connection_filename_wal_DOC ":type: str\n" \
+"\n" \
+"The WAL filename of the database,\n" \
+"\n" \
+"Calls: `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__\n" 
 
 #define  Connection_getautocommit_DOC "getautocommit($self)\n--\n\nConnection.getautocommit() -> bool\n\n" \
 "Returns if the Connection is in auto commit mode (ie not in a transaction).\n" \
@@ -1593,6 +1689,28 @@
   assert(__builtin_types_compatible_p(typeof(op), int)); \
   assert(__builtin_types_compatible_p(typeof(reset), int)); \
   assert(reset == 0); \
+} while(0)
+
+
+#define  Connection_system_errno_DOC ":type: int\n" \
+"\n" \
+"The underlying system error code for the most recent I/O errors or failing to open files.\n" \
+"\n" \
+"Calls: `sqlite3_system_errno <https://sqlite.org/c3ref/system_errno.html>`__\n" 
+
+#define  Connection_table_exists_DOC "table_exists($self,dbname,table_name)\n--\n\nConnection.table_exists(dbname: Optional[str], table_name: str) -> bool\n\n" \
+"Returns True if the named table exists, else False.\n" \
+"\n" \
+"`dbname` is the specific database (eg \"main\", \"temp\") or None to search\n" \
+"all databases\n" \
+"\n" \
+"Calls: `sqlite3_table_column_metadata <https://sqlite.org/c3ref/table_column_metadata.html>`__\n" 
+
+#define Connection_table_exists_USAGE "Connection.table_exists(dbname: Optional[str], table_name: str) -> bool"
+
+#define Connection_table_exists_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(dbname), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(table_name), const char *)); \
 } while(0)
 
 

@@ -321,6 +321,32 @@ def status(op: int, reset: bool = False) -> Tuple[int, int]:
     Calls: `sqlite3_status64 <https://sqlite.org/c3ref/status.html>`__"""
     ...
 
+def strglob(glob: str, string: str) -> int:
+    """Does string GLOB matching.  Note that zero is returned on on a match.
+
+    Calls: `sqlite3_strglob <https://sqlite.org/c3ref/strglob.html>`__"""
+    ...
+
+def stricmp(string1: str, string2: str) -> int:
+    """Does string case-insensitive comparison.  Note that zero is returned
+    on on a match.
+
+    Calls: `sqlite3_stricmp <https://sqlite.org/c3ref/stricmp.html>`__"""
+    ...
+
+def strlike(glob: str, string: str, escape: int = 0) -> int:
+    """Does string LIKE matching.  Note that zero is returned on on a match.
+
+    Calls: `sqlite3_strlike <https://sqlite.org/c3ref/strlike.html>`__"""
+    ...
+
+def strnicmp(string1: str, string2: str, count: int) -> int:
+    """Does string case-insensitive comparison.  Note that zero is returned
+    on on a match.
+
+    Calls: `sqlite3_strnicmp <https://sqlite.org/c3ref/stricmp.html>`__"""
+    ...
+
 using_amalgamation: bool
 """If True then `SQLite amalgamation
 <https://sqlite.org/cvstrac/wiki?p=TheAmalgamation>`__ is in
@@ -744,6 +770,25 @@ class Connection:
         Calls: `sqlite3_collation_needed <https://sqlite.org/c3ref/collation_needed.html>`__"""
         ...
 
+    def column_metadata(self, dbname: Optional[str], table_name: str, column_name: str) -> Tuple[str, str, bool, bool, bool]:
+        """`dbname` is the specific database (eg "main", "temp") or None to search
+        all databases.
+
+        The returned :class:`tuple` has these fields:
+
+        0: str - declared data type
+
+        1: str - name of default collation sequence
+
+        2: bool - True if not null constraint
+
+        3: bool - True if part of primary key
+
+        4: bool - True if column is `autoincrement <https://www.sqlite.org/autoinc.html>`__
+
+        Calls: `sqlite3_table_column_metadata <https://sqlite.org/c3ref/table_column_metadata.html>`__"""
+        ...
+
     def config(self, op: int, *args: int) -> int:
         """:param op: A `configuration operation
           <https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__
@@ -821,7 +866,7 @@ class Connection:
         Calls: `sqlite3_create_collation_v2 <https://sqlite.org/c3ref/create_collation.html>`__"""
         ...
 
-    def createmodule(self, name: str, datasource: Any) -> None:
+    def createmodule(self, name: str, datasource: VTModule) -> None:
         """Registers a virtual table.  See :ref:`virtualtables` for details.
 
         .. seealso::
@@ -1038,9 +1083,19 @@ class Connection:
         ...
 
     filename: str
-    """The filename of the  database.
+    """The filename of the database.
 
     Calls: `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__"""
+
+    filename_journal: str
+    """The journal filename of the database,
+
+    Calls: `sqlite3_filename_journal <https://sqlite.org/c3ref/filename_database.html>`__"""
+
+    filename_wal: str
+    """The WAL filename of the database,
+
+    Calls: `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__"""
 
     def getautocommit(self) -> bool:
         """Returns if the Connection is in auto commit mode (ie not in a transaction).
@@ -1368,6 +1423,20 @@ class Connection:
           * :ref:`Status example <example_status>`
 
         Calls: `sqlite3_db_status <https://sqlite.org/c3ref/db_status.html>`__"""
+        ...
+
+    system_errno: int
+    """The underlying system error code for the most recent I/O errors or failing to open files.
+
+    Calls: `sqlite3_system_errno <https://sqlite.org/c3ref/system_errno.html>`__"""
+
+    def table_exists(self, dbname: Optional[str], table_name: str) -> bool:
+        """Returns True if the named table exists, else False.
+
+        `dbname` is the specific database (eg "main", "temp") or None to search
+        all databases
+
+        Calls: `sqlite3_table_column_metadata <https://sqlite.org/c3ref/table_column_metadata.html>`__"""
         ...
 
     def totalchanges(self) -> int:
