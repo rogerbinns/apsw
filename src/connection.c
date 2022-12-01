@@ -2968,7 +2968,7 @@ Connection_wal_checkpoint(Connection *self, PyObject *args, PyObject *kwds)
 static struct sqlite3_module apsw_vtable_module;
 static void apswvtabFree(void *context);
 
-/** .. method:: createmodule(name: str, datasource: Any) -> None
+/** .. method:: createmodule(name: str, datasource: VTModule) -> None
 
     Registers a virtual table.  See :ref:`virtualtables` for details.
 
