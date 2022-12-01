@@ -2738,7 +2738,25 @@
 
 #define  EmptyError_exc_DOC "*SQLITE_EMPTY*. Database is completely empty.\n" 
 
-#define  Error_exc_DOC "This is the base for APSW exceptions.\n" 
+#define  Error_exc_DOC "  This is the base for APSW exceptions.\n" \
+"\n" \
+".. attribute:: Error.result\n" \
+"\n" \
+"         For exceptions corresponding to `SQLite error codes\n" \
+"         <https://sqlite.org/c3ref/c_abort.html>`_ codes this attribute\n" \
+"         is the numeric error code.\n" \
+"\n" \
+".. attribute:: Error.extendedresult\n" \
+"\n" \
+"         APSW runs with `extended result codes\n" \
+"         <https://sqlite.org/rescode.html>`_ turned on.\n" \
+"         This attribute includes the detailed code.\n" \
+"\n" \
+".. attribute:: Error.error_offset\n" \
+"\n" \
+"        The location of the error in the SQL when encoded in UTF-8.\n" \
+"        The value is from `sqlite3_error_offset\n" \
+"        <https://www.sqlite.org/c3ref/errcode.html>`__.\n" 
 
 #define  ExecTraceAbort_exc_DOC "The :ref:`execution tracer <executiontracer>` returned False so\n" \
 "execution was aborted.\n" 

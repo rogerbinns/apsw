@@ -3605,7 +3605,25 @@ SQLITE_SHM_UNLOCK"""
 
 
 class Error(Exception):
-    """This is the base for APSW exceptions."""
+    """  This is the base for APSW exceptions.
+
+    .. attribute:: Error.result
+
+             For exceptions corresponding to `SQLite error codes
+             <https://sqlite.org/c3ref/c_abort.html>`_ codes this attribute
+             is the numeric error code.
+
+    .. attribute:: Error.extendedresult
+
+             APSW runs with `extended result codes
+             <https://sqlite.org/rescode.html>`_ turned on.
+             This attribute includes the detailed code.
+
+    .. attribute:: Error.error_offset
+
+            The location of the error in the SQL when encoded in UTF-8.
+            The value is from `sqlite3_error_offset
+            <https://www.sqlite.org/c3ref/errcode.html>`__."""
 
 class AbortError(Error):
     """*SQLITE_ABORT*. Callback routine requested an abort."""
