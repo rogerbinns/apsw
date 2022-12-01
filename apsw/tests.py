@@ -837,7 +837,7 @@ class APSW(unittest.TestCase):
         c.execute(
             "create temp table two(fred banana); insert into two values(7); create temp view three as select fred as [a space] from two"
         )
-        c.execute("select 3") # see issue #370
+        c.execute("select 3")  # see issue #370
         has_full = any(o == "ENABLE_COLUMN_METADATA" or o.startswith("ENABLE_COLUMN_METADATA=")
                        for o in apsw.compile_options) if apsw.using_amalgamation else hasattr(c, "description_full")
         for row in c.execute("select * from foo"):
@@ -895,10 +895,18 @@ class APSW(unittest.TestCase):
         self.assertEqual(c.execute("select 3; select 4").fetchall(), [(3, ), (4, )])
         # readonly, explain & expanded_sql attributes
         res = None
+
         def tracer(cur, query, bindings):
             nonlocal res
-            res = {"cursor": cur, "query": query, "bindings": bindings, "readonly": cur.is_readonly, "explain": cur.is_explain}
+            res = {
+                "cursor": cur,
+                "query": query,
+                "bindings": bindings,
+                "readonly": cur.is_readonly,
+                "explain": cur.is_explain
+            }
             return True
+
         self.assertIsNone(c.exectrace)
         c.setexectrace(tracer)
         self.assertIs(c.exectrace, tracer)
@@ -912,7 +920,7 @@ class APSW(unittest.TestCase):
         self.assertEqual(res["explain"], 2)
         c.execute("pragma user_version=42")
         self.assertFalse(res["readonly"])
-        biggy="9" * 24 * 1024
+        biggy = "9" * 24 * 1024
         ran = False
         for row in c.execute("select ?,?", (biggy, biggy)):
             ran = True
@@ -923,7 +931,8 @@ class APSW(unittest.TestCase):
         self.assertTrue(ran)
         # keyword args
         c.execute("pragma user_version=73", bindings=None, can_cache=False, prepare_flags=0).fetchall()
-        c.executemany(statements="select ?", sequenceofbindings=((1,), (2,)), can_cache=False, prepare_flags=0).fetchall()
+        c.executemany(statements="select ?", sequenceofbindings=((1, ), (2, )), can_cache=False,
+                      prepare_flags=0).fetchall()
 
     def testIssue373(self):
         "issue 373: dict type checking in bindings"
@@ -933,6 +942,7 @@ class APSW(unittest.TestCase):
             pass
 
         class dict_lookalike(collections.abc.Mapping):
+
             def __getitem__(self, _):
                 return 99
 
@@ -943,14 +953,17 @@ class APSW(unittest.TestCase):
                 raise NotImplementedError
 
         class errors_be_here:
+
             def __instancecheck__(self, _):
-                1/0
+                1 / 0
+
             def __subclasscheck__(self, _):
-                1/0
+                1 / 0
 
         class dict_with_error:
+
             def __getitem__(self, _):
-                1/0
+                1 / 0
 
         collections.abc.Mapping.register(dict_with_error)
 
@@ -960,50 +973,49 @@ class APSW(unittest.TestCase):
             def __getitem__(self, key):
                 if key < 10:
                     return key
-                1/0
+                1 / 0
 
         class dict_subclass(dict):
             pass
 
         self.assertRaises(TypeError, self.db.execute, "select :name", not_a_dict())
-        self.assertEqual([(99,)], self.db.execute("select :name", dict_lookalike()).fetchall())
+        self.assertEqual([(99, )], self.db.execute("select :name", dict_lookalike()).fetchall())
         # make sure these aren't detected as dict
-        for thing in (1,), {1}, [1]:
+        for thing in (1, ), {1}, [1]:
             self.assertRaises(TypeError, self.db.execute("select :name", thing))
 
         self.assertRaises(TypeError, self.db.execute, "select :name", errors_be_here())
         self.assertRaises(ZeroDivisionError, self.db.execute, "select :name", dict_with_error())
-        self.assertEqual([(None,)], self.db.execute("select :name", {}).fetchall())
-        self.assertEqual([(None,)], self.db.execute("select :name", dict_subclass()).fetchall())
+        self.assertEqual([(None, )], self.db.execute("select :name", {}).fetchall())
+        self.assertEqual([(None, )], self.db.execute("select :name", dict_subclass()).fetchall())
         self.assertRaises(ZeroDivisionError, self.db.execute, "select ?", coerced_to_list())
 
         # same tests with executemany
-        self.assertRaises(TypeError, self.db.executemany, "select :name", (not_a_dict(),))
-        self.assertEqual([(99,)], self.db.executemany("select :name", [dict_lookalike()]).fetchall())
+        self.assertRaises(TypeError, self.db.executemany, "select :name", (not_a_dict(), ))
+        self.assertEqual([(99, )], self.db.executemany("select :name", [dict_lookalike()]).fetchall())
         # make sure these aren't detected as dict
-        for thing in (1,), {1}, [1]:
+        for thing in (1, ), {1}, [1]:
             self.assertRaises(TypeError, self.db.executemany("select :name", [thing]))
 
         self.assertRaises(TypeError, self.db.executemany, "select :name", errors_be_here())
         self.assertRaises(ZeroDivisionError, self.db.executemany, "select :name", dict_with_error())
-        self.assertEqual([(None,)], self.db.executemany("select :name", ({},)).fetchall())
-        self.assertEqual([(None,)], self.db.executemany("select :name", [dict_subclass()]).fetchall())
-        self.assertRaises(ZeroDivisionError, self.db.executemany, "select ?", (coerced_to_list(),))
+        self.assertEqual([(None, )], self.db.executemany("select :name", ({}, )).fetchall())
+        self.assertEqual([(None, )], self.db.executemany("select :name", [dict_subclass()]).fetchall())
+        self.assertRaises(ZeroDivisionError, self.db.executemany, "select ?", (coerced_to_list(), ))
 
     def testIssue376(self):
         "Whitespace treated as incomplete execution"
         c = self.db.cursor()
         for statement in (
-            "select 3",
-            "select 3;",
-            "select 3; ",
-            "select 3; ;\t\r\n; ",
+                "select 3",
+                "select 3;",
+                "select 3; ",
+                "select 3; ;\t\r\n; ",
         ):
             c.execute(statement)
             # should not throw incomplete
             c.execute("select 4")
-            self.assertEqual([(3,), (4,)], c.execute(statement + "; select 4").fetchall())
-
+            self.assertEqual([(3, ), (4, )], c.execute(statement + "; select 4").fetchall())
 
     def testTypes(self):
         "Check type information is maintained"
@@ -4032,43 +4044,55 @@ class APSW(unittest.TestCase):
 
         # prepare_flags
         class VTModule:
+
             def Create(self, *args):
                 return ("create table dontcare(x int)", VTTable())
+
             Connect = Create
 
         class VTTable:
+
             def Open(self):
                 return VTCursor()
+
             def BestIndex(self, *args):
                 return None
 
         class VTCursor:
-            rows=[[99], [100]]
+            rows = [[99], [100]]
+
             def __init__(self):
-                self.pos=0
+                self.pos = 0
+
             def Filter(self, *args):
-                self.pos=0
+                self.pos = 0
+
             def Eof(self):
-                return self.pos>=len(self.rows)
+                return self.pos >= len(self.rows)
+
             def Column(self, num):
-                if num<0:
-                    return self.pos+1_000_000
+                if num < 0:
+                    return self.pos + 1_000_000
                 return self.rows[self.pos][num]
+
             def Next(self):
-                self.pos+=1
+                self.pos += 1
+
             def Close(self):
                 pass
 
-
-        vt=VTModule()
+        vt = VTModule()
         self.db.createmodule("fortestingonly", vt)
         # no_vtab doesn't block creating a vtab
         self.db.execute("create VIRTUAL table fred USING fortestingonly()", prepare_flags=apsw.SQLITE_PREPARE_NO_VTAB)
         # make sure query using vtab is identical so cache would be hit
         query = "select * from fred"
-        self.assertEqual(self.db.execute(query).fetchall(), [(99,), (100,)])
+        self.assertEqual(self.db.execute(query).fetchall(), [(99, ), (100, )])
         # this should fail (sqlite pretends the vtabs don't exist rather than giving specific error)
-        self.assertRaises(apsw.SQLError,  self.db.execute, "select * from fred", prepare_flags=apsw.SQLITE_PREPARE_NO_VTAB)
+        self.assertRaises(apsw.SQLError,
+                          self.db.execute,
+                          "select * from fred",
+                          prepare_flags=apsw.SQLITE_PREPARE_NO_VTAB)
 
     def testStatementCacheZeroSize(self):
         "Rerun statement cache tests with a zero sized/disabled cache"
@@ -6391,7 +6415,7 @@ class APSW(unittest.TestCase):
         self.assertEqual(self.db.filename + "2", self.db.db_filename("foo"))
         self.assert_(self.db.filename_wal.startswith(self.db.filename))
         self.assert_(self.db.filename_journal.startswith(self.db.filename))
-        xdb=apsw.Connection("")
+        xdb = apsw.Connection("")
         # these all end up empty string
         self.assert_(xdb.filename == xdb.filename_wal and xdb.filename_wal == xdb.filename_journal)
 
@@ -8481,9 +8505,10 @@ shell.write(shell.stdout, "hello world\\n")
             pass
 
         ### statement cache stuff
-        for key in ("SCStatsBuildFail", "SCStatsListFail", "SCStatsEntryBuildFail", "SCStatsAppendFail", "SCStatsEntriesSetFail"):
+        for key in ("SCStatsBuildFail", "SCStatsListFail", "SCStatsEntryBuildFail", "SCStatsAppendFail",
+                    "SCStatsEntriesSetFail"):
             # this ensures stuff is in statement cache
-            self.db.execute("Select ?", (key,)).fetchall()
+            self.db.execute("Select ?", (key, )).fetchall()
             apsw.faultdict[key] = True
             self.assertRaises(MemoryError, self.db.cache_stats, True)
 
@@ -8536,8 +8561,7 @@ shell.write(shell.stdout, "hello world\\n")
         apsw.randomness(0)
         apsw.faultdict["xRandomnessAllocFail"] = True
         # doesn't matter which vfs opens the file
-        self.assertRaisesUnraisable(MemoryError,
-                                    apsw.Connection(":memory:").cursor().execute, "select randomblob(10)")
+        self.assertRaisesUnraisable(MemoryError, apsw.Connection(":memory:").cursor().execute, "select randomblob(10)")
         del vfs2
         gc.collect()
 
@@ -8775,7 +8799,6 @@ shell.write(shell.stdout, "hello world\\n")
         self.assertRaises(MemoryError, self.db.db_names)
         apsw.faultdict["dbnamesappendfail"] = True
         self.assertRaises(MemoryError, self.db.db_names)
-
 
     def testExtDataClassRowFactory(self) -> None:
         "apsw.ext.DataClassRowFactory"
