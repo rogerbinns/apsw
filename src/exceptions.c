@@ -6,7 +6,6 @@
 
 /* EXCEPTION TYPES */
 
-static PyObject *APSWException;          /* root exception class */
 static PyObject *ExcThreadingViolation;  /* thread misuse */
 static PyObject *ExcIncomplete;          /* didn't finish previous query */
 static PyObject *ExcBindings;            /* wrong number of bindings */
@@ -221,6 +220,7 @@ static void make_exception(int res, sqlite3 *db)
 {
   int i;
   const char *errmsg = NULL;
+  int error_offset = -1;
 
   if (db)
     errmsg = apsw_get_errmsg();
@@ -228,6 +228,8 @@ static void make_exception(int res, sqlite3 *db)
     errmsg = "error";
 
   APSW_FAULT_INJECT(UnknownSQLiteErrorCode, , res = 0xfe);
+
+  _PYSQLITE_CALL_V(error_offset = sqlite3_error_offset(db));
 
   for (i = 0; exc_descriptors[i].name; i++)
     if (exc_descriptors[i].code == (res & 0xff))
@@ -242,6 +244,9 @@ static void make_exception(int res, sqlite3 *db)
       Py_DECREF(tmp);
       tmp = PyLong_FromLongLong(res);
       PyObject_SetAttrString(eval, "extendedresult", tmp);
+      Py_DECREF(tmp);
+      tmp = PyLong_FromLong(error_offset);
+      PyObject_SetAttrString(eval, "error_offset", tmp);
       Py_DECREF(tmp);
       PyErr_Restore(etype, eval, etb);
       assert(PyErr_Occurred());

@@ -21,6 +21,12 @@ Exceptions
          <https://sqlite.org/rescode.html>`_ turned on.
          This attribute includes the detailed code.
 
+.. attribute:: Error.error_offset
+
+        The location of the error in the SQL when encoded in UTF-8.
+        The value is from `sqlite3_error_offset
+        <https://www.sqlite.org/c3ref/errcode.html>`__.
+
 As an example, if SQLite issued a read request and the system returned
 less data than expected then :attr:`~Error.result` would have the value
 *SQLITE_IOERR* while :attr:`~Error.extendedresult` would have

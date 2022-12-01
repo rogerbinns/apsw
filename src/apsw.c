@@ -132,6 +132,9 @@ static int APSW_Should_Fault(const char *);
 /* The module object */
 static PyObject *apswmodule;
 
+/* root exception class */
+static PyObject *APSWException;
+
 /* Argument parsing helpers */
 #include "argparse.c"
 
@@ -141,11 +144,11 @@ static PyObject *apswmodule;
 /* Make various versions of Python code compatible with each other */
 #include "pyutil.c"
 
-/* Exceptions we can raise */
-#include "exceptions.c"
-
 /* various utility functions and macros */
 #include "util.c"
+
+/* Exceptions we can raise */
+#include "exceptions.c"
 
 /* The statement cache */
 #include "statementcache.c"

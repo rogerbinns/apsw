@@ -3475,6 +3475,11 @@ class APSW(unittest.TestCase):
         except:
             pass
 
+        try:
+            self.db.execute("select a from XYZ banana 4")
+        except apsw.SQLError as e:
+            self.assertEqual(25, e.error_offset)
+
     def testLimits(self):
         "Verify setting and getting limits"
         self.assertRaises(TypeError, self.db.limit, "apollo", 11)
