@@ -313,11 +313,10 @@ class APSW(unittest.TestCase):
         self.assertRaises(etype, func)
 
     def assertTableExists(self, tablename):
-        self.assertEqual(next(self.db.cursor().execute("select count(*) from [" + tablename + "]"))[0], 0)
+        self.assertTrue(self.db.table_exists(None, tablename))
 
     def assertTableNotExists(self, tablename):
-        # you get SQLError if the table doesn't exist!
-        self.assertRaises(apsw.SQLError, self.db.cursor().execute, "select count(*) from [" + tablename + "]")
+        self.assertFalse(self.db.table_exists(None, tablename))
 
     def assertTablesEqual(self, dbl, left, dbr, right):
         # Ensure tables have the same contents.  Rowids can be
