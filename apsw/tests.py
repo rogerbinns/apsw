@@ -449,6 +449,31 @@ class APSW(unittest.TestCase):
             self.assertEqual(1, self.db.config(i, -1))
             self.assertEqual(0, self.db.config(i, 0))
 
+    def testConnectionMetadata(self):
+        "Test uses of sqlite3_table_column_metadata"
+        self.db.createcollation("BreadFruit", lambda x, y: 1)
+        self.db.execute("""
+            create table table1(x);
+            create table temp.table2(x);
+
+            create table table3(
+                one  INTEGER PRIMARY KEY AUTOINCREMENT,
+                two  Bananas COLLATE BreadFruit,
+                three [   ] NOT NULL);
+            """)
+        self.assertTrue(self.db.table_exists(None, "table1"))
+        self.assertTrue(self.db.table_exists("main", "table1"))
+        self.assertTrue(self.db.table_exists(None, "table2"))
+        self.assertTrue(self.db.table_exists("temp", "table2"))
+        self.assertFalse(self.db.table_exists("main", "table2"))
+
+        for colname, expected in (
+            ("one", ('INTEGER', 'BINARY', False, True, True)),
+            ("two", ('Bananas', 'BreadFruit', False, False, False)),
+            ("three", ('   ', 'BINARY', True, False, False)),
+        ):
+            self.assertEqual(self.db.column_metadata(None, "table3", colname), expected)
+
     def testConnectionNames(self):
         "Test Connection.db_names"
         self.assertRaises(TypeError, self.db.db_names, 3)

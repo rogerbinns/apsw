@@ -8,7 +8,8 @@ next
 
 Added :attr:`Connection.system_errno`, :meth:`apsw.strlike`,
 :meth:`apsw.strglob`, :meth:`apsw.stricmp`, :meth:`apsw.strnicmp`,
-:attr:`Connection.filename_wal`, :attr:`Connection.filename_journal`
+:attr:`Connection.filename_wal`, :attr:`Connection.filename_journal`,
+:meth:`Connection.table_exists`, :meth:`Connection.column_metadata`
 (:issue:`382`)
 
 3.40.0.0

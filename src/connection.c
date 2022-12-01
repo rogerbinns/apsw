@@ -3669,6 +3669,84 @@ Connection_cache_stats(Connection *self, PyObject *args, PyObject *kwds)
   return statementcache_stats(self->stmtcache, include_entries);
 }
 
+/** .. method:: table_exists(dbname: Optional[str], table_name: str) -> bool
+
+  Returns True if the named table exists, else False.
+
+  `dbname` is the specific database (eg "main", "temp") or None to search
+  all databases
+
+  -* sqlite3_table_column_metadata
+*/
+static PyObject *
+Connection_table_exists(Connection *self, PyObject *args, PyObject *kwds)
+{
+  const char *dbname = NULL, *table_name = NULL;
+  int res;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  {
+    static char *kwlist[] = {"dbname", "table_name", NULL};
+    Connection_table_exists_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "zs:" Connection_table_exists_USAGE, kwlist, &dbname, &table_name))
+      return NULL;
+  }
+
+  PYSQLITE_VOID_CALL(res = sqlite3_table_column_metadata(self->db, dbname, table_name, NULL, NULL, NULL, NULL, NULL, NULL));
+
+  if (res == SQLITE_OK)
+    Py_RETURN_TRUE;
+  Py_RETURN_FALSE;
+}
+
+/** .. method:: column_metadata(dbname: Optional[str], table_name: str, column_name: str) -> Tuple[str, str, bool, bool, bool]
+
+  `dbname` is the specific database (eg "main", "temp") or None to search
+  all databases.
+
+  The returned :class:`tuple` has these fields:
+
+  0: str - declared data type
+
+  1: str - name of default collation sequence
+
+  2: bool - True if not null constraint
+
+  3: bool - True if part of primary key
+
+  4: bool - True if column is `autoincrement <https://www.sqlite.org/autoinc.html>`__
+
+  -* sqlite3_table_column_metadata
+*/
+static PyObject *
+Connection_column_metadata(Connection *self, PyObject *args, PyObject *kwds)
+{
+  const char *dbname = NULL, *table_name = NULL, *column_name = NULL;
+  int res;
+
+  const char *datatype = NULL, *collseq = NULL;
+  int notnull = 0, primarykey = 0, autoinc = 0;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  {
+    static char *kwlist[] = {"dbname", "table_name", "column_name", NULL};
+    Connection_column_metadata_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "zss:" Connection_column_metadata_USAGE, kwlist, &dbname, &table_name, &column_name))
+      return NULL;
+  }
+
+  PYSQLITE_CON_CALL(res = sqlite3_table_column_metadata(self->db, dbname, table_name, column_name, &datatype, &collseq, &notnull, &primarykey, &autoinc));
+
+  if (res != SQLITE_OK)
+    return NULL;
+
+  return Py_BuildValue("(ssOOO)", datatype, collseq, notnull ? Py_True : Py_False, primarykey ? Py_True : Py_False, autoinc ? Py_True : Py_False);
+}
+
 /** .. attribute:: filename
   :type: str
 
@@ -4112,6 +4190,8 @@ static PyMethodDef Connection_methods[] = {
     {"executemany", (PyCFunction)Connection_executemany, METH_VARARGS | METH_KEYWORDS,
      Connection_executemany_DOC},
     {"cache_stats", (PyCFunction)Connection_cache_stats, METH_VARARGS | METH_KEYWORDS, Connection_cache_stats_DOC},
+    {"table_exists", (PyCFunction)Connection_table_exists, METH_VARARGS | METH_KEYWORDS, Connection_table_exists_DOC},
+    {"column_metadata", (PyCFunction)Connection_column_metadata, METH_VARARGS | METH_KEYWORDS, Connection_column_metadata_DOC},
     {0, 0, 0, 0} /* Sentinel */
 };
 
