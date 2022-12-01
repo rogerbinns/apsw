@@ -7,6 +7,7 @@ import sys
 import time
 import apsw
 import random
+import ast
 
 # Note: this code uses Python's optional typing annotations.  You can
 # ignore them and do not need to use them
@@ -648,7 +649,7 @@ class Source:
 
     def Create(self, db, modulename, dbname, tablename, *args):
         # the eval strips off layer of quotes
-        columns, data = get_file_data([eval(a.replace("\\", "\\\\")) for a in args])
+        columns, data = get_file_data([ast.literal_eval(a.replace("\\", "\\\\")) for a in args])
         schema = "create table foo(" + ','.join(["'%s'" % (x, ) for x in columns[1:]]) + ")"
         return schema, Table(columns, data)
 
