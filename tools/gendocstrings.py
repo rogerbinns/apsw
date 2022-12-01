@@ -113,7 +113,7 @@ def get_all_exc_doc() -> None:
             continue
         if capture is not None:
             # look for non-indented line
-            if line.strip() and line.lstrip() == line:
+            if line.strip() and line.lstrip() == line and not line.startswith(".. attribute::"):
                 proc()
                 continue
             capture.append(line.rstrip())
