@@ -158,7 +158,8 @@ SQLite has a `warning/error logging facility
 
     def handler(errcode, message):
         errstr=apsw.mapping_result_codes[errcode & 255]
-        print ("SQLITE_LOG: %s (%d) %s %s" % (message, errcode, errstr, apsw.mapping_extended_result_codes.get(errcode, "")))
+        print (f"SQLITE_LOG: { message } ({ errcode }) { errstr } "
+               + apsw.mapping_extended_result_codes.get(errcode, ""))
 
     apsw.config(apsw.SQLITE_CONFIG_LOG, handler)
 
@@ -171,7 +172,9 @@ SQLite has a `warning/error logging facility
 
 This is an example of what gets printed when I use ``/dev/null`` as
 the database name in the :class:`Connection` and then tried to create
-a table.::
+a table.
+
+.. code-block:: output
 
     SQLITE_LOG: cannot open file at line 28729 of [7dd4968f23] (14) SQLITE_CANTOPEN
     SQLITE_LOG: os_unix.c:28729: (2) open(/dev/null-journal) - No such file or directory (14) SQLITE_CANTOPEN
