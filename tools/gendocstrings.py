@@ -551,8 +551,10 @@ def do_argparse(item):
             kind = "O&"
             args = ["argcheck_Optional_Callable"] + args
             if param["default"]:
-                breakpoint()
-                pass
+                if param["default"] == "None":
+                    default_check = f"{ pname } == NULL"
+                else:
+                    breakpoint()
         elif param["type"] == "Optional[Union[str,URIFilename]]":
             type = "PyObject *"
             kind = "O&"
