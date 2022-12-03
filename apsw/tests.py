@@ -4148,7 +4148,7 @@ class APSW(unittest.TestCase):
                                                 "|randomness|db_readonly|db_filename|release_memory|status64|result_.+|user_data|mprintf|aggregate_context"
                                                 "|declare_vtab|backup_remaining|backup_pagecount|mutex_enter|mutex_leave|sourceid|uri_.+"
                                                 "|column_name|column_decltype|column_database_name|column_table_name|column_origin_name"
-                                                "|stmt_isexplain|stmt_readonly|filename_journal|filename_wal)$"),
+                                                "|stmt_isexplain|stmt_readonly|filename_journal|filename_wal|stmt_status|sql)$"),
                         # error message
                         'desc': "sqlite3_ calls must wrap with PYSQLITE_CALL",
                         },
@@ -4788,6 +4788,70 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, self.db.cursor().execute, "delete from foo where rowid=?", (rowids.pop(), ))
         self.db.autovacuum_pages(None)
         self.db.cursor().execute("delete from foo where rowid=?", (rowids.pop(), ))
+
+    def testTraceV2(self):
+        "Connection.trace_v2"
+        self.assertRaises(TypeError, self.db.trace_v2, "abc", "abc")
+        self.assertRaises(TypeError, self.db.trace_v2, 1, "abc")
+
+        self.assertRaises(ValueError, self.db.trace_v2, 1, None)
+        self.assertRaises(ValueError, self.db.trace_v2, 0, lambda x: x)
+
+        results = []
+
+        def tracecb(data):
+            results.append(data)
+
+        query = "select 3"
+
+        self.db.trace_v2(apsw.SQLITE_TRACE_STMT, tracecb)
+
+        for _ in self.db.execute(query):
+            pass
+
+        self.assertEqual(1, len(results))
+        x = results.pop()
+        self.assertEqual(apsw.SQLITE_TRACE_STMT, x["code"])
+        self.assertIs(self.db, x["connection"])
+        self.assertEqual(query, x["sql"])
+
+        self.db.trace_v2(apsw.SQLITE_TRACE_ROW, tracecb)
+
+        for _ in self.db.execute(query):
+            pass
+
+        self.assertEqual(1, len(results))
+        x = results.pop()
+        self.assertEqual(apsw.SQLITE_TRACE_ROW, x["code"])
+        self.assertIs(self.db, x["connection"])
+        self.assertEqual(query, x["sql"])
+
+        self.db.trace_v2(apsw.SQLITE_TRACE_PROFILE, tracecb)
+
+        for _ in self.db.execute(query):
+            time.sleep(0.1)
+
+        self.assertEqual(1, len(results))
+        x = results.pop()
+        self.assertEqual(apsw.SQLITE_TRACE_PROFILE, x["code"])
+        self.assertIs(self.db, x["connection"])
+        self.assertEqual(query, x["sql"])
+        self.assertGreater(x["nanoseconds"], 0)
+        self.assertIn("stmt_status", x)
+        for n in apsw.mapping_statement_status:
+            if isinstance(n, str):
+                self.assertGreaterEqual(x["stmt_status"][n], 0)
+
+        db2 = apsw.Connection("")
+        db2.trace_v2(apsw.SQLITE_TRACE_CLOSE, tracecb)
+        for _ in db2.execute(query):
+            pass
+
+        db2.close()
+        self.assertEqual(1, len(results))
+        x = results.pop()
+        self.assertEqual(apsw.SQLITE_TRACE_CLOSE, x["code"])
+        self.assertIs(db2, x["connection"])
 
     def testURIFilenames(self):
         assertRaises = self.assertRaises

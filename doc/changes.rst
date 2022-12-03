@@ -12,6 +12,9 @@ Added :attr:`Connection.system_errno`, :meth:`apsw.strlike`,
 :meth:`Connection.table_exists`, :meth:`Connection.column_metadata`,
 :attr:`Error.error_offset` (:issue:`382`)
 
+Added :meth:`Connection.trace_v2` with :attr:`apsw.mapping_trace_codes`
+and :attr:`apsw.mapping_statement_status` (:issue:`383`)
+
 3.40.0.0
 ========
 

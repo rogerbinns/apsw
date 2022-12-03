@@ -469,7 +469,6 @@ qd = apsw.ext.query_info(
 # help with formatting
 import pprint
 
-
 print("query", qd.query)
 print("\nbindings", qd.bindings)
 print("\nexpanded_sql", qd.expanded_sql)
@@ -480,7 +479,6 @@ print("\nis_readonly", qd.is_readonly)
 print("\ndescription\n", pprint.pformat(qd.description))
 if hasattr(qd, "description_full"):
     print("\ndescription_full\n", pprint.pformat(qd.description_full))
-
 
 print("\nquery_plan\n", pprint.pformat(qd.query_plan))
 print("\nFirst 5 actions\n", pprint.pformat(qd.actions[:5]))
@@ -888,6 +886,44 @@ print(output.getvalue())
 
 current_usage, max_usage = apsw.status(apsw.SQLITE_STATUS_MEMORY_USED)
 print(f"SQLite memory usage { current_usage } max { max_usage }")
+
+### trace_v2: Tracing
+# This shows using :meth:`Connection.trace_v2`
+
+# From https://www.sqlite.org/lang_with.html
+# Outlandish Recursive Query Examples
+
+query = """WITH RECURSIVE
+            xaxis(x) AS (VALUES(-2.0) UNION ALL SELECT x+0.05 FROM xaxis WHERE x<1.2),
+            yaxis(y) AS (VALUES(-1.0) UNION ALL SELECT y+0.1 FROM yaxis WHERE y<1.0),
+            m(iter, cx, cy, x, y) AS (
+                SELECT 0, x, y, 0.0, 0.0 FROM xaxis, yaxis
+                UNION ALL
+                SELECT iter+1, cx, cy, x*x-y*y + cx, 2.0*x*y + cy FROM m
+                WHERE (x*x + y*y) < 4.0 AND iter<28
+            ),
+            m2(iter, cx, cy) AS (
+                SELECT max(iter), cx, cy FROM m GROUP BY cx, cy
+            ),
+            a(t) AS (
+                SELECT group_concat( substr(' .+*#', 1+min(iter/7,4), 1), '')
+                FROM m2 GROUP BY cy
+            )
+            SELECT group_concat(rtrim(t),x'0a') FROM a;"""
+
+
+def trace_hook(trace: Dict) -> None:
+    # check the sql and connection are as expected and remove from trace
+    # so we don't print them
+    assert trace.pop("sql") == query
+    print("code is ", apsw.mapping_trace_codes[trace["code"]])
+    print(pprint.pformat(trace), "\n")
+
+connection.trace_v2(apsw.SQLITE_TRACE_STMT | apsw.SQLITE_TRACE_PROFILE | apsw.SQLITE_TRACE_ROW, trace_hook)
+
+# We will get one each of the trace events
+for _ in connection.execute(query):
+    pass
 
 ### cleanup:  Cleanup
 # As a general rule you do not need to do any cleanup.  Standard

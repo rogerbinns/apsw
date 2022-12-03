@@ -65,7 +65,7 @@ def do_mappings():
 
         foundin = set()
         for val in m:
-            # present in multiple mappings
+            # present in multiple mappings etc
             if val in {"SQLITE_OK", "SQLITE_IGNORE", "SQLITE_ABORT"}:
                 continue
             for desc, const in consts.items():
@@ -81,7 +81,7 @@ def do_mappings():
         lookfor = set(consts[desc]["vars"])
 
         for v in lookfor:
-            if v not in mappings[map]:
+            if v not in mappings[map] and v not in {"SQLITE_TRACE"}:
                 print("Mapping", map, "is missing", v)
                 shouldexit = True
         if shouldexit:
@@ -107,13 +107,10 @@ def do_mappings():
         "Maximum xShmLock index",
         "Mutex Types",
         "Prepared Statement Scan Status Opcodes",
-        "Status Parameters for prepared statements",
         "Testing Interface Operation Codes",
         "Text Encodings",
         "Flags for sqlite3_deserialize()",
         "Flags for sqlite3_serialize",
-        "Prepare Flags",
-        "SQL Trace Event Codes",
         "Win32 Directory Types",
     }
 
