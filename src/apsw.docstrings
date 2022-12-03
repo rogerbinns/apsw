@@ -1720,6 +1720,50 @@
 "\n" \
 "Calls: `sqlite3_total_changes64 <https://sqlite.org/c3ref/total_changes.html>`__\n" 
 
+#define  Connection_trace_v2_DOC "trace_v2($self,mask,callback=None)\n--\n\nConnection.trace_v2(mask: int, callback: Optional[Callable[[dict], None]] = None) -> None\n\n" \
+"Registers a trace callback.  The callback is called with a dict of relevant values based\n" \
+"on the code.\n" \
+"\n" \
+".. list-table::\n" \
+"  :header-rows: 1\n" \
+"  :widths: auto\n" \
+"\n" \
+"  * - Key\n" \
+"    - Type\n" \
+"    - Explanation\n" \
+"  * - code\n" \
+"    - :class:`int`\n" \
+"    - One of the `trace event codes <https://www.sqlite.org/c3ref/c_trace.html>`__\n" \
+"  * - connection\n" \
+"    - :class:`Connection`\n" \
+"    - Connection this trace event belongs to\n" \
+"  * - sql\n" \
+"    - :class:`str`\n" \
+"    - SQL text (except SQLITE_TRACE_CLOSE)\n" \
+"  * - profile\n" \
+"    - :class:`int`\n" \
+"    - nanoseconds SQL took to execute (SQLITE_TRACE_PROFILE only)\n" \
+"  * - stmt_status\n" \
+"    - :class:`dict`\n" \
+"    - SQLITE_TRACE_PROFILE only: Keys are names from `status parameters\n" \
+"      <https://www.sqlite.org/c3ref/c_stmtstatus_counter.html>`__ - eg\n" \
+"      *\"SQLITE_STMTSTATUS_VM_STEP\"* and corresponding integer values.\n" \
+"      The counters are reset each time a statement\n" \
+"      starts execution.\n" \
+"\n" \
+"Calls:\n" \
+"  * `sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__\n" \
+"  * `sqlite3_stmt_status <https://sqlite.org/c3ref/stmt_status.html>`__\n" 
+
+#define Connection_trace_v2_USAGE "Connection.trace_v2(mask: int, callback: Optional[Callable[[dict], None]] = None) -> None"
+
+#define Connection_trace_v2_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(mask), int)); \
+  assert(__builtin_types_compatible_p(typeof(callback), PyObject *)); \
+  assert(callback == NULL); \
+} while(0)
+
+
 #define  Connection_txn_state_DOC "txn_state($self,schema=None)\n--\n\nConnection.txn_state(schema: Optional[str] = None) -> int\n\n" \
 "Returns the current transaction state of the database, or a specific schema\n" \
 "if provided.  ValueError is raised if schema is not None or a valid schema name.\n" \
