@@ -4853,6 +4853,12 @@ class APSW(unittest.TestCase):
         self.assertEqual(apsw.SQLITE_TRACE_CLOSE, x["code"])
         self.assertIs(db2, x["connection"])
 
+        def tracehook(x):
+            1/0
+        self.db.trace_v2(apsw.SQLITE_TRACE_STMT, tracehook)
+        self.assertRaisesUnraisable(ZeroDivisionError, self.db.execute, query)
+        self.assertEqual(0, len(results))
+
     def testURIFilenames(self):
         assertRaises = self.assertRaises
         assertEqual = self.assertEqual
