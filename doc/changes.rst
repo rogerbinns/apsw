@@ -15,6 +15,12 @@ Added :attr:`Connection.system_errno`, :meth:`apsw.strlike`,
 Added :meth:`Connection.trace_v2` with :attr:`apsw.mapping_trace_codes`
 and :attr:`apsw.mapping_statement_status` (:issue:`383`)
 
+When APSW has an unraiseable exception (usually a place where C code
+cannot return errors) it now also calls `sqlite3_log
+<https://www.sqlite.org/c3ref/log.html>`__ so you will have context
+(eg a rollback may be happening due to an exception in a VFS routine).
+(:issue:`385`)
+
 3.40.0.0
 ========
 

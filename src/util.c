@@ -138,6 +138,10 @@ apsw_write_unraiseable(PyObject *hookobject)
   PyErr_Fetch(&err_type, &err_value, &err_traceback);
   PyErr_NormalizeException(&err_type, &err_value, &err_traceback);
 
+  /* tell sqlite3_log */
+  if(err_value)
+    sqlite3_log(SQLITE_ERROR, "apsw_write_unraiseable type %s", Py_TYPE(err_value)->tp_name);
+
   if (hookobject)
   {
     excepthook = PyObject_GetAttrString(hookobject, "excepthook");
