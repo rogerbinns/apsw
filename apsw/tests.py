@@ -228,10 +228,6 @@ def deletefile(name):
         time.sleep(0.1)
 
 
-# Monkey patching FTW
-if not hasattr(unittest.TestCase, "assertTrue"):
-    unittest.TestCase.assertTrue = unittest.TestCase.assert_
-
 openflags = apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_URI
 
 
@@ -6488,11 +6484,11 @@ class APSW(unittest.TestCase):
         self.assertEqual(self.db.filename, self.db.db_filename("main"))
         self.db.cursor().execute("attach '%s' as foo" % (TESTFILEPREFIX + "testdb2", ))
         self.assertEqual(self.db.filename + "2", self.db.db_filename("foo"))
-        self.assert_(self.db.filename_wal.startswith(self.db.filename))
-        self.assert_(self.db.filename_journal.startswith(self.db.filename))
+        self.assertTrue(self.db.filename_wal.startswith(self.db.filename))
+        self.assertTrue(self.db.filename_journal.startswith(self.db.filename))
         xdb = apsw.Connection("")
         # these all end up empty string
-        self.assert_(xdb.filename == xdb.filename_wal and xdb.filename_wal == xdb.filename_journal)
+        self.assertTrue(xdb.filename == xdb.filename_wal and xdb.filename_wal == xdb.filename_journal)
 
     def testShell(self, shellclass=None):
         "Check Shell functionality"
