@@ -799,13 +799,14 @@ class Connection:
         Calls: `sqlite3_db_config <https://sqlite.org/c3ref/db_config.html>`__"""
         ...
 
-    def createaggregatefunction(self, name: str, factory: Optional[AggregateFactory], numargs: int = -1) -> None:
+    def createaggregatefunction(self, name: str, factory: Optional[AggregateFactory], numargs: int = -1, *, flags: int = 0) -> None:
         """Registers an aggregate function.  Aggregate functions operate on all
         the relevant rows such as counting how many there are.
 
         :param name: The string name of the function.  It should be less than 255 characters
         :param factory: The function that will be called.  Use None to delete the function.
         :param numargs: How many arguments the function takes, with -1 meaning any number
+        :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
 
         When a query starts, the *factory* will be called and must return a tuple of 3 items:
 
@@ -876,7 +877,7 @@ class Connection:
         Calls: `sqlite3_create_module_v2 <https://sqlite.org/c3ref/create_module.html>`__"""
         ...
 
-    def createscalarfunction(self, name: str, callable: Optional[ScalarProtocol], numargs: int = -1, deterministic: bool = False) -> None:
+    def createscalarfunction(self, name: str, callable: Optional[ScalarProtocol], numargs: int = -1, *, deterministic: bool = False, flags: int = 0) -> None:
         """Registers a scalar function.  Scalar functions operate on one set of parameters once.
 
         :param name: The string name of the function.  It should be less than 255 characters
@@ -888,6 +889,7 @@ class Connection:
                  for deterministic functions.  For example a random()
                  function is not deterministic while one that returns the
                  length of a string is.
+        :param flags: Additional `function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
 
         .. note::
 
@@ -2907,6 +2909,10 @@ SQLITE_DENY: int = 1
 """For `Authorizer Return Codes <https://sqlite.org/c3ref/c_deny.html>'__"""
 SQLITE_DETACH: int = 25
 """For `Authorizer Action Codes <https://sqlite.org/c3ref/c_alter_table.html>'__"""
+SQLITE_DETERMINISTIC: int = 2048
+"""For `Function Flags <https://sqlite.org/c3ref/c_deterministic.html>'__"""
+SQLITE_DIRECTONLY: int = 524288
+"""For `Function Flags <https://sqlite.org/c3ref/c_deterministic.html>'__"""
 SQLITE_DONE: int = 101
 """For `Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_DROP_INDEX: int = 10
@@ -3063,6 +3069,8 @@ SQLITE_INDEX_CONSTRAINT_REGEXP: int = 67
 """For `Virtual Table Constraint Operator Codes <https://sqlite.org/c3ref/c_index_constraint_eq.html>'__"""
 SQLITE_INDEX_SCAN_UNIQUE: int = 1
 """For `Virtual Table Scan Flags <https://sqlite.org/c3ref/c_index_scan_unique.html>'__"""
+SQLITE_INNOCUOUS: int = 2097152
+"""For `Function Flags <https://sqlite.org/c3ref/c_deterministic.html>'__"""
 SQLITE_INSERT: int = 18
 """For `Authorizer Action Codes <https://sqlite.org/c3ref/c_alter_table.html>'__"""
 SQLITE_INTERNAL: int = 2
@@ -3367,6 +3375,8 @@ SQLITE_STMTSTATUS_SORT: int = 2
 """For `Status Parameters for prepared statements <https://sqlite.org/c3ref/c_stmtstatus_counter.html>'__"""
 SQLITE_STMTSTATUS_VM_STEP: int = 4
 """For `Status Parameters for prepared statements <https://sqlite.org/c3ref/c_stmtstatus_counter.html>'__"""
+SQLITE_SUBTYPE: int = 1048576
+"""For `Function Flags <https://sqlite.org/c3ref/c_deterministic.html>'__"""
 SQLITE_SYNC_DATAONLY: int = 16
 """For `Synchronization Type Flags <https://sqlite.org/c3ref/c_sync_dataonly.html>'__"""
 SQLITE_SYNC_FULL: int = 3
@@ -3565,6 +3575,12 @@ SQLITE_FCNTL_SYNC_OMITTED SQLITE_FCNTL_TEMPFILENAME SQLITE_FCNTL_TRACE
 SQLITE_FCNTL_VFSNAME SQLITE_FCNTL_VFS_POINTER SQLITE_FCNTL_WAL_BLOCK
 SQLITE_FCNTL_WIN32_AV_RETRY SQLITE_FCNTL_WIN32_GET_HANDLE
 SQLITE_FCNTL_WIN32_SET_HANDLE SQLITE_FCNTL_ZIPVFS"""
+
+mapping_function_flags: Dict[Union[str,int],Union[int,str]]
+"""Function Flags mapping names to int and int to names.
+Doc at https://sqlite.org/c3ref/c_deterministic.html
+
+SQLITE_DETERMINISTIC SQLITE_DIRECTONLY SQLITE_INNOCUOUS SQLITE_SUBTYPE"""
 
 mapping_limits: Dict[Union[str,int],Union[int,str]]
 """Run-Time Limit Categories mapping names to int and int to names.

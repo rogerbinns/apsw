@@ -870,13 +870,14 @@
 "\n" \
 "Calls: `sqlite3_db_config <https://sqlite.org/c3ref/db_config.html>`__\n" 
 
-#define  Connection_createaggregatefunction_DOC "createaggregatefunction($self,name,factory,numargs=-1)\n--\n\nConnection.createaggregatefunction(name: str, factory: Optional[AggregateFactory], numargs: int = -1) -> None\n\n" \
+#define  Connection_createaggregatefunction_DOC "createaggregatefunction($self,name,factory,numargs=-1,*,flags=0)\n--\n\nConnection.createaggregatefunction(name: str, factory: Optional[AggregateFactory], numargs: int = -1, *, flags: int = 0) -> None\n\n" \
 "Registers an aggregate function.  Aggregate functions operate on all\n" \
 "the relevant rows such as counting how many there are.\n" \
 "\n" \
 ":param name: The string name of the function.  It should be less than 255 characters\n" \
 ":param factory: The function that will be called.  Use None to delete the function.\n" \
 ":param numargs: How many arguments the function takes, with -1 meaning any number\n" \
+":param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__\n" \
 "\n" \
 "When a query starts, the *factory* will be called and must return a tuple of 3 items:\n" \
 "\n" \
@@ -908,13 +909,15 @@
 "\n" \
 "Calls: `sqlite3_create_function_v2 <https://sqlite.org/c3ref/create_function.html>`__\n" 
 
-#define Connection_createaggregatefunction_USAGE "Connection.createaggregatefunction(name: str, factory: Optional[AggregateFactory], numargs: int = -1) -> None"
+#define Connection_createaggregatefunction_USAGE "Connection.createaggregatefunction(name: str, factory: Optional[AggregateFactory], numargs: int = -1, *, flags: int = 0) -> None"
 
 #define Connection_createaggregatefunction_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
   assert(__builtin_types_compatible_p(typeof(factory), PyObject *)); \
   assert(__builtin_types_compatible_p(typeof(numargs), int)); \
   assert(numargs == (-1)); \
+  assert(__builtin_types_compatible_p(typeof(flags), int)); \
+  assert(flags == (0)); \
 } while(0)
 
 
@@ -970,7 +973,7 @@
 } while(0)
 
 
-#define  Connection_createscalarfunction_DOC "createscalarfunction($self,name,callable,numargs=-1,deterministic=False)\n--\n\nConnection.createscalarfunction(name: str, callable: Optional[ScalarProtocol], numargs: int = -1, deterministic: bool = False) -> None\n\n" \
+#define  Connection_createscalarfunction_DOC "createscalarfunction($self,name,callable,numargs=-1,*,deterministic=False,flags=0)\n--\n\nConnection.createscalarfunction(name: str, callable: Optional[ScalarProtocol], numargs: int = -1, *, deterministic: bool = False, flags: int = 0) -> None\n\n" \
 "Registers a scalar function.  Scalar functions operate on one set of parameters once.\n" \
 "\n" \
 ":param name: The string name of the function.  It should be less than 255 characters\n" \
@@ -982,6 +985,7 @@
 "         for deterministic functions.  For example a random()\n" \
 "         function is not deterministic while one that returns the\n" \
 "         length of a string is.\n" \
+":param flags: Additional `function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__\n" \
 "\n" \
 ".. note::\n" \
 "\n" \
@@ -1002,7 +1006,7 @@
 "\n" \
 "Calls: `sqlite3_create_function_v2 <https://sqlite.org/c3ref/create_function.html>`__\n" 
 
-#define Connection_createscalarfunction_USAGE "Connection.createscalarfunction(name: str, callable: Optional[ScalarProtocol], numargs: int = -1, deterministic: bool = False) -> None"
+#define Connection_createscalarfunction_USAGE "Connection.createscalarfunction(name: str, callable: Optional[ScalarProtocol], numargs: int = -1, *, deterministic: bool = False, flags: int = 0) -> None"
 
 #define Connection_createscalarfunction_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
@@ -1011,6 +1015,8 @@
   assert(numargs == (-1)); \
   assert(__builtin_types_compatible_p(typeof(deterministic), int)); \
   assert(deterministic == 0); \
+  assert(__builtin_types_compatible_p(typeof(flags), int)); \
+  assert(flags == (0)); \
 } while(0)
 
 
