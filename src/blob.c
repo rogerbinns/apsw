@@ -229,7 +229,7 @@ APSWBlob_close_internal(APSWBlob *self, int force)
         break;
       case 2:
         SET_EXC(res, self->connection->db);
-        apsw_write_unraiseable(NULL);
+        apsw_write_unraisable(NULL);
       }
     }
     self->pBlob = 0;

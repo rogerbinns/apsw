@@ -88,9 +88,8 @@
 #define APSW_INT32_MAX 2147483647
 
 /*
-   The default Python PyErr_WriteUnraiseable is almost useless.  It
-   only prints the str() of the exception and the str() of the object
-   passed in.  This gives the developer no clue whatsoever where in
+   The default Python PyErr_WriteUnraisable is almost useless, and barely used
+   by CPython.  It gives the developer no clue whatsoever where in
    the code it is happening.  It also does funky things to the passed
    in object which can cause the destructor to fire twice.
    Consequently we use our version here.  It makes the traceback
@@ -98,6 +97,7 @@
    the hook isn't found or returns an error:
 
    * excepthook of hookobject (if not NULL)
+   * unraisablehook of sys module
    * excepthook of sys module
    * PyErr_Display
 
@@ -105,7 +105,7 @@
    return, any error will be cleared.
 */
 static void
-apsw_write_unraiseable(PyObject *hookobject)
+apsw_write_unraisable(PyObject *hookobject)
 {
   static int recursion_level;
 
@@ -149,7 +149,7 @@ apsw_write_unraiseable(PyObject *hookobject)
 
   /* tell sqlite3_log */
   if (err_value)
-    sqlite3_log(SQLITE_ERROR, "apsw_write_unraiseable type %s", Py_TYPE(err_value)->tp_name);
+    sqlite3_log(SQLITE_ERROR, "apsw_write_unraisable type %s", Py_TYPE(err_value)->tp_name);
 
   if (hookobject)
   {

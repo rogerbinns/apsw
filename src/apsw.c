@@ -338,7 +338,7 @@ apsw_logger(void *arg, int errcode, const char *message)
                      "logger", OBJ(arg),
                      "errcode", errcode,
                      "message", message);
-    apsw_write_unraiseable(NULL);
+    apsw_write_unraisable(NULL);
   }
   else
     Py_DECREF(res);
@@ -842,7 +842,7 @@ apsw_check_mutex(apsw_mutex *am)
     PyGILState_STATE gilstate;
     gilstate = PyGILState_Ensure();
     PyErr_Format(ExcForkingViolation, "SQLite object allocated in one process is being used in another (across a fork)");
-    apsw_write_unraiseable(NULL);
+    apsw_write_unraisable(NULL);
     PyErr_Format(ExcForkingViolation, "SQLite object allocated in one process is being used in another (across a fork)");
     PyGILState_Release(gilstate);
     return SQLITE_MISUSE;

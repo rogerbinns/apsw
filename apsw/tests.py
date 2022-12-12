@@ -100,11 +100,11 @@ def next(cursor, *args):
 # py3 has a useless sys.excepthook mainly to avoid allocating any
 # memory as the exception could have been running out of memory.  So
 # we use our own which is also valuable on py2 as it says it is an
-# unraiseable exception (with testcode you sometimes can't tell if it
-# is unittest showing you an exception or the unraiseable).  It is
+# unraisable exception (with testcode you sometimes can't tell if it
+# is unittest showing you an exception or the unraisable).  It is
 # mainly VFS code that needs to raise these.
 def ehook(etype, evalue, etraceback):
-    sys.stderr.write("Unraiseable exception " + str(etype) + ":" + str(evalue) + "\n")
+    sys.stderr.write("Unraisable exception " + str(etype) + ":" + str(evalue) + "\n")
     traceback.print_tb(etraceback)
 
 
@@ -339,7 +339,7 @@ class APSW(unittest.TestCase):
         return self.baseAssertRaisesUnraisable(True, exc, func, args, kwargs)
 
     def assertMayRaiseUnraisable(self, exc, func, *args, **kwargs):
-        """Like assertRaisesUnraiseable but no exception may be raised.
+        """Like assertRaisesUnraisable but no exception may be raised.
 
         If one is raised, it must have the expected type.
         """
@@ -378,7 +378,7 @@ class APSW(unittest.TestCase):
                     raise
             finally:
                 if must_raise and len(called) < 1:
-                    self.fail("Call %s(*%s, **%s) did not do any unraiseable" % (func, args, kwargs))
+                    self.fail("Call %s(*%s, **%s) did not do any unraisable" % (func, args, kwargs))
                 if len(called):
                     self.assertEqual(exc, called[0][0])  # check it was the correct type
         finally:
@@ -3929,11 +3929,11 @@ class APSW(unittest.TestCase):
 
         self.assertRaises(apsw.ThreadingViolationError, cur.executemany, "insert into b values(?)", foo())
 
-    def testWriteUnraiseable(self):
-        "Verify writeunraiseable replacement function"
+    def testWriteUnraisable(self):
+        "Verify writeunraisable replacement function"
 
         def unraise():
-            # We cause an unraiseable error to happen by writing to a
+            # We cause an unraisable error to happen by writing to a
             # blob open for reading.  The close method called in the
             # destructor will then also give the error
             db = apsw.Connection(":memory:")
@@ -6449,7 +6449,7 @@ class APSW(unittest.TestCase):
             self.assertEqual(called[0], 1)
 
             def badhandler(code, message, called=called):
-                if message and "apsw_write_unraiseable" in message:
+                if message and "apsw_write_unraisable" in message:
                     return
                 called[0] += 1
                 self.assertEqual(code, apsw.SQLITE_NOMEM)
@@ -9086,7 +9086,7 @@ SELECT group_concat(rtrim(t),x'0a') FROM a;
             # this should work
             teststuff(*getstuff())
 
-            # ignore the unraiseable stuff sent to sys.excepthook
+            # ignore the unraisable stuff sent to sys.excepthook
             def eh(*args):
                 pass
 

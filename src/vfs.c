@@ -186,7 +186,7 @@ across.
 
 #define VFSPOSTAMBLE                                     \
   if (PyErr_Occurred())                                  \
-    apsw_write_unraiseable((PyObject *)(vfs->pAppData)); \
+    apsw_write_unraisable((PyObject *)(vfs->pAppData)); \
   PyErr_Restore(etype, eval, etb);                       \
   PyGILState_Release(gilstate);
 
@@ -200,7 +200,7 @@ across.
 
 #define FILEPOSTAMBLE                       \
   if (PyErr_Occurred())                     \
-    apsw_write_unraiseable(apswfile->file); \
+    apsw_write_unraisable(apswfile->file); \
   PyErr_Restore(etype, eval, etb);          \
   PyGILState_Release(gilstate);
 
@@ -1553,7 +1553,7 @@ APSWVFS_dealloc(APSWVFS *self)
     Py_XDECREF(xx);
 
     if (PyErr_Occurred())
-      apsw_write_unraiseable(NULL);
+      apsw_write_unraisable(NULL);
     PyErr_Restore(etype, evalue, etraceback);
 
     /* some cleanups */
@@ -1818,7 +1818,7 @@ APSWVFSFile_dealloc(APSWVFSFile *self)
   if (PyErr_Occurred())
   {
     AddTraceBackHere(__FILE__, __LINE__, "APSWVFS File destructor", NULL);
-    apsw_write_unraiseable(NULL);
+    apsw_write_unraisable(NULL);
   }
   Py_TYPE(self)->tp_free((PyObject *)self);
 
@@ -2361,7 +2361,7 @@ apswvfsfile_xSectorSize(sqlite3_file *file)
       PyErr_Format(PyExc_TypeError, "xSectorSize should return a number");
   }
 
-  /* We can't return errors so use unraiseable */
+  /* We can't return errors so use unraisable */
   if (PyErr_Occurred())
   {
     AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xSectorSize", NULL);
@@ -2411,7 +2411,7 @@ apswvfsfile_xDeviceCharacteristics(sqlite3_file *file)
       PyErr_Format(PyExc_TypeError, "xDeviceCharacteristics should return a number");
   }
 
-  /* We can't return errors so use unraiseable */
+  /* We can't return errors so use unraisable */
   if (PyErr_Occurred())
   {
     AddTraceBackHere(__FILE__, __LINE__, "apswvfsfile_xDeviceCharacteristics", "{s: O}", "result", OBJ(pyresult));

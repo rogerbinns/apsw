@@ -15,7 +15,7 @@ Added :attr:`Connection.system_errno`, :meth:`apsw.strlike`,
 Added :meth:`Connection.trace_v2` with :attr:`apsw.mapping_trace_codes`
 and :attr:`apsw.mapping_statement_status` (:issue:`383`)
 
-When an :ref:`unraiseable exception <unraisable>` happens,
+When an :ref:`unraisable exception <unraisable>` happens,
 `sqlite3_log <https://www.sqlite.org/c3ref/log.html>`__ is now called
 so you will have context within SQLite's actions.  `sys.unraisablehook
 <https://docs.python.org/3/library/sys.html#sys.unraisablehook>`__ is

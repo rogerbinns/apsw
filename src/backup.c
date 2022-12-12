@@ -124,7 +124,7 @@ APSWBackup_close_internal(APSWBackup *self, int force)
       PyErr_Fetch(&etype, &eval, &etb);
 
       SET_EXC(res, self->dest->db);
-      apsw_write_unraiseable(NULL);
+      apsw_write_unraisable(NULL);
 
       PyErr_Restore(etype, eval, etb);
       break;

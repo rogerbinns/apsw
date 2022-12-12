@@ -198,7 +198,7 @@ Connection_close_internal(Connection *self, int force)
     {
       assert(PyErr_Occurred());
       if (force == 2)
-        apsw_write_unraiseable(NULL);
+        apsw_write_unraisable(NULL);
       else
         return 1;
     }
@@ -222,7 +222,7 @@ Connection_close_internal(Connection *self, int force)
                    "apsw.Connection at address %p. The destructor "
                    "has encountered an error %d closing the connection, but cannot raise an exception.",
                    self, res);
-      apsw_write_unraiseable(NULL);
+      apsw_write_unraisable(NULL);
     }
   }
 
@@ -1269,7 +1269,7 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
   {
     res = PyObject_CallFunctionObjArgs(connection->tracehook, param, NULL);
     if (!res)
-      apsw_write_unraiseable(NULL);
+      apsw_write_unraisable(NULL);
   }
 finally:
   Py_XDECREF(res);
@@ -2609,7 +2609,7 @@ finally:
   if (PyErr_Occurred() && (err_type || err_value || err_traceback))
   {
     PyErr_Format(PyExc_Exception, "An exception happened during cleanup of an aggregate function, but there was already error in the step function so only that can be returned");
-    apsw_write_unraiseable(NULL);
+    apsw_write_unraisable(NULL);
   }
 
   if (err_type || err_value || err_traceback)
