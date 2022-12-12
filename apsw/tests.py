@@ -8873,6 +8873,21 @@ shell.write(shell.stdout, "hello world\\n")
         apsw.faultdict["dbnamesappendfail"] = True
         self.assertRaises(MemoryError, self.db.db_names)
 
+    def testFunctionFlags(self) -> None:
+        "Flags to registered SQLite functions"
+        self.db.createscalarfunction("donotcall", lambda x: x/0, flags = apsw.SQLITE_DIRECTONLY)
+        self.db.execute("""
+            create table foo(y);
+            insert into foo values(7);
+            create view bar(z) as select donotcall(y) from foo;
+        """)
+        try:
+            self.db.execute("select * from bar")
+            1/0 # should not be reached
+        except apsw.SQLError as e:
+            self.assertIn("unsafe use of donotcall",  str(e))
+
+
     def testExtDataClassRowFactory(self) -> None:
         "apsw.ext.DataClassRowFactory"
         import apsw.ext

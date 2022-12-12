@@ -2645,7 +2645,7 @@ apsw_free_func(void *funcinfo)
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: createscalarfunction(name: str, callable: Optional[ScalarProtocol], numargs: int = -1, deterministic: bool = False) -> None
+/** .. method:: createscalarfunction(name: str, callable: Optional[ScalarProtocol], numargs: int = -1, *, deterministic: bool = False, flags: int = 0) -> None
 
   Registers a scalar function.  Scalar functions operate on one set of parameters once.
 
@@ -2658,6 +2658,7 @@ apsw_free_func(void *funcinfo)
            for deterministic functions.  For example a random()
            function is not deterministic while one that returns the
            length of a string is.
+  :param flags: Additional `function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
 
   .. note::
 
@@ -2684,7 +2685,7 @@ Connection_createscalarfunction(Connection *self, PyObject *args, PyObject *kwds
 {
   int numargs = -1;
   PyObject *callable = NULL;
-  int deterministic = 0;
+  int deterministic = 0, flags = 0;
   const char *name = 0;
   FunctionCBInfo *cbinfo;
   int res;
@@ -2693,9 +2694,9 @@ Connection_createscalarfunction(Connection *self, PyObject *args, PyObject *kwds
   CHECK_CLOSED(self, NULL);
 
   {
-    static char *kwlist[] = {"name", "callable", "numargs", "deterministic", NULL};
+    static char *kwlist[] = {"name", "callable", "numargs", "deterministic", "flags", NULL};
     Connection_createscalarfunction_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&|iO&:" Connection_createscalarfunction_USAGE, kwlist, &name, argcheck_Optional_Callable, &callable, &numargs, argcheck_bool, &deterministic))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&|i$O&i:" Connection_createscalarfunction_USAGE, kwlist, &name, argcheck_Optional_Callable, &callable, &numargs, argcheck_bool, &deterministic, &flags))
       return NULL;
   }
   if (!callable)
@@ -2712,11 +2713,13 @@ Connection_createscalarfunction(Connection *self, PyObject *args, PyObject *kwds
     Py_INCREF(callable);
   }
 
+  flags |= (deterministic ? SQLITE_DETERMINISTIC : 0);
+
   PYSQLITE_CON_CALL(
       res = sqlite3_create_function_v2(self->db,
                                        name,
                                        numargs,
-                                       SQLITE_UTF8 | (deterministic ? SQLITE_DETERMINISTIC : 0),
+                                       SQLITE_UTF8 | flags,
                                        cbinfo,
                                        cbinfo ? cbdispatch_func : NULL,
                                        NULL,
@@ -2735,7 +2738,7 @@ finally:
   Py_RETURN_NONE;
 }
 
-/** .. method:: createaggregatefunction(name: str, factory: Optional[AggregateFactory], numargs: int = -1) -> None
+/** .. method:: createaggregatefunction(name: str, factory: Optional[AggregateFactory], numargs: int = -1, *, flags: int = 0) -> None
 
   Registers an aggregate function.  Aggregate functions operate on all
   the relevant rows such as counting how many there are.
@@ -2743,6 +2746,7 @@ finally:
   :param name: The string name of the function.  It should be less than 255 characters
   :param factory: The function that will be called.  Use None to delete the function.
   :param numargs: How many arguments the function takes, with -1 meaning any number
+  :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
 
   When a query starts, the *factory* will be called and must return a tuple of 3 items:
 
@@ -2783,14 +2787,15 @@ Connection_createaggregatefunction(Connection *self, PyObject *args, PyObject *k
   const char *name = 0;
   FunctionCBInfo *cbinfo;
   int res;
+  int flags = 0;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
-    static char *kwlist[] = {"name", "factory", "numargs", NULL};
+    static char *kwlist[] = {"name", "factory", "numargs", "flags", NULL};
     Connection_createaggregatefunction_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&|i:" Connection_createaggregatefunction_USAGE, kwlist, &name, argcheck_Optional_Callable, &factory, &numargs))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&|i$i:" Connection_createaggregatefunction_USAGE, kwlist, &name, argcheck_Optional_Callable, &factory, &numargs, &flags))
       return NULL;
   }
 
@@ -2811,7 +2816,7 @@ Connection_createaggregatefunction(Connection *self, PyObject *args, PyObject *k
       res = sqlite3_create_function_v2(self->db,
                                        name,
                                        numargs,
-                                       SQLITE_UTF8,
+                                       SQLITE_UTF8 | flags,
                                        cbinfo,
                                        NULL,
                                        cbinfo ? cbdispatch_step : NULL,

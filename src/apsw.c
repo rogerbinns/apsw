@@ -2040,6 +2040,13 @@ modules etc. For example::
         ADDINT(SQLITE_STMTSTATUS_FILTER_MISS),
         ADDINT(SQLITE_STMTSTATUS_FILTER_HIT),
         ADDINT(SQLITE_STMTSTATUS_MEMUSED),
+        END,
+
+        DICT("mapping_function_flags"),
+        ADDINT(SQLITE_DETERMINISTIC),
+        ADDINT(SQLITE_DIRECTONLY),
+        ADDINT(SQLITE_SUBTYPE),
+        ADDINT(SQLITE_INNOCUOUS),
         END
 
     };

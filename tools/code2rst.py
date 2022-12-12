@@ -102,7 +102,6 @@ def do_mappings():
     ignores = {
         "Compile-Time Library Version Numbers",
         "Constants Defining Special Destructor Behavior",
-        "Function Flags",
         "Fundamental Datatypes",
         "Maximum xShmLock index",
         "Mutex Types",

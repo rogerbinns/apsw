@@ -6,6 +6,11 @@ Change History
 next
 ====
 
+`Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
+can be specified to :meth:`Connection.createscalarfunction` and
+:meth:`Connection.createaggregatefunction`. Added
+:attr:`apsw.mapping_function_flags`. (:issue:`384`)
+
 Added :attr:`Connection.system_errno`, :meth:`apsw.strlike`,
 :meth:`apsw.strglob`, :meth:`apsw.stricmp`, :meth:`apsw.strnicmp`,
 :attr:`Connection.filename_wal`, :attr:`Connection.filename_journal`,
