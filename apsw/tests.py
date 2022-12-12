@@ -4144,7 +4144,7 @@ class APSW(unittest.TestCase):
                                                 "|randomness|db_readonly|db_filename|release_memory|status64|result_.+|user_data|mprintf|aggregate_context"
                                                 "|declare_vtab|backup_remaining|backup_pagecount|mutex_enter|mutex_leave|sourceid|uri_.+"
                                                 "|column_name|column_decltype|column_database_name|column_table_name|column_origin_name"
-                                                "|stmt_isexplain|stmt_readonly|filename_journal|filename_wal|stmt_status|sql)$"),
+                                                "|stmt_isexplain|stmt_readonly|filename_journal|filename_wal|stmt_status|sql|log)$"),
                         # error message
                         'desc': "sqlite3_ calls must wrap with PYSQLITE_CALL",
                         },
@@ -6449,6 +6449,8 @@ class APSW(unittest.TestCase):
             self.assertEqual(called[0], 1)
 
             def badhandler(code, message, called=called):
+                if message and "apsw_write_unraiseable" in message:
+                    return
                 called[0] += 1
                 self.assertEqual(code, apsw.SQLITE_NOMEM)
                 self.assertEqual(message, u"Xa \u1234 unicode ' \ufe54 string \u0089")

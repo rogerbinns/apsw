@@ -1,8 +1,45 @@
+.. currentmodule:: apsw
+
 .. _exceptions:
 
-Exceptions
-**********
-.. currentmodule:: apsw
+Exceptions and Errors
+*********************
+
+Python uses :class:`exceptions <Exception>` to indicate an error has
+happened.  The SQLite library uses `integer error codes
+<https://www.sqlite.org/rescode.html>`__.  APSW maps between the two
+systems as needed.  Exceptions raised in Python code called by SQLite
+will have that exception present when control returns to Python, and
+SQLite will understand that an error occurred.
+
+.. _unraisable:
+
+Unraisable
+----------
+
+There are a few places where it is not possible for a Python exception
+to be reported to SQLite as an error, typically because SQLite does
+not allow an error to be signalled in that context.  Another example
+would be in :doc:`VFS <vfs>` code, because SQLite takes actions to
+recover from errors (eg it may try to rollback a transaction on a
+write error).  Python wants to return to callers, not continue
+execution while the exception is pending.  (Also only one exception
+can be active at a time.)
+
+Unraisable exceptions in VFS code are handled by calling
+:meth:`VFS.excepthook` or :meth:`VFSFile.excepthook` (:ref:`more info
+<vfserrors>`).  In other code `sys.unraisablehook
+<https://docs.python.org/3/library/sys.html#sys.unraisablehook>`__ is
+called, and if that is not present then `sys.excepthook
+<https://docs.python.org/3/library/sys.html#sys.excepthook>`__ is
+called.
+
+`sqlite3_log <https://www.sqlite.org/c3ref/log.html>`__ is also called
+so that you will have the context of when the exception happened
+relative to the errors SQLite is logging.
+
+Exception Classes
+-----------------
 
 
 .. exception:: Error

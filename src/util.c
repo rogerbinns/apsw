@@ -107,13 +107,22 @@
 static void
 apsw_write_unraiseable(PyObject *hookobject)
 {
+  static int recursion_level;
+
   PyObject *err_type = NULL, *err_value = NULL, *err_traceback = NULL;
   PyObject *excepthook = NULL;
   PyObject *result = NULL;
 
-  /* fill in the rest of the traceback */
+  /* this is necessary because we call sqlite3_log and that handler
+     could have an exception which calls this which calls sqlite3_log until
+     the stack overflows */
+  recursion_level++;
+  if (recursion_level > 2)
+    goto finally;
+
+    /* fill in the rest of the traceback */
 #ifdef PYPY_VERSION
-  /* do nothing */
+    /* do nothing */
 #else
 #if PY_VERSION_HEX < 0x03090000
   PyFrameObject *frame = PyThreadState_GET()->frame;
@@ -139,7 +148,7 @@ apsw_write_unraiseable(PyObject *hookobject)
   PyErr_NormalizeException(&err_type, &err_value, &err_traceback);
 
   /* tell sqlite3_log */
-  if(err_value)
+  if (err_value)
     sqlite3_log(SQLITE_ERROR, "apsw_write_unraiseable type %s", Py_TYPE(err_value)->tp_name);
 
   if (hookobject)
@@ -152,7 +161,18 @@ apsw_write_unraiseable(PyObject *hookobject)
       if (result)
         goto finally;
     }
-    Py_XDECREF(excepthook);
+    Py_CLEAR(excepthook);
+  }
+
+  excepthook = PySys_GetObject("unraisablehook");
+  if (excepthook)
+  {
+    Py_INCREF(excepthook); /* borrowed reference from PySys_GetObject so we increment */
+    PyErr_Clear();
+    result = PyObject_CallFunction(excepthook, "(OOO)", err_type ? err_type : Py_None, err_value ? err_value : Py_None, err_traceback ? err_traceback : Py_None);
+    if (result)
+      goto finally;
+    Py_CLEAR(excepthook);
   }
 
   excepthook = PySys_GetObject("excepthook");
@@ -176,6 +196,7 @@ finally:
   Py_XDECREF(err_value);
   Py_XDECREF(err_type);
   PyErr_Clear(); /* being paranoid - make sure no errors on return */
+  recursion_level--;
 }
 
 /* Converts sqlite3_value to PyObject.  Returns a new reference. */
