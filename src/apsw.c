@@ -333,7 +333,7 @@ apsw_logger(void *arg, int errcode, const char *message)
     res = PyObject_CallFunction(arg, "iO", errcode, msgaspystring);
   if (!res)
   {
-    AddTraceBackHere(__FILE__, __LINE__, "Call_Logger",
+    AddTraceBackHere(__FILE__, __LINE__, "apsw_sqlite3_log_receiver",
                      "{s: O, s: i, s: s}",
                      "logger", OBJ(arg),
                      "errcode", errcode,
