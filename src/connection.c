@@ -2333,7 +2333,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
     APSW_FAULT_INJECT(SetContextResultUnicodeConversionFails, strdata = PyUnicode_AsUTF8AndSize(obj, &strbytes), strdata = (const char *)PyErr_NoMemory());
     if (strdata)
     {
-        sqlite3_result_text64(context, strdata, strbytes, SQLITE_TRANSIENT, SQLITE_UTF8);
+      sqlite3_result_text64(context, strdata, strbytes, SQLITE_TRANSIENT, SQLITE_UTF8);
     }
     else
       sqlite3_result_error(context, "Unicode conversions failed", -1);
