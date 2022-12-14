@@ -1632,9 +1632,9 @@ class Cursor:
           * `sqlite3_step <https://sqlite.org/c3ref/step.html>`__
           * `sqlite3_bind_int64 <https://sqlite.org/c3ref/bind_blob.html>`__
           * `sqlite3_bind_null <https://sqlite.org/c3ref/bind_blob.html>`__
-          * `sqlite3_bind_text <https://sqlite.org/c3ref/bind_blob.html>`__
+          * `sqlite3_bind_text64 <https://sqlite.org/c3ref/bind_blob.html>`__
           * `sqlite3_bind_double <https://sqlite.org/c3ref/bind_blob.html>`__
-          * `sqlite3_bind_blob <https://sqlite.org/c3ref/bind_blob.html>`__
+          * `sqlite3_bind_blob64 <https://sqlite.org/c3ref/bind_blob.html>`__
           * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__"""
         ...
 

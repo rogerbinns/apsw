@@ -2006,9 +2006,9 @@
 "  * `sqlite3_step <https://sqlite.org/c3ref/step.html>`__\n" \
 "  * `sqlite3_bind_int64 <https://sqlite.org/c3ref/bind_blob.html>`__\n" \
 "  * `sqlite3_bind_null <https://sqlite.org/c3ref/bind_blob.html>`__\n" \
-"  * `sqlite3_bind_text <https://sqlite.org/c3ref/bind_blob.html>`__\n" \
+"  * `sqlite3_bind_text64 <https://sqlite.org/c3ref/bind_blob.html>`__\n" \
 "  * `sqlite3_bind_double <https://sqlite.org/c3ref/bind_blob.html>`__\n" \
-"  * `sqlite3_bind_blob <https://sqlite.org/c3ref/bind_blob.html>`__\n" \
+"  * `sqlite3_bind_blob64 <https://sqlite.org/c3ref/bind_blob.html>`__\n" \
 "  * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__\n" 
 
 #define Cursor_execute_bindings_MSG  "argument 'bindings' of Cursor.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor" 
@@ -2813,7 +2813,7 @@
 #define Zeroblob_init_USAGE "zeroblob.__init__(size: int)"
 
 #define Zeroblob_init_CHECK do { \
-  assert(__builtin_types_compatible_p(typeof(size), int)); \
+  assert(__builtin_types_compatible_p(typeof(size), long long)); \
 } while(0)
 
 
