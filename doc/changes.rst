@@ -11,14 +11,15 @@ can be specified to :meth:`Connection.createscalarfunction` and
 :meth:`Connection.createaggregatefunction`. Added
 :attr:`apsw.mapping_function_flags`. (:issue:`384`)
 
-Added :attr:`Connection.system_errno`, :meth:`apsw.strlike`,
-:meth:`apsw.strglob`, :meth:`apsw.stricmp`, :meth:`apsw.strnicmp`,
-:attr:`Connection.filename_wal`, :attr:`Connection.filename_journal`,
-:meth:`Connection.table_exists`, :meth:`Connection.column_metadata`,
-:attr:`Error.error_offset` (:issue:`382`)
-
 Added :meth:`Connection.trace_v2` with :attr:`apsw.mapping_trace_codes`
 and :attr:`apsw.mapping_statement_status` (:issue:`383`)
+
+Wrapped various SQLite APIs - :attr:`Connection.system_errno`,
+:meth:`apsw.strlike`, :meth:`apsw.strglob`, :meth:`apsw.stricmp`,
+:meth:`apsw.strnicmp`, :attr:`Connection.filename_wal`,
+:attr:`Connection.filename_journal`, :meth:`Connection.table_exists`,
+:meth:`Connection.column_metadata`, :attr:`Error.error_offset`
+(:issue:`382`)
 
 When an :ref:`unraisable exception <unraisable>` happens,
 `sqlite3_log <https://www.sqlite.org/c3ref/log.html>`__ is now called
