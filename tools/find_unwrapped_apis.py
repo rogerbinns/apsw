@@ -39,6 +39,12 @@ nowrap = {
     "sqlite3_column_int",
     "sqlite3_bind_int",
     "sqlite3_value_int",
+    "sqlite3_bind_blob",
+    "sqlite3_bind_text",
+    "sqlite3_result_int",
+    "sqlite3_result_text",
+    "sqlite3_result_zeroblob",
+    "sqlite3_result_blob",
 
     # not useful
     "sqlite3_next_stmt",
@@ -73,9 +79,12 @@ nowrap = {
     "sqlite3_get_table",
     "sqlite3_free_table",
     "sqlite3_result_value",
+    "sqlite3_bind_value",
     "sqlite3_auto_extension",  # connection_hooks are used
     "sqlite3_cancel_auto_extension",
     "sqlite3_reset_auto_extension",
+    "sqlite3_result_error_nomem",
+    "sqlite3_result_error_toobig",
 
     # deprecated but not marked as such (v2 exists)
     "sqlite3_trace",
