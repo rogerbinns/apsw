@@ -41,6 +41,7 @@ docstrings_skip = {
 
 virtual_table_classes = {"VTCursor", "VTModule", "VTTable"}
 
+
 def sqlite_links():
     global funclist, consts
 
@@ -103,7 +104,6 @@ def get_all_exc_doc() -> None:
         doc = [f"{ line }\n" for line in textwrap.dedent("\n".join(capture)).split("\n")]
         all_exc_doc[cur_name] = doc
         capture = None
-
 
     for line in open("doc/exceptions.rst", "rt"):
         if line.startswith(f".. exception::"):
@@ -453,7 +453,8 @@ def do_argparse(item):
         if param["name"] != "*" and not param["type"]:
             sys.exit(f"{ item['name'] } param { param } has no type from { item['signature_original'] }")
     res = [f"#define { item['symbol'] }_CHECK do {{ \\"]
-
+    param_structs = []
+    param_usages = []
     fstr = ""
     optional = False
     # names of python level keywords
@@ -529,7 +530,8 @@ def do_argparse(item):
                 breakpoint()
                 pass
         elif param["type"] in {
-                "PyObject", "Any", "Optional[type[BaseException]]", "Optional[BaseException]", "Optional[types.TracebackType]", "VTModule"
+                "PyObject", "Any", "Optional[type[BaseException]]", "Optional[BaseException]",
+                "Optional[types.TracebackType]", "VTModule"
         }:
             type = "PyObject *"
             kind = "O"
@@ -623,20 +625,38 @@ def do_argparse(item):
             optional = True
 
         fstr += kind
+        assert len(args) in {1, 2}
+        if len(args) == 2 and args[0].startswith("argcheck_"):
+            param_usages.append(pname)
+            param_structs.append(
+                f"{ args[0] }_param { pname }_param = {{ { args[1] }, { item['symbol'] }_{ pname }_MSG }};")
+            args[1] += "_param"
+
         parse_args.extend(args)
 
     res.append("} while(0)\n")
+
+    param_structs = "\n    ".join(param_structs)
 
     code = f"""\
   {{
     static char *kwlist[] = {{{ ", ".join(f'"{ a }"' for a in kwlist) }, NULL}};
     { item['symbol'] }_CHECK;
+    { param_structs }
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "{ fstr }:" { item['symbol'] }_USAGE, kwlist, { ", ".join(parse_args) }))
       return { "NULL" if not item['symbol'].endswith("_init") else -1 };
   }}"""
 
+    code = "\n".join(line for line in code.split("\n") if line.strip())
+
     usage = f"{ item['name'] }{ item['signature_original'] }".replace('"', '\\"')
     res.insert(0, f"""#define { item['symbol'] }_USAGE "{ usage }"\n""")
+
+    if param_usages:
+        u = []
+        for p in param_usages:
+            u.append(f"""#define { item['symbol'] }_{ p }_MSG  "argument '{ p }' of { usage }" """)
+        res.insert(0, "\n".join(u) + "\n")
 
     check_and_update(f"{ item['symbol'] }_CHECK", code)
 
@@ -695,7 +715,7 @@ def generate_typestubs(items: list[dict]):
 
     lastclass = ""
 
-    baseindent=""
+    baseindent = ""
 
     for item in sorted(items, key=lambda x: x["symbol"]):
         if item["kind"] == "class":

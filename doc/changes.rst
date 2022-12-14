@@ -28,6 +28,10 @@ now called first, and if it doesn't exist then `sys.excepthook
 <https://docs.python.org/3/library/sys.html#sys.excepthook>`__ as
 before.  (:issue:`385`)
 
+When the wrong type is given for a function argument, the error
+message now includes the parameter name and function signature.
+(:issue:`358`)
+
 3.40.0.0
 ========
 

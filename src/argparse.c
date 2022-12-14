@@ -1,14 +1,20 @@
-static int
-argcheck_Optional_Callable(PyObject *object, void *result)
+typedef struct
 {
-    PyObject **res = (PyObject **)result;
+    PyObject **result;
+    const char *message;
+} argcheck_Optional_Callable_param;
+
+static int
+argcheck_Optional_Callable(PyObject *object, void *vparam)
+{
+    argcheck_Optional_Callable_param *param = (argcheck_Optional_Callable_param *)vparam;
     if (object == Py_None)
-        *res = NULL;
+        *param->result = NULL;
     else if (PyCallable_Check(object))
-        *res = object;
+        *param->result = object;
     else
     {
-        PyErr_Format(PyExc_TypeError, "Function argument expected a Callable or None");
+        PyErr_Format(PyExc_TypeError, "Function argument expected a Callable or None: %s", param->message);
         return 0;
     }
     return 1;
@@ -21,15 +27,22 @@ argcheck_Optional_Callable(PyObject *object, void *result)
 
    This converter only accepts bool / int (or subclasses)
 */
-static int
-argcheck_bool(PyObject *object, void *result)
+typedef struct
 {
-    int *res = (int *)result;
+    int *result;
+    const char *message;
+} argcheck_bool_param;
+
+static int
+argcheck_bool(PyObject *object, void *vparam)
+{
+    argcheck_bool_param *param = (argcheck_bool_param *)vparam;
+
     int val;
 
     if (!PyBool_Check(object) && !PyLong_Check(object))
     {
-        PyErr_Format(PyExc_TypeError, "Function argument expected a bool");
+        PyErr_Format(PyExc_TypeError, "Function argument expected a bool: %s", param->message);
         return 0;
     }
 
@@ -38,29 +51,35 @@ argcheck_bool(PyObject *object, void *result)
     {
     case 0:
     case 1:
-        *res = val;
+        *param->result = val;
         return 1;
     default:
         return 0;
     }
 }
 
+typedef struct
+{
+    PyObject **result;
+    const char *message;
+} argcheck_List_int_int_param;
+
 /* Doing this here avoids cleanup in the calling function */
 static int
-argcheck_List_int_int(PyObject *object, void *result)
+argcheck_List_int_int(PyObject *object, void *vparam)
 {
     int i;
-    PyObject **output = (PyObject **)result;
+    argcheck_List_int_int_param *param = (argcheck_List_int_int_param *)vparam;
 
     if (!PyList_Check(object))
     {
-        PyErr_Format(PyExc_TypeError, "Function argument expected a list");
+        PyErr_Format(PyExc_TypeError, "Function argument expected a list: %s", param->message);
         return 0;
     }
 
     if (PySequence_Length(object) != 2)
     {
-        PyErr_Format(PyExc_ValueError, "Function argument expected a two item list");
+        PyErr_Format(PyExc_ValueError, "Function argument expected a two item list: %s", param->message);
         return 0;
     }
 
@@ -74,54 +93,73 @@ argcheck_List_int_int(PyObject *object, void *result)
         Py_DECREF(list_item);
         if (!check)
         {
-            PyErr_Format(PyExc_TypeError, "Function argument list[int,int] expected int for item %d", i);
+            PyErr_Format(PyExc_TypeError, "Function argument list[int,int] expected int for item %d: %s", i, param->message);
             return 0;
         }
     }
-    *output = object;
+    *param->result = object;
     return 1;
 }
 
 static PyTypeObject APSWURIFilenameType;
-static int
-argcheck_Optional_str_URIFilename(PyObject *object, void *result)
+
+typedef struct
 {
-    PyObject **output = (PyObject **)result;
+    PyObject **result;
+    const char *message;
+} argcheck_Optional_str_URIFilename_param;
+
+static int
+argcheck_Optional_str_URIFilename(PyObject *object, void *vparam)
+{
+    argcheck_Optional_str_URIFilename_param *param = (argcheck_Optional_str_URIFilename_param *)vparam;
 
     if (object == Py_None || PyUnicode_Check(object) || PyObject_IsInstance(object, (PyObject *)&APSWURIFilenameType))
     {
-        *output = object;
+        *param->result = object;
         return 1;
     }
-    PyErr_Format(PyExc_TypeError, "Function argument expect None | str | apsw.URIFilename");
+    PyErr_Format(PyExc_TypeError, "Function argument expect None | str | apsw.URIFilename: %s", param->message);
     return 0;
 }
 
-static int
-argcheck_pointer(PyObject *object, void *result)
+typedef struct
 {
-    void **output = (void **)result;
+    void **result;
+    const char *message;
+} argcheck_pointer_param;
+
+static int
+argcheck_pointer(PyObject *object, void *vparam)
+{
+    argcheck_pointer_param *param = (argcheck_pointer_param *)vparam;
     if (!PyLong_Check(object))
     {
-        PyErr_Format(PyExc_TypeError, "Function argument expected int (to be used as a pointer)");
+        PyErr_Format(PyExc_TypeError, "Function argument expected int (to be used as a pointer): %s", param->message);
         return 0;
     }
-    *output = PyLong_AsVoidPtr(object);
+    *param->result = PyLong_AsVoidPtr(object);
     return PyErr_Occurred() ? 0 : 1;
 }
 
-static int
-argcheck_Optional_Bindings(PyObject *object, void *result)
+typedef struct
 {
-    PyObject **output = (PyObject **)result;
+    PyObject **result;
+    const char *message;
+} argcheck_Optional_Bindings_param;
+
+static int
+argcheck_Optional_Bindings(PyObject *object, void *vparam)
+{
+    argcheck_Optional_Bindings_param *param = (argcheck_Optional_Bindings_param *)vparam;
     if (object == Py_None)
     {
-        *output = NULL;
+        *param->result = NULL;
         return 1;
     }
     /* PySequence_Check is too strict and rejects things that are
         accepted by PySequence_Fast like sets and generators,
         so everything is accepted */
-    *output = object;
+    *param->result = object;
     return 1;
 }
