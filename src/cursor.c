@@ -585,12 +585,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
     APSW_FAULT_INJECT(DoBindingUnicodeConversionFails, strdata = PyUnicode_AsUTF8AndSize(obj, &strbytes), strdata = (const char *)PyErr_NoMemory());
     if (strdata)
     {
-      if (strbytes > APSW_INT32_MAX)
-      {
-        SET_EXC(SQLITE_TOOBIG, NULL);
-      }
-      else
-        PYSQLITE_CUR_CALL(res = sqlite3_bind_text(self->statement->vdbestatement, arg, strdata, strbytes, SQLITE_TRANSIENT));
+        PYSQLITE_CUR_CALL(res = sqlite3_bind_text64(self->statement->vdbestatement, arg, strdata, strbytes, SQLITE_TRANSIENT, SQLITE_UTF8));
     }
     else
     {
@@ -607,18 +602,12 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
     if (asrb != 0)
       return -1;
 
-    if (py3buffer.len > APSW_INT32_MAX)
-    {
-      SET_EXC(SQLITE_TOOBIG, NULL);
-      PyBuffer_Release(&py3buffer);
-      return -1;
-    }
-    PYSQLITE_CUR_CALL(res = sqlite3_bind_blob(self->statement->vdbestatement, arg, py3buffer.buf, py3buffer.len, SQLITE_TRANSIENT));
+    PYSQLITE_CUR_CALL(res = sqlite3_bind_blob64(self->statement->vdbestatement, arg, py3buffer.buf, py3buffer.len, SQLITE_TRANSIENT));
     PyBuffer_Release(&py3buffer);
   }
   else if (PyObject_TypeCheck(obj, &ZeroBlobBindType) == 1)
   {
-    PYSQLITE_CUR_CALL(res = sqlite3_bind_zeroblob(self->statement->vdbestatement, arg, ((ZeroBlobBind *)obj)->blobsize));
+    PYSQLITE_CUR_CALL(res = sqlite3_bind_zeroblob64(self->statement->vdbestatement, arg, ((ZeroBlobBind *)obj)->blobsize));
   }
   else
   {
@@ -1012,7 +1001,7 @@ APSWCursor_step(APSWCursor *self)
     :raises BindingsError: You supplied too many or too few bindings for the statements
     :raises IncompleteExecutionError: There are remaining unexecuted queries from your last execute
 
-    -* sqlite3_prepare_v3 sqlite3_step sqlite3_bind_int64 sqlite3_bind_null sqlite3_bind_text sqlite3_bind_double sqlite3_bind_blob sqlite3_bind_zeroblob
+    -* sqlite3_prepare_v3 sqlite3_step sqlite3_bind_int64 sqlite3_bind_null sqlite3_bind_text64 sqlite3_bind_double sqlite3_bind_blob64 sqlite3_bind_zeroblob
 
     .. seealso::
 

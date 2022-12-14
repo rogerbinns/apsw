@@ -1015,6 +1015,14 @@ class APSW(unittest.TestCase):
 
     def testTypes(self):
         "Check type information is maintained"
+
+        # zeroblob in functions
+        def func(n: int):
+            return apsw.zeroblob(n)
+        self.db.createscalarfunction("func", func)
+
+        self.assertEqual(self.db.execute("select func(17)").fetchall()[0][0], b"\0" * 17)
+
         c = self.db.cursor()
         c.execute("create table foo(row,x)")
 
@@ -3969,6 +3977,7 @@ class APSW(unittest.TestCase):
 
     def testStatementCache(self, scsize=17):
         "Verify statement cache integrity"
+        self.db.close()
         self.db = apsw.Connection(TESTFILEPREFIX + "testdb", statementcachesize=scsize)
         cur = self.db.cursor()
         cur.execute("create table foo(x,y)")
@@ -4540,7 +4549,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, apsw.zeroblob)
         self.assertRaises(TypeError, apsw.zeroblob, "foo")
         self.assertRaises(TypeError, apsw.zeroblob, -7)
-        self.assertRaises(OverflowError, apsw.zeroblob, 4000000000)
+        self.assertRaises(apsw.TooBigError, self.db.execute, "select ?", (apsw.zeroblob(4000000000),))
         cur = self.db.cursor()
         cur.execute("create table foo(x)")
         cur.execute("insert into foo values(?)", (apsw.zeroblob(27), ))

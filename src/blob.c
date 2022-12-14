@@ -52,10 +52,7 @@ store the filename in the database.  Doing so loses the `ACID
   contents.
 */
 
-typedef struct
-{
-  PyObject_HEAD int blobsize;
-} ZeroBlobBind;
+/* ZeroBlobBind is defined in apsw.c because of forward references */
 
 static PyObject *
 ZeroBlobBind_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSED(kwargs))
@@ -74,12 +71,12 @@ ZeroBlobBind_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNU
 static int
 ZeroBlobBind_init(ZeroBlobBind *self, PyObject *args, PyObject *kwds)
 {
-  int size;
+  long long size;
 
   {
     static char *kwlist[] = {"size", NULL};
     Zeroblob_init_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" Zeroblob_init_USAGE, kwlist, &size))
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "L:" Zeroblob_init_USAGE, kwlist, &size))
       return -1;
   }
   if (size < 0)

@@ -409,7 +409,10 @@ type_overrides = {
     },
     "VFS.xOpen": {
         "flags": "List[int,int]"
-    }
+    },
+    "zeroblob.__init__": {
+        "size": "int64"
+    },
 }
 
 

@@ -135,6 +135,12 @@ static PyObject *apswmodule;
 /* root exception class */
 static PyObject *APSWException;
 
+typedef struct
+{
+  PyObject_HEAD long long blobsize;
+} ZeroBlobBind;
+
+
 /* Argument parsing helpers */
 #include "argparse.c"
 

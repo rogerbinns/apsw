@@ -2333,13 +2333,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
     APSW_FAULT_INJECT(SetContextResultUnicodeConversionFails, strdata = PyUnicode_AsUTF8AndSize(obj, &strbytes), strdata = (const char *)PyErr_NoMemory());
     if (strdata)
     {
-      if (strbytes > APSW_INT32_MAX)
-      {
-        SET_EXC(SQLITE_TOOBIG, NULL);
-        sqlite3_result_error_toobig(context);
-      }
-      else
-        sqlite3_result_text(context, strdata, strbytes, SQLITE_TRANSIENT);
+        sqlite3_result_text64(context, strdata, strbytes, SQLITE_TRANSIENT, SQLITE_UTF8);
     }
     else
       sqlite3_result_error(context, "Unicode conversions failed", -1);
@@ -2358,11 +2352,14 @@ set_context_result(sqlite3_context *context, PyObject *obj)
       sqlite3_result_error(context, "PyObject_GetBuffer failed", -1);
       return;
     }
-    if (py3buffer.len > APSW_INT32_MAX)
-      sqlite3_result_error_toobig(context);
-    else
-      sqlite3_result_blob(context, py3buffer.buf, py3buffer.len, SQLITE_TRANSIENT);
+    sqlite3_result_blob64(context, py3buffer.buf, py3buffer.len, SQLITE_TRANSIENT);
     PyBuffer_Release(&py3buffer);
+    return;
+  }
+
+  if (PyObject_TypeCheck(obj, &ZeroBlobBindType) == 1)
+  {
+    sqlite3_result_zeroblob64(context, ((ZeroBlobBind *)obj)->blobsize);
     return;
   }
 

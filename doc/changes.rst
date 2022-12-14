@@ -32,6 +32,9 @@ When the wrong type is given for a function argument, the error
 message now includes the parameter name and function signature.
 (:issue:`358`)
 
+Let SQLite do size checking instead of APSW for strings and blobs.
+(:issue:`387`)
+
 3.40.0.0
 ========
 
