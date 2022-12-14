@@ -229,7 +229,8 @@ enablesharedcache(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"enable", NULL};
     Apsw_enablesharedcache_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Apsw_enablesharedcache_USAGE, kwlist, argcheck_bool, &enable))
+    argcheck_bool_param enable_param = { &enable, Apsw_enablesharedcache_enable_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Apsw_enablesharedcache_USAGE, kwlist, argcheck_bool, &enable_param))
       return NULL;
   }
   APSW_FAULT_INJECT(EnableSharedCacheFail, res = sqlite3_enable_shared_cache(enable), res = SQLITE_NOMEM);
@@ -477,7 +478,8 @@ memoryhighwater(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"reset", NULL};
     Apsw_memoryhighwater_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&:" Apsw_memoryhighwater_USAGE, kwlist, argcheck_bool, &reset))
+    argcheck_bool_param reset_param = { &reset, Apsw_memoryhighwater_reset_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&:" Apsw_memoryhighwater_USAGE, kwlist, argcheck_bool, &reset_param))
       return NULL;
   }
   return PyLong_FromLongLong(sqlite3_memory_highwater(reset));
@@ -581,7 +583,8 @@ status(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"op", "reset", NULL};
     Apsw_status_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|O&:" Apsw_status_USAGE, kwlist, &op, argcheck_bool, &reset))
+    argcheck_bool_param reset_param = { &reset, Apsw_status_reset_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|O&:" Apsw_status_USAGE, kwlist, &op, argcheck_bool, &reset_param))
       return NULL;
   }
 

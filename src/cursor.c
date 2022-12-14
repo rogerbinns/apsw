@@ -1044,7 +1044,9 @@ APSWCursor_execute(APSWCursor *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"statements", "bindings", "can_cache", "prepare_flags", NULL};
     Cursor_execute_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O&$O&i:" Cursor_execute_USAGE, kwlist, &PyUnicode_Type, &statements, argcheck_Optional_Bindings, &bindings, argcheck_bool, &can_cache, &prepare_flags))
+    argcheck_Optional_Bindings_param bindings_param = { &bindings, Cursor_execute_bindings_MSG };
+    argcheck_bool_param can_cache_param = { &can_cache, Cursor_execute_can_cache_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!|O&$O&i:" Cursor_execute_USAGE, kwlist, &PyUnicode_Type, &statements, argcheck_Optional_Bindings, &bindings_param, argcheck_bool, &can_cache_param, &prepare_flags))
       return NULL;
   }
   self->bindings = bindings;
@@ -1157,7 +1159,8 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"statements", "sequenceofbindings", "can_cache", "prepare_flags", NULL};
     Cursor_executemany_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!O|$O&i:" Cursor_executemany_USAGE, kwlist, &PyUnicode_Type, &statements, &sequenceofbindings, argcheck_bool, &can_cache, &prepare_flags))
+    argcheck_bool_param can_cache_param = { &can_cache, Cursor_executemany_can_cache_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!O|$O&i:" Cursor_executemany_USAGE, kwlist, &PyUnicode_Type, &statements, &sequenceofbindings, argcheck_bool, &can_cache_param, &prepare_flags))
       return NULL;
   }
   self->emiter = PyObject_GetIter(sequenceofbindings);
@@ -1267,7 +1270,8 @@ APSWCursor_close(APSWCursor *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"force", NULL};
     Cursor_close_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&:" Cursor_close_USAGE, kwlist, argcheck_bool, &force))
+    argcheck_bool_param force_param = { &force, Cursor_close_force_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&:" Cursor_close_USAGE, kwlist, argcheck_bool, &force_param))
       return NULL;
   }
   APSWCursor_close_internal(self, !!force);
@@ -1368,7 +1372,8 @@ APSWCursor_setexectrace(APSWCursor *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"callable", NULL};
     Cursor_setexectrace_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Cursor_setexectrace_USAGE, kwlist, argcheck_Optional_Callable, &callable))
+    argcheck_Optional_Callable_param callable_param = { &callable, Cursor_setexectrace_callable_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Cursor_setexectrace_USAGE, kwlist, argcheck_Optional_Callable, &callable_param))
       return NULL;
   }
 
@@ -1394,7 +1399,8 @@ APSWCursor_setrowtrace(APSWCursor *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"callable", NULL};
     Cursor_setrowtrace_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Cursor_setrowtrace_USAGE, kwlist, argcheck_Optional_Callable, &callable))
+    argcheck_Optional_Callable_param callable_param = { &callable, Cursor_setrowtrace_callable_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Cursor_setrowtrace_USAGE, kwlist, argcheck_Optional_Callable, &callable_param))
       return NULL;
   }
 

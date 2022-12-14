@@ -330,7 +330,8 @@ apswvfspy_xDelete(APSWVFS *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"filename", "syncdir", NULL};
     VFS_xDelete_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&:" VFS_xDelete_USAGE, kwlist, &filename, argcheck_bool, &syncdir))
+    argcheck_bool_param syncdir_param = { &syncdir, VFS_xDelete_syncdir_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&:" VFS_xDelete_USAGE, kwlist, &filename, argcheck_bool, &syncdir_param))
       return NULL;
   }
   res = self->basevfs->xDelete(self->basevfs, filename, syncdir);
@@ -619,7 +620,9 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"name", "flags", NULL};
     VFS_xOpen_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&:" VFS_xOpen_USAGE, kwlist, argcheck_Optional_str_URIFilename, &name, argcheck_List_int_int, &flags))
+    argcheck_Optional_str_URIFilename_param name_param = { &name, VFS_xOpen_name_MSG };
+    argcheck_List_int_int_param flags_param = { &flags, VFS_xOpen_flags_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&:" VFS_xOpen_USAGE, kwlist, argcheck_Optional_str_URIFilename, &name_param, argcheck_List_int_int, &flags_param))
       return NULL;
   }
 
@@ -791,7 +794,8 @@ apswvfspy_xDlSym(APSWVFS *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"handle", "symbol", NULL};
     VFS_xDlSym_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&s:" VFS_xDlSym_USAGE, kwlist, argcheck_pointer, &handle, &symbol))
+    argcheck_pointer_param handle_param = { &handle, VFS_xDlSym_handle_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&s:" VFS_xDlSym_USAGE, kwlist, argcheck_pointer, &handle_param, &symbol))
       return NULL;
   }
   res = self->basevfs->xDlSym(self->basevfs, handle, symbol);
@@ -842,7 +846,8 @@ apswvfspy_xDlClose(APSWVFS *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"handle", NULL};
     VFS_xDlClose_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" VFS_xDlClose_USAGE, kwlist, argcheck_pointer, &handle))
+    argcheck_pointer_param handle_param = { &handle, VFS_xDlClose_handle_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" VFS_xDlClose_USAGE, kwlist, argcheck_pointer, &handle_param))
       return NULL;
   }
   self->basevfs->xDlClose(self->basevfs, handle);
@@ -1348,7 +1353,8 @@ apswvfspy_xSetSystemCall(APSWVFS *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"name", "pointer", NULL};
     VFS_xSetSystemCall_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "zO&:" VFS_xSetSystemCall_USAGE, kwlist, &name, argcheck_pointer, &pointer))
+    argcheck_pointer_param pointer_param = { &pointer, VFS_xSetSystemCall_pointer_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "zO&:" VFS_xSetSystemCall_USAGE, kwlist, &name, argcheck_pointer, &pointer_param))
       return NULL;
   }
 
@@ -1619,7 +1625,8 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"name", "base", "makedefault", "maxpathname", NULL};
     VFS_init_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|zO&i:" VFS_init_USAGE, kwlist, &name, &base, argcheck_bool, &makedefault, &maxpathname))
+    argcheck_bool_param makedefault_param = { &makedefault, VFS_init_makedefault_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|zO&i:" VFS_init_USAGE, kwlist, &name, &base, argcheck_bool, &makedefault_param, &maxpathname))
       return -1;
   }
 
@@ -1877,7 +1884,8 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"vfs", "filename", "flags", NULL};
     VFSFile_init_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sOO&:" VFSFile_init_USAGE, kwlist, &vfs, &filename, argcheck_List_int_int, &flags))
+    argcheck_List_int_int_param flags_param = { &flags, VFSFile_init_flags_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sOO&:" VFSFile_init_USAGE, kwlist, &vfs, &filename, argcheck_List_int_int, &flags_param))
       return -1;
   }
 
@@ -2623,7 +2631,8 @@ apswvfsfilepy_xFileControl(APSWVFSFile *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"op", "ptr", NULL};
     VFSFile_xFileControl_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iO&:" VFSFile_xFileControl_USAGE, kwlist, &op, argcheck_pointer, &ptr))
+    argcheck_pointer_param ptr_param = { &ptr, VFSFile_xFileControl_ptr_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iO&:" VFSFile_xFileControl_USAGE, kwlist, &op, argcheck_pointer, &ptr_param))
       return NULL;
   }
   res = self->base->pMethods->xFileControl(self->base, op, ptr);
@@ -2920,7 +2929,8 @@ apswurifilename_uri_boolean(APSWURIFilename *self, PyObject *args, PyObject *kwd
   {
     static char *kwlist[] = {"name", "default_", NULL};
     URIFilename_uri_boolean_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&:" URIFilename_uri_boolean_USAGE, kwlist, &name, argcheck_bool, &default_))
+    argcheck_bool_param default__param = { &default_, URIFilename_uri_boolean_default__MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&:" URIFilename_uri_boolean_USAGE, kwlist, &name, argcheck_bool, &default__param))
       return NULL;
   }
 

@@ -278,7 +278,8 @@ Connection_close(Connection *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"force", NULL};
     Connection_close_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&:" Connection_close_USAGE, kwlist, argcheck_bool, &force))
+    argcheck_bool_param force_param = { &force, Connection_close_force_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&:" Connection_close_USAGE, kwlist, argcheck_bool, &force_param))
       return NULL;
   }
   if (Connection_close_internal(self, force))
@@ -508,7 +509,8 @@ Connection_blobopen(Connection *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"database", "table", "column", "rowid", "writeable", NULL};
     Connection_blobopen_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sssLO&:" Connection_blobopen_USAGE, kwlist, &database, &table, &column, &rowid, argcheck_bool, &writeable))
+    argcheck_bool_param writeable_param = { &writeable, Connection_blobopen_writeable_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sssLO&:" Connection_blobopen_USAGE, kwlist, &database, &table, &column, &rowid, argcheck_bool, &writeable_param))
       return NULL;
   }
   PYSQLITE_CON_CALL(res = sqlite3_blob_open(self->db, database, table, column, rowid, writeable, &blob));
@@ -1028,7 +1030,8 @@ Connection_setupdatehook(Connection *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"callable", NULL};
     Connection_setupdatehook_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setupdatehook_USAGE, kwlist, argcheck_Optional_Callable, &callable))
+    argcheck_Optional_Callable_param callable_param = { &callable, Connection_setupdatehook_callable_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setupdatehook_USAGE, kwlist, argcheck_Optional_Callable, &callable_param))
       return NULL;
   }
   if (!callable)
@@ -1095,7 +1098,8 @@ Connection_setrollbackhook(Connection *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"callable", NULL};
     Connection_setrollbackhook_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setrollbackhook_USAGE, kwlist, argcheck_Optional_Callable, &callable))
+    argcheck_Optional_Callable_param callable_param = { &callable, Connection_setrollbackhook_callable_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setrollbackhook_USAGE, kwlist, argcheck_Optional_Callable, &callable_param))
       return NULL;
   }
 
@@ -1164,7 +1168,8 @@ Connection_setprofile(Connection *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"callable", NULL};
     Connection_setprofile_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setprofile_USAGE, kwlist, argcheck_Optional_Callable, &callable))
+    argcheck_Optional_Callable_param callable_param = { &callable, Connection_setprofile_callable_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setprofile_USAGE, kwlist, argcheck_Optional_Callable, &callable_param))
       return NULL;
   }
   if (!callable)
@@ -1324,7 +1329,8 @@ Connection_trace_v2(Connection *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"mask", "callback", NULL};
     Connection_trace_v2_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|O&:" Connection_trace_v2_USAGE, kwlist, &mask, argcheck_Optional_Callable, &callback))
+    argcheck_Optional_Callable_param callback_param = { &callback, Connection_trace_v2_callback_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|O&:" Connection_trace_v2_USAGE, kwlist, &mask, argcheck_Optional_Callable, &callback_param))
       return NULL;
   }
 
@@ -1425,7 +1431,8 @@ Connection_setcommithook(Connection *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"callable", NULL};
     Connection_setcommithook_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setcommithook_USAGE, kwlist, argcheck_Optional_Callable, &callable))
+    argcheck_Optional_Callable_param callable_param = { &callable, Connection_setcommithook_callable_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setcommithook_USAGE, kwlist, argcheck_Optional_Callable, &callable_param))
       return NULL;
   }
   if (!callable)
@@ -1516,7 +1523,8 @@ Connection_setwalhook(Connection *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"callable", NULL};
     Connection_setwalhook_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setwalhook_USAGE, kwlist, argcheck_Optional_Callable, &callable))
+    argcheck_Optional_Callable_param callable_param = { &callable, Connection_setwalhook_callable_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setwalhook_USAGE, kwlist, argcheck_Optional_Callable, &callable_param))
       return NULL;
   }
 
@@ -1598,7 +1606,8 @@ Connection_setprogresshandler(Connection *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"callable", "nsteps", NULL};
     Connection_setprogresshandler_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|i:" Connection_setprogresshandler_USAGE, kwlist, argcheck_Optional_Callable, &callable, &nsteps))
+    argcheck_Optional_Callable_param callable_param = { &callable, Connection_setprogresshandler_callable_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|i:" Connection_setprogresshandler_USAGE, kwlist, argcheck_Optional_Callable, &callable_param, &nsteps))
       return NULL;
   }
   if (!callable)
@@ -1711,7 +1720,8 @@ Connection_setauthorizer(Connection *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"callable", NULL};
     Connection_setauthorizer_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setauthorizer_USAGE, kwlist, argcheck_Optional_Callable, &callable))
+    argcheck_Optional_Callable_param callable_param = { &callable, Connection_setauthorizer_callable_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setauthorizer_USAGE, kwlist, argcheck_Optional_Callable, &callable_param))
       return NULL;
   }
 
@@ -1792,7 +1802,8 @@ Connection_autovacuum_pages(Connection *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"callable", NULL};
     Connection_autovacuum_pages_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_autovacuum_pages_USAGE, kwlist, argcheck_Optional_Callable, &callable))
+    argcheck_Optional_Callable_param callable_param = { &callable, Connection_autovacuum_pages_callable_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_autovacuum_pages_USAGE, kwlist, argcheck_Optional_Callable, &callable_param))
       return NULL;
   }
   if (!callable)
@@ -1876,7 +1887,8 @@ Connection_collationneeded(Connection *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"callable", NULL};
     Connection_collationneeded_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_collationneeded_USAGE, kwlist, argcheck_Optional_Callable, &callable))
+    argcheck_Optional_Callable_param callable_param = { &callable, Connection_collationneeded_callable_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_collationneeded_USAGE, kwlist, argcheck_Optional_Callable, &callable_param))
       return NULL;
   }
 
@@ -1982,7 +1994,8 @@ Connection_setbusyhandler(Connection *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"callable", NULL};
     Connection_setbusyhandler_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setbusyhandler_USAGE, kwlist, argcheck_Optional_Callable, &callable))
+    argcheck_Optional_Callable_param callable_param = { &callable, Connection_setbusyhandler_callable_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setbusyhandler_USAGE, kwlist, argcheck_Optional_Callable, &callable_param))
       return NULL;
   }
 
@@ -2154,7 +2167,8 @@ Connection_enableloadextension(Connection *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"enable", NULL};
     Connection_enableloadextension_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_enableloadextension_USAGE, kwlist, argcheck_bool, &enable))
+    argcheck_bool_param enable_param = { &enable, Connection_enableloadextension_enable_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_enableloadextension_USAGE, kwlist, argcheck_bool, &enable_param))
       return NULL;
   }
   /* call function */
@@ -2696,7 +2710,9 @@ Connection_createscalarfunction(Connection *self, PyObject *args, PyObject *kwds
   {
     static char *kwlist[] = {"name", "callable", "numargs", "deterministic", "flags", NULL};
     Connection_createscalarfunction_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&|i$O&i:" Connection_createscalarfunction_USAGE, kwlist, &name, argcheck_Optional_Callable, &callable, &numargs, argcheck_bool, &deterministic, &flags))
+    argcheck_Optional_Callable_param callable_param = { &callable, Connection_createscalarfunction_callable_MSG };
+    argcheck_bool_param deterministic_param = { &deterministic, Connection_createscalarfunction_deterministic_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&|i$O&i:" Connection_createscalarfunction_USAGE, kwlist, &name, argcheck_Optional_Callable, &callable_param, &numargs, argcheck_bool, &deterministic_param, &flags))
       return NULL;
   }
   if (!callable)
@@ -2795,7 +2811,8 @@ Connection_createaggregatefunction(Connection *self, PyObject *args, PyObject *k
   {
     static char *kwlist[] = {"name", "factory", "numargs", "flags", NULL};
     Connection_createaggregatefunction_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&|i$i:" Connection_createaggregatefunction_USAGE, kwlist, &name, argcheck_Optional_Callable, &factory, &numargs, &flags))
+    argcheck_Optional_Callable_param factory_param = { &factory, Connection_createaggregatefunction_factory_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&|i$i:" Connection_createaggregatefunction_USAGE, kwlist, &name, argcheck_Optional_Callable, &factory_param, &numargs, &flags))
       return NULL;
   }
 
@@ -2942,7 +2959,8 @@ Connection_createcollation(Connection *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"name", "callback", NULL};
     Connection_createcollation_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&:" Connection_createcollation_USAGE, kwlist, &name, argcheck_Optional_Callable, &callback))
+    argcheck_Optional_Callable_param callback_param = { &callback, Connection_createcollation_callback_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&:" Connection_createcollation_USAGE, kwlist, &name, argcheck_Optional_Callable, &callback_param))
       return NULL;
   }
 
@@ -3029,7 +3047,8 @@ Connection_filecontrol(Connection *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"dbname", "op", "pointer", NULL};
     Connection_filecontrol_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "siO&:" Connection_filecontrol_USAGE, kwlist, &dbname, &op, argcheck_pointer, &pointer))
+    argcheck_pointer_param pointer_param = { &pointer, Connection_filecontrol_pointer_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "siO&:" Connection_filecontrol_USAGE, kwlist, &dbname, &op, argcheck_pointer, &pointer_param))
       return NULL;
   }
 
@@ -3253,7 +3272,8 @@ Connection_setexectrace(Connection *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"callable", NULL};
     Connection_setexectrace_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setexectrace_USAGE, kwlist, argcheck_Optional_Callable, &callable))
+    argcheck_Optional_Callable_param callable_param = { &callable, Connection_setexectrace_callable_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setexectrace_USAGE, kwlist, argcheck_Optional_Callable, &callable_param))
       return NULL;
   }
 
@@ -3280,7 +3300,8 @@ Connection_setrowtrace(Connection *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"callable", NULL};
     Connection_setrowtrace_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setrowtrace_USAGE, kwlist, argcheck_Optional_Callable, &callable))
+    argcheck_Optional_Callable_param callable_param = { &callable, Connection_setrowtrace_callable_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Connection_setrowtrace_USAGE, kwlist, argcheck_Optional_Callable, &callable_param))
       return NULL;
   }
 
@@ -3600,7 +3621,8 @@ Connection_status(Connection *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"op", "reset", NULL};
     Connection_status_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|O&:" Connection_status_USAGE, kwlist, &op, argcheck_bool, &reset))
+    argcheck_bool_param reset_param = { &reset, Connection_status_reset_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|O&:" Connection_status_USAGE, kwlist, &op, argcheck_bool, &reset_param))
       return NULL;
   }
 
@@ -3847,7 +3869,8 @@ Connection_cache_stats(Connection *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"include_entries", NULL};
     Connection_cache_stats_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&:" Connection_cache_stats_USAGE, kwlist, argcheck_bool, &include_entries))
+    argcheck_bool_param include_entries_param = { &include_entries, Connection_cache_stats_include_entries_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&:" Connection_cache_stats_USAGE, kwlist, argcheck_bool, &include_entries_param))
       return NULL;
   }
   return statementcache_stats(self->stmtcache, include_entries);

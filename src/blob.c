@@ -603,7 +603,8 @@ APSWBlob_close(APSWBlob *self, PyObject *args, PyObject *kwds)
   {
     static char *kwlist[] = {"force", NULL};
     Blob_close_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&:" Blob_close_USAGE, kwlist, argcheck_bool, &force))
+    argcheck_bool_param force_param = { &force, Blob_close_force_MSG };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O&:" Blob_close_USAGE, kwlist, argcheck_bool, &force_param))
       return NULL;
   }
   setexc = APSWBlob_close_internal(self, !!force);
