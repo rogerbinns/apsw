@@ -28,7 +28,7 @@ GENDOCS = \
 	doc/apsw.rst \
 	doc/backup.rst
 
-.PHONY : all docs doc header linkcheck publish showsymbols compile-win source source_nocheck release tags clean ppa dpkg dpkg-bin coverage valgrind valgrind1 tagpush pydebug test fulltest test_debug
+.PHONY : all docs doc header linkcheck publish showsymbols compile-win source source_nocheck release tags clean ppa dpkg dpkg-bin coverage valgrind valgrind1 tagpush pydebug test fulltest test_debug unwrapped
 
 all: header src/apsw.docstrings apsw/__init__.pyi test docs
 
@@ -102,6 +102,9 @@ fulltest: test test_debug
 
 linkcheck:
 	make RELEASEDATE=$(RELEASEDATE) VERSION=$(VERSION) -C doc linkcheck
+
+unwrapped:
+	env PYTHONPATH=. $(PYTHON) tools/find_unwrapped_apis.py
 
 publish: docs
 	if [ -d ../apsw-publish ] ; then rm -f ../apsw-publish/* ../apsw-publish/_static/* ../apsw-publish/_sources/* ; \
