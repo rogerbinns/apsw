@@ -534,7 +534,7 @@ def do_argparse(item):
                 pass
         elif param["type"] in {
                 "PyObject", "Any", "Optional[type[BaseException]]", "Optional[BaseException]",
-                "Optional[types.TracebackType]", "VTModule"
+                "Optional[types.TracebackType]", "Optional[VTModule]"
         }:
             type = "PyObject *"
             kind = "O"

@@ -3168,9 +3168,10 @@ Connection_wal_checkpoint(Connection *self, PyObject *args, PyObject *kwds)
 static struct sqlite3_module apsw_vtable_module;
 static void apswvtabFree(void *context);
 
-/** .. method:: createmodule(name: str, datasource: VTModule) -> None
+/** .. method:: createmodule(name: str, datasource: Optional[VTModule]) -> None
 
-    Registers a virtual table.  See :ref:`virtualtables` for details.
+    Registers a virtual table, or drops it if *datasource* is *None*.
+    See :ref:`virtualtables` for details.
 
     .. seealso::
 
@@ -3183,7 +3184,7 @@ Connection_createmodule(Connection *self, PyObject *args, PyObject *kwds)
 {
   const char *name = NULL;
   PyObject *datasource = NULL;
-  vtableinfo *vti;
+  vtableinfo *vti = NULL;
   int res;
 
   CHECK_USE(NULL);
@@ -3195,15 +3196,19 @@ Connection_createmodule(Connection *self, PyObject *args, PyObject *kwds)
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO:" Connection_createmodule_USAGE, kwlist, &name, &datasource))
       return NULL;
   }
-  Py_INCREF(datasource);
-  vti = PyMem_Malloc(sizeof(vtableinfo));
-  vti->connection = self;
-  vti->datasource = datasource;
+
+  if (datasource != Py_None)
+  {
+    Py_INCREF(datasource);
+    vti = PyMem_Malloc(sizeof(vtableinfo));
+    vti->connection = self;
+    vti->datasource = datasource;
+  }
 
   /* SQLite is really finnicky.  Note that it calls the destructor on
      failure  */
   APSW_FAULT_INJECT(CreateModuleFail,
-                    PYSQLITE_CON_CALL((res = sqlite3_create_module_v2(self->db, name, &apsw_vtable_module, vti, apswvtabFree), vti = NULL)),
+                    PYSQLITE_CON_CALL((res = sqlite3_create_module_v2(self->db, name, vti ? &apsw_vtable_module : NULL, vti, apswvtabFree), vti = NULL)),
                     res = SQLITE_IOERR);
   SET_EXC(res, self->db);
 
