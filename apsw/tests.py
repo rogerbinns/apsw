@@ -4442,31 +4442,16 @@ class APSW(unittest.TestCase):
         self.assertEqual(self.db.sqlite3pointer(), self.db.sqlite3pointer())
         self.assertNotEqual(self.db.sqlite3pointer(), apsw.Connection(":memory:").sqlite3pointer())
 
-    def testPickle(self, module=None):
+    def testPickle(self):
         "Verify data etc can be pickled"
-        if module == None:
-            import pickle
-            self.testPickle(pickle)
-            try:
-                import cPickle
-                self.testPickle(cPickle)
-            except ImportError:
-                pass
-            return
-
         import pickle
         PicklingError = pickle.PicklingError
-        try:
-            import cPickle
-            PicklingError = (PicklingError, cPickle.PicklingError)
-        except ImportError:
-            pass
 
         # work out what protocol versions we can use
         versions = []
         for num in range(-1, 20):
             try:
-                module.dumps(3, num)
+                pickle.dumps(3, num)
                 versions.append(num)
             except ValueError:
                 pass
@@ -4485,7 +4470,7 @@ class APSW(unittest.TestCase):
 
         for ver in versions:
             for row in cursor.execute("select * from t"):
-                self.assertEqual(row, module.loads(module.dumps(row, ver)))
+                self.assertEqual(row, pickle.loads(pickle.dumps(row, ver)))
                 rownum, val = row
                 if type(vals[rownum]) is float:
                     self.assertAlmostEqual(vals[rownum], val)
@@ -4493,7 +4478,7 @@ class APSW(unittest.TestCase):
                     self.assertEqual(vals[rownum], val)
             # can't pickle cursors
             try:
-                module.dumps(cursor, ver)
+                pickle.dumps(cursor, ver)
             except TypeError:
                 pass
             except PicklingError:
@@ -4501,7 +4486,7 @@ class APSW(unittest.TestCase):
             # some versions can pickle the db, but give a zeroed db back
             db = None
             try:
-                db = module.loads(module.dumps(self.db, ver))
+                db = pickle.loads(pickle.dumps(self.db, ver))
             except TypeError:
                 pass
             if db is not None:
