@@ -355,6 +355,9 @@ type_overrides = {
     "apsw.softheaplimit": {
         "limit": "int64"
     },
+    "apsw.hard_heap_limit": {
+        "limit": "int64"
+    },
     "Blob.readinto": {
         "buffer": "PyObject",
         "offset": "int64",
@@ -365,6 +368,9 @@ type_overrides = {
     },
     "Connection.blobopen": {
         "rowid": "int64"
+    },
+    "Connection.drop_modules": {
+        "keep": "PyObject"
     },
     "Connection.filecontrol": {
         "pointer": "pointer"

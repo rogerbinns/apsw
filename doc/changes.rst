@@ -14,11 +14,13 @@ can be specified to :meth:`Connection.createscalarfunction` and
 Added :meth:`Connection.trace_v2` with :attr:`apsw.mapping_trace_codes`
 and :attr:`apsw.mapping_statement_status` (:issue:`383`)
 
-Wrapped various SQLite APIs - :attr:`Connection.system_errno`,
+Ensure all SQLite APIs are wrapped. :attr:`Connection.system_errno`,
 :meth:`apsw.strlike`, :meth:`apsw.strglob`, :meth:`apsw.stricmp`,
 :meth:`apsw.strnicmp`, :attr:`Connection.filename_wal`,
 :attr:`Connection.filename_journal`, :meth:`Connection.table_exists`,
-:meth:`Connection.column_metadata`, :attr:`Error.error_offset`
+:meth:`Connection.column_metadata`, :attr:`Error.error_offset`,
+:meth:`Connection.cacheflush`, :meth:`Connection.release_memory`,
+:meth:`apsw.hard_heap_limit`. :meth:`Connection.drop_modules`
 (:issue:`382`)
 
 When an :ref:`unraisable exception <unraisable>` happens,

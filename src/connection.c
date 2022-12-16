@@ -3956,6 +3956,133 @@ Connection_column_metadata(Connection *self, PyObject *args, PyObject *kwds)
   return Py_BuildValue("(ssOOO)", datatype, collseq, notnull ? Py_True : Py_False, primarykey ? Py_True : Py_False, autoinc ? Py_True : Py_False);
 }
 
+/** .. method:: cacheflush() -> None
+
+  Flushes caches to disk mid-transaction.
+
+  -* sqlite3_db_cacheflush
+*/
+static PyObject *
+Connection_cacheflush(Connection *self)
+{
+  int res;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  PYSQLITE_VOID_CALL(res = sqlite3_db_cacheflush(self->db));
+  if (res)
+  {
+    SET_EXC(res, NULL);
+    return NULL;
+  }
+
+  Py_RETURN_NONE;
+}
+
+/** .. method:: release_memory() -> None
+
+  Attempts to free as much heap memory as possible used by this connection.
+
+  -* sqlite3_db_release_memory
+*/
+static PyObject *
+Connection_release_memory(Connection *self)
+{
+  int res;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  PYSQLITE_CON_CALL(res = sqlite3_db_cacheflush(self->db));
+  if (res != SQLITE_OK)
+    return NULL;
+
+  Py_RETURN_NONE;
+}
+
+/** .. method:: drop_modules(keep: Optional[Sequence[str]]) -> None
+
+  If *keep* is *None* then all registered virtual tables are dropped.
+
+  Otherwise *keep* is a sequence of strings, naming the virtual tables that
+  are kept, dropping all others.
+*/
+static PyObject *
+Connection_drop_modules(Connection *self, PyObject *args, PyObject *kwds)
+{
+  int res;
+  PyObject *keep = NULL, *sequence = NULL;
+  char *strings = NULL, *stringstmp;
+  size_t strings_size = 0;
+  const char **array = NULL;
+  Py_ssize_t nitems = 0, i;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  {
+    static char *kwlist[] = {"keep", NULL};
+    Connection_drop_modules_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O:" Connection_drop_modules_USAGE, kwlist, &keep))
+      return NULL;
+  }
+
+  if (keep != Py_None)
+  {
+    sequence = PySequence_Fast(keep, "expected a sequence for " Connection_drop_modules_USAGE);
+    if (!sequence)
+      goto finally;
+    nitems = PySequence_Size(sequence);
+    if (nitems < 0)
+      goto finally;
+    array = PyMem_Calloc(nitems + 1, sizeof(char *));
+    if (!array)
+      goto finally;
+    for (i = 0; i < nitems; i++)
+    {
+      const char *sc;
+      size_t slen;
+      PyObject *s = PySequence_Fast_GET_ITEM(sequence, i);
+      if (!s)
+        goto finally;
+      if (!PyUnicode_Check(s))
+      {
+        PyErr_Format(PyExc_TypeError, "Expected sequence item #%zd to be str, not %s", i, Py_TYPE(s)->tp_name);
+        goto finally;
+      }
+      sc = PyUnicode_AsUTF8(s);
+      if (!sc)
+        goto finally;
+      slen = strlen(sc);
+      stringstmp = PyMem_Realloc(strings, strings_size + slen + 1);
+      if (!stringstmp)
+        goto finally;
+      strings = stringstmp;
+      strncpy(strings + strings_size, sc, slen + 1);
+      strings_size += slen + 1;
+    }
+    /* fill in array pointer to each string */
+    stringstmp = strings;
+    for (i = 0; i < nitems; i++)
+    {
+      array[i] = stringstmp;
+      stringstmp += strlen(stringstmp) + 1;
+    }
+  }
+
+  PYSQLITE_CON_CALL(res = sqlite3_drop_modules(self->db, array));
+
+finally:
+  Py_CLEAR(sequence);
+  PyMem_Free(strings);
+  PyMem_Free(array);
+  if (PyErr_Occurred())
+    return NULL;
+
+  Py_RETURN_NONE;
+}
+
 /** .. attribute:: filename
   :type: str
 
@@ -4403,6 +4530,9 @@ static PyMethodDef Connection_methods[] = {
     {"table_exists", (PyCFunction)Connection_table_exists, METH_VARARGS | METH_KEYWORDS, Connection_table_exists_DOC},
     {"column_metadata", (PyCFunction)Connection_column_metadata, METH_VARARGS | METH_KEYWORDS, Connection_column_metadata_DOC},
     {"trace_v2", (PyCFunction)Connection_trace_v2, METH_VARARGS | METH_KEYWORDS, Connection_trace_v2_DOC},
+    {"cacheflush", (PyCFunction)Connection_cacheflush, METH_NOARGS, Connection_cacheflush_DOC},
+    {"release_memory", (PyCFunction)Connection_release_memory, METH_NOARGS, Connection_release_memory_DOC},
+    {"drop_modules", (PyCFunction)Connection_drop_modules, METH_VARARGS | METH_KEYWORDS, Connection_drop_modules_DOC},
     {0, 0, 0, 0} /* Sentinel */
 };
 

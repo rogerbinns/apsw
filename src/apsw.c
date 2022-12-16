@@ -140,7 +140,6 @@ typedef struct
   PyObject_HEAD long long blobsize;
 } ZeroBlobBind;
 
-
 /* Argument parsing helpers */
 #include "argparse.c"
 
@@ -493,8 +492,12 @@ memoryhighwater(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
 
 /** .. method:: softheaplimit(limit: int) -> int
 
-  Requests SQLite try to keep memory usage below *amount* bytes and
+  Requests SQLite try to keep memory usage below *limit* bytes and
   returns the previous limit.
+
+  .. seealso::
+
+      :meth:`hard_heap_limit`
 
   -* sqlite3_soft_heap_limit64
 */
@@ -509,6 +512,32 @@ softheaplimit(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
       return NULL;
   }
   oldlimit = sqlite3_soft_heap_limit64(limit);
+
+  return PyLong_FromLongLong(oldlimit);
+}
+
+/** .. method:: hard_heap_limit(limit: int) -> int
+
+  Enforces SQLite keeping memory usage below *limit* bytes and
+  returns the previous limit.
+
+  .. seealso::
+
+      :meth:`softheaplimit`
+
+  -* sqlite3_hard_heap_limit64
+*/
+static PyObject *
+apsw_hard_heap_limit(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
+{
+  sqlite3_int64 limit, oldlimit;
+  {
+    static char *kwlist[] = {"limit", NULL};
+    Apsw_hard_heap_limit_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "L:" Apsw_hard_heap_limit_USAGE, kwlist, &limit))
+      return NULL;
+  }
+  oldlimit = sqlite3_hard_heap_limit64(limit);
 
   return PyLong_FromLongLong(oldlimit);
 }
@@ -1407,6 +1436,8 @@ static PyMethodDef module_methods[] = {
      Apsw_status_DOC},
     {"softheaplimit", (PyCFunction)softheaplimit, METH_VARARGS | METH_KEYWORDS,
      Apsw_softheaplimit_DOC},
+    {"hard_heap_limit", (PyCFunction)apsw_hard_heap_limit, METH_VARARGS | METH_KEYWORDS,
+     Apsw_hard_heap_limit_DOC},
     {"releasememory", (PyCFunction)releasememory, METH_VARARGS | METH_KEYWORDS,
      Apsw_releasememory_DOC},
     {"randomness", (PyCFunction)randomness, METH_VARARGS | METH_KEYWORDS,

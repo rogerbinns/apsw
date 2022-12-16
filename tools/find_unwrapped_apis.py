@@ -85,6 +85,8 @@ nowrap = {
     "sqlite3_reset_auto_extension",
     "sqlite3_result_error_nomem",
     "sqlite3_result_error_toobig",
+    "sqlite3_libversion_number",  # more useful in C
+    "sqlite3_version",  # we provide sqlite3_libversion which is the same
 
     # deprecated but not marked as such (v2 exists)
     "sqlite3_trace",

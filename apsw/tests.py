@@ -9,6 +9,7 @@ import os
 import warnings
 import platform
 import typing
+import itertools
 
 
 def print_version_info():
@@ -1871,6 +1872,11 @@ class APSW(unittest.TestCase):
         c.execute("begin")
         for i in range(100):
             c.execute("insert into foo values(?)", (i + 1000, ))
+
+        # for coverage
+        self.db.cacheflush()
+        self.db.release_memory()
+
         c.execute("commit")
         self.assertEqual(300, self.db.totalchanges())
         if hasattr(apsw, "faultdict"):
@@ -4149,7 +4155,7 @@ class APSW(unittest.TestCase):
            # isn't a problem.
                         'skipcalls': re.compile("^sqlite3_(blob_bytes|column_count|bind_parameter_count|data_count|vfs_.+|changes64|total_changes64"
                                                 "|get_autocommit|last_insert_rowid|complete|interrupt|limit|malloc64|free|threadsafe|value_.+"
-                                                "|libversion|enable_shared_cache|initialize|shutdown|config|memory_.+|soft_heap_limit(64)?"
+                                                "|libversion|enable_shared_cache|initialize|shutdown|config|memory_.+|soft_heap_limit64|hard_heap_limit64"
                                                 "|randomness|db_readonly|db_filename|release_memory|status64|result_.+|user_data|mprintf|aggregate_context"
                                                 "|declare_vtab|backup_remaining|backup_pagecount|mutex_enter|mutex_leave|sourceid|uri_.+"
                                                 "|column_name|column_decltype|column_database_name|column_table_name|column_origin_name"
@@ -4418,12 +4424,16 @@ class APSW(unittest.TestCase):
         apsw.memoryhighwater(True)
         self.assertEqual(apsw.memoryhighwater(), apsw.memoryused())
         self.assertRaises(TypeError, apsw.softheaplimit, 1, 2)
+        self.assertRaises(TypeError, apsw.hard_heap_limit, 1, 2)
         apsw.softheaplimit(0)
         self.assertRaises(TypeError, apsw.releasememory, 1, 2)
         res = apsw.releasememory(0x7fffffff)
         self.assertTrue(type(res) in (int, ))
         apsw.softheaplimit(0x1234567890abc)
         self.assertEqual(0x1234567890abc, apsw.softheaplimit(0x1234567890abe))
+        apsw.hard_heap_limit(0x1234567890abd)
+        self.assertEqual(0x1234567890abd, apsw.hard_heap_limit(0x1234567890abe))
+
 
     def testRandomness(self):
         "Verify randomness routine"
@@ -4494,6 +4504,47 @@ class APSW(unittest.TestCase):
                 self.assertRaises(apsw.ConnectionClosedError, db.cursor)
                 self.assertRaises(apsw.ConnectionClosedError, db.getautocommit)
                 self.assertRaises(apsw.ConnectionClosedError, db.in_transaction)
+
+    def testDropModules(self):
+        "Verify dropping virtual table modules"
+        # simplest implementation possible
+        class Source:
+            def Create(self, db, modulename, dbname, tablename, *args):
+                return "create table placeholder(x)", object()
+
+        counter = 0
+        def check_module(name: str, shouldfail: bool) -> None:
+            nonlocal counter
+            counter +=1
+            try:
+                self.db.execute(f"create virtual table ex{ counter } using { name }()")
+            except apsw.SQLError as e:
+                if shouldfail:
+                    self.assertIn(f"no such module: { name }", str(e))
+                else:
+                    raise
+
+        self.db.createmodule("abc", Source())
+        check_module("abc", False)
+        self.db.createmodule("abc", None) # should drop the table
+        check_module("abc", True)
+
+        # we register a whole bunch, and then unregister subsets
+        names = list("".join(x) for x in itertools.permutations("abc"))
+        for n in names:
+            self.db.createmodule(n, Source())
+            check_module(n, False)
+
+        random.shuffle(names)
+        for i in range(len(names), -1, -1):
+            if not names:
+                break
+            keep = random.sample(names, i)
+            self.db.drop_modules(keep)
+            for n in names:
+                check_module(n, n not in keep)
+            check_module("madeup",  True)
+            names = keep
 
     def testStatus(self):
         "Verify status function"
@@ -8434,7 +8485,7 @@ shell.write(shell.stdout, "hello world\\n")
         apsw.faultdict["VtabCreateBadString"] = True
         try:
             db = apsw.Connection(":memory:")
-            db.createmodule("nonsense", None)
+            db.createmodule("nonsense", Source())
             db.cursor().execute("create virtual table foo using nonsense(3,4)")
             1 / 0
         except MemoryError:
