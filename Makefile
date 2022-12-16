@@ -92,11 +92,11 @@ pycoverage:
 	$(PYTHON) -m webbrowser -t htmlcov/index.html
 
 test: build_ext
-	env PYTHONHASHSEED=random $(PYTHON) -m apsw.tests
+	env $(PYTHON) -m apsw.tests
 
 test_debug: $(PYDEBUG_DIR)/bin/python3
 	$(MAKE) build_ext_debug PYTHON=$(PYDEBUG_DIR)/bin/python3
-	env PYTHONHASHSEED=random APSWTESTPREFIX=$(PYDEBUG_WORKDIR) $(PYDEBUG_DIR)/bin/python3 -m apsw.tests -v
+	env APSWTESTPREFIX=$(PYDEBUG_WORKDIR) $(PYDEBUG_DIR)/bin/python3 -m apsw.tests -v
 
 fulltest: test test_debug
 
