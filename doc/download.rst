@@ -46,13 +46,16 @@ See the :ref:`recommended <recommended_build>` way to build or all the
   <https://github.com/rogerbinns/apsw/releases/download/3.40.0.0/apsw-3.40.0.0.zip>`__
   (Source, includes this HTML Help)
 
-* `apsw-3.40.0.0-sigs.zip 
+* `apsw-3.40.0.0-sigs.zip
   <https://github.com/rogerbinns/apsw/releases/download/3.40.0.0/apsw-3.40.0.0-sigs.zip>`__
   GPG signatures for all files
 
 .. downloads-end
 
-Some Linux distributions also have packages which may trail the SQLite
+Linux/BSD provided package
+==========================
+
+Some Linux & BSD distributions also have packages which may trail the SQLite
 and APSW releases by a year, or more.  It is also possible to build
 RPMs and DEB packages from the source, although this involves setting
 up package management tools and various dependencies on your build
@@ -69,6 +72,11 @@ machine.
 +-------------------+------------------------------------------------------------------------------------------------------+
 | Arch Linux        | Install `python-apsw <https://www.archlinux.org/packages/?q=apsw>`__                                 |
 +-------------------+------------------------------------------------------------------------------------------------------+
+
+There is a `full list (150+)
+<https://repology.org/project/python:apsw/versions>`__ of
+distributions, the package name for APSW, and what APSW version they
+are currently on.
 
 .. _verifydownload:
 
