@@ -9341,11 +9341,6 @@ def setup():
         print("  python3 setup.py build_test_extension")
         del APSW.testLoadExtension
 
-    # coverage testing of the shell
-    if "APSW_PY_COVERAGE" in os.environ:
-        APSW._originaltestShell = APSW.testShell
-        APSW.testShell = APSW._testShellWithCoverage
-
     # python version compatibility
     if not hasattr(APSW, "assertRaisesRegex"):
         APSW.assertRaisesRegex = APSW.assertRaisesRegexCompat
