@@ -638,7 +638,7 @@ def do_argparse(item):
         if len(args) == 2 and args[0].startswith("argcheck_"):
             param_usages.append(pname)
             param_structs.append(
-                f"{ args[0] }_param { pname }_param = {{ { args[1] }, { item['symbol'] }_{ pname }_MSG }};")
+                f"{ args[0] }_param { pname }_param = {{{ args[1] }, { item['symbol'] }_{ pname }_MSG}};")
             args[1] += "_param"
 
         parse_args.extend(args)
@@ -669,8 +669,7 @@ def do_argparse(item):
 
     check_and_update(f"{ item['symbol'] }_CHECK", code)
 
-    res = "\n".join(res) + "\n"
-    return res
+    return "\n".join(res) + "\n"
 
 
 def is_sequence(s):
