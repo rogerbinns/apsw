@@ -2282,14 +2282,19 @@ static PyTypeObject FunctionCBInfoType =
         PyType_TRAILER};
 
 static FunctionCBInfo *
-allocfunccbinfo(void)
+allocfunccbinfo(const char *name)
 {
   FunctionCBInfo *res = PyObject_New(FunctionCBInfo, &FunctionCBInfoType);
   if (res)
   {
-    res->name = 0;
+    res->name = apsw_strdup(name);
     res->scalarfunc = 0;
     res->aggregatefactory = 0;
+    if (!name)
+    {
+      FunctionCBInfo_dealloc(res);
+      res = 0;
+    }
   }
   return res;
 }
@@ -2718,10 +2723,9 @@ Connection_createscalarfunction(Connection *self, PyObject *args, PyObject *kwds
   }
   else
   {
-    cbinfo = allocfunccbinfo();
+    cbinfo = allocfunccbinfo(name);
     if (!cbinfo)
       goto finally;
-    cbinfo->name = apsw_strdup(name);
     cbinfo->scalarfunc = callable;
     Py_INCREF(callable);
   }
@@ -2817,11 +2821,10 @@ Connection_createaggregatefunction(Connection *self, PyObject *args, PyObject *k
     cbinfo = 0;
   else
   {
-    cbinfo = allocfunccbinfo();
+    cbinfo = allocfunccbinfo(name);
     if (!cbinfo)
       goto finally;
 
-    cbinfo->name = apsw_strdup(name);
     cbinfo->aggregatefactory = factory;
     Py_INCREF(factory);
   }

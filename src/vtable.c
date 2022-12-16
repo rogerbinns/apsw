@@ -1165,11 +1165,8 @@ apswvtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
       assert(PyErr_Occurred());
       goto error;
     }
-    cbinfo = allocfunccbinfo();
+    cbinfo = allocfunccbinfo(zName);
     if (!cbinfo)
-      goto error;
-    cbinfo->name = apsw_strdup(zName);
-    if (!cbinfo->name)
       goto error;
     cbinfo->scalarfunc = res;
     res = NULL;
