@@ -214,6 +214,17 @@ def format_sql_value(value: SQLiteValue) -> str:
     """Returns a Python string representing the supplied value in SQL syntax."""
     ...
 
+def hard_heap_limit(limit: int) -> int:
+    """Enforces SQLite keeping memory usage below *limit* bytes and
+    returns the previous limit.
+
+    .. seealso::
+
+        :meth:`softheaplimit`
+
+    Calls: `sqlite3_hard_heap_limit64 <https://sqlite.org/c3ref/hard_heap_limit64.html>`__"""
+    ...
+
 def initialize() -> None:
     """It is unlikely you will want to call this method as SQLite automatically initializes.
 
@@ -286,8 +297,12 @@ def shutdown() -> None:
     ...
 
 def softheaplimit(limit: int) -> int:
-    """Requests SQLite try to keep memory usage below *amount* bytes and
+    """Requests SQLite try to keep memory usage below *limit* bytes and
     returns the previous limit.
+
+    .. seealso::
+
+        :meth:`hard_heap_limit`
 
     Calls: `sqlite3_soft_heap_limit64 <https://sqlite.org/c3ref/hard_heap_limit64.html>`__"""
     ...
@@ -714,6 +729,12 @@ class Connection:
               the first statement"""
         ...
 
+    def cacheflush(self) -> None:
+        """Flushes caches to disk mid-transaction.
+
+        Calls: `sqlite3_db_cacheflush <https://sqlite.org/c3ref/db_cacheflush.html>`__"""
+        ...
+
     def changes(self) -> int:
         """Returns the number of database rows that were changed (or inserted
         or deleted) by the most recently completed INSERT, UPDATE, or DELETE
@@ -867,8 +888,9 @@ class Connection:
         Calls: `sqlite3_create_collation_v2 <https://sqlite.org/c3ref/create_collation.html>`__"""
         ...
 
-    def createmodule(self, name: str, datasource: VTModule) -> None:
-        """Registers a virtual table.  See :ref:`virtualtables` for details.
+    def createmodule(self, name: str, datasource: Optional[VTModule]) -> None:
+        """Registers a virtual table, or drops it if *datasource* is *None*.
+        See :ref:`virtualtables` for details.
 
         .. seealso::
 
@@ -957,6 +979,13 @@ class Connection:
           * :meth:`Connection.serialize`
 
         Calls: `sqlite3_deserialize <https://sqlite.org/c3ref/deserialize.html>`__"""
+        ...
+
+    def drop_modules(self, keep: Optional[Sequence[str]]) -> None:
+        """If *keep* is *None* then all registered virtual tables are dropped.
+
+        Otherwise *keep* is a sequence of strings, naming the virtual tables that
+        are kept, dropping all others."""
         ...
 
     def enableloadextension(self, enable: bool) -> None:
@@ -1218,6 +1247,12 @@ class Connection:
         An exception is raised if the database doesn't exist.
 
         Calls: `sqlite3_db_readonly <https://sqlite.org/c3ref/db_readonly.html>`__"""
+        ...
+
+    def release_memory(self) -> None:
+        """Attempts to free as much heap memory as possible used by this connection.
+
+        Calls: `sqlite3_db_release_memory <https://sqlite.org/c3ref/db_release_memory.html>`__"""
         ...
 
     rowtrace: Optional[RowTracer]

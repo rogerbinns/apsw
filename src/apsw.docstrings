@@ -128,6 +128,23 @@
 #define  Apsw_format_sql_value_DOC "format_sql_value($self,value)\n--\n\napsw.format_sql_value(value: SQLiteValue) -> str\n\n" \
 "Returns a Python string representing the supplied value in SQL syntax.\n" 
 
+#define  Apsw_hard_heap_limit_DOC "hard_heap_limit($self,limit)\n--\n\napsw.hard_heap_limit(limit: int) -> int\n\n" \
+"Enforces SQLite keeping memory usage below *limit* bytes and\n" \
+"returns the previous limit.\n" \
+"\n" \
+".. seealso::\n" \
+"\n" \
+"    :meth:`softheaplimit`\n" \
+"\n" \
+"Calls: `sqlite3_hard_heap_limit64 <https://sqlite.org/c3ref/hard_heap_limit64.html>`__\n" 
+
+#define Apsw_hard_heap_limit_USAGE "apsw.hard_heap_limit(limit: int) -> int"
+
+#define Apsw_hard_heap_limit_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(limit), long long)); \
+} while(0)
+
+
 #define  Apsw_initialize_DOC "initialize($self)\n--\n\napsw.initialize() -> None\n\n" \
 "It is unlikely you will want to call this method as SQLite automatically initializes.\n" \
 "\n" \
@@ -218,8 +235,12 @@
 "Calls: `sqlite3_shutdown <https://sqlite.org/c3ref/initialize.html>`__\n" 
 
 #define  Apsw_softheaplimit_DOC "softheaplimit($self,limit)\n--\n\napsw.softheaplimit(limit: int) -> int\n\n" \
-"Requests SQLite try to keep memory usage below *amount* bytes and\n" \
+"Requests SQLite try to keep memory usage below *limit* bytes and\n" \
 "returns the previous limit.\n" \
+"\n" \
+".. seealso::\n" \
+"\n" \
+"    :meth:`hard_heap_limit`\n" \
 "\n" \
 "Calls: `sqlite3_soft_heap_limit64 <https://sqlite.org/c3ref/hard_heap_limit64.html>`__\n" 
 
@@ -779,6 +800,11 @@
 } while(0)
 
 
+#define  Connection_cacheflush_DOC "cacheflush($self)\n--\n\nConnection.cacheflush() -> None\n\n" \
+"Flushes caches to disk mid-transaction.\n" \
+"\n" \
+"Calls: `sqlite3_db_cacheflush <https://sqlite.org/c3ref/db_cacheflush.html>`__\n" 
+
 #define  Connection_changes_DOC "changes($self)\n--\n\nConnection.changes() -> int\n\n" \
 "Returns the number of database rows that were changed (or inserted\n" \
 "or deleted) by the most recently completed INSERT, UPDATE, or DELETE\n" \
@@ -980,8 +1006,9 @@
 } while(0)
 
 
-#define  Connection_createmodule_DOC "createmodule($self,name,datasource)\n--\n\nConnection.createmodule(name: str, datasource: VTModule) -> None\n\n" \
-"Registers a virtual table.  See :ref:`virtualtables` for details.\n" \
+#define  Connection_createmodule_DOC "createmodule($self,name,datasource)\n--\n\nConnection.createmodule(name: str, datasource: Optional[VTModule]) -> None\n\n" \
+"Registers a virtual table, or drops it if *datasource* is *None*.\n" \
+"See :ref:`virtualtables` for details.\n" \
 "\n" \
 ".. seealso::\n" \
 "\n" \
@@ -989,7 +1016,7 @@
 "\n" \
 "Calls: `sqlite3_create_module_v2 <https://sqlite.org/c3ref/create_module.html>`__\n" 
 
-#define Connection_createmodule_USAGE "Connection.createmodule(name: str, datasource: VTModule) -> None"
+#define Connection_createmodule_USAGE "Connection.createmodule(name: str, datasource: Optional[VTModule]) -> None"
 
 #define Connection_createmodule_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
@@ -1104,6 +1131,19 @@
 #define Connection_deserialize_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
   assert(__builtin_types_compatible_p(typeof(contents), Py_buffer)); \
+} while(0)
+
+
+#define  Connection_drop_modules_DOC "drop_modules($self,keep)\n--\n\nConnection.drop_modules(keep: Optional[Sequence[str]]) -> None\n\n" \
+"If *keep* is *None* then all registered virtual tables are dropped.\n" \
+"\n" \
+"Otherwise *keep* is a sequence of strings, naming the virtual tables that\n" \
+"are kept, dropping all others.\n" 
+
+#define Connection_drop_modules_USAGE "Connection.drop_modules(keep: Optional[Sequence[str]]) -> None"
+
+#define Connection_drop_modules_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(keep), PyObject *)); \
 } while(0)
 
 
@@ -1433,6 +1473,11 @@
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
 } while(0)
 
+
+#define  Connection_release_memory_DOC "release_memory($self)\n--\n\nConnection.release_memory() -> None\n\n" \
+"Attempts to free as much heap memory as possible used by this connection.\n" \
+"\n" \
+"Calls: `sqlite3_db_release_memory <https://sqlite.org/c3ref/db_release_memory.html>`__\n" 
 
 #define  Connection_rowtrace_DOC ":type: Optional[RowTracer]\n" \
 "\n" \
