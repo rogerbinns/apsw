@@ -1,7 +1,7 @@
 # The C source
 
 include src/*.c
-include src/types.py
+include src/apswtypes.py
 include src/apswversion.h
 include src/apsw.docstrings
 

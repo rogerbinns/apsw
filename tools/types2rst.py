@@ -78,7 +78,7 @@ def valuefmt(value: str, indent: str) -> str:
 
 
 if __name__ == '__main__':
-    source = open("src/types.py").read()
+    source = open("src/apswtypes.py").read()
     parsed = ast.parse(source, type_comments=True)
     assert isinstance(parsed, ast.Module)
     with open("doc/typing.rstgen", "wt") as f:
