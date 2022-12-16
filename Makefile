@@ -225,7 +225,7 @@ PYDEBUG_DIR=/space/pydebug
 PYVALGRIND_VER=$(PYDEBUG_VER)
 PYVALGRIND_DIR=/space/pyvalgrind
 # This must end in slash
-PYDEBUG_WORKDIR=/space/apsw/work/
+PYDEBUG_WORKDIR=/space/apsw-test/
 
 # Build a debug python including address sanitizer.  Extensions it builds are also address sanitized
 pydebug:
