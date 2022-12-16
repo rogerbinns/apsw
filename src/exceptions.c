@@ -143,8 +143,6 @@ static struct
 
 /* EXCEPTION CODE */
 
-/* MS compiler is stupid and requires this pulled out */
-
 typedef struct
 {
   PyObject **var;
