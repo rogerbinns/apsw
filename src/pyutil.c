@@ -6,8 +6,7 @@
 
 /* used in calls to AddTraceBackHere where O format takes non-null but
    we often have null so convert to None */
-#define OBJ(o) ((o)?(o):(Py_None))
-
+#define OBJ(o) ((o) ? (o) : (Py_None))
 
 /* we clear weakref lists when close is called on a blob/cursor as
    well as when it is deallocated */
@@ -37,8 +36,8 @@ Call_PythonMethod(PyObject *obj, const char *methodname, int mandatory, PyObject
   if (pyerralreadyoccurred)
     PyErr_Fetch(&etype, &evalue, &etraceback);
 
-    /* we should only be called with ascii methodnames so no need to do
-     character set conversions etc */
+  /* we should only be called with ascii methodnames so no need to do
+   character set conversions etc */
   method = PyObject_GetAttrString(obj, methodname);
 
   assert(method != obj);
@@ -104,7 +103,18 @@ convertutf8string(const char *str)
 
 /* These correspond to the slots tp_version_tag, tp_finalize, tp_vectorcall */
 #if PY_VERSION_HEX < 0x03080000
-#define PyType_TRAILER  0
+#define PyType_TRAILER 0
 #else
-#define PyType_TRAILER  0, 0, 0
+#define PyType_TRAILER 0, 0, 0
 #endif
+
+#if PY_VERSION_HEX < 0x030a0000
+static PyObject *
+Py_NewRef(PyObject *o)
+{
+  Py_INCREF(o);
+  return o;
+}
+#endif
+
+#define Py_TypeName(o) ((o) ? (Py_TYPE(o)->tp_name) : "NULL")
