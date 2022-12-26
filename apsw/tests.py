@@ -1640,8 +1640,8 @@ class APSW(unittest.TestCase):
 
             return None, badfunc, final
 
-        self.db.createaggregatefunction("badfunc", badfactory)
-        self.assertRaises(ZeroDivisionError, c.execute, "select badfunc(x) from foo")
+        self.db.createaggregatefunction("badfunc2", badfactory)
+        self.assertRaises(ZeroDivisionError, c.execute, "select badfunc2(x) from foo")
 
         # bad return from factory
         def badfactory():
