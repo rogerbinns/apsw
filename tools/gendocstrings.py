@@ -554,8 +554,14 @@ def do_argparse(item):
                 breakpoint()
                 pass
         elif callable_erasure(param["type"]) in {
-                "Optional[Callable]", "Optional[RowTracer]", "Optional[ExecTracer]", "Optional[ScalarProtocol]",
-                "Optional[AggregateFactory]", "Optional[Authorizer]", "Optional[CommitHook]"
+                "Optional[Callable]",
+                "Optional[RowTracer]",
+                "Optional[ExecTracer]",
+                "Optional[ScalarProtocol]",
+                "Optional[AggregateFactory]",
+                "Optional[Authorizer]",
+                "Optional[CommitHook]",
+                "Optional[WindowProtocol]",
         }:
             # the above are all callables and we don't check beyond that
             type = "PyObject *"
