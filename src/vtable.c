@@ -1349,14 +1349,14 @@ finally:
     supported types <types>`
 */
 /* forward decln */
-static void set_context_result(sqlite3_context *context, PyObject *obj);
+static int set_context_result(sqlite3_context *context, PyObject *obj);
 
 static int
 apswvtabColumn(sqlite3_vtab_cursor *pCursor, sqlite3_context *result, int ncolumn)
 {
   PyObject *cursor, *res = NULL;
   PyGILState_STATE gilstate;
-  int sqliteres = SQLITE_OK;
+  int sqliteres = SQLITE_OK, ok;
 
   gilstate = PyGILState_Ensure();
 
@@ -1366,10 +1366,12 @@ apswvtabColumn(sqlite3_vtab_cursor *pCursor, sqlite3_context *result, int ncolum
   if (!res)
     goto pyexception;
 
-  set_context_result(result, res);
+  ok = set_context_result(result, res);
   if (!PyErr_Occurred())
+  {
+    assert(ok);
     goto finally;
-
+  }
 pyexception: /* we had an exception in python code */
   assert(PyErr_Occurred());
   sqliteres = MakeSqliteMsgFromPyException(&(pCursor->pVtab->zErrMsg)); /* SQLite flaw: errMsg should be on the cursor not the table! */
