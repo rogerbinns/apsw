@@ -23,20 +23,37 @@ processes.
 /* CALLBACK INFO */
 
 /* details of a registered function passed as user data to sqlite3_create_function */
-typedef struct FunctionCBInfo
+typedef struct
 {
   PyObject_HEAD const char *name; /* utf8 function name */
   PyObject *scalarfunc;           /* the function to call for stepping */
   PyObject *aggregatefactory;     /* factory for aggregate functions */
+  PyObject *windowfactory;        /* factory for window functions */
 } FunctionCBInfo;
 
 /* a particular aggregate function instance used as sqlite3_aggregate_context */
-typedef struct _aggregatefunctioncontext
+typedef struct
 {
   PyObject *aggvalue;  /* the aggregation value passed as first parameter */
   PyObject *stepfunc;  /* step function */
   PyObject *finalfunc; /* final function */
 } aggregatefunctioncontext;
+
+/* a particular window function instance used as sqlite3_aggregate_context */
+typedef struct
+{
+  enum
+  {
+    OK = 1,
+    UNINIT = 0,
+    ERROR = -1
+  } state;
+  PyObject *aggvalue;    /* the aggregation value passed as first parameter */
+  PyObject *stepfunc;    /* step function */
+  PyObject *finalfunc;   /* final function */
+  PyObject *valuefunc;   /* value function */
+  PyObject *inversefunc; /* inverse function */
+} windowfunctioncontext;
 
 /* CONNECTION TYPE */
 
@@ -114,6 +131,7 @@ FunctionCBInfo_dealloc(FunctionCBInfo *self)
     PyMem_Free((void *)(self->name));
   Py_CLEAR(self->scalarfunc);
   Py_CLEAR(self->aggregatefactory);
+  Py_CLEAR(self->windowfactory);
   Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
@@ -2290,6 +2308,7 @@ allocfunccbinfo(const char *name)
     res->name = apsw_strdup(name);
     res->scalarfunc = 0;
     res->aggregatefactory = 0;
+    res->windowfactory = 0;
     if (!name)
     {
       FunctionCBInfo_dealloc(res);
@@ -2299,17 +2318,14 @@ allocfunccbinfo(const char *name)
   return res;
 }
 
-/* converts a python object into a sqlite3_context result */
-static void
+/* converts a python object into a sqlite3_context result
+
+  returns zero on failure, non-zero on success
+*/
+static int
 set_context_result(sqlite3_context *context, PyObject *obj)
 {
-  if (!obj)
-  {
-    assert(PyErr_Occurred());
-    sqlite3_result_error_code(context, MakeSqliteMsgFromPyException(NULL));
-    sqlite3_result_error(context, "bad object given to set_context_result", -1);
-    return;
-  }
+  assert(obj);
 
   /* DUPLICATE(ish) code: this is substantially similar to the code in
      APSWCursor_dobinding.  If you fix anything here then do it there as
@@ -2318,17 +2334,23 @@ set_context_result(sqlite3_context *context, PyObject *obj)
   if (obj == Py_None)
   {
     sqlite3_result_null(context);
-    return;
+    return 1;
   }
   if (PyLong_Check(obj))
   {
-    sqlite3_result_int64(context, PyLong_AsLongLong(obj));
-    return;
+    long long v = PyLong_AsLongLong(obj);
+    if (v == -1 && PyErr_Occurred())
+    {
+      sqlite3_result_error(context, "python integer overflow", -1);
+      return 0;
+    }
+    sqlite3_result_int64(context, v);
+    return 1;
   }
   if (PyFloat_Check(obj))
   {
     sqlite3_result_double(context, PyFloat_AS_DOUBLE(obj));
-    return;
+    return 1;
   }
   if (PyUnicode_Check(obj))
   {
@@ -2339,10 +2361,10 @@ set_context_result(sqlite3_context *context, PyObject *obj)
     if (strdata)
     {
       sqlite3_result_text64(context, strdata, strbytes, SQLITE_TRANSIENT, SQLITE_UTF8);
+      return 1;
     }
-    else
-      sqlite3_result_error(context, "Unicode conversions failed", -1);
-    return;
+    sqlite3_result_error(context, "Unicode conversions failed", -1);
+    return 0;
   }
 
   if (PyObject_CheckBuffer(obj))
@@ -2355,21 +2377,22 @@ set_context_result(sqlite3_context *context, PyObject *obj)
     if (asrb != 0)
     {
       sqlite3_result_error(context, "PyObject_GetBuffer failed", -1);
-      return;
+      return 0;
     }
     sqlite3_result_blob64(context, py3buffer.buf, py3buffer.len, SQLITE_TRANSIENT);
     PyBuffer_Release(&py3buffer);
-    return;
+    return 1;
   }
 
   if (PyObject_TypeCheck(obj, &ZeroBlobBindType) == 1)
   {
     sqlite3_result_zeroblob64(context, ((ZeroBlobBind *)obj)->blobsize);
-    return;
+    return 1;
   }
 
   PyErr_Format(PyExc_TypeError, "Bad return type from function callback");
-  sqlite3_result_error(context, "Bad return type from function callback", -1);
+  sqlite3_result_error(context, "Bad return type from python function callback", -1);
+  return 0;
 }
 
 /* Returns a new reference to a tuple formed from function parameters */
@@ -2612,8 +2635,12 @@ cbdispatch_final(sqlite3_context *context)
   }
 
   retval = PyObject_CallFunctionObjArgs(aggfc->finalfunc, aggfc->aggvalue, NULL);
-  set_context_result(context, retval);
-  Py_XDECREF(retval);
+  if (retval)
+  {
+    int ok = set_context_result(context, retval);
+    assert(ok || PyErr_Occurred());
+    Py_DECREF(retval);
+  }
 
 finally:
   /* we also free the aggregatefunctioncontext here */
@@ -2646,6 +2673,116 @@ finally:
   PyGILState_Release(gilstate);
 }
 
+static void
+clearwindowfunctioncontext(windowfunctioncontext *winfc)
+{
+  if (winfc)
+  {
+    Py_CLEAR(winfc->aggvalue);
+    Py_CLEAR(winfc->stepfunc);
+    Py_CLEAR(winfc->finalfunc);
+    Py_CLEAR(winfc->valuefunc);
+    Py_CLEAR(winfc->inversefunc);
+    winfc->state = ERROR;
+  }
+}
+
+static windowfunctioncontext *
+getwindowfunctioncontext(sqlite3_context *context)
+{
+  /* was an error already present? */
+  int had_err;
+  windowfunctioncontext *winfc = sqlite3_aggregate_context(context, sizeof(windowfunctioncontext));
+  FunctionCBInfo *cbinfo;
+  PyObject *retval = NULL;
+  PyObject *sequence = NULL;
+
+  /* have we seen it before? */
+  if (winfc->state == OK)
+    return winfc;
+  if (winfc->state == ERROR)
+    return NULL;
+  assert(winfc->state == UNINIT);
+
+  had_err = !!PyErr_Occurred();
+
+  winfc->state = ERROR;
+
+  cbinfo = (FunctionCBInfo *)sqlite3_user_data(context);
+  assert(cbinfo);
+  assert(cbinfo->windowfactory);
+
+  /* call the windowfactory to get our working object(s) */
+  retval = PyObject_CallObject(cbinfo->windowfactory, NULL);
+
+  if (!retval)
+    goto finally;
+
+  /* it should have returned a sequence of object and 4 functions, or a single object */
+  if (PyTuple_Check(retval) || PyList_Check(retval))
+  {
+    sequence = PySequence_Fast(retval, "expected a sequence");
+    if (!sequence)
+      goto finally;
+    if (PySequence_Fast_GET_SIZE(sequence) != 5)
+    {
+      PyErr_Format(PyExc_TypeError, "Expected a 5 item sequence");
+      goto finally;
+    }
+    winfc->aggvalue = Py_NewRef(PySequence_Fast_GET_ITEM(sequence, 0));
+
+#define METH(n, i)                                                                                                      \
+  winfc->n##func = PySequence_Fast_GET_ITEM(sequence, i);                                                               \
+  if (!PyCallable_Check(winfc->n##func))                                                                                \
+  {                                                                                                                     \
+    PyErr_Format(PyExc_TypeError, "Expected item %d (%s) to be callable - got %s", i, #n, Py_TypeName(winfc->n##func)); \
+    goto finally;                                                                                                       \
+  }
+
+    METH(step, 1);
+    METH(final, 2);
+    METH(value, 3);
+    METH(inverse, 4);
+
+#undef METH
+  }
+  else
+  {
+#define METH(n)                                                                                                      \
+  winfc->n##func = PyObject_GetAttrString(retval, #n);                                                               \
+  if (!winfc->n##func)                                                                                               \
+    goto finally;                                                                                                    \
+  if (!PyCallable_Check(winfc->n##func))                                                                             \
+  {                                                                                                                  \
+    PyErr_Format(PyExc_TypeError, "Expected callable window function %s - got %s", #n, Py_TypeName(winfc->n##func)); \
+    goto finally;                                                                                                    \
+  }
+
+    METH(step);
+    METH(final);
+    METH(value);
+    METH(inverse);
+#undef METH
+  }
+
+  winfc->state = OK;
+
+finally:
+  if (!had_err && PyErr_Occurred())
+  {
+    char *funcname = sqlite3_mprintf("window-function-factory-%s", cbinfo->name);
+    AddTraceBackHere(__FILE__, __LINE__, funcname, "{s: O, s: O}", "instance", OBJ(retval), "as_sequence", OBJ(sequence));
+    sqlite3_free(funcname);
+  }
+
+  Py_XDECREF(retval);
+  Py_XDECREF(sequence);
+  if (winfc->state == OK)
+    return winfc;
+  clearwindowfunctioncontext(winfc);
+  return NULL;
+}
+
 /* Used for the create function v2 xDestroy callbacks.  Note this is
    called even when supplying NULL for the function implementation (ie
    deleting it), so XDECREF has to be used.
@@ -2659,6 +2796,189 @@ apsw_free_func(void *funcinfo)
   Py_XDECREF((PyObject *)funcinfo);
 
   PyGILState_Release(gilstate);
+}
+
+static void
+cbw_step(sqlite3_context *context, int argc, sqlite3_value **argv)
+{
+  PyGILState_STATE gilstate;
+  windowfunctioncontext *winfc;
+  PyObject *pyargs = NULL, *retval = NULL;
+  gilstate = PyGILState_Ensure();
+
+  winfc = getwindowfunctioncontext(context);
+  if (!winfc)
+    goto error;
+
+  pyargs = getfunctionargs(context, winfc->aggvalue, argc, argv);
+  if (!pyargs)
+    goto error;
+  retval = PyObject_CallObject(winfc->stepfunc, pyargs);
+  if (!retval)
+    goto error;
+
+  goto finally;
+
+error:
+  sqlite3_result_error(context, "Python level error", -1);
+
+finally:
+  Py_XDECREF(pyargs);
+  Py_XDECREF(retval);
+
+  PyGILState_Release(gilstate);
+}
+
+static void
+cbw_final(sqlite3_context *context)
+{
+  PyGILState_STATE gilstate;
+  windowfunctioncontext *winfc;
+  PyObject *retval = NULL;
+  int ok;
+
+  gilstate = PyGILState_Ensure();
+
+  winfc = getwindowfunctioncontext(context);
+  if (!winfc)
+    goto error;
+
+  retval = PyObject_CallObject(winfc->finalfunc, NULL);
+  if (!retval)
+    goto error;
+
+  ok = set_context_result(context, retval);
+  if (ok)
+    goto finally;
+
+  assert(PyErr_Occurred());
+
+error:
+  sqlite3_result_error(context, "Python level error", -1);
+
+finally:
+  Py_XDECREF(retval);
+
+  clearwindowfunctioncontext(winfc);
+
+  PyGILState_Release(gilstate);
+}
+
+static void
+cbw_value(sqlite3_context *context)
+{
+  PyGILState_STATE gilstate;
+  windowfunctioncontext *winfc;
+  PyObject *retval = NULL;
+  int ok;
+
+  gilstate = PyGILState_Ensure();
+
+  winfc = getwindowfunctioncontext(context);
+  if (!winfc)
+    goto error;
+
+  retval = PyObject_CallObject(winfc->valuefunc, NULL);
+  if (!retval)
+    goto error;
+
+  ok = set_context_result(context, retval);
+  if (ok)
+    goto finally;
+
+  assert(PyErr_Occurred());
+
+error:
+  sqlite3_result_error(context, "Python level error", -1);
+
+finally:
+  Py_XDECREF(retval);
+
+  PyGILState_Release(gilstate);
+}
+
+static void
+cbw_inverse(sqlite3_context *context, int argc, sqlite3_value **argv)
+{
+  PyGILState_STATE gilstate;
+  windowfunctioncontext *winfc;
+  PyObject *pyargs = NULL, *retval = NULL;
+  gilstate = PyGILState_Ensure();
+
+  winfc = getwindowfunctioncontext(context);
+  if (!winfc)
+    goto error;
+
+  pyargs = getfunctionargs(context, winfc->aggvalue, argc, argv);
+  if (!pyargs)
+    goto error;
+  retval = PyObject_CallObject(winfc->inversefunc, pyargs);
+  if (!retval)
+    goto error;
+
+  goto finally;
+
+error:
+  sqlite3_result_error(context, "Python level error", -1);
+
+finally:
+  Py_XDECREF(pyargs);
+  Py_XDECREF(retval);
+
+  PyGILState_Release(gilstate);
+}
+
+/** .. method:: create_window_function(name:str, callable: Optional[WindowProtocol], numargs: int =-1, *, flags: int = 0) -> None
+
+ Registers a window function
+
+ More text to come
+*/
+static PyObject *
+Connection_create_window_function(Connection *self, PyObject *args, PyObject *kwds)
+{
+  int numargs = -1, flags = 0, res;
+  const char *name = NULL;
+  PyObject *callable = NULL;
+  FunctionCBInfo *cbinfo;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  {
+    static char *kwlist[] = {"name", "callable", "numargs", "flags", NULL};
+    Connection_create_window_function_CHECK;
+    argcheck_Optional_Callable_param callable_param = {&callable, Connection_create_window_function_callable_MSG};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&|i$i:" Connection_create_window_function_USAGE, kwlist, &name, argcheck_Optional_Callable, &callable_param, &numargs, &flags))
+      return NULL;
+  }
+
+  if (!callable)
+    cbinfo = NULL;
+  else
+  {
+    cbinfo = allocfunccbinfo(name);
+    if (!cbinfo)
+      goto finally;
+    cbinfo->windowfactory = Py_NewRef(callable);
+  }
+
+  PYSQLITE_CON_CALL(
+      res = sqlite3_create_window_function(self->db,
+                                           name,
+                                           numargs,
+                                           SQLITE_UTF8 | flags,
+                                           cbinfo,
+                                           cbinfo ? cbw_step : NULL,
+                                           cbinfo ? cbw_final : NULL,
+                                           cbinfo ? cbw_value : NULL,
+                                           cbinfo ? cbw_inverse : NULL,
+                                           apsw_free_func));
+
+finally:
+  if (PyErr_Occurred())
+    return NULL;
+  Py_RETURN_NONE;
 }
 
 /** .. method:: createscalarfunction(name: str, callable: Optional[ScalarProtocol], numargs: int = -1, *, deterministic: bool = False, flags: int = 0) -> None
@@ -4536,6 +4856,8 @@ static PyMethodDef Connection_methods[] = {
     {"cacheflush", (PyCFunction)Connection_cacheflush, METH_NOARGS, Connection_cacheflush_DOC},
     {"release_memory", (PyCFunction)Connection_release_memory, METH_NOARGS, Connection_release_memory_DOC},
     {"drop_modules", (PyCFunction)Connection_drop_modules, METH_VARARGS | METH_KEYWORDS, Connection_drop_modules_DOC},
+    {"create_window_function", (PyCFunction)Connection_create_window_function, METH_VARARGS | METH_KEYWORDS,
+     Connection_create_window_function_DOC},
     {0, 0, 0, 0} /* Sentinel */
 };
 
