@@ -38,6 +38,10 @@ message now includes the parameter name and function signature.
 Let SQLite do size checking instead of APSW for strings and blobs.
 (:issue:`387`)
 
+Added :meth:`apsw.ext.log_sqlite` which installs a handler that
+forwards SQLite messages to the `logging module
+<https://docs.python.org/3/library/logging.html>`__.
+
 3.40.0.0
 ========
 

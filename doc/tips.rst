@@ -154,7 +154,12 @@ APSW ensures you have :ref:`detailed information
 APSW/SQLite was operating on.
 
 SQLite has a `warning/error logging facility
-<http://www.sqlite.org/errlog.html>`__.  To set your own logger use::
+<http://www.sqlite.org/errlog.html>`__.  You can call
+:meth:`apsw.ext.log_sqlite` which installs a handler that forwards
+SQLite messages to the `logging module
+<https://docs.python.org/3/library/logging.html>`__.
+
+To do it yourself::
 
     def handler(errcode, message):
         errstr=apsw.mapping_result_codes[errcode & 255]
