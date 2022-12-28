@@ -344,20 +344,36 @@ traceback::
   cursor.execute("create table bar(x,y,z);insert into bar values(1,2,3)")
   cursor.execute("select foo(1) from bar")
 
-+-----------------------------------------------------------+----------------------------------------------------------+
-| Original Traceback                                        |      Augmented Traceback                                 |
-+===========================================================+==========================================================+
-| ::                                                        | ::                                                       |
-|                                                           |                                                          |
-|   Traceback (most recent call last):                      |   Traceback (most recent call last):                     |
-|     File "t.py", line 11, in <module>                     |     File "t.py", line 11, in <module>                    |
-|       cursor.execute("select foo(1) from bar")            |       cursor.execute("select foo(1) from bar")           |
-|     File "t.py", line 4, in myfunc                        |     File "apsw.c", line 3412, in resetcursor             |
-|       1/0                                                 |     File "apsw.c", line 1597, in user-defined-scalar-foo |
-|   ZeroDivisionError: integer division or modulo by zero   |     File "t.py", line 4, in myfunc                       |
-|                                                           |       1/0                                                |
-|                                                           |   ZeroDivisionError: integer division or modulo by zero  |
-+-----------------------------------------------------------+----------------------------------------------------------+
+
++-----------------------------------------------------------+
+| Original Traceback                                        |
++===========================================================+
+| ::                                                        |
+|                                                           |
+|   Traceback (most recent call last):                      |
+|     File "t.py", line 11, in <module>                     |
+|       cursor.execute("select foo(1) from bar")            |
+|     File "t.py", line 4, in myfunc                        |
+|       1/0                                                 |
+|   ZeroDivisionError: integer division or modulo by zero   |
+|                                                           |
+|                                                           |
++-----------------------------------------------------------+
+
++----------------------------------------------------------+
+|      Augmented Traceback                                 |
++==========================================================+
+| ::                                                       |
+|                                                          |
+|   Traceback (most recent call last):                     |
+|     File "t.py", line 11, in <module>                    |
+|       cursor.execute("select foo(1) from bar")           |
+|     File "apsw.c", line 3412, in resetcursor             |
+|     File "apsw.c", line 1597, in user-defined-scalar-foo |
+|     File "t.py", line 4, in myfunc                       |
+|       1/0                                                |
+|   ZeroDivisionError: integer division or modulo by zero  |
++----------------------------------------------------------+
 
 In the original traceback you can't even see that code in apsw was
 involved. The augmented traceback shows that there were indeed two
@@ -368,27 +384,8 @@ to examine the code. Also note how you are told that the call was in
 *But wait, there is more!!!* In order to further aid troubleshooting,
 the augmented stack traces make additional information available. Each
 frame in the traceback has local variables defined with more
-information. You can print out the variables like this::
-
-    import sys
-
-    def print_exc_plus(tb = None):
-        tb = tb or sys.exc_info()[2]
-
-        print ("Locals by frame (most recent call last)")
-
-        while tb:
-            frame = tb.tb_frame
-            print()
-            print(f"Frame { frame.f_code.co_name } in { frame.f_code.co_filename } at line { frame.f_lineno}")
-            for key, value in sorted(frame.f_locals.items()):
-                try:
-                    vstr = str(value)
-                except:
-                    vstr = "<Failed to stringify>"
-                print(f"   { key } = { vstr }")
-            tb = tb.tb_next
-
+information. You can use :meth:`apsw.ext.print_augmented_traceback` to
+print an exception with the local variables.
 
 Here is a far more complex example from some :ref:`virtual tables
 <Virtualtables>` code I was writing. The BestIndex method in my code

@@ -10,11 +10,14 @@ else:
 
 from dataclasses import dataclass, make_dataclass
 
-from typing import Optional, Tuple, Union, List, Any, Dict, Callable, Sequence
+from typing import Optional, Tuple, Union, List, Any, Dict, Callable, Sequence, TextIO
+import types
+
 import functools
 import abc
 
 import logging
+import traceback
 
 import apsw
 
@@ -289,6 +292,26 @@ def log_sqlite(*, level: int = logging.ERROR) -> None:
                     extra=extra)
 
     apsw.config(apsw.SQLITE_CONFIG_LOG, handler)
+
+
+def print_augmented_traceback(exc_type: type[BaseException],
+                              exc_value: BaseException,
+                              exc_traceback: types.TracebackType,
+                              *,
+                              file: Optional[TextIO] = None) -> None:
+    """Prints a standard exception, but also includes the value of variables in each stack frame
+
+    :param exc_type: The exception type
+    :param exc_value: The exception value
+    :param exc_traceback: Traceback for the exception
+    :param file: (default ``sys.stderr``) Where the print goes
+    """
+
+    file = file or sys.stderr
+
+    tbe = traceback.TracebackException(exc_type, exc_value, exc_traceback, capture_locals=True, compact=True)
+    for line in tbe.format():
+        print(line, file=file)
 
 
 def query_info(db: apsw.Connection,
