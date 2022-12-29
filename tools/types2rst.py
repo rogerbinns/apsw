@@ -8,7 +8,18 @@ def process(module: ast.Module, source: str) -> List[Tuple[str, str, str]]:
     res = []
     body = module.body
     i = 0
+
     while i < len(body):
+        if isinstance(body[i], ast.If):
+            if not isinstance(body[i].body[0], ast.ClassDef):
+                i += 1
+                continue
+            klass = body[i].body[0]
+            code = ast.unparse(klass).split("\n")
+            code[0] = code[0].replace("class ", "").replace("(", "\\(")
+            res.append((klass.name, "\n".join(code), f"{ klass.name } Protocol"))
+            i += 1
+            continue
         if not isinstance(body[i], ast.Assign):
             i += 1
             continue
@@ -25,7 +36,7 @@ def process(module: ast.Module, source: str) -> List[Tuple[str, str, str]]:
 
 
 # stuff defined in standard library
-std_typing = {"Union", "Callable", "Tuple", "Dict", "List", "Optional", "Any", "Sequence", "Mapping"}
+std_typing = {"Union", "Callable", "Tuple", "Dict", "List", "Optional", "Any", "Sequence", "Mapping", "Protocol"}
 std_other = {"None", "int", "float", "bytes", "str", "dict", "tuple", "bool"}
 
 # from apsw
@@ -33,12 +44,13 @@ apsw_mod = {"zeroblob", "Cursor", "Connection"}
 
 
 def sub(m: re.Match) -> str:
-    text = m.group("name")
+    text: str = m.group("name")
     if text in std_typing:
-        return f"`{ text } <https://docs.python.org/3/library/typing.html#typing.{ text }>`__ "
+        return f"`{ text } <https://docs.python.org/3/library/typing.html#typing.{ text }>`__\\"
     if text in std_other:
-        return f"`{ text } <https://docs.python.org/3/library/stdtypes.html#{ text }>`__"
-    return f" :class:`{ text }`"
+        return f"`{ text } <https://docs.python.org/3/library/stdtypes.html#{ text }>`__\\"
+    return f":class:`{ text }`"
+
 
 def nomunge(pattern: str, replacement: Any, value: str) -> str:
     # re causes problems with Mapping so quick hack
@@ -49,6 +61,7 @@ def nomunge(pattern: str, replacement: Any, value: str) -> str:
     if hack:
         value = value.replace("Xabc.XMapping", "abc.Mapping")
     return value
+
 
 def output(doc: List[Tuple[str, str, str]]) -> str:
     in_doc: set[str] = set()
