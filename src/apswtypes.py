@@ -58,6 +58,59 @@ ScalarProtocol = Union [
 """Scalar callbacks take zero or more SQLiteValues, and return a SQLiteValue"""
 
 
+if sys.version_info >= (3, 8):
+    class WindowClass(Protocol):
+        "Represents a running window function"
+        def step(self, param: SQLiteValue) -> None:
+            "Adds the param(s) to the window"
+            ...
+        def final(self) -> SQLiteValue:
+            "Finishes the function and returns final value"
+            ...
+        def value(self) -> SQLiteValue:
+            "Returns the current value"
+            ...
+        def inverse(self, param: SQLiteValue) -> None:
+            "Removes the param(s) from the window"
+            ...
+
+WindowT = Any
+"An object provided as first parameter of the 4 window functions, if not using class based callbacks"
+
+WindowStep = Union[
+        Callable[[WindowT], None],
+        Callable[[WindowT, SQLiteValue], None],
+        Callable[[WindowT, SQLiteValue, SQLiteValue], None],
+        Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue], None],
+        Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None]
+]
+"""Window function step takes zero or more SQLiteValues"""
+
+WindowFinal = Union[
+        Callable[[WindowT], SQLiteValue],
+        Callable[[WindowT, SQLiteValue], SQLiteValue],
+        Callable[[WindowT, SQLiteValue, SQLiteValue], SQLiteValue],
+        Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue], SQLiteValue],
+        Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], SQLiteValue]
+]
+"""Window function final takes zero or more SQLiteValues, and returns a SQLiteValue"""
+
+WindowValue = Callable[[WindowT], SQLiteValue]
+"""Window function value returns the current  SQLiteValue"""
+
+WindowInverse = Union[
+        Callable[[WindowT], None],
+        Callable[[WindowT, SQLiteValue], None],
+        Callable[[WindowT, SQLiteValue, SQLiteValue], None],
+        Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue], None],
+        Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None]
+]
+"""Window function inverse takes zero or more SQLiteValues"""
+
+WindowFactory = Callable[[], Union[WindowClass, Tuple[WindowT, WindowStep, WindowFinal, WindowValue, WindowInverse]]]
+"""Called each time at the start of a new window function execution.  It should return either an object
+with relevant methods or an object used as the first parameter and the 4 methods"""
+
 RowTracer = Callable[[Cursor, SQLiteValues], Any]
 """Row tracers are called with the Cursor, and the row that would
 be returned.  If you return None, then no row is returned, otherwise

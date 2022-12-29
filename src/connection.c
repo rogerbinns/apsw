@@ -2691,7 +2691,7 @@ static windowfunctioncontext *
 getwindowfunctioncontext(sqlite3_context *context)
 {
   /* was an error already present? */
-  int had_err;
+  int had_tb;
   windowfunctioncontext *winfc = sqlite3_aggregate_context(context, sizeof(windowfunctioncontext));
   FunctionCBInfo *cbinfo;
   PyObject *retval = NULL;
@@ -2704,7 +2704,7 @@ getwindowfunctioncontext(sqlite3_context *context)
     return NULL;
   assert(winfc->state == UNINIT);
 
-  had_err = !!PyErr_Occurred();
+  had_tb = !!PyErr_Occurred();
 
   winfc->state = ERROR;
 
@@ -2768,7 +2768,7 @@ getwindowfunctioncontext(sqlite3_context *context)
   winfc->state = OK;
 
 finally:
-  if (!had_err && PyErr_Occurred())
+  if (!had_tb && PyErr_Occurred())
   {
     char *funcname = sqlite3_mprintf("window-function-factory-%s", cbinfo->name);
     AddTraceBackHere(__FILE__, __LINE__, funcname, "{s: O, s: O}", "instance", OBJ(retval), "as_sequence", OBJ(sequence));
@@ -2798,13 +2798,18 @@ apsw_free_func(void *funcinfo)
   PyGILState_Release(gilstate);
 }
 
+#define funcname (sqlite3_user_data(context) ? ((FunctionCBInfo *)sqlite3_user_data(context))->name : "<unknown>")
+
 static void
 cbw_step(sqlite3_context *context, int argc, sqlite3_value **argv)
 {
   PyGILState_STATE gilstate;
   windowfunctioncontext *winfc;
   PyObject *pyargs = NULL, *retval = NULL;
+  int had_tb;
+
   gilstate = PyGILState_Ensure();
+  had_tb = !!PyErr_Occurred();
 
   winfc = getwindowfunctioncontext(context);
   if (!winfc)
@@ -2821,6 +2826,9 @@ cbw_step(sqlite3_context *context, int argc, sqlite3_value **argv)
 
 error:
   sqlite3_result_error(context, "Python level error", -1);
+  if (!had_tb)
+    AddTraceBackHere(__FILE__, __LINE__, "window-function-step", "{s:O,s:O,s:s}", "pyargs", OBJ(pyargs),
+                     "retval", OBJ(retval), "name", funcname);
 
 finally:
   Py_XDECREF(pyargs);
@@ -2836,8 +2844,10 @@ cbw_final(sqlite3_context *context)
   windowfunctioncontext *winfc;
   PyObject *retval = NULL;
   int ok;
+  int had_tb;
 
   gilstate = PyGILState_Ensure();
+  had_tb = !!PyErr_Occurred();
 
   winfc = getwindowfunctioncontext(context);
   if (!winfc)
@@ -2855,6 +2865,9 @@ cbw_final(sqlite3_context *context)
 
 error:
   sqlite3_result_error(context, "Python level error", -1);
+  if (!had_tb)
+    AddTraceBackHere(__FILE__, __LINE__, "window-function-final", "{s:O,s:s}",
+                     "retval", OBJ(retval), "name", funcname);
 
 finally:
   Py_XDECREF(retval);
@@ -2871,8 +2884,10 @@ cbw_value(sqlite3_context *context)
   windowfunctioncontext *winfc;
   PyObject *retval = NULL;
   int ok;
+  int had_tb;
 
   gilstate = PyGILState_Ensure();
+  had_tb = !!PyErr_Occurred();
 
   winfc = getwindowfunctioncontext(context);
   if (!winfc)
@@ -2890,7 +2905,9 @@ cbw_value(sqlite3_context *context)
 
 error:
   sqlite3_result_error(context, "Python level error", -1);
-
+  if (!had_tb)
+    AddTraceBackHere(__FILE__, __LINE__, "window-function-final", "{s:O,s:s}",
+                     "retval", OBJ(retval), "name", funcname);
 finally:
   Py_XDECREF(retval);
 
@@ -2903,7 +2920,10 @@ cbw_inverse(sqlite3_context *context, int argc, sqlite3_value **argv)
   PyGILState_STATE gilstate;
   windowfunctioncontext *winfc;
   PyObject *pyargs = NULL, *retval = NULL;
+  int had_tb;
+
   gilstate = PyGILState_Ensure();
+  had_tb = !!PyErr_Occurred();
 
   winfc = getwindowfunctioncontext(context);
   if (!winfc)
@@ -2920,6 +2940,9 @@ cbw_inverse(sqlite3_context *context, int argc, sqlite3_value **argv)
 
 error:
   sqlite3_result_error(context, "Python level error", -1);
+  if (!had_tb)
+    AddTraceBackHere(__FILE__, __LINE__, "window-function-inverse", "{s:O,s:O,s:s}",
+                     "pyargs", OBJ(pyargs), "retval", OBJ(retval), "name", funcname);
 
 finally:
   Py_XDECREF(pyargs);
@@ -2928,39 +2951,61 @@ finally:
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: create_window_function(name:str, callable: Optional[WindowProtocol], numargs: int =-1, *, flags: int = 0) -> None
+/** .. method:: create_window_function(name:str, factory: Optional[WindowFactory], numargs: int =-1, *, flags: int = 0) -> None
 
- Registers a window function
+    Registers a `window function
+    <https://sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions>`__
 
- More text to come
+      :param name: The string name of the function.  It should be less than 255 characters
+      :param factory: Called to start a new window.  Use None to delete the function.
+      :param numargs: How many arguments the function takes, with -1 meaning any number
+      :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
+
+    You need to provide callbacks for the ``step``, ``final``, ``value``
+    and ``inverse`` methods.  This can be done by having `factory` as a
+    class, and the corresponding method names, or by having `factory`
+    return a sequence of a first parameter, and then each of the 4
+    functions.
+
+    **Debugging note** SQlite always calls the ``final`` method to allow
+    for cleanup.  If you have an error in one of the other methods, then
+    ``final`` will also be called, and you may see both methods in
+    tracebacks.
+
+    .. seealso::
+
+     * :ref:`Example <example_window>`
+     * :meth:`~Connection.createaggregatefunction`
+
+    -* sqlite3_create_window_function
 */
 static PyObject *
 Connection_create_window_function(Connection *self, PyObject *args, PyObject *kwds)
 {
   int numargs = -1, flags = 0, res;
   const char *name = NULL;
-  PyObject *callable = NULL;
+  PyObject *factory = NULL;
   FunctionCBInfo *cbinfo;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
-    static char *kwlist[] = {"name", "callable", "numargs", "flags", NULL};
+    static char *kwlist[] = {"name", "factory", "numargs", "flags", NULL};
     Connection_create_window_function_CHECK;
-    argcheck_Optional_Callable_param callable_param = {&callable, Connection_create_window_function_callable_MSG};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&|i$i:" Connection_create_window_function_USAGE, kwlist, &name, argcheck_Optional_Callable, &callable_param, &numargs, &flags))
+    argcheck_Optional_Callable_param factory_param = {&factory, Connection_create_window_function_factory_MSG};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO&|i$i:" Connection_create_window_function_USAGE, kwlist, &name, argcheck_Optional_Callable, &factory_param, &numargs, &flags))
       return NULL;
   }
 
-  if (!callable)
+  if (!factory)
     cbinfo = NULL;
   else
   {
     cbinfo = allocfunccbinfo(name);
     if (!cbinfo)
       goto finally;
-    cbinfo->windowfactory = Py_NewRef(callable);
+    cbinfo->windowfactory = Py_NewRef(factory);
   }
 
   PYSQLITE_CON_CALL(

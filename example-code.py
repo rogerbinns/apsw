@@ -272,6 +272,59 @@ connection.createaggregatefunction("longest", longest.factory)
 for row in connection.execute("select longest(event) from log"):
     print(row)
 
+### window: Defining window functions
+# Window functions input values come from a "window" around a row of
+# interest.  Four methods are called to add, remove, get the current
+# value, and finalize as the window moves.
+#
+# An example is calculating an average of values in the window to
+# compare to the row.  They are registered by calling
+# :meth:`Connection.create_window_function`.
+#
+# This is the Python equivalent to the C based example in the `SQLite
+# documentation
+# <https://www.sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions>`__
+
+
+class SumInt:
+
+    def __init__(self):
+        self.v = 0
+
+    def step(self, arg):
+        print("step", arg)
+        self.v += arg
+
+    def inverse(self, arg):
+        print("inverse", arg)
+        self.v -= arg
+
+    def final(self):
+        print("final")
+        return self.v
+
+    def value(self):
+        print("value", self.v)
+        return self.v
+
+
+connection.create_window_function("sumint", SumInt)
+
+for row in connection.execute("""
+        CREATE TABLE t3(x, y);
+        INSERT INTO t3 VALUES('a', 4),
+                             ('b', 5),
+                             ('c', 3),
+                             ('d', 8),
+                             ('e', 1);
+        -- Use the window function
+        SELECT x, sumint(y) OVER (
+        ORDER BY x ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING
+        ) AS sum_y
+        FROM t3 ORDER BY x;
+    """):
+        print("ROW", row)
+
 ### collation: Defining collations (sorting)
 # How you sort can depend on the languages or values involved.  You
 # register a collation by calling :meth:`Connection.createcollation`.
@@ -918,6 +971,7 @@ def trace_hook(trace: Dict) -> None:
     assert trace.pop("sql") == query
     print("code is ", apsw.mapping_trace_codes[trace["code"]])
     print(pprint.pformat(trace), "\n")
+
 
 connection.trace_v2(apsw.SQLITE_TRACE_STMT | apsw.SQLITE_TRACE_PROFILE | apsw.SQLITE_TRACE_ROW, trace_hook)
 

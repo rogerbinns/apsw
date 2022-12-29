@@ -561,7 +561,7 @@ def do_argparse(item):
                 "Optional[AggregateFactory]",
                 "Optional[Authorizer]",
                 "Optional[CommitHook]",
-                "Optional[WindowProtocol]",
+                "Optional[WindowFactory]",
         }:
             # the above are all callables and we don't check beyond that
             type = "PyObject *"
