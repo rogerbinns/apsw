@@ -916,6 +916,47 @@
 "\n" \
 "Calls: `sqlite3_db_config <https://sqlite.org/c3ref/db_config.html>`__\n" 
 
+#define  Connection_create_window_function_DOC "create_window_function($self,name,factory,numargs=-1,*,flags=0)\n--\n\nConnection.create_window_function(name:str, factory: Optional[WindowFactory], numargs: int =-1, *, flags: int = 0) -> None\n\n" \
+"Registers a `window function\n" \
+"<https://sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions>`__\n" \
+"\n" \
+"  :param name: The string name of the function.  It should be less than 255 characters\n" \
+"  :param factory: Called to start a new window.  Use None to delete the function.\n" \
+"  :param numargs: How many arguments the function takes, with -1 meaning any number\n" \
+"  :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__\n" \
+"\n" \
+"You need to provide callbacks for the ``step``, ``final``, ``value``\n" \
+"and ``inverse`` methods.  This can be done by having `factory` as a\n" \
+"class, and the corresponding method names, or by having `factory`\n" \
+"return a sequence of a first parameter, and then each of the 4\n" \
+"functions.\n" \
+"\n" \
+"**Debugging note** SQlite always calls the ``final`` method to allow\n" \
+"for cleanup.  If you have an error in one of the other methods, then\n" \
+"``final`` will also be called, and you may see both methods in\n" \
+"tracebacks.\n" \
+"\n" \
+".. seealso::\n" \
+"\n" \
+" * :ref:`Example <example_window>`\n" \
+" * :meth:`~Connection.createaggregatefunction`\n" \
+"\n" \
+"Calls: `sqlite3_create_window_function <https://sqlite.org/c3ref/create_function.html>`__\n" 
+
+#define Connection_create_window_function_factory_MSG  "argument 'factory' of Connection.create_window_function(name:str, factory: Optional[WindowFactory], numargs: int =-1, *, flags: int = 0) -> None" 
+
+#define Connection_create_window_function_USAGE "Connection.create_window_function(name:str, factory: Optional[WindowFactory], numargs: int =-1, *, flags: int = 0) -> None"
+
+#define Connection_create_window_function_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(name), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(factory), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(numargs), int)); \
+  assert(numargs == (-1)); \
+  assert(__builtin_types_compatible_p(typeof(flags), int)); \
+  assert(flags == (0)); \
+} while(0)
+
+
 #define  Connection_createaggregatefunction_DOC "createaggregatefunction($self,name,factory,numargs=-1,*,flags=0)\n--\n\nConnection.createaggregatefunction(name: str, factory: Optional[AggregateFactory], numargs: int = -1, *, flags: int = 0) -> None\n\n" \
 "Registers an aggregate function.  Aggregate functions operate on all\n" \
 "the relevant rows such as counting how many there are.\n" \

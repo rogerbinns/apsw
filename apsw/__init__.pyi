@@ -59,6 +59,59 @@ ScalarProtocol = Union [
 """Scalar callbacks take zero or more SQLiteValues, and return a SQLiteValue"""
 
 
+if sys.version_info >= (3, 8):
+    class WindowClass(Protocol):
+        "Represents a running window function"
+        def step(self, param: SQLiteValue) -> None:
+            "Adds the param(s) to the window"
+            ...
+        def final(self) -> SQLiteValue:
+            "Finishes the function and returns final value"
+            ...
+        def value(self) -> SQLiteValue:
+            "Returns the current value"
+            ...
+        def inverse(self, param: SQLiteValue) -> None:
+            "Removes the param(s) from the window"
+            ...
+
+WindowT = Any
+"An object provided as first parameter of the 4 window functions, if not using class based callbacks"
+
+WindowStep = Union[
+        Callable[[WindowT], None],
+        Callable[[WindowT, SQLiteValue], None],
+        Callable[[WindowT, SQLiteValue, SQLiteValue], None],
+        Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue], None],
+        Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None]
+]
+"""Window function step takes zero or more SQLiteValues"""
+
+WindowFinal = Union[
+        Callable[[WindowT], SQLiteValue],
+        Callable[[WindowT, SQLiteValue], SQLiteValue],
+        Callable[[WindowT, SQLiteValue, SQLiteValue], SQLiteValue],
+        Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue], SQLiteValue],
+        Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], SQLiteValue]
+]
+"""Window function final takes zero or more SQLiteValues, and returns a SQLiteValue"""
+
+WindowValue = Callable[[WindowT], SQLiteValue]
+"""Window function value returns the current  SQLiteValue"""
+
+WindowInverse = Union[
+        Callable[[WindowT], None],
+        Callable[[WindowT, SQLiteValue], None],
+        Callable[[WindowT, SQLiteValue, SQLiteValue], None],
+        Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue], None],
+        Callable[[WindowT, SQLiteValue, SQLiteValue, SQLiteValue, SQLiteValue], None]
+]
+"""Window function inverse takes zero or more SQLiteValues"""
+
+WindowFactory = Callable[[], Union[WindowClass, Tuple[WindowT, WindowStep, WindowFinal, WindowValue, WindowInverse]]]
+"""Called each time at the start of a new window function execution.  It should return either an object
+with relevant methods or an object used as the first parameter and the 4 methods"""
+
 RowTracer = Callable[[Cursor, SQLiteValues], Any]
 """Row tracers are called with the Cursor, and the row that would
 be returned.  If you return None, then no row is returned, otherwise
@@ -818,6 +871,34 @@ class Connection:
         Only optiona that take an int and return one are implemented.
 
         Calls: `sqlite3_db_config <https://sqlite.org/c3ref/db_config.html>`__"""
+        ...
+
+    def create_window_function(self, name:str, factory: Optional[WindowFactory], numargs: int =-1, *, flags: int = 0) -> None:
+        """Registers a `window function
+        <https://sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions>`__
+
+          :param name: The string name of the function.  It should be less than 255 characters
+          :param factory: Called to start a new window.  Use None to delete the function.
+          :param numargs: How many arguments the function takes, with -1 meaning any number
+          :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
+
+        You need to provide callbacks for the ``step``, ``final``, ``value``
+        and ``inverse`` methods.  This can be done by having `factory` as a
+        class, and the corresponding method names, or by having `factory`
+        return a sequence of a first parameter, and then each of the 4
+        functions.
+
+        **Debugging note** SQlite always calls the ``final`` method to allow
+        for cleanup.  If you have an error in one of the other methods, then
+        ``final`` will also be called, and you may see both methods in
+        tracebacks.
+
+        .. seealso::
+
+         * :ref:`Example <example_window>`
+         * :meth:`~Connection.createaggregatefunction`
+
+        Calls: `sqlite3_create_window_function <https://sqlite.org/c3ref/create_function.html>`__"""
         ...
 
     def createaggregatefunction(self, name: str, factory: Optional[AggregateFactory], numargs: int = -1, *, flags: int = 0) -> None:
@@ -3604,10 +3685,11 @@ SQLITE_FCNTL_LOCKSTATE SQLITE_FCNTL_LOCK_TIMEOUT
 SQLITE_FCNTL_MMAP_SIZE SQLITE_FCNTL_OVERWRITE SQLITE_FCNTL_PDB
 SQLITE_FCNTL_PERSIST_WAL SQLITE_FCNTL_POWERSAFE_OVERWRITE
 SQLITE_FCNTL_PRAGMA SQLITE_FCNTL_RBU SQLITE_FCNTL_RESERVE_BYTES
-SQLITE_FCNTL_ROLLBACK_ATOMIC_WRITE SQLITE_FCNTL_SET_LOCKPROXYFILE
-SQLITE_FCNTL_SIZE_HINT SQLITE_FCNTL_SIZE_LIMIT SQLITE_FCNTL_SYNC
-SQLITE_FCNTL_SYNC_OMITTED SQLITE_FCNTL_TEMPFILENAME SQLITE_FCNTL_TRACE
-SQLITE_FCNTL_VFSNAME SQLITE_FCNTL_VFS_POINTER SQLITE_FCNTL_WAL_BLOCK
+SQLITE_FCNTL_RESET_CACHE SQLITE_FCNTL_ROLLBACK_ATOMIC_WRITE
+SQLITE_FCNTL_SET_LOCKPROXYFILE SQLITE_FCNTL_SIZE_HINT
+SQLITE_FCNTL_SIZE_LIMIT SQLITE_FCNTL_SYNC SQLITE_FCNTL_SYNC_OMITTED
+SQLITE_FCNTL_TEMPFILENAME SQLITE_FCNTL_TRACE SQLITE_FCNTL_VFSNAME
+SQLITE_FCNTL_VFS_POINTER SQLITE_FCNTL_WAL_BLOCK
 SQLITE_FCNTL_WIN32_AV_RETRY SQLITE_FCNTL_WIN32_GET_HANDLE
 SQLITE_FCNTL_WIN32_SET_HANDLE SQLITE_FCNTL_ZIPVFS"""
 
