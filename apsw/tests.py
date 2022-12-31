@@ -1020,6 +1020,7 @@ class APSW(unittest.TestCase):
         # zeroblob in functions
         def func(n: int):
             return apsw.zeroblob(n)
+
         self.db.createscalarfunction("func", func)
 
         self.assertEqual(self.db.execute("select func(17)").fetchall()[0][0], b"\0" * 17)
@@ -4434,7 +4435,6 @@ class APSW(unittest.TestCase):
         apsw.hard_heap_limit(0x1234567890abd)
         self.assertEqual(0x1234567890abd, apsw.hard_heap_limit(0x1234567890abe))
 
-
     def testRandomness(self):
         "Verify randomness routine"
         self.assertRaises(TypeError, apsw.randomness, "three")
@@ -4507,15 +4507,18 @@ class APSW(unittest.TestCase):
 
     def testDropModules(self):
         "Verify dropping virtual table modules"
+
         # simplest implementation possible
         class Source:
+
             def Create(self, db, modulename, dbname, tablename, *args):
                 return "create table placeholder(x)", object()
 
         counter = 0
+
         def check_module(name: str, shouldfail: bool) -> None:
             nonlocal counter
-            counter +=1
+            counter += 1
             try:
                 self.db.execute(f"create virtual table ex{ counter } using { name }()")
             except apsw.SQLError as e:
@@ -4526,7 +4529,7 @@ class APSW(unittest.TestCase):
 
         self.db.createmodule("abc", Source())
         check_module("abc", False)
-        self.db.createmodule("abc", None) # should drop the table
+        self.db.createmodule("abc", None)  # should drop the table
         check_module("abc", True)
 
         # we register a whole bunch, and then unregister subsets
@@ -4543,7 +4546,7 @@ class APSW(unittest.TestCase):
             self.db.drop_modules(keep)
             for n in names:
                 check_module(n, n not in keep)
-            check_module("madeup",  True)
+            check_module("madeup", True)
             names = keep
 
     def testStatus(self):
@@ -4585,7 +4588,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, apsw.zeroblob)
         self.assertRaises(TypeError, apsw.zeroblob, "foo")
         self.assertRaises(TypeError, apsw.zeroblob, -7)
-        self.assertRaises(apsw.TooBigError, self.db.execute, "select ?", (apsw.zeroblob(4000000000),))
+        self.assertRaises(apsw.TooBigError, self.db.execute, "select ?", (apsw.zeroblob(4000000000), ))
         cur = self.db.cursor()
         cur.execute("create table foo(x)")
         cur.execute("insert into foo values(?)", (apsw.zeroblob(27), ))
@@ -4895,7 +4898,8 @@ class APSW(unittest.TestCase):
         self.assertIs(db2, x["connection"])
 
         def tracehook(x):
-            1/0
+            1 / 0
+
         self.db.trace_v2(apsw.SQLITE_TRACE_STMT, tracehook)
         self.assertRaisesUnraisable(ZeroDivisionError, self.db.execute, query)
         self.assertEqual(0, len(results))
@@ -8920,7 +8924,7 @@ shell.write(shell.stdout, "hello world\\n")
 
     def testFunctionFlags(self) -> None:
         "Flags to registered SQLite functions"
-        self.db.createscalarfunction("donotcall", lambda x: x/0, flags = apsw.SQLITE_DIRECTONLY)
+        self.db.createscalarfunction("donotcall", lambda x: x / 0, flags=apsw.SQLITE_DIRECTONLY)
         self.db.execute("""
             create table foo(y);
             insert into foo values(7);
@@ -8928,10 +8932,9 @@ shell.write(shell.stdout, "hello world\\n")
         """)
         try:
             self.db.execute("select * from bar")
-            1/0 # should not be reached
+            1 / 0  # should not be reached
         except apsw.SQLError as e:
-            self.assertIn("unsafe use of donotcall",  str(e))
-
+            self.assertIn("unsafe use of donotcall", str(e))
 
     def testExtDataClassRowFactory(self) -> None:
         "apsw.ext.DataClassRowFactory"
