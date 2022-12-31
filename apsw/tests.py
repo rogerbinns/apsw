@@ -1707,6 +1707,80 @@ class APSW(unittest.TestCase):
         self.db.createaggregatefunction("badfunc", badfactory)
         self.assertRaises(ZeroDivisionError, c.execute, "select badfunc(x) from foo")
 
+    def testWindowFunctions(self):
+        "Verify window functions"
+
+        # check the sqlite example works
+        class windowfunc:
+
+            def __init__(self):
+                self.v = 0
+
+            def step(self, arg):
+                self.v += arg
+
+            def inverse(self, arg):
+                self.v -= arg
+
+            def final(self):
+                return self.v
+
+            def value(self):
+                return self.v
+
+        self.db.create_window_function("sumint", windowfunc)
+        self.db.execute("""CREATE TABLE t3(x, y);
+                INSERT INTO t3 VALUES('a', 4),('b', 5),('c', 3),('d', 8),('e', 1);""")
+        query = """SELECT x, sumint(y) OVER (ORDER BY x ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) AS sum_y
+            FROM t3 ORDER BY x;"""
+        expected = [('a', 9), ('b', 12), ('c', 16), ('d', 12), ('e', 9)]
+        self.assertEqual(self.db.execute(query).fetchall(), expected)
+
+        self.db.create_window_function("sumint", None)
+        try:
+            self.db.execute(query)
+            1 / 0  # should not be reached
+        except apsw.SQLError as e:
+            self.assertIn("no such function: sumint", str(e))
+
+        def factory():
+            return windowfunc(), windowfunc.step, windowfunc.value, windowfunc.final, windowfunc.inverse
+
+        self.db.create_window_function("sumint", factory)
+        self.assertEqual(self.db.execute(query).fetchall(), expected)
+
+        # now all the errors
+        for factory, exc in (
+            (lambda : 3, AttributeError),
+            (lambda x: 3, TypeError),
+            (lambda : 1/0, ZeroDivisionError),
+            (lambda : [object,] + [99] * 3, TypeError),
+            (lambda : [object,] + [99] * 5, TypeError),
+        ):
+            self.db.create_window_function("sumint", factory)
+            self.assertRaises(exc, self.db.execute, query)
+
+        args=[lambda : 3] * 4
+        names = "step", "final", "value", "inverse"
+
+        for counter, n in enumerate(names):
+            a = args[:]
+            a[counter] = "a string"
+            self.db.create_window_function("sumint", lambda : [object] + a)
+            try:
+                self.db.execute(query)
+                1/0
+            except TypeError as e:
+                self.assertIn(n, str(e))
+            setattr(windowfunc, n+"orig", getattr(windowfunc, n))
+            setattr(windowfunc, n, lambda *args: 1/0)
+            self.db.create_window_function("sumint", windowfunc)
+            self.db.execute(query)
+            setattr(windowfunc, n, getattr(windowfunc, n+"orig"))
+
+
+
+
     def testCollation(self):
         "Verify collations"
         # create a whole bunch to check they are freed
