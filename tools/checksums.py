@@ -11,6 +11,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import setup
 
 sqlitevers = (
+    '3400100',
     '3400000',
     '3390400',
     '3390300',
