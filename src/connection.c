@@ -2632,6 +2632,7 @@ cbdispatch_final(sqlite3_context *context)
   {
     int ok = set_context_result(context, retval);
     assert(ok || PyErr_Occurred());
+    (void)ok;
     Py_DECREF(retval);
   }
 

@@ -1370,6 +1370,7 @@ apswvtabColumn(sqlite3_vtab_cursor *pCursor, sqlite3_context *result, int ncolum
   if (!PyErr_Occurred())
   {
     assert(ok);
+    (void)ok;
     goto finally;
   }
 pyexception: /* we had an exception in python code */
