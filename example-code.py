@@ -6,6 +6,7 @@ import os
 import sys
 import time
 import apsw
+import apsw.ext
 import random
 import ast
 
@@ -30,6 +31,17 @@ print("   SQLite lib version", apsw.sqlitelibversion())
 # If True then SQLite is incorporated into the extension.
 # If False then a shared library is being used, or static linking
 print("   Using amalgamation", apsw.using_amalgamation)
+
+### logging: Logging
+# It is a good idea to get SQLite's logs as you will get more
+# information about errors.  This has to be done first (a SQLite
+# limitation, not APSW). :meth:`apsw.ext.log_sqlite` forwards
+# SQLite's log messages to the :mod:`logging` module.
+
+apsw.ext.log_sqlite()
+
+# You can also write to SQLite's log
+apsw.log(apsw.SQLITE_ERROR, "A message from Python")
 
 ### open_db:  Opening the database
 # You open the database by using :class:`Connection`

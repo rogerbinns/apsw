@@ -6,6 +6,16 @@ Various interesting and useful bits of functionality
 You need to import `apsw.ext` to use this module. :mod:`dataclasses`
 are used, and only Python 3.7+ is supported.
 
+Logging and tracebacks
+----------------------
+
+You can use :meth:`log_sqlite` to forward SQLite log messages
+to the :mod:`logging` module.
+
+:meth:`print_augmented_traceback` prints an exception the usual way
+but also includes local variables, which :ref:`APSW includes
+<augmentedstacktraces>` to make debugging quicker and easier.
+
 Accessing result rows by column name
 ------------------------------------
 
