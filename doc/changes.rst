@@ -6,6 +6,10 @@ Change History
 next
 ====
 
+Implemented `window functions
+<https://www.sqlite.org/windowfunctions.html#udfwinfunc>`__
+(:issue:`292`)
+
 `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
 can be specified to :meth:`Connection.createscalarfunction` and
 :meth:`Connection.createaggregatefunction`. Added

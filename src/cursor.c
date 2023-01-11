@@ -191,8 +191,13 @@ resetcursor(APSWCursor *self, int force)
   if (self->statement)
   {
     INUSE_CALL(res = statementcache_finalize(self->connection->stmtcache, self->statement));
-    if (!force) /* we don't care about errors when forcing */
-      SET_EXC(res, self->connection->db);
+    if (res)
+    {
+      if (force)
+        PyErr_Clear();
+      else
+        SET_EXC(res, self->connection->db);
+    }
     self->statement = 0;
   }
 
@@ -585,7 +590,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
     APSW_FAULT_INJECT(DoBindingUnicodeConversionFails, strdata = PyUnicode_AsUTF8AndSize(obj, &strbytes), strdata = (const char *)PyErr_NoMemory());
     if (strdata)
     {
-        PYSQLITE_CUR_CALL(res = sqlite3_bind_text64(self->statement->vdbestatement, arg, strdata, strbytes, SQLITE_TRANSIENT, SQLITE_UTF8));
+      PYSQLITE_CUR_CALL(res = sqlite3_bind_text64(self->statement->vdbestatement, arg, strdata, strbytes, SQLITE_TRANSIENT, SQLITE_UTF8));
     }
     else
     {

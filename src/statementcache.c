@@ -83,18 +83,24 @@ static APSWStatement *apsw_sc_recycle_bin[SC_STATEMENT_RECYCLE_BIN_ENTRIES];
 static unsigned apsw_sc_recycle_bin_next = 0;
 #endif
 
-static void
+static int
 statementcache_free_statement(StatementCache *sc, APSWStatement *s)
 {
+  int res;
+
   Py_CLEAR(s->query);
-  /* always succeeds and returns last err that happened which we don't care about */
-  _PYSQLITE_CALL_V(sqlite3_finalize(s->vdbestatement));
+
+  PYSQLITE_SC_CALL(res = sqlite3_finalize(s->vdbestatement));
+
 #if SC_STATEMENT_RECYCLE_BIN_ENTRIES > 0
   if (apsw_sc_recycle_bin_next + 1 < SC_STATEMENT_RECYCLE_BIN_ENTRIES)
     apsw_sc_recycle_bin[apsw_sc_recycle_bin_next++] = s;
   else
 #endif
+
     PyMem_Free(s);
+
+  return res;
 }
 
 static int
@@ -117,6 +123,15 @@ statementcache_finalize(StatementCache *sc, APSWStatement *statement)
 
     PYSQLITE_SC_CALL(res = sqlite3_reset(statement->vdbestatement));
 
+    /*
+      https://sqlite.org/forum/forumpost/d72cba6ff7
+
+      window function final can be called to do cleanup during reset.  If it
+      returns an error, SQLite does not pass on the error.
+    */
+    if (res == SQLITE_OK && PyErr_Occurred())
+      res = SQLITE_ERROR;
+
     if (sc->caches[sc->next_eviction])
     {
       assert(sc->hashes[sc->next_eviction] != SC_SENTINEL_HASH);
@@ -137,7 +152,9 @@ statementcache_finalize(StatementCache *sc, APSWStatement *statement)
   else
   {
     /* not caching */
-    statementcache_free_statement(sc, statement);
+    res = statementcache_free_statement(sc, statement);
+    if (res == SQLITE_OK && PyErr_Occurred())
+      res = SQLITE_ERROR;
   }
   return res;
 }

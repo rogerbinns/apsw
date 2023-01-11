@@ -118,3 +118,41 @@ Py_NewRef(PyObject *o)
 #endif
 
 #define Py_TypeName(o) ((o) ? (Py_TYPE(o)->tp_name) : "NULL")
+
+/*
+
+This is necessary for calling into CPython for methods that cannot
+handle an existing exception, such as PyObject_Call*.  If those
+methods are called with an existing exception then when they return
+CPython will raise:
+
+SystemError: _PyEval_EvalFrameDefault returned a result with an
+exception set
+
+If there was an exception coming in, then this macro will turn any
+exception in `x` into an unraisable exception and requires the
+parameters for AddTraceBackHere to be provided.
+
+*/
+
+#define PY_EXC_HANDLE(x, func_name, locals_dict_spec, ...)                              \
+  do                                                                                    \
+  {                                                                                     \
+    PyObject *e_type = NULL, *e_value = NULL, *e_traceback = NULL;                      \
+    PyErr_Fetch(&e_type, &e_value, &e_traceback);                                       \
+                                                                                        \
+    x;                                                                                  \
+                                                                                        \
+    if ((e_type || e_value || e_traceback))                                             \
+    {                                                                                   \
+      if (PyErr_Occurred())                                                             \
+      {                                                                                 \
+        /* report the new error as unraisable because of the existing error */          \
+        AddTraceBackHere(__FILE__, __LINE__, func_name, locals_dict_spec, __VA_ARGS__); \
+        apsw_write_unraisable(NULL);                                                    \
+      } /* put the old error back */                                                    \
+      PyErr_Restore(e_type, e_value, e_traceback);                                      \
+    }                                                                                   \
+                                                                                        \
+  } while (0)
+;
