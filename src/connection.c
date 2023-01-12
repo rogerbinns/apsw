@@ -44,9 +44,9 @@ typedef struct
 {
   enum
   {
-    OK = 1,
-    UNINIT = 0,
-    ERROR = -1
+    wfcOK = 1,
+    wfcUNINIT = 0,
+    wfcERROR = -1
   } state;
   PyObject *aggvalue;    /* the aggregation value passed as first parameter */
   PyObject *stepfunc;    /* step function */
@@ -2677,7 +2677,7 @@ clear_window_function_context(windowfunctioncontext *winfc)
     Py_CLEAR(winfc->finalfunc);
     Py_CLEAR(winfc->valuefunc);
     Py_CLEAR(winfc->inversefunc);
-    winfc->state = ERROR;
+    winfc->state = wfcERROR;
   }
 }
 
@@ -2690,13 +2690,13 @@ get_window_function_context_wrapped(sqlite3_context *context)
   PyObject *sequence = NULL;
 
   /* have we seen it before? */
-  if (winfc->state == OK)
+  if (winfc->state == wfcOK)
     return winfc;
-  if (winfc->state == ERROR)
+  if (winfc->state == wfcERROR)
     return NULL;
-  assert(winfc->state == UNINIT);
+  assert(winfc->state == wfcUNINIT);
 
-  winfc->state = ERROR;
+  winfc->state = wfcERROR;
 
   cbinfo = (FunctionCBInfo *)sqlite3_user_data(context);
   assert(cbinfo);
@@ -2755,18 +2755,18 @@ get_window_function_context_wrapped(sqlite3_context *context)
 #undef METH
   }
 
-  winfc->state = OK;
+  winfc->state = wfcOK;
 
 finally:
   if (PyErr_Occurred())
   {
-    assert(winfc->state != OK);
+    assert(winfc->state != wfcOK);
     AddTraceBackHere(__FILE__, __LINE__, "get_window_function_context", "{s: O, s: O, s: s}", "instance", OBJ(retval),
                      "as_sequence", OBJ(sequence), "name", cbinfo->name);
   }
   Py_XDECREF(retval);
   Py_XDECREF(sequence);
-  if (winfc->state == OK)
+  if (winfc->state == wfcOK)
     return winfc;
   clear_window_function_context(winfc);
   return NULL;
