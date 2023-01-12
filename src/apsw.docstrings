@@ -225,6 +225,21 @@
 } while(0)
 
 
+#define  Apsw_set_default_vfs_DOC "set_default_vfs($self,name)\n--\n\napsw.set_default_vfs(name: str) -> None\n\n" \
+"Sets the default vfs to *name* which must be an existing vfs.\n" \
+"See :meth:`vfsnames`.\n" \
+"\n" \
+"Calls:\n" \
+"  * `sqlite3_vfs_register <https://sqlite.org/c3ref/vfs_find.html>`__\n" \
+"  * `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__\n" 
+
+#define Apsw_set_default_vfs_USAGE "apsw.set_default_vfs(name: str) -> None"
+
+#define Apsw_set_default_vfs_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(name), const char *)); \
+} while(0)
+
+
 #define  Apsw_shutdown_DOC "shutdown($self)\n--\n\napsw.shutdown() -> None\n\n" \
 "It is unlikely you will want to call this method and there is no\n" \
 "need to do so.  It is a **really** bad idea to call it unless you\n" \
@@ -342,6 +357,20 @@
   assert(__builtin_types_compatible_p(typeof(string1), const char *)); \
   assert(__builtin_types_compatible_p(typeof(string2), const char *)); \
   assert(__builtin_types_compatible_p(typeof(count), int)); \
+} while(0)
+
+
+#define  Apsw_unregister_vfs_DOC "unregister_vfs($self,name)\n--\n\napsw.unregister_vfs(name: str) -> None\n\n" \
+"Unregisters the named vfs.  See :meth:`vfsnames`.\n" \
+"\n" \
+"Calls:\n" \
+"  * `sqlite3_vfs_unregister <https://sqlite.org/c3ref/vfs_find.html>`__\n" \
+"  * `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__\n" 
+
+#define Apsw_unregister_vfs_USAGE "apsw.unregister_vfs(name: str) -> None"
+
+#define Apsw_unregister_vfs_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(name), const char *)); \
 } while(0)
 
 

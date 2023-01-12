@@ -339,6 +339,15 @@ def releasememory(amount: int) -> int:
     Calls: `sqlite3_release_memory <https://sqlite.org/c3ref/release_memory.html>`__"""
     ...
 
+def set_default_vfs(name: str) -> None:
+    """Sets the default vfs to *name* which must be an existing vfs.
+    See :meth:`vfsnames`.
+
+    Calls:
+      * `sqlite3_vfs_register <https://sqlite.org/c3ref/vfs_find.html>`__
+      * `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__"""
+    ...
+
 def shutdown() -> None:
     """It is unlikely you will want to call this method and there is no
     need to do so.  It is a **really** bad idea to call it unless you
@@ -413,6 +422,14 @@ def strnicmp(string1: str, string2: str, count: int) -> int:
     on on a match.
 
     Calls: `sqlite3_strnicmp <https://sqlite.org/c3ref/stricmp.html>`__"""
+    ...
+
+def unregister_vfs(name: str) -> None:
+    """Unregisters the named vfs.  See :meth:`vfsnames`.
+
+    Calls:
+      * `sqlite3_vfs_unregister <https://sqlite.org/c3ref/vfs_find.html>`__
+      * `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__"""
     ...
 
 using_amalgamation: bool
@@ -3110,6 +3127,8 @@ SQLITE_FCNTL_PRAGMA: int = 14
 SQLITE_FCNTL_RBU: int = 26
 """For `Standard File Control Opcodes <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>'__"""
 SQLITE_FCNTL_RESERVE_BYTES: int = 38
+"""For `Standard File Control Opcodes <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>'__"""
+SQLITE_FCNTL_RESET_CACHE: int = 42
 """For `Standard File Control Opcodes <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>'__"""
 SQLITE_FCNTL_ROLLBACK_ATOMIC_WRITE: int = 33
 """For `Standard File Control Opcodes <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>'__"""
