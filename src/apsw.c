@@ -1391,6 +1391,67 @@ apsw_strnicmp(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   return PyLong_FromLong(res);
 }
 
+/** .. method:: set_default_vfs(name: str) -> None
+
+ Sets the default vfs to *name* which must be an existing vfs.
+ See :meth:`vfsnames`.
+
+ -* sqlite3_vfs_register sqlite3_vfs_find
+*/
+static PyObject *
+apsw_set_default_vfs(PyObject *Py_UNUSED(module), PyObject *args, PyObject *kwds)
+{
+  const char *name;
+  sqlite3_vfs *vfs;
+  int res;
+
+  {
+    static char *kwlist[] = {"name", NULL};
+    Apsw_set_default_vfs_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:" Apsw_set_default_vfs_USAGE, kwlist, &name))
+      return NULL;
+  }
+
+  vfs = sqlite3_vfs_find(name);
+  if (!vfs)
+    return PyErr_Format(PyExc_ValueError, "vfs named \"%s\" not known", name);
+  res = sqlite3_vfs_register(vfs, 1);
+  SET_EXC(res, NULL);
+  if (res)
+    return NULL;
+  Py_RETURN_NONE;
+}
+
+/** .. method:: unregister_vfs(name: str) -> None
+
+ Unregisters the named vfs.  See :meth:`vfsnames`.
+
+ -* sqlite3_vfs_unregister sqlite3_vfs_find
+*/
+static PyObject *
+apsw_unregister_vfs(PyObject *Py_UNUSED(module), PyObject *args, PyObject *kwds)
+{
+  const char *name;
+  sqlite3_vfs *vfs;
+  int res;
+
+  {
+    static char *kwlist[] = {"name", NULL};
+    Apsw_unregister_vfs_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:" Apsw_unregister_vfs_USAGE, kwlist, &name))
+      return NULL;
+  }
+
+  vfs = sqlite3_vfs_find(name);
+  if (!vfs)
+    return PyErr_Format(PyExc_ValueError, "vfs named \"%s\" not known", name);
+  res = sqlite3_vfs_unregister(vfs);
+  SET_EXC(res, NULL);
+  if (res)
+    return NULL;
+  Py_RETURN_NONE;
+}
+
 static PyObject *
 apsw_getattr(PyObject *module, PyObject *name)
 {
@@ -1450,6 +1511,8 @@ static PyMethodDef module_methods[] = {
     {"strglob", (PyCFunction)apsw_strglob, METH_VARARGS | METH_KEYWORDS, Apsw_strglob_DOC},
     {"stricmp", (PyCFunction)apsw_stricmp, METH_VARARGS | METH_KEYWORDS, Apsw_stricmp_DOC},
     {"strnicmp", (PyCFunction)apsw_strnicmp, METH_VARARGS | METH_KEYWORDS, Apsw_strnicmp_DOC},
+    {"set_default_vfs", (PyCFunction)apsw_set_default_vfs, METH_VARARGS | METH_KEYWORDS, Apsw_set_default_vfs_DOC},
+    {"unregister_vfs", (PyCFunction)apsw_unregister_vfs, METH_VARARGS | METH_KEYWORDS, Apsw_unregister_vfs_DOC},
 #ifdef APSW_TESTFIXTURES
     {"_fini", (PyCFunction)apsw_fini, METH_NOARGS,
      "Frees all caches and recycle lists"},
@@ -1458,7 +1521,7 @@ static PyMethodDef module_methods[] = {
     {"fork_checker", (PyCFunction)apsw_fork_checker, METH_NOARGS,
      Apsw_fork_checker_DOC},
 #endif
-    {"__getattr__", (PyCFunction)apsw_getattr, METH_O, "foo"},
+    {"__getattr__", (PyCFunction)apsw_getattr, METH_O, "module getattr"},
     {0, 0, 0, 0} /* Sentinel */
 };
 
@@ -2024,6 +2087,9 @@ modules etc. For example::
         ADDINT(SQLITE_FCNTL_RESERVE_BYTES),
         ADDINT(SQLITE_FCNTL_EXTERNAL_READER),
         ADDINT(SQLITE_FCNTL_CKSM_FILE),
+#ifdef SQLITE_FCNTL_RESET_CACHE
+        ADDINT(SQLITE_FCNTL_RESET_CACHE),
+#endif
         END,
 
         DICT("mapping_conflict_resolution_modes"),
