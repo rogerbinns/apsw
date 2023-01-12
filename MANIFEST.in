@@ -17,8 +17,7 @@ include apsw/trace.py
 include apsw/tests.py
 include LICENSE
 include checksums
-include setup.cfg
 include setup.py
 
 # Long description comes from this
-README.rst
+include README.rst
