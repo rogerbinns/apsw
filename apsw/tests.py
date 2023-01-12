@@ -4027,6 +4027,27 @@ class APSW(unittest.TestCase):
         gc.collect()
         self.assertEqual(1000, len(cleared))
 
+    def testIssue394(self):
+        "Default vfs manipulation"
+        starting = apsw.vfsnames()
+        if len(starting) > 1:
+            apsw.set_default_vfs(starting[1])
+            self.assertEqual(apsw.vfsnames()[0], starting[1])
+            self.assertNotEqual(starting, apsw.vfsnames())
+            apsw.set_default_vfs(starting[0])
+            # we assume it is safe to remove the last listed vfs for testing
+            apsw.unregister_vfs(starting[-1])
+            self.assertEqual(apsw.vfsnames(), starting[:-1])
+        self.assertRaises(TypeError, apsw.set_default_vfs)
+        self.assertRaises(TypeError, apsw.set_default_vfs, 3)
+        self.assertRaises(TypeError, apsw.set_default_vfs, "3", 3)
+        self.assertRaises(ValueError, apsw.set_default_vfs, "4324324234")
+        self.assertRaises(TypeError, apsw.unregister_vfs)
+        self.assertRaises(TypeError, apsw.unregister_vfs, 3)
+        self.assertRaises(TypeError, apsw.unregister_vfs, "3", 3)
+        self.assertRaises(ValueError, apsw.unregister_vfs, "4342345324")
+
+
     def testPysqliteRecursiveIssue(self):
         "Check an issue that affected pysqlite"
         # https://code.google.com/p/pysqlite/source/detail?r=260ee266d6686e0f87b0547c36b68a911e6c6cdb
@@ -9445,6 +9466,11 @@ def setup():
         APSW.assertRaisesRegex = APSW.assertRaisesRegexCompat
 
     del memdb
+
+    # zipvfs causes some test failures - issue #394
+    for name in ('zipvfs', 'cksmvfs', 'zipvfsonly', 'multiplex',):
+        if name in apsw.vfsnames():
+            apsw.unregister_vfs(name)
 
 
 test_types_vals = (
