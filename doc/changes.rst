@@ -3,8 +3,8 @@ Change History
 
 .. currentmodule:: apsw
 
-next
-====
+3.40.1.0
+========
 
 Implemented `window functions
 <https://www.sqlite.org/windowfunctions.html#udfwinfunc>`__
