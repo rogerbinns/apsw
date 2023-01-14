@@ -108,6 +108,7 @@ typedef struct _vtableinfo
   Connection *connection; /* the Connection this is registered against so we don't
              have to have a global table mapping sqlite3_db* to
              Connection* */
+  int bestindex_object;   /* 0: tuples are passed to xBestIndex, 1: object is */
 } vtableinfo;
 
 /* forward declarations */
@@ -3560,7 +3561,7 @@ Connection_wal_checkpoint(Connection *self, PyObject *args, PyObject *kwds)
 static struct sqlite3_module apsw_vtable_module;
 static void apswvtabFree(void *context);
 
-/** .. method:: createmodule(name: str, datasource: Optional[VTModule]) -> None
+/** .. method:: createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False) -> None
 
     Registers a virtual table, or drops it if *datasource* is *None*.
     See :ref:`virtualtables` for details.
@@ -3578,14 +3579,16 @@ Connection_createmodule(Connection *self, PyObject *args, PyObject *kwds)
   PyObject *datasource = NULL;
   vtableinfo *vti = NULL;
   int res;
+  int use_bestindex_object = 0;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
-    static char *kwlist[] = {"name", "datasource", NULL};
+    static char *kwlist[] = {"name", "datasource", "use_bestindex_object", NULL};
     Connection_createmodule_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO:" Connection_createmodule_USAGE, kwlist, &name, &datasource))
+    argcheck_bool_param use_bestindex_object_param = {&use_bestindex_object, Connection_createmodule_use_bestindex_object_MSG};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO|$O&:" Connection_createmodule_USAGE, kwlist, &name, &datasource, argcheck_bool, &use_bestindex_object_param))
       return NULL;
   }
 
@@ -3595,6 +3598,7 @@ Connection_createmodule(Connection *self, PyObject *args, PyObject *kwds)
     vti = PyMem_Malloc(sizeof(vtableinfo));
     vti->connection = self;
     vti->datasource = datasource;
+    vti->bestindex_object = use_bestindex_object;
   }
 
   /* SQLite is really finnicky.  Note that it calls the destructor on

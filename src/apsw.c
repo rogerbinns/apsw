@@ -1555,7 +1555,16 @@ PyInit_apsw(void)
     goto fail;
   }
 
-  if (PyType_Ready(&ConnectionType) < 0 || PyType_Ready(&APSWCursorType) < 0 || PyType_Ready(&ZeroBlobBindType) < 0 || PyType_Ready(&APSWBlobType) < 0 || PyType_Ready(&APSWVFSType) < 0 || PyType_Ready(&APSWVFSFileType) < 0 || PyType_Ready(&APSWURIFilenameType) < 0 || PyType_Ready(&FunctionCBInfoType) < 0 || PyType_Ready(&APSWBackupType) < 0)
+  if (PyType_Ready(&ConnectionType) < 0
+      || PyType_Ready(&APSWCursorType) < 0
+      || PyType_Ready(&ZeroBlobBindType) < 0
+      || PyType_Ready(&APSWBlobType) < 0
+      || PyType_Ready(&APSWVFSType) < 0
+      || PyType_Ready(&APSWVFSFileType) < 0
+      || PyType_Ready(&APSWURIFilenameType) < 0
+      || PyType_Ready(&FunctionCBInfoType) < 0
+      || PyType_Ready(&APSWBackupType) < 0
+      || PyType_Ready(&SqliteIndexInfoType) < 0)
     goto fail;
 
   m = apswmodule = PyModule_Create(&apswmoduledef);
@@ -1589,6 +1598,9 @@ PyInit_apsw(void)
   PyModule_AddObject(m, "VFSFile", (PyObject *)&APSWVFSFileType);
   Py_INCREF(&APSWURIFilenameType);
   PyModule_AddObject(m, "URIFilename", (PyObject *)&APSWURIFilenameType);
+
+  Py_INCREF(&SqliteIndexInfoType);
+  PyModule_AddObject(m, "IndexInfo", (PyObject *)&SqliteIndexInfoType);
 
   /** .. attribute:: connection_hooks
        :type: List[Callable[[Connection], None]]

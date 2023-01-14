@@ -115,6 +115,24 @@ Py_NewRef(PyObject *o)
   Py_INCREF(o);
   return o;
 }
+
+static int
+Py_Is(const PyObject *left, const PyObject *right)
+{
+  return left == right;
+}
+
+static int
+Py_IsTrue(const PyObject *val)
+{
+  return Py_Is(val, Py_True);
+}
+
+static int
+Py_IsFalse(const PyObject *val)
+{
+  return Py_Is(val, Py_False);
+}
 #endif
 
 #define Py_TypeName(o) ((o) ? (Py_TYPE(o)->tp_name) : "NULL")
