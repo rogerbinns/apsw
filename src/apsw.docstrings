@@ -2341,7 +2341,10 @@
 "\n" \
 "Naming is identical to the C structure rather than\n" \
 "Pythonic.  You can access members directly while needing to\n" \
-"use get/set methods for array members.\n" 
+"use get/set methods for array members.\n" \
+"\n" \
+"You will get :exc:`ValueError` if you use the object\n" \
+"outside of an BestIndex method.\n" 
 
 #define  IndexInfo_colUsed_DOC ":type: set[int]\n" \
 "\n" \
@@ -2454,7 +2457,7 @@
 
 #define  IndexInfo_idxFlags_DOC ":type: int\n" \
 "\n" \
-"Mask of SQLITE_INDEX_SCAN_* flags\n" 
+"Mask of :attr:`SQLITE_INDEX_SCAN flags <apsw.mapping_virtual_table_scan_flags>`\n" 
 
 #define  IndexInfo_idxNum_DOC ":type: int\n" \
 "\n" \

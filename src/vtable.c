@@ -56,6 +56,9 @@ function to do the mapping.
   Pythonic.  You can access members directly while needing to
   use get/set methods for array members.
 
+  You will get :exc:`ValueError` if you use the object
+  outside of an BestIndex method.
+
 */
 typedef struct SqliteIndexInfo
 {
@@ -438,13 +441,12 @@ SqliteIndexInfo_set_idxStr(SqliteIndexInfo *self, PyObject *value)
   if (self->index_info->idxStr && self->index_info->needToFreeIdxStr)
   {
     sqlite3_free(self->index_info->idxStr);
-    self->index_info->idxStr = NULL;
-    self->index_info->needToFreeIdxStr = 0;
   }
 
-  if (Py_IsNone(value))
-    self->index_info->idxStr = NULL;
-  else
+  self->index_info->idxStr = NULL;
+  self->index_info->needToFreeIdxStr = 0;
+
+  if (!Py_IsNone(value))
   {
     self->index_info->idxStr = sqlite3_mprintf(PyUnicode_AsUTF8(value));
     self->index_info->needToFreeIdxStr = 1;
@@ -519,7 +521,7 @@ SqliteIndexInfo_set_estimatedCost(SqliteIndexInfo *self, PyObject *value)
 /** .. attribute:: idxFlags
   :type: int
 
-  Mask of SQLITE_INDEX_SCAN_* flags
+  Mask of :attr:`SQLITE_INDEX_SCAN flags <apsw.mapping_virtual_table_scan_flags>`
 */
 static PyObject *
 SqliteIndexInfo_get_idxFlags(SqliteIndexInfo *self)
@@ -571,7 +573,7 @@ SqliteIndexInfo_get_colUsed(SqliteIndexInfo *self)
         goto finally;
       if (0 != PySet_Add(retval, tmp))
         goto finally;
-      Py_DECREF(tmp);
+      Py_CLEAR(tmp);
     }
   }
 

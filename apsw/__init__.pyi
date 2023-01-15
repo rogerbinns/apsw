@@ -1943,7 +1943,10 @@ class IndexInfo:
 
     Naming is identical to the C structure rather than
     Pythonic.  You can access members directly while needing to
-    use get/set methods for array members."""
+    use get/set methods for array members.
+
+    You will get :exc:`ValueError` if you use the object
+    outside of an BestIndex method."""
 
     colUsed: set[int]
     """(Read-only) Columns used by the statement.  Note that a set is returned, not
@@ -1998,7 +2001,7 @@ class IndexInfo:
         ...
 
     idxFlags: int
-    """Mask of SQLITE_INDEX_SCAN_* flags"""
+    """Mask of :attr:`SQLITE_INDEX_SCAN flags <apsw.mapping_virtual_table_scan_flags>`"""
 
     idxNum: int
     """Number used to identify the index"""
