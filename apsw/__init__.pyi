@@ -986,7 +986,7 @@ class Connection:
         Calls: `sqlite3_create_collation_v2 <https://sqlite.org/c3ref/create_collation.html>`__"""
         ...
 
-    def createmodule(self, name: str, datasource: Optional[VTModule]) -> None:
+    def createmodule(self, name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False) -> None:
         """Registers a virtual table, or drops it if *datasource* is *None*.
         See :ref:`virtualtables` for details.
 
@@ -1936,6 +1936,94 @@ class Cursor:
         ...
 
 
+class IndexInfo:
+    """IndexInfo represents the `sqlite3_index_info
+    <https://www.sqlite.org/c3ref/index_info.html>`__
+    used in the :meth:`VTTable.BestIndexObject` method.
+
+    Naming is identical to the C structure rather than
+    Pythonic.  You can access members directly while needing to
+    use get/set methods for array members."""
+
+    colUsed: set[int]
+    """(Read-only) Columns used by the statement.  Note that a set is returned, not
+    the underlying integer."""
+
+    distinct: int
+    """(Read-only) How the query planner would like output ordered
+
+    Calls: `sqlite3_vtab_distinct <https://sqlite.org/c3ref/vtab_distinct.html>`__"""
+
+    estimatedCost: float
+    """Estimated cost of using this index"""
+
+    def get_aConstraintUsage_argvIndex(self, which: int) -> int:
+        """Returns *argvIndex* for *aConstraintUsage[which]*"""
+        ...
+
+    def get_aConstraintUsage_omit(self, which: int) -> bool:
+        """Returns *omit* for *aConstraintUsage[which]*"""
+        ...
+
+    def get_aConstraint_collation(self, which: int) -> str:
+        """Returns collation name for *aConstraint[which]*
+
+        Calls: `sqlite3_vtab_collation <https://sqlite.org/c3ref/vtab_collation.html>`__"""
+        ...
+
+    def get_aConstraint_iColumn(self, which: int) -> int:
+        """Returns *iColumn* for *aConstraint[which]*"""
+        ...
+
+    def get_aConstraint_op(self, which: int) -> int:
+        """Returns *op* for *aConstraint[which]*"""
+        ...
+
+    def get_aConstraint_rhs(self, which: int) -> SQLiteValue:
+        """Returns right hand side value if known, else None.
+
+        Calls: `sqlite3_vtab_rhs_value <https://sqlite.org/c3ref/vtab_rhs_value.html>`__"""
+        ...
+
+    def get_aConstraint_usable(self, which: int) -> bool:
+        """Returns *usable* for *aConstraint[which]*"""
+        ...
+
+    def get_aOrderBy_desc(self, which: int) -> bool:
+        """Returns *desc* for *aOrderBy[which]*"""
+        ...
+
+    def get_aOrderBy_iColumn(self, which: int) -> int:
+        """Returns *iColumn* for *aOrderBy[which]*"""
+        ...
+
+    idxFlags: int
+    """Mask of SQLITE_INDEX_SCAN_* flags"""
+
+    idxNum: int
+    """Number used to identify the index"""
+
+    idxStr: Optional[str]
+    """Name used to identify the index"""
+
+    nConstraint: int
+    """(Read-only) Number of constraint entries"""
+
+    nOrderBy: int
+    """(Read-only) Number of order by  entries"""
+
+    orderByConsumed: bool
+    """True if index output is already ordered"""
+
+    def set_aConstraintUsage_argvIndex(self, which: int, argvIndex: int) -> None:
+        """Sets *argvIndex* for *aConstraintUsage[which]*"""
+        ...
+
+    def set_aConstraintUsage_omit(self, which: int, omit: bool) -> None:
+        """Sets *omit* for *aConstraintUsage[which]*"""
+        ...
+
+
 class URIFilename:
     """SQLite uses a convoluted method of storing `uri parameters
     <https://sqlite.org/uri.html>`__ after the filename binding the
@@ -2687,6 +2775,20 @@ if sys.version_info >= (3, 8):
               "idx_pr_cust",   # index name you returned
               "Acme Widgets",  # constraintarg[0] - customer
               74.99            # constraintarg[1] - price"""
+            ...
+
+        def BestIndexObject(self, index_info: IndexInfo) -> bool:
+            """This method is called instead of :meth:`BestIndex` if
+            *use_bestindex_object* was *True* in the call to
+            :meth:`Connection.createmodule`.
+
+            Use the :class:`IndexInfo` to tell SQLite about your indexes, and
+            extract other information.
+
+            Return *True* to indicate all is well.  If you return *False* then
+            `SQLITE_CONSTRAINT
+            <https://www.sqlite.org/vtab.html#return_value>`__ is returned to
+            SQLite."""
             ...
 
         def Commit(self) -> None:

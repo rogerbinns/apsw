@@ -1076,7 +1076,7 @@
 } while(0)
 
 
-#define  Connection_createmodule_DOC "createmodule($self,name,datasource)\n--\n\nConnection.createmodule(name: str, datasource: Optional[VTModule]) -> None\n\n" \
+#define  Connection_createmodule_DOC "createmodule($self,name,datasource,*,use_bestindex_object=False)\n--\n\nConnection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False) -> None\n\n" \
 "Registers a virtual table, or drops it if *datasource* is *None*.\n" \
 "See :ref:`virtualtables` for details.\n" \
 "\n" \
@@ -1086,11 +1086,15 @@
 "\n" \
 "Calls: `sqlite3_create_module_v2 <https://sqlite.org/c3ref/create_module.html>`__\n" 
 
-#define Connection_createmodule_USAGE "Connection.createmodule(name: str, datasource: Optional[VTModule]) -> None"
+#define Connection_createmodule_use_bestindex_object_MSG  "argument 'use_bestindex_object' of Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False) -> None" 
+
+#define Connection_createmodule_USAGE "Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False) -> None"
 
 #define Connection_createmodule_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
   assert(__builtin_types_compatible_p(typeof(datasource), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(use_bestindex_object), int)); \
+  assert(use_bestindex_object == 0); \
 } while(0)
 
 
@@ -2328,6 +2332,171 @@
 
 #define Cursor_setrowtrace_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
+} while(0)
+
+
+#define  IndexInfo_class_DOC "IndexInfo represents the `sqlite3_index_info\n" \
+"<https://www.sqlite.org/c3ref/index_info.html>`__\n" \
+"used in the :meth:`VTTable.BestIndexObject` method.\n" \
+"\n" \
+"Naming is identical to the C structure rather than\n" \
+"Pythonic.  You can access members directly while needing to\n" \
+"use get/set methods for array members.\n" 
+
+#define  IndexInfo_colUsed_DOC ":type: set[int]\n" \
+"\n" \
+"(Read-only) Columns used by the statement.  Note that a set is returned, not\n" \
+"the underlying integer.\n" 
+
+#define  IndexInfo_distinct_DOC ":type: int\n" \
+"\n" \
+"(Read-only) How the query planner would like output ordered\n" \
+"\n" \
+"Calls: `sqlite3_vtab_distinct <https://sqlite.org/c3ref/vtab_distinct.html>`__\n" 
+
+#define  IndexInfo_estimatedCost_DOC ":type: float\n" \
+"\n" \
+"Estimated cost of using this index\n" 
+
+#define  IndexInfo_get_aConstraintUsage_argvIndex_DOC "get_aConstraintUsage_argvIndex($self,which)\n--\n\nIndexInfo.get_aConstraintUsage_argvIndex(which: int) -> int\n\n" \
+"Returns *argvIndex* for *aConstraintUsage[which]*\n" 
+
+#define IndexInfo_get_aConstraintUsage_argvIndex_USAGE "IndexInfo.get_aConstraintUsage_argvIndex(which: int) -> int"
+
+#define IndexInfo_get_aConstraintUsage_argvIndex_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(which), int)); \
+} while(0)
+
+
+#define  IndexInfo_get_aConstraintUsage_omit_DOC "get_aConstraintUsage_omit($self,which)\n--\n\nIndexInfo.get_aConstraintUsage_omit(which: int) -> bool\n\n" \
+"Returns *omit* for *aConstraintUsage[which]*\n" 
+
+#define IndexInfo_get_aConstraintUsage_omit_USAGE "IndexInfo.get_aConstraintUsage_omit(which: int) -> bool"
+
+#define IndexInfo_get_aConstraintUsage_omit_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(which), int)); \
+} while(0)
+
+
+#define  IndexInfo_get_aConstraint_collation_DOC "get_aConstraint_collation($self,which)\n--\n\nIndexInfo.get_aConstraint_collation(which: int) -> str\n\n" \
+"Returns collation name for *aConstraint[which]*\n" \
+"\n" \
+"Calls: `sqlite3_vtab_collation <https://sqlite.org/c3ref/vtab_collation.html>`__\n" 
+
+#define IndexInfo_get_aConstraint_collation_USAGE "IndexInfo.get_aConstraint_collation(which: int) -> str"
+
+#define IndexInfo_get_aConstraint_collation_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(which), int)); \
+} while(0)
+
+
+#define  IndexInfo_get_aConstraint_iColumn_DOC "get_aConstraint_iColumn($self,which)\n--\n\nIndexInfo.get_aConstraint_iColumn(which: int) -> int\n\n" \
+"Returns *iColumn* for *aConstraint[which]*\n" 
+
+#define IndexInfo_get_aConstraint_iColumn_USAGE "IndexInfo.get_aConstraint_iColumn(which: int) -> int"
+
+#define IndexInfo_get_aConstraint_iColumn_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(which), int)); \
+} while(0)
+
+
+#define  IndexInfo_get_aConstraint_op_DOC "get_aConstraint_op($self,which)\n--\n\nIndexInfo.get_aConstraint_op(which: int) -> int\n\n" \
+"Returns *op* for *aConstraint[which]*\n" 
+
+#define IndexInfo_get_aConstraint_op_USAGE "IndexInfo.get_aConstraint_op(which: int) -> int"
+
+#define IndexInfo_get_aConstraint_op_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(which), int)); \
+} while(0)
+
+
+#define  IndexInfo_get_aConstraint_rhs_DOC "get_aConstraint_rhs($self,which)\n--\n\nIndexInfo.get_aConstraint_rhs(which: int) -> SQLiteValue\n\n" \
+"Returns right hand side value if known, else None.\n" \
+"\n" \
+"Calls: `sqlite3_vtab_rhs_value <https://sqlite.org/c3ref/vtab_rhs_value.html>`__\n" 
+
+#define IndexInfo_get_aConstraint_rhs_USAGE "IndexInfo.get_aConstraint_rhs(which: int) -> SQLiteValue"
+
+#define IndexInfo_get_aConstraint_rhs_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(which), int)); \
+} while(0)
+
+
+#define  IndexInfo_get_aConstraint_usable_DOC "get_aConstraint_usable($self,which)\n--\n\nIndexInfo.get_aConstraint_usable(which: int) -> bool\n\n" \
+"Returns *usable* for *aConstraint[which]*\n" 
+
+#define IndexInfo_get_aConstraint_usable_USAGE "IndexInfo.get_aConstraint_usable(which: int) -> bool"
+
+#define IndexInfo_get_aConstraint_usable_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(which), int)); \
+} while(0)
+
+
+#define  IndexInfo_get_aOrderBy_desc_DOC "get_aOrderBy_desc($self,which)\n--\n\nIndexInfo.get_aOrderBy_desc(which: int) -> bool\n\n" \
+"Returns *desc* for *aOrderBy[which]*\n" 
+
+#define IndexInfo_get_aOrderBy_desc_USAGE "IndexInfo.get_aOrderBy_desc(which: int) -> bool"
+
+#define IndexInfo_get_aOrderBy_desc_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(which), int)); \
+} while(0)
+
+
+#define  IndexInfo_get_aOrderBy_iColumn_DOC "get_aOrderBy_iColumn($self,which)\n--\n\nIndexInfo.get_aOrderBy_iColumn(which: int) -> int\n\n" \
+"Returns *iColumn* for *aOrderBy[which]*\n" 
+
+#define IndexInfo_get_aOrderBy_iColumn_USAGE "IndexInfo.get_aOrderBy_iColumn(which: int) -> int"
+
+#define IndexInfo_get_aOrderBy_iColumn_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(which), int)); \
+} while(0)
+
+
+#define  IndexInfo_idxFlags_DOC ":type: int\n" \
+"\n" \
+"Mask of SQLITE_INDEX_SCAN_* flags\n" 
+
+#define  IndexInfo_idxNum_DOC ":type: int\n" \
+"\n" \
+"Number used to identify the index\n" 
+
+#define  IndexInfo_idxStr_DOC ":type: Optional[str]\n" \
+"\n" \
+"Name used to identify the index\n" 
+
+#define  IndexInfo_nConstraint_DOC ":type: int\n" \
+"\n" \
+"(Read-only) Number of constraint entries\n" 
+
+#define  IndexInfo_nOrderBy_DOC ":type: int\n" \
+"\n" \
+"(Read-only) Number of order by  entries\n" 
+
+#define  IndexInfo_orderByConsumed_DOC ":type: bool\n" \
+"\n" \
+"True if index output is already ordered\n" 
+
+#define  IndexInfo_set_aConstraintUsage_argvIndex_DOC "set_aConstraintUsage_argvIndex($self,which,argvIndex)\n--\n\nIndexInfo.set_aConstraintUsage_argvIndex(which: int, argvIndex: int) -> None\n\n" \
+"Sets *argvIndex* for *aConstraintUsage[which]*\n" 
+
+#define IndexInfo_set_aConstraintUsage_argvIndex_USAGE "IndexInfo.set_aConstraintUsage_argvIndex(which: int, argvIndex: int) -> None"
+
+#define IndexInfo_set_aConstraintUsage_argvIndex_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(which), int)); \
+  assert(__builtin_types_compatible_p(typeof(argvIndex), int)); \
+} while(0)
+
+
+#define  IndexInfo_set_aConstraintUsage_omit_DOC "set_aConstraintUsage_omit($self,which,omit)\n--\n\nIndexInfo.set_aConstraintUsage_omit(which: int, omit: bool) -> None\n\n" \
+"Sets *omit* for *aConstraintUsage[which]*\n" 
+
+#define IndexInfo_set_aConstraintUsage_omit_omit_MSG  "argument 'omit' of IndexInfo.set_aConstraintUsage_omit(which: int, omit: bool) -> None" 
+
+#define IndexInfo_set_aConstraintUsage_omit_USAGE "IndexInfo.set_aConstraintUsage_omit(which: int, omit: bool) -> None"
+
+#define IndexInfo_set_aConstraintUsage_omit_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(which), int)); \
+  assert(__builtin_types_compatible_p(typeof(omit), int)); \
 } while(0)
 
 
