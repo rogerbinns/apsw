@@ -53,7 +53,8 @@ function to do the mapping.
   used in the :meth:`VTTable.BestIndexObject` method.
 
   Naming is identical to the C structure rather than
-  Pythonic.
+  Pythonic.  You can access members directly while needing to
+  use get/set methods for array members.
 
 */
 typedef struct SqliteIndexInfo
@@ -72,6 +73,13 @@ typedef struct SqliteIndexInfo
     }                                                                                            \
   } while (0)
 
+#define CHECK_RANGE(against)                                                                                                                     \
+  do                                                                                                                                             \
+  {                                                                                                                                              \
+    if (which < 0 || which >= (self->index_info->against))                                                                                       \
+      return PyErr_Format(PyExc_IndexError, "which parameter (%i) is out of range - should be >=0 and <%i", which, (self->index_info->against)); \
+  } while (0)
+
 /** .. attribute:: nConstraint
   :type: int
 
@@ -83,6 +91,19 @@ SqliteIndexInfo_get_nConstraint(SqliteIndexInfo *self)
   CHECK_INDEX(NULL);
 
   return PyLong_FromLong(self->index_info->nConstraint);
+}
+
+/** .. attribute:: nOrderBy
+  :type: int
+
+  (Read-only) Number of order by  entries
+*/
+static PyObject *
+SqliteIndexInfo_get_nOrderBy(SqliteIndexInfo *self)
+{
+  CHECK_INDEX(NULL);
+
+  return PyLong_FromLong(self->index_info->nOrderBy);
 }
 
 /** .. method:: get_aConstraint_iColumn(which: int) -> int
@@ -104,8 +125,7 @@ SqliteIndexInfo_get_aConstraint_iColumn(SqliteIndexInfo *self, PyObject *args, P
       return NULL;
   }
 
-  if (which < 0 || which >= self->index_info->nConstraint)
-    return PyErr_Format(PyExc_IndexError, "which parameter is out of range");
+  CHECK_RANGE(nConstraint);
 
   return PyLong_FromLong(self->index_info->aConstraint[which].iColumn);
 }
@@ -129,8 +149,7 @@ SqliteIndexInfo_get_aConstraint_op(SqliteIndexInfo *self, PyObject *args, PyObje
       return NULL;
   }
 
-  if (which < 0 || which >= self->index_info->nConstraint)
-    return PyErr_Format(PyExc_IndexError, "which parameter is out of range");
+  CHECK_RANGE(nConstraint);
 
   return PyLong_FromLong(self->index_info->aConstraint[which].op);
 }
@@ -153,18 +172,444 @@ SqliteIndexInfo_get_aConstraint_usable(SqliteIndexInfo *self, PyObject *args, Py
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" IndexInfo_get_aConstraint_usable_USAGE, kwlist, &which))
       return NULL;
   }
-
-  if (which < 0 || which >= self->index_info->nConstraint)
-    return PyErr_Format(PyExc_IndexError, "which parameter is out of range");
+  CHECK_RANGE(nConstraint);
 
   if (self->index_info->aConstraint[which].op)
     Py_RETURN_TRUE;
   Py_RETURN_FALSE;
 }
 
+/** .. method:: get_aConstraint_collation(which: int) -> str
+
+ Returns collation name for *aConstraint[which]*
+
+ -* sqlite3_vtab_collation
+
+*/
+static PyObject *
+SqliteIndexInfo_get_aConstraint_collation(SqliteIndexInfo *self, PyObject *args, PyObject *kwds)
+{
+  int which;
+
+  CHECK_INDEX(NULL);
+
+  {
+    static char *kwlist[] = {"which", NULL};
+    IndexInfo_get_aConstraint_collation_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" IndexInfo_get_aConstraint_collation_USAGE, kwlist, &which))
+      return NULL;
+  }
+  CHECK_RANGE(nConstraint);
+
+  return convertutf8string(sqlite3_vtab_collation(self->index_info, which));
+}
+
+/** .. method:: get_aConstraint_rhs(which: int) -> SQLiteValue
+
+ Returns right hand side value if known, else None.
+
+ -* sqlite3_vtab_rhs_value
+
+*/
+static PyObject *
+SqliteIndexInfo_get_aConstraint_rhs(SqliteIndexInfo *self, PyObject *args, PyObject *kwds)
+{
+  int which, res;
+  sqlite3_value *pval = NULL;
+  CHECK_INDEX(NULL);
+
+  {
+    static char *kwlist[] = {"which", NULL};
+    IndexInfo_get_aConstraint_rhs_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" IndexInfo_get_aConstraint_rhs_USAGE, kwlist, &which))
+      return NULL;
+  }
+  CHECK_RANGE(nConstraint);
+
+  res = sqlite3_vtab_rhs_value(self->index_info, which, &pval);
+  if (res == SQLITE_NOTFOUND)
+    Py_RETURN_NONE;
+
+  if (res != SQLITE_OK)
+  {
+    SET_EXC(res, NULL);
+    return NULL;
+  }
+
+  return convert_value_to_pyobject(pval);
+}
+
+/** .. method:: get_aOrderBy_iColumn(which: int) -> int
+
+ Returns *iColumn* for *aOrderBy[which]*
+
+*/
+static PyObject *
+SqliteIndexInfo_get_aOrderBy_iColumn(SqliteIndexInfo *self, PyObject *args, PyObject *kwds)
+{
+  int which;
+
+  CHECK_INDEX(NULL);
+
+  {
+    static char *kwlist[] = {"which", NULL};
+    IndexInfo_get_aOrderBy_iColumn_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" IndexInfo_get_aOrderBy_iColumn_USAGE, kwlist, &which))
+      return NULL;
+  }
+  CHECK_RANGE(nOrderBy);
+
+  return PyLong_FromLong(self->index_info->aOrderBy[which].iColumn);
+}
+
+/** .. method:: get_aOrderBy_desc(which: int) -> bool
+
+ Returns *desc* for *aOrderBy[which]*
+
+*/
+static PyObject *
+SqliteIndexInfo_get_aOrderBy_desc(SqliteIndexInfo *self, PyObject *args, PyObject *kwds)
+{
+  int which;
+
+  CHECK_INDEX(NULL);
+
+  {
+    static char *kwlist[] = {"which", NULL};
+    IndexInfo_get_aOrderBy_desc_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" IndexInfo_get_aOrderBy_desc_USAGE, kwlist, &which))
+      return NULL;
+  }
+  CHECK_RANGE(nOrderBy);
+
+  if (self->index_info->aOrderBy[which].desc)
+    Py_RETURN_TRUE;
+  Py_RETURN_FALSE;
+}
+
+/** .. method:: get_aConstraintUsage_argvIndex(which: int) -> int
+
+ Returns *argvIndex* for *aConstraintUsage[which]*
+
+*/
+static PyObject *
+SqliteIndexInfo_get_aConstraintUsage_argvIndex(SqliteIndexInfo *self, PyObject *args, PyObject *kwds)
+{
+  int which;
+
+  CHECK_INDEX(NULL);
+
+  {
+    static char *kwlist[] = {"which", NULL};
+    IndexInfo_get_aConstraintUsage_argvIndex_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" IndexInfo_get_aConstraintUsage_argvIndex_USAGE, kwlist, &which))
+      return NULL;
+  }
+  CHECK_RANGE(nConstraint);
+
+  return PyLong_FromLong(self->index_info->aConstraintUsage[which].argvIndex);
+}
+
+/** .. method:: set_aConstraintUsage_argvIndex(which: int, argvIndex: int) -> None
+
+ Sets *argvIndex* for *aConstraintUsage[which]*
+
+*/
+static PyObject *
+SqliteIndexInfo_set_aConstraintUsage_argvIndex(SqliteIndexInfo *self, PyObject *args, PyObject *kwds)
+{
+  int which, argvIndex;
+
+  CHECK_INDEX(NULL);
+
+  {
+    static char *kwlist[] = {"which", "argvIndex", NULL};
+    IndexInfo_set_aConstraintUsage_argvIndex_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "ii:" IndexInfo_set_aConstraintUsage_argvIndex_USAGE, kwlist, &which, &argvIndex))
+      return NULL;
+  }
+  CHECK_RANGE(nConstraint);
+
+  self->index_info->aConstraintUsage[which].argvIndex = argvIndex;
+  Py_RETURN_NONE;
+}
+
+/** .. method:: get_aConstraintUsage_omit(which: int) -> bool
+
+ Returns *omit* for *aConstraintUsage[which]*
+
+*/
+static PyObject *
+SqliteIndexInfo_get_aConstraintUsage_omit(SqliteIndexInfo *self, PyObject *args, PyObject *kwds)
+{
+  int which;
+
+  CHECK_INDEX(NULL);
+
+  {
+    static char *kwlist[] = {"which", NULL};
+    IndexInfo_get_aConstraintUsage_omit_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" IndexInfo_get_aConstraintUsage_omit_USAGE, kwlist, &which))
+      return NULL;
+  }
+  CHECK_RANGE(nConstraint);
+
+  if (self->index_info->aConstraintUsage[which].omit)
+    Py_RETURN_TRUE;
+  Py_RETURN_FALSE;
+}
+
+/** .. method:: set_aConstraintUsage_omit(which: int, omit: bool) -> None
+
+ Sets *omit* for *aConstraintUsage[which]*
+
+*/
+static PyObject *
+SqliteIndexInfo_set_aConstraintUsage_omit(SqliteIndexInfo *self, PyObject *args, PyObject *kwds)
+{
+  int which, omit;
+
+  CHECK_INDEX(NULL);
+
+  {
+    static char *kwlist[] = {"which", "omit", NULL};
+    IndexInfo_set_aConstraintUsage_omit_CHECK;
+    argcheck_bool_param omit_param = {&omit, IndexInfo_set_aConstraintUsage_omit_omit_MSG};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iO&:" IndexInfo_set_aConstraintUsage_omit_USAGE, kwlist, &which, argcheck_bool, &omit_param))
+      return NULL;
+  }
+  CHECK_RANGE(nConstraint);
+
+  self->index_info->aConstraintUsage[which].omit = omit;
+  Py_RETURN_NONE;
+}
+
+/** .. attribute:: idxNum
+  :type: int
+
+  Number used to identify the index
+*/
+static PyObject *
+SqliteIndexInfo_get_idxNum(SqliteIndexInfo *self)
+{
+  CHECK_INDEX(NULL);
+
+  return PyLong_FromLong(self->index_info->idxNum);
+}
+
+static int
+SqliteIndexInfo_set_idxNum(SqliteIndexInfo *self, PyObject *value)
+{
+  int v;
+
+  CHECK_INDEX(-1);
+
+  v = PyLong_AsInt(value);
+  if (PyErr_Occurred())
+    return -1;
+  self->index_info->idxNum = v;
+  return 0;
+}
+
+/** .. attribute:: idxStr
+  :type: Optional[str]
+
+  Name used to identify the index
+*/
+static PyObject *
+SqliteIndexInfo_get_idxStr(SqliteIndexInfo *self)
+{
+  CHECK_INDEX(NULL);
+
+  return convertutf8string(self->index_info->idxStr);
+}
+
+static int
+SqliteIndexInfo_set_idxStr(SqliteIndexInfo *self, PyObject *value)
+{
+  CHECK_INDEX(-1);
+
+  if (!Py_IsNone(value) && !PyUnicode_Check(value))
+  {
+    PyErr_Format(PyExc_TypeError, "Expected None or str, not %s", Py_TypeName(value));
+    return -1;
+  }
+
+  if (self->index_info->idxStr && self->index_info->needToFreeIdxStr)
+  {
+    sqlite3_free(self->index_info->idxStr);
+    self->index_info->idxStr = NULL;
+    self->index_info->needToFreeIdxStr = 0;
+  }
+
+  if (Py_IsNone(value))
+    self->index_info->idxStr = NULL;
+  else
+  {
+    self->index_info->idxStr = sqlite3_mprintf(PyUnicode_AsUTF8(value));
+    self->index_info->needToFreeIdxStr = 1;
+    if (!self->index_info->idxStr || PyErr_Occurred())
+      return -1;
+  }
+
+  return 0;
+}
+
+/** .. attribute:: orderByConsumed
+  :type: bool
+
+  True if index output is already ordered
+*/
+static PyObject *
+SqliteIndexInfo_get_orderByConsumed(SqliteIndexInfo *self)
+{
+  CHECK_INDEX(NULL);
+
+  if (self->index_info->orderByConsumed)
+    Py_RETURN_TRUE;
+  Py_RETURN_FALSE;
+}
+
+static int
+SqliteIndexInfo_set_OrderByConsumed(SqliteIndexInfo *self, PyObject *value)
+{
+  int v;
+  CHECK_INDEX(-1);
+
+  if (!PyBool_Check(value) && !PyLong_Check(value))
+  {
+    PyErr_Format(PyExc_TypeError, "expected a bool not %s", Py_TypeName(value));
+    return -1;
+  }
+
+  self->index_info->orderByConsumed = PyObject_IsTrue(value);
+
+  return 0;
+}
+
+/** .. attribute:: estimatedCost
+  :type: float
+
+  Estimated cost of using this index
+*/
+static PyObject *
+SqliteIndexInfo_get_estimatedCost(SqliteIndexInfo *self)
+{
+  CHECK_INDEX(NULL);
+
+  return PyFloat_FromDouble(self->index_info->estimatedCost);
+}
+
+static int
+SqliteIndexInfo_set_estimatedCost(SqliteIndexInfo *self, PyObject *value)
+{
+  double v;
+  CHECK_INDEX(-1);
+
+  v = PyFloat_AsDouble(value);
+
+  if (PyErr_Occurred())
+    return -1;
+
+  self->index_info->estimatedCost = v;
+
+  return 0;
+}
+
+/** .. attribute:: idxFlags
+  :type: int
+
+  Mask of SQLITE_INDEX_SCAN_* flags
+*/
+static PyObject *
+SqliteIndexInfo_get_idxFlags(SqliteIndexInfo *self)
+{
+  CHECK_INDEX(NULL);
+
+  return PyLong_FromLong(self->index_info->idxFlags);
+}
+
+static int
+SqliteIndexInfo_set_idxFlags(SqliteIndexInfo *self, PyObject *value)
+{
+  int v;
+  CHECK_INDEX(-1);
+
+  v = PyLong_AsInt(value);
+  if (PyErr_Occurred())
+    return -1;
+  self->index_info->idxFlags = v;
+  return 0;
+}
+
+/** .. attribute:: colUsed
+  :type: set[int]
+
+  (Read-only) Columns used by the statement.  Note that a set is returned, not
+  the underlying integer.
+*/
+static PyObject *
+SqliteIndexInfo_get_colUsed(SqliteIndexInfo *self)
+{
+  PyObject *retval = NULL, *tmp = NULL;
+  sqlite3_uint64 colUsed, mask;
+  int i;
+  CHECK_INDEX(NULL);
+
+  colUsed = self->index_info->colUsed;
+
+  retval = PySet_New(NULL);
+  if (!retval)
+    goto finally;
+
+  for (mask = 1, i = 0; i <= 63; i++, mask <<= 1)
+  {
+    if (colUsed & mask)
+    {
+      tmp = PyLong_FromLong(i);
+      if (!tmp)
+        goto finally;
+      if (0 != PySet_Add(retval, tmp))
+        goto finally;
+      Py_DECREF(tmp);
+    }
+  }
+
+finally:
+  if (PyErr_Occurred())
+  {
+    Py_CLEAR(retval);
+    Py_CLEAR(tmp);
+  }
+
+  return retval;
+}
+
+/** .. attribute:: distinct
+  :type: int
+
+  (Read-only) How the query planner would like output ordered
+
+  -* sqlite3_vtab_distinct
+*/
+static PyObject *
+SqliteIndexInfo_get_distinct(SqliteIndexInfo *self)
+{
+  CHECK_INDEX(NULL);
+
+  return PyLong_FromLong(sqlite3_vtab_distinct(self->index_info));
+}
+
 static PyGetSetDef SqliteIndexInfo_getsetters[] = {
     {"nConstraint", (getter)SqliteIndexInfo_get_nConstraint, NULL, IndexInfo_nConstraint_DOC},
-
+    {"nOrderBy", (getter)SqliteIndexInfo_get_nOrderBy, NULL, IndexInfo_nOrderBy_DOC},
+    {"idxNum", (getter)SqliteIndexInfo_get_idxNum, (setter)SqliteIndexInfo_set_idxNum, IndexInfo_idxNum_DOC},
+    {"idxStr", (getter)SqliteIndexInfo_get_idxStr, (setter)SqliteIndexInfo_set_idxStr, IndexInfo_idxStr_DOC},
+    {"orderByConsumed", (getter)SqliteIndexInfo_get_orderByConsumed, (setter)SqliteIndexInfo_set_OrderByConsumed, IndexInfo_orderByConsumed_DOC},
+    {"estimatedCost", (getter)SqliteIndexInfo_get_estimatedCost, (setter)SqliteIndexInfo_set_estimatedCost, IndexInfo_estimatedCost_DOC},
+    {"idxFlags", (getter)SqliteIndexInfo_get_idxFlags, (setter)SqliteIndexInfo_set_idxFlags, IndexInfo_idxFlags_DOC},
+    {"colUsed", (getter)SqliteIndexInfo_get_colUsed, NULL, IndexInfo_colUsed_DOC},
+    {"distinct", (getter)SqliteIndexInfo_get_distinct, NULL, IndexInfo_distinct_DOC},
     /* sentinel */
     {NULL, NULL, NULL, NULL}};
 
@@ -175,7 +620,22 @@ static PyMethodDef SqliteIndexInfo_methods[] = {
      IndexInfo_get_aConstraint_op_DOC},
     {"get_aConstraint_usable", (PyCFunction)SqliteIndexInfo_get_aConstraint_usable, METH_VARARGS | METH_KEYWORDS,
      IndexInfo_get_aConstraint_usable_DOC},
-
+    {"get_aConstraint_collation", (PyCFunction)SqliteIndexInfo_get_aConstraint_collation, METH_VARARGS | METH_KEYWORDS,
+     IndexInfo_get_aConstraint_collation_DOC},
+    {"get_aConstraint_rhs", (PyCFunction)SqliteIndexInfo_get_aConstraint_rhs, METH_VARARGS | METH_KEYWORDS,
+     IndexInfo_get_aConstraint_rhs_DOC},
+    {"get_aOrderBy_iColumn", (PyCFunction)SqliteIndexInfo_get_aOrderBy_iColumn, METH_VARARGS | METH_KEYWORDS,
+     IndexInfo_get_aOrderBy_iColumn_DOC},
+    {"get_aOrderBy_desc", (PyCFunction)SqliteIndexInfo_get_aOrderBy_desc, METH_VARARGS | METH_KEYWORDS,
+     IndexInfo_get_aOrderBy_desc_DOC},
+    {"get_aConstraintUsage_argvIndex", (PyCFunction)SqliteIndexInfo_get_aConstraintUsage_argvIndex, METH_VARARGS | METH_KEYWORDS,
+     IndexInfo_get_aConstraintUsage_argvIndex_DOC},
+    {"set_aConstraintUsage_argvIndex", (PyCFunction)SqliteIndexInfo_set_aConstraintUsage_argvIndex, METH_VARARGS | METH_KEYWORDS,
+     IndexInfo_set_aConstraintUsage_argvIndex_DOC},
+    {"get_aConstraintUsage_omit", (PyCFunction)SqliteIndexInfo_get_aConstraintUsage_omit, METH_VARARGS | METH_KEYWORDS,
+     IndexInfo_get_aConstraintUsage_omit_DOC},
+    {"set_aConstraintUsage_omit", (PyCFunction)SqliteIndexInfo_set_aConstraintUsage_omit, METH_VARARGS | METH_KEYWORDS,
+     IndexInfo_set_aConstraintUsage_omit_DOC},
     /* sentinel */
     {NULL, NULL, 0, NULL}};
 
@@ -191,6 +651,7 @@ static PyTypeObject SqliteIndexInfoType = {
 };
 
 #undef CHECK_INDEX
+#undef CHECK_RANGE
 
 /** .. class:: VTModule
 
