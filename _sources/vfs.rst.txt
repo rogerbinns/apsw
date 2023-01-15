@@ -41,6 +41,8 @@ file contents.
   All strings supplied and returned to :class:`VFS`/:class:`VFSFile`
   routines are treated as Unicode.
 
+.. _vfserrors:
+
 Exceptions and errors
 =====================
 

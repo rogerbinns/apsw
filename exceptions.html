@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Exceptions &#8212; APSW 3.40.0.0 documentation</title>
+    <title>Exceptions and Errors &#8212; APSW 3.40.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -23,10 +23,14 @@
     <link rel="next" title="Types" href="types.html" />
     <link rel="prev" title="Various interesting and useful bits of functionality" href="ext.html" />
  
-<script type="text/javascript">
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-26815066-1']);
-  _gaq.push(['_trackPageview']);
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-2NR9GDCQLT');
 </script>
 
   </head><body>
@@ -45,8 +49,8 @@
         <li class="right" >
           <a href="ext.html" title="Various interesting and useful bits of functionality"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.0.0 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Exceptions</a></li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Exceptions and Errors</a></li> 
       </ul>
     </div>  
 
@@ -55,8 +59,33 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <section id="exceptions">
-<span id="id1"></span><h1>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this heading">¶</a></h1>
+  <section id="exceptions-and-errors">
+<span id="exceptions"></span><h1>Exceptions and Errors<a class="headerlink" href="#exceptions-and-errors" title="Permalink to this heading">¶</a></h1>
+<p>Python uses <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">exceptions</span></code></a> to indicate an error has
+happened.  The SQLite library uses <a class="reference external" href="https://www.sqlite.org/rescode.html">integer error codes</a>.  APSW maps between the two
+systems as needed.  Exceptions raised in Python code called by SQLite
+will have that exception present when control returns to Python, and
+SQLite will understand that an error occurred.</p>
+<section id="unraisable">
+<span id="id1"></span><h2>Unraisable<a class="headerlink" href="#unraisable" title="Permalink to this heading">¶</a></h2>
+<p>There are a few places where it is not possible for a Python exception
+to be reported to SQLite as an error, typically because SQLite does
+not allow an error to be signalled in that context.  Another example
+would be in <a class="reference internal" href="vfs.html"><span class="doc">VFS</span></a> code, because SQLite takes actions to
+recover from errors (eg it may try to rollback a transaction on a
+write error).  Python wants to return to callers, not continue
+execution while the exception is pending.  (Also only one exception
+can be active at a time.)</p>
+<p>Unraisable exceptions in VFS code are handled by calling
+<a class="reference internal" href="vfs.html#apsw.VFS.excepthook" title="apsw.VFS.excepthook"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFS.excepthook()</span></code></a> or <a class="reference internal" href="vfs.html#apsw.VFSFile.excepthook" title="apsw.VFSFile.excepthook"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VFSFile.excepthook()</span></code></a> (<a class="reference internal" href="vfs.html#vfserrors"><span class="std std-ref">more info</span></a>).  In other code <a class="reference external" href="https://docs.python.org/3/library/sys.html#sys.unraisablehook">sys.unraisablehook</a> is
+called, and if that is not present then <a class="reference external" href="https://docs.python.org/3/library/sys.html#sys.excepthook">sys.excepthook</a> is
+called.</p>
+<p><a class="reference external" href="https://www.sqlite.org/c3ref/log.html">sqlite3_log</a> is also called
+so that you will have the context of when the exception happened
+relative to the errors SQLite is logging.</p>
+</section>
+<section id="exception-classes">
+<h2>Exception Classes<a class="headerlink" href="#exception-classes" title="Permalink to this heading">¶</a></h2>
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.Error">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Error</span></span><a class="headerlink" href="#apsw.Error" title="Permalink to this definition">¶</a></dt>
@@ -77,12 +106,19 @@ is the numeric error code.</p>
 This attribute includes the detailed code.</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.Error.error_offset">
+<span class="sig-prename descclassname"><span class="pre">Error.</span></span><span class="sig-name descname"><span class="pre">error_offset</span></span><a class="headerlink" href="#apsw.Error.error_offset" title="Permalink to this definition">¶</a></dt>
+<dd><p>The location of the error in the SQL when encoded in UTF-8.
+The value is from <a class="reference external" href="https://www.sqlite.org/c3ref/errcode.html">sqlite3_error_offset</a>.</p>
+</dd></dl>
+
 <p>As an example, if SQLite issued a read request and the system returned
 less data than expected then <a class="reference internal" href="#apsw.Error.result" title="apsw.Error.result"><code class="xref py py-attr docutils literal notranslate"><span class="pre">result</span></code></a> would have the value
 <em>SQLITE_IOERR</em> while <a class="reference internal" href="#apsw.Error.extendedresult" title="apsw.Error.extendedresult"><code class="xref py py-attr docutils literal notranslate"><span class="pre">extendedresult</span></code></a> would have
 the value <em>SQLITE_IOERR_SHORT_READ</em>.</p>
 <section id="apsw-specific-exceptions">
-<h2>APSW specific exceptions<a class="headerlink" href="#apsw-specific-exceptions" title="Permalink to this heading">¶</a></h2>
+<h3>APSW specific exceptions<a class="headerlink" href="#apsw-specific-exceptions" title="Permalink to this heading">¶</a></h3>
 <p>The following exceptions happen when APSW detects various problems.</p>
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.ThreadingViolationError">
@@ -191,11 +227,11 @@ does not implement the method.</p>
 
 </section>
 <section id="sqlite-exceptions">
-<h2>SQLite Exceptions<a class="headerlink" href="#sqlite-exceptions" title="Permalink to this heading">¶</a></h2>
+<h3>SQLite Exceptions<a class="headerlink" href="#sqlite-exceptions" title="Permalink to this heading">¶</a></h3>
 <p>The following lists which Exception classes correspond to which <a class="reference external" href="https://sqlite.org/c3ref/c_abort.html">SQLite
 error codes</a>.</p>
 <section id="general-errors">
-<h3>General Errors<a class="headerlink" href="#general-errors" title="Permalink to this heading">¶</a></h3>
+<h4>General Errors<a class="headerlink" href="#general-errors" title="Permalink to this heading">¶</a></h4>
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.SQLError">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SQLError</span></span><a class="headerlink" href="#apsw.SQLError" title="Permalink to this definition">¶</a></dt>
@@ -222,7 +258,7 @@ controls.</p>
 
 </section>
 <section id="internal-errors">
-<h3>Internal Errors<a class="headerlink" href="#internal-errors" title="Permalink to this heading">¶</a></h3>
+<h4>Internal Errors<a class="headerlink" href="#internal-errors" title="Permalink to this heading">¶</a></h4>
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.InternalError">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">InternalError</span></span><a class="headerlink" href="#apsw.InternalError" title="Permalink to this definition">¶</a></dt>
@@ -251,7 +287,7 @@ a function with more than 127 parameters.</p>
 
 </section>
 <section id="permissions-etc">
-<h3>Permissions Etc<a class="headerlink" href="#permissions-etc" title="Permalink to this heading">¶</a></h3>
+<h4>Permissions Etc<a class="headerlink" href="#permissions-etc" title="Permalink to this heading">¶</a></h4>
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.PermissionsError">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PermissionsError</span></span><a class="headerlink" href="#apsw.PermissionsError" title="Permalink to this definition">¶</a></dt>
@@ -278,7 +314,7 @@ a function with more than 127 parameters.</p>
 
 </section>
 <section id="abort-busy-etc">
-<h3>Abort/Busy Etc<a class="headerlink" href="#abort-busy-etc" title="Permalink to this heading">¶</a></h3>
+<h4>Abort/Busy Etc<a class="headerlink" href="#abort-busy-etc" title="Permalink to this heading">¶</a></h4>
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.AbortError">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AbortError</span></span><a class="headerlink" href="#apsw.AbortError" title="Permalink to this definition">¶</a></dt>
@@ -330,7 +366,7 @@ which one was the cause.</p>
 
 </section>
 <section id="memory-disk">
-<h3>Memory/Disk<a class="headerlink" href="#memory-disk" title="Permalink to this heading">¶</a></h3>
+<h4>Memory/Disk<a class="headerlink" href="#memory-disk" title="Permalink to this heading">¶</a></h4>
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.NoMemError">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">NoMemError</span></span><a class="headerlink" href="#apsw.NoMemError" title="Permalink to this definition">¶</a></dt>
@@ -394,7 +430,7 @@ SQLite databases.</p>
 </section>
 </section>
 <section id="augmented-stack-traces">
-<span id="augmentedstacktraces"></span><h2>Augmented stack traces<a class="headerlink" href="#augmented-stack-traces" title="Permalink to this heading">¶</a></h2>
+<span id="augmentedstacktraces"></span><h3>Augmented stack traces<a class="headerlink" href="#augmented-stack-traces" title="Permalink to this heading">¶</a></h3>
 <p>When an exception occurs, Python does not include frames from
 non-Python code (ie the C code called from Python).  This can make it
 more difficult to work out what was going on when an exception
@@ -418,12 +454,10 @@ traceback:</p>
 </div>
 <table class="docutils align-default">
 <colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
+<col style="width: 100%" />
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Original Traceback</p></th>
-<th class="head"><p>Augmented Traceback</p></th>
 </tr>
 </thead>
 <tbody>
@@ -436,7 +470,19 @@ traceback:</p>
 </pre></div>
 </div>
 </td>
-<td><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 100%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Augmented Traceback</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
   <span class="n">File</span> <span class="s2">&quot;t.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">11</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
     <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select foo(1) from bar&quot;</span><span class="p">)</span>
   <span class="n">File</span> <span class="s2">&quot;apsw.c&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">3412</span><span class="p">,</span> <span class="ow">in</span> <span class="n">resetcursor</span>
@@ -458,27 +504,8 @@ to examine the code. Also note how you are told that the call was in
 <p><em>But wait, there is more!!!</em> In order to further aid troubleshooting,
 the augmented stack traces make additional information available. Each
 frame in the traceback has local variables defined with more
-information. You can print out the variables like this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
-
-<span class="k">def</span> <span class="nf">print_exc_plus</span><span class="p">(</span><span class="n">tb</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-    <span class="n">tb</span> <span class="o">=</span> <span class="n">tb</span> <span class="ow">or</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">2</span><span class="p">]</span>
-
-    <span class="nb">print</span> <span class="p">(</span><span class="s2">&quot;Locals by frame (most recent call last)&quot;</span><span class="p">)</span>
-
-    <span class="k">while</span> <span class="n">tb</span><span class="p">:</span>
-        <span class="n">frame</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">tb_frame</span>
-        <span class="nb">print</span><span class="p">()</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Frame </span><span class="si">{</span> <span class="n">frame</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span> <span class="si">}</span><span class="s2"> in </span><span class="si">{</span> <span class="n">frame</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_filename</span> <span class="si">}</span><span class="s2"> at line </span><span class="si">{</span> <span class="n">frame</span><span class="o">.</span><span class="n">f_lineno</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">f_locals</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">vstr</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-            <span class="k">except</span><span class="p">:</span>
-                <span class="n">vstr</span> <span class="o">=</span> <span class="s2">&quot;&lt;Failed to stringify&gt;&quot;</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   </span><span class="si">{</span> <span class="n">key</span> <span class="si">}</span><span class="s2"> = </span><span class="si">{</span> <span class="n">vstr</span> <span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">tb</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">tb_next</span>
-</pre></div>
-</div>
+information. You can use <a class="reference internal" href="ext.html#apsw.ext.print_augmented_traceback" title="apsw.ext.print_augmented_traceback"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.print_augmented_traceback()</span></code></a> to
+print an exception with the local variables.</p>
 <p>Here is a far more complex example from some <a class="reference internal" href="vtable.html#virtualtables"><span class="std std-ref">virtual tables</span></a> code I was writing. The BestIndex method in my code
 had returned an incorrect value. The augmented traceback includes
 local variables. I can see what was passed in to my method, what I
@@ -521,6 +548,7 @@ almost completely useless!</p>
 </div>
 </section>
 </section>
+</section>
 
 
             <div class="clearer"></div>
@@ -532,10 +560,13 @@ almost completely useless!</p>
   <div>
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
-<li><a class="reference internal" href="#">Exceptions</a><ul>
+<li><a class="reference internal" href="#">Exceptions and Errors</a><ul>
+<li><a class="reference internal" href="#unraisable">Unraisable</a></li>
+<li><a class="reference internal" href="#exception-classes">Exception Classes</a><ul>
 <li><a class="reference internal" href="#apsw.Error"><code class="docutils literal notranslate"><span class="pre">Error</span></code></a><ul>
 <li><a class="reference internal" href="#apsw.Error.result"><code class="docutils literal notranslate"><span class="pre">Error.result</span></code></a></li>
 <li><a class="reference internal" href="#apsw.Error.extendedresult"><code class="docutils literal notranslate"><span class="pre">Error.extendedresult</span></code></a></li>
+<li><a class="reference internal" href="#apsw.Error.error_offset"><code class="docutils literal notranslate"><span class="pre">Error.error_offset</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#apsw-specific-exceptions">APSW specific exceptions</a><ul>
@@ -601,6 +632,8 @@ almost completely useless!</p>
 </ul>
 </li>
 </ul>
+</li>
+</ul>
 
   </div>
   <div>
@@ -649,28 +682,18 @@ almost completely useless!</p>
         <li class="right" >
           <a href="ext.html" title="Various interesting and useful bits of functionality"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.0.0 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">Exceptions</a></li> 
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.1.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Exceptions and Errors</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
-        &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Nov 27, 2022.
+        &#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Jan 15, 2023.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
-Google Analytics</a> to collect statistics. You can disable it by blocking
-the JavaScript coming from www.google-analytics.com.
-<script type="text/javascript">
-  (function() {
-    var ga = document.createElement('script');
-    ga.src = ('https:' == document.location.protocol ?
-              'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    ga.setAttribute('async', 'true');
-    document.documentElement.firstChild.appendChild(ga);
-  })();
-</script>
+Google Analytics</a> to collect statistics.
 </div>
 
   </body>

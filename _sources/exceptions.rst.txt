@@ -1,8 +1,45 @@
+.. currentmodule:: apsw
+
 .. _exceptions:
 
-Exceptions
-**********
-.. currentmodule:: apsw
+Exceptions and Errors
+*********************
+
+Python uses :class:`exceptions <Exception>` to indicate an error has
+happened.  The SQLite library uses `integer error codes
+<https://www.sqlite.org/rescode.html>`__.  APSW maps between the two
+systems as needed.  Exceptions raised in Python code called by SQLite
+will have that exception present when control returns to Python, and
+SQLite will understand that an error occurred.
+
+.. _unraisable:
+
+Unraisable
+----------
+
+There are a few places where it is not possible for a Python exception
+to be reported to SQLite as an error, typically because SQLite does
+not allow an error to be signalled in that context.  Another example
+would be in :doc:`VFS <vfs>` code, because SQLite takes actions to
+recover from errors (eg it may try to rollback a transaction on a
+write error).  Python wants to return to callers, not continue
+execution while the exception is pending.  (Also only one exception
+can be active at a time.)
+
+Unraisable exceptions in VFS code are handled by calling
+:meth:`VFS.excepthook` or :meth:`VFSFile.excepthook` (:ref:`more info
+<vfserrors>`).  In other code `sys.unraisablehook
+<https://docs.python.org/3/library/sys.html#sys.unraisablehook>`__ is
+called, and if that is not present then `sys.excepthook
+<https://docs.python.org/3/library/sys.html#sys.excepthook>`__ is
+called.
+
+`sqlite3_log <https://www.sqlite.org/c3ref/log.html>`__ is also called
+so that you will have the context of when the exception happened
+relative to the errors SQLite is logging.
+
+Exception Classes
+-----------------
 
 
 .. exception:: Error
@@ -20,6 +57,12 @@ Exceptions
          APSW runs with `extended result codes
          <https://sqlite.org/rescode.html>`_ turned on.
          This attribute includes the detailed code.
+
+.. attribute:: Error.error_offset
+
+        The location of the error in the SQL when encoded in UTF-8.
+        The value is from `sqlite3_error_offset
+        <https://www.sqlite.org/c3ref/errcode.html>`__.
 
 As an example, if SQLite issued a read request and the system returned
 less data than expected then :attr:`~Error.result` would have the value
@@ -301,20 +344,36 @@ traceback::
   cursor.execute("create table bar(x,y,z);insert into bar values(1,2,3)")
   cursor.execute("select foo(1) from bar")
 
-+-----------------------------------------------------------+----------------------------------------------------------+
-| Original Traceback                                        |      Augmented Traceback                                 |
-+===========================================================+==========================================================+
-| ::                                                        | ::                                                       |
-|                                                           |                                                          |
-|   Traceback (most recent call last):                      |   Traceback (most recent call last):                     |
-|     File "t.py", line 11, in <module>                     |     File "t.py", line 11, in <module>                    |
-|       cursor.execute("select foo(1) from bar")            |       cursor.execute("select foo(1) from bar")           |
-|     File "t.py", line 4, in myfunc                        |     File "apsw.c", line 3412, in resetcursor             |
-|       1/0                                                 |     File "apsw.c", line 1597, in user-defined-scalar-foo |
-|   ZeroDivisionError: integer division or modulo by zero   |     File "t.py", line 4, in myfunc                       |
-|                                                           |       1/0                                                |
-|                                                           |   ZeroDivisionError: integer division or modulo by zero  |
-+-----------------------------------------------------------+----------------------------------------------------------+
+
++-----------------------------------------------------------+
+| Original Traceback                                        |
++===========================================================+
+| ::                                                        |
+|                                                           |
+|   Traceback (most recent call last):                      |
+|     File "t.py", line 11, in <module>                     |
+|       cursor.execute("select foo(1) from bar")            |
+|     File "t.py", line 4, in myfunc                        |
+|       1/0                                                 |
+|   ZeroDivisionError: integer division or modulo by zero   |
+|                                                           |
+|                                                           |
++-----------------------------------------------------------+
+
++----------------------------------------------------------+
+|      Augmented Traceback                                 |
++==========================================================+
+| ::                                                       |
+|                                                          |
+|   Traceback (most recent call last):                     |
+|     File "t.py", line 11, in <module>                    |
+|       cursor.execute("select foo(1) from bar")           |
+|     File "apsw.c", line 3412, in resetcursor             |
+|     File "apsw.c", line 1597, in user-defined-scalar-foo |
+|     File "t.py", line 4, in myfunc                       |
+|       1/0                                                |
+|   ZeroDivisionError: integer division or modulo by zero  |
++----------------------------------------------------------+
 
 In the original traceback you can't even see that code in apsw was
 involved. The augmented traceback shows that there were indeed two
@@ -325,27 +384,8 @@ to examine the code. Also note how you are told that the call was in
 *But wait, there is more!!!* In order to further aid troubleshooting,
 the augmented stack traces make additional information available. Each
 frame in the traceback has local variables defined with more
-information. You can print out the variables like this::
-
-    import sys
-
-    def print_exc_plus(tb = None):
-        tb = tb or sys.exc_info()[2]
-
-        print ("Locals by frame (most recent call last)")
-
-        while tb:
-            frame = tb.tb_frame
-            print()
-            print(f"Frame { frame.f_code.co_name } in { frame.f_code.co_filename } at line { frame.f_lineno}")
-            for key, value in sorted(frame.f_locals.items()):
-                try:
-                    vstr = str(value)
-                except:
-                    vstr = "<Failed to stringify>"
-                print(f"   { key } = { vstr }")
-            tb = tb.tb_next
-
+information. You can use :meth:`apsw.ext.print_augmented_traceback` to
+print an exception with the local variables.
 
 Here is a far more complex example from some :ref:`virtual tables
 <Virtualtables>` code I was writing. The BestIndex method in my code

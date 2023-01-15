@@ -19,7 +19,9 @@ see what gets printed when you run the code.
    import sys
    import time
    import apsw
+   import apsw.ext
    import random
+   import ast
    
    # Note: this code uses Python's optional typing annotations.  You can
    # ignore them and do not need to use them
@@ -57,11 +59,31 @@ Checking APSW and SQLite versions
 .. code-block:: output
 
           Using APSW file /space/apsw/./apsw/__init__.cpython-310-x86_64-linux-gnu.so
-             APSW version 3.40.0.0
-    SQLite header version 3040000
-       SQLite lib version 3.40.0
+             APSW version 3.40.1.0
+    SQLite header version 3040001
+       SQLite lib version 3.40.1
        Using amalgamation True
 
+
+.. index:: Logging (example code)
+
+.. _example_logging:
+
+Logging
+-------
+
+It is a good idea to get SQLite's logs as you will get more
+information about errors.  This has to be done first (a SQLite
+limitation, not APSW). :meth:`apsw.ext.log_sqlite` forwards
+SQLite's log messages to the :mod:`logging` module.
+
+.. code-block:: python
+
+   apsw.ext.log_sqlite()
+   
+   # You can also write to SQLite's log
+   apsw.log(apsw.SQLITE_ERROR, "A message from Python")
+   
 
 .. index:: Opening the database (example code)
 
@@ -472,6 +494,92 @@ average.  They are registered by calling
     ('restart',)
 
 
+.. index:: Defining window functions (example code)
+
+.. _example_window:
+
+Defining window functions
+-------------------------
+
+Window functions input values come from a "window" around a row of
+interest.  Four methods are called to add, remove, get the current
+value, and finalize as the window moves.
+
+An example is calculating an average of values in the window to
+compare to the row.  They are registered by calling
+:meth:`Connection.create_window_function`.
+
+This is the Python equivalent to the C based example in the `SQLite
+documentation
+<https://www.sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions>`__
+
+.. code-block:: python
+
+   
+   class SumInt:
+   
+       def __init__(self):
+           self.v = 0
+   
+       def step(self, arg):
+           print("step", arg)
+           self.v += arg
+   
+       def inverse(self, arg):
+           print("inverse", arg)
+           self.v -= arg
+   
+       def final(self):
+           print("final")
+           return self.v
+   
+       def value(self):
+           print("value", self.v)
+           return self.v
+   
+   
+   connection.create_window_function("sumint", SumInt)
+   
+   for row in connection.execute("""
+           CREATE TABLE t3(x, y);
+           INSERT INTO t3 VALUES('a', 4),
+                                ('b', 5),
+                                ('c', 3),
+                                ('d', 8),
+                                ('e', 1);
+           -- Use the window function
+           SELECT x, sumint(y) OVER (
+           ORDER BY x ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING
+           ) AS sum_y
+           FROM t3 ORDER BY x;
+       """):
+           print("ROW", row)
+   
+
+
+.. code-block:: output
+
+    step 4
+    step 5
+    value 9
+    ROW ('a', 9)
+    step 3
+    value 12
+    ROW ('b', 12)
+    inverse 4
+    step 8
+    value 16
+    ROW ('c', 16)
+    inverse 5
+    step 1
+    value 12
+    ROW ('d', 12)
+    inverse 3
+    value 9
+    ROW ('e', 9)
+    final
+
+
 .. index:: Defining collations (sorting) (example code)
 
 .. _example_collation:
@@ -744,7 +852,6 @@ query (without running it)
    # help with formatting
    import pprint
    
-   
    print("query", qd.query)
    print("\nbindings", qd.bindings)
    print("\nexpanded_sql", qd.expanded_sql)
@@ -755,7 +862,6 @@ query (without running it)
    print("\ndescription\n", pprint.pformat(qd.description))
    if hasattr(qd, "description_full"):
        print("\ndescription_full\n", pprint.pformat(qd.description_full))
-   
    
    print("\nquery_plan\n", pprint.pformat(qd.query_plan))
    print("\nFirst 5 actions\n", pprint.pformat(qd.actions[:5]))
@@ -898,7 +1004,7 @@ query (without running it)
                      opcode='OpenRead',
                      comment=None,
                      p1=0,
-                     p2=13,
+                     p2=14,
                      p3=0,
                      p4='3',
                      p5=0),
@@ -906,7 +1012,7 @@ query (without running it)
                      opcode='OpenRead',
                      comment=None,
                      p1=1,
-                     p2=12,
+                     p2=13,
                      p3=0,
                      p4='3',
                      p5=0),
@@ -1059,7 +1165,7 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9996980943,)
+    (9550133018,)
 
 
 .. index:: Commit hook (example code)
@@ -1099,8 +1205,7 @@ with  :meth:`Connection.setcommithook`.
 .. code-block:: output
 
     in commit hook
-    no commits out of hours
-    commit was not allowed
+    commits okay at this time
 
 
 .. index:: Update hook (example code)
@@ -1185,7 +1290,7 @@ virtual tables <virtualtables>`.
    
        def Create(self, db, modulename, dbname, tablename, *args):
            # the eval strips off layer of quotes
-           columns, data = get_file_data([eval(a.replace("\\", "\\\\")) for a in args])
+           columns, data = get_file_data([ast.literal_eval(a.replace("\\", "\\\\")) for a in args])
            schema = "create table foo(" + ','.join(["'%s'" % (x, ) for x in columns[1:]]) + ")"
            return schema, Table(columns, data)
    
@@ -1259,9 +1364,9 @@ virtual tables <virtualtables>`.
 .. code-block:: output
 
     3 biggest files
+    5894672 apsw.o .
+    5199987 apsw.gcno .
     546696 _ctypes.cpython-310d-x86_64-linux-gnu.so /usr/lib/python3.10/lib-dynload
-    511328 _ssl.cpython-310d-x86_64-linux-gnu.so /usr/lib/python3.10/lib-dynload
-    450008 _testcapi.cpython-310d-x86_64-linux-gnu.so /usr/lib/python3.10/lib-dynload
     
     3 oldest files
     1641597423.5541885 sitecustomize.py /usr/lib/python3.10
@@ -1507,9 +1612,9 @@ Python.
     
     Dump output
     
-    -- SQLite dump (by APSW 3.40.0.0)
-    -- SQLite version 3.40.0
-    -- Date: Sun Nov 27 07:17:16 2022
+    -- SQLite dump (by APSW 3.40.1.0)
+    -- SQLite version 3.40.1
+    -- Date: Sun Jan 15 10:16:17 2023
     -- Tables like: csvtest%
     -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
@@ -1552,7 +1657,80 @@ SQLite provides statistics by :meth:`status`
 
 .. code-block:: output
 
-    SQLite memory usage 298832 max 345560
+    SQLite memory usage 308160 max 354920
+
+
+.. index:: Tracing (example code)
+
+.. _example_trace_v2:
+
+Tracing
+-------
+
+This shows using :meth:`Connection.trace_v2`
+
+.. code-block:: python
+
+   # From https://www.sqlite.org/lang_with.html
+   # Outlandish Recursive Query Examples
+   
+   query = """WITH RECURSIVE
+               xaxis(x) AS (VALUES(-2.0) UNION ALL SELECT x+0.05 FROM xaxis WHERE x<1.2),
+               yaxis(y) AS (VALUES(-1.0) UNION ALL SELECT y+0.1 FROM yaxis WHERE y<1.0),
+               m(iter, cx, cy, x, y) AS (
+                   SELECT 0, x, y, 0.0, 0.0 FROM xaxis, yaxis
+                   UNION ALL
+                   SELECT iter+1, cx, cy, x*x-y*y + cx, 2.0*x*y + cy FROM m
+                   WHERE (x*x + y*y) < 4.0 AND iter<28
+               ),
+               m2(iter, cx, cy) AS (
+                   SELECT max(iter), cx, cy FROM m GROUP BY cx, cy
+               ),
+               a(t) AS (
+                   SELECT group_concat( substr(' .+*#', 1+min(iter/7,4), 1), '')
+                   FROM m2 GROUP BY cy
+               )
+               SELECT group_concat(rtrim(t),x'0a') FROM a;"""
+   
+   
+   def trace_hook(trace: Dict) -> None:
+       # check the sql and connection are as expected and remove from trace
+       # so we don't print them
+       assert trace.pop("sql") == query
+       print("code is ", apsw.mapping_trace_codes[trace["code"]])
+       print(pprint.pformat(trace), "\n")
+   
+   
+   connection.trace_v2(apsw.SQLITE_TRACE_STMT | apsw.SQLITE_TRACE_PROFILE | apsw.SQLITE_TRACE_ROW, trace_hook)
+   
+   # We will get one each of the trace events
+   for _ in connection.execute(query):
+       pass
+   
+
+
+.. code-block:: output
+
+    code is  SQLITE_TRACE_STMT
+    {'code': 1, 'connection': <apsw.Connection object at 0x7fa2ba4f3760>} 
+    
+    code is  SQLITE_TRACE_ROW
+    {'code': 4, 'connection': <apsw.Connection object at 0x7fa2ba4f3760>} 
+    
+    code is  SQLITE_TRACE_PROFILE
+    {'code': 2,
+     'connection': <apsw.Connection object at 0x7fa2ba4f3760>,
+     'nanoseconds': 35000000,
+     'stmt_status': {'SQLITE_STMTSTATUS_AUTOINDEX': 0,
+                     'SQLITE_STMTSTATUS_FILTER_HIT': 0,
+                     'SQLITE_STMTSTATUS_FILTER_MISS': 0,
+                     'SQLITE_STMTSTATUS_FULLSCAN_STEP': 1429,
+                     'SQLITE_STMTSTATUS_MEMUSED': 15800,
+                     'SQLITE_STMTSTATUS_REPREPARE': 0,
+                     'SQLITE_STMTSTATUS_RUN': 1,
+                     'SQLITE_STMTSTATUS_SORT': 2,
+                     'SQLITE_STMTSTATUS_VM_STEP': 1013989}} 
+    
 
 
 .. index:: Cleanup (example code)

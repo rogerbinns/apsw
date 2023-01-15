@@ -230,6 +230,14 @@ If `entries` is present, then each list entry is a dict with the following infor
     - Boolean indicating if there was more query text than
       the first statement
 
+.. index:: sqlite3_db_cacheflush
+
+.. method:: Connection.cacheflush() -> None
+
+  Flushes caches to disk mid-transaction.
+
+  Calls: `sqlite3_db_cacheflush <https://sqlite.org/c3ref/db_cacheflush.html>`__
+
 .. index:: sqlite3_changes64
 
 .. method:: Connection.changes() -> int
@@ -292,6 +300,27 @@ If `entries` is present, then each list entry is a dict with the following infor
 
   Calls: `sqlite3_collation_needed <https://sqlite.org/c3ref/collation_needed.html>`__
 
+.. index:: sqlite3_table_column_metadata
+
+.. method:: Connection.column_metadata(dbname: Optional[str], table_name: str, column_name: str) -> Tuple[str, str, bool, bool, bool]
+
+  `dbname` is the specific database (eg "main", "temp") or None to search
+  all databases.
+
+  The returned :class:`tuple` has these fields:
+
+  0: str - declared data type
+
+  1: str - name of default collation sequence
+
+  2: bool - True if not null constraint
+
+  3: bool - True if part of primary key
+
+  4: bool - True if column is `autoincrement <https://www.sqlite.org/autoinc.html>`__
+
+  Calls: `sqlite3_table_column_metadata <https://sqlite.org/c3ref/table_column_metadata.html>`__
+
 .. index:: sqlite3_db_config
 
 .. method:: Connection.config(op: int, *args: int) -> int
@@ -304,9 +333,39 @@ If `entries` is present, then each list entry is a dict with the following infor
 
     Calls: `sqlite3_db_config <https://sqlite.org/c3ref/db_config.html>`__
 
+.. index:: sqlite3_create_window_function
+
+.. method:: Connection.create_window_function(name:str, factory: Optional[WindowFactory], numargs: int =-1, *, flags: int = 0) -> None
+
+    Registers a `window function
+    <https://sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions>`__
+
+      :param name: The string name of the function.  It should be less than 255 characters
+      :param factory: Called to start a new window.  Use None to delete the function.
+      :param numargs: How many arguments the function takes, with -1 meaning any number
+      :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
+
+    You need to provide callbacks for the ``step``, ``final``, ``value``
+    and ``inverse`` methods.  This can be done by having `factory` as a
+    class, and the corresponding method names, or by having `factory`
+    return a sequence of a first parameter, and then each of the 4
+    functions.
+
+    **Debugging note** SQlite always calls the ``final`` method to allow
+    for cleanup.  If you have an error in one of the other methods, then
+    ``final`` will also be called, and you may see both methods in
+    tracebacks.
+
+    .. seealso::
+
+     * :ref:`Example <example_window>`
+     * :meth:`~Connection.createaggregatefunction`
+
+    Calls: `sqlite3_create_window_function <https://sqlite.org/c3ref/create_function.html>`__
+
 .. index:: sqlite3_create_function_v2
 
-.. method:: Connection.createaggregatefunction(name: str, factory: Optional[AggregateFactory], numargs: int = -1) -> None
+.. method:: Connection.createaggregatefunction(name: str, factory: Optional[AggregateFactory], numargs: int = -1, *, flags: int = 0) -> None
 
   Registers an aggregate function.  Aggregate functions operate on all
   the relevant rows such as counting how many there are.
@@ -314,6 +373,7 @@ If `entries` is present, then each list entry is a dict with the following infor
   :param name: The string name of the function.  It should be less than 255 characters
   :param factory: The function that will be called.  Use None to delete the function.
   :param numargs: How many arguments the function takes, with -1 meaning any number
+  :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
 
   When a query starts, the *factory* will be called and must return a tuple of 3 items:
 
@@ -377,9 +437,10 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. index:: sqlite3_create_module_v2
 
-.. method:: Connection.createmodule(name: str, datasource: Any) -> None
+.. method:: Connection.createmodule(name: str, datasource: Optional[VTModule]) -> None
 
-    Registers a virtual table.  See :ref:`virtualtables` for details.
+    Registers a virtual table, or drops it if *datasource* is *None*.
+    See :ref:`virtualtables` for details.
 
     .. seealso::
 
@@ -389,7 +450,7 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. index:: sqlite3_create_function_v2
 
-.. method:: Connection.createscalarfunction(name: str, callable: Optional[ScalarProtocol], numargs: int = -1, deterministic: bool = False) -> None
+.. method:: Connection.createscalarfunction(name: str, callable: Optional[ScalarProtocol], numargs: int = -1, *, deterministic: bool = False, flags: int = 0) -> None
 
   Registers a scalar function.  Scalar functions operate on one set of parameters once.
 
@@ -402,6 +463,7 @@ If `entries` is present, then each list entry is a dict with the following infor
            for deterministic functions.  For example a random()
            function is not deterministic while one that returns the
            length of a string is.
+  :param flags: Additional `function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
 
   .. note::
 
@@ -477,6 +539,13 @@ If `entries` is present, then each list entry is a dict with the following infor
      * :meth:`Connection.serialize`
 
    Calls: `sqlite3_deserialize <https://sqlite.org/c3ref/deserialize.html>`__
+
+.. method:: Connection.drop_modules(keep: Optional[Sequence[str]]) -> None
+
+  If *keep* is *None* then all registered virtual tables are dropped.
+
+  Otherwise *keep* is a sequence of strings, naming the virtual tables that
+  are kept, dropping all others.
 
 .. index:: sqlite3_enable_load_extension
 
@@ -584,9 +653,27 @@ See :meth:`Cursor.executemany` for more details.
 .. attribute:: Connection.filename
   :type: str
 
-  The filename of the  database.
+  The filename of the database.
 
   Calls: `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__
+
+.. index:: sqlite3_filename_journal
+
+.. attribute:: Connection.filename_journal
+  :type: str
+
+  The journal filename of the database,
+
+  Calls: `sqlite3_filename_journal <https://sqlite.org/c3ref/filename_database.html>`__
+
+.. index:: sqlite3_filename_wal
+
+.. attribute:: Connection.filename_wal
+  :type: str
+
+  The WAL filename of the database,
+
+  Calls: `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__
 
 .. index:: sqlite3_get_autocommit
 
@@ -708,6 +795,14 @@ See :meth:`Cursor.executemany` for more details.
   An exception is raised if the database doesn't exist.
 
   Calls: `sqlite3_db_readonly <https://sqlite.org/c3ref/db_readonly.html>`__
+
+.. index:: sqlite3_db_release_memory
+
+.. method:: Connection.release_memory() -> None
+
+  Attempts to free as much heap memory as possible used by this connection.
+
+  Calls: `sqlite3_db_release_memory <https://sqlite.org/c3ref/db_release_memory.html>`__
 
 .. attribute:: Connection.rowtrace
   :type: Optional[RowTracer]
@@ -940,6 +1035,26 @@ libraries.
 
   Calls: `sqlite3_db_status <https://sqlite.org/c3ref/db_status.html>`__
 
+.. index:: sqlite3_system_errno
+
+.. attribute:: Connection.system_errno
+ :type: int
+
+ The underlying system error code for the most recent I/O errors or failing to open files.
+
+ Calls: `sqlite3_system_errno <https://sqlite.org/c3ref/system_errno.html>`__
+
+.. index:: sqlite3_table_column_metadata
+
+.. method:: Connection.table_exists(dbname: Optional[str], table_name: str) -> bool
+
+  Returns True if the named table exists, else False.
+
+  `dbname` is the specific database (eg "main", "temp") or None to search
+  all databases
+
+  Calls: `sqlite3_table_column_metadata <https://sqlite.org/c3ref/table_column_metadata.html>`__
+
 .. index:: sqlite3_total_changes64
 
 .. method:: Connection.totalchanges() -> int
@@ -948,6 +1063,44 @@ libraries.
   inserted, or deleted since the database connection was opened.
 
   Calls: `sqlite3_total_changes64 <https://sqlite.org/c3ref/total_changes.html>`__
+
+.. index:: sqlite3_trace_v2, sqlite3_stmt_status
+
+.. method:: Connection.trace_v2(mask: int, callback: Optional[Callable[[dict], None]] = None) -> None
+
+  Registers a trace callback.  The callback is called with a dict of relevant values based
+  on the code.
+
+  .. list-table::
+    :header-rows: 1
+    :widths: auto
+
+    * - Key
+      - Type
+      - Explanation
+    * - code
+      - :class:`int`
+      - One of the `trace event codes <https://www.sqlite.org/c3ref/c_trace.html>`__
+    * - connection
+      - :class:`Connection`
+      - Connection this trace event belongs to
+    * - sql
+      - :class:`str`
+      - SQL text (except SQLITE_TRACE_CLOSE)
+    * - profile
+      - :class:`int`
+      - nanoseconds SQL took to execute (SQLITE_TRACE_PROFILE only)
+    * - stmt_status
+      - :class:`dict`
+      - SQLITE_TRACE_PROFILE only: Keys are names from `status parameters
+        <https://www.sqlite.org/c3ref/c_stmtstatus_counter.html>`__ - eg
+        *"SQLITE_STMTSTATUS_VM_STEP"* and corresponding integer values.
+        The counters are reset each time a statement
+        starts execution.
+
+  Calls:
+    * `sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__
+    * `sqlite3_stmt_status <https://sqlite.org/c3ref/stmt_status.html>`__
 
 .. index:: sqlite3_txn_state
 

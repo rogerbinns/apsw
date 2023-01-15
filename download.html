@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Download &#8212; APSW 3.40.0.0 documentation</title>
+    <title>Download &#8212; APSW 3.40.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -23,10 +23,14 @@
     <link rel="next" title="Building" href="build.html" />
     <link rel="prev" title="Example/Tour" href="example.html" />
  
-<script type="text/javascript">
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-26815066-1']);
-  _gaq.push(['_trackPageview']);
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-2NR9GDCQLT');
 </script>
 
   </head><body>
@@ -45,7 +49,7 @@
         <li class="right" >
           <a href="example.html" title="Example/Tour"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.1.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Download</a></li> 
       </ul>
     </div>  
@@ -88,12 +92,15 @@ on your platform</p></li>
 <p>See the <a class="reference internal" href="build.html#recommended-build"><span class="std std-ref">recommended</span></a> way to build or all the
 <a class="reference internal" href="build.html#building"><span class="std std-ref">options available</span></a>.</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.40.0.0/apsw-3.40.0.0.zip">apsw-3.40.0.0.zip</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.40.1.0/apsw-3.40.1.0.zip">apsw-3.40.1.0.zip</a>
 (Source, includes this HTML Help)</p></li>
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.40.0.0/apsw-3.40.0.0-sigs.zip">apsw-3.40.0.0-sigs.zip</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.40.1.0/apsw-3.40.1.0-sigs.zip">apsw-3.40.1.0-sigs.zip</a>
 GPG signatures for all files</p></li>
 </ul>
-<p>Some Linux distributions also have packages which may trail the SQLite
+</section>
+<section id="linux-bsd-provided-package">
+<h2>Linux/BSD provided package<a class="headerlink" href="#linux-bsd-provided-package" title="Permalink to this heading">¶</a></h2>
+<p>Some Linux &amp; BSD distributions also have packages which may trail the SQLite
 and APSW releases by a year, or more.  It is also possible to build
 RPMs and DEB packages from the source, although this involves setting
 up package management tools and various dependencies on your build
@@ -121,6 +128,9 @@ machine.</p>
 </tr>
 </tbody>
 </table>
+<p>There is a <a class="reference external" href="https://repology.org/project/python:apsw/versions">full list (150+)</a> of
+distributions, the package name for APSW, and what APSW version they
+are currently on.</p>
 </section>
 <section id="verifying-your-download">
 <span id="verifydownload"></span><h2>Verifying your download<a class="headerlink" href="#verifying-your-download" title="Permalink to this heading">¶</a></h2>
@@ -132,7 +142,7 @@ Unix/Linux platforms and can be downloaded for Windows.)</p>
 <blockquote>
 <div><p>To verify a file just use –verify specifying the corresponding
 <code class="docutils literal notranslate"><span class="pre">.asc</span></code> filename.  This example verifies the source:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ gpg --verify apsw-3.40.0.0.zip.asc
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ gpg --verify apsw-3.40.1.0.zip.asc
 gpg: Signature made ... date ... using DSA key ID 0DFBD904
 gpg: Good signature from &quot;Roger Binns &lt;rogerb@rogerbinns.com&gt;&quot;
 </pre></div>
@@ -179,6 +189,7 @@ gpg:               imported: 1
 <li><a class="reference internal" href="#">Download</a><ul>
 <li><a class="reference internal" href="#pypi-pip">PyPI/pip</a></li>
 <li><a class="reference internal" href="#source">Source</a></li>
+<li><a class="reference internal" href="#linux-bsd-provided-package">Linux/BSD provided package</a></li>
 <li><a class="reference internal" href="#verifying-your-download">Verifying your download</a></li>
 <li><a class="reference internal" href="#source-code-control">Source code control</a></li>
 </ul>
@@ -232,28 +243,18 @@ gpg:               imported: 1
         <li class="right" >
           <a href="example.html" title="Example/Tour"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.1.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Download</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
-        &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Nov 27, 2022.
+        &#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Jan 15, 2023.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
-Google Analytics</a> to collect statistics. You can disable it by blocking
-the JavaScript coming from www.google-analytics.com.
-<script type="text/javascript">
-  (function() {
-    var ga = document.createElement('script');
-    ga.src = ('https:' == document.location.protocol ?
-              'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    ga.setAttribute('async', 'true');
-    document.documentElement.firstChild.appendChild(ga);
-  })();
-</script>
+Google Analytics</a> to collect statistics.
 </div>
 
   </body>

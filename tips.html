@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Tips &#8212; APSW 3.40.0.0 documentation</title>
+    <title>Tips &#8212; APSW 3.40.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -23,10 +23,14 @@
     <link rel="next" title="Example/Tour" href="example.html" />
     <link rel="prev" title="APSW documentation" href="index.html" />
  
-<script type="text/javascript">
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-26815066-1']);
-  _gaq.push(['_trackPageview']);
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-2NR9GDCQLT');
 </script>
 
   </head><body>
@@ -45,7 +49,7 @@
         <li class="right" >
           <a href="index.html" title="APSW documentation"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.1.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Tips</a></li> 
       </ul>
     </div>  
@@ -178,10 +182,14 @@ various forms of bindings.</p>
 will be signalled via an <a class="reference internal" href="exceptions.html"><span class="doc">exception</span></a>.</p>
 <p>APSW ensures you have <a class="reference internal" href="exceptions.html#augmentedstacktraces"><span class="std std-ref">detailed information</span></a> both in the stack trace as well as what data
 APSW/SQLite was operating on.</p>
-<p>SQLite has a <a class="reference external" href="http://www.sqlite.org/errlog.html">warning/error logging facility</a>.  To set your own logger use:</p>
+<p>SQLite has a <a class="reference external" href="http://www.sqlite.org/errlog.html">warning/error logging facility</a>.  You can call
+<a class="reference internal" href="ext.html#apsw.ext.log_sqlite" title="apsw.ext.log_sqlite"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.log_sqlite()</span></code></a> which installs a handler that forwards
+SQLite messages to the <a class="reference external" href="https://docs.python.org/3/library/logging.html">logging module</a>.</p>
+<p>To do it yourself:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">errcode</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
     <span class="n">errstr</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">mapping_result_codes</span><span class="p">[</span><span class="n">errcode</span> <span class="o">&amp;</span> <span class="mi">255</span><span class="p">]</span>
-    <span class="nb">print</span> <span class="p">(</span><span class="s2">&quot;SQLITE_LOG: </span><span class="si">%s</span><span class="s2"> (</span><span class="si">%d</span><span class="s2">) </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">errcode</span><span class="p">,</span> <span class="n">errstr</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_extended_result_codes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">errcode</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)))</span>
+    <span class="nb">print</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SQLITE_LOG: </span><span class="si">{</span> <span class="n">message</span> <span class="si">}</span><span class="s2"> (</span><span class="si">{</span> <span class="n">errcode</span> <span class="si">}</span><span class="s2">) </span><span class="si">{</span> <span class="n">errstr</span> <span class="si">}</span><span class="s2"> &quot;</span>
+           <span class="o">+</span> <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_extended_result_codes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">errcode</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
 
 <span class="n">apsw</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CONFIG_LOG</span><span class="p">,</span> <span class="n">handler</span><span class="p">)</span>
 </pre></div>
@@ -195,10 +203,10 @@ APSW).</p>
 </div>
 <p>This is an example of what gets printed when I use <code class="docutils literal notranslate"><span class="pre">/dev/null</span></code> as
 the database name in the <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> and then tried to create
-a table.:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SQLITE_LOG</span><span class="p">:</span> <span class="n">cannot</span> <span class="nb">open</span> <span class="n">file</span> <span class="n">at</span> <span class="n">line</span> <span class="mi">28729</span> <span class="n">of</span> <span class="p">[</span><span class="mi">7</span><span class="n">dd4968f23</span><span class="p">]</span> <span class="p">(</span><span class="mi">14</span><span class="p">)</span> <span class="n">SQLITE_CANTOPEN</span>
-<span class="n">SQLITE_LOG</span><span class="p">:</span> <span class="n">os_unix</span><span class="o">.</span><span class="n">c</span><span class="p">:</span><span class="mi">28729</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="nb">open</span><span class="p">(</span><span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">null</span><span class="o">-</span><span class="n">journal</span><span class="p">)</span> <span class="o">-</span> <span class="n">No</span> <span class="n">such</span> <span class="n">file</span> <span class="ow">or</span> <span class="n">directory</span> <span class="p">(</span><span class="mi">14</span><span class="p">)</span> <span class="n">SQLITE_CANTOPEN</span>
-<span class="n">SQLITE_LOG</span><span class="p">:</span> <span class="n">statement</span> <span class="n">aborts</span> <span class="n">at</span> <span class="mi">38</span><span class="p">:</span> <span class="p">[</span><span class="n">create</span> <span class="n">table</span> <span class="n">foo</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">);]</span> <span class="n">unable</span> <span class="n">to</span> <span class="nb">open</span> <span class="n">database</span> <span class="n">file</span> <span class="p">(</span><span class="mi">14</span><span class="p">)</span> <span class="n">SQLITE_CANTOPEN</span>
+a table.</p>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLITE_LOG: cannot open file at line 28729 of [7dd4968f23] (14) SQLITE_CANTOPEN</span>
+<span class="go">SQLITE_LOG: os_unix.c:28729: (2) open(/dev/null-journal) - No such file or directory (14) SQLITE_CANTOPEN</span>
+<span class="go">SQLITE_LOG: statement aborts at 38: [create table foo(x,y);] unable to open database file (14) SQLITE_CANTOPEN</span>
 </pre></div>
 </div>
 </section>
@@ -448,28 +456,18 @@ indirect call via Python.)</p>
         <li class="right" >
           <a href="index.html" title="APSW documentation"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.1.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Tips</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
-        &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Nov 27, 2022.
+        &#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Jan 15, 2023.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
-Google Analytics</a> to collect statistics. You can disable it by blocking
-the JavaScript coming from www.google-analytics.com.
-<script type="text/javascript">
-  (function() {
-    var ga = document.createElement('script');
-    ga.src = ('https:' == document.location.protocol ?
-              'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    ga.setAttribute('async', 'true');
-    document.documentElement.firstChild.appendChild(ga);
-  })();
-</script>
+Google Analytics</a> to collect statistics.
 </div>
 
   </body>

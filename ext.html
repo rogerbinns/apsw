@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Various interesting and useful bits of functionality &#8212; APSW 3.40.0.0 documentation</title>
+    <title>Various interesting and useful bits of functionality &#8212; APSW 3.40.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -20,13 +20,17 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="next" title="Exceptions" href="exceptions.html" />
+    <link rel="next" title="Exceptions and Errors" href="exceptions.html" />
     <link rel="prev" title="Shell" href="shell.html" />
  
-<script type="text/javascript">
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-26815066-1']);
-  _gaq.push(['_trackPageview']);
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-2NR9GDCQLT');
 </script>
 
   </head><body>
@@ -40,12 +44,12 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="exceptions.html" title="Exceptions"
+          <a href="exceptions.html" title="Exceptions and Errors"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="shell.html" title="Shell"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.1.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Various interesting and useful bits of functionality</a></li> 
       </ul>
     </div>  
@@ -59,6 +63,13 @@
 <h1>Various interesting and useful bits of functionality<a class="headerlink" href="#various-interesting-and-useful-bits-of-functionality" title="Permalink to this heading">¶</a></h1>
 <p>You need to import <cite>apsw.ext</cite> to use this module. <a class="reference external" href="https://docs.python.org/3/library/dataclasses.html#module-dataclasses" title="(in Python v3.11)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataclasses</span></code></a>
 are used, and only Python 3.7+ is supported.</p>
+<section id="logging-and-tracebacks">
+<h2>Logging and tracebacks<a class="headerlink" href="#logging-and-tracebacks" title="Permalink to this heading">¶</a></h2>
+<p>You can use <a class="reference internal" href="#apsw.ext.log_sqlite" title="apsw.ext.log_sqlite"><code class="xref py py-meth docutils literal notranslate"><span class="pre">log_sqlite()</span></code></a> to forward SQLite log messages
+to the <a class="reference external" href="https://docs.python.org/3/library/logging.html#module-logging" title="(in Python v3.11)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">logging</span></code></a> module.</p>
+<p><a class="reference internal" href="#apsw.ext.print_augmented_traceback" title="apsw.ext.print_augmented_traceback"><code class="xref py py-meth docutils literal notranslate"><span class="pre">print_augmented_traceback()</span></code></a> prints an exception the usual way
+but also includes local variables, which <a class="reference internal" href="exceptions.html#augmentedstacktraces"><span class="std std-ref">APSW includes</span></a> to make debugging quicker and easier.</p>
+</section>
 <section id="accessing-result-rows-by-column-name">
 <h2>Accessing result rows by column name<a class="headerlink" href="#accessing-result-rows-by-column-name" title="Permalink to this heading">¶</a></h2>
 <p>See <a class="reference internal" href="example.html#example-colnames"><span class="std std-ref">the example</span></a>.</p>
@@ -268,6 +279,35 @@ register with <a class="reference internal" href="#apsw.ext.TypesConverterCursor
 
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.ext.log_sqlite">
+<span class="sig-name descname"><span class="pre">log_sqlite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">40</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/ext.html#log_sqlite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.log_sqlite" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send SQLite log messages to <a class="reference external" href="https://docs.python.org/3/library/logging.html#module-logging" title="(in Python v3.11)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">logging</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>level</strong> – level to log at (default <em>logging.ERROR</em>)</p>
+</dd>
+</dl>
+<p>This must be called before doing any operations with SQLite, otherwise a <a class="reference internal" href="exceptions.html#apsw.MisuseError" title="apsw.MisuseError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">apsw.MisuseError</span></code></a>
+will be raised.  (This is a SQLite limitation, not APSW.)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.ext.print_augmented_traceback">
+<span class="sig-name descname"><span class="pre">print_augmented_traceback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exc_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.11)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#BaseException" title="(in Python v3.11)"><span class="pre">BaseException</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#BaseException" title="(in Python v3.11)"><span class="pre">BaseException</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc_traceback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/types.html#types.TracebackType" title="(in Python v3.11)"><span class="pre">types.TracebackType</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">TextIO</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.11)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/ext.html#print_augmented_traceback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.print_augmented_traceback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints a standard exception, but also includes the value of variables in each stack frame</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>exc_type</strong> – The exception type</p></li>
+<li><p><strong>exc_value</strong> – The exception value</p></li>
+<li><p><strong>exc_traceback</strong> – Traceback for the exception</p></li>
+<li><p><strong>file</strong> – (default <code class="docutils literal notranslate"><span class="pre">sys.stderr</span></code>) Where the print goes</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -528,6 +568,7 @@ directly expressed in the query itself</p>
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">Various interesting and useful bits of functionality</a><ul>
+<li><a class="reference internal" href="#logging-and-tracebacks">Logging and tracebacks</a></li>
 <li><a class="reference internal" href="#accessing-result-rows-by-column-name">Accessing result rows by column name</a></li>
 <li><a class="reference internal" href="#converting-types-into-and-out-of-sqlite">Converting types into and out of SQLite</a></li>
 <li><a class="reference internal" href="#detailed-query-information">Detailed Query Information</a></li>
@@ -558,6 +599,8 @@ directly expressed in the query itself</p>
 </li>
 </ul>
 </li>
+<li><a class="reference internal" href="#apsw.ext.log_sqlite"><code class="docutils literal notranslate"><span class="pre">log_sqlite()</span></code></a></li>
+<li><a class="reference internal" href="#apsw.ext.print_augmented_traceback"><code class="docutils literal notranslate"><span class="pre">print_augmented_traceback()</span></code></a></li>
 <li><a class="reference internal" href="#apsw.ext.query_info"><code class="docutils literal notranslate"><span class="pre">query_info()</span></code></a></li>
 <li><a class="reference internal" href="#apsw.ext.QueryDetails"><code class="docutils literal notranslate"><span class="pre">QueryDetails</span></code></a><ul>
 <li><a class="reference internal" href="#apsw.ext.QueryDetails.query"><code class="docutils literal notranslate"><span class="pre">QueryDetails.query</span></code></a></li>
@@ -622,7 +665,7 @@ directly expressed in the query itself</p>
   <div>
     <h4>Next topic</h4>
     <p class="topless"><a href="exceptions.html"
-                          title="next chapter">Exceptions</a></p>
+                          title="next chapter">Exceptions and Errors</a></p>
   </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
@@ -655,33 +698,23 @@ directly expressed in the query itself</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="exceptions.html" title="Exceptions"
+          <a href="exceptions.html" title="Exceptions and Errors"
              >next</a> |</li>
         <li class="right" >
           <a href="shell.html" title="Shell"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">APSW 3.40.1.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Various interesting and useful bits of functionality</a></li> 
       </ul>
     </div>
 
     <div class="footer" role="contentinfo">
-        &#169; <a href="copyright.html">Copyright</a> 2004-2022, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      Last updated on Nov 27, 2022.
+        &#169; <a href="copyright.html">Copyright</a> 2004-2023, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      Last updated on Jan 15, 2023.
       Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.0.
     </div>
 <div class="footer">This page uses <a href="http://analytics.google.com/">
-Google Analytics</a> to collect statistics. You can disable it by blocking
-the JavaScript coming from www.google-analytics.com.
-<script type="text/javascript">
-  (function() {
-    var ga = document.createElement('script');
-    ga.src = ('https:' == document.location.protocol ?
-              'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    ga.setAttribute('async', 'true');
-    document.documentElement.firstChild.appendChild(ga);
-  })();
-</script>
+Google Analytics</a> to collect statistics.
 </div>
 
   </body>

@@ -196,7 +196,7 @@ Calls:
     * :ref:`executiontracer`
     * :attr:`Connection.exectrace`
 
-.. index:: sqlite3_prepare_v3, sqlite3_step, sqlite3_bind_int64, sqlite3_bind_null, sqlite3_bind_text, sqlite3_bind_double, sqlite3_bind_blob, sqlite3_bind_zeroblob
+.. index:: sqlite3_prepare_v3, sqlite3_step, sqlite3_bind_int64, sqlite3_bind_null, sqlite3_bind_text64, sqlite3_bind_double, sqlite3_bind_blob64, sqlite3_bind_zeroblob
 
 .. method:: Cursor.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor
 
@@ -257,9 +257,9 @@ Calls:
       * `sqlite3_step <https://sqlite.org/c3ref/step.html>`__
       * `sqlite3_bind_int64 <https://sqlite.org/c3ref/bind_blob.html>`__
       * `sqlite3_bind_null <https://sqlite.org/c3ref/bind_blob.html>`__
-      * `sqlite3_bind_text <https://sqlite.org/c3ref/bind_blob.html>`__
+      * `sqlite3_bind_text64 <https://sqlite.org/c3ref/bind_blob.html>`__
       * `sqlite3_bind_double <https://sqlite.org/c3ref/bind_blob.html>`__
-      * `sqlite3_bind_blob <https://sqlite.org/c3ref/bind_blob.html>`__
+      * `sqlite3_bind_blob64 <https://sqlite.org/c3ref/bind_blob.html>`__
       * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__
 
 .. method:: Cursor.executemany(statements: str, sequenceofbindings: Sequence[Bindings], *, can_cache: bool = True, prepare_flags: int = 0) -> Cursor
