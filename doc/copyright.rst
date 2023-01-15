@@ -1,8 +1,7 @@
 Copyright and License
 =====================
 
-Copyright (C) 2004-2022 `Roger Binns <mailto:rogerb@rogerbinns.com>`_
-See src/traceback.c for code by Greg Ewing.
+Copyright (C) 2004-2023 `Roger Binns <mailto:rogerb@rogerbinns.com>`_
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any damages
