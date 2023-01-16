@@ -42,10 +42,6 @@ extlinks={
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
 
 autodoc_type_aliases = {
-    "Optional": "typing.Optional",
-    "Tuple": "typing.Tuple",
-    "Any": "typing.Any",
-    "List": "typing.List",
 }
 
 # Add any paths that contain templates here, relative to this directory.
