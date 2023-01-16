@@ -10,15 +10,6 @@ VERWIN=apsw-$(VERSION)
 
 PYTHON=python3
 
-# Some useful info
-#
-# To use a different SQLite version: make SQLITEVERSION=1.2.3 blah blah
-#
-# build_ext      - builds extension in current directory fetching sqlite
-# test           - builds extension in place then runs test suite
-# doc            - makes the doc
-# source         - makes a source zip in dist directory after running code through test suite
-
 GENDOCS = \
 	doc/blob.rst \
 	doc/vfs.rst \
@@ -30,13 +21,17 @@ GENDOCS = \
 
 .PHONY : all docs doc header linkcheck publish showsymbols compile-win source source_nocheck release tags clean ppa dpkg dpkg-bin coverage valgrind valgrind1 tagpush pydebug test fulltest test_debug unwrapped
 
-all: header src/apsw.docstrings apsw/__init__.pyi test docs
+help: ## Show this help
+	@egrep -h '\s##\s' $(MAKEFILE_LIST) | sort | \
+	awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-tagpush:
+all: header src/apsw.docstrings apsw/__init__.pyi test docs ## Update generated files, build, test, make doc
+
+tagpush: ## Tag with version and push
 	git tag -af $(SQLITEVERSION)$(APSWSUFFIX)
 	git push --tags
 
-clean:
+clean: ## Cleans up everything
 	make PYTHONPATH="`pwd`" VERSION=$(VERSION) -C doc clean
 	rm -rf dist build work/* megatestresults apsw.egg-info __pycache__ apsw/__pycache__ :memory: .mypy_cache .ropeproject htmlcov "System Volume Information" doc/docdb.json
 	mkdir dist
@@ -44,7 +39,7 @@ clean:
 		find . -type f -name "$$i" -print0 | xargs -0t --no-run-if-empty rm -f ; done
 	rm -f doc/typing.rstgen doc/example.rst $(GENDOCS)
 
-doc: docs
+doc: docs ## Builds all the doc
 
 docs: build_ext $(GENDOCS) doc/example.rst doc/.static doc/typing.rstgen
 	env PYTHONPATH=. $(PYTHON) tools/docmissing.py
@@ -70,18 +65,18 @@ $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
 apsw/__init__.pyi src/apsw.docstrings: $(GENDOCS) tools/gendocstrings.py src/apswtypes.py
 	env PYTHONPATH=. $(PYTHON) tools/gendocstrings.py doc/docdb.json src/apsw.docstrings
 
-build_ext:
+build_ext:  ## Fetches SQLite and builds the extension
 	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext -DSQLITE_ENABLE_COLUMN_METADATA --inplace --force --enable-all-extensions
 
-build_ext_debug:
+build_ext_debug: ## Fetches SQLite and builds the extension in debug mode
 	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --force --enable-all-extensions --debug
 
-coverage:
+coverage:  ## Coverage of the C code
 	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all && tools/coverage.sh
 
 PYCOVERAGEOPTS=--source apsw --append
 
-pycoverage:
+pycoverage:  ## Coverage of the Python code
 	-rm -rf .coverage htmlcov
 	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.tests
 	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw ":memory:" .quit
@@ -91,19 +86,19 @@ pycoverage:
 	$(PYTHON) -m coverage html --title "APSW python coverage"
 	$(PYTHON) -m webbrowser -t htmlcov/index.html
 
-test: build_ext
+test: build_ext ## Standard testing
 	env $(PYTHON) -m apsw.tests
 
-test_debug: $(PYDEBUG_DIR)/bin/python3
+test_debug: $(PYDEBUG_DIR)/bin/python3  ## Testing in debug mode and sanitizer
 	$(MAKE) build_ext_debug PYTHON=$(PYDEBUG_DIR)/bin/python3
 	env APSWTESTPREFIX=$(PYDEBUG_WORKDIR) $(PYDEBUG_DIR)/bin/python3 -m apsw.tests -v
 
 fulltest: test test_debug
 
-linkcheck:
+linkcheck:  ## Checks links from doc
 	make RELEASEDATE=$(RELEASEDATE) VERSION=$(VERSION) -C doc linkcheck
 
-unwrapped:
+unwrapped:  ## Find SQLite APIs that are not wrapped by APSW
 	env PYTHONPATH=. $(PYTHON) tools/find_unwrapped_apis.py
 
 publish: docs
@@ -114,13 +109,13 @@ publish: docs
 header:
 	echo "#define APSW_VERSION \"$(VERSION)\"" > src/apswversion.h
 
-stubtest: build_ext
+stubtest: build_ext  ## Verifies type annotations with mypy
 	$(PYTHON) -m mypy.stubtest --allowlist tools/stubtest.allowlist apsw
 	$(PYTHON) -m mypy example-code.py
 	$(PYTHON) -m mypy --strict example-code.py
 
 # the funky test stuff is to exit successfully when grep has rc==1 since that means no lines found.
-showsymbols:
+showsymbols:  ## Finds any C symbols that aren't static(private)
 	rm -f apsw/__init__`$(PYTHON) -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"`
 	$(PYTHON) setup.py fetch --all --version=$(SQLITEVERSION) build_ext --inplace --force --enable-all-extensions
 	test -f apsw/__init__`$(PYTHON) -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"`
@@ -133,7 +128,7 @@ WINBWHEEL=bdist_wheel
 # config used in CI
 WINCICONFIG=set APSW_TEST_FSYNC_OFF=set &
 
-compile-win:
+compile-win:  ## Builds and tests against all the Python versions on Windows
 	-del /q apsw\\*.pyd
 	-del /q dist\\*.egg
 	-del /q testextension.*
@@ -167,7 +162,7 @@ compile-win:
 	c:/python36-64/python setup.py $(WINBPREFIX) $(WINBSUFFIX) $(WINBWHEEL)
 	$(WINCICONFIG) c:/python36-64/python -m apsw.tests
 
-setup-wheel:
+setup-wheel:  ## Ensures all Python Windows version have wheel support
 	c:/python311/python -m ensurepip
 	c:/python311/python -m pip install --upgrade wheel setuptools
 	c:/python311-32/python -m ensurepip
@@ -197,8 +192,7 @@ setup-wheel:
 source_nocheck: docs
 	$(PYTHON) setup.py sdist --formats zip --add-doc
 
-# Make the source and then check it builds and tests correctly.  This will catch missing files etc
-source: source_nocheck
+source: source_nocheck # Make the source and then check it builds and tests correctly.  This will catch missing files etc
 	mkdir -p work
 	rm -rf work/$(VERDIR)
 	cd work ; unzip -q ../dist/$(VERDIR).zip
@@ -208,7 +202,7 @@ source: source_nocheck
 # Test code works
 	cd work/$(VERDIR) ; $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --enable-all-extensions build_test_extension test
 
-release:
+release: ## Signs built source file(s)
 	test -f dist/$(VERDIR).zip
 	-rm -f dist/$(VERDIR)-sigs.zip dist/*.asc
 	for f in dist/* ; do gpg --use-agent --armor --detach-sig "$$f" ; done
@@ -227,8 +221,7 @@ PYVALGRIND_DIR=/space/pyvalgrind
 # This must end in slash
 PYDEBUG_WORKDIR=/space/apsw-test/
 
-# Build a debug python including address sanitizer.  Extensions it builds are also address sanitized
-pydebug:
+pydebug: ## Build a debug python including address sanitizer.  Extensions it builds are also address sanitized
 	set -x && cd "$(PYDEBUG_DIR)" && find . -delete && \
 	curl https://www.python.org/ftp/python/$(PYDEBUG_VER)/Python-$(PYDEBUG_VER).tar.xz | tar xfJ - && \
 	cd Python-$(PYDEBUG_VER) && \
@@ -236,7 +229,7 @@ pydebug:
 	CPPFLAGS="-DPyDict_MAXFREELIST=0 -DPyFloat_MAXFREELIST=0 -DPyTuple_MAXFREELIST=0 -DPyList_MAXFREELIST=0" && \
 	env PATH="/usr/lib/ccache:$$PATH" ASAN_OPTIONS=detect_leaks=false make -j install
 
-pyvalgrind:
+pyvalgrind: ## Build a debug python with valgrind integration
 	set -x && cd "$(PYVALGRIND_DIR)" && find . -delete && \
 	curl https://www.python.org/ftp/python/$(PYVALGRIND_VER)/Python-$(PYVALGRIND_VER).tar.xz | tar xfJ - && \
 	cd Python-$(PYVALGRIND_VER) && \
@@ -244,14 +237,12 @@ pyvalgrind:
 	CPPFLAGS="-DPyDict_MAXFREELIST=0 -DPyFloat_MAXFREELIST=0 -DPyTuple_MAXFREELIST=0 -DPyList_MAXFREELIST=0" && \
 	env PATH="/usr/lib/ccache:$$PATH" make -j install
 
-# Look at the final numbers at the bottom of l6, l7 and l8 and see if any are growing
-valgrind: $(PYVALGRIND_DIR)/bin/python3
+valgrind: $(PYVALGRIND_DIR)/bin/python3 ## Runs multiple iterations with valgrind to catch leaks
 	$(PYVALGRIND_DIR)/bin/python3 setup.py fetch --version=$(SQLITEVERSION) --all && \
 	  env APSWTESTPREFIX=$(PYDEBUG_WORKDIR) PATH=$(PYVALGRIND_DIR)/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=6 tools/valgrind.sh 2>&1 | tee l6 && \
 	  env APSWTESTPREFIX=$(PYDEBUG_WORKDIR) PATH=$(PYVALGRIND_DIR)/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=7 tools/valgrind.sh 2>&1 | tee l7 && \
 	  env APSWTESTPREFIX=$(PYDEBUG_WORKDIR) PATH=$(PYVALGRIND_DIR)/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=8 tools/valgrind.sh 2>&1 | tee l8
 
-# Same as above but does just one run
-valgrind1: $(PYVALGRIND_DIR)/bin/python3
+valgrind1: $(PYVALGRIND_DIR)/bin/python3 ## valgrind check (one iteration)
 	$(PYVALGRIND_DIR)/bin/python3 setup.py fetch --version=$(SQLITEVERSION) --all && \
 	  env APSWTESTPREFIX=$(PYDEBUG_WORKDIR) PATH=$(PYVALGRIND_DIR)/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=1 tools/valgrind.sh
