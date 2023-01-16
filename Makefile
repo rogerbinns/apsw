@@ -19,13 +19,14 @@ GENDOCS = \
 	doc/apsw.rst \
 	doc/backup.rst
 
-.PHONY : all docs doc header linkcheck publish showsymbols compile-win source source_nocheck release tags clean ppa dpkg dpkg-bin coverage valgrind valgrind1 tagpush pydebug test fulltest test_debug unwrapped
+.PHONY : help all tagpush clean doc docs build_ext build_ext_debug coverage pycoverage test test_debug fulltest linkcheck unwrapped \
+		 publish stubtest showsymbols compile-win setup-wheel source_nocheck source release pydebug pyvalgrind valgrind valgrind1
 
 help: ## Show this help
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | sort | \
 	awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-all: header src/apsw.docstrings apsw/__init__.pyi test docs ## Update generated files, build, test, make doc
+all: src/apswversion.h src/apsw.docstrings apsw/__init__.pyi test docs ## Update generated files, build, test, make doc
 
 tagpush: ## Tag with version and push
 	git tag -af $(SQLITEVERSION)$(APSWSUFFIX)
@@ -65,10 +66,10 @@ $(GENDOCS): doc/%.rst: src/%.c tools/code2rst.py
 apsw/__init__.pyi src/apsw.docstrings: $(GENDOCS) tools/gendocstrings.py src/apswtypes.py
 	env PYTHONPATH=. $(PYTHON) tools/gendocstrings.py doc/docdb.json src/apsw.docstrings
 
-build_ext:  ## Fetches SQLite and builds the extension
+build_ext: src/apswversion.h  ## Fetches SQLite and builds the extension
 	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext -DSQLITE_ENABLE_COLUMN_METADATA --inplace --force --enable-all-extensions
 
-build_ext_debug: ## Fetches SQLite and builds the extension in debug mode
+build_ext_debug: src/apswversion.h ## Fetches SQLite and builds the extension in debug mode
 	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --force --enable-all-extensions --debug
 
 coverage:  ## Coverage of the C code
@@ -106,7 +107,7 @@ publish: docs
 	rsync -a doc/build/html/ ../apsw-publish/ ;  cd ../apsw-publish ; git status ; \
 	fi
 
-header:
+src/apswversion.h: Makefile
 	echo "#define APSW_VERSION \"$(VERSION)\"" > src/apswversion.h
 
 stubtest: build_ext  ## Verifies type annotations with mypy
@@ -189,7 +190,7 @@ setup-wheel:  ## Ensures all Python Windows version have wheel support
 	c:/python36-64/python -m pip install --upgrade wheel setuptools
 
 
-source_nocheck: docs
+source_nocheck: docs src/apswversion.h
 	$(PYTHON) setup.py sdist --formats zip --add-doc
 
 source: source_nocheck # Make the source and then check it builds and tests correctly.  This will catch missing files etc
@@ -208,12 +209,7 @@ release: ## Signs built source file(s)
 	for f in dist/* ; do gpg --use-agent --armor --detach-sig "$$f" ; done
 	cd dist ; zip -m $(VERDIR)-sigs.zip *.asc
 
-tags:
-	rm -f TAGS
-	ctags-exuberant -e --recurse --exclude=build --exclude=work .
-
 # building a python debug interpreter
-
 PYDEBUG_VER=3.11.1
 PYDEBUG_DIR=/space/pydebug
 PYVALGRIND_VER=$(PYDEBUG_VER)
