@@ -2813,24 +2813,27 @@ if sys.version_info >= (3, 8):
             be called when the table is no longer used."""
             ...
 
-        def FindFunction(self, name: str, nargs: int):
+        def FindFunction(self, name: str, nargs: int) -> Union[None, Callable, Sequence[int, Callable]]:
             """Called to find if the virtual table has its own implementation of a
-            particular scalar function. You should return the function if you
-            have it, else return None. You do not have to provide this method.
-
-            This method is called while SQLite is `preparing
-            <https://sqlite.org/c3ref/prepare.html>`_ a query.  If a query is
-            in the :ref:`statement cache <statementcache>` then *FindFunction*
-            won't be called again.  If you want to return different
-            implementations for the same function over time then you will need
-            to disable the :ref:`statement cache <statementcache>`.
+            particular scalar function. You do not have to provide this method.
 
             :param name: The function name
             :param nargs: How many arguments the function takes
 
+            Return *None* if you don't have the function.  Zero is then returned to SQLite.
+
+            Return a callable if you have one.  One is then returned to SQLite with the function.
+
+            Return a sequence of int, callable.  The int is returned to SQLite with the function.
+            This is useful for *SQLITE_INDEX_CONSTRAINT_FUNCTION* returns.
+
+            It isn't possible to tell SQLite about exceptions in this function, so an
+            :ref:`unraisable exception <unraisable>` is used.
+
             .. seealso::
 
-              * :meth:`Connection.overloadfunction`"""
+              * :meth:`Connection.overloadfunction`
+              * `FindFunction documentation <https://www.sqlite.org/vtab.html#xfindfunction>`__"""
             ...
 
         def Open(self) -> VTCursor:
