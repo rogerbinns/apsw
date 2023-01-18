@@ -1781,25 +1781,28 @@ finally:
   return sqliteres;
 }
 
-/** .. method:: FindFunction(name: str, nargs: int)
+/** .. method:: FindFunction(name: str, nargs: int) -> Union[None, Callable, Sequence[int, Callable]]
 
   Called to find if the virtual table has its own implementation of a
-  particular scalar function. You should return the function if you
-  have it, else return None. You do not have to provide this method.
-
-  This method is called while SQLite is `preparing
-  <https://sqlite.org/c3ref/prepare.html>`_ a query.  If a query is
-  in the :ref:`statement cache <statementcache>` then *FindFunction*
-  won't be called again.  If you want to return different
-  implementations for the same function over time then you will need
-  to disable the :ref:`statement cache <statementcache>`.
+  particular scalar function. You do not have to provide this method.
 
   :param name: The function name
   :param nargs: How many arguments the function takes
 
+  Return *None* if you don't have the function.  Zero is then returned to SQLite.
+
+  Return a callable if you have one.  One is then returned to SQLite with the function.
+
+  Return a sequence of int, callable.  The int is returned to SQLite with the function.
+  This is useful for *SQLITE_INDEX_CONSTRAINT_FUNCTION* returns.
+
+  It isn't possible to tell SQLite about exceptions in this function, so an
+  :ref:`unraisable exception <unraisable>` is used.
+
   .. seealso::
 
     * :meth:`Connection.overloadfunction`
+    * `FindFunction documentation <https://www.sqlite.org/vtab.html#xfindfunction>`__
 
 */
 
@@ -1817,7 +1820,7 @@ apswvtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
 {
   PyGILState_STATE gilstate;
   int sqliteres = 0;
-  PyObject *vtable, *res = NULL;
+  PyObject *vtable, *res = NULL, *item_0 = NULL, *item_1 = NULL;
   FunctionCBInfo *cbinfo = NULL;
   apsw_vtable *av = (apsw_vtable *)pVtab;
 
@@ -1825,6 +1828,12 @@ apswvtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
   vtable = av->vtable;
 
   res = Call_PythonMethodV(vtable, "FindFunction", 0, "(Ni)", convertutf8string(zName), nArg);
+  if(!res)
+  {
+    AddTraceBackHere(__FILE__, __LINE__, "apswvtabFindFunction", "{s: s, s: i}", "zName", zName, "nArg", nArg);
+    goto error;
+  }
+
   if (res != Py_None)
   {
     if (!av->functions)
@@ -1841,16 +1850,54 @@ apswvtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
     cbinfo = allocfunccbinfo(zName);
     if (!cbinfo)
       goto error;
-    cbinfo->scalarfunc = res;
-    res = NULL;
-    sqliteres = 1;
+    if (!PyCallable_Check(res))
+    {
+      if (!PySequence_Check(res) || PySequence_Size(res) != 2)
+      {
+        PyErr_Format(PyExc_TypeError, "Expected FindFunction to return None, a Callable, or Sequence[int, Callable]");
+        AddTraceBackHere(__FILE__, __LINE__, "apswvtabFindFunction", "{s: s, s: i, s: O}", "zName", zName, "nArg", nArg,
+                         "result", res);
+        goto error;
+      }
+
+      item_0 = PySequence_GetItem(res, 0);
+      if (item_0)
+        item_1 = PySequence_GetItem(res, 1);
+
+      if (PyErr_Occurred() || !item_0 || !item_1 || !PyLong_Check(item_0) || !PyCallable_Check(item_1))
+      {
+        PyErr_Format(PyExc_TypeError, "Expected FindFunction sequence to be [int, Callable]");
+        AddTraceBackHere(__FILE__, __LINE__, "apswvtabFindFunction", "{s: s, s: i, s: O, s: O, s: O}", "zName", zName, "nArg", nArg,
+                         "result", res, "item_0", OBJ(item_0), "item_1", OBJ(item_1));
+        goto error;
+      }
+      cbinfo->scalarfunc = item_1;
+      item_1 = NULL;
+      sqliteres = PyLong_AsInt(item_0);
+      if (PyErr_Occurred() || sqliteres < SQLITE_INDEX_CONSTRAINT_FUNCTION || sqliteres > 255)
+      {
+        PyErr_Format(PyExc_TypeError, "Expected FindFunction sequence [int, Callable] to have int between SQLITE_INDEX_CONSTRAINT_FUNCTION and 255, not %i", sqliteres);
+        sqliteres = 0;
+        goto error;
+      }
+    }
+    else
+    {
+      cbinfo->scalarfunc = res;
+      sqliteres = 1;
+      res = NULL;
+    }
     *pxFunc = cbdispatch_func;
     *ppArg = cbinfo;
     PyList_Append(av->functions, (PyObject *)cbinfo);
   }
 error:
+  Py_XDECREF(item_0);
+  Py_XDECREF(item_1);
   Py_XDECREF(res);
   Py_XDECREF(cbinfo);
+  if(PyErr_Occurred())
+    apsw_write_unraisable(NULL);
   PyGILState_Release(gilstate);
   return sqliteres;
 }

@@ -16,6 +16,12 @@ to the :mod:`logging` module.
 but also includes local variables, which :ref:`APSW includes
 <augmentedstacktraces>` to make debugging quicker and easier.
 
+Virtual Tables
+--------------
+
+Use :meth:`index_info_to_dict` to get :class:`apsw.IndexInfo`
+in an easier to print and work with format.
+
 Accessing result rows by column name
 ------------------------------------
 

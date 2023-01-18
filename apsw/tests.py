@@ -3575,21 +3575,19 @@ class APSW(unittest.TestCase):
         # https://sqlite.org/cvstrac/tktview?tn=3507
         # self.db.overloadfunction("a"*1024, 1)
         self.db.overloadfunction("xyz", 2)
-        self.assertRaises(apsw.SQLError, cur.execute, "select xyz(item,description) from foo")
+        self.assertRaises(apsw.SQLError, cur.execute, "select xyz(item,description) from foo", can_cache=False)
         VTable.FindFunction = VTable.FindFunction1
-        self.assertRaises(TypeError, cur.execute, "select xyz(item,description) from foo ")
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, cur.execute, "select xyz(item,description) from foo ", can_cache=False)
         VTable.FindFunction = VTable.FindFunction2
-        self.assertRaises(ZeroDivisionError, cur.execute, "select xyz(item,description) from foo  ")
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, cur.execute, "select xyz(item,description) from foo  ", can_cache=False)
         VTable.FindFunction = VTable.FindFunction3
-        try:
-            for row in cur.execute("select xyz(item,description) from foo   "):
+        def foo():
+            for row in cur.execute("select xyz(item,description) from foo   ", can_cache=False):
                 pass
-            1 / 0
-        except TypeError:
-            pass
+        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, foo)
         # this should work
         VTable.FindFunction = VTable.FindFunction4
-        for row in cur.execute("select xyz(item,description) from foo    "):
+        for row in cur.execute("select xyz(item,description) from foo    ", can_cache=False):
             pass
 
         # transaction control
@@ -8884,8 +8882,8 @@ shell.write(shell.stdout, "hello world\\n")
             def Next(self):
                 self.row += 1
 
-                def Close(self):
-                    pass
+            def Close(self):
+                pass
 
         ## VtabCreateBadString
         apsw.faultdict["VtabCreateBadString"] = True
@@ -8938,15 +8936,13 @@ shell.write(shell.stdout, "hello world\\n")
 
         ## FindFunctionAllocFailed
         apsw.faultdict["FindFunctionAllocFailed"] = True
-        try:
+        def foo():
             db = apsw.Connection(":memory:")
             db.overloadfunction("xyz", 2)
             db.createmodule("foo", Source())
             db.cursor().execute("create virtual table foo using foo()")
-            db.cursor().execute("select xyz(x,y) from foo")
-            1 / 0
-        except MemoryError:
-            pass
+            self.assertRaises(apsw.SQLError, db.cursor().execute, "select xyz(x,y) from foo")
+        self.assertRaisesUnraisable(MemoryError, foo)
 
         ## BlobDeallocException
         def f():

@@ -3,6 +3,18 @@ Change History
 
 .. currentmodule:: apsw
 
+next
+====
+
+Virtual table updates:
+
+* :meth:`VTTable.BestIndexObject` is now available which provides
+  :class:`IndexInfo` exposing full control
+
+* Exceptions in :meth:`VTTable.FindFunction` are now reported as
+  an :ref:`unraisable exception <unraisable>` because it isn't
+  possible to tell SQLite about the error.
+
 3.40.1.0
 ========
 
