@@ -1612,6 +1612,10 @@ class Connection:
               The counters are reset each time a statement
               starts execution.
 
+        .. seealso::
+
+          * :ref:`Example <example_trace_v2>`
+
         Calls:
           * `sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__
           * `sqlite3_stmt_status <https://sqlite.org/c3ref/stmt_status.html>`__"""
@@ -1946,7 +1950,10 @@ class IndexInfo:
     use get/set methods for array members.
 
     You will get :exc:`ValueError` if you use the object
-    outside of an BestIndex method."""
+    outside of an BestIndex method.
+
+    :meth:`apsw.ext.index_info_to_dict` provides a convenient
+    representation of this object as a :class:`dict`."""
 
     colUsed: set[int]
     """(Read-only) Columns used by the statement.  Note that a set is returned, not

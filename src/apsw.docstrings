@@ -1929,6 +1929,10 @@
 "      The counters are reset each time a statement\n" \
 "      starts execution.\n" \
 "\n" \
+".. seealso::\n" \
+"\n" \
+"  * :ref:`Example <example_trace_v2>`\n" \
+"\n" \
 "Calls:\n" \
 "  * `sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__\n" \
 "  * `sqlite3_stmt_status <https://sqlite.org/c3ref/stmt_status.html>`__\n" 
@@ -2344,7 +2348,10 @@
 "use get/set methods for array members.\n" \
 "\n" \
 "You will get :exc:`ValueError` if you use the object\n" \
-"outside of an BestIndex method.\n" 
+"outside of an BestIndex method.\n" \
+"\n" \
+":meth:`apsw.ext.index_info_to_dict` provides a convenient\n" \
+"representation of this object as a :class:`dict`.\n" 
 
 #define  IndexInfo_colUsed_DOC ":type: set[int]\n" \
 "\n" \
