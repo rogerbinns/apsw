@@ -1334,6 +1334,10 @@ finally:
         The counters are reset each time a statement
         starts execution.
 
+  .. seealso::
+
+    * :ref:`Example <example_trace_v2>`
+
   -* sqlite3_trace_v2 sqlite3_stmt_status
 */
 static PyObject *
