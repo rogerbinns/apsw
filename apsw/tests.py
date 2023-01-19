@@ -296,6 +296,16 @@ class APSW(unittest.TestCase):
         self.deltempfiles()
         self.db = apsw.Connection(TESTFILEPREFIX + "testdb", flags=openflags)
         self.warnings_filters = warnings.filters
+        # zipvfs causes some test failures - issue #394
+        for name in (
+                'zipvfs',
+                'cksmvfs',
+                'zipvfsonly',
+                'multiplex',
+        ):
+            if name in apsw.vfsnames():
+                apsw.unregister_vfs(name)
+
 
     def tearDown(self):
         if self.db is not None:
@@ -9747,16 +9757,6 @@ def setup():
         APSW.assertRaisesRegex = APSW.assertRaisesRegexCompat
 
     del memdb
-
-    # zipvfs causes some test failures - issue #394
-    for name in (
-            'zipvfs',
-            'cksmvfs',
-            'zipvfsonly',
-            'multiplex',
-    ):
-        if name in apsw.vfsnames():
-            apsw.unregister_vfs(name)
 
 
 test_types_vals = (
