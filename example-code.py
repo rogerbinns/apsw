@@ -1002,7 +1002,3 @@ for _ in connection.execute(query):
 connection.close()
 #  You can call close multiple times, and also indicate to ignore exceptions
 connection.close(True)
-
-# Deleting the database file. Note that there can be additional files
-# with suffixes like -wal, -shm, and -journal.
-os.remove("dbfile")
