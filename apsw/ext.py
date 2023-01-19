@@ -329,7 +329,7 @@ def index_info_to_dict(o: apsw.IndexInfo,
         "aConstraint": [{
             "iColumn": o.get_aConstraint_iColumn(n),
             "op": o.get_aConstraint_op(n),
-            "op_str": apsw.mapping_bestindex_constraints[o.get_aConstraint_op(n)],
+            "op_str": apsw.mapping_bestindex_constraints.get(o.get_aConstraint_op(n)),
             "usable": o.get_aConstraint_usable(n),
             "collation": o.get_aConstraint_collation(n),
             "rhs": o.get_aConstraint_rhs(n),
@@ -361,6 +361,12 @@ def index_info_to_dict(o: apsw.IndexInfo,
         "distinct":
         o.distinct,
     }
+
+    for aConstraint in res["aConstraint"]:
+        if aConstraint["op"] >= apsw.SQLITE_INDEX_CONSTRAINT_FUNCTION and aConstraint["op"] <= 255:
+            aConstraint[
+                "op_str"] = f"SQLITE_INDEX_CONSTRAINT_FUNCTION+{ aConstraint['op'] - apsw.SQLITE_INDEX_CONSTRAINT_FUNCTION }"
+
     if column_names:
         for aconstraint in res["aConstraint"]:
             aconstraint["iColumn_name"] = rowid_name if aconstraint["iColumn"] == -1 else column_names[
@@ -368,6 +374,7 @@ def index_info_to_dict(o: apsw.IndexInfo,
         for aorderby in res["aOrderBy"]:
             aorderby["iColumn_name"] = rowid_name if aorderby["iColumn"] == -1 else column_names[aorderby["iColumn"]]
         res["colUsed_names"] = set(column_names[i] for i in o.colUsed)
+
     return res
 
 
