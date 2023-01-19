@@ -306,7 +306,6 @@ class APSW(unittest.TestCase):
             if name in apsw.vfsnames():
                 apsw.unregister_vfs(name)
 
-
     def tearDown(self):
         if self.db is not None:
             self.db.close(True)
@@ -1119,9 +1118,10 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, apsw.format_sql_value, apsw)
         self.assertRaises(TypeError, apsw.format_sql_value)
 
-    def testIndexInfo(self):
-        "Test IndexInfo object used by BestIndex in virtual tables"
+    def testVTableStuff(self):
+        "Test new stuff added for Virtual tables"
         if False and sys.version_info < (3, 7):
+            # it works on 3.6 but apsw.ext doesn't because it uses dataclasses
             return
         # we use apsw.ext.index_info_to_dict as part of the testing
         import apsw.ext
@@ -1306,6 +1306,23 @@ class APSW(unittest.TestCase):
         Source.bio_callback = bio
         Source.filter_callback = bio_f
         self.db.execute(self.index_info_test_patterns[1][0])
+
+        # More than 63 columns affects colUsed
+        manycol_names = [f'c{ n }' for n in range(100)]
+        Source.schema = f"create table ignored({ ','.join(manycol_names) })"
+        self.db.execute("create virtual table manycol using foo()")
+
+        def check(o):
+            d = apsw.ext.index_info_to_dict(o, column_names=manycol_names)
+            self.assertIn("c61", d["colUsed_names"])
+            self.assertNotIn("c62", d["colUsed_names"])
+            for name in manycol_names[63:]:
+                self.assertIn(name, d["colUsed_names"])
+            return True
+
+        Source.bio_callback = check
+        Source.filter_callback = lambda *args: 0
+        self.db.execute("select c61, c64 from manycol where c72>7")
 
     index_info_test_patterns = (("select * from bar where c7 is null", {
         'nConstraint':
@@ -3587,13 +3604,25 @@ class APSW(unittest.TestCase):
         self.db.overloadfunction("xyz", 2)
         self.assertRaises(apsw.SQLError, cur.execute, "select xyz(item,description) from foo", can_cache=False)
         VTable.FindFunction = VTable.FindFunction1
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, cur.execute, "select xyz(item,description) from foo ", can_cache=False)
+        self.assertRaises(apsw.SQLError,
+                          self.assertRaisesUnraisable,
+                          TypeError,
+                          cur.execute,
+                          "select xyz(item,description) from foo ",
+                          can_cache=False)
         VTable.FindFunction = VTable.FindFunction2
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, cur.execute, "select xyz(item,description) from foo  ", can_cache=False)
+        self.assertRaises(apsw.SQLError,
+                          self.assertRaisesUnraisable,
+                          ZeroDivisionError,
+                          cur.execute,
+                          "select xyz(item,description) from foo  ",
+                          can_cache=False)
         VTable.FindFunction = VTable.FindFunction3
+
         def foo():
             for row in cur.execute("select xyz(item,description) from foo   ", can_cache=False):
                 pass
+
         self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, foo)
         # this should work
         VTable.FindFunction = VTable.FindFunction4
@@ -8946,12 +8975,14 @@ shell.write(shell.stdout, "hello world\\n")
 
         ## FindFunctionAllocFailed
         apsw.faultdict["FindFunctionAllocFailed"] = True
+
         def foo():
             db = apsw.Connection(":memory:")
             db.overloadfunction("xyz", 2)
             db.createmodule("foo", Source())
             db.cursor().execute("create virtual table foo using foo()")
             self.assertRaises(apsw.SQLError, db.cursor().execute, "select xyz(x,y) from foo")
+
         self.assertRaisesUnraisable(MemoryError, foo)
 
         ## BlobDeallocException
