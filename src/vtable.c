@@ -59,6 +59,9 @@ function to do the mapping.
   You will get :exc:`ValueError` if you use the object
   outside of an BestIndex method.
 
+  :meth:`apsw.ext.index_info_to_dict` provides a convenient
+  representation of this object as a :class:`dict`.
+
 */
 typedef struct SqliteIndexInfo
 {
@@ -475,7 +478,6 @@ SqliteIndexInfo_get_orderByConsumed(SqliteIndexInfo *self)
 static int
 SqliteIndexInfo_set_OrderByConsumed(SqliteIndexInfo *self, PyObject *value)
 {
-  int v;
   CHECK_INDEX(-1);
 
   if (!PyBool_Check(value) && !PyLong_Check(value))
