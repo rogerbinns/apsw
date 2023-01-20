@@ -51,6 +51,8 @@ function to do the mapping.
   IndexInfo represents the `sqlite3_index_info
   <https://www.sqlite.org/c3ref/index_info.html>`__
   used in the :meth:`VTTable.BestIndexObject` method.
+  The structure values are not altered or made friendlier
+  in any way.
 
   Naming is identical to the C structure rather than
   Pythonic.  You can access members directly while needing to
