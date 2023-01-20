@@ -103,9 +103,7 @@ unwrapped:  ## Find SQLite APIs that are not wrapped by APSW
 	env PYTHONPATH=. $(PYTHON) tools/find_unwrapped_apis.py
 
 publish: docs
-	if [ -d ../apsw-publish ] ; then rm -f ../apsw-publish/* ../apsw-publish/_static/* ../apsw-publish/_sources/* ; \
-	rsync -a doc/build/html/ ../apsw-publish/ ;  cd ../apsw-publish ; git status ; \
-	fi
+	rsync -a --delete --exclude=.git --exclude=.nojekyll doc/build/html/ ../apsw-publish/ ;  cd ../apsw-publish ; git status
 
 src/apswversion.h: Makefile
 	echo "#define APSW_VERSION \"$(VERSION)\"" > src/apswversion.h

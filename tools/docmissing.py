@@ -39,10 +39,12 @@ vfs = apsw.VFS("aname", "")
 vfsfile = apsw.VFSFile("", ":memory:",
                        [apsw.SQLITE_OPEN_MAIN_DB | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_READWRITE, 0])
 
+
+
 # virtual tables aren't real - just check their size hasn't changed
 assert len(classes['VTModule']) == 2
 del classes['VTModule']
-assert len(classes['VTTable']) == 13
+assert len(classes['VTTable']) == 14
 del classes['VTTable']
 assert len(classes['VTCursor']) == 6
 del classes['VTCursor']
@@ -80,7 +82,7 @@ for name, obj in (
             if isinstance(getattr(apsw, c), type) and issubclass(getattr(apsw, c), Exception):
                 continue
             # ignore classes !!!
-            if c in ("Connection", "VFS", "VFSFile", "zeroblob", "Shell", "URIFilename", "Cursor", "Blob", "Backup"):
+            if c in ("Connection", "VFS", "VFSFile", "zeroblob", "Shell", "URIFilename", "Cursor", "Blob", "Backup", "IndexInfo"):
                 continue
             # ignore mappings !!!
             if c.startswith("mapping_"):
