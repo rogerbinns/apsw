@@ -30,11 +30,14 @@
 */
 
 /* call where no error is returned */
-#define _PYSQLITE_CALL_V(x)       \
-  do                              \
-  {                               \
-    Py_BEGIN_ALLOW_THREADS { x; } \
-    Py_END_ALLOW_THREADS;         \
+#define _PYSQLITE_CALL_V(x) \
+  do                        \
+  {                         \
+    Py_BEGIN_ALLOW_THREADS  \
+    {                       \
+      x;                    \
+    }                       \
+    Py_END_ALLOW_THREADS;   \
   } while (0)
 
 /* Calls where error could be set.  We assume that a variable 'res' is set.  Also need the db to take
