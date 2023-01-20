@@ -1132,10 +1132,12 @@ class APSW(unittest.TestCase):
             indexinfo_saved = None
             bio_callback = lambda *args: True
             filter_callback = lambda *args: 0
+            create_callback = lambda : 0
 
             schema = f"create table ignored({ ','.join(columns) })"
 
             def Create(self, *args):
+                Source.create_callback()
                 return self.schema, Source.Table()
 
             Connect = Create
@@ -1323,6 +1325,17 @@ class APSW(unittest.TestCase):
         Source.bio_callback = check
         Source.filter_callback = lambda *args: 0
         self.db.execute("select c61, c64 from manycol where c72>7")
+
+        # vtab_config
+        self.assertRaises(ValueError, self.db.vtab_config, apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT)
+        def check():
+            self.assertRaises(TypeError, self.db.vtab_config, "three")
+            self.assertRaises(TypeError, self.db.vtab_config, apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT, "three")
+            self.assertRaises(TypeError, self.db.vtab_config, apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT, apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT, apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT)
+            self.assertRaises(ValueError, self.db.vtab_config, 97657)
+        Source.create_callback = check
+        self.db.execute("create virtual table vtab_config using foo()")
+        self.assertRaises(ValueError, self.db.vtab_config, apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT)
 
     index_info_test_patterns = (("select * from bar where c7 is null", {
         'nConstraint':
@@ -4594,7 +4607,7 @@ class APSW(unittest.TestCase):
                                                 "|declare_vtab|backup_remaining|backup_pagecount|mutex_enter|mutex_leave|sourceid|uri_.+"
                                                 "|column_name|column_decltype|column_database_name|column_table_name|column_origin_name"
                                                 "|stmt_isexplain|stmt_readonly|filename_journal|filename_wal|stmt_status|sql|log|vtab_collation"
-                                                "|vtab_rhs_value|vtab_distinct)$"),
+                                                "|vtab_rhs_value|vtab_distinct|vtab_config)$"),
                         # error message
                         'desc': "sqlite3_ calls must wrap with PYSQLITE_CALL",
                         },

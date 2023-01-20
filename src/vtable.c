@@ -730,6 +730,9 @@ apswvtabCreateOrConnect(sqlite3 *db,
   vti = (vtableinfo *)pAux;
   assert(db == vti->connection->db);
 
+  Connection *self = vti->connection;
+  CALL_ENTER(xConnect);
+
   args = PyTuple_New(1 + argc);
   if (!args)
     goto pyexception;
@@ -809,7 +812,7 @@ finally: /* cleanup */
   Py_XDECREF(vtable);
   if (avi)
     PyMem_Free(avi);
-
+  CALL_LEAVE(xConnect);
   PyGILState_Release(gilstate);
   return res;
 }

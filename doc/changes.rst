@@ -15,6 +15,8 @@ Virtual table updates:
   an :ref:`unraisable exception <unraisable>` because it isn't
   possible to tell SQLite about the error.
 
+* Added :meth:`Connection.vtab_config`
+
 3.40.1.0
 ========
 

@@ -96,6 +96,9 @@ struct Connection
 
   /* weak reference support */
   PyObject *weakreflist;
+
+  /* limit calls to callbacks */
+  CALL_TRACK(xConnect);
 };
 
 typedef struct Connection Connection;
@@ -357,6 +360,7 @@ Connection_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
     self->open_flags = 0;
     self->open_vfs = 0;
     self->weakreflist = 0;
+    CALL_TRACK_INIT(xConnect);
   }
 
   return (PyObject *)self;
@@ -3622,6 +3626,48 @@ Connection_createmodule(Connection *self, PyObject *args, PyObject *kwds)
   Py_RETURN_NONE;
 }
 
+/** .. method:: vtab_config(op: int, val: int = 0) -> None
+
+ Called during virtual table connect/create.
+
+ -* sqlite3_vtab_config
+
+*/
+static PyObject *
+Connection_vtab_config(Connection *self, PyObject *args, PyObject *kwds)
+{
+  int op, val = 0, res;
+
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  {
+    static char *kwlist[] = {"op", "val", NULL};
+    Connection_vtab_config_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i|i:" Connection_vtab_config_USAGE, kwlist, &op, &val))
+      return NULL;
+  }
+
+  if (!CALL_CHECK(xConnect))
+    return PyErr_Format(PyExc_ValueError, "You can only call vtab_config while in a virtual table Create/Connect call");
+
+  switch (op)
+  {
+  case SQLITE_VTAB_CONSTRAINT_SUPPORT:
+  case SQLITE_VTAB_INNOCUOUS:
+  case SQLITE_VTAB_DIRECTONLY:
+    res = sqlite3_vtab_config(self->db, op, val);
+    break;
+  default:
+    return PyErr_Format(PyExc_ValueError, "Unknown sqlite3_vtab_config op %d", op);
+  }
+
+  SET_EXC(res, self->db);
+  if (res)
+    return NULL;
+  Py_RETURN_NONE;
+}
+
 /** .. method:: overloadfunction(name: str, nargs: int) -> None
 
   Registers a placeholder function so that a virtual table can provide an implementation via
@@ -4935,6 +4981,7 @@ static PyMethodDef Connection_methods[] = {
     {"drop_modules", (PyCFunction)Connection_drop_modules, METH_VARARGS | METH_KEYWORDS, Connection_drop_modules_DOC},
     {"create_window_function", (PyCFunction)Connection_create_window_function, METH_VARARGS | METH_KEYWORDS,
      Connection_create_window_function_DOC},
+    {"vtab_config", (PyCFunction)Connection_vtab_config, METH_VARARGS | METH_KEYWORDS, Connection_vtab_config_DOC},
     {0, 0, 0, 0} /* Sentinel */
 };
 
