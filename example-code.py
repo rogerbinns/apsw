@@ -395,8 +395,8 @@ import apsw.ext
 
 connection.execute("""
     create table books(id, title, author, year);
-    insert into books values(7, "Animal Farm", "George Orwell", 1945);
-    insert into books values(37, "The Picture of Dorian Gray", "Oscar Wilde", 1890);
+    insert into books values(7, 'Animal Farm', 'George Orwell', 1945);
+    insert into books values(37, 'The Picture of Dorian Gray', 'Oscar Wilde', 1890);
     """)
 
 # Normally you use column numbers
