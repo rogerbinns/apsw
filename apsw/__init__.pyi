@@ -1629,6 +1629,12 @@ class Connection:
         Calls: `sqlite3_txn_state <https://sqlite.org/c3ref/txn_state.html>`__"""
         ...
 
+    def vtab_config(self, op: int, val: int = 0) -> None:
+        """Called during virtual table connect/create.
+
+        Calls: `sqlite3_vtab_config <https://sqlite.org/c3ref/vtab_config.html>`__"""
+        ...
+
     def wal_autocheckpoint(self, n: int) -> None:
         """Sets how often the :ref:`wal` checkpointing is run.
 
@@ -1944,6 +1950,8 @@ class IndexInfo:
     """IndexInfo represents the `sqlite3_index_info
     <https://www.sqlite.org/c3ref/index_info.html>`__
     used in the :meth:`VTTable.BestIndexObject` method.
+    The structure values are not altered or made friendlier
+    in any way.
 
     Naming is identical to the C structure rather than
     Pythonic.  You can access members directly while needing to
@@ -1969,6 +1977,12 @@ class IndexInfo:
 
     def get_aConstraintUsage_argvIndex(self, which: int) -> int:
         """Returns *argvIndex* for *aConstraintUsage[which]*"""
+        ...
+
+    def get_aConstraintUsage_in(self, which: int) -> bool:
+        """Returns True if the constraint is *in* - eg column in (3, 7, 9)
+
+        Calls: `sqlite3_vtab_in <https://sqlite.org/c3ref/vtab_in.html>`__"""
         ...
 
     def get_aConstraintUsage_omit(self, which: int) -> bool:
@@ -2027,6 +2041,11 @@ class IndexInfo:
 
     def set_aConstraintUsage_argvIndex(self, which: int, argvIndex: int) -> None:
         """Sets *argvIndex* for *aConstraintUsage[which]*"""
+        ...
+
+    def set_aConstraintUsage_in(self, which: int, filter_all: bool) -> None:
+        """If *which* is an *in* constraint, and *filter_all* is True then your :meth:`VTCursor.Filter`
+        method will have all of the values at once."""
         ...
 
     def set_aConstraintUsage_omit(self, which: int, omit: bool) -> None:
@@ -2489,10 +2508,13 @@ if sys.version_info >= (3, 8):
         def Filter(self, indexnum: int, indexname: str, constraintargs: Optional[Tuple]) -> None:
             """This method is always called first to initialize an iteration to the
             first row of the table. The arguments come from the
-            :meth:`~VTTable.BestIndex` method in the :class:`table <VTTable>`
-            object with constraintargs being a tuple of the constraints you
+            :meth:`~VTTable.BestIndex` or :meth:`~VTTable.BestIndexObject`
+            with constraintargs being a tuple of the constraints you
             requested. If you always return None in BestIndex then indexnum will
-            be zero, indexstring will be None and constraintargs will be empty)."""
+            be zero, indexstring will be None and constraintargs will be empty).
+
+            If you had an *in* constraint and set :meth:`IndexInfo.set_aConstraintUsage_in`
+            then that value will be a :class:`set`."""
             ...
 
         def Next(self) -> None:
@@ -2614,9 +2636,12 @@ if sys.version_info >= (3, 8):
 
         def BestIndex(self, constraints: Sequence[Tuple[int, int], ...], orderbys: Sequence[Tuple[int, int], ...]) -> Any:
             """This is a complex method. To get going initially, just return
-            *None* and you will be fine. Implementing this method reduces
-            the number of rows scanned in your table to satisfy queries, but
-            only if you have an index or index like mechanism available.
+            *None* and you will be fine. You should also consider using
+            :meth:`BestIndexObject` instead.
+
+            Implementing this method reduces the number of rows scanned
+            in your table to satisfy queries, but only if you have an
+            index or index like mechanism available.
 
             .. note::
 

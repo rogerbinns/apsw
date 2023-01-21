@@ -1963,6 +1963,20 @@
 } while(0)
 
 
+#define  Connection_vtab_config_DOC "vtab_config($self,op,val=0)\n--\n\nConnection.vtab_config(op: int, val: int = 0) -> None\n\n" \
+"Called during virtual table connect/create.\n" \
+"\n" \
+"Calls: `sqlite3_vtab_config <https://sqlite.org/c3ref/vtab_config.html>`__\n" 
+
+#define Connection_vtab_config_USAGE "Connection.vtab_config(op: int, val: int = 0) -> None"
+
+#define Connection_vtab_config_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(op), int)); \
+  assert(__builtin_types_compatible_p(typeof(val), int)); \
+  assert(val == (0)); \
+} while(0)
+
+
 #define  Connection_wal_autocheckpoint_DOC "wal_autocheckpoint($self,n)\n--\n\nConnection.wal_autocheckpoint(n: int) -> None\n\n" \
 "Sets how often the :ref:`wal` checkpointing is run.\n" \
 "\n" \
@@ -2342,6 +2356,8 @@
 #define  IndexInfo_class_DOC "IndexInfo represents the `sqlite3_index_info\n" \
 "<https://www.sqlite.org/c3ref/index_info.html>`__\n" \
 "used in the :meth:`VTTable.BestIndexObject` method.\n" \
+"The structure values are not altered or made friendlier\n" \
+"in any way.\n" \
 "\n" \
 "Naming is identical to the C structure rather than\n" \
 "Pythonic.  You can access members directly while needing to\n" \
@@ -2374,6 +2390,18 @@
 #define IndexInfo_get_aConstraintUsage_argvIndex_USAGE "IndexInfo.get_aConstraintUsage_argvIndex(which: int) -> int"
 
 #define IndexInfo_get_aConstraintUsage_argvIndex_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(which), int)); \
+} while(0)
+
+
+#define  IndexInfo_get_aConstraintUsage_in_DOC "get_aConstraintUsage_in($self,which)\n--\n\nIndexInfo.get_aConstraintUsage_in(which: int) -> bool\n\n" \
+"Returns True if the constraint is *in* - eg column in (3, 7, 9)\n" \
+"\n" \
+"Calls: `sqlite3_vtab_in <https://sqlite.org/c3ref/vtab_in.html>`__\n" 
+
+#define IndexInfo_get_aConstraintUsage_in_USAGE "IndexInfo.get_aConstraintUsage_in(which: int) -> bool"
+
+#define IndexInfo_get_aConstraintUsage_in_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(which), int)); \
 } while(0)
 
@@ -2494,6 +2522,20 @@
 #define IndexInfo_set_aConstraintUsage_argvIndex_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(which), int)); \
   assert(__builtin_types_compatible_p(typeof(argvIndex), int)); \
+} while(0)
+
+
+#define  IndexInfo_set_aConstraintUsage_in_DOC "set_aConstraintUsage_in($self,which,filter_all)\n--\n\nIndexInfo.set_aConstraintUsage_in(which: int, filter_all: bool) -> None\n\n" \
+"If *which* is an *in* constraint, and *filter_all* is True then your :meth:`VTCursor.Filter`\n" \
+"method will have all of the values at once.\n" 
+
+#define IndexInfo_set_aConstraintUsage_in_filter_all_MSG  "argument 'filter_all' of IndexInfo.set_aConstraintUsage_in(which: int, filter_all: bool) -> None" 
+
+#define IndexInfo_set_aConstraintUsage_in_USAGE "IndexInfo.set_aConstraintUsage_in(which: int, filter_all: bool) -> None"
+
+#define IndexInfo_set_aConstraintUsage_in_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(which), int)); \
+  assert(__builtin_types_compatible_p(typeof(filter_all), int)); \
 } while(0)
 
 
