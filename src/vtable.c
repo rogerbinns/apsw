@@ -578,6 +578,36 @@ SqliteIndexInfo_set_estimatedCost(SqliteIndexInfo *self, PyObject *value)
   return 0;
 }
 
+/** .. attribute:: estimatedRows
+  :type: int
+
+  Estimated number of rows returned
+*/
+static PyObject *
+SqliteIndexInfo_get_estimatedRows(SqliteIndexInfo *self)
+{
+  CHECK_INDEX(NULL);
+
+  return PyLong_FromLongLong(self->index_info->estimatedRows);
+}
+
+static int
+SqliteIndexInfo_set_estimatedRows(SqliteIndexInfo *self, PyObject *value)
+{
+  sqlite3_int64 v;
+  CHECK_INDEX(-1);
+
+  v = PyLong_AsLongLong(value);
+
+  if (PyErr_Occurred())
+    return -1;
+
+  self->index_info->estimatedRows = v;
+
+  return 0;
+}
+
+
 /** .. attribute:: idxFlags
   :type: int
 
@@ -669,6 +699,7 @@ static PyGetSetDef SqliteIndexInfo_getsetters[] = {
     {"idxStr", (getter)SqliteIndexInfo_get_idxStr, (setter)SqliteIndexInfo_set_idxStr, IndexInfo_idxStr_DOC},
     {"orderByConsumed", (getter)SqliteIndexInfo_get_orderByConsumed, (setter)SqliteIndexInfo_set_OrderByConsumed, IndexInfo_orderByConsumed_DOC},
     {"estimatedCost", (getter)SqliteIndexInfo_get_estimatedCost, (setter)SqliteIndexInfo_set_estimatedCost, IndexInfo_estimatedCost_DOC},
+    {"estimatedRows", (getter)SqliteIndexInfo_get_estimatedRows, (setter)SqliteIndexInfo_set_estimatedRows, IndexInfo_estimatedRows_DOC},
     {"idxFlags", (getter)SqliteIndexInfo_get_idxFlags, (setter)SqliteIndexInfo_set_idxFlags, IndexInfo_idxFlags_DOC},
     {"colUsed", (getter)SqliteIndexInfo_get_colUsed, NULL, IndexInfo_colUsed_DOC},
     {"distinct", (getter)SqliteIndexInfo_get_distinct, NULL, IndexInfo_distinct_DOC},

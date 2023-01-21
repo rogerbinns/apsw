@@ -353,6 +353,8 @@ def index_info_to_dict(o: apsw.IndexInfo,
         o.orderByConsumed,
         "estimatedCost":
         o.estimatedCost,
+        "estimatedRows":
+        o.estimatedRows,
         "idxFlags":
         o.idxFlags,
         "idxFlags_set":

@@ -1975,6 +1975,9 @@ class IndexInfo:
     estimatedCost: float
     """Estimated cost of using this index"""
 
+    estimatedRows: int
+    """Estimated number of rows returned"""
+
     def get_aConstraintUsage_argvIndex(self, which: int) -> int:
         """Returns *argvIndex* for *aConstraintUsage[which]*"""
         ...

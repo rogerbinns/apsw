@@ -2384,6 +2384,10 @@
 "\n" \
 "Estimated cost of using this index\n" 
 
+#define  IndexInfo_estimatedRows_DOC ":type: int\n" \
+"\n" \
+"Estimated number of rows returned\n" 
+
 #define  IndexInfo_get_aConstraintUsage_argvIndex_DOC "get_aConstraintUsage_argvIndex($self,which)\n--\n\nIndexInfo.get_aConstraintUsage_argvIndex(which: int) -> int\n\n" \
 "Returns *argvIndex* for *aConstraintUsage[which]*\n" 
 
