@@ -343,6 +343,7 @@ def index_info_to_dict(o: apsw.IndexInfo,
         "aConstraintUsage": [{
             "argvIndex": o.get_aConstraintUsage_argvIndex(n),
             "omit": o.get_aConstraintUsage_omit(n),
+            "in": o.get_aConstraintUsage_in(n),
         } for n in range(o.nConstraint)],
         "idxNum":
         o.idxNum,
@@ -374,7 +375,7 @@ def index_info_to_dict(o: apsw.IndexInfo,
         for aorderby in res["aOrderBy"]:
             aorderby["iColumn_name"] = rowid_name if aorderby["iColumn"] == -1 else column_names[aorderby["iColumn"]]
         res["colUsed_names"] = set(column_names[i] for i in o.colUsed)
-        if 63 in o.colUsed: # could be one or more of the rest - we add all
+        if 63 in o.colUsed:  # could be one or more of the rest - we add all
             res["colUsed_names"].update(column_names[63:])
 
     return res

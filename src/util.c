@@ -204,9 +204,10 @@ finally:
 
 /* Converts sqlite3_value to PyObject.  Returns a new reference. */
 static PyObject *
-convert_value_to_pyobject(sqlite3_value *value)
+convert_value_to_pyobject(sqlite3_value *value, int in_constraint_possible)
 {
   int coltype = sqlite3_value_type(value);
+  sqlite3_value *in_value;
 
   APSW_FAULT_INJECT(UnknownValueType, , coltype = 123456);
 
@@ -226,6 +227,33 @@ convert_value_to_pyobject(sqlite3_value *value)
     return PyUnicode_FromStringAndSize((const char *)sqlite3_value_text(value), sqlite3_value_bytes(value));
 
   case SQLITE_NULL:
+    if (in_constraint_possible && sqlite3_vtab_in_first(value, &in_value) == SQLITE_OK)
+    {
+      int res;
+      PyObject *v = NULL, *set = PySet_New(NULL);
+      if (!set)
+        return NULL;
+      while (in_value)
+      {
+        v = convert_value_to_pyobject(in_value, 0);
+        if (!v || 0 != PySet_Add(set, v))
+          goto error;
+        v = NULL;
+        res = sqlite3_vtab_in_next(value, &in_value);
+        if (res != SQLITE_DONE && res != SQLITE_OK)
+        {
+          /* this should use SET_EXC but there is a circular dependency between that
+             file and this one, so we punt on this unlikely scenario */
+          PyErr_Format(PyExc_ValueError, "Failed in sqlite3_vtab_in_next result %d", res);
+          goto error;
+        }
+      }
+      return set;
+    error:
+      Py_XDECREF(v);
+      Py_XDECREF(set);
+      return NULL;
+    }
     Py_RETURN_NONE;
 
   case SQLITE_BLOB:
@@ -237,6 +265,12 @@ convert_value_to_pyobject(sqlite3_value *value)
   /* can't get here */
   assert(0);
   return NULL;
+}
+
+static PyObject *
+convert_value_to_pyobject_not_in(sqlite3_value *value)
+{
+  return convert_value_to_pyobject(value, 0);
 }
 
 /* Converts column to PyObject.  Returns a new reference. Almost identical to above
@@ -376,9 +410,9 @@ assert fail or cause a valgrind error.
 
 #define CALL_TRACK_INIT(name) self->in_call##name = NULL
 
-#define CALL_ENTER(name)                                                        \
+#define CALL_ENTER(name)                                                         \
   assert(self->in_call##name == NULL || *(self->in_call##name) == MAGIC_##name); \
-  int *enter_call_save_##name = self->in_call##name;                            \
+  int *enter_call_save_##name = self->in_call##name;                             \
   int enter_call_here_##name = MAGIC_##name;                                     \
   self->in_call##name = &enter_call_here_##name
 

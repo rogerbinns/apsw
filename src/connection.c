@@ -2424,7 +2424,7 @@ getfunctionargs(sqlite3_context *context, PyObject *firstelement, int argc, sqli
 
   for (i = 0; i < argc; i++)
   {
-    PyObject *item = convert_value_to_pyobject(argv[i]);
+    PyObject *item = convert_value_to_pyobject(argv[i], 0);
     if (!item)
     {
       sqlite3_result_error(context, "convert_value_to_pyobject failed", -1);

@@ -11,9 +11,15 @@ Virtual table updates:
 * :meth:`VTTable.BestIndexObject` is now available which provides
   :class:`IndexInfo` exposing full control
 
+* :meth:`IndexInfo.set_aConstraintUsage_in` can have *in* values
+  passed all at once to :meth:`VTCursor.Filter`
+
 * Exceptions in :meth:`VTTable.FindFunction` are now reported as
   an :ref:`unraisable exception <unraisable>` because it isn't
   possible to tell SQLite about the error.
+
+* :meth:`VTTable.FindFunction` can now return (int, callable)
+  to allow for virtual table specific function overloads.
 
 * Added :meth:`Connection.vtab_config`
 

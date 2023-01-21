@@ -244,7 +244,7 @@ SqliteIndexInfo_get_aConstraint_rhs(SqliteIndexInfo *self, PyObject *args, PyObj
     return NULL;
   }
 
-  return convert_value_to_pyobject(pval);
+  return convert_value_to_pyobject(pval, 0);
 }
 
 /** .. method:: get_aOrderBy_iColumn(which: int) -> int
@@ -390,6 +390,62 @@ SqliteIndexInfo_set_aConstraintUsage_omit(SqliteIndexInfo *self, PyObject *args,
 
   self->index_info->aConstraintUsage[which].omit = omit;
   Py_RETURN_NONE;
+}
+
+/** .. method:: get_aConstraintUsage_in(which: int) -> bool
+
+ Returns True if the constraint is *in* - eg column in (3, 7, 9)
+
+ -* sqlite3_vtab_in
+*/
+static PyObject *
+SqliteIndexInfo_get_aConstraintUsage_in(SqliteIndexInfo *self, PyObject *args, PyObject *kwds)
+{
+  int which;
+
+  CHECK_INDEX(NULL);
+
+  {
+    static char *kwlist[] = {"which", NULL};
+    IndexInfo_get_aConstraintUsage_in_CHECK;
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "i:" IndexInfo_get_aConstraintUsage_in_USAGE, kwlist, &which))
+      return NULL;
+  }
+  CHECK_RANGE(nConstraint);
+
+  if (sqlite3_vtab_in(self->index_info, which, -1))
+    Py_RETURN_TRUE;
+  Py_RETURN_FALSE;
+}
+
+/** .. method:: set_aConstraintUsage_in(which: int, filter_all: bool) -> None
+
+ If *which* is an *in* constraint, and *filter_all* is True then your :meth:`VTCursor.Filter`
+ method will have all of the values at once.
+
+*/
+static PyObject *
+SqliteIndexInfo_set_aConstraintUsage_in(SqliteIndexInfo *self, PyObject *args, PyObject *kwds)
+{
+  int which, filter_all;
+
+  CHECK_INDEX(NULL);
+
+  {
+    static char *kwlist[] = {"which", "filter_all", NULL};
+    IndexInfo_set_aConstraintUsage_in_CHECK;
+    argcheck_bool_param filter_all_param = {&filter_all, IndexInfo_set_aConstraintUsage_in_filter_all_MSG};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "iO&:" IndexInfo_set_aConstraintUsage_in_USAGE, kwlist, &which, argcheck_bool, &filter_all_param))
+      return NULL;
+  }
+  CHECK_RANGE(nConstraint);
+
+  if (sqlite3_vtab_in(self->index_info, which, -1))
+  {
+    sqlite3_vtab_in(self->index_info, which, filter_all);
+    Py_RETURN_NONE;
+  }
+  return PyErr_Format(PyExc_ValueError, "Constraint %d is not an 'in' which can be set", which);
 }
 
 /** .. attribute:: idxNum
@@ -642,6 +698,11 @@ static PyMethodDef SqliteIndexInfo_methods[] = {
      IndexInfo_get_aConstraintUsage_omit_DOC},
     {"set_aConstraintUsage_omit", (PyCFunction)SqliteIndexInfo_set_aConstraintUsage_omit, METH_VARARGS | METH_KEYWORDS,
      IndexInfo_set_aConstraintUsage_omit_DOC},
+    {"get_aConstraintUsage_in", (PyCFunction)SqliteIndexInfo_get_aConstraintUsage_in, METH_VARARGS | METH_KEYWORDS,
+     IndexInfo_get_aConstraintUsage_in_DOC},
+    {"set_aConstraintUsage_in", (PyCFunction)SqliteIndexInfo_set_aConstraintUsage_in, METH_VARARGS | METH_KEYWORDS,
+     IndexInfo_set_aConstraintUsage_in_DOC},
+
     /* sentinel */
     {NULL, NULL, 0, NULL}};
 
@@ -1075,9 +1136,12 @@ finally:
 /** .. method:: BestIndex(constraints: Sequence[Tuple[int, int], ...], orderbys: Sequence[Tuple[int, int], ...]) -> Any
 
   This is a complex method. To get going initially, just return
-  *None* and you will be fine. Implementing this method reduces
-  the number of rows scanned in your table to satisfy queries, but
-  only if you have an index or index like mechanism available.
+  *None* and you will be fine. You should also consider using
+  :meth:`BestIndexObject` instead.
+
+  Implementing this method reduces the number of rows scanned
+  in your table to satisfy queries, but only if you have an
+  index or index like mechanism available.
 
   .. note::
 
@@ -1685,7 +1749,7 @@ apswvtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int6
   if (argc == 1)
   {
     methodname = "UpdateDeleteRow";
-    args = Py_BuildValue("(O&)", convert_value_to_pyobject, argv[0]);
+    args = Py_BuildValue("(O&)", convert_value_to_pyobject_not_in, argv[0]);
     if (!args)
       goto pyexception;
   }
@@ -1704,7 +1768,7 @@ apswvtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int6
     }
     else
     {
-      newrowid = convert_value_to_pyobject(argv[1]);
+      newrowid = convert_value_to_pyobject(argv[1], 0);
       if (!newrowid)
         goto pyexception;
     }
@@ -1716,8 +1780,8 @@ apswvtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int6
     PyObject *oldrowid = NULL, *newrowid = NULL;
     methodname = "UpdateChangeRow";
     args = PyTuple_New(3);
-    oldrowid = convert_value_to_pyobject(argv[0]);
-    APSW_FAULT_INJECT(VtabUpdateChangeRowFail, newrowid = convert_value_to_pyobject(argv[1]), newrowid = PyErr_NoMemory());
+    oldrowid = convert_value_to_pyobject(argv[0], 0);
+    APSW_FAULT_INJECT(VtabUpdateChangeRowFail, newrowid = convert_value_to_pyobject(argv[1], 0), newrowid = PyErr_NoMemory());
     if (!args || !oldrowid || !newrowid)
     {
       Py_XDECREF(oldrowid);
@@ -1738,7 +1802,7 @@ apswvtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int6
     for (i = 0; i + 2 < argc; i++)
     {
       PyObject *field;
-      APSW_FAULT_INJECT(VtabUpdateBadField, field = convert_value_to_pyobject(argv[i + 2]), field = PyErr_NoMemory());
+      APSW_FAULT_INJECT(VtabUpdateBadField, field = convert_value_to_pyobject(argv[i + 2], 0), field = PyErr_NoMemory());
       if (!field)
       {
         Py_DECREF(fields);
@@ -1835,7 +1899,7 @@ apswvtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
   vtable = av->vtable;
 
   res = Call_PythonMethodV(vtable, "FindFunction", 0, "(Ni)", convertutf8string(zName), nArg);
-  if(!res)
+  if (!res)
   {
     AddTraceBackHere(__FILE__, __LINE__, "apswvtabFindFunction", "{s: s, s: i}", "zName", zName, "nArg", nArg);
     goto error;
@@ -1903,7 +1967,7 @@ error:
   Py_XDECREF(item_1);
   Py_XDECREF(res);
   Py_XDECREF(cbinfo);
-  if(PyErr_Occurred())
+  if (PyErr_Occurred())
     apsw_write_unraisable(NULL);
   PyGILState_Release(gilstate);
   return sqliteres;
@@ -1973,10 +2037,13 @@ it is.
 
   This method is always called first to initialize an iteration to the
   first row of the table. The arguments come from the
-  :meth:`~VTTable.BestIndex` method in the :class:`table <VTTable>`
-  object with constraintargs being a tuple of the constraints you
+  :meth:`~VTTable.BestIndex` or :meth:`~VTTable.BestIndexObject`
+  with constraintargs being a tuple of the constraints you
   requested. If you always return None in BestIndex then indexnum will
   be zero, indexstring will be None and constraintargs will be empty).
+
+  If you had an *in* constraint and set :meth:`IndexInfo.set_aConstraintUsage_in`
+  then that value will be a :class:`set`.
 */
 static int
 apswvtabFilter(sqlite3_vtab_cursor *pCursor, int idxNum, const char *idxStr,
@@ -1996,7 +2063,7 @@ apswvtabFilter(sqlite3_vtab_cursor *pCursor, int idxNum, const char *idxStr,
     goto pyexception;
   for (i = 0; i < argc; i++)
   {
-    PyObject *value = convert_value_to_pyobject(sqliteargv[i]);
+    PyObject *value = convert_value_to_pyobject(sqliteargv[i], 1);
     if (!value)
       goto pyexception;
     PyTuple_SET_ITEM(argv, i, value);
