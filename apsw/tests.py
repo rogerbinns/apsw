@@ -240,6 +240,8 @@ openflags = apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_O
 # main test class/code
 class APSW(unittest.TestCase):
 
+    maxDiff = 16384
+
     connection_nargs={ # number of args for function.  those not listed take zero
         'createaggregatefunction': 2,
         'createcollation': 2,
@@ -1132,7 +1134,7 @@ class APSW(unittest.TestCase):
             indexinfo_saved = None
             bio_callback = lambda *args: True
             filter_callback = lambda *args: 0
-            create_callback = lambda : 0
+            create_callback = lambda: 0
 
             schema = f"create table ignored({ ','.join(columns) })"
 
@@ -1229,6 +1231,13 @@ class APSW(unittest.TestCase):
                         t = f"stuff { i }"
                         o.idxStr = t
                         self.assertEqual(o.idxStr, t)
+                elif n == "estimatedRows":
+                    self.assertRaises(TypeError, setattr, o, n, 3.2)
+                    self.assertRaises(TypeError, setattr, o, n, "seven")
+                    self.assertRaises(TypeError, setattr, o, n, [])
+                    for newval in (25, 77, 2*1024*1024*1024):
+                        setattr(o, n, newval)
+                        self.assertEqual(newval, getattr(o, n))
                 else:
                     raise Exception(f"untested attribute { n }")
 
@@ -1326,13 +1335,39 @@ class APSW(unittest.TestCase):
         Source.filter_callback = lambda *args: 0
         self.db.execute("select c61, c64 from manycol where c72>7")
 
+        # in args
+        def bio(o):
+            d = apsw.ext.index_info_to_dict(o)
+            self.assertTrue(d["aConstraintUsage"][0]["in"])
+            self.assertTrue(d["aConstraintUsage"][1]["in"])
+            self.assertFalse(d["aConstraintUsage"][2]["in"])
+            self.assertRaises(TypeError, o.set_aConstraintUsage_in, 0, 'foo')
+            self.assertRaises(IndexError, o.set_aConstraintUsage_in, 99, True)
+            self.assertRaises(ValueError, o.set_aConstraintUsage_in, 2, True)
+            o.set_aConstraintUsage_in(0, True)
+            o.set_aConstraintUsage_in(1, True)
+            for i in range(3):
+                o.set_aConstraintUsage_argvIndex(i, i+1)
+            return True
+
+        def bio_f(*args):
+            self.assertEqual(args, (0, None, ({1, 'one', 1.1}, {b'aabbcc', None}, None)))
+
+        Source.schema = "create table ignored(c0,c1,c2)"
+        Source.bio_callback = bio
+        Source.filter_callback=bio_f
+        self.db.execute("create virtual table in_filter using foo(); select * from in_filter where c0 in (1,1.1,'one') and c1 in (?,?,?) and c2 in (?)", (None, b'aabbcc', None, None))
+
         # vtab_config
         self.assertRaises(ValueError, self.db.vtab_config, apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT)
+
         def check():
             self.assertRaises(TypeError, self.db.vtab_config, "three")
             self.assertRaises(TypeError, self.db.vtab_config, apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT, "three")
-            self.assertRaises(TypeError, self.db.vtab_config, apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT, apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT, apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT)
+            self.assertRaises(TypeError, self.db.vtab_config, apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT,
+                              apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT, apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT)
             self.assertRaises(ValueError, self.db.vtab_config, 97657)
+
         Source.create_callback = check
         self.db.execute("create virtual table vtab_config using foo()")
         self.assertRaises(ValueError, self.db.vtab_config, apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT)
@@ -1353,6 +1388,7 @@ class APSW(unittest.TestCase):
         'aOrderBy': [],
         'aConstraintUsage': [{
             'argvIndex': 0,
+            'in': False,
             'omit': False
         }],
         'idxNum':
@@ -1363,6 +1399,8 @@ class APSW(unittest.TestCase):
         False,
         'estimatedCost':
         5e+98,
+        'estimatedRows':
+        25,
         'idxFlags':
         0,
         'idxFlags_set':
@@ -1399,10 +1437,12 @@ class APSW(unittest.TestCase):
             }],
             'aConstraintUsage': [{
                 'argvIndex': 0,
-                'omit': False
+                'omit': False,
+                'in': False,
             }, {
                 'argvIndex': 0,
-                'omit': False
+                'omit': False,
+                'in': False,
             }],
             'idxNum':
             0,
@@ -1412,6 +1452,8 @@ class APSW(unittest.TestCase):
             False,
             'estimatedCost':
             5e+98,
+            'estimatedRows':
+            25,
             'idxFlags':
             0,
             'idxFlags_set':

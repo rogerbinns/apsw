@@ -2517,7 +2517,11 @@ if sys.version_info >= (3, 8):
             be zero, indexstring will be None and constraintargs will be empty).
 
             If you had an *in* constraint and set :meth:`IndexInfo.set_aConstraintUsage_in`
-            then that value will be a :class:`set`."""
+            then that value will be a :class:`set`.
+
+            Calls:
+              * `sqlite3_vtab_in_first <https://sqlite.org/c3ref/vtab_in_first.html>`__
+              * `sqlite3_vtab_in_next <https://sqlite.org/c3ref/vtab_in_first.html>`__"""
             ...
 
         def Next(self) -> None:

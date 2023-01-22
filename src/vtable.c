@@ -2075,6 +2075,8 @@ it is.
 
   If you had an *in* constraint and set :meth:`IndexInfo.set_aConstraintUsage_in`
   then that value will be a :class:`set`.
+
+  -* sqlite3_vtab_in_first sqlite3_vtab_in_next
 */
 static int
 apswvtabFilter(sqlite3_vtab_cursor *pCursor, int idxNum, const char *idxStr,
