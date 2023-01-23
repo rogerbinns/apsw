@@ -316,8 +316,8 @@ def print_augmented_traceback(exc_type: type[BaseException],
 
 def index_info_to_dict(o: apsw.IndexInfo,
                        *,
-                       column_names: Optional[List] = None,
-                       rowid_name: str = "__ROWID__") -> dict:
+                       column_names: Optional[List[str]] = None,
+                       rowid_name: str = "__ROWID__") -> Dict[str, Any]:
     """
     Returns a :class:`apsw.IndexInfo` as a dictionary.
 
