@@ -1977,6 +1977,11 @@
 } while(0)
 
 
+#define  Connection_vtab_on_conflict_DOC "vtab_on_conflict($self)\n--\n\nConnection.vtab_on_conflict() -> int\n\n" \
+"Called during virtual table xUpdate\n" \
+"\n" \
+"Calls: `sqlite3_vtab_on_conflict <https://sqlite.org/c3ref/vtab_on_conflict.html>`__\n" 
+
 #define  Connection_wal_autocheckpoint_DOC "wal_autocheckpoint($self,n)\n--\n\nConnection.wal_autocheckpoint(n: int) -> None\n\n" \
 "Sets how often the :ref:`wal` checkpointing is run.\n" \
 "\n" \
@@ -2354,17 +2359,16 @@
 
 
 #define  IndexInfo_class_DOC "IndexInfo represents the `sqlite3_index_info\n" \
-"<https://www.sqlite.org/c3ref/index_info.html>`__\n" \
-"used in the :meth:`VTTable.BestIndexObject` method.\n" \
-"The structure values are not altered or made friendlier\n" \
-"in any way.\n" \
+"<https://www.sqlite.org/c3ref/index_info.html>`__ and associated\n" \
+"methods used in the :meth:`VTTable.BestIndexObject` method.  The\n" \
+"structure values are not altered or made friendlier in any way.\n" \
 "\n" \
-"Naming is identical to the C structure rather than\n" \
-"Pythonic.  You can access members directly while needing to\n" \
-"use get/set methods for array members.\n" \
+"Naming is identical to the C structure rather than Pythonic.  You can\n" \
+"access members directly while needing to use get/set methods for array\n" \
+"members.\n" \
 "\n" \
-"You will get :exc:`ValueError` if you use the object\n" \
-"outside of an BestIndex method.\n" \
+"You will get :exc:`ValueError` if you use the object outside of an\n" \
+"BestIndex method.\n" \
 "\n" \
 ":meth:`apsw.ext.index_info_to_dict` provides a convenient\n" \
 "representation of this object as a :class:`dict`.\n" 

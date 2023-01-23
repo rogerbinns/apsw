@@ -1635,6 +1635,12 @@ class Connection:
         Calls: `sqlite3_vtab_config <https://sqlite.org/c3ref/vtab_config.html>`__"""
         ...
 
+    def vtab_on_conflict(self) -> int:
+        """Called during virtual table xUpdate
+
+        Calls: `sqlite3_vtab_on_conflict <https://sqlite.org/c3ref/vtab_on_conflict.html>`__"""
+        ...
+
     def wal_autocheckpoint(self, n: int) -> None:
         """Sets how often the :ref:`wal` checkpointing is run.
 
@@ -1948,17 +1954,16 @@ class Cursor:
 
 class IndexInfo:
     """IndexInfo represents the `sqlite3_index_info
-    <https://www.sqlite.org/c3ref/index_info.html>`__
-    used in the :meth:`VTTable.BestIndexObject` method.
-    The structure values are not altered or made friendlier
-    in any way.
+    <https://www.sqlite.org/c3ref/index_info.html>`__ and associated
+    methods used in the :meth:`VTTable.BestIndexObject` method.  The
+    structure values are not altered or made friendlier in any way.
 
-    Naming is identical to the C structure rather than
-    Pythonic.  You can access members directly while needing to
-    use get/set methods for array members.
+    Naming is identical to the C structure rather than Pythonic.  You can
+    access members directly while needing to use get/set methods for array
+    members.
 
-    You will get :exc:`ValueError` if you use the object
-    outside of an BestIndex method.
+    You will get :exc:`ValueError` if you use the object outside of an
+    BestIndex method.
 
     :meth:`apsw.ext.index_info_to_dict` provides a convenient
     representation of this object as a :class:`dict`."""
@@ -2827,8 +2832,8 @@ if sys.version_info >= (3, 8):
             Use the :class:`IndexInfo` to tell SQLite about your indexes, and
             extract other information.
 
-            Return *True* to indicate all is well.  If you return *False* then
-            `SQLITE_CONSTRAINT
+            Return *True* to indicate all is well.  If you return *False* or there is an error,
+            then `SQLITE_CONSTRAINT
             <https://www.sqlite.org/vtab.html#return_value>`__ is returned to
             SQLite."""
             ...
@@ -2896,7 +2901,7 @@ if sys.version_info >= (3, 8):
             provide the method."""
             ...
 
-        def UpdateChangeRow(self, row: int, newrowid: int, fields: Tuple[SQLiteValue, ...]):
+        def UpdateChangeRow(self, row: int, newrowid: int, fields: Tuple[SQLiteValue, ...]) -> None:
             """Change an existing row.  You may also need to change the rowid - for example if the query was
             ``UPDATE table SET rowid=rowid+100 WHERE ...``
 
@@ -2905,7 +2910,7 @@ if sys.version_info >= (3, 8):
             :param fields: A tuple of values the same length and order as columns in your table"""
             ...
 
-        def UpdateDeleteRow(self, rowid: int):
+        def UpdateDeleteRow(self, rowid: int) -> None:
             """Delete the row with the specified *rowid*.
 
             :param rowid: 64 bit integer"""
