@@ -1,3 +1,8 @@
+.. image::  https://raw.githubusercontent.com/rogerbinns/apsw/master/doc/apswlogo.png
+  :width: 215 px
+  :align: left
+  :alt: APSW logo
+
 APSW stands for **A**\ nother **P**\ ython **S**\ QLite **W**\ rapper.   APSW
 supports CPython 3.6 onwards.
 
