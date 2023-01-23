@@ -423,3 +423,4 @@ assert fail or cause a valgrind error.
 
 /* some arbitrary magic numbers for call track */
 #define MAGIC_xConnect 0x008295ab
+#define MAGIC_xUpdate  0x119306bc

@@ -21,7 +21,8 @@ Virtual table updates:
 * :meth:`VTTable.FindFunction` can now return (int, callable)
   to allow for virtual table specific function overloads.
 
-* Added :meth:`Connection.vtab_config`
+* Added :meth:`Connection.vtab_config` and
+  :meth:`Connection.vtab_on_conflict`
 
 3.40.1.0
 ========

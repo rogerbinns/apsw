@@ -99,6 +99,7 @@ struct Connection
 
   /* limit calls to callbacks */
   CALL_TRACK(xConnect);
+  CALL_TRACK(xUpdate);
 };
 
 typedef struct Connection Connection;
@@ -3668,6 +3669,25 @@ Connection_vtab_config(Connection *self, PyObject *args, PyObject *kwds)
   Py_RETURN_NONE;
 }
 
+/** .. method:: vtab_on_conflict() -> int
+
+ Called during virtual table xUpdate
+
+ -* sqlite3_vtab_on_conflict
+
+*/
+static PyObject *
+Connection_vtab_on_conflict(Connection *self)
+{
+  CHECK_USE(NULL);
+  CHECK_CLOSED(self, NULL);
+
+  if (!CALL_CHECK(xUpdate))
+    return PyErr_Format(PyExc_ValueError, "You can only call vtab_on_conflict while in a virtual table Update call");
+
+  return PyLong_FromLong(sqlite3_vtab_on_conflict(self->db));
+}
+
 /** .. method:: overloadfunction(name: str, nargs: int) -> None
 
   Registers a placeholder function so that a virtual table can provide an implementation via
@@ -4982,6 +5002,7 @@ static PyMethodDef Connection_methods[] = {
     {"create_window_function", (PyCFunction)Connection_create_window_function, METH_VARARGS | METH_KEYWORDS,
      Connection_create_window_function_DOC},
     {"vtab_config", (PyCFunction)Connection_vtab_config, METH_VARARGS | METH_KEYWORDS, Connection_vtab_config_DOC},
+    {"vtab_on_conflict", (PyCFunction)Connection_vtab_on_conflict, METH_NOARGS, Connection_vtab_on_conflict_DOC},
     {0, 0, 0, 0} /* Sentinel */
 };
 

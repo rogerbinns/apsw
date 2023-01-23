@@ -1158,16 +1158,31 @@ class APSW(unittest.TestCase):
 
                 Destroy = Disconnect
 
+                def UpdateChangeRow(self_table, *args):
+                    self.assertEqual(apsw.mapping_conflict_resolution_modes[self.db.vtab_on_conflict()],
+                                     Source.expected_conflict)
+
             class Cursor:
+                max_row = -1
 
                 def Filter(self, *args):
+                    self.rownum = 0
                     return Source.filter_callback(*args)
 
                 def Eof(self):
-                    return True
+                    return self.rownum >= self.max_row
 
                 def Close(self):
                     return
+
+                def Rowid(self):
+                    return self.rownum
+
+                def Column(self, num):
+                    return self.rownum
+
+                def Next(self):
+                    self.rownum += 1
 
         self.db.createmodule("foo", Source(), use_bestindex_object=True)
         self.db.execute("create virtual table bar using foo()")
@@ -1235,7 +1250,7 @@ class APSW(unittest.TestCase):
                     self.assertRaises(TypeError, setattr, o, n, 3.2)
                     self.assertRaises(TypeError, setattr, o, n, "seven")
                     self.assertRaises(TypeError, setattr, o, n, [])
-                    for newval in (25, 77, 2*1024*1024*1024):
+                    for newval in (25, 77, 2 * 1024 * 1024 * 1024):
                         setattr(o, n, newval)
                         self.assertEqual(newval, getattr(o, n))
                 else:
@@ -1347,7 +1362,7 @@ class APSW(unittest.TestCase):
             o.set_aConstraintUsage_in(0, True)
             o.set_aConstraintUsage_in(1, True)
             for i in range(3):
-                o.set_aConstraintUsage_argvIndex(i, i+1)
+                o.set_aConstraintUsage_argvIndex(i, i + 1)
             return True
 
         def bio_f(*args):
@@ -1355,8 +1370,10 @@ class APSW(unittest.TestCase):
 
         Source.schema = "create table ignored(c0,c1,c2)"
         Source.bio_callback = bio
-        Source.filter_callback=bio_f
-        self.db.execute("create virtual table in_filter using foo(); select * from in_filter where c0 in (1,1.1,'one') and c1 in (?,?,?) and c2 in (?)", (None, b'aabbcc', None, None))
+        Source.filter_callback = bio_f
+        self.db.execute(
+            "create virtual table in_filter using foo(); select * from in_filter where c0 in (1,1.1,'one') and c1 in (?,?,?) and c2 in (?)",
+            (None, b'aabbcc', None, None))
 
         # vtab_config
         self.assertRaises(ValueError, self.db.vtab_config, apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT)
@@ -1371,6 +1388,16 @@ class APSW(unittest.TestCase):
         Source.create_callback = check
         self.db.execute("create virtual table vtab_config using foo()")
         self.assertRaises(ValueError, self.db.vtab_config, apsw.SQLITE_VTAB_CONSTRAINT_SUPPORT)
+
+        # vtab_on_conflict
+        self.db.execute("create virtual table vtab_on_conflict using foo()")
+        self.assertRaises(ValueError, self.db.vtab_on_conflict)
+        Source.bio_callback = Source.filter_callback = lambda *args: True
+        Source.Cursor.max_row = 1
+        for mode in ("ROLLBACK", "FAIL", "ABORT", "IGNORE", "REPLACE"):
+            Source.expected_conflict = "SQLITE_" + mode
+            self.db.execute(f"update or { mode } vtab_on_conflict set c0=7 where rowid=0")
+        self.assertRaises(ValueError, self.db.vtab_on_conflict)
 
     index_info_test_patterns = (("select * from bar where c7 is null", {
         'nConstraint':
@@ -4649,7 +4676,7 @@ class APSW(unittest.TestCase):
                                                 "|declare_vtab|backup_remaining|backup_pagecount|mutex_enter|mutex_leave|sourceid|uri_.+"
                                                 "|column_name|column_decltype|column_database_name|column_table_name|column_origin_name"
                                                 "|stmt_isexplain|stmt_readonly|filename_journal|filename_wal|stmt_status|sql|log|vtab_collation"
-                                                "|vtab_rhs_value|vtab_distinct|vtab_config)$"),
+                                                "|vtab_rhs_value|vtab_distinct|vtab_config|vtab_on_conflict|vtab_in_first|vtab_in_next|vtab_in)$"),
                         # error message
                         'desc': "sqlite3_ calls must wrap with PYSQLITE_CALL",
                         },

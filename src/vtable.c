@@ -49,17 +49,16 @@ function to do the mapping.
 /** .. class:: IndexInfo
 
   IndexInfo represents the `sqlite3_index_info
-  <https://www.sqlite.org/c3ref/index_info.html>`__
-  used in the :meth:`VTTable.BestIndexObject` method.
-  The structure values are not altered or made friendlier
-  in any way.
+  <https://www.sqlite.org/c3ref/index_info.html>`__ and associated
+  methods used in the :meth:`VTTable.BestIndexObject` method.  The
+  structure values are not altered or made friendlier in any way.
 
-  Naming is identical to the C structure rather than
-  Pythonic.  You can access members directly while needing to
-  use get/set methods for array members.
+  Naming is identical to the C structure rather than Pythonic.  You can
+  access members directly while needing to use get/set methods for array
+  members.
 
-  You will get :exc:`ValueError` if you use the object
-  outside of an BestIndex method.
+  You will get :exc:`ValueError` if you use the object outside of an
+  BestIndex method.
 
   :meth:`apsw.ext.index_info_to_dict` provides a convenient
   representation of this object as a :class:`dict`.
@@ -784,6 +783,7 @@ typedef struct
   PyObject *vtable;            /* object implementing vtable */
   PyObject *functions;         /* functions returned by vtabFindFunction */
   int bestindex_object;        /* 0: tuples are passed to xBestIndex, 1: object is */
+  Connection *connection;
 } apsw_vtable;
 
 static struct
@@ -863,6 +863,7 @@ apswvtabCreateOrConnect(sqlite3 *db,
   assert((void *)avi == (void *)&(avi->used_by_sqlite)); /* detect if weird padding happens */
   memset(avi, 0, sizeof(apsw_vtable));
   avi->bestindex_object = vti->bestindex_object;
+  avi->connection = self;
 
   schema = PySequence_GetItem(pyres, 0);
   if (!schema)
@@ -1115,8 +1116,8 @@ apswvtabDisconnect(sqlite3_vtab *pVTab)
   Use the :class:`IndexInfo` to tell SQLite about your indexes, and
   extract other information.
 
-  Return *True* to indicate all is well.  If you return *False* then
-  `SQLITE_CONSTRAINT
+  Return *True* to indicate all is well.  If you return *False* or there is an error,
+  then `SQLITE_CONSTRAINT
   <https://www.sqlite.org/vtab.html#return_value>`__ is returned to
   SQLite.
 */
@@ -1735,7 +1736,7 @@ finally:
   return sqliteres;
 }
 
-/** .. method:: UpdateDeleteRow(rowid: int)
+/** .. method:: UpdateDeleteRow(rowid: int) -> None
 
   Delete the row with the specified *rowid*.
 
@@ -1752,7 +1753,7 @@ finally:
     to the row.  If *rowid* was not *None* then the return value
     is ignored.
 */
-/** .. method:: UpdateChangeRow(row: int, newrowid: int, fields: Tuple[SQLiteValue, ...])
+/** .. method:: UpdateChangeRow(row: int, newrowid: int, fields: Tuple[SQLiteValue, ...]) -> None
 
   Change an existing row.  You may also need to change the rowid - for example if the query was
   ``UPDATE table SET rowid=rowid+100 WHERE ...``
@@ -1775,6 +1776,9 @@ apswvtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int6
   gilstate = PyGILState_Ensure();
 
   vtable = ((apsw_vtable *)pVtab)->vtable;
+  Connection *self = ((apsw_vtable *)pVtab)->connection;
+
+  CALL_ENTER(xUpdate);
 
   /* case 1 - argc=1 means delete row */
   if (argc == 1)
@@ -1878,7 +1882,7 @@ pyexception: /* we had an exception in python code */
 finally:
   Py_XDECREF(args);
   Py_XDECREF(res);
-
+  CALL_LEAVE(xUpdate);
   PyGILState_Release(gilstate);
   return sqliteres;
 }
