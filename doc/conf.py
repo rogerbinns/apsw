@@ -56,6 +56,7 @@ master_doc = 'index'
 # General substitutions.
 project = u'APSW'
 copyright = u'2004-2023, Roger Binns <rogerb@rogerbinns.com>'
+html_logo = "apswlogo.png"
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
@@ -99,7 +100,10 @@ add_module_names = False
 # -----------------------
 
 html_theme = 'default'
-html_theme_options = {'stickysidebar': True}
+html_theme_options = {
+    'stickysidebar': True,
+    'externalrefs': True
+}
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
