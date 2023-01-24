@@ -986,9 +986,17 @@ class Connection:
         Calls: `sqlite3_create_collation_v2 <https://sqlite.org/c3ref/create_collation.html>`__"""
         ...
 
-    def createmodule(self, name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False) -> None:
+    def createmodule(self, name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, iVersion: int = 3, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None:
         """Registers a virtual table, or drops it if *datasource* is *None*.
         See :ref:`virtualtables` for details.
+
+        :param name: Module name (what comes after USING in CREATE VIRTUAL TABLE tablename USING ...)
+        :param datasource: Provides :class:`VTModule` methods
+        :param use_bestindex_object: If True then BestIndexObject is used, else BestIndex
+        :param iVersion: iVersion field in `sqlite3_module <https://www.sqlite.org/c3ref/module.html>`__
+        :param eponymous: Configures module to be `eponymous <https://www.sqlite.org/vtab.html#eponymous_virtual_tables>`__
+        :param eponymous_only: Configures module to be `eponymous only <https://www.sqlite.org/vtab.html#eponymous_only_virtual_tables>`__
+        :param read_only: Leaves `sqlite3_module <https://www.sqlite.org/c3ref/module.html>`__ methods that involve writing and transactions as NULL
 
         .. seealso::
 

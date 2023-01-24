@@ -606,7 +606,6 @@ SqliteIndexInfo_set_estimatedRows(SqliteIndexInfo *self, PyObject *value)
   return 0;
 }
 
-
 /** .. attribute:: idxFlags
   :type: int
 
@@ -1012,6 +1011,7 @@ apswvtabFree(void *context)
   gilstate = PyGILState_Ensure();
 
   Py_XDECREF(vti->datasource);
+  PyMem_Free(vti->sqlite3_module_def);
   /* connection was a borrowed reference so no decref needed */
   PyMem_Free(vti);
 
@@ -1042,30 +1042,19 @@ apswvtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
 
   /* mandatory for Destroy, optional for Disconnect */
   res = Call_PythonMethod(vtable, destroy_disconnect_strings[stringindex].methodname, (stringindex == 0), NULL);
-  /* sqlite 3.3.8 ignore return code for disconnect so we always free */
-  if (res || stringindex == 1)
+
+  if (stringindex == 1)
   {
-    /* see SQLite ticket 2127 */
     if (pVtab->zErrMsg)
+    {
       sqlite3_free(pVtab->zErrMsg);
+      pVtab->zErrMsg = NULL;
+    }
 
     Py_DECREF(vtable);
     Py_XDECREF(((apsw_vtable *)pVtab)->functions);
     PyMem_Free(pVtab);
     goto finally;
-  }
-
-  if (stringindex == 0)
-  {
-    /* ::TODO:: waiting on ticket 2099 to know if the pVtab should also be freed in case of error return with Destroy. */
-#if 0
-      /* see SQLite ticket 2127 */
-      if(pVtab->zErrMsg)
-	sqlite3_free(pVtab->zErrMsg);
-
-      Py_DECREF(vtable);
-      PyMem_Free(pVtab);
-#endif
   }
 
   /* pyexception:  we had an exception in python code */
@@ -2330,29 +2319,55 @@ finally:
   return sqliteres;
 }
 
-/* it would be nice to use C99 style initializers here ... */
-static struct sqlite3_module apsw_vtable_module =
-    {
-        1,              /* version */
-        apswvtabCreate, /* methods */
-        apswvtabConnect,
-        apswvtabBestIndex,
-        apswvtabDisconnect,
-        apswvtabDestroy,
-        apswvtabOpen,
-        apswvtabClose,
-        apswvtabFilter,
-        apswvtabNext,
-        apswvtabEof,
-        apswvtabColumn,
-        apswvtabRowid,
-        apswvtabUpdate,
-        apswvtabBegin,
-        apswvtabSync,
-        apswvtabCommit,
-        apswvtabRollback,
-        apswvtabFindFunction,
-        apswvtabRename};
+/* returns 0 on success, non-zero on failure */
+static int apswvtabSetupModuleDef(struct sqlite3_module *mod, int iVersion, int eponymous, int eponymous_only, int read_only)
+{
+  if (iVersion < 1 || iVersion > 3)
+  {
+    PyErr_Format(PyExc_ValueError, "%d is not a valid iVersion - should be 1, 2, or 3", iVersion);
+    return 1;
+  }
+  if (eponymous_only)
+    eponymous = 1;
+  mod->iVersion = iVersion;
+  if (eponymous_only)
+    ;
+  else if (eponymous)
+    mod->xCreate = apswvtabConnect;
+  else
+    mod->xCreate = apswvtabCreate;
+  mod->xConnect = apswvtabConnect;
+  mod->xBestIndex = apswvtabBestIndex;
+  mod->xDisconnect = apswvtabDisconnect;
+  mod->xDestroy = apswvtabDestroy;
+  mod->xOpen = apswvtabOpen;
+  mod->xClose = apswvtabClose;
+  mod->xFilter = apswvtabFilter;
+  mod->xNext = apswvtabNext;
+  mod->xEof = apswvtabEof;
+  mod->xColumn = apswvtabColumn;
+  mod->xRowid = apswvtabRowid;
+  if (!read_only)
+  {
+    mod->xUpdate = apswvtabUpdate;
+    mod->xBegin = apswvtabBegin;
+    mod->xSync = apswvtabSync;
+    mod->xCommit = apswvtabCommit;
+    mod->xRollback = apswvtabRollback;
+  }
+  mod->xFindFunction = apswvtabFindFunction;
+  if (!read_only)
+    mod->xRename = apswvtabRename;
+
+  /* ::TODO::
+    mod->xSavepoint = apswvtabSavepoint;
+    mod->xRelease = apswvtabRelease;
+    mod->xRollbackTo = apswvtabRollbackTo;
+    mod->xShadowName = apswvtabShadowName;
+  */
+
+  return 0;
+}
 
 /**
 

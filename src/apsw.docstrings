@@ -1076,9 +1076,17 @@
 } while(0)
 
 
-#define  Connection_createmodule_DOC "createmodule($self,name,datasource,*,use_bestindex_object=False)\n--\n\nConnection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False) -> None\n\n" \
+#define  Connection_createmodule_DOC "createmodule($self,name,datasource,*,use_bestindex_object=False,iVersion=3,eponymous=False,eponymous_only=False,read_only=False)\n--\n\nConnection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, iVersion: int = 3, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None\n\n" \
 "Registers a virtual table, or drops it if *datasource* is *None*.\n" \
 "See :ref:`virtualtables` for details.\n" \
+"\n" \
+":param name: Module name (what comes after USING in CREATE VIRTUAL TABLE tablename USING ...)\n" \
+":param datasource: Provides :class:`VTModule` methods\n" \
+":param use_bestindex_object: If True then BestIndexObject is used, else BestIndex\n" \
+":param iVersion: iVersion field in `sqlite3_module <https://www.sqlite.org/c3ref/module.html>`__\n" \
+":param eponymous: Configures module to be `eponymous <https://www.sqlite.org/vtab.html#eponymous_virtual_tables>`__\n" \
+":param eponymous_only: Configures module to be `eponymous only <https://www.sqlite.org/vtab.html#eponymous_only_virtual_tables>`__\n" \
+":param read_only: Leaves `sqlite3_module <https://www.sqlite.org/c3ref/module.html>`__ methods that involve writing and transactions as NULL\n" \
 "\n" \
 ".. seealso::\n" \
 "\n" \
@@ -1086,15 +1094,26 @@
 "\n" \
 "Calls: `sqlite3_create_module_v2 <https://sqlite.org/c3ref/create_module.html>`__\n" 
 
-#define Connection_createmodule_use_bestindex_object_MSG  "argument 'use_bestindex_object' of Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False) -> None" 
+#define Connection_createmodule_use_bestindex_object_MSG  "argument 'use_bestindex_object' of Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, iVersion: int = 3, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None" 
+#define Connection_createmodule_eponymous_MSG  "argument 'eponymous' of Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, iVersion: int = 3, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None" 
+#define Connection_createmodule_eponymous_only_MSG  "argument 'eponymous_only' of Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, iVersion: int = 3, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None" 
+#define Connection_createmodule_read_only_MSG  "argument 'read_only' of Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, iVersion: int = 3, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None" 
 
-#define Connection_createmodule_USAGE "Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False) -> None"
+#define Connection_createmodule_USAGE "Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, iVersion: int = 3, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None"
 
 #define Connection_createmodule_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
   assert(__builtin_types_compatible_p(typeof(datasource), PyObject *)); \
   assert(__builtin_types_compatible_p(typeof(use_bestindex_object), int)); \
   assert(use_bestindex_object == 0); \
+  assert(__builtin_types_compatible_p(typeof(iVersion), int)); \
+  assert(iVersion == (3)); \
+  assert(__builtin_types_compatible_p(typeof(eponymous), int)); \
+  assert(eponymous == 0); \
+  assert(__builtin_types_compatible_p(typeof(eponymous_only), int)); \
+  assert(eponymous_only == 0); \
+  assert(__builtin_types_compatible_p(typeof(read_only), int)); \
+  assert(read_only == 0); \
 } while(0)
 
 

@@ -110,9 +110,10 @@ typedef struct _vtableinfo
 {
   PyObject *datasource;   /* object with create/connect methods */
   Connection *connection; /* the Connection this is registered against so we don't
-             have to have a global table mapping sqlite3_db* to
-             Connection* */
+                             have to have a global table mapping sqlite3_db* to
+                             Connection* */
   int bestindex_object;   /* 0: tuples are passed to xBestIndex, 1: object is */
+  struct sqlite3_module *sqlite3_module_def;
 } vtableinfo;
 
 /* forward declarations */
@@ -3567,13 +3568,21 @@ Connection_wal_checkpoint(Connection *self, PyObject *args, PyObject *kwds)
   return NULL;
 }
 
-static struct sqlite3_module apsw_vtable_module;
 static void apswvtabFree(void *context);
+static int apswvtabSetupModuleDef(struct sqlite3_module *mod, int iVersion, int eponymous, int eponymous_only, int read_only);
 
-/** .. method:: createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False) -> None
+/** .. method:: createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, iVersion: int = 3, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None
 
     Registers a virtual table, or drops it if *datasource* is *None*.
     See :ref:`virtualtables` for details.
+
+    :param name: Module name (what comes after USING in CREATE VIRTUAL TABLE tablename USING ...)
+    :param datasource: Provides :class:`VTModule` methods
+    :param use_bestindex_object: If True then BestIndexObject is used, else BestIndex
+    :param iVersion: iVersion field in `sqlite3_module <https://www.sqlite.org/c3ref/module.html>`__
+    :param eponymous: Configures module to be `eponymous <https://www.sqlite.org/vtab.html#eponymous_virtual_tables>`__
+    :param eponymous_only: Configures module to be `eponymous only <https://www.sqlite.org/vtab.html#eponymous_only_virtual_tables>`__
+    :param read_only: Leaves `sqlite3_module <https://www.sqlite.org/c3ref/module.html>`__ methods that involve writing and transactions as NULL
 
     .. seealso::
 
@@ -3590,21 +3599,33 @@ Connection_createmodule(Connection *self, PyObject *args, PyObject *kwds)
   int res;
   int use_bestindex_object = 0;
 
+  int iVersion = 3, eponymous = 0, eponymous_only = 0, read_only = 0;
+
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
-    static char *kwlist[] = {"name", "datasource", "use_bestindex_object", NULL};
+    static char *kwlist[] = {"name", "datasource", "use_bestindex_object", "iVersion", "eponymous", "eponymous_only", "read_only", NULL};
     Connection_createmodule_CHECK;
     argcheck_bool_param use_bestindex_object_param = {&use_bestindex_object, Connection_createmodule_use_bestindex_object_MSG};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO|$O&:" Connection_createmodule_USAGE, kwlist, &name, &datasource, argcheck_bool, &use_bestindex_object_param))
+    argcheck_bool_param eponymous_param = {&eponymous, Connection_createmodule_eponymous_MSG};
+    argcheck_bool_param eponymous_only_param = {&eponymous_only, Connection_createmodule_eponymous_only_MSG};
+    argcheck_bool_param read_only_param = {&read_only, Connection_createmodule_read_only_MSG};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO|$O&iO&O&O&:" Connection_createmodule_USAGE, kwlist, &name, &datasource, argcheck_bool, &use_bestindex_object_param, &iVersion, argcheck_bool, &eponymous_param, argcheck_bool, &eponymous_only_param, argcheck_bool, &read_only_param))
       return NULL;
   }
 
   if (datasource != Py_None)
   {
     Py_INCREF(datasource);
-    vti = PyMem_Malloc(sizeof(vtableinfo));
+    vti = PyMem_Calloc(1, sizeof(vtableinfo));
+    if (!vti)
+      goto error;
+    vti->sqlite3_module_def = PyMem_Calloc(1, sizeof(struct sqlite3_module));
+    if (!vti->sqlite3_module_def)
+      goto error;
+    if (apswvtabSetupModuleDef(vti->sqlite3_module_def, iVersion, eponymous, eponymous_only, read_only))
+      goto error;
     vti->connection = self;
     vti->datasource = datasource;
     vti->bestindex_object = use_bestindex_object;
@@ -3613,12 +3634,13 @@ Connection_createmodule(Connection *self, PyObject *args, PyObject *kwds)
   /* SQLite is really finnicky.  Note that it calls the destructor on
      failure  */
   APSW_FAULT_INJECT(CreateModuleFail,
-                    PYSQLITE_CON_CALL((res = sqlite3_create_module_v2(self->db, name, vti ? &apsw_vtable_module : NULL, vti, apswvtabFree), vti = NULL)),
+                    PYSQLITE_CON_CALL((res = sqlite3_create_module_v2(self->db, name, vti ? vti->sqlite3_module_def : NULL, vti, apswvtabFree), vti = NULL)),
                     res = SQLITE_IOERR);
   SET_EXC(res, self->db);
 
   if (res != SQLITE_OK)
   {
+  error:
     if (vti)
       apswvtabFree(vti);
     return NULL;
