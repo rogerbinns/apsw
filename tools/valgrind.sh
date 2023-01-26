@@ -14,7 +14,7 @@ if [ -z "$SHOWINUSE" ]
 then
    showleaks=""
 else
-   showleaks="--leak-check=full --leak-resolution=high --show-reachable=yes"
+   showleaks="--leak-check=full --leak-resolution=high --show-leak-kinds=all --track-origins=yes --expensive-definedness-checks=yes"
 fi
 
 if [ -z "$CALLGRIND" ]
