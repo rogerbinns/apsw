@@ -3966,7 +3966,7 @@ class APSW(unittest.TestCase):
             # The exception could be thrown on either of these lines
             # depending on several factors
             db = apsw.Connection(fname)
-            db.cursor().execute("select * from sqlite_master")
+            db.cursor().execute("select * from sqlite_schema")
             1 / 0  # should not be reachable
         except:
             klass, e, tb = sys.exc_info()
@@ -6891,15 +6891,15 @@ class APSW(unittest.TestCase):
         "Ensures databases are identical"
         c1 = db1.cursor()
         c2 = db2.cursor()
-        self.assertEqual(list(c1.execute("select * from sqlite_master order by _ROWID_")),
-                         list(c2.execute("select * from sqlite_master order by _ROWID_")))
-        for table in db1.cursor().execute("select name from sqlite_master where type='table'"):
+        self.assertEqual(list(c1.execute("select * from sqlite_schema order by _ROWID_")),
+                         list(c2.execute("select * from sqlite_schema order by _ROWID_")))
+        for table in db1.cursor().execute("select name from sqlite_schema where type='table'"):
             table = table[0]
             self.assertEqual(
                 list(c1.execute("select * from [%s] order by _ROWID_" % (table, ))),
                 list(c2.execute("select * from [%s] order by _ROWID_" % (table, ))),
             )
-        for table in db2.cursor().execute("select name from sqlite_master where type='table'"):
+        for table in db2.cursor().execute("select name from sqlite_schema where type='table'"):
             table = table[0]
             self.assertEqual(
                 list(c1.execute("select * from [%s] order by _ROWID_" % (table, ))),
@@ -7348,7 +7348,7 @@ class APSW(unittest.TestCase):
         reset()
         cmd(".open --new " + fn)
         s.cmdloop()
-        for row in s.db.cursor().execute("select * from sqlite_master"):
+        for row in s.db.cursor().execute("select * from sqlite_schema"):
             self.fail("--new didn't wipe file")
 
         ###
@@ -7626,7 +7626,7 @@ class APSW(unittest.TestCase):
         # What happens if db cannot be opened?
         s.process_args(args=["/"])
         reset()
-        cmd("select * from sqlite_master;\n.bail on\nselect 3;\n")
+        cmd("select * from sqlite_schema;\n.bail on\nselect 3;\n")
         self.assertRaises(apsw.CantOpenError, s.cmdloop)
         isempty(fh[1])
         self.assertTrue("unable to open database file" in get(fh[2]))
@@ -8262,7 +8262,7 @@ insert into xxblah values(3);
         newdata.sort()
         self.assertEqual(data, newdata)
         # error handling
-        for i in ".import", ".import one", ".import one two three", ".import nosuchfile nosuchtable", ".import nosuchfile sqlite_master":
+        for i in ".import", ".import one", ".import one two three", ".import nosuchfile nosuchtable", ".import nosuchfile sqlite_schema":
             reset()
             cmd(i)
             s.cmdloop()
@@ -8289,7 +8289,7 @@ insert into xxblah values(3);
         ###
 
         # errors
-        for i in ".autoimport", ".autoimport 1 2 3", ".autoimport nosuchfile", ".autoimport %stest-shell-1 sqlite_master" % (
+        for i in ".autoimport", ".autoimport 1 2 3", ".autoimport nosuchfile", ".autoimport %stest-shell-1 sqlite_schema" % (
                 TESTFILEPREFIX, ):
             reset()
             cmd(i)
@@ -9843,7 +9843,7 @@ def vfstestdb(filename=TESTFILEPREFIX + "testdb2", vfsname="apswtest", closedb=T
         hotdb = apsw.Connection(filename + "x", vfs=vfsname)
         if mode:
             hotdb.cursor().execute("pragma journal_mode=" + mode)
-        hotdb.cursor().execute("select sql from sqlite_master")
+        hotdb.cursor().execute("select sql from sqlite_schema")
         hotdb.close()
 
     if closedb:

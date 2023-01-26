@@ -135,7 +135,7 @@ def doit():
       CREATE TABLE t2(a INTEGER, b INTEGER, c TEXT);
       CREATE INDEX i2a ON t2(a);
       CREATE INDEX i2b ON t2(b);
-      SELECT name FROM sqlite_master ORDER BY 1""".split(";"):
+      SELECT name FROM sqlite_schema ORDER BY 1""".split(";"):
             yield (i, )
 
         # 50,000 inserts on an unindexed table

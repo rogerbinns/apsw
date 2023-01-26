@@ -1035,7 +1035,7 @@ Enter SQL statements terminated with a ";"
             tables = []
             for pattern in cmd:
                 for name, sql in self.db.execute(
-                        "SELECT name,sql FROM sqlite_master "
+                        "SELECT name,sql FROM sqlite_schema "
                         "WHERE sql NOT NULL AND type IN ('table','view') "
                         "AND tbl_name LIKE ?1", (pattern, )):
                     if check(name, sql) and name not in tables:
@@ -1047,7 +1047,7 @@ Enter SQL statements terminated with a ";"
             # will we need to analyze anything later?
             analyze_needed = []
             for stat in self.db.execute(
-                    "select name from sqlite_master where sql not null and type='table' and tbl_name like 'sqlite_stat%'"
+                    "select name from sqlite_schema where sql not null and type='table' and tbl_name like 'sqlite_stat%'"
             ):
                 for name in tables:
                     if len(self.db.execute(
@@ -1131,20 +1131,20 @@ Enter SQL statements terminated with a ";"
                 self.output = self.output_insert
                 # Dump the table
                 for table in tables:
-                    for sql in self.db.execute("SELECT sql FROM sqlite_master WHERE name=?1 AND type='table'",
+                    for sql in self.db.execute("SELECT sql FROM sqlite_schema WHERE name=?1 AND type='table'",
                                                         (table, )):
                         comment("Table  " + table)
                         # Special treatment for virtual tables - they
                         # get called back on drops and creates and
                         # could thwart us so we have to manipulate
-                        # sqlite_master directly
+                        # sqlite_schema directly
                         if sql[0].lower().split()[:3] == ["create", "virtual", "table"]:
                             self.write(
-                                self.stdout, "DELETE FROM sqlite_master WHERE name=" + apsw.format_sql_value(table) +
+                                self.stdout, "DELETE FROM sqlite_schema WHERE name=" + apsw.format_sql_value(table) +
                                 " AND type='table';\n")
                             self.write(
                                 self.stdout,
-                                "INSERT INTO sqlite_master(type,name,tbl_name,rootpage,sql) VALUES('table',%s,%s,0,%s);\n"
+                                "INSERT INTO sqlite_schema(type,name,tbl_name,rootpage,sql) VALUES('table',%s,%s,0,%s);\n"
                                 % (apsw.format_sql_value(table), apsw.format_sql_value(table),
                                    apsw.format_sql_value(sql[0])))
                         else:
@@ -1155,7 +1155,7 @@ Enter SQL statements terminated with a ";"
                         # Now any indices or triggers
                         first = True
                         for name, sql in self.db.execute(
-                                "SELECT name,sql FROM sqlite_master "
+                                "SELECT name,sql FROM sqlite_schema "
                                 "WHERE sql NOT NULL AND type IN ('index', 'trigger') "
                                 "AND tbl_name=?1 AND name NOT LIKE 'sqlite_%' "
                                 "ORDER BY lower(name)", (table, )):
@@ -1164,10 +1164,10 @@ Enter SQL statements terminated with a ";"
                                 first = False
                             self.write(self.stdout, sqldef(sql))
                         blank()
-                # Views done last.  They have to be done in the same order as they are in sqlite_master
+                # Views done last.  They have to be done in the same order as they are in sqlite_schema
                 # as they could refer to each other
                 first = True
-                for name, sql in self.db.execute("SELECT name,sql FROM sqlite_master "
+                for name, sql in self.db.execute("SELECT name,sql FROM sqlite_schema "
                                                           "WHERE sql NOT NULL AND type='view' "
                                                           "AND name IN ( " +
                                                           ",".join([apsw.format_sql_value(i)
@@ -1182,7 +1182,7 @@ Enter SQL statements terminated with a ";"
 
                 # sqlite sequence
                 # does it exist
-                if len(self.db.execute("select * from sqlite_master where name='sqlite_sequence'").fetchall()):
+                if len(self.db.execute("select * from sqlite_schema where name='sqlite_sequence'").fetchall()):
                     first = True
                     for t in tables:
                         v = self.db.execute("select seq from main.sqlite_sequence where name=?1",
@@ -1236,7 +1236,7 @@ Enter SQL statements terminated with a ";"
                 # schema reread
                 blank()
                 comment("We need to force SQLite to reread the schema because otherwise it doesn't know that "
-                        "the virtual tables we inserted directly into sqlite_master exist.  See "
+                        "the virtual tables we inserted directly into sqlite_schema exist.  See "
                         "last comments of https://sqlite.org/cvstrac/tktview?tn=3425")
                 self.write(self.stdout, "BEGIN;\nCREATE TABLE no_such_table(x,y,z);\nROLLBACK;\n")
 
@@ -1392,7 +1392,7 @@ Enter SQL statements terminated with a ";"
         except ValueError:
             pass
         querytemplate = " OR ".join(querytemplate)
-        for (table, ) in self.db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE ?1",
+        for (table, ) in self.db.execute("SELECT name FROM sqlite_schema WHERE type='table' AND name LIKE ?1",
                                                   (tablefilter, )):
             t = self._fmt_sql_identifier(table)
             query = "SELECT * from %s WHERE " % (t, )
@@ -1843,7 +1843,7 @@ Enter SQL statements terminated with a ";"
         self.output = self.output_list
         try:
             self.process_sql(
-                "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name LIKE ?1 "
+                "SELECT name FROM sqlite_schema WHERE type='index' AND tbl_name LIKE ?1 "
                 "UNION ALL SELECT name FROM sqlite_temp_master WHERE type='index' AND tbl_name LIKE "
                 "?1 ORDER by name",
                 cmd,
@@ -2151,7 +2151,7 @@ Enter SQL statements terminated with a ";"
                 self.process_sql(
                     "SELECT sql||';' FROM "
                     "(SELECT sql sql, type type, tbl_name tbl_name, name name "
-                    "FROM sqlite_master UNION ALL "
+                    "FROM sqlite_schema UNION ALL "
                     "SELECT sql, type, tbl_name, name FROM sqlite_temp_master) "
                     "WHERE tbl_name LIKE ?1 AND type!='meta' AND sql NOTNULL AND name NOT LIKE 'sqlite_%' "
                     "ORDER BY substr(type,2,1), name", (n, ),
@@ -2257,7 +2257,7 @@ Enter SQL statements terminated with a ";"
             # plus wrapping at 80 columns.
             for n in cmd:
                 self.process_sql(
-                    "SELECT name FROM sqlite_master "
+                    "SELECT name FROM sqlite_schema "
                     "WHERE type IN ('table', 'view') AND name NOT LIKE 'sqlite_%' "
                     "AND name like ?1 "
                     "UNION ALL "
@@ -2587,7 +2587,7 @@ Enter SQL statements terminated with a ";"
     # add a space after each of them except functions which get parentheses
     _sqlite_keywords = [x + (" ", "(")[x in ("VALUES", "CAST")] for x in _sqlite_keywords]
 
-    _sqlite_special_names = """_ROWID_ OID ROWID SQLITE_MASTER
+    _sqlite_special_names = """_ROWID_ OID ROWID sqlite_schema
            SQLITE_SEQUENCE""".split()
 
     _sqlite_functions = """abs( changes() char( coalesce( glob( ifnull( hex( instr(
@@ -2681,7 +2681,7 @@ Enter SQL statements terminated with a ";"
                 if db == "temp":
                     master = "sqlite_temp_master"
                 else:
-                    master = "[%s].sqlite_master" % (db, )
+                    master = "[%s].sqlite_schema" % (db, )
                 for row in cur.execute("select * from " + master).fetchall():
                     for col in (1, 2):
                         if row[col] not in other and not row[col].startswith("sqlite_"):
