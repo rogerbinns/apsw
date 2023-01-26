@@ -20,7 +20,8 @@ GENDOCS = \
 	doc/backup.rst
 
 .PHONY : help all tagpush clean doc docs build_ext build_ext_debug coverage pycoverage test test_debug fulltest linkcheck unwrapped \
-		 publish stubtest showsymbols compile-win setup-wheel source_nocheck source release pydebug pyvalgrind valgrind valgrind1
+		 publish stubtest showsymbols compile-win setup-wheel source_nocheck source release pydebug pyvalgrind valgrind valgrind1 \
+		 fossil
 
 help: ## Show this help
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | sort | \
@@ -112,6 +113,14 @@ stubtest: build_ext  ## Verifies type annotations with mypy
 	$(PYTHON) -m mypy.stubtest --allowlist tools/stubtest.allowlist apsw
 	$(PYTHON) -m mypy example-code.py
 	$(PYTHON) -m mypy --strict example-code.py
+
+fossil: ## Grabs latest trunk from SQLite source control, extracts and builds in sqlite3 directory
+	-mv sqlite3/sqlite3config.h .
+	-rm -rf sqlite3
+	mkdir sqlite3
+	set -e ; cd sqlite3 ; wget https://www.sqlite.org/src/tarball/sqlite.tar.gz ; tar xfa sqlite.tar.gz --strip-components=1
+	set -e ; cd sqlite3 ; ./configure --quiet ; make sqlite3.c sqlite3
+	-mv sqlite3config.h sqlite3/
 
 # the funky test stuff is to exit successfully when grep has rc==1 since that means no lines found.
 showsymbols:  ## Finds any C symbols that aren't static(private)
