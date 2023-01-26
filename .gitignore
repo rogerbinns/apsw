@@ -45,3 +45,4 @@ apsw.egg-info
 __pycache__/
 setup.cfg
 work/
+/fossil/
