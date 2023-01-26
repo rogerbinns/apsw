@@ -5033,20 +5033,54 @@ class APSW(unittest.TestCase):
         class Source:
 
             def Create(self, db, modulename, dbname, tablename, *args):
-                return "create table placeholder(x)", object()
+                return "create table placeholder(x)", Source.Table()
+
+            Connect = Create
+
+            class Table:
+
+                def BestIndex(*args):
+                    return
+
+                def BestIndexObject(*args):
+                    return True
+
+                def Open(*args):
+                    return Source.Cursor()
+
+            class Cursor:
+
+                def Eof(*args):
+                    return True
+
+                def Filter(*args):
+                    pass
+
+                Close = Filter
 
         counter = 0
 
         def check_module(name: str, shouldfail: bool) -> None:
             nonlocal counter
             counter += 1
+            errs = []
+
+            # eponymous only will have no_module even when they exist
+            no_module = False
+            no_table = False
+
             try:
                 self.db.execute(f"create virtual table ex{ counter } using { name }()")
             except apsw.SQLError as e:
-                if shouldfail:
-                    self.assertIn(f"no such module: { name }", str(e))
-                else:
-                    raise
+                no_module = f"no such module: { name }" in str(e)
+            try:
+                self.db.execute(f"select * from  { name }()")
+            except apsw.SQLError as e:
+                no_table = f"no such table: { name }" in str(e)
+            if shouldfail:
+                self.assertTrue(no_module and no_table)
+            else:
+                self.assertFalse(no_module and no_table)
 
         self.db.createmodule("abc", Source())
         check_module("abc", False)
@@ -5054,9 +5088,23 @@ class APSW(unittest.TestCase):
         check_module("abc", True)
 
         # we register a whole bunch, and then unregister subsets
-        names = list("".join(x) for x in itertools.permutations("abc"))
+        args = []
+        for use_bestindex_object in (False, True):
+            for iVersion in (1, 2, 3):
+                for eponymous in (False, True):
+                    for eponymous_only in (False, True):
+                        for read_only in (False, True):
+                            args.append({
+                                "use_bestindex_object": use_bestindex_object,
+                                "iVersion": iVersion,
+                                "eponymous": eponymous,
+                                "eponymous_only": eponymous_only,
+                                "read_only": read_only
+                            })
+
+        names = list("".join(x) for x in itertools.permutations("abcd"))
         for n in names:
-            self.db.createmodule(n, Source())
+            self.db.createmodule(n, Source(), **random.choice(args))
             check_module(n, False)
 
         random.shuffle(names)
