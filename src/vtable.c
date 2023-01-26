@@ -1006,14 +1006,20 @@ apswvtabConnect(sqlite3 *db,
 static void
 apswvtabFree(void *context)
 {
-  vtableinfo *vti = (vtableinfo *)context;
   PyGILState_STATE gilstate;
   gilstate = PyGILState_Ensure();
+
+#if SQLITE_VERSION_NUMBER < 3041000
+/* https://sqlite.org/forum/forumpost/b68391eb71fdff73 */
+#warning "Memory will be deliberately leaked by this routine"
+#else
+  vtableinfo *vti = (vtableinfo *)context;
 
   Py_XDECREF(vti->datasource);
   PyMem_Free(vti->sqlite3_module_def);
   /* connection was a borrowed reference so no decref needed */
   PyMem_Free(vti);
+#endif
 
   PyGILState_Release(gilstate);
 }
@@ -1029,7 +1035,6 @@ static struct
         {"Disconnect",
          "VirtualTable.xDisconnect"}};
 
-/* See SQLite ticket 2099 */
 static int
 apswvtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
 {
@@ -1043,25 +1048,19 @@ apswvtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
   /* mandatory for Destroy, optional for Disconnect */
   res = Call_PythonMethod(vtable, destroy_disconnect_strings[stringindex].methodname, (stringindex == 0), NULL);
 
+  if (!res)
+  {
+    sqliteres = MakeSqliteMsgFromPyException(&(pVtab->zErrMsg));
+    AddTraceBackHere(__FILE__, __LINE__, destroy_disconnect_strings[stringindex].pyexceptionname, "{s: O}", "self", OBJ(vtable));
+  }
+
   if (stringindex == 1)
   {
-    if (pVtab->zErrMsg)
-    {
-      sqlite3_free(pVtab->zErrMsg);
-      pVtab->zErrMsg = NULL;
-    }
-
     Py_DECREF(vtable);
     Py_XDECREF(((apsw_vtable *)pVtab)->functions);
     PyMem_Free(pVtab);
-    goto finally;
   }
 
-  /* pyexception:  we had an exception in python code */
-  sqliteres = MakeSqliteMsgFromPyException(&(pVtab->zErrMsg));
-  AddTraceBackHere(__FILE__, __LINE__, destroy_disconnect_strings[stringindex].pyexceptionname, "{s: O}", "self", OBJ(vtable));
-
-finally:
   Py_XDECREF(res);
 
   PyGILState_Release(gilstate);
@@ -2319,16 +2318,29 @@ finally:
   return sqliteres;
 }
 
-/* returns 0 on success, non-zero on failure */
-static int apswvtabSetupModuleDef(struct sqlite3_module *mod, int iVersion, int eponymous, int eponymous_only, int read_only)
+static sqlite3_module *
+apswvtabSetupModuleDef(int iVersion, int eponymous, int eponymous_only, int read_only)
 {
+  sqlite3_module *mod = NULL;
+  assert(!PyErr_Occurred());
   if (iVersion < 1 || iVersion > 3)
   {
     PyErr_Format(PyExc_ValueError, "%d is not a valid iVersion - should be 1, 2, or 3", iVersion);
-    return 1;
+    return NULL;
   }
+
+  assert(iVersion == 1 || iVersion == 2 || iVersion == 3);
+  assert(eponymous == 0 || eponymous == 1);
+  assert(eponymous_only == 0 || eponymous_only == 1);
+  assert(read_only == 0 || read_only == 1);
+
   if (eponymous_only)
     eponymous = 1;
+
+  mod = PyMem_Calloc(1, sizeof(*mod));
+  if (!mod)
+    return NULL;
+
   mod->iVersion = iVersion;
   if (eponymous_only)
     ;
@@ -2366,7 +2378,7 @@ static int apswvtabSetupModuleDef(struct sqlite3_module *mod, int iVersion, int 
     mod->xShadowName = apswvtabShadowName;
   */
 
-  return 0;
+  return mod;
 }
 
 /**
