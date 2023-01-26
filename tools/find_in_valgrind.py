@@ -24,7 +24,7 @@ pattern = r"\((" + "|".join(src_files) + r"):[0-9]+\)"
 section = r"==[0-9]+== [^\s]"
 
 
-def process_file(name: str):
+def process_file(name: str) -> None:
     cur_section = None
     cur_section_num = None
     has_output = False
