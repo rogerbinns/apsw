@@ -4161,7 +4161,7 @@ class APSW(unittest.TestCase):
                     sql = "select timesten(x) from foo where x=? order by x"
                     self.db.cursor().execute(sql, (i, ))
 
-        runtime = int(os.getenv("APSW_HEAVY_DURATION")) if os.getenv("APSW_HEAVY_DURATION") else 15
+        runtime = float(os.getenv("APSW_HEAVY_DURATION")) if os.getenv("APSW_HEAVY_DURATION") else 15
         threads = [ThreadRunner(dostuff, runtime) for _ in range(20)]
         for t in threads:
             t.start()
@@ -6882,13 +6882,14 @@ class APSW(unittest.TestCase):
                     # this means main thread grabbed inuse first
                     pass
 
+        runtime = float(os.getenv("APSW_HEAVY_DURATION")) if os.getenv("APSW_HEAVY_DURATION") else 30
         t = ThreadRunner(wt)
         t.start()
         b4 = time.time()
-        # try to get inuse error for 30 seconds
+        # try to get inuse error
         try:
             try:
-                while not vals["stop"] and time.time() - b4 < 30:
+                while not vals["stop"] and time.time() - b4 < runtime:
                     self.db.backup("main", dbt, "main").close()
             except apsw.ThreadingViolationError:
                 vals["stop"] = True
