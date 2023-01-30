@@ -35,7 +35,7 @@ def run(cmd):
 
 
 def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug, sysconfig):
-    pyflags = "-X warn_default_encoding  -X dev" if debug else ""
+    pyflags = "-X warn_default_encoding  -X dev -X tracemalloc=5" if debug else ""
     # bundled setuptools does deprecated stuff
     pyflags += " -W ignore::DeprecationWarning:setuptools"
     if "3.6" in pybin:
