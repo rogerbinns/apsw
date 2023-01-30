@@ -104,6 +104,7 @@ html_theme_options = {
     'stickysidebar': True,
     'externalrefs': True
 }
+html_favicon = "favicon.ico"
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
