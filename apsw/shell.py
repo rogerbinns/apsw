@@ -1844,7 +1844,7 @@ Enter SQL statements terminated with a ";"
         try:
             self.process_sql(
                 "SELECT name FROM sqlite_schema WHERE type='index' AND tbl_name LIKE ?1 "
-                "UNION ALL SELECT name FROM sqlite_temp_master WHERE type='index' AND tbl_name LIKE "
+                "UNION ALL SELECT name FROM sqlite_temp_schema WHERE type='index' AND tbl_name LIKE "
                 "?1 ORDER by name",
                 cmd,
                 internal=True)
@@ -2055,7 +2055,7 @@ Enter SQL statements terminated with a ";"
         prompted for more using the continuation prompt which defaults
         to ' ..> '.  Example:
 
-          .prompt "Yes, Master> " "More, Master> "
+          .prompt "command> " "more command> "
 
         You can use backslash escapes such as \\n and \\t.
         """
@@ -2152,7 +2152,7 @@ Enter SQL statements terminated with a ";"
                     "SELECT sql||';' FROM "
                     "(SELECT sql sql, type type, tbl_name tbl_name, name name "
                     "FROM sqlite_schema UNION ALL "
-                    "SELECT sql, type, tbl_name, name FROM sqlite_temp_master) "
+                    "SELECT sql, type, tbl_name, name FROM sqlite_temp_schema) "
                     "WHERE tbl_name LIKE ?1 AND type!='meta' AND sql NOTNULL AND name NOT LIKE 'sqlite_%' "
                     "ORDER BY substr(type,2,1), name", (n, ),
                     internal=True)
@@ -2261,7 +2261,7 @@ Enter SQL statements terminated with a ";"
                     "WHERE type IN ('table', 'view') AND name NOT LIKE 'sqlite_%' "
                     "AND name like ?1 "
                     "UNION ALL "
-                    "SELECT name FROM sqlite_temp_master "
+                    "SELECT name FROM sqlite_temp_schema "
                     "WHERE type IN ('table', 'view') AND name NOT LIKE 'sqlite_%' "
                     "ORDER BY 1", (n, ),
                     internal=True)
@@ -2679,7 +2679,7 @@ Enter SQL statements terminated with a ";"
             other = []
             for db in databases:
                 if db == "temp":
-                    master = "sqlite_temp_master"
+                    master = "sqlite_temp_schema"
                 else:
                     master = "[%s].sqlite_schema" % (db, )
                 for row in cur.execute("select * from " + master).fetchall():
