@@ -24,6 +24,15 @@ Virtual table updates:
 * Added :meth:`Connection.vtab_config` and
   :meth:`Connection.vtab_on_conflict`
 
+* :meth:`Connection.createmodule` lets you have `eponymous
+  <https://sqlite.org/vtab.html#eponymous_virtual_tables>`__,
+  `eponymous_only
+  <https://sqlite.org/vtab.html#eponymous_only_virtual_tables>`__, and
+  read_only modules.
+
+* :meth:`apsw.ext.make_virtual_module` makes it very easy to turn
+  a Python function into a virtual table module.
+
 3.40.1.0
 ========
 

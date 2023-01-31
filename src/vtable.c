@@ -33,11 +33,17 @@ Some examples of how you might use this:
 
 * There are other examples on the `SQLite page <https://sqlite.org/vtab.html>`__
 
-You need to have 3 types of object. A :class:`module <VTModule>`, a
-:class:`virtual table <VTTable>` and a :class:`cursor
-<VTCursor>`. These are documented below. You can also read the `SQLite
-C method documentation <https://sqlite.org/vtab.html>`__.  At the C
-level, they are just one set of methods. At the Python/APSW level,
+.. tip::
+
+  You'll find initial development a lot quicker by using
+  :meth:`apsw.ext.make_virtual_module`
+
+
+To write a virtual table, you need to have 3 types of object. A
+:class:`module <VTModule>`, a :class:`virtual table <VTTable>` and a
+:class:`cursor <VTCursor>`. These are documented below. You can also
+read the `SQLiteC method documentation <https://sqlite.org/vtab.html>`__.
+At the C level, they are just one set of methods. At the Python/APSW level,
 they are split over the 3 types of object. The leading **x** is
 omitted in Python. You can return SQLite error codes (eg
 *SQLITE_READONLY*) by raising the appropriate exceptions (eg

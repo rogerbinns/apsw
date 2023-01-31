@@ -22,6 +22,12 @@ Virtual Tables
 Use :meth:`index_info_to_dict` to get :class:`apsw.IndexInfo`
 in an easier to print and work with format.
 
+Use :meth:`make_virtual_module` to easily turn a Python function
+into a virtual table source.
+
+:meth:`generate_series` and :meth:`generate_series_sqlite` provide
+`generate_series <https://sqlite.org/series.html>`__.
+
 Accessing result rows by column name
 ------------------------------------
 
@@ -65,7 +71,7 @@ Detailed Query Information
 --------------------------
 
 SQLite can provide lots of information about queries.  The
-:meth:`query_info <apsw.ext.query_info>` function can gather them up
+:meth:`~apsw.ext.query_info` function can gather them up
 for you.  This includes:
 
 * **readonly** if the query makes no direct changes
