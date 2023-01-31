@@ -8,13 +8,15 @@ if sys.version_info >= (3, 10):
 else:
     NoneType = type(None)
 
-from dataclasses import dataclass, make_dataclass
+from dataclasses import dataclass, make_dataclass, is_dataclass
 
 from typing import Optional, Tuple, Union, List, Any, Dict, Callable, Sequence, TextIO
 import types
 
 import functools
 import abc
+import enum
+import inspect
 
 import logging
 import traceback
@@ -437,11 +439,402 @@ def index_info_to_dict(o: apsw.IndexInfo,
             aorderby["iColumn_name"] = rowid_name if aorderby["iColumn"] == -1 else column_names[aorderby["iColumn"]]
         # colUsed has all bits set when SQLite just wants the whole row
         # eg when doing an update
-        res["colUsed_names"] = set(column_names[i] for i in o.colUsed if i<len(column_names))
+        res["colUsed_names"] = set(column_names[i] for i in o.colUsed if i < len(column_names))
         if 63 in o.colUsed:  # could be one or more of the rest - we add all
             res["colUsed_names"].update(column_names[63:])
 
     return res
+
+
+class VTColumnAccess(enum.Enum):
+    "How the column value is accessed from a row, for :meth:`make_virtual_module`"
+    By_Index = enum.auto()
+    "By number like with tuples and lists - eg :code:`row[3]`"
+    By_Name = enum.auto()
+    "By name like with dicts - eg :code:`row['quantity']`"
+    By_Attr = enum.auto()
+    "By attribute like with :mod:`dataclasses` - eg :code:`row.quantity`"
+
+
+def get_column_names(row: Any) -> Tuple[List[str], VTColumnAccess]:
+    r"""
+    Works out column names and access given an example row
+
+    *row* can be an instance of a row, or the class used to make
+    one (eg a :mod:`dataclass <dataclasses>`)
+
+    .. list-table::
+        :header-rows: 1
+
+        * - Type
+          - Access
+          - Column names From
+        * - :external:func:`dataclasses.is_dataclass`
+          - :attr:`VTColumnAccess.By_Attr`
+          - :func:`dataclasses.fields`
+        * - :func:`isinstance <isinstance>`\(:class:`tuple`) and :func:`hasattr <hasattr>`\(:code:`"_fields"`) - eg :func:`~collections.namedtuple`
+          - :attr:`VTColumnAccess.By_Index`
+          - :code:`row._fields`
+        * - :func:`hasattr <hasattr>`\(:code:`"__match_args__"`)
+          - :attr:`VTColumnAccess.By_Attr`
+          - :code:`row.__match_args__` (if not empty)
+        * - :func:`isinstance <isinstance>`\(:class:`dict`)
+          - :attr:`VTColumnAccess.By_Name`
+          - :meth:`dict.keys`
+        * - :func:`isinstance <isinstance>`\(:class:`tuple`\)
+          - :attr:`VTColumnAccess.By_Index`
+          - :code:`columnX` where *X* is zero up to :func:`len <len>`\(:code:`row`)
+
+    """
+    if is_dataclass(row):
+        return tuple(field.name for field in dataclasses.fields(row)), VTColumnAccess.By_Attr
+    if isinstance(row, tuple) and hasattr(row, "_fields"):
+        return row._fields, VTColumnAccess.By_Index
+    if getattr(row, "__match_args__", None):
+        return row.__match_args__, VTColumnAccess.By_Attr
+    if isinstance(row, dict):
+        return tuple(row.keys()), VTColumnAccess.By_Name
+    if isinstance(row, tuple):
+        return tuple(f"column{ x }" for x in len(tuple)), VTColumnAccess.By_Index
+    raise TypeError(f"Can't figure out columns for { row }")
+
+
+def make_virtual_module(db: apsw.Connection,
+                        name: str,
+                        callable: Callable,
+                        *,
+                        eponymous: bool = True,
+                        eponymous_only: bool = False,
+                        repr_invalid: bool = False) -> None:
+    """
+    Registers a read-only virtual table module with *db* based on
+    *callable*.  The *callable* must have an attribute named *columns*
+    with a list of column names, and an attribute named *column_access*
+    with a :class:`VTColumnAccess` saying how to access columns from a row.
+
+    The goal is to make it very easy to turn a Python function into a
+    virtual table.  For example the following Python function::
+
+      def gendata(start_id, end_id=1000, include_system=False):
+          yield (10, "2020-10-21", "readme.txt)
+          yield (11, "2019-05-12", "john.txt)
+
+      gendata.columns = ("user_id", "start_date", "file_name")
+      gendata.column_access = VTColumnAccess.By_Index
+
+    Will generate a table declared like this, using `HIDDEN
+    <https://sqlite.org/vtab.html#hidden_columns_in_virtual_tables>`__
+    for parameters:
+
+    .. code-block:: sql
+
+        CREATE TABLE table_name(user_id,
+                                start_date,
+                                file_name,
+                                start_id HIDDEN,
+                                end_id HIDDEN,
+                                include_system HIDDEN);
+
+    :func:`inspect.signature` is used to discover parameter names.
+
+    Positional parameters to *callable* come from the table definition.
+
+    .. code-block:: sql
+
+      SELECT * from table_name(1, 100, 1);
+
+    Keyword arguments come from WHERE clauses.
+
+    .. code-block:: sql
+
+      SELECT * from table_name(1) WHERE
+            include_system=1;
+
+    :func:`iter` is called on *callable* with each iteration expected
+    to return the next row.  That means *callable* can return its data
+    all at once (eg a list of rows), or *yield* them one row at a
+    time.  The number of columns must always be the same, no matter
+    what the parameter values.
+
+    :param eponymous: Lets you use the *name* as a table name without
+             having to create a virtual table
+    :param eponymous_only: Can only reference as a table name
+    :param repr_invalid: If *True* then values that are not valid
+       :class:`apsw.SQLiteValue` will be converted to a string using
+       :func:`repr`
+
+    Advanced
+    ++++++++
+
+    The *callable* may also have an attribute named *primary_key*.
+    By default the :func:`id` of each row is used as the primary key.
+    If present then it must be a column number to use as the primary
+    key.  The contents of that column must be unique for every row.
+
+    If you specify a parameter to the table and in WHERE, or have
+    non-equality for WHERE clauses of parameters then the query will
+    fail with :class:`apsw.SQLError` and a message "no query solution"
+    """
+
+    class Module:
+
+        def __init__(self, callable: Callable, columns: tuple[str], column_access: VTColumnAccess,
+                     primary_key: Optional[int], repr_invalid: bool):
+            self.columns = columns
+            self.callable: Callable = callable
+            if not isinstance(column_access, VTColumnAccess):
+                raise ValueError(f"Expected column_access to be { VTColumnAccess } not {column_access!r}")
+            self.column_access = column_access
+            self.parameters: list[str] = []
+            # These are as representable as SQLiteValue and are not used
+            # for the actual call.
+            self.defaults: list[apsw.SQLiteValue] = []
+            for p, v in inspect.signature(callable).parameters.items():
+                self.parameters.append(p)
+                default = None if v.default is inspect.Parameter.empty else v.default
+                try:
+                    apsw.format_sql_value(default)
+                except TypeError:
+                    default = repr(default)
+                self.defaults.append(default)
+
+            both = set(self.columns) & set(self.parameters)
+            if both:
+                raise ValueError(f"Same name in columns and in paramters: { both }")
+
+            self.all_columns: tuple[str] = tuple(self.columns) + tuple(self.parameters)
+            self.primary_key = primary_key
+            if self.primary_key is not None and not (0 <= self.primary_key < len(self.columns)):
+                raise ValueError(f"{self.primary_key!r} should be None or a column number")
+            self.repr_invalid = repr_invalid
+            column_defs = ""
+            for i, c in enumerate(self.columns):
+                if column_defs:
+                    column_defs += ", "
+                column_defs += f"[{ c }]"
+                if self.primary_key == i:
+                    column_defs += " PRIMARY KEY"
+            for p in self.parameters:
+                column_defs += f",[{ p }] HIDDEN"
+
+            self.schema = f"CREATE TABLE ignored({ column_defs })"
+            if self.primary_key is not None:
+                self.schema += " WITHOUT rowid"
+
+        def Create(self, db, modulename, dbname, tablename, *args: apsw.SQLiteValue) -> tuple[str, apsw.VTTable]:
+
+            if len(args) > len(self.parameters):
+                raise ValueError(f"Too many parameters: parameters accepted are { ' '.join(self.parameters) }")
+
+            param_values = dict(zip(self.parameters, args))
+
+            return self.schema, self.Table(self, param_values)
+
+        Connect = Create
+
+        class Table:
+
+            def __init__(self, module: Module, param_values: dict[str, apsw.SQLiteValue]):
+                self.module = module
+                self.param_values = param_values
+
+            def BestIndexObject(self, o: apsw.IndexInfo) -> bool:
+                idx_str: list[str] = []
+                param_start = len(self.module.columns)
+                for c in range(o.nConstraint):
+                    if o.get_aConstraint_iColumn(c) >= param_start:
+                        if not o.get_aConstraint_usable(c):
+                            return False
+                        if o.get_aConstraint_op(c) != apsw.SQLITE_INDEX_CONSTRAINT_EQ:
+                            return False
+                        o.set_aConstraintUsage_argvIndex(c, len(idx_str) + 1)
+                        o.set_aConstraintUsage_omit(c, True)
+                        n = self.module.all_columns[o.get_aConstraint_iColumn(c)]
+                        # a parameter could be a function parameter and where
+                        #    generate_series(7) where start=8
+                        # the order they appear in IndexInfo is random so we
+                        # have to abort the query because a random one would
+                        # prevail
+                        if n in idx_str:
+                            return False
+                        idx_str.append(n)
+
+                o.idxStr = ",".join(idx_str)
+                # say there are a huge number of rows so the query planner avoids us
+                o.estimatedRows = 2147483647
+                #pprint.pprint(apsw.ext.index_info_to_dict(o, column_names=self.module.all_columns), compact=True)
+                return True
+
+            def Open(self):
+                return self.module.Cursor(self.module, self.param_values)
+
+            def Disconnect(self):
+                pass
+
+            Destroy = Disconnect
+
+        class Cursor:
+
+            def __init__(self, module: Module, param_values: dict[str, apsw.SQLiteValue]):
+                self.module = module
+                self.param_values = param_values
+                self.iterating: Optional[Iterator] = None
+                self.current_row: Any = None
+                self.columns = module.columns
+                self.repr_invalid = module.repr_invalid
+                self.num_columns = len(self.columns)
+                self.access = self.module.column_access
+
+            def Filter(self, idx_num: int, idx_str: str, args: tuple[apsw.SQLiteValue]) -> None:
+                params: dict[str, apsw.SQLiteValue] = self.param_values.copy()
+                params.update(zip(idx_str.split(","), args))
+                self.iterating = iter(self.module.callable(**params))
+                # proactively advance so we can tell if eof
+                self.Next()
+
+                self.param_values: List[SQLiteValue] = self.module.defaults[:]
+                for k, v in params.items():
+                    self.param_values[self.module.parameters.index(k)] = v
+
+            def Eof(self) -> bool:
+                return self.iterating is None
+
+            def Close(self) -> None:
+                if self.iterating:
+                    if hasattr(self.iterating, "close"):
+                        self.iterating.close()
+                    self.iterating = None
+
+            def Column(self, which: int) -> apsw.SQLiteValue:
+                if which >= self.num_columns:
+                    return self.param_values[which - self.num_columns]
+                if self.access == VTColumnAccess.By_Index:
+                    v = self.current_row[which]
+                elif self.access == VTColumnAccess.By_Name:
+                    v = self.current_row[self.columns[which]]
+                elif self.access == VTColumnAccess.By_Attr:
+                    v = getattr(self.current_row, self.columns[which])
+                if self.repr_invalid:
+                    try:
+                        apsw.format_sql_value(v)
+                    except TypeError:
+                        v = repr(v)
+                return v
+
+            def Next(self) -> None:
+                try:
+                    self.current_row = next(self.iterating)
+                except StopIteration:
+                    if hasattr(self.iterating, "close"):
+                        self.iterating.close()
+                    self.iterating = None
+
+            def Rowid(self):
+                if self.module.primary_key is None:
+                    return id(self.current_row)
+                return self.Column(self.module.primary_key)
+
+    mod = Module(callable, callable.columns, callable.column_access, getattr(callable, "primary_key", None),
+                 repr_invalid)
+
+    db.createmodule(name,
+                    mod,
+                    use_bestindex_object=True,
+                    eponymous=eponymous,
+                    eponymous_only=eponymous_only,
+                    read_only=True)
+
+
+def generate_series_sqlite(start=None, stop=0xffffffff, step=1):
+    """Behaves like SQLite's generate_series
+
+    `SQLite doc <https://sqlite.org/series.html>`__.
+
+    Only integers are supported.  If *step* is negative
+    then values are generated from *stop* to *start*
+
+    To use::
+
+        apsw.ext.make_virtual_module(db,
+                                     "generate_series",
+                                     apsw.ext.generate_series_sqlite,
+                                     eponymous_only=True)
+
+    .. seealso::
+
+        :meth:`generate_series`
+
+    """
+    if start is None:
+        raise ValueError("You must specify a value for start")
+    istart = int(start)
+    istop = int(stop)
+    istep = int(step)
+    if istart != start or istop != stop or istep != step:
+        raise ValueError("generate_series_sqlite only works with integers")
+    if step > 0:
+        while start <= stop:
+            yield (start, )
+            start += step
+    elif step < 0:
+        while stop >= start:
+            yield (stop, )
+            stop += step
+    else:
+        # SQLite doesn't error on step==0
+        pass
+
+
+generate_series_sqlite.columns = ("value", )
+generate_series_sqlite.column_access = VTColumnAccess.By_Index
+generate_series_sqlite.primary_key = 0
+
+
+def generate_series(start, stop, step=None):
+    """Behaves like Postgres and SQL Server
+
+    `Postgres doc
+    <https://www.postgresql.org/docs/current/functions-srf.html>`__
+    `SQL server doc
+    <https://learn.microsoft.com/en-us/sql/t-sql/functions/generate-series-transact-sql>`__
+
+    Operates on floating point as well as integer.  If step is not
+    specified then it is 1 if *stop* is greater than *start* and -1 if
+    *stop* is less than *start*.
+
+    To use::
+
+        apsw.ext.make_virtual_module(db,
+                                     "generate_series",
+                                     apsw.ext.generate_series,
+                                     eponymous_only=True)
+
+    .. seealso::
+
+        :meth:`generate_series`
+
+    """
+    if step is None:
+        if stop > start:
+            step = 1
+        else:
+            step = -1
+
+    if step > 0:
+        while start <= stop:
+            yield (start, )
+            start += step
+    elif step < 0:
+        while start >= stop:
+            yield (start, )
+            start += step
+    else:
+        raise ValueError("step of zero is not valid")
+
+
+generate_series.columns = ("value", )
+generate_series.column_access = VTColumnAccess.By_Index
+generate_series.primary_key = 0
 
 
 def query_info(db: apsw.Connection,
