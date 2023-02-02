@@ -716,8 +716,8 @@ def format_query_table(db: apsw.Connection,
                 lt += sum(1 if unicodedata.east_asian_width(c) == "W" else 0 for c in text)
                 extra = " " * max(colwidths[i] + 2 - lt, 0)
                 if centre:
-                    lpad = extra[len(extra) // 2:]
-                    rpad = extra[:len(extra) // 2]
+                    lpad = extra[:len(extra) // 2]
+                    rpad = extra[len(extra) // 2:]
                 else:
                     lpad = ""
                     rpad = extra
