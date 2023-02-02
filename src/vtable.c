@@ -36,13 +36,14 @@ Some examples of how you might use this:
 .. tip::
 
   You'll find initial development a lot quicker by using
-  :meth:`apsw.ext.make_virtual_module`
+  :meth:`apsw.ext.make_virtual_module`.  To write your own
+  you will need to understand `xBestIndex <https://www.sqlite.org/vtab.html#the_xbestindex_method>`__.
 
 
 To write a virtual table, you need to have 3 types of object. A
 :class:`module <VTModule>`, a :class:`virtual table <VTTable>` and a
 :class:`cursor <VTCursor>`. These are documented below. You can also
-read the `SQLiteC method documentation <https://sqlite.org/vtab.html>`__.
+read the `SQLite C method documentation <https://sqlite.org/vtab.html>`__.
 At the C level, they are just one set of methods. At the Python/APSW level,
 they are split over the 3 types of object. The leading **x** is
 omitted in Python. You can return SQLite error codes (eg
