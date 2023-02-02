@@ -1034,22 +1034,27 @@ connection.trace_v2(0, None)
 # truncation etc
 
 # Create a table with some dummy data
-connection.execute("""CREATE TABLE dummy(quantity, [spaces in name], last);
+connection.execute(
+    """CREATE TABLE dummy(quantity, [spaces in name], last);
     INSERT INTO dummy VALUES(3, 'some regular text to make this row interesting', x'030709');
     INSERT INTO dummy VALUES(3.14, 'Tiếng Việt', null);
     INSERT INTO dummy VALUES('', ?, ' ');
-""", ('special \t\n\f\0 cha\\rs',))
+""", ('special \t\n\f\0 cha\\rs', ))
 
-query="SELECT * FROM dummy"
+query = "SELECT * FROM dummy"
 # default
 print(apsw.ext.format_query_table(connection, query))
 
 # no unicode and maximum sanitize the text
-kwargs={"use_unicode": False, "string_sanitize": 2}
+kwargs = {"use_unicode": False, "string_sanitize": 2}
 print(apsw.ext.format_query_table(connection, query, **kwargs))
 
 # lets have unicode and make things narrow with no word wrap
-kwargs={"use_unicode": True, "string_sanitize": 0, "text_width": 30, "word_wrap": False}
+kwargs = {"use_unicode": True, "string_sanitize": 0, "text_width": 30, "word_wrap": False}
+print(apsw.ext.format_query_table(connection, query, **kwargs))
+
+# have the values in SQL syntax
+kwargs = {"quote": True}
 print(apsw.ext.format_query_table(connection, query, **kwargs))
 
 # do look at the format_query_table doc for more output tweaking
