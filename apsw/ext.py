@@ -464,7 +464,7 @@ def format_query_table(db: apsw.Connection,
                        word_wrap: bool = True) -> str:
     r"""Produces query output in an attractive text table
 
-    Column headers are always provided.
+    See :ref:`the example <example_format_query>`.
 
     :param db: Connection to run the query on
     :param query: Query to run
@@ -487,7 +487,7 @@ def format_query_table(db: apsw.Connection,
               - description
             * - 0
               - hello \\\\  \0日本語 world
-              - Various whitespace (eg tabs, vertical form feed) are replaced with spaces. backslashes
+              - Various whitespace (eg tabs, vertical form feed) are replaced. backslashes
                 are escaped, embedded nulls become \\0
             * - 1
               - hello \\\\  \\0{CJK UNIFIED IDEOGRAPH-65E5}{CJK UNIFIED IDEOGRAPH-672C}{CJK UNIFIED IDEOGRAPH-8A9E} world
