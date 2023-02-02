@@ -188,7 +188,7 @@ SqliteIndexInfo_get_aConstraint_usable(SqliteIndexInfo *self, PyObject *args, Py
   }
   CHECK_RANGE(nConstraint);
 
-  if (self->index_info->aConstraint[which].op)
+  if (self->index_info->aConstraint[which].usable)
     Py_RETURN_TRUE;
   Py_RETURN_FALSE;
 }
