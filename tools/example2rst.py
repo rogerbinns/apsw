@@ -3,10 +3,12 @@
 # The purpose of this file is to produce rst output interspersed into
 # the the text of the example code
 
-import os
+import sys
 import re
 import tempfile
 import shutil
+
+import apsw.ext
 
 from typing import Any, TextIO
 
@@ -98,7 +100,11 @@ def gen_rst(filename: str, outfile: TextIO, output: dict[str, list[str]]) -> Non
 
 
 if __name__ == "__main__":
-    output = get_output("example-code.py")
+    try:
+        output = get_output("example-code.py")
+    except:
+        apsw.ext.print_augmented_traceback(*sys.exc_info())
+        raise
     with tempfile.NamedTemporaryFile("wt", prefix="example2rst") as f:
         gen_rst("example-code.py", f, output)
         shutil.copy(f.name, "doc/example.rst")
