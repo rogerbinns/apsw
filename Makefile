@@ -52,6 +52,7 @@ docs: build_ext $(GENDOCS) doc/example.rst doc/.static doc/typing.rstgen
 doc/example.rst: example-code.py tools/example2rst.py src/apswversion.h
 	rm -f dbfile
 	env PYTHONPATH=. $(PYTHON) -sS tools/example2rst.py
+	rm -f dbfile
 
 doc/typing.rstgen: src/apswtypes.py tools/types2rst.py
 	-rm -f doc/typing.rstgen
