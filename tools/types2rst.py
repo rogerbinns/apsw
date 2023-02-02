@@ -44,12 +44,16 @@ apsw_mod = {"zeroblob", "Cursor", "Connection"}
 
 
 def sub(m: re.Match) -> str:
+    # we have to add a backslash quoted zero width space on the end, otherwise docutils
+    # sees our replacement merging with the next token and claiming an error.  If a regular
+    # space is used then the output has wierd spaces everywhere
+    sp="\\\u200b"
     text: str = m.group("name")
     if text in std_typing:
-        return f"`{ text } <https://docs.python.org/3/library/typing.html#typing.{ text }>`__\\"
+        return f"`{ text } <https://docs.python.org/3/library/typing.html#typing.{ text }>`__{sp}"
     if text in std_other:
-        return f"`{ text } <https://docs.python.org/3/library/stdtypes.html#{ text }>`__\\"
-    return f":class:`{ text }`"
+        return f"`{ text } <https://docs.python.org/3/library/stdtypes.html#{ text }>`__{sp}"
+    return f":class:`{ text }`{sp}"
 
 
 def nomunge(pattern: str, replacement: Any, value: str) -> str:
@@ -69,8 +73,7 @@ def output(doc: List[Tuple[str, str, str]]) -> str:
     for name, _, _ in doc:
         in_doc.add(name)
     in_doc.update(apsw_mod)
-    pattern = r"\b(?P<name>" + "|".join(std_other.union(std_typing.union(in_doc))) + ")\\b"
-
+    pattern = r"\b(?P<name>" + "|".join(std_other.union(std_typing.union(in_doc))) + r")\b"
     res = ""
     for name, value, descr in doc:
         value = nomunge(pattern, sub, value)
