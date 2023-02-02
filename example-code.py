@@ -8,7 +8,6 @@ import time
 import apsw
 import apsw.ext
 import random
-import ast
 
 # Note: this code uses Python's optional typing annotations.  You can
 # ignore them and do not need to use them
@@ -684,8 +683,8 @@ connection.setupdatehook(None)
 # `BestIndex <https://www.sqlite.org/vtab.html#the_xbestindex_method>`__ method
 # as it is how you return less than all of the data.
 #
-# These examples use :func:`apsw.ext.make_virtual_module` to wrap
-# Python function, so you can have a virtual table in 3 lines of code
+# These examples use :func:`apsw.ext.make_virtual_module` to wrap a
+# Python function, so you can have a virtual table in 3 lines of code.
 
 # The unicode database.  This shows how you can pass keyword arguments
 # to your virtual table
@@ -722,7 +721,7 @@ apsw.ext.make_virtual_module(connection, "unicode_data", unicode_data)
 # how many codepoints are in each category?
 query = """
     SELECT count(*), category FROM unicode_data
-       WHERE start=0x1000 AND stop=0xffff
+       WHERE start = 0x1000 AND stop = 0xffff
        GROUP BY category
        ORDER BY category"""
 print(apsw.ext.format_query_table(connection, query))
@@ -746,7 +745,8 @@ if pwd:
     apsw.ext.make_virtual_module(connection, "pwd", pwd_database)
 
     # What shells are used where uid and gid are equal?
-    print(apsw.ext.format_query_table(connection, "SELECT distinct(pw_shell) FROM pwd WHERE pw_uid=pw_gid"))
+    query = "SELECT distinct(pw_shell) FROM pwd WHERE pw_uid = pw_gid"
+    print(apsw.ext.format_query_table(connection, query))
 
 
 # A more complex example - given a list of directories return information about the files within
@@ -776,7 +776,6 @@ def get_files_info(directories: str,
                        for k in get_files_info.stat_columns}
                 }
 
-
 # which stat columns do we want?
 get_files_info.stat_columns = tuple(n for n in dir(os.stat(".")) if n.startswith("st_"))
 # setup columns and access by providing an example of the first entry returned
@@ -784,7 +783,7 @@ get_files_info.columns, get_files_info.column_access = apsw.ext.get_column_names
 
 apsw.ext.make_virtual_module(connection, "files_info", get_files_info)
 
-# all the directories except our current one
+# all the sys.path directories except our current one
 bindings = (os.pathsep.join(p for p in sys.path if os.path.isdir(p) and not os.path.samefile(p, ".")), )
 
 # Find the 3 biggest files
@@ -792,11 +791,11 @@ query = "SELECT st_size, directory, name FROM files_info(?) ORDER BY st_size DES
 print(apsw.ext.format_query_table(connection, query, bindings))
 
 # Find the 3 oldest
-query = "SELECT DATE(st_ctime, 'auto'), directory, name FROM files_info(?) ORDER BY st_size DESC LIMIT 3"
+query = "SELECT DATE(st_ctime, 'auto') as date, directory, name FROM files_info(?) ORDER BY st_size DESC LIMIT 3"
 print(apsw.ext.format_query_table(connection, query, bindings))
 
-# find space used by extension
-query = "SELECT extension, SUM(st_size) FROM files_info(?) GROUP BY extension ORDER BY extension"
+# find space used by filename extension
+query = "SELECT extension, SUM(st_size) as total_size FROM files_info(?) GROUP BY extension ORDER BY extension"
 print(apsw.ext.format_query_table(connection, query, bindings))
 
 ### vfs: VFS - Virtual File System
