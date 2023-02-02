@@ -33,6 +33,9 @@ Virtual table updates:
 * :meth:`apsw.ext.make_virtual_module` makes it very easy to turn
   a Python function into a virtual table module.
 
+Added :meth:`apsw.ext.format_query_table` for handy table output
+with auto column sizes, colour, word wrap etc.
+
 3.40.1.0
 ========
 
