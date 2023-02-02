@@ -685,9 +685,35 @@ connection.setupdatehook(None)
 #
 # These examples use :func:`apsw.ext.make_virtual_module` to wrap a
 # Python function, so you can have a virtual table in 3 lines of code.
+# For the first example you'll find :meth:`apsw.ext.generate_series`
+# useful instead.
 
-# The unicode database.  This shows how you can pass keyword arguments
-# to your virtual table
+
+# 3 lines of code ...
+def table_range(start=1, stop=100, step=1):
+    for i in range(start, stop + 1, step):
+        yield (i, )
+
+
+# set column names
+table_range.columns = ("value", )
+# set how to access what table_range returns
+table_range.column_access = apsw.ext.VTColumnAccess.By_Index
+
+# register it
+apsw.ext.make_virtual_module(connection, "range", table_range)
+
+# see it work.  we can provide both positional and keyword
+# arguments
+query = "SELECT * FROM range(90) WHERE step=2"
+print(apsw.ext.format_query_table(connection, query))
+
+# the parameters are hidden columns so '*' doesn't select them
+# but you can ask
+query = "SELECT *, start, stop, step FROM range(89) WHERE step=3"
+print(apsw.ext.format_query_table(connection, query))
+
+# Expose the unicode database.
 import unicodedata
 
 # The methods we will call on each codepoint
@@ -723,30 +749,9 @@ query = """
     SELECT count(*), category FROM unicode_data
        WHERE start = 0x1000 AND stop = 0xffff
        GROUP BY category
-       ORDER BY category"""
+       ORDER BY category
+       LIMIT 10"""
 print(apsw.ext.format_query_table(connection, query))
-
-# The UNIX password database - in one line of code!
-try:
-    import pwd
-except:
-    pwd = None
-
-# only on UNIX
-if pwd:
-    # source of the data
-    def pwd_database():
-        return pwd.getpwall()  # the one line
-
-    # provide the column names and how to extract each row
-    pwd_database.columns, pwd_database.column_access = apsw.ext.get_column_names(pwd.getpwuid(0))
-
-    # Register
-    apsw.ext.make_virtual_module(connection, "pwd", pwd_database)
-
-    # What shells are used where uid and gid are equal?
-    query = "SELECT distinct(pw_shell) FROM pwd WHERE pw_uid = pw_gid"
-    print(apsw.ext.format_query_table(connection, query))
 
 
 # A more complex example - given a list of directories return information about the files within
@@ -756,9 +761,6 @@ def get_files_info(directories: str,
                    ignore_symlinks: bool = True) -> Iterator[dict[str, Any]]:
     """Scan directories returning information about the files within"""
     for root in directories.split(sep):
-        if not os.path.isdir(root):
-            return
-
         for entry in os.scandir(root):
             if entry.is_symlink() and ignore_symlinks:
                 continue
@@ -776,10 +778,12 @@ def get_files_info(directories: str,
                        for k in get_files_info.stat_columns}
                 }
 
+
 # which stat columns do we want?
 get_files_info.stat_columns = tuple(n for n in dir(os.stat(".")) if n.startswith("st_"))
 # setup columns and access by providing an example of the first entry returned
-get_files_info.columns, get_files_info.column_access = apsw.ext.get_column_names(next(get_files_info(".")))
+get_files_info.columns, get_files_info.column_access = \
+    apsw.ext.get_column_names(next(get_files_info(".")))
 
 apsw.ext.make_virtual_module(connection, "files_info", get_files_info)
 
@@ -787,16 +791,28 @@ apsw.ext.make_virtual_module(connection, "files_info", get_files_info)
 bindings = (os.pathsep.join(p for p in sys.path if os.path.isdir(p) and not os.path.samefile(p, ".")), )
 
 # Find the 3 biggest files
-query = "SELECT st_size, directory, name FROM files_info(?) ORDER BY st_size DESC LIMIT 3"
+query = """SELECT st_size, directory, name
+            FROM files_info(?)
+            ORDER BY st_size DESC
+            LIMIT 3"""
 print(apsw.ext.format_query_table(connection, query, bindings))
 
 # Find the 3 oldest
-query = "SELECT DATE(st_ctime, 'auto') as date, directory, name FROM files_info(?) ORDER BY st_size DESC LIMIT 3"
+query = """SELECT DATE(st_ctime, 'auto') AS date, directory, name
+            FROM files_info(?)
+            ORDER BY st_size DESC
+            LIMIT 3"""
 print(apsw.ext.format_query_table(connection, query, bindings))
 
 # find space used by filename extension
-query = "SELECT extension, SUM(st_size) as total_size FROM files_info(?) GROUP BY extension ORDER BY extension"
+query = """SELECT extension, SUM(st_size) as total_size
+            FROM files_info(?)
+            GROUP BY extension
+            ORDER BY extension"""
 print(apsw.ext.format_query_table(connection, query, bindings))
+
+# unregister a virtual table by passing None
+connection.createmodule("files_info", None)
 
 ### vfs: VFS - Virtual File System
 # VFS lets you control access to the filesystem from SQLite.  APSW
@@ -1007,6 +1023,36 @@ connection.trace_v2(apsw.SQLITE_TRACE_STMT | apsw.SQLITE_TRACE_PROFILE | apsw.SQ
 # We will get one each of the trace events
 for _ in connection.execute(query):
     pass
+
+# Turn off tracing
+connection.trace_v2(0, None)
+
+### format_query: Formatting query results table
+# :meth:`apsw.ext.format_query_table` makes it easy
+# to format the results of a query in an automatic
+# adjusting table, colour, sanitizing strings,
+# truncation etc
+
+# Create a table with some dummy data
+connection.execute("""CREATE TABLE dummy(quantity, [spaces in name], last);
+    INSERT INTO dummy VALUES(3, 'some regular text to make this row interesting', x'030709');
+    INSERT INTO dummy VALUES(3.14, 'Tiếng Việt', null);
+    INSERT INTO dummy VALUES('', ?, ' ');
+""", ('special \t\n\f\0 cha\\rs',))
+
+query="SELECT * FROM dummy"
+# default
+print(apsw.ext.format_query_table(connection, query))
+
+# no unicode and maximum sanitize the text
+kwargs={"use_unicode": False, "string_sanitize": 2}
+print(apsw.ext.format_query_table(connection, query, **kwargs))
+
+# lets have unicode and make things narrow with no word wrap
+kwargs={"use_unicode": True, "string_sanitize": 0, "text_width": 30, "word_wrap": False}
+print(apsw.ext.format_query_table(connection, query, **kwargs))
+
+# do look at the format_query_table doc for more output tweaking
 
 ### cleanup:  Cleanup
 # As a general rule you do not need to do any cleanup.  Standard
