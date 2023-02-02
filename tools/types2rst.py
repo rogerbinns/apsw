@@ -46,7 +46,7 @@ apsw_mod = {"zeroblob", "Cursor", "Connection"}
 def sub(m: re.Match) -> str:
     # we have to add a backslash quoted zero width space on the end, otherwise docutils
     # sees our replacement merging with the next token and claiming an error.  If a regular
-    # space is used then the output has wierd spaces everywhere
+    # space is used then the output has weird spaces everywhere
     sp="\\\u200b"
     text: str = m.group("name")
     if text in std_typing:
