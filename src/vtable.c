@@ -474,11 +474,16 @@ SqliteIndexInfo_set_idxNum(SqliteIndexInfo *self, PyObject *value)
 
   CHECK_INDEX(-1);
 
-  v = PyLong_AsInt(value);
-  if (PyErr_Occurred())
+  if(!PyLong_Check(value))
+  {
+    PyErr_Format(PyExc_TypeError, "Expected an int, not %s", Py_TypeName(value));
     return -1;
-  self->index_info->idxNum = v;
-  return 0;
+  }
+    v = PyLong_AsInt(value);
+    if (PyErr_Occurred())
+      return -1;
+    self->index_info->idxNum = v;
+    return 0;
 }
 
 /** .. attribute:: idxStr
@@ -603,6 +608,12 @@ SqliteIndexInfo_set_estimatedRows(SqliteIndexInfo *self, PyObject *value)
   sqlite3_int64 v;
   CHECK_INDEX(-1);
 
+  if(!PyLong_Check(value))
+  {
+    PyErr_Format(PyExc_TypeError, "Expected an int, not %s", Py_TypeName(value));
+    return -1;
+  }
+
   v = PyLong_AsLongLong(value);
 
   if (PyErr_Occurred())
@@ -631,6 +642,12 @@ SqliteIndexInfo_set_idxFlags(SqliteIndexInfo *self, PyObject *value)
 {
   int v;
   CHECK_INDEX(-1);
+
+  if(!PyLong_Check(value))
+  {
+    PyErr_Format(PyExc_TypeError, "Expected an int, not %s", Py_TypeName(value));
+    return -1;
+  }
 
   v = PyLong_AsInt(value);
   if (PyErr_Occurred())
