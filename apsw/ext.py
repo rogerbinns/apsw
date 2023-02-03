@@ -545,11 +545,202 @@ def format_query_table(db: apsw.Connection,
         def colour_wrap(text, *args, **kwargs):
             return text
 
+    def table_builder(colnames, rows):
+        colwidths = [max(len(v) for v in c.splitlines()) for c in colnames]
+        coltypes = [set() for _ in colnames]
+
+        # type, measure and stringize each cell
+        for row in rows:
+            for i, cell in enumerate(row):
+                coltypes[i].add(type(cell))
+                if isinstance(cell, str):
+                    if callable(string_sanitize):
+                        cell = string_sanitize(cell)
+                    else:
+                        cell = unicodedata.normalize("NFKC", cell)
+                        if string_sanitize in (0, 1):
+                            cell = cell.replace("\\", "\\\\")
+                            cell = cell.replace("\r\n", "\n")
+                            cell = cell.replace("\t", " ")
+                            cell = cell.replace("\f", "")
+                            cell = cell.replace("\v", "")
+                            cell = cell.replace("\0", "\\0")
+
+                        if string_sanitize == 1:
+
+                            def repl(s):
+                                if s[0] in string.printable:
+                                    return s[0]
+                                try:
+                                    return "{" + unicodedata.name(s[0]) + "}"
+                                except ValueError:
+                                    return "\\x" + f"{ord(s[0]):02}"
+
+                            cell = re.sub(".", repl, cell)
+
+                        if string_sanitize == 2:
+
+                            def repl(s):
+                                if s[0] in string.printable and s[0] not in string.whitespace:
+                                    return s[0]
+                                return "."
+
+                            cell = re.sub(".", repl, cell)
+                if quote:
+                    val = apsw.format_sql_value(cell)
+                else:
+                    if isinstance(cell, str):
+                        val = cell
+                    elif isinstance(cell, (float, int)):
+                        val = str(cell)
+                    elif isinstance(cell, bytes):
+                        val = binary(cell)
+                    else:
+                        val = null
+                assert isinstance(val, str), f"expected str not { val!r}"
+
+                val = val.replace("\r\n", "\n")
+
+                if truncate > 0 and len(val) > truncate:
+                    val = val[:truncate] + truncate_val
+                row[i] = (val, type(cell))
+                colwidths[i] = max(colwidths[i], max(len(v) for v in val.splitlines()) if val else 0)
+
+        ## work out widths
+        # we need a space each side of a cell plus a cell separator hence 3
+        # "| cell " and another for the final "|"
+        total_width = lambda: sum(w + 3 for w in colwidths) + 1
+
+        # proportionally reduce column widths
+        victim = len(colwidths) - 1
+        while total_width() > text_width:
+            # if all are 1 then we can't go any narrower
+            if sum(colwidths) == len(colwidths):
+                break
+
+            # this makes wider columns take more of the width blame
+            proportions = [w * 1.1 / total_width() for w in colwidths]
+
+            excess = total_width() - text_width
+
+            # start with widest columns first
+            for _, i in reversed(sorted((proportions[n], n) for n in range(len(colwidths)))):
+                w = colwidths[i]
+                w -= int(proportions[i] * excess)
+                w = max(1, w)
+                colwidths[i] = w
+                new_excess = total_width() - text_width
+                # narrower than needed?
+                if new_excess < 0:
+                    colwidths[i] -= new_excess
+                    break
+
+            # if still too wide, then punish victim
+            if total_width() > text_width:
+                if colwidths[victim] > 1:
+                    colwidths[victim] -= 1
+                victim -= 1
+                if victim < 0:
+                    victim = len(colwidths) - 1
+
+        # can't fit
+        if total_width() > text_width:
+            raise ValueError("Results can't be fitted in terminal width even with 1 char wide columns")
+
+        # break headers and cells into lines
+        if word_wrap:
+
+            def wrap(text, width):
+                res = []
+                for para in text.splitlines():
+                    if para:
+                        res.extend(textwrap.wrap(para, width=width, drop_whitespace=False))
+                    else:
+                        res.append("")
+                return res
+        else:
+
+            def wrap(text, width):
+                res = []
+                for para in text.splitlines():
+                    if len(para) < width:
+                        res.append(para)
+                    else:
+                        res.extend([para[s:s + width] for s in range(0, len(para), width)])
+                return res
+
+        colnames = [wrap(colnames[i], colwidths[i]) for i in range(len(colwidths))]
+        for row in rows:
+            for i, (text, t) in enumerate(row):
+                row[i] = (wrap(text, colwidths[i]), t)
+
+        ## output
+        # are any cells more than one line?
+        multiline = max(len(cell[0]) for cell in row for row in rows) > 1
+
+        out_lines = []
+
+        def do_bar(chars):
+            line = chars[0]
+            for i, w in enumerate(colwidths):
+                line += chars[1] * (w + 2)
+                if i == len(colwidths) - 1:
+                    line += chars[3]
+                else:
+                    line += chars[2]
+            out_lines.append(line)
+
+        def do_row(row, sep, *, centre=False, header=False):
+            # column names
+            for n in range(max(len(cell[0]) for cell in row)):
+                line = sep
+                for i, (cell, t) in enumerate(row):
+                    text = cell[n] if n < len(cell) else ""
+                    text = " " + text + " "
+                    lt = len(text)
+                    # fudge things a little with this heuristic which
+                    # works when there is extra space - the earlier textwrap
+                    # doesn't know about different char widths
+                    lt += sum(1 if unicodedata.east_asian_width(c) == "W" else 0 for c in text)
+                    extra = " " * max(colwidths[i] + 2 - lt, 0)
+                    if centre:
+                        lpad = extra[:len(extra) // 2]
+                        rpad = extra[len(extra) // 2:]
+                    else:
+                        lpad = ""
+                        rpad = extra
+                    if header:
+                        text = colour_wrap(lpad + text + rpad, None, header=True)
+                    else:
+                        text = lpad + colour_wrap(text, t) + rpad
+                    line += text + sep
+                out_lines.append(line)
+
+        do_bar("┌─┬┐" if use_unicode else "+-++")
+        do_row([(c, None) for c in colnames], "│" if use_unicode else "|", centre=True, header=True)
+
+        # rows
+        if rows:
+            for row in rows:
+                if multiline:
+                    do_bar("├─┼┤" if use_unicode else "+-++")
+                do_row(row, "│" if use_unicode else "|")
+
+        do_bar("└─┴┘" if use_unicode else "+-++")
+
+        return "\n".join(out_lines) + "\n"
+
+    res = []
+
     cursor = db.cursor()
     colnames = None
 
     def trace(cursor, query, bindings):
-        nonlocal colnames
+        nonlocal colnames, rows
+        if colnames:
+            res.append(table_builder(colnames, rows))
+            colnames = None
+            rows = []
         colnames = [n for n, _ in cursor.getdescription()]
         return True
 
@@ -558,189 +749,11 @@ def format_query_table(db: apsw.Connection,
     for row in cursor.execute(query, bindings):
         rows.append(list(row))
 
-    colwidths = [max(len(v) for v in c.splitlines()) for c in colnames]
-    coltypes = [set() for _ in colnames]
+    res.append(table_builder(colnames, rows))
 
-    # type, measure and stringize each cell
-    for row in rows:
-        for i, cell in enumerate(row):
-            coltypes[i].add(type(cell))
-            if isinstance(cell, str):
-                if callable(string_sanitize):
-                    cell = string_sanitize(cell)
-                else:
-                    cell = unicodedata.normalize("NFKC", cell)
-                    if string_sanitize in (0, 1):
-                        cell = cell.replace("\\", "\\\\")
-                        cell = cell.replace("\r\n", "\n")
-                        cell = cell.replace("\t", " ")
-                        cell = cell.replace("\f", "")
-                        cell = cell.replace("\v", "")
-                        cell = cell.replace("\0", "\\0")
-
-                    if string_sanitize == 1:
-
-                        def repl(s):
-                            if s[0] in string.printable:
-                                return s[0]
-                            try:
-                                return "{" + unicodedata.name(s[0]) + "}"
-                            except ValueError:
-                                return "\\x" + f"{ord(s[0]):02}"
-
-                        cell = re.sub(".", repl, cell)
-
-                    if string_sanitize == 2:
-
-                        def repl(s):
-                            if s[0] in string.printable and s[0] not in string.whitespace:
-                                return s[0]
-                            return "."
-
-                        cell = re.sub(".", repl, cell)
-            if quote:
-                val = apsw.format_sql_value(cell)
-            else:
-                if isinstance(cell, str):
-                    val = cell
-                elif isinstance(cell, (float, int)):
-                    val = str(cell)
-                elif isinstance(cell, bytes):
-                    val = binary(cell)
-                else:
-                    val = null
-            assert isinstance(val, str), f"expected str not { val!r}"
-
-            val = val.replace("\r\n", "\n")
-
-            if truncate > 0 and len(val) > truncate:
-                val = val[:truncate] + truncate_val
-            row[i] = (val, type(cell))
-            colwidths[i] = max(colwidths[i], max(len(v) for v in val.splitlines()) if val else 0)
-
-    ## work out widths
-    # we need a space each side of a cell plus a cell separator hence 3
-    # "| cell " and another for the final "|"
-    total_width = lambda: sum(w + 3 for w in colwidths) + 1
-
-    # proportionally reduce column widths
-    victim = len(colwidths) - 1
-    while total_width() > text_width:
-        # if all are 1 then we can't go any narrower
-        if sum(colwidths) == len(colwidths):
-            break
-
-        # this makes wider columns take more of the width blame
-        proportions = [w * 1.1 / total_width() for w in colwidths]
-
-        excess = total_width() - text_width
-
-        # start with widest columns first
-        for _, i in reversed(sorted((proportions[n], n) for n in range(len(colwidths)))):
-            w = colwidths[i]
-            w -= int(proportions[i] * excess)
-            w = max(1, w)
-            colwidths[i] = w
-            new_excess = total_width() - text_width
-            # narrower than needed?
-            if new_excess < 0:
-                colwidths[i] -= new_excess
-                break
-
-        # if still too wide, then punish victim
-        if total_width() > text_width:
-            if colwidths[victim] > 1:
-                colwidths[victim] -= 1
-            victim -= 1
-            if victim < 0:
-                victim = len(colwidths) - 1
-
-    # can't fit
-    if total_width() > text_width:
-        raise ValueError("Results can't be fitted in terminal width even with 1 char wide columns")
-
-    # break headers and cells into lines
-    if word_wrap:
-
-        def wrap(text, width):
-            res = []
-            for para in text.splitlines():
-                if para:
-                    res.extend(textwrap.wrap(para, width=width, drop_whitespace=False))
-                else:
-                    res.append("")
-            return res
-    else:
-
-        def wrap(text, width):
-            res = []
-            for para in text.splitlines():
-                if len(para) < width:
-                    res.append(para)
-                else:
-                    res.extend([para[s:s + width] for s in range(0, len(para), width)])
-            return res
-
-    colnames = [wrap(colnames[i], colwidths[i]) for i in range(len(colwidths))]
-    for row in rows:
-        for i, (text, t) in enumerate(row):
-            row[i] = (wrap(text, colwidths[i]), t)
-
-    ## output
-    # are any cells more than one line?
-    multiline = max(len(cell[0]) for cell in row for row in rows) > 1
-
-    out_lines = []
-
-    def do_bar(chars):
-        line = chars[0]
-        for i, w in enumerate(colwidths):
-            line += chars[1] * (w + 2)
-            if i == len(colwidths) - 1:
-                line += chars[3]
-            else:
-                line += chars[2]
-        out_lines.append(line)
-
-    def do_row(row, sep, *, centre=False, header=False):
-        # column names
-        for n in range(max(len(cell[0]) for cell in row)):
-            line = sep
-            for i, (cell, t) in enumerate(row):
-                text = cell[n] if n < len(cell) else ""
-                text = " " + text + " "
-                lt = len(text)
-                # fudge things a little with this heuristic which
-                # works when there is extra space - the earlier textwrap
-                # doesn't know about different char widths
-                lt += sum(1 if unicodedata.east_asian_width(c) == "W" else 0 for c in text)
-                extra = " " * max(colwidths[i] + 2 - lt, 0)
-                if centre:
-                    lpad = extra[:len(extra) // 2]
-                    rpad = extra[len(extra) // 2:]
-                else:
-                    lpad = ""
-                    rpad = extra
-                if header:
-                    text = colour_wrap(lpad + text + rpad, None, header=True)
-                else:
-                    text = lpad + colour_wrap(text, t) + rpad
-                line += text + sep
-            out_lines.append(line)
-
-    do_bar("┌─┬┐" if use_unicode else "+-++")
-    do_row([(c, None) for c in colnames], "│" if use_unicode else "|", centre=True, header=True)
-
-    # rows
-    if rows:
-        for row in rows:
-            if multiline:
-                do_bar("├─┼┤" if use_unicode else "+-++")
-            do_row(row, "│" if use_unicode else "|")
-
-    do_bar("└─┴┘" if use_unicode else "+-++")
-
-    return "\n".join(out_lines) + "\n"
+    if len(res) == 1:
+        return res[0]
+    return "\n".join(res)
 
 
 class VTColumnAccess(enum.Enum):
