@@ -14,13 +14,6 @@ import time
 import gc
 import optparse
 
-# Sigh
-try:
-    maxuni = 0x10ffff
-    chr(maxuni)
-except ValueError:
-    maxuni = 0xffff
-
 timerfn = time.process_time
 
 
@@ -101,7 +94,7 @@ def doit():
                     newt.append(t)
                     continue
                 while True:
-                    t = random.randint(0xa1, maxuni)
+                    t = random.randint(0xa1, sys.maxunicode)
                     # we don't want the surrogate range or apostrophe
                     if t < 0xd800 or t > 0xdfff: break
                 newt.append(chr(t))
