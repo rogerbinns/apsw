@@ -1122,7 +1122,7 @@ class APSW(unittest.TestCase):
 
     def testVTableStuff(self):
         "Test new stuff added for Virtual tables"
-        if False and sys.version_info < (3, 7):
+        if sys.version_info < (3, 7):
             # it works on 3.6 but apsw.ext doesn't because it uses dataclasses
             return
         # we use apsw.ext.index_info_to_dict as part of the testing
