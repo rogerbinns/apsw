@@ -240,6 +240,23 @@
 } while(0)
 
 
+#define  Apsw_shadow_name_DOC "shadow_name($self,table_name)\n--\n\napsw.shadow_name(table_name: str) -> bool\n\n" \
+"If you have virtual tables and SQLite is in defensive mode, then this\n" \
+"method is called to check if *table_name* is a `shadow name\n" \
+"<https://www.sqlite.org/vtab.html#the_xshadowname_method>`__\n" \
+"\n" \
+"The default implementation always returns *False*.  To\n" \
+"provide your own, you need to::\n" \
+"\n" \
+"   apsw.shadow_name = your_method\n" 
+
+#define Apsw_shadow_name_USAGE "apsw.shadow_name(table_name: str) -> bool"
+
+#define Apsw_shadow_name_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(table_name), const char *)); \
+} while(0)
+
+
 #define  Apsw_shutdown_DOC "shutdown($self)\n--\n\napsw.shutdown() -> None\n\n" \
 "It is unlikely you will want to call this method and there is no\n" \
 "need to do so.  It is a **really** bad idea to call it unless you\n" \

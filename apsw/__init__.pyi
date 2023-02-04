@@ -348,6 +348,17 @@ def set_default_vfs(name: str) -> None:
       * `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__"""
     ...
 
+def shadow_name(table_name: str) -> bool:
+    """If you have virtual tables and SQLite is in defensive mode, then this
+    method is called to check if *table_name* is a `shadow name
+    <https://www.sqlite.org/vtab.html#the_xshadowname_method>`__
+
+    The default implementation always returns *False*.  To
+    provide your own, you need to::
+
+       apsw.shadow_name = your_method"""
+    ...
+
 def shutdown() -> None:
     """It is unlikely you will want to call this method and there is no
     need to do so.  It is a **really** bad idea to call it unless you
@@ -2892,6 +2903,10 @@ if sys.version_info >= (3, 8):
             """Returns a :class:`cursor <VTCursor>` object."""
             ...
 
+        def Release(self, level: int) -> None:
+            """Release nested transactions back to *level*."""
+            ...
+
         def Rename(self, newname: str) -> None:
             """Notification that the table will be given a new name. If you return
             without raising an exception, then SQLite renames the table (you
@@ -2902,6 +2917,21 @@ if sys.version_info >= (3, 8):
         def Rollback(self) -> None:
             """This function is used as part of transactions.  You do not have to
             provide the method."""
+            ...
+
+        def Savepoint(self, level: int) -> None:
+            """Set nested transaction to *level*."""
+            ...
+
+        def ShadowName(self, table_name: str) -> bool:
+            """.. note::
+
+               Your virtual table is not called with this method because the underlying
+               SQLite implementation defines it as a global method, not as a method
+               on a virtual table.  You will need to provide :meth:`apsw.shadow_name`
+               to respond.
+
+            Checks if *table_name* is owned by a virtual table in defensive mode."""
             ...
 
         def Sync(self) -> None:
