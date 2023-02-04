@@ -9086,16 +9086,6 @@ shell.write(shell.stdout, "hello world\\n")
             pass
 
         ## VtabRenameBadName
-        apsw.faultdict["VtabRenameBadName"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.createmodule("foo", Source())
-            db.cursor().execute("create virtual table foo using foo(); alter table foo rename to bar")
-            1 / 0
-        except MemoryError:
-            pass
-
-        ## VtabRenameBadName
         apsw.faultdict["CreateModuleFail"] = True
         try:
             db = apsw.Connection(":memory:")

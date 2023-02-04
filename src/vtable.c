@@ -474,16 +474,16 @@ SqliteIndexInfo_set_idxNum(SqliteIndexInfo *self, PyObject *value)
 
   CHECK_INDEX(-1);
 
-  if(!PyLong_Check(value))
+  if (!PyLong_Check(value))
   {
     PyErr_Format(PyExc_TypeError, "Expected an int, not %s", Py_TypeName(value));
     return -1;
   }
-    v = PyLong_AsInt(value);
-    if (PyErr_Occurred())
-      return -1;
-    self->index_info->idxNum = v;
-    return 0;
+  v = PyLong_AsInt(value);
+  if (PyErr_Occurred())
+    return -1;
+  self->index_info->idxNum = v;
+  return 0;
 }
 
 /** .. attribute:: idxStr
@@ -608,7 +608,7 @@ SqliteIndexInfo_set_estimatedRows(SqliteIndexInfo *self, PyObject *value)
   sqlite3_int64 v;
   CHECK_INDEX(-1);
 
-  if(!PyLong_Check(value))
+  if (!PyLong_Check(value))
   {
     PyErr_Format(PyExc_TypeError, "Expected an int, not %s", Py_TypeName(value));
     return -1;
@@ -643,7 +643,7 @@ SqliteIndexInfo_set_idxFlags(SqliteIndexInfo *self, PyObject *value)
   int v;
   CHECK_INDEX(-1);
 
-  if(!PyLong_Check(value))
+  if (!PyLong_Check(value))
   {
     PyErr_Format(PyExc_TypeError, "Expected an int, not %s", Py_TypeName(value));
     return -1;
@@ -2032,31 +2032,115 @@ static int
 apswvtabRename(sqlite3_vtab *pVtab, const char *zNew)
 {
   PyGILState_STATE gilstate;
-  PyObject *vtable, *res = NULL, *newname = NULL;
+  PyObject *vtable, *res = NULL;
   int sqliteres = SQLITE_OK;
 
   gilstate = PyGILState_Ensure();
   vtable = ((apsw_vtable *)pVtab)->vtable;
 
-  APSW_FAULT_INJECT(VtabRenameBadName, newname = convertutf8string(zNew), newname = PyErr_NoMemory());
-  if (!newname)
-  {
-    sqliteres = SQLITE_ERROR;
-    goto finally;
-  }
   /* Marked as optional since sqlite does the actual renaming */
-  res = Call_PythonMethodV(vtable, "Rename", 0, "(N)", newname);
+  res = Call_PythonMethodV(vtable, "Rename", 0, "(s)", zNew);
   if (!res)
   {
     sqliteres = MakeSqliteMsgFromPyException(NULL);
     AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xRename", "{s: O, s: s}", "self", vtable, "newname", zNew);
   }
 
-finally:
   Py_XDECREF(res);
   PyGILState_Release(gilstate);
   return sqliteres;
 }
+
+/** .. method:: Savepoint(level: int) -> None
+
+  Set nested transaction to *level*.
+*/
+static int
+apswvtabSavepoint(sqlite3_vtab *pVtab, int level)
+{
+  PyGILState_STATE gilstate;
+  PyObject *vtable, *res = NULL;
+  int sqliteres = SQLITE_OK;
+
+  gilstate = PyGILState_Ensure();
+  vtable = ((apsw_vtable *)pVtab)->vtable;
+
+  res = Call_PythonMethodV(vtable, "Savepoint", 1, "(i)", level);
+  if (!res)
+  {
+    sqliteres = MakeSqliteMsgFromPyException(NULL);
+    AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xSavepoint", "{s: O, s: i}", "self", vtable, "level", level);
+  }
+
+  Py_XDECREF(res);
+  PyGILState_Release(gilstate);
+  return sqliteres;
+}
+
+/** .. method:: Release(level: int) -> None
+
+  Release nested transactions back to *level*.
+*/
+static int
+apswvtabRelease(sqlite3_vtab *pVtab, int level)
+{
+  PyGILState_STATE gilstate;
+  PyObject *vtable, *res = NULL;
+  int sqliteres = SQLITE_OK;
+
+  gilstate = PyGILState_Ensure();
+  vtable = ((apsw_vtable *)pVtab)->vtable;
+
+  res = Call_PythonMethodV(vtable, "Release", 1, "(i)", level);
+  if (!res)
+  {
+    sqliteres = MakeSqliteMsgFromPyException(NULL);
+    AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xRelease", "{s: O, s: i}", "self", vtable, "level", level);
+  }
+
+  Py_XDECREF(res);
+  PyGILState_Release(gilstate);
+  return sqliteres;
+}
+
+/* .. method:: RollbackTo(level: int) -> None
+
+  Rollback nested transactions back to *level*.
+
+*/
+static int
+apswvtabRollbackTo(sqlite3_vtab *pVtab, int level)
+{
+  PyGILState_STATE gilstate;
+  PyObject *vtable, *res = NULL;
+  int sqliteres = SQLITE_OK;
+
+  gilstate = PyGILState_Ensure();
+  vtable = ((apsw_vtable *)pVtab)->vtable;
+
+  res = Call_PythonMethodV(vtable, "RollbackTo", 1, "(i)", level);
+  if (!res)
+  {
+    sqliteres = MakeSqliteMsgFromPyException(NULL);
+    AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xRollbackTo", "{s: O, s: i}", "self", vtable, "level", level);
+  }
+
+  Py_XDECREF(res);
+  PyGILState_Release(gilstate);
+  return sqliteres;
+}
+
+/** .. method:: ShadowName(table_name: str) -> bool
+
+  .. note::
+
+     Your virtual table is not called with this method because the underlying
+     SQLite implementation defines it as a global method, not as a method
+     on a virtual table.  You will need to provide :meth:`apsw.shadow_name`
+     to respond.
+
+  Checks if *table_name* is owned by a virtual table in defensive mode.
+*/
 
 /** .. class:: VTCursor
 
@@ -2393,14 +2477,13 @@ apswvtabSetupModuleDef(int iVersion, int eponymous, int eponymous_only, int read
   }
   mod->xFindFunction = apswvtabFindFunction;
   if (!read_only)
+  {
     mod->xRename = apswvtabRename;
-
-  /* ::TODO::
     mod->xSavepoint = apswvtabSavepoint;
     mod->xRelease = apswvtabRelease;
     mod->xRollbackTo = apswvtabRollbackTo;
-    mod->xShadowName = apswvtabShadowName;
-  */
+  }
+  mod->xShadowName = apswvtabShadowName;
 
   return mod;
 }
