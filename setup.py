@@ -138,7 +138,7 @@ class build_test_extension(Command):
 
         # unixy platforms have this, and is necessary to match the 32/64 bitness of Python itself
         if v('CC'):
-            cc = f"{ v('CC') } { v('CFLAGS') } { v('CCSHARED') } -Isqlite3 -I. -c src/testextension.c"
+            cc = f"{ v('CC') } { v('CFLAGS') } { v('CCSHARED') } -Isqlite3 -c src/testextension.c"
             ld = f"{ v('LDSHARED') } testextension.o -o { name }"
 
             for cmd in cc, ld:
@@ -519,7 +519,7 @@ class apsw_build_ext(beparent):
             ext.define_macros.append(('APSW_FORK_CHECKER', '1'))
 
         # SQLite 3
-        # Look for amalgamation in our directory or in sqlite3 subdirectory
+        # Look for amalgamation in sqlite3 subdirectory
 
         path = findamalgamation()
         if path:
