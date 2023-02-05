@@ -1316,6 +1316,23 @@ class APSW(unittest.TestCase):
                 else:
                     1 / 0
 
+        # how we get usable == False
+        def bioUnusable(o):
+            # we can get usable == False by having an IN which comes across as CONSTRAINT_EQ
+            # and using it.  then the next call will have it as unusable
+            for i in range(o.nConstraint):
+                if o.get_aConstraint_op(i) == apsw.SQLITE_INDEX_CONSTRAINT_EQ \
+                    and o.get_aConstraint_usable(i):
+                    o.set_aConstraintUsage_argvIndex(i, 1)
+                    return True
+            else:
+                self.assertTrue(any(o.get_aConstraint_usable(i) == False for i in range(o.nConstraint)))
+            return True
+
+        Source.bio_callback = bioUnusable
+        for _ in self.db.execute("select * from bar where c1 in (1,2) and c2>6"):
+            pass
+
         # check it actually works
         def bio(o):
             # we work on the second query in index_info_test_patterns
@@ -1437,7 +1454,7 @@ class APSW(unittest.TestCase):
         'distinct':
         0
     }), (
-        "select c2, c4, c6 from bar where c3 is not null and c10>'foo' and c12!=c14 group by c8 order by c10 asc, c12 desc",
+        "select c2, c4, c6 from bar where c3 is not null and c10>'foo' and c12!=c14 group by c8 order by c10 desc",
         {
             'nConstraint':
             2,
@@ -1460,7 +1477,7 @@ class APSW(unittest.TestCase):
             1,
             'aOrderBy': [{
                 'iColumn': 8,
-                'desc': False
+                'desc': True
             }],
             'aConstraintUsage': [{
                 'argvIndex': 0,
@@ -3405,6 +3422,15 @@ class APSW(unittest.TestCase):
                     return lambda x, y: x + y
                 return None
 
+            def FindFunction5(self, name, nargs):
+                return (1, 2, 3, 4)
+
+            def FindFunction6(self, name, nargs):
+                return (1, 2)
+
+            def FindFunction7(self, name, nargs):
+                return (1, lambda x: x)
+
         class Cursor:
 
             _bestindexreturn = 99
@@ -3710,6 +3736,12 @@ class APSW(unittest.TestCase):
         VTable.FindFunction = VTable.FindFunction4
         for row in cur.execute("select xyz(item,description) from foo    ", can_cache=False):
             pass
+
+        for ff, e in ((VTable.FindFunction5, TypeError),
+                      (VTable.FindFunction6, TypeError),
+                      (VTable.FindFunction7, ValueError)):
+            VTable.FindFunction = ff
+            self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, e,  cur.execute, "select xyz(item,description) from foo", can_cache=False)
 
         # transaction control
         # Begin, Sync, Commit and rollback all use the same underlying code
