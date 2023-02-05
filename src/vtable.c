@@ -1250,10 +1250,11 @@ finally:
 
      (integer, boolean)
        By default SQLite will check what you return. For example if
-       you said that you had an index on price, SQLite will still
-       check that each row you returned is greater than 74.99. If you
-       set the boolean to False then SQLite won't do that double
-       checking.
+       you said that you had an index on price and so would only
+       return rows greater than 74.99, then SQLite will still
+       check that each row you returned is greater than 74.99.
+       If the boolean is True then SQLite will not double
+       check, while False retains the default double checking.
 
   Example query: ``select * from foo where price > 74.99 and
   quantity<=10 and customer=='Acme Widgets'``.  customer is column 0,
