@@ -11,7 +11,7 @@ else
 fi
 
 # Measure code coverage
-GCOVOPTS="-b -c"
+GCOVOPTS="-b -H"
 GCOVOPTS=""
 rm -f *.gcda *.gcov *.gcno sqlite3/*.gcov apsw/*.so
 # find python
@@ -29,12 +29,11 @@ then
     CFLAGS="$CFLAGS -DAPSW_USE_SQLITE_CONFIG"
 fi
 
-PROFILE="-ftest-coverage -fprofile-arcs -g"
+PROFILE="-Og --coverage"
 
 set -ex
 $CC $CFLAGS $MOREFLAGS $PROFILE -DAPSW_NO_NDEBUG -DSQLITE_ENABLE_API_ARMOR -DAPSW_USE_SQLITE_AMALGAMATION  -DAPSW_TESTFIXTURES -I$INCLUDEDIR -Isrc -Isqlite3 -I. -c src/apsw.c
 $LINKER $PROFILE apsw.o -o apsw/__init__$SOSUFFIX
-$PYTHON setup.py build_test_extension
 set +ex
 $PYTHON $args
 res=$?
