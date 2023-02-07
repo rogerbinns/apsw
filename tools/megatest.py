@@ -156,8 +156,18 @@ def buildpython(workdir, pyver, bits, logfilename):
         ldflags = "LDFLAGS=\"-L/usr/lib/$(dpkg-architecture -qDEB_HOST_MULTIARCH)\"; export LDFLAGS;"
     else:
         ldflags = ""
-    run(f"set -e ; cd { workdir } ; cd Python-{ pyver } ; env CC='gcc -m{ bits }' ./configure --prefix={ workdir }/pyinst  >> { logfilename } 2>&1; make >>{ logfilename } 2>&1; make  install >>{ logfilename } 2>&1 ; make clean >/dev/null"
-        )
+    run(f"""set -e ;
+            cd { workdir } ;
+            cd Python-{ pyver } ;
+            env CC='gcc -m{ bits }' ./configure --prefix={ workdir }/pyinst  --with-ensure-pip=no --disable-test-modules >> { logfilename } 2>&1 ;
+            make >>{ logfilename } 2>&1 ;
+            make  install >>{ logfilename } 2>&1 ;
+            # a lot of effort to reduce disk space
+            rm -rf {workdir}/pyinst/lib/*/site-packages/pip  {workdir}/pyinst/lib/*/test { workdir}/pyinst/lib/*/idlelib { workdir}/pyinst/lib/*/lib2to3 { workdir}/pyinst/lib/*/tkinter ;
+            rm -rf lib/test lib/idlelib lib/encodings ;
+            find { workdir } -type d -name __pycache__ -print0 | xargs -0 --no-run-if-empty rm -rf ;
+            make clean >/dev/null
+    """ )
     suf = "3"
     pybin = os.path.join(workdir, "pyinst", "bin", "python" + suf)
     return pybin, os.path.join(workdir, "pyinst", "lib")
