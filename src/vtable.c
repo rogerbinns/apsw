@@ -2144,7 +2144,7 @@ apswvtabRollbackTo(sqlite3_vtab *pVtab, int level)
   return sqliteres;
 }
 
-/** .. method:: ShadowName(table_name: str) -> bool
+/** .. method:: ShadowName(table_suffix: str) -> bool
 
   .. note::
 
@@ -2153,7 +2153,6 @@ apswvtabRollbackTo(sqlite3_vtab *pVtab, int level)
      on a virtual table.  You will need to provide :meth:`apsw.shadow_name`
      to respond.
 
-  Checks if *table_name* is owned by a virtual table in defensive mode.
 */
 
 /** .. class:: VTCursor

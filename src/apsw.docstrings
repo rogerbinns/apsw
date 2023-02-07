@@ -240,20 +240,24 @@
 } while(0)
 
 
-#define  Apsw_shadow_name_DOC "shadow_name($self,table_name)\n--\n\napsw.shadow_name(table_name: str) -> bool\n\n" \
-"If you have virtual tables and SQLite is in defensive mode, then this\n" \
-"method is called to check if *table_name* is a `shadow name\n" \
+#define  Apsw_shadow_name_DOC "shadow_name($self,table_suffix)\n--\n\napsw.shadow_name(table_suffix: str) -> bool\n\n" \
+"If you have virtual tables then this method is called to check if\n" \
+"*table_suffix* is a `shadow name\n" \
 "<https://www.sqlite.org/vtab.html#the_xshadowname_method>`__\n" \
 "\n" \
 "The default implementation always returns *False*.  To\n" \
 "provide your own, you need to::\n" \
 "\n" \
-"   apsw.shadow_name = your_method\n" 
+"   apsw.shadow_name = your_method\n" \
+"\n" \
+"If a virtual table is created named :code:`example` and then a\n" \
+"real table is created named :code:`example_content`, this\n" \
+"would be called with a *table_suffix* of :code:`content`\n" 
 
-#define Apsw_shadow_name_USAGE "apsw.shadow_name(table_name: str) -> bool"
+#define Apsw_shadow_name_USAGE "apsw.shadow_name(table_suffix: str) -> bool"
 
 #define Apsw_shadow_name_CHECK do { \
-  assert(__builtin_types_compatible_p(typeof(table_name), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(table_suffix), const char *)); \
 } while(0)
 
 

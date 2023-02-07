@@ -1493,6 +1493,26 @@ class APSW(unittest.TestCase):
         clear()
         self.db.execute(query)
 
+        # shadowname
+        wascalled = set()
+
+        def iwascalled(name):
+            wascalled.add(name)
+            return bool(len(wascalled) % 2)
+
+        apsw.shadow_name = iwascalled
+
+        bn = "banana"
+
+        def make_shadow():
+            self.db.execute(f"create table { bn }_foo(x); create table { bn }_bar(x)")
+
+        Source.create_callback = make_shadow
+        self.db.execute("create virtual table banana using sptest()")
+        bn = "orange"
+        apsw.shadow_name = lambda x: 1 / 0
+        self.assertRaisesUnraisable(ZeroDivisionError, self.db.execute, "create virtual table orange using sptest()")
+
     index_info_test_patterns = (("select * from bar where c7 is null", {
         'nConstraint':
         1,
