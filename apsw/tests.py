@@ -1150,6 +1150,10 @@ class APSW(unittest.TestCase):
                     Source.indexinfo_saved = o
                     return Source.bio_callback(o)
 
+                def BestIndex(self, constraints, orderby):
+                    # non-string for idxstr
+                    return [[0], 1, object()]
+
                 def Open(self):
                     return Source.Cursor()
 
@@ -1161,6 +1165,27 @@ class APSW(unittest.TestCase):
                 def UpdateChangeRow(self_table, *args):
                     self.assertEqual(apsw.mapping_conflict_resolution_modes[self.db.vtab_on_conflict()],
                                      Source.expected_conflict)
+
+                def UpdateDeleteRow(self, rowid):
+                    pass
+
+                def Savepoint1(self, level):
+                    pass
+
+                def Savepoint2(self):
+                    1 / 0
+
+                def Release1(self, level):
+                    pass
+
+                def Release2(self):
+                    1 / 0
+
+                def RollbackTo1(self, level):
+                    pass
+
+                def RollbackTo2(self):
+                    1 / 0
 
             class Cursor:
                 max_row = -1
@@ -1185,7 +1210,13 @@ class APSW(unittest.TestCase):
                     self.rownum += 1
 
         self.db.createmodule("foo", Source(), use_bestindex_object=True)
+        self.db.createmodule("foo2", Source(), use_bestindex_object=False)
+        self.assertRaises(ValueError, self.db.createmodule, "foo2", Source(), iVersion=77)
+
         self.db.execute("create virtual table bar using foo()")
+        self.db.execute("create virtual table bar2 using foo2()")
+
+        self.assertRaises(TypeError, self.db.execute, "select * from bar2 where c0>7")
 
         def basic(o):
             odict = apsw.ext.index_info_to_dict(o)
@@ -1415,6 +1446,52 @@ class APSW(unittest.TestCase):
             Source.expected_conflict = "SQLITE_" + mode
             self.db.execute(f"update or { mode } vtab_on_conflict set c0=7 where rowid=0")
         self.assertRaises(ValueError, self.db.vtab_on_conflict)
+
+        # savepoints
+        Source.Cursor.max_row = 20
+        Source.filter_callback = lambda *args: 0
+        Source.bio_callback = lambda *args: True
+        self.db.createmodule("sptest", Source(), use_bestindex_object=True)
+        self.db.execute("create virtual table sptest using sptest()")
+
+        def clear():
+            while not self.db.getautocommit():
+                self.db.execute("rollback")
+
+        query = """begin;
+                    delete from sptest where rowid=7;
+                    savepoint t0 ;
+                    delete from sptest where rowid=8;
+                    savepoint t1;
+                    delete from sptest where rowid=9;
+                    savepoint t2;
+                    delete from sptest where rowid=10;
+                    savepoint t3;
+                    delete from sptest where rowid=10;
+                    release t3; rollback to t1;
+                    commit;
+                   """
+        # check it works
+        clear()
+        self.db.execute(query)
+        Source.Table.Savepoint = Source.Table.Savepoint2
+        clear()
+        self.assertRaises(TypeError, self.db.execute, query)
+        Source.Table.Savepoint = Source.Table.Savepoint1
+        clear()
+        self.db.execute(query)
+        Source.Table.Release = Source.Table.Release2
+        clear()
+        self.assertRaises(TypeError, self.db.execute, query)
+        Source.Table.Release = Source.Table.Release1
+        clear()
+        self.db.execute(query)
+        Source.Table.RollbackTo = Source.Table.RollbackTo2
+        clear()
+        self.assertRaises(TypeError, self.db.execute, query)
+        Source.Table.RollbackTo = Source.Table.RollbackTo1
+        clear()
+        self.db.execute(query)
 
     index_info_test_patterns = (("select * from bar where c7 is null", {
         'nConstraint':
@@ -3737,11 +3814,15 @@ class APSW(unittest.TestCase):
         for row in cur.execute("select xyz(item,description) from foo    ", can_cache=False):
             pass
 
-        for ff, e in ((VTable.FindFunction5, TypeError),
-                      (VTable.FindFunction6, TypeError),
-                      (VTable.FindFunction7, ValueError)):
+        for ff, e in ((VTable.FindFunction5, TypeError), (VTable.FindFunction6, TypeError), (VTable.FindFunction7,
+                                                                                             ValueError)):
             VTable.FindFunction = ff
-            self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, e,  cur.execute, "select xyz(item,description) from foo", can_cache=False)
+            self.assertRaises(apsw.SQLError,
+                              self.assertRaisesUnraisable,
+                              e,
+                              cur.execute,
+                              "select xyz(item,description) from foo",
+                              can_cache=False)
 
         # transaction control
         # Begin, Sync, Commit and rollback all use the same underlying code
@@ -3790,110 +3871,115 @@ class APSW(unittest.TestCase):
         cur.execute("drop table foo")
         self.db.close()
 
-    def testVTableExample(self):
-        "Tests vtable example code"
-
-        # Make sure vtable code actually works by comparing SQLite
-        # results against manually computed results
-
-        def getfiledata(directories):
-            columns = None
-            data = []
-            counter = 1
-            for directory in directories:
-                for f in os.listdir(directory):
-                    if not os.path.isfile(os.path.join(directory, f)):
-                        continue
-                    counter += 1
-                    try:
-                        st = os.stat(os.path.join(directory, f))
-                        if columns is None:
-                            columns = ["rowid", "name", "directory"] + [x for x in dir(st) if x.startswith("st_")]
-                        data.append([counter, f, directory] + [getattr(st, x) for x in columns[3:]])
-                    except OSError:
-                        # we ignore file and permission errors in this example
-                        pass
-            return columns, data
+    def testVTableUnusable(self):
+        "Tests vtable bestindex with unusable constraints and other error handling"
 
         class Source:
 
             def Create(self, db, modulename, dbname, tablename, *args):
-                columns, data = getfiledata([eval(a) for a in args])  # eval strips off layer of quotes
-                schema = "create table foo(" + ','.join(["'%s'" % (x, ) for x in columns[1:]]) + ")"
-                return schema, Table(columns, data)
+                return "create table ignored(a,b,c)", Table()
 
             Connect = Create
 
         class Table:
 
-            def __init__(self, columns, data):
-                self.columns = columns
-                self.data = data
+            last = None
 
-            def BestIndex(self, *args):
-                return None
+            def BestIndex(tself, constraints, orderbys):
+                if tself.last is None:
+                    self.assertEqual(len(constraints), 3)
+                    tself.last = constraints
+                else:
+                    # the in clause should have become unusable
+                    self.assertEqual(len(constraints), 2)
+                res = []
+                estimated = 9999999999999999
+                for c, op in constraints:
+                    if op == apsw.SQLITE_INDEX_CONSTRAINT_EQ:  # actually IN
+                        res.append(0)
+                    else:
+                        res.append(None)
+                if all(r is None for r in res):
+                    res[-1] = 0
+                    estimated = 7  # make it prefer this
+                return [res, 0, "fred", False, estimated]
+
+            bifg_seqnum = 0
+
+            def BestIndex_fail_getitem(self, *args):
+                res = Table.bifg_sequence[Table.bifg_seqnum]
+                Table.bifg_seqnum += 1
+                return res
 
             def Open(self):
-                return Cursor(self)
+                return Cursor()
 
             def Disconnect(self):
                 pass
 
             Destroy = Disconnect
 
+        def bad(n, *args):
+
+            class badgi(list):
+
+                def __getitem__(self, n):
+                    if n == self.failnum:
+                        1 / 0
+                    return super().__getitem__(n)
+
+            res = badgi(*args)
+            res.failnum = n
+            return res
+
+        all_none = (None, None, None, None, None)
+        Table.bifg_sequence = (
+            # outer list
+            bad(0, all_none),
+            bad(1, all_none),
+            bad(2, all_none),
+            bad(3, all_none),
+            bad(4, all_none),
+            # constraints
+            [bad(0, [None])],
+            [[bad(0, (1, 2))]],
+            [[bad(1, (1, 2))]],
+        )
+
         class Cursor:
 
-            def __init__(self, table):
-                self.table = table
+            def Filter(cself, idxnum, idxstr, args):
+                # if we correctly handled unusable then args should contain column c
+                # bound value
+                self.assertEqual(args, (100, ))
 
-            def Filter(self, *args):
-                self.pos = 0
+            def FilterIgnore(*args):
+                pass
 
             def Eof(self):
-                return self.pos >= len(self.table.data)
+                return True
 
             def Rowid(self):
-                return self.table.data[self.pos][0]
+                return 10
 
             def Column(self, col):
-                return self.table.data[self.pos][1 + col]
+                return 10
 
             def Next(self):
-                self.pos += 1
+                pass
 
             def Close(self):
                 pass
 
-        paths = [x.replace("\\", "/") for x in sys.path if len(x) and os.path.isdir(x)]
-        cols, data = getfiledata(paths)
-        self.db.createmodule("filesource", Source())
-        cur = self.db.cursor()
-        args = ",".join(["'%s'" % (x, ) for x in paths])
-        cur.execute("create virtual table files using filesource(" + args + ")")
+        self.db.createmodule("bestindex", Source())
+        self.db.execute(
+            "create virtual table foo using bestindex(); select * from foo where a in (66,77) and b>? and c>?",
+            (99, 100))
 
-        # Find the largest file (SQL)
-        for bigsql in cur.execute("select st_size,name,directory from files order by st_size desc limit 1"):
-            pass
-        # Find the largest (manually)
-        colnum = cols.index("st_size")
-        bigmanual = (0, "", "")
-        for file in data:
-            if file[colnum] > bigmanual[0]:
-                bigmanual = file[colnum], file[1], file[2]
-
-        self.assertEqual(bigsql, bigmanual)
-
-        # Find the oldest file (SQL)
-        for oldestsql in cur.execute("select st_ctime,name,directory from files order by st_ctime limit 1"):
-            pass
-        # Find the oldest (manually)
-        colnum = cols.index("st_ctime")
-        oldestmanual = (99999999999999999, "", "")
-        for file in data:
-            if file[colnum] < oldestmanual[0]:
-                oldestmanual = file[colnum], file[1], file[2]
-
-        self.assertEqual(oldestmanual, oldestsql)
+        Table.BestIndex = Table.BestIndex_fail_getitem
+        Cursor.Filter = Cursor.FilterIgnore
+        for i in range(len(Table.bifg_sequence)):
+            self.assertRaises(ZeroDivisionError, self.db.execute, "select * from foo where a > 7")
 
     def testClosingChecks(self):
         "Check closed connection/blob/cursor is correctly detected"
