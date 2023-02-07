@@ -1439,6 +1439,9 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
     goto finally;
 
   indices = PySequence_GetItem(res, 0);
+  if (!indices)
+    goto pyexception;
+
   if (indices != Py_None)
   {
     if (!PySequence_Check(indices) || PySequence_Size(indices) != nconstraints)
@@ -1482,7 +1485,8 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
         goto pyexception;
       }
       argvindex = PySequence_GetItem(constraint, 0);
-      omit = PySequence_GetItem(constraint, 1);
+      if (argvindex)
+        omit = PySequence_GetItem(constraint, 1);
       if (!argvindex || !omit)
         goto constraintfail;
       if (!PyLong_Check(argvindex))
@@ -1543,10 +1547,11 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
     {
       if (!PyUnicode_Check(idxstr))
       {
-        PyErr_Format(PyExc_TypeError, "Expected a string for idxStr");
+        PyErr_Format(PyExc_TypeError, "Expected a string for idxStr not %s", Py_TypeName(idxstr));
         Py_DECREF(idxstr);
         goto pyexception;
       }
+      assert(indexinfo->idxStr == NULL);
       indexinfo->idxStr = sqlite3_mprintf("%s", PyUnicode_AsUTF8(idxstr));
       indexinfo->needToFreeIdxStr = 1;
     }
@@ -2055,6 +2060,9 @@ apswvtabRename(sqlite3_vtab *pVtab, const char *zNew)
 /** .. method:: Savepoint(level: int) -> None
 
   Set nested transaction to *level*.
+
+  If you do not provide this method then the call succeeds (matching
+  SQLite behaviour when no callback is provided).
 */
 static int
 apswvtabSavepoint(sqlite3_vtab *pVtab, int level)
@@ -2066,7 +2074,7 @@ apswvtabSavepoint(sqlite3_vtab *pVtab, int level)
   gilstate = PyGILState_Ensure();
   vtable = ((apsw_vtable *)pVtab)->vtable;
 
-  res = Call_PythonMethodV(vtable, "Savepoint", 1, "(i)", level);
+  res = Call_PythonMethodV(vtable, "Savepoint", 0, "(i)", level);
   if (!res)
   {
     sqliteres = MakeSqliteMsgFromPyException(NULL);
@@ -2081,6 +2089,9 @@ apswvtabSavepoint(sqlite3_vtab *pVtab, int level)
 /** .. method:: Release(level: int) -> None
 
   Release nested transactions back to *level*.
+
+  If you do not provide this method then the call succeeds (matching
+  SQLite behaviour when no callback is provided).
 */
 static int
 apswvtabRelease(sqlite3_vtab *pVtab, int level)
@@ -2092,7 +2103,7 @@ apswvtabRelease(sqlite3_vtab *pVtab, int level)
   gilstate = PyGILState_Ensure();
   vtable = ((apsw_vtable *)pVtab)->vtable;
 
-  res = Call_PythonMethodV(vtable, "Release", 1, "(i)", level);
+  res = Call_PythonMethodV(vtable, "Release", 0, "(i)", level);
   if (!res)
   {
     sqliteres = MakeSqliteMsgFromPyException(NULL);
@@ -2108,6 +2119,8 @@ apswvtabRelease(sqlite3_vtab *pVtab, int level)
 
   Rollback nested transactions back to *level*.
 
+  If you do not provide this method then the call succeeds (matching
+  SQLite behaviour when no callback is provided).
 */
 static int
 apswvtabRollbackTo(sqlite3_vtab *pVtab, int level)
@@ -2119,7 +2132,7 @@ apswvtabRollbackTo(sqlite3_vtab *pVtab, int level)
   gilstate = PyGILState_Ensure();
   vtable = ((apsw_vtable *)pVtab)->vtable;
 
-  res = Call_PythonMethodV(vtable, "RollbackTo", 1, "(i)", level);
+  res = Call_PythonMethodV(vtable, "RollbackTo", 0, "(i)", level);
   if (!res)
   {
     sqliteres = MakeSqliteMsgFromPyException(NULL);
