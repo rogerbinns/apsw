@@ -743,7 +743,7 @@ APSWCursor_doexectrace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
   assert(self->statement);
 
   /* make a string of the command */
-  sqlcmd = PyUnicode_FromStringAndSize(self->statement->utf8, self->statement->query_size);
+  sqlcmd = PyUnicode_FromStringAndSize(self->statement->utf8 ? self->statement->utf8 : "", self->statement->query_size);
 
   if (!sqlcmd)
     return -1;
