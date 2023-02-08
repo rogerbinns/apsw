@@ -9763,6 +9763,7 @@ shell.write(shell.stdout, "hello world\\n")
                 }
 
         def stuff_attr():
+
             class x:
                 pass
 
@@ -9813,7 +9814,7 @@ shell.write(shell.stdout, "hello world\\n")
             (stuff_stat_struct, apsw.ext.VTColumnAccess.By_Attr, None),
         ):
             if func is stuff_stat_struct:
-                if  sys.version_info<(3,10):
+                if sys.version_info < (3, 10):
                     a = apsw.ext.VTColumnAccess.By_Attr
                     n = names = tuple(member for member in dir(next(func())) if member.startswith("st_"))
                 else:
@@ -9887,7 +9888,7 @@ shell.write(shell.stdout, "hello world\\n")
             -- another comment
             select 4;
         """
-        self.db.rowtrace = lambda x: 1/0
+        self.db.rowtrace = lambda x: 1 / 0
         apsw.ext.format_query_table(self.db, query)
         self.db.rowtrace = None
 
@@ -9931,13 +9932,12 @@ shell.write(shell.stdout, "hello world\\n")
         self.assertRaises(TypeError, self.db.execute, "select * from messy(1)")
         self.assertRaises(ValueError, self.db.execute, "create virtual table fail using messy(1,2,3,4,5)")
         for query in (
-            "select * from messy where arg1>3",
-            "select * from messy(1,2) where arg2=7"
-            "select * from messy(1,2) where arg2=7 and arg2=8",
-            "select * from messy where arg1 in (1,2) and arg1=6",
+                "select * from messy where arg1>3",
+                "select * from messy(1,2) where arg2=7"
+                "select * from messy(1,2) where arg2=7 and arg2=8",
+                "select * from messy where arg1 in (1,2) and arg1=6",
         ):
             self.assertRaises(apsw.SQLError, self.db.execute, query)
-
 
     def testExtQueryInfo(self) -> None:
         "apsw.ext.query_info"
