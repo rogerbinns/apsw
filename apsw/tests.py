@@ -9758,7 +9758,7 @@ shell.write(shell.stdout, "hello world\\n")
                     " cc": b"aabbccddeeff",
                     "dd": None,
                     # the chr gives a codepoint that has no name in unicodedata
-                    "eeeeeeeeeeeeeeeeeeee": f"\\\n\f\v\t\n\0{ i }" + chr(0x10ffff) + "\r \n\r\ \nr\r \n\r \n\n",
+                    "eeeeeeeeeeeeeeeeeeee": f"\\\n\f\v\t\n\0{ i }" + chr(0x10ffff) + "\r \n\r\\ \nr\r \n\r \n\n",
                     "f": APSW.wikipedia_text,
                 }
 
