@@ -9721,6 +9721,215 @@ shell.write(shell.stdout, "hello world\\n")
 
         self.assertRaises(TypeError, NotImplemented)
 
+    def testExtStuff(self):
+        "Various apsw.ext functions"
+        import apsw.ext
+
+        apsw.ext.make_virtual_module(self.db, "g1", apsw.ext.generate_series)
+        vals = {row[0] for row in self.db.execute("select value from g1 where start=1 and stop=10")}
+        self.assertEqual(vals, {i for i in range(1, 10 + 1)})
+        vals = {row[0] for row in self.db.execute("select value from g1 where start=10 and stop=1")}
+        self.assertEqual(vals, {i for i in range(1, 10 + 1)})
+        vals = {row[0] for row in self.db.execute("select value from g1(1, 10, 2)")}
+        self.assertEqual(vals, {i for i in range(1, 10 + 1, 2)})
+        self.assertRaises(ValueError, self.db.execute, "select *,start,stop,step from g1(1,10) where step=0")
+        vals = [row[0] for row in self.db.execute("select value from g1(0.0, 1, 0.1)")]
+        expected = [i / 10 for i in range(0, 10 + 1)]
+        for l, r in zip(vals, expected):
+            self.assertAlmostEqual(l, r)
+        self.assertRaises(TypeError, self.db.execute, "select * from g1()")
+
+        apsw.ext.make_virtual_module(self.db, "g2", apsw.ext.generate_series_sqlite)
+        vals = {row[0] for row in self.db.execute("select value from g2 where start=1 and stop=10")}
+        self.assertEqual(vals, {i for i in range(1, 10 + 1)})
+        vals = {row[0] for row in self.db.execute("select value from g2 where start=1 and stop=10 and step=-1")}
+        self.assertEqual(vals, {i for i in range(1, 10 + 1)})
+        vals = {row[0] for row in self.db.execute("select value from g2(1, 10, 2)")}
+        self.assertEqual(vals, {i for i in range(1, 10 + 1, 2)})
+        self.assertEqual([], self.db.execute("select *,start,stop,step from g2(1,10) where step=0").fetchall())
+        self.assertRaises(ValueError, self.db.execute, "select * from g2 where stop=10 and step=1")
+        self.assertRaises(TypeError, self.db.execute, "select * from g2(0.1, 1, 1)")
+
+        def stuff_dict():
+            for i in range(10):
+                yield {
+                    "a a": i,
+                    "bb": 3.1415,
+                    " cc": b"aabbccddeeff",
+                    "dd": None,
+                    # the chr gives a codepoint that has no name in unicodedata
+                    "eeeeeeeeeeeeeeeeeeee": f"\\\n\f\v\t\n\0{ i }" + chr(0x10ffff) + "\r \n\r\ \nr\r \n\r \n\n",
+                    "f": APSW.wikipedia_text,
+                }
+
+        def stuff_attr():
+            class x:
+                pass
+
+            for row in stuff_dict():
+                for k, v in row.items():
+                    setattr(x, k, v)
+                yield x
+
+        def stuff_tuple():
+            for row in stuff_dict():
+                yield tuple(row.values())
+
+        import dataclasses
+
+        @dataclasses.dataclass
+        class xx:
+            one: str
+            two: str
+            three: str
+            four: str
+            five: str
+            six: str
+
+            def method(self):
+                1 / 0
+
+        def stuff_dataclass():
+            for row in stuff_tuple():
+                yield xx(*row)
+
+        def stuff_stat_struct():
+            yield os.stat(".")
+            yield os.stat("..")
+
+        import collections
+        nt = collections.namedtuple("nt", next(stuff_dict()).keys(), rename=True)
+
+        def stuff_namedtuple():
+            for row in stuff_tuple():
+                yield nt(*row)
+
+        for func, access, names in (
+            (stuff_dict, apsw.ext.VTColumnAccess.By_Name, ('a a', 'bb', ' cc', 'dd', 'eeeeeeeeeeeeeeeeeeee', "f")),
+            (stuff_tuple, apsw.ext.VTColumnAccess.By_Index, ('column0', 'column1', 'column2', 'column3', 'column4',
+                                                             "column5")),
+            (stuff_dataclass, apsw.ext.VTColumnAccess.By_Attr, ('one', 'two', 'three', 'four', 'five', 'six')),
+            (stuff_namedtuple, apsw.ext.VTColumnAccess.By_Index, ('_0', 'bb', '_2', 'dd', 'eeeeeeeeeeeeeeeeeeee', 'f')),
+            (stuff_stat_struct, apsw.ext.VTColumnAccess.By_Attr, os.stat(".").__match_args__),
+        ):
+            n, a = apsw.ext.get_column_names(next(func()))
+            self.assertEqual(access, a)
+            self.assertEqual(names, n)
+            func.columns = n
+            func.column_access = a
+
+        stuff_attr.columns = stuff_dict.columns
+        stuff_attr.column_access = apsw.ext.VTColumnAccess.By_Attr
+
+        self.assertRaises(TypeError, apsw.ext.get_column_names, object())
+
+        funcs = (stuff_attr, stuff_dataclass, stuff_dict, stuff_tuple, stuff_stat_struct, stuff_namedtuple)
+
+        def _nb():
+            while True:
+                yield random.choice((True, False))
+
+        _nb = _nb()
+        nb = lambda: next(_nb)
+
+        def _ns():
+            while True:
+                yield 0
+                yield 1
+                yield 2
+                yield lambda x: repr(x)
+
+        _ns = _ns()
+        ns = lambda: next(_ns)
+
+        for f in funcs:
+            apsw.ext.make_virtual_module(self.db, "workit", f, eponymous_only=nb(), repr_invalid=nb())
+            apsw.ext.format_query_table(self.db,
+                                        "select rowid, * from workit(); select * from workit()",
+                                        bindings=tuple() if nb() else None,
+                                        colour=nb(),
+                                        quote=nb(),
+                                        string_sanitize=ns(),
+                                        truncate=3 if nb() else 35,
+                                        text_width=30 if nb() else 130,
+                                        use_unicode=nb(),
+                                        word_wrap=nb())
+
+        for width in range(200, 1, -17):
+            try:
+                apsw.ext.format_query_table(self.db,
+                                            "select * from workit()",
+                                            bindings=tuple() if nb() else None,
+                                            colour=nb(),
+                                            quote=nb(),
+                                            string_sanitize=ns(),
+                                            truncate=3 if nb() else 35,
+                                            text_width=width,
+                                            use_unicode=nb(),
+                                            word_wrap=nb())
+            except ValueError as e:
+                self.assertIn("Results can't be fitted in text width", str(e))
+
+        self.assertEqual(apsw.ext.format_query_table(self.db, "-- comment"), "")
+
+        query = """
+            -- comment
+            select 3;
+            -- another comment
+            select 4;
+        """
+        self.db.rowtrace = lambda x: 1/0
+        apsw.ext.format_query_table(self.db, query)
+        self.db.rowtrace = None
+
+        def messy(arg1, arg2, arg3=lambda x: 1 / 0):
+            yield (1, )
+            yield (object(), )
+
+        messy.columns = ["x"]
+        messy.column_access = "orange"
+
+        try:
+            apsw.ext.make_virtual_module(self.db, "messy", messy)
+        except ValueError as e:
+            self.assertIn("column_access", str(e))
+            messy.column_access = apsw.ext.VTColumnAccess.By_Index
+
+        messy.columns = ["arg1"]
+        try:
+            apsw.ext.make_virtual_module(self.db, "messy", messy)
+        except ValueError as e:
+            self.assertIn("Same name in ", str(e))
+            self.assertIn("arg1", str(e))
+            messy.columns = ["x"]
+
+        messy.primary_key = 7
+        try:
+            apsw.ext.make_virtual_module(self.db, "messy", messy)
+        except ValueError as e:
+            self.assertIn("column number", str(e))
+            messy.primary_key = 0
+
+        for ri in (True, False):
+            apsw.ext.make_virtual_module(self.db, "messy", messy, repr_invalid=True)
+            self.db.execute("select *, arg3 from messy(1,2)").fetchall()
+
+        try:
+            self.db.execute("select * from messy(1,2,3,4)").fetchall()
+        except apsw.SQLError as e:
+            self.assertIn("too many arguments", str(e))
+
+        self.assertRaises(TypeError, self.db.execute, "select * from messy(1)")
+        self.assertRaises(ValueError, self.db.execute, "create virtual table fail using messy(1,2,3,4,5)")
+        for query in (
+            "select * from messy where arg1>3",
+            "select * from messy(1,2) where arg2=7"
+            "select * from messy(1,2) where arg2=7 and arg2=8",
+            "select * from messy where arg1 in (1,2) and arg1=6",
+        ):
+            self.assertRaises(apsw.SQLError, self.db.execute, query)
+
+
     def testExtQueryInfo(self) -> None:
         "apsw.ext.query_info"
         import apsw.ext
