@@ -218,7 +218,7 @@ release: ## Signs built source file(s)
 	cd dist ; zip -m $(VERDIR)-sigs.zip *.asc
 
 # building a python debug interpreter
-PYDEBUG_VER=3.11.1
+PYDEBUG_VER=3.11.2
 PYDEBUG_DIR=/space/pydebug
 PYVALGRIND_VER=$(PYDEBUG_VER)
 PYVALGRIND_DIR=/space/pyvalgrind
