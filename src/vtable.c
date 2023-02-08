@@ -1035,7 +1035,6 @@ apswvtabFree(void *context)
 
 #if SQLITE_VERSION_NUMBER < 3041000
 /* https://sqlite.org/forum/forumpost/b68391eb71fdff73 */
-#warning "Memory will be deliberately leaked by this routine"
 #else
   vtableinfo *vti = (vtableinfo *)context;
 
