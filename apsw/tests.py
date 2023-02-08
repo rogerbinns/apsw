@@ -85,16 +85,15 @@ except:
 # yay
 is64bit = ctypes and ctypes.sizeof(ctypes.c_size_t) >= 8
 
-# Make next switch between the iterator and fetchone alternately
-_realnext = next
+# Make curnext switch between the iterator and fetchone alternately
 _nextcounter = 0
 
 
-def next(cursor, *args):
+def curnext(cursor, *args):
     global _nextcounter
     _nextcounter += 1
     if _nextcounter % 2:
-        return _realnext(cursor, *args)
+        return next(cursor, *args)
     res = cursor.fetchone()
     if res is None:
         if args:
@@ -679,12 +678,12 @@ class APSW(unittest.TestCase):
 
         for str, bindings in vals:
             c.execute("insert into foo values" + str, bindings)
-            self.assertEqual(next(c.execute("select * from foo")), (1, 2, 3))
+            self.assertEqual(curnext(c.execute("select * from foo")), (1, 2, 3))
             c.execute("delete from foo")
 
         # currently missing dict keys come out as null
         c.execute("insert into foo values(:a,:b,$c)", {'a': 1, 'c': 3})  # 'b' deliberately missing
-        self.assertEqual((1, None, 3), next(c.execute("select * from foo")))
+        self.assertEqual((1, None, 3), curnext(c.execute("select * from foo")))
         c.execute("delete from foo")
 
         # these ones should cause errors
@@ -714,12 +713,12 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.BindingsError, c.execute, "insert into foo values(?,?,?); insert into foo values(?,?,?)",
                           (101, 100, 101, 1000, 103, 104, 105))  # too many
         # check the relevant statements did or didn't execute as appropriate
-        self.assertEqual(next(self.db.cursor().execute("select count(*) from foo where x=99"))[0], 1)
-        self.assertEqual(next(self.db.cursor().execute("select count(*) from foo where x=102"))[0], 1)
-        self.assertEqual(next(self.db.cursor().execute("select count(*) from foo where x=100"))[0], 1)
-        self.assertEqual(next(self.db.cursor().execute("select count(*) from foo where x=1000"))[0], 0)
-        self.assertEqual(next(self.db.cursor().execute("select count(*) from foo where x=101"))[0], 1)
-        self.assertEqual(next(self.db.cursor().execute("select count(*) from foo where x=105"))[0], 0)
+        self.assertEqual(curnext(self.db.cursor().execute("select count(*) from foo where x=99"))[0], 1)
+        self.assertEqual(curnext(self.db.cursor().execute("select count(*) from foo where x=102"))[0], 1)
+        self.assertEqual(curnext(self.db.cursor().execute("select count(*) from foo where x=100"))[0], 1)
+        self.assertEqual(curnext(self.db.cursor().execute("select count(*) from foo where x=1000"))[0], 0)
+        self.assertEqual(curnext(self.db.cursor().execute("select count(*) from foo where x=101"))[0], 1)
+        self.assertEqual(curnext(self.db.cursor().execute("select count(*) from foo where x=105"))[0], 0)
 
         # check there are some bindings!
         self.assertRaises(apsw.BindingsError, c.execute, "create table bar(x,y,z);insert into bar values(?,?,?)")
@@ -728,7 +727,7 @@ class APSW(unittest.TestCase):
         vals = ((1, 2, 3), (4, 5, 6), (7, 8, 9))
         c.executemany("insert into foo values(?,?,?);", vals)
         for x, y, z in vals:
-            self.assertEqual(next(c.execute("select * from foo where x=?", (x, ))), (x, y, z))
+            self.assertEqual(curnext(c.execute("select * from foo where x=?", (x, ))), (x, y, z))
 
         # with an iterator
         def myvals():
@@ -763,7 +762,7 @@ class APSW(unittest.TestCase):
             1 / 0
 
         self.assertRaises(ZeroDivisionError, c.executemany, "insert into foo values($a,:b,$c)", myvals())
-        self.assertEqual(next(c.execute("select count(*) from foo"))[0], 2)
+        self.assertEqual(curnext(c.execute("select count(*) from foo"))[0], 2)
         c.execute("delete from foo")
 
         # return bad type from iterator after a while
@@ -773,7 +772,7 @@ class APSW(unittest.TestCase):
             yield self
 
         self.assertRaises(TypeError, c.executemany, "insert into foo values($a,:b,$c)", myvals())
-        self.assertEqual(next(c.execute("select count(*) from foo"))[0], 2)
+        self.assertEqual(curnext(c.execute("select count(*) from foo"))[0], 2)
         c.execute("delete from foo")
 
         # some errors in executemany
@@ -816,7 +815,7 @@ class APSW(unittest.TestCase):
         c.execute(" ;\n\t\r;;")
 
         # unicode
-        self.assertEqual(3, next(c.execute(u"select 3"))[0])
+        self.assertEqual(3, curnext(c.execute(u"select 3"))[0])
 
         # does it work?
         c.execute("create table foo(x,y,z)")
@@ -878,8 +877,8 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.ExecutionCompleteError, lambda: c.description)
         if has_full:
             self.assertRaises(apsw.ExecutionCompleteError, lambda: c.description_full)
-        self.assertRaises(StopIteration, lambda xx=0: _realnext(c))
-        self.assertRaises(StopIteration, lambda xx=0: _realnext(c))
+        self.assertRaises(StopIteration, lambda xx=0: next(c))
+        self.assertRaises(StopIteration, lambda xx=0: next(c))
         # fetchone is used throughout, check end behaviour
         self.assertEqual(None, c.fetchone())
         self.assertEqual(None, c.fetchone())
@@ -1078,7 +1077,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, c.execute, "insert into foo values(9999,?)", (dir, ))  # function
 
         # check nothing got inserted
-        self.assertEqual(0, next(c.execute("select count(*) from foo where row=9999"))[0])
+        self.assertEqual(0, curnext(c.execute("select count(*) from foo where row=9999"))[0])
 
     def testFormatSQLValue(self):
         "Verify text formatting of values"
@@ -1749,7 +1748,7 @@ class APSW(unittest.TestCase):
         # cmds should be unchanged
         self.assertEqual(cmds, statements)
         # tracefunc can abort execution
-        count = next(c.execute("select count(*) from one"))[0]
+        count = curnext(c.execute("select count(*) from one"))[0]
 
         def tracefunc(cursor, cmd, bindings):
             return False  # abort
@@ -1758,7 +1757,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.ExecTraceAbort, c.execute, "insert into one values(1,2,3)")
         # table should not have been modified
         c.setexectrace(None)
-        self.assertEqual(count, next(c.execute("select count(*) from one"))[0])
+        self.assertEqual(count, curnext(c.execute("select count(*) from one"))[0])
 
         # error in tracefunc
         def tracefunc(cursor, cmd, bindings):
@@ -1767,7 +1766,7 @@ class APSW(unittest.TestCase):
         c.setexectrace(tracefunc)
         self.assertRaises(ZeroDivisionError, c.execute, "insert into one values(1,2,3)")
         c.setexectrace(None)
-        self.assertEqual(count, next(c.execute("select count(*) from one"))[0])
+        self.assertEqual(count, curnext(c.execute("select count(*) from one"))[0])
         # test across executemany and multiple statements
         counter = [0]
 
@@ -1801,7 +1800,7 @@ class APSW(unittest.TestCase):
         self.assertEqual(counter[0], 4)
         c.setexectrace(None)
         # check the first statements got executed
-        self.assertEqual(3, next(c.execute("select max(x) from two"))[0])
+        self.assertEqual(3, curnext(c.execute("select max(x) from two"))[0])
 
         # executemany
         def tracefunc(cursor, cmd, bindings):
@@ -1867,22 +1866,22 @@ class APSW(unittest.TestCase):
             return tuple([7 for i in row])
 
         # should get original row back
-        self.assertEqual(next(c.execute("select * from foo")), vals)
+        self.assertEqual(curnext(c.execute("select * from foo")), vals)
         self.assertRaises(TypeError, c.setrowtrace, 12)  # must be callable
         c.setrowtrace(tracefunc)
         self.assertTrue(c.getrowtrace() is tracefunc)
         # all values replaced with 7
-        self.assertEqual(next(c.execute("select * from foo")), tuple([7] * len(vals)))
+        self.assertEqual(curnext(c.execute("select * from foo")), tuple([7] * len(vals)))
 
         def tracefunc(cursor, row):
             return (7, )
 
         # a single 7
         c.setrowtrace(tracefunc)
-        self.assertEqual(next(c.execute("select * from foo")), (7, ))
+        self.assertEqual(curnext(c.execute("select * from foo")), (7, ))
         # no alteration again
         c.setrowtrace(None)
-        self.assertEqual(next(c.execute("select * from foo")), vals)
+        self.assertEqual(curnext(c.execute("select * from foo")), vals)
 
         # error in function
         def tracefunc(*result):
@@ -1896,7 +1895,7 @@ class APSW(unittest.TestCase):
         except ZeroDivisionError:
             pass
         c.setrowtrace(None)
-        self.assertEqual(next(c.execute("select * from foo")), vals)
+        self.assertEqual(curnext(c.execute("select * from foo")), vals)
         # returning null
         c.execute("create table bar(x)")
         c.executemany("insert into bar values(?)", [[x] for x in range(10)])
@@ -1975,7 +1974,7 @@ class APSW(unittest.TestCase):
         for i in range(10):
             c.execute("insert into foo values(?,?,?)", (i, i, i))
         for i in range(10):
-            self.assertEqual((7, ), next(c.execute("select seven(x,y,z) from foo where x=?", (i, ))))
+            self.assertEqual((7, ), curnext(c.execute("select seven(x,y,z) from foo where x=?", (i, ))))
         # clear func
         self.assertRaises(apsw.BusyError, self.db.createscalarfunction, "seven",
                           None)  # active select above so no funcs can be changed
@@ -2099,7 +2098,7 @@ class APSW(unittest.TestCase):
         for v in vals:
             c.execute("insert into foo values(?,?,?)", v)
 
-        v = next(c.execute("select longest(x,y,z) from foo"))[0]
+        v = curnext(c.execute("select longest(x,y,z) from foo"))[0]
         self.assertEqual(v, vals[0][2])
 
         # SQLite doesn't allow step functions to return an error, so we have to defer to the final
@@ -2437,7 +2436,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, self.db.setprogresshandler, ph, "foo")  # second param is steps
         self.db.setprogresshandler(ph, -17)  # SQLite doesn't complain about negative numbers
         self.db.setprogresshandler(ph, 20)
-        next(c.execute("select max(x) from foo"))
+        curnext(c.execute("select max(x) from foo"))
 
         self.assertNotEqual(phcalledcount[0], 0)
         saved = phcalledcount[0]
@@ -2450,7 +2449,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(ZeroDivisionError, c.execute, "update foo set x=-10")
         self.db.setprogresshandler(None)  # clear ph so next line runs
         # none should have taken
-        self.assertEqual(0, next(c.execute("select count(*) from foo where x=-10"))[0])
+        self.assertEqual(0, curnext(c.execute("select count(*) from foo where x=-10"))[0])
         # and previous ph should not have been called
         self.assertEqual(saved, phcalledcount[0])
 
@@ -2666,7 +2665,7 @@ class APSW(unittest.TestCase):
         cur.execute("insert into test values(123,'abc')")
         self.assertRaises(apsw.BusyError, cur2.execute, "insert into test values(456, 'def')")
         cur.execute("commit")
-        self.assertEqual(1, next(cur2.execute("select count(*) from test where x=123"))[0])
+        self.assertEqual(1, curnext(cur2.execute("select count(*) from test where x=123"))[0])
         con2.close()
 
     def testInterruptHandling(self):
@@ -2809,7 +2808,7 @@ class APSW(unittest.TestCase):
 
         # check cursor still works
         c.execute("insert into foo values(1000,1000)")
-        self.assertEqual(1, next(c.execute("select count(*) from foo where x=1000"))[0])
+        self.assertEqual(1, curnext(c.execute("select count(*) from foo where x=1000"))[0])
 
     def testProfile(self):
         "Verify profiling"
@@ -2937,10 +2936,10 @@ class APSW(unittest.TestCase):
 
         # check execute
         for v in vals:
-            self.assertEqual(v, next(c.execute("select ?", (v, )))[0])
+            self.assertEqual(v, curnext(c.execute("select ?", (v, )))[0])
             # nulls not allowed in main query string, so lets check the other bits (unicode etc)
             v2 = v.replace("\0", " zero ")
-            self.assertEqual(v2, next(c.execute("select '%s'" % (v2, )))[0])
+            self.assertEqual(v2, curnext(c.execute("select '%s'" % (v2, )))[0])
 
         # ::TODO:: check collations
 
@@ -3170,13 +3169,13 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, self.db.loadextension, "foo", "bar", 12)
         self.db.loadextension(LOADEXTENSIONFILENAME)
         c = self.db.cursor()
-        self.assertEqual(1, next(c.execute("select half(2)"))[0])
+        self.assertEqual(1, curnext(c.execute("select half(2)"))[0])
         # second entry point hasn't been called yet
         self.assertRaises(apsw.SQLError, c.execute, "select doubleup(2)")
         # load using other entry point
         self.assertRaises(apsw.ExtensionLoadingError, self.db.loadextension, LOADEXTENSIONFILENAME, "doesntexist")
         self.db.loadextension(LOADEXTENSIONFILENAME, "alternate_sqlite3_extension_init")
-        self.assertEqual(4, next(c.execute("select doubleup(2)"))[0])
+        self.assertEqual(4, curnext(c.execute("select doubleup(2)"))[0])
 
     def testMakeSqliteMsgFromException(self):
         "Test C function that converts exception into SQLite error code"
@@ -4004,7 +4003,7 @@ class APSW(unittest.TestCase):
     def testClosingChecks(self):
         "Check closed connection/blob/cursor is correctly detected"
         cur = self.db.cursor()
-        rowid = next(
+        rowid = curnext(
             cur.execute("create table foo(x blob); insert into foo values(zeroblob(98765)); select rowid from foo"))[0]
         blob = self.db.blobopen("main", "foo", "x", rowid, True)
         blob.close()
@@ -4222,12 +4221,12 @@ class APSW(unittest.TestCase):
         for i in range(10):
             c.execute("insert into numbers values(?)", (i, ))
         c.execute("select * from numbers")
-        next(c)
-        next(c)
-        next(c)
+        curnext(c)
+        curnext(c)
+        curnext(c)
         self.db.cursor().execute("delete from numbers where x=5")
-        next(c)
-        next(c)
+        curnext(c)
+        curnext(c)
 
     def testIssue24(self):
         "Issue 24: Ints and Longs"
@@ -4321,7 +4320,7 @@ class APSW(unittest.TestCase):
             f.close()
         cur = self.db.cursor()
         # make a blob to play with
-        rowid = next(
+        rowid = curnext(
             cur.execute("create table foo(x blob); insert into foo values(zeroblob(98765)); select rowid from foo"))[0]
         blobro = self.db.blobopen("main", "foo", "x", rowid, False)
         try:
@@ -4605,7 +4604,7 @@ class APSW(unittest.TestCase):
             # blob open for reading.  The close method called in the
             # destructor will then also give the error
             db = apsw.Connection(":memory:")
-            rowid = next(db.cursor().execute(
+            rowid = curnext(db.cursor().execute(
                 "create table foo(x); insert into foo values(x'aabbccdd'); select rowid from foo"))[0]
             blob = db.blobopen("main", "foo", "x", rowid, False)
             try:
@@ -5299,7 +5298,7 @@ class APSW(unittest.TestCase):
         cur = self.db.cursor()
         cur.execute("create table foo(x)")
         cur.execute("insert into foo values(?)", (apsw.zeroblob(27), ))
-        v = next(cur.execute("select * from foo"))[0]
+        v = curnext(cur.execute("select * from foo"))[0]
         self.assertEqual(v, b"\x00" * 27)
 
         # Make sure inheritance works
@@ -5315,14 +5314,14 @@ class APSW(unittest.TestCase):
                 apsw.zeroblob.__init__(self, num)
 
         cur.execute("delete from foo; insert into foo values(?)", (derived(28), ))
-        v = next(cur.execute("select * from foo"))[0]
+        v = curnext(cur.execute("select * from foo"))[0]
         self.assertEqual(v, b"\x00" * 28)
         self.assertEqual(apsw.zeroblob(91210).length(), 91210)
 
     def testBlobIO(self):
         "Verify Blob input/output"
         cur = self.db.cursor()
-        rowid = next(
+        rowid = curnext(
             cur.execute("create table foo(x blob); insert into foo values(zeroblob(98765)); select rowid from foo"))[0]
         self.assertRaises(TypeError, self.db.blobopen, 1)
         self.assertRaises(TypeError, self.db.blobopen, u"main", "foo\xf3")
@@ -5770,7 +5769,7 @@ class APSW(unittest.TestCase):
             apsw.randomness(0)
             vfs = RandomVFS()
             db = apsw.Connection(TESTFILEPREFIX + "testdb")
-            next(db.cursor().execute("select randomblob(10)"))
+            curnext(db.cursor().execute("select randomblob(10)"))
 
         class RandomVFSUpper(apsw.VFS):
 
@@ -9950,7 +9949,7 @@ def vfstestdb(filename=TESTFILEPREFIX + "testdb2", vfsname="apswtest", closedb=T
         except apsw.ExtensionLoadingError:
             pass
         db.loadextension(LOADEXTENSIONFILENAME)
-        assert (1 == next(db.cursor().execute("select half(2)"))[0])
+        assert (1 == curnext(db.cursor().execute("select half(2)"))[0])
 
     # Get the routine xCheckReservedLock to be called.  We need a hot journal
     # which this code adapted from SQLite's pager.test does
