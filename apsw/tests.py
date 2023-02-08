@@ -9810,9 +9810,18 @@ shell.write(shell.stdout, "hello world\\n")
                                                              "column5")),
             (stuff_dataclass, apsw.ext.VTColumnAccess.By_Attr, ('one', 'two', 'three', 'four', 'five', 'six')),
             (stuff_namedtuple, apsw.ext.VTColumnAccess.By_Index, ('_0', 'bb', '_2', 'dd', 'eeeeeeeeeeeeeeeeeeee', 'f')),
-            (stuff_stat_struct, apsw.ext.VTColumnAccess.By_Attr, os.stat(".").__match_args__),
+            (stuff_stat_struct, apsw.ext.VTColumnAccess.By_Attr, None),
         ):
-            n, a = apsw.ext.get_column_names(next(func()))
+            if func is stuff_stat_struct:
+                if  sys.version_info<(3,10):
+                    a = apsw.ext.VTColumnAccess.By_Attr
+                    n = names = tuple(member for member in dir(next(func())) if member.startswith("st_"))
+                else:
+                    n, a = apsw.ext.get_column_names(next(func()))
+                    names = n
+                    self.assertEqual(names, os.stat(".").__match_args__)
+            else:
+                n, a = apsw.ext.get_column_names(next(func()))
             self.assertEqual(access, a)
             self.assertEqual(names, n)
             func.columns = n
