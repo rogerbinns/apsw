@@ -1450,7 +1450,7 @@ class APSW(unittest.TestCase):
         Source.Cursor.max_row = 20
         Source.filter_callback = lambda *args: 0
         Source.bio_callback = lambda *args: True
-        self.db.createmodule("sptest", Source(), use_bestindex_object=True)
+        self.db.createmodule("sptest", Source(), use_bestindex_object=True, iVersion=3)
         self.db.execute("create virtual table sptest using sptest()")
 
         def clear():
