@@ -8,6 +8,7 @@ if sys.version_info >= (3, 10):
 else:
     NoneType = type(None)
 
+import dataclasses
 from dataclasses import dataclass, make_dataclass, is_dataclass
 
 from typing import Optional, Tuple, Union, List, Any, Dict, Callable, Sequence, TextIO
@@ -561,6 +562,7 @@ def format_query_table(db: apsw.Connection,
                         if string_sanitize in (0, 1):
                             cell = cell.replace("\\", "\\\\")
                             cell = cell.replace("\r\n", "\n")
+                            cell = cell.replace("\r", " ")
                             cell = cell.replace("\t", " ")
                             cell = cell.replace("\f", "")
                             cell = cell.replace("\v", "")
@@ -645,7 +647,7 @@ def format_query_table(db: apsw.Connection,
 
         # can't fit
         if total_width() > text_width:
-            raise ValueError("Results can't be fitted in terminal width even with 1 char wide columns")
+            raise ValueError("Results can't be fitted in text width even with 1 char wide columns")
 
         # break headers and cells into lines
         if word_wrap:
@@ -734,22 +736,26 @@ def format_query_table(db: apsw.Connection,
 
     cursor = db.cursor()
     colnames = None
+    rows = []
 
-    def trace(cursor, query, bindings):
+    def trace(c, query, bindings):
         nonlocal colnames, rows
         if colnames:
             res.append(table_builder(colnames, rows))
-            colnames = None
             rows = []
-        colnames = [n for n, _ in cursor.getdescription()]
+        colnames = [n for n, _ in c.getdescription()]
         return True
 
     cursor.exectrace = trace
-    rows = []
+    # mitigate any existing rowtracer
+    if db.rowtrace:
+        cursor.rowtrace=lambda x, y: y
+
     for row in cursor.execute(query, bindings):
         rows.append(list(row))
 
-    res.append(table_builder(colnames, rows))
+    if colnames:
+        res.append(table_builder(colnames, rows))
 
     if len(res) == 1:
         return res[0]
@@ -805,7 +811,7 @@ def get_column_names(row: Any) -> Tuple[List[str], VTColumnAccess]:
     if isinstance(row, dict):
         return tuple(row.keys()), VTColumnAccess.By_Name
     if isinstance(row, tuple):
-        return tuple(f"column{ x }" for x in len(tuple)), VTColumnAccess.By_Index
+        return tuple(f"column{ x }" for x in range(len(row))), VTColumnAccess.By_Index
     raise TypeError(f"Can't figure out columns for { row }")
 
 
@@ -915,7 +921,7 @@ def make_virtual_module(db: apsw.Connection,
             self.all_columns: tuple[str] = tuple(self.columns) + tuple(self.parameters)
             self.primary_key = primary_key
             if self.primary_key is not None and not (0 <= self.primary_key < len(self.columns)):
-                raise ValueError(f"{self.primary_key!r} should be None or a column number")
+                raise ValueError(f"{self.primary_key!r} should be None or a column number < { len(self.columns) }")
             self.repr_invalid = repr_invalid
             column_defs = ""
             for i, c in enumerate(self.columns):
@@ -954,7 +960,7 @@ def make_virtual_module(db: apsw.Connection,
                 for c in range(o.nConstraint):
                     if o.get_aConstraint_iColumn(c) >= param_start:
                         if not o.get_aConstraint_usable(c):
-                            return False
+                            continue
                         if o.get_aConstraint_op(c) != apsw.SQLITE_INDEX_CONSTRAINT_EQ:
                             return False
                         o.set_aConstraintUsage_argvIndex(c, len(idx_str) + 1)
@@ -972,7 +978,6 @@ def make_virtual_module(db: apsw.Connection,
                 o.idxStr = ",".join(idx_str)
                 # say there are a huge number of rows so the query planner avoids us
                 o.estimatedRows = 2147483647
-                #pprint.pprint(apsw.ext.index_info_to_dict(o, column_names=self.module.all_columns), compact=True)
                 return True
 
             def Open(self):
@@ -1047,6 +1052,8 @@ def make_virtual_module(db: apsw.Connection,
     mod = Module(callable, callable.columns, callable.column_access, getattr(callable, "primary_key", None),
                  repr_invalid)
 
+    # unregister any existing first
+    db.createmodule(name, None)
     db.createmodule(name,
                     mod,
                     use_bestindex_object=True,
@@ -1067,8 +1074,10 @@ def generate_series_sqlite(start=None, stop=0xffffffff, step=1):
 
         apsw.ext.make_virtual_module(db,
                                      "generate_series",
-                                     apsw.ext.generate_series_sqlite,
-                                     eponymous_only=True)
+                                     apsw.ext.generate_series_sqlite)
+
+
+        db.execute("SELECT value FROM generate_series(1, 10))
 
     .. seealso::
 
@@ -1081,7 +1090,7 @@ def generate_series_sqlite(start=None, stop=0xffffffff, step=1):
     istop = int(stop)
     istep = int(step)
     if istart != start or istop != stop or istep != step:
-        raise ValueError("generate_series_sqlite only works with integers")
+        raise TypeError("generate_series_sqlite only works with integers")
     if step > 0:
         while start <= stop:
             yield (start, )
@@ -1116,8 +1125,9 @@ def generate_series(start, stop, step=None):
 
         apsw.ext.make_virtual_module(db,
                                      "generate_series",
-                                     apsw.ext.generate_series,
-                                     eponymous_only=True)
+                                     apsw.ext.generate_series)
+
+        db.execute("SELECT value FROM generate_series(1, 10))
 
     .. seealso::
 
