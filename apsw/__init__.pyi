@@ -324,6 +324,11 @@ def memoryused() -> int:
     Calls: `sqlite3_memory_used <https://sqlite.org/c3ref/memory_highwater.html>`__"""
     ...
 
+no_change: apsw.no_change
+"""A sentinel used to indicate no change in a value when
+used with :meth:`VTCursor.ColumnNoChange` and
+:meth:`VTTable.UpdateChangeRow`"""
+
 def randomness(amount: int)  -> bytes:
     """Gets random data from SQLite's random number generator.
 
@@ -1001,13 +1006,14 @@ class Connection:
         Calls: `sqlite3_create_collation_v2 <https://sqlite.org/c3ref/create_collation.html>`__"""
         ...
 
-    def createmodule(self, name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, iVersion: int = 3, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None:
+    def createmodule(self, name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 2, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None:
         """Registers a virtual table, or drops it if *datasource* is *None*.
         See :ref:`virtualtables` for details.
 
         :param name: Module name (what comes after USING in CREATE VIRTUAL TABLE tablename USING ...)
         :param datasource: Provides :class:`VTModule` methods
         :param use_bestindex_object: If True then BestIndexObject is used, else BestIndex
+        :param use_no_change: Turn on understanding :meth:`VTCursor.ColumnNoChange` and using :attr:`apsw.no_change` to reduce :meth:`VTTable.UpdateChangeRow` work
         :param iVersion: iVersion field in `sqlite3_module <https://www.sqlite.org/c3ref/module.html>`__
         :param eponymous: Configures module to be `eponymous <https://www.sqlite.org/vtab.html#eponymous_virtual_tables>`__
         :param eponymous_only: Configures module to be `eponymous only <https://www.sqlite.org/vtab.html#eponymous_only_virtual_tables>`__
@@ -2522,6 +2528,22 @@ if sys.version_info >= (3, 8):
 
             :returns: Must be one one of the :ref:`5
               supported types <types>`"""
+            ...
+
+        def ColumnNoChange(self, number: int) -> SQLiteValue:
+            """:meth:`VTTable.UpdateChangeRow` is going to be called which includes
+            values for all columns.  However this column is not going to be changed
+            in that update.
+
+            If you return :attr:`apsw.no_change` then :meth:`VTTable.UpdateChangeRow`
+            will have :attr:`apsw.no_change` for this column.  If you return
+            anything else then it will have that value - as though :meth:`VTCursor.Column`
+            had been called.
+
+            This method will only be called if *use_no_change* was *True* in the
+            call to :meth:`Connection.createmodule`.
+
+            Calls: `sqlite3_vtab_nochange <https://sqlite.org/c3ref/vtab_nochange.html>`__"""
             ...
 
         def Eof(self) -> bool:
