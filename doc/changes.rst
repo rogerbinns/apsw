@@ -30,6 +30,12 @@ Virtual table updates:
   <https://sqlite.org/vtab.html#eponymous_only_virtual_tables>`__, and
   read_only modules.
 
+* Virtual table updates can avoid having to provide all column
+  values when only a subset are changing.  See :attr:`apsw.no_change`,
+  :meth:`Connection.createmodule` *use_no_change* parameter,
+  :meth:`VTCursor.ColumnNoChange` and :meth:`VTTable.UpdateChangeRow`
+  (:issue:`402`)
+
 * :meth:`apsw.ext.make_virtual_module` makes it very easy to turn
   a Python function into a virtual table module.
 

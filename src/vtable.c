@@ -250,7 +250,7 @@ SqliteIndexInfo_get_aConstraint_rhs(SqliteIndexInfo *self, PyObject *args, PyObj
     return NULL;
   }
 
-  return convert_value_to_pyobject(pval, 0);
+  return convert_value_to_pyobject(pval, 0, 0);
 }
 
 /** .. method:: get_aOrderBy_iColumn(which: int) -> int
@@ -806,6 +806,7 @@ typedef struct
   PyObject *vtable;            /* object implementing vtable */
   PyObject *functions;         /* functions returned by vtabFindFunction */
   int bestindex_object;        /* 0: tuples are passed to xBestIndex, 1: object is */
+  int use_no_change;           /* 1: we understand no_change updating */
   Connection *connection;
 } apsw_vtable;
 
@@ -886,6 +887,7 @@ apswvtabCreateOrConnect(sqlite3 *db,
   assert((void *)avi == (void *)&(avi->used_by_sqlite)); /* detect if weird padding happens */
   memset(avi, 0, sizeof(apsw_vtable));
   avi->bestindex_object = vti->bestindex_object;
+  avi->use_no_change = vti->use_no_change;
   avi->connection = self;
 
   schema = PySequence_GetItem(pyres, 0);
@@ -1716,6 +1718,7 @@ typedef struct
 {
   sqlite3_vtab_cursor used_by_sqlite; /* I don't touch this */
   PyObject *cursor;                   /* Object implementing cursor */
+  int use_no_change;
 } apsw_vtable_cursor;
 
 static int
@@ -1733,11 +1736,10 @@ apswvtabOpen(sqlite3_vtab *pVtab, sqlite3_vtab_cursor **ppCursor)
   res = Call_PythonMethod(vtable, "Open", 1, NULL);
   if (!res)
     goto pyexception;
-  avc = PyMem_Malloc(sizeof(apsw_vtable_cursor));
+  avc = PyMem_Calloc(1, sizeof(apsw_vtable_cursor));
   assert((void *)avc == (void *)&(avc->used_by_sqlite)); /* detect if weird padding happens */
-  memset(avc, 0, sizeof(apsw_vtable_cursor));
-
   avc->cursor = res;
+  avc->use_no_change = ((apsw_vtable *)pVtab)->use_no_change;
   res = NULL;
   *ppCursor = (sqlite3_vtab_cursor *)avc;
   goto finally;
@@ -1820,7 +1822,7 @@ apswvtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int6
     }
     else
     {
-      newrowid = convert_value_to_pyobject(argv[1], 0);
+      newrowid = convert_value_to_pyobject(argv[1], 0, 0);
       if (!newrowid)
         goto pyexception;
     }
@@ -1832,8 +1834,8 @@ apswvtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int6
     PyObject *oldrowid = NULL, *newrowid = NULL;
     methodname = "UpdateChangeRow";
     args = PyTuple_New(3);
-    oldrowid = convert_value_to_pyobject(argv[0], 0);
-    APSW_FAULT_INJECT(VtabUpdateChangeRowFail, newrowid = convert_value_to_pyobject(argv[1], 0), newrowid = PyErr_NoMemory());
+    oldrowid = convert_value_to_pyobject(argv[0], 0, 0);
+    APSW_FAULT_INJECT(VtabUpdateChangeRowFail, newrowid = convert_value_to_pyobject(argv[1], 0, 0), newrowid = PyErr_NoMemory());
     if (!args || !oldrowid || !newrowid)
     {
       Py_XDECREF(oldrowid);
@@ -1854,7 +1856,7 @@ apswvtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int6
     for (i = 0; i + 2 < argc; i++)
     {
       PyObject *field;
-      APSW_FAULT_INJECT(VtabUpdateBadField, field = convert_value_to_pyobject(argv[i + 2], 0), field = PyErr_NoMemory());
+      APSW_FAULT_INJECT(VtabUpdateBadField, field = convert_value_to_pyobject(argv[i + 2], 0, ((apsw_vtable *)pVtab)->use_no_change), field = PyErr_NoMemory());
       if (!field)
       {
         Py_DECREF(fields);
@@ -2208,7 +2210,7 @@ apswvtabFilter(sqlite3_vtab_cursor *pCursor, int idxNum, const char *idxStr,
     goto pyexception;
   for (i = 0; i < argc; i++)
   {
-    PyObject *value = convert_value_to_pyobject(sqliteargv[i], 1);
+    PyObject *value = convert_value_to_pyobject(sqliteargv[i], 1, 0);
     if (!value)
       goto pyexception;
     PyTuple_SET_ITEM(argv, i, value);
@@ -2287,6 +2289,29 @@ finally:
   :returns: Must be one one of the :ref:`5
     supported types <types>`
 */
+
+/*
+  Tt would be ideal for the return to be Union[SQLiteValue, apsw.no_change]
+  but that then requires apsw.no_change being documented as a class
+  which then confuses the documentation extractor.
+*/
+/** .. method:: ColumnNoChange(number: int) -> SQLiteValue
+
+  :meth:`VTTable.UpdateChangeRow` is going to be called which includes
+  values for all columns.  However this column is not going to be changed
+  in that update.
+
+  If you return :attr:`apsw.no_change` then :meth:`VTTable.UpdateChangeRow`
+  will have :attr:`apsw.no_change` for this column.  If you return
+  anything else then it will have that value - as though :meth:`VTCursor.Column`
+  had been called.
+
+  This method will only be called if *use_no_change* was *True* in the
+  call to :meth:`Connection.createmodule`.
+
+  -* sqlite3_vtab_nochange
+*/
+
 /* forward decln */
 static int set_context_result(sqlite3_context *context, PyObject *obj);
 
@@ -2296,16 +2321,25 @@ apswvtabColumn(sqlite3_vtab_cursor *pCursor, sqlite3_context *result, int ncolum
   PyObject *cursor, *res = NULL;
   PyGILState_STATE gilstate;
   int sqliteres = SQLITE_OK, ok;
+  int nc;
 
   gilstate = PyGILState_Ensure();
 
   cursor = ((apsw_vtable_cursor *)pCursor)->cursor;
 
-  res = Call_PythonMethodV(cursor, "Column", 1, "(i)", ncolumn);
+  nc = ((apsw_vtable_cursor *)pCursor)->use_no_change && sqlite3_vtab_nochange(result);
+
+  if (nc)
+    res = Call_PythonMethodV(cursor, "ColumnNoChange", 1, "(i)", ncolumn);
+  else
+    res = Call_PythonMethodV(cursor, "Column", 1, "(i)", ncolumn);
   if (!res)
     goto pyexception;
 
-  ok = set_context_result(result, res);
+  if (nc && Py_Is(res, (PyObject*)&apsw_no_change_object))
+    ok = 1;
+  else
+    ok = set_context_result(result, res);
   if (!PyErr_Occurred())
   {
     assert(ok);
@@ -2315,7 +2349,7 @@ apswvtabColumn(sqlite3_vtab_cursor *pCursor, sqlite3_context *result, int ncolum
 pyexception: /* we had an exception in python code */
   assert(PyErr_Occurred());
   sqliteres = MakeSqliteMsgFromPyException(&(pCursor->pVtab->zErrMsg)); /* SQLite flaw: errMsg should be on the cursor not the table! */
-  AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xColumn", "{s: O, s: O}", "self", cursor, "res", OBJ(res));
+  AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xColumn", "{s: O, s: O, s: O}", "self", cursor, "res", OBJ(res), "no_change", nc ? Py_True : Py_False);
 
 finally:
   Py_XDECREF(res);

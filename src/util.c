@@ -204,10 +204,13 @@ finally:
 
 /* Converts sqlite3_value to PyObject.  Returns a new reference. */
 static PyObject *
-convert_value_to_pyobject(sqlite3_value *value, int in_constraint_possible)
+convert_value_to_pyobject(sqlite3_value *value, int in_constraint_possible, int no_change_possible)
 {
   int coltype = sqlite3_value_type(value);
   sqlite3_value *in_value;
+
+  if (no_change_possible && sqlite3_value_nochange(value))
+    return Py_NewRef(&apsw_no_change_object);
 
   APSW_FAULT_INJECT(UnknownValueType, , coltype = 123456);
 
@@ -235,7 +238,7 @@ convert_value_to_pyobject(sqlite3_value *value, int in_constraint_possible)
         return NULL;
       while (in_value)
       {
-        v = convert_value_to_pyobject(in_value, 0);
+        v = convert_value_to_pyobject(in_value, 0, 0);
         if (!v || 0 != PySet_Add(set, v))
           goto error;
         v = NULL;
@@ -270,7 +273,7 @@ convert_value_to_pyobject(sqlite3_value *value, int in_constraint_possible)
 static PyObject *
 convert_value_to_pyobject_not_in(sqlite3_value *value)
 {
-  return convert_value_to_pyobject(value, 0);
+  return convert_value_to_pyobject(value, 0, 0);
 }
 
 /* Converts column to PyObject.  Returns a new reference. Almost identical to above
@@ -423,4 +426,4 @@ assert fail or cause a valgrind error.
 
 /* some arbitrary magic numbers for call track */
 #define MAGIC_xConnect 0x008295ab
-#define MAGIC_xUpdate  0x119306bc
+#define MAGIC_xUpdate 0x119306bc

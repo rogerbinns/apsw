@@ -135,6 +135,13 @@ static PyObject *apswmodule;
 /* root exception class */
 static PyObject *APSWException;
 
+/* no change sentinel for vtable updates */
+static PyTypeObject apsw_no_change_object = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+        .tp_name = "apsw.no_change",
+    .tp_doc = Apsw_no_change_DOC,
+};
+
 typedef struct
 {
   PyObject_HEAD long long blobsize;
@@ -1620,16 +1627,7 @@ PyInit_apsw(void)
     goto fail;
   }
 
-  if (PyType_Ready(&ConnectionType) < 0
-      || PyType_Ready(&APSWCursorType) < 0
-      || PyType_Ready(&ZeroBlobBindType) < 0
-      || PyType_Ready(&APSWBlobType) < 0
-      || PyType_Ready(&APSWVFSType) < 0
-      || PyType_Ready(&APSWVFSFileType) < 0
-      || PyType_Ready(&APSWURIFilenameType) < 0
-      || PyType_Ready(&FunctionCBInfoType) < 0
-      || PyType_Ready(&APSWBackupType) < 0
-      || PyType_Ready(&SqliteIndexInfoType) < 0)
+  if (PyType_Ready(&ConnectionType) < 0 || PyType_Ready(&APSWCursorType) < 0 || PyType_Ready(&ZeroBlobBindType) < 0 || PyType_Ready(&APSWBlobType) < 0 || PyType_Ready(&APSWVFSType) < 0 || PyType_Ready(&APSWVFSFileType) < 0 || PyType_Ready(&APSWURIFilenameType) < 0 || PyType_Ready(&FunctionCBInfoType) < 0 || PyType_Ready(&APSWBackupType) < 0 || PyType_Ready(&SqliteIndexInfoType) < 0 || PyType_Ready(&apsw_no_change_object) < 0)
     goto fail;
 
   m = apswmodule = PyModule_Create(&apswmoduledef);
@@ -1719,6 +1717,16 @@ PyInit_apsw(void)
   Py_INCREF(Py_False);
   PyModule_AddObject(m, "using_amalgamation", Py_False);
 #endif
+
+  /** .. attribute:: no_change
+     :type: apsw.no_change
+
+    A sentinel used to indicate no change in a value when
+    used with :meth:`VTCursor.ColumnNoChange` and
+    :meth:`VTTable.UpdateChangeRow`
+  */
+
+  PyModule_AddObject(m, "no_change", Py_NewRef(&apsw_no_change_object));
 
   /**
 

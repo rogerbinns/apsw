@@ -1124,7 +1124,7 @@ class APSW(unittest.TestCase):
         if sys.version_info < (3, 7):
             # it works on 3.6 but apsw.ext doesn't because it uses dataclasses
             return
-        # we use apsw.ext.index_info_to_dict as part of the testing
+        # we also test apsw.ext
         import apsw.ext
 
         columns = [f"c{ n }" for n in range(30)]
@@ -1603,6 +1603,64 @@ class APSW(unittest.TestCase):
             1
         },
     ))
+
+    def testVTableNoChange(self):
+        "Test virtual table no change values on update"
+
+        class Source:
+            data = [(i, 2, i, 4, i) for i in range(10)]
+
+            def Create(self, *args):
+                return "create table ignored(c0, c1, c2, c3, c4)", Source.Table()
+
+            Connect = Create
+
+            class Table:
+
+                def BestIndex(self, *args):
+                    return None
+
+                def Open(self):
+                    return Source.Cursor()
+
+                def Disconnect(self):
+                    pass
+
+                Destroy = Disconnect
+
+                def UpdateChangeRow(tself, rowid, newrowid, fields):
+                    d=Source.data
+                    expected=(apsw.no_change, d[rowid][2]+1, apsw.no_change, 4, apsw.no_change)
+                    self.assertEqual(fields, expected)
+
+            class Cursor:
+
+                def Filter(self, *args):
+                    self.pos = 0
+
+                def Eof(self):
+                    return self.pos >= len(Source.data)
+
+                def Next(self):
+                    self.pos += 1
+
+                def Column(self, n):
+                    return Source.data[self.pos][n]
+
+                def ColumnNoChange(self, n):
+                    if n % 2:
+                        return self.Column(n)
+                    return apsw.no_change
+
+                def Close(self):
+                    pass
+
+                def Rowid(self):
+                    return self.pos
+
+        self.db.createmodule("testing", Source(), eponymous=True, use_no_change=True)
+        self.db.execute("update testing set c1=c2+1")
+
 
     def testWAL(self):
         "Test WAL functions"
@@ -4813,7 +4871,8 @@ class APSW(unittest.TestCase):
                                                 "|declare_vtab|backup_remaining|backup_pagecount|mutex_enter|mutex_leave|sourceid|uri_.+"
                                                 "|column_name|column_decltype|column_database_name|column_table_name|column_origin_name"
                                                 "|stmt_isexplain|stmt_readonly|filename_journal|filename_wal|stmt_status|sql|log|vtab_collation"
-                                                "|vtab_rhs_value|vtab_distinct|vtab_config|vtab_on_conflict|vtab_in_first|vtab_in_next|vtab_in)$"),
+                                                "|vtab_rhs_value|vtab_distinct|vtab_config|vtab_on_conflict|vtab_in_first|vtab_in_next|vtab_in"
+                                                "|vtab_nochange)$"),
                         # error message
                         'desc': "sqlite3_ calls must wrap with PYSQLITE_CALL",
                         },
