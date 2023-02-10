@@ -3572,7 +3572,7 @@ Connection_wal_checkpoint(Connection *self, PyObject *args, PyObject *kwds)
 static void apswvtabFree(void *context);
 static struct sqlite3_module *apswvtabSetupModuleDef(int iVersion, int eponymous, int eponymous_only, int read_only);
 
-/** .. method:: createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 2, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None
+/** .. method:: createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None
 
     Registers a virtual table, or drops it if *datasource* is *None*.
     See :ref:`virtualtables` for details.
@@ -3601,7 +3601,7 @@ Connection_createmodule(Connection *self, PyObject *args, PyObject *kwds)
   int res;
   int use_bestindex_object = 0, use_no_change = 0;
 
-  int iVersion = 2, eponymous = 0, eponymous_only = 0, read_only = 0;
+  int iVersion = 1, eponymous = 0, eponymous_only = 0, read_only = 0;
 
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
