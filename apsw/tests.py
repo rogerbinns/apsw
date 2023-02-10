@@ -1508,7 +1508,9 @@ class APSW(unittest.TestCase):
 
         Source.ShadowName = lambda *args: 1 / 0
         self.assertRaisesUnraisable(ZeroDivisionError, self.db.execute, "create table sptest_bam(x)")
-        Source.ShadowName = lambda *args: True
+        Source.ShadowName = lambda *args: "foo"
+        self.assertRaisesUnraisable(TypeError, self.db.execute, "create table sptest_bam2(x)")
+        Source.ShadowName = lambda *args: False
 
         def clear_all():
             self.db.close()
