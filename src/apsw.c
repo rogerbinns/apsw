@@ -1718,6 +1718,11 @@ PyInit_apsw(void)
 
   PyModule_AddObject(m, "no_change", Py_NewRef(&apsw_no_change_object));
 
+#ifdef APSW_TESTFIXTURES
+  PyModule_AddObject(m, "test_fixtures_present", Py_NewRef(Py_True));
+#endif
+
+
   /**
 
 .. _sqliteconstants:
@@ -2310,40 +2315,30 @@ static int
 APSW_Should_Fault(const char *name)
 {
   PyGILState_STATE gilstate;
-  PyObject *faultdict = NULL, *truthval = NULL, *value = NULL;
+  PyObject *res, *callable;
   PyObject *errsave1 = NULL, *errsave2 = NULL, *errsave3 = NULL;
-  int res = 0;
+  int callres;
 
   gilstate = PyGILState_Ensure();
 
   PyErr_Fetch(&errsave1, &errsave2, &errsave3);
 
-  if (!PyObject_HasAttrString(apswmodule, "faultdict"))
+  callable = PySys_GetObject("apsw_should_fault");
+  assert(callable); /* sys.apsw_should_fault */
+  res = PyObject_CallFunction(callable, "s(OOO)", name, OBJ(errsave1), OBJ(errsave2), OBJ(errsave3));
+  if(!res)
   {
-    PyObject *dict = PyDict_New();
-    if (dict)
-      PyModule_AddObject(apswmodule, "faultdict", dict);
+    assert(!PyErr_Occurred());
+    assert(0); /* unreachable */
   }
 
-  value = PyUnicode_FromString(name);
-
-  faultdict = PyObject_GetAttrString(apswmodule, "faultdict");
-
-  truthval = PyDict_GetItem(faultdict, value);
-  if (!truthval)
-    goto finally;
-
-  /* set false if present - one shot firing */
-  PyDict_SetItem(faultdict, value, Py_False);
-  res = PyObject_IsTrue(truthval);
-
-finally:
-  Py_XDECREF(value);
-  Py_XDECREF(faultdict);
+  assert(PyBool_Check(res));
+  assert(Py_IsTrue(res) || Py_IsFalse(res));
+  callres = Py_IsTrue(res);
+  Py_DECREF(res);
 
   PyErr_Restore(errsave1, errsave2, errsave3);
-
   PyGILState_Release(gilstate);
-  return res;
+  return callres;
 }
 #endif

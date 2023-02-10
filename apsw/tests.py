@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 # See the accompanying LICENSE file.
 
-import apsw
-import apsw.shell
 import sys
 import os
 import warnings
@@ -12,6 +10,21 @@ import typing
 import itertools
 import inspect
 import struct
+
+
+def ShouldFault(name, pending_exception):
+    # You can't use print because calls involving print can be nested
+    # and will then have a fatal exception.  Directly writing
+    # to stderr is ok like this:
+    #
+    #     os.write(2, f"SF { name } { pending_exception }\n".encode("utf8"))
+    return False
+
+
+sys.apsw_should_fault = ShouldFault
+
+import apsw
+import apsw.shell
 
 
 def print_version_info():
@@ -8959,8 +8972,16 @@ shell.write(shell.stdout, "hello world\\n")
     # testLargeObjects
     def testzzFaultInjection(self):
         "Deliberately inject faults to exercise all code paths"
-        if not hasattr(apsw, "faultdict"):
+        if not getattr(apsw, "test_fixtures_present", None):
             return
+
+        apsw.faultdict = dict()
+
+        def ShouldFault(name, pending_exception):
+            r = apsw.faultdict.get(name, False)
+            apsw.faultdict[name] = False
+            return r
+        sys.apsw_should_fault = ShouldFault
 
         # Verify we test all fault locations
         code = []
