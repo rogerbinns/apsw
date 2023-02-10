@@ -51,6 +51,7 @@ exclude_trees = ['build']
 
 add_module_names = False
 
+smartquotes = False
 
 # Options for HTML output
 # -----------------------
