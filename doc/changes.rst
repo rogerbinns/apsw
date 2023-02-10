@@ -47,6 +47,9 @@ Virtual table updates:
 * :meth:`apsw.ext.generate_series` and :meth:`apsw.ext.generate_series_sqlite`
   added. (:issue:`380`)
 
+:meth:`apsw.format_sql_value` now outputs floating point Nan, positive
+and negative infinity, and signed zero exactly as SQLite does (:issue:`398`)
+
 Added :meth:`apsw.ext.format_query_table` for handy table output
 with auto column sizes, colour, word wrap etc.
 

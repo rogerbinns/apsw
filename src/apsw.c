@@ -1140,8 +1140,13 @@ fail:
 
 /** .. method:: format_sql_value(value: SQLiteValue) -> str
 
-  Returns a Python string representing the supplied value in SQL syntax.
+  Returns a Python string representing the supplied value in SQLite
+  syntax.
 
+  Note that SQLite represents floating point `Nan
+  <https://en.wikipedia.org/wiki/NaN>`__ as :code:`NULL`, infinity as
+  :code:`1e999` and loses the sign on `negative zero
+  <https://en.wikipedia.org/wiki/Signed_zero>`__.
 */
 static PyObject *
 formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value)
@@ -1150,9 +1155,22 @@ formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value)
   if (value == Py_None)
     return PyUnicode_FromString("NULL");
 
-  /* Integer/Float */
-  if (PyLong_Check(value) || PyFloat_Check(value))
+  /* Integer */
+  if (PyLong_Check(value))
     return PyObject_Str(value);
+
+  /* float */
+  if (PyFloat_Check(value))
+  {
+    double d = PyFloat_AS_DOUBLE(value);
+    if (isnan(d))
+      return PyUnicode_FromString("NULL");
+    if (isinf(d))
+      return PyUnicode_FromString(signbit(d) ? "-1e999" : "1e999");
+    if (d == 0 && signbit(d))
+      return PyUnicode_FromString("0.0");
+    return PyObject_Str(value);
+  }
 
   /* Unicode */
   if (PyUnicode_Check(value))

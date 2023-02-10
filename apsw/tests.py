@@ -1111,10 +1111,20 @@ class APSW(unittest.TestCase):
             (b"", "X''"),
             (wt, "'" + wt + "'"),
             (wt[:77] + "'" + wt[77:], "'" + wt[:77] + "''" + wt[77:] + "'"),
+            # SQLite doesn't understand 'inf', 'nan' or negative zero
+            # so output what it does
+            (math.inf, "1e999"),
+            (-math.inf, "-1e999"),
+            (math.nan, "NULL"),
+            (-0.0, "0.0"),
         )
         for vin, vout in vals:
             out = apsw.format_sql_value(vin)
             self.assertEqual(out, vout)
+            for row in self.db.execute("select " + vout):
+                if vin in (math.nan, -0.0):
+                    continue
+                self.assertEqual(row[0], vin)
         # Errors
         self.assertRaises(TypeError, apsw.format_sql_value, apsw)
         self.assertRaises(TypeError, apsw.format_sql_value)
