@@ -241,7 +241,7 @@ convert_value_to_pyobject(sqlite3_value *value, int in_constraint_possible, int 
         v = convert_value_to_pyobject(in_value, 0, 0);
         if (!v || 0 != PySet_Add(set, v))
           goto error;
-        v = NULL;
+        Py_CLEAR(v);
         res = sqlite3_vtab_in_next(value, &in_value);
         if (res != SQLITE_DONE && res != SQLITE_OK)
         {

@@ -881,11 +881,10 @@ apswvtabCreateOrConnect(sqlite3 *db,
   if (!vtable)
     goto pyexception;
 
-  avi = PyMem_Malloc(sizeof(apsw_vtable));
+  avi = PyMem_Calloc(1, sizeof(apsw_vtable));
   if (!avi)
     goto pyexception;
   assert((void *)avi == (void *)&(avi->used_by_sqlite)); /* detect if weird padding happens */
-  memset(avi, 0, sizeof(apsw_vtable));
   avi->bestindex_object = vti->bestindex_object;
   avi->use_no_change = vti->use_no_change;
   avi->connection = self;
@@ -1099,16 +1098,13 @@ apswvtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
 
   if (!res)
   {
-    sqliteres = MakeSqliteMsgFromPyException(&(pVtab->zErrMsg));
+    sqliteres = MakeSqliteMsgFromPyException(NULL);
     AddTraceBackHere(__FILE__, __LINE__, destroy_disconnect_strings[stringindex].pyexceptionname, "{s: O}", "self", OBJ(vtable));
   }
 
-  if (stringindex == 1)
-  {
-    Py_DECREF(vtable);
-    Py_XDECREF(((apsw_vtable *)pVtab)->functions);
-    PyMem_Free(pVtab);
-  }
+  Py_DECREF(vtable);
+  Py_XDECREF(((apsw_vtable *)pVtab)->functions);
+  PyMem_Free(pVtab);
 
   Py_XDECREF(res);
 
