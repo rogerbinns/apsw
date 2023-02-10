@@ -682,7 +682,9 @@ class APSW(unittest.TestCase):
             c.execute("delete from foo")
 
         # currently missing dict keys come out as null
+        apsw.allow_missing_dict_bindings(True)
         c.execute("insert into foo values(:a,:b,$c)", {'a': 1, 'c': 3})  # 'b' deliberately missing
+        apsw.allow_missing_dict_bindings(False)
         self.assertEqual((1, None, 3), curnext(c.execute("select * from foo")))
         c.execute("delete from foo")
 
@@ -998,8 +1000,10 @@ class APSW(unittest.TestCase):
 
         self.assertRaises(TypeError, self.db.execute, "select :name", errors_be_here())
         self.assertRaises(ZeroDivisionError, self.db.execute, "select :name", dict_with_error())
+        apsw.allow_missing_dict_bindings(True)
         self.assertEqual([(None, )], self.db.execute("select :name", {}).fetchall())
         self.assertEqual([(None, )], self.db.execute("select :name", dict_subclass()).fetchall())
+        apsw.allow_missing_dict_bindings(False)
         self.assertRaises(ZeroDivisionError, self.db.execute, "select ?", coerced_to_list())
 
         # same tests with executemany
@@ -1011,8 +1015,10 @@ class APSW(unittest.TestCase):
 
         self.assertRaises(TypeError, self.db.executemany, "select :name", errors_be_here())
         self.assertRaises(ZeroDivisionError, self.db.executemany, "select :name", dict_with_error())
+        apsw.allow_missing_dict_bindings(True)
         self.assertEqual([(None, )], self.db.executemany("select :name", ({}, )).fetchall())
         self.assertEqual([(None, )], self.db.executemany("select :name", [dict_subclass()]).fetchall())
+        apsw.allow_missing_dict_bindings(False)
         self.assertRaises(ZeroDivisionError, self.db.executemany, "select ?", (coerced_to_list(), ))
 
     def testIssue376(self):
@@ -1078,6 +1084,14 @@ class APSW(unittest.TestCase):
 
         # check nothing got inserted
         self.assertEqual(0, curnext(c.execute("select count(*) from foo where row=9999"))[0])
+
+    def testMissingDictBindings(self):
+        "How missing bindings are handled"
+        orig = apsw.allow_missing_dict_bindings(True)
+        self.assertEqual(self.db.execute("select :foo, $bar", {"foo": 3, "XXX": 4}).fetchall(), [(3, None)])
+        apsw.allow_missing_dict_bindings(False)
+        self.assertRaises(KeyError, self.db.execute, "select :foo, $bar", {"foo": 3, "XXX": 4})
+        apsw.allow_missing_dict_bindings(orig)
 
     def testFormatSQLValue(self):
         "Verify text formatting of values"

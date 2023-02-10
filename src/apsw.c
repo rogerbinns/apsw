@@ -174,6 +174,8 @@ typedef struct
 /* Zeroblob and blob */
 #include "blob.c"
 
+static int allow_missing_dict_bindings = 0;
+
 /* cursors */
 #include "cursor.c"
 
@@ -753,7 +755,6 @@ apswcomplete(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
     Py_RETURN_TRUE;
   Py_RETURN_FALSE;
 }
-
 
 #ifdef APSW_TESTFIXTURES
 static PyObject *
@@ -1478,6 +1479,41 @@ apsw_unregister_vfs(PyObject *Py_UNUSED(module), PyObject *args, PyObject *kwds)
   Py_RETURN_NONE;
 }
 
+/** .. method:: allow_missing_dict_bindings(value: bool) -> bool
+
+  Changes how missing bindings are handled when using a :class:`dict`.
+  Historically missing bindings were treated as *None*.  It was
+  anticipated that dict bindings would be used when there were lots
+  of columns, so having missing ones defaulting to *None* was
+  convenient.
+
+  Unfortunately this also has the side effect of not catching typos
+  and similar issues.
+
+  APSW 3.41.0.0 changed the default so that missing dict entries
+  will result in an exception.  Call this with *True* to restore
+  the earlier behaviour, and *False* to have an exception.
+
+  The previous value is returned.
+*/
+static PyObject *
+apsw_allow_missing_dict_bindings(PyObject *Py_UNUSED(module), PyObject *args, PyObject *kwds)
+{
+  int curval = allow_missing_dict_bindings;
+  int value;
+  {
+    static char *kwlist[] = {"value", NULL};
+    Apsw_allow_missing_dict_bindings_CHECK;
+    argcheck_bool_param value_param = {&value, Apsw_allow_missing_dict_bindings_value_MSG};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Apsw_allow_missing_dict_bindings_USAGE, kwlist, argcheck_bool, &value_param))
+      return NULL;
+  }
+  allow_missing_dict_bindings = value;
+  if (curval)
+    Py_RETURN_TRUE;
+  Py_RETURN_FALSE;
+}
+
 static PyObject *
 apsw_getattr(PyObject *module, PyObject *name)
 {
@@ -1539,6 +1575,7 @@ static PyMethodDef module_methods[] = {
     {"strnicmp", (PyCFunction)apsw_strnicmp, METH_VARARGS | METH_KEYWORDS, Apsw_strnicmp_DOC},
     {"set_default_vfs", (PyCFunction)apsw_set_default_vfs, METH_VARARGS | METH_KEYWORDS, Apsw_set_default_vfs_DOC},
     {"unregister_vfs", (PyCFunction)apsw_unregister_vfs, METH_VARARGS | METH_KEYWORDS, Apsw_unregister_vfs_DOC},
+    {"allow_missing_dict_bindings", (PyCFunction)apsw_allow_missing_dict_bindings, METH_VARARGS | METH_KEYWORDS, Apsw_allow_missing_dict_bindings_DOC},
 #ifdef APSW_TESTFIXTURES
     {"_fini", (PyCFunction)apsw_fini, METH_NOARGS,
      "Frees all caches and recycle lists"},
