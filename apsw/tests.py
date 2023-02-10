@@ -7171,32 +7171,36 @@ class APSW(unittest.TestCase):
         self.assertRaises(ValueError, self.db.backup, "main", self.db, "it doesn't care what is here")
 
         # try and get inuse error
-        dbt = apsw.Connection(":memory:")
-        vals = {"stop": False, "raised": False}
+        if not os.getenv("APSW_VALGRIND"):
+            # valgrind only runs one thread at a time (kinda like the GIL)
+            # which makes this race condition almost impossible to cause
+            # so we skip
+            dbt = apsw.Connection(":memory:")
+            vals = {"stop": False, "raised": False}
 
-        def wt():
-            # worker thread spins grabbing and releasing inuse flag
-            while not vals["stop"]:
-                try:
-                    dbt.setbusytimeout(100)
-                except apsw.ThreadingViolationError:
-                    # this means main thread grabbed inuse first
-                    pass
+            def wt():
+                # worker thread spins grabbing and releasing inuse flag
+                while not vals["stop"]:
+                    try:
+                        dbt.setbusytimeout(100)
+                    except apsw.ThreadingViolationError:
+                        # this means main thread grabbed inuse first
+                        pass
 
-        runtime = float(os.getenv("APSW_HEAVY_DURATION")) if os.getenv("APSW_HEAVY_DURATION") else 30
-        t = ThreadRunner(wt)
-        t.start()
-        b4 = time.time()
-        # try to get inuse error
-        try:
+            runtime = float(os.getenv("APSW_HEAVY_DURATION")) if os.getenv("APSW_HEAVY_DURATION") else 30
+            t = ThreadRunner(wt)
+            t.start()
+            b4 = time.time()
+            # try to get inuse error
             try:
-                while not vals["stop"] and time.time() - b4 < runtime:
-                    self.db.backup("main", dbt, "main").close()
-            except apsw.ThreadingViolationError:
+                try:
+                    while not vals["stop"] and time.time() - b4 < runtime:
+                        self.db.backup("main", dbt, "main").close()
+                except apsw.ThreadingViolationError:
+                    vals["stop"] = True
+                    vals["raised"] = True
+            finally:
                 vals["stop"] = True
-                vals["raised"] = True
-        finally:
-            vals["stop"] = True
 
         # standard usage
         db2 = apsw.Connection(":memory:")
