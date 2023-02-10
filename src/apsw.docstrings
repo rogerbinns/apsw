@@ -4,6 +4,31 @@
 #define __builtin_types_compatible_p(x,y) (1)
 #endif
 
+#define  Apsw_allow_missing_dict_bindings_DOC "allow_missing_dict_bindings($self,value)\n--\n\napsw.allow_missing_dict_bindings(value: bool) -> bool\n\n" \
+"Changes how missing bindings are handled when using a :class:`dict`.\n" \
+"Historically missing bindings were treated as *None*.  It was\n" \
+"anticipated that dict bindings would be used when there were lots\n" \
+"of columns, so having missing ones defaulting to *None* was\n" \
+"convenient.\n" \
+"\n" \
+"Unfortunately this also has the side effect of not catching typos\n" \
+"and similar issues.\n" \
+"\n" \
+"APSW 3.41.0.0 changed the default so that missing dict entries\n" \
+"will result in an exception.  Call this with *True* to restore\n" \
+"the earlier behaviour, and *False* to have an exception.\n" \
+"\n" \
+"The previous value is returned.\n" 
+
+#define Apsw_allow_missing_dict_bindings_value_MSG  "argument 'value' of apsw.allow_missing_dict_bindings(value: bool) -> bool" 
+
+#define Apsw_allow_missing_dict_bindings_USAGE "apsw.allow_missing_dict_bindings(value: bool) -> bool"
+
+#define Apsw_allow_missing_dict_bindings_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(value), int)); \
+} while(0)
+
+
 #define  Apsw_apswversion_DOC "apswversion($self)\n--\n\napsw.apswversion() -> str\n\n" \
 "Returns the APSW version.\n" 
 

@@ -136,6 +136,23 @@ This number may be different than the actual library in use if the
 library is shared and has been updated.  Call
 :meth:`sqlitelibversion` to get the actual library version."""
 
+def allow_missing_dict_bindings(value: bool) -> bool:
+    """Changes how missing bindings are handled when using a :class:`dict`.
+    Historically missing bindings were treated as *None*.  It was
+    anticipated that dict bindings would be used when there were lots
+    of columns, so having missing ones defaulting to *None* was
+    convenient.
+
+    Unfortunately this also has the side effect of not catching typos
+    and similar issues.
+
+    APSW 3.41.0.0 changed the default so that missing dict entries
+    will result in an exception.  Call this with *True* to restore
+    the earlier behaviour, and *False* to have an exception.
+
+    The previous value is returned."""
+    ...
+
 def apswversion() -> str:
     """Returns the APSW version."""
     ...
