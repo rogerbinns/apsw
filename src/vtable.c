@@ -1000,6 +1000,22 @@ apswvtabConnect(sqlite3 *db,
   return apswvtabCreateOrConnect(db, pAux, argc, argv, pVTab, errmsg, 1);
 }
 
+/** .. method:: ShadowName(table_suffix: str) -> bool
+
+  This method is called to check if
+  *table_suffix* is a `shadow name
+  <https://www.sqlite.org/vtab.html#the_xshadowname_method>`__
+
+  The default implementation always returns *False*.
+
+  If a virtual table is created using this module
+  named :code:`example` and then a  real table is created
+  named :code:`example_content`, this would be called with
+  a *table_suffix* of :code:`content`
+*/
+
+/* actual implementation is later */
+
 /** .. class:: VTTable
 
   .. note::
@@ -1016,7 +1032,7 @@ apswvtabConnect(sqlite3 *db,
   .. _vtablestructure:
 
   A virtual table is structured as a series of rows, each of which has
-  the same columns.  The value in a column must be one of the `5
+  the same number of columns.  The value in a column must be one of the `5
   supported types <https://sqlite.org/datatype3.html>`_, but the
   type can be different between rows for the same column.  The virtual
   table routines identify the columns by number, starting at zero.
@@ -1027,7 +1043,12 @@ apswvtabConnect(sqlite3 *db,
   the :class:`Table <VTTable>` routines such as :meth:`UpdateChangeRow
   <VTTable.UpdateChangeRow>`.
 
+  It is possible to not have a rowid - read more at `the SQLite
+  site <https://www.sqlite.org/vtab.html#_without_rowid_virtual_tables_>`__
+
 */
+
+static void freeShadowName(sqlite3_module *mod, PyObject *datasource);
 
 static void
 apswvtabFree(void *context)
@@ -1039,6 +1060,9 @@ apswvtabFree(void *context)
 /* https://sqlite.org/forum/forumpost/b68391eb71fdff73 */
 #else
   vtableinfo *vti = (vtableinfo *)context;
+
+  if (vti->sqlite3_module_def && vti->sqlite3_module_def->xShadowName)
+    freeShadowName(vti->sqlite3_module_def, vti->datasource);
 
   Py_XDECREF(vti->datasource);
   PyMem_Free(vti->sqlite3_module_def);
@@ -2145,17 +2169,6 @@ apswvtabRollbackTo(sqlite3_vtab *pVtab, int level)
   return sqliteres;
 }
 
-/** .. method:: ShadowName(table_suffix: str) -> bool
-
-  .. note::
-
-     Your virtual table is not called with this method because the underlying
-     SQLite implementation defines it as a global method, not as a method
-     on a virtual table.  You will need to provide :meth:`apsw.shadow_name`
-     to respond.
-
-*/
-
 /** .. class:: VTCursor
 
 .. note::
@@ -2336,7 +2349,7 @@ apswvtabColumn(sqlite3_vtab_cursor *pCursor, sqlite3_context *result, int ncolum
   if (!res)
     goto pyexception;
 
-  if (nc && Py_Is(res, (PyObject*)&apsw_no_change_object))
+  if (nc && Py_Is(res, (PyObject *)&apsw_no_change_object))
     ok = 1;
   else
     ok = set_context_result(result, res);
@@ -2472,8 +2485,186 @@ finally:
   return sqliteres;
 }
 
+/* xShadowName has no context information so we have to make
+   make multiple functions (so each has a different address
+   and do lots of housekeeping.
+
+  https://sqlite.org/forum/forumpost/d5589fe401
+*/
+
+/* our multiple copies of the callback then call this
+   methir providing the which parameter */
+static int
+apswvtabShadowName(int which, const char *table_suffix);
+
+#define SN(n)                                    \
+  static int xShadowName_##n(const char *suffix) \
+  {                                              \
+    return apswvtabShadowName(n, suffix);        \
+  }
+
+SN(0)
+SN(1)
+SN(2)
+SN(3)
+SN(4)
+SN(5)
+SN(6)
+SN(7)
+SN(8)
+SN(9)
+SN(10)
+SN(11)
+SN(12)
+SN(13)
+SN(14)
+SN(15)
+SN(16)
+SN(17)
+SN(18)
+SN(19)
+SN(20)
+SN(21)
+SN(22)
+SN(23)
+SN(24)
+SN(25)
+SN(26)
+SN(27)
+SN(28)
+SN(29)
+SN(30)
+SN(31)
+
+#undef SN
+#define SN(n)             \
+  {                       \
+    xShadowName_##n, 0, 0 \
+  }
+
+static struct
+{
+  /* sqlite callback */
+  int (*apsw_xShadowName)(const char *);
+  /* associated python object we call */
+  PyObject *source;
+  /* this isn't needed but we use it with assertions to catch any errors */
+  struct sqlite3_module *module;
+} shadowname_allocation[] = {
+    SN(0),
+    SN(1),
+    SN(2),
+    SN(3),
+    SN(4),
+    SN(5),
+    SN(6),
+    SN(7),
+    SN(8),
+    SN(9),
+    SN(10),
+    SN(11),
+    SN(12),
+    SN(13),
+    SN(14),
+    SN(15),
+    SN(16),
+    SN(17),
+    SN(18),
+    SN(19),
+    SN(20),
+    SN(21),
+    SN(22),
+    SN(23),
+    SN(24),
+    SN(25),
+    SN(26),
+    SN(27),
+    SN(28),
+    SN(29),
+    SN(30),
+    SN(31)};
+
+#undef SN
+
+/* sanity check of entry x.  */
+#define SN_CHECK(x)                                                                                    \
+  do                                                                                                   \
+  {                                                                                                    \
+    assert((shadowname_allocation[x].module == NULL && shadowname_allocation[x].source == NULL) ||     \
+           shadowname_allocation[x].apsw_xShadowName == shadowname_allocation[x].module->xShadowName); \
+  } while (0)
+
+static void allocShadowName(sqlite3_module *mod, PyObject *datasource)
+{
+  const int max_sn = sizeof(shadowname_allocation) / sizeof(shadowname_allocation[0]);
+  int i;
+  for (i = 0; i < max_sn; i++)
+  {
+    SN_CHECK(i);
+    if (shadowname_allocation[i].module)
+      continue;
+
+    shadowname_allocation[i].module = mod;
+    mod->xShadowName = shadowname_allocation[i].apsw_xShadowName;
+    shadowname_allocation[i].source = datasource;
+    SN_CHECK(i);
+    return;
+  }
+  PyErr_Format(PyExc_Exception, "No xShadowName slots are available.  There can be at most %d at once across all databases.", max_sn);
+}
+
+static void freeShadowName(sqlite3_module *mod, PyObject *datasource)
+{
+  const int max_sn = sizeof(shadowname_allocation) / sizeof(shadowname_allocation[0]);
+  int i;
+  int (*apsw_xShadowName)(const char *) = mod->xShadowName;
+
+  for (i = 0; i < max_sn; i++)
+  {
+    SN_CHECK(i);
+    if (shadowname_allocation[i].apsw_xShadowName == apsw_xShadowName)
+    {
+      assert(shadowname_allocation[i].source == datasource && shadowname_allocation[i].module == mod);
+      shadowname_allocation[i].source = NULL;
+      shadowname_allocation[i].module = NULL;
+      SN_CHECK(i);
+      return;
+    }
+  }
+  assert(0); /* something went horribly wrong */
+}
+
+static int
+apswvtabShadowName(int which, const char *table_suffix)
+{
+  PyGILState_STATE gilstate;
+  PyObject *res = NULL;
+  int sqliteres = 0;
+
+  gilstate = PyGILState_Ensure();
+  SN_CHECK(which);
+  res = Call_PythonMethodV(shadowname_allocation[which].source, "ShadowName", 0, "(s)", table_suffix);
+  if (!res)
+    sqliteres = 0;
+  else if (Py_IsNone(res) || Py_IsFalse(res))
+    sqliteres = 0;
+  else if (Py_IsTrue(res))
+    sqliteres = 1;
+  else
+    PyErr_Format(PyExc_TypeError, "Expected a bool from ShadowName not %s", Py_TypeName(res));
+
+  if (PyErr_Occurred())
+  {
+    AddTraceBackHere(__FILE__, __LINE__, "VTModule.ShadowName", "{s: s, s: O}", "table_suffix", table_suffix, res, OBJ(res));
+    apsw_write_unraisable(NULL);
+  }
+  Py_XDECREF(res);
+  PyGILState_Release(gilstate);
+  return sqliteres;
+}
+
 static sqlite3_module *
-apswvtabSetupModuleDef(int iVersion, int eponymous, int eponymous_only, int read_only)
+apswvtabSetupModuleDef(PyObject *datasource, int iVersion, int eponymous, int eponymous_only, int read_only)
 {
   sqlite3_module *mod = NULL;
   assert(!PyErr_Occurred());
@@ -2529,7 +2720,15 @@ apswvtabSetupModuleDef(int iVersion, int eponymous, int eponymous_only, int read
     mod->xRelease = apswvtabRelease;
     mod->xRollbackTo = apswvtabRollbackTo;
   }
-  mod->xShadowName = apswvtabShadowName;
+  if (iVersion >= 3)
+  {
+    allocShadowName(mod, datasource);
+    if (!mod->xShadowName)
+    {
+      PyMem_Free(mod);
+      return NULL;
+    }
+  }
 
   return mod;
 }

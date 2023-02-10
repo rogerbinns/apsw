@@ -1135,6 +1135,8 @@ class APSW(unittest.TestCase):
             filter_callback = lambda *args: 0
             create_callback = lambda: 0
 
+            sn_called = set()
+
             schema = f"create table ignored({ ','.join(columns) })"
 
             def Create(self, *args):
@@ -1142,6 +1144,9 @@ class APSW(unittest.TestCase):
                 return self.schema, Source.Table()
 
             Connect = Create
+
+            def ShadowName(self, suffix):
+                Source.sn_called.add((id(self), suffix))
 
             class Table:
 
@@ -1493,24 +1498,47 @@ class APSW(unittest.TestCase):
         self.db.execute(query)
 
         # shadowname
-        wascalled = set()
+        self.assertEqual(len(Source.sn_called), 0)
 
-        def iwascalled(name):
-            wascalled.add(name)
-            return bool(len(wascalled) % 2)
-
-        apsw.shadow_name = iwascalled
-
-        bn = "banana"
-
-        def make_shadow():
+        def make_shadow(bn):
             self.db.execute(f"create table { bn }_foo(x); create table { bn }_bar(x)")
 
-        Source.create_callback = make_shadow
-        self.db.execute("create virtual table banana using sptest()")
-        bn = "orange"
-        apsw.shadow_name = lambda x: 1 / 0
-        self.assertRaisesUnraisable(ZeroDivisionError, self.db.execute, "create virtual table orange using sptest()")
+        make_shadow("sptest")
+        self.assertEqual(len(Source.sn_called), 2)
+
+        Source.ShadowName = lambda *args: 1 / 0
+        self.assertRaisesUnraisable(ZeroDivisionError, self.db.execute, "create table sptest_bam(x)")
+        Source.ShadowName = lambda *args: True
+
+        def clear_all():
+            self.db.close()
+            self.db = apsw.Connection(":memory:")
+
+        # run out of shadowname slots
+        clear_all()
+        for i in range(2000):
+            try:
+                self.db.createmodule(f"sptest{ i }", Source(), use_bestindex_object=True, iVersion=3)
+            except Exception as e:
+                limit = i
+                self.assertIn("No xShadowName slots are available", str(e))
+                break
+
+        # do some deliberate thrashing
+        clear_all()
+
+        registered = set()
+        for i in range(limit * 20):
+            if len(registered) == limit:
+                victim = random.choice(list(registered))
+                self.db.execute(f"drop table v{ victim }")
+                self.db.createmodule(victim, None)
+                registered.remove(victim)
+            name = f"sptest{ i }"
+            self.db.createmodule(f"sptest{ i }", Source(), use_bestindex_object=False, iVersion=3)
+            self.db.execute(f"create virtual table v{ name } using { name }")
+            make_shadow(f"v{ name }")
+            registered.add(name)
 
     index_info_test_patterns = (("select * from bar where c7 is null", {
         'nConstraint':
@@ -1629,8 +1657,8 @@ class APSW(unittest.TestCase):
                 Destroy = Disconnect
 
                 def UpdateChangeRow(tself, rowid, newrowid, fields):
-                    d=Source.data
-                    expected=(apsw.no_change, d[rowid][2]+1, apsw.no_change, 4, apsw.no_change)
+                    d = Source.data
+                    expected = (apsw.no_change, d[rowid][2] + 1, apsw.no_change, 4, apsw.no_change)
                     self.assertEqual(fields, expected)
 
             class Cursor:
@@ -1660,7 +1688,6 @@ class APSW(unittest.TestCase):
 
         self.db.createmodule("testing", Source(), eponymous=True, use_no_change=True)
         self.db.execute("update testing set c1=c2+1")
-
 
     def testWAL(self):
         "Test WAL functions"
@@ -5300,7 +5327,11 @@ class APSW(unittest.TestCase):
 
         names = list("".join(x) for x in itertools.permutations("abcd"))
         for n in names:
-            self.db.createmodule(n, Source(), **random.choice(args))
+            try:
+                self.db.createmodule(n, Source(), **random.choice(args))
+            except Exception as e:
+                self.assertIn("No xShadowName slots are available.", str(e))
+                continue
             check_module(n, False)
 
         random.shuffle(names)

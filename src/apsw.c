@@ -147,8 +147,6 @@ typedef struct
   PyObject_HEAD long long blobsize;
 } ZeroBlobBind;
 
-static int apswvtabShadowName(const char *);
-
 /* Argument parsing helpers */
 #include "argparse.c"
 
@@ -756,67 +754,6 @@ apswcomplete(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
   Py_RETURN_FALSE;
 }
 
-/** .. method:: shadow_name(table_suffix: str) -> bool
-
-  If you have virtual tables then this method is called to check if
-  *table_suffix* is a `shadow name
-  <https://www.sqlite.org/vtab.html#the_xshadowname_method>`__
-
-  The default implementation always returns *False*.  To
-  provide your own, you need to::
-
-     apsw.shadow_name = your_method
-
-  If a virtual table is created named :code:`example` and then a
-  real table is created named :code:`example_content`, this
-  would be called with a *table_suffix* of :code:`content`
-*/
-
-/* this is the virtual table callback with gil released */
-static int
-apswvtabShadowName(const char *table_suffix)
-{
-  PyGILState_STATE gilstate;
-  PyObject *res = NULL;
-  int sqliteres = 0;
-
-  gilstate = PyGILState_Ensure();
-
-  res = Call_PythonMethodV(apswmodule, "shadow_name", 0, "(s)", table_suffix);
-  if (!res)
-    sqliteres = 0;
-  else if (Py_IsNone(res) || Py_IsFalse(res))
-    sqliteres = 0;
-  else if (Py_IsTrue(res))
-    sqliteres = 1;
-  else
-    PyErr_Format(PyExc_TypeError, "Expected a bool from ShadowName not %s", Py_TypeName(res));
-
-  if (PyErr_Occurred())
-  {
-    AddTraceBackHere(__FILE__, __LINE__, "apsw.shadow_name", "{s: s, s: O}", "table_suffix", table_suffix, res, OBJ(res));
-    apsw_write_unraisable(NULL);
-  }
-
-  Py_XDECREF(res);
-  PyGILState_Release(gilstate);
-  return sqliteres;
-}
-
-/* dummy version that always returns false */
-static PyObject *
-apsw_shadow_name(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
-{
-  const char *table_suffix;
-  {
-    static char *kwlist[] = {"table_suffix", NULL};
-    Apsw_shadow_name_CHECK;
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:" Apsw_shadow_name_USAGE, kwlist, &table_suffix))
-      return NULL;
-  }
-
-  Py_RETURN_FALSE;
-}
 
 #ifdef APSW_TESTFIXTURES
 static PyObject *
@@ -1584,7 +1521,6 @@ static PyMethodDef module_methods[] = {
     {"strnicmp", (PyCFunction)apsw_strnicmp, METH_VARARGS | METH_KEYWORDS, Apsw_strnicmp_DOC},
     {"set_default_vfs", (PyCFunction)apsw_set_default_vfs, METH_VARARGS | METH_KEYWORDS, Apsw_set_default_vfs_DOC},
     {"unregister_vfs", (PyCFunction)apsw_unregister_vfs, METH_VARARGS | METH_KEYWORDS, Apsw_unregister_vfs_DOC},
-    {"shadow_name", (PyCFunction)apsw_shadow_name, METH_VARARGS | METH_KEYWORDS, Apsw_shadow_name_DOC},
 #ifdef APSW_TESTFIXTURES
     {"_fini", (PyCFunction)apsw_fini, METH_NOARGS,
      "Frees all caches and recycle lists"},

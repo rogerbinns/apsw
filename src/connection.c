@@ -3570,7 +3570,7 @@ Connection_wal_checkpoint(Connection *self, PyObject *args, PyObject *kwds)
 }
 
 static void apswvtabFree(void *context);
-static struct sqlite3_module *apswvtabSetupModuleDef(int iVersion, int eponymous, int eponymous_only, int read_only);
+static struct sqlite3_module *apswvtabSetupModuleDef(PyObject *datasource, int iVersion, int eponymous, int eponymous_only, int read_only);
 
 /** .. method:: createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None
 
@@ -3624,7 +3624,7 @@ Connection_createmodule(Connection *self, PyObject *args, PyObject *kwds)
     vti = PyMem_Calloc(1, sizeof(vtableinfo));
     if (!vti)
       goto error;
-    vti->sqlite3_module_def = apswvtabSetupModuleDef(iVersion, eponymous, eponymous_only, read_only);
+    vti->sqlite3_module_def = apswvtabSetupModuleDef(datasource, iVersion, eponymous, eponymous_only, read_only);
     if (!vti->sqlite3_module_def)
       goto error;
     vti->connection = self;
