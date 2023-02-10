@@ -1102,9 +1102,12 @@ apswvtabDestroyOrDisconnect(sqlite3_vtab *pVtab, int stringindex)
     AddTraceBackHere(__FILE__, __LINE__, destroy_disconnect_strings[stringindex].pyexceptionname, "{s: O}", "self", OBJ(vtable));
   }
 
-  Py_DECREF(vtable);
-  Py_XDECREF(((apsw_vtable *)pVtab)->functions);
-  PyMem_Free(pVtab);
+  if (stringindex == 1)
+  {
+    Py_DECREF(vtable);
+    Py_XDECREF(((apsw_vtable *)pVtab)->functions);
+    PyMem_Free(pVtab);
+  }
 
   Py_XDECREF(res);
 
