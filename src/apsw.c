@@ -1673,9 +1673,8 @@ PyInit_apsw(void)
 #endif
 
   /** .. attribute:: no_change
-     :type: apsw.no_change
 
-    A sentinel used to indicate no change in a value when
+    A sentinel value used to indicate no change in a value when
     used with :meth:`VTCursor.ColumnNoChange` and
     :meth:`VTTable.UpdateChangeRow`
   */

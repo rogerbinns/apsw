@@ -801,6 +801,17 @@ def get_column_names(row: Any) -> Tuple[List[str], VTColumnAccess]:
           - :attr:`VTColumnAccess.By_Index`
           - :code:`columnX` where *X* is zero up to :func:`len <len>`\(:code:`row`)
 
+
+    Example usage:
+
+    .. code::
+
+        def method(arg1, arg2):
+            yield {"fruit": "orange", "price": 17, "quantity": 2}
+
+        example_row = next(method(0, 10))
+        method.columns, method.column_access = apsw.ext.get_column_names(example_row)
+
     """
     if is_dataclass(row):
         return tuple(field.name for field in dataclasses.fields(row)), VTColumnAccess.By_Attr
@@ -827,6 +838,7 @@ def make_virtual_module(db: apsw.Connection,
     *callable*.  The *callable* must have an attribute named *columns*
     with a list of column names, and an attribute named *column_access*
     with a :class:`VTColumnAccess` saying how to access columns from a row.
+    See :meth:`get_column_names` for easily figuring that out.
 
     The goal is to make it very easy to turn a Python function into a
     virtual table.  For example the following Python function::
@@ -878,6 +890,8 @@ def make_virtual_module(db: apsw.Connection,
     :param repr_invalid: If *True* then values that are not valid
        :class:`apsw.SQLiteValue` will be converted to a string using
        :func:`repr`
+
+    See the :ref:`example <example_virtual_tables>`
 
     Advanced
     ++++++++

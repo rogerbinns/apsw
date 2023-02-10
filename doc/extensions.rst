@@ -40,7 +40,7 @@ The ICU extension provides an `International Components for Unicode
 <http://en.wikipedia.org/wiki/International_Components_for_Unicode>`__
 interface, in particular enabling you do sorting and regular
 expressions in a locale aware way.  The `documentation
-<https://sqlite.org/src/finfo?name=ext/icu/README.txt>`__
+<https://sqlite.org/src/tree?name=ext/icu>`__
 shows how to use it.
 
 .. _ext-json1:

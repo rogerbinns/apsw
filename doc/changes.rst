@@ -38,7 +38,7 @@ Virtual table updates:
   (:issue:`402`)
 
 * All `virtual table methods <https://www.sqlite.org/c3ref/module.html>`__
-  are supported - added *iVersion* 2 and 3.  You can also specify the
+  are supported - added *iVersion* 2 and 3.  You can specify the
   *iVersion* in :meth:`Connection.createmodule` (:issue:`128`)
 
 * :meth:`apsw.ext.make_virtual_module` makes it very easy to turn

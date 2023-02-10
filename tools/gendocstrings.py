@@ -828,6 +828,8 @@ Doc at { mi["url"] }
 def attribute_type(item: dict) -> str:
     # docstring will start with :type: type
     doc = "\n".join(item["doc"]).strip().split("\n")[0]
+    if item["name"] == "apsw.no_change":
+        return ""
     assert doc.startswith(":type:"), f"Expected :type: for doc in { item }"
     return doc[len(":type:"):].strip()
 
