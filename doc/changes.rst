@@ -3,13 +3,14 @@ Change History
 
 .. currentmodule:: apsw
 
-next
-====
+3.41.0.0
+========
 
 Virtual table updates:
 
 * :meth:`VTTable.BestIndexObject` is now available which provides
-  :class:`IndexInfo` exposing full control
+  :class:`IndexInfo` exposing full control (:issue:`332`, :issue:`329`,
+  :issue:`278`, :issue:`188`)
 
 * :meth:`IndexInfo.set_aConstraintUsage_in` can have *in* values
   passed all at once to :meth:`VTCursor.Filter`
@@ -19,16 +20,16 @@ Virtual table updates:
   possible to tell SQLite about the error.
 
 * :meth:`VTTable.FindFunction` can now return (int, callable)
-  to allow for virtual table specific function overloads.
+  to allow for virtual table specific function overloads. (:issue:`269`)
 
 * Added :meth:`Connection.vtab_config` and
-  :meth:`Connection.vtab_on_conflict`
+  :meth:`Connection.vtab_on_conflict` (:issue:`189`, :issue:`190`)
 
 * :meth:`Connection.createmodule` lets you have `eponymous
   <https://sqlite.org/vtab.html#eponymous_virtual_tables>`__,
   `eponymous_only
   <https://sqlite.org/vtab.html#eponymous_only_virtual_tables>`__, and
-  read_only modules.
+  read_only modules. (:issue:`196`)
 
 * Virtual table updates can avoid having to provide all column
   values when only a subset are changing.  See :attr:`apsw.no_change`,
@@ -36,8 +37,15 @@ Virtual table updates:
   :meth:`VTCursor.ColumnNoChange` and :meth:`VTTable.UpdateChangeRow`
   (:issue:`402`)
 
+* All `virtual table methods <https://www.sqlite.org/c3ref/module.html>`__
+  are supported - added *iVersion* 2 and 3.  You can also specify the
+  *iVersion* in :meth:`Connection.createmodule` (:issue:`128`)
+
 * :meth:`apsw.ext.make_virtual_module` makes it very easy to turn
   a Python function into a virtual table module.
+
+* :meth:`apsw.ext.generate_series` and :meth:`apsw.ext.generate_series_sqlite`
+  added. (:issue:`380`)
 
 Added :meth:`apsw.ext.format_query_table` for handy table output
 with auto column sizes, colour, word wrap etc.
