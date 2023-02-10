@@ -102,9 +102,11 @@ PyLong_AsInt(PyObject *val)
 {
   int ival = -1;
   long lval = PyLong_AsLong(val);
-  if(!PyErr_Occurred()) {
+  if (!PyErr_Occurred())
+  {
     ival = (int)lval;
-    if(lval!=ival) {
+    if (lval != ival)
+    {
       PyErr_Format(PyExc_OverflowError, "%R overflowed C int", val);
       ival = -1;
     }
