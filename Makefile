@@ -119,7 +119,7 @@ fossil: ## Grabs latest trunk from SQLite source control, extracts and builds in
 	-mv sqlite3/sqlite3config.h .
 	-rm -rf sqlite3
 	mkdir sqlite3
-	set -e ; cd sqlite3 ; wget https://www.sqlite.org/src/tarball/sqlite.tar.gz ; tar xfa sqlite.tar.gz --strip-components=1
+	set -e ; cd sqlite3 ; curl --output - https://www.sqlite.org/src/tarball/sqlite.tar.gz | tar xfz - --strip-components=1
 	set -e ; cd sqlite3 ; ./configure --quiet --enable-all ; make sqlite3.c sqlite3
 	-mv sqlite3config.h sqlite3/
 
