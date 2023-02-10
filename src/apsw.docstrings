@@ -246,27 +246,6 @@
 } while(0)
 
 
-#define  Apsw_shadow_name_DOC "shadow_name($self,table_suffix)\n--\n\napsw.shadow_name(table_suffix: str) -> bool\n\n" \
-"If you have virtual tables then this method is called to check if\n" \
-"*table_suffix* is a `shadow name\n" \
-"<https://www.sqlite.org/vtab.html#the_xshadowname_method>`__\n" \
-"\n" \
-"The default implementation always returns *False*.  To\n" \
-"provide your own, you need to::\n" \
-"\n" \
-"   apsw.shadow_name = your_method\n" \
-"\n" \
-"If a virtual table is created named :code:`example` and then a\n" \
-"real table is created named :code:`example_content`, this\n" \
-"would be called with a *table_suffix* of :code:`content`\n" 
-
-#define Apsw_shadow_name_USAGE "apsw.shadow_name(table_suffix: str) -> bool"
-
-#define Apsw_shadow_name_CHECK do { \
-  assert(__builtin_types_compatible_p(typeof(table_suffix), const char *)); \
-} while(0)
-
-
 #define  Apsw_shutdown_DOC "shutdown($self)\n--\n\napsw.shutdown() -> None\n\n" \
 "It is unlikely you will want to call this method and there is no\n" \
 "need to do so.  It is a **really** bad idea to call it unless you\n" \
@@ -1103,7 +1082,7 @@
 } while(0)
 
 
-#define  Connection_createmodule_DOC "createmodule($self,name,datasource,*,use_bestindex_object=False,use_no_change=False,iVersion=2,eponymous=False,eponymous_only=False,read_only=False)\n--\n\nConnection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 2, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None\n\n" \
+#define  Connection_createmodule_DOC "createmodule($self,name,datasource,*,use_bestindex_object=False,use_no_change=False,iVersion=1,eponymous=False,eponymous_only=False,read_only=False)\n--\n\nConnection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None\n\n" \
 "Registers a virtual table, or drops it if *datasource* is *None*.\n" \
 "See :ref:`virtualtables` for details.\n" \
 "\n" \
@@ -1122,13 +1101,13 @@
 "\n" \
 "Calls: `sqlite3_create_module_v2 <https://sqlite.org/c3ref/create_module.html>`__\n" 
 
-#define Connection_createmodule_use_bestindex_object_MSG  "argument 'use_bestindex_object' of Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 2, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None" 
-#define Connection_createmodule_use_no_change_MSG  "argument 'use_no_change' of Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 2, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None" 
-#define Connection_createmodule_eponymous_MSG  "argument 'eponymous' of Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 2, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None" 
-#define Connection_createmodule_eponymous_only_MSG  "argument 'eponymous_only' of Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 2, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None" 
-#define Connection_createmodule_read_only_MSG  "argument 'read_only' of Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 2, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None" 
+#define Connection_createmodule_use_bestindex_object_MSG  "argument 'use_bestindex_object' of Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None" 
+#define Connection_createmodule_use_no_change_MSG  "argument 'use_no_change' of Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None" 
+#define Connection_createmodule_eponymous_MSG  "argument 'eponymous' of Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None" 
+#define Connection_createmodule_eponymous_only_MSG  "argument 'eponymous_only' of Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None" 
+#define Connection_createmodule_read_only_MSG  "argument 'read_only' of Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None" 
 
-#define Connection_createmodule_USAGE "Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 2, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None"
+#define Connection_createmodule_USAGE "Connection.createmodule(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None"
 
 #define Connection_createmodule_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
@@ -1138,7 +1117,7 @@
   assert(__builtin_types_compatible_p(typeof(use_no_change), int)); \
   assert(use_no_change == 0); \
   assert(__builtin_types_compatible_p(typeof(iVersion), int)); \
-  assert(iVersion == (2)); \
+  assert(iVersion == (1)); \
   assert(__builtin_types_compatible_p(typeof(eponymous), int)); \
   assert(eponymous == 0); \
   assert(__builtin_types_compatible_p(typeof(eponymous_only), int)); \

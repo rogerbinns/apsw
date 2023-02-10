@@ -353,21 +353,6 @@ def set_default_vfs(name: str) -> None:
       * `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__"""
     ...
 
-def shadow_name(table_suffix: str) -> bool:
-    """If you have virtual tables then this method is called to check if
-    *table_suffix* is a `shadow name
-    <https://www.sqlite.org/vtab.html#the_xshadowname_method>`__
-
-    The default implementation always returns *False*.  To
-    provide your own, you need to::
-
-       apsw.shadow_name = your_method
-
-    If a virtual table is created named :code:`example` and then a
-    real table is created named :code:`example_content`, this
-    would be called with a *table_suffix* of :code:`content`"""
-    ...
-
 def shutdown() -> None:
     """It is unlikely you will want to call this method and there is no
     need to do so.  It is a **really** bad idea to call it unless you
@@ -1006,7 +991,7 @@ class Connection:
         Calls: `sqlite3_create_collation_v2 <https://sqlite.org/c3ref/create_collation.html>`__"""
         ...
 
-    def createmodule(self, name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 2, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None:
+    def createmodule(self, name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None:
         """Registers a virtual table, or drops it if *datasource* is *None*.
         See :ref:`virtualtables` for details.
 
@@ -2657,6 +2642,19 @@ if sys.version_info >= (3, 8):
             The corresponding call is :meth:`VTTable.Destroy`."""
             ...
 
+        def ShadowName(self, table_suffix: str) -> bool:
+            """This method is called to check if
+            *table_suffix* is a `shadow name
+            <https://www.sqlite.org/vtab.html#the_xshadowname_method>`__
+
+            The default implementation always returns *False*.
+
+            If a virtual table is created using this module
+            named :code:`example` and then a  real table is created
+            named :code:`example_content`, this would be called with
+            a *table_suffix* of :code:`content`"""
+            ...
+
 
 if sys.version_info >= (3, 8):
 
@@ -2675,7 +2673,7 @@ if sys.version_info >= (3, 8):
         .. _vtablestructure:
 
         A virtual table is structured as a series of rows, each of which has
-        the same columns.  The value in a column must be one of the `5
+        the same number of columns.  The value in a column must be one of the `5
         supported types <https://sqlite.org/datatype3.html>`_, but the
         type can be different between rows for the same column.  The virtual
         table routines identify the columns by number, starting at zero.
@@ -2684,7 +2682,10 @@ if sys.version_info >= (3, 8):
         <https://sqlite.org/autoinc.html>`_ with the :class:`Cursor
         <VTCursor>` routines operating on this number, as well as some of
         the :class:`Table <VTTable>` routines such as :meth:`UpdateChangeRow
-        <VTTable.UpdateChangeRow>`."""
+        <VTTable.UpdateChangeRow>`.
+
+        It is possible to not have a rowid - read more at `the SQLite
+        site <https://www.sqlite.org/vtab.html#_without_rowid_virtual_tables_>`__"""
 
         def Begin(self) -> None:
             """This function is used as part of transactions.  You do not have to
@@ -2954,15 +2955,6 @@ if sys.version_info >= (3, 8):
 
             If you do not provide this method then the call succeeds (matching
             SQLite behaviour when no callback is provided)."""
-            ...
-
-        def ShadowName(self, table_suffix: str) -> bool:
-            """.. note::
-
-               Your virtual table is not called with this method because the underlying
-               SQLite implementation defines it as a global method, not as a method
-               on a virtual table.  You will need to provide :meth:`apsw.shadow_name`
-               to respond."""
             ...
 
         def Sync(self) -> None:
