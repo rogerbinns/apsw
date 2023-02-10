@@ -294,6 +294,7 @@ APSWCursor_close_internal(APSWCursor *self, int force)
 static void
 APSWCursor_dealloc(APSWCursor *self)
 {
+  PyObject_GC_UnTrack(self);
   APSW_CLEAR_WEAKREFS;
 
   APSWCursor_close_internal(self, 2);

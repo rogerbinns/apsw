@@ -319,6 +319,7 @@ Connection_close(Connection *self, PyObject *args, PyObject *kwds)
 static void
 Connection_dealloc(Connection *self)
 {
+  PyObject_GC_UnTrack(self);
   APSW_CLEAR_WEAKREFS;
 
   Connection_close_internal(self, 2);
