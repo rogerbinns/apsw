@@ -8,7 +8,7 @@ Change History
 
 **Backwards incompatible change**:  Bindings using a dictionary with a
 missing key now result in a :exc:`KeyError` exception.  You can use
-:func:`allow_missing_dict_bindings` to restore the old behaviour.
+:meth:`allow_missing_dict_bindings` to restore the old behaviour.
 (:issue:`392`)
 
 Virtual table updates:
