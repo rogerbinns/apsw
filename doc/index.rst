@@ -32,9 +32,6 @@ APSW is hosted at https://github.com/rogerbinns/apsw and can be
 :doc:`downloaded <download>` from `PyPI
 <https://pypi.org/project/apsw/>`__
 
-* :ref:`genindex`
-* :ref:`search`
-
 .. toctree::
    :maxdepth: 2
 
