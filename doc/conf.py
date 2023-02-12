@@ -8,16 +8,15 @@ if sphinx.version_info < (5, 2):
     import warnings
     warnings.warn("You should use sphinx 5.2+")
 
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.extlinks', 'sphinx.ext.intersphinx',
-    "sphinx.ext.viewcode", "sphinx.ext.autosummary"]
+extensions = [
+    'sphinx.ext.autodoc', 'sphinx.ext.extlinks', 'sphinx.ext.intersphinx', "sphinx.ext.viewcode",
+    "sphinx.ext.autosummary"
+]
 
-
-extlinks={
-    'issue': ('https://github.com/rogerbinns/apsw/issues/%s',
-              'APSW issue %s'),
-    'source': ('https://github.com/rogerbinns/apsw/blob/master/%s',
-               '%s'),
-    }
+extlinks = {
+    'issue': ('https://github.com/rogerbinns/apsw/issues/%s', 'APSW issue %s'),
+    'source': ('https://github.com/rogerbinns/apsw/blob/master/%s', '%s'),
+}
 
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
 
@@ -57,10 +56,7 @@ smartquotes = False
 # -----------------------
 
 html_theme = 'default'
-html_theme_options = {
-    'stickysidebar': True,
-    'externalrefs': True
-}
+html_theme_options = {'stickysidebar': True, 'externalrefs': True, 'globaltoc_maxdepth': 1}
 html_favicon = "favicon.ico"
 
 html_static_path = ['.static']
@@ -68,15 +64,38 @@ html_last_updated_fmt = '%b %d, %Y'
 
 htmlhelp_basename = 'apsw'
 
-
+html_sidebars = {'**': ['searchbox.html', 'relations.html', 'localtoc.html', 'globaltoc.html', 'sourcelink.html']}
 ### Extra gunk
+
 
 def skip_Shell_members(app, what, name, obj, skip, options):
     if name.startswith("command_") or name.startswith("output_"):
         return True
     return skip
 
+
 def setup(app):
     app.connect('autodoc-skip-member', skip_Shell_members)
 
+
 nitpicky = True
+
+
+### Google analytics
+def add_ga_javascript(app, pagename, templatename, context, doctree):
+    context["metatags"] = context.get("metatags", "") + \
+    """
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+        <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-2NR9GDCQLT');
+        </script>
+    """
+
+
+def setup(app):
+    app.connect('html-page-context', add_ga_javascript)
