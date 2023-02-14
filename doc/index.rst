@@ -1,5 +1,5 @@
-APSW documentation
-==================
+APSW |version| documentation
+============================
 
 .. centered:: APSW |version| released |today|
 
