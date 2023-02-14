@@ -2419,7 +2419,6 @@ apswvtabClose(sqlite3_vtab_cursor *pCursor)
 {
   PyObject *cursor, *res = NULL;
   PyGILState_STATE gilstate;
-  char **zErrMsgLocation = &(pCursor->pVtab->zErrMsg); /* we free pCursor but still need this field */
   int sqliteres = SQLITE_OK;
 
   gilstate = PyGILState_Ensure();
@@ -2433,7 +2432,7 @@ apswvtabClose(sqlite3_vtab_cursor *pCursor)
 
   /* pyexception: we had an exception in python code */
   assert(PyErr_Occurred());
-  sqliteres = MakeSqliteMsgFromPyException(zErrMsgLocation); /* SQLite flaw: errMsg should be on the cursor not the table! */
+  sqliteres = MakeSqliteMsgFromPyException(NULL); /* SQLite api: we can't report error string */
   AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xClose", "{s: O}", "self", cursor);
 
 finally:
