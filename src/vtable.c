@@ -1955,9 +1955,7 @@ finally:
 */
 
 /*
-  We have to save everything returned for the lifetime of the table as
-  we don't know when it is no longer used due to `SQLite ticket 2095
-  <https://sqlite.org/cvstrac/tktview?tn=2095>`_.
+  We have to save everything returned for the lifetime of the table.
 
   This taps into the existing scalar function code in connection.c
 */
