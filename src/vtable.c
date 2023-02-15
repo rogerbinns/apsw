@@ -1858,7 +1858,8 @@ apswvtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int6
     methodname = "UpdateChangeRow";
     args = PyTuple_New(3);
     oldrowid = convert_value_to_pyobject(argv[0], 0, 0);
-    APSW_FAULT_INJECT(VtabUpdateChangeRowFail, newrowid = convert_value_to_pyobject(argv[1], 0, 0), newrowid = PyErr_NoMemory());
+    if(oldrowid)
+      newrowid = convert_value_to_pyobject(argv[1], 0, 0);
     if (!args || !oldrowid || !newrowid)
     {
       Py_XDECREF(oldrowid);
@@ -1879,7 +1880,7 @@ apswvtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int6
     for (i = 0; i + 2 < argc; i++)
     {
       PyObject *field;
-      APSW_FAULT_INJECT(VtabUpdateBadField, field = convert_value_to_pyobject(argv[i + 2], 0, ((apsw_vtable *)pVtab)->use_no_change), field = PyErr_NoMemory());
+      field = convert_value_to_pyobject(argv[i + 2], 0, ((apsw_vtable *)pVtab)->use_no_change);
       if (!field)
       {
         Py_DECREF(fields);

@@ -9343,26 +9343,6 @@ shell.write(shell.stdout, "hello world\\n")
         except MemoryError:
             pass
 
-        ## VtabUpdateChangeRowFail
-        apsw.faultdict["VtabUpdateChangeRowFail"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.createmodule("foo", Source())
-            db.cursor().execute("create virtual table foo using foo();update foo set x=3 where y=2")
-            1 / 0
-        except MemoryError:
-            pass
-
-        ## VtabUpdateBadField
-        apsw.faultdict["VtabUpdateBadField"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.createmodule("foo", Source())
-            db.cursor().execute("create virtual table foo using foo();update foo set x=3 where y=2")
-            1 / 0
-        except MemoryError:
-            pass
-
         ## VtabRenameBadName
         apsw.faultdict["CreateModuleFail"] = True
         try:
@@ -9759,6 +9739,9 @@ shell.write(shell.stdout, "hello world\\n")
         self.assertRaises(MemoryError, self.db.db_names)
         apsw.faultdict["dbnamesappendfail"] = True
         self.assertRaises(MemoryError, self.db.db_names)
+
+        for k,v in apsw.faultdict.items():
+            assert v is False, f"faultdict { k } never fired"
 
     def testFunctionFlags(self) -> None:
         "Flags to registered SQLite functions"
