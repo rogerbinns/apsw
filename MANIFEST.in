@@ -16,6 +16,8 @@ include apsw/shell.py
 include apsw/speedtest.py
 include apsw/trace.py
 include apsw/tests.py
+include apsw/ext.py
+
 include LICENSE
 include checksums
 include setup.py
