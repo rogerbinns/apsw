@@ -2,6 +2,7 @@
 testdb2
 apsw/*.pyd
 TAGS
+src/faultinject.h
 sqlite3async.h
 sqlite3async.c
 callgrind.out.*

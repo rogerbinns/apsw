@@ -71,10 +71,14 @@ apsw/__init__.pyi src/apsw.docstrings: $(GENDOCS) tools/gendocstrings.py src/aps
 build_ext: src/apswversion.h  ## Fetches SQLite and builds the extension
 	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext -DSQLITE_ENABLE_COLUMN_METADATA --inplace --force --enable-all-extensions
 
-build_ext_debug: src/apswversion.h ## Fetches SQLite and builds the extension in debug mode
+src/faultinject.h: tools/genfaultinject.py
+	-rm src/faultinject.h
+	tools/genfaultinject.py src/faultinject
+
+build_ext_debug: src/apswversion.h src/faultinject.h ## Fetches SQLite and builds the extension in debug mode
 	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --force --enable-all-extensions --debug
 
-coverage:  ## Coverage of the C code
+coverage:  src/faultinject.h ## Coverage of the C code
 	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all && tools/coverage.sh
 
 PYCOVERAGEOPTS=--source apsw --append
@@ -92,7 +96,7 @@ pycoverage:  ## Coverage of the Python code
 test: build_ext ## Standard testing
 	env $(PYTHON) -m apsw.tests
 
-test_debug: $(PYDEBUG_DIR)/bin/python3  ## Testing in debug mode and sanitizer
+test_debug: $(PYDEBUG_DIR)/bin/python3  src/faultinject.h ## Testing in debug mode and sanitizer
 	$(MAKE) build_ext_debug PYTHON=$(PYDEBUG_DIR)/bin/python3
 	env APSWTESTPREFIX=$(PYDEBUG_WORKDIR) $(PYDEBUG_DIR)/bin/python3 -m apsw.tests -v
 
@@ -207,7 +211,7 @@ source: source_nocheck # Make the source and then check it builds and tests corr
 	cd work ; unzip -q ../dist/$(VERDIR).zip
 # Make certain various files do/do not exist
 	for f in doc/vfs.html doc/_sources/pysqlite.txt apsw/trace.py ; do test -f work/$(VERDIR)/$$f ; done
-	for f in sqlite3.c sqlite3/sqlite3.c debian/control ; do test ! -f work/$(VERDIR)/$$f ; done
+	for f in sqlite3.c sqlite3/sqlite3.c debian/control src/faultinject.h ; do test ! -f work/$(VERDIR)/$$f ; done
 # Test code works
 	cd work/$(VERDIR) ; $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --enable-all-extensions build_test_extension test
 
@@ -241,12 +245,15 @@ pyvalgrind: ## Build a debug python with valgrind integration
 	CPPFLAGS="-DPyDict_MAXFREELIST=0 -DPyFloat_MAXFREELIST=0 -DPyTuple_MAXFREELIST=0 -DPyList_MAXFREELIST=0" && \
 	env PATH="/usr/lib/ccache:$$PATH" make -j install
 
-valgrind: $(PYVALGRIND_DIR)/bin/python3 ## Runs multiple iterations with valgrind to catch leaks
+valgrind: $(PYVALGRIND_DIR)/bin/python3 src/faultinject.h ## Runs multiple iterations with valgrind to catch leaks
 	$(PYVALGRIND_DIR)/bin/python3 setup.py fetch --version=$(SQLITEVERSION) --all && \
 	  env APSWTESTPREFIX=$(PYDEBUG_WORKDIR) PATH=$(PYVALGRIND_DIR)/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=6 tools/valgrind.sh 2>&1 | tee l6 && \
 	  env APSWTESTPREFIX=$(PYDEBUG_WORKDIR) PATH=$(PYVALGRIND_DIR)/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=7 tools/valgrind.sh 2>&1 | tee l7 && \
 	  env APSWTESTPREFIX=$(PYDEBUG_WORKDIR) PATH=$(PYVALGRIND_DIR)/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=8 tools/valgrind.sh 2>&1 | tee l8
 
-valgrind1: $(PYVALGRIND_DIR)/bin/python3 ## valgrind check (one iteration)
+valgrind1: $(PYVALGRIND_DIR)/bin/python3 src/faultinject.h ## valgrind check (one iteration)
 	$(PYVALGRIND_DIR)/bin/python3 setup.py fetch --version=$(SQLITEVERSION) --all && \
+	  env APSWTESTPREFIX=$(PYDEBUG_WORKDIR) PATH=$(PYVALGRIND_DIR)/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=1 tools/valgrind.sh
+
+valgrind_no_fetch: $(PYVALGRIND_DIR)/bin/python3 src/faultinject.h ## valgrind check (one iteration) - does not fetch SQLite, using existing directory
 	  env APSWTESTPREFIX=$(PYDEBUG_WORKDIR) PATH=$(PYVALGRIND_DIR)/bin:$$PATH SHOWINUSE=t APSW_TEST_ITERATIONS=1 tools/valgrind.sh
