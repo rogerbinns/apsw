@@ -7,20 +7,8 @@ has_faulted = set()
 to_fault = set()
 
 
-class ReturnCode(enum.IntEnum):
-    "Encapsulates the magic return values from apsw_fault_inject_control"
-
-    Proceed = 0x1FACADE
-    "keep going changing nothing"
-
-    ProceedClearException = 0x2FACADE
-    "clear exception, keep going"
-
-    ProceedAndCallBack = 0x3FACADE
-    "keep going, changing nothing, call with result"
-
-    ProceedClearExceptionAndCallBack = 0x4FACADE
-    "clear exception, keep going, call with result"
+Proceed = 0x1FACADE
+"magic value keep going (ie do not inject a return value)"
 
 
 # should be same as in genfaultinject.py
@@ -55,38 +43,15 @@ def FaultCall(key):
     breakpoint()
 
 
-def called(is_call, fault_function, callid, call_location, exc_info, retval):
-    if False:
-        d = {
-            "is_call": is_call,
-            "callid": callid,
-            "fault_function": fault_function,
-            "call_location": {
-                "filename": call_location[0],
-                "funcname": call_location[1],
-                "linenum": call_location[2],
-                "strargs": call_location[3],
-            },
-            "exc_info": {
-                "exc_type": exc_info[0],
-                "exc_value": exc_info[1],
-                "exc_traceback": exc_info[2],
-            },
-            "retval": retval
-        }
-        pprint.pprint(d, compact=True)
-
-    key = (fault_function, call_location)
-    if is_call:
-        if expect_exception:
-            # already have faulted this round
-            if key not in has_faulted:
-                to_fault.add(key)
-            return ReturnCode.Proceed
-        else:
-            return FaultCall(key)
-    breakpoint()
-    return None
+def called(key):
+    if expect_exception:
+        # already have faulted this round
+        if key not in has_faulted:
+            to_fault.add(key)
+        return Proceed
+    if key in has_faulted:
+        return Proceed
+    return FaultCall(key)
 
 
 sys.apsw_fault_inject_control = called
@@ -94,8 +59,14 @@ sys.apsw_should_fault = lambda *args: False
 
 
 def exercise():
+    "This function exercises the code paths where we have fault injection"
+
+    # The module is not imported outside because the init function has
+    # several fault injection locations
+
     import apsw
     apsw.keywords
+
     import apsw.ext
 
     con = apsw.Connection("")
@@ -196,9 +167,6 @@ def exercise():
             FROM t3 ORDER BY x;
         """):
         pass
-
-    # we reached the end
-    return True
 
 
 last = None

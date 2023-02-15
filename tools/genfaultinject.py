@@ -1,33 +1,20 @@
 #!/usr/bin/python
 
 proto = """
-typedef enum
-{
-    FICProceed = 7,
-    FICProceed_And_Call_With_Result = 8,
-    FICReturnThis = 9,
-} FaultInjectControlVerb;
-
-static FaultInjectControlVerb
-APSW_FaultInjectControl(int is_call, const char *faultfunction, const char *filename, const char *funcname, int linenum, const char *args, PyObject **obj);
+static int
+APSW_FaultInjectControl(const char *faultfunction, const char *filename, const char *funcname, int linenum, const char *args, PyObject **obj);
 """
 
 pyobject_return = """
 ({
     PyObject *_res = 0;
     PyGILState_STATE gilstate = PyGILState_Ensure();
-    switch (APSW_FaultInjectControl(1, "PySet_New", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res))
+    switch (APSW_FaultInjectControl("PySet_New", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res))
     {
-    case FICProceed:
+    case 0x1FACADE:
         assert(_res == 0);
         _res = PySet_New(__VA_ARGS__);
         break;
-    case FICProceed_And_Call_With_Result:
-        assert(_res == 0);
-        _res = PySet_New(__VA_ARGS__);
-        APSW_FaultInjectControl(0, "PySet_New", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res);
-        /* fallthrough  */
-    case FICReturnThis:
     default:
         assert(_res || PyErr_Occurred());
         assert(!(_res && PyErr_Occurred()));
@@ -50,23 +37,14 @@ int_return_no_gil = """
     PyObject *_res2 = 0;
     int _res = 0;
     PyGILState_STATE gilstate = PyGILState_Ensure();
-    switch (APSW_FaultInjectControl(1, "sqlite3_threadsafe", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))
+    switch (APSW_FaultInjectControl("sqlite3_threadsafe", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))
     {
-    case FICProceed:
+    case 0x1FACADE:
         assert(_res2 == 0);
         PyGILState_Release(gilstate);
         _res = sqlite3_threadsafe(__VA_ARGS__);
         gilstate = PyGILState_Ensure();
         break;
-    case FICProceed_And_Call_With_Result:
-        assert(_res2 == 0);
-        PyGILState_Release(gilstate);
-        _res = sqlite3_threadsafe(__VA_ARGS__);
-        gilstate = PyGILState_Ensure();
-        _res2 = PyLong_FromLong(_res);
-        APSW_FaultInjectControl(0, "sqlite3_threadsafe", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2);
-        /* fallthrough  */
-    case FICReturnThis:
     default:
         assert(_res2);
         if(PyTuple_Check(_res2))
@@ -94,19 +72,12 @@ int_return = """
     PyObject *_res2=0;
     int _res = 0;
     PyGILState_STATE gilstate = PyGILState_Ensure();
-    switch (APSW_FaultInjectControl(1, "PyType_Ready", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))
+    switch (APSW_FaultInjectControl("PyType_Ready", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))
     {
-    case FICProceed:
+    case 0x1FACADE:
         assert(_res == 0);
         _res = PyType_Ready(__VA_ARGS__);
         break;
-    case FICProceed_And_Call_With_Result:
-        assert(_res2 == 0);
-        _res = PyType_Ready(__VA_ARGS__);
-        _res2 = PyLong_FromLong(_res);
-        APSW_FaultInjectControl(0, "PyType_Ready", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2);
-        /* fallthrough  */
-    case FICReturnThis:
     default:
         if(PyTuple_Check(_res2))
         {

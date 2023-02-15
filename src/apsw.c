@@ -2315,8 +2315,8 @@ PyInit___init__(void)
 #ifdef APSW_TESTFIXTURES
 #define APSW_FAULT_CLEAR
 #include "faultinject.h"
-static FaultInjectControlVerb
-APSW_FaultInjectControl(int is_call, const char *faultfunction, const char *filename, const char *funcname, int linenum, const char *args, PyObject **obj)
+static int
+APSW_FaultInjectControl(const char *faultfunction, const char *filename, const char *funcname, int linenum, const char *args, PyObject **obj)
 {
   PyObject *callable, *res;
   PyObject *etype = NULL, *evalue = NULL, *etraceback = NULL;
@@ -2331,106 +2331,37 @@ APSW_FaultInjectControl(int is_call, const char *faultfunction, const char *file
       whined++;
       fprintf(stderr, "Missing sys.apsw_fault_inject_control\n");
     }
-    return FICProceed;
+    return 0x1FACADE;
   }
 
-  /*
+  res = PyObject_CallFunction(callable, "((sssis))", faultfunction,
+                              filename, funcname, linenum, args);
 
-      def apsw_fault_inject_control(
-          # True if a call, False if return value/exc from a call
-          is_call: bool,
-          # name of the function
-          name: str,
-          # id of call so call and return value can be correlated
-          call_id: int,
-          # call site
-          location: tuple[
-              # code call location
-              filename:str,
-              # function calling
-              function:str, linenum: int,
-              # text of the arguments
-              args: str].
-          # exception details
-          exc_info: tuple[etype, evalue, etraceback],
-          # return value if is_call else None
-          retval: Any
-          ):
-
-          The return should be a magic number (see 0x1FACADE etc below),
-          or an exception to raise that, or the return value
-
-  */
-
-  res = PyObject_CallFunction(callable, "NsN(ssis)(OOO)O",
-                              PyBool_FromLong(is_call),
-                              faultfunction,
-                              PyLong_FromVoidPtr(obj),
-                              filename, funcname, linenum, args,
-                              OBJ(etype), OBJ(evalue), OBJ(etraceback),
-                              OBJ(*obj));
-
-  if (is_call)
+  if (res)
   {
-    if (res)
+    if (PyLong_Check(res))
     {
-      if (PyLong_Check(res))
+      int overflow;
+      long value = PyLong_AsLongAndOverflow(res, &overflow);
+      if (!overflow && value == 0x1FACADE)
       {
-        int overflow;
-        long value = PyLong_AsLongAndOverflow(res, &overflow);
-        if (!overflow)
-        {
-          switch (value)
-          {
-          case 0x1FACADE: /* proceed leaving exception */
-            PyErr_Restore(etype, evalue, etraceback);
-            Py_DECREF(res);
-            return FICProceed;
-
-          case 0x2FACADE: /* clear exception, proceed */
-            assert(etype && evalue && etraceback);
-            Py_DECREF(etype);
-            Py_DECREF(evalue);
-            Py_DECREF(etraceback);
-            Py_DECREF(res);
-            return FICProceed;
-
-          case 0x3FACADE: /* proceed leaving exception, and call with result */
-            PyErr_Restore(etype, evalue, etraceback);
-            Py_DECREF(res);
-            return FICProceed_And_Call_With_Result;
-
-          case 0x4FACADE: /* clear exception, proceed, call with result */
-            assert(etype && evalue && etraceback);
-            Py_DECREF(etype);
-            Py_DECREF(evalue);
-            Py_DECREF(etraceback);
-            Py_DECREF(res);
-            return FICProceed_And_Call_With_Result;
-          }
-        }
+        PyErr_Restore(etype, evalue, etraceback);
+        Py_DECREF(res);
+        return 0x1FACADE;
       }
-      assert(!etype && !evalue && !etraceback);
-      *obj = res;
-      return FICReturnThis;
     }
-    Py_XDECREF(etype);
-    Py_XDECREF(evalue);
-    Py_XDECREF(etraceback);
-    return FICReturnThis;
+    PyErr_Restore(etype, evalue, etraceback);
+    *obj = res;
+    return 0;
   }
-  else
-  {
-    if (PyErr_Occurred())
-    {
-      PyErr_PrintEx(0);
-      assert(0); /* PyErr_Print clears the exception */
-    }
-    assert(Py_IsNone(res));
-    Py_CLEAR(res);
-    /* return ignored */
-    return FICProceed;
-  }
+
+  assert(PyErr_Occurred());
+  /* we can't put any exception that was present at beginning of call back */
+  Py_XDECREF(etype);
+  Py_XDECREF(evalue);
+  Py_XDECREF(etraceback);
+
+  return 0;
 }
 
 static int
