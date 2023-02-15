@@ -73,7 +73,7 @@ build_ext: src/apswversion.h  ## Fetches SQLite and builds the extension
 
 src/faultinject.h: tools/genfaultinject.py
 	-rm src/faultinject.h
-	tools/genfaultinject.py src/faultinject
+	tools/genfaultinject.py src/faultinject.h
 
 build_ext_debug: src/apswversion.h src/faultinject.h ## Fetches SQLite and builds the extension in debug mode
 	env $(PYTHON) setup.py fetch --version=$(SQLITEVERSION) --all build_ext --inplace --force --enable-all-extensions --debug

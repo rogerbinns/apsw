@@ -1,6 +1,7 @@
 # The C source
 
 include src/*.c
+include src/faultinject.h
 include src/apswtypes.py
 include src/apswversion.h
 include src/apsw.docstrings

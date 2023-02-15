@@ -23,6 +23,38 @@ class ReturnCode(enum.IntEnum):
     "clear exception, keep going, call with result"
 
 
+# should be same as in genfaultinject.py
+returns = {
+    "pyobject": "PySet_New convert_value_to_pyobject getfunctionargs PyModule_Create2 PyErr_NewExceptionWithDoc".split(),
+    "int_no_gil": "sqlite3_threadsafe".split(),
+    "int": "PyType_Ready PyModule_AddObject PyModule_AddIntConstant".split(),
+}
+
+expect_exception = set()
+
+FAULT = ZeroDivisionError, "Fault injection synthesized failure"
+
+
+def FaultCall(key):
+    try:
+        if key[0] in returns["pyobject"] or key[0] == "PyModule_Create2":
+            expect_exception.add(MemoryError)
+            raise MemoryError()
+        if key[0] == "sqlite3_threadsafe":
+            expect_exception.add(EnvironmentError)
+            return 0
+        if key[0] in returns["int"]:
+            # for ones returning -1 on error
+            expect_exception.add(FAULT[0])
+            return (-1, *FAULT)
+    finally:
+        to_fault.discard(key)
+        has_faulted.add(key)
+
+    print("Unhandled", key)
+    breakpoint()
+
+
 def called(is_call, fault_function, callid, call_location, exc_info, retval):
     if False:
         d = {
@@ -46,21 +78,14 @@ def called(is_call, fault_function, callid, call_location, exc_info, retval):
 
     key = (fault_function, call_location)
     if is_call:
-        if key in has_faulted:
+        if expect_exception:
+            # already have faulted this round
+            if key not in has_faulted:
+                to_fault.add(key)
             return ReturnCode.Proceed
         else:
-            if fault_function in ("PySet_New", ):
-                has_faulted.add(key)
-                raise MemoryError()
-        return ReturnCode.ProceedAndCallBack
-    if fault_function in ("PySet_New", ):
-        breakpoint()
-        fault = retval is None or all(e is not None for e in exc_info)
-        if fault:
-            has_faulted.add(key)
-            to_fault.remove(key)
-    else:
-        assert False, f"unknown { fault_function }"
+            return FaultCall(key)
+    breakpoint()
     return None
 
 
@@ -93,6 +118,15 @@ def exercise():
             def Open(self):
                 return Source.Cursor()
 
+            def UpdateDeleteRow(self, rowid):
+                pass
+
+            def UpdateInsertRow(self, rowid, fields):
+                return 77
+
+            def UpdateChangeRow(self, rowid, newrowid, fields):
+                pass
+
         class Cursor:
 
             def Filter(self, *args):
@@ -102,34 +136,92 @@ def exercise():
                 return self.pos >= 7
 
             def Column(self, n):
-                return self.pos
+                return [None, ' ' * n, b"aa" * n, 3.14 * n][n]
 
             def Next(self):
                 self.pos += 1
 
+            def Rowid(self):
+                return self.pos
+
+            def Close(self):
+                pass
+
     con.createmodule("vtable", Source(), use_bestindex_object=True, iVersion=3, eponymous=True)
 
     con.execute("select * from vtable where c2>2 and c1 in (1,2,3)")
+    con.execute("create virtual table fred using vtable()")
+    con.execute("delete from fred where c3>5")
+    n = 2
+    con.execute("insert into fred values(?,?,?,?)", [None, ' ' * n, b"aa" * n, 3.14 * n])
+    con.execute("insert into fred(ROWID, c1) values (99, NULL)")
+    con.execute("update fred set c2=c3 where rowid=3; update fred set rowid=990 where c2=2")
+
+    def func(*args):
+        return 3.14
+
+    con.createscalarfunction("func", func)
+    con.execute("select func(1,null,'abc',x'aabb')")
+
+    class SumInt:
+
+        def __init__(self):
+            self.v = 0
+
+        def step(self, arg):
+            self.v += arg
+
+        def inverse(self, arg):
+            self.v -= arg
+
+        def final(self):
+            return self.v
+
+        def value(self):
+            return self.v
+
+    con.create_window_function("sumint", SumInt)
+
+    for row in con.execute("""
+            CREATE TABLE t3(x, y);
+            INSERT INTO t3 VALUES('a', 4),
+                                ('b', 5),
+                                ('c', 3),
+                                ('d', 8),
+                                ('e', 1);
+            -- Use the window function
+            SELECT x, sumint(y) OVER (
+            ORDER BY x ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING
+            ) AS sum_y
+            FROM t3 ORDER BY x;
+        """):
+        pass
 
     # we reached the end
     return True
 
 
 last = None
-complete = False
-while not complete:
+while True:
     print("remaining", len(to_fault), "done", len(has_faulted))
+    expect_exception = set()
     try:
-        complete = exercise()
-    except Exception:
+        exercise()
+        break
+    except Exception as e:
         complete = False
+        assert sys.exc_info(
+        )[0] in expect_exception, f"Expected { type(e) }/{ sys.exc_info()[1] } to be in { expect_exception }"
+
     now = set(to_fault), set(has_faulted)
     if now == last and len(to_fault):
         print("Unable to make progress")
         exercise()
+        break
     else:
         last = now
 
+assert not to_fault, "Remaining { to_fault }"
 print("Complete")
 
 for n in sorted(has_faulted):

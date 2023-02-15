@@ -92,8 +92,9 @@ API Reference
 #include <pythread.h>
 #include "structmember.h"
 
-#ifdef APSW_TESTFIXTURES
 #include "faultinject.h"
+
+#ifdef APSW_TESTFIXTURES
 
 /* Fault injection */
 #define APSW_FAULT_INJECT(faultName, good, bad) \
@@ -128,7 +129,6 @@ static int APSW_Should_Fault(const char *);
   {                                             \
     good;                                       \
   } while (0)
-
 #endif
 
 /* The module object */
@@ -1623,7 +1623,7 @@ PyInit_apsw(void)
   if (PyType_Ready(&ConnectionType) < 0 || PyType_Ready(&APSWCursorType) < 0 || PyType_Ready(&ZeroBlobBindType) < 0 || PyType_Ready(&APSWBlobType) < 0 || PyType_Ready(&APSWVFSType) < 0 || PyType_Ready(&APSWVFSFileType) < 0 || PyType_Ready(&APSWURIFilenameType) < 0 || PyType_Ready(&FunctionCBInfoType) < 0 || PyType_Ready(&APSWBackupType) < 0 || PyType_Ready(&SqliteIndexInfoType) < 0 || PyType_Ready(&apsw_no_change_object) < 0)
     goto fail;
 
-  m = apswmodule = PyModule_Create(&apswmoduledef);
+  m = apswmodule = PyModule_Create2(&apswmoduledef, PYTHON_API_VERSION);
 
   if (m == NULL)
     goto fail;
@@ -2281,7 +2281,7 @@ modules etc. For example::
   PyModule_AddObject(m, "compile_options", get_compile_options());
   PyModule_AddObject(m, "keywords", get_keywords());
 
-  if(!PyErr_Occurred())
+  if (!PyErr_Occurred())
   {
     PyObject *mod = PyImport_ImportModule("collections.abc");
     if (mod)
@@ -2313,7 +2313,8 @@ PyInit___init__(void)
 #endif
 
 #ifdef APSW_TESTFIXTURES
-
+#define APSW_FAULT_CLEAR
+#include "faultinject.h"
 static FaultInjectControlVerb
 APSW_FaultInjectControl(int is_call, const char *faultfunction, const char *filename, const char *funcname, int linenum, const char *args, PyObject **obj)
 {
@@ -2420,7 +2421,11 @@ APSW_FaultInjectControl(int is_call, const char *faultfunction, const char *file
   }
   else
   {
-    assert(!PyErr_Occurred());
+    if (PyErr_Occurred())
+    {
+      PyErr_PrintEx(0);
+      assert(0); /* PyErr_Print clears the exception */
+    }
     assert(Py_IsNone(res));
     Py_CLEAR(res);
     /* return ignored */
@@ -2434,7 +2439,7 @@ APSW_Should_Fault(const char *name)
   PyGILState_STATE gilstate;
   PyObject *res, *callable;
   PyObject *errsave1 = NULL, *errsave2 = NULL, *errsave3 = NULL;
-  int callres=0;
+  int callres = 0;
 
   gilstate = PyGILState_Ensure();
 
@@ -2464,7 +2469,7 @@ APSW_Should_Fault(const char *name)
   Py_DECREF(res);
 
   PyErr_Restore(errsave1, errsave2, errsave3);
-  end:
+end:
   PyGILState_Release(gilstate);
   return callres;
 }

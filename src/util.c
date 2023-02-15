@@ -202,10 +202,13 @@ finally:
   recursion_level--;
 }
 
+#undef convert_value_to_pyobject
 /* Converts sqlite3_value to PyObject.  Returns a new reference. */
 static PyObject *
 convert_value_to_pyobject(sqlite3_value *value, int in_constraint_possible, int no_change_possible)
 {
+#include "faultinject.h"
+
   int coltype = sqlite3_value_type(value);
   sqlite3_value *in_value;
 

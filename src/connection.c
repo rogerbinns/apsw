@@ -2409,9 +2409,11 @@ set_context_result(sqlite3_context *context, PyObject *obj)
 }
 
 /* Returns a new reference to a tuple formed from function parameters */
+#undef getfunctionargs
 static PyObject *
 getfunctionargs(sqlite3_context *context, PyObject *firstelement, int argc, sqlite3_value **argv)
 {
+#include "faultinject.h"
   PyObject *pyargs = NULL;
   int i;
   int extra = firstelement ? 1 : 0;
