@@ -28,16 +28,17 @@ for f in names:
         continue
     file_exec = 0
     file_total = 0
-    for line in open(f, "rt"):
-        if ":" not in line: continue
-        line = line.split(":", 1)[0].strip()
-        if line == "-":
-            continue
-        if line != "#####":
-            lines_executed += 1
-            file_exec += 1
-        lines_total += 1
-        file_total += 1
+    with open(f, "rt") as fd:
+        for line in fd:
+            if ":" not in line: continue
+            line = line.split(":", 1)[0].strip()
+            if line == "-":
+                continue
+            if line != "#####":
+                lines_executed += 1
+                file_exec += 1
+            lines_total += 1
+            file_total += 1
     n = os.path.splitext(f)[0]
     output(n, file_exec, file_total)
 
