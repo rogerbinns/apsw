@@ -51,12 +51,8 @@ apsw_set_errmsg(const char *msg)
   /* dictionary operations whine if there is an outstanding error */
   PyErr_Fetch(&etype, &eval, &etb);
 
-  if (!tls_errmsg)
-  {
-    tls_errmsg = PyDict_New();
-    if (!tls_errmsg)
-      goto finally;
-  }
+  assert(tls_errmsg);
+
   key = PyLong_FromLong(PyThread_get_thread_ident());
   if (!key)
     goto finally;

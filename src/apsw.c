@@ -1629,6 +1629,9 @@ PyInit_apsw(void)
     goto fail;
 
   Py_INCREF(m);
+  tls_errmsg = PyDict_New();
+  if(!tls_errmsg)
+    goto fail;
 
   if (init_exceptions(m))
     goto fail;
