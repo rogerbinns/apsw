@@ -3,6 +3,11 @@
 proto = """
 static int
 APSW_FaultInjectControl(const char *faultfunction, const char *filename, const char *funcname, int linenum, const char *args, PyObject **obj);
+
+/* these are needed because we don't want to fault within our faulting */
+
+static long PyLong_AsLong_fi(PyObject *obj) { return PyLong_AsLong(obj);}
+
 """
 
 pyobject_return = """
@@ -32,10 +37,10 @@ pyobject_return = """
 
 
 # note this releases the gil around calls.
-int_return_no_gil = """
+return_no_gil = """
 ({
     PyObject *_res2 = 0;
-    int _res = 0;
+    __auto_type _res = 0 ? sqlite3_threadsafe(__VA_ARGS__) : 0;
     PyGILState_STATE gilstate = PyGILState_Ensure();
     switch (APSW_FaultInjectControl("sqlite3_threadsafe", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))
     {
@@ -50,14 +55,14 @@ int_return_no_gil = """
         if(PyTuple_Check(_res2))
         {
             assert(3 == PyTuple_GET_SIZE(_res2));
-            _res = PyLong_AsLong(PyTuple_GET_ITEM(_res2, 0));
+            _res = PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));
             assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));
             PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8(PyTuple_GET_ITEM(_res2, 2)));
         }
         else
         {
             assert(PyLong_Check(_res2));
-            _res = PyLong_AsLong(_res2);
+            _res = PyLong_AsLong_fi(_res2);
         }
         break;
     }
@@ -67,10 +72,10 @@ int_return_no_gil = """
 })
 """
 
-int_return = """
+return_with_gil = """
 ({
     PyObject *_res2=0;
-    int _res = 0;
+    __auto_type _res = 0 ? PyType_Ready(__VA_ARGS__) : 0;
     PyGILState_STATE gilstate = PyGILState_Ensure();
     switch (APSW_FaultInjectControl("PyType_Ready", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))
     {
@@ -82,14 +87,14 @@ int_return = """
         if(PyTuple_Check(_res2))
         {
             assert(3 == PyTuple_GET_SIZE(_res2));
-            _res = PyLong_AsLong(PyTuple_GET_ITEM(_res2, 0));
+            _res = (int)PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));
             assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));
             PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8(PyTuple_GET_ITEM(_res2, 2)));
         }
         else
         {
             assert(PyLong_Check(_res2));
-            _res = PyLong_AsLong(_res2);
+            _res = PyLong_AsLong_fi(_res2);
         }
         break;
     }
@@ -99,14 +104,13 @@ int_return = """
 })
 """
 
-
 def get_definition(s):
     if s in returns["pyobject"]:
         t = pyobject_return.replace("PySet_New", s)
-    elif s in returns["int_no_gil"]:
-        t = int_return_no_gil.replace("sqlite3_threadsafe", s)
-    elif s in returns["int"]:
-        t = int_return.replace("PyType_Ready", s)
+    elif s in returns["no_gil"]:
+        t = return_no_gil.replace("sqlite3_threadsafe", s)
+    elif s in returns["with_gil"]:
+        t = return_with_gil.replace("PyType_Ready", s)
     else:
         print("unknown template " + s)
         breakpoint()
@@ -145,8 +149,8 @@ def genfile(symbols):
 
 returns = {
     "pyobject": "PySet_New convert_value_to_pyobject getfunctionargs PyModule_Create2 PyErr_NewExceptionWithDoc".split(),
-    "int_no_gil": "sqlite3_threadsafe".split(),
-    "int": "PyType_Ready PyModule_AddObject PyModule_AddIntConstant".split(),
+    "no_gil": "sqlite3_threadsafe".split(),
+    "with_gil": "PyType_Ready PyModule_AddObject PyModule_AddIntConstant PyLong_AsLong PyLong_AsLongLong".split(),
 }
 
 if __name__ == '__main__':

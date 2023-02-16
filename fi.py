@@ -14,9 +14,10 @@ Proceed = 0x1FACADE
 # should be same as in genfaultinject.py
 returns = {
     "pyobject": "PySet_New convert_value_to_pyobject getfunctionargs PyModule_Create2 PyErr_NewExceptionWithDoc".split(),
-    "int_no_gil": "sqlite3_threadsafe".split(),
-    "int": "PyType_Ready PyModule_AddObject PyModule_AddIntConstant".split(),
+    "no_gil": "sqlite3_threadsafe".split(),
+    "with_gil": "PyType_Ready PyModule_AddObject PyModule_AddIntConstant PyLong_AsLong PyLong_AsLongLong".split(),
 }
+
 
 expect_exception = set()
 
@@ -25,16 +26,20 @@ FAULT = ZeroDivisionError, "Fault injection synthesized failure"
 
 def FaultCall(key):
     try:
-        if key[0] in returns["pyobject"] or key[0] == "PyModule_Create2":
+        if key[0] in returns["pyobject"]:
             expect_exception.add(MemoryError)
             raise MemoryError()
         if key[0] == "sqlite3_threadsafe":
             expect_exception.add(EnvironmentError)
             return 0
-        if key[0] in returns["int"]:
+        if key[0].startswith("PyLong_As"):
+            expect_exception.add(OverflowError)
+            return (-1, OverflowError, FAULT[1])
+        if key[0].startswith("Py"):
             # for ones returning -1 on error
             expect_exception.add(FAULT[0])
             return (-1, *FAULT)
+
     finally:
         to_fault.discard(key)
         has_faulted.add(key)
@@ -84,6 +89,7 @@ def exercise():
                     if iio.get_aConstraintUsage_in(n):
                         iio.set_aConstraintUsage_in(n, True)
                         iio.set_aConstraintUsage_argvIndex(n, 1)
+                iio.estimatedRows = 7
                 return True
 
             def Open(self):
@@ -171,7 +177,7 @@ def exercise():
 
 last = None
 while True:
-    print("remaining", len(to_fault), "done", len(has_faulted))
+    print("remaining", len(to_fault), "done", len(has_faulted), end="             \r", flush=True)
     expect_exception = set()
     try:
         exercise()
@@ -189,8 +195,9 @@ while True:
     else:
         last = now
 
+print("Complete                                    ")
 assert not to_fault, "Remaining { to_fault }"
-print("Complete")
+
 
 for n in sorted(has_faulted):
     print(n)
