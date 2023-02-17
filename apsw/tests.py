@@ -9700,14 +9700,6 @@ shell.write(shell.stdout, "hello world\\n")
         apsw.faultdict["BlobWritePyError"] = True
         self.assertRaises(MemoryError, blob.write, b"123")
 
-        ### apsw.format_sql_value
-        apsw.faultdict["formatsqlHexStrFail"] = True
-        self.assertRaises(MemoryError, apsw.format_sql_value, b"aabbcc")
-        apsw.faultdict["formatsqlHexBufFail"] = True
-        self.assertRaises(MemoryError, apsw.format_sql_value, b"aabbcc")
-        apsw.faultdict["formatsqlStrFail"] = True
-        self.assertRaises(MemoryError, apsw.format_sql_value, "aabbcc")
-
         ## WalAutocheckpointFails
         apsw.faultdict["WalAutocheckpointFails"] = True
         try:

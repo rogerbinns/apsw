@@ -1211,7 +1211,7 @@ formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value)
       }
     }
 
-    STRING_NEW(formatsqlStrFail, strres, needed_chars, PyUnicode_MAX_CHAR_VALUE(value));
+    strres = PyUnicode_New(needed_chars, PyUnicode_MAX_CHAR_VALUE(value));
     if (!strres)
       return NULL;
     output_kind = PyUnicode_KIND(strres);
@@ -1264,11 +1264,11 @@ formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value)
     Py_ssize_t buflen;
     const unsigned char *bufferc;
 
-    GET_BUFFER(formatsqlHexBufFail, asrb, value, &buffer);
+    asrb = PyObject_GetBuffer(value, &buffer, PyBUF_SIMPLE);
     if (asrb == -1)
       return NULL;
 
-    STRING_NEW(formatsqlHexStrFail, strres, buffer.len * 2 + 3, 127);
+    strres = PyUnicode_New(buffer.len * 2 + 3, 127);
     if (!strres)
       goto bytesfinally;
 
