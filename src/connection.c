@@ -872,7 +872,7 @@ Connection_db_names(Connection *self)
   if (!res)
     goto error;
 
-  for (i = 0; i < APSW_INT32_MAX; i++)
+  for (i = 0; ; i++)
   {
     int appendres;
 

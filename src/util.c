@@ -86,10 +86,6 @@
 /* call from backup code */
 #define PYSQLITE_BACKUP_CALL(y) INUSE_CALL(_PYSQLITE_CALL_E(self->dest->db, y))
 
-/* used to decide if we will use int (4 bytes) or long long (8 bytes) */
-#define APSW_INT32_MIN (-2147483647 - 1)
-#define APSW_INT32_MAX 2147483647
-
 /*
    The default Python PyErr_WriteUnraisable is almost useless, and barely used
    by CPython.  It gives the developer no clue whatsoever where in
