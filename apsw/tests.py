@@ -8995,7 +8995,7 @@ shell.write(shell.stdout, "hello world\\n")
 
         seen = set()
 
-        for macro, faultname in re.findall(r"(APSW_FAULT_INJECT|GET_BUFFER|STRING_NEW)\s*[(]\s*(?P<fault_name>.*?)\s*,",
+        for macro, faultname in re.findall(r"(APSW_FAULT_INJECT)\s*[(]\s*(?P<fault_name>.*?)\s*,",
                                            code):
             if faultname == "faultName":
                 continue
@@ -9024,30 +9024,6 @@ shell.write(shell.stdout, "hello world\\n")
             klass, value = sys.exc_info()[:2]
             self.assertTrue(klass is apsw.Error)
             self.assertTrue("254" in str(value))
-
-        ## ConnectionCloseFail
-        if "APSW_NO_MEMLEAK" not in os.environ:
-            apsw.faultdict["ConnectionCloseFail"] = True
-            try:
-                db = apsw.Connection(":memory:")
-                db.cursor().execute("select 3")
-                db.close(True)
-                1 / 0
-            except apsw.IOError:
-                pass
-
-        ## ConnectionCloseFail in destructor
-        if "APSW_NO_MEMLEAK" not in os.environ:
-            # test
-            apsw.faultdict["ConnectionCloseFail"] = True
-
-            def f():
-                db = apsw.Connection(":memory:")
-                db.cursor().execute("select 3")
-                del db
-                gc.collect()
-
-            self.assertRaisesUnraisable(apsw.ConnectionNotClosedError, f)
 
         ## BlobAllocFails
         apsw.faultdict["BlobAllocFails"] = True

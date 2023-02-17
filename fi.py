@@ -1,6 +1,14 @@
+#!/usr/bin/env python3
+
 import sys
-import pprint
-import enum
+import pathlib
+import gc
+
+sys.path.insert(0, str(pathlib.Path(__file__).parent.absolute() / "tools"))
+
+import genfaultinject
+returns = genfaultinject.returns
+
 
 has_faulted = set()
 
@@ -10,34 +18,37 @@ to_fault = set()
 Proceed = 0x1FACADE
 "magic value keep going (ie do not inject a return value)"
 
-
-# should be same as in genfaultinject.py
-returns = {
-    "pyobject": "PySet_New convert_value_to_pyobject getfunctionargs PyModule_Create2 PyErr_NewExceptionWithDoc".split(),
-    "no_gil": "sqlite3_threadsafe".split(),
-    "with_gil": "PyType_Ready PyModule_AddObject PyModule_AddIntConstant PyLong_AsLong PyLong_AsLongLong".split(),
-}
-
-
 expect_exception = set()
 
-FAULT = ZeroDivisionError, "Fault injection synthesized failure"
+FAULTT = ZeroDivisionError
+FAULTS = "Fault injection synthesized failure"
 
+FAULT = FAULTT, FAULTS
+
+
+def apswattr(name):
+    # this is need because we don't do the top level import of apsw
+    assert "apsw" in sys.modules
+    return getattr(sys.modules["apsw"], name)
 
 def FaultCall(key):
     try:
         if key[0] in returns["pyobject"]:
             expect_exception.add(MemoryError)
-            raise MemoryError()
+            raise MemoryError(FAULTS)
         if key[0] == "sqlite3_threadsafe":
             expect_exception.add(EnvironmentError)
             return 0
+        if key[0] == "sqlite3_close":
+            expect_exception.add(apswattr("ConnectionNotClosedError"))
+            expect_exception.add(apswattr("IOError"))
+            return 10 # SQLITE_IOERROR
         if key[0].startswith("PyLong_As"):
             expect_exception.add(OverflowError)
-            return (-1, OverflowError, FAULT[1])
+            return (-1, OverflowError, FAULTS)
         if key[0].startswith("Py"):
             # for ones returning -1 on error
-            expect_exception.add(FAULT[0])
+            expect_exception.add(FAULTT)
             return (-1, *FAULT)
 
     finally:
@@ -49,6 +60,10 @@ def FaultCall(key):
 
 
 def called(key):
+    # we can't do this because it messes up the import machinery
+    if key[0] == "PyUnicode_AsUTF8" and key[2] == "apsw_getattr":
+        return Proceed
+
     if expect_exception:
         # already have faulted this round
         if key not in has_faulted:
@@ -73,6 +88,9 @@ def exercise():
     apsw.keywords
 
     import apsw.ext
+
+    for v in ("a'bc", "ab\0c", b"aabbcc"):
+        apsw.format_sql_value(v)
 
     con = apsw.Connection("")
 
@@ -174,21 +192,42 @@ def exercise():
         """):
         pass
 
+    con.close()
+
+    con2 = apsw.Connection("")
+    del con2
+
+    gc.collect()
+
+
+exc_happened = []
+def unraisehook(details):
+    exc_happened.append(details[:2])
+
+sys.unraisablehook = unraisehook
+
+def verify_exception():
+    ok = any(e[0] in expect_exception for e in exc_happened) or any(FAULTS in str(e[1]) for e in exc_happened)
+    if not ok:
+        print("Exceptions failed to verify")
+        print(f"Got { exc_happened }")
+        print(f"Expected { expect_exception }")
+        sys.exit(1)
 
 last = None
 while True:
+    exc_happened = []
     print("remaining", len(to_fault), "done", len(has_faulted), end="             \r", flush=True)
     expect_exception = set()
     try:
         exercise()
         break
     except Exception as e:
-        complete = False
-        assert sys.exc_info(
-        )[0] in expect_exception, f"Expected { type(e) }/{ sys.exc_info()[1] } to be in { expect_exception }"
+        exc_happened.append(sys.exc_info()[:2])
+        verify_exception()
 
     now = set(to_fault), set(has_faulted)
-    if now == last and len(to_fault):
+    if now == last:
         print("Unable to make progress")
         exercise()
         break
@@ -201,3 +240,5 @@ assert not to_fault, "Remaining { to_fault }"
 
 for n in sorted(has_faulted):
     print(n)
+
+print(f"Total faults: { len(has_faulted) }")

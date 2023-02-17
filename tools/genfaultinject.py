@@ -7,14 +7,16 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 /* these are needed because we don't want to fault within our faulting */
 
 static long PyLong_AsLong_fi(PyObject *obj) { return PyLong_AsLong(obj);}
-
+static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(obj); }
 """
 
+# this also works for pointer returns that use NULL for error and set a Python exception
+# like PyUnicode_AsUTF8
 pyobject_return = """
 ({
-    PyObject *_res = 0;
+    __auto_type _res = 0 ? PySet_New(__VA_ARGS__) : 0;
     PyGILState_STATE gilstate = PyGILState_Ensure();
-    switch (APSW_FaultInjectControl("PySet_New", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res))
+    switch (APSW_FaultInjectControl("PySet_New", __FILE__, __func__, __LINE__, #__VA_ARGS__, (PyObject**)&_res))
     {
     case 0x1FACADE:
         assert(_res == 0);
@@ -51,13 +53,14 @@ return_no_gil = """
         gilstate = PyGILState_Ensure();
         break;
     default:
+        if(!_res2) PyErr_Print();
         assert(_res2);
         if(PyTuple_Check(_res2))
         {
             assert(3 == PyTuple_GET_SIZE(_res2));
-            _res = PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));
             assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8(PyTuple_GET_ITEM(_res2, 2)));
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));
         }
         else
         {
@@ -87,9 +90,9 @@ return_with_gil = """
         if(PyTuple_Check(_res2))
         {
             assert(3 == PyTuple_GET_SIZE(_res2));
-            _res = (int)PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));
+            _res =  (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));
             assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));
-            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8(PyTuple_GET_ITEM(_res2, 2)));
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));
         }
         else
         {
@@ -148,9 +151,17 @@ def genfile(symbols):
 
 
 returns = {
-    "pyobject": "PySet_New convert_value_to_pyobject getfunctionargs PyModule_Create2 PyErr_NewExceptionWithDoc".split(),
-    "no_gil": "sqlite3_threadsafe".split(),
-    "with_gil": "PyType_Ready PyModule_AddObject PyModule_AddIntConstant PyLong_AsLong PyLong_AsLongLong".split(),
+    "pyobject": """
+            PySet_New convert_value_to_pyobject getfunctionargs PyModule_Create2 PyErr_NewExceptionWithDoc
+            PyUnicode_New  PyUnicode_AsUTF8 PyObject_GetAttrString
+            """.split(),
+    "no_gil": """
+            sqlite3_threadsafe sqlite3_close
+            """.split(),
+    "with_gil": """
+        PyType_Ready PyModule_AddObject PyModule_AddIntConstant PyLong_AsLong
+        PyLong_AsLongLong PyObject_GetBuffer
+        """.split(),
 }
 
 if __name__ == '__main__':
