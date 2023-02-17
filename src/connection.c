@@ -233,8 +233,7 @@ Connection_close_internal(Connection *self, int force)
     statementcache_free(self->stmtcache);
   self->stmtcache = 0;
 
-  PYSQLITE_VOID_CALL(
-      APSW_FAULT_INJECT(ConnectionCloseFail, res = sqlite3_close(self->db), res = SQLITE_IOERR));
+  PYSQLITE_VOID_CALL(res = sqlite3_close(self->db));
 
   self->db = 0;
 

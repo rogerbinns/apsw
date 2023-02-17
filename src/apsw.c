@@ -1522,8 +1522,10 @@ apsw_getattr(PyObject *module, PyObject *name)
   PyObject *shellmodule = NULL, *res = NULL;
   const char *cname = PyUnicode_AsUTF8(name);
 
-  if (strcmp(cname, "Shell") && strcmp(cname, "main"))
-    return PyErr_Format(PyExc_AttributeError, "Unknown apsw attribute %R", name);
+  if (!cname)
+    return NULL;
+
+  if (strcmp(cname, "Shell") && strcmp(cname, "main")) return PyErr_Format(PyExc_AttributeError, "Unknown apsw attribute %R", name);
 
   shellmodule = PyImport_ImportModule("apsw.shell");
   if (shellmodule)
@@ -1629,7 +1631,7 @@ PyInit_apsw(void)
     goto fail;
 
   tls_errmsg = PyDict_New();
-  if(!tls_errmsg)
+  if (!tls_errmsg)
     goto fail;
 
   if (init_exceptions(m))
@@ -2291,7 +2293,6 @@ modules etc. For example::
       collections_abc_Mapping = PyObject_GetAttrString(mod, "Mapping");
       Py_DECREF(mod);
     }
-    assert(collections_abc_Mapping);
   }
 
   if (!PyErr_Occurred())

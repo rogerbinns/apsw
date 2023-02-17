@@ -552,7 +552,7 @@ APSWCursor_is_dict_binding(PyObject *obj)
     return 0;
 
   /* abstract base classes final answer */
-  if (PyObject_IsInstance(obj, collections_abc_Mapping) == 1)
+  if (collections_abc_Mapping && PyObject_IsInstance(obj, collections_abc_Mapping) == 1)
     return 1;
 
   return 0;
