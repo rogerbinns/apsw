@@ -153,10 +153,11 @@ def genfile(symbols):
 returns = {
     "pyobject": """
             PySet_New convert_value_to_pyobject getfunctionargs PyModule_Create2 PyErr_NewExceptionWithDoc
-            PyUnicode_New  PyUnicode_AsUTF8 PyObject_GetAttrString
+            PyUnicode_New  PyUnicode_AsUTF8 PyObject_GetAttrString _PyObject_New PyUnicode_FromString
+            PyObject_Str
             """.split(),
     "no_gil": """
-            sqlite3_threadsafe sqlite3_close
+            sqlite3_threadsafe sqlite3_close sqlite3_db_config
             """.split(),
     "with_gil": """
         PyType_Ready PyModule_AddObject PyModule_AddIntConstant PyLong_AsLong

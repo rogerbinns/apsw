@@ -3,6 +3,7 @@
 import sys
 import pathlib
 import gc
+import math
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent.absolute() / "tools"))
 
@@ -43,6 +44,9 @@ def FaultCall(key):
             expect_exception.add(apswattr("ConnectionNotClosedError"))
             expect_exception.add(apswattr("IOError"))
             return 10 # SQLITE_IOERROR
+        if key[0] == "sqlite3_db_config":
+            expect_exception.add(apswattr("TooBigError"))
+            return 18 # SQLITE_TOOBIG
         if key[0].startswith("PyLong_As"):
             expect_exception.add(OverflowError)
             return (-1, OverflowError, FAULTS)
@@ -84,15 +88,17 @@ def exercise():
     # The module is not imported outside because the init function has
     # several fault injection locations
 
-    import apsw
-    apsw.keywords
+    import apsw, apsw.ext
+    for n in "keywords", "sqlitelibversion", "sqlite3_sourceid", "apswversion", "compile_options":
+        obj=getattr(apsw, n)
+        if callable(obj):
+            obj()
 
-    import apsw.ext
-
-    for v in ("a'bc", "ab\0c", b"aabbcc"):
+    for v in ("a'bc", "ab\0c", b"aabbcc", None, math.nan, math.inf, -0.0, -math.inf, 3.1):
         apsw.format_sql_value(v)
 
     con = apsw.Connection("")
+    con.config(apsw.SQLITE_DBCONFIG_ENABLE_TRIGGER, 1)
 
     class Source:
 
@@ -192,39 +198,51 @@ def exercise():
         """):
         pass
 
-    con.close()
+    con.execute("create table blobby(x); insert into blobby values(?)", (apsw.zeroblob(99),))
+    blob=con.blobopen("main", "blobby", "x", con.last_insert_rowid(), True)
+    blob.write(b"hello world")
+    blob.seek(80)
+    blob.read(10)
+    blob.close()
 
     con2 = apsw.Connection("")
+    with con2.backup("main", con, "main") as backup:
+        backup.step(1)
     del con2
 
+    con.close()
+    del sys.modules["apsw"]
+    del sys.modules["apsw.ext"]
     gc.collect()
 
 
 exc_happened = []
-def unraisehook(details):
+def unraisehook(*details):
     exc_happened.append(details[:2])
 
 sys.unraisablehook = unraisehook
 
-def verify_exception():
+def verify_exception(tested):
     ok = any(e[0] in expect_exception for e in exc_happened) or any(FAULTS in str(e[1]) for e in exc_happened)
     if not ok:
-        print("Exceptions failed to verify")
+        print("\nExceptions failed to verify")
         print(f"Got { exc_happened }")
         print(f"Expected { expect_exception }")
+        print(f"Testing { tested }")
         sys.exit(1)
 
-last = None
+last = set(), set()
 while True:
     exc_happened = []
     print("remaining", len(to_fault), "done", len(has_faulted), end="             \r", flush=True)
     expect_exception = set()
     try:
         exercise()
-        break
+        if not to_fault:
+            break
     except Exception as e:
         exc_happened.append(sys.exc_info()[:2])
-        verify_exception()
+        verify_exception(has_faulted - last[1])
 
     now = set(to_fault), set(has_faulted)
     if now == last:
@@ -235,7 +253,7 @@ while True:
         last = now
 
 print("Complete                                    ")
-assert not to_fault, "Remaining { to_fault }"
+assert not to_fault, f"Remaining { to_fault }"
 
 
 for n in sorted(has_faulted):
