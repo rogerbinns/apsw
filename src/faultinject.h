@@ -18,29 +18,105 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
 
 #ifdef APSW_FAULT_CLEAR
 
+#undef PyDict_New
+#undef PyDict_SetItemString
 #undef PyErr_NewExceptionWithDoc
+#undef PyIter_Next
+#undef PyList_Append
+#undef PyList_New
+#undef PyLong_AsInt
 #undef PyLong_AsLong
 #undef PyLong_AsLongLong
+#undef PyLong_FromLong
+#undef PyMem_Calloc
 #undef PyModule_AddIntConstant
 #undef PyModule_AddObject
 #undef PyModule_Create2
+#undef PyObject_CallObject
 #undef PyObject_GetAttrString
 #undef PyObject_GetBuffer
+#undef PyObject_GetIter
 #undef PyObject_Str
+#undef PySequence_GetItem
 #undef PySet_New
+#undef PyTuple_New
 #undef PyType_Ready
 #undef PyUnicode_AsUTF8
+#undef PyUnicode_AsUTF8AndSize
 #undef PyUnicode_FromString
+#undef PyUnicode_FromStringAndSize
 #undef PyUnicode_New
+#undef PyWeakref_NewRef
+#undef Py_BuildValue
 #undef _PyObject_New
+#undef apsw_strdup
 #undef convert_value_to_pyobject
+#undef convertutf8string
 #undef getfunctionargs
+#undef sqlite3_busy_handler
 #undef sqlite3_close
+#undef sqlite3_collation_needed
+#undef sqlite3_column_type
 #undef sqlite3_db_config
+#undef sqlite3_enable_load_extension
+#undef sqlite3_enable_shared_cache
+#undef sqlite3_initialize
+#undef sqlite3_set_authorizer
+#undef sqlite3_shutdown
+#undef sqlite3_status64
 #undef sqlite3_threadsafe
+#undef sqlite3_value_type
 
 #else
 
+#define PyDict_New(...) \
+({                                                                                                                \
+    __auto_type _res = 0 ? PyDict_New(__VA_ARGS__) : 0;                                                           \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                              \
+    switch (APSW_FaultInjectControl("PyDict_New", __FILE__, __func__, __LINE__, #__VA_ARGS__, (PyObject**)&_res)) \
+    {                                                                                                             \
+    case 0x1FACADE:                                                                                               \
+        assert(_res == 0);                                                                                        \
+        _res = PyDict_New(__VA_ARGS__);                                                                           \
+        break;                                                                                                    \
+    default:                                                                                                      \
+        assert(_res || PyErr_Occurred());                                                                         \
+        assert(!(_res && PyErr_Occurred()));                                                                      \
+        break;                                                                                                    \
+    }                                                                                                             \
+    PyGILState_Release(gilstate);                                                                                 \
+    _res;                                                                                                         \
+})
+#define PyDict_SetItemString(...) \
+({                                                                                                               \
+    PyObject *_res2=0;                                                                                           \
+    __auto_type _res = 0 ? PyDict_SetItemString(__VA_ARGS__) : 0;                                                \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                             \
+    switch (APSW_FaultInjectControl("PyDict_SetItemString", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
+    {                                                                                                            \
+    case 0x1FACADE:                                                                                              \
+        assert(_res == 0);                                                                                       \
+        _res = PyDict_SetItemString(__VA_ARGS__);                                                                \
+        break;                                                                                                   \
+    default:                                                                                                     \
+        if(PyTuple_Check(_res2))                                                                                 \
+        {                                                                                                        \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                \
+            _res =  (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                 \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                 \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));     \
+        }                                                                                                        \
+        else                                                                                                     \
+        {                                                                                                        \
+            assert(PyLong_Check(_res2));                                                                         \
+            _res = PyLong_AsLong_fi(_res2);                                                                      \
+        }                                                                                                        \
+        break;                                                                                                   \
+    }                                                                                                            \
+    Py_XDECREF(_res2);                                                                                           \
+    PyGILState_Release(gilstate);                                                                                \
+    _res;                                                                                                        \
+})
 #define PyErr_NewExceptionWithDoc(...) \
 ({                                                                                                                               \
     __auto_type _res = 0 ? PyErr_NewExceptionWithDoc(__VA_ARGS__) : 0;                                                           \
@@ -58,6 +134,90 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
     }                                                                                                                            \
     PyGILState_Release(gilstate);                                                                                                \
     _res;                                                                                                                        \
+})
+#define PyIter_Next(...) \
+({                                                                                                                 \
+    __auto_type _res = 0 ? PyIter_Next(__VA_ARGS__) : 0;                                                           \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                               \
+    switch (APSW_FaultInjectControl("PyIter_Next", __FILE__, __func__, __LINE__, #__VA_ARGS__, (PyObject**)&_res)) \
+    {                                                                                                              \
+    case 0x1FACADE:                                                                                                \
+        assert(_res == 0);                                                                                         \
+        _res = PyIter_Next(__VA_ARGS__);                                                                           \
+        break;                                                                                                     \
+    default:                                                                                                       \
+        assert(_res || PyErr_Occurred());                                                                          \
+        assert(!(_res && PyErr_Occurred()));                                                                       \
+        break;                                                                                                     \
+    }                                                                                                              \
+    PyGILState_Release(gilstate);                                                                                  \
+    _res;                                                                                                          \
+})
+#define PyList_Append(...) \
+({                                                                                                           \
+    PyObject *_res2=0;                                                                                       \
+    __auto_type _res = 0 ? PyList_Append(__VA_ARGS__) : 0;                                                   \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                         \
+    switch (APSW_FaultInjectControl("PyList_Append", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2))    \
+    {                                                                                                        \
+    case 0x1FACADE:                                                                                          \
+        assert(_res == 0);                                                                                   \
+        _res = PyList_Append(__VA_ARGS__);                                                                   \
+        break;                                                                                               \
+    default:                                                                                                 \
+        if(PyTuple_Check(_res2))                                                                             \
+        {                                                                                                    \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                            \
+            _res =  (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                             \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                             \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2))); \
+        }                                                                                                    \
+        else                                                                                                 \
+        {                                                                                                    \
+            assert(PyLong_Check(_res2));                                                                     \
+            _res = PyLong_AsLong_fi(_res2);                                                                  \
+        }                                                                                                    \
+        break;                                                                                               \
+    }                                                                                                        \
+    Py_XDECREF(_res2);                                                                                       \
+    PyGILState_Release(gilstate);                                                                            \
+    _res;                                                                                                    \
+})
+#define PyList_New(...) \
+({                                                                                                                \
+    __auto_type _res = 0 ? PyList_New(__VA_ARGS__) : 0;                                                           \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                              \
+    switch (APSW_FaultInjectControl("PyList_New", __FILE__, __func__, __LINE__, #__VA_ARGS__, (PyObject**)&_res)) \
+    {                                                                                                             \
+    case 0x1FACADE:                                                                                               \
+        assert(_res == 0);                                                                                        \
+        _res = PyList_New(__VA_ARGS__);                                                                           \
+        break;                                                                                                    \
+    default:                                                                                                      \
+        assert(_res || PyErr_Occurred());                                                                         \
+        assert(!(_res && PyErr_Occurred()));                                                                      \
+        break;                                                                                                    \
+    }                                                                                                             \
+    PyGILState_Release(gilstate);                                                                                 \
+    _res;                                                                                                         \
+})
+#define PyLong_AsInt(...) \
+({                                                                                                                  \
+    __auto_type _res = 0 ? PyLong_AsInt(__VA_ARGS__) : 0;                                                           \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                \
+    switch (APSW_FaultInjectControl("PyLong_AsInt", __FILE__, __func__, __LINE__, #__VA_ARGS__, (PyObject**)&_res)) \
+    {                                                                                                               \
+    case 0x1FACADE:                                                                                                 \
+        assert(_res == 0);                                                                                          \
+        _res = PyLong_AsInt(__VA_ARGS__);                                                                           \
+        break;                                                                                                      \
+    default:                                                                                                        \
+        assert(_res || PyErr_Occurred());                                                                           \
+        assert(!(_res && PyErr_Occurred()));                                                                        \
+        break;                                                                                                      \
+    }                                                                                                               \
+    PyGILState_Release(gilstate);                                                                                   \
+    _res;                                                                                                           \
 })
 #define PyLong_AsLong(...) \
 ({                                                                                                           \
@@ -118,6 +278,42 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
     Py_XDECREF(_res2);                                                                                        \
     PyGILState_Release(gilstate);                                                                             \
     _res;                                                                                                     \
+})
+#define PyLong_FromLong(...) \
+({                                                                                                                     \
+    __auto_type _res = 0 ? PyLong_FromLong(__VA_ARGS__) : 0;                                                           \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                   \
+    switch (APSW_FaultInjectControl("PyLong_FromLong", __FILE__, __func__, __LINE__, #__VA_ARGS__, (PyObject**)&_res)) \
+    {                                                                                                                  \
+    case 0x1FACADE:                                                                                                    \
+        assert(_res == 0);                                                                                             \
+        _res = PyLong_FromLong(__VA_ARGS__);                                                                           \
+        break;                                                                                                         \
+    default:                                                                                                           \
+        assert(_res || PyErr_Occurred());                                                                              \
+        assert(!(_res && PyErr_Occurred()));                                                                           \
+        break;                                                                                                         \
+    }                                                                                                                  \
+    PyGILState_Release(gilstate);                                                                                      \
+    _res;                                                                                                              \
+})
+#define PyMem_Calloc(...) \
+({                                                                                                                  \
+    __auto_type _res = 0 ? PyMem_Calloc(__VA_ARGS__) : 0;                                                           \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                \
+    switch (APSW_FaultInjectControl("PyMem_Calloc", __FILE__, __func__, __LINE__, #__VA_ARGS__, (PyObject**)&_res)) \
+    {                                                                                                               \
+    case 0x1FACADE:                                                                                                 \
+        assert(_res == 0);                                                                                          \
+        _res = PyMem_Calloc(__VA_ARGS__);                                                                           \
+        break;                                                                                                      \
+    default:                                                                                                        \
+        assert(_res || PyErr_Occurred());                                                                           \
+        assert(!(_res && PyErr_Occurred()));                                                                        \
+        break;                                                                                                      \
+    }                                                                                                               \
+    PyGILState_Release(gilstate);                                                                                   \
+    _res;                                                                                                           \
 })
 #define PyModule_AddIntConstant(...) \
 ({                                                                                                                  \
@@ -197,6 +393,24 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
     PyGILState_Release(gilstate);                                                                                       \
     _res;                                                                                                               \
 })
+#define PyObject_CallObject(...) \
+({                                                                                                                         \
+    __auto_type _res = 0 ? PyObject_CallObject(__VA_ARGS__) : 0;                                                           \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                       \
+    switch (APSW_FaultInjectControl("PyObject_CallObject", __FILE__, __func__, __LINE__, #__VA_ARGS__, (PyObject**)&_res)) \
+    {                                                                                                                      \
+    case 0x1FACADE:                                                                                                        \
+        assert(_res == 0);                                                                                                 \
+        _res = PyObject_CallObject(__VA_ARGS__);                                                                           \
+        break;                                                                                                             \
+    default:                                                                                                               \
+        assert(_res || PyErr_Occurred());                                                                                  \
+        assert(!(_res && PyErr_Occurred()));                                                                               \
+        break;                                                                                                             \
+    }                                                                                                                      \
+    PyGILState_Release(gilstate);                                                                                          \
+    _res;                                                                                                                  \
+})
 #define PyObject_GetAttrString(...) \
 ({                                                                                                                            \
     __auto_type _res = 0 ? PyObject_GetAttrString(__VA_ARGS__) : 0;                                                           \
@@ -245,6 +459,24 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
     PyGILState_Release(gilstate);                                                                              \
     _res;                                                                                                      \
 })
+#define PyObject_GetIter(...) \
+({                                                                                                                      \
+    __auto_type _res = 0 ? PyObject_GetIter(__VA_ARGS__) : 0;                                                           \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                    \
+    switch (APSW_FaultInjectControl("PyObject_GetIter", __FILE__, __func__, __LINE__, #__VA_ARGS__, (PyObject**)&_res)) \
+    {                                                                                                                   \
+    case 0x1FACADE:                                                                                                     \
+        assert(_res == 0);                                                                                              \
+        _res = PyObject_GetIter(__VA_ARGS__);                                                                           \
+        break;                                                                                                          \
+    default:                                                                                                            \
+        assert(_res || PyErr_Occurred());                                                                               \
+        assert(!(_res && PyErr_Occurred()));                                                                            \
+        break;                                                                                                          \
+    }                                                                                                                   \
+    PyGILState_Release(gilstate);                                                                                       \
+    _res;                                                                                                               \
+})
 #define PyObject_Str(...) \
 ({                                                                                                                  \
     __auto_type _res = 0 ? PyObject_Str(__VA_ARGS__) : 0;                                                           \
@@ -263,6 +495,24 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
     PyGILState_Release(gilstate);                                                                                   \
     _res;                                                                                                           \
 })
+#define PySequence_GetItem(...) \
+({                                                                                                                        \
+    __auto_type _res = 0 ? PySequence_GetItem(__VA_ARGS__) : 0;                                                           \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                      \
+    switch (APSW_FaultInjectControl("PySequence_GetItem", __FILE__, __func__, __LINE__, #__VA_ARGS__, (PyObject**)&_res)) \
+    {                                                                                                                     \
+    case 0x1FACADE:                                                                                                       \
+        assert(_res == 0);                                                                                                \
+        _res = PySequence_GetItem(__VA_ARGS__);                                                                           \
+        break;                                                                                                            \
+    default:                                                                                                              \
+        assert(_res || PyErr_Occurred());                                                                                 \
+        assert(!(_res && PyErr_Occurred()));                                                                              \
+        break;                                                                                                            \
+    }                                                                                                                     \
+    PyGILState_Release(gilstate);                                                                                         \
+    _res;                                                                                                                 \
+})
 #define PySet_New(...) \
 ({                                                                                                               \
     __auto_type _res = 0 ? PySet_New(__VA_ARGS__) : 0;                                                           \
@@ -280,6 +530,24 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
     }                                                                                                            \
     PyGILState_Release(gilstate);                                                                                \
     _res;                                                                                                        \
+})
+#define PyTuple_New(...) \
+({                                                                                                                 \
+    __auto_type _res = 0 ? PyTuple_New(__VA_ARGS__) : 0;                                                           \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                               \
+    switch (APSW_FaultInjectControl("PyTuple_New", __FILE__, __func__, __LINE__, #__VA_ARGS__, (PyObject**)&_res)) \
+    {                                                                                                              \
+    case 0x1FACADE:                                                                                                \
+        assert(_res == 0);                                                                                         \
+        _res = PyTuple_New(__VA_ARGS__);                                                                           \
+        break;                                                                                                     \
+    default:                                                                                                       \
+        assert(_res || PyErr_Occurred());                                                                          \
+        assert(!(_res && PyErr_Occurred()));                                                                       \
+        break;                                                                                                     \
+    }                                                                                                              \
+    PyGILState_Release(gilstate);                                                                                  \
+    _res;                                                                                                          \
 })
 #define PyType_Ready(...) \
 ({                                                                                                           \
@@ -329,6 +597,24 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
     PyGILState_Release(gilstate);                                                                                       \
     _res;                                                                                                               \
 })
+#define PyUnicode_AsUTF8AndSize(...) \
+({                                                                                                                             \
+    __auto_type _res = 0 ? PyUnicode_AsUTF8AndSize(__VA_ARGS__) : 0;                                                           \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                           \
+    switch (APSW_FaultInjectControl("PyUnicode_AsUTF8AndSize", __FILE__, __func__, __LINE__, #__VA_ARGS__, (PyObject**)&_res)) \
+    {                                                                                                                          \
+    case 0x1FACADE:                                                                                                            \
+        assert(_res == 0);                                                                                                     \
+        _res = PyUnicode_AsUTF8AndSize(__VA_ARGS__);                                                                           \
+        break;                                                                                                                 \
+    default:                                                                                                                   \
+        assert(_res || PyErr_Occurred());                                                                                      \
+        assert(!(_res && PyErr_Occurred()));                                                                                   \
+        break;                                                                                                                 \
+    }                                                                                                                          \
+    PyGILState_Release(gilstate);                                                                                              \
+    _res;                                                                                                                      \
+})
 #define PyUnicode_FromString(...) \
 ({                                                                                                                          \
     __auto_type _res = 0 ? PyUnicode_FromString(__VA_ARGS__) : 0;                                                           \
@@ -346,6 +632,24 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
     }                                                                                                                       \
     PyGILState_Release(gilstate);                                                                                           \
     _res;                                                                                                                   \
+})
+#define PyUnicode_FromStringAndSize(...) \
+({                                                                                                                                 \
+    __auto_type _res = 0 ? PyUnicode_FromStringAndSize(__VA_ARGS__) : 0;                                                           \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                               \
+    switch (APSW_FaultInjectControl("PyUnicode_FromStringAndSize", __FILE__, __func__, __LINE__, #__VA_ARGS__, (PyObject**)&_res)) \
+    {                                                                                                                              \
+    case 0x1FACADE:                                                                                                                \
+        assert(_res == 0);                                                                                                         \
+        _res = PyUnicode_FromStringAndSize(__VA_ARGS__);                                                                           \
+        break;                                                                                                                     \
+    default:                                                                                                                       \
+        assert(_res || PyErr_Occurred());                                                                                          \
+        assert(!(_res && PyErr_Occurred()));                                                                                       \
+        break;                                                                                                                     \
+    }                                                                                                                              \
+    PyGILState_Release(gilstate);                                                                                                  \
+    _res;                                                                                                                          \
 })
 #define PyUnicode_New(...) \
 ({                                                                                                                   \
@@ -365,6 +669,43 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
     PyGILState_Release(gilstate);                                                                                    \
     _res;                                                                                                            \
 })
+#define PyWeakref_NewRef(...) \
+({                                                                                                                      \
+    __auto_type _res = 0 ? PyWeakref_NewRef(__VA_ARGS__) : 0;                                                           \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                    \
+    switch (APSW_FaultInjectControl("PyWeakref_NewRef", __FILE__, __func__, __LINE__, #__VA_ARGS__, (PyObject**)&_res)) \
+    {                                                                                                                   \
+    case 0x1FACADE:                                                                                                     \
+        assert(_res == 0);                                                                                              \
+        _res = PyWeakref_NewRef(__VA_ARGS__);                                                                           \
+        break;                                                                                                          \
+    default:                                                                                                            \
+        assert(_res || PyErr_Occurred());                                                                               \
+        assert(!(_res && PyErr_Occurred()));                                                                            \
+        break;                                                                                                          \
+    }                                                                                                                   \
+    PyGILState_Release(gilstate);                                                                                       \
+    _res;                                                                                                               \
+})
+#undef Py_BuildValue
+#define Py_BuildValue(...) \
+({                                                                                                                          \
+    __auto_type _res = 0 ? _Py_BuildValue_SizeT(__VA_ARGS__) : 0;                                                           \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                        \
+    switch (APSW_FaultInjectControl("_Py_BuildValue_SizeT", __FILE__, __func__, __LINE__, #__VA_ARGS__, (PyObject**)&_res)) \
+    {                                                                                                                       \
+    case 0x1FACADE:                                                                                                         \
+        assert(_res == 0);                                                                                                  \
+        _res = _Py_BuildValue_SizeT(__VA_ARGS__);                                                                           \
+        break;                                                                                                              \
+    default:                                                                                                                \
+        assert(_res || PyErr_Occurred());                                                                                   \
+        assert(!(_res && PyErr_Occurred()));                                                                                \
+        break;                                                                                                              \
+    }                                                                                                                       \
+    PyGILState_Release(gilstate);                                                                                           \
+    _res;                                                                                                                   \
+})
 #define _PyObject_New(...) \
 ({                                                                                                                   \
     __auto_type _res = 0 ? _PyObject_New(__VA_ARGS__) : 0;                                                           \
@@ -382,6 +723,24 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
     }                                                                                                                \
     PyGILState_Release(gilstate);                                                                                    \
     _res;                                                                                                            \
+})
+#define apsw_strdup(...) \
+({                                                                                                                 \
+    __auto_type _res = 0 ? apsw_strdup(__VA_ARGS__) : 0;                                                           \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                               \
+    switch (APSW_FaultInjectControl("apsw_strdup", __FILE__, __func__, __LINE__, #__VA_ARGS__, (PyObject**)&_res)) \
+    {                                                                                                              \
+    case 0x1FACADE:                                                                                                \
+        assert(_res == 0);                                                                                         \
+        _res = apsw_strdup(__VA_ARGS__);                                                                           \
+        break;                                                                                                     \
+    default:                                                                                                       \
+        assert(_res || PyErr_Occurred());                                                                          \
+        assert(!(_res && PyErr_Occurred()));                                                                       \
+        break;                                                                                                     \
+    }                                                                                                              \
+    PyGILState_Release(gilstate);                                                                                  \
+    _res;                                                                                                          \
 })
 #define convert_value_to_pyobject(...) \
 ({                                                                                                                               \
@@ -401,6 +760,24 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
     PyGILState_Release(gilstate);                                                                                                \
     _res;                                                                                                                        \
 })
+#define convertutf8string(...) \
+({                                                                                                                       \
+    __auto_type _res = 0 ? convertutf8string(__VA_ARGS__) : 0;                                                           \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                     \
+    switch (APSW_FaultInjectControl("convertutf8string", __FILE__, __func__, __LINE__, #__VA_ARGS__, (PyObject**)&_res)) \
+    {                                                                                                                    \
+    case 0x1FACADE:                                                                                                      \
+        assert(_res == 0);                                                                                               \
+        _res = convertutf8string(__VA_ARGS__);                                                                           \
+        break;                                                                                                           \
+    default:                                                                                                             \
+        assert(_res || PyErr_Occurred());                                                                                \
+        assert(!(_res && PyErr_Occurred()));                                                                             \
+        break;                                                                                                           \
+    }                                                                                                                    \
+    PyGILState_Release(gilstate);                                                                                        \
+    _res;                                                                                                                \
+})
 #define getfunctionargs(...) \
 ({                                                                                                                     \
     __auto_type _res = 0 ? getfunctionargs(__VA_ARGS__) : 0;                                                           \
@@ -418,6 +795,40 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
     }                                                                                                                  \
     PyGILState_Release(gilstate);                                                                                      \
     _res;                                                                                                              \
+})
+#define sqlite3_busy_handler(...) \
+({                                                                                                               \
+    PyObject *_res2 = 0;                                                                                         \
+    __auto_type _res = 0 ? sqlite3_busy_handler(__VA_ARGS__) : 0;                                                \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                             \
+    switch (APSW_FaultInjectControl("sqlite3_busy_handler", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
+    {                                                                                                            \
+    case 0x1FACADE:                                                                                              \
+        assert(_res2 == 0);                                                                                      \
+        PyGILState_Release(gilstate);                                                                            \
+        _res = sqlite3_busy_handler(__VA_ARGS__);                                                                \
+        gilstate = PyGILState_Ensure();                                                                          \
+        break;                                                                                                   \
+    default:                                                                                                     \
+        if(!_res2) PyErr_Print();                                                                                \
+        assert(_res2);                                                                                           \
+        if(PyTuple_Check(_res2))                                                                                 \
+        {                                                                                                        \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                  \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                 \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));     \
+        }                                                                                                        \
+        else                                                                                                     \
+        {                                                                                                        \
+            assert(PyLong_Check(_res2));                                                                         \
+            _res = PyLong_AsLong_fi(_res2);                                                                      \
+        }                                                                                                        \
+        break;                                                                                                   \
+    }                                                                                                            \
+    Py_XDECREF(_res2);                                                                                           \
+    PyGILState_Release(gilstate);                                                                                \
+    _res;                                                                                                        \
 })
 #define sqlite3_close(...) \
 ({                                                                                                           \
@@ -453,6 +864,74 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
     PyGILState_Release(gilstate);                                                                            \
     _res;                                                                                                    \
 })
+#define sqlite3_collation_needed(...) \
+({                                                                                                                   \
+    PyObject *_res2 = 0;                                                                                             \
+    __auto_type _res = 0 ? sqlite3_collation_needed(__VA_ARGS__) : 0;                                                \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                 \
+    switch (APSW_FaultInjectControl("sqlite3_collation_needed", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
+    {                                                                                                                \
+    case 0x1FACADE:                                                                                                  \
+        assert(_res2 == 0);                                                                                          \
+        PyGILState_Release(gilstate);                                                                                \
+        _res = sqlite3_collation_needed(__VA_ARGS__);                                                                \
+        gilstate = PyGILState_Ensure();                                                                              \
+        break;                                                                                                       \
+    default:                                                                                                         \
+        if(!_res2) PyErr_Print();                                                                                    \
+        assert(_res2);                                                                                               \
+        if(PyTuple_Check(_res2))                                                                                     \
+        {                                                                                                            \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                    \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                      \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                     \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));         \
+        }                                                                                                            \
+        else                                                                                                         \
+        {                                                                                                            \
+            assert(PyLong_Check(_res2));                                                                             \
+            _res = PyLong_AsLong_fi(_res2);                                                                          \
+        }                                                                                                            \
+        break;                                                                                                       \
+    }                                                                                                                \
+    Py_XDECREF(_res2);                                                                                               \
+    PyGILState_Release(gilstate);                                                                                    \
+    _res;                                                                                                            \
+})
+#define sqlite3_column_type(...) \
+({                                                                                                              \
+    PyObject *_res2 = 0;                                                                                        \
+    __auto_type _res = 0 ? sqlite3_column_type(__VA_ARGS__) : 0;                                                \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                            \
+    switch (APSW_FaultInjectControl("sqlite3_column_type", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
+    {                                                                                                           \
+    case 0x1FACADE:                                                                                             \
+        assert(_res2 == 0);                                                                                     \
+        PyGILState_Release(gilstate);                                                                           \
+        _res = sqlite3_column_type(__VA_ARGS__);                                                                \
+        gilstate = PyGILState_Ensure();                                                                         \
+        break;                                                                                                  \
+    default:                                                                                                    \
+        if(!_res2) PyErr_Print();                                                                               \
+        assert(_res2);                                                                                          \
+        if(PyTuple_Check(_res2))                                                                                \
+        {                                                                                                       \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                               \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                 \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));    \
+        }                                                                                                       \
+        else                                                                                                    \
+        {                                                                                                       \
+            assert(PyLong_Check(_res2));                                                                        \
+            _res = PyLong_AsLong_fi(_res2);                                                                     \
+        }                                                                                                       \
+        break;                                                                                                  \
+    }                                                                                                           \
+    Py_XDECREF(_res2);                                                                                          \
+    PyGILState_Release(gilstate);                                                                               \
+    _res;                                                                                                       \
+})
 #define sqlite3_db_config(...) \
 ({                                                                                                            \
     PyObject *_res2 = 0;                                                                                      \
@@ -487,6 +966,210 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
     PyGILState_Release(gilstate);                                                                             \
     _res;                                                                                                     \
 })
+#define sqlite3_enable_load_extension(...) \
+({                                                                                                                        \
+    PyObject *_res2 = 0;                                                                                                  \
+    __auto_type _res = 0 ? sqlite3_enable_load_extension(__VA_ARGS__) : 0;                                                \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                      \
+    switch (APSW_FaultInjectControl("sqlite3_enable_load_extension", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
+    {                                                                                                                     \
+    case 0x1FACADE:                                                                                                       \
+        assert(_res2 == 0);                                                                                               \
+        PyGILState_Release(gilstate);                                                                                     \
+        _res = sqlite3_enable_load_extension(__VA_ARGS__);                                                                \
+        gilstate = PyGILState_Ensure();                                                                                   \
+        break;                                                                                                            \
+    default:                                                                                                              \
+        if(!_res2) PyErr_Print();                                                                                         \
+        assert(_res2);                                                                                                    \
+        if(PyTuple_Check(_res2))                                                                                          \
+        {                                                                                                                 \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                         \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                           \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                          \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));              \
+        }                                                                                                                 \
+        else                                                                                                              \
+        {                                                                                                                 \
+            assert(PyLong_Check(_res2));                                                                                  \
+            _res = PyLong_AsLong_fi(_res2);                                                                               \
+        }                                                                                                                 \
+        break;                                                                                                            \
+    }                                                                                                                     \
+    Py_XDECREF(_res2);                                                                                                    \
+    PyGILState_Release(gilstate);                                                                                         \
+    _res;                                                                                                                 \
+})
+#define sqlite3_enable_shared_cache(...) \
+({                                                                                                                      \
+    PyObject *_res2 = 0;                                                                                                \
+    __auto_type _res = 0 ? sqlite3_enable_shared_cache(__VA_ARGS__) : 0;                                                \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                                    \
+    switch (APSW_FaultInjectControl("sqlite3_enable_shared_cache", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
+    {                                                                                                                   \
+    case 0x1FACADE:                                                                                                     \
+        assert(_res2 == 0);                                                                                             \
+        PyGILState_Release(gilstate);                                                                                   \
+        _res = sqlite3_enable_shared_cache(__VA_ARGS__);                                                                \
+        gilstate = PyGILState_Ensure();                                                                                 \
+        break;                                                                                                          \
+    default:                                                                                                            \
+        if(!_res2) PyErr_Print();                                                                                       \
+        assert(_res2);                                                                                                  \
+        if(PyTuple_Check(_res2))                                                                                        \
+        {                                                                                                               \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                       \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                         \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                        \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));            \
+        }                                                                                                               \
+        else                                                                                                            \
+        {                                                                                                               \
+            assert(PyLong_Check(_res2));                                                                                \
+            _res = PyLong_AsLong_fi(_res2);                                                                             \
+        }                                                                                                               \
+        break;                                                                                                          \
+    }                                                                                                                   \
+    Py_XDECREF(_res2);                                                                                                  \
+    PyGILState_Release(gilstate);                                                                                       \
+    _res;                                                                                                               \
+})
+#define sqlite3_initialize(...) \
+({                                                                                                             \
+    PyObject *_res2 = 0;                                                                                       \
+    __auto_type _res = 0 ? sqlite3_initialize(__VA_ARGS__) : 0;                                                \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                           \
+    switch (APSW_FaultInjectControl("sqlite3_initialize", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
+    {                                                                                                          \
+    case 0x1FACADE:                                                                                            \
+        assert(_res2 == 0);                                                                                    \
+        PyGILState_Release(gilstate);                                                                          \
+        _res = sqlite3_initialize(__VA_ARGS__);                                                                \
+        gilstate = PyGILState_Ensure();                                                                        \
+        break;                                                                                                 \
+    default:                                                                                                   \
+        if(!_res2) PyErr_Print();                                                                              \
+        assert(_res2);                                                                                         \
+        if(PyTuple_Check(_res2))                                                                               \
+        {                                                                                                      \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                              \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                               \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));   \
+        }                                                                                                      \
+        else                                                                                                   \
+        {                                                                                                      \
+            assert(PyLong_Check(_res2));                                                                       \
+            _res = PyLong_AsLong_fi(_res2);                                                                    \
+        }                                                                                                      \
+        break;                                                                                                 \
+    }                                                                                                          \
+    Py_XDECREF(_res2);                                                                                         \
+    PyGILState_Release(gilstate);                                                                              \
+    _res;                                                                                                      \
+})
+#define sqlite3_set_authorizer(...) \
+({                                                                                                                 \
+    PyObject *_res2 = 0;                                                                                           \
+    __auto_type _res = 0 ? sqlite3_set_authorizer(__VA_ARGS__) : 0;                                                \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                               \
+    switch (APSW_FaultInjectControl("sqlite3_set_authorizer", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
+    {                                                                                                              \
+    case 0x1FACADE:                                                                                                \
+        assert(_res2 == 0);                                                                                        \
+        PyGILState_Release(gilstate);                                                                              \
+        _res = sqlite3_set_authorizer(__VA_ARGS__);                                                                \
+        gilstate = PyGILState_Ensure();                                                                            \
+        break;                                                                                                     \
+    default:                                                                                                       \
+        if(!_res2) PyErr_Print();                                                                                  \
+        assert(_res2);                                                                                             \
+        if(PyTuple_Check(_res2))                                                                                   \
+        {                                                                                                          \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                                  \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                    \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                                   \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));       \
+        }                                                                                                          \
+        else                                                                                                       \
+        {                                                                                                          \
+            assert(PyLong_Check(_res2));                                                                           \
+            _res = PyLong_AsLong_fi(_res2);                                                                        \
+        }                                                                                                          \
+        break;                                                                                                     \
+    }                                                                                                              \
+    Py_XDECREF(_res2);                                                                                             \
+    PyGILState_Release(gilstate);                                                                                  \
+    _res;                                                                                                          \
+})
+#define sqlite3_shutdown(...) \
+({                                                                                                           \
+    PyObject *_res2 = 0;                                                                                     \
+    __auto_type _res = 0 ? sqlite3_shutdown(__VA_ARGS__) : 0;                                                \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                         \
+    switch (APSW_FaultInjectControl("sqlite3_shutdown", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
+    {                                                                                                        \
+    case 0x1FACADE:                                                                                          \
+        assert(_res2 == 0);                                                                                  \
+        PyGILState_Release(gilstate);                                                                        \
+        _res = sqlite3_shutdown(__VA_ARGS__);                                                                \
+        gilstate = PyGILState_Ensure();                                                                      \
+        break;                                                                                               \
+    default:                                                                                                 \
+        if(!_res2) PyErr_Print();                                                                            \
+        assert(_res2);                                                                                       \
+        if(PyTuple_Check(_res2))                                                                             \
+        {                                                                                                    \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                            \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                              \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                             \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2))); \
+        }                                                                                                    \
+        else                                                                                                 \
+        {                                                                                                    \
+            assert(PyLong_Check(_res2));                                                                     \
+            _res = PyLong_AsLong_fi(_res2);                                                                  \
+        }                                                                                                    \
+        break;                                                                                               \
+    }                                                                                                        \
+    Py_XDECREF(_res2);                                                                                       \
+    PyGILState_Release(gilstate);                                                                            \
+    _res;                                                                                                    \
+})
+#define sqlite3_status64(...) \
+({                                                                                                           \
+    PyObject *_res2 = 0;                                                                                     \
+    __auto_type _res = 0 ? sqlite3_status64(__VA_ARGS__) : 0;                                                \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                         \
+    switch (APSW_FaultInjectControl("sqlite3_status64", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
+    {                                                                                                        \
+    case 0x1FACADE:                                                                                          \
+        assert(_res2 == 0);                                                                                  \
+        PyGILState_Release(gilstate);                                                                        \
+        _res = sqlite3_status64(__VA_ARGS__);                                                                \
+        gilstate = PyGILState_Ensure();                                                                      \
+        break;                                                                                               \
+    default:                                                                                                 \
+        if(!_res2) PyErr_Print();                                                                            \
+        assert(_res2);                                                                                       \
+        if(PyTuple_Check(_res2))                                                                             \
+        {                                                                                                    \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                            \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                              \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                             \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2))); \
+        }                                                                                                    \
+        else                                                                                                 \
+        {                                                                                                    \
+            assert(PyLong_Check(_res2));                                                                     \
+            _res = PyLong_AsLong_fi(_res2);                                                                  \
+        }                                                                                                    \
+        break;                                                                                               \
+    }                                                                                                        \
+    Py_XDECREF(_res2);                                                                                       \
+    PyGILState_Release(gilstate);                                                                            \
+    _res;                                                                                                    \
+})
 #define sqlite3_threadsafe(...) \
 ({                                                                                                             \
     PyObject *_res2 = 0;                                                                                       \
@@ -498,6 +1181,40 @@ static const char *PyUnicode_AsUTF8_fi(PyObject *obj) { return PyUnicode_AsUTF8(
         assert(_res2 == 0);                                                                                    \
         PyGILState_Release(gilstate);                                                                          \
         _res = sqlite3_threadsafe(__VA_ARGS__);                                                                \
+        gilstate = PyGILState_Ensure();                                                                        \
+        break;                                                                                                 \
+    default:                                                                                                   \
+        if(!_res2) PyErr_Print();                                                                              \
+        assert(_res2);                                                                                         \
+        if(PyTuple_Check(_res2))                                                                               \
+        {                                                                                                      \
+            assert(3 == PyTuple_GET_SIZE(_res2));                                                              \
+            _res = (typeof(_res)) PyLong_AsLong_fi(PyTuple_GET_ITEM(_res2, 0));                                \
+            assert(PyUnicode_Check(PyTuple_GET_ITEM(_res2, 2)));                                               \
+            PyErr_Format(PyTuple_GET_ITEM(_res2, 1), "%s", PyUnicode_AsUTF8_fi(PyTuple_GET_ITEM(_res2, 2)));   \
+        }                                                                                                      \
+        else                                                                                                   \
+        {                                                                                                      \
+            assert(PyLong_Check(_res2));                                                                       \
+            _res = PyLong_AsLong_fi(_res2);                                                                    \
+        }                                                                                                      \
+        break;                                                                                                 \
+    }                                                                                                          \
+    Py_XDECREF(_res2);                                                                                         \
+    PyGILState_Release(gilstate);                                                                              \
+    _res;                                                                                                      \
+})
+#define sqlite3_value_type(...) \
+({                                                                                                             \
+    PyObject *_res2 = 0;                                                                                       \
+    __auto_type _res = 0 ? sqlite3_value_type(__VA_ARGS__) : 0;                                                \
+    PyGILState_STATE gilstate = PyGILState_Ensure();                                                           \
+    switch (APSW_FaultInjectControl("sqlite3_value_type", __FILE__, __func__, __LINE__, #__VA_ARGS__, &_res2)) \
+    {                                                                                                          \
+    case 0x1FACADE:                                                                                            \
+        assert(_res2 == 0);                                                                                    \
+        PyGILState_Release(gilstate);                                                                          \
+        _res = sqlite3_value_type(__VA_ARGS__);                                                                \
         gilstate = PyGILState_Ensure();                                                                        \
         break;                                                                                                 \
     default:                                                                                                   \

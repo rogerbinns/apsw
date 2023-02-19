@@ -10,6 +10,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).parent.absolute() / "tools"))
 import genfaultinject
 returns = genfaultinject.returns
 
+call_remap = {v: k for k, v in genfaultinject.call_map.items()}
 
 has_faulted = set()
 
@@ -32,25 +33,44 @@ def apswattr(name):
     assert "apsw" in sys.modules
     return getattr(sys.modules["apsw"], name)
 
+previous_func = None
 def FaultCall(key):
+    global previous_func
+    fname = call_remap.get(key[0], key[0])
     try:
-        if key[0] in returns["pyobject"]:
+        if fname in returns["pyobject"]:
             expect_exception.add(MemoryError)
             raise MemoryError(FAULTS)
-        if key[0] == "sqlite3_threadsafe":
+
+        if fname == "sqlite3_threadsafe":
             expect_exception.add(EnvironmentError)
             return 0
-        if key[0] == "sqlite3_close":
+
+        if fname == "sqlite3_close":
             expect_exception.add(apswattr("ConnectionNotClosedError"))
             expect_exception.add(apswattr("IOError"))
-            return 10 # SQLITE_IOERROR
-        if key[0] == "sqlite3_db_config":
+            return apswattr("SQLITE_IOERR")
+
+        if fname == "sqlite3_enable_shared_cache":
+            expect_exception.add(apswattr("Error"))
+            return 0xFE # also does unknown error code to make_exception
+
+        if fname in {"sqlite3_value_type", "sqlite3_column_type"}:
+            if key[2] == "apswvtabUpdate":
+                expect_exception.add(TypeError)
+            else:
+                expect_exception.add(apswattr("Error"))
+            return 12345
+
+        if fname.startswith("sqlite3_"):
             expect_exception.add(apswattr("TooBigError"))
-            return 18 # SQLITE_TOOBIG
-        if key[0].startswith("PyLong_As"):
+            return apswattr("SQLITE_TOOBIG")
+
+        if fname.startswith("PyLong_As"):
             expect_exception.add(OverflowError)
             return (-1, OverflowError, FAULTS)
-        if key[0].startswith("Py"):
+
+        if fname.startswith("Py"):
             # for ones returning -1 on error
             expect_exception.add(FAULTT)
             return (-1, *FAULT)
@@ -58,6 +78,9 @@ def FaultCall(key):
     finally:
         to_fault.discard(key)
         has_faulted.add(key)
+        if key[2] == "apswvtabFindFunction" or previous_func == "apswvtabFindFunction":
+            expect_exception.update({TypeError, ValueError})
+        previous_func = key[2]
 
     print("Unhandled", key)
     breakpoint()
@@ -75,6 +98,7 @@ def called(key):
         return Proceed
     if key in has_faulted:
         return Proceed
+    print(key)
     return FaultCall(key)
 
 
@@ -89,16 +113,42 @@ def exercise():
     # several fault injection locations
 
     import apsw, apsw.ext
-    for n in "keywords", "sqlitelibversion", "sqlite3_sourceid", "apswversion", "compile_options":
+    apsw.initialize()
+    for n in """
+            SQLITE_VERSION_NUMBER apswversion compile_options keywords memoryused
+            sqlite3_sourceid sqlitelibversion using_amalgamation vfsnames
+        """.split():
         obj=getattr(apsw, n)
         if callable(obj):
             obj()
+
+    apsw.enablesharedcache(False)
+    apsw.status(apsw.SQLITE_STATUS_MEMORY_USED)
 
     for v in ("a'bc", "ab\0c", b"aabbcc", None, math.nan, math.inf, -0.0, -math.inf, 3.1):
         apsw.format_sql_value(v)
 
     con = apsw.Connection("")
+
     con.config(apsw.SQLITE_DBCONFIG_ENABLE_TRIGGER, 1)
+    con.setauthorizer(None)
+    con.authorizer = None
+    con.collationneeded(None)
+    con.collationneeded(lambda *args: 0)
+    con.enableloadextension(True)
+    con.setbusyhandler(None)
+    con.setbusyhandler(lambda *args: True)
+    con.createscalarfunction("failme", lambda x: x+1)
+    cur=con.cursor()
+    for _ in cur.execute("select failme(3)"):
+        cur.description
+        cur.description_full
+        cur.getdescription()
+
+    apsw.allow_missing_dict_bindings(True)
+    con.execute("select :a,:b,$c", {'a': 1, 'c': 3})
+    con.execute("select ?, ?, ?, ?", (None, "dsadas", b"xxx", 3.14))
+    apsw.allow_missing_dict_bindings(False)
 
     class Source:
 
@@ -128,6 +178,11 @@ def exercise():
             def UpdateChangeRow(self, rowid, newrowid, fields):
                 pass
 
+            def FindFunction(self, name, nargs):
+                if nargs == 1:
+                    return lambda x: 6
+                return [apsw.SQLITE_INDEX_CONSTRAINT_FUNCTION, lambda *args: 7]
+
         class Cursor:
 
             def Filter(self, *args):
@@ -149,9 +204,11 @@ def exercise():
                 pass
 
     con.createmodule("vtable", Source(), use_bestindex_object=True, iVersion=3, eponymous=True)
-
+    con.overloadfunction("vtf", 2)
+    con.overloadfunction("vtf", 1)
     con.execute("select * from vtable where c2>2 and c1 in (1,2,3)")
     con.execute("create virtual table fred using vtable()")
+    con.execute("select vtf(c3) from fred where c3>5; select vtf(c2,c1) from fred where c3>5").fetchall()
     con.execute("delete from fred where c3>5")
     n = 2
     con.execute("insert into fred values(?,?,?,?)", [None, ' ' * n, b"aa" * n, 3.14 * n])
@@ -198,6 +255,15 @@ def exercise():
         """):
         pass
 
+    for n in """db_names cacheflush changes filename filename_journal
+                filename_wal getautocommit in_transaction interrupt last_insert_rowid
+                open_flags open_vfs release_memory sqlite3pointer system_errno
+                totalchanges txn_state
+        """.split():
+        obj=getattr(con, n)
+        if callable(obj):
+            obj()
+
     con.execute("create table blobby(x); insert into blobby values(?)", (apsw.zeroblob(99),))
     blob=con.blobopen("main", "blobby", "x", con.last_insert_rowid(), True)
     blob.write(b"hello world")
@@ -205,15 +271,18 @@ def exercise():
     blob.read(10)
     blob.close()
 
+    con.cache_stats(True)
+
     con2 = apsw.Connection("")
     with con2.backup("main", con, "main") as backup:
         backup.step(1)
     del con2
 
     con.close()
-    del sys.modules["apsw"]
     del sys.modules["apsw.ext"]
     gc.collect()
+    apsw.shutdown()
+    del sys.modules["apsw"]
 
 
 exc_happened = []
@@ -231,14 +300,15 @@ def verify_exception(tested):
         print(f"Testing { tested }")
         sys.exit(1)
 
+complete = False
 last = set(), set()
 while True:
     exc_happened = []
-    print("remaining", len(to_fault), "done", len(has_faulted), end="             \r", flush=True)
     expect_exception = set()
     try:
         exercise()
         if not to_fault:
+            complete = True
             break
     except Exception as e:
         exc_happened.append(sys.exc_info()[:2])
@@ -246,17 +316,25 @@ while True:
 
     now = set(to_fault), set(has_faulted)
     if now == last:
-        print("Unable to make progress")
+        print("\nUnable to make progress")
         exercise()
         break
     else:
         last = now
 
-print("Complete                                    ")
-assert not to_fault, f"Remaining { to_fault }"
-
+if complete:
+    print("\nComplete")
 
 for n in sorted(has_faulted):
     print(n)
 
 print(f"Total faults: { len(has_faulted) }")
+
+if to_fault:
+    t = f"Failed to fault { len(to_fault) }"
+    print("=" * len(t))
+    print(t)
+    print("=" * len(t))
+    for f in sorted(to_fault):
+        print(f)
+    sys.exit(1)

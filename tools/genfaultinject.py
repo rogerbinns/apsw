@@ -107,15 +107,15 @@ return_with_gil = """
 })
 """
 
-def get_definition(s):
-    if s in returns["pyobject"]:
-        t = pyobject_return.replace("PySet_New", s)
-    elif s in returns["no_gil"]:
-        t = return_no_gil.replace("sqlite3_threadsafe", s)
-    elif s in returns["with_gil"]:
-        t = return_with_gil.replace("PyType_Ready", s)
+def get_definition(name, use_name):
+    if name in returns["pyobject"]:
+        t = pyobject_return.replace("PySet_New", use_name)
+    elif name in returns["no_gil"]:
+        t = return_no_gil.replace("sqlite3_threadsafe", use_name)
+    elif name in returns["with_gil"]:
+        t = return_with_gil.replace("PyType_Ready", use_name)
     else:
-        print("unknown template " + s)
+        print("unknown template " + name)
         breakpoint()
         1 / 0
     t = t.strip().split("\n")
@@ -123,7 +123,6 @@ def get_definition(s):
     for i in range(len(t) - 1):
         t[i] += " " * (maxlen - len(t[i])) + " \\\n"
     return "".join(t)
-
 
 def genfile(symbols):
     res = []
@@ -144,26 +143,56 @@ def genfile(symbols):
         res.append(f"#undef { s }")
     res.append("\n#else\n")
     for s in sorted(symbols):
-        res.append(f"#define {s}(...) \\\n{ get_definition(s) }")
+        if s in call_map:
+            res.append(f"#undef {s}")
+        res.append(f"#define {s}(...) \\\n{ get_definition( s, call_map.get(s, s)) }")
     res.append("#endif")
     res.append("#endif")
     return "\n".join(res)
 
 
 returns = {
+    # these have the gil and return NULL on failure
     "pyobject": """
             PySet_New convert_value_to_pyobject getfunctionargs PyModule_Create2 PyErr_NewExceptionWithDoc
             PyUnicode_New  PyUnicode_AsUTF8 PyObject_GetAttrString _PyObject_New PyUnicode_FromString
-            PyObject_Str
+            PyObject_Str PyUnicode_AsUTF8AndSize PyTuple_New PyDict_New Py_BuildValue PyList_New
+            PyWeakref_NewRef PyMem_Calloc convertutf8string PyLong_FromLong PyObject_GetIter
+            PyObject_CallObject PyIter_Next apsw_strdup PyLong_AsInt PyUnicode_FromStringAndSize
+            PySequence_GetItem
             """.split(),
+    # numeric return, no gil
     "no_gil": """
-            sqlite3_threadsafe sqlite3_close sqlite3_db_config
+            sqlite3_threadsafe sqlite3_close sqlite3_db_config sqlite3_enable_shared_cache
+            sqlite3_set_authorizer sqlite3_collation_needed
+            sqlite3_enable_load_extension sqlite3_busy_handler sqlite3_value_type
+            sqlite3_column_type sqlite3_status64 sqlite3_initialize sqlite3_shutdown
             """.split(),
+    # py functions that return a number to indicate failure
     "with_gil": """
         PyType_Ready PyModule_AddObject PyModule_AddIntConstant PyLong_AsLong
-        PyLong_AsLongLong PyObject_GetBuffer
+        PyLong_AsLongLong PyObject_GetBuffer PyList_Append PyDict_SetItemString
         """.split(),
 }
+
+# some calls like Py_BuildValue are #defined to _Py_BuildValue_SizeT
+# so deal with that here
+call_map = {
+    "Py_BuildValue": "_Py_BuildValue_SizeT",
+
+}
+
+# double check no dupes
+for k, v in returns.items():
+    if len(set(v)) != len(v):
+        seen = set()
+        for val in v:
+            if val in seen:
+                print(f"Duplicate item { val } in { k }")
+            else:
+                seen.add(val)
+        sys.exit(1)
+
 
 if __name__ == '__main__':
     import sys
