@@ -859,7 +859,7 @@ apswvtabCreateOrConnect(sqlite3 *db,
   {
     PyObject *str;
 
-    APSW_FAULT_INJECT(VtabCreateBadString, str = convertutf8string(argv[i]), str = PyErr_NoMemory());
+    str = convertutf8string(argv[i]);
     if (!str)
       goto pyexception;
     PyTuple_SET_ITEM(args, 1 + i, str);
@@ -1168,7 +1168,7 @@ apswvtabBestIndexObject(sqlite3_vtab *pVtab, sqlite3_index_info *in_index_info)
 
   gilstate = PyGILState_Ensure();
   vtable = ((apsw_vtable *)pVtab)->vtable;
-  index_info = (struct SqliteIndexInfo*)_PyObject_New(&SqliteIndexInfoType);
+  index_info = (struct SqliteIndexInfo *)_PyObject_New(&SqliteIndexInfoType);
   if (!index_info)
     goto finally;
 
@@ -1760,6 +1760,8 @@ apswvtabOpen(sqlite3_vtab *pVtab, sqlite3_vtab_cursor **ppCursor)
   if (!res)
     goto pyexception;
   avc = PyMem_Calloc(1, sizeof(apsw_vtable_cursor));
+  if (!avc)
+    goto pyexception;
   assert((void *)avc == (void *)&(avc->used_by_sqlite)); /* detect if weird padding happens */
   avc->cursor = res;
   avc->use_no_change = ((apsw_vtable *)pVtab)->use_no_change;
@@ -1858,7 +1860,7 @@ apswvtabUpdate(sqlite3_vtab *pVtab, int argc, sqlite3_value **argv, sqlite3_int6
     methodname = "UpdateChangeRow";
     args = PyTuple_New(3);
     oldrowid = convert_value_to_pyobject(argv[0], 0, 0);
-    if(oldrowid)
+    if (oldrowid)
       newrowid = convert_value_to_pyobject(argv[1], 0, 0);
     if (!args || !oldrowid || !newrowid)
     {
@@ -1986,11 +1988,7 @@ apswvtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
   if (res != Py_None)
   {
     if (!av->functions)
-    {
-      APSW_FAULT_INJECT(FindFunctionAllocFailed,
-                        av->functions = PyList_New(0),
-                        av->functions = PyErr_NoMemory());
-    }
+      av->functions = PyList_New(0);
     if (!av->functions)
     {
       assert(PyErr_Occurred());
@@ -2036,9 +2034,13 @@ apswvtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
       sqliteres = 1;
       res = NULL;
     }
-    *pxFunc = cbdispatch_func;
-    *ppArg = cbinfo;
-    PyList_Append(av->functions, (PyObject *)cbinfo);
+    if (0 == PyList_Append(av->functions, (PyObject *)cbinfo))
+    {
+      *pxFunc = cbdispatch_func;
+      *ppArg = cbinfo;
+    }
+    else
+      sqliteres = 0;
   }
 error:
   Py_XDECREF(item_0);

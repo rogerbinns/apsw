@@ -477,13 +477,12 @@ apswvfspy_xFullPathname(APSWVFS *self, PyObject *args, PyObject *kwds)
       return NULL;
   }
 
-  resbuf = PyMem_Malloc(self->basevfs->mxPathname + 1);
-  memset(resbuf, 0, self->basevfs->mxPathname + 1); /* make sure it is null terminated */
+  resbuf = PyMem_Calloc(1, self->basevfs->mxPathname + 1);
   if (resbuf)
     res = self->basevfs->xFullPathname(self->basevfs, name, self->basevfs->mxPathname + 1, resbuf);
 
   if (res == SQLITE_OK)
-    APSW_FAULT_INJECT(xFullPathnameConversion, result = convertutf8string(resbuf), result = PyErr_NoMemory());
+    result = convertutf8string(resbuf);
 
   if (!result)
     res = SQLITE_CANTOPEN;
@@ -649,7 +648,7 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args, PyObject *kwds)
   if (PyErr_Occurred())
     goto finally;
 
-  file = PyMem_Malloc(self->basevfs->szOsFile);
+  file = PyMem_Calloc(1, self->basevfs->szOsFile);
   if (!file)
     goto finally;
 
@@ -940,9 +939,7 @@ apswvfspy_xDlError(APSWVFS *self)
   }
 
   /* turn into unicode */
-  APSW_FAULT_INJECT(xDlErrorUnicodeFail,
-                    unicode = convertutf8string(PyBytes_AS_STRING(res)),
-                    unicode = PyErr_NoMemory());
+  unicode = convertutf8string(PyBytes_AS_STRING(res));
   if (unicode)
   {
     Py_DECREF(res);
@@ -1436,7 +1433,7 @@ apswvfs_xNextSystemCall(sqlite3_vfs *vfs, const char *zName)
 
   VFSPREAMBLE;
   pyresult = Call_PythonMethodV((PyObject *)(vfs->pAppData), "xNextSystemCall", 1, "(N)",
-                                zName ? convertutf8string(zName) : (Py_INCREF(Py_None), Py_None));
+                                convertutf8string(zName));
 
   if (pyresult && pyresult != Py_None)
   {
@@ -1652,10 +1649,9 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
     }
   }
 
-  self->containingvfs = (sqlite3_vfs *)PyMem_Malloc(sizeof(sqlite3_vfs));
+  self->containingvfs = (sqlite3_vfs *)PyMem_Calloc(1, sizeof(sqlite3_vfs));
   if (!self->containingvfs)
     return -1;
-  memset(self->containingvfs, 0, sizeof(sqlite3_vfs));
   self->containingvfs->iVersion = 3;
   self->containingvfs->szOsFile = sizeof(APSWSQLite3File);
   if (self->basevfs && !maxpathname)
@@ -1924,7 +1920,7 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwds)
     PyErr_Format(PyExc_ValueError, "Unknown vfs \"%s\"", vfs);
     goto finally;
   }
-  file = PyMem_Malloc(vfstouse->szOsFile);
+  file = PyMem_Calloc(1, vfstouse->szOsFile);
   if (!file)
     goto finally;
 
@@ -1987,8 +1983,7 @@ apswvfsfile_xRead(sqlite3_file *file, void *bufout, int amount, sqlite3_int64 of
     goto finally;
   }
 
-  APSW_FAULT_INJECT(xReadReadBufferFail, asrb = PyObject_GetBuffer(pybuf, &py3buffer, PyBUF_SIMPLE), (PyErr_NoMemory(), asrb = -1));
-
+  asrb = PyObject_GetBuffer(pybuf, &py3buffer, PyBUF_SIMPLE);
   if (asrb != 0)
   {
     PyErr_Format(PyExc_TypeError, "Object returned from xRead doesn't do read buffer");

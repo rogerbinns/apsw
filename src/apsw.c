@@ -149,6 +149,8 @@ typedef struct
   PyObject_HEAD long long blobsize;
 } ZeroBlobBind;
 
+static void apsw_write_unraisable(PyObject *hookobject);
+
 /* Argument parsing helpers */
 #include "argparse.c"
 
@@ -249,7 +251,7 @@ enablesharedcache(PyObject *Py_UNUSED(self), PyObject *args, PyObject *kwds)
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&:" Apsw_enablesharedcache_USAGE, kwlist, argcheck_bool, &enable_param))
       return NULL;
   }
-  APSW_FAULT_INJECT(EnableSharedCacheFail, res = sqlite3_enable_shared_cache(enable), res = SQLITE_NOMEM);
+  res = sqlite3_enable_shared_cache(enable);
   SET_EXC(res, NULL);
 
   if (res != SQLITE_OK)
@@ -271,7 +273,7 @@ initialize(void)
   int res;
 
   res = sqlite3_initialize();
-  APSW_FAULT_INJECT(InitializeFail, , res = SQLITE_NOMEM);
+
   SET_EXC(res, NULL);
 
   if (res != SQLITE_OK)
@@ -299,7 +301,7 @@ sqliteshutdown(void)
 {
   int res;
 
-  APSW_FAULT_INJECT(ShutdownFail, res = sqlite3_shutdown(), res = SQLITE_NOMEM);
+  res = sqlite3_shutdown();
   SET_EXC(res, NULL);
 
   if (res != SQLITE_OK)
@@ -655,18 +657,16 @@ vfsnames(PyObject *Py_UNUSED(self))
   int res;
   sqlite3_vfs *vfs = sqlite3_vfs_find(0);
 
-  APSW_FAULT_INJECT(vfsnamesallocfail, result = PyList_New(0), result = PyErr_NoMemory());
+  result = PyList_New(0);
   if (!result)
     goto error;
 
   while (vfs)
   {
-    APSW_FAULT_INJECT(vfsnamesfails,
-                      str = convertutf8string(vfs->zName),
-                      str = PyErr_NoMemory());
+    str = convertutf8string(vfs->zName);
     if (!str)
       goto error;
-    APSW_FAULT_INJECT(vfsnamesappendfails, res = PyList_Append(result, str), (res = -1, PyErr_NoMemory()));
+    res = PyList_Append(result, str);
     if (res)
       goto error;
     Py_DECREF(str);
@@ -1525,7 +1525,8 @@ apsw_getattr(PyObject *module, PyObject *name)
   if (!cname)
     return NULL;
 
-  if (strcmp(cname, "Shell") && strcmp(cname, "main")) return PyErr_Format(PyExc_AttributeError, "Unknown apsw attribute %R", name);
+  if (strcmp(cname, "Shell") && strcmp(cname, "main"))
+    return PyErr_Format(PyExc_AttributeError, "Unknown apsw attribute %R", name);
 
   shellmodule = PyImport_ImportModule("apsw.shell");
   if (shellmodule)
@@ -2256,6 +2257,8 @@ modules etc. For example::
         assert(mapping_name == NULL);
         mapping_name = name;
         thedict = PyDict_New();
+        if (!thedict)
+          goto fail;
         continue;
       }
       /* at END? */

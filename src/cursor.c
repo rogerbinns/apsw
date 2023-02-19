@@ -410,17 +410,15 @@ APSWCursor_internal_getdescription(APSWCursor *self, int fmtnum)
 #define DESCFMT2 NULL
 #endif
     INUSE_CALL(
-        APSW_FAULT_INJECT(GetDescriptionFail,
-                          column = (fmtnum < 2) ? Py_BuildValue(description_formats[fmtnum],
-                                                                convertutf8string, sqlite3_column_name(INDEX),
-                                                                convertutf8string, sqlite3_column_decltype(INDEX),
-                                                                Py_None,
-                                                                Py_None,
-                                                                Py_None,
-                                                                Py_None,
-                                                                Py_None)
-                                                : DESCFMT2,
-                          column = PyErr_NoMemory()));
+        column = (fmtnum < 2) ? Py_BuildValue(description_formats[fmtnum],
+                                              convertutf8string, sqlite3_column_name(INDEX),
+                                              convertutf8string, sqlite3_column_decltype(INDEX),
+                                              Py_None,
+                                              Py_None,
+                                              Py_None,
+                                              Py_None,
+                                              Py_None)
+                              : DESCFMT2);
 #undef INDEX
     if (!column)
       goto error;
@@ -588,7 +586,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
   {
     const char *strdata = NULL;
     Py_ssize_t strbytes = 0;
-    APSW_FAULT_INJECT(DoBindingUnicodeConversionFails, strdata = PyUnicode_AsUTF8AndSize(obj, &strbytes), strdata = (const char *)PyErr_NoMemory());
+    strdata = PyUnicode_AsUTF8AndSize(obj, &strbytes);
     if (strdata)
     {
       PYSQLITE_CUR_CALL(res = sqlite3_bind_text64(self->statement->vdbestatement, arg, strdata, strbytes, SQLITE_TRANSIENT, SQLITE_UTF8));
@@ -604,7 +602,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
     int asrb;
     Py_buffer py3buffer;
 
-    APSW_FAULT_INJECT(DoBindingAsReadBufferFails, asrb = PyObject_GetBuffer(obj, &py3buffer, PyBUF_SIMPLE), (PyErr_NoMemory(), asrb = -1));
+    asrb = PyObject_GetBuffer(obj, &py3buffer, PyBUF_SIMPLE);
     if (asrb != 0)
       return -1;
 

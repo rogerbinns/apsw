@@ -9019,16 +9019,6 @@ shell.write(shell.stdout, "hello world\\n")
         # that an exception is always thrown.  If we catch that then
         # it means earlier expected exceptions were not thrown.
 
-        ## UnknownSQLiteErrorCode
-        apsw.faultdict["UnknownSQLiteErrorCode"] = True
-        try:
-            self.db.cursor().execute("select '")
-            1 / 0
-        except:
-            klass, value = sys.exc_info()[:2]
-            self.assertTrue(klass is apsw.Error)
-            self.assertTrue("254" in str(value))
-
         ## RollbackHookExistingError
         apsw.faultdict["RollbackHookExistingError"] = True
         try:
@@ -9055,142 +9045,6 @@ shell.write(shell.stdout, "hello world\\n")
             db = apsw.Connection(":memory:")
             db.setauthorizer(dummy)
             db.cursor().execute("create table foo(a)")
-            1 / 0
-        except MemoryError:
-            pass
-
-        ## SetAuthorizerFail
-        apsw.faultdict["SetAuthorizerFail"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.setauthorizer(dummy)
-            1 / 0
-        except:
-            pass
-
-        apsw.faultdict["SetAuthorizerFail"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.authorizer = None
-            1 / 0
-        except:
-            pass
-
-        ## CollationNeededNullFail
-        apsw.faultdict["CollationNeededNullFail"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.collationneeded(None)
-            1 / 0
-        except apsw.IOError:
-            klass, value = sys.exc_info()[:2]
-            self.assertTrue(klass is apsw.IOError)
-
-        ## CollationNeededFail
-        apsw.faultdict["CollationNeededFail"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.collationneeded(dummy)
-            1 / 0
-        except:
-            klass, value = sys.exc_info()[:2]
-            self.assertTrue(klass is apsw.IOError)
-
-        ##EnableLoadExtensionFail
-        apsw.faultdict["EnableLoadExtensionFail"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.enableloadextension(True)
-            1 / 0
-        except:
-            pass
-
-        ## SetBusyHandlerNullFail
-        apsw.faultdict["SetBusyHandlerNullFail"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.setbusyhandler(None)
-            1 / 0
-        except apsw.IOError:
-            pass
-
-        ## SetBusyHandlerFail
-        apsw.faultdict["SetBusyHandlerFail"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.setbusyhandler(dummy)
-            1 / 0
-        except apsw.IOError:
-            pass
-
-        ## UnknownValueType
-        apsw.faultdict["UnknownValueType"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.createscalarfunction("dummy", dummy)
-            db.cursor().execute("select dummy(4)")
-            1 / 0
-        except:
-            klass, value = sys.exc_info()[:2]
-            self.assertTrue(klass is apsw.Error)
-            self.assertTrue("123456" in str(value))
-
-        ## UnknownColumnType
-        apsw.faultdict["UnknownColumnType"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            for row in db.cursor().execute("select 3"):
-                pass
-            1 / 0
-        except:
-            klass, value = sys.exc_info()[:2]
-            self.assertTrue(klass is apsw.Error)
-            self.assertTrue("12348" in str(value))
-
-        ## SetContextResultUnicodeConversionFails
-        apsw.faultdict["SetContextResultUnicodeConversionFails"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.createscalarfunction("foo", lambda x: u"another unicode string")
-            for row in db.cursor().execute("select foo(3)"):
-                pass
-            1 / 0
-        except MemoryError:
-            pass
-
-        ## SetContextResultAsReadBufferFail
-        apsw.faultdict["SetContextResultAsReadBufferFail"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.createscalarfunction("foo", lambda x: b"another string")
-            for row in db.cursor().execute("select foo(3)"):
-                pass
-            1 / 0
-        except MemoryError:
-            pass
-
-        ## GFAPyTuple_NewFail
-        apsw.faultdict["GFAPyTuple_NewFail"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.createscalarfunction("foo", dummy)
-            for row in db.cursor().execute("select foo(3)"):
-                pass
-            1 / 0
-        except MemoryError:
-            pass
-
-        ## Same again
-        apsw.faultdict["GFAPyTuple_NewFail"] = True
-        try:
-            db = apsw.Connection(":memory:")
-
-            def foo():
-                return None, dummy2, dummy2
-
-            db.createaggregatefunction("foo", foo)
-            for row in db.cursor().execute("create table bar(x);insert into bar values(3); select foo(x) from bar"):
-                pass
             1 / 0
         except MemoryError:
             pass
@@ -9285,16 +9139,6 @@ shell.write(shell.stdout, "hello world\\n")
             def Close(self):
                 pass
 
-        ## VtabCreateBadString
-        apsw.faultdict["VtabCreateBadString"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.createmodule("nonsense", Source())
-            db.cursor().execute("create virtual table foo using nonsense(3,4)")
-            1 / 0
-        except MemoryError:
-            pass
-
         ## VtabRenameBadName
         apsw.faultdict["CreateModuleFail"] = True
         try:
@@ -9303,18 +9147,6 @@ shell.write(shell.stdout, "hello world\\n")
             1 / 0
         except apsw.IOError:
             pass
-
-        ## FindFunctionAllocFailed
-        apsw.faultdict["FindFunctionAllocFailed"] = True
-
-        def foo():
-            db = apsw.Connection(":memory:")
-            db.overloadfunction("xyz", 2)
-            db.createmodule("foo", Source())
-            db.cursor().execute("create virtual table foo using foo()")
-            self.assertRaises(apsw.SQLError, db.cursor().execute, "select xyz(x,y) from foo")
-
-        self.assertRaisesUnraisable(MemoryError, foo)
 
         ## BlobDeallocException
         def f():
@@ -9332,35 +9164,6 @@ shell.write(shell.stdout, "hello world\\n")
 
         self.assertRaisesUnraisable(apsw.ReadOnlyError, f)
 
-        ## GetDescriptionFail
-        apsw.faultdict["GetDescriptionFail"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            c = db.cursor()
-            c.execute("create table foo(b);insert into foo(rowid,b) values(2,x'aabbccddee');select * from foo")
-            c.getdescription()
-            1 / 0
-        except MemoryError:
-            pass
-
-        ## DoBindingUnicodeConversionFails
-        apsw.faultdict["DoBindingUnicodeConversionFails"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.cursor().execute("select ?", (u"abc", ))
-            1 / 0
-        except MemoryError:
-            pass
-
-        ## DoBindingAsReadBufferFails
-        apsw.faultdict["DoBindingAsReadBufferFails"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.cursor().execute("select ?", (b"abcd", ))
-            1 / 0
-        except MemoryError:
-            pass
-
         ## DoExecTraceBadSlice
         apsw.faultdict["DoExecTraceBadSlice"] = True
         try:
@@ -9371,38 +9174,6 @@ shell.write(shell.stdout, "hello world\\n")
             1 / 0
         except MemoryError:
             pass
-
-        ## EnableSharedCacheFail
-        apsw.faultdict["EnableSharedCacheFail"] = True
-        try:
-            apsw.enablesharedcache(True)
-            1 / 0
-        except apsw.NoMemError:
-            pass
-
-        ## InitializeFail
-        apsw.faultdict["InitializeFail"] = True
-        try:
-            apsw.initialize()
-            1 / 0
-        except apsw.NoMemError:
-            pass
-
-        ## ShutdownFail
-        apsw.faultdict["ShutdownFail"] = True
-        try:
-            apsw.shutdown()
-            1 / 0
-        except apsw.NoMemError:
-            pass
-
-        ### statement cache stuff
-        for key in ("SCStatsBuildFail", "SCStatsListFail", "SCStatsEntryBuildFail", "SCStatsAppendFail",
-                    "SCStatsEntriesSetFail"):
-            # this ensures stuff is in statement cache
-            self.db.execute("Select ?", (key, )).fetchall()
-            apsw.faultdict[key] = True
-            self.assertRaises(MemoryError, self.db.cache_stats, True)
 
         ### vfs routines
 
@@ -9497,12 +9268,6 @@ shell.write(shell.stdout, "hello world\\n")
         # connection because a connection hook turns on wal mode which
         # causes database reads which then cause failures
         if openok:
-            apsw.faultdict["xReadReadBufferFail"] = True
-
-            def foo():
-                apsw.Connection(TESTFILEPREFIX + "testdb", vfs="faultvfs").cursor().execute("select * from dummy1")
-
-            self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, foo)
 
             ## xUnlockFails
             apsw.faultdict["xUnlockFails"] = True
@@ -9548,18 +9313,6 @@ shell.write(shell.stdout, "hello world\\n")
             gc.collect()
 
         self.assertRaisesUnraisable(apsw.IOError, foo)
-
-        ## vfsnamesfails
-        apsw.faultdict["vfsnamesfails"] = True
-        self.assertRaises(MemoryError, apsw.vfsnames)
-        apsw.faultdict["vfsnamesallocfail"] = True
-        try:
-            apsw.vfsnames()
-            1 / 0
-        except MemoryError:
-            pass
-        apsw.faultdict["vfsnamesappendfails"] = True
-        self.assertRaises(MemoryError, apsw.vfsnames)
 
         ## StatementCacheAllocFails
         apsw.faultdict["StatementCacheAllocFails"] = True

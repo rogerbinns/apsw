@@ -207,7 +207,7 @@ Connection_close_internal(Connection *self, int force)
   /* close out dependents by repeatedly processing first item until
      list is empty.  note that closing an item will cause the list to
      be perturbed as a side effect */
-  while (PyList_GET_SIZE(self->dependents))
+  while (self->dependents && PyList_GET_SIZE(self->dependents))
   {
     PyObject *closeres, *item, *wr = PyList_GET_ITEM(self->dependents, 0);
     item = PyWeakref_GetObject(wr);
@@ -325,7 +325,7 @@ Connection_dealloc(Connection *self)
 
   /* Our dependents all hold a refcount on us, so they must have all
      released before this destructor could be called */
-  assert(PyList_GET_SIZE(self->dependents) == 0);
+  assert(!self->dependents || PyList_GET_SIZE(self->dependents) == 0);
   Py_CLEAR(self->dependents);
 
   Py_TYPE(self)->tp_free((PyObject *)self);
@@ -366,7 +366,7 @@ Connection_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
     CALL_TRACK_INIT(xConnect);
   }
 
-  return (PyObject *)self;
+  return self->dependents ? (PyObject *)self : NULL;
 }
 
 /** .. method:: __init__(filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: Optional[str] = None, statementcachesize: int = 100)
@@ -439,8 +439,14 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwds)
 
   /* record information */
   self->open_flags = PyLong_FromLong(flags);
+  if(!self->open_flags)
+    goto pyexception;
   if (vfsused)
-    self->open_vfs = convertutf8string(vfsused->zName);
+    {
+      self->open_vfs = convertutf8string(vfsused->zName);
+      if(!self->open_vfs)
+       goto pyexception;
+    }
 
   /* get detailed error codes */
   PYSQLITE_VOID_CALL(sqlite3_extended_result_codes(self->db, 1));
@@ -554,8 +560,12 @@ Connection_blobopen(Connection *self, PyObject *args, PyObject *kwds)
 
   APSWBlob_init(apswblob, self, blob);
   weakref = PyWeakref_NewRef((PyObject *)apswblob, NULL);
-  PyList_Append(self->dependents, weakref);
+  if (!weakref)
+    return NULL;
+  res = PyList_Append(self->dependents, weakref);
   Py_DECREF(weakref);
+  if (res)
+    return NULL;
   return (PyObject *)apswblob;
 }
 
@@ -602,7 +612,7 @@ Connection_backup(Connection *self, PyObject *args, PyObject *kwds)
   {
     PyObject *args = NULL, *etype, *evalue, *etb;
 
-    APSW_FAULT_INJECT(BackupTupleFails, args = PyTuple_New(2), args = PyErr_NoMemory());
+    args = PyTuple_New(2);
     if (!args)
       goto thisfinally;
     PyTuple_SET_ITEM(args, 0, PyUnicode_FromString("The destination database has outstanding objects open on it.  They must all be closed for the backup to proceed (otherwise corruption would be possible.)"));
@@ -671,14 +681,14 @@ Connection_backup(Connection *self, PyObject *args, PyObject *kwds)
   APSW_FAULT_INJECT(BackupDependent1, weakref = PyWeakref_NewRef((PyObject *)apswbackup, NULL), weakref = PyErr_NoMemory());
   if (!weakref)
     goto finally;
-  APSW_FAULT_INJECT(BackupDependent2, res = PyList_Append(self->dependents, weakref), (PyErr_NoMemory(), res = -1));
+  res = PyList_Append(self->dependents, weakref);
   if (res)
     goto finally;
   Py_DECREF(weakref);
   APSW_FAULT_INJECT(BackupDependent3, weakref = PyWeakref_NewRef((PyObject *)apswbackup, NULL), weakref = PyErr_NoMemory());
   if (!weakref)
     goto finally;
-  APSW_FAULT_INJECT(BackupDependent4, res = PyList_Append(sourceconnection->dependents, weakref), (PyErr_NoMemory(), res = -1));
+  res = PyList_Append(sourceconnection->dependents, weakref);
   if (res)
     goto finally;
   Py_DECREF(weakref);
@@ -735,7 +745,8 @@ Connection_cursor(Connection *self)
     Py_DECREF(cursor);
     return NULL;
   }
-  PyList_Append(self->dependents, weakref);
+  if (PyList_Append(self->dependents, weakref))
+    cursor = NULL;
   Py_DECREF(weakref);
 
   return (PyObject *)cursor;
@@ -865,18 +876,18 @@ Connection_db_names(Connection *self)
 
   sqlite3_mutex_enter(sqlite3_db_mutex(self->db));
 
-  APSW_FAULT_INJECT(dbnamesnolist, res = PyList_New(0), res = PyErr_NoMemory());
+  res = PyList_New(0);
   if (!res)
     goto error;
 
-  for (i = 0; ; i++)
+  for (i = 0;; i++)
   {
     int appendres;
 
     const char *s = sqlite3_db_name(self->db, i); /* Doesn't need PYSQLITE_CALL */
     if (!s)
       break;
-    APSW_FAULT_INJECT(dbnamestrfail, str = convertutf8string(s), str = PyErr_NoMemory());
+    str = convertutf8string(s);
     if (!str)
       goto error;
     APSW_FAULT_INJECT(dbnamesappendfail, appendres = PyList_Append(res, str), (PyErr_NoMemory(), appendres = -1));
@@ -1713,9 +1724,8 @@ Connection_internal_set_authorizer(Connection *self, PyObject *callable)
 
   assert(callable != Py_None);
 
-  APSW_FAULT_INJECT(SetAuthorizerFail,
-                    PYSQLITE_CON_CALL(res = sqlite3_set_authorizer(self->db, callable ? authorizercb : NULL, callable ? self : NULL)),
-                    res = SQLITE_IOERR);
+  PYSQLITE_CON_CALL(res = sqlite3_set_authorizer(self->db, callable ? authorizercb : NULL, callable ? self : NULL));
+
   if (res != SQLITE_OK)
   {
     SET_EXC(res, self->db);
@@ -1922,9 +1932,7 @@ Connection_collationneeded(Connection *self, PyObject *args, PyObject *kwds)
 
   if (!callable)
   {
-    APSW_FAULT_INJECT(CollationNeededNullFail,
-                      PYSQLITE_CON_CALL(res = sqlite3_collation_needed(self->db, NULL, NULL)),
-                      res = SQLITE_IOERR);
+    PYSQLITE_CON_CALL(res = sqlite3_collation_needed(self->db, NULL, NULL));
     if (res != SQLITE_OK)
     {
       SET_EXC(res, self->db);
@@ -1934,9 +1942,7 @@ Connection_collationneeded(Connection *self, PyObject *args, PyObject *kwds)
     goto finally;
   }
 
-  APSW_FAULT_INJECT(CollationNeededFail,
-                    PYSQLITE_CON_CALL(res = sqlite3_collation_needed(self->db, self, collationneeded_cb)),
-                    res = SQLITE_IOERR);
+  PYSQLITE_CON_CALL(res = sqlite3_collation_needed(self->db, self, collationneeded_cb));
   if (res != SQLITE_OK)
   {
     SET_EXC(res, self->db);
@@ -2029,9 +2035,7 @@ Connection_setbusyhandler(Connection *self, PyObject *args, PyObject *kwds)
 
   if (!callable)
   {
-    APSW_FAULT_INJECT(SetBusyHandlerNullFail,
-                      PYSQLITE_CON_CALL(res = sqlite3_busy_handler(self->db, NULL, NULL)),
-                      res = SQLITE_IOERR);
+    PYSQLITE_CON_CALL(res = sqlite3_busy_handler(self->db, NULL, NULL));
     if (res != SQLITE_OK)
     {
       SET_EXC(res, self->db);
@@ -2040,9 +2044,7 @@ Connection_setbusyhandler(Connection *self, PyObject *args, PyObject *kwds)
     goto finally;
   }
 
-  APSW_FAULT_INJECT(SetBusyHandlerFail,
-                    PYSQLITE_CON_CALL(res = sqlite3_busy_handler(self->db, busyhandlercb, self)),
-                    res = SQLITE_IOERR);
+  PYSQLITE_CON_CALL(res = sqlite3_busy_handler(self->db, busyhandlercb, self));
   if (res != SQLITE_OK)
   {
     SET_EXC(res, self->db);
@@ -2200,9 +2202,7 @@ Connection_enableloadextension(Connection *self, PyObject *args, PyObject *kwds)
       return NULL;
   }
   /* call function */
-  APSW_FAULT_INJECT(EnableLoadExtensionFail,
-                    PYSQLITE_CON_CALL(res = sqlite3_enable_load_extension(self->db, enable)),
-                    res = SQLITE_IOERR);
+  PYSQLITE_CON_CALL(res = sqlite3_enable_load_extension(self->db, enable));
   SET_EXC(res, self->db);
 
   /* done */
@@ -2312,7 +2312,7 @@ static PyTypeObject FunctionCBInfoType =
 static FunctionCBInfo *
 allocfunccbinfo(const char *name)
 {
-  FunctionCBInfo *res = (FunctionCBInfo*)_PyObject_New(&FunctionCBInfoType);
+  FunctionCBInfo *res = (FunctionCBInfo *)_PyObject_New(&FunctionCBInfoType);
   if (res)
   {
     res->name = apsw_strdup(name);
@@ -2367,7 +2367,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
     const char *strdata;
     Py_ssize_t strbytes;
 
-    APSW_FAULT_INJECT(SetContextResultUnicodeConversionFails, strdata = PyUnicode_AsUTF8AndSize(obj, &strbytes), strdata = (const char *)PyErr_NoMemory());
+    strdata = PyUnicode_AsUTF8AndSize(obj, &strbytes);
     if (strdata)
     {
       sqlite3_result_text64(context, strdata, strbytes, SQLITE_TRANSIENT, SQLITE_UTF8);
@@ -2382,7 +2382,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
     int asrb;
     Py_buffer py3buffer;
 
-    APSW_FAULT_INJECT(SetContextResultAsReadBufferFail, asrb = PyObject_GetBuffer(obj, &py3buffer, PyBUF_SIMPLE), (PyErr_NoMemory(), asrb = -1));
+    asrb = PyObject_GetBuffer(obj, &py3buffer, PyBUF_SIMPLE);
 
     if (asrb != 0)
     {
@@ -2415,7 +2415,7 @@ getfunctionargs(sqlite3_context *context, PyObject *firstelement, int argc, sqli
   int i;
   int extra = firstelement ? 1 : 0;
 
-  APSW_FAULT_INJECT(GFAPyTuple_NewFail, pyargs = PyTuple_New((long)argc + extra), pyargs = PyErr_NoMemory());
+  pyargs = PyTuple_New((long)argc + extra);
   if (!pyargs)
   {
     sqlite3_result_error(context, "PyTuple_New failed", -1);

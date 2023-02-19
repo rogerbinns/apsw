@@ -86,20 +86,24 @@ Call_PythonMethodV(PyObject *obj, const char *methodname, int mandatory, const c
 
 /* CONVENIENCE FUNCTIONS */
 
+#undef convertutf8string
 /* Convert a NULL terminated UTF-8 string into a Python object.  None
    is returned if NULL is passed in. */
 static PyObject *
 convertutf8string(const char *str)
 {
+#include "faultinject.h"
   if (!str)
     Py_RETURN_NONE;
 
   return PyUnicode_FromStringAndSize(str, strlen(str));
 }
 
+#undef PyLong_AsInt
 static int
 PyLong_AsInt(PyObject *val)
 {
+#include "faultinject.h"
   int ival = -1;
   long lval = PyLong_AsLong(val);
   if (!PyErr_Occurred())

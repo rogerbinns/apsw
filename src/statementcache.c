@@ -246,7 +246,7 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   else
 #endif
   {
-    APSW_FAULT_INJECT(SCAllocFails, statement = PyMem_Malloc(sizeof(APSWStatement)), statement = NULL);
+    statement = PyMem_Calloc(1, sizeof(APSWStatement));
     if (!statement)
     {
       PYSQLITE_SC_CALL(sqlite3_finalize(vdbestatement));
@@ -363,7 +363,7 @@ static StatementCache *
 statementcache_init(sqlite3 *db, unsigned size)
 {
   StatementCache *res;
-  APSW_FAULT_INJECT(StatementCacheAllocFails, res = (StatementCache *)PyMem_Calloc(1, sizeof(StatementCache)), res = NULL);
+  res = (StatementCache *)PyMem_Calloc(1, sizeof(StatementCache));
   if (res)
   {
     res->hashes = size ? PyMem_Calloc(size, sizeof(Py_hash_t)) : 0;
@@ -393,22 +393,20 @@ statementcache_stats(StatementCache *sc, int include_entries)
      update this */
   PyObject *res = NULL, *entries = NULL, *entry = NULL;
 
-  APSW_FAULT_INJECT(SCStatsBuildFail,
-                    res = Py_BuildValue("{s: I, s: I, s: I, s: I, s: I, s: I, s: I, s: I, s: I}",
-                                        "size", sc->maxentries,
-                                        "evictions", sc->evictions,
-                                        "no_cache", sc->no_cache,
-                                        "hits", sc->hits,
-                                        "no_vdbe", sc->no_vdbe,
-                                        "misses", sc->misses,
-                                        "too_big", sc->too_big,
-                                        "no_cache", sc->no_cache,
-                                        "max_cacheable_bytes", SC_MAX_ITEM_SIZE),
-                    PyErr_NoMemory());
+  res = Py_BuildValue("{s: I, s: I, s: I, s: I, s: I, s: I, s: I, s: I, s: I}",
+                      "size", sc->maxentries,
+                      "evictions", sc->evictions,
+                      "no_cache", sc->no_cache,
+                      "hits", sc->hits,
+                      "no_vdbe", sc->no_vdbe,
+                      "misses", sc->misses,
+                      "too_big", sc->too_big,
+                      "no_cache", sc->no_cache,
+                      "max_cacheable_bytes", SC_MAX_ITEM_SIZE);
   if (res && include_entries)
   {
     int pycres;
-    APSW_FAULT_INJECT(SCStatsListFail, entries = PyList_New(0), entries = PyErr_NoMemory());
+    entries = PyList_New(0);
     if (!entries)
       goto fail;
 
@@ -418,22 +416,20 @@ statementcache_stats(StatementCache *sc, int include_entries)
       if (sc->hashes[i] != SC_SENTINEL_HASH)
       {
         APSWStatement *stmt = sc->caches[i];
-        APSW_FAULT_INJECT(SCStatsEntryBuildFail,
-                          entry = Py_BuildValue("{s: s#, s: O, s: i, s: I}",
-                                                "query", stmt->utf8, stmt->query_size,
-                                                "has_more", (stmt->query_size == stmt->utf8_size) ? Py_False : Py_True,
-                                                "prepare_flags", stmt->options.prepare_flags,
-                                                "uses", stmt->uses),
-                          entry = PyErr_NoMemory());
+        entry = Py_BuildValue("{s: s#, s: O, s: i, s: I}",
+                              "query", stmt->utf8, stmt->query_size,
+                              "has_more", (stmt->query_size == stmt->utf8_size) ? Py_False : Py_True,
+                              "prepare_flags", stmt->options.prepare_flags,
+                              "uses", stmt->uses);
         if (!entry)
           goto fail;
-        APSW_FAULT_INJECT(SCStatsAppendFail, pycres = PyList_Append(entries, entry), (PyErr_NoMemory(), pycres = -1));
+        pycres = PyList_Append(entries, entry);
         if (pycres)
           goto fail;
         Py_CLEAR(entry);
       }
     }
-    APSW_FAULT_INJECT(SCStatsEntriesSetFail, pycres = PyDict_SetItemString(res, "entries", entries), (PyErr_NoMemory(), pycres = -1));
+    pycres = PyDict_SetItemString(res, "entries", entries);
     if (pycres)
       goto fail;
     Py_DECREF(entries);

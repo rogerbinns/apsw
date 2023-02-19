@@ -221,8 +221,6 @@ static void make_exception(int res, sqlite3 *db)
   if (!errmsg)
     errmsg = "error";
 
-  APSW_FAULT_INJECT(UnknownSQLiteErrorCode, , res = 0xfe);
-
   if(db)
     _PYSQLITE_CALL_V(error_offset = sqlite3_error_offset(db));
 

@@ -211,8 +211,6 @@ convert_value_to_pyobject(sqlite3_value *value, int in_constraint_possible, int 
   if (no_change_possible && sqlite3_value_nochange(value))
     return Py_NewRef(&apsw_no_change_object);
 
-  APSW_FAULT_INJECT(UnknownValueType, , coltype = 123456);
-
   switch (coltype)
   {
   case SQLITE_INTEGER:
@@ -284,8 +282,6 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
   int coltype;
 
   _PYSQLITE_CALL_V(coltype = sqlite3_column_type(stmt, col));
-
-  APSW_FAULT_INJECT(UnknownColumnType, , coltype = 12348);
 
   switch (coltype)
   {
@@ -370,12 +366,15 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
     }                                                                      \
   } while (0)
 
+#undef apsw_strdup
 /* This adds double nulls on the end - needed if string is a filename
    used near vfs as it puts extra info after the first null */
 static char *apsw_strdup(const char *source)
 {
+#include "faultinject.h"
+
   size_t len = strlen(source);
-  char *res = PyMem_Malloc(len + 3);
+  char *res = PyMem_Calloc(1, len + 3);
   if (res)
   {
     res[len] = res[len + 1] = res[len + 2] = 0;
