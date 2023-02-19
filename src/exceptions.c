@@ -293,12 +293,20 @@ MakeSqliteMsgFromPyException(char **errmsg)
     if (!str && evalue)
       str = PyObject_Str(evalue);
     if (!str && etype)
+    {
+      PyErr_Clear();
       str = PyObject_Str(etype);
+    }
     if (!str)
+    {
+      PyErr_Clear();
       str = PyUnicode_FromString("python exception with no information");
-    if (*errmsg)
+    }
+    if (*errmsg && str)
+    {
       sqlite3_free(*errmsg);
-    *errmsg = sqlite3_mprintf("%s", PyBytes_AsString(str));
+      *errmsg = sqlite3_mprintf("%s", PyUnicode_AsUTF8(str));
+    }
 
     Py_XDECREF(str);
   }

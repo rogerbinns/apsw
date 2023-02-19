@@ -5112,6 +5112,10 @@ class APSW(unittest.TestCase):
                     if n in code:
                         self.fail("Should be using compat function for %s in file %s" % (n, filename))
 
+            # not allowed PyObject_New because we can't faultinject it
+            if re.search(r"\bPyObject_New\b", code):
+                self.fail(f"In { filename } you must use _PyObject_New (leading underscore)")
+
             # check check funcs
             funcpat1 = re.compile(r"^(\w+_\w+)\s*\(\s*\w+\s*\*\s*self")
             funcpat2 = re.compile(r"^(\w+)\s*\(")
@@ -9025,34 +9029,6 @@ shell.write(shell.stdout, "hello world\\n")
             self.assertTrue(klass is apsw.Error)
             self.assertTrue("254" in str(value))
 
-        ## BlobAllocFails
-        apsw.faultdict["BlobAllocFails"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.cursor().execute("create table foo(ablob); insert into foo (ROWID, ablob) values (1,x'aabbccddeeff')")
-            blob = db.blobopen("main", "foo", "ablob", 1, False)
-            1 / 0
-        except MemoryError:
-            pass
-
-        ## CursorAllocFails
-        apsw.faultdict["CursorAllocFails"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.cursor().execute("select 3")
-            1 / 0
-        except MemoryError:
-            pass
-
-        ## DBConfigFails
-        apsw.faultdict["DBConfigFails"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.config(apsw.SQLITE_DBCONFIG_ENABLE_TRIGGER, -1)
-            1 / 0
-        except apsw.NoMemError:
-            pass
-
         ## RollbackHookExistingError
         apsw.faultdict["RollbackHookExistingError"] = True
         try:
@@ -9618,15 +9594,6 @@ shell.write(shell.stdout, "hello world\\n")
             db.backup("main", apsw.Connection(":memory:"), "main")
             1 / 0
         except apsw.NoMemError:
-            pass
-
-        ## BackupNewFails
-        apsw.faultdict["BackupNewFails"] = True
-        try:
-            db = apsw.Connection(":memory:")
-            db.backup("main", apsw.Connection(":memory:"), "main")
-            1 / 0
-        except MemoryError:
             pass
 
         ## BackupTupleFails

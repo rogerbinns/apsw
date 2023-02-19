@@ -545,7 +545,7 @@ Connection_blobopen(Connection *self, PyObject *args, PyObject *kwds)
   if (res != SQLITE_OK)
     return NULL;
 
-  APSW_FAULT_INJECT(BlobAllocFails, apswblob = PyObject_New(struct APSWBlob, &APSWBlobType), (PyErr_NoMemory(), apswblob = NULL));
+  apswblob = (struct APSWBlob *)_PyObject_New(&APSWBlobType);
   if (!apswblob)
   {
     PYSQLITE_CON_CALL(sqlite3_blob_close(blob));
@@ -658,9 +658,7 @@ Connection_backup(Connection *self, PyObject *args, PyObject *kwds)
     goto finally;
   }
 
-  APSW_FAULT_INJECT(BackupNewFails,
-                    apswbackup = PyObject_New(struct APSWBackup, &APSWBackupType),
-                    apswbackup = (struct APSWBackup *)PyErr_NoMemory());
+  apswbackup = (struct APSWBackup *)_PyObject_New(&APSWBackupType);
   if (!apswbackup)
     goto finally;
 
@@ -722,7 +720,7 @@ Connection_cursor(Connection *self)
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  APSW_FAULT_INJECT(CursorAllocFails, cursor = PyObject_CallFunction(self->cursor_factory, "O", self), cursor = PyErr_NoMemory());
+  cursor = PyObject_CallFunction(self->cursor_factory, "O", self);
   if (!cursor)
   {
     AddTraceBackHere(__FILE__, __LINE__, "Connection.cursor", "{s: O}", "cursor_factory", OBJ(self->cursor_factory));
@@ -2314,7 +2312,7 @@ static PyTypeObject FunctionCBInfoType =
 static FunctionCBInfo *
 allocfunccbinfo(const char *name)
 {
-  FunctionCBInfo *res = PyObject_New(FunctionCBInfo, &FunctionCBInfoType);
+  FunctionCBInfo *res = (FunctionCBInfo*)_PyObject_New(&FunctionCBInfoType);
   if (res)
   {
     res->name = apsw_strdup(name);
@@ -4073,9 +4071,8 @@ Connection_config(Connection *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "ii", &opdup, &val))
       return NULL;
 
-    APSW_FAULT_INJECT(DBConfigFails,
-                      PYSQLITE_CON_CALL(res = sqlite3_db_config(self->db, opdup, val, &current)),
-                      res = SQLITE_NOMEM);
+    PYSQLITE_CON_CALL(res = sqlite3_db_config(self->db, opdup, val, &current));
+
     if (res != SQLITE_OK)
     {
       SET_EXC(res, self->db);

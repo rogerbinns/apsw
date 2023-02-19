@@ -156,7 +156,7 @@ apsw_write_unraisable(PyObject *hookobject)
     PyErr_Clear();
     if (excepthook)
     {
-      result = PyObject_CallFunction(excepthook, "(OOO)", err_type ? err_type : Py_None, err_value ? err_value : Py_None, err_traceback ? err_traceback : Py_None);
+      result = PyObject_CallFunction(excepthook, "(OOO)", OBJ(err_type), OBJ(err_value), OBJ(err_traceback));
       if (result)
         goto finally;
     }

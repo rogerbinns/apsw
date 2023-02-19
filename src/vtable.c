@@ -1168,7 +1168,7 @@ apswvtabBestIndexObject(sqlite3_vtab *pVtab, sqlite3_index_info *in_index_info)
 
   gilstate = PyGILState_Ensure();
   vtable = ((apsw_vtable *)pVtab)->vtable;
-  index_info = PyObject_New(struct SqliteIndexInfo, &SqliteIndexInfoType);
+  index_info = (struct SqliteIndexInfo*)_PyObject_New(&SqliteIndexInfoType);
   if (!index_info)
     goto finally;
 

@@ -523,7 +523,7 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
 
   if (inflags & (SQLITE_OPEN_URI | SQLITE_OPEN_MAIN_DB))
   {
-    nameobject = PyObject_New(PyObject, &APSWURIFilenameType);
+    nameobject = _PyObject_New(&APSWURIFilenameType);
     if (nameobject)
       ((APSWURIFilename *)nameobject)->filename = (char *)zName;
   }
@@ -666,7 +666,7 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *args, PyObject *kwds)
   if (PyErr_Occurred())
     goto finally;
 
-  apswfile = PyObject_New(APSWVFSFile, &APSWVFSFileType);
+  apswfile = (APSWVFSFile*)_PyObject_New(&APSWVFSFileType);
   if (!apswfile)
     goto finally;
   apswfile->base = file;
