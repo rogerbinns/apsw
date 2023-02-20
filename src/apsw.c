@@ -386,7 +386,6 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
   case SQLITE_CONFIG_SINGLETHREAD:
   case SQLITE_CONFIG_MULTITHREAD:
   case SQLITE_CONFIG_SERIALIZED:
-  case SQLITE_CONFIG_URI:
     if (!PyArg_ParseTuple(args, "i", &optdup))
       return NULL;
     assert(opt == optdup);
@@ -399,7 +398,7 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &optdup))
       return NULL;
     assert(opt == optdup);
-    APSW_FAULT_INJECT(SCPHConfigFails, res = sqlite3_config((int)opt, &outval), res = SQLITE_FULL);
+    res = sqlite3_config((int)opt, &outval);
     if (res)
     {
       SET_EXC(res, NULL);
@@ -408,10 +407,12 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
     return PyLong_FromLong(outval);
   }
 
+  case SQLITE_CONFIG_URI:
   case SQLITE_CONFIG_MEMSTATUS:
   case SQLITE_CONFIG_COVERING_INDEX_SCAN:
   case SQLITE_CONFIG_PMASZ:
   case SQLITE_CONFIG_STMTJRNL_SPILL:
+  case SQLITE_CONFIG_SORTERREF_SIZE:
   {
     int intval;
     if (!PyArg_ParseTuple(args, "ii", &optdup, &intval))
