@@ -8,6 +8,7 @@ import math
 sys.path.insert(0, str(pathlib.Path(__file__).parent.absolute() / "tools"))
 
 import genfaultinject
+
 returns = genfaultinject.returns
 
 call_remap = {v: k for k, v in genfaultinject.call_map.items()}
@@ -15,7 +16,6 @@ call_remap = {v: k for k, v in genfaultinject.call_map.items()}
 has_faulted = set()
 
 to_fault = set()
-
 
 Proceed = 0x1FACADE
 "magic value keep going (ie do not inject a return value)"
@@ -33,7 +33,10 @@ def apswattr(name):
     assert "apsw" in sys.modules
     return getattr(sys.modules["apsw"], name)
 
+
 previous_func = None
+
+
 def FaultCall(key):
     global previous_func
     fname = call_remap.get(key[0], key[0])
@@ -53,7 +56,7 @@ def FaultCall(key):
 
         if fname == "sqlite3_enable_shared_cache":
             expect_exception.add(apswattr("Error"))
-            return 0xFE # also does unknown error code to make_exception
+            return 0xFE  # also does unknown error code to make_exception
 
         if fname in {"sqlite3_value_type", "sqlite3_column_type"}:
             if key[2] == "apswvtabUpdate":
@@ -61,6 +64,12 @@ def FaultCall(key):
             else:
                 expect_exception.add(apswattr("Error"))
             return 12345
+
+        # pointers with 0 being failure
+        if fname in {"sqlite3_backup_init", "sqlite3_malloc64", "sqlite3_mprintf"}:
+            expect_exception.add(apswattr("SQLError"))
+            expect_exception.add(MemoryError)
+            return 0
 
         if fname.startswith("sqlite3_"):
             expect_exception.add(apswattr("TooBigError"))
@@ -113,22 +122,43 @@ def exercise():
     # several fault injection locations
 
     import apsw, apsw.ext
+
+    try:
+        apsw.config(apsw.SQLITE_CONFIG_URI, 1)
+        apsw.config(apsw.SQLITE_CONFIG_MULTITHREAD)
+        apsw.config(apsw.SQLITE_CONFIG_PCACHE_HDRSZ)
+        apsw.ext.log_sqlite(level=0)
+    except apsw.MisuseError:
+        pass
+
     apsw.initialize()
+    apsw.status(apsw.SQLITE_STATUS_MEMORY_USED)
+
     for n in """
             SQLITE_VERSION_NUMBER apswversion compile_options keywords memoryused
             sqlite3_sourceid sqlitelibversion using_amalgamation vfsnames
         """.split():
-        obj=getattr(apsw, n)
+        obj = getattr(apsw, n)
         if callable(obj):
             obj()
 
     apsw.enablesharedcache(False)
-    apsw.status(apsw.SQLITE_STATUS_MEMORY_USED)
 
     for v in ("a'bc", "ab\0c", b"aabbcc", None, math.nan, math.inf, -0.0, -math.inf, 3.1):
         apsw.format_sql_value(v)
 
     con = apsw.Connection("")
+    con.wal_autocheckpoint(1)
+    con.execute("pragma page_size=512; pragma auto_vacuum=FULL; pragma journal_mode=wal; create table foo(x)")
+    with con:
+        con.executemany("insert into foo values(zeroblob(1023))", [tuple() for _ in range(500)])
+
+    con.autovacuum_pages(lambda *args: 1)
+    for i in range(20):
+        con.wal_autocheckpoint()
+        victim = con.execute("select rowid from foo order by random limit 1").fetchall()[0][0]
+        con.execute("delete from foo where rowid=?", (victim,))
+
 
     con.config(apsw.SQLITE_DBCONFIG_ENABLE_TRIGGER, 1)
     con.setauthorizer(None)
@@ -138,8 +168,8 @@ def exercise():
     con.enableloadextension(True)
     con.setbusyhandler(None)
     con.setbusyhandler(lambda *args: True)
-    con.createscalarfunction("failme", lambda x: x+1)
-    cur=con.cursor()
+    con.createscalarfunction("failme", lambda x: x + 1)
+    cur = con.cursor()
     for _ in cur.execute("select failme(3)"):
         cur.description
         cur.description_full
@@ -260,18 +290,20 @@ def exercise():
                 open_flags open_vfs release_memory sqlite3pointer system_errno
                 totalchanges txn_state
         """.split():
-        obj=getattr(con, n)
+        obj = getattr(con, n)
         if callable(obj):
             obj()
 
-    con.execute("create table blobby(x); insert into blobby values(?)", (apsw.zeroblob(99),))
-    blob=con.blobopen("main", "blobby", "x", con.last_insert_rowid(), True)
+    con.execute("create table blobby(x); insert into blobby values(?)", (apsw.zeroblob(99), ))
+    blob = con.blobopen("main", "blobby", "x", con.last_insert_rowid(), True)
     blob.write(b"hello world")
     blob.seek(80)
     blob.read(10)
     blob.close()
 
     con.cache_stats(True)
+
+
 
     con2 = apsw.Connection("")
     with con2.backup("main", con, "main") as backup:
@@ -286,10 +318,15 @@ def exercise():
 
 
 exc_happened = []
+
+
 def unraisehook(*details):
     exc_happened.append(details[:2])
 
+
 sys.unraisablehook = unraisehook
+sys.excepthook = unraisehook
+
 
 def verify_exception(tested):
     ok = any(e[0] in expect_exception for e in exc_happened) or any(FAULTS in str(e[1]) for e in exc_happened)
@@ -299,6 +336,7 @@ def verify_exception(tested):
         print(f"Expected { expect_exception }")
         print(f"Testing { tested }")
         sys.exit(1)
+
 
 complete = False
 last = set(), set()
