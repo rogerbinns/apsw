@@ -92,6 +92,7 @@ API Reference
 #include <pythread.h>
 #include "structmember.h"
 
+static int MakeExistingException() { return 0;  }
 #include "faultinject.h"
 
 #ifdef APSW_TESTFIXTURES
@@ -2320,8 +2321,11 @@ PyInit___init__(void)
 #endif
 
 #ifdef APSW_TESTFIXTURES
+
 #define APSW_FAULT_CLEAR
 #include "faultinject.h"
+#define PyObject_CallFunction _PyObject_CallFunction_SizeT
+
 static int
 APSW_FaultInjectControl(const char *faultfunction, const char *filename, const char *funcname, int linenum, const char *args, PyObject **obj)
 {

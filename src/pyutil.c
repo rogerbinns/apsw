@@ -5,8 +5,13 @@
 */
 
 /* used in calls to AddTraceBackHere where O format takes non-null but
-   we often have null so convert to None */
-#define OBJ(o) ((o) ? (o) : (Py_None))
+   we often have null so convert to None.  This can't be done as a portable
+   macro because v would end up double evaluated */
+static PyObject *
+OBJ(PyObject *v)
+{
+  return v ? v : Py_None;
+}
 
 /* we clear weakref lists when close is called on a blob/cursor as
    well as when it is deallocated */
@@ -68,9 +73,11 @@ finally:
   return res;
 }
 
+#undef Call_PythonMethodV
 static PyObject *
 Call_PythonMethodV(PyObject *obj, const char *methodname, int mandatory, const char *format, ...)
 {
+#include "faultinject.h"
   PyObject *args = NULL, *result = NULL;
   va_list list;
   va_start(list, format);

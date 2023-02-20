@@ -221,7 +221,7 @@ static void make_exception(int res, sqlite3 *db)
   if (!errmsg)
     errmsg = "error";
 
-  if(db)
+  if (db)
     _PYSQLITE_CALL_V(error_offset = sqlite3_error_offset(db));
 
   for (i = 0; exc_descriptors[i].name; i++)
@@ -233,14 +233,25 @@ static void make_exception(int res, sqlite3 *db)
       PyErr_Fetch(&etype, &eval, &etb);
       PyErr_NormalizeException(&etype, &eval, &etb);
       tmp = PyLong_FromLongLong(res & 0xff);
+      if (!tmp)
+        goto error;
       PyObject_SetAttrString(eval, "result", tmp);
       Py_DECREF(tmp);
       tmp = PyLong_FromLongLong(res);
+      if (!tmp)
+        goto error;
+
       PyObject_SetAttrString(eval, "extendedresult", tmp);
       Py_DECREF(tmp);
+
       tmp = PyLong_FromLong(error_offset);
+      if (!tmp)
+        goto error;
       PyObject_SetAttrString(eval, "error_offset", tmp);
-      Py_DECREF(tmp);
+    error:
+      Py_XDECREF(tmp);
+      if (PyErr_Occurred())
+        apsw_write_unraisable(NULL);
       PyErr_Restore(etype, eval, etb);
       assert(PyErr_Occurred());
       return;

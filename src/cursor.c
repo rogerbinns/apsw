@@ -294,11 +294,20 @@ APSWCursor_close_internal(APSWCursor *self, int force)
 static void
 APSWCursor_dealloc(APSWCursor *self)
 {
+  /* dealloc is not allowed to return an exception or
+     clear the current exception */
+  PyObject *one, *two, *three;
+  PyErr_Fetch(&one, &two, &three);
+
   PyObject_GC_UnTrack(self);
   APSW_CLEAR_WEAKREFS;
 
   APSWCursor_close_internal(self, 2);
 
+  if(PyErr_Occurred())
+    apsw_write_unraisable(NULL);
+
+  PyErr_Restore(one, two, three);
   Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
@@ -763,9 +772,7 @@ APSWCursor_doexectrace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
     }
     else
     {
-      APSW_FAULT_INJECT(DoExecTraceBadSlice,
-                        bindings = PySequence_GetSlice(self->bindings, savedbindingsoffset, self->bindingsoffset),
-                        bindings = PyErr_NoMemory());
+      bindings = PySequence_GetSlice(self->bindings, savedbindingsoffset, self->bindingsoffset);
 
       if (!bindings)
       {
@@ -1164,7 +1171,10 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args, PyObject *kwds)
   }
   self->emiter = PyObject_GetIter(sequenceofbindings);
   if (!self->emiter)
-    return PyErr_Format(PyExc_TypeError, "2nd parameter must be iterable");
+    {
+    assert(PyErr_Occurred());
+    return NULL;
+    }
 
   INUSE_CALL(next = PyIter_Next(self->emiter));
   if (!next && PyErr_Occurred())

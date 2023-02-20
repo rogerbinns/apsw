@@ -915,9 +915,7 @@ apswvfspy_xDlError(APSWVFS *self)
   CHECKVFSPY;
   VFSNOTIMPLEMENTED(xDlError, 1);
 
-  APSW_FAULT_INJECT(xDlErrorAllocFail,
-                    res = PyBytes_FromStringAndSize(NULL, 512 + self->basevfs->mxPathname),
-                    res = PyErr_NoMemory());
+  res = PyBytes_FromStringAndSize(NULL, 512 + self->basevfs->mxPathname);
   if (res)
   {
     memset(PyBytes_AS_STRING(res), 0, PyBytes_GET_SIZE(res));
@@ -946,7 +944,7 @@ apswvfspy_xDlError(APSWVFS *self)
     return unicode;
   }
 
-  AddTraceBackHere(__FILE__, __LINE__, "vfspy.xDlError", "{s: O, s: N}", "self", self, "res", PyBytes_FromStringAndSize(PyBytes_AS_STRING(res), strlen(PyBytes_AS_STRING(res))));
+  AddTraceBackHere(__FILE__, __LINE__, "vfspy.xDlError", "{s: O, s: N}", "self", self, "res", OBJ(PyBytes_FromStringAndSize(PyBytes_AS_STRING(res), strlen(PyBytes_AS_STRING(res)))));
   Py_DECREF(res);
   return NULL;
 }
@@ -1015,9 +1013,7 @@ apswvfspy_xRandomness(APSWVFS *self, PyObject *args, PyObject *kwds)
   if (numbytes < 0)
     return PyErr_Format(PyExc_ValueError, "You can't have negative amounts of randomness!");
 
-  APSW_FAULT_INJECT(xRandomnessAllocFail,
-                    res = PyBytes_FromStringAndSize(NULL, numbytes),
-                    res = PyErr_NoMemory());
+  res = PyBytes_FromStringAndSize(NULL, numbytes);
   if (res)
   {
     int amt = self->basevfs->xRandomness(self->basevfs, PyBytes_GET_SIZE(res), PyBytes_AS_STRING(res));
@@ -1265,7 +1261,10 @@ apswvfspy_xGetLastError(APSWVFS *self)
   errval = self->basevfs->xGetLastError(self->basevfs, size, PyBytes_AS_STRING(text));
   msglen = strnlen(PyBytes_AS_STRING(text), size);
   if (msglen > 0)
-    _PyBytes_Resize(&text, msglen);
+  {
+    if(_PyBytes_Resize(&text, msglen))
+      goto error;
+  }
   else
   {
     Py_CLEAR(text);
@@ -1440,7 +1439,7 @@ apswvfs_xNextSystemCall(sqlite3_vfs *vfs, const char *zName)
     if (PyUnicode_Check(pyresult))
     {
       /* note this deliberately leaks memory due to SQLite semantics */
-      res = sqlite3_mprintf("%s", PyUnicode_AsUTF8String(pyresult));
+      res = sqlite3_mprintf("%s", PyUnicode_AsUTF8(pyresult));
     }
     else
       PyErr_Format(PyExc_TypeError, "You must return a string or None");
@@ -1529,7 +1528,6 @@ apswvfspy_unregister(APSWVFS *self)
          anything except ok anyway. */
     res = sqlite3_vfs_unregister(self->containingvfs);
     self->registered = 0;
-    APSW_FAULT_INJECT(APSWVFSDeallocFail, , res = SQLITE_IOERR);
 
     SET_EXC(res, NULL);
     if (res != SQLITE_OK)
@@ -1680,10 +1678,7 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwds)
   METHOD(GetSystemCall);
   METHOD(NextSystemCall);
 #undef METHOD
-
-  APSW_FAULT_INJECT(APSWVFSRegistrationFails,
-                    res = sqlite3_vfs_register(self->containingvfs, makedefault),
-                    res = SQLITE_NOMEM);
+  res = sqlite3_vfs_register(self->containingvfs, makedefault);
 
   if (res == SQLITE_OK)
   {

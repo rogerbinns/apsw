@@ -186,9 +186,7 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
         sc->hashes[i] = SC_SENTINEL_HASH;
         statement = sc->caches[i];
         sc->caches[i] = NULL;
-        APSW_FAULT_INJECT(SCClearBindingsFails,
-                          PYSQLITE_SC_CALL(res = sqlite3_clear_bindings(statement->vdbestatement)),
-                          res = SQLITE_NOMEM);
+        PYSQLITE_SC_CALL(res = sqlite3_clear_bindings(statement->vdbestatement));
         if (res)
         {
           SET_EXC(res, sc->db);
