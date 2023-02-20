@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+import sys
+import subprocess
+
 proto = """
 static int
 APSW_FaultInjectControl(const char *faultfunction, const char *filename, const char *funcname, int linenum, const char *args, PyObject **obj);
@@ -65,7 +68,7 @@ return_no_gil = """
         else
         {
             assert(PyLong_Check(_res2));
-            _res = PyLong_AsLong_fi(_res2);
+            _res = (typeof(_res)) PyLong_AsLong_fi(_res2);
         }
         break;
     }
@@ -118,6 +121,9 @@ def get_definition(name, use_name):
         print("unknown template " + name)
         breakpoint()
         1 / 0
+    if name != use_name:
+        # put back pretty name in string passed to APSW_FaultInjectControl
+        t = t.replace(f'"{ use_name }"', f'"{ name }"')
     t = t.strip().split("\n")
     maxlen = max(len(l) for l in t)
     for i in range(len(t) - 1):
@@ -158,8 +164,12 @@ returns = {
             PyUnicode_New  PyUnicode_AsUTF8 PyObject_GetAttrString _PyObject_New PyUnicode_FromString
             PyObject_Str PyUnicode_AsUTF8AndSize PyTuple_New PyDict_New Py_BuildValue PyList_New
             PyWeakref_NewRef PyMem_Calloc convertutf8string PyLong_FromLong PyObject_GetIter
-            PyObject_CallObject PyIter_Next apsw_strdup PyLong_AsInt PyUnicode_FromStringAndSize
-            PySequence_GetItem
+            PyObject_CallObject apsw_strdup PyLong_AsInt PyUnicode_FromStringAndSize
+            PySequence_GetItem PyLong_FromLongLong PySequence_GetSlice PyBytes_FromStringAndSize
+            PyFloat_FromDouble MakeExistingException PyBool_FromLong PyCode_NewEmpty PyFloat_AsDouble
+            PyIter_Next PyList_SetItem PyLong_FromVoidPtr PyMapping_GetItemString PyNumber_Float
+            PyNumber_Long PySequence_List PySequence_SetItem PyObject_CallFunction PyObject_CallMethod
+            Call_PythonMethodV
             """.split(),
     # numeric return, no gil
     "no_gil": """
@@ -167,11 +177,17 @@ returns = {
             sqlite3_set_authorizer sqlite3_collation_needed
             sqlite3_enable_load_extension sqlite3_busy_handler sqlite3_value_type
             sqlite3_column_type sqlite3_status64 sqlite3_initialize sqlite3_shutdown
+            sqlite3_config sqlite3_blob_read sqlite3_blob_write sqlite3_backup_init
+            sqlite3_autovacuum_pages sqlite3_malloc64 sqlite3_wal_autocheckpoint
+            sqlite3_wal_checkpoint_v2 sqlite3_create_module_v2 sqlite3_overload_function
+            sqlite3_exec sqlite3_clear_bindings sqlite3_vfs_register sqlite3_mprintf
             """.split(),
     # py functions that return a number to indicate failure
     "with_gil": """
         PyType_Ready PyModule_AddObject PyModule_AddIntConstant PyLong_AsLong
         PyLong_AsLongLong PyObject_GetBuffer PyList_Append PyDict_SetItemString
+        PyObject_SetAttrString _PyBytes_Resize PyDict_SetItem PyList_SetSlice
+        PyObject_IsTrue PySequence_Size PySet_Add
         """.split(),
 }
 
@@ -179,6 +195,10 @@ returns = {
 # so deal with that here
 call_map = {
     "Py_BuildValue": "_Py_BuildValue_SizeT",
+    "PyArg_ParseTuple": "_PyArg_ParseTuple_SizeT",
+    "PyObject_CallFunction": "_PyObject_CallFunction_SizeT",
+    "PyObject_CallMethod": "_PyObject_CallMethod_SizeT",
+    "Py_VaBuildValue": "_Py_VaBuildValue_SizeT",
 
 }
 
@@ -189,15 +209,69 @@ for k, v in returns.items():
         for val in v:
             if val in seen:
                 print(f"Duplicate item { val } in { k }")
+                sys.exit(1)
             else:
                 seen.add(val)
-        sys.exit(1)
+
+# these don't provide meaning for fault injection
+no_error=set("""PyBuffer_Release PyDict_GetItem PyMem_Free PyDict_GetItemString PyErr_Clear
+    PyErr_Display PyErr_Fetch PyErr_Format PyErr_NoMemory PyErr_NormalizeException
+    PyErr_Occurred PyErr_Print PyErr_Restore PyErr_SetObject PyEval_RestoreThread
+    PyEval_SaveThread PyGILState_Ensure PyGILState_Release PyMem_Realloc PyOS_snprintf
+    PyObject_CheckBuffer PyObject_ClearWeakRefs PyObject_GC_UnTrack PyObject_HasAttrString
+    PySequence_Fast PyThreadState_Get PyThread_get_thread_ident PyTraceBack_Here
+    PyType_IsSubtype PyUnicode_CopyCharacters PyWeakref_GetObject _Py_Dealloc
+    _Py_HashBytes _Py_NegativeRefcount _Py_RefTotal PyThreadState_GetFrame
+    _PyArg_ParseTupleAndKeywords_SizeT
+""".split())
+
+# these could error but are only used in a small number of places where
+# errors are already dealt with
+no_error.update("""PyArg_ParseTuple PyBytes_AsString PyErr_GivenExceptionMatches PyFrame_GetBack
+    PyFrame_New PyImport_ImportModule PyLong_AsLongAndOverflow PyLong_AsVoidPtr PyObject_Call
+    PyObject_CallFunctionObjArgs PyObject_IsInstance PySys_GetObject
+""".split())
+
+def check_dll(fname, all):
+    not_seen = set()
+    for line in subprocess.run(["nm", "-u", fname], text=True, capture_output=True, check=True).stdout.split("\n"):
+        if not line.strip().startswith("U") or "@" in line or "Py" not in line:
+            continue
+        _, sym = line.split()
+        if sym in all:
+            assert sym not in no_error, f"{ sym } in all and no_error"
+
+        if sym in call_map.values():
+            for k, v in call_map.items():
+                if sym == v:
+                    sym = k
+                    break
+            else:
+                1/0
+
+        if (sym in all
+            or sym in no_error
+            or sym.endswith("_Check")
+            or sym.endswith("_Type")
+            or sym.endswith("Struct")
+            or sym.startswith("PyExc_")
+        ):
+            continue
+
+
+
+        not_seen.add(sym)
+
+    print(sorted(not_seen))
+    print(len(not_seen), "items")
 
 
 if __name__ == '__main__':
-    import sys
     all = set()
     for v in returns.values():
         all.update(v)
-    r = genfile(all)
-    open(sys.argv[1], "wt").write(r)
+    if sys.argv[1].endswith(".h"):
+        r = genfile(all)
+        open(sys.argv[1], "wt").write(r)
+    else:
+        check_dll(sys.argv[1], all)
