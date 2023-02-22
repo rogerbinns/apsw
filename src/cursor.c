@@ -304,7 +304,7 @@ APSWCursor_dealloc(APSWCursor *self)
 
   APSWCursor_close_internal(self, 2);
 
-  if(PyErr_Occurred())
+  if (PyErr_Occurred())
     apsw_write_unraisable(NULL);
 
   PyErr_Restore(one, two, three);
@@ -439,7 +439,7 @@ APSWCursor_internal_getdescription(APSWCursor *self, int fmtnum)
 #undef INDEX
     if (!column)
       goto error;
-
+    assert(!PyErr_Occurred());
     PyTuple_SET_ITEM(result, i, column);
     /* owned by result now */
     column = 0;
@@ -1179,10 +1179,10 @@ APSWCursor_executemany(APSWCursor *self, PyObject *args, PyObject *kwds)
   }
   self->emiter = PyObject_GetIter(sequenceofbindings);
   if (!self->emiter)
-    {
+  {
     assert(PyErr_Occurred());
     return NULL;
-    }
+  }
 
   INUSE_CALL(next = PyIter_Next(self->emiter));
   if (!next && PyErr_Occurred())
